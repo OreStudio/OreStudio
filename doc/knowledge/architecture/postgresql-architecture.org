@@ -1,0 +1,204 @@
+:PROPERTIES:
+:ID: 81AB065B-E6EB-4CC2-BB18-F3FD2652EC47
+:END:
+#+title: PostgreSQL: Database Architecture and Conventions
+#+description: The PostgreSQL database used by ORE Studio: schema layout, roles, session conventions, bitemporal design, extensions, and key SQL patterns.
+#+type: knowledge
+#+level: cross
+#+filetags: :postgresql:database:architecture:knowledge:
+#+created: 2026-06-03
+#+updated: 2026-06-03
+
+ORE Studio uses PostgreSQL as its sole persistent store.  All services
+read and write through a shared database, each with a strictly scoped
+service role.  This article documents the database structure, naming
+conventions, session settings, and the patterns every service must
+follow. Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+
+* Project reference
+
+The SQL source lives entirely in [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]].  Key paths:
+
+| Path | Purpose |
+|------|---------|
+| =ores.sql/create/= | DDL: tables, triggers, functions, indexes, RLS policies |
+| =ores.sql/migrate/= | Incremental migrations (applied by =migrate.sh=) |
+| =ores.sql/populate/= | Seed data: reference tables, system accounts, flags |
+| =ores.sql/drop/= | Complementary DROP scripts (idempotent teardown) |
+| =ores.sql/test/= | pgTAP SQL unit tests |
+| =ores.sql/create/utility/utility_functions_create.sql= | Shared utility functions (infinity timestamp, name normalisation, etc.) |
+| =ores.sql/setup_extensions.sql= | Extension installation script |
+| =ores.sql/recreate_database.sh= | Full database teardown and rebuild |
+| =ores.sql/migrate.sh= | Incremental migration runner |
+
+* Schema layout
+
+All tables share the =public= schema with an =ores_= prefix followed by a
+domain sub-prefix:
+
+| Prefix | Domain |
+|--------|--------|
+| =ores_iam_*= | Identity and access management |
+| =ores_refdata_*= | Reference data (currencies, parties, books, …) |
+| =ores_trading_*= | Trades, instruments, lifecycle events |
+| =ores_analytics_*= | Pricing models and configurations |
+| =ores_compute_*= | Compute grid: apps, batches, work units, results |
+| =ores_reporting_*= | Report definitions, instances, concurrency policies |
+| =ores_dq_*= | Data quality: badges, FSMs, datasets, catalogues |
+| =ores_marketdata_*= | Market series, observations, fixings |
+| =ores_workflow_*= | Workflow instances and steps |
+| =ores_variability_*= | System settings |
+| =ores_assets_*= | Binary assets (images, tags) |
+| =ores_telemetry_*= | Telemetry logs and samples |
+| =ores_scheduler_*= | Job definitions and instances |
+
+* Roles and users
+
+ORE Studio uses a least-privilege role model.  Every service runs as a
+dedicated database user with DML only on its own domain tables.  No
+service user can read or write another domain's tables directly.
+
+| Role pattern | Privilege |
+|--------------|-----------|
+| =ores_<env>_owner= | Superuser-level within the DB; owns all objects |
+| =ores_<env>_ddl_user= | DDL (CREATE, ALTER, DROP); used by setup scripts |
+| =ores_<env>_<service>_service= | SELECT, INSERT, UPDATE, DELETE on own domain only |
+| =ores_<env>_readonly_user= | SELECT on all tables; used by reporting tools |
+| =ores_<env>_cli_user= | CLI surface DML |
+| =ores_<env>_shell_user= | Shell surface DML |
+| =ores_<env>_wt_user= | Wt (web) surface DML |
+| =ores_<env>_http_user= | HTTP surface DML |
+
+Row-Level Security enforces tenant isolation on top of these grants —
+see [[id:B28747DF-A735-1C84-4E43-11ADFA8B05E3][PostgreSQL Row-Level Security]] for details.
+
+* Session conventions
+
+Every application connection must set the following before executing
+queries.  The [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]] =tenant_aware_pool= does this on =acquire()=:
+
+#+begin_src sql
+-- Force UTC — all TIMESTAMPTZ values are returned as "YYYY-MM-DD HH:MM:SS+00"
+SELECT set_config('TimeZone', 'UTC', false);
+
+-- Set the current tenant (required by RLS policies)
+SELECT set_config('app.current_tenant_id', '<uuid>', false);
+
+-- Set the current party (required by some service-level policies)
+SELECT set_config('app.current_party_id', '<uuid>', false);
+#+end_src
+
+*Every service must set =TimeZone = UTC= on every connection.*  Without
+it, PostgreSQL uses the server's local timezone and returns
+=TIMESTAMPTZ= values with local offsets rather than =+00=.  All C++
+timestamp parsing assumes UTC.
+
+* Bitemporal design
+
+All reference and trading entities use a bitemporal schema: see
+[[id:4AAD3581-CFA7-4B44-A2DD-0236784E939F][Time and Timestamps: Architecture and Conventions]] for the full
+treatment.  The short version:
+
+- Every table has =valid_from TIMESTAMPTZ NOT NULL= and
+  =valid_to TIMESTAMPTZ NOT NULL=.
+- =valid_from= is set to =current_timestamp= by the INSERT trigger.
+- =valid_to= is set to =ores_utility_infinity_timestamp_fn()= on INSERT
+  and closed to =current_timestamp= on UPDATE or DELETE.
+- "Current" records are those with =valid_to = ores_utility_infinity_timestamp_fn()=.
+- =ores_utility_infinity_timestamp_fn()= must be used in SQL wherever the
+  sentinel value is needed — never the bare literal.
+
+* Extensions
+
+Extensions are installed by =ores.sql/setup_extensions.sql=, which is
+called during database creation.  Extensions are per-database in
+PostgreSQL.
+
+** =btree_gist= (required)
+
+Extends GiST indexes to support btree-indexable data types (integers,
+timestamps, text).  ORE Studio uses it for *temporal exclusion
+constraints*: a GiST index over =(id, valid_from, valid_to)= prevents
+two rows for the same entity from having overlapping valid-time ranges.
+Without =btree_gist=, the exclusion constraint on bitemporal tables
+cannot be created.
+
+#+begin_src sql
+create extension if not exists btree_gist;
+#+end_src
+
+** =unaccent= (required)
+
+Provides a text-search dictionary that strips accents from characters
+(e.g. é → e, ñ → n).  Used by the =ores_utility_normalise_name_fn()=
+helper to produce a lowercase, accent-free version of party and
+counterparty names for deduplication and search.  Without =unaccent=,
+name normalisation falls back to a plain =lower()= which misses
+accented characters.
+
+#+begin_src sql
+create extension if not exists unaccent;
+#+end_src
+
+** =pgtap= (optional — recommended for development)
+
+A TAP-compliant unit-testing framework for SQL.  Provides =plan()=,
+=is()=, =ok()=, =throws_ok()=, and similar functions for writing
+database-level tests under =ores.sql/test/=.  If not installed, the
+SQL test suite cannot run; application functionality is unaffected.
+
+Install on Debian/Ubuntu: =apt install postgresql-NN-pgtap=.
+
+#+begin_src sql
+create extension if not exists pgtap;
+#+end_src
+
+** =timescaledb= (optional — recommended for telemetry)
+
+A time-series database extension.  ORE Studio uses it for the
+telemetry tables (=ores_telemetry_*=): hypertables partition telemetry
+logs by time, enabling efficient range queries and compression.  If
+TimescaleDB is not installed, the telemetry tables fall back to
+regular PostgreSQL tables — all functionality works but performance
+at scale degrades.
+
+TimescaleDB requires a system-level installation
+(=apt install timescaledb-2-postgresql-NN=) and
+=shared_preload_libraries = 'timescaledb'= in =postgresql.conf= before
+the extension can be created.
+
+#+begin_src sql
+create extension if not exists timescaledb;
+#+end_src
+
+* Notification triggers
+
+Most tables have a =NOTIFY= trigger that fires after INSERT, UPDATE, or
+DELETE and publishes a JSON payload on a per-domain PostgreSQL channel
+(e.g. =ores_refdata_notifications=).  The service layer listens on its
+channel and translates database events into NATS messages, which are
+then routed to connected clients.  This is how live-update eventing
+works: DB write → NOTIFY trigger → service listener → NATS event → Qt
+=markAsStale()=.
+
+Trigger files follow the naming pattern:
+=<domain>_<table>_notify_trigger_create.sql=.
+
+* Key utility functions
+
+Defined in =ores.sql/create/utility/utility_functions_create.sql=:
+
+| Function | Returns | Purpose |
+|---|---|---|
+| =ores_utility_infinity_timestamp_fn()= | =timestamptz= | Canonical "live record" sentinel. Always use this, never the bare literal. |
+| =ores_utility_normalise_name_fn(text)= | =text= | Lowercase + =unaccent= normalisation for search/dedup. |
+| =ores_iam_validate_account_username_fn(text)= | =text= | Validates =modified_by= is a known IAM account; called from write triggers. |
+| =ores_iam_current_service_fn()= | =text= | Returns the current service username; used to set =performed_by=. |
+| =ores_dq_validate_change_reason_fn(uuid, text)= | =text= | Validates =change_reason_code= against the DQ catalogue. |
+
+* See also
+
+- [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]] — the component that owns all DDL, migrations, and seed data.
+- [[id:B28747DF-A735-1C84-4E43-11ADFA8B05E3][PostgreSQL Row-Level Security]] — tenant isolation and service-role separation via RLS.
+- [[id:4AAD3581-CFA7-4B44-A2DD-0236784E939F][Time and Timestamps: Architecture and Conventions]] — bitemporality, the infinity sentinel, and the full timestamp type chain.
+- [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] — how C++ domain, mapper, service, and handler layers connect to the DB.

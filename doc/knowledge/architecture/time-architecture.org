@@ -332,10 +332,10 @@ The target state for the =unify-entity-timestamps= story is:
 * See also
 
 - [[id:F9AD7932-8E11-433C-A812-B57DBC9BF5D8][LLM instructions]] — links to all architectural entry points.
-- [[id:B28747DF-A735-1C84-4E43-11ADFA8B05E3][PostgreSQL Row-Level Security]] — the only current PostgreSQL
-  architecture document; covers RLS, tenant isolation, and role
-  assignment. A broader PostgreSQL conventions document does not yet
-  exist; it should be created and linked here once written.
+- [[id:81AB065B-E6EB-4CC2-BB18-F3FD2652EC47][PostgreSQL Architecture]] — database schema, roles, session conventions,
+  extensions, and utility functions including =ores_utility_infinity_timestamp_fn()=.
+- [[id:B28747DF-A735-1C84-4E43-11ADFA8B05E3][PostgreSQL Row-Level Security]] — tenant isolation and service-role
+  separation via RLS policies.
 - =ores.database/repository/db_types.hpp= — =db_timestamp= typedef.
 - =ores.database/repository/mapper_helpers.hpp= — =timestamp_to_timepoint= overloads.
 - =ores.database/repository/helpers.hpp= — =make_timestamp=, =MAX_TIMESTAMP=.

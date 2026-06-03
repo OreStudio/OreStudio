@@ -9,14 +9,17 @@
 #+created: 2026-06-03
 #+updated: 2026-06-03
 
+This chapter covers currency management end to end: the ISO 4217
+standard and OreStudio's extensions, every screen in the Qt UI,
+and the three classification tables currencies depend on — rounding
+types, market tiers, and monetary natures.
+
 ** Overview
 
-@@latex:\textsc{Currencies are}@@@@html:Currencies are@@ the foundational reference data entity. Every trade,
+@@latex:\lettrine[lines=2,nindent=0em]{C}{urrencies} \textsc{are}@@@@html:Currencies are@@ the foundational reference data entity. Every trade,
 cashflow, position, and P&L figure in the system is denominated in a
 currency; getting the currency record right is a prerequisite for
-everything else. This chapter covers the currency entity itself and
-the three auxiliary classification tables it relies on: rounding
-types, market tiers, and monetary natures.
+everything else.
 
 ** ISO 4217 and its limitations
 

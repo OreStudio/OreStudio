@@ -7,11 +7,20 @@
 #+level: cross
 #+filetags: :knowledge:manual:reference_data:refdata:user_guide:
 #+created: 2026-06-03
-#+updated: 2026-06-03
+#+updated: 2026-06-04
+
+This chapter introduces OreStudio's reference data model. It explains
+what reference data is and how it differs from market data and trades,
+then covers the data quality framework that governs it: the six
+industry-standard DQ dimensions, the bitemporal storage model,
+versioning and immutable history, provenance tracking, and the
+structured change reason system. Readers who want to jump straight to
+managing specific entity types can skim this chapter and return to it
+when questions arise about audit trails or data quality controls.
 
 ** What is Reference Data?
 
-@@latex:\textsc{Reference data}@@@@html:Reference data@@ is the static or slowly-changing master data that all
+@@latex:\lettrine[lines=2,nindent=0em]{R}{eference} \textsc{data}@@@@html:Reference data@@ is the static or slowly-changing master data that all
 financial activity depends on. It defines the vocabulary of the system
 — the currencies a trade is denominated in, the counterparty on the
 other side of a deal, the book it settles into, the country a legal
@@ -33,8 +42,7 @@ OreStudio's reference data covers a wide range of entity types:
 - *Books* — the internal trading books that own positions.
 - *Business units and portfolios* — the organisational structure within
   a party.
-- *Party types and statuses* — the classification vocabulary for
-  parties.
+- *Party types and statuses* — the classification vocabulary for parties.
 - *Classifications* — supplementary taxonomies such as currency market
   tiers and monetary natures.
 
@@ -55,6 +63,31 @@ deliberately. A currency's rounding convention is not something that
 shifts intraday — it is corrected through a controlled, audited
 process. OreStudio enforces this with a comprehensive data quality
 framework described in this chapter.
+
+#+begin_tangent
+*GLEIF and the Legal Entity Identifier (LEI)*
+
+The Global Legal Entity Identifier Foundation ([[https://www.gleif.org][GLEIF]]) is a
+not-for-profit organisation that oversees the global LEI system on
+behalf of financial regulators. A *Legal Entity Identifier (LEI)* is a
+20-character alphanumeric code that uniquely identifies a legal entity
+participating in financial markets — a bank, a corporation, a fund, a
+branch. LEIs are mandated by major regulatory frameworks including
+MiFID II, EMIR, Dodd-Frank, and Basel III for trade reporting and
+counterparty identification.
+
+GLEIF publishes the full registry of LEI entities and their corporate
+hierarchies (parent-child relationships) as open data. OreStudio uses
+the GLEIF dataset to seed counterparties and, when a party's root LEI
+is selected during tenant provisioning, to populate the initial party
+hierarchy from real organisational data.
+
+A *BIC* (Bank Identifier Code, ISO 9362) is an 8 or 11 character code
+identifying a specific financial institution, used in SWIFT messaging
+for settlement routing. GLEIF publishes a LEI-to-BIC mapping dataset
+that OreStudio also imports, allowing settlement systems to resolve a
+counterparty's BIC from its LEI.
+#+end_tangent
 
 ** Data Quality
 
@@ -79,34 +112,30 @@ industry-standard DQ dimensions described below.
 *Accuracy* is the degree to which data values agree with their
 authoritative golden source. OreStudio seeds currencies from ISO 4217,
 countries from ISO 3166, and counterparty identifiers from the GLEIF
-Legal Entity Identifier registry. Where a discrepancy arises between
-a record in OreStudio and its source, the source takes precedence; the
-system provides tooling to re-import from authoritative datasets.
+LEI registry. Where a discrepancy arises between a record in OreStudio
+and its source, the source takes precedence; the system provides
+tooling to re-import from authoritative datasets.
 
 *Completeness* means all mandatory attributes are present. The service
 layer rejects saves that omit required fields and returns a validation
 error; the Qt UI marks missing mandatory fields visually before a save
-is attempted. Bulk imports from external sources are validated against
-a mandatory-field checklist before being committed.
+is attempted.
 
 *Consistency* is the absence of contradictions between related
 entities. A currency's rounding type must be drawn from the governed
 rounding-types table; its market tier from the currency-market-tiers
-table. Foreign-key constraints in the database enforce this, so a save
-that references a non-existent classification code is rejected at the
-persistence layer rather than silently stored.
+table. Foreign-key constraints in the database enforce this at the
+persistence layer.
 
 *Timeliness* means data is available when calculations need it. The
-tenant provisioner imports standard catalogues — currencies, countries,
-market conventions — at setup time, so the foundational reference data
-is ready before any trading activity begins. NATS events propagate
-updates to all connected clients in real time, so the Qt UI reflects
-changes within milliseconds of a save.
+tenant provisioner imports standard catalogues at setup time so
+foundational reference data is ready before any trading activity
+begins. NATS events propagate updates to all connected clients in real
+time.
 
 *Validity* is adherence to business rules and formats. ISO code
 lengths, numeric code ranges, currency format strings, and rounding
-precision bounds are all validated at save time. Invalid values are
-rejected with a diagnostic message.
+precision bounds are all validated at save time.
 
 *Uniqueness* ensures no duplicate records exist for the same entity.
 Primary key constraints at the database level prevent duplicates; the
@@ -127,9 +156,7 @@ expiry". When an update is saved, the database trigger closes the
 existing row by setting =valid_to= to the current time, and inserts a
 new row with =valid_from = now= and =valid_to = sentinel=. The
 application never writes =valid_from= or =valid_to= directly — the
-trigger owns both columns. This pattern means the table always contains
-the complete history of every entity: no rows are ever deleted or
-overwritten.
+trigger owns both columns.
 
 The second dimension is *transaction time*, surfaced to the application
 as the =recorded_at= field. It records when this version was written to
@@ -137,37 +164,28 @@ the database — independently of what period the version is valid for.
 Transaction time answers the question "what did the system believe at
 a given moment?"
 
-All timestamps in OreStudio are stored and processed as UTC throughout
-— the database, the service layer, and the NATS protocol all use UTC
-exclusively. The Qt UI converts timestamps to your local timezone for
-display only; no local-time arithmetic is performed anywhere in the
-system. Every timestamp you see in the application — in list windows,
-detail dialogs, history dialogs, and the Provenance tab — is a
-local-time rendering of a UTC value stored in the database.
+All timestamps in OreStudio are stored and processed as UTC throughout.
+The Qt UI converts timestamps to your local timezone for display only;
+every timestamp you see in the application is a local-time rendering of
+a UTC value stored in the database.
 
 The combination of the two time dimensions allows OreStudio to answer
 questions that neither alone could answer:
 
-- /What is the current record for USD?/ — the live row has
-  =valid_to = sentinel=.
+- /What is the current record for USD?/ — the live row has =valid_to = sentinel=.
 - /What did the USD record look like on a specific past date t?/ —
   find the row where =valid_from <= t < valid_to=.
 - /When did we first record the current name for a currency?/ —
-  inspect the =recorded_at= of the version where the name field
-  changed.
-- /Revert to an earlier version/ — the revert operation inserts a new
-  row copied from the historical version, creating a new current record
-  with its own transaction time and leaving all intermediate versions
-  intact.
+  inspect the =recorded_at= of the version where the name field changed.
+- /Revert to an earlier version/ — inserts a new row copied from the
+  historical version, leaving all intermediate versions intact.
 
 Bitemporality is particularly important for *calculation
-reproducibility*. Financial valuations depend on reference data — a
-holiday calendar, a rounding convention, a market tier — that can
-change after the fact. Being able to reconstruct the exact state of all
+reproducibility*. Being able to reconstruct the exact state of all
 reference data as it existed on a past valuation date is a prerequisite
-for explaining why a historical calculation produced the result it did,
-for regulatory back-testing, and for resolving disputes about
-previously reported figures.
+for explaining historical calculation results, for regulatory
+back-testing, and for resolving disputes about previously reported
+figures.
 
 *** Versioning and Immutable History
 
@@ -178,210 +196,326 @@ modified. Even a "revert" operation creates a new version — it does
 not roll the counter back or remove intermediate history.
 
 This immutability guarantee is deliberate. Compliance frameworks such
-as MiFID II and EMIR require that firms be able to demonstrate the
-state of their data at any past point in time. If a regulatory
-inquiry asks "what was your EUR rounding rule on a specific date?",
-the answer must be provable from the data, not reconstructed from
-memory. OreStudio's history tables provide this proof unconditionally.
+as MiFID II and EMIR require that firms demonstrate the state of their
+data at any past point in time. OreStudio's history tables provide this
+proof unconditionally.
 
-#+caption[The Currency History dialog]: The Currency History dialog for the Angolan Kwanza, showing three versions. Version 1 was imported from the ISO 4217 dataset; version 2 introduced a typo for testing purposes; version 3 corrects it. The Changes tab shows a field-by-field diff for the selected version against its predecessor.
+#+caption[The Currency History dialog]: The Currency History dialog for the Angolan Kwanza, showing three versions. The Changes tab shows a field-by-field diff for the selected version against its predecessor.
 [[../../../assets/images/currency_history_dialog.png]]
 
 The history dialog, accessible from every detail dialog's title bar or
-from the list window's right-click menu, exposes the full version
-history of any entity. Selecting a version in the upper table
-populates a detail panel below it. The *Changes* tab shows a
-field-by-field diff between the selected version and its predecessor
-— exactly the fields that changed, with old and new values side by
-side. The *Full Details* tab shows the complete record as it existed
-at that version. The *Revert* toolbar button reinstates a historical
-version as a new current version, creating a new entry at the top of
-the history rather than removing subsequent entries.
+the list window's right-click menu, shows the full version list.
+Selecting a version populates a detail panel. The *Changes* tab shows
+a field-by-field diff; the *Full Details* tab shows the complete record
+at that version. The *Revert* button reinstates a historical version as
+a new current version.
 
 *** Provenance
 
 Every version of every reference data record carries six standard
-provenance fields. Some are written by the application at the time of
-the save request; others are written by the database trigger and are
-never set by the application:
+provenance fields. The *Provenance* tab in every detail dialog shows
+them read-only; it is disabled in create mode since no provenance
+exists before the first save.
 
-#+latex: \begin{fullwidth}
-#+caption: Record provenance fields carried by every reference data entity
-#+attr_latex: :environment tabularx :width \linewidth :align lllX
-| Field                | UI Label      | Set by       | Meaning                                                                          |
-|----------------------+---------------+--------------+----------------------------------------------------------------------------------|
-| =version=            | Version       | DB trigger   | Monotonically increasing integer; starts at 1, incremented on each update.       |
-| =modified_by=        | Modified By   | Application  | Username of the account that submitted the change request.                       |
-| =performed_by=       | Performed By  | Application  | Username on whose behalf the change was performed; may differ from =modified_by= in delegated workflows. |
-| =recorded_at=        | Recorded At   | DB trigger   | UTC wall-clock timestamp at the moment the row was written (displayed in local time, like all UI timestamps). |
-| =change_reason_code= | Change Reason | Application  | Structured code drawn from the change reasons table explaining the business justification. |
-| =change_commentary=  | Commentary    | Application  | Optional free-text note accompanying the change.                                 |
-#+latex: \end{fullwidth}
+**** =version= — Version
 
-These fields are displayed read-only in the *Provenance* tab of every
-entity detail dialog. The tab is disabled (greyed out, not hidden) in
-create mode — provenance does not exist for a record that has not yet
-been saved.
+| Set by   | DB trigger |
+| UI label | Version    |
 
-The distinction between =modified_by= and =performed_by= matters in
-automated workflows where a service account submits a change on behalf
-of a human user. In those cases =modified_by= identifies the service
-and =performed_by= identifies the human, preserving accountability at
-both layers.
+Monotonically increasing integer starting at 1, incremented by the
+database trigger on every save. Never written by the application.
+
+**** =modified_by= — Modified By
+
+| Set by   | Application |
+| UI label | Modified By |
+
+The username of the account that submitted the save request.
+
+**** =performed_by= — Performed By
+
+| Set by   | Application  |
+| UI label | Performed By |
+
+The username on whose behalf the change was performed. In automated
+workflows, a service account may submit a change on behalf of a human
+operator — in that case =modified_by= identifies the service and
+=performed_by= identifies the human, preserving accountability at both
+layers.
+
+**** =recorded_at= — Recorded At
+
+| Set by   | DB trigger  |
+| UI label | Recorded At |
+
+The UTC wall-clock timestamp at the moment the row was written,
+set by the database trigger. Like all timestamps in OreStudio it is
+stored as UTC and displayed in your local timezone.
+
+**** =change_reason_code= — Change Reason
+
+| Set by   | Application   |
+| UI label | Change Reason |
+
+A structured code drawn from the change reasons table identifying the
+business justification for the change. See [[*Change Reasons][Change Reasons]] below.
+
+**** =change_commentary= — Commentary
+
+| Set by   | Application |
+| UI label | Commentary  |
+
+A free-text note accompanying the change. Mandatory for some reason
+codes, optional for others. Displayed in the history dialog and
+stored permanently with the version.
 
 *** Change Reasons
 
 Before every save OreStudio prompts for a /change reason/ — a
-structured code that identifies the business justification for the
-change. Change reasons are organised into categories; both windows
-are accessible from /Reference Data → Audit Trail/.
+structured code identifying the business justification. Change reasons
+are organised into categories accessible from
+/Reference Data → Audit Trail/.
 
-#+caption[Change Reason Categories]: The Change Reason Categories window (Reference Data → Audit Trail → Change Reason Categories) showing the three built-in category groups and their regulatory alignment.
+#+caption[Change Reason Categories]: The Change Reason Categories window showing the three built-in category groups and their regulatory alignment.
 [[../../../assets/images/change_reasons_categories_main_window.png]]
 
 #+begin_note
 Screenshot pending: the Change Reasons list window
-(Reference Data → Audit Trail → Change Reasons), showing all individual
-reason codes with their category, description, and display order.
+(Reference Data → Audit Trail → Change Reasons).
 #+end_note
 
-There are three standard categories:
-
-- *common* — universal data quality reasons aligned with BCBS 239 and
-  FRTB standards. These apply across all entity types. Examples:
-  =common.rectification= for correcting a data-entry error.
-- *trade* — trade lifecycle reasons aligned with FINRA and MiFID II
-  standards. These apply when a change is driven by a trade event or
-  a regulatory reporting obligation.
-- *system* — reasons for automatic, system-generated operations that
-  are not user-selectable. Examples: =system.external_data_import= for
-  a bulk import from an authoritative data source, and
-  =system.new_record= for the initial creation of an entity.
-
-#+caption[Change Reason Category detail]: The detail dialog for the =trade= category, showing the code and regulatory description. Each category carries its own provenance tab and is itself subject to change management.
+#+caption[Change Reason Category detail]: The detail dialog for the =trade= category, showing its regulatory description.
 [[../../../assets/images/change_reasons_categories_details.png]]
 
-Change reasons serve two purposes. First, they act as a forcing
-function: requiring an explicit reason prevents silent, undocumented
-changes and encourages operators to think deliberately before saving.
-Second, they make the audit trail machine-readable and regulatorily
-aligned. A compliance officer can query all records modified under
-=common.rectification= across an entire tenant in a single query,
-and the category structure maps directly to reporting obligations
-under MiFID II, FRTB, and BCBS 239.
-
-Each reason code has three properties that govern when it may be used
-and what it requires: whether it applies to new record creation, to
-amendments of existing records, or to deletions; and whether a
-free-text commentary is mandatory or optional. These constraints are
-enforced by the application layer before a save is submitted.
+Change reasons serve two purposes: they act as a forcing function
+against silent undocumented changes, and they make the audit trail
+machine-readable and regulatorily aligned. The category structure maps
+directly to BCBS 239, FRTB, MiFID II, and FINRA reporting obligations.
 
 **** The System Category
 
 System reasons are assigned automatically by the application and
-services. They are not presented to users in the change reason
-prompt and cannot be selected manually. They exist solely to
-provide traceability for machine-driven operations.
+services. They are not shown in the change reason prompt and cannot
+be selected manually.
 
-#+latex: \begin{fullwidth}
-#+caption: System change reason codes (auto-assigned, not user-selectable)
-#+attr_latex: :environment tabularx :width \linewidth :align llX
-| Code                           | Applies to      | Description                                                                     |
-|--------------------------------+-----------------+---------------------------------------------------------------------------------|
-| =system.initial_load=          | Create          | Initial system provisioning or database migration. Used once during deployment. |
-| =system.new_record=            | Create          | Normal operational record creation by the application or a service.             |
-| =system.external_data_import=  | Amend           | Import from an external data source (ISO feed, GLEIF, vendor file). Commentary mandatory — data lineage must be recorded. |
-| =system.import=                | Create, Amend   | Data loaded via the CLI import command.                                         |
-| =system.test=                  | Create, Amend, Delete | Test data created by automated test suites.                               |
-| =system.tenant_terminated=     | Amend           | Applied when a tenant is marked as terminated.                                  |
-| =system.admin_reset=           | Amend           | Data reset by a system administrator during re-provisioning.                    |
-#+latex: \end{fullwidth}
+***** =system.initial_load=
+
+| Applies to  | Create   |
+| Commentary  | Optional |
+
+Initial system provisioning or database migration. Used once during
+deployment.
+
+***** =system.new_record=
+
+| Applies to  | Create   |
+| Commentary  | Optional |
+
+Normal operational record creation by the application or a service.
+
+***** =system.external_data_import=
+
+| Applies to  | Amend        |
+| Commentary  | *Mandatory*  |
+
+Import from an external data source (ISO feed, GLEIF, vendor file).
+Commentary is mandatory — the data lineage source must be recorded.
+
+***** =system.import=
+
+| Applies to  | Create, Amend |
+| Commentary  | Optional      |
+
+Data loaded via the CLI import command.
+
+***** =system.test=
+
+| Applies to  | Create, Amend, Delete |
+| Commentary  | Optional              |
+
+Test data created by automated test suites.
+
+***** =system.tenant_terminated=
+
+| Applies to  | Amend    |
+| Commentary  | Optional |
+
+Applied when a tenant is marked as terminated.
+
+***** =system.admin_reset=
+
+| Applies to  | Amend    |
+| Commentary  | Optional |
+
+Data reset by a system administrator during re-provisioning.
 
 **** The Common Category
 
 Common reasons are the universal data quality reasons, aligned with
-BCBS 239 (Risk Data Aggregation) and FRTB standards. They apply
-across all entity types and all tenants. These are the reasons most
-frequently used by operators during day-to-day data maintenance.
+BCBS 239 and FRTB standards. These are the reasons most frequently
+used by operators during day-to-day data maintenance.
 
-#+latex: \begin{fullwidth}
-#+caption: Common change reason codes (BCBS 239 / FRTB aligned)
-#+attr_latex: :environment tabularx :width \linewidth :align llX
-| Code                           | Applies to    | Description                                                                      |
-|--------------------------------+---------------+----------------------------------------------------------------------------------|
-| =common.non_material_update=   | Amend         | A cosmetic or administrative change with no economic impact — a "touch" to refresh a timestamp or correct capitalisation. Commentary optional. |
-| =common.rectification=         | Amend, Delete | Correction of a user or booking error. The most commonly used reason for fixing a data-entry mistake. Commentary optional. |
-| =common.duplicate=             | Delete        | Removal of a duplicate record where an equivalent entry already exists.          |
-| =common.stale_data=            | Amend, Delete | Data that has not been updated within the required liquidity horizon, requiring a refresh or removal. Commentary optional. |
-| =common.outlier_correction=    | Amend, Delete | Manual override following a plausibility check failure — when a value falls outside acceptable bounds and is overridden by an operator. Commentary mandatory. |
-| =common.feed_failure=          | Amend, Delete | Correction caused by an upstream vendor or API data issue. Commentary mandatory — the failed feed must be identified. |
-| =common.mapping_error=         | Amend, Delete | Incorrect identifier translation — for example a wrong ISIN-to-FIGI mapping. Commentary mandatory. |
-| =common.judgmental_override=   | Amend, Delete | Expert judgment applied when market prices or reference values are unavailable and an operator must supply a value manually. Commentary mandatory. |
-| =common.regulatory=            | Amend, Delete | Mandatory compliance adjustment required by a regulatory obligation or instruction. Commentary mandatory. |
-| =common.other=                 | Amend, Delete | Exceptional changes that do not fit any other category. Commentary mandatory — the reason must be fully explained in the note. |
-#+latex: \end{fullwidth}
+***** =common.non_material_update=
+
+| Applies to  | Amend    |
+| Commentary  | Optional |
+
+A cosmetic or administrative change with no economic impact — a
+"touch" to refresh a timestamp or correct capitalisation.
+
+***** =common.rectification=
+
+| Applies to  | Amend, Delete |
+| Commentary  | Optional      |
+
+Correction of a user or booking error. The most commonly used reason
+for fixing a data-entry mistake.
+
+***** =common.duplicate=
+
+| Applies to  | Delete   |
+| Commentary  | Optional |
+
+Removal of a duplicate record where an equivalent entry already exists.
+
+***** =common.stale_data=
+
+| Applies to  | Amend, Delete |
+| Commentary  | Optional      |
+
+Data not updated within the required liquidity horizon, requiring a
+refresh or removal.
+
+***** =common.outlier_correction=
+
+| Applies to  | Amend, Delete |
+| Commentary  | *Mandatory*   |
+
+Manual override following a plausibility check failure — a value
+outside acceptable bounds overridden by an operator. Commentary must
+identify the plausibility rule that triggered the review.
+
+***** =common.feed_failure=
+
+| Applies to  | Amend, Delete |
+| Commentary  | *Mandatory*   |
+
+Correction caused by an upstream vendor or API data issue. Commentary
+must identify the failed feed.
+
+***** =common.mapping_error=
+
+| Applies to  | Amend, Delete |
+| Commentary  | *Mandatory*   |
+
+Incorrect identifier translation — for example a wrong ISIN-to-FIGI
+mapping. Commentary must describe the mapping error.
+
+***** =common.judgmental_override=
+
+| Applies to  | Amend, Delete |
+| Commentary  | *Mandatory*   |
+
+Expert judgment applied when market prices or reference values are
+unavailable and an operator must supply a value manually.
+
+***** =common.regulatory=
+
+| Applies to  | Amend, Delete |
+| Commentary  | *Mandatory*   |
+
+Mandatory compliance adjustment required by a regulatory obligation
+or instruction.
+
+***** =common.other=
+
+| Applies to  | Amend, Delete |
+| Commentary  | *Mandatory*   |
+
+Exceptional changes that do not fit any other category. The commentary
+must fully explain the reason — this code exists as a last resort and
+should be used sparingly.
 
 **** The Trade Category
 
 Trade reasons are aligned with FINRA and MiFID II trade lifecycle
-reporting requirements. They apply specifically to changes driven by
-trade events or trade-processing workflows.
+reporting requirements.
 
-#+latex: \begin{fullwidth}
-#+caption: Trade change reason codes (FINRA / MiFID II aligned)
-#+attr_latex: :environment tabularx :width \linewidth :align llX
-| Code                      | Applies to    | Description                                                                            |
-|---------------------------+---------------+----------------------------------------------------------------------------------------|
-| =trade.fat_finger=        | Amend, Delete | Erroneous execution — a trade entered with the wrong quantity, price, or instrument due to a keying error. Commentary optional. |
-| =trade.system_malfunction= | Amend, Delete | Change caused by a technical glitch or algorithmic error in an execution system. Commentary mandatory. |
-| =trade.corporate_action=  | Amend, Delete | Adjustment following a corporate action such as a stock split, dividend reinvestment, or merger. Commentary optional. |
-| =trade.allocation_swap=   | Amend, Delete | Reallocation between a house account and a client sub-account, or between sub-accounts. Commentary optional. |
-| =trade.re_booking=        | Amend, Delete | Correction of a wrong legal entity booking — a trade entered under the wrong counterparty or book. Commentary mandatory. |
-| =trade.other=             | Amend, Delete | Exceptional trade lifecycle changes that do not fit any other code. Commentary mandatory. |
-#+latex: \end{fullwidth}
+***** =trade.fat_finger=
+
+| Applies to  | Amend, Delete |
+| Commentary  | Optional      |
+
+Erroneous execution — a trade entered with the wrong quantity, price,
+or instrument due to a keying error.
+
+***** =trade.system_malfunction=
+
+| Applies to  | Amend, Delete |
+| Commentary  | *Mandatory*   |
+
+Change caused by a technical glitch or algorithmic error in an
+execution system. Commentary must identify the system and the nature
+of the malfunction.
+
+***** =trade.corporate_action=
+
+| Applies to  | Amend, Delete |
+| Commentary  | Optional      |
+
+Adjustment following a corporate action such as a stock split,
+dividend reinvestment, or merger.
+
+***** =trade.allocation_swap=
+
+| Applies to  | Amend, Delete |
+| Commentary  | Optional      |
+
+Reallocation between a house account and a client sub-account, or
+between sub-accounts.
+
+***** =trade.re_booking=
+
+| Applies to  | Amend, Delete |
+| Commentary  | *Mandatory*   |
+
+Correction of a wrong legal entity booking — a trade entered under
+the wrong counterparty or book. Commentary must identify the correct
+entity.
+
+***** =trade.other=
+
+| Applies to  | Amend, Delete |
+| Commentary  | *Mandatory*   |
+
+Exceptional trade lifecycle changes that do not fit any other code.
 
 **** Extending Change Reasons
 
 Change reason categories and individual codes are stored as versioned
-reference data and can be added or modified through the same Qt UI
-and CLI tools used for other entities. In principle, a tenant
-administrator can create additional categories and codes to cover
-firm-specific workflows.
+reference data and can be added through the same Qt UI and CLI tools
+used for other entities. In principle, a tenant administrator can
+create additional categories and codes for firm-specific workflows.
 
-In practice, extending the built-in taxonomy should be done
-cautiously and sparingly:
+In practice this should be done cautiously:
 
-- The standard codes are aligned with regulatory reporting
-  frameworks (BCBS 239, FRTB, MiFID II, FINRA). Adding non-standard
-  codes risks creating audit trail entries that do not map cleanly
-  to regulatory reports, complicating compliance submissions.
-- The =common= and =trade= categories are designed to cover the vast
-  majority of change scenarios. Before adding a new code, check
-  whether =common.other= or =trade.other= (with mandatory commentary)
-  would adequately document the change.
+- The standard codes are aligned with regulatory frameworks (BCBS
+  239, FRTB, MiFID II, FINRA). Non-standard codes risk creating audit
+  trail entries that do not map cleanly to regulatory reports.
+- =common.other= and =trade.other= with mandatory commentary cover most
+  exceptional cases without adding custom codes.
 - Custom codes cannot be distinguished from standard codes by the
-  system — there is no "built-in" flag — so any tenant that adds
-  codes must maintain its own record of which codes are standard and
-  which are custom.
-
-If you do add codes, use the =category.reason_name= naming convention,
-document the code's meaning and commentary requirements thoroughly,
-and treat it as a long-lived commitment: changing or removing a
-reason code after it has been used in the audit trail would leave
-historical records referencing a code whose meaning is no longer
-documented.
+  system, so the tenant must maintain its own record of which codes
+  are standard and which are custom.
+- Removing or renaming a code after it has been used in the audit
+  trail leaves historical records referencing a code whose meaning is
+  no longer documented.
 
 ** See also
 
 - [[https://en.wikipedia.org/wiki/ISO_8000][ISO 8000]] — international standard for data quality.
-- [[https://www.dama.org/cpages/body-of-knowledge][DAMA-DMBOK]] — data management body of knowledge, including the DQ-6
-  framework.
-- [[https://en.wikipedia.org/wiki/Temporal_database][Temporal database]] — background on transaction time, valid time,
-  and the bitemporal model.
-- /Time and Timestamps: Architecture and Conventions/ — the internal
-  architecture document covering the bitemporal model, UTC standard,
-  the infinity sentinel, and the C++ / PostgreSQL type chain
-  (=doc/knowledge/architecture/time-architecture.org=).
-- [[https://www.bis.org/bcbs/publ/d239.htm][BCBS 239]] — Basel Committee principles for effective risk data
-  aggregation and risk reporting; the regulatory foundation for the
-  =common= change reason category.
+- [[https://www.dama.org/cpages/body-of-knowledge][DAMA-DMBOK]] — data management body of knowledge, including the DQ-6 framework.
+- [[https://en.wikipedia.org/wiki/Temporal_database][Temporal database]] — background on transaction time, valid time, and the bitemporal model.
+- /Time and Timestamps: Architecture and Conventions/ — internal architecture document (=doc/knowledge/architecture/time-architecture.org=).
+- [[https://www.bis.org/bcbs/publ/d239.htm][BCBS 239]] — Basel Committee principles for effective risk data aggregation and reporting.
+- [[https://www.gleif.org][GLEIF]] — the Global Legal Entity Identifier Foundation; publishes the LEI registry and the LEI-to-BIC mapping dataset.

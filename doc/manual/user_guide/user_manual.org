@@ -38,6 +38,7 @@
 # figures or sidenotes. Uses tcolorbox with only a left rule.
 #+latex_header: \usepackage[most]{tcolorbox}
 #+latex_header: \newtcolorbox{note}{colback=white, colframe=orenote, coltext=orenote, boxrule=0pt, leftrule=2pt, sharp corners, left=6pt, right=0pt, top=1mm, bottom=1mm, fontupper=\small, enhanced}
+#+latex_header: \newtcolorbox{tangent}{enhanced, breakable, colback=yellow!10, colframe=orange!40!brown, coltext=black!85, boxrule=0.5pt, sharp corners, left=8pt, right=8pt, top=3mm, bottom=3mm, fontupper=\small}
 #+latex_header: \AtBeginDocument{\renewcommand{\plaintitle}{ORE Studio User Manual}}
 # Include subsections (level *** in the chapters) in the table of contents.
 #+latex_header: \setcounter{tocdepth}{2}

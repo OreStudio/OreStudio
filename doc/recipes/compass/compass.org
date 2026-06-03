@@ -68,6 +68,8 @@ pillars that fold in the standalone scripts, starting with Provision.
 - [[id:694BFB41-222A-4BC7-BC74-D8B7C6C61644][How do I manage the .env format version with compass?]] — show and
   record the env-format version, and how a stale checkout is caught
   (=env version= / =version new=).
+- [[id:280432C1-EE5D-4409-9DC6-372CCD3E2789][How do I generate NATS certificates with compass?]] — generate the CA
+  and per-service mTLS client certs (=nats certs= / =nats certs --force=).
 
 * Navigating the doc graph
 

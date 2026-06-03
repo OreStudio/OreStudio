@@ -59,13 +59,8 @@ General-purpose helper scripts not tied to a specific workflow.
 
 * NATS certificate management
 
-NATS mTLS certificate generation is handled by =compass nats certs=:
-
-#+begin_src sh
-./compass.sh nats certs              # idempotent; skips existing files
-./compass.sh nats certs --force      # regenerate all (CI / rotation)
-./compass.sh nats certs --hostname h # add extra SAN hostname
-#+end_src
+NATS mTLS certificate generation is handled by =compass nats certs=
+(see [[id:280432C1-EE5D-4409-9DC6-372CCD3E2789][How do I generate NATS certificates with compass?]]).
 
 The implementation lives in =projects/ores.compass/src/nats_certs.py= and is
 also called internally by =compass env init=. To add a certificate for a new

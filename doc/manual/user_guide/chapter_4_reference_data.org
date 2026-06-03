@@ -2,7 +2,7 @@
 :ID: FD54D29E-9309-4AFE-AFE2-50DA9F7BA354
 :END:
 #+title: Reference Data
-#+description: Introduction to reference data in OreStudio: what it is, how it differs from market data and trades, and how OreStudio ensures its quality through versioning, provenance, and change management.
+#+description: Introduction to reference data in OreStudio: what it is, how it differs from market data and trades, and how OreStudio ensures its quality through the DQ-6 framework, bitemporality, versioning, provenance, and change management.
 #+type: manual
 #+level: cross
 #+filetags: :knowledge:manual:reference_data:refdata:user_guide:
@@ -32,8 +32,8 @@ in the system:
 
 - *Market data* — prices, FX rates, yield curves, and volatility
   surfaces that update continuously throughout the trading day.
-  Market data is time-stamped and immutable once recorded; a
-  new observation does not overwrite an old one.
+  Market data is time-stamped and immutable once recorded; a new
+  observation does not overwrite an old one.
 - *Trades* — specific financial transactions between parties with
   defined cashflows, valuation models, and lifecycle states. Trades
   reference the reference data (they need a currency, a counterparty,
@@ -42,81 +42,182 @@ in the system:
 The key property of reference data is that it changes slowly and
 deliberately. A currency's rounding convention is not something that
 shifts intraday — it is corrected through a controlled, audited
-process. OreStudio enforces this by requiring a /change reason/ for
-every modification and recording a full version history for every
-entity.
+process. OreStudio enforces this with a comprehensive data quality
+framework described in this chapter.
 
 ** Data Quality
 
-Financial calculations are only as good as the data they consume. A
-misspelled currency name is a cosmetic nuisance; an incorrect rounding
-rule or a wrong counterparty legal entity identifier can propagate
-into risk figures, margin calls, or regulatory reports. OreStudio's
-reference data layer is built around six industry-standard data quality
-dimensions, codified by ISO 8000 and DAMA:
+Financial calculations are only as reliable as the data they consume.
+A misspelled currency name is a cosmetic nuisance; an incorrect
+rounding rule, a wrong counterparty identifier, or a stale market tier
+classification can silently propagate into risk figures, margin calls,
+collateral calculations, and regulatory reports. The consequences range
+from minor reconciliation breaks to significant financial loss or
+regulatory censure.
 
-- *Accuracy* — values match their authoritative source. OreStudio
-  seeds currencies, countries, and counterparty identifiers from
-  ISO 4217, ISO 3166, and the GLEIF LEI registry respectively.
-- *Completeness* — all mandatory attributes are present. The service
-  layer rejects saves that omit required fields; the Qt UI marks them
-  visually.
-- *Consistency* — no contradictions across entities. Foreign-key
-  constraints in the database enforce that a currency's rounding type
-  and market tier are drawn from valid classification tables.
-- *Timeliness* — data is available when calculations need it. The
-  tenant provisioner imports standard catalogues at setup time so that
-  currencies and countries are ready before any trading activity.
-- *Validity* — values conform to business rules and formats. ISO code
-  lengths, numeric code ranges, and format strings are validated at
-  save time.
-- *Uniqueness* — no duplicate records for the same entity. Primary key
-  constraints prevent duplicates at the database level.
+OreStudio's reference data layer is designed around the definition of
+data quality from ISO 8000 and the DAMA Data Management Body of
+Knowledge (DAMA-DMBOK): /data quality is the measure of how well a
+dataset satisfies the requirements of its intended business use/. In
+financial markets this means data must be not only accurate but also
+complete, consistent, timely, valid, and unique — the six
+industry-standard DQ dimensions described below.
+
+*** The Six Dimensions
+
+*Accuracy* is the degree to which data values agree with their
+authoritative golden source. OreStudio seeds currencies from ISO 4217,
+countries from ISO 3166, and counterparty identifiers from the GLEIF
+Legal Entity Identifier registry. Where a discrepancy arises between
+a record in OreStudio and its source, the source takes precedence; the
+system provides tooling to re-import from authoritative datasets.
+
+*Completeness* means all mandatory attributes are present. The service
+layer rejects saves that omit required fields and returns a validation
+error; the Qt UI marks missing mandatory fields visually before a save
+is attempted. Bulk imports from external sources are validated against
+a mandatory-field checklist before being committed.
+
+*Consistency* is the absence of contradictions between related
+entities. A currency's rounding type must be drawn from the governed
+rounding-types table; its market tier from the currency-market-tiers
+table. Foreign-key constraints in the database enforce this, so a save
+that references a non-existent classification code is rejected at the
+persistence layer rather than silently stored.
+
+*Timeliness* means data is available when calculations need it. The
+tenant provisioner imports standard catalogues — currencies, countries,
+market conventions — at setup time, so the foundational reference data
+is ready before any trading activity begins. NATS events propagate
+updates to all connected clients in real time, so the Qt UI reflects
+changes within milliseconds of a save.
+
+*Validity* is adherence to business rules and formats. ISO code
+lengths, numeric code ranges, currency format strings, and rounding
+precision bounds are all validated at save time. Invalid values are
+rejected with a diagnostic message.
+
+*Uniqueness* ensures no duplicate records exist for the same entity.
+Primary key constraints at the database level prevent duplicates; the
+service layer surfaces a clear error if a duplicate is attempted.
+
+*** Bitemporality
+
+The most important architectural property of OreStudio's reference
+data layer is its use of /bitemporality/ — the recording of two
+independent time dimensions for every stored fact.
+
+The first dimension is *transaction time*: when was this version of the
+record written to the database? This is the =recorded_at= timestamp set
+by the database trigger at the moment of the write. Transaction time
+answers the question "what did the system believe at a given moment?"
+
+The second dimension is *validity time*: over what period is this
+version of the record considered current? Validity time is managed
+through =valid_from= and =valid_to= columns on every record. The live
+(current) record carries =valid_to = ∞= (represented internally as a
+far-future sentinel timestamp). When an update is saved, the existing
+row's =valid_to= is set to the current time, and a new row is inserted
+with =valid_from = now= and =valid_to = ∞=. This pattern means the
+table always contains the complete history of every entity — no rows
+are ever deleted or overwritten.
+
+The combination of the two time dimensions allows OreStudio to answer
+questions that neither dimension alone could answer:
+
+- /What is the current record for USD?/ — query =valid_to = ∞=.
+- /What did the USD record look like on a specific past date?/ — query
+  =valid_from ≤ date < valid_to=.
+- /When did we first record the current name for the Angolan Kwanza?/ —
+  inspect the =recorded_at= of the version where the name field changed.
+- /Revert to an earlier version/ — insert a new row copied from the
+  historical version, creating a new current record with its own
+  transaction time.
+
+OreStudio implements bitemporality in application code rather than
+relying on database-level temporal table syntax, which gives full
+portability across PostgreSQL versions and allows the same patterns to
+be used across all entity types.
+
+*** Versioning and Immutable History
+
+Every save to a reference data entity creates a new, numbered version.
+The version counter starts at 1 on the first save and increments
+monotonically. History is immutable: no version is ever deleted or
+modified. Even a "revert" operation creates a new version — it does
+not roll the counter back or remove intermediate history.
+
+This immutability guarantee is deliberate. Compliance frameworks such
+as MiFID II and EMIR require that firms be able to demonstrate the
+state of their data at any past point in time. If a regulatory
+inquiry asks "what was your EUR rounding rule on a specific date?", the
+answer must be provable from the data, not reconstructed from memory.
+OreStudio's history tables provide this proof unconditionally.
+
+The history dialog, accessible from every detail dialog's title bar or
+from the list window's right-click menu, exposes the full version
+history of any entity. Selecting a version in the upper table
+populates a detail panel below it. The *Changes* tab within that panel
+shows a field-by-field diff between the selected version and its
+predecessor — exactly the fields that changed, with old and new values
+side by side — making it easy to pinpoint when a specific change was
+made and by whom. The *Full Details* tab shows the complete record
+as it existed at that version.
 
 *** Provenance
 
-Every reference data record in OreStudio carries six standard
-provenance fields that together answer the "who, when, and why" of the
-last change:
+Every version of every reference data record carries six standard
+provenance fields, set automatically by the application and database
+layers on each save:
 
 #+attr_latex: :environment tabularx :width \linewidth :align llX
-| Field         | UI Label      | Meaning                                                                          |
-|---------------+---------------+----------------------------------------------------------------------------------|
-| =version=     | Version       | Increments from 1 on every save.                                                 |
-| =modified_by= | Modified By   | Account that submitted the change.                                               |
-| =performed_by= | Performed By | Account on whose behalf the change was made (may differ in delegated workflows). |
-| =recorded_at= | Recorded At   | UTC timestamp when the row was written.                                          |
-| =change_reason_code= | Change Reason | Structured reason code drawn from the change reasons table.               |
-| =change_commentary= | Commentary  | Optional free-text note accompanying the change.                                |
+| Field                | UI Label      | Meaning                                                                          |
+|----------------------+---------------+----------------------------------------------------------------------------------|
+| =version=            | Version       | Monotonically increasing integer; starts at 1, incremented on each update.       |
+| =modified_by=        | Modified By   | Username of the account that submitted the change request.                       |
+| =performed_by=       | Performed By  | Username on whose behalf the change was performed; may differ from =modified_by= in delegated workflows. |
+| =recorded_at=        | Recorded At   | UTC wall-clock timestamp written by the database trigger at the moment of the save. |
+| =change_reason_code= | Change Reason | Structured code drawn from the change reasons table explaining the business justification. |
+| =change_commentary=  | Commentary    | Optional free-text note accompanying the change, displayed in the UI and stored in the history. |
 
-These fields are displayed in the read-only *Provenance* tab of every
-detail dialog and are stored in the current record. In addition, the
-database writes a copy of every version into a companion history table
-so that the full audit trail — including the values of all fields at
-every past version — is always recoverable.
+These fields are displayed read-only in the *Provenance* tab of every
+entity detail dialog. The tab is disabled (greyed out, not hidden) in
+create mode — provenance does not exist for a record that has not yet
+been saved.
 
-*** Versioning and History
-
-Saves never overwrite data. Each change creates a new row in the
-history table and increments the version counter on the live record.
-The history dialog for any entity shows the complete version list,
-allows field-by-field comparison between any two versions, and
-provides a revert button that reinstates any past version as a new
-current version — preserving the audit chain rather than rolling it
-back.
+The distinction between =modified_by= and =performed_by= matters in
+automated workflows where a service account submits a change on behalf
+of a human user. In those cases =modified_by= identifies the service
+and =performed_by= identifies the human, preserving accountability at
+both layers.
 
 *** Change Reasons
 
-Before every save, OreStudio prompts for a /change reason/ — a
-structured code drawn from a configurable table (for example,
-=common.rectification= for a data-entry correction, or
-=system.external_data_import= for an automated import). Change
-reasons make the audit trail machine-readable: a compliance officer
-can filter the history of all records modified under
-=common.rectification= across an entire tenant. Some reason codes
-require a free-text commentary; others make it optional.
+Before every save OreStudio prompts for a /change reason/ — a
+structured code drawn from a tenant-configurable table of reason
+codes, each assigned to a category. Examples include:
+
+- =common.rectification= (category: /User/Booking Error/) — correcting
+  a data-entry mistake.
+- =system.external_data_import= — an automated import from an external
+  data source.
+- =system.new_record= — the initial creation of a record by the system.
+
+Change reasons serve two purposes. First, they act as a forcing
+function: requiring an explicit reason prevents silent, undocumented
+changes and encourages operators to think deliberately before saving.
+Second, they make the audit trail machine-readable. A compliance
+officer can query the history of all records modified under
+=common.rectification= across an entire tenant in a single SQL query,
+rather than reading through free-text commentary fields. Some reason
+codes require a free-text commentary; others make it optional.
+The requirement is enforced at the application layer before the save
+is submitted to the service.
 
 ** See also
 
 - [[https://en.wikipedia.org/wiki/ISO_8000][ISO 8000]] — international standard for data quality.
-- [[https://www.dama.org/cpages/body-of-knowledge][DAMA-DMBOK]] — data management body of knowledge.
+- [[https://www.dama.org/cpages/body-of-knowledge][DAMA-DMBOK]] — data management body of knowledge, including the
+  DQ-6 framework.
+- [[https://en.wikipedia.org/wiki/Temporal_database][Temporal database]] — background on transaction time, valid time,
+  and the bitemporal model.

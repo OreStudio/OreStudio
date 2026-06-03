@@ -1217,7 +1217,7 @@ void CurrencyDetailDialog::populateMonetaryNatureCombo() {
             self->ui_->monetaryNatureCombo->setToolTip(tip);
         }
 
-        BOOST_LOG_SEV(lg(), debug) << "Asset class combo populated with "
+        BOOST_LOG_SEV(lg(), debug) << "Monetary nature combo populated with "
                                    << result.types.size() << " entries";
     });
 

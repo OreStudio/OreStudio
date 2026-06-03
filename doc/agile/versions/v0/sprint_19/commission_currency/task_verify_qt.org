@@ -12,7 +12,7 @@
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-29
-#+updated: 2026-05-29
+#+updated: 2026-06-03
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -28,12 +28,12 @@ second session via NATS eventing. Fix any regressions found inline or file as ca
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Start service; open Qt app; run through checklist. |
-| Last touched | 2026-05-29                               |
+| Now          | Code review done; one bug fixed; manual run-through needed. |
+| Waiting on   | Manual test session against live service.              |
+| Next         | Start services; open Qt app; run through checklist.    |
+| Last touched | 2026-06-03                                             |
 
 * Acceptance
 
@@ -59,3 +59,39 @@ second session via NATS eventing. Fix any regressions found inline or file as ca
 |   |                 |      |          |       |
 
 * Result
+
+** Code review (2026-06-03)
+
+Pre-run code review of =CurrencyController=, =CurrencyDetailDialog=, and the three
+auxiliary controllers (=RoundingTypeController=, =MonetaryNatureController=,
+=CurrencyMarketTierController=).
+
+*** Fix: stale log message in CurrencyDetailDialog
+
+=populateMonetaryNatureCombo()= logged "Asset class combo populated with N entries"
+(copy-paste artefact from an earlier rename). Fixed to "Monetary nature combo populated
+with N entries".
+
+*** Observation: auxiliary controllers have no NATS event subscriptions
+
+=monetary_nature_changed_event.hpp= and =currency_market_tier_changed_event.hpp= exist
+in =ores.refdata.api/eventing/= but =MonetaryNatureController= and
+=CurrencyMarketTierController= do not subscribe to them. Their list windows will not
+auto-refresh when a remote mutation occurs. =rounding_type= has no event type at all,
+so =RoundingTypeController= is correct. Filed as capture =qt-auxiliary-nats-eventing=.
+
+*** Currency controller: looks correct
+
+NATS event subscription, reconnect re-subscribe, and per-window =markAsStale= wiring
+all present and correct. Combo populate methods (rounding_type, monetary_nature,
+market_tier) are async, guard against duplicate watchers, restore previous selection,
+and set tooltip from description. No regressions visible from code review alone.
+
+** Manual checklist (TODO — requires live service)
+
+- [ ] MDI list window loads and displays currency records.
+- [ ] Detail dialog: edit a field, save, reload — change is persisted.
+- [ ] History dialog: shows at least one historical version after an edit.
+- [ ] Delete command: record removed from list; history dialog still accessible.
+- [ ] Eventing: add or edit in client A appears in client B without manual refresh.
+- [ ] rounding_type, monetary_nature, currency_market_tier windows: loads, detail, history, delete.

@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: 813B6AB7-5B5A-461C-92AF-C9C60C710F66
+:END:
+#+title: Task: Fix compass env init venv activation path on Windows
+#+description: compass.sh env init creates the venv but sources venv/bin/activate (Unix path); on Windows Git Bash the activate script is at venv/Scripts/activate, causing CI to exit 1 with 'No such file or directory'.
+#+type: task
+#+level: s1
+#+filetags: :consolidate_scripts_into_compass:sprint_19:v0:
+#+owner: marco
+#+branch: feature/fix-compass-env-init-windows
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-03
+#+updated: 2026-06-03
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+=compass.sh env init= (and the =--no-deps= variant) sources =venv/bin/activate=
+after creating the virtual environment. On Windows (Git Bash / MSYS2) the activate
+script lives at =venv/Scripts/activate=, so the source step exits 1 with
+"No such file or directory" even though the venv was created successfully.
+
+Fix =compass.sh= to detect the platform and source the correct path so that
+=compass env init= works on Windows CI runners and developer machines.
+
+Discovered from the Windows CI failure on PR #1031 (fix-windows-macos-ci
+story), where the step "Run =./projects/ores.compass/compass.sh --no-deps env
+init -y=" exits 1.
+
+* Status
+
+| Field        | Value                                                              |
+|--------------+--------------------------------------------------------------------|
+| State        | STARTED                                                            |
+| Parent story | [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]]                        |
+| Now          | Fix implemented in compass.sh; Linux smoke-test passes; awaiting CI. |
+| Waiting on   | Windows CI green on PR #1032.                                        |
+| Next         | Merge once CI is green.                                              |
+| Last touched | 2026-06-03                                                           |
+
+* Acceptance
+
+- =compass env init= completes without error on Windows Git Bash (CI runner).
+- =compass env init= continues to work on Linux and macOS.
+- The =--no-deps= flag path is also covered (same activation step).
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

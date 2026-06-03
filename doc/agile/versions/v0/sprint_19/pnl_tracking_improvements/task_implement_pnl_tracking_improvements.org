@@ -28,11 +28,11 @@ tracking approach]] knowledge doc, then implement the agreed changes.
 
 | Field        | Value                                          |
 |--------------+------------------------------------------------|
-| State        | BACKLOG                                        |
+| State        | DONE                                           |
 | Parent story | [[id:F8E2AB1E-344B-4B04-BD0B-6EC96CDA5298][PnL tracking improvements]]                      |
-| Now          | Not yet started.                               |
+| Now          | Nothing. — closed with story as knowledge capture. |
 | Waiting on   | Nothing.                                       |
-| Next         | Gap analysis: map Lightyear's five improvements to OreStudio. |
+| Next         | Nothing.                                       |
 | Last touched | 2026-06-03                                     |
 
 * Acceptance

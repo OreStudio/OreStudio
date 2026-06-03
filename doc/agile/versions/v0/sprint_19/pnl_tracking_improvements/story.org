@@ -28,12 +28,12 @@ FIFO).
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                                |
-| Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                              |
-| Now           | Not yet started.                       |
-| Waiting on    | Nothing.                               |
-| Next          | Start with design + gap analysis task. |
-| Last touched  | 2026-06-03                             |
+| State         | DONE                                                      |
+| Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                                                 |
+| Now           | Nothing. — closed as a knowledge capture.                 |
+| Waiting on    | Nothing.                                                  |
+| Next          | Nothing.                                                  |
+| Last touched  | 2026-06-03                                                |
 
 * Acceptance
 

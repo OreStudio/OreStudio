@@ -73,7 +73,7 @@ dedicated thread pool to prevent =QThreadPool= starvation.
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
 | [[id:61F836E5-2277-4765-9038-AF7D0176C993][Make UI more responsive]] | DONE | 2026-06-01 | 2026-06-01 | Fix waitForFinished() in destructors; add spinners; pre-populate combos; dedicated I/O thread pool. |
-| [[id:F8E2AB1E-344B-4B04-BD0B-6EC96CDA5298][PnL tracking improvements]] | BACKLOG | | | Capture: FX locking, timeframe-scoped PnL, dual charts, two-phase sell P&L, FIFO/WAVG. See [[id:42F22269-B875-489D-A3D7-7FEC456C69EA][Lightyear knowledge doc]]. |
+| [[id:F8E2AB1E-344B-4B04-BD0B-6EC96CDA5298][PnL tracking improvements]] | DONE | 2026-06-03 | 2026-06-03 | Capture: FX locking, timeframe-scoped PnL, dual charts, two-phase sell P&L, FIFO/WAVG. See [[id:42F22269-B875-489D-A3D7-7FEC456C69EA][Lightyear knowledge doc]]. |
 
 ** Tooling
 

@@ -294,6 +294,26 @@ BEGIN
         'tenant_bootstrapping', 'Bootstrapping', 'Tenant is awaiting initial provisioning wizard run.',
         '#0ea5e9', '#ffffff', 'info', 'badge bg-info', 32);
 
+    -- Account Type: User
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'account_type_user', 'User', 'Human user account.',
+        '#3b82f6', '#ffffff', 'info', 'badge bg-info', 33);
+
+    -- Account Type: Service
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'account_type_service', 'Service', 'Service account for non-human processes.',
+        '#6b7280', '#ffffff', 'secondary', 'badge bg-secondary', 34);
+
+    -- Account Type: Algorithm
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'account_type_algorithm', 'Algorithm', 'Account for automated algorithms.',
+        '#eab308', '#ffffff', 'warning', 'badge bg-warning', 35);
+
+    -- Account Type: LLM
+    PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'account_type_llm', 'LLM', 'Account for Large Language Model agents.',
+        '#7c3aed', '#ffffff', 'primary', 'badge bg-primary', 36);
+
     -- =============================================================================
     -- Code Domains (workspace)
     -- =============================================================================
@@ -301,6 +321,10 @@ BEGIN
     PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
         'workspace_status', 'Workspace Status',
         'Lifecycle status codes for workspace records.', 16);
+
+    PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'account_type', 'Account Type',
+        'Classification of account types (user, service, algorithm, llm).', 17);
 
     -- =============================================================================
     -- Badge Mappings
@@ -447,6 +471,16 @@ BEGIN
         'dq_treatment', 'Cleaned', 'treatment_cleaned');
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'dq_treatment', 'Enriched', 'treatment_enriched');
+
+    -- account_type
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'account_type', 'user', 'account_type_user');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'account_type', 'service', 'account_type_service');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'account_type', 'algorithm', 'account_type_algorithm');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'account_type', 'llm', 'account_type_llm');
 
     -- =============================================================================
     -- Summary

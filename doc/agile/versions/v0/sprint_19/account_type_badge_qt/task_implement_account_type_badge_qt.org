@@ -29,11 +29,11 @@ and =account_locked= do.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                                |
+| State        | DONE                                   |
 | Parent story | [[id:814D4E79-8EB9-4B2B-8A87-DB72F145044D][Display account type as badge in Qt accounts list]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing.                               |
 | Last touched | 2026-06-04                             |
 
 * Acceptance
@@ -75,3 +75,13 @@ and =account_locked= do.
 |   |                 |      |          |       |
 
 * Result
+
+Added =account_type= code domain (display_order 17), four badge
+definitions (=account_type_user=, =account_type_service=,
+=account_type_algorithm=, =account_type_llm=, display_orders 33–36),
+and four badge mappings to =dq_badge_system_populate.sql=.
+
+Wired =Column::AccountType= into =AccountItemDelegate::paint()= and
+=sizeHint()= using the same =BadgeCache::resolve("account_type", ...)=
+pattern as =login_status= and =account_locked=. Badge text is the raw
+type code as returned by the model; sizeHint minimum width set to 80px.

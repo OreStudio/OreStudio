@@ -27,11 +27,10 @@ class QAction;
 
 namespace ores::qt {
 
-class CurrencyMarketTierController;
 class MarketDataController;
 
 /**
- * @brief Market data plugin: market series, fixings, and currency market tiers.
+ * @brief Market data plugin: market series and fixings.
  *
  * Loaded as a shared library by QPluginLoader at application startup.
  * Owns the Market Data menu.
@@ -57,9 +56,7 @@ private:
 
     plugin_context ctx_;
 
-    // Entity controllers
-    std::unique_ptr<CurrencyMarketTierController>  currencyMarketTierController_;
-    std::unique_ptr<MarketDataController>          marketDataController_;
+    std::unique_ptr<MarketDataController> marketDataController_;
 };
 
 }

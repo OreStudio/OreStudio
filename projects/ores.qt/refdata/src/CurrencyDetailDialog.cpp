@@ -84,33 +84,6 @@ CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
     toolBar_->setMovable(false);
     toolBar_->setFloatable(false);
 
-    // Rounding Types navigation action
-    auto* roundingTypesAction = new QAction("Rounding", this);
-    roundingTypesAction->setIcon(IconUtils::createRecoloredIcon(
-            Icon::Tag, IconUtils::DefaultIconColor));
-    roundingTypesAction->setToolTip("Open Rounding Types list");
-    connect(roundingTypesAction, &QAction::triggered, this,
-        [this]() { emit showRoundingTypesRequested(); });
-    toolBar_->addAction(roundingTypesAction);
-
-    auto* monetaryNaturesAction = new QAction("Monetary Natures", this);
-    monetaryNaturesAction->setIcon(IconUtils::createRecoloredIcon(
-            Icon::Classification, IconUtils::DefaultIconColor));
-    monetaryNaturesAction->setToolTip("Open Monetary Natures list");
-    connect(monetaryNaturesAction, &QAction::triggered, this,
-        [this]() { emit showMonetaryNaturesRequested(); });
-    toolBar_->addAction(monetaryNaturesAction);
-
-    auto* marketTiersAction = new QAction("Market Tiers", this);
-    marketTiersAction->setIcon(IconUtils::createRecoloredIcon(
-            Icon::Chart, IconUtils::DefaultIconColor));
-    marketTiersAction->setToolTip("Open Currency Market Tiers list");
-    connect(marketTiersAction, &QAction::triggered, this,
-        [this]() { emit showMarketTiersRequested(); });
-    toolBar_->addAction(marketTiersAction);
-
-    toolBar_->addSeparator();
-
     // Create Revert action (initially hidden)
     revertAction_ = new QAction("Revert", this);
     revertAction_->setIcon(IconUtils::createRecoloredIcon(
@@ -1217,7 +1190,7 @@ void CurrencyDetailDialog::populateMonetaryNatureCombo() {
             self->ui_->monetaryNatureCombo->setToolTip(tip);
         }
 
-        BOOST_LOG_SEV(lg(), debug) << "Asset class combo populated with "
+        BOOST_LOG_SEV(lg(), debug) << "Monetary nature combo populated with "
                                    << result.types.size() << " entries";
     });
 

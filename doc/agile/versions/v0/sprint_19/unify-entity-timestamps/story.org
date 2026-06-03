@@ -1,0 +1,76 @@
+:PROPERTIES:
+:ID: 71116F94-09A7-43FD-BD56-4B5B25BEAC80
+:END:
+#+title: Story: Unify entity timestamp fields: replace optional<db_timestamp> with std::string
+#+description: Replace optional<db_timestamp> and db_timestamp with std::string in all entity files so all mapper reads go through the single timestamp_to_timepoint(string_view) path. Remove the db_timestamp overload and timepoint_to_timestamp from mapper_helpers. Covers ~60 entity files and ~160 mapper call sites across all services.
+#+type: story
+#+level: s2
+#+filetags: :sprint_19:v0:
+#+created: 2026-06-03
+#+updated: 2026-06-03
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Eliminate the two-path timestamp problem in the repository layer. Every entity
+timestamp field (=valid_from=, =valid_to=, =created_at=, =started_at=, etc.) currently
+uses =optional<db_timestamp>= or =db_timestamp=, which routes reads through
+=strptime= and silently produces epoch on parse failure.
+
+Replace all entity timestamp fields with =std::string=. sqlgen then reads the raw
+PostgreSQL string (e.g. ="2026-06-03 10:57:32.015657+00"=). The mapper calls the
+single =timestamp_to_timepoint(std::string_view)= overload which goes through
+=from_iso8601_utc= and throws on any failure. The =db_timestamp= overload of
+=timestamp_to_timepoint= and the =timepoint_to_timestamp= helper are removed — one
+path, one function, throws on error.
+
+Scope: ~60 entity files and ~160 mapper call sites across all services.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Start task_fix-mapper-helpers.         |
+| Last touched  | 2026-06-03                             |
+
+* Acceptance
+
+- No entity file declares =db_timestamp= or =optional<db_timestamp>= for any timestamp field.
+- =timestamp_to_timepoint= has exactly one overload (=std::string_view=).
+- =timepoint_to_timestamp= is deleted from =mapper_helpers.hpp=.
+- All mapper read sites call =timestamp_to_timepoint(v.field)= where =v.field= is =std::string=.
+- All mapper write sites use =datetime::to_db_string(tp)= to assign timestamp fields.
+- Full build green; no epoch timestamps in any history dialog.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:D24905FA-DF57-4758-AD03-019BC3FB5C01][Fix mapper_helpers: drop db_timestamp overload and timepoint_to_timestamp]] | BACKLOG | | | Remove db_timestamp overload + timepoint_to_timestamp; document single path. |
+| [[id:35473DF9-42DD-4163-9912-05A4523DC8F3][Fix all entity files: optional<db_timestamp>/db_timestamp → std::string]] | BACKLOG | | | ~60 entity files across all services. |
+| [[id:6F234DBB-887C-4352-B719-9F9D58F55416][Fix mapper read sites: optional dereference → direct string_view call]] | BACKLOG | | | ~111 call sites: timestamp_to_timepoint(*v.field) → timestamp_to_timepoint(v.field). |
+| [[id:CBD64E21-D0BC-4EB1-BC65-FEEC8D8E1C78][Fix mapper write sites: timepoint_to_timestamp → datetime::to_db_string]] | BACKLOG | | | ~50 call sites across mapper/repository .cpp files. |
+| [[id:A573F0D0-C163-40A4-87FB-DE1A7C049FC0][Verify full build and tests green after timestamp unification]] | BACKLOG | | | Full build + test run; confirm no epoch timestamps in history dialogs. |
+
+* Decisions
+
+- =std::string= is the correct entity field type because sqlgen reads the raw PostgreSQL
+  string directly, bypassing =strptime=. The only parse function is =from_iso8601_utc=
+  which handles =+00=, =+00:00=, and =Z= designators and throws on failure.
+- =datetime::to_db_string(tp)= (format: ="YYYY-MM-DD HH:MM:SS"= without designator) is
+  the correct write-side function; PostgreSQL accepts it for =TIMESTAMPTZ= columns when
+  the session timezone is UTC.
+- =timepoint_to_timestamp= is removed: it returned an empty =db_timestamp= on failure
+  (silent epoch) instead of throwing, and is no longer needed once entities use =std::string=.
+
+* Out of scope
+
+- Changing the temporal SQL schema or trigger behaviour.
+- Non-timestamp fields in entity structs.
+- =db_timestamp= usage outside the repository/mapper layer.

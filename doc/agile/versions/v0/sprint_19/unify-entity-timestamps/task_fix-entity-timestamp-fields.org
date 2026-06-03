@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: 35473DF9-42DD-4163-9912-05A4523DC8F3
+:END:
+#+title: Task: Fix all entity files: optional<db_timestamp>/db_timestamp → std::string
+#+description: Change valid_from, valid_to, created_at, started_at, completed_at, and all other timestamp entity fields from optional<db_timestamp> or db_timestamp to std::string across ~60 entity files in all services (refdata, trading, iam, dq, analytics, compute, reporting, workflow, marketdata, assets, scheduler, controller, database).
+#+type: task
+#+level: s1
+#+filetags: :unify-entity-timestamps:sprint_19:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-03
+#+updated: 2026-06-03
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:71116F94-09A7-43FD-BD56-4B5B25BEAC80][Unify entity timestamp fields: replace optional<db_timestamp> with std::string]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:71116F94-09A7-43FD-BD56-4B5B25BEAC80][Unify entity timestamp fields: replace optional<db_timestamp> with std::string]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-03                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

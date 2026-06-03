@@ -23,7 +23,6 @@
 
 #include "ores.qt/IconUtils.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.qt/CurrencyMarketTierController.hpp"
 #include "ores.qt/MarketDataController.hpp"
 
 namespace ores::qt {
@@ -51,11 +50,6 @@ MktdataPlugin::~MktdataPlugin() {
 void MktdataPlugin::on_login(const plugin_context& ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Login event received.";
     ctx_ = ctx;
-
-    currencyMarketTierController_ = std::make_unique<CurrencyMarketTierController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
-    connectControllerSignals(currencyMarketTierController_.get());
 
     marketDataController_ = std::make_unique<MarketDataController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username);
@@ -89,12 +83,6 @@ QList<QMenu*> MktdataPlugin::create_menus() {
     connect(actMarketFixings, &QAction::triggered, this, [this]() {
         if (marketDataController_) marketDataController_->showFixingsWindow();
     });
-    menuMarketData->addSeparator();
-    auto* actCurrencyMarketTiers = menuMarketData->addAction(
-        ico(Icon::Chart), tr("Currency Market &Tiers"));
-    connect(actCurrencyMarketTiers, &QAction::triggered, this, [this]() {
-        if (currencyMarketTierController_) currencyMarketTierController_->showListWindow();
-    });
     BOOST_LOG_SEV(lg(), debug) << "Plugin menus ready.";
     return {menuMarketData};
 }
@@ -109,8 +97,6 @@ QList<QAction*> MktdataPlugin::toolbar_actions() {
 void MktdataPlugin::on_logout() {
     BOOST_LOG_SEV(lg(), debug) << "Logout event received.";
     marketDataController_.reset();
-    currencyMarketTierController_.reset();
-
     ctx_ = {};
 }
 

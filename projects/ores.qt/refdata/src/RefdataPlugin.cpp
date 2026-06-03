@@ -41,6 +41,7 @@
 #include "ores.qt/FloatingIndexTypeController.hpp"
 #include "ores.qt/PaymentFrequencyTypeController.hpp"
 #include "ores.qt/LegTypeController.hpp"
+#include "ores.qt/CurrencyMarketTierController.hpp"
 #include "ores.qt/MonetaryNatureController.hpp"
 #include "ores.qt/RoundingTypeController.hpp"
 #include "ores.qt/PurposeTypeController.hpp"
@@ -167,6 +168,16 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
     connect(currencyController_.get(), &CurrencyController::showMonetaryNaturesRequested,
             this, [this]() {
         if (monetaryNatureController_) monetaryNatureController_->showListWindow();
+    });
+
+    currencyMarketTierController_ = std::make_unique<CurrencyMarketTierController>(
+        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
+        ctx_.change_reason_cache, ctx_.username, this);
+    connectControllerSignals(currencyMarketTierController_.get());
+
+    connect(currencyController_.get(), &CurrencyController::showMarketTiersRequested,
+            this, [this]() {
+        if (currencyMarketTierController_) currencyMarketTierController_->showListWindow();
     });
 
     purposeTypeController_ = std::make_unique<PurposeTypeController>(
@@ -398,6 +409,11 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
         connect(actRoundingTypes, &QAction::triggered, this, [this]() {
             if (roundingTypeController_) roundingTypeController_->showListWindow();
         });
+        auto* actCurrencyMarketTiers = menuCurrencyCodes->addAction(
+            ico(Icon::Chart), tr("Currency Market &Tiers"));
+        connect(actCurrencyMarketTiers, &QAction::triggered, this, [this]() {
+            if (currencyMarketTierController_) currencyMarketTierController_->showListWindow();
+        });
 
         ref->addSeparator();
 
@@ -549,6 +565,7 @@ void RefdataPlugin::on_logout() {
 
     zeroConventionController_.reset();
     purposeTypeController_.reset();
+    currencyMarketTierController_.reset();
     monetaryNatureController_.reset();
     roundingTypeController_.reset();
     legTypeController_.reset();

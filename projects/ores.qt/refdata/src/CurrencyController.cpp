@@ -237,12 +237,6 @@ void CurrencyController::onAddNewRequested() {
         if (!self) return;
         emit self->errorMessage(message);
     });
-    connect(detailDialog, &CurrencyDetailDialog::showRoundingTypesRequested,
-            this, &CurrencyController::showRoundingTypesRequested);
-    connect(detailDialog, &CurrencyDetailDialog::showMonetaryNaturesRequested,
-            this, &CurrencyController::showMonetaryNaturesRequested);
-    connect(detailDialog, &CurrencyDetailDialog::showMarketTiersRequested,
-            this, &CurrencyController::showMarketTiersRequested);
 
     detailDialog->setCurrency(new_currency);
 
@@ -299,12 +293,6 @@ void CurrencyController::onShowCurrencyDetails(
         if (!self) return;
         emit self->errorMessage(message);
     });
-    connect(detailDialog, &CurrencyDetailDialog::showRoundingTypesRequested,
-            this, &CurrencyController::showRoundingTypesRequested);
-    connect(detailDialog, &CurrencyDetailDialog::showMonetaryNaturesRequested,
-            this, &CurrencyController::showMonetaryNaturesRequested);
-    connect(detailDialog, &CurrencyDetailDialog::showMarketTiersRequested,
-            this, &CurrencyController::showMarketTiersRequested);
 
     detailDialog->setCurrency(currency);
 

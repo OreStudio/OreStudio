@@ -270,9 +270,10 @@ enforced at the application layer before the save is submitted.
   framework.
 - [[https://en.wikipedia.org/wiki/Temporal_database][Temporal database]] — background on transaction time, valid time,
   and the bitemporal model.
-- [[id:4AAD3581-CFA7-4B44-A2DD-0236784E939F][Time and Timestamps: Architecture and Conventions]] — the internal
+- /Time and Timestamps: Architecture and Conventions/ — the internal
   architecture document covering the bitemporal model, UTC standard,
-  the infinity sentinel, and the C++ / PostgreSQL type chain.
+  the infinity sentinel, and the C++ / PostgreSQL type chain
+  (=doc/knowledge/architecture/time-architecture.org=).
 - [[https://www.bis.org/bcbs/publ/d239.htm][BCBS 239]] — Basel Committee principles for effective risk data
   aggregation and risk reporting; the regulatory foundation for the
   =common= change reason category.

@@ -182,6 +182,9 @@ public:
             for (const auto& c : h) {
                 ores::refdata::domain::currency_version cv;
                 cv.data = c;
+                cv.version_number = c.version;
+                cv.modified_by = c.modified_by;
+                cv.recorded_at = c.recorded_at;
                 cvh.versions.push_back(std::move(cv));
             }
             BOOST_LOG_SEV(currency_handler_lg(), debug)

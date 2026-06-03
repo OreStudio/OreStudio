@@ -8,7 +8,7 @@
 #+filetags: :fix_rfl_complexity:sprint_19:v0:
 #+owner: marco
 #+branch: feature/fix-windows-macos-ci
-#+pr: 1022
+#+pr: 1031
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-02
@@ -179,9 +179,9 @@ The mapping layer changes are mechanical and bounded to the =swap_leg= usage sit
 
 * PRs
 
-| PR   | Title                                                         |
-|------+---------------------------------------------------------------|
-| #1022 | Fix rfl complexity failure (Windows + macOS CI) — ongoing    |
+| PR                                                                          | Title                                                                          |
+|-----------------------------------------------------------------------------+--------------------------------------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/1031][#1031]] | [swap_leg] Decompose into sub-structs via rfl::Flatten to fix MSVC C1202 |
 
 * Decisions
 

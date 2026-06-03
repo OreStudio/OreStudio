@@ -1768,6 +1768,13 @@ def cmd_add(argv):
     if rc in (None, 0):
         print("ℹ️  Remember to wire the new artefact into its parent "
               "(e.g. the sprint's * Stories table) where needed.", file=sys.stderr)
+        if doc_type == "manual":
+            print("⚠️  Manual link rule: [[id:UUID]] links to documents outside"
+                  " doc/manual/ will break the PDF export.", file=sys.stderr)
+            print("   Use HTTP URLs for external references. Internal chapter"
+                  " id-links are fine.", file=sys.stderr)
+            print("   See: projects/ores.lisp/modeling/manual.org §Link conventions",
+                  file=sys.stderr)
         return 0
     if isinstance(rc, str):   # sys.exit("message") — surface it
         print(rc, file=sys.stderr)

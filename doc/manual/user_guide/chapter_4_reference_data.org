@@ -9,6 +9,8 @@
 #+created: 2026-06-03
 #+updated: 2026-06-04
 
+** Overview
+
 This chapter introduces OreStudio's reference data model. It explains
 what reference data is and how it differs from market data and trades,
 then covers the data quality framework that governs it: the six

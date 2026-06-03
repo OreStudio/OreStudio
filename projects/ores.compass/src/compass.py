@@ -1711,11 +1711,12 @@ def cmd_add(argv):
     """
     if not argv or argv[0] in ("-h", "--help"):
         print("usage: compass add <type> [generate_doc options]\n"
-              "  types: story task sprint version recipe knowledge component\n"
+              "  types: story task sprint version recipe knowledge manual component\n"
               "         capture memory investigation product_identity skill\n"
               "         diagram entity_org dataset_overview\n"
               "  --parent-dir defaults to the current sprint (story) or\n"
-              "  version (sprint), or doc/llm/skills (skill); required otherwise.\n"
+              "  version (sprint), doc/llm/skills (skill), or\n"
+              "  doc/manual/user_guide (manual); required otherwise.\n"
               "  diagram: scaffolds a .puml file with the standard licence header.\n"
               "  entity_org: scaffolds projects/ores.<component>/modeling/\n"
               "    ores.<component>.<slug>.org; requires --component, --slug,\n"
@@ -1737,6 +1738,11 @@ def cmd_add(argv):
     if not has_parent:
         if doc_type == "skill":
             default_parent = "doc/llm/skills"
+            rest += ["--parent-dir", default_parent]
+            print(f"ℹ️  --parent-dir not given; using default: {default_parent}",
+                  file=sys.stderr)
+        elif doc_type == "manual":
+            default_parent = "doc/manual/user_guide"
             rest += ["--parent-dir", default_parent]
             print(f"ℹ️  --parent-dir not given; using default: {default_parent}",
                   file=sys.stderr)

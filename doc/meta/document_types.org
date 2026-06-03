@@ -733,6 +733,21 @@ identity.
 - Size :: 50–80 lines once skeleton sections are filled in. Skills
   are /thin indexes/, not reference content.
 
+** manual
+
+- Folder :: =doc/manual/user_guide/=
+- Level :: =cross=
+- Not stateful — no TODO.
+- Naming :: =chapter_<N>_<slug>.org= — one file per chapter, included
+  into =user_manual.org= via =#+include: "chapter_<N>_<slug>.org" :minlevel 2=.
+  Headings inside the chapter start at =**= (level 2), which maps to
+  =\section= in the PDF build.
+- How to create :: =compass add manual --slug chapter_N_<topic> --title "..." --description "..."=
+  (=--parent-dir= defaults to =doc/manual/user_guide/=).
+- Required sections ::
+  - =** Overview= — one or two sentences orienting the reader.
+  - =** See also= — optional; for cross-references and external links.
+
 ** knowledge
 
 - Folder ::

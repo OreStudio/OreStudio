@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :commission_currency:sprint_19:v0:
 #+owner: marco
-#+branch: feature/commission-currency
+#+branch: feature/currency-write-docs
 #+pr:
 #+blocked_on: none
 #+blocked_since:
@@ -32,7 +32,7 @@ The manual chapter is the highest-priority item; it is entirely absent.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Qt and shell verification tasks (for accurate screenshots / command output). |

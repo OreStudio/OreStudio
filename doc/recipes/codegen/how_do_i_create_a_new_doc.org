@@ -172,6 +172,24 @@ an =#+begin_src sh :results verbatim= block so the recipe is
 executable in emacs (=C-c C-c=) — see [[id:AADBEF95-AFD8-4DC0-A4EC-505E47B07F86][How do I list available presets?]]
 for an example that also captures a =#+RESULTS:= snapshot.
 
+** New manual chapter
+:PROPERTIES:
+:ID: 2B7E4F1A-9C3D-4A8B-B5E6-7D2F0C1A3E9B
+:END:
+
+Use =compass add manual=. The slug should follow the =chapter_<N>_<topic>= convention.
+=--parent-dir= defaults to =doc/manual/user_guide= and can be omitted.
+Headings inside the chapter start at =**= (level 2); they become =\section= in the PDF.
+After creating, add a =#+include= line in =user_manual.org= and an entry in =user_manual_site.org=.
+
+#+begin_src sh :results verbatim
+./projects/ores.compass/compass.sh add manual \
+  --slug chapter_4_reference_data \
+  --title "Reference Data" \
+  --description "Reference data management in ORE Studio: currencies, countries, and other slowly-changing financial master data." \
+  --tags "manual,reference_data,user_guide"
+#+end_src
+
 ** New knowledge document
 :PROPERTIES:
 :ID: F497AA0A-F604-436A-8555-C17B14302C99

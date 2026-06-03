@@ -1,0 +1,90 @@
+:PROPERTIES:
+:ID: F5C8D615-E4B7-4E51-B3C4-7BDE932AA820
+:END:
+#+title: Task: Fix NOTIFY listener mutex contention + reduce max_backoff
+#+description: Refactor listen_loop to release the mutex before processing notification callbacks (drain into local vector under lock, handle outside lock). This eliminates thread starvation under heavy bulk imports. Also reduce max_backoff from 30s to 5s as a reconnect safety net. Document in the PostgreSQL architecture doc.
+#+type: task
+#+level: s1
+#+filetags: :sprint_19:v0:onboarding:database:symmetric-onboarding-flags:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-03
+#+updated: 2026-06-03
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C2BC9C1E-4AAA-42FC-A62F-CE4E5C4FA160][Symmetric onboarding flags for provisioner wizards]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The NOTIFY listener's =listen_loop= holds the mutex for the entire
+=consume_input()= + =get_notifications()= + callback chain. During a heavy
+bulk import (e.g. GLEIF party dataset — hundreds of INSERTs each firing a
+NOTIFY trigger), rapid-fire notification processing causes mutex contention
+that blocks the 100ms poll cycle for up to ~30 seconds. The callbacks run
+slowly under load, so the 100ms sleep never gets a chance to fire and the
+listener appears to have died.
+
+Refactor to hold the mutex only for the drain step, then process callbacks
+outside the lock:
+
+#+begin_src cpp
+std::vector<Notification> batch;
+{
+    std::lock_guard lock(mutex_);
+    if (!(*connection_)->consume_input()) { ... }
+    batch = (*connection_)->get_notifications();
+}
+for (const auto& n : batch)
+    handle_notification(n);
+#+end_src
+
+Also reduce =max_backoff= from 30s to 5s (the 30s ceiling was appropriate
+for a remote DB; a local PostgreSQL should reconnect in under a second).
+
+Note: suspending the listener during wizard execution was considered but
+rejected — it requires cross-process coordination (Qt client → service)
+and leaves the listener permanently paused if the client crashes mid-wizard.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:C2BC9C1E-4AAA-42FC-A62F-CE4E5C4FA160][Symmetric onboarding flags for provisioner wizards]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-03                               |
+
+* Acceptance
+
+- =listen_loop= releases the mutex before calling =handle_notification=.
+- Under a simulated bulk import (1000 rapid NOTIFYs), the listener delivers
+  notifications within 200ms of each trigger.
+- =max_backoff= is 5s.
+- A comment in the source explains why callbacks run outside the lock.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

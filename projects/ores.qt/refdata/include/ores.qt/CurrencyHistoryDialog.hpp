@@ -32,6 +32,8 @@
 #include "ores.refdata.api/domain/currency_version.hpp"
 #include "ores.refdata.api/messaging/currency_history_protocol.hpp"
 #include "ores.logging/make_logger.hpp"
+
+class QCloseEvent;
 #include "ui_CurrencyHistoryDialog.h"
 
 namespace Ui {
@@ -71,7 +73,7 @@ public:
      */
     void setImageCache(ImageCache* imageCache);
 
-    QSize sizeHint() const override; // Provide optimal size based on table content
+    QSize sizeHint() const override;
 
     /**
      * @brief Mark the history data as stale and reload.
@@ -92,6 +94,9 @@ public:
     [[nodiscard]] const refdata::messaging::currency_version_history& getHistory() const {
         return history_;
     }
+
+protected:
+    void closeEvent(QCloseEvent* event) override;
 
 signals:
     void statusChanged(const QString& message);

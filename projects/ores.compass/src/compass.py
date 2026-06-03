@@ -1966,8 +1966,8 @@ def cmd_story(argv):
         return 0
 
 
-def _cmd_task_start(task_ident):
-    """compass task start <slug-or-uuid> — clock on to an existing task."""
+def _cmd_task_start(task_ident, branch_arg=""):
+    """compass task start <slug-or-uuid> [--branch <name>] — clock on to an existing task."""
     docs = doc_index.load_all()
     il   = task_ident.lower()
 
@@ -2000,11 +2000,25 @@ def _cmd_task_start(task_ident):
     task_doc  = cands[0]
     task_path = Path(PROJECT_ROOT) / task_doc.rel_path
 
-    # Read branch from #+branch: frontmatter.
+    # Read branch from #+branch: frontmatter; write it if --branch was supplied.
     branch = _read_frontmatter_field(task_path, "branch")
     if not branch:
-        print(f"❌ Task has no #+branch: set. Run 'compass task new' first.", file=sys.stderr)
-        return 1
+        if branch_arg:
+            text = task_path.read_text(encoding="utf-8")
+            new_text, count = re.subn(r'^(#\+branch:)[ \t]*\r?$', f'\\1 {branch_arg}',
+                                      text, count=1, flags=re.MULTILINE)
+            if count == 0:
+                print(f"❌ Could not find empty '#+branch:' line in {task_path.name}",
+                      file=sys.stderr)
+                return 1
+            task_path.write_text(new_text, encoding="utf-8")
+            branch = branch_arg
+            print(f"📝 #+branch: set to {branch}")
+        else:
+            print(f"❌ Task has no #+branch: set. "
+                  f"Pass --branch <name> or run 'compass task new' first.",
+                  file=sys.stderr)
+            return 1
 
     # Find the parent story (one directory up, story.org).
     story_path = task_path.parent / "story.org"
@@ -2090,6 +2104,10 @@ def cmd_task(argv):
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     start_p.add_argument("task", help="Task slug, UUID/prefix, or branch suffix")
+    start_p.add_argument("--branch", default="",
+                         help="Branch name to write into #+branch: if the task "
+                              "has no branch set yet (creates the branch off "
+                              "origin/main when it does not already exist)")
 
     args = ap.parse_args(argv)
 
@@ -2111,7 +2129,7 @@ def cmd_task(argv):
             branch, args.base, args.dry_run, current_sprint)
 
     if args.subcmd == "start":
-        return _cmd_task_start(args.task)
+        return _cmd_task_start(args.task, getattr(args, "branch", ""))
 
 def cmd_env(argv):
     """compass env — Provision pillar: environment setup."""

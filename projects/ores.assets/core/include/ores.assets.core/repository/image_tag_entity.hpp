@@ -42,9 +42,9 @@ struct image_tag_entity {
     sqlgen::PrimaryKey<std::string> image_id;
     sqlgen::PrimaryKey<std::string> tag_id;
     std::string assigned_by;
-    std::optional<db_timestamp> assigned_at = "9999-12-31 23:59:59";
-    std::optional<db_timestamp> valid_from = "9999-12-31 23:59:59";
-    std::optional<db_timestamp> valid_to = "9999-12-31 23:59:59";
+    db_timestamp assigned_at = "9999-12-31 23:59:59";
+    db_timestamp valid_from = "9999-12-31 23:59:59";
+    db_timestamp valid_to = "9999-12-31 23:59:59";
 };
 
 std::ostream& operator<<(std::ostream& s, const image_tag_entity& v);

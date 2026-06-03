@@ -28,6 +28,7 @@ namespace ores::dq::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
+using ores::platform::time::datetime;
 
 namespace {
 
@@ -106,8 +107,8 @@ dataset_mapper::map(const domain::dataset& v) {
     r.business_context = v.business_context;
     r.upstream_derivation_id = optional_uuid_to_string(v.upstream_derivation_id);
     r.lineage_depth = v.lineage_depth;
-    r.as_of_date = timepoint_to_timestamp(v.as_of_date, lg());
-    r.ingestion_timestamp = timepoint_to_timestamp(v.ingestion_timestamp, lg());
+    r.as_of_date = datetime::to_db_string(v.as_of_date);
+    r.ingestion_timestamp = datetime::to_db_string(v.ingestion_timestamp);
     r.license_info = v.license_info;
     r.artefact_type = v.artefact_type;
 r.modified_by = v.modified_by;

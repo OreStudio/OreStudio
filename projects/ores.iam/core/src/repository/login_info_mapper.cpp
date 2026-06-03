@@ -28,6 +28,7 @@ namespace ores::iam::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
+using ores::platform::time::datetime;
 
 domain::login_info login_info_mapper::map(const login_info_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
@@ -59,7 +60,7 @@ login_info_entity login_info_mapper::map(const domain::login_info& v) {
     r.last_attempt_ip = v.last_attempt_ip.to_string();
     r.failed_logins = v.failed_logins;
     r.locked = v.locked;
-    r.last_login = timepoint_to_timestamp(v.last_login, lg());
+    r.last_login = datetime::to_db_string(v.last_login);
     r.online = v.online;
     r.password_reset_required = v.password_reset_required;
 

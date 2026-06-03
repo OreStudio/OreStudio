@@ -60,8 +60,9 @@ void change_reason_repository::write(
 std::vector<domain::change_reason>
 change_reason_repository::read_latest() {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<change_reason_entity>> |
-        where("valid_to"_c == max.value()) |
+        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
         order_by("display_order"_c, "code"_c);
 
     return execute_read_query<change_reason_entity, domain::change_reason>(
@@ -75,8 +76,9 @@ change_reason_repository::read_latest(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest change_reason. Code: " << code;
 
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<change_reason_entity>> |
-        where("code"_c == code && "valid_to"_c == max.value());
+        where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max.value());
 
     return execute_read_query<change_reason_entity, domain::change_reason>(
         ctx_, query,
@@ -90,8 +92,9 @@ change_reason_repository::read_latest(std::uint32_t offset, std::uint32_t limit)
                                << offset << " and limit: " << limit;
 
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<change_reason_entity>> |
-        where("valid_to"_c == max.value()) |
+        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
         order_by("display_order"_c, "code"_c) |
         sqlgen::offset(offset) |
         sqlgen::limit(limit);
@@ -108,8 +111,9 @@ change_reason_repository::read_latest_by_category(const std::string& category_co
                                << category_code;
 
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<change_reason_entity>> |
-        where("category_code"_c == category_code && "valid_to"_c == max.value()) |
+        where("tenant_id"_c == tid && "category_code"_c == category_code && "valid_to"_c == max.value()) |
         order_by("display_order"_c, "code"_c);
 
     return execute_read_query<change_reason_entity, domain::change_reason>(
@@ -127,9 +131,10 @@ std::uint32_t change_reason_repository::get_total_count() {
         long long count;
     };
 
+    const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::select_from<change_reason_entity>(
         sqlgen::count().as<"count">()) |
-        where("valid_to"_c == max.value()) |
+        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
         sqlgen::to<count_result>;
 
     const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
@@ -145,8 +150,9 @@ change_reason_repository::read_all(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all change_reason versions. Code: "
                                << code;
 
+    const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<change_reason_entity>> |
-        where("code"_c == code) |
+        where("tenant_id"_c == tid && "code"_c == code) |
         order_by("version"_c.desc());
 
     return execute_read_query<change_reason_entity, domain::change_reason>(
@@ -160,15 +166,17 @@ void change_reason_repository::remove(const std::string& code) {
 
     // Delete the reason - the database rule will close the temporal record
     // instead of actually deleting it (sets valid_to = current_timestamp)
+    const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::delete_from<change_reason_entity> |
-        where("code"_c == code);
+        where("tenant_id"_c == tid && "code"_c == code);
 
     execute_delete_query(ctx_, query, lg(), "removing change_reason from database");
 }
 
 void change_reason_repository::remove(const std::vector<std::string>& codes) {
+    const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::delete_from<change_reason_entity> |
-        where("code"_c.in(codes));
+        where("tenant_id"_c == tid && "code"_c.in(codes));
     execute_delete_query(ctx_, query, lg(), "batch removing change_reasons");
 }
 

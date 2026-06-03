@@ -37,6 +37,7 @@ using namespace sqlgen;
 using namespace sqlgen::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
+using ores::platform::time::datetime;
 
 std::optional<domain::workflow_step>
 workflow_step_repository::find_by_id(
@@ -116,8 +117,7 @@ void workflow_step_repository::update_state(
 
     const auto id_str = boost::uuids::to_string(id);
     const auto state_id_str = boost::uuids::to_string(state_id);
-    const auto now = timepoint_to_timestamp(
-        std::chrono::system_clock::now(), lg());
+    const auto now = datetime::to_db_string(std::chrono::system_clock::now());
     const auto opt_response = response_json.empty()
         ? std::optional<std::string>{}
         : std::optional<std::string>(response_json);
@@ -151,8 +151,7 @@ void workflow_step_repository::mark_command_published(
                                << boost::uuids::to_string(id);
 
     const auto id_str = boost::uuids::to_string(id);
-    const auto now = timepoint_to_timestamp(
-        std::chrono::system_clock::now(), lg());
+    const auto now = datetime::to_db_string(std::chrono::system_clock::now());
     using ts_t = ores::database::repository::db_timestamp;
     const auto opt_now = std::optional<ts_t>(now);
 

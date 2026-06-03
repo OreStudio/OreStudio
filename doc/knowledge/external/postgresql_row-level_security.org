@@ -69,3 +69,5 @@ through application bugs or direct database access.
 
 - [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]] — how this project applies RLS for tenant isolation
   and service-role separation.
+- [[id:81AB065B-E6EB-4CC2-BB18-F3FD2652EC47][PostgreSQL Architecture]] — broader database conventions: schema
+  layout, roles, session settings, extensions, and utility functions.

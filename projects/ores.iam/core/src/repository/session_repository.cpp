@@ -36,6 +36,7 @@ using namespace sqlgen;
 using namespace sqlgen::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
+using ores::platform::time::datetime;
 
 session_repository::session_repository(context ctx)
     : ctx_(std::move(ctx)) {}
@@ -87,7 +88,7 @@ void session_repository::update_bytes(const boost::uuids::uuid& session_id,
                                << boost::uuids::to_string(session_id);
 
     const auto session_id_str = boost::lexical_cast<std::string>(session_id);
-    const auto start_time_ts = timepoint_to_timestamp(start_time, lg());
+    const auto start_time_ts = db_timestamp{datetime::to_db_string(start_time)};
 
     const auto query = sqlgen::update<session_entity>(
         "bytes_sent"_c.set(static_cast<std::int64_t>(bytes_sent)),
@@ -111,7 +112,7 @@ void session_repository::end_session(const boost::uuids::uuid& session_id,
                                << boost::uuids::to_string(session_id);
 
     const auto session_id_str = boost::lexical_cast<std::string>(session_id);
-    const auto start_time_ts = timepoint_to_timestamp(start_time, lg());
+    const auto start_time_ts = db_timestamp{datetime::to_db_string(start_time)};
     const auto end_time_str = ores::platform::time::datetime::to_db_string(end_time);
 
     const auto query = sqlgen::update<session_entity>(
@@ -256,8 +257,8 @@ session_repository::read_by_time_range(
 
     BOOST_LOG_SEV(lg(), debug) << "Reading sessions in time range";
 
-    const auto start_ts = timepoint_to_timestamp(start, lg());
-    const auto end_ts = timepoint_to_timestamp(end, lg());
+    const auto start_ts = db_timestamp{datetime::to_db_string(start)};
+    const auto end_ts = db_timestamp{datetime::to_db_string(end)};
 
     const auto query = sqlgen::read<std::vector<session_entity>> |
         where("start_time"_c >= start_ts && "start_time"_c <= end_ts) |

@@ -1086,8 +1086,12 @@ void CurrencyDetailDialog::populateRoundingTypeCombo() {
                 Qt::ToolTipRole);
         }
 
-        if (!previousSelection.isEmpty()) {
-            self->ui_->roundingTypeCombo->setCurrentText(previousSelection);
+        {
+            const QString toSelect = !previousSelection.isEmpty()
+                ? previousSelection
+                : QString::fromStdString(self->currentCurrency_.rounding_type);
+            if (!toSelect.isEmpty())
+                self->ui_->roundingTypeCombo->setCurrentText(toSelect);
         }
 
         self->ui_->roundingTypeCombo->blockSignals(false);
@@ -1177,8 +1181,12 @@ void CurrencyDetailDialog::populateMonetaryNatureCombo() {
                 Qt::ToolTipRole);
         }
 
-        if (!previousSelection.isEmpty()) {
-            self->ui_->monetaryNatureCombo->setCurrentText(previousSelection);
+        {
+            const QString toSelect = !previousSelection.isEmpty()
+                ? previousSelection
+                : QString::fromStdString(self->currentCurrency_.monetary_nature);
+            if (!toSelect.isEmpty())
+                self->ui_->monetaryNatureCombo->setCurrentText(toSelect);
         }
 
         self->ui_->monetaryNatureCombo->blockSignals(false);
@@ -1267,8 +1275,12 @@ void CurrencyDetailDialog::populateMarketTierCombo() {
                 Qt::ToolTipRole);
         }
 
-        if (!previousSelection.isEmpty()) {
-            self->ui_->marketTierCombo->setCurrentText(previousSelection);
+        {
+            const QString toSelect = !previousSelection.isEmpty()
+                ? previousSelection
+                : QString::fromStdString(self->currentCurrency_.market_tier);
+            if (!toSelect.isEmpty())
+                self->ui_->marketTierCombo->setCurrentText(toSelect);
         }
 
         self->ui_->marketTierCombo->blockSignals(false);

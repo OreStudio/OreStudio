@@ -35,6 +35,8 @@
 #include "ores.service/service/request_context.hpp"
 #include "ores.iam.api/messaging/tenant_protocol.hpp"
 #include "ores.iam.core/repository/tenant_repository.hpp"
+#include "ores.database/domain/change_reason_constants.hpp"
+#include "ores.variability.core/service/system_settings_service.hpp"
 
 namespace ores::iam::messaging {
 
@@ -204,6 +206,23 @@ public:
 
             BOOST_LOG_SEV(tenant_handler_lg(), info)
                 << "Tenant marked active: " << ids.front();
+
+            // Clear the bootstrap_mode flag server-side using the service's own
+            // credentials — independent of the user having variability::flags:create.
+            try {
+                variability::service::system_settings_service vss(
+                    *ctx_expected, ids.front());
+                vss.set_bootstrap_mode(false, ctx_expected->service_account(),
+                    std::string(database::domain::change_reason_constants::codes::new_record),
+                    "Bootstrap mode cleared on tenant activation");
+                BOOST_LOG_SEV(tenant_handler_lg(), info)
+                    << "Bootstrap mode cleared for tenant: " << ids.front();
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(tenant_handler_lg(), warn)
+                    << "Failed to clear bootstrap mode for tenant "
+                    << ids.front() << ": " << e.what();
+            }
+
             reply(nats_, msg, complete_tenant_provisioning_response{.success = true});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(tenant_handler_lg(), error)

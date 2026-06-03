@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :agile:task:pr:review:merge:
 #+created: 2026-05-26
-#+updated: 2026-05-26
+#+updated: 2026-06-03
 
 This page documents a [[id:B555D2A6-10CA-4A93-973E-F2AF4E1D7E55][runbook]] — a named, repeatable composition of [[id:0C57932D-D13A-480F-B426-49525AA8BA3D][recipes]] and [[id:6054CC20-5F41-482F-A587-759512577B1D][skills]] for a complete multi-step procedure. Each step references a recipe or skill by id-link.
 
@@ -31,6 +31,15 @@ In execution order:
 
    #+begin_src sh :results verbatim
    ./projects/ores.compass/compass.sh task start <task-slug>
+   #+end_src
+
+   If the task was scaffolded manually (e.g. via =compass add task= rather
+   than =compass task new=) its =#+branch:= field may be empty. Supply
+   =--branch= to write the branch name into the doc and create the branch in
+   one step — no manual edit required:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh task start <task-slug> --branch feature/<slug>
    #+end_src
 
    This covers all three cases: new task on an existing story, resuming a

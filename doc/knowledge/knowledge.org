@@ -88,6 +88,10 @@ How the codebase is put together.
   and system class diagrams.
 - [[id:496DC90B-8951-42A6-A63E-B1762DF496C6][PlantUML ER diagram conventions]] — styling for the SQL schema
   ER diagram.
+- [[id:81AB065B-E6EB-4CC2-BB18-F3FD2652EC47][PostgreSQL architecture]] — schema layout, roles, session settings,
+  bitemporal design, extensions, and key utility functions.
+- [[id:4AAD3581-CFA7-4B44-A2DD-0236784E939F][Time and timestamps]] — bitemporality, =TIMESTAMPTZ=, =db_timestamp=,
+  =time_point=, UTC standard, and the conversion layer.
 
 * Tooling
 

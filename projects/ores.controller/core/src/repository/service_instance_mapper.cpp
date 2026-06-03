@@ -27,6 +27,7 @@ namespace ores::controller::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
+using ores::platform::time::datetime;
 
 api::domain::service_instance
 service_instance_mapper::map(const service_instance_entity& v) {
@@ -64,15 +65,15 @@ service_instance_mapper::map(const api::domain::service_instance& v) {
     r.pid = v.pid;
     r.phase = v.phase;
     if (v.started_at)
-        r.started_at = timepoint_to_timestamp(*v.started_at, lg());
+        r.started_at = datetime::to_db_string(*v.started_at);
     if (v.stopped_at)
-        r.stopped_at = timepoint_to_timestamp(*v.stopped_at, lg());
+        r.stopped_at = datetime::to_db_string(*v.stopped_at);
     r.restart_count = v.restart_count;
     r.last_error = v.last_error;
     r.last_log_snippet = v.last_log_snippet;
     r.last_stderr_snippet = v.last_stderr_snippet;
     r.last_command_line = v.last_command_line;
-    r.created_at = timepoint_to_timestamp(v.created_at, lg());
+    r.created_at = datetime::to_db_string(v.created_at);
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity.";
     return r;

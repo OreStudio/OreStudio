@@ -21,6 +21,7 @@
 
 #include <QIcon>
 #include <QLabel>
+#include <QCloseEvent>
 #include <QDateTime>
 #include <QScrollBar>
 #include <QVBoxLayout>
@@ -30,6 +31,7 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
+#include "ores.qt/UiPersistence.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata.api/messaging/protocol.hpp"
 
@@ -89,6 +91,8 @@ CurrencyHistoryDialog::CurrencyHistoryDialog(QString iso_code,
             this, [this]() { if (window()) window()->close(); });
 
     updateButtonStates();
+    resize(UiPersistence::restoreSize(
+        QLatin1String("CurrencyHistoryDialog"), sizeHint()));
 }
 
 CurrencyHistoryDialog::~CurrencyHistoryDialog() {
@@ -490,6 +494,11 @@ void CurrencyHistoryDialog::onReloadClicked() {
                               << isoCode_.toStdString();
     emit statusChanged(QString("Reloading history for %1...").arg(isoCode_));
     loadHistory();
+}
+
+void CurrencyHistoryDialog::closeEvent(QCloseEvent* event) {
+    UiPersistence::saveSize(QLatin1String("CurrencyHistoryDialog"), this);
+    QWidget::closeEvent(event);
 }
 
 QSize CurrencyHistoryDialog::sizeHint() const {

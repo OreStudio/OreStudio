@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: D24905FA-DF57-4758-AD03-019BC3FB5C01
 :END:
-#+title: Task: Fix mapper_helpers: drop db_timestamp overload and timepoint_to_timestamp
-#+description: Remove timestamp_to_timepoint(const db_timestamp&) overload and timepoint_to_timestamp() from mapper_helpers.hpp. Document string_view overload as the single standard path. Update any in-header doc examples.
+#+title: Task: Fix optional<db_timestamp> → db_timestamp for all NOT NULL entity fields
+#+description: Change optional<db_timestamp> to db_timestamp for valid_from, valid_to, and any other NOT NULL timestamp columns across all ~100 entity files. Nullable columns keep optional<db_timestamp>.
 #+type: task
 #+level: s1
 #+filetags: :unify-entity-timestamps:sprint_19:v0:
@@ -15,34 +15,88 @@
 #+updated: 2026-06-03
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:71116F94-09A7-43FD-BD56-4B5B25BEAC80][Unify entity timestamp fields: replace optional<db_timestamp> with std::string]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:71116F94-09A7-43FD-BD56-4B5B25BEAC80][Unify entity timestamp handling]] story.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Change every =optional<db_timestamp>= that maps to a =NOT NULL= DB column to plain
+=db_timestamp=. The =optional= wrapper let sqlgen silently skip populating the field
+on a parse failure, which could produce a default-initialised =db_timestamp= (near-epoch)
+that then fed through =timestamp_to_timepoint= to produce the "56 years ago" bug.
+
+Nullable columns (=completed_at=, =last_event_at=, etc.) must stay as
+=optional<db_timestamp>=.
 
 * Status
 
-| Field        | Value                                  |
-|--------------+----------------------------------------|
-| State        | STARTED                              |
-| Parent story | [[id:71116F94-09A7-43FD-BD56-4B5B25BEAC80][Unify entity timestamp fields: replace optional<db_timestamp> with std::string]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-03                               |
+| Field        | Value                                                        |
+|--------------+--------------------------------------------------------------|
+| State        | STARTED                                                      |
+| Parent story | [[id:71116F94-09A7-43FD-BD56-4B5B25BEAC80][Unify entity timestamp handling]] |
+| Now          | Plan written. Ready to implement.                            |
+| Waiting on   | Nothing.                                                     |
+| Next         | Run transformation script on all entity files.               |
+| Last touched | 2026-06-03                                                   |
 
 * Acceptance
 
--
+- Every =optional<db_timestamp> X = "..."= (field with a default) is =db_timestamp X = "..."=.
+- Every =optional<db_timestamp> X;= (no default, truly nullable) remains =optional<db_timestamp> X;=.
+- Mapper read sites that previously dereferenced =*v.X= for the now-non-optional fields
+  change to =v.X= (no dereference).
+- Null-check guards (=if (!v.X) throw= preceding the =*v.X=) are removed for non-optional fields.
+- Build green.
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
+** Identification rule
 
-* Notes
+A field should become =db_timestamp= (not optional) if and only if it has a default
+value in the struct declaration:
+
+#+begin_src cpp
+// NOT NULL → becomes db_timestamp:
+std::optional<db_timestamp> valid_from = "9999-12-31 23:59:59";
+
+// Nullable → stays optional<db_timestamp>:
+std::optional<db_timestamp> completed_at;  // no default
+#+end_src
+
+** Script approach
+
+Use a Python script on all =*_entity.hpp= files under =projects/=:
+
+1. Match =std::optional<db_timestamp> (\w+) = "...";= → replace with =db_timestamp \1 = "...";=
+2. All other =optional<db_timestamp>= (without default) → leave unchanged
+
+** Mapper read-side fixup
+
+For each field that became non-optional, find the corresponding mapper and:
+
+1. Remove any null-check guard:
+   #+begin_src cpp
+   // Remove this:
+   if (!v.valid_from)
+       throw std::logic_error("...");
+   #+end_src
+
+2. Remove the dereference:
+   #+begin_src cpp
+   // Before:
+   r.recorded_at = timestamp_to_timepoint(*v.valid_from);
+   // After:
+   r.recorded_at = timestamp_to_timepoint(v.valid_from);
+   #+end_src
+
+** Verification
+
+After the change, grep for remaining =optional<db_timestamp>=. Every hit should be
+a genuinely nullable field (no default in the struct). Any hit with a default is a
+missed case.
+
+#+begin_src sh
+grep -rn "optional<db_timestamp>" projects/ --include="*_entity.hpp" | grep -v build
+#+end_src
 
 * PRs
 

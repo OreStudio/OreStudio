@@ -1,0 +1,297 @@
+:PROPERTIES:
+:ID: 4AAD3581-CFA7-4B44-A2DD-0236784E939F
+:END:
+#+title: Time and Timestamps: Architecture and Conventions
+#+description: How time is represented, stored, and converted across the system: bitemporality, PostgreSQL TIMESTAMPTZ, db_timestamp, std::chrono::system_clock::time_point, UTC standards, and the conversion layer.
+#+type: knowledge
+#+level: cross
+#+filetags: :time:bitemporality:database:architecture:knowledge:
+#+created: 2026-06-03
+#+updated: 2026-06-03
+
+Time is a first-class concern in ORE Studio. Every persisted entity
+carries a full audit trail, the database schema is bitemporal, and all
+services must agree on a single timezone standard.  This article
+documents the decisions, the types used at each layer, and the
+conversion functions that bridge them. Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+
+* Bitemporality
+
+ORE Studio uses a *bitemporal* data model for all reference and trading
+entities.  Each row in the database carries two independent time axes:
+
+** Valid time (=valid_from= / =valid_to=)
+
+Valid time records *when the fact was true in the real world*.
+
+- =valid_from=: the instant from which this version of the record is
+  authoritative (set by the INSERT trigger to =current_timestamp=;
+  the application never writes it explicitly).
+- =valid_to=: the instant from which this version is no longer current
+  (set to the "infinity" sentinel =9999-12-31 23:59:59= for the live
+  record; closed to =current_timestamp= when the record is updated or
+  deleted).
+
+Together they form an open interval =[valid_from, valid_to)=.  A query
+for "current" data filters =valid_to = MAX_TIMESTAMP=.  A query for
+the state at a historical instant =t= filters
+=valid_from <= t AND valid_to > t=.
+
+The application *never writes =valid_from= or =valid_to= directly*.
+The database trigger manages both columns.  Entity structs therefore
+declare them as read-only from the application's perspective:
+=valid_from= and =valid_to= are populated on SELECT and ignored on
+INSERT/UPDATE.
+
+** Transaction time (=recorded_at=)
+
+=recorded_at= is the domain object field that surfaces =valid_from= to
+the application layer.  The mapper reads it from =valid_from= on SELECT
+and never writes it back (the trigger owns it).
+
+** Audit fields
+
+Every persisted entity also carries:
+
+| Field                 | Who writes it        | Meaning                          |
+|-----------------------+----------------------+----------------------------------|
+| =modified_by=         | Application (stamp)  | Authenticated actor              |
+| =performed_by=        | Application (stamp)  | Service account                  |
+| =change_reason_code=  | Application / client | Reason for the mutation          |
+| =change_commentary=   | Client               | Free-text audit note             |
+| =recorded_at=         | DB trigger (read only) | When this version was written  |
+
+The =stamp()= helper in =handler_helpers.hpp= fills =modified_by=,
+=performed_by=, and =change_reason_code= on every write.
+
+* The UTC Standard
+
+*All timestamps in ORE Studio are UTC, everywhere.*
+
+- PostgreSQL: every connection runs =SET TIME ZONE 'UTC'= on acquire
+  (=tenant_aware_pool::acquire()=).  PostgreSQL therefore returns all
+  =TIMESTAMPTZ= values as ="YYYY-MM-DD HH:MM:SS.ffffff+00"=.
+- C++ domain layer: =std::chrono::system_clock::time_point= is UTC by
+  definition (C++20).
+- NATS / JSON protocol: timestamps serialise as ISO 8601 UTC strings
+  with a =Z= suffix (e.g. ="2026-06-03 10:57:32Z"=).
+- User interface: Qt converts to local time only for *display*; all
+  internal passing uses =time_point=.
+
+There is no local-time arithmetic anywhere in the codebase.
+
+* Time Types at Each Layer
+
+#+begin_example
+  PostgreSQL column          C++ entity (DB layer)         C++ domain
+  ─────────────────          ─────────────────────         ──────────
+  TIMESTAMPTZ NOT NULL  →    db_timestamp                → time_point
+  TIMESTAMPTZ (nullable) →   std::optional<db_timestamp> → std::optional<time_point>
+#+end_example
+
+** PostgreSQL: =TIMESTAMPTZ=
+
+All timestamp columns are declared =TIMESTAMP WITH TIME ZONE NOT NULL=
+(or nullable where the DB schema allows NULL).  PostgreSQL stores
+timestamps internally as UTC microseconds since 2000-01-01; the
+timezone is only relevant for display and input parsing.  With the
+session timezone forced to UTC, the text representation returned to the
+C++ client is always ="YYYY-MM-DD HH:MM:SS.ffffff+00"=.
+
+** C++ entity layer: =db_timestamp=
+
+#+begin_src cpp
+// ores.database/repository/db_types.hpp
+using db_timestamp = sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">;
+// which is rfl::Timestamp<"%Y-%m-%d %H:%M:%S">
+#+end_src
+
+=db_timestamp= is a *serialisation shim* — its sole job is to let
+sqlgen (via rfl reflection) read and write PostgreSQL timestamp strings.
+Internally it wraps a =std::tm= (a C struct of integer fields) and uses
+=strptime= / =strftime= with the format ="%Y-%m-%d %H:%M:%S"=.
+
+Important properties and limitations:
+
+- =strptime= parses ="2026-06-03 10:57:32.ffffff+00"= up to the
+  seconds, stopping at the fractional-second dot.  The parse succeeds
+  and the =+00= suffix is ignored.  The resulting =std::tm= holds the
+  correct wall-clock fields.
+- =db_timestamp= has *no concept of UTC or timezone*.  Whether the
+  =std::tm= represents UTC or local time depends entirely on which
+  conversion function is subsequently called.
+- A *default-constructed* =db_timestamp= (=std::tm{}=) represents a
+  near-epoch date (1900-01-01) — not the application epoch 1970.
+  Calling =timegm= on a zero-=std::tm= returns a large negative
+  =time_t=.  The old =timestamp_to_timepoint(const db_timestamp&)=
+  implementation used =ts.tm() → timegm= directly and silently
+  produced epoch (or negative) values on a failed parse.  This is the
+  root cause of the "56 years ago" history display bug.
+- Entity structs *must* declare =valid_from= and =valid_to= as plain
+  =db_timestamp= (not =std::optional<db_timestamp>=) because the DB
+  columns are =NOT NULL=. Declaring them optional meant sqlgen could
+  silently leave them unpopulated, masking parse failures.
+
+** C++ domain layer: =std::chrono::system_clock::time_point=
+
+The canonical time type in ORE Studio.  All domain structs use
+=time_point= (or =std::optional<time_point>= for nullable instants).
+
+- UTC by definition (C++20 guarantees =system_clock= epoch is Unix
+  epoch in UTC).
+- Supports arithmetic and comparison.
+- Strongly typed — no accidental local/UTC confusion.
+- Converted from =db_timestamp= exactly once at the mapper boundary.
+
+* Conversion Functions
+
+All conversions live in =ores.database/repository/mapper_helpers.hpp=
+and =ores.platform/time/datetime.hpp=.
+
+** =timestamp_to_timepoint= (read path: entity → domain)
+
+#+begin_src cpp
+// The single standard conversion function.
+// Parses a PostgreSQL timestamp string into a UTC time_point.
+// Throws std::invalid_argument on any parse failure (empty string,
+// missing UTC designator, invalid date).
+inline std::chrono::system_clock::time_point
+timestamp_to_timepoint(std::string_view timestamp_str);
+
+// Overload for db_timestamp entity fields.
+// Formats tm_ back to "YYYY-MM-DD HH:MM:SS" via strftime, appends
+// "+00" to assert UTC intent, then delegates to from_iso8601_utc.
+// Throws on a zero-initialised or otherwise invalid db_timestamp.
+inline std::chrono::system_clock::time_point
+timestamp_to_timepoint(const db_timestamp& ts);
+#+end_src
+
+Both overloads ultimately call =platform::time::datetime::from_iso8601_utc=.
+They throw rather than returning epoch silently.
+
+*** Mapper usage (read side)
+
+#+begin_src cpp
+// NOT NULL field (db_timestamp):
+r.recorded_at = timestamp_to_timepoint(v.valid_from);
+
+// Nullable field (optional<db_timestamp>):
+if (v.completed_at)
+    r.completed_at = timestamp_to_timepoint(*v.completed_at);
+#+end_src
+
+** =datetime::to_db_string= (write path: domain → entity)
+
+#+begin_src cpp
+// ores.platform/time/datetime.hpp
+// Formats a time_point as "YYYY-MM-DD HH:MM:SS" (no timezone suffix).
+// PostgreSQL accepts this for TIMESTAMPTZ when the session is UTC.
+std::string datetime::to_db_string(
+    const std::chrono::system_clock::time_point& tp);
+#+end_src
+
+This is the *only* function used to write timestamps to entity fields.
+The old =timepoint_to_timestamp(tp, lg)= helper (which returned an
+empty =db_timestamp= on failure — silent epoch) has been removed.
+
+*** Mapper usage (write side)
+
+#+begin_src cpp
+// NOT NULL field:
+entity.started_at = datetime::to_db_string(domain.started_at);
+
+// Nullable field:
+if (domain.completed_at)
+    entity.completed_at = datetime::to_db_string(*domain.completed_at);
+#+end_src
+
+** NATS / JSON protocol: =time_point_parser.hpp=
+
+For over-the-wire serialisation, a custom rfl parser is registered in
+=ores.utility/rfl/time_point_parser.hpp=:
+
+- *Write*: =time_point= → =to_iso8601_utc= → ="2026-06-03 10:57:32Z"=
+- *Read*: ISO 8601 string with =Z=, =+00=, or =+00:00= suffix →
+  =from_iso8601_utc= → =time_point=.  Throws on missing UTC designator.
+
+This parser is invoked automatically when rfl serialises or deserialises
+any struct containing a =time_point= field (NATS request/response types,
+domain JSON I/O).
+
+* Repository WHERE Clauses
+
+Queries that filter on =valid_to= or =valid_from= compare
+=db_timestamp= entity column values against =db_timestamp= constants:
+
+#+begin_src cpp
+const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+// "current" records:
+where("valid_to"_c == max.value()) | ...
+
+const auto ts(make_timestamp(as_of, lg()));
+// "as-of" query:
+where("valid_from"_c <= ts.value() && "valid_to"_c > ts.value()) | ...
+#+end_src
+
+=make_timestamp= parses the string into a =db_timestamp= and throws if
+parsing fails.  sqlgen compares the column (=db_timestamp=) with the
+value (=db_timestamp=) using rfl's type machinery.  This is
+type-safe and consistent.
+
+=MAX_TIMESTAMP= is defined in =ores.database/repository/helpers.hpp=:
+
+#+begin_src cpp
+inline constexpr const char* MAX_TIMESTAMP = "9999-12-31 23:59:59";
+#+end_src
+
+* Current State vs Target State
+
+** Current state (after unification story tasks 1–4)
+
+The commit =1ad3f36a1= replaced =db_timestamp= entity fields with
+=std::string=, removed the =db_timestamp= overload of
+=timestamp_to_timepoint=, and updated WHERE clauses to compare strings
+directly.  This was reverted as incorrect (see below).
+
+The actual fixes landed:
+
+- =0446e9536=: =timestamp_to_timepoint(const db_timestamp&)= now routes
+  through =from_iso8601_utc= and throws on failure (fixes the epoch bug).
+- =529baf7d7=: =currency_entity= =valid_from=/=valid_to= changed from
+  =optional<db_timestamp>= to =db_timestamp= (fixes the optional bug for
+  currency).
+
+** Target state
+
+The target state for the =unify-entity-timestamps= story is:
+
+1. *All entity NOT-NULL timestamp fields* are =db_timestamp= (not
+   =optional<db_timestamp>=).  The optional was never correct for NOT
+   NULL columns; removing it means sqlgen always populates the field and
+   a missed read surfaces as an error rather than epoch.
+
+2. *All entity nullable timestamp fields* are
+   =std::optional<db_timestamp>=.  These map to genuinely nullable DB
+   columns.
+
+3. *=timepoint_to_timestamp= is deleted.*  Every mapper write site uses
+   =datetime::to_db_string(tp)= instead.  =timepoint_to_timestamp=
+   returned an empty =db_timestamp= on failure (silent epoch on write).
+
+4. *(Stretch goal)* Entity timestamp fields migrate from =db_timestamp=
+   to =std::chrono::system_clock::time_point= directly.  This requires
+   confirming that sqlgen correctly handles =time_point= via the
+   registered rfl custom parser.  If it does, mappers become a simple
+   assignment (=r.recorded_at = v.valid_from=) with no explicit
+   conversion.  This eliminates =db_timestamp= from the entity layer
+   entirely and makes the type chain:
+   =TIMESTAMPTZ → time_point → time_point= with no intermediate.
+
+* See also
+
+- [[id:F9AD7932-8E11-433C-A812-B57DBC9BF5D8][LLM instructions]] — links to all architectural entry points.
+- =ores.database/repository/db_types.hpp= — =db_timestamp= typedef.
+- =ores.database/repository/mapper_helpers.hpp= — =timestamp_to_timepoint= overloads.
+- =ores.database/repository/helpers.hpp= — =make_timestamp=, =MAX_TIMESTAMP=.
+- =ores.platform/time/datetime.hpp= — =from_iso8601_utc=, =to_db_string=, =to_iso8601_utc=.
+- =ores.utility/rfl/time_point_parser.hpp= — JSON/NATS serialisation of =time_point=.

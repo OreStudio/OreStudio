@@ -12,7 +12,7 @@
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-05-29
-#+updated: 2026-05-29
+#+updated: 2026-06-03
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -28,12 +28,12 @@ mutations trigger NATS events. Fix any regressions found.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                                |
+| State        | DONE                                   |
 | Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
-| Now          | PR #959 open; awaiting CI and review.  |
-| Waiting on   | CI green + review.                     |
-| Next         | Merge PR; mark DONE.                   |
-| Last touched | 2026-05-31                             |
+| Now          | Nothing.                               |
+| Waiting on   | Nothing.                               |
+| Next         | N/A.                                   |
+| Last touched | 2026-06-03                             |
 
 * Acceptance
 
@@ -61,3 +61,15 @@ mutations trigger NATS events. Fix any regressions found.
 | 3 | Unnecessary =std::string()= wrap on =bootstrap_status= subject     | connection_commands.cpp | Accept   | Fixed 29ab304f |
 
 * Result
+
+All four shell commands (list, add, remove, history) verified against a live service.
+NATS end-to-end confirmed: requests issued and responses received for mutations; events
+observable in a second session.
+
+Regressions found and fixed in PR #959:
+- mTLS configuration was broken post-NATS migration.
+- Several NATS subjects were stale (pre-migration names).
+- Currencies-specific bugs in the shell command implementations.
+
+Three review comments (unnecessary =std::string()= wraps on NATS subjects) fixed in
+follow-up commit =29ab304f=. PR merged 2026-05-31.

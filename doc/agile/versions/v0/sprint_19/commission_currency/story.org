@@ -28,10 +28,10 @@ same checklist applies.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] |
-| Now           | Codegen task done; shell/NATS/Qt tasks next. |
+| Now           | Shell task DONE (PR #959 merged); Qt verification next. |
 | Waiting on    | Nothing.                              |
-| Next          | Pick up shell + NATS verification task. |
-| Last touched  | 2026-05-30                               |
+| Next          | Start task_verify_qt.                |
+| Last touched  | 2026-06-03                           |
 
 * Acceptance
 
@@ -76,6 +76,6 @@ auxiliary type (=rounding_type=, =monetary_nature=, =currency_market_tier=).
 | [[id:F66CC098-A23B-4ECC-96A4-A99AF94BA838][Verify currency SQL against evaluation checklist]] | DONE | 2026-05-29 | 2026-05-29 | Inspect DDL against DB-layer checklist criteria; fix any gaps. |
 | [[id:E8890097-FAE9-40F8-B823-FCE23BAFD6C5][Verify and fix codegen for currency and auxiliaries]] | DONE | 2026-05-29 | 2026-05-30 | SQL zero-diff; component path fix in three auxiliaries; currency_domain_entity.json confirmed unnecessary; C++ drift filed. |
 | [[id:1816FAA3-B987-4307-B265-EBF6EDEE93AA][Verify and fix currency CLI commands]] | DONE | 2026-05-29 | 2026-05-29 | Confirm list/add/remove exist; implement missing; run against live service. |
-| [[id:3D394DE4-7101-4E4B-A774-DD583BC5F0B0][Verify currency shell commands and NATS integration]] | BACKLOG | | | Run list/add/remove/history in shell; validates NATS end-to-end. |
+| [[id:3D394DE4-7101-4E4B-A774-DD583BC5F0B0][Verify currency shell commands and NATS integration]] | DONE | 2026-05-29 | 2026-05-31 | Run list/add/remove/history in shell; validates NATS end-to-end. |
 | [[id:E276A541-93EA-46EC-8CD8-D40803FEE587][Verify currency Qt UI end-to-end post-NATS]] | BACKLOG | | | Manually test MDI list, detail, history, delete, eventing. |
 | [[id:B3788A76-208E-4422-B277-17DF8FF3A78C][Write currency documentation (manual chapter, recipes, NATS reference)]] | BACKLOG | | | Manual chapter, CLI recipe, shell recipe, NATS message reference. |

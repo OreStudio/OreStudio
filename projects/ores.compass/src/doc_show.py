@@ -31,9 +31,10 @@ from doc_index import (
     resolve_id, resolve_anchor, find_ambiguous,
 )
 
-_C_BOLD  = "\033[1m"
-_C_CYAN  = "\033[36m"
-_C_RESET = "\033[0m"
+_C_BOLD   = "\033[1m"
+_C_CYAN   = "\033[36m"
+_C_YELLOW = "\033[33m"
+_C_RESET  = "\033[0m"
 
 def _h(text):
     """Wrap text in bold cyan for section headings."""

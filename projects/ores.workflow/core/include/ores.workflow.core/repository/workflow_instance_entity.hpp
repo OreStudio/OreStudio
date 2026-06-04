@@ -51,7 +51,7 @@ struct workflow_instance_entity {
     std::string materialised_steps_json;
     std::optional<db_timestamp> completed_at;
     std::optional<db_timestamp> last_event_at;
-    std::optional<db_timestamp> created_at;
+    db_timestamp created_at;
 };
 
 std::ostream& operator<<(std::ostream& s, const workflow_instance_entity& v);

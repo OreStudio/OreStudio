@@ -53,7 +53,7 @@ struct workflow_step_entity {
     std::string compensation_json;
     std::optional<db_timestamp> started_at;
     std::optional<db_timestamp> completed_at;
-    std::optional<db_timestamp> created_at;
+    db_timestamp created_at;
     std::optional<std::string> step_log_json;
 };
 

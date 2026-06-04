@@ -51,9 +51,7 @@ workflow_instance_mapper::map(const workflow_instance_entity& v) {
         r.completed_at = timestamp_to_timepoint(*v.completed_at);
     if (v.last_event_at)
         r.last_event_at = timestamp_to_timepoint(*v.last_event_at);
-    if (!v.created_at)
-        throw std::logic_error("Cannot map entity with null created_at to domain object.");
-    r.created_at = timestamp_to_timepoint(*v.created_at);
+    r.created_at = timestamp_to_timepoint(v.created_at);
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;

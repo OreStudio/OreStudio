@@ -7,34 +7,40 @@
 #+level: s1
 #+filetags: :unify-entity-timestamps:sprint_19:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/unify-entity-timestamps-mopup
+#+pr: https://github.com/OreStudio/OreStudio/pull/1036
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-03
-#+updated: 2026-06-03
+#+updated: 2026-06-04
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:71116F94-09A7-43FD-BD56-4B5B25BEAC80][Unify entity timestamp fields: replace optional<db_timestamp> with std::string]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Eliminate =timepoint_to_timestamp= (silent-failure write-side
+conversion) in favour of =datetime::to_db_string=, which cannot fail
+for valid time_points and throws rather than returning an empty
+timestamp.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                 |
 | Parent story | [[id:71116F94-09A7-43FD-BD56-4B5B25BEAC80][Unify entity timestamp fields: replace optional<db_timestamp> with std::string]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-03                               |
+| Next         | Nothing — task closed.                 |
+| Last touched | 2026-06-04                               |
 
 * Acceptance
 
--
+- No call sites of =timepoint_to_timestamp= remain.
+- =timepoint_to_timestamp= is deleted from =mapper_helpers.hpp=.
+- Both throwing overloads of =timestamp_to_timepoint= remain.
+- Build green.
 
 * Plan
 
@@ -48,12 +54,19 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1036][#1036]] | [multi,compass] Timestamp unification mop-up; compass test logging toggle |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Now field should be 'Nothing.' on DONE tasks | task_fix-mapper-write-sites.org | Fixed in c54d298b1 | |
 
 * Result
+
+All write-site call sites had already been migrated to
+=datetime::to_db_string= as part of PR #1033 — a grep on the mop-up
+branch found zero remaining callers. This task therefore reduced to
+deleting the =timepoint_to_timestamp= function and its doc block from
+=mapper_helpers.hpp=. Both throwing =timestamp_to_timepoint= overloads
+remain. Full build green.

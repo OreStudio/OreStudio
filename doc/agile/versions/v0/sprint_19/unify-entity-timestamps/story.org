@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :sprint_19:v0:time:
 #+created: 2026-06-03
-#+updated: 2026-06-03
+#+updated: 2026-06-04
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -39,10 +39,10 @@ Architecture reference: [[id:4AAD3581-CFA7-4B44-A2DD-0236784E939F][Time and Time
 |---------------+----------------------------------------------------------------|
 | State         | STARTED                                                        |
 | Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                                                      |
-| Now           | Architecture documented; plan written; ready to implement.     |
+| Now           | Tasks 1 and 2 DONE: bulk in PR #1033, stragglers + timepoint_to_timestamp deletion on mop-up branch. |
 | Waiting on    | Nothing.                                                       |
-| Next          | Start task 1: fix optional<db_timestamp> across all entities.  |
-| Last touched  | 2026-06-03                                                     |
+| Next          | Run full test suite (task 4); verify no epoch timestamps in history dialogs — unblocks currency Qt verification. |
+| Last touched  | 2026-06-04                                                     |
 
 * Acceptance
 
@@ -58,8 +58,8 @@ Architecture reference: [[id:4AAD3581-CFA7-4B44-A2DD-0236784E939F][Time and Time
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:D24905FA-DF57-4758-AD03-019BC3FB5C01][Fix optional<db_timestamp> → db_timestamp for all NOT NULL entity fields]] | STARTED | 2026-06-03 | | ~100 entity files: every valid_from/valid_to and other NOT NULL ts fields. |
-| [[id:CBD64E21-D0BC-4EB1-BC65-FEEC8D8E1C78][Replace timepoint_to_timestamp with datetime::to_db_string on write side]] | BACKLOG | | | ~50 mapper write sites; delete timepoint_to_timestamp from mapper_helpers. |
+| [[id:D24905FA-DF57-4758-AD03-019BC3FB5C01][Fix optional<db_timestamp> → db_timestamp for all NOT NULL entity fields]] | DONE | 2026-06-03 | 2026-06-04 | ~100 entity files: every valid_from/valid_to and other NOT NULL ts fields. |
+| [[id:CBD64E21-D0BC-4EB1-BC65-FEEC8D8E1C78][Replace timepoint_to_timestamp with datetime::to_db_string on write side]] | DONE | 2026-06-03 | 2026-06-04 | Call sites migrated in PR #1033; function deleted from mapper_helpers in mop-up. |
 | [[id:35473DF9-42DD-4163-9912-05A4523DC8F3][Investigate direct time_point entity fields (stretch)]] | BACKLOG | | | Confirm sqlgen handles time_point via custom rfl parser; prototype one entity. |
 | [[id:A573F0D0-C163-40A4-87FB-DE1A7C049FC0][Verify full build and tests green]] | BACKLOG | | | Full build + test run; confirm no epoch timestamps in history dialogs. |
 

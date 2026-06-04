@@ -39,9 +39,7 @@ database_info_mapper::map(const database_info_entity& v) {
     r.build_environment = v.build_environment;
     r.git_commit = v.git_commit;
     r.git_date = v.git_date;
-    if (!v.created_at)
-        throw std::logic_error("Cannot map entity with null created_at to domain object.");
-    r.created_at = timestamp_to_timepoint(*v.created_at);
+    r.created_at = timestamp_to_timepoint(v.created_at);
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;

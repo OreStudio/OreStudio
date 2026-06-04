@@ -137,7 +137,8 @@ def _logging_only(env_file: Path, op: str, level: str) -> int:
         print("Test logging disabled.")
     env_file.write_text(out)
     env_file.chmod(0o600)
-    print("Re-run 'cmake --preset <preset>' to pick up the change.")
+    print("Picked up automatically on the next build/test run "
+          "(.env is a CMake configure dependency).")
     return 0
 
 

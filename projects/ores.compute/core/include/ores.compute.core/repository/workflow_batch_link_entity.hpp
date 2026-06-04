@@ -44,7 +44,7 @@ struct workflow_batch_link_entity {
     std::string tenant_id;
     std::string workflow_step_id;
     std::string workflow_instance_id;
-    std::optional<db_timestamp> created_at;
+    db_timestamp created_at;
 };
 
 }

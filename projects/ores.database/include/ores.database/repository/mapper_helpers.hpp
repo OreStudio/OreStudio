@@ -118,35 +118,6 @@ timestamp_to_timepoint(const db_timestamp& ts) {
     return platform::time::datetime::from_iso8601_utc(ts.str() + "+00");
 }
 
-/**
- * @brief Converts a std::chrono::system_clock::time_point to a db_timestamp.
- *
- * Formats the time_point as an ISO 8601 UTC string with Z suffix. PostgreSQL
- * TIMESTAMPTZ columns accept the Z suffix correctly and store the UTC instant.
- *
- * @param tp The time_point to convert
- * @param lg The logger to use for logging
- * @return A db_timestamp, or an empty db_timestamp if conversion fails
- *
- * @example
- * entity.last_login = timepoint_to_timestamp(std::chrono::system_clock::now(), lg);
- */
-inline db_timestamp
-timepoint_to_timestamp(const std::chrono::system_clock::time_point& tp,
-    logging::logger_t& lg) {
-    using namespace ores::logging;
-
-    const auto s = platform::time::datetime::to_iso8601_utc(tp);
-    // Strip the Z suffix — db_timestamp::from_string expects no timezone designator
-    const auto bare = s.substr(0, s.size() - 1);
-    const auto r = db_timestamp::from_string(bare);
-    if (!r) {
-        BOOST_LOG_SEV(lg, error) << "Error converting timepoint to timestamp";
-        return {};
-    }
-    return r.value();
-}
-
 }
 
 #endif

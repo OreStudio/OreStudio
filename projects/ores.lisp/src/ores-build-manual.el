@@ -26,6 +26,7 @@
 ;;
 ;;; Code:
 (require 'org)
+(require 'org-id)
 (require 'ox-latex)
 
 (setq debug-on-error nil)
@@ -150,6 +151,15 @@
 (setq org-latex-pdf-process
       '("pdflatex -interaction nonstopmode -output-directory %o %f"
         "pdflatex -interaction nonstopmode -output-directory %o %f"))
+
+;; Refresh org-id locations over the whole doc tree before exporting, as
+;; the site build does. Without this, id links resolve against a stale
+;; known-file list and links to newly added chapters abort the export.
+(setq org-id-locations-file
+      (expand-file-name ".org-id-locations-file" ores/repo-root))
+(org-id-update-id-locations
+ (directory-files-recursively
+  (expand-file-name "doc" ores/repo-root) "\\.org$"))
 
 (let ((manual-file (expand-file-name
                     "doc/manual/user_guide/user_manual.org"

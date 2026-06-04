@@ -27,7 +27,7 @@ produced so future badges can be added without archaeology.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                                |
+| State         | STARTED                                |
 | Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -54,8 +54,8 @@ produced so future badges can be added without archaeology.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:5433FF26-FF0A-45A4-882A-4A9C41F51CB9][Implement account type badge in AccountItemDelegate]] | BACKLOG | | | Add account_type code domain + badge defs to SQL; wire Column::AccountType in delegate. |
-| [[id:36118737-9E05-48F0-889A-E800BA58825C][Write knowledge doc: badge system wiring]] | BACKLOG | | | Architectural knowledge doc covering ores.dq/ores.sql/ores.qt.api layers; account_type as worked example. |
+| [[id:5433FF26-FF0A-45A4-882A-4A9C41F51CB9][Implement account type badge in AccountItemDelegate]] | DONE | 2026-06-04 | 2026-06-04 | Add account_type code domain + badge defs to SQL; wire Column::AccountType in delegate. |
+| [[id:36118737-9E05-48F0-889A-E800BA58825C][Write knowledge doc: badge system wiring]] | DONE | 2026-06-04 | 2026-06-04 | Architectural knowledge doc covering ores.dq/ores.sql/ores.qt.api layers; account_type as worked example. |
 
 * Decisions
 

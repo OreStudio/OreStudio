@@ -8,7 +8,7 @@
 #+filetags: :account_type_badge_qt:sprint_19:v0:
 #+owner: marco
 #+branch: feature/account-type-badge-qt
-#+pr:
+#+pr: https://github.com/OreStudio/OreStudio/pull/1038
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-04
@@ -66,7 +66,7 @@ and =account_locked= do.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1038][#1038]] | Display account type as badge in Qt accounts list |
 
 * Review
 

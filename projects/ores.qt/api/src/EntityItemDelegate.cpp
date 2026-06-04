@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/EntityItemDelegate.hpp"
+#include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/DelegatePaintUtils.hpp"
 #include "ores.qt/FontUtils.hpp"
 
@@ -55,7 +56,10 @@ void EntityItemDelegate::paint(QPainter* painter,
 
         const QString text = index.data(Qt::DisplayRole).toString();
         if (!text.isEmpty()) {
-            badge_color_pair colors{QColor(0x6B, 0x72, 0x80), Qt::white};
+            // Fallback for columns without a resolver — deliberately not
+            // gray, which is reserved for inactive/negative states.
+            badge_color_pair colors{color_constants::badge_fallback,
+                color_constants::badge_fallback_text};
             auto it = column_resolvers_.find(col);
             if (it != column_resolvers_.end())
                 colors = it->second(text);

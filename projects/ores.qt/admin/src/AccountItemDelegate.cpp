@@ -20,6 +20,7 @@
 #include "ores.qt/AccountItemDelegate.hpp"
 #include "ores.qt/BadgeCache.hpp"
 #include "ores.qt/ClientAccountModel.hpp"
+#include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/DelegatePaintUtils.hpp"
 #include "ores.qt/FontUtils.hpp"
 
@@ -50,12 +51,11 @@ void AccountItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
         QStyle* style = QApplication::style();
         style->drawPrimitive(QStyle::PE_PanelItemViewItem, &opt, painter);
 
-        static const QColor default_gray(107, 114, 128);
-        static const QColor white(255, 255, 255);
-
         QString text = index.data(Qt::DisplayRole).toString();
-        QColor bgColor = default_gray;
-        QColor textColor = white;
+        // Fallback for unresolved badge definitions — deliberately not
+        // gray, which is reserved for inactive/negative states.
+        QColor bgColor = color_constants::badge_fallback;
+        QColor textColor = color_constants::badge_fallback_text;
         QString badgeText;
 
         if (index.column() == Column::Status) {

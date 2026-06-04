@@ -199,9 +199,12 @@
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="QLineEdit" name="onlineEdit">
-            <property name="readOnly">
-             <bool>true</bool>
+           <widget class="QLabel" name="onlineBadge">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
             </property>
            </widget>
           </item>
@@ -213,9 +216,12 @@
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="QLineEdit" name="lockedEdit">
-            <property name="readOnly">
-             <bool>true</bool>
+           <widget class="QLabel" name="lockedBadge">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
             </property>
            </widget>
           </item>

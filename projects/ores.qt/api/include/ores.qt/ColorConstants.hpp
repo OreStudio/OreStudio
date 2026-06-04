@@ -66,6 +66,18 @@ struct color_constants {
      * @brief Color for indicating active sessions in tree view.
      */
     static inline const QColor active_session{34, 197, 94};  // Green (same as INFO)
+
+    /**
+     * @brief Fallback colors for unresolved badge definitions.
+     *
+     * Used when BadgeCache has no definition for a code domain value.
+     * Deliberately NOT gray: in the UX language gray is reserved for
+     * inactive/off/no/negative states, so a missing badge definition
+     * must look like a gap to fix, not like an inactive record. Orange
+     * is otherwise unused in the badge palette.
+     */
+    static inline const QColor badge_fallback{249, 115, 22};      // Orange (#f97316)
+    static inline const QColor badge_fallback_text{255, 255, 255}; // White
 };
 
 }

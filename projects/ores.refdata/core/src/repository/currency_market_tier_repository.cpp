@@ -39,22 +39,29 @@ std::string currency_market_tier_repository::sql() {
 
 void currency_market_tier_repository::write(context ctx, const domain::currency_market_tier& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing currency market tier: " << v.code;
-    execute_write_query(ctx, currency_market_tier_mapper::map(v),
+    auto e = currency_market_tier_mapper::map(v);
+    e.tenant_id = ctx.tenant_id().to_string();
+    execute_write_query(ctx, e,
         lg(), "Writing currency market tier to database.");
 }
 
 void currency_market_tier_repository::write(
     context ctx, const std::vector<domain::currency_market_tier>& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing currency market tiers. Count: " << v.size();
-    execute_write_query(ctx, currency_market_tier_mapper::map(v),
+    auto entities = currency_market_tier_mapper::map(v);
+    const auto tid = ctx.tenant_id().to_string();
+    for (auto& e : entities)
+        e.tenant_id = tid;
+    execute_write_query(ctx, entities,
         lg(), "Writing currency market tiers to database.");
 }
 
 std::vector<domain::currency_market_tier>
 currency_market_tier_repository::read_latest(context ctx) {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<currency_market_tier_entity>> |
-        where("valid_to"_c == max.value()) |
+        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
         order_by("code"_c);
 
     return execute_read_query<currency_market_tier_entity, domain::currency_market_tier>(
@@ -67,8 +74,10 @@ std::vector<domain::currency_market_tier>
 currency_market_tier_repository::read_latest(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest currency market tier. code: " << code;
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<currency_market_tier_entity>> |
-        where("code"_c == code && "valid_to"_c == max.value());
+        where("tenant_id"_c == tid && "code"_c == code &&
+            "valid_to"_c == max.value());
 
     return execute_read_query<currency_market_tier_entity, domain::currency_market_tier>(
         ctx, query,
@@ -79,8 +88,9 @@ currency_market_tier_repository::read_latest(context ctx, const std::string& cod
 std::vector<domain::currency_market_tier>
 currency_market_tier_repository::read_all(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all currency market tier versions. code: " << code;
+    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<currency_market_tier_entity>> |
-        where("code"_c == code) |
+        where("tenant_id"_c == tid && "code"_c == code) |
         order_by("version"_c.desc());
 
     return execute_read_query<currency_market_tier_entity, domain::currency_market_tier>(
@@ -92,16 +102,19 @@ currency_market_tier_repository::read_all(context ctx, const std::string& code) 
 void currency_market_tier_repository::remove(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing currency market tier: " << code;
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<currency_market_tier_entity> |
-        where("code"_c == code && "valid_to"_c == max.value());
+        where("tenant_id"_c == tid && "code"_c == code &&
+            "valid_to"_c == max.value());
 
     execute_delete_query(ctx, query, lg(), "Removing currency market tier from database.");
 }
 
 void currency_market_tier_repository::remove(context ctx,
     const std::vector<std::string>& codes) {
+    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<currency_market_tier_entity> |
-        where("code"_c.in(codes));
+        where("tenant_id"_c == tid && "code"_c.in(codes));
     execute_delete_query(ctx, query, lg(), "batch removing currency_market_tiers");
 }
 

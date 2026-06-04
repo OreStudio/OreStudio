@@ -77,7 +77,7 @@ of these exclusions, push back: the right home is somewhere else.
 - [[id:EAB80857-3DB3-4A63-8D81-2F0A06B4F6DD][Check git commit conventions before committing]] — =[component]=
   title, =Story-ID= / =Task-ID= trailers, =Co-Authored-By= every time.
 - [[id:C6735DF2-B905-4A85-BAAA-B7F5CBBEC92D][Prefer compass over Unix tools for repo navigation]] — use compass
-  search/list/show/where/goto/capture before =find= / =grep= / =ls=;
+  search/list/show/where/story/task/capture before =find= / =grep= / =ls=;
   gaps in compass are captures, not workarounds.
 - [[id:09B8AA56-2F85-47EA-949C-0CBFD36BCD1B][#+version: field is schema version, not a content revision counter]] —
   always =#+version: 2= for docs; never increment it when editing content.
@@ -103,7 +103,7 @@ of these exclusions, push back: the right home is somewhere else.
 
 ** Reference
 
-- [[id:28F78E07-834D-4755-BB03-89BD7C17B01E][Compass basic command syntax]] — =search=, =list=, =show=, =where=, =goto=, =add= with required flags.
+- [[id:28F78E07-834D-4755-BB03-89BD7C17B01E][Compass basic command syntax]] — =search=, =list=, =show=, =where=, =story new=, =task new=, =add= with required flags.
 
 * See also
 

@@ -1,0 +1,81 @@
+:PROPERTIES:
+:ID: 746A337A-E96D-42E5-BC47-8EB1FCDD6A30
+:END:
+#+title: Story: Add compass test run: build and run unit tests via compass
+#+description: Extend the test pillar with 'compass test run': run all tests, all tests for a composite component (e.g. refdata = api+core+...), a specific component's tests, or tests filtered by Catch2 name/tag; optional --build to build the targets first. Compass delegates to cmake targets (rat, test_<component>) and loads .env when invoking test binaries directly.
+#+type: story
+#+level: s2
+#+filetags: :compass:testing:tooling:sprint_19:v0:
+#+created: 2026-06-04
+#+updated: 2026-06-04
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Running tests today means knowing the cmake target zoo (=rat=,
+=test_<component>.tests=) and, for direct binary runs, hand-loading the
+=.env= test environment. Compass already owns test-result inspection
+(=compass test results=) and test logging (=compass test logging=);
+this story completes the pillar with =compass test run=.
+
+Use cases:
+
+1. /Run all tests/ — =compass test run= → delegates to the =rat= target.
+2. /Run a composite component's tests/ — =compass test run refdata= →
+   discovers and runs every test target under the component
+   (=ores.refdata.api.tests=, =ores.refdata.core.tests=, ...).
+3. /Run a specific component's tests/ — =compass test run refdata.core=
+   → the =test_ores.refdata.core.tests= cmake target.
+4. /Filter by Catch2 name or tag/ — =compass test run refdata.core
+   --filter "[repository]"= (or a test name) → compass invokes the test
+   binary directly, loading =.env= into the process environment first.
+5. /Build first/ — =--build= builds the relevant targets before running;
+   compass just calls cmake (no parallel build logic of its own).
+
+The preset comes from =ORES_PRESET= in =.env= (as =compass test
+results= already does), overridable with =--preset=.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-06-04                               |
+
+* Acceptance
+
+- =compass test run= runs the full suite via the =rat= target.
+- =compass test run <component>= runs all of a composite component's
+  test targets; =compass test run <component>.<part>= runs one.
+- =--filter <name-or-tag>= passes a Catch2 filter to the test binary,
+  with =.env= loaded into its environment.
+- =--build= builds the targets first by calling cmake; without it,
+  existing binaries are used as-is.
+- =--preset= overrides the =ORES_PRESET= default from =.env=.
+- =compass test results= picks up the run's XML output unchanged.
+- The run-the-tests recipe is updated to lead with the compass
+  command (and its stale =-DORES_TEST_LOG_LEVEL= /
+  =parse_test_results.py= references are fixed).
+
+* Out of scope (story-level)
+
+- CI integration — CI keeps calling cmake targets directly.
+- Test sharding/parallelism beyond what ctest already provides.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+* Out of scope
+
+-

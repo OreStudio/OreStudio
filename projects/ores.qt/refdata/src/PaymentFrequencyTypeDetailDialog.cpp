@@ -18,24 +18,23 @@
  *
  */
 #include "ores.qt/PaymentFrequencyTypeDetailDialog.hpp"
-
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include <QPlainTextEdit>
-#include "ui_PaymentFrequencyTypeDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.trading.api/messaging/payment_frequency_type_protocol.hpp"
+#include "ui_PaymentFrequencyTypeDetailDialog.h"
+#include <QFutureWatcher>
+#include <QMessageBox>
+#include <QPlainTextEdit>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 PaymentFrequencyTypeDetailDialog::PaymentFrequencyTypeDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent),
-      ui_(new Ui::PaymentFrequencyTypeDetailDialog),
-      clientManager_(nullptr) {
+    : DetailDialogBase(parent)
+    , ui_(new Ui::PaymentFrequencyTypeDetailDialog)
+    , clientManager_(nullptr) {
 
     ui_->setupUi(this);
     setupUi();
@@ -71,16 +70,26 @@ void PaymentFrequencyTypeDetailDialog::setupUi() {
 }
 
 void PaymentFrequencyTypeDetailDialog::setupConnections() {
-    connect(ui_->saveButton, &QPushButton::clicked, this,
+    connect(ui_->saveButton,
+            &QPushButton::clicked,
+            this,
             &PaymentFrequencyTypeDetailDialog::onSaveClicked);
-    connect(ui_->deleteButton, &QPushButton::clicked, this,
+    connect(ui_->deleteButton,
+            &QPushButton::clicked,
+            this,
             &PaymentFrequencyTypeDetailDialog::onDeleteClicked);
-    connect(ui_->closeButton, &QPushButton::clicked, this,
+    connect(ui_->closeButton,
+            &QPushButton::clicked,
+            this,
             &PaymentFrequencyTypeDetailDialog::onCloseClicked);
 
-    connect(ui_->codeEdit, &QLineEdit::textChanged, this,
+    connect(ui_->codeEdit,
+            &QLineEdit::textChanged,
+            this,
             &PaymentFrequencyTypeDetailDialog::onCodeChanged);
-    connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this,
+    connect(ui_->descriptionEdit,
+            &QPlainTextEdit::textChanged,
+            this,
             &PaymentFrequencyTypeDetailDialog::onFieldChanged);
 }
 
@@ -161,14 +170,15 @@ bool PaymentFrequencyTypeDetailDialog::validateInput() {
 
 void PaymentFrequencyTypeDetailDialog::onSaveClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
+        MessageBoxHelper::warning(
+            this,
+            "Disconnected",
             "Cannot save payment frequency type while disconnected from server.");
         return;
     }
 
     if (!validateInput()) {
-        MessageBoxHelper::warning(this, "Invalid Input",
-            "Please fill in all required fields.");
+        MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
 
@@ -190,7 +200,8 @@ void PaymentFrequencyTypeDetailDialog::onSaveClicked() {
 
         trading::messaging::save_payment_frequency_type_request request;
         request.data = type;
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -200,8 +211,7 @@ void PaymentFrequencyTypeDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
@@ -226,13 +236,17 @@ void PaymentFrequencyTypeDetailDialog::onSaveClicked() {
 
 void PaymentFrequencyTypeDetailDialog::onDeleteClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
+        MessageBoxHelper::warning(
+            this,
+            "Disconnected",
             "Cannot delete payment frequency type while disconnected from server.");
         return;
     }
 
     QString code = QString::fromStdString(type_.code);
-    auto reply = MessageBoxHelper::question(this, "Delete Payment Frequency Type",
+    auto reply = MessageBoxHelper::question(
+        this,
+        "Delete Payment Frequency Type",
         QString("Are you sure you want to delete payment frequency type '%1'?").arg(code),
         QMessageBox::Yes | QMessageBox::No);
 
@@ -256,7 +270,8 @@ void PaymentFrequencyTypeDetailDialog::onDeleteClicked() {
 
         trading::messaging::delete_payment_frequency_type_request request;
         request.codes = {code};
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -266,8 +281,7 @@ void PaymentFrequencyTypeDetailDialog::onDeleteClicked() {
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
-            self, [self, code, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, code, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 

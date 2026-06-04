@@ -18,14 +18,13 @@
  *
  */
 #include "ores.qt/JobInstanceDetailDialog.hpp"
-
-#include <QVBoxLayout>
+#include <QDialogButtonBox>
 #include <QFormLayout>
+#include <QGroupBox>
 #include <QLabel>
 #include <QLineEdit>
 #include <QPlainTextEdit>
-#include <QDialogButtonBox>
-#include <QGroupBox>
+#include <QVBoxLayout>
 
 namespace ores::qt {
 
@@ -40,12 +39,10 @@ QLineEdit* readOnlyField(const QString& text, QWidget* parent) {
 } // namespace
 
 JobInstanceDetailDialog::JobInstanceDetailDialog(
-    const scheduler::messaging::job_instance_summary& inst,
-    QWidget* parent)
+    const scheduler::messaging::job_instance_summary& inst, QWidget* parent)
     : QDialog(parent) {
 
-    setWindowTitle(tr("Job Instance — %1").arg(
-        QString::fromStdString(inst.job_name)));
+    setWindowTitle(tr("Job Instance — %1").arg(QString::fromStdString(inst.job_name)));
     setAttribute(Qt::WA_DeleteOnClose);
     resize(560, 400);
 
@@ -55,32 +52,28 @@ JobInstanceDetailDialog::JobInstanceDetailDialog(
     auto* grp = new QGroupBox(tr("Execution Details"), this);
     auto* form = new QFormLayout(grp);
 
-    form->addRow(tr("Job Name:"),
-        readOnlyField(QString::fromStdString(inst.job_name), grp));
-    form->addRow(tr("Status:"),
-        readOnlyField(QString::fromStdString(inst.status), grp));
-    form->addRow(tr("Action Type:"),
-        readOnlyField(QString::fromStdString(inst.action_type), grp));
+    form->addRow(tr("Job Name:"), readOnlyField(QString::fromStdString(inst.job_name), grp));
+    form->addRow(tr("Status:"), readOnlyField(QString::fromStdString(inst.status), grp));
+    form->addRow(tr("Action Type:"), readOnlyField(QString::fromStdString(inst.action_type), grp));
     form->addRow(tr("Triggered At:"),
-        readOnlyField(QString::fromStdString(inst.triggered_at), grp));
-    form->addRow(tr("Started At:"),
-        readOnlyField(QString::fromStdString(inst.started_at), grp));
-    form->addRow(tr("Completed At:"),
-        readOnlyField(inst.completed_at
-            ? QString::fromStdString(*inst.completed_at) : tr("—"), grp));
-    form->addRow(tr("Duration:"),
-        readOnlyField(inst.duration_ms
-            ? tr("%1 ms").arg(*inst.duration_ms) : tr("—"), grp));
+                 readOnlyField(QString::fromStdString(inst.triggered_at), grp));
+    form->addRow(tr("Started At:"), readOnlyField(QString::fromStdString(inst.started_at), grp));
+    form->addRow(
+        tr("Completed At:"),
+        readOnlyField(inst.completed_at ? QString::fromStdString(*inst.completed_at) : tr("—"),
+                      grp));
+    form->addRow(
+        tr("Duration:"),
+        readOnlyField(inst.duration_ms ? tr("%1 ms").arg(*inst.duration_ms) : tr("—"), grp));
     form->addRow(tr("Job Definition ID:"),
-        readOnlyField(QString::fromStdString(inst.job_definition_id), grp));
+                 readOnlyField(QString::fromStdString(inst.job_definition_id), grp));
 
     mainLayout->addWidget(grp);
 
     if (!inst.error_message.empty()) {
         auto* errGrp = new QGroupBox(tr("Error"), this);
         auto* errLayout = new QVBoxLayout(errGrp);
-        auto* errEdit = new QPlainTextEdit(
-            QString::fromStdString(inst.error_message), errGrp);
+        auto* errEdit = new QPlainTextEdit(QString::fromStdString(inst.error_message), errGrp);
         errEdit->setReadOnly(true);
         errEdit->setMaximumHeight(100);
         errLayout->addWidget(errEdit);

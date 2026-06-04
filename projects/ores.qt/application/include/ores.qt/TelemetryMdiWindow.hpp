@@ -20,28 +20,28 @@
 #ifndef ORES_QT_TELEMETRY_MDI_WINDOW_HPP
 #define ORES_QT_TELEMETRY_MDI_WINDOW_HPP
 
-#include <QWidget>
-#include <QTreeWidget>
-#include <QTableView>
-#include <QTableWidget>
-#include <QSplitter>
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QToolBar>
-#include <QLabel>
-#include <QTextEdit>
-#include <QGroupBox>
-#include <QTimer>
-#include <QPushButton>
-#include <QSortFilterProxyModel>
-#include <QCloseEvent>
-#include <memory>
-#include <unordered_map>
-#include "ores.qt/ClientManager.hpp"
+#include "ores.iam.api/domain/session.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ClientTelemetryLogModel.hpp"
 #include "ores.qt/PaginationWidget.hpp"
-#include "ores.iam.api/domain/session.hpp"
+#include <QCloseEvent>
+#include <QGroupBox>
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QPushButton>
+#include <QSortFilterProxyModel>
+#include <QSplitter>
+#include <QTableView>
+#include <QTableWidget>
+#include <QTextEdit>
+#include <QTimer>
+#include <QToolBar>
+#include <QTreeWidget>
+#include <QVBoxLayout>
+#include <QWidget>
+#include <memory>
+#include <unordered_map>
 
 namespace ores::qt {
 
@@ -55,8 +55,7 @@ class TelemetryMdiWindow : public QWidget {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.telemetry_mdi_window";
+    inline static std::string_view logger_name = "ores.qt.telemetry_mdi_window";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -66,11 +65,13 @@ private:
 
 public:
     explicit TelemetryMdiWindow(ClientManager* clientManager,
-                                 const QString& username,
-                                 QWidget* parent = nullptr);
+                                const QString& username,
+                                QWidget* parent = nullptr);
     ~TelemetryMdiWindow() override;
 
-    ClientTelemetryLogModel* logModel() const { return logModel_.get(); }
+    ClientTelemetryLogModel* logModel() const {
+        return logModel_.get();
+    }
 
     QSize sizeHint() const override;
 

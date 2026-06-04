@@ -17,23 +17,21 @@
  *
  */
 #include "ores.qt/TradingPlugin.hpp"
-
-#include <QMenu>
-#include <QAction>
-#include <QMdiArea>
-#include <QMdiSubWindow>
-#include <QMainWindow>
 #include "ores.logging/make_logger.hpp"
-
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/DetachableMdiSubWindow.hpp"
-#include "ores.qt/OreImportController.hpp"
-#include "ores.qt/PortfolioExplorerMdiWindow.hpp"
-#include "ores.qt/OrgExplorerMdiWindow.hpp"
-#include "ores.qt/PortfolioController.hpp"
 #include "ores.qt/BookController.hpp"
 #include "ores.qt/BookStatusController.hpp"
+#include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/OreImportController.hpp"
+#include "ores.qt/OrgExplorerMdiWindow.hpp"
+#include "ores.qt/PortfolioController.hpp"
+#include "ores.qt/PortfolioExplorerMdiWindow.hpp"
 #include "ores.qt/TradeController.hpp"
+#include <QAction>
+#include <QMainWindow>
+#include <QMdiArea>
+#include <QMdiSubWindow>
+#include <QMenu>
 
 namespace ores::qt {
 
@@ -46,7 +44,8 @@ auto& lg() {
 }
 }
 
-TradingPlugin::TradingPlugin(QObject* parent) : PluginBase(parent) {
+TradingPlugin::TradingPlugin(QObject* parent)
+    : PluginBase(parent) {
     BOOST_LOG_SEV(lg(), debug) << "Plugin initialised.";
 }
 
@@ -61,31 +60,49 @@ void TradingPlugin::on_login(const plugin_context& ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Login event received.";
     ctx_ = ctx;
 
-    oreImportController_ = std::make_unique<OreImportController>(
-        ctx_.client_manager, this);
+    oreImportController_ = std::make_unique<OreImportController>(ctx_.client_manager, this);
     if (!ctx_.http_base_url.empty())
         oreImportController_->setHttpBaseUrl(ctx_.http_base_url);
-    connect(oreImportController_.get(), &OreImportController::statusMessage,
-            this, &PluginBase::statusMessage);
+    connect(oreImportController_.get(),
+            &OreImportController::statusMessage,
+            this,
+            &PluginBase::statusMessage);
 
-    portfolioController_ = std::make_unique<PortfolioController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.image_cache,
-        ctx_.change_reason_cache, ctx_.badge_cache, ctx_.username, this);
+    portfolioController_ = std::make_unique<PortfolioController>(ctx_.main_window,
+                                                                 ctx_.mdi_area,
+                                                                 ctx_.client_manager,
+                                                                 ctx_.image_cache,
+                                                                 ctx_.change_reason_cache,
+                                                                 ctx_.badge_cache,
+                                                                 ctx_.username,
+                                                                 this);
     connectControllerSignals(portfolioController_.get());
 
-    bookController_ = std::make_unique<BookController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.image_cache,
-        ctx_.change_reason_cache, ctx_.badge_cache, ctx_.username, this);
+    bookController_ = std::make_unique<BookController>(ctx_.main_window,
+                                                       ctx_.mdi_area,
+                                                       ctx_.client_manager,
+                                                       ctx_.image_cache,
+                                                       ctx_.change_reason_cache,
+                                                       ctx_.badge_cache,
+                                                       ctx_.username,
+                                                       this);
     connectControllerSignals(bookController_.get());
 
-    bookStatusController_ = std::make_unique<BookStatusController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
+    bookStatusController_ = std::make_unique<BookStatusController>(ctx_.main_window,
+                                                                   ctx_.mdi_area,
+                                                                   ctx_.client_manager,
+                                                                   ctx_.change_reason_cache,
+                                                                   ctx_.username,
+                                                                   this);
     connectControllerSignals(bookStatusController_.get());
 
-    tradeController_ = std::make_unique<TradeController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.image_cache, ctx_.username, this);
+    tradeController_ = std::make_unique<TradeController>(ctx_.main_window,
+                                                         ctx_.mdi_area,
+                                                         ctx_.client_manager,
+                                                         ctx_.change_reason_cache,
+                                                         ctx_.image_cache,
+                                                         ctx_.username,
+                                                         this);
     connectControllerSignals(tradeController_.get());
 }
 
@@ -94,30 +111,34 @@ void TradingPlugin::on_login(const plugin_context& ctx) {
 // ---------------------------------------------------------------------------
 void TradingPlugin::setup_menus(const shared_menus_context& smc) {
     BOOST_LOG_SEV(lg(), debug) << "Registering entries in shared menus."
-        << " trading_codes=" << (smc.trading_codes_menu ? "ok" : "null")
-        << " data_management=" << (smc.data_management_menu ? "ok" : "null");
+                               << " trading_codes=" << (smc.trading_codes_menu ? "ok" : "null")
+                               << " data_management=" << (smc.data_management_menu ? "ok" : "null");
     using IC = IconUtils;
-    auto ico = [](Icon i) { return IC::createRecoloredIcon(i, IC::DefaultIconColor); };
+    auto ico = [](Icon i) {
+        return IC::createRecoloredIcon(i, IC::DefaultIconColor);
+    };
 
     // Save reference so create_menus() can append it to the Trading menu.
     trading_codes_menu_ = smc.trading_codes_menu;
 
     // ---- Trading Codes — add Book Statuses (RefdataPlugin adds Purpose Types) --
     if (trading_codes_menu_) {
-        auto* actBookStatuses = trading_codes_menu_->addAction(
-            ico(Icon::Flag), tr("Book &Statuses"));
+        auto* actBookStatuses =
+            trading_codes_menu_->addAction(ico(Icon::Flag), tr("Book &Statuses"));
         connect(actBookStatuses, &QAction::triggered, this, [this]() {
-            if (bookStatusController_) bookStatusController_->showListWindow();
+            if (bookStatusController_)
+                bookStatusController_->showListWindow();
         });
     }
 
     // ---- Data Management menu — contribute Import ORE Data --------------
     if (smc.data_management_menu) {
         smc.data_management_menu->addSeparator();
-        auto* actImportOre = smc.data_management_menu->addAction(
-            ico(Icon::ImportOre), tr("&Import ORE Data..."));
+        auto* actImportOre =
+            smc.data_management_menu->addAction(ico(Icon::ImportOre), tr("&Import ORE Data..."));
         connect(actImportOre, &QAction::triggered, this, [this]() {
-            if (oreImportController_) oreImportController_->trigger(ctx_.main_window);
+            if (oreImportController_)
+                oreImportController_->trigger(ctx_.main_window);
         });
     }
 }
@@ -130,24 +151,28 @@ void TradingPlugin::setup_menus(const shared_menus_context& smc) {
 QList<QMenu*> TradingPlugin::create_menus() {
     BOOST_LOG_SEV(lg(), debug) << "Building plugin menus.";
     using IC = IconUtils;
-    auto ico = [](Icon i) { return IC::createRecoloredIcon(i, IC::DefaultIconColor); };
+    auto ico = [](Icon i) {
+        return IC::createRecoloredIcon(i, IC::DefaultIconColor);
+    };
 
     // ---- Trading ----------------------------------------------------
     auto* menuTrading = new QMenu(tr("&Trading"));
 
     act_portfolios_ = menuTrading->addAction(ico(Icon::Briefcase), tr("&Portfolios"));
     connect(act_portfolios_, &QAction::triggered, this, [this]() {
-        if (portfolioController_) portfolioController_->showListWindow();
+        if (portfolioController_)
+            portfolioController_->showListWindow();
     });
     act_books_ = menuTrading->addAction(ico(Icon::BookOpen), tr("&Books"));
     connect(act_books_, &QAction::triggered, this, [this]() {
-        if (bookController_) bookController_->showListWindow();
+        if (bookController_)
+            bookController_->showListWindow();
     });
 
     menuTrading->addSeparator();
 
-    act_portfolio_explorer_ = menuTrading->addAction(
-        ico(Icon::BriefcaseFilled), tr("&Portfolio Explorer"));
+    act_portfolio_explorer_ =
+        menuTrading->addAction(ico(Icon::BriefcaseFilled), tr("&Portfolio Explorer"));
     connect(act_portfolio_explorer_, &QAction::triggered, this, [this]() {
         if (portfolio_explorer_sub_window_) {
             ctx_.mdi_area->setActiveSubWindow(portfolio_explorer_sub_window_);
@@ -155,18 +180,19 @@ QList<QMenu*> TradingPlugin::create_menus() {
         }
 
         BOOST_LOG_SEV(lg(), info) << "DIAG: creating PortfolioExplorerMdiWindow";
-        auto* window = new PortfolioExplorerMdiWindow(
-            ctx_.client_manager,
-            bookController_.get(),
-            portfolioController_.get(),
-            tradeController_.get(),
-            oreImportController_.get(),
-            ctx_.username,
-            ctx_.main_window);
+        auto* window = new PortfolioExplorerMdiWindow(ctx_.client_manager,
+                                                      bookController_.get(),
+                                                      portfolioController_.get(),
+                                                      tradeController_.get(),
+                                                      oreImportController_.get(),
+                                                      ctx_.username,
+                                                      ctx_.main_window);
         BOOST_LOG_SEV(lg(), info) << "DIAG: PortfolioExplorerMdiWindow constructor returned";
 
-        connect(window, &PortfolioExplorerMdiWindow::statusChanged,
-                this, [this](const QString& msg) { emit statusMessage(msg); });
+        connect(window,
+                &PortfolioExplorerMdiWindow::statusChanged,
+                this,
+                [this](const QString& msg) { emit statusMessage(msg); });
 
         BOOST_LOG_SEV(lg(), info) << "DIAG: new DetachableMdiSubWindow";
         auto* subWindow = new DetachableMdiSubWindow(ctx_.main_window);
@@ -189,7 +215,8 @@ QList<QMenu*> TradingPlugin::create_menus() {
         ctx_.mdi_area->addSubWindow(subWindow);
         BOOST_LOG_SEV(lg(), info) << "DIAG: addSubWindow returned, calling sizeHint";
         const auto hint = window->sizeHint();
-        BOOST_LOG_SEV(lg(), info) << "DIAG: sizeHint returned " << hint.width() << "x" << hint.height() << ", calling resize";
+        BOOST_LOG_SEV(lg(), info) << "DIAG: sizeHint returned " << hint.width() << "x"
+                                  << hint.height() << ", calling resize";
         subWindow->resize(hint);
         BOOST_LOG_SEV(lg(), info) << "DIAG: resize returned, calling show";
         subWindow->show();
@@ -203,16 +230,16 @@ QList<QMenu*> TradingPlugin::create_menus() {
             return;
         }
 
-        auto* window = new OrgExplorerMdiWindow(
-            ctx_.client_manager,
-            nullptr,
-            bookController_.get(),
-            tradeController_.get(),
-            ctx_.username,
-            ctx_.main_window);
+        auto* window = new OrgExplorerMdiWindow(ctx_.client_manager,
+                                                nullptr,
+                                                bookController_.get(),
+                                                tradeController_.get(),
+                                                ctx_.username,
+                                                ctx_.main_window);
 
-        connect(window, &OrgExplorerMdiWindow::statusChanged,
-                this, [this](const QString& msg) { emit statusMessage(msg); });
+        connect(window, &OrgExplorerMdiWindow::statusChanged, this, [this](const QString& msg) {
+            emit statusMessage(msg);
+        });
 
         auto* subWindow = new DetachableMdiSubWindow(ctx_.main_window);
         subWindow->setWidget(window);
@@ -222,9 +249,8 @@ QList<QMenu*> TradingPlugin::create_menus() {
         subWindow->setAttribute(Qt::WA_DeleteOnClose);
 
         org_explorer_sub_window_ = subWindow;
-        connect(subWindow, &QObject::destroyed, this, [this]() {
-            org_explorer_sub_window_ = nullptr;
-        });
+        connect(
+            subWindow, &QObject::destroyed, this, [this]() { org_explorer_sub_window_ = nullptr; });
 
         ctx_.mdi_area->addSubWindow(subWindow);
         subWindow->resize(window->sizeHint());
@@ -234,7 +260,8 @@ QList<QMenu*> TradingPlugin::create_menus() {
     menuTrading->addSeparator();
     act_trades_ = menuTrading->addAction(ico(Icon::ArrowTrending), tr("&Trades"));
     connect(act_trades_, &QAction::triggered, this, [this]() {
-        if (tradeController_) tradeController_->showListWindow();
+        if (tradeController_)
+            tradeController_->showListWindow();
     });
 
     // Append the Trading Codes submenu (populated during setup_menus).
@@ -248,11 +275,10 @@ QList<QMenu*> TradingPlugin::create_menus() {
 }
 
 QList<QAction*> TradingPlugin::toolbar_actions() {
-    if (!act_portfolios_ || !act_books_ || !act_portfolio_explorer_ ||
-            !act_org_explorer_ || !act_trades_)
+    if (!act_portfolios_ || !act_books_ || !act_portfolio_explorer_ || !act_org_explorer_ ||
+        !act_trades_)
         BOOST_LOG_SEV(lg(), warn) << "One or more toolbar actions are uninitialised.";
-    return {act_portfolios_, act_books_, act_portfolio_explorer_,
-            act_org_explorer_, act_trades_};
+    return {act_portfolios_, act_books_, act_portfolio_explorer_, act_org_explorer_, act_trades_};
 }
 
 // ---------------------------------------------------------------------------

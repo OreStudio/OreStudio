@@ -20,20 +20,20 @@
 #ifndef ORES_QT_PUBLISH_DATASETS_DIALOG_HPP
 #define ORES_QT_PUBLISH_DATASETS_DIALOG_HPP
 
-#include <vector>
-#include <QLabel>
-#include <QWizard>
-#include <QWizardPage>
-#include <QListWidget>
-#include <QComboBox>
-#include <QCheckBox>
-#include <QTableWidget>
-#include <QProgressBar>
-#include <boost/uuid/uuid.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.dq.api/domain/dataset.hpp"
 #include "ores.dq.api/domain/publication_mode.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/WorkflowStepsWidget.hpp"
+#include <QCheckBox>
+#include <QComboBox>
+#include <QLabel>
+#include <QListWidget>
+#include <QProgressBar>
+#include <QTableWidget>
+#include <QWizard>
+#include <QWizardPage>
+#include <boost/uuid/uuid.hpp>
+#include <vector>
 
 namespace ores::qt {
 
@@ -69,31 +69,38 @@ signals:
     void datasetsPublished(const QStringList& datasetCodes);
 
 public:
-    enum PageId {
-        Page_Selection,
-        Page_Options,
-        Page_Review,
-        Page_Progress,
-        Page_Results
-    };
+    enum PageId { Page_Selection, Page_Options, Page_Review, Page_Progress, Page_Results };
 
-    explicit PublishDatasetsDialog(
-        ClientManager* clientManager,
-        const QString& username,
-        QWidget* parent = nullptr);
+    explicit PublishDatasetsDialog(ClientManager* clientManager,
+                                   const QString& username,
+                                   QWidget* parent = nullptr);
 
     ~PublishDatasetsDialog() override = default;
 
     void setDatasets(const std::vector<dq::domain::dataset>& datasets);
 
     // Accessors for wizard pages
-    ClientManager* clientManager() const { return clientManager_; }
-    const QString& username() const { return username_; }
-    const std::vector<dq::domain::dataset>& datasets() const { return datasets_; }
-    std::vector<dq::domain::dataset>& resolvedDatasets() { return resolvedDatasets_; }
-    std::vector<std::string>& requestedIds() { return requestedIds_; }
-    std::string& instanceId() { return instanceId_; }
-    int& datasetsDispatched() { return datasetsDispatched_; }
+    ClientManager* clientManager() const {
+        return clientManager_;
+    }
+    const QString& username() const {
+        return username_;
+    }
+    const std::vector<dq::domain::dataset>& datasets() const {
+        return datasets_;
+    }
+    std::vector<dq::domain::dataset>& resolvedDatasets() {
+        return resolvedDatasets_;
+    }
+    std::vector<std::string>& requestedIds() {
+        return requestedIds_;
+    }
+    std::string& instanceId() {
+        return instanceId_;
+    }
+    int& datasetsDispatched() {
+        return datasetsDispatched_;
+    }
 
     dq::domain::publication_mode selectedMode() const;
     bool resolveDependencies() const;
@@ -135,8 +142,12 @@ class OptionsPage final : public QWizardPage {
 public:
     explicit OptionsPage(PublishDatasetsDialog* wizard);
 
-    QComboBox* modeCombo() const { return modeCombo_; }
-    QCheckBox* resolveDependenciesCheck() const { return resolveDependenciesCheck_; }
+    QComboBox* modeCombo() const {
+        return modeCombo_;
+    }
+    QCheckBox* resolveDependenciesCheck() const {
+        return resolveDependenciesCheck_;
+    }
 
 private:
     PublishDatasetsDialog* wizard_;

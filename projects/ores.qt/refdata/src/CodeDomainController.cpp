@@ -18,30 +18,27 @@
  *
  */
 #include "ores.qt/CodeDomainController.hpp"
-
+#include "ores.qt/CodeDomainDetailDialog.hpp"
+#include "ores.qt/CodeDomainHistoryDialog.hpp"
+#include "ores.qt/CodeDomainMdiWindow.hpp"
+#include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/IconUtils.hpp"
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/CodeDomainMdiWindow.hpp"
-#include "ores.qt/CodeDomainDetailDialog.hpp"
-#include "ores.qt/CodeDomainHistoryDialog.hpp"
-#include "ores.qt/DetachableMdiSubWindow.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-CodeDomainController::CodeDomainController(
-    QMainWindow* mainWindow,
-    QMdiArea* mdiArea,
-    ClientManager* clientManager,
-    const QString& username,
-    QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username,
-          std::string_view{}, parent),
-      listWindow_(nullptr),
-      listMdiSubWindow_(nullptr) {
+CodeDomainController::CodeDomainController(QMainWindow* mainWindow,
+                                           QMdiArea* mdiArea,
+                                           ClientManager* clientManager,
+                                           const QString& username,
+                                           QObject* parent)
+    : EntityController(mainWindow, mdiArea, clientManager, username, std::string_view{}, parent)
+    , listWindow_(nullptr)
+    , listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "CodeDomainController created";
 }
@@ -59,23 +56,33 @@ void CodeDomainController::showListWindow() {
     listWindow_ = new CodeDomainMdiWindow(clientManager_, username_);
 
     // Connect signals
-    connect(listWindow_, &CodeDomainMdiWindow::statusChanged,
-            this, &CodeDomainController::statusMessage);
-    connect(listWindow_, &CodeDomainMdiWindow::errorOccurred,
-            this, &CodeDomainController::errorMessage);
-    connect(listWindow_, &CodeDomainMdiWindow::showDomainDetails,
-            this, &CodeDomainController::onShowDetails);
-    connect(listWindow_, &CodeDomainMdiWindow::addNewRequested,
-            this, &CodeDomainController::onAddNewRequested);
-    connect(listWindow_, &CodeDomainMdiWindow::showDomainHistory,
-            this, &CodeDomainController::onShowHistory);
+    connect(listWindow_,
+            &CodeDomainMdiWindow::statusChanged,
+            this,
+            &CodeDomainController::statusMessage);
+    connect(listWindow_,
+            &CodeDomainMdiWindow::errorOccurred,
+            this,
+            &CodeDomainController::errorMessage);
+    connect(listWindow_,
+            &CodeDomainMdiWindow::showDomainDetails,
+            this,
+            &CodeDomainController::onShowDetails);
+    connect(listWindow_,
+            &CodeDomainMdiWindow::addNewRequested,
+            this,
+            &CodeDomainController::onAddNewRequested);
+    connect(listWindow_,
+            &CodeDomainMdiWindow::showDomainHistory,
+            this,
+            &CodeDomainController::onShowHistory);
 
     // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Code Domains");
-    listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Table, IconUtils::DefaultIconColor));
+    listMdiSubWindow_->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Table, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -87,12 +94,16 @@ void CodeDomainController::showListWindow() {
     register_detachable_window(listMdiSubWindow_);
 
     // Cleanup when closed
-    connect(listMdiSubWindow_, &QObject::destroyed, this, [self = QPointer<CodeDomainController>(this), key]() {
-        if (!self) return;
-        self->untrack_window(key);
-        self->listWindow_ = nullptr;
-        self->listMdiSubWindow_ = nullptr;
-    });
+    connect(listMdiSubWindow_,
+            &QObject::destroyed,
+            this,
+            [self = QPointer<CodeDomainController>(this), key]() {
+                if (!self)
+                    return;
+                self->untrack_window(key);
+                self->listWindow_ = nullptr;
+                self->listMdiSubWindow_ = nullptr;
+            });
 
     BOOST_LOG_SEV(lg(), debug) << "Code Domain list window created";
 }
@@ -119,8 +130,7 @@ void CodeDomainController::reloadListWindow() {
     }
 }
 
-void CodeDomainController::onShowDetails(
-    const dq::domain::code_domain& domain) {
+void CodeDomainController::onShowDetails(const dq::domain::code_domain& domain) {
     BOOST_LOG_SEV(lg(), debug) << "Show details for: " << domain.code;
     showDetailWindow(domain);
 }
@@ -130,8 +140,7 @@ void CodeDomainController::onAddNewRequested() {
     showAddWindow();
 }
 
-void CodeDomainController::onShowHistory(
-    const dq::domain::code_domain& domain) {
+void CodeDomainController::onShowHistory(const dq::domain::code_domain& domain) {
     BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << domain.code;
     showHistoryWindow(QString::fromStdString(domain.code));
 }
@@ -144,23 +153,30 @@ void CodeDomainController::showAddWindow() {
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
 
-    connect(detailDialog, &CodeDomainDetailDialog::statusMessage,
-            this, &CodeDomainController::statusMessage);
-    connect(detailDialog, &CodeDomainDetailDialog::errorMessage,
-            this, &CodeDomainController::errorMessage);
-    connect(detailDialog, &CodeDomainDetailDialog::domainSaved,
-            this, [self = QPointer<CodeDomainController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Code Domain saved: " << code.toStdString();
-        self->handleEntitySaved();
-    });
+    connect(detailDialog,
+            &CodeDomainDetailDialog::statusMessage,
+            this,
+            &CodeDomainController::statusMessage);
+    connect(detailDialog,
+            &CodeDomainDetailDialog::errorMessage,
+            this,
+            &CodeDomainController::errorMessage);
+    connect(detailDialog,
+            &CodeDomainDetailDialog::domainSaved,
+            this,
+            [self = QPointer<CodeDomainController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Code Domain saved: " << code.toStdString();
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Code Domain");
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Table, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Table, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -168,8 +184,7 @@ void CodeDomainController::showAddWindow() {
     show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
-void CodeDomainController::showDetailWindow(
-    const dq::domain::code_domain& domain) {
+void CodeDomainController::showDetailWindow(const dq::domain::code_domain& domain) {
 
     const QString identifier = QString::fromStdString(domain.code);
     const QString key = build_window_key("details", identifier);
@@ -187,37 +202,46 @@ void CodeDomainController::showDetailWindow(
     detailDialog->setCreateMode(false);
     detailDialog->setDomain(domain);
 
-    connect(detailDialog, &CodeDomainDetailDialog::statusMessage,
-            this, &CodeDomainController::statusMessage);
-    connect(detailDialog, &CodeDomainDetailDialog::errorMessage,
-            this, &CodeDomainController::errorMessage);
-    connect(detailDialog, &CodeDomainDetailDialog::domainSaved,
-            this, [self = QPointer<CodeDomainController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Code Domain saved: " << code.toStdString();
-        self->handleEntitySaved();
-    });
-    connect(detailDialog, &CodeDomainDetailDialog::domainDeleted,
-            this, [self = QPointer<CodeDomainController>(this), key](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Code Domain deleted: " << code.toStdString();
-        self->handleEntityDeleted();
-    });
+    connect(detailDialog,
+            &CodeDomainDetailDialog::statusMessage,
+            this,
+            &CodeDomainController::statusMessage);
+    connect(detailDialog,
+            &CodeDomainDetailDialog::errorMessage,
+            this,
+            &CodeDomainController::errorMessage);
+    connect(detailDialog,
+            &CodeDomainDetailDialog::domainSaved,
+            this,
+            [self = QPointer<CodeDomainController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Code Domain saved: " << code.toStdString();
+                self->handleEntitySaved();
+            });
+    connect(detailDialog,
+            &CodeDomainDetailDialog::domainDeleted,
+            this,
+            [self = QPointer<CodeDomainController>(this), key](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Code Domain deleted: " << code.toStdString();
+                self->handleEntityDeleted();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Code Domain: %1").arg(identifier));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Table, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Table, IconUtils::DefaultIconColor));
 
     // Track window
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<CodeDomainController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, key]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, key]() {
         if (self) {
             self->untrack_window(key);
         }
@@ -228,37 +252,44 @@ void CodeDomainController::showDetailWindow(
 }
 
 void CodeDomainController::showHistoryWindow(const QString& code) {
-    BOOST_LOG_SEV(lg(), info) << "Opening history window for code domain: "
-                              << code.toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Opening history window for code domain: " << code.toStdString();
 
     const QString windowKey = build_window_key("history", code);
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
-        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: "
-                                  << code.toStdString();
+        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: " << code.toStdString();
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
-                              << code.toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << code.toStdString();
 
     auto* historyDialog = new CodeDomainHistoryDialog(code, clientManager_, mainWindow_);
 
-    connect(historyDialog, &CodeDomainHistoryDialog::statusChanged,
-            this, [self = QPointer<CodeDomainController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(historyDialog, &CodeDomainHistoryDialog::errorOccurred,
-            this, [self = QPointer<CodeDomainController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
-    connect(historyDialog, &CodeDomainHistoryDialog::revertVersionRequested,
-            this, &CodeDomainController::onRevertVersion);
-    connect(historyDialog, &CodeDomainHistoryDialog::openVersionRequested,
-            this, &CodeDomainController::onOpenVersion);
+    connect(historyDialog,
+            &CodeDomainHistoryDialog::statusChanged,
+            this,
+            [self = QPointer<CodeDomainController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(historyDialog,
+            &CodeDomainHistoryDialog::errorOccurred,
+            this,
+            [self = QPointer<CodeDomainController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
+    connect(historyDialog,
+            &CodeDomainHistoryDialog::revertVersionRequested,
+            this,
+            &CodeDomainController::onRevertVersion);
+    connect(historyDialog,
+            &CodeDomainHistoryDialog::openVersionRequested,
+            this,
+            &CodeDomainController::onOpenVersion);
 
     // Load history data
     historyDialog->loadHistory();
@@ -267,16 +298,15 @@ void CodeDomainController::showHistoryWindow(const QString& code) {
     historyWindow->setAttribute(Qt::WA_DeleteOnClose);
     historyWindow->setWidget(historyDialog);
     historyWindow->setWindowTitle(QString("Code Domain History: %1").arg(code));
-    historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    historyWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     // Track this history window
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
 
     QPointer<CodeDomainController> self = this;
-    connect(historyWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -285,14 +315,13 @@ void CodeDomainController::showHistoryWindow(const QString& code) {
     show_managed_window(historyWindow, listMdiSubWindow_);
 }
 
-void CodeDomainController::onOpenVersion(
-    const dq::domain::code_domain& domain, int versionNumber) {
+void CodeDomainController::onOpenVersion(const dq::domain::code_domain& domain, int versionNumber) {
     BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
                               << " for code domain: " << domain.code;
 
     const QString code = QString::fromStdString(domain.code);
-    const QString windowKey = build_window_key("version", QString("%1_v%2")
-        .arg(code).arg(versionNumber));
+    const QString windowKey =
+        build_window_key("version", QString("%1_v%2").arg(code).arg(versionNumber));
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
@@ -306,31 +335,36 @@ void CodeDomainController::onOpenVersion(
     detailDialog->setDomain(domain);
     detailDialog->setReadOnly(true);
 
-    connect(detailDialog, &CodeDomainDetailDialog::statusMessage,
-            this, [self = QPointer<CodeDomainController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(detailDialog, &CodeDomainDetailDialog::errorMessage,
-            this, [self = QPointer<CodeDomainController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
+    connect(detailDialog,
+            &CodeDomainDetailDialog::statusMessage,
+            this,
+            [self = QPointer<CodeDomainController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(detailDialog,
+            &CodeDomainDetailDialog::errorMessage,
+            this,
+            [self = QPointer<CodeDomainController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Code Domain: %1 (Version %2)")
-        .arg(code).arg(versionNumber));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("Code Domain: %1 (Version %2)").arg(code).arg(versionNumber));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     track_window(windowKey, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<CodeDomainController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -340,10 +374,8 @@ void CodeDomainController::onOpenVersion(
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
-void CodeDomainController::onRevertVersion(
-    const dq::domain::code_domain& domain) {
-    BOOST_LOG_SEV(lg(), info) << "Reverting code domain to version: "
-                              << domain.version;
+void CodeDomainController::onRevertVersion(const dq::domain::code_domain& domain) {
+    BOOST_LOG_SEV(lg(), info) << "Reverting code domain to version: " << domain.version;
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new CodeDomainDetailDialog(mainWindow_);
@@ -352,25 +384,33 @@ void CodeDomainController::onRevertVersion(
     detailDialog->setDomain(domain);
     detailDialog->setCreateMode(false);
 
-    connect(detailDialog, &CodeDomainDetailDialog::statusMessage,
-            this, &CodeDomainController::statusMessage);
-    connect(detailDialog, &CodeDomainDetailDialog::errorMessage,
-            this, &CodeDomainController::errorMessage);
-    connect(detailDialog, &CodeDomainDetailDialog::domainSaved,
-            this, [self = QPointer<CodeDomainController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Code Domain reverted: " << code.toStdString();
-        emit self->statusMessage(QString("Code Domain '%1' reverted successfully").arg(code));
-        self->handleEntitySaved();
-    });
+    connect(detailDialog,
+            &CodeDomainDetailDialog::statusMessage,
+            this,
+            &CodeDomainController::statusMessage);
+    connect(detailDialog,
+            &CodeDomainDetailDialog::errorMessage,
+            this,
+            &CodeDomainController::errorMessage);
+    connect(detailDialog,
+            &CodeDomainDetailDialog::domainSaved,
+            this,
+            [self = QPointer<CodeDomainController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Code Domain reverted: " << code.toStdString();
+                emit self->statusMessage(
+                    QString("Code Domain '%1' reverted successfully").arg(code));
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Revert Code Domain: %1")
-        .arg(QString::fromStdString(domain.code)));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("Revert Code Domain: %1").arg(QString::fromStdString(domain.code)));
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
+                                                               IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 

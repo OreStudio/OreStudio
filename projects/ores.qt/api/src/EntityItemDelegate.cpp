@@ -21,93 +21,90 @@
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/DelegatePaintUtils.hpp"
 #include "ores.qt/FontUtils.hpp"
-
 #include <QApplication>
 #include <QStyleOptionViewItem>
 
 namespace ores::qt {
 
-EntityItemDelegate::EntityItemDelegate(std::vector<column_style> styles,
-    QObject* parent)
-    : QStyledItemDelegate(parent),
-      styles_(std::move(styles)),
-      monospaceFont_(FontUtils::monospace()) {
-}
+EntityItemDelegate::EntityItemDelegate(std::vector<column_style> styles, QObject* parent)
+    : QStyledItemDelegate(parent)
+    , styles_(std::move(styles))
+    , monospaceFont_(FontUtils::monospace()) {}
 
 void EntityItemDelegate::paint(QPainter* painter,
-    const QStyleOptionViewItem& option, const QModelIndex& index) const {
+                               const QStyleOptionViewItem& option,
+                               const QModelIndex& index) const {
     QStyleOptionViewItem opt = option;
     initStyleOption(&opt, index);
 
     DelegatePaintUtils::apply_foreground_role(opt, index);
 
     const auto col = static_cast<std::size_t>(index.column());
-    const auto style = col < styles_.size()
-        ? styles_[col] : column_style::text_left;
+    const auto style = col < styles_.size() ? styles_[col] : column_style::text_left;
 
     switch (style) {
-    case column_style::icon_centered:
-        DelegatePaintUtils::paint_centered_icon(painter, option, index);
-        return;
-    case column_style::badge_centered: {
-        // Draw selection/hover background first
-        opt.text.clear();
-        QApplication::style()->drawControl(QStyle::CE_ItemViewItem, &opt, painter);
+        case column_style::icon_centered:
+            DelegatePaintUtils::paint_centered_icon(painter, option, index);
+            return;
+        case column_style::badge_centered: {
+            // Draw selection/hover background first
+            opt.text.clear();
+            QApplication::style()->drawControl(QStyle::CE_ItemViewItem, &opt, painter);
 
-        const QString text = index.data(Qt::DisplayRole).toString();
-        if (!text.isEmpty()) {
-            // Fallback for columns without a resolver — deliberately not
-            // gray, which is reserved for inactive/negative states.
-            badge_color_pair colors{color_constants::badge_fallback,
-                color_constants::badge_fallback_text};
-            auto it = column_resolvers_.find(col);
-            if (it != column_resolvers_.end())
-                colors = it->second(text);
+            const QString text = index.data(Qt::DisplayRole).toString();
+            if (!text.isEmpty()) {
+                // Fallback for columns without a resolver — deliberately not
+                // gray, which is reserved for inactive/negative states.
+                badge_color_pair colors{color_constants::badge_fallback,
+                                        color_constants::badge_fallback_text};
+                auto it = column_resolvers_.find(col);
+                if (it != column_resolvers_.end())
+                    colors = it->second(text);
 
-            QFont badgeFont = opt.font;
-            badgeFont.setPointSize(qRound(badgeFont.pointSize() * 0.8));
-            badgeFont.setBold(true);
+                QFont badgeFont = opt.font;
+                badgeFont.setPointSize(qRound(badgeFont.pointSize() * 0.8));
+                badgeFont.setBold(true);
 
-            DelegatePaintUtils::draw_centered_badge(painter, opt.rect,
-                text, colors.background, colors.foreground, badgeFont);
+                DelegatePaintUtils::draw_centered_badge(
+                    painter, opt.rect, text, colors.background, colors.foreground, badgeFont);
+            }
+            return;
         }
-        return;
-    }
-    case column_style::text_left:
-        opt.displayAlignment = Qt::AlignLeft | Qt::AlignVCenter;
-        break;
-    case column_style::text_center:
-        opt.displayAlignment = Qt::AlignCenter;
-        break;
-    case column_style::mono_left:
-        opt.font = monospaceFont_;
-        opt.displayAlignment = Qt::AlignLeft | Qt::AlignVCenter;
-        break;
-    case column_style::mono_center:
-        opt.font = monospaceFont_;
-        opt.displayAlignment = Qt::AlignCenter;
-        break;
-    case column_style::mono_right:
-        opt.font = monospaceFont_;
-        opt.displayAlignment = Qt::AlignRight | Qt::AlignVCenter;
-        break;
-    case column_style::mono_bold_left:
-        opt.font = monospaceFont_;
-        opt.font.setBold(true);
-        opt.displayAlignment = Qt::AlignLeft | Qt::AlignVCenter;
-        break;
-    case column_style::mono_bold_center:
-        opt.font = monospaceFont_;
-        opt.font.setBold(true);
-        opt.displayAlignment = Qt::AlignCenter;
-        break;
+        case column_style::text_left:
+            opt.displayAlignment = Qt::AlignLeft | Qt::AlignVCenter;
+            break;
+        case column_style::text_center:
+            opt.displayAlignment = Qt::AlignCenter;
+            break;
+        case column_style::mono_left:
+            opt.font = monospaceFont_;
+            opt.displayAlignment = Qt::AlignLeft | Qt::AlignVCenter;
+            break;
+        case column_style::mono_center:
+            opt.font = monospaceFont_;
+            opt.displayAlignment = Qt::AlignCenter;
+            break;
+        case column_style::mono_right:
+            opt.font = monospaceFont_;
+            opt.displayAlignment = Qt::AlignRight | Qt::AlignVCenter;
+            break;
+        case column_style::mono_bold_left:
+            opt.font = monospaceFont_;
+            opt.font.setBold(true);
+            opt.displayAlignment = Qt::AlignLeft | Qt::AlignVCenter;
+            break;
+        case column_style::mono_bold_center:
+            opt.font = monospaceFont_;
+            opt.font.setBold(true);
+            opt.displayAlignment = Qt::AlignCenter;
+            break;
     }
 
     QApplication::style()->drawControl(QStyle::CE_ItemViewItem, &opt, painter);
 }
 
-void EntityItemDelegate::set_badge_color_resolver(
-    std::size_t column, badge_color_resolver resolver) {
+void EntityItemDelegate::set_badge_color_resolver(std::size_t column,
+                                                  badge_color_resolver resolver) {
     column_resolvers_[column] = std::move(resolver);
 }
 

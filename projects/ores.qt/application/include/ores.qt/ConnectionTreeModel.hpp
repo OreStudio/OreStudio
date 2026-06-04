@@ -20,18 +20,18 @@
 #ifndef ORES_QT_CONNECTION_TREE_MODEL_HPP
 #define ORES_QT_CONNECTION_TREE_MODEL_HPP
 
+#include "ores.connections/domain/connection.hpp"
+#include "ores.connections/domain/environment.hpp"
+#include "ores.connections/domain/folder.hpp"
+#include "ores.logging/make_logger.hpp"
 #include <QAbstractItemModel>
 #include <QIcon>
-#include <memory>
-#include <vector>
-#include <optional>
-#include <unordered_set>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_hash.hpp>
-#include "ores.connections/domain/folder.hpp"
-#include "ores.connections/domain/environment.hpp"
-#include "ores.connections/domain/connection.hpp"
-#include "ores.logging/make_logger.hpp"
+#include <memory>
+#include <optional>
+#include <unordered_set>
+#include <vector>
 
 namespace ores::connections::service {
 class connection_manager;
@@ -53,9 +53,9 @@ struct ConnectionTreeNode {
     // Environment / Connection-specific data
     QString host;
     int port{0};
-    QString username;        ///< Connection only
+    QString username; ///< Connection only
     QString description;
-    std::optional<boost::uuids::uuid> environment_id;  ///< Connection only
+    std::optional<boost::uuids::uuid> environment_id; ///< Connection only
 
     // Tree structure
     ConnectionTreeNode* parent{nullptr};
@@ -84,8 +84,7 @@ class ConnectionTreeModel : public QAbstractItemModel {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.connection_tree_model";
+    inline static std::string_view logger_name = "ores.qt.connection_tree_model";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -94,13 +93,7 @@ private:
     }
 
 public:
-    enum Column {
-        Name = 0,
-        Host,
-        Port,
-        Username,
-        ColumnCount
-    };
+    enum Column { Name = 0, Host, Port, Username, ColumnCount };
 
     enum Role {
         NodeTypeRole = Qt::UserRole + 1,
@@ -111,32 +104,36 @@ public:
         TagsRole
     };
 
-    explicit ConnectionTreeModel(
-        connections::service::connection_manager* manager,
-        QObject* parent = nullptr);
+    explicit ConnectionTreeModel(connections::service::connection_manager* manager,
+                                 QObject* parent = nullptr);
     ~ConnectionTreeModel() override;
 
     // QAbstractItemModel interface
-    QModelIndex index(int row, int column,
-        const QModelIndex& parent = QModelIndex()) const override;
+    QModelIndex
+    index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
     QModelIndex parent(const QModelIndex& index) const override;
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-    QVariant headerData(int section, Qt::Orientation orientation,
-        int role = Qt::DisplayRole) const override;
+    QVariant
+    headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
     Qt::ItemFlags flags(const QModelIndex& index) const override;
-    bool setData(const QModelIndex& index, const QVariant& value,
-        int role = Qt::EditRole) override;
+    bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) override;
 
     // Drag and drop support
     Qt::DropActions supportedDropActions() const override;
     QStringList mimeTypes() const override;
     QMimeData* mimeData(const QModelIndexList& indexes) const override;
-    bool canDropMimeData(const QMimeData* data, Qt::DropAction action,
-        int row, int column, const QModelIndex& parent) const override;
-    bool dropMimeData(const QMimeData* data, Qt::DropAction action,
-        int row, int column, const QModelIndex& parent) override;
+    bool canDropMimeData(const QMimeData* data,
+                         Qt::DropAction action,
+                         int row,
+                         int column,
+                         const QModelIndex& parent) const override;
+    bool dropMimeData(const QMimeData* data,
+                      Qt::DropAction action,
+                      int row,
+                      int column,
+                      const QModelIndex& parent) override;
 
     // Data access
     ConnectionTreeNode* nodeFromIndex(const QModelIndex& index) const;
@@ -147,15 +144,16 @@ public:
 
     // Expansion state (for folder icons)
     void setFolderExpanded(const QModelIndex& index, bool expanded);
-    const std::unordered_set<boost::uuids::uuid>& expandedFolders() const { return expandedFolders_; }
+    const std::unordered_set<boost::uuids::uuid>& expandedFolders() const {
+        return expandedFolders_;
+    }
 
     // Get domain objects from selection
-    std::optional<connections::domain::folder> getFolderFromIndex(
-        const QModelIndex& index) const;
-    std::optional<connections::domain::environment> getEnvironmentFromIndex(
-        const QModelIndex& index) const;
-    std::optional<connections::domain::connection> getConnectionFromIndex(
-        const QModelIndex& index) const;
+    std::optional<connections::domain::folder> getFolderFromIndex(const QModelIndex& index) const;
+    std::optional<connections::domain::environment>
+    getEnvironmentFromIndex(const QModelIndex& index) const;
+    std::optional<connections::domain::connection>
+    getConnectionFromIndex(const QModelIndex& index) const;
 
 signals:
     void dataRefreshed();
@@ -164,14 +162,13 @@ signals:
 private:
     void buildTree();
     void buildFolderNodes(ConnectionTreeNode* parentNode,
-        const std::optional<boost::uuids::uuid>& parentId);
+                          const std::optional<boost::uuids::uuid>& parentId);
     void buildEnvironmentNodes(ConnectionTreeNode* parentNode,
-        const std::optional<boost::uuids::uuid>& folderId);
+                               const std::optional<boost::uuids::uuid>& folderId);
     void buildConnectionNodes(ConnectionTreeNode* parentNode,
-        const std::optional<boost::uuids::uuid>& folderId);
+                              const std::optional<boost::uuids::uuid>& folderId);
     QModelIndex indexFromNode(ConnectionTreeNode* node, int column = 0) const;
-    QModelIndex findNodeIndex(ConnectionTreeNode* searchNode,
-        const boost::uuids::uuid& id) const;
+    QModelIndex findNodeIndex(ConnectionTreeNode* searchNode, const boost::uuids::uuid& id) const;
 
     connections::service::connection_manager* manager_;
     std::unique_ptr<ConnectionTreeNode> rootNode_;

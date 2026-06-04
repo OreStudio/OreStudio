@@ -20,11 +20,11 @@
 #ifndef ORES_QT_METHODOLOGY_DETAIL_DIALOG_HPP
 #define ORES_QT_METHODOLOGY_DETAIL_DIALOG_HPP
 
-#include <boost/uuid/uuid.hpp>
+#include "ores.dq.api/domain/methodology.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.dq.api/domain/methodology.hpp"
+#include <boost/uuid/uuid.hpp>
 
 namespace Ui {
 class MethodologyDetailDialog;
@@ -36,8 +36,7 @@ class MethodologyDetailDialog final : public DetailDialogBase {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.methodology_detail_dialog";
+    inline static std::string_view logger_name = "ores.qt.methodology_detail_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -49,8 +48,12 @@ public:
     explicit MethodologyDetailDialog(QWidget* parent = nullptr);
     ~MethodologyDetailDialog() override;
 
-    void setClientManager(ClientManager* cm) { clientManager_ = cm; }
-    void setUsername(const std::string& username) { username_ = username; }
+    void setClientManager(ClientManager* cm) {
+        clientManager_ = cm;
+    }
+    void setUsername(const std::string& username) {
+        username_ = username;
+    }
     void setCreateMode(bool create);
     void setMethodology(const dq::domain::methodology& methodology);
     void setReadOnly(bool readOnly);

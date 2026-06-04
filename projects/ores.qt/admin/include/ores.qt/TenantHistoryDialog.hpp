@@ -20,13 +20,13 @@
 #ifndef ORES_QT_TENANT_HISTORY_DIALOG_HPP
 #define ORES_QT_TENANT_HISTORY_DIALOG_HPP
 
-#include <QWidget>
-#include <QToolBar>
-#include <QTableWidget>
-#include <boost/uuid/uuid.hpp>
-#include "ores.qt/ClientManager.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.iam.api/domain/tenant.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include <QTableWidget>
+#include <QToolBar>
+#include <QWidget>
+#include <boost/uuid/uuid.hpp>
 
 namespace Ui {
 class TenantHistoryDialog;
@@ -44,8 +44,7 @@ class TenantHistoryDialog final : public QWidget {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.tenant_history_dialog";
+    inline static std::string_view logger_name = "ores.qt.tenant_history_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -54,11 +53,10 @@ private:
     }
 
 public:
-    explicit TenantHistoryDialog(
-        const boost::uuids::uuid& id,
-        const QString& code,
-        ClientManager* clientManager,
-        QWidget* parent = nullptr);
+    explicit TenantHistoryDialog(const boost::uuids::uuid& id,
+                                 const QString& code,
+                                 ClientManager* clientManager,
+                                 QWidget* parent = nullptr);
     ~TenantHistoryDialog() override;
 
     void loadHistory();
@@ -66,8 +64,7 @@ public:
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
-    void openVersionRequested(const iam::domain::tenant& tenant,
-                              int versionNumber);
+    void openVersionRequested(const iam::domain::tenant& tenant, int versionNumber);
     void revertVersionRequested(const iam::domain::tenant& tenant);
 
 private slots:

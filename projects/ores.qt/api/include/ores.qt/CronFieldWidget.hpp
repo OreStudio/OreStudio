@@ -20,12 +20,12 @@
 #ifndef ORES_QT_CRON_FIELD_WIDGET_HPP
 #define ORES_QT_CRON_FIELD_WIDGET_HPP
 
-#include <QWidget>
+#include "ores.qt/export.hpp"
 #include <QList>
-#include <QVector>
 #include <QString>
 #include <QStringList>
-#include "ores.qt/export.hpp"
+#include <QVector>
+#include <QWidget>
 
 class QRadioButton;
 class QComboBox;
@@ -37,11 +37,11 @@ namespace ores::qt {
  * @brief Configuration for one cron field (minutes, hours, etc.).
  */
 struct FieldConfig {
-    int          min_val;
-    int          max_val;
-    QStringList  labels;              // empty -> zero-padded numbers
-    QList<int>   freq_steps;          // step values for the Frequency combo
-    int          checkboxes_per_row;
+    int min_val;
+    int max_val;
+    QStringList labels;    // empty -> zero-padded numbers
+    QList<int> freq_steps; // step values for the Frequency combo
+    int checkboxes_per_row;
 };
 
 /**
@@ -71,20 +71,20 @@ private slots:
     void onModeClicked();
 
 private:
-    void    updateEnabled();
+    void updateEnabled();
     QString labelFor(int v) const;
 
     FieldConfig cfg_;
 
     QRadioButton* freqRadio_;
-    QComboBox*    everyCombo_;
-    QComboBox*    startCombo_;
+    QComboBox* everyCombo_;
+    QComboBox* startCombo_;
 
     QRadioButton* rangeRadio_;
-    QComboBox*    minCombo_;
-    QComboBox*    maxCombo_;
+    QComboBox* minCombo_;
+    QComboBox* maxCombo_;
 
-    QRadioButton*       choiceRadio_;
+    QRadioButton* choiceRadio_;
     QVector<QCheckBox*> checkboxes_;
 };
 

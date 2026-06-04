@@ -18,24 +18,23 @@
  *
  */
 #include "ores.qt/PricingEngineTypeDetailDialog.hpp"
-
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include <QPlainTextEdit>
-#include "ui_PricingEngineTypeDetailDialog.h"
+#include "ores.analytics.api/messaging/pricing_engine_type_protocol.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.analytics.api/messaging/pricing_engine_type_protocol.hpp"
+#include "ui_PricingEngineTypeDetailDialog.h"
+#include <QFutureWatcher>
+#include <QMessageBox>
+#include <QPlainTextEdit>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 PricingEngineTypeDetailDialog::PricingEngineTypeDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent),
-      ui_(new Ui::PricingEngineTypeDetailDialog),
-      clientManager_(nullptr) {
+    : DetailDialogBase(parent)
+    , ui_(new Ui::PricingEngineTypeDetailDialog)
+    , clientManager_(nullptr) {
 
     ui_->setupUi(this);
     setupUi();
@@ -71,18 +70,30 @@ void PricingEngineTypeDetailDialog::setupUi() {
 }
 
 void PricingEngineTypeDetailDialog::setupConnections() {
-    connect(ui_->saveButton, &QPushButton::clicked, this,
+    connect(ui_->saveButton,
+            &QPushButton::clicked,
+            this,
             &PricingEngineTypeDetailDialog::onSaveClicked);
-    connect(ui_->deleteButton, &QPushButton::clicked, this,
+    connect(ui_->deleteButton,
+            &QPushButton::clicked,
+            this,
             &PricingEngineTypeDetailDialog::onDeleteClicked);
-    connect(ui_->closeButton, &QPushButton::clicked, this,
+    connect(ui_->closeButton,
+            &QPushButton::clicked,
+            this,
             &PricingEngineTypeDetailDialog::onCloseClicked);
 
-    connect(ui_->codeEdit, &QLineEdit::textChanged, this,
+    connect(ui_->codeEdit,
+            &QLineEdit::textChanged,
+            this,
             &PricingEngineTypeDetailDialog::onCodeChanged);
-    connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this,
+    connect(ui_->descriptionEdit,
+            &QPlainTextEdit::textChanged,
+            this,
             &PricingEngineTypeDetailDialog::onFieldChanged);
-    connect(ui_->instrumentTypeCodeEdit, &QLineEdit::textChanged, this,
+    connect(ui_->instrumentTypeCodeEdit,
+            &QLineEdit::textChanged,
+            this,
             &PricingEngineTypeDetailDialog::onFieldChanged);
 }
 
@@ -94,8 +105,7 @@ void PricingEngineTypeDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
 
-void PricingEngineTypeDetailDialog::setType(
-    const analytics::domain::pricing_engine_type& type) {
+void PricingEngineTypeDetailDialog::setType(const analytics::domain::pricing_engine_type& type) {
     type_ = type;
     updateUiFromType();
 }
@@ -161,28 +171,26 @@ void PricingEngineTypeDetailDialog::updateSaveButtonState() {
 bool PricingEngineTypeDetailDialog::validateInput() {
     const QString code_val = ui_->codeEdit->text().trimmed();
 
-    return true
-        && !code_val.isEmpty()
-    ;
+    return true && !code_val.isEmpty();
 }
 
 void PricingEngineTypeDetailDialog::onSaveClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
+        MessageBoxHelper::warning(
+            this,
+            "Disconnected",
             "Cannot save pricing engine type while disconnected from server.");
         return;
     }
 
     if (!validateInput()) {
-        MessageBoxHelper::warning(this, "Invalid Input",
-            "Please fill in all required fields.");
+        MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
 
     updateTypeFromUi();
 
-    BOOST_LOG_SEV(lg(), info) << "Saving pricing engine type: "
-        << type_.code;
+    BOOST_LOG_SEV(lg(), info) << "Saving pricing engine type: " << type_.code;
 
     QPointer<PricingEngineTypeDetailDialog> self = this;
 
@@ -198,8 +206,8 @@ void PricingEngineTypeDetailDialog::onSaveClicked() {
 
         analytics::messaging::save_pricing_engine_type_request request;
         request.data = type;
-        auto response_result = self->clientManager_->
-            process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -209,15 +217,13 @@ void PricingEngineTypeDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Pricing Engine Type saved successfully";
-            QString code = QString::fromStdString(
-                self->type_.code);
+            QString code = QString::fromStdString(self->type_.code);
             self->hasChanges_ = false;
             self->updateSaveButtonState();
             emit self->typeSaved(code);
@@ -236,14 +242,17 @@ void PricingEngineTypeDetailDialog::onSaveClicked() {
 
 void PricingEngineTypeDetailDialog::onDeleteClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
+        MessageBoxHelper::warning(
+            this,
+            "Disconnected",
             "Cannot delete pricing engine type while disconnected from server.");
         return;
     }
 
-    QString code = QString::fromStdString(
-        type_.code);
-    auto reply = MessageBoxHelper::question(this, "Delete Pricing Engine Type",
+    QString code = QString::fromStdString(type_.code);
+    auto reply = MessageBoxHelper::question(
+        this,
+        "Delete Pricing Engine Type",
         QString("Are you sure you want to delete pricing engine type '%1'?").arg(code),
         QMessageBox::Yes | QMessageBox::No);
 
@@ -251,8 +260,7 @@ void PricingEngineTypeDetailDialog::onDeleteClicked() {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Deleting pricing engine type: "
-        << type_.code;
+    BOOST_LOG_SEV(lg(), info) << "Deleting pricing engine type: " << type_.code;
 
     QPointer<PricingEngineTypeDetailDialog> self = this;
 
@@ -268,8 +276,8 @@ void PricingEngineTypeDetailDialog::onDeleteClicked() {
 
         analytics::messaging::delete_pricing_engine_type_request request;
         request.codes = {code};
-        auto response_result = self->clientManager_->
-            process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -279,15 +287,13 @@ void PricingEngineTypeDetailDialog::onDeleteClicked() {
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
-            self, [self, code, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, code, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Pricing Engine Type deleted successfully";
-            emit self->statusMessage(
-                QString("Pricing Engine Type '%1' deleted").arg(code));
+            emit self->statusMessage(QString("Pricing Engine Type '%1' deleted").arg(code));
             emit self->typeDeleted(code);
             self->requestClose();
         } else {

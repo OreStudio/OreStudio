@@ -20,9 +20,9 @@
 #ifndef ORES_QT_BUSINESS_DAY_CONVENTION_TYPE_DETAIL_DIALOG_HPP
 #define ORES_QT_BUSINESS_DAY_CONVENTION_TYPE_DETAIL_DIALOG_HPP
 
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/business_day_convention_type.hpp"
 
 namespace Ui {
@@ -75,7 +75,9 @@ protected:
     QTabWidget* tabWidget() const override;
     QWidget* provenanceTab() const override;
     ProvenanceWidget* provenanceWidget() const override;
-    bool hasUnsavedChanges() const override { return hasChanges_; }
+    bool hasUnsavedChanges() const override {
+        return hasChanges_;
+    }
 
 private:
     void setupUi();

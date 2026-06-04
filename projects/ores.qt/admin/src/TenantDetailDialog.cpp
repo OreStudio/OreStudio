@@ -18,28 +18,27 @@
  *
  */
 #include "ores.qt/TenantDetailDialog.hpp"
-
+#include "ores.iam.api/messaging/tenant_protocol.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/LookupFetcher.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/WidgetUtils.hpp"
+#include "ui_TenantDetailDialog.h"
 #include <QComboBox>
+#include <QFutureWatcher>
 #include <QMessageBox>
 #include <QtConcurrent>
-#include <QFutureWatcher>
 #include <boost/uuid/uuid_io.hpp>
-#include "ui_TenantDetailDialog.h"
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/ChangeReasonDialog.hpp"
-#include "ores.iam.api/messaging/tenant_protocol.hpp"
-#include "ores.qt/LookupFetcher.hpp"
-#include "ores.qt/WidgetUtils.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 TenantDetailDialog::TenantDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent),
-      ui_(new Ui::TenantDetailDialog),
-      clientManager_(nullptr) {
+    : DetailDialogBase(parent)
+    , ui_(new Ui::TenantDetailDialog)
+    , clientManager_(nullptr) {
 
     ui_->setupUi(this);
     WidgetUtils::setupComboBoxes(this);
@@ -51,9 +50,15 @@ TenantDetailDialog::~TenantDetailDialog() {
     delete ui_;
 }
 
-QTabWidget* TenantDetailDialog::tabWidget() const { return ui_->tabWidget; }
-QWidget* TenantDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
-ProvenanceWidget* TenantDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
+QTabWidget* TenantDetailDialog::tabWidget() const {
+    return ui_->tabWidget;
+}
+QWidget* TenantDetailDialog::provenanceTab() const {
+    return ui_->provenanceTab;
+}
+ProvenanceWidget* TenantDetailDialog::provenanceWidget() const {
+    return ui_->provenanceWidget;
+}
 
 void TenantDetailDialog::setupUi() {
     ui_->saveButton->setIcon(
@@ -68,22 +73,18 @@ void TenantDetailDialog::setupUi() {
 }
 
 void TenantDetailDialog::setupConnections() {
-    connect(ui_->saveButton, &QPushButton::clicked, this,
-            &TenantDetailDialog::onSaveClicked);
-    connect(ui_->deleteButton, &QPushButton::clicked, this,
-            &TenantDetailDialog::onDeleteClicked);
-    connect(ui_->closeButton, &QPushButton::clicked, this,
-            &TenantDetailDialog::onCloseClicked);
+    connect(ui_->saveButton, &QPushButton::clicked, this, &TenantDetailDialog::onSaveClicked);
+    connect(ui_->deleteButton, &QPushButton::clicked, this, &TenantDetailDialog::onDeleteClicked);
+    connect(ui_->closeButton, &QPushButton::clicked, this, &TenantDetailDialog::onCloseClicked);
 
-    connect(ui_->codeEdit, &QLineEdit::textChanged, this,
-            &TenantDetailDialog::onCodeChanged);
-    connect(ui_->nameEdit, &QLineEdit::textChanged, this,
-            &TenantDetailDialog::onFieldChanged);
-    connect(ui_->typeCombo, &QComboBox::currentTextChanged, this,
-            &TenantDetailDialog::onFieldChanged);
-    connect(ui_->hostnameEdit, &QLineEdit::textChanged, this,
-            &TenantDetailDialog::onFieldChanged);
-    connect(ui_->statusCombo, &QComboBox::currentTextChanged, this,
+    connect(ui_->codeEdit, &QLineEdit::textChanged, this, &TenantDetailDialog::onCodeChanged);
+    connect(ui_->nameEdit, &QLineEdit::textChanged, this, &TenantDetailDialog::onFieldChanged);
+    connect(
+        ui_->typeCombo, &QComboBox::currentTextChanged, this, &TenantDetailDialog::onFieldChanged);
+    connect(ui_->hostnameEdit, &QLineEdit::textChanged, this, &TenantDetailDialog::onFieldChanged);
+    connect(ui_->statusCombo,
+            &QComboBox::currentTextChanged,
+            this,
             &TenantDetailDialog::onFieldChanged);
 }
 
@@ -109,23 +110,21 @@ void TenantDetailDialog::populateLookups() {
     };
 
     auto* watcher = new QFutureWatcher<lookup_result>(self);
-    connect(watcher, &QFutureWatcher<lookup_result>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<lookup_result>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
-        if (!self) return;
+        if (!self)
+            return;
 
         self->ui_->typeCombo->clear();
         for (const auto& code : result.type_codes) {
-            self->ui_->typeCombo->addItem(
-                QString::fromStdString(code));
+            self->ui_->typeCombo->addItem(QString::fromStdString(code));
         }
 
         self->ui_->statusCombo->clear();
         for (const auto& code : result.status_codes) {
-            self->ui_->statusCombo->addItem(
-                QString::fromStdString(code));
+            self->ui_->statusCombo->addItem(QString::fromStdString(code));
         }
 
         self->updateUiFromTenant();
@@ -135,8 +134,7 @@ void TenantDetailDialog::populateLookups() {
     watcher->setFuture(future);
 }
 
-void TenantDetailDialog::setTenant(
-    const iam::domain::tenant& tenant) {
+void TenantDetailDialog::setTenant(const iam::domain::tenant& tenant) {
     tenant_ = tenant;
     updateUiFromTenant();
 }
@@ -170,9 +168,12 @@ void TenantDetailDialog::updateUiFromTenant() {
     ui_->hostnameEdit->setText(QString::fromStdString(tenant_.hostname));
     ui_->statusCombo->setCurrentText(QString::fromStdString(tenant_.status));
 
-    populateProvenance(tenant_.version, tenant_.modified_by,
-        tenant_.performed_by, tenant_.recorded_at,
-        tenant_.change_reason_code, tenant_.change_commentary);
+    populateProvenance(tenant_.version,
+                       tenant_.modified_by,
+                       tenant_.performed_by,
+                       tenant_.recorded_at,
+                       tenant_.change_reason_code,
+                       tenant_.change_commentary);
     hasChanges_ = false;
     updateSaveButtonState();
 }
@@ -213,25 +214,23 @@ bool TenantDetailDialog::validateInput() {
 
 void TenantDetailDialog::onSaveClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot save tenant while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot save tenant while disconnected from server.");
         return;
     }
 
     if (!validateInput()) {
-        MessageBoxHelper::warning(this, "Invalid Input",
-            "Please fill in all required fields.");
+        MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
 
     updateTenantFromUi();
 
-    const auto crOpType = createMode_
-        ? ChangeReasonDialog::OperationType::Create
-        : ChangeReasonDialog::OperationType::Amend;
-    const auto crSel = promptChangeReason(crOpType, hasChanges_,
-        createMode_ ? "system" : "common");
-    if (!crSel) return;
+    const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
+                                        ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
+    if (!crSel)
+        return;
     tenant_.change_reason_code = crSel->reason_code;
     tenant_.change_commentary = crSel->commentary;
 
@@ -251,7 +250,8 @@ void TenantDetailDialog::onSaveClicked() {
 
         iam::messaging::save_tenant_request request;
         request.data = tenant;
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -262,8 +262,7 @@ void TenantDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
@@ -288,13 +287,15 @@ void TenantDetailDialog::onSaveClicked() {
 
 void TenantDetailDialog::onDeleteClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot delete tenant while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot delete tenant while disconnected from server.");
         return;
     }
 
     QString code = QString::fromStdString(tenant_.code);
-    auto reply = MessageBoxHelper::question(this, "Delete Tenant",
+    auto reply = MessageBoxHelper::question(
+        this,
+        "Delete Tenant",
         QString("Are you sure you want to delete tenant '%1'?").arg(code),
         QMessageBox::Yes | QMessageBox::No);
 
@@ -302,9 +303,10 @@ void TenantDetailDialog::onDeleteClicked() {
         return;
     }
 
-    const auto crSel = promptChangeReason(
-        ChangeReasonDialog::OperationType::Delete, true, "common");
-    if (!crSel) return;
+    const auto crSel =
+        promptChangeReason(ChangeReasonDialog::OperationType::Delete, true, "common");
+    if (!crSel)
+        return;
 
     BOOST_LOG_SEV(lg(), info) << "Deleting tenant: " << tenant_.code;
 
@@ -322,7 +324,8 @@ void TenantDetailDialog::onDeleteClicked() {
 
         iam::messaging::delete_tenant_request request;
         request.ids.push_back(boost::uuids::to_string(id));
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -333,8 +336,7 @@ void TenantDetailDialog::onDeleteClicked() {
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
-            self, [self, code, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, code, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 

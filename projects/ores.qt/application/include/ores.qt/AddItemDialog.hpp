@@ -20,22 +20,22 @@
 #ifndef ORES_QT_ADD_ITEM_DIALOG_HPP
 #define ORES_QT_ADD_ITEM_DIALOG_HPP
 
-#include <QWidget>
-#include <QPushButton>
-#include <QComboBox>
-#include <QLineEdit>
-#include <QSpinBox>
-#include <QTextEdit>
-#include <QCheckBox>
-#include <QLabel>
-#include <optional>
-#include <boost/uuid/uuid.hpp>
-#include "ores.connections/domain/folder.hpp"
-#include "ores.connections/domain/environment.hpp"
 #include "ores.connections/domain/connection.hpp"
+#include "ores.connections/domain/environment.hpp"
+#include "ores.connections/domain/folder.hpp"
 #include "ores.connections/domain/tag.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ConnectionTypes.hpp"
+#include <QCheckBox>
+#include <QComboBox>
+#include <QLabel>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QSpinBox>
+#include <QTextEdit>
+#include <QWidget>
+#include <boost/uuid/uuid.hpp>
+#include <optional>
 
 namespace ores::qt {
 class TagSelectorWidget;
@@ -50,11 +50,7 @@ namespace ores::qt {
 /**
  * @brief Item type selector for the combined add dialog.
  */
-enum class ItemType {
-    Folder,
-    Environment,
-    Connection
-};
+enum class ItemType { Folder, Environment, Connection };
 
 /**
  * @brief Combined modeless dialog for creating and editing folders,
@@ -76,16 +72,19 @@ private:
     }
 
 public:
-    explicit AddItemDialog(
-        connections::service::connection_manager* manager,
-        QWidget* parent = nullptr);
+    explicit AddItemDialog(connections::service::connection_manager* manager,
+                           QWidget* parent = nullptr);
     ~AddItemDialog() override;
 
     void setItemType(ItemType type);
-    ItemType itemType() const { return itemType_; }
+    ItemType itemType() const {
+        return itemType_;
+    }
 
     void setCreateMode(bool createMode);
-    bool isCreateMode() const { return isCreateMode_; }
+    bool isCreateMode() const {
+        return isCreateMode_;
+    }
 
     // Folder operations
     void setFolder(const connections::domain::folder& folder);
@@ -187,8 +186,8 @@ private:
 
     // IDs for edit mode
     boost::uuids::uuid folderId_;
-    boost::uuids::uuid pureEnvironmentId_;   ///< Used when editing a pure environment
-    boost::uuids::uuid connectionId_;        ///< Used when editing a connection
+    boost::uuids::uuid pureEnvironmentId_; ///< Used when editing a pure environment
+    boost::uuids::uuid connectionId_;      ///< Used when editing a connection
 
     // Linked environment for connections (selected from combo)
     std::optional<boost::uuids::uuid> linkedEnvironmentId_;

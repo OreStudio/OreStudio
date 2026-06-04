@@ -18,45 +18,43 @@
  *
  */
 #include "ores.qt/ReportDefinitionMdiWindow.hpp"
-
-#include <QVBoxLayout>
+#include "ores.qt/BadgeCache.hpp"
+#include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/EntityItemDelegate.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.reporting.api/messaging/report_definition_protocol.hpp"
+#include <QFutureWatcher>
 #include <QHeaderView>
 #include <QMessageBox>
+#include <QVBoxLayout>
 #include <QtConcurrent>
-#include <QFutureWatcher>
 #include <boost/uuid/uuid_io.hpp>
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/EntityItemDelegate.hpp"
-#include "ores.qt/BadgeCache.hpp"
-#include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/ColorConstants.hpp"
-#include "ores.reporting.api/messaging/report_definition_protocol.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-ReportDefinitionMdiWindow::ReportDefinitionMdiWindow(
-    ClientManager* clientManager,
-    const QString& username,
-    BadgeCache* badgeCache,
-    QWidget* parent)
-    : EntityListMdiWindow(parent),
-      clientManager_(clientManager),
-      username_(username),
-      badgeCache_(badgeCache),
-      toolbar_(nullptr),
-      tableView_(nullptr),
-      model_(nullptr),
-      proxyModel_(nullptr),
-      paginationWidget_(nullptr),
-      reloadAction_(nullptr),
-      addAction_(nullptr),
-      editAction_(nullptr),
-      deleteAction_(nullptr),
-      historyAction_(nullptr),
-      scheduleAction_(nullptr),
-      unscheduleAction_(nullptr) {
+ReportDefinitionMdiWindow::ReportDefinitionMdiWindow(ClientManager* clientManager,
+                                                     const QString& username,
+                                                     BadgeCache* badgeCache,
+                                                     QWidget* parent)
+    : EntityListMdiWindow(parent)
+    , clientManager_(clientManager)
+    , username_(username)
+    , badgeCache_(badgeCache)
+    , toolbar_(nullptr)
+    , tableView_(nullptr)
+    , model_(nullptr)
+    , proxyModel_(nullptr)
+    , paginationWidget_(nullptr)
+    , reloadAction_(nullptr)
+    , addAction_(nullptr)
+    , editAction_(nullptr)
+    , deleteAction_(nullptr)
+    , historyAction_(nullptr)
+    , scheduleAction_(nullptr)
+    , unscheduleAction_(nullptr) {
 
     setupUi();
     setupConnections();
@@ -89,71 +87,57 @@ void ReportDefinitionMdiWindow::setupToolbar() {
     toolbar_->setIconSize(QSize(20, 20));
 
     reloadAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::ArrowClockwise, IconUtils::DefaultIconColor),
+        IconUtils::createRecoloredIcon(Icon::ArrowClockwise, IconUtils::DefaultIconColor),
         tr("Reload"));
-    connect(reloadAction_, &QAction::triggered, this,
-            &EntityListMdiWindow::reload);
+    connect(reloadAction_, &QAction::triggered, this, &EntityListMdiWindow::reload);
 
     initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowClockwise));
 
     toolbar_->addSeparator();
 
     addAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::Add, IconUtils::DefaultIconColor),
-        tr("Add"));
+        IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor), tr("Add"));
     addAction_->setToolTip(tr("Add new report definition"));
-    connect(addAction_, &QAction::triggered, this,
-            &ReportDefinitionMdiWindow::addNew);
+    connect(addAction_, &QAction::triggered, this, &ReportDefinitionMdiWindow::addNew);
 
     editAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::Edit, IconUtils::DefaultIconColor),
-        tr("Edit"));
+        IconUtils::createRecoloredIcon(Icon::Edit, IconUtils::DefaultIconColor), tr("Edit"));
     editAction_->setToolTip(tr("Edit selected report definition"));
     editAction_->setEnabled(false);
-    connect(editAction_, &QAction::triggered, this,
-            &ReportDefinitionMdiWindow::editSelected);
+    connect(editAction_, &QAction::triggered, this, &ReportDefinitionMdiWindow::editSelected);
 
     deleteAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::Delete, IconUtils::DefaultIconColor),
-        tr("Delete"));
+        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor), tr("Delete"));
     deleteAction_->setToolTip(tr("Delete selected report definition"));
     deleteAction_->setEnabled(false);
-    connect(deleteAction_, &QAction::triggered, this,
-            &ReportDefinitionMdiWindow::deleteSelected);
+    connect(deleteAction_, &QAction::triggered, this, &ReportDefinitionMdiWindow::deleteSelected);
 
     historyAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::History, IconUtils::DefaultIconColor),
-        tr("History"));
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor), tr("History"));
     historyAction_->setToolTip(tr("View report definition history"));
     historyAction_->setEnabled(false);
-    connect(historyAction_, &QAction::triggered, this,
-            &ReportDefinitionMdiWindow::viewHistorySelected);
+    connect(
+        historyAction_, &QAction::triggered, this, &ReportDefinitionMdiWindow::viewHistorySelected);
 
     toolbar_->addSeparator();
 
     scheduleAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::CalendarAdd, IconUtils::DefaultIconColor),
+        IconUtils::createRecoloredIcon(Icon::CalendarAdd, IconUtils::DefaultIconColor),
         tr("Schedule"));
     scheduleAction_->setToolTip(tr("Schedule selected report definitions"));
     scheduleAction_->setEnabled(false);
-    connect(scheduleAction_, &QAction::triggered, this,
-            &ReportDefinitionMdiWindow::scheduleSelected);
+    connect(
+        scheduleAction_, &QAction::triggered, this, &ReportDefinitionMdiWindow::scheduleSelected);
 
     unscheduleAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::CalendarCancel, IconUtils::DefaultIconColor),
+        IconUtils::createRecoloredIcon(Icon::CalendarCancel, IconUtils::DefaultIconColor),
         tr("Unschedule"));
     unscheduleAction_->setToolTip(tr("Unschedule selected report definitions"));
     unscheduleAction_->setEnabled(false);
-    connect(unscheduleAction_, &QAction::triggered, this,
+    connect(unscheduleAction_,
+            &QAction::triggered,
+            this,
             &ReportDefinitionMdiWindow::unscheduleSelected);
-
 }
 
 void ReportDefinitionMdiWindow::setupTable() {
@@ -169,67 +153,77 @@ void ReportDefinitionMdiWindow::setupTable() {
     tableView_->setSortingEnabled(true);
 
     using cs = column_style;
-    auto* delegate = new EntityItemDelegate({
-        cs::text_left,      // Name (0)
-        cs::text_left,      // Source (1)
-        cs::text_left,      // ReportType (2)
-        cs::text_left,      // ScheduleExpression (3)
-        cs::badge_centered, // ConcurrencyPolicy (4)
-        cs::badge_centered, // Status (5)
-        cs::text_left,      // NextFire (6)
-        cs::mono_center,    // Version (7)
-        cs::text_left,      // ModifiedBy (8)
-        cs::text_left,      // RecordedAt (9)
-    }, tableView_);
-    delegate->set_badge_color_resolver(4, [cache = badgeCache_](const QString& value) -> badge_color_pair {
-        static const badge_color_pair fallback{color_constants::badge_fallback,
-            color_constants::badge_fallback_text};
-        if (!cache) return fallback;
-        auto* def = cache->resolve("report_concurrency_policy", value.toStdString());
-        if (!def) return fallback;
-        return {QColor(QString::fromStdString(def->background_colour)),
-                QColor(QString::fromStdString(def->text_colour))};
-    });
-    delegate->set_badge_color_resolver(5, [cache = badgeCache_](const QString& value) -> badge_color_pair {
-        static const badge_color_pair fallback{color_constants::badge_fallback,
-            color_constants::badge_fallback_text};
-        if (!cache) return fallback;
-        auto* def = cache->resolve("report_fsm_state", value.toStdString());
-        if (!def) return fallback;
-        return {QColor(QString::fromStdString(def->background_colour)),
-                QColor(QString::fromStdString(def->text_colour))};
-    });
+    auto* delegate = new EntityItemDelegate(
+        {
+            cs::text_left,      // Name (0)
+            cs::text_left,      // Source (1)
+            cs::text_left,      // ReportType (2)
+            cs::text_left,      // ScheduleExpression (3)
+            cs::badge_centered, // ConcurrencyPolicy (4)
+            cs::badge_centered, // Status (5)
+            cs::text_left,      // NextFire (6)
+            cs::mono_center,    // Version (7)
+            cs::text_left,      // ModifiedBy (8)
+            cs::text_left,      // RecordedAt (9)
+        },
+        tableView_);
+    delegate->set_badge_color_resolver(
+        4, [cache = badgeCache_](const QString& value) -> badge_color_pair {
+            static const badge_color_pair fallback{color_constants::badge_fallback,
+                                                   color_constants::badge_fallback_text};
+            if (!cache)
+                return fallback;
+            auto* def = cache->resolve("report_concurrency_policy", value.toStdString());
+            if (!def)
+                return fallback;
+            return {QColor(QString::fromStdString(def->background_colour)),
+                    QColor(QString::fromStdString(def->text_colour))};
+        });
+    delegate->set_badge_color_resolver(
+        5, [cache = badgeCache_](const QString& value) -> badge_color_pair {
+            static const badge_color_pair fallback{color_constants::badge_fallback,
+                                                   color_constants::badge_fallback_text};
+            if (!cache)
+                return fallback;
+            auto* def = cache->resolve("report_fsm_state", value.toStdString());
+            if (!def)
+                return fallback;
+            return {QColor(QString::fromStdString(def->background_colour)),
+                    QColor(QString::fromStdString(def->text_colour))};
+        });
     tableView_->setItemDelegate(delegate);
 
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
 
-    initializeTableSettings(tableView_, model_,
-        "ReportDefinitionListWindow",
-        {},
-        {900, 400}, 2);
+    initializeTableSettings(tableView_, model_, "ReportDefinitionListWindow", {}, {900, 400}, 2);
 }
 
 void ReportDefinitionMdiWindow::setupConnections() {
-    connect(model_, &ClientReportDefinitionModel::dataLoaded,
-            this, &ReportDefinitionMdiWindow::onDataLoaded);
-    connect(model_, &ClientReportDefinitionModel::loadError,
-            this, &ReportDefinitionMdiWindow::onLoadError);
+    connect(model_,
+            &ClientReportDefinitionModel::dataLoaded,
+            this,
+            &ReportDefinitionMdiWindow::onDataLoaded);
+    connect(model_,
+            &ClientReportDefinitionModel::loadError,
+            this,
+            &ReportDefinitionMdiWindow::onLoadError);
     connectModel(model_);
 
-    connect(tableView_->selectionModel(), &QItemSelectionModel::selectionChanged,
-            this, &ReportDefinitionMdiWindow::onSelectionChanged);
-    connect(tableView_, &QTableView::doubleClicked,
-            this, &ReportDefinitionMdiWindow::onDoubleClicked);
+    connect(tableView_->selectionModel(),
+            &QItemSelectionModel::selectionChanged,
+            this,
+            &ReportDefinitionMdiWindow::onSelectionChanged);
+    connect(
+        tableView_, &QTableView::doubleClicked, this, &ReportDefinitionMdiWindow::onDoubleClicked);
 
-    connect(paginationWidget_, &PaginationWidget::page_size_changed,
-            this, [this](std::uint32_t size) {
-        model_->set_page_size(size);
-        model_->refresh();
-    });
+    connect(
+        paginationWidget_, &PaginationWidget::page_size_changed, this, [this](std::uint32_t size) {
+            model_->set_page_size(size);
+            model_->refresh();
+        });
 
-    connect(paginationWidget_, &PaginationWidget::load_all_requested,
-            this, [this]() {
+    connect(paginationWidget_, &PaginationWidget::load_all_requested, this, [this]() {
         const auto total = model_->total_available_count();
         if (total > 0 && total <= 1000) {
             model_->set_page_size(total);
@@ -237,10 +231,11 @@ void ReportDefinitionMdiWindow::setupConnections() {
         }
     });
 
-    connect(paginationWidget_, &PaginationWidget::page_requested,
-            this, [this](std::uint32_t offset, std::uint32_t limit) {
-        model_->load_page(offset, limit);
-    });
+    connect(
+        paginationWidget_,
+        &PaginationWidget::page_requested,
+        this,
+        [this](std::uint32_t offset, std::uint32_t limit) { model_->load_page(offset, limit); });
 }
 
 void ReportDefinitionMdiWindow::doReload() {
@@ -255,12 +250,11 @@ void ReportDefinitionMdiWindow::onDataLoaded() {
     emit statusChanged(tr("Loaded %1 of %2 report definitions").arg(loaded).arg(total));
 
     paginationWidget_->update_state(loaded, total);
-    paginationWidget_->set_load_all_enabled(
-        loaded < static_cast<int>(total) && total > 0 && total <= 1000);
+    paginationWidget_->set_load_all_enabled(loaded < static_cast<int>(total) && total > 0 &&
+                                            total <= 1000);
 }
 
-void ReportDefinitionMdiWindow::onLoadError(const QString& error_message,
-                                          const QString& details) {
+void ReportDefinitionMdiWindow::onLoadError(const QString& error_message, const QString& details) {
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);
@@ -334,8 +328,8 @@ void ReportDefinitionMdiWindow::viewHistorySelected() {
 
     auto sourceIndex = proxyModel_->mapToSource(selected.first());
     if (auto* definition = model_->getDefinition(sourceIndex.row())) {
-        BOOST_LOG_SEV(lg(), debug) << "Emitting showDefinitionHistory for code: "
-                                   << definition->name;
+        BOOST_LOG_SEV(lg(), debug)
+            << "Emitting showDefinitionHistory for code: " << definition->name;
         emit showDefinitionHistory(*definition);
     }
 }
@@ -376,13 +370,13 @@ void ReportDefinitionMdiWindow::deleteSelected() {
     }
 
     if (!clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot delete report definition while disconnected.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot delete report definition while disconnected.");
         return;
     }
 
     std::vector<boost::uuids::uuid> ids;
-    std::vector<std::string> codes;  // For display purposes
+    std::vector<std::string> codes; // For display purposes
     for (const auto& index : selected) {
         auto sourceIndex = proxyModel_->mapToSource(index);
         if (auto* definition = model_->getDefinition(sourceIndex.row())) {
@@ -396,20 +390,19 @@ void ReportDefinitionMdiWindow::deleteSelected() {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Delete requested for " << ids.size()
-                               << " report definitions";
+    BOOST_LOG_SEV(lg(), debug) << "Delete requested for " << ids.size() << " report definitions";
 
     QString confirmMessage;
     if (ids.size() == 1) {
         confirmMessage = QString("Are you sure you want to delete report definition '%1'?")
-            .arg(QString::fromStdString(codes.front()));
+                             .arg(QString::fromStdString(codes.front()));
     } else {
-        confirmMessage = QString("Are you sure you want to delete %1 report definitions?")
-            .arg(ids.size());
+        confirmMessage =
+            QString("Are you sure you want to delete %1 report definitions?").arg(ids.size());
     }
 
-    auto reply = MessageBoxHelper::question(this, "Delete Report Definition",
-        confirmMessage, QMessageBox::Yes | QMessageBox::No);
+    auto reply = MessageBoxHelper::question(
+        this, "Delete Report Definition", confirmMessage, QMessageBox::Yes | QMessageBox::No);
 
     if (reply != QMessageBox::Yes) {
         BOOST_LOG_SEV(lg(), debug) << "Delete cancelled by user";
@@ -417,20 +410,23 @@ void ReportDefinitionMdiWindow::deleteSelected() {
     }
 
     QPointer<ReportDefinitionMdiWindow> self = this;
-    using DeleteResult = std::vector<std::tuple<boost::uuids::uuid, std::string, bool, std::string>>;
+    using DeleteResult =
+        std::vector<std::tuple<boost::uuids::uuid, std::string, bool, std::string>>;
 
     auto task = [self, ids, codes]() -> DeleteResult {
         DeleteResult results;
-        if (!self) return {};
+        if (!self)
+            return {};
 
-        BOOST_LOG_SEV(lg(), debug) << "Making batch delete request for "
-                                   << ids.size() << " report definitions";
+        BOOST_LOG_SEV(lg(), debug)
+            << "Making batch delete request for " << ids.size() << " report definitions";
 
         reporting::messaging::delete_report_definition_request request;
         for (const auto& id : ids) {
             request.ids.push_back(boost::uuids::to_string(id));
         }
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             BOOST_LOG_SEV(lg(), error) << "Failed to send batch delete request";
@@ -449,8 +445,7 @@ void ReportDefinitionMdiWindow::deleteSelected() {
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, watcher]() {
         auto results = watcher->result();
         watcher->deleteLater();
 
@@ -464,8 +459,8 @@ void ReportDefinitionMdiWindow::deleteSelected() {
                 success_count++;
                 emit self->definitionDeleted(QString::fromStdString(code));
             } else {
-                BOOST_LOG_SEV(lg(), error) << "Report Definition deletion failed: "
-                                           << code << " - " << message;
+                BOOST_LOG_SEV(lg(), error)
+                    << "Report Definition deletion failed: " << code << " - " << message;
                 failure_count++;
                 if (first_error.isEmpty()) {
                     first_error = QString::fromStdString(message);
@@ -476,21 +471,21 @@ void ReportDefinitionMdiWindow::deleteSelected() {
         self->model_->refresh();
 
         if (failure_count == 0) {
-            QString msg = success_count == 1
-                ? "Successfully deleted 1 report definition"
-                : QString("Successfully deleted %1 report definitions").arg(success_count);
+            QString msg =
+                success_count == 1 ?
+                    "Successfully deleted 1 report definition" :
+                    QString("Successfully deleted %1 report definitions").arg(success_count);
             emit self->statusChanged(msg);
         } else if (success_count == 0) {
             QString msg = QString("Failed to delete %1 %2: %3")
-                .arg(failure_count)
-                .arg(failure_count == 1 ? "report definition" : "report definitions")
-                .arg(first_error);
+                              .arg(failure_count)
+                              .arg(failure_count == 1 ? "report definition" : "report definitions")
+                              .arg(first_error);
             emit self->errorOccurred(msg);
             MessageBoxHelper::critical(self, "Delete Failed", msg);
         } else {
-            QString msg = QString("Deleted %1, failed to delete %2")
-                .arg(success_count)
-                .arg(failure_count);
+            QString msg =
+                QString("Deleted %1, failed to delete %2").arg(success_count).arg(failure_count);
             emit self->statusChanged(msg);
             MessageBoxHelper::warning(self, "Partial Success", msg);
         }

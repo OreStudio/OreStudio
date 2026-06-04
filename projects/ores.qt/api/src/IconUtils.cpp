@@ -19,10 +19,9 @@
  *
  */
 #include "ores.qt/IconUtils.hpp"
-
 #include <QImage>
-#include <QPixmap>
 #include <QPainter>
+#include <QPixmap>
 #include <QSvgRenderer>
 
 namespace ores::qt {
@@ -37,105 +36,195 @@ struct IconDef {
 
 static IconDef getIconDef(Icon icon) {
     switch (icon) {
-        case Icon::Add: return {"ic_fluent_add_20", "add-circle.svg"};
-        case Icon::Archive: return {"ic_fluent_archive_20", "archive.svg"};
-        case Icon::ArrowClockwise: return {"ic_fluent_arrow_clockwise_16", "restart-circle.svg"};
-        case Icon::ArrowDownload: return {"ic_fluent_arrow_download_20", "download-square.svg"};
-        case Icon::ArrowLeft: return {"ic_fluent_arrow_left_20", "arrow-left.svg"};
-        case Icon::ArrowNext: return {"ic_fluent_arrow_next_20", "double-alt-arrow-right.svg"};
-        case Icon::ArrowPrevious: return {"ic_fluent_arrow_previous_20", "double-alt-arrow-left.svg"};
-        case Icon::ArrowRight: return {"ic_fluent_arrow_right_20", "arrow-right.svg"};
-        case Icon::ArrowRotateCounterclockwise: return {"ic_fluent_arrow_rotate_counterclockwise_20", "undo-left-round.svg"};
-        case Icon::ArrowSync: return {"ic_fluent_arrow_sync_20", "refresh-circle.svg"};
-        case Icon::ArrowTrending: return {"ic_fluent_arrow_trending_20", "transfer-horizontal.svg"};
-        case Icon::Book: return {"ic_fluent_book_20", "notes-minimalistic.svg"};
-        case Icon::CalendarAdd:    return {"ic_fluent_calendar_add_20",    "calendar-add.svg"};
-        case Icon::CalendarCancel: return {"ic_fluent_calendar_cancel_20", "alarm-remove.svg"};
-        case Icon::CalendarClock:  return {"ic_fluent_calendar_clock_20",  "calendar.svg"};
-        case Icon::BookOpen: return {"ic_fluent_book_open_20", "book-2.svg"};
-        case Icon::BookOpenFilled:  return {"ic_fluent_book_open_20", "book-2.svg", true};
-        case Icon::Briefcase: return {"ic_fluent_briefcase_20", "case-round.svg"};
-        case Icon::BriefcaseFilled: return {"ic_fluent_briefcase_20", "case-round.svg", true};
-        case Icon::Building: return {"ic_fluent_building_20", "buildings.svg"};
-        case Icon::BuildingBank: return {"ic_fluent_building_bank_20", "buildings-3.svg"};
-        case Icon::BuildingSkyscraper: return {"ic_fluent_building_skyscraper_20", "buildings.svg"};
-        case Icon::Chart: return {"ic_fluent_data_bar_vertical_ascending_20", "chart-2.svg"};
-        case Icon::ChartMultiple: return {"ic_fluent_chart_multiple_20", "presentation-graph.svg"};
-        case Icon::Checkmark: return {"ic_fluent_checkmark_20", "check-circle.svg"};
-        case Icon::Classification: return {"ic_fluent_classification_20", "layers.svg"};
-        case Icon::Clock: return {"ic_fluent_clock_16", "clock-circle.svg"};
-        case Icon::Code: return {"ic_fluent_code_20", "code-file.svg"};
-        case Icon::ContactCard: return {"ic_fluent_contact_card_20", "chat-round.svg"};
-        case Icon::Copy: return {"ic_fluent_copy_20", "copy.svg"};
-        case Icon::Currency: return {"ic_fluent_currency_dollar_euro_20", "dollar-minimalistic.svg"};
-        case Icon::Histogram: return {"ic_fluent_column_triple_20", "chart-square.svg"};
-        case Icon::Database: return {"ic_fluent_database_20", "server-square.svg"};
-        case Icon::Delete: return {"ic_fluent_delete_20", "trash-bin-trash.svg"};
-        case Icon::DeleteDismiss: return {"ic_fluent_delete_dismiss_20", "trash-bin-trash.svg"};
-        case Icon::Dismiss: return {"ic_fluent_dismiss_20", "close-circle.svg"};
-        case Icon::DocumentCode: return {"ic_fluent_document_code_16", "code-file.svg"};
-        case Icon::DocumentTable: return {"ic_fluent_document_table_20", "document-add.svg"};
-        case Icon::Edit: return {"ic_fluent_edit_20", "pen-new-square.svg"};
-        case Icon::Error: return {"ic_fluent_error_circle_20", "forbidden-circle.svg"};
-        case Icon::ExportCsv: return {"ic_fluent_arrow_upload_csv_20", "export_csv.svg"};
-        case Icon::ExportFpml: return {"ic_fluent_arrow_upload_fpml_20", "export_fpml.svg"};
-        case Icon::ExportOre: return {"ic_fluent_arrow_upload_ore_20", "export_ore.svg"};
-        case Icon::Flag: return {"ic_fluent_flag_20", "flag.svg"};
-        case Icon::Folder: return {"ic_fluent_folder_20", "folder.svg"};
-        case Icon::FolderOpen: return {"ic_fluent_folder_open_20", "folder-open.svg"};
-        case Icon::Globe: return {"ic_fluent_globe_20", "earth.svg"};
-        case Icon::Handshake: return {"ic_fluent_handshake_20", "hand-shake.svg"};
-        case Icon::History: return {"ic_fluent_history_20", "history.svg"};
-        case Icon::ImportCsv: return {"ic_fluent_arrow_download_csv_20", "import_csv.svg"};
-        case Icon::ImportFpml: return {"ic_fluent_arrow_download_fpml_20", "import_fpml.svg"};
-        case Icon::ImportOre: return {"ic_fluent_arrow_download_ore_20", "import_ore.svg"};
-        case Icon::Info: return {"ic_fluent_info_20", "info-circle.svg"};
-        case Icon::Key: return {"ic_fluent_key_20", "key-minimalistic-square.svg"};
-        case Icon::KeyMultiple: return {"ic_fluent_key_multiple_20", "key-minimalistic-square.svg"};
-        case Icon::Keyboard: return {"ic_fluent_keyboard_20", "keyboard.svg"};
-        case Icon::Library: return {"ic_fluent_library_20", "folder.svg"};
-        case Icon::LockClosed: return {"ic_fluent_lock_closed_20", "lock-password.svg"};
-        case Icon::LockOpen: return {"ic_fluent_lock_unlocked_20", "lock-unlocked.svg"};
-        case Icon::NoteEdit: return {"ic_fluent_note_edit_20", "notes-minimalistic.svg"};
-        case Icon::Notepad:  return {"ic_fluent_notepad_20",   "solar_notepad.svg"};
-        case Icon::Open: return {"ic_fluent_open_20", "folder-open.svg"};
-        case Icon::Organization: return {"ic_fluent_organization_20", "buildings-2.svg"};
-        case Icon::PasswordReset: return {"ic_fluent_password_reset_48", "lock-password-unlocked.svg"};
-        case Icon::PeopleTeam: return {"ic_fluent_people_team_20", "structure.svg"};
-        case Icon::Person: return {"ic_fluent_person_20", "user-circle.svg"};
-        case Icon::PersonAccounts: return {"ic_fluent_person_accounts_20", "users-group-rounded.svg"};
-        case Icon::PersonAdd: return {"ic_fluent_person_add_20", "user-plus-rounded.svg"};
-        case Icon::PlugConnected: return {"ic_fluent_plug_connected_20", "plug-circle.svg"};
-        case Icon::PlugConnectedFilled: return {"ic_fluent_plug_connected_20", "plug-circle.svg", true};
-        case Icon::PlugDisconnected: return {"ic_fluent_plug_disconnected_20", "link-broken.svg"};
-        case Icon::Publish: return {"ic_fluent_arrow_upload_20", "upload-square.svg"};
-        case Icon::Question: return {"ic_fluent_question_20", "question-circle.svg"};
-        case Icon::Record: return {"ic_fluent_record_20", "record-circle.svg"};
-        case Icon::RecordFilled: return {"ic_fluent_record_20", "record-circle.svg", true};
-        case Icon::Save: return {"ic_fluent_save_20", "diskette.svg"};
-        case Icon::Server: return {"ic_fluent_server_20", "server-square.svg"};
-        case Icon::ServerLink: return {"ic_fluent_server_link_20", "server-square.svg"};
-        case Icon::ServerLinkFilled: return {"ic_fluent_server_link_20", "server-square.svg", true};
-        case Icon::Settings: return {"ic_fluent_settings_20", "settings.svg"};
-        case Icon::Star: return {"ic_fluent_star_20", "star-circle.svg"};
-        case Icon::Table: return {"ic_fluent_table_20", "document-add.svg"};
-        case Icon::Tag: return {"ic_fluent_tag_20", "tag.svg"};
-        case Icon::TasksApp: return {"ic_fluent_tasks_app_20", "clipboard-list.svg"};
-        case Icon::Terminal: return {"ic_fluent_window_console_20", "programming.svg"};
-        case Icon::Wand: return {"ic_fluent_wand_20", "magic-stick-3.svg"};
-        case Icon::Warning: return {"ic_fluent_warning_20", "danger-circle.svg"};
+        case Icon::Add:
+            return {"ic_fluent_add_20", "add-circle.svg"};
+        case Icon::Archive:
+            return {"ic_fluent_archive_20", "archive.svg"};
+        case Icon::ArrowClockwise:
+            return {"ic_fluent_arrow_clockwise_16", "restart-circle.svg"};
+        case Icon::ArrowDownload:
+            return {"ic_fluent_arrow_download_20", "download-square.svg"};
+        case Icon::ArrowLeft:
+            return {"ic_fluent_arrow_left_20", "arrow-left.svg"};
+        case Icon::ArrowNext:
+            return {"ic_fluent_arrow_next_20", "double-alt-arrow-right.svg"};
+        case Icon::ArrowPrevious:
+            return {"ic_fluent_arrow_previous_20", "double-alt-arrow-left.svg"};
+        case Icon::ArrowRight:
+            return {"ic_fluent_arrow_right_20", "arrow-right.svg"};
+        case Icon::ArrowRotateCounterclockwise:
+            return {"ic_fluent_arrow_rotate_counterclockwise_20", "undo-left-round.svg"};
+        case Icon::ArrowSync:
+            return {"ic_fluent_arrow_sync_20", "refresh-circle.svg"};
+        case Icon::ArrowTrending:
+            return {"ic_fluent_arrow_trending_20", "transfer-horizontal.svg"};
+        case Icon::Book:
+            return {"ic_fluent_book_20", "notes-minimalistic.svg"};
+        case Icon::CalendarAdd:
+            return {"ic_fluent_calendar_add_20", "calendar-add.svg"};
+        case Icon::CalendarCancel:
+            return {"ic_fluent_calendar_cancel_20", "alarm-remove.svg"};
+        case Icon::CalendarClock:
+            return {"ic_fluent_calendar_clock_20", "calendar.svg"};
+        case Icon::BookOpen:
+            return {"ic_fluent_book_open_20", "book-2.svg"};
+        case Icon::BookOpenFilled:
+            return {"ic_fluent_book_open_20", "book-2.svg", true};
+        case Icon::Briefcase:
+            return {"ic_fluent_briefcase_20", "case-round.svg"};
+        case Icon::BriefcaseFilled:
+            return {"ic_fluent_briefcase_20", "case-round.svg", true};
+        case Icon::Building:
+            return {"ic_fluent_building_20", "buildings.svg"};
+        case Icon::BuildingBank:
+            return {"ic_fluent_building_bank_20", "buildings-3.svg"};
+        case Icon::BuildingSkyscraper:
+            return {"ic_fluent_building_skyscraper_20", "buildings.svg"};
+        case Icon::Chart:
+            return {"ic_fluent_data_bar_vertical_ascending_20", "chart-2.svg"};
+        case Icon::ChartMultiple:
+            return {"ic_fluent_chart_multiple_20", "presentation-graph.svg"};
+        case Icon::Checkmark:
+            return {"ic_fluent_checkmark_20", "check-circle.svg"};
+        case Icon::Classification:
+            return {"ic_fluent_classification_20", "layers.svg"};
+        case Icon::Clock:
+            return {"ic_fluent_clock_16", "clock-circle.svg"};
+        case Icon::Code:
+            return {"ic_fluent_code_20", "code-file.svg"};
+        case Icon::ContactCard:
+            return {"ic_fluent_contact_card_20", "chat-round.svg"};
+        case Icon::Copy:
+            return {"ic_fluent_copy_20", "copy.svg"};
+        case Icon::Currency:
+            return {"ic_fluent_currency_dollar_euro_20", "dollar-minimalistic.svg"};
+        case Icon::Histogram:
+            return {"ic_fluent_column_triple_20", "chart-square.svg"};
+        case Icon::Database:
+            return {"ic_fluent_database_20", "server-square.svg"};
+        case Icon::Delete:
+            return {"ic_fluent_delete_20", "trash-bin-trash.svg"};
+        case Icon::DeleteDismiss:
+            return {"ic_fluent_delete_dismiss_20", "trash-bin-trash.svg"};
+        case Icon::Dismiss:
+            return {"ic_fluent_dismiss_20", "close-circle.svg"};
+        case Icon::DocumentCode:
+            return {"ic_fluent_document_code_16", "code-file.svg"};
+        case Icon::DocumentTable:
+            return {"ic_fluent_document_table_20", "document-add.svg"};
+        case Icon::Edit:
+            return {"ic_fluent_edit_20", "pen-new-square.svg"};
+        case Icon::Error:
+            return {"ic_fluent_error_circle_20", "forbidden-circle.svg"};
+        case Icon::ExportCsv:
+            return {"ic_fluent_arrow_upload_csv_20", "export_csv.svg"};
+        case Icon::ExportFpml:
+            return {"ic_fluent_arrow_upload_fpml_20", "export_fpml.svg"};
+        case Icon::ExportOre:
+            return {"ic_fluent_arrow_upload_ore_20", "export_ore.svg"};
+        case Icon::Flag:
+            return {"ic_fluent_flag_20", "flag.svg"};
+        case Icon::Folder:
+            return {"ic_fluent_folder_20", "folder.svg"};
+        case Icon::FolderOpen:
+            return {"ic_fluent_folder_open_20", "folder-open.svg"};
+        case Icon::Globe:
+            return {"ic_fluent_globe_20", "earth.svg"};
+        case Icon::Handshake:
+            return {"ic_fluent_handshake_20", "hand-shake.svg"};
+        case Icon::History:
+            return {"ic_fluent_history_20", "history.svg"};
+        case Icon::ImportCsv:
+            return {"ic_fluent_arrow_download_csv_20", "import_csv.svg"};
+        case Icon::ImportFpml:
+            return {"ic_fluent_arrow_download_fpml_20", "import_fpml.svg"};
+        case Icon::ImportOre:
+            return {"ic_fluent_arrow_download_ore_20", "import_ore.svg"};
+        case Icon::Info:
+            return {"ic_fluent_info_20", "info-circle.svg"};
+        case Icon::Key:
+            return {"ic_fluent_key_20", "key-minimalistic-square.svg"};
+        case Icon::KeyMultiple:
+            return {"ic_fluent_key_multiple_20", "key-minimalistic-square.svg"};
+        case Icon::Keyboard:
+            return {"ic_fluent_keyboard_20", "keyboard.svg"};
+        case Icon::Library:
+            return {"ic_fluent_library_20", "folder.svg"};
+        case Icon::LockClosed:
+            return {"ic_fluent_lock_closed_20", "lock-password.svg"};
+        case Icon::LockOpen:
+            return {"ic_fluent_lock_unlocked_20", "lock-unlocked.svg"};
+        case Icon::NoteEdit:
+            return {"ic_fluent_note_edit_20", "notes-minimalistic.svg"};
+        case Icon::Notepad:
+            return {"ic_fluent_notepad_20", "solar_notepad.svg"};
+        case Icon::Open:
+            return {"ic_fluent_open_20", "folder-open.svg"};
+        case Icon::Organization:
+            return {"ic_fluent_organization_20", "buildings-2.svg"};
+        case Icon::PasswordReset:
+            return {"ic_fluent_password_reset_48", "lock-password-unlocked.svg"};
+        case Icon::PeopleTeam:
+            return {"ic_fluent_people_team_20", "structure.svg"};
+        case Icon::Person:
+            return {"ic_fluent_person_20", "user-circle.svg"};
+        case Icon::PersonAccounts:
+            return {"ic_fluent_person_accounts_20", "users-group-rounded.svg"};
+        case Icon::PersonAdd:
+            return {"ic_fluent_person_add_20", "user-plus-rounded.svg"};
+        case Icon::PlugConnected:
+            return {"ic_fluent_plug_connected_20", "plug-circle.svg"};
+        case Icon::PlugConnectedFilled:
+            return {"ic_fluent_plug_connected_20", "plug-circle.svg", true};
+        case Icon::PlugDisconnected:
+            return {"ic_fluent_plug_disconnected_20", "link-broken.svg"};
+        case Icon::Publish:
+            return {"ic_fluent_arrow_upload_20", "upload-square.svg"};
+        case Icon::Question:
+            return {"ic_fluent_question_20", "question-circle.svg"};
+        case Icon::Record:
+            return {"ic_fluent_record_20", "record-circle.svg"};
+        case Icon::RecordFilled:
+            return {"ic_fluent_record_20", "record-circle.svg", true};
+        case Icon::Save:
+            return {"ic_fluent_save_20", "diskette.svg"};
+        case Icon::Server:
+            return {"ic_fluent_server_20", "server-square.svg"};
+        case Icon::ServerLink:
+            return {"ic_fluent_server_link_20", "server-square.svg"};
+        case Icon::ServerLinkFilled:
+            return {"ic_fluent_server_link_20", "server-square.svg", true};
+        case Icon::Settings:
+            return {"ic_fluent_settings_20", "settings.svg"};
+        case Icon::Star:
+            return {"ic_fluent_star_20", "star-circle.svg"};
+        case Icon::Table:
+            return {"ic_fluent_table_20", "document-add.svg"};
+        case Icon::Tag:
+            return {"ic_fluent_tag_20", "tag.svg"};
+        case Icon::TasksApp:
+            return {"ic_fluent_tasks_app_20", "clipboard-list.svg"};
+        case Icon::Terminal:
+            return {"ic_fluent_window_console_20", "programming.svg"};
+        case Icon::Wand:
+            return {"ic_fluent_wand_20", "magic-stick-3.svg"};
+        case Icon::Warning:
+            return {"ic_fluent_warning_20", "danger-circle.svg"};
     }
     return {};
 }
 
 QString IconUtils::iconPath(Icon icon) {
     auto def = getIconDef(icon);
-    if (!def.fluent) return {};
+    if (!def.fluent)
+        return {};
 
     IconTheme activeTheme = currentTheme_;
     if (def.forceFilled) {
-        if (activeTheme == IconTheme::FluentUIRegular) activeTheme = IconTheme::FluentUIFilled;
-        else if (activeTheme == IconTheme::SolarizedLinear) activeTheme = IconTheme::SolarizedBold;
+        if (activeTheme == IconTheme::FluentUIRegular)
+            activeTheme = IconTheme::FluentUIFilled;
+        else if (activeTheme == IconTheme::SolarizedLinear)
+            activeTheme = IconTheme::SolarizedBold;
     }
 
     switch (activeTheme) {
@@ -158,8 +247,7 @@ QIcon IconUtils::createRecoloredIcon(Icon icon, const QColor& color) {
 QIcon IconUtils::createRecoloredIcon(const QString& svgPath, const QColor& color) {
     QSvgRenderer renderer(svgPath);
     if (!renderer.isValid()) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to load SVG for recoloring: "
-                                  << svgPath.toStdString();
+        BOOST_LOG_SEV(lg(), warn) << "Failed to load SVG for recoloring: " << svgPath.toStdString();
         return QIcon(svgPath);
     }
 
@@ -170,13 +258,13 @@ QIcon IconUtils::createRecoloredIcon(const QString& svgPath, const QColor& color
         // Normal state
         QImage normalImage(size, size, QImage::Format_ARGB32);
         normalImage.fill(Qt::transparent);
-        
+
         QPainter painter(&normalImage);
         renderer.render(&painter);
         painter.setCompositionMode(QPainter::CompositionMode_SourceIn);
         painter.fillRect(normalImage.rect(), color);
         painter.end();
-        
+
         QPixmap normalPixmap = QPixmap::fromImage(normalImage);
         recoloredIcon.addPixmap(normalPixmap, QIcon::Normal, QIcon::On);
         recoloredIcon.addPixmap(normalPixmap, QIcon::Normal, QIcon::Off);
@@ -184,13 +272,13 @@ QIcon IconUtils::createRecoloredIcon(const QString& svgPath, const QColor& color
         // Disabled state
         QImage disabledImage(size, size, QImage::Format_ARGB32);
         disabledImage.fill(Qt::transparent);
-        
+
         painter.begin(&disabledImage);
         renderer.render(&painter);
         painter.setCompositionMode(QPainter::CompositionMode_SourceIn);
         painter.fillRect(disabledImage.rect(), disabledColor);
         painter.end();
-        
+
         QPixmap disabledPixmap = QPixmap::fromImage(disabledImage);
         recoloredIcon.addPixmap(disabledPixmap, QIcon::Disabled, QIcon::On);
         recoloredIcon.addPixmap(disabledPixmap, QIcon::Disabled, QIcon::Off);
@@ -215,7 +303,7 @@ QPixmap IconUtils::svgDataToPixmap(const std::string& svg_data, int height) {
     // Get SVG's default (viewBox) size to preserve aspect ratio
     QSizeF svgSize = renderer.defaultSize();
     if (svgSize.isEmpty()) {
-        svgSize = QSizeF(4, 3);  // Default to 4:3 if no viewBox
+        svgSize = QSizeF(4, 3); // Default to 4:3 if no viewBox
     }
     qreal aspectRatio = svgSize.width() / svgSize.height();
     int width = static_cast<int>(height * aspectRatio);
@@ -250,7 +338,7 @@ QIcon IconUtils::svgDataToIcon(const std::string& svg_data) {
     // Get SVG's default (viewBox) size to preserve aspect ratio
     QSizeF svgSize = renderer.defaultSize();
     if (svgSize.isEmpty()) {
-        svgSize = QSizeF(4, 3);  // Default to 4:3 if no viewBox
+        svgSize = QSizeF(4, 3); // Default to 4:3 if no viewBox
     }
     qreal aspectRatio = svgSize.width() / svgSize.height();
 

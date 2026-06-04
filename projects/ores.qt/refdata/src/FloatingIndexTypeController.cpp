@@ -18,30 +18,27 @@
  *
  */
 #include "ores.qt/FloatingIndexTypeController.hpp"
-
+#include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/FloatingIndexTypeDetailDialog.hpp"
+#include "ores.qt/FloatingIndexTypeHistoryDialog.hpp"
+#include "ores.qt/FloatingIndexTypeMdiWindow.hpp"
+#include "ores.qt/IconUtils.hpp"
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/FloatingIndexTypeMdiWindow.hpp"
-#include "ores.qt/FloatingIndexTypeDetailDialog.hpp"
-#include "ores.qt/FloatingIndexTypeHistoryDialog.hpp"
-#include "ores.qt/DetachableMdiSubWindow.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-FloatingIndexTypeController::FloatingIndexTypeController(
-    QMainWindow* mainWindow,
-    QMdiArea* mdiArea,
-    ClientManager* clientManager,
-    const QString& username,
-    QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username,
-          std::string_view{}, parent),
-      listWindow_(nullptr),
-      listMdiSubWindow_(nullptr) {
+FloatingIndexTypeController::FloatingIndexTypeController(QMainWindow* mainWindow,
+                                                         QMdiArea* mdiArea,
+                                                         ClientManager* clientManager,
+                                                         const QString& username,
+                                                         QObject* parent)
+    : EntityController(mainWindow, mdiArea, clientManager, username, std::string_view{}, parent)
+    , listWindow_(nullptr)
+    , listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "FloatingIndexTypeController created";
 }
@@ -59,23 +56,33 @@ void FloatingIndexTypeController::showListWindow() {
     listWindow_ = new FloatingIndexTypeMdiWindow(clientManager_, username_);
 
     // Connect signals
-    connect(listWindow_, &FloatingIndexTypeMdiWindow::statusChanged,
-            this, &FloatingIndexTypeController::statusMessage);
-    connect(listWindow_, &FloatingIndexTypeMdiWindow::errorOccurred,
-            this, &FloatingIndexTypeController::errorMessage);
-    connect(listWindow_, &FloatingIndexTypeMdiWindow::showTypeDetails,
-            this, &FloatingIndexTypeController::onShowDetails);
-    connect(listWindow_, &FloatingIndexTypeMdiWindow::addNewRequested,
-            this, &FloatingIndexTypeController::onAddNewRequested);
-    connect(listWindow_, &FloatingIndexTypeMdiWindow::showTypeHistory,
-            this, &FloatingIndexTypeController::onShowHistory);
+    connect(listWindow_,
+            &FloatingIndexTypeMdiWindow::statusChanged,
+            this,
+            &FloatingIndexTypeController::statusMessage);
+    connect(listWindow_,
+            &FloatingIndexTypeMdiWindow::errorOccurred,
+            this,
+            &FloatingIndexTypeController::errorMessage);
+    connect(listWindow_,
+            &FloatingIndexTypeMdiWindow::showTypeDetails,
+            this,
+            &FloatingIndexTypeController::onShowDetails);
+    connect(listWindow_,
+            &FloatingIndexTypeMdiWindow::addNewRequested,
+            this,
+            &FloatingIndexTypeController::onAddNewRequested);
+    connect(listWindow_,
+            &FloatingIndexTypeMdiWindow::showTypeHistory,
+            this,
+            &FloatingIndexTypeController::onShowHistory);
 
     // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Floating Index Types");
-    listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Tag, IconUtils::DefaultIconColor));
+    listMdiSubWindow_->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -87,12 +94,16 @@ void FloatingIndexTypeController::showListWindow() {
     register_detachable_window(listMdiSubWindow_);
 
     // Cleanup when closed
-    connect(listMdiSubWindow_, &QObject::destroyed, this, [self = QPointer<FloatingIndexTypeController>(this), key]() {
-        if (!self) return;
-        self->untrack_window(key);
-        self->listWindow_ = nullptr;
-        self->listMdiSubWindow_ = nullptr;
-    });
+    connect(listMdiSubWindow_,
+            &QObject::destroyed,
+            this,
+            [self = QPointer<FloatingIndexTypeController>(this), key]() {
+                if (!self)
+                    return;
+                self->untrack_window(key);
+                self->listWindow_ = nullptr;
+                self->listMdiSubWindow_ = nullptr;
+            });
 
     BOOST_LOG_SEV(lg(), debug) << "Floating Index Type list window created";
 }
@@ -119,8 +130,7 @@ void FloatingIndexTypeController::reloadListWindow() {
     }
 }
 
-void FloatingIndexTypeController::onShowDetails(
-    const trading::domain::floating_index_type& type) {
+void FloatingIndexTypeController::onShowDetails(const trading::domain::floating_index_type& type) {
     BOOST_LOG_SEV(lg(), debug) << "Show details for: " << type.code;
     showDetailWindow(type);
 }
@@ -130,8 +140,7 @@ void FloatingIndexTypeController::onAddNewRequested() {
     showAddWindow();
 }
 
-void FloatingIndexTypeController::onShowHistory(
-    const trading::domain::floating_index_type& type) {
+void FloatingIndexTypeController::onShowHistory(const trading::domain::floating_index_type& type) {
     BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << type.code;
     showHistoryWindow(QString::fromStdString(type.code));
 }
@@ -144,23 +153,30 @@ void FloatingIndexTypeController::showAddWindow() {
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
 
-    connect(detailDialog, &FloatingIndexTypeDetailDialog::statusMessage,
-            this, &FloatingIndexTypeController::statusMessage);
-    connect(detailDialog, &FloatingIndexTypeDetailDialog::errorMessage,
-            this, &FloatingIndexTypeController::errorMessage);
-    connect(detailDialog, &FloatingIndexTypeDetailDialog::typeSaved,
-            this, [self = QPointer<FloatingIndexTypeController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Floating Index Type saved: " << code.toStdString();
-        self->handleEntitySaved();
-    });
+    connect(detailDialog,
+            &FloatingIndexTypeDetailDialog::statusMessage,
+            this,
+            &FloatingIndexTypeController::statusMessage);
+    connect(detailDialog,
+            &FloatingIndexTypeDetailDialog::errorMessage,
+            this,
+            &FloatingIndexTypeController::errorMessage);
+    connect(detailDialog,
+            &FloatingIndexTypeDetailDialog::typeSaved,
+            this,
+            [self = QPointer<FloatingIndexTypeController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Floating Index Type saved: " << code.toStdString();
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Floating Index Type");
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Tag, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -187,37 +203,46 @@ void FloatingIndexTypeController::showDetailWindow(
     detailDialog->setCreateMode(false);
     detailDialog->setType(type);
 
-    connect(detailDialog, &FloatingIndexTypeDetailDialog::statusMessage,
-            this, &FloatingIndexTypeController::statusMessage);
-    connect(detailDialog, &FloatingIndexTypeDetailDialog::errorMessage,
-            this, &FloatingIndexTypeController::errorMessage);
-    connect(detailDialog, &FloatingIndexTypeDetailDialog::typeSaved,
-            this, [self = QPointer<FloatingIndexTypeController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Floating Index Type saved: " << code.toStdString();
-        self->handleEntitySaved();
-    });
-    connect(detailDialog, &FloatingIndexTypeDetailDialog::typeDeleted,
-            this, [self = QPointer<FloatingIndexTypeController>(this), key](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Floating Index Type deleted: " << code.toStdString();
-        self->handleEntityDeleted();
-    });
+    connect(detailDialog,
+            &FloatingIndexTypeDetailDialog::statusMessage,
+            this,
+            &FloatingIndexTypeController::statusMessage);
+    connect(detailDialog,
+            &FloatingIndexTypeDetailDialog::errorMessage,
+            this,
+            &FloatingIndexTypeController::errorMessage);
+    connect(detailDialog,
+            &FloatingIndexTypeDetailDialog::typeSaved,
+            this,
+            [self = QPointer<FloatingIndexTypeController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Floating Index Type saved: " << code.toStdString();
+                self->handleEntitySaved();
+            });
+    connect(detailDialog,
+            &FloatingIndexTypeDetailDialog::typeDeleted,
+            this,
+            [self = QPointer<FloatingIndexTypeController>(this), key](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Floating Index Type deleted: " << code.toStdString();
+                self->handleEntityDeleted();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Floating Index Type: %1").arg(identifier));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Tag, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor));
 
     // Track window
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<FloatingIndexTypeController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, key]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, key]() {
         if (self) {
             self->untrack_window(key);
         }
@@ -235,30 +260,38 @@ void FloatingIndexTypeController::showHistoryWindow(const QString& code) {
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
-        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: "
-                                  << code.toStdString();
+        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: " << code.toStdString();
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
-                              << code.toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << code.toStdString();
 
     auto* historyDialog = new FloatingIndexTypeHistoryDialog(code, clientManager_, mainWindow_);
 
-    connect(historyDialog, &FloatingIndexTypeHistoryDialog::statusChanged,
-            this, [self = QPointer<FloatingIndexTypeController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(historyDialog, &FloatingIndexTypeHistoryDialog::errorOccurred,
-            this, [self = QPointer<FloatingIndexTypeController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
-    connect(historyDialog, &FloatingIndexTypeHistoryDialog::revertVersionRequested,
-            this, &FloatingIndexTypeController::onRevertVersion);
-    connect(historyDialog, &FloatingIndexTypeHistoryDialog::openVersionRequested,
-            this, &FloatingIndexTypeController::onOpenVersion);
+    connect(historyDialog,
+            &FloatingIndexTypeHistoryDialog::statusChanged,
+            this,
+            [self = QPointer<FloatingIndexTypeController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(historyDialog,
+            &FloatingIndexTypeHistoryDialog::errorOccurred,
+            this,
+            [self = QPointer<FloatingIndexTypeController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
+    connect(historyDialog,
+            &FloatingIndexTypeHistoryDialog::revertVersionRequested,
+            this,
+            &FloatingIndexTypeController::onRevertVersion);
+    connect(historyDialog,
+            &FloatingIndexTypeHistoryDialog::openVersionRequested,
+            this,
+            &FloatingIndexTypeController::onOpenVersion);
 
     // Load history data
     historyDialog->loadHistory();
@@ -267,16 +300,15 @@ void FloatingIndexTypeController::showHistoryWindow(const QString& code) {
     historyWindow->setAttribute(Qt::WA_DeleteOnClose);
     historyWindow->setWidget(historyDialog);
     historyWindow->setWindowTitle(QString("Floating Index Type History: %1").arg(code));
-    historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    historyWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     // Track this history window
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
 
     QPointer<FloatingIndexTypeController> self = this;
-    connect(historyWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -285,14 +317,14 @@ void FloatingIndexTypeController::showHistoryWindow(const QString& code) {
     show_managed_window(historyWindow, listMdiSubWindow_);
 }
 
-void FloatingIndexTypeController::onOpenVersion(
-    const trading::domain::floating_index_type& type, int versionNumber) {
+void FloatingIndexTypeController::onOpenVersion(const trading::domain::floating_index_type& type,
+                                                int versionNumber) {
     BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
                               << " for floating index type: " << type.code;
 
     const QString code = QString::fromStdString(type.code);
-    const QString windowKey = build_window_key("version", QString("%1_v%2")
-        .arg(code).arg(versionNumber));
+    const QString windowKey =
+        build_window_key("version", QString("%1_v%2").arg(code).arg(versionNumber));
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
@@ -306,31 +338,36 @@ void FloatingIndexTypeController::onOpenVersion(
     detailDialog->setType(type);
     detailDialog->setReadOnly(true);
 
-    connect(detailDialog, &FloatingIndexTypeDetailDialog::statusMessage,
-            this, [self = QPointer<FloatingIndexTypeController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(detailDialog, &FloatingIndexTypeDetailDialog::errorMessage,
-            this, [self = QPointer<FloatingIndexTypeController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
+    connect(detailDialog,
+            &FloatingIndexTypeDetailDialog::statusMessage,
+            this,
+            [self = QPointer<FloatingIndexTypeController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(detailDialog,
+            &FloatingIndexTypeDetailDialog::errorMessage,
+            this,
+            [self = QPointer<FloatingIndexTypeController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Floating Index Type: %1 (Version %2)")
-        .arg(code).arg(versionNumber));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("Floating Index Type: %1 (Version %2)").arg(code).arg(versionNumber));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     track_window(windowKey, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<FloatingIndexTypeController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -342,8 +379,7 @@ void FloatingIndexTypeController::onOpenVersion(
 
 void FloatingIndexTypeController::onRevertVersion(
     const trading::domain::floating_index_type& type) {
-    BOOST_LOG_SEV(lg(), info) << "Reverting floating index type to version: "
-                              << type.version;
+    BOOST_LOG_SEV(lg(), info) << "Reverting floating index type to version: " << type.version;
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new FloatingIndexTypeDetailDialog(mainWindow_);
@@ -352,25 +388,33 @@ void FloatingIndexTypeController::onRevertVersion(
     detailDialog->setType(type);
     detailDialog->setCreateMode(false);
 
-    connect(detailDialog, &FloatingIndexTypeDetailDialog::statusMessage,
-            this, &FloatingIndexTypeController::statusMessage);
-    connect(detailDialog, &FloatingIndexTypeDetailDialog::errorMessage,
-            this, &FloatingIndexTypeController::errorMessage);
-    connect(detailDialog, &FloatingIndexTypeDetailDialog::typeSaved,
-            this, [self = QPointer<FloatingIndexTypeController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Floating Index Type reverted: " << code.toStdString();
-        emit self->statusMessage(QString("Floating Index Type '%1' reverted successfully").arg(code));
-        self->handleEntitySaved();
-    });
+    connect(detailDialog,
+            &FloatingIndexTypeDetailDialog::statusMessage,
+            this,
+            &FloatingIndexTypeController::statusMessage);
+    connect(detailDialog,
+            &FloatingIndexTypeDetailDialog::errorMessage,
+            this,
+            &FloatingIndexTypeController::errorMessage);
+    connect(detailDialog,
+            &FloatingIndexTypeDetailDialog::typeSaved,
+            this,
+            [self = QPointer<FloatingIndexTypeController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Floating Index Type reverted: " << code.toStdString();
+                emit self->statusMessage(
+                    QString("Floating Index Type '%1' reverted successfully").arg(code));
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Revert Floating Index Type: %1")
-        .arg(QString::fromStdString(type.code)));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("Revert Floating Index Type: %1").arg(QString::fromStdString(type.code)));
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
+                                                               IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 

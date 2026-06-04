@@ -20,12 +20,12 @@
 #ifndef ORES_QT_JOB_DEFINITION_HISTORY_DIALOG_HPP
 #define ORES_QT_JOB_DEFINITION_HISTORY_DIALOG_HPP
 
-#include <QWidget>
-#include <QTableWidget>
-#include <boost/uuid/uuid.hpp>
-#include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
 #include "ores.scheduler.api/domain/job_instance.hpp"
+#include <QTableWidget>
+#include <QWidget>
+#include <boost/uuid/uuid.hpp>
 
 namespace Ui {
 class JobDefinitionHistoryDialog;
@@ -44,8 +44,7 @@ class JobDefinitionHistoryDialog final : public QWidget {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.job_definition_history_dialog";
+    inline static std::string_view logger_name = "ores.qt.job_definition_history_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -54,11 +53,10 @@ private:
     }
 
 public:
-    explicit JobDefinitionHistoryDialog(
-        const boost::uuids::uuid& job_definition_id,
-        const QString& job_name,
-        ClientManager* clientManager,
-        QWidget* parent = nullptr);
+    explicit JobDefinitionHistoryDialog(const boost::uuids::uuid& job_definition_id,
+                                        const QString& job_name,
+                                        ClientManager* clientManager,
+                                        QWidget* parent = nullptr);
     ~JobDefinitionHistoryDialog() override;
 
     void loadHistory();

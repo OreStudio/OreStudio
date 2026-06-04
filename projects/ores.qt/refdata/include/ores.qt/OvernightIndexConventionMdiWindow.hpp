@@ -20,15 +20,15 @@
 #ifndef ORES_QT_OVERNIGHT_INDEX_CONVENTION_MDI_WINDOW_HPP
 #define ORES_QT_OVERNIGHT_INDEX_CONVENTION_MDI_WINDOW_HPP
 
-#include <QToolBar>
-#include <QTableView>
-#include <QSortFilterProxyModel>
-#include "ores.qt/EntityListMdiWindow.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ClientOvernightIndexConventionModel.hpp"
+#include "ores.qt/EntityListMdiWindow.hpp"
 #include "ores.qt/PaginationWidget.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/overnight_index_convention.hpp"
+#include <QSortFilterProxyModel>
+#include <QTableView>
+#include <QToolBar>
 
 namespace ores::qt {
 
@@ -42,8 +42,7 @@ class OvernightIndexConventionMdiWindow final : public EntityListMdiWindow {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.overnight_index_convention_mdi_window";
+    inline static std::string_view logger_name = "ores.qt.overnight_index_convention_mdi_window";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -52,10 +51,9 @@ private:
     }
 
 public:
-    explicit OvernightIndexConventionMdiWindow(
-        ClientManager* clientManager,
-        const QString& username,
-        QWidget* parent = nullptr);
+    explicit OvernightIndexConventionMdiWindow(ClientManager* clientManager,
+                                               const QString& username,
+                                               QWidget* parent = nullptr);
     ~OvernightIndexConventionMdiWindow() override = default;
 
 signals:

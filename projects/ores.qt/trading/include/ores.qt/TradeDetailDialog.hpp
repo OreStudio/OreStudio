@@ -20,22 +20,22 @@
 #ifndef ORES_QT_TRADE_DETAIL_DIALOG_HPP
 #define ORES_QT_TRADE_DETAIL_DIALOG_HPP
 
-#include <map>
-#include <vector>
-#include <QTabWidget>
-#include <QTimer>
-#include "ores.qt/ClientManager.hpp"
-#include "ores.qt/ImageCache.hpp"
-#include "ores.qt/DetailDialogBase.hpp"
-#include "ores.qt/ProvenanceWidget.hpp"
-#include "ores.qt/IInstrumentForm.hpp"
-#include "ores.qt/InstrumentFormRegistry.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/DetailDialogBase.hpp"
+#include "ores.qt/IInstrumentForm.hpp"
+#include "ores.qt/ImageCache.hpp"
+#include "ores.qt/InstrumentFormRegistry.hpp"
+#include "ores.qt/ProvenanceWidget.hpp"
+#include "ores.refdata.api/domain/book.hpp"
+#include "ores.refdata.api/domain/counterparty.hpp"
 #include "ores.trading.api/domain/trade.hpp"
 #include "ores.trading.api/domain/trade_type.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
-#include "ores.refdata.api/domain/book.hpp"
-#include "ores.refdata.api/domain/counterparty.hpp"
+#include <QTabWidget>
+#include <QTimer>
+#include <map>
+#include <vector>
 
 namespace Ui {
 class TradeDetailDialog;
@@ -60,8 +60,7 @@ class TradeDetailDialog final : public DetailDialogBase {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.trade_detail_dialog";
+    inline static std::string_view logger_name = "ores.qt.trade_detail_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -91,8 +90,8 @@ public:
     void setReadOnly(bool readOnly);
 
 protected:
-    QTabWidget*       tabWidget()        const override;
-    QWidget*          provenanceTab()    const override;
+    QTabWidget* tabWidget() const override;
+    QWidget* provenanceTab() const override;
     ProvenanceWidget* provenanceWidget() const override;
     bool hasUnsavedChanges() const override {
         return hasChanges_ || instrumentHasChanges_;
@@ -125,8 +124,7 @@ private:
     bool validateInput();
     void connectFormSignals(IInstrumentForm* form);
     void activateForm(IInstrumentForm* form, const std::string& tradeTypeCode);
-    IInstrumentForm* findForm(trading::domain::product_type pt,
-                              const std::string& trade_type_code);
+    IInstrumentForm* findForm(trading::domain::product_type pt, const std::string& trade_type_code);
     void applyCreateTradeType();
 
     void saveTrade(const trading::domain::trade& trade);

@@ -18,31 +18,29 @@
  *
  */
 #include "ores.qt/MarketFixingsMdiWindow.hpp"
-
-#include <QHeaderView>
-#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/EntityItemDelegate.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include <QHeaderView>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-MarketFixingsMdiWindow::MarketFixingsMdiWindow(
-    ClientManager* clientManager,
-    const QString& username,
-    QWidget* parent)
-    : EntityListMdiWindow(parent),
-      verticalLayout_(new QVBoxLayout(this)),
-      tableView_(new QTableView(this)),
-      toolBar_(new QToolBar(this)),
-      paginationWidget_(new PaginationWidget(this)),
-      reloadAction_(new QAction("Reload", this)),
-      viewFixingsAction_(new QAction("View Fixings", this)),
-      model_(std::make_unique<ClientMarketSeriesModel>(clientManager)),
-      proxyModel_(new QSortFilterProxyModel(this)),
-      clientManager_(clientManager),
-      username_(username) {
+MarketFixingsMdiWindow::MarketFixingsMdiWindow(ClientManager* clientManager,
+                                               const QString& username,
+                                               QWidget* parent)
+    : EntityListMdiWindow(parent)
+    , verticalLayout_(new QVBoxLayout(this))
+    , tableView_(new QTableView(this))
+    , toolBar_(new QToolBar(this))
+    , paginationWidget_(new PaginationWidget(this))
+    , reloadAction_(new QAction("Reload", this))
+    , viewFixingsAction_(new QAction("View Fixings", this))
+    , model_(std::make_unique<ClientMarketSeriesModel>(clientManager))
+    , proxyModel_(new QSortFilterProxyModel(this))
+    , clientManager_(clientManager)
+    , username_(username) {
 
     BOOST_LOG_SEV(lg(), debug) << "Creating market fixings MDI window";
     model_->set_series_type_filter("FIXING");
@@ -68,35 +66,40 @@ void MarketFixingsMdiWindow::setupUi() {
     tableView_->verticalHeader()->setVisible(false);
     tableView_->setItemDelegate(new EntityItemDelegate({}, tableView_));
 
-    initializeTableSettings(tableView_, model_.get(),
-        "MarketFixingsListWindow", {}, {1100, 600}, 1);
+    initializeTableSettings(
+        tableView_, model_.get(), "MarketFixingsListWindow", {}, {1100, 600}, 1);
 
     verticalLayout_->addWidget(tableView_);
     verticalLayout_->addWidget(createBottomBar(paginationWidget_, clientManager_));
 
     // Connections
-    connect(model_.get(), &ClientMarketSeriesModel::dataLoaded,
-            this, &MarketFixingsMdiWindow::onDataLoaded);
-    connect(model_.get(), &ClientMarketSeriesModel::loadError,
-            this, &MarketFixingsMdiWindow::onLoadError);
+    connect(model_.get(),
+            &ClientMarketSeriesModel::dataLoaded,
+            this,
+            &MarketFixingsMdiWindow::onDataLoaded);
+    connect(model_.get(),
+            &ClientMarketSeriesModel::loadError,
+            this,
+            &MarketFixingsMdiWindow::onLoadError);
     connectModel(model_.get());
-    connect(tableView_, &QTableView::doubleClicked,
-            this, &MarketFixingsMdiWindow::onRowDoubleClicked);
+    connect(
+        tableView_, &QTableView::doubleClicked, this, &MarketFixingsMdiWindow::onRowDoubleClicked);
     connect(tableView_->selectionModel(),
             &QItemSelectionModel::selectionChanged,
-            this, &MarketFixingsMdiWindow::onSelectionChanged);
+            this,
+            &MarketFixingsMdiWindow::onSelectionChanged);
 
-    connect(paginationWidget_, &PaginationWidget::page_size_changed,
-            this, [this](std::uint32_t size) {
-        model_->set_page_size(size);
-        model_->refresh();
-    });
-    connect(paginationWidget_, &PaginationWidget::page_requested,
-            this, [this](std::uint32_t offset, std::uint32_t limit) {
-        model_->load_page(offset, limit);
-    });
-    connect(paginationWidget_, &PaginationWidget::load_all_requested,
-            this, [this]() {
+    connect(
+        paginationWidget_, &PaginationWidget::page_size_changed, this, [this](std::uint32_t size) {
+            model_->set_page_size(size);
+            model_->refresh();
+        });
+    connect(
+        paginationWidget_,
+        &PaginationWidget::page_requested,
+        this,
+        [this](std::uint32_t offset, std::uint32_t limit) { model_->load_page(offset, limit); });
+    connect(paginationWidget_, &PaginationWidget::load_all_requested, this, [this]() {
         const auto total = model_->total_available_count();
         if (total > 0 && total <= 5000) {
             model_->set_page_size(total);
@@ -105,10 +108,14 @@ void MarketFixingsMdiWindow::setupUi() {
     });
 
     if (clientManager_) {
-        connect(clientManager_, &ClientManager::connected,
-                this, &MarketFixingsMdiWindow::onConnectionStateChanged);
-        connect(clientManager_, &ClientManager::reconnected,
-                this, &MarketFixingsMdiWindow::onConnectionStateChanged);
+        connect(clientManager_,
+                &ClientManager::connected,
+                this,
+                &MarketFixingsMdiWindow::onConnectionStateChanged);
+        connect(clientManager_,
+                &ClientManager::reconnected,
+                this,
+                &MarketFixingsMdiWindow::onConnectionStateChanged);
         if (clientManager_->isConnected())
             model_->refresh();
     }
@@ -122,29 +129,24 @@ void MarketFixingsMdiWindow::setupToolbar() {
 
     const QColor iconColor = color_constants::icon_color;
 
-    reloadAction_->setIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowSync, iconColor));
+    reloadAction_->setIcon(IconUtils::createRecoloredIcon(Icon::ArrowSync, iconColor));
     reloadAction_->setToolTip(tr("Refresh fixing series"));
-    connect(reloadAction_, &QAction::triggered,
-            this, &EntityListMdiWindow::reload);
+    connect(reloadAction_, &QAction::triggered, this, &EntityListMdiWindow::reload);
     toolBar_->addAction(reloadAction_);
     initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowSync));
 
     toolBar_->addSeparator();
 
-    viewFixingsAction_->setIcon(IconUtils::createRecoloredIcon(
-        Icon::Chart, iconColor));
+    viewFixingsAction_->setIcon(IconUtils::createRecoloredIcon(Icon::Chart, iconColor));
     viewFixingsAction_->setToolTip(tr("View fixing history for selected index"));
     viewFixingsAction_->setEnabled(false);
-    connect(viewFixingsAction_, &QAction::triggered,
-            this, &MarketFixingsMdiWindow::viewFixings);
+    connect(viewFixingsAction_, &QAction::triggered, this, &MarketFixingsMdiWindow::viewFixings);
     toolBar_->addAction(viewFixingsAction_);
 }
 
 void MarketFixingsMdiWindow::updateActionStates() {
     const bool hasSelection =
-        tableView_->selectionModel() &&
-        tableView_->selectionModel()->hasSelection();
+        tableView_->selectionModel() && tableView_->selectionModel()->hasSelection();
     viewFixingsAction_->setEnabled(hasSelection);
 }
 
@@ -161,16 +163,13 @@ void MarketFixingsMdiWindow::onWindowWorkspaceChanged(const WorkspaceContext& ct
 
 void MarketFixingsMdiWindow::onDataLoaded() {
     const auto loaded = model_->rowCount();
-    const auto total  = static_cast<int>(model_->total_available_count());
+    const auto total = static_cast<int>(model_->total_available_count());
     paginationWidget_->update_state(loaded, total);
-    paginationWidget_->set_load_all_enabled(
-        loaded < total && total > 0 && total <= 5000);
-    emit statusChanged(tr("Loaded %1 of %2 fixing series")
-        .arg(loaded).arg(total));
+    paginationWidget_->set_load_all_enabled(loaded < total && total > 0 && total <= 5000);
+    emit statusChanged(tr("Loaded %1 of %2 fixing series").arg(loaded).arg(total));
 }
 
-void MarketFixingsMdiWindow::onLoadError(
-    const QString& error_message, const QString& /*details*/) {
+void MarketFixingsMdiWindow::onLoadError(const QString& error_message, const QString& /*details*/) {
     emit errorOccurred(error_message);
 }
 
@@ -182,7 +181,8 @@ void MarketFixingsMdiWindow::onRowDoubleClicked(const QModelIndex& index) {
 
 void MarketFixingsMdiWindow::viewFixings() {
     const auto selection = tableView_->selectionModel()->selectedRows();
-    if (selection.isEmpty()) return;
+    if (selection.isEmpty())
+        return;
     auto sourceIndex = proxyModel_->mapToSource(selection.first());
     if (auto* s = model_->getSeries(sourceIndex.row()))
         emit showMarketFixings(*s);

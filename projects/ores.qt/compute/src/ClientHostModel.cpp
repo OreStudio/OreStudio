@@ -18,39 +18,41 @@
  *
  */
 #include "ores.qt/ClientHostModel.hpp"
-
-#include <QtConcurrent>
-#include <boost/uuid/uuid_io.hpp>
 #include "ores.compute.api/messaging/host_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
+#include <QtConcurrent>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    std::string host_key_extractor(const compute::domain::host& e) {
-        return e.external_id;
-    }
+std::string host_key_extractor(const compute::domain::host& e) {
+    return e.external_id;
+}
 }
 
-ClientHostModel::ClientHostModel(
-    ClientManager* clientManager, QObject* parent)
-    : AbstractClientModel(parent),
-      clientManager_(clientManager),
-      watcher_(new QFutureWatcher<FetchResult>(this)),
-      recencyTracker_(host_key_extractor),
-      pulseManager_(new RecencyPulseManager(this)) {
+ClientHostModel::ClientHostModel(ClientManager* clientManager, QObject* parent)
+    : AbstractClientModel(parent)
+    , clientManager_(clientManager)
+    , watcher_(new QFutureWatcher<FetchResult>(this))
+    , recencyTracker_(host_key_extractor)
+    , pulseManager_(new RecencyPulseManager(this)) {
 
-    connect(watcher_, &QFutureWatcher<FetchResult>::finished,
-            this, &ClientHostModel::onHostsLoaded);
+    connect(
+        watcher_, &QFutureWatcher<FetchResult>::finished, this, &ClientHostModel::onHostsLoaded);
 
-    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
-            this, &ClientHostModel::onPulseStateChanged);
-    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
-            this, &ClientHostModel::onPulsingComplete);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulse_state_changed,
+            this,
+            &ClientHostModel::onPulseStateChanged);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulsing_complete,
+            this,
+            &ClientHostModel::onPulsingComplete);
 }
 
 int ClientHostModel::rowCount(const QModelIndex& parent) const {
@@ -65,8 +67,7 @@ int ClientHostModel::columnCount(const QModelIndex& parent) const {
     return ColumnCount;
 }
 
-QVariant ClientHostModel::data(
-    const QModelIndex& index, int role) const {
+QVariant ClientHostModel::data(const QModelIndex& index, int role) const {
     if (!index.isValid())
         return {};
 
@@ -78,32 +79,32 @@ QVariant ClientHostModel::data(
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-        case DisplayName: {
-            if (!host.display_name.empty())
-                return QString::fromStdString(host.display_name);
-            // Short-ID fallback: first 8 hex chars of the UUID.
-            return QString::fromStdString(host.external_id).left(8);
-        }
-        case ExternalId:
-            return QString::fromStdString(host.external_id);
-        case Location:
-            return QString::fromStdString(host.location);
-        case CpuCount:
-            return static_cast<qlonglong>(host.cpu_count);
-        case RamMb:
-            return static_cast<qlonglong>(host.ram_mb);
-        case GpuType:
-            return QString::fromStdString(host.gpu_type);
-        case LastRpcTime:
-            return relative_time_helper::format(host.last_rpc_time);
-        case CreditTotal:
-            return static_cast<qlonglong>(host.credit_total);
-        case Version:
-            return static_cast<qlonglong>(host.version);
-        case ModifiedBy:
-            return QString::fromStdString(host.modified_by);
-        default:
-            return {};
+            case DisplayName: {
+                if (!host.display_name.empty())
+                    return QString::fromStdString(host.display_name);
+                // Short-ID fallback: first 8 hex chars of the UUID.
+                return QString::fromStdString(host.external_id).left(8);
+            }
+            case ExternalId:
+                return QString::fromStdString(host.external_id);
+            case Location:
+                return QString::fromStdString(host.location);
+            case CpuCount:
+                return static_cast<qlonglong>(host.cpu_count);
+            case RamMb:
+                return static_cast<qlonglong>(host.ram_mb);
+            case GpuType:
+                return QString::fromStdString(host.gpu_type);
+            case LastRpcTime:
+                return relative_time_helper::format(host.last_rpc_time);
+            case CreditTotal:
+                return static_cast<qlonglong>(host.credit_total);
+            case Version:
+                return static_cast<qlonglong>(host.version);
+            case ModifiedBy:
+                return QString::fromStdString(host.modified_by);
+            default:
+                return {};
         }
     }
 
@@ -118,34 +119,33 @@ QVariant ClientHostModel::data(
     return {};
 }
 
-QVariant ClientHostModel::headerData(
-    int section, Qt::Orientation orientation, int role) const {
+QVariant ClientHostModel::headerData(int section, Qt::Orientation orientation, int role) const {
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return {};
 
     switch (section) {
-    case DisplayName:
-        return tr("Name");
-    case ExternalId:
-        return tr("Host ID");
-    case Location:
-        return tr("Location");
-    case CpuCount:
-        return tr("CPUs");
-    case RamMb:
-        return tr("RAM (MB)");
-    case GpuType:
-        return tr("GPU");
-    case LastRpcTime:
-        return tr("Last Heartbeat");
-    case CreditTotal:
-        return tr("Credits");
-    case Version:
-        return tr("Version");
-    case ModifiedBy:
-        return tr("Modified By");
-    default:
-        return {};
+        case DisplayName:
+            return tr("Name");
+        case ExternalId:
+            return tr("Host ID");
+        case Location:
+            return tr("Location");
+        case CpuCount:
+            return tr("CPUs");
+        case RamMb:
+            return tr("RAM (MB)");
+        case GpuType:
+            return tr("GPU");
+        case LastRpcTime:
+            return tr("Last Heartbeat");
+        case CreditTotal:
+            return tr("Credits");
+        case Version:
+            return tr("Version");
+        case ModifiedBy:
+            return tr("Modified By");
+        default:
+            return {};
     }
 }
 
@@ -175,8 +175,7 @@ void ClientHostModel::refresh() {
     fetch_hosts(0, page_size_);
 }
 
-void ClientHostModel::load_page(std::uint32_t offset,
-                                          std::uint32_t limit) {
+void ClientHostModel::load_page(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "load_page: offset=" << offset << ", limit=" << limit;
 
     if (is_fetching_) {
@@ -200,18 +199,18 @@ void ClientHostModel::load_page(std::uint32_t offset,
     fetch_hosts(offset, limit);
 }
 
-void ClientHostModel::fetch_hosts(
-    std::uint32_t offset, std::uint32_t limit) {
+void ClientHostModel::fetch_hosts(std::uint32_t offset, std::uint32_t limit) {
     is_fetching_ = true;
     QPointer<ClientHostModel> self = this;
 
-    QFuture<FetchResult> future =
-        QtConcurrent::run([self, offset, limit]() -> FetchResult {
-            return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
-                BOOST_LOG_SEV(lg(), debug) << "Making compute hosts request with offset="
-                                           << offset << ", limit=" << limit;
+    QFuture<FetchResult> future = QtConcurrent::run([self, offset, limit]() -> FetchResult {
+        return exception_helper::wrap_async_fetch<FetchResult>(
+            [&]() -> FetchResult {
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Making compute hosts request with offset=" << offset << ", limit=" << limit;
                 if (!self || !self->clientManager_) {
-                    return {.success = false, .hosts = {},
+                    return {.success = false,
+                            .hosts = {},
                             .total_available_count = 0,
                             .error_message = "Model was destroyed",
                             .error_details = {}};
@@ -221,28 +220,32 @@ void ClientHostModel::fetch_hosts(
                 request.offset = offset;
                 request.limit = limit;
 
-                auto result = self->clientManager_->
-                    process_authenticated_request(std::move(request));
+                auto result =
+                    self->clientManager_->process_authenticated_request(std::move(request));
 
                 if (!result) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to fetch compute hosts: "
-                                               << result.error();
-                    return {.success = false, .hosts = {},
+                    BOOST_LOG_SEV(lg(), error)
+                        << "Failed to fetch compute hosts: " << result.error();
+                    return {.success = false,
+                            .hosts = {},
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(
                                 "Failed to fetch compute hosts: " + result.error()),
                             .error_details = {}};
                 }
 
-                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->hosts.size()
-                                           << " compute hosts, total available: "
-                                           << result->total_available_count;
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Fetched " << result->hosts.size()
+                    << " compute hosts, total available: " << result->total_available_count;
                 return {.success = true,
                         .hosts = std::move(result->hosts),
-                        .total_available_count = static_cast<std::uint32_t>(result->total_available_count),
-                        .error_message = {}, .error_details = {}};
-            }, "compute hosts");
-        });
+                        .total_available_count =
+                            static_cast<std::uint32_t>(result->total_available_count),
+                        .error_message = {},
+                        .error_details = {}};
+            },
+            "compute hosts");
+    });
 
     watcher_->setFuture(future);
 }
@@ -253,8 +256,8 @@ void ClientHostModel::onHostsLoaded() {
     const auto result = watcher_->result();
 
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to fetch compute hosts: "
-                                   << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to fetch compute hosts: " << result.error_message.toStdString();
         emit loadError(result.error_message, result.error_details);
         return;
     }
@@ -293,16 +296,14 @@ void ClientHostModel::set_page_size(std::uint32_t size) {
     }
 }
 
-const compute::domain::host*
-ClientHostModel::getHost(int row) const {
+const compute::domain::host* ClientHostModel::getHost(int row) const {
     const auto idx = static_cast<std::size_t>(row);
     if (idx >= hosts_.size())
         return nullptr;
     return &hosts_[idx];
 }
 
-QVariant ClientHostModel::recency_foreground_color(
-    const std::string& code) const {
+QVariant ClientHostModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {
         return color_constants::stale_indicator;
     }
@@ -311,8 +312,8 @@ QVariant ClientHostModel::recency_foreground_color(
 
 void ClientHostModel::onPulseStateChanged(bool /*isOn*/) {
     if (!hosts_.empty()) {
-        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
-            {Qt::ForegroundRole});
+        emit dataChanged(
+            index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::ForegroundRole});
     }
 }
 

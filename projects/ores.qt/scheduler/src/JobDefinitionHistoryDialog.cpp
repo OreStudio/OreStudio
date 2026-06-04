@@ -18,16 +18,15 @@
  *
  */
 #include "ores.qt/JobDefinitionHistoryDialog.hpp"
-
-#include <QHeaderView>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include <boost/uuid/uuid_io.hpp>
-#include "ui_JobDefinitionHistoryDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.scheduler.api/rfl/reflectors.hpp"
 #include "ores.scheduler.api/messaging/scheduler_protocol.hpp"
+#include "ores.scheduler.api/rfl/reflectors.hpp"
+#include "ui_JobDefinitionHistoryDialog.h"
+#include <QFutureWatcher>
+#include <QHeaderView>
+#include <QtConcurrent>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
@@ -37,9 +36,12 @@ namespace {
 
 QString format_status(scheduler::domain::job_status s) {
     switch (s) {
-    case scheduler::domain::job_status::starting:   return QObject::tr("Starting");
-    case scheduler::domain::job_status::succeeded:  return QObject::tr("Succeeded");
-    case scheduler::domain::job_status::failed:     return QObject::tr("Failed");
+        case scheduler::domain::job_status::starting:
+            return QObject::tr("Starting");
+        case scheduler::domain::job_status::succeeded:
+            return QObject::tr("Succeeded");
+        case scheduler::domain::job_status::failed:
+            return QObject::tr("Failed");
     }
     return QObject::tr("Unknown");
 }
@@ -56,16 +58,15 @@ QString format_duration(const scheduler::domain::job_instance& instance) {
 
 } // anonymous namespace
 
-JobDefinitionHistoryDialog::JobDefinitionHistoryDialog(
-    const boost::uuids::uuid& job_definition_id,
-    const QString& job_name,
-    ClientManager* clientManager,
-    QWidget* parent)
-    : QWidget(parent),
-      ui_(new Ui::JobDefinitionHistoryDialog),
-      job_definition_id_(job_definition_id),
-      job_name_(job_name),
-      clientManager_(clientManager) {
+JobDefinitionHistoryDialog::JobDefinitionHistoryDialog(const boost::uuids::uuid& job_definition_id,
+                                                       const QString& job_name,
+                                                       ClientManager* clientManager,
+                                                       QWidget* parent)
+    : QWidget(parent)
+    , ui_(new Ui::JobDefinitionHistoryDialog)
+    , job_definition_id_(job_definition_id)
+    , job_name_(job_name)
+    , clientManager_(clientManager) {
 
     ui_->setupUi(this);
     setupUi();
@@ -84,9 +85,12 @@ void JobDefinitionHistoryDialog::setupUi() {
 
     // Columns: Run ID | Status | Start Time | End Time | Duration | Message
     ui_->versionListWidget->setColumnCount(6);
-    ui_->versionListWidget->setHorizontalHeaderLabels(
-        {tr("Run ID"), tr("Status"), tr("Start Time"),
-         tr("End Time"), tr("Duration"), tr("Message")});
+    ui_->versionListWidget->setHorizontalHeaderLabels({tr("Run ID"),
+                                                       tr("Status"),
+                                                       tr("Start Time"),
+                                                       tr("End Time"),
+                                                       tr("Duration"),
+                                                       tr("Message")});
     ui_->versionListWidget->horizontalHeader()->setStretchLastSection(true);
     ui_->versionListWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui_->versionListWidget->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -94,10 +98,14 @@ void JobDefinitionHistoryDialog::setupUi() {
 }
 
 void JobDefinitionHistoryDialog::setupConnections() {
-    connect(ui_->versionListWidget, &QTableWidget::itemSelectionChanged,
-            this, &JobDefinitionHistoryDialog::onRunSelected);
-    connect(ui_->closeButton, &QPushButton::clicked,
-            this, [this]() { if (window()) window()->close(); });
+    connect(ui_->versionListWidget,
+            &QTableWidget::itemSelectionChanged,
+            this,
+            &JobDefinitionHistoryDialog::onRunSelected);
+    connect(ui_->closeButton, &QPushButton::clicked, this, [this]() {
+        if (window())
+            window()->close();
+    });
 }
 
 void JobDefinitionHistoryDialog::loadHistory() {
@@ -106,8 +114,7 @@ void JobDefinitionHistoryDialog::loadHistory() {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Loading execution history for: "
-                               << job_name_.toStdString();
+    BOOST_LOG_SEV(lg(), debug) << "Loading execution history for: " << job_name_.toStdString();
     emit statusChanged(tr("Loading execution history…"));
 
     QPointer<JobDefinitionHistoryDialog> self = this;
@@ -126,20 +133,21 @@ void JobDefinitionHistoryDialog::loadHistory() {
         scheduler::messaging::get_job_history_request request;
         request.job_definition_id = boost::uuids::to_string(id);
         request.limit = 0; // server default (100)
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server", {}};
         }
 
 
-        return {response_result->success, response_result->message,
+        return {response_result->success,
+                response_result->message,
                 std::move(response_result->instances)};
     };
 
     auto* watcher = new QFutureWatcher<HistoryResult>(self);
-    connect(watcher, &QFutureWatcher<HistoryResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<HistoryResult>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
@@ -147,11 +155,9 @@ void JobDefinitionHistoryDialog::loadHistory() {
             self->instances_ = std::move(result.instances);
             self->updateRunList();
             emit self->statusChanged(
-                QString("Loaded %1 execution record(s)").arg(
-                    self->instances_.size()));
+                QString("Loaded %1 execution record(s)").arg(self->instances_.size()));
         } else {
-            BOOST_LOG_SEV(lg(), error) << "History load failed: "
-                                       << result.message;
+            BOOST_LOG_SEV(lg(), error) << "History load failed: " << result.message;
             emit self->errorOccurred(QString::fromStdString(result.message));
         }
     });
@@ -167,29 +173,25 @@ void JobDefinitionHistoryDialog::updateRunList() {
         int row = ui_->versionListWidget->rowCount();
         ui_->versionListWidget->insertRow(row);
 
-        auto* runIdItem = new QTableWidgetItem(
-            QString::number(inst.id));
+        auto* runIdItem = new QTableWidgetItem(QString::number(inst.id));
         runIdItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
         ui_->versionListWidget->setItem(row, 0, runIdItem);
 
         auto* statusItem = new QTableWidgetItem(format_status(inst.status));
         ui_->versionListWidget->setItem(row, 1, statusItem);
 
-        auto* startItem = new QTableWidgetItem(
-            relative_time_helper::format(inst.triggered_at));
+        auto* startItem = new QTableWidgetItem(relative_time_helper::format(inst.triggered_at));
         ui_->versionListWidget->setItem(row, 2, startItem);
 
-        QString endText = inst.completed_at
-            ? relative_time_helper::format(*inst.completed_at)
-            : tr("—");
+        QString endText =
+            inst.completed_at ? relative_time_helper::format(*inst.completed_at) : tr("—");
         auto* endItem = new QTableWidgetItem(endText);
         ui_->versionListWidget->setItem(row, 3, endItem);
 
         auto* durationItem = new QTableWidgetItem(format_duration(inst));
         ui_->versionListWidget->setItem(row, 4, durationItem);
 
-        auto* msgItem = new QTableWidgetItem(
-            QString::fromStdString(inst.error_message));
+        auto* msgItem = new QTableWidgetItem(QString::fromStdString(inst.error_message));
         ui_->versionListWidget->setItem(row, 5, msgItem);
     }
 

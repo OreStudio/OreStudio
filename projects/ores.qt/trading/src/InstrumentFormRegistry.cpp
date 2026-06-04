@@ -18,27 +18,25 @@
  *
  */
 #include "ores.qt/InstrumentFormRegistry.hpp"
-
-#include "ores.qt/IInstrumentForm.hpp"
 #include "ores.qt/BondInstrumentForm.hpp"
 #include "ores.qt/CommodityInstrumentForm.hpp"
 #include "ores.qt/CompositeInstrumentForm.hpp"
 #include "ores.qt/CreditInstrumentForm.hpp"
 #include "ores.qt/EquityInstrumentForm.hpp"
-#include "ores.qt/FxInstrumentForm.hpp"
-#include "ores.qt/FxVanillaOptionInstrumentForm.hpp"
+#include "ores.qt/FxAccumulatorInstrumentForm.hpp"
+#include "ores.qt/FxAsianForwardInstrumentForm.hpp"
 #include "ores.qt/FxBarrierOptionInstrumentForm.hpp"
 #include "ores.qt/FxDigitalOptionInstrumentForm.hpp"
-#include "ores.qt/FxAsianForwardInstrumentForm.hpp"
-#include "ores.qt/FxAccumulatorInstrumentForm.hpp"
+#include "ores.qt/FxInstrumentForm.hpp"
+#include "ores.qt/FxVanillaOptionInstrumentForm.hpp"
 #include "ores.qt/FxVarianceSwapInstrumentForm.hpp"
+#include "ores.qt/IInstrumentForm.hpp"
 #include "ores.qt/ScriptedInstrumentForm.hpp"
 #include "ores.qt/SwapInstrumentForm.hpp"
 
 namespace ores::qt {
 
-void InstrumentFormRegistry::registerForm(
-    product_type pt, QString displayName, Factory factory) {
+void InstrumentFormRegistry::registerForm(product_type pt, QString displayName, Factory factory) {
     if (entries_.find(pt) == entries_.end()) {
         order_.push_back(pt);
     }
@@ -49,40 +47,39 @@ bool InstrumentFormRegistry::contains(product_type pt) const noexcept {
     return entries_.find(pt) != entries_.end();
 }
 
-IInstrumentForm* InstrumentFormRegistry::createForm(
-    product_type pt, QWidget* parent) const {
+IInstrumentForm* InstrumentFormRegistry::createForm(product_type pt, QWidget* parent) const {
     auto it = entries_.find(pt);
-    if (it == entries_.end()) return nullptr;
+    if (it == entries_.end())
+        return nullptr;
     return it->second.factory(parent);
 }
 
 QString InstrumentFormRegistry::displayName(product_type pt) const {
     auto it = entries_.find(pt);
-    if (it == entries_.end()) return {};
+    if (it == entries_.end())
+        return {};
     return it->second.displayName;
 }
 
-std::vector<InstrumentFormRegistry::product_type>
-InstrumentFormRegistry::registeredTypes() const {
+std::vector<InstrumentFormRegistry::product_type> InstrumentFormRegistry::registeredTypes() const {
     return order_;
 }
 
-void InstrumentFormRegistry::registerTypeForm(
-    const QString& trade_type_code, Factory factory) {
+void InstrumentFormRegistry::registerTypeForm(const QString& trade_type_code, Factory factory) {
     if (typeEntries_.find(trade_type_code) == typeEntries_.end())
         typeOrder_.push_back(trade_type_code);
     typeEntries_[trade_type_code] = TypeEntry{std::move(factory)};
 }
 
-bool InstrumentFormRegistry::containsTypeForm(
-    const QString& trade_type_code) const noexcept {
+bool InstrumentFormRegistry::containsTypeForm(const QString& trade_type_code) const noexcept {
     return typeEntries_.find(trade_type_code) != typeEntries_.end();
 }
 
-IInstrumentForm* InstrumentFormRegistry::createTypeForm(
-    const QString& trade_type_code, QWidget* parent) const {
+IInstrumentForm* InstrumentFormRegistry::createTypeForm(const QString& trade_type_code,
+                                                        QWidget* parent) const {
     auto it = typeEntries_.find(trade_type_code);
-    if (it == typeEntries_.end()) return nullptr;
+    if (it == typeEntries_.end())
+        return nullptr;
     return it->second.factory(parent);
 }
 
@@ -96,46 +93,44 @@ void register_default_forms(InstrumentFormRegistry& registry) {
     // Adding a ninth family is one new subclass plus one new line below.
     using PT = ores::trading::domain::product_type;
 
-    registry.registerForm(PT::bond, QStringLiteral("Bond"),
-        [](QWidget* parent) -> IInstrumentForm* {
+    registry.registerForm(
+        PT::bond, QStringLiteral("Bond"), [](QWidget* parent) -> IInstrumentForm* {
             return new BondInstrumentForm(parent);
         });
-    registry.registerForm(PT::credit, QStringLiteral("Credit"),
-        [](QWidget* parent) -> IInstrumentForm* {
+    registry.registerForm(
+        PT::credit, QStringLiteral("Credit"), [](QWidget* parent) -> IInstrumentForm* {
             return new CreditInstrumentForm(parent);
         });
-    registry.registerForm(PT::swap, QStringLiteral("Swap"),
-        [](QWidget* parent) -> IInstrumentForm* {
+    registry.registerForm(
+        PT::swap, QStringLiteral("Swap"), [](QWidget* parent) -> IInstrumentForm* {
             return new SwapInstrumentForm(parent);
         });
-    registry.registerForm(PT::commodity, QStringLiteral("Commodity"),
-        [](QWidget* parent) -> IInstrumentForm* {
+    registry.registerForm(
+        PT::commodity, QStringLiteral("Commodity"), [](QWidget* parent) -> IInstrumentForm* {
             return new CommodityInstrumentForm(parent);
         });
-    registry.registerForm(PT::composite, QStringLiteral("Composite"),
-        [](QWidget* parent) -> IInstrumentForm* {
+    registry.registerForm(
+        PT::composite, QStringLiteral("Composite"), [](QWidget* parent) -> IInstrumentForm* {
             return new CompositeInstrumentForm(parent);
         });
-    registry.registerForm(PT::scripted, QStringLiteral("Scripted"),
-        [](QWidget* parent) -> IInstrumentForm* {
+    registry.registerForm(
+        PT::scripted, QStringLiteral("Scripted"), [](QWidget* parent) -> IInstrumentForm* {
             return new ScriptedInstrumentForm(parent);
         });
-    registry.registerForm(PT::equity, QStringLiteral("Equity"),
-        [](QWidget* parent) -> IInstrumentForm* {
+    registry.registerForm(
+        PT::equity, QStringLiteral("Equity"), [](QWidget* parent) -> IInstrumentForm* {
             return new EquityInstrumentForm(parent);
         });
-    registry.registerForm(PT::fx, QStringLiteral("FX"),
-        [](QWidget* parent) -> IInstrumentForm* {
-            return new FxInstrumentForm(parent);
-        });
+    registry.registerForm(PT::fx, QStringLiteral("FX"), [](QWidget* parent) -> IInstrumentForm* {
+        return new FxInstrumentForm(parent);
+    });
 
     // Per-trade-type-code forms: each registered code gets its own dedicated
     // form widget on the instrument stack. TradeDetailDialog prefers these
     // over the family-level form when the trade_type_code matches.
-    registry.registerTypeForm(QStringLiteral("FxOption"),
-        [](QWidget* parent) -> IInstrumentForm* {
-            return new FxVanillaOptionInstrumentForm(parent);
-        });
+    registry.registerTypeForm(QStringLiteral("FxOption"), [](QWidget* parent) -> IInstrumentForm* {
+        return new FxVanillaOptionInstrumentForm(parent);
+    });
 
     // FX barrier options
     auto makeBarrier = [](QWidget* parent) -> IInstrumentForm* {
@@ -165,15 +160,15 @@ void register_default_forms(InstrumentFormRegistry& registry) {
 
     // FX accumulator
     registry.registerTypeForm(QStringLiteral("FxAccumulator"),
-        [](QWidget* parent) -> IInstrumentForm* {
-            return new FxAccumulatorInstrumentForm(parent);
-        });
+                              [](QWidget* parent) -> IInstrumentForm* {
+                                  return new FxAccumulatorInstrumentForm(parent);
+                              });
 
     // FX variance swap
     registry.registerTypeForm(QStringLiteral("FxVarianceSwap"),
-        [](QWidget* parent) -> IInstrumentForm* {
-            return new FxVarianceSwapInstrumentForm(parent);
-        });
+                              [](QWidget* parent) -> IInstrumentForm* {
+                                  return new FxVarianceSwapInstrumentForm(parent);
+                              });
 }
 
 }

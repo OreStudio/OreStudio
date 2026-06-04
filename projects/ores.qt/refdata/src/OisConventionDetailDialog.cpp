@@ -18,23 +18,22 @@
  *
  */
 #include "ores.qt/OisConventionDetailDialog.hpp"
-
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include "ui_OisConventionDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.refdata.api/messaging/ois_convention_protocol.hpp"
+#include "ui_OisConventionDetailDialog.h"
+#include <QFutureWatcher>
+#include <QMessageBox>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 OisConventionDetailDialog::OisConventionDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent),
-      ui_(new Ui::OisConventionDetailDialog),
-      clientManager_(nullptr) {
+    : DetailDialogBase(parent)
+    , ui_(new Ui::OisConventionDetailDialog)
+    , clientManager_(nullptr) {
 
     ui_->setupUi(this);
     setupUi();
@@ -70,30 +69,43 @@ void OisConventionDetailDialog::setupUi() {
 }
 
 void OisConventionDetailDialog::setupConnections() {
-    connect(ui_->saveButton, &QPushButton::clicked, this,
-            &OisConventionDetailDialog::onSaveClicked);
-    connect(ui_->deleteButton, &QPushButton::clicked, this,
+    connect(
+        ui_->saveButton, &QPushButton::clicked, this, &OisConventionDetailDialog::onSaveClicked);
+    connect(ui_->deleteButton,
+            &QPushButton::clicked,
+            this,
             &OisConventionDetailDialog::onDeleteClicked);
-    connect(ui_->closeButton, &QPushButton::clicked, this,
-            &OisConventionDetailDialog::onCloseClicked);
+    connect(
+        ui_->closeButton, &QPushButton::clicked, this, &OisConventionDetailDialog::onCloseClicked);
 
-    connect(ui_->idEdit, &QLineEdit::textChanged, this,
-            &OisConventionDetailDialog::onCodeChanged);
-    connect(ui_->indexEdit, &QLineEdit::textChanged, this,
+    connect(ui_->idEdit, &QLineEdit::textChanged, this, &OisConventionDetailDialog::onCodeChanged);
+    connect(
+        ui_->indexEdit, &QLineEdit::textChanged, this, &OisConventionDetailDialog::onFieldChanged);
+    connect(ui_->fixedDayCountFractionEdit,
+            &QLineEdit::textChanged,
+            this,
             &OisConventionDetailDialog::onFieldChanged);
-    connect(ui_->fixedDayCountFractionEdit, &QLineEdit::textChanged, this,
+    connect(ui_->fixedCalendarEdit,
+            &QLineEdit::textChanged,
+            this,
             &OisConventionDetailDialog::onFieldChanged);
-    connect(ui_->fixedCalendarEdit, &QLineEdit::textChanged, this,
+    connect(ui_->fixedFrequencyEdit,
+            &QLineEdit::textChanged,
+            this,
             &OisConventionDetailDialog::onFieldChanged);
-    connect(ui_->fixedFrequencyEdit, &QLineEdit::textChanged, this,
+    connect(ui_->fixedConventionEdit,
+            &QLineEdit::textChanged,
+            this,
             &OisConventionDetailDialog::onFieldChanged);
-    connect(ui_->fixedConventionEdit, &QLineEdit::textChanged, this,
+    connect(ui_->fixedPaymentConventionEdit,
+            &QLineEdit::textChanged,
+            this,
             &OisConventionDetailDialog::onFieldChanged);
-    connect(ui_->fixedPaymentConventionEdit, &QLineEdit::textChanged, this,
-            &OisConventionDetailDialog::onFieldChanged);
-    connect(ui_->ruleEdit, &QLineEdit::textChanged, this,
-            &OisConventionDetailDialog::onFieldChanged);
-    connect(ui_->paymentCalendarEdit, &QLineEdit::textChanged, this,
+    connect(
+        ui_->ruleEdit, &QLineEdit::textChanged, this, &OisConventionDetailDialog::onFieldChanged);
+    connect(ui_->paymentCalendarEdit,
+            &QLineEdit::textChanged,
+            this,
             &OisConventionDetailDialog::onFieldChanged);
 }
 
@@ -105,8 +117,7 @@ void OisConventionDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
 
-void OisConventionDetailDialog::setConvention(
-    const refdata::domain::ois_convention& oc) {
+void OisConventionDetailDialog::setConvention(const refdata::domain::ois_convention& oc) {
     oc_ = oc;
     updateUiFromConvention();
 }
@@ -140,31 +151,23 @@ void OisConventionDetailDialog::updateUiFromConvention() {
     ui_->indexEdit->setText(QString::fromStdString(oc_.index));
     ui_->spotLagEdit->setValue(oc_.spot_lag);
     ui_->fixedDayCountFractionEdit->setText(QString::fromStdString(oc_.fixed_day_count_fraction));
-    ui_->fixedCalendarEdit->setText(oc_.fixed_calendar
-        ? QString::fromStdString(*oc_.fixed_calendar)
-        : QString{});
-    ui_->paymentLagEdit->setValue(oc_.payment_lag.value_or(
-        ui_->paymentLagEdit->minimum()));
-    ui_->fixedFrequencyEdit->setText(oc_.fixed_frequency
-        ? QString::fromStdString(*oc_.fixed_frequency)
-        : QString{});
-    ui_->fixedConventionEdit->setText(oc_.fixed_convention
-        ? QString::fromStdString(*oc_.fixed_convention)
-        : QString{});
-    ui_->fixedPaymentConventionEdit->setText(oc_.fixed_payment_convention
-        ? QString::fromStdString(*oc_.fixed_payment_convention)
-        : QString{});
-    ui_->ruleEdit->setText(oc_.rule
-        ? QString::fromStdString(*oc_.rule)
-        : QString{});
-    ui_->paymentCalendarEdit->setText(oc_.payment_calendar
-        ? QString::fromStdString(*oc_.payment_calendar)
-        : QString{});
-    ui_->rateCutoffEdit->setValue(oc_.rate_cutoff.value_or(
-        ui_->rateCutoffEdit->minimum()));
-    ui_->endOfMonthEdit->setCheckState(oc_.end_of_month
-        ? (*oc_.end_of_month ? Qt::Checked : Qt::Unchecked)
-        : Qt::PartiallyChecked);
+    ui_->fixedCalendarEdit->setText(
+        oc_.fixed_calendar ? QString::fromStdString(*oc_.fixed_calendar) : QString{});
+    ui_->paymentLagEdit->setValue(oc_.payment_lag.value_or(ui_->paymentLagEdit->minimum()));
+    ui_->fixedFrequencyEdit->setText(
+        oc_.fixed_frequency ? QString::fromStdString(*oc_.fixed_frequency) : QString{});
+    ui_->fixedConventionEdit->setText(
+        oc_.fixed_convention ? QString::fromStdString(*oc_.fixed_convention) : QString{});
+    ui_->fixedPaymentConventionEdit->setText(
+        oc_.fixed_payment_convention ? QString::fromStdString(*oc_.fixed_payment_convention) :
+                                       QString{});
+    ui_->ruleEdit->setText(oc_.rule ? QString::fromStdString(*oc_.rule) : QString{});
+    ui_->paymentCalendarEdit->setText(
+        oc_.payment_calendar ? QString::fromStdString(*oc_.payment_calendar) : QString{});
+    ui_->rateCutoffEdit->setValue(oc_.rate_cutoff.value_or(ui_->rateCutoffEdit->minimum()));
+    ui_->endOfMonthEdit->setCheckState(oc_.end_of_month ?
+                                           (*oc_.end_of_month ? Qt::Checked : Qt::Unchecked) :
+                                           Qt::PartiallyChecked);
 
     populateProvenance(oc_.version,
                        oc_.modified_by,
@@ -186,8 +189,9 @@ void OisConventionDetailDialog::updateConventionFromUi() {
     oc_.fixed_day_count_fraction = ui_->fixedDayCountFractionEdit->text().trimmed().toStdString();
     {
         const auto fixed_calendar_str = ui_->fixedCalendarEdit->text().trimmed().toStdString();
-        oc_.fixed_calendar =
-            fixed_calendar_str.empty() ? std::nullopt : std::optional<std::string>(fixed_calendar_str);
+        oc_.fixed_calendar = fixed_calendar_str.empty() ?
+                                 std::nullopt :
+                                 std::optional<std::string>(fixed_calendar_str);
     }
     if (ui_->paymentLagEdit->value() == ui_->paymentLagEdit->minimum())
         oc_.payment_lag = std::nullopt;
@@ -195,43 +199,47 @@ void OisConventionDetailDialog::updateConventionFromUi() {
         oc_.payment_lag = ui_->paymentLagEdit->value();
     {
         const auto fixed_frequency_str = ui_->fixedFrequencyEdit->text().trimmed().toStdString();
-        oc_.fixed_frequency =
-            fixed_frequency_str.empty() ? std::nullopt : std::optional<std::string>(fixed_frequency_str);
+        oc_.fixed_frequency = fixed_frequency_str.empty() ?
+                                  std::nullopt :
+                                  std::optional<std::string>(fixed_frequency_str);
     }
     {
         const auto fixed_convention_str = ui_->fixedConventionEdit->text().trimmed().toStdString();
-        oc_.fixed_convention =
-            fixed_convention_str.empty() ? std::nullopt : std::optional<std::string>(fixed_convention_str);
+        oc_.fixed_convention = fixed_convention_str.empty() ?
+                                   std::nullopt :
+                                   std::optional<std::string>(fixed_convention_str);
     }
     {
-        const auto fixed_payment_convention_str = ui_->fixedPaymentConventionEdit->text().trimmed().toStdString();
-        oc_.fixed_payment_convention =
-            fixed_payment_convention_str.empty() ? std::nullopt : std::optional<std::string>(fixed_payment_convention_str);
+        const auto fixed_payment_convention_str =
+            ui_->fixedPaymentConventionEdit->text().trimmed().toStdString();
+        oc_.fixed_payment_convention = fixed_payment_convention_str.empty() ?
+                                           std::nullopt :
+                                           std::optional<std::string>(fixed_payment_convention_str);
     }
     {
         const auto rule_str = ui_->ruleEdit->text().trimmed().toStdString();
-        oc_.rule =
-            rule_str.empty() ? std::nullopt : std::optional<std::string>(rule_str);
+        oc_.rule = rule_str.empty() ? std::nullopt : std::optional<std::string>(rule_str);
     }
     {
         const auto payment_calendar_str = ui_->paymentCalendarEdit->text().trimmed().toStdString();
-        oc_.payment_calendar =
-            payment_calendar_str.empty() ? std::nullopt : std::optional<std::string>(payment_calendar_str);
+        oc_.payment_calendar = payment_calendar_str.empty() ?
+                                   std::nullopt :
+                                   std::optional<std::string>(payment_calendar_str);
     }
     if (ui_->rateCutoffEdit->value() == ui_->rateCutoffEdit->minimum())
         oc_.rate_cutoff = std::nullopt;
     else
         oc_.rate_cutoff = ui_->rateCutoffEdit->value();
     switch (ui_->endOfMonthEdit->checkState()) {
-    case Qt::Checked:
-        oc_.end_of_month = std::optional<bool>(true);
-        break;
-    case Qt::Unchecked:
-        oc_.end_of_month = std::optional<bool>(false);
-        break;
-    default:
-        oc_.end_of_month = std::nullopt;
-        break;
+        case Qt::Checked:
+            oc_.end_of_month = std::optional<bool>(true);
+            break;
+        case Qt::Unchecked:
+            oc_.end_of_month = std::optional<bool>(false);
+            break;
+        default:
+            oc_.end_of_month = std::nullopt;
+            break;
     }
     oc_.modified_by = username_;
 }
@@ -256,30 +264,25 @@ bool OisConventionDetailDialog::validateInput() {
     const QString index_val = ui_->indexEdit->text().trimmed();
     const QString fixed_day_count_fraction_val = ui_->fixedDayCountFractionEdit->text().trimmed();
 
-    return true
-        && !id_val.isEmpty()
-        && !index_val.isEmpty()
-        && !fixed_day_count_fraction_val.isEmpty()
-    ;
+    return true && !id_val.isEmpty() && !index_val.isEmpty() &&
+           !fixed_day_count_fraction_val.isEmpty();
 }
 
 void OisConventionDetailDialog::onSaveClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot save OIS convention while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot save OIS convention while disconnected from server.");
         return;
     }
 
     if (!validateInput()) {
-        MessageBoxHelper::warning(this, "Invalid Input",
-            "Please fill in all required fields.");
+        MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
 
     updateConventionFromUi();
 
-    BOOST_LOG_SEV(lg(), info) << "Saving OIS convention: "
-        << oc_.id;
+    BOOST_LOG_SEV(lg(), info) << "Saving OIS convention: " << oc_.id;
 
     QPointer<OisConventionDetailDialog> self = this;
 
@@ -295,8 +298,8 @@ void OisConventionDetailDialog::onSaveClicked() {
 
         refdata::messaging::save_ois_convention_request request;
         request.data = oc;
-        auto response_result = self->clientManager_->
-            process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -306,15 +309,13 @@ void OisConventionDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "OIS Convention saved successfully";
-            QString code = QString::fromStdString(
-                self->oc_.id);
+            QString code = QString::fromStdString(self->oc_.id);
             self->hasChanges_ = false;
             self->updateSaveButtonState();
             emit self->ocSaved(code);
@@ -333,14 +334,15 @@ void OisConventionDetailDialog::onSaveClicked() {
 
 void OisConventionDetailDialog::onDeleteClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot delete OIS convention while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot delete OIS convention while disconnected from server.");
         return;
     }
 
-    QString code = QString::fromStdString(
-        oc_.id);
-    auto reply = MessageBoxHelper::question(this, "Delete OIS Convention",
+    QString code = QString::fromStdString(oc_.id);
+    auto reply = MessageBoxHelper::question(
+        this,
+        "Delete OIS Convention",
         QString("Are you sure you want to delete OIS convention '%1'?").arg(code),
         QMessageBox::Yes | QMessageBox::No);
 
@@ -348,8 +350,7 @@ void OisConventionDetailDialog::onDeleteClicked() {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Deleting OIS convention: "
-        << oc_.id;
+    BOOST_LOG_SEV(lg(), info) << "Deleting OIS convention: " << oc_.id;
 
     QPointer<OisConventionDetailDialog> self = this;
 
@@ -365,8 +366,8 @@ void OisConventionDetailDialog::onDeleteClicked() {
 
         refdata::messaging::delete_ois_convention_request request;
         request.codes = {code};
-        auto response_result = self->clientManager_->
-            process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -376,15 +377,13 @@ void OisConventionDetailDialog::onDeleteClicked() {
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
-            self, [self, code, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, code, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "OIS Convention deleted successfully";
-            emit self->statusMessage(
-                QString("OIS Convention '%1' deleted").arg(code));
+            emit self->statusMessage(QString("OIS Convention '%1' deleted").arg(code));
             emit self->ocDeleted(code);
             self->requestClose();
         } else {

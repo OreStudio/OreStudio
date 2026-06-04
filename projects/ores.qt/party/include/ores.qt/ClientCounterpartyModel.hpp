@@ -20,19 +20,19 @@
 #ifndef ORES_QT_CLIENT_COUNTERPARTY_MODEL_HPP
 #define ORES_QT_CLIENT_COUNTERPARTY_MODEL_HPP
 
-#include <vector>
-#include <cstdint>
-#include <unordered_map>
-#include <unordered_set>
-#include <QFutureWatcher>
-#include <QAbstractTableModel>
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/AbstractClientModel.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ImageCache.hpp"
 #include "ores.qt/RecencyPulseManager.hpp"
 #include "ores.qt/RecencyTracker.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/counterparty.hpp"
+#include <QAbstractTableModel>
+#include <QFutureWatcher>
+#include <cstdint>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
 
 namespace ores::qt {
 
@@ -46,8 +46,7 @@ class ClientCounterpartyModel final : public AbstractClientModel {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.client_counterparty_model";
+    inline static std::string_view logger_name = "ores.qt.client_counterparty_model";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -81,8 +80,8 @@ public:
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-    QVariant headerData(int section, Qt::Orientation orientation,
-        int role = Qt::DisplayRole) const override;
+    QVariant
+    headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
     /**
      * @brief Refresh counterparty data from server asynchronously.
@@ -110,9 +109,13 @@ public:
      */
     const refdata::domain::counterparty* getCounterparty(int row) const;
 
-    std::uint32_t page_size() const { return page_size_; }
+    std::uint32_t page_size() const {
+        return page_size_;
+    }
     void set_page_size(std::uint32_t size);
-    std::uint32_t total_available_count() const { return total_available_count_; }
+    std::uint32_t total_available_count() const {
+        return total_available_count_;
+    }
 
 signals:
     /**
@@ -150,7 +153,7 @@ private:
     std::uint32_t total_available_count_{0};
     bool is_fetching_{false};
 
-    using CounterpartyKeyExtractor = std::string(*)(const refdata::domain::counterparty&);
+    using CounterpartyKeyExtractor = std::string (*)(const refdata::domain::counterparty&);
     RecencyTracker<refdata::domain::counterparty, CounterpartyKeyExtractor> recencyTracker_;
     RecencyPulseManager* pulseManager_;
 

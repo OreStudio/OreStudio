@@ -20,18 +20,18 @@
 #ifndef ORES_QT_CLIENT_CURRENCY_MODEL_HPP
 #define ORES_QT_CLIENT_CURRENCY_MODEL_HPP
 
-#include <vector>
-#include <unordered_set>
-#include <QSize>
-#include <QFutureWatcher>
-#include <QAbstractTableModel>
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/AbstractClientModel.hpp"
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/ColumnMetadata.hpp"
 #include "ores.qt/RecencyPulseManager.hpp"
 #include "ores.qt/RecencyTracker.hpp"
-#include "ores.qt/ColumnMetadata.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/currency.hpp"
+#include <QAbstractTableModel>
+#include <QFutureWatcher>
+#include <QSize>
+#include <unordered_set>
+#include <vector>
 
 namespace ores::qt {
 
@@ -47,8 +47,7 @@ class ClientCurrencyModel final : public AbstractClientModel {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.client_currency_model";
+    inline static std::string_view logger_name = "ores.qt.client_currency_model";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -78,7 +77,7 @@ public:
         Version,
         ModifiedBy,
         RecordedAt,
-        ColumnCount  // Must be last - represents total number of columns
+        ColumnCount // Must be last - represents total number of columns
     };
 
     /**
@@ -88,103 +87,76 @@ public:
      */
     static constexpr std::size_t kColumnCount = std::size_t(ColumnCount);
     static constexpr std::array<ColumnMetadata, kColumnCount> kColumns = {{
-        {
-            .column = IsoCode,
-            .header = std::string_view("Code"),
-            .style = column_style::mono_bold_left,
-            .hidden_by_default = false,
-            .default_width = kColumnWidthAuto
-        },
-        {
-            .column = CurrencyName,
-            .header = std::string_view("Currency Name"),
-            .style = column_style::text_left,
-            .hidden_by_default = false,
-            .default_width = kColumnWidthAuto},
-        {
-            .column = NumericCode,
-            .header = std::string_view("Numeric Code"),
-            .style = column_style::mono_center,
-            .hidden_by_default = false,
-            .default_width = 70
-        },
-        {
-            .column = Symbol,
-            .header = std::string_view("Symbol"),
-            .style = column_style::mono_center,
-            .hidden_by_default = false,
-            .default_width = 60
-        },
-        {
-            .column = FractionSymbol,
-            .header = std::string_view("Fraction"),
-            .style = column_style::mono_center,
-            .hidden_by_default = true,
-            .default_width = 60
-        },
-        {
-            .column = FractionsPerUnit,
-            .header = std::string_view("Per Unit"),
-            .style = column_style::mono_right,
-            .hidden_by_default = true,
-            .default_width = 70
-        },
-        {
-            .column = RoundingType,
-            .header = std::string_view("Rounding Type"),
-            .style = column_style::text_left,
-            .hidden_by_default = true,
-            .default_width = kColumnWidthAuto
-        },
-        {
-            .column = RoundingPrecision,
-            .header = std::string_view("Precision"),
-            .style = column_style::mono_right,
-            .hidden_by_default = true,
-            .default_width = 70
-        },
-        {
-            .column = Format,
-            .header = std::string_view("Format"),
-            .style = column_style::text_left,
-            .hidden_by_default = true,
-            .default_width = kColumnWidthAuto
-        },
-        {
-            .column = MonetaryNature,
-            .header = std::string_view("Monetary Nature"),
-            .style = column_style::text_left,
-            .hidden_by_default = true,
-            .default_width = kColumnWidthAuto
-        },
-        {
-            .column = MarketTier,
-            .header = std::string_view("Market Tier"),
-            .style = column_style::text_left,
-            .hidden_by_default = true,
-            .default_width = kColumnWidthAuto
-        },
-        {
-            .column = Version,
-            .header = std::string_view("Version"),
-            .style = column_style::mono_center,
-            .hidden_by_default = false,
-            .default_width = 70
-        },
-        {
-            .column = ModifiedBy,
-            .header = std::string_view("Modified By"),
-            .style = column_style::text_left,
-            .hidden_by_default = false,
-            .default_width = kColumnWidthAuto
-        },
-        {
-            .column = RecordedAt,
-            .header = std::string_view("Recorded At"),
-            .style = column_style::mono_left,
-            .hidden_by_default = false,
-            .default_width = kColumnWidthAuto
-        },
+        {.column = IsoCode,
+         .header = std::string_view("Code"),
+         .style = column_style::mono_bold_left,
+         .hidden_by_default = false,
+         .default_width = kColumnWidthAuto},
+        {.column = CurrencyName,
+         .header = std::string_view("Currency Name"),
+         .style = column_style::text_left,
+         .hidden_by_default = false,
+         .default_width = kColumnWidthAuto},
+        {.column = NumericCode,
+         .header = std::string_view("Numeric Code"),
+         .style = column_style::mono_center,
+         .hidden_by_default = false,
+         .default_width = 70},
+        {.column = Symbol,
+         .header = std::string_view("Symbol"),
+         .style = column_style::mono_center,
+         .hidden_by_default = false,
+         .default_width = 60},
+        {.column = FractionSymbol,
+         .header = std::string_view("Fraction"),
+         .style = column_style::mono_center,
+         .hidden_by_default = true,
+         .default_width = 60},
+        {.column = FractionsPerUnit,
+         .header = std::string_view("Per Unit"),
+         .style = column_style::mono_right,
+         .hidden_by_default = true,
+         .default_width = 70},
+        {.column = RoundingType,
+         .header = std::string_view("Rounding Type"),
+         .style = column_style::text_left,
+         .hidden_by_default = true,
+         .default_width = kColumnWidthAuto},
+        {.column = RoundingPrecision,
+         .header = std::string_view("Precision"),
+         .style = column_style::mono_right,
+         .hidden_by_default = true,
+         .default_width = 70},
+        {.column = Format,
+         .header = std::string_view("Format"),
+         .style = column_style::text_left,
+         .hidden_by_default = true,
+         .default_width = kColumnWidthAuto},
+        {.column = MonetaryNature,
+         .header = std::string_view("Monetary Nature"),
+         .style = column_style::text_left,
+         .hidden_by_default = true,
+         .default_width = kColumnWidthAuto},
+        {.column = MarketTier,
+         .header = std::string_view("Market Tier"),
+         .style = column_style::text_left,
+         .hidden_by_default = true,
+         .default_width = kColumnWidthAuto},
+        {.column = Version,
+         .header = std::string_view("Version"),
+         .style = column_style::mono_center,
+         .hidden_by_default = false,
+         .default_width = 70},
+        {.column = ModifiedBy,
+         .header = std::string_view("Modified By"),
+         .style = column_style::text_left,
+         .hidden_by_default = false,
+         .default_width = kColumnWidthAuto},
+        {.column = RecordedAt,
+         .header = std::string_view("Recorded At"),
+         .style = column_style::mono_left,
+         .hidden_by_default = false,
+         .default_width = kColumnWidthAuto},
     }};
 
     /**
@@ -215,22 +187,21 @@ public:
      * @brief Returns a static QVector of hidden column indices (built once per process).
      */
     static QVector<int> defaultHiddenColumns() {
-        static QVector<int> const result =
-            ::ores::qt::defaultHiddenColumns<kColumnCount>(kColumns);
+        static QVector<int> const result = ::ores::qt::defaultHiddenColumns<kColumnCount>(kColumns);
         return result;
     }
 
     explicit ClientCurrencyModel(ClientManager* clientManager,
-                                   ImageCache* imageCache,
-                                   QObject* parent = nullptr);
+                                 ImageCache* imageCache,
+                                 QObject* parent = nullptr);
     ~ClientCurrencyModel() override = default;
 
     // QAbstractTableModel interface
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-    QVariant headerData(int section, Qt::Orientation orientation,
-        int role = Qt::DisplayRole) const override;
+    QVariant
+    headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
     /**
      * @brief Refresh currency data from server asynchronously.
@@ -271,7 +242,9 @@ public:
      *
      * @return The number of records fetched per page.
      */
-    std::uint32_t page_size() const { return page_size_; }
+    std::uint32_t page_size() const {
+        return page_size_;
+    }
 
     /**
      * @brief Set the page size for pagination.
@@ -285,7 +258,9 @@ public:
      *
      * @return Total available record count.
      */
-    std::uint32_t total_available_count() const { return total_available_count_; }
+    std::uint32_t total_available_count() const {
+        return total_available_count_;
+    }
 
     /**
      * @brief Add synthetic (generated) currencies to the model.
@@ -368,7 +343,7 @@ private:
     bool is_fetching_{false};
 
     // Recency highlighting
-    using CurrencyKeyExtractor = std::string(*)(const refdata::domain::currency&);
+    using CurrencyKeyExtractor = std::string (*)(const refdata::domain::currency&);
     RecencyTracker<refdata::domain::currency, CurrencyKeyExtractor> recencyTracker_;
     RecencyPulseManager* pulseManager_;
 

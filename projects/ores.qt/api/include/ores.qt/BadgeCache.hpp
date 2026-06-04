@@ -20,16 +20,16 @@
 #ifndef ORES_QT_BADGE_CACHE_HPP
 #define ORES_QT_BADGE_CACHE_HPP
 
+#include "ores.dq.api/domain/badge_definition.hpp"
+#include "ores.dq.api/messaging/badge_protocol.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/export.hpp"
+#include <QFutureWatcher>
+#include <QObject>
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include <QObject>
-#include <QFutureWatcher>
-#include "ores.qt/ClientManager.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.dq.api/domain/badge_definition.hpp"
-#include "ores.dq.api/messaging/badge_protocol.hpp"
-#include "ores.qt/export.hpp"
 
 namespace ores::qt {
 
@@ -71,7 +71,9 @@ public:
     /**
      * @brief Returns true once both definitions and mappings are loaded.
      */
-    bool isLoaded() const { return is_loaded_; }
+    bool isLoaded() const {
+        return is_loaded_;
+    }
 
     /**
      * @brief Inject test data directly, bypassing the network load path.
@@ -79,9 +81,8 @@ public:
      * Sets definitions and mappings, builds the lookup index, and marks the
      * cache as loaded. Intended for unit tests only.
      */
-    void populate_for_testing(
-        std::vector<dq::domain::badge_definition> definitions,
-        std::vector<dq::messaging::badge_mapping> mappings);
+    void populate_for_testing(std::vector<dq::domain::badge_definition> definitions,
+                              std::vector<dq::messaging::badge_mapping> mappings);
 
     /**
      * @brief Resolve a badge definition for a given (code_domain, entity_code) pair.
@@ -93,9 +94,8 @@ public:
      * Always returns immediately without blocking. Returns nullptr if the cache
      * is not yet loaded or no mapping exists for the given pair.
      */
-    const dq::domain::badge_definition* resolve(
-        const std::string& code_domain_code,
-        const std::string& entity_code) const;
+    const dq::domain::badge_definition* resolve(const std::string& code_domain_code,
+                                                const std::string& entity_code) const;
 
     /**
      * @brief List all (entity_code, badge_definition*) pairs for a domain.
@@ -103,7 +103,7 @@ public:
      * Returns empty if the cache is not yet loaded or the domain has no mappings.
      */
     std::vector<std::pair<std::string, const dq::domain::badge_definition*>>
-        list_by_domain(const std::string& code_domain_code) const;
+    list_by_domain(const std::string& code_domain_code) const;
 
 signals:
     /**

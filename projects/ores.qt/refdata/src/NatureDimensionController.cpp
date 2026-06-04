@@ -18,40 +18,37 @@
  *
  */
 #include "ores.qt/NatureDimensionController.hpp"
+#include "ores.dq.api/eventing/nature_dimension_changed_event.hpp"
+#include "ores.eventing/domain/event_traits.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
-
-#include <QMdiSubWindow>
-#include <QMessageBox>
+#include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
-#include "ores.qt/NatureDimensionMdiWindow.hpp"
 #include "ores.qt/NatureDimensionDetailDialog.hpp"
 #include "ores.qt/NatureDimensionHistoryDialog.hpp"
-#include "ores.qt/DetachableMdiSubWindow.hpp"
-#include "ores.eventing/domain/event_traits.hpp"
-#include "ores.dq.api/eventing/nature_dimension_changed_event.hpp"
+#include "ores.qt/NatureDimensionMdiWindow.hpp"
+#include <QMdiSubWindow>
+#include <QMessageBox>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    constexpr std::string_view nature_dimension_event_name =
-        eventing::domain::event_traits<
-            dq::eventing::nature_dimension_changed_event>::name;
+constexpr std::string_view nature_dimension_event_name =
+    eventing::domain::event_traits<dq::eventing::nature_dimension_changed_event>::name;
 }
 
-NatureDimensionController::NatureDimensionController(
-    QMainWindow* mainWindow,
-    QMdiArea* mdiArea,
-    ClientManager* clientManager,
-    ChangeReasonCache* changeReasonCache,
-    const QString& username,
-    QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username,
-                       nature_dimension_event_name, parent),
-      changeReasonCache_(changeReasonCache),
-      listWindow_(nullptr),
-      listMdiSubWindow_(nullptr) {
+NatureDimensionController::NatureDimensionController(QMainWindow* mainWindow,
+                                                     QMdiArea* mdiArea,
+                                                     ClientManager* clientManager,
+                                                     ChangeReasonCache* changeReasonCache,
+                                                     const QString& username,
+                                                     QObject* parent)
+    : EntityController(
+          mainWindow, mdiArea, clientManager, username, nature_dimension_event_name, parent)
+    , changeReasonCache_(changeReasonCache)
+    , listWindow_(nullptr)
+    , listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "NatureDimensionController created";
 }
@@ -73,23 +70,33 @@ void NatureDimensionController::showListWindow() {
     listWindow_ = new NatureDimensionMdiWindow(clientManager_, username_);
 
     // Connect signals
-    connect(listWindow_, &NatureDimensionMdiWindow::statusChanged,
-            this, &NatureDimensionController::statusMessage);
-    connect(listWindow_, &NatureDimensionMdiWindow::errorOccurred,
-            this, &NatureDimensionController::errorMessage);
-    connect(listWindow_, &NatureDimensionMdiWindow::showDimensionDetails,
-            this, &NatureDimensionController::onShowDetails);
-    connect(listWindow_, &NatureDimensionMdiWindow::addNewRequested,
-            this, &NatureDimensionController::onAddNewRequested);
-    connect(listWindow_, &NatureDimensionMdiWindow::showDimensionHistory,
-            this, &NatureDimensionController::onShowHistory);
+    connect(listWindow_,
+            &NatureDimensionMdiWindow::statusChanged,
+            this,
+            &NatureDimensionController::statusMessage);
+    connect(listWindow_,
+            &NatureDimensionMdiWindow::errorOccurred,
+            this,
+            &NatureDimensionController::errorMessage);
+    connect(listWindow_,
+            &NatureDimensionMdiWindow::showDimensionDetails,
+            this,
+            &NatureDimensionController::onShowDetails);
+    connect(listWindow_,
+            &NatureDimensionMdiWindow::addNewRequested,
+            this,
+            &NatureDimensionController::onAddNewRequested);
+    connect(listWindow_,
+            &NatureDimensionMdiWindow::showDimensionHistory,
+            this,
+            &NatureDimensionController::onShowHistory);
 
     // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Nature Dimensions");
-    listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Database, IconUtils::DefaultIconColor));
+    listMdiSubWindow_->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Database, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -101,12 +108,16 @@ void NatureDimensionController::showListWindow() {
     register_detachable_window(listMdiSubWindow_);
 
     // Cleanup when closed
-    connect(listMdiSubWindow_, &QObject::destroyed, this, [self = QPointer<NatureDimensionController>(this), key]() {
-        if (!self) return;
-        self->untrack_window(key);
-        self->listWindow_ = nullptr;
-        self->listMdiSubWindow_ = nullptr;
-    });
+    connect(listMdiSubWindow_,
+            &QObject::destroyed,
+            this,
+            [self = QPointer<NatureDimensionController>(this), key]() {
+                if (!self)
+                    return;
+                self->untrack_window(key);
+                self->listWindow_ = nullptr;
+                self->listMdiSubWindow_ = nullptr;
+            });
 
     BOOST_LOG_SEV(lg(), debug) << "Nature dimension list window created";
 }
@@ -134,8 +145,7 @@ void NatureDimensionController::reloadListWindow() {
     }
 }
 
-void NatureDimensionController::onShowDetails(
-    const dq::domain::nature_dimension& dimension) {
+void NatureDimensionController::onShowDetails(const dq::domain::nature_dimension& dimension) {
     BOOST_LOG_SEV(lg(), debug) << "Show details for: " << dimension.code;
     showDetailWindow(dimension);
 }
@@ -160,23 +170,30 @@ void NatureDimensionController::showAddWindow() {
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
 
-    connect(detailDialog, &NatureDimensionDetailDialog::statusMessage,
-            this, &NatureDimensionController::statusMessage);
-    connect(detailDialog, &NatureDimensionDetailDialog::errorMessage,
-            this, &NatureDimensionController::errorMessage);
-    connect(detailDialog, &NatureDimensionDetailDialog::dimensionSaved,
-            this, [self = QPointer<NatureDimensionController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Nature dimension saved: " << code.toStdString();
-        self->handleEntitySaved();
-    });
+    connect(detailDialog,
+            &NatureDimensionDetailDialog::statusMessage,
+            this,
+            &NatureDimensionController::statusMessage);
+    connect(detailDialog,
+            &NatureDimensionDetailDialog::errorMessage,
+            this,
+            &NatureDimensionController::errorMessage);
+    connect(detailDialog,
+            &NatureDimensionDetailDialog::dimensionSaved,
+            this,
+            [self = QPointer<NatureDimensionController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Nature dimension saved: " << code.toStdString();
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Nature Dimension");
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Database, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Database, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -184,8 +201,7 @@ void NatureDimensionController::showAddWindow() {
     show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
-void NatureDimensionController::showDetailWindow(
-    const dq::domain::nature_dimension& dimension) {
+void NatureDimensionController::showDetailWindow(const dq::domain::nature_dimension& dimension) {
 
     const QString identifier = QString::fromStdString(dimension.code);
     const QString key = build_window_key("details", identifier);
@@ -205,37 +221,46 @@ void NatureDimensionController::showDetailWindow(
     detailDialog->setCreateMode(false);
     detailDialog->setDimension(dimension);
 
-    connect(detailDialog, &NatureDimensionDetailDialog::statusMessage,
-            this, &NatureDimensionController::statusMessage);
-    connect(detailDialog, &NatureDimensionDetailDialog::errorMessage,
-            this, &NatureDimensionController::errorMessage);
-    connect(detailDialog, &NatureDimensionDetailDialog::dimensionSaved,
-            this, [self = QPointer<NatureDimensionController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Nature dimension saved: " << code.toStdString();
-        self->handleEntitySaved();
-    });
-    connect(detailDialog, &NatureDimensionDetailDialog::dimensionDeleted,
-            this, [self = QPointer<NatureDimensionController>(this), key](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Nature dimension deleted: " << code.toStdString();
-        self->handleEntityDeleted();
-    });
+    connect(detailDialog,
+            &NatureDimensionDetailDialog::statusMessage,
+            this,
+            &NatureDimensionController::statusMessage);
+    connect(detailDialog,
+            &NatureDimensionDetailDialog::errorMessage,
+            this,
+            &NatureDimensionController::errorMessage);
+    connect(detailDialog,
+            &NatureDimensionDetailDialog::dimensionSaved,
+            this,
+            [self = QPointer<NatureDimensionController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Nature dimension saved: " << code.toStdString();
+                self->handleEntitySaved();
+            });
+    connect(detailDialog,
+            &NatureDimensionDetailDialog::dimensionDeleted,
+            this,
+            [self = QPointer<NatureDimensionController>(this), key](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Nature dimension deleted: " << code.toStdString();
+                self->handleEntityDeleted();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Nature Dimension: %1").arg(identifier));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Database, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Database, IconUtils::DefaultIconColor));
 
     // Track window
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<NatureDimensionController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, key]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, key]() {
         if (self) {
             self->untrack_window(key);
         }
@@ -253,30 +278,38 @@ void NatureDimensionController::showHistoryWindow(const QString& code) {
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
-        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: "
-                                  << code.toStdString();
+        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: " << code.toStdString();
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
-                              << code.toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << code.toStdString();
 
     auto* historyDialog = new NatureDimensionHistoryDialog(code, clientManager_, mainWindow_);
 
-    connect(historyDialog, &NatureDimensionHistoryDialog::statusChanged,
-            this, [self = QPointer<NatureDimensionController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(historyDialog, &NatureDimensionHistoryDialog::errorOccurred,
-            this, [self = QPointer<NatureDimensionController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
-    connect(historyDialog, &NatureDimensionHistoryDialog::revertVersionRequested,
-            this, &NatureDimensionController::onRevertVersion);
-    connect(historyDialog, &NatureDimensionHistoryDialog::openVersionRequested,
-            this, &NatureDimensionController::onOpenVersion);
+    connect(historyDialog,
+            &NatureDimensionHistoryDialog::statusChanged,
+            this,
+            [self = QPointer<NatureDimensionController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(historyDialog,
+            &NatureDimensionHistoryDialog::errorOccurred,
+            this,
+            [self = QPointer<NatureDimensionController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
+    connect(historyDialog,
+            &NatureDimensionHistoryDialog::revertVersionRequested,
+            this,
+            &NatureDimensionController::onRevertVersion);
+    connect(historyDialog,
+            &NatureDimensionHistoryDialog::openVersionRequested,
+            this,
+            &NatureDimensionController::onOpenVersion);
 
     // Load history data
     historyDialog->loadHistory();
@@ -285,16 +318,15 @@ void NatureDimensionController::showHistoryWindow(const QString& code) {
     historyWindow->setAttribute(Qt::WA_DeleteOnClose);
     historyWindow->setWidget(historyDialog);
     historyWindow->setWindowTitle(QString("Nature Dimension History: %1").arg(code));
-    historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    historyWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     // Track this history window
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
 
     QPointer<NatureDimensionController> self = this;
-    connect(historyWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -303,14 +335,14 @@ void NatureDimensionController::showHistoryWindow(const QString& code) {
     show_managed_window(historyWindow, listMdiSubWindow_);
 }
 
-void NatureDimensionController::onOpenVersion(
-    const dq::domain::nature_dimension& dimension, int versionNumber) {
+void NatureDimensionController::onOpenVersion(const dq::domain::nature_dimension& dimension,
+                                              int versionNumber) {
     BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
                               << " for nature dimension: " << dimension.code;
 
     const QString code = QString::fromStdString(dimension.code);
-    const QString windowKey = build_window_key("version", QString("%1_v%2")
-        .arg(code).arg(versionNumber));
+    const QString windowKey =
+        build_window_key("version", QString("%1_v%2").arg(code).arg(versionNumber));
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
@@ -326,31 +358,36 @@ void NatureDimensionController::onOpenVersion(
     detailDialog->setDimension(dimension);
     detailDialog->setReadOnly(true);
 
-    connect(detailDialog, &NatureDimensionDetailDialog::statusMessage,
-            this, [self = QPointer<NatureDimensionController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(detailDialog, &NatureDimensionDetailDialog::errorMessage,
-            this, [self = QPointer<NatureDimensionController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
+    connect(detailDialog,
+            &NatureDimensionDetailDialog::statusMessage,
+            this,
+            [self = QPointer<NatureDimensionController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(detailDialog,
+            &NatureDimensionDetailDialog::errorMessage,
+            this,
+            [self = QPointer<NatureDimensionController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Nature Dimension: %1 (Version %2)")
-        .arg(code).arg(versionNumber));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("Nature Dimension: %1 (Version %2)").arg(code).arg(versionNumber));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     track_window(windowKey, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<NatureDimensionController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -360,10 +397,8 @@ void NatureDimensionController::onOpenVersion(
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
-void NatureDimensionController::onRevertVersion(
-    const dq::domain::nature_dimension& dimension) {
-    BOOST_LOG_SEV(lg(), info) << "Reverting nature dimension to version: "
-                              << dimension.version;
+void NatureDimensionController::onRevertVersion(const dq::domain::nature_dimension& dimension) {
+    BOOST_LOG_SEV(lg(), info) << "Reverting nature dimension to version: " << dimension.version;
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new NatureDimensionDetailDialog(mainWindow_);
@@ -374,25 +409,33 @@ void NatureDimensionController::onRevertVersion(
     detailDialog->setDimension(dimension);
     detailDialog->setCreateMode(false);
 
-    connect(detailDialog, &NatureDimensionDetailDialog::statusMessage,
-            this, &NatureDimensionController::statusMessage);
-    connect(detailDialog, &NatureDimensionDetailDialog::errorMessage,
-            this, &NatureDimensionController::errorMessage);
-    connect(detailDialog, &NatureDimensionDetailDialog::dimensionSaved,
-            this, [self = QPointer<NatureDimensionController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Nature dimension reverted: " << code.toStdString();
-        emit self->statusMessage(QString("Nature dimension '%1' reverted successfully").arg(code));
-        self->handleEntitySaved();
-    });
+    connect(detailDialog,
+            &NatureDimensionDetailDialog::statusMessage,
+            this,
+            &NatureDimensionController::statusMessage);
+    connect(detailDialog,
+            &NatureDimensionDetailDialog::errorMessage,
+            this,
+            &NatureDimensionController::errorMessage);
+    connect(detailDialog,
+            &NatureDimensionDetailDialog::dimensionSaved,
+            this,
+            [self = QPointer<NatureDimensionController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Nature dimension reverted: " << code.toStdString();
+                emit self->statusMessage(
+                    QString("Nature dimension '%1' reverted successfully").arg(code));
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Revert Nature Dimension: %1")
-        .arg(QString::fromStdString(dimension.code)));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("Revert Nature Dimension: %1").arg(QString::fromStdString(dimension.code)));
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
+                                                               IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 

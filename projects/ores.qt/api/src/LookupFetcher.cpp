@@ -18,22 +18,23 @@
  *
  */
 #include "ores.qt/LookupFetcher.hpp"
-#include "ores.qt/ClientManager.hpp"
-#include <boost/uuid/uuid_io.hpp>
-#include "ores.refdata.api/messaging/party_type_protocol.hpp"
-#include "ores.refdata.api/messaging/party_status_protocol.hpp"
-#include "ores.refdata.api/messaging/business_centre_protocol.hpp"
-#include "ores.refdata.api/messaging/currency_protocol.hpp"
-#include "ores.refdata.api/messaging/portfolio_protocol.hpp"
-#include "ores.refdata.api/messaging/business_unit_protocol.hpp"
-#include "ores.iam.api/messaging/tenant_type_protocol.hpp"
 #include "ores.iam.api/messaging/tenant_status_protocol.hpp"
+#include "ores.iam.api/messaging/tenant_type_protocol.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.refdata.api/messaging/business_centre_protocol.hpp"
+#include "ores.refdata.api/messaging/business_unit_protocol.hpp"
+#include "ores.refdata.api/messaging/currency_protocol.hpp"
+#include "ores.refdata.api/messaging/party_status_protocol.hpp"
+#include "ores.refdata.api/messaging/party_type_protocol.hpp"
+#include "ores.refdata.api/messaging/portfolio_protocol.hpp"
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
 lookup_result fetch_party_lookups(ClientManager* cm) {
     lookup_result result;
-    if (!cm) return result;
+    if (!cm)
+        return result;
 
     {
         refdata::messaging::get_party_types_request request;
@@ -71,7 +72,8 @@ lookup_result fetch_party_lookups(ClientManager* cm) {
 
 lookup_result fetch_tenant_lookups(ClientManager* cm) {
     lookup_result result;
-    if (!cm) return result;
+    if (!cm)
+        return result;
 
     {
         iam::messaging::get_tenant_types_request request;
@@ -98,7 +100,8 @@ lookup_result fetch_tenant_lookups(ClientManager* cm) {
 
 std::vector<std::string> fetch_currency_codes(ClientManager* cm) {
     std::vector<std::string> codes;
-    if (!cm) return codes;
+    if (!cm)
+        return codes;
 
     refdata::messaging::get_currencies_request request;
     request.limit = lookup_fetch_limit;
@@ -111,10 +114,10 @@ std::vector<std::string> fetch_currency_codes(ClientManager* cm) {
     return codes;
 }
 
-std::unordered_map<std::string, std::string>
-fetch_business_centre_image_map(ClientManager* cm) {
+std::unordered_map<std::string, std::string> fetch_business_centre_image_map(ClientManager* cm) {
     std::unordered_map<std::string, std::string> mapping;
-    if (!cm) return mapping;
+    if (!cm)
+        return mapping;
 
     refdata::messaging::get_business_centres_request request;
     request.limit = lookup_fetch_limit;
@@ -132,7 +135,8 @@ fetch_business_centre_image_map(ClientManager* cm) {
 
 std::vector<portfolio_entry> fetch_portfolio_entries(ClientManager* cm) {
     std::vector<portfolio_entry> entries;
-    if (!cm) return entries;
+    if (!cm)
+        return entries;
 
     refdata::messaging::get_portfolios_request request;
     request.limit = lookup_fetch_limit;
@@ -147,7 +151,8 @@ std::vector<portfolio_entry> fetch_portfolio_entries(ClientManager* cm) {
 
 std::vector<business_unit_entry> fetch_business_unit_entries(ClientManager* cm) {
     std::vector<business_unit_entry> entries;
-    if (!cm) return entries;
+    if (!cm)
+        return entries;
 
     refdata::messaging::get_business_units_request request;
     request.limit = lookup_fetch_limit;

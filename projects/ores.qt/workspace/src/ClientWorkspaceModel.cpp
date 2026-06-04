@@ -18,39 +18,43 @@
  *
  */
 #include "ores.qt/ClientWorkspaceModel.hpp"
-
-#include <QtConcurrent>
-#include <boost/uuid/uuid_io.hpp>
-#include "ores.workspace.api/messaging/workspace_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
+#include "ores.workspace.api/messaging/workspace_protocol.hpp"
+#include <QtConcurrent>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    std::string workspace_key_extractor(const workspace::domain::workspace& e) {
-        return e.name;
-    }
+std::string workspace_key_extractor(const workspace::domain::workspace& e) {
+    return e.name;
+}
 }
 
-ClientWorkspaceModel::ClientWorkspaceModel(
-    ClientManager* clientManager, QObject* parent)
-    : AbstractClientModel(parent),
-      clientManager_(clientManager),
-      watcher_(new QFutureWatcher<FetchResult>(this)),
-      recencyTracker_(workspace_key_extractor),
-      pulseManager_(new RecencyPulseManager(this)) {
+ClientWorkspaceModel::ClientWorkspaceModel(ClientManager* clientManager, QObject* parent)
+    : AbstractClientModel(parent)
+    , clientManager_(clientManager)
+    , watcher_(new QFutureWatcher<FetchResult>(this))
+    , recencyTracker_(workspace_key_extractor)
+    , pulseManager_(new RecencyPulseManager(this)) {
 
-    connect(watcher_, &QFutureWatcher<FetchResult>::finished,
-            this, &ClientWorkspaceModel::onWorkspacesLoaded);
+    connect(watcher_,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            &ClientWorkspaceModel::onWorkspacesLoaded);
 
-    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
-            this, &ClientWorkspaceModel::onPulseStateChanged);
-    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
-            this, &ClientWorkspaceModel::onPulsingComplete);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulse_state_changed,
+            this,
+            &ClientWorkspaceModel::onPulseStateChanged);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulsing_complete,
+            this,
+            &ClientWorkspaceModel::onPulsingComplete);
 }
 
 int ClientWorkspaceModel::rowCount(const QModelIndex& parent) const {
@@ -65,8 +69,7 @@ int ClientWorkspaceModel::columnCount(const QModelIndex& parent) const {
     return ColumnCount;
 }
 
-QVariant ClientWorkspaceModel::data(
-    const QModelIndex& index, int role) const {
+QVariant ClientWorkspaceModel::data(const QModelIndex& index, int role) const {
     if (!index.isValid())
         return {};
 
@@ -78,26 +81,26 @@ QVariant ClientWorkspaceModel::data(
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-        case Name:
-            return QString::fromStdString(workspace.name);
-        case Description:
-            return QString::fromStdString(workspace.description);
-        case StatusCode:
-            return QString::fromStdString(workspace.status_code);
-        case ParentName: {
-            if (!workspace.parent_workspace_id.has_value())
+            case Name:
+                return QString::fromStdString(workspace.name);
+            case Description:
+                return QString::fromStdString(workspace.description);
+            case StatusCode:
+                return QString::fromStdString(workspace.status_code);
+            case ParentName: {
+                if (!workspace.parent_workspace_id.has_value())
+                    return {};
+                const auto pid = boost::uuids::to_string(*workspace.parent_workspace_id);
+                auto it = parent_id_to_name_.find(pid);
+                return it != parent_id_to_name_.end() ? QString::fromStdString(it->second) :
+                                                        QString{};
+            }
+            case Version:
+                return static_cast<qlonglong>(workspace.version);
+            case ModifiedBy:
+                return QString::fromStdString(workspace.modified_by);
+            default:
                 return {};
-            const auto pid = boost::uuids::to_string(*workspace.parent_workspace_id);
-            auto it = parent_id_to_name_.find(pid);
-            return it != parent_id_to_name_.end()
-                ? QString::fromStdString(it->second) : QString{};
-        }
-        case Version:
-            return static_cast<qlonglong>(workspace.version);
-        case ModifiedBy:
-            return QString::fromStdString(workspace.modified_by);
-        default:
-            return {};
         }
     }
 
@@ -108,26 +111,26 @@ QVariant ClientWorkspaceModel::data(
     return {};
 }
 
-QVariant ClientWorkspaceModel::headerData(
-    int section, Qt::Orientation orientation, int role) const {
+QVariant
+ClientWorkspaceModel::headerData(int section, Qt::Orientation orientation, int role) const {
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return {};
 
     switch (section) {
-    case Name:
-        return tr("Name");
-    case Description:
-        return tr("Description");
-    case StatusCode:
-        return tr("Status");
-    case ParentName:
-        return tr("Parent");
-    case Version:
-        return tr("Version");
-    case ModifiedBy:
-        return tr("Modified By");
-    default:
-        return {};
+        case Name:
+            return tr("Name");
+        case Description:
+            return tr("Description");
+        case StatusCode:
+            return tr("Status");
+        case ParentName:
+            return tr("Parent");
+        case Version:
+            return tr("Version");
+        case ModifiedBy:
+            return tr("Modified By");
+        default:
+            return {};
     }
 }
 
@@ -157,8 +160,7 @@ void ClientWorkspaceModel::refresh() {
     fetch_workspaces(0, page_size_);
 }
 
-void ClientWorkspaceModel::load_page(std::uint32_t offset,
-                                          std::uint32_t limit) {
+void ClientWorkspaceModel::load_page(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "load_page: offset=" << offset << ", limit=" << limit;
 
     if (is_fetching_) {
@@ -182,18 +184,18 @@ void ClientWorkspaceModel::load_page(std::uint32_t offset,
     fetch_workspaces(offset, limit);
 }
 
-void ClientWorkspaceModel::fetch_workspaces(
-    std::uint32_t offset, std::uint32_t limit) {
+void ClientWorkspaceModel::fetch_workspaces(std::uint32_t offset, std::uint32_t limit) {
     is_fetching_ = true;
     QPointer<ClientWorkspaceModel> self = this;
 
-    QFuture<FetchResult> future =
-        QtConcurrent::run([self, offset, limit]() -> FetchResult {
-            return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
-                BOOST_LOG_SEV(lg(), debug) << "Making workspaces request with offset="
-                                           << offset << ", limit=" << limit;
+    QFuture<FetchResult> future = QtConcurrent::run([self, offset, limit]() -> FetchResult {
+        return exception_helper::wrap_async_fetch<FetchResult>(
+            [&]() -> FetchResult {
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Making workspaces request with offset=" << offset << ", limit=" << limit;
                 if (!self || !self->clientManager_) {
-                    return {.success = false, .workspaces = {},
+                    return {.success = false,
+                            .workspaces = {},
                             .total_available_count = 0,
                             .error_message = "Model was destroyed",
                             .error_details = {}};
@@ -201,27 +203,29 @@ void ClientWorkspaceModel::fetch_workspaces(
 
                 workspace::messaging::list_workspaces_request request;
 
-                auto result = self->clientManager_->
-                    process_authenticated_request(std::move(request));
+                auto result =
+                    self->clientManager_->process_authenticated_request(std::move(request));
 
                 if (!result) {
                     BOOST_LOG_SEV(lg(), error) << "Failed to send request: " << result.error();
-                    return {.success = false, .workspaces = {},
+                    return {.success = false,
+                            .workspaces = {},
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(result.error()),
                             .error_details = {}};
                 }
 
-                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->workspaces.size()
-                                           << " workspaces";
-                const std::uint32_t count =
-                    static_cast<std::uint32_t>(result->workspaces.size());
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Fetched " << result->workspaces.size() << " workspaces";
+                const std::uint32_t count = static_cast<std::uint32_t>(result->workspaces.size());
                 return {.success = true,
                         .workspaces = std::move(result->workspaces),
                         .total_available_count = count,
-                        .error_message = {}, .error_details = {}};
-            }, "workspaces");
-        });
+                        .error_message = {},
+                        .error_details = {}};
+            },
+            "workspaces");
+    });
 
     watcher_->setFuture(future);
 }
@@ -232,8 +236,8 @@ void ClientWorkspaceModel::onWorkspacesLoaded() {
     const auto result = watcher_->result();
 
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to fetch workspaces: "
-                                   << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to fetch workspaces: " << result.error_message.toStdString();
         emit loadError(result.error_message, result.error_details);
         return;
     }
@@ -275,16 +279,14 @@ void ClientWorkspaceModel::set_page_size(std::uint32_t size) {
     }
 }
 
-const workspace::domain::workspace*
-ClientWorkspaceModel::getWorkspace(int row) const {
+const workspace::domain::workspace* ClientWorkspaceModel::getWorkspace(int row) const {
     const auto idx = static_cast<std::size_t>(row);
     if (idx >= workspaces_.size())
         return nullptr;
     return &workspaces_[idx];
 }
 
-QVariant ClientWorkspaceModel::recency_foreground_color(
-    const std::string& code) const {
+QVariant ClientWorkspaceModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {
         return color_constants::stale_indicator;
     }
@@ -293,8 +295,8 @@ QVariant ClientWorkspaceModel::recency_foreground_color(
 
 void ClientWorkspaceModel::onPulseStateChanged(bool /*isOn*/) {
     if (!workspaces_.empty()) {
-        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
-            {Qt::ForegroundRole});
+        emit dataChanged(
+            index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::ForegroundRole});
     }
 }
 

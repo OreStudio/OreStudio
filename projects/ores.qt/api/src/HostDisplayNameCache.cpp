@@ -18,7 +18,6 @@
  *
  */
 #include "ores.qt/HostDisplayNameCache.hpp"
-
 #include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
@@ -34,12 +33,9 @@ QString HostDisplayNameCache::display_name_for(const QString& uuid) const {
     return uuid.left(8);
 }
 
-void HostDisplayNameCache::populate_from(
-    const std::vector<compute::domain::host>& hosts)
-{
+void HostDisplayNameCache::populate_from(const std::vector<compute::domain::host>& hosts) {
     for (const auto& h : hosts) {
-        const auto uuid = QString::fromStdString(
-            boost::uuids::to_string(h.id));
+        const auto uuid = QString::fromStdString(boost::uuids::to_string(h.id));
         if (!h.display_name.empty())
             cache_.insert(uuid, QString::fromStdString(h.display_name));
     }

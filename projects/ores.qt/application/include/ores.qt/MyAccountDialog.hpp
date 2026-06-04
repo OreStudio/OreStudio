@@ -20,13 +20,13 @@
 #ifndef ORES_QT_MYACCOUNTDIALOG_HPP
 #define ORES_QT_MYACCOUNTDIALOG_HPP
 
+#include "ores.qt/ClientManager.hpp"
 #include <QLabel>
-#include <QWidget>
-#include <QTabWidget>
-#include <QToolBar>
 #include <QLineEdit>
 #include <QPushButton>
-#include "ores.qt/ClientManager.hpp"
+#include <QTabWidget>
+#include <QToolBar>
+#include <QWidget>
 
 namespace ores::qt {
 

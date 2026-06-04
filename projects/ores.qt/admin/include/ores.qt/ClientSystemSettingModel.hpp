@@ -20,15 +20,15 @@
 #ifndef ORES_QT_CLIENT_SYSTEM_SETTING_MODEL_HPP
 #define ORES_QT_CLIENT_SYSTEM_SETTING_MODEL_HPP
 
-#include <vector>
-#include <QFutureWatcher>
-#include <QAbstractTableModel>
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/AbstractClientModel.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/RecencyPulseManager.hpp"
 #include "ores.qt/RecencyTracker.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.variability.api/domain/system_setting.hpp"
+#include <QAbstractTableModel>
+#include <QFutureWatcher>
+#include <vector>
 
 namespace ores::qt {
 
@@ -42,8 +42,7 @@ class ClientSystemSettingModel final : public AbstractClientModel {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.client_system_setting_model";
+    inline static std::string_view logger_name = "ores.qt.client_system_setting_model";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -55,25 +54,17 @@ public:
     /**
      * @brief Enumeration of table columns for type-safe column access.
      */
-    enum Column {
-        Name,
-        Enabled,
-        Version,
-        ModifiedBy,
-        RecordedAt,
-        ColumnCount
-    };
+    enum Column { Name, Enabled, Version, ModifiedBy, RecordedAt, ColumnCount };
 
-    explicit ClientSystemSettingModel(ClientManager* clientManager,
-                                    QObject* parent = nullptr);
+    explicit ClientSystemSettingModel(ClientManager* clientManager, QObject* parent = nullptr);
     ~ClientSystemSettingModel() override = default;
 
     // QAbstractTableModel interface
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-    QVariant headerData(int section, Qt::Orientation orientation,
-        int role = Qt::DisplayRole) const override;
+    QVariant
+    headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
     /**
      * @brief Refresh system setting data from server asynchronously.
@@ -117,7 +108,7 @@ private:
     QFutureWatcher<FetchResult>* watcher_;
     bool is_fetching_{false};
 
-    using SystemSettingKeyExtractor = std::string(*)(const variability::domain::system_setting&);
+    using SystemSettingKeyExtractor = std::string (*)(const variability::domain::system_setting&);
     RecencyTracker<variability::domain::system_setting, SystemSettingKeyExtractor> recencyTracker_;
     RecencyPulseManager* pulseManager_;
 };

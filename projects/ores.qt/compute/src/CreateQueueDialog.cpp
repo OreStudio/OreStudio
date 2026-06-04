@@ -18,11 +18,10 @@
  *
  */
 #include "ores.qt/CreateQueueDialog.hpp"
-
-#include <QFormLayout>
-#include <QVBoxLayout>
 #include <QDialogButtonBox>
+#include <QFormLayout>
 #include <QLabel>
+#include <QVBoxLayout>
 
 namespace ores::qt {
 
@@ -42,13 +41,13 @@ CreateQueueDialog::CreateQueueDialog(QWidget* parent)
     formLayout->addRow(tr("Queue name:"), nameEdit_);
 
     scopeCombo_ = new QComboBox(this);
-    scopeCombo_->addItem(tr("Party"),  QStringLiteral("party"));
+    scopeCombo_->addItem(tr("Party"), QStringLiteral("party"));
     scopeCombo_->addItem(tr("Tenant"), QStringLiteral("tenant"));
     scopeCombo_->addItem(tr("System"), QStringLiteral("system"));
     formLayout->addRow(tr("Scope:"), scopeCombo_);
 
     typeCombo_ = new QComboBox(this);
-    typeCombo_->addItem(tr("Task"),    QStringLiteral("task"));
+    typeCombo_->addItem(tr("Task"), QStringLiteral("task"));
     typeCombo_->addItem(tr("Channel"), QStringLiteral("channel"));
     formLayout->addRow(tr("Type:"), typeCombo_);
 
@@ -59,9 +58,10 @@ CreateQueueDialog::CreateQueueDialog(QWidget* parent)
 
     layout->addLayout(formLayout);
 
-    auto* note = new QLabel(
-        tr("<small>Queue names must start with a letter or underscore and contain "
-           "only alphanumeric characters and underscores.</small>"), this);
+    auto* note =
+        new QLabel(tr("<small>Queue names must start with a letter or underscore and contain "
+                      "only alphanumeric characters and underscores.</small>"),
+                   this);
     note->setWordWrap(true);
     layout->addWidget(note);
 
@@ -72,8 +72,7 @@ CreateQueueDialog::CreateQueueDialog(QWidget* parent)
 
     connect(buttons, &QDialogButtonBox::accepted, this, &QDialog::accept);
     connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
-    connect(nameEdit_, &QLineEdit::textChanged,
-            this, &CreateQueueDialog::onNameChanged);
+    connect(nameEdit_, &QLineEdit::textChanged, this, &CreateQueueDialog::onNameChanged);
 
     layout->addWidget(buttons);
 }

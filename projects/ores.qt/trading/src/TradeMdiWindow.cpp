@@ -18,41 +18,39 @@
  *
  */
 #include "ores.qt/TradeMdiWindow.hpp"
-
-#include <QVBoxLayout>
-#include <QHeaderView>
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include <boost/uuid/uuid_io.hpp>
+#include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
+#include <QFutureWatcher>
+#include <QHeaderView>
+#include <QMessageBox>
+#include <QVBoxLayout>
+#include <QtConcurrent>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-TradeMdiWindow::TradeMdiWindow(
-    ClientManager* clientManager,
-    const QString& username,
-    QWidget* parent)
-    : EntityListMdiWindow(parent),
-      clientManager_(clientManager),
-      username_(username),
-      toolbar_(nullptr),
-      tableView_(nullptr),
-      model_(nullptr),
-      proxyModel_(nullptr),
-      paginationWidget_(nullptr),
-      reloadAction_(nullptr),
-      addAction_(nullptr),
-      editAction_(nullptr),
-      deleteAction_(nullptr),
-      historyAction_(nullptr),
-      importAction_(nullptr) {
+TradeMdiWindow::TradeMdiWindow(ClientManager* clientManager,
+                               const QString& username,
+                               QWidget* parent)
+    : EntityListMdiWindow(parent)
+    , clientManager_(clientManager)
+    , username_(username)
+    , toolbar_(nullptr)
+    , tableView_(nullptr)
+    , model_(nullptr)
+    , proxyModel_(nullptr)
+    , paginationWidget_(nullptr)
+    , reloadAction_(nullptr)
+    , addAction_(nullptr)
+    , editAction_(nullptr)
+    , deleteAction_(nullptr)
+    , historyAction_(nullptr)
+    , importAction_(nullptr) {
 
     setupUi();
     setupConnections();
@@ -83,61 +81,43 @@ void TradeMdiWindow::setupToolbar() {
     toolbar_->setIconSize(QSize(20, 20));
 
     reloadAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::ArrowClockwise, IconUtils::DefaultIconColor),
+        IconUtils::createRecoloredIcon(Icon::ArrowClockwise, IconUtils::DefaultIconColor),
         tr("Reload"));
-    connect(reloadAction_, &QAction::triggered, this,
-            &EntityListMdiWindow::reload);
+    connect(reloadAction_, &QAction::triggered, this, &EntityListMdiWindow::reload);
 
     initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowClockwise));
 
     toolbar_->addSeparator();
 
     addAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::Add, IconUtils::DefaultIconColor),
-        tr("Add"));
+        IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor), tr("Add"));
     addAction_->setToolTip(tr("Add new trade"));
-    connect(addAction_, &QAction::triggered, this,
-            &TradeMdiWindow::addNew);
+    connect(addAction_, &QAction::triggered, this, &TradeMdiWindow::addNew);
 
     editAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::Edit, IconUtils::DefaultIconColor),
-        tr("Edit"));
+        IconUtils::createRecoloredIcon(Icon::Edit, IconUtils::DefaultIconColor), tr("Edit"));
     editAction_->setToolTip(tr("Edit selected trade"));
     editAction_->setEnabled(false);
-    connect(editAction_, &QAction::triggered, this,
-            &TradeMdiWindow::editSelected);
+    connect(editAction_, &QAction::triggered, this, &TradeMdiWindow::editSelected);
 
     deleteAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::Delete, IconUtils::DefaultIconColor),
-        tr("Delete"));
+        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor), tr("Delete"));
     deleteAction_->setToolTip(tr("Delete selected trade"));
     deleteAction_->setEnabled(false);
-    connect(deleteAction_, &QAction::triggered, this,
-            &TradeMdiWindow::deleteSelected);
+    connect(deleteAction_, &QAction::triggered, this, &TradeMdiWindow::deleteSelected);
 
     historyAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::History, IconUtils::DefaultIconColor),
-        tr("History"));
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor), tr("History"));
     historyAction_->setToolTip(tr("View trade history"));
     historyAction_->setEnabled(false);
-    connect(historyAction_, &QAction::triggered, this,
-            &TradeMdiWindow::viewHistorySelected);
+    connect(historyAction_, &QAction::triggered, this, &TradeMdiWindow::viewHistorySelected);
 
     toolbar_->addSeparator();
 
     importAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::ImportOre, IconUtils::DefaultIconColor),
-        tr("Import"));
+        IconUtils::createRecoloredIcon(Icon::ImportOre, IconUtils::DefaultIconColor), tr("Import"));
     importAction_->setToolTip(tr("Import trades from an ORE portfolio XML file"));
-    connect(importAction_, &QAction::triggered,
-            this, &TradeMdiWindow::importTradesRequested);
-
+    connect(importAction_, &QAction::triggered, this, &TradeMdiWindow::importTradesRequested);
 }
 
 void TradeMdiWindow::setupTable() {
@@ -154,32 +134,27 @@ void TradeMdiWindow::setupTable() {
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
 
-    initializeTableSettings(tableView_, model_,
-        "TradeListWindow",
-        {},
-        {900, 400}, 1);
+    initializeTableSettings(tableView_, model_, "TradeListWindow", {}, {900, 400}, 1);
 }
 
 void TradeMdiWindow::setupConnections() {
-    connect(model_, &ClientTradeModel::dataLoaded,
-            this, &TradeMdiWindow::onDataLoaded);
-    connect(model_, &ClientTradeModel::loadError,
-            this, &TradeMdiWindow::onLoadError);
+    connect(model_, &ClientTradeModel::dataLoaded, this, &TradeMdiWindow::onDataLoaded);
+    connect(model_, &ClientTradeModel::loadError, this, &TradeMdiWindow::onLoadError);
     connectModel(model_);
 
-    connect(tableView_->selectionModel(), &QItemSelectionModel::selectionChanged,
-            this, &TradeMdiWindow::onSelectionChanged);
-    connect(tableView_, &QTableView::doubleClicked,
-            this, &TradeMdiWindow::onDoubleClicked);
+    connect(tableView_->selectionModel(),
+            &QItemSelectionModel::selectionChanged,
+            this,
+            &TradeMdiWindow::onSelectionChanged);
+    connect(tableView_, &QTableView::doubleClicked, this, &TradeMdiWindow::onDoubleClicked);
 
-    connect(paginationWidget_, &PaginationWidget::page_size_changed,
-            this, [this](std::uint32_t size) {
-        model_->set_page_size(size);
-        model_->refresh();
-    });
+    connect(
+        paginationWidget_, &PaginationWidget::page_size_changed, this, [this](std::uint32_t size) {
+            model_->set_page_size(size);
+            model_->refresh();
+        });
 
-    connect(paginationWidget_, &PaginationWidget::load_all_requested,
-            this, [this]() {
+    connect(paginationWidget_, &PaginationWidget::load_all_requested, this, [this]() {
         const auto total = model_->total_available_count();
         if (total > 0 && total <= 1000) {
             model_->set_page_size(total);
@@ -187,10 +162,11 @@ void TradeMdiWindow::setupConnections() {
         }
     });
 
-    connect(paginationWidget_, &PaginationWidget::page_requested,
-            this, [this](std::uint32_t offset, std::uint32_t limit) {
-        model_->load_page(offset, limit);
-    });
+    connect(
+        paginationWidget_,
+        &PaginationWidget::page_requested,
+        this,
+        [this](std::uint32_t offset, std::uint32_t limit) { model_->load_page(offset, limit); });
 }
 
 void TradeMdiWindow::doReload() {
@@ -211,12 +187,11 @@ void TradeMdiWindow::onDataLoaded() {
     emit statusChanged(tr("Loaded %1 of %2 trades").arg(loaded).arg(total));
 
     paginationWidget_->update_state(loaded, total);
-    paginationWidget_->set_load_all_enabled(
-        loaded < static_cast<int>(total) && total > 0 && total <= 1000);
+    paginationWidget_->set_load_all_enabled(loaded < static_cast<int>(total) && total > 0 &&
+                                            total <= 1000);
 }
 
-void TradeMdiWindow::onLoadError(const QString& error_message,
-                                          const QString& details) {
+void TradeMdiWindow::onLoadError(const QString& error_message, const QString& details) {
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);
@@ -270,8 +245,8 @@ void TradeMdiWindow::viewHistorySelected() {
 
     auto sourceIndex = proxyModel_->mapToSource(selected.first());
     if (auto* trade = model_->getTrade(sourceIndex.row())) {
-        BOOST_LOG_SEV(lg(), debug) << "Emitting showTradeHistory for code: "
-                                   << trade->identity.external_id;
+        BOOST_LOG_SEV(lg(), debug)
+            << "Emitting showTradeHistory for code: " << trade->identity.external_id;
         emit showTradeHistory(*trade);
     }
 }
@@ -284,13 +259,12 @@ void TradeMdiWindow::deleteSelected() {
     }
 
     if (!clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot delete trade while disconnected.");
+        MessageBoxHelper::warning(this, "Disconnected", "Cannot delete trade while disconnected.");
         return;
     }
 
     std::vector<boost::uuids::uuid> ids;
-    std::vector<std::string> codes;  // For display purposes
+    std::vector<std::string> codes; // For display purposes
     for (const auto& index : selected) {
         auto sourceIndex = proxyModel_->mapToSource(index);
         if (auto* trade = model_->getTrade(sourceIndex.row())) {
@@ -304,20 +278,18 @@ void TradeMdiWindow::deleteSelected() {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Delete requested for " << ids.size()
-                               << " trades";
+    BOOST_LOG_SEV(lg(), debug) << "Delete requested for " << ids.size() << " trades";
 
     QString confirmMessage;
     if (ids.size() == 1) {
         confirmMessage = QString("Are you sure you want to delete trade '%1'?")
-            .arg(QString::fromStdString(codes.front()));
+                             .arg(QString::fromStdString(codes.front()));
     } else {
-        confirmMessage = QString("Are you sure you want to delete %1 trades?")
-            .arg(ids.size());
+        confirmMessage = QString("Are you sure you want to delete %1 trades?").arg(ids.size());
     }
 
-    auto reply = MessageBoxHelper::question(this, "Delete Trade",
-        confirmMessage, QMessageBox::Yes | QMessageBox::No);
+    auto reply = MessageBoxHelper::question(
+        this, "Delete Trade", confirmMessage, QMessageBox::Yes | QMessageBox::No);
 
     if (reply != QMessageBox::Yes) {
         BOOST_LOG_SEV(lg(), debug) << "Delete cancelled by user";
@@ -325,20 +297,22 @@ void TradeMdiWindow::deleteSelected() {
     }
 
     QPointer<TradeMdiWindow> self = this;
-    using DeleteResult = std::vector<std::tuple<boost::uuids::uuid, std::string, bool, std::string>>;
+    using DeleteResult =
+        std::vector<std::tuple<boost::uuids::uuid, std::string, bool, std::string>>;
 
     auto task = [self, ids, codes]() -> DeleteResult {
         DeleteResult results;
-        if (!self) return {};
+        if (!self)
+            return {};
 
-        BOOST_LOG_SEV(lg(), debug) << "Making batch delete request for "
-                                   << ids.size() << " trades";
+        BOOST_LOG_SEV(lg(), debug) << "Making batch delete request for " << ids.size() << " trades";
 
         trading::messaging::delete_trade_request request;
         for (const auto& id : ids) {
             request.ids.push_back(boost::uuids::to_string(id));
         }
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             BOOST_LOG_SEV(lg(), error) << "Failed to send batch delete request";
@@ -357,8 +331,7 @@ void TradeMdiWindow::deleteSelected() {
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, watcher]() {
         auto results = watcher->result();
         watcher->deleteLater();
 
@@ -372,8 +345,7 @@ void TradeMdiWindow::deleteSelected() {
                 success_count++;
                 emit self->tradeDeleted(QString::fromStdString(code));
             } else {
-                BOOST_LOG_SEV(lg(), error) << "Trade deletion failed: "
-                                           << code << " - " << message;
+                BOOST_LOG_SEV(lg(), error) << "Trade deletion failed: " << code << " - " << message;
                 failure_count++;
                 if (first_error.isEmpty()) {
                     first_error = QString::fromStdString(message);
@@ -384,21 +356,20 @@ void TradeMdiWindow::deleteSelected() {
         self->model_->refresh();
 
         if (failure_count == 0) {
-            QString msg = success_count == 1
-                ? "Successfully deleted 1 trade"
-                : QString("Successfully deleted %1 trades").arg(success_count);
+            QString msg = success_count == 1 ?
+                              "Successfully deleted 1 trade" :
+                              QString("Successfully deleted %1 trades").arg(success_count);
             emit self->statusChanged(msg);
         } else if (success_count == 0) {
             QString msg = QString("Failed to delete %1 %2: %3")
-                .arg(failure_count)
-                .arg(failure_count == 1 ? "trade" : "trades")
-                .arg(first_error);
+                              .arg(failure_count)
+                              .arg(failure_count == 1 ? "trade" : "trades")
+                              .arg(first_error);
             emit self->errorOccurred(msg);
             MessageBoxHelper::critical(self, "Delete Failed", msg);
         } else {
-            QString msg = QString("Deleted %1, failed to delete %2")
-                .arg(success_count)
-                .arg(failure_count);
+            QString msg =
+                QString("Deleted %1, failed to delete %2").arg(success_count).arg(failure_count);
             emit self->statusChanged(msg);
             MessageBoxHelper::warning(self, "Partial Success", msg);
         }
@@ -409,4 +380,3 @@ void TradeMdiWindow::deleteSelected() {
 }
 
 }
-

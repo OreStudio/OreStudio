@@ -20,13 +20,13 @@
 #ifndef ORES_QT_ORE_IMPORT_CONTROLLER_HPP
 #define ORES_QT_ORE_IMPORT_CONTROLLER_HPP
 
-#include <optional>
-#include <string>
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
 #include <QObject>
 #include <QWidget>
 #include <boost/uuid/uuid.hpp>
-#include "ores.logging/make_logger.hpp"
-#include "ores.qt/ClientManager.hpp"
+#include <optional>
+#include <string>
 
 namespace ores::qt {
 
@@ -52,8 +52,7 @@ private:
     }
 
 public:
-    explicit OreImportController(ClientManager* clientManager,
-                                  QObject* parent = nullptr);
+    explicit OreImportController(ClientManager* clientManager, QObject* parent = nullptr);
     ~OreImportController() override = default;
 
     /**
@@ -73,7 +72,9 @@ public:
      *
      * Called by MainWindow when the HTTP server is discovered.
      */
-    void setHttpBaseUrl(const std::string& url) { http_base_url_ = url; }
+    void setHttpBaseUrl(const std::string& url) {
+        http_base_url_ = url;
+    }
 
 signals:
     /**

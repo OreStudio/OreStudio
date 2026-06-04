@@ -20,23 +20,23 @@
 #ifndef ORES_QT_SERVICE_DASHBOARD_MDI_WINDOW_HPP
 #define ORES_QT_SERVICE_DASHBOARD_MDI_WINDOW_HPP
 
+#include "ores.controller.api/domain/service_definition.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include <QAction>
+#include <QCloseEvent>
+#include <QGroupBox>
+#include <QLabel>
+#include <QPushButton>
+#include <QSpinBox>
+#include <QSplitter>
+#include <QTableWidget>
+#include <QTimer>
+#include <QToolBar>
+#include <QVBoxLayout>
+#include <QWidget>
 #include <string>
 #include <vector>
-#include <QTimer>
-#include <QLabel>
-#include <QWidget>
-#include <QAction>
-#include <QSpinBox>
-#include <QToolBar>
-#include <QGroupBox>
-#include <QSplitter>
-#include <QPushButton>
-#include <QTableWidget>
-#include <QVBoxLayout>
-#include <QCloseEvent>
-#include "ores.qt/ClientManager.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.controller.api/domain/service_definition.hpp"
 
 namespace ores::qt {
 
@@ -54,8 +54,7 @@ class ServiceDashboardMdiWindow final : public QWidget {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.service_dashboard_mdi_window";
+    inline static std::string_view logger_name = "ores.qt.service_dashboard_mdi_window";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -64,9 +63,7 @@ private:
     }
 
 public:
-    explicit ServiceDashboardMdiWindow(
-        ClientManager* clientManager,
-        QWidget* parent = nullptr);
+    explicit ServiceDashboardMdiWindow(ClientManager* clientManager, QWidget* parent = nullptr);
     ~ServiceDashboardMdiWindow() override = default;
 
     QSize sizeHint() const override {

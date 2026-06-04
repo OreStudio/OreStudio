@@ -18,30 +18,27 @@
  *
  */
 #include "ores.qt/BadgeSeverityController.hpp"
-
+#include "ores.qt/BadgeSeverityDetailDialog.hpp"
+#include "ores.qt/BadgeSeverityHistoryDialog.hpp"
+#include "ores.qt/BadgeSeverityMdiWindow.hpp"
+#include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/IconUtils.hpp"
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/BadgeSeverityMdiWindow.hpp"
-#include "ores.qt/BadgeSeverityDetailDialog.hpp"
-#include "ores.qt/BadgeSeverityHistoryDialog.hpp"
-#include "ores.qt/DetachableMdiSubWindow.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-BadgeSeverityController::BadgeSeverityController(
-    QMainWindow* mainWindow,
-    QMdiArea* mdiArea,
-    ClientManager* clientManager,
-    const QString& username,
-    QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username,
-          std::string_view{}, parent),
-      listWindow_(nullptr),
-      listMdiSubWindow_(nullptr) {
+BadgeSeverityController::BadgeSeverityController(QMainWindow* mainWindow,
+                                                 QMdiArea* mdiArea,
+                                                 ClientManager* clientManager,
+                                                 const QString& username,
+                                                 QObject* parent)
+    : EntityController(mainWindow, mdiArea, clientManager, username, std::string_view{}, parent)
+    , listWindow_(nullptr)
+    , listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "BadgeSeverityController created";
 }
@@ -59,23 +56,33 @@ void BadgeSeverityController::showListWindow() {
     listWindow_ = new BadgeSeverityMdiWindow(clientManager_, username_);
 
     // Connect signals
-    connect(listWindow_, &BadgeSeverityMdiWindow::statusChanged,
-            this, &BadgeSeverityController::statusMessage);
-    connect(listWindow_, &BadgeSeverityMdiWindow::errorOccurred,
-            this, &BadgeSeverityController::errorMessage);
-    connect(listWindow_, &BadgeSeverityMdiWindow::showSeverityDetails,
-            this, &BadgeSeverityController::onShowDetails);
-    connect(listWindow_, &BadgeSeverityMdiWindow::addNewRequested,
-            this, &BadgeSeverityController::onAddNewRequested);
-    connect(listWindow_, &BadgeSeverityMdiWindow::showSeverityHistory,
-            this, &BadgeSeverityController::onShowHistory);
+    connect(listWindow_,
+            &BadgeSeverityMdiWindow::statusChanged,
+            this,
+            &BadgeSeverityController::statusMessage);
+    connect(listWindow_,
+            &BadgeSeverityMdiWindow::errorOccurred,
+            this,
+            &BadgeSeverityController::errorMessage);
+    connect(listWindow_,
+            &BadgeSeverityMdiWindow::showSeverityDetails,
+            this,
+            &BadgeSeverityController::onShowDetails);
+    connect(listWindow_,
+            &BadgeSeverityMdiWindow::addNewRequested,
+            this,
+            &BadgeSeverityController::onAddNewRequested);
+    connect(listWindow_,
+            &BadgeSeverityMdiWindow::showSeverityHistory,
+            this,
+            &BadgeSeverityController::onShowHistory);
 
     // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Badge Severities");
-    listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Star, IconUtils::DefaultIconColor));
+    listMdiSubWindow_->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Star, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -87,12 +94,16 @@ void BadgeSeverityController::showListWindow() {
     register_detachable_window(listMdiSubWindow_);
 
     // Cleanup when closed
-    connect(listMdiSubWindow_, &QObject::destroyed, this, [self = QPointer<BadgeSeverityController>(this), key]() {
-        if (!self) return;
-        self->untrack_window(key);
-        self->listWindow_ = nullptr;
-        self->listMdiSubWindow_ = nullptr;
-    });
+    connect(listMdiSubWindow_,
+            &QObject::destroyed,
+            this,
+            [self = QPointer<BadgeSeverityController>(this), key]() {
+                if (!self)
+                    return;
+                self->untrack_window(key);
+                self->listWindow_ = nullptr;
+                self->listMdiSubWindow_ = nullptr;
+            });
 
     BOOST_LOG_SEV(lg(), debug) << "Badge Severity list window created";
 }
@@ -119,8 +130,7 @@ void BadgeSeverityController::reloadListWindow() {
     }
 }
 
-void BadgeSeverityController::onShowDetails(
-    const dq::domain::badge_severity& severity) {
+void BadgeSeverityController::onShowDetails(const dq::domain::badge_severity& severity) {
     BOOST_LOG_SEV(lg(), debug) << "Show details for: " << severity.code;
     showDetailWindow(severity);
 }
@@ -130,8 +140,7 @@ void BadgeSeverityController::onAddNewRequested() {
     showAddWindow();
 }
 
-void BadgeSeverityController::onShowHistory(
-    const dq::domain::badge_severity& severity) {
+void BadgeSeverityController::onShowHistory(const dq::domain::badge_severity& severity) {
     BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << severity.code;
     showHistoryWindow(QString::fromStdString(severity.code));
 }
@@ -144,23 +153,30 @@ void BadgeSeverityController::showAddWindow() {
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
 
-    connect(detailDialog, &BadgeSeverityDetailDialog::statusMessage,
-            this, &BadgeSeverityController::statusMessage);
-    connect(detailDialog, &BadgeSeverityDetailDialog::errorMessage,
-            this, &BadgeSeverityController::errorMessage);
-    connect(detailDialog, &BadgeSeverityDetailDialog::severitySaved,
-            this, [self = QPointer<BadgeSeverityController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Badge Severity saved: " << code.toStdString();
-        self->handleEntitySaved();
-    });
+    connect(detailDialog,
+            &BadgeSeverityDetailDialog::statusMessage,
+            this,
+            &BadgeSeverityController::statusMessage);
+    connect(detailDialog,
+            &BadgeSeverityDetailDialog::errorMessage,
+            this,
+            &BadgeSeverityController::errorMessage);
+    connect(detailDialog,
+            &BadgeSeverityDetailDialog::severitySaved,
+            this,
+            [self = QPointer<BadgeSeverityController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Badge Severity saved: " << code.toStdString();
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Badge Severity");
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Star, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Star, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -168,8 +184,7 @@ void BadgeSeverityController::showAddWindow() {
     show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
-void BadgeSeverityController::showDetailWindow(
-    const dq::domain::badge_severity& severity) {
+void BadgeSeverityController::showDetailWindow(const dq::domain::badge_severity& severity) {
 
     const QString identifier = QString::fromStdString(severity.code);
     const QString key = build_window_key("details", identifier);
@@ -187,37 +202,46 @@ void BadgeSeverityController::showDetailWindow(
     detailDialog->setCreateMode(false);
     detailDialog->setSeverity(severity);
 
-    connect(detailDialog, &BadgeSeverityDetailDialog::statusMessage,
-            this, &BadgeSeverityController::statusMessage);
-    connect(detailDialog, &BadgeSeverityDetailDialog::errorMessage,
-            this, &BadgeSeverityController::errorMessage);
-    connect(detailDialog, &BadgeSeverityDetailDialog::severitySaved,
-            this, [self = QPointer<BadgeSeverityController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Badge Severity saved: " << code.toStdString();
-        self->handleEntitySaved();
-    });
-    connect(detailDialog, &BadgeSeverityDetailDialog::severityDeleted,
-            this, [self = QPointer<BadgeSeverityController>(this), key](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Badge Severity deleted: " << code.toStdString();
-        self->handleEntityDeleted();
-    });
+    connect(detailDialog,
+            &BadgeSeverityDetailDialog::statusMessage,
+            this,
+            &BadgeSeverityController::statusMessage);
+    connect(detailDialog,
+            &BadgeSeverityDetailDialog::errorMessage,
+            this,
+            &BadgeSeverityController::errorMessage);
+    connect(detailDialog,
+            &BadgeSeverityDetailDialog::severitySaved,
+            this,
+            [self = QPointer<BadgeSeverityController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Badge Severity saved: " << code.toStdString();
+                self->handleEntitySaved();
+            });
+    connect(detailDialog,
+            &BadgeSeverityDetailDialog::severityDeleted,
+            this,
+            [self = QPointer<BadgeSeverityController>(this), key](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Badge Severity deleted: " << code.toStdString();
+                self->handleEntityDeleted();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Badge Severity: %1").arg(identifier));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Star, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Star, IconUtils::DefaultIconColor));
 
     // Track window
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<BadgeSeverityController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, key]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, key]() {
         if (self) {
             self->untrack_window(key);
         }
@@ -235,30 +259,38 @@ void BadgeSeverityController::showHistoryWindow(const QString& code) {
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
-        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: "
-                                  << code.toStdString();
+        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: " << code.toStdString();
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
-                              << code.toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << code.toStdString();
 
     auto* historyDialog = new BadgeSeverityHistoryDialog(code, clientManager_, mainWindow_);
 
-    connect(historyDialog, &BadgeSeverityHistoryDialog::statusChanged,
-            this, [self = QPointer<BadgeSeverityController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(historyDialog, &BadgeSeverityHistoryDialog::errorOccurred,
-            this, [self = QPointer<BadgeSeverityController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
-    connect(historyDialog, &BadgeSeverityHistoryDialog::revertVersionRequested,
-            this, &BadgeSeverityController::onRevertVersion);
-    connect(historyDialog, &BadgeSeverityHistoryDialog::openVersionRequested,
-            this, &BadgeSeverityController::onOpenVersion);
+    connect(historyDialog,
+            &BadgeSeverityHistoryDialog::statusChanged,
+            this,
+            [self = QPointer<BadgeSeverityController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(historyDialog,
+            &BadgeSeverityHistoryDialog::errorOccurred,
+            this,
+            [self = QPointer<BadgeSeverityController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
+    connect(historyDialog,
+            &BadgeSeverityHistoryDialog::revertVersionRequested,
+            this,
+            &BadgeSeverityController::onRevertVersion);
+    connect(historyDialog,
+            &BadgeSeverityHistoryDialog::openVersionRequested,
+            this,
+            &BadgeSeverityController::onOpenVersion);
 
     // Load history data
     historyDialog->loadHistory();
@@ -267,16 +299,15 @@ void BadgeSeverityController::showHistoryWindow(const QString& code) {
     historyWindow->setAttribute(Qt::WA_DeleteOnClose);
     historyWindow->setWidget(historyDialog);
     historyWindow->setWindowTitle(QString("Badge Severity History: %1").arg(code));
-    historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    historyWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     // Track this history window
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
 
     QPointer<BadgeSeverityController> self = this;
-    connect(historyWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -285,14 +316,14 @@ void BadgeSeverityController::showHistoryWindow(const QString& code) {
     show_managed_window(historyWindow, listMdiSubWindow_);
 }
 
-void BadgeSeverityController::onOpenVersion(
-    const dq::domain::badge_severity& severity, int versionNumber) {
+void BadgeSeverityController::onOpenVersion(const dq::domain::badge_severity& severity,
+                                            int versionNumber) {
     BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
                               << " for badge severity: " << severity.code;
 
     const QString code = QString::fromStdString(severity.code);
-    const QString windowKey = build_window_key("version", QString("%1_v%2")
-        .arg(code).arg(versionNumber));
+    const QString windowKey =
+        build_window_key("version", QString("%1_v%2").arg(code).arg(versionNumber));
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
@@ -306,31 +337,36 @@ void BadgeSeverityController::onOpenVersion(
     detailDialog->setSeverity(severity);
     detailDialog->setReadOnly(true);
 
-    connect(detailDialog, &BadgeSeverityDetailDialog::statusMessage,
-            this, [self = QPointer<BadgeSeverityController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(detailDialog, &BadgeSeverityDetailDialog::errorMessage,
-            this, [self = QPointer<BadgeSeverityController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
+    connect(detailDialog,
+            &BadgeSeverityDetailDialog::statusMessage,
+            this,
+            [self = QPointer<BadgeSeverityController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(detailDialog,
+            &BadgeSeverityDetailDialog::errorMessage,
+            this,
+            [self = QPointer<BadgeSeverityController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Badge Severity: %1 (Version %2)")
-        .arg(code).arg(versionNumber));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("Badge Severity: %1 (Version %2)").arg(code).arg(versionNumber));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     track_window(windowKey, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<BadgeSeverityController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -340,10 +376,8 @@ void BadgeSeverityController::onOpenVersion(
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
-void BadgeSeverityController::onRevertVersion(
-    const dq::domain::badge_severity& severity) {
-    BOOST_LOG_SEV(lg(), info) << "Reverting badge severity to version: "
-                              << severity.version;
+void BadgeSeverityController::onRevertVersion(const dq::domain::badge_severity& severity) {
+    BOOST_LOG_SEV(lg(), info) << "Reverting badge severity to version: " << severity.version;
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new BadgeSeverityDetailDialog(mainWindow_);
@@ -352,25 +386,33 @@ void BadgeSeverityController::onRevertVersion(
     detailDialog->setSeverity(severity);
     detailDialog->setCreateMode(false);
 
-    connect(detailDialog, &BadgeSeverityDetailDialog::statusMessage,
-            this, &BadgeSeverityController::statusMessage);
-    connect(detailDialog, &BadgeSeverityDetailDialog::errorMessage,
-            this, &BadgeSeverityController::errorMessage);
-    connect(detailDialog, &BadgeSeverityDetailDialog::severitySaved,
-            this, [self = QPointer<BadgeSeverityController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Badge Severity reverted: " << code.toStdString();
-        emit self->statusMessage(QString("Badge Severity '%1' reverted successfully").arg(code));
-        self->handleEntitySaved();
-    });
+    connect(detailDialog,
+            &BadgeSeverityDetailDialog::statusMessage,
+            this,
+            &BadgeSeverityController::statusMessage);
+    connect(detailDialog,
+            &BadgeSeverityDetailDialog::errorMessage,
+            this,
+            &BadgeSeverityController::errorMessage);
+    connect(detailDialog,
+            &BadgeSeverityDetailDialog::severitySaved,
+            this,
+            [self = QPointer<BadgeSeverityController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Badge Severity reverted: " << code.toStdString();
+                emit self->statusMessage(
+                    QString("Badge Severity '%1' reverted successfully").arg(code));
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Revert Badge Severity: %1")
-        .arg(QString::fromStdString(severity.code)));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("Revert Badge Severity: %1").arg(QString::fromStdString(severity.code)));
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
+                                                               IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 

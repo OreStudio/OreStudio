@@ -20,10 +20,10 @@
 #ifndef ORES_QT_MDI_AREA_WITH_BACKGROUND_HPP
 #define ORES_QT_MDI_AREA_WITH_BACKGROUND_HPP
 
-#include <QMdiArea>
-#include <QPixmap>
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/export.hpp"
+#include <QMdiArea>
+#include <QPixmap>
 
 namespace ores::qt {
 
@@ -34,8 +34,7 @@ class ORES_QT_API MdiAreaWithBackground : public QMdiArea {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.mdi_area_with_background";
+    inline static std::string_view logger_name = "ores.qt.mdi_area_with_background";
 
     static auto& lg() {
         using namespace ores::logging;

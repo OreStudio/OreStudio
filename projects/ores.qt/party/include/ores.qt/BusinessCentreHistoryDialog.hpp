@@ -20,12 +20,12 @@
 #ifndef ORES_QT_BUSINESS_CENTRE_HISTORY_DIALOG_HPP
 #define ORES_QT_BUSINESS_CENTRE_HISTORY_DIALOG_HPP
 
-#include <QWidget>
-#include <QToolBar>
-#include <QTableWidget>
-#include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
 #include "ores.refdata.api/domain/business_centre.hpp"
+#include <QTableWidget>
+#include <QToolBar>
+#include <QWidget>
 
 namespace Ui {
 class BusinessCentreHistoryDialog;
@@ -43,8 +43,7 @@ class BusinessCentreHistoryDialog final : public QWidget {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.business_centre_history_dialog";
+    inline static std::string_view logger_name = "ores.qt.business_centre_history_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -53,10 +52,9 @@ private:
     }
 
 public:
-    explicit BusinessCentreHistoryDialog(
-        const QString& code,
-        ClientManager* clientManager,
-        QWidget* parent = nullptr);
+    explicit BusinessCentreHistoryDialog(const QString& code,
+                                         ClientManager* clientManager,
+                                         QWidget* parent = nullptr);
     ~BusinessCentreHistoryDialog() override;
 
     void loadHistory();

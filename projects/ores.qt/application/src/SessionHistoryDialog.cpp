@@ -18,8 +18,9 @@
  *
  */
 #include "ores.qt/SessionHistoryDialog.hpp"
-
-#include <algorithm>
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/RelativeTimeHelper.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include <QDateTime>
 #include <QHBoxLayout>
 #include <QHeaderView>
@@ -27,15 +28,13 @@
 #include <QPainter>
 #include <QPushButton>
 #include <QTimer>
-#include <QtConcurrent>
 #include <QtCharts/QChart>
-#include <QtCharts/QLineSeries>
 #include <QtCharts/QDateTimeAxis>
+#include <QtCharts/QLineSeries>
 #include <QtCharts/QValueAxis>
+#include <QtConcurrent>
 #include <boost/uuid/uuid_io.hpp>
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.qt/WidgetUtils.hpp"
+#include <algorithm>
 
 namespace ores::qt {
 
@@ -44,19 +43,20 @@ using namespace ores::logging;
 // SessionHistoryModel implementation
 
 SessionHistoryModel::SessionHistoryModel(QObject* parent)
-    : QAbstractTableModel(parent),
-      activeIcon_(IconUtils::createRecoloredIcon(Icon::PlugConnectedFilled,
-                                                  IconUtils::ConnectedColor)),
-      historyIcon_(IconUtils::createRecoloredIcon(Icon::History,
-                                                   IconUtils::DefaultIconColor)) {}
+    : QAbstractTableModel(parent)
+    , activeIcon_(
+          IconUtils::createRecoloredIcon(Icon::PlugConnectedFilled, IconUtils::ConnectedColor))
+    , historyIcon_(IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor)) {}
 
 int SessionHistoryModel::rowCount(const QModelIndex& parent) const {
-    if (parent.isValid()) return 0;
+    if (parent.isValid())
+        return 0;
     return static_cast<int>(sessions_.size());
 }
 
 int SessionHistoryModel::columnCount(const QModelIndex& parent) const {
-    if (parent.isValid()) return 0;
+    if (parent.isValid())
+        return 0;
     return ColumnCount;
 }
 
@@ -68,67 +68,69 @@ QVariant SessionHistoryModel::data(const QModelIndex& index, int role) const {
 
     if (role == Qt::DisplayRole) {
         switch (static_cast<Column>(index.column())) {
-        case StartTime: {
-            auto qdt = QDateTime::fromSecsSinceEpoch(
-                std::chrono::system_clock::to_time_t(session.start_time));
-            return qdt.toString("yyyy-MM-dd hh:mm:ss");
-        }
-        case EndTime: {
-            if (session.end_time) {
+            case StartTime: {
                 auto qdt = QDateTime::fromSecsSinceEpoch(
-                    std::chrono::system_clock::to_time_t(*session.end_time));
+                    std::chrono::system_clock::to_time_t(session.start_time));
                 return qdt.toString("yyyy-MM-dd hh:mm:ss");
             }
-            return tr("Active");
-        }
-        case Duration: {
-            if (auto dur = session.duration()) {
-                auto minutes = std::chrono::duration_cast<std::chrono::minutes>(*dur);
-                auto hours = std::chrono::duration_cast<std::chrono::hours>(minutes);
-                minutes -= std::chrono::duration_cast<std::chrono::minutes>(hours);
-                if (hours.count() > 0) {
-                    return QString("%1h %2m").arg(hours.count()).arg(minutes.count());
+            case EndTime: {
+                if (session.end_time) {
+                    auto qdt = QDateTime::fromSecsSinceEpoch(
+                        std::chrono::system_clock::to_time_t(*session.end_time));
+                    return qdt.toString("yyyy-MM-dd hh:mm:ss");
                 }
-                return QString("%1m").arg(minutes.count());
+                return tr("Active");
             }
-            return tr("Ongoing");
-        }
-        case ClientIP:
-            return QString::fromStdString(session.client_ip.to_string());
-        case Country:
-            return QString::fromStdString(session.country_code);
-        case BytesSent:
-            if (session.bytes_sent >= 1024 * 1024) {
-                return QString("%1 MB").arg(session.bytes_sent / (1024.0 * 1024.0), 0, 'f', 2);
-            } else if (session.bytes_sent >= 1024) {
-                return QString("%1 KB").arg(session.bytes_sent / 1024.0, 0, 'f', 2);
+            case Duration: {
+                if (auto dur = session.duration()) {
+                    auto minutes = std::chrono::duration_cast<std::chrono::minutes>(*dur);
+                    auto hours = std::chrono::duration_cast<std::chrono::hours>(minutes);
+                    minutes -= std::chrono::duration_cast<std::chrono::minutes>(hours);
+                    if (hours.count() > 0) {
+                        return QString("%1h %2m").arg(hours.count()).arg(minutes.count());
+                    }
+                    return QString("%1m").arg(minutes.count());
+                }
+                return tr("Ongoing");
             }
-            return QString("%1 B").arg(session.bytes_sent);
-        case BytesReceived:
-            if (session.bytes_received >= 1024 * 1024) {
-                return QString("%1 MB").arg(session.bytes_received / (1024.0 * 1024.0), 0, 'f', 2);
-            } else if (session.bytes_received >= 1024) {
-                return QString("%1 KB").arg(session.bytes_received / 1024.0, 0, 'f', 2);
-            }
-            return QString("%1 B").arg(session.bytes_received);
-        case ClientVersion:
-            if (session.client_version_major > 0 || session.client_version_minor > 0) {
-                return QString("%1.%2").arg(session.client_version_major)
-                                       .arg(session.client_version_minor);
-            }
-            return QString("-");
-        default:
-            return QVariant();
+            case ClientIP:
+                return QString::fromStdString(session.client_ip.to_string());
+            case Country:
+                return QString::fromStdString(session.country_code);
+            case BytesSent:
+                if (session.bytes_sent >= 1024 * 1024) {
+                    return QString("%1 MB").arg(session.bytes_sent / (1024.0 * 1024.0), 0, 'f', 2);
+                } else if (session.bytes_sent >= 1024) {
+                    return QString("%1 KB").arg(session.bytes_sent / 1024.0, 0, 'f', 2);
+                }
+                return QString("%1 B").arg(session.bytes_sent);
+            case BytesReceived:
+                if (session.bytes_received >= 1024 * 1024) {
+                    return QString("%1 MB").arg(
+                        session.bytes_received / (1024.0 * 1024.0), 0, 'f', 2);
+                } else if (session.bytes_received >= 1024) {
+                    return QString("%1 KB").arg(session.bytes_received / 1024.0, 0, 'f', 2);
+                }
+                return QString("%1 B").arg(session.bytes_received);
+            case ClientVersion:
+                if (session.client_version_major > 0 || session.client_version_minor > 0) {
+                    return QString("%1.%2")
+                        .arg(session.client_version_major)
+                        .arg(session.client_version_minor);
+                }
+                return QString("-");
+            default:
+                return QVariant();
         }
     }
 
     if (role == Qt::TextAlignmentRole) {
         switch (static_cast<Column>(index.column())) {
-        case BytesSent:
-        case BytesReceived:
-            return Qt::AlignRight;
-        default:
-            return QVariant();
+            case BytesSent:
+            case BytesReceived:
+                return Qt::AlignRight;
+            default:
+                return QVariant();
         }
     }
 
@@ -146,21 +148,29 @@ QVariant SessionHistoryModel::data(const QModelIndex& index, int role) const {
     return QVariant();
 }
 
-QVariant SessionHistoryModel::headerData(int section, Qt::Orientation orientation,
-    int role) const {
+QVariant SessionHistoryModel::headerData(int section, Qt::Orientation orientation, int role) const {
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return QVariant();
 
     switch (static_cast<Column>(section)) {
-    case StartTime:     return tr("Start Time");
-    case EndTime:       return tr("End Time");
-    case Duration:      return tr("Duration");
-    case ClientIP:      return tr("IP Address");
-    case Country:       return tr("Country");
-    case BytesSent:     return tr("Sent");
-    case BytesReceived: return tr("Received");
-    case ClientVersion: return tr("Version");
-    default:            return QVariant();
+        case StartTime:
+            return tr("Start Time");
+        case EndTime:
+            return tr("End Time");
+        case Duration:
+            return tr("Duration");
+        case ClientIP:
+            return tr("IP Address");
+        case Country:
+            return tr("Country");
+        case BytesSent:
+            return tr("Sent");
+        case BytesReceived:
+            return tr("Received");
+        case ClientVersion:
+            return tr("Version");
+        default:
+            return QVariant();
     }
 }
 
@@ -176,38 +186,40 @@ void SessionHistoryModel::clear() {
     endResetModel();
 }
 
-void SessionHistoryModel::updateActiveBytesFromClient(
-    std::uint64_t bytes_sent, std::uint64_t bytes_received) {
+void SessionHistoryModel::updateActiveBytesFromClient(std::uint64_t bytes_sent,
+                                                      std::uint64_t bytes_received) {
     for (std::size_t i = 0; i < sessions_.size(); ++i) {
         if (!sessions_[i].end_time) {
             sessions_[i].bytes_sent = bytes_sent;
             sessions_[i].bytes_received = bytes_received;
             const int row = static_cast<int>(i);
-            emit dataChanged(index(row, BytesSent), index(row, BytesReceived),
-                             {Qt::DisplayRole});
+            emit dataChanged(index(row, BytesSent), index(row, BytesReceived), {Qt::DisplayRole});
         }
     }
 }
 
 // SessionHistoryDialog implementation
 
-SessionHistoryDialog::SessionHistoryDialog(ClientManager* clientManager,
-                                           QWidget* parent)
-    : QWidget(parent),
-      clientManager_(clientManager),
-      watcher_(new QFutureWatcher<FetchResult>(this)),
-      samplesWatcher_(new QFutureWatcher<FetchSamplesResult>(this)),
-      sampleRefreshTimer_(new QTimer(this)) {
+SessionHistoryDialog::SessionHistoryDialog(ClientManager* clientManager, QWidget* parent)
+    : QWidget(parent)
+    , clientManager_(clientManager)
+    , watcher_(new QFutureWatcher<FetchResult>(this))
+    , samplesWatcher_(new QFutureWatcher<FetchSamplesResult>(this))
+    , sampleRefreshTimer_(new QTimer(this)) {
     setupUi();
 
-    connect(watcher_, &QFutureWatcher<FetchResult>::finished,
-            this, &SessionHistoryDialog::onSessionsLoaded);
-    connect(samplesWatcher_, &QFutureWatcher<FetchSamplesResult>::finished,
-            this, &SessionHistoryDialog::onSamplesLoaded);
+    connect(watcher_,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            &SessionHistoryDialog::onSessionsLoaded);
+    connect(samplesWatcher_,
+            &QFutureWatcher<FetchSamplesResult>::finished,
+            this,
+            &SessionHistoryDialog::onSamplesLoaded);
 
     // Auto-refresh chart every ~60s (sample_flush_interval * heartbeat_interval)
-    connect(sampleRefreshTimer_, &QTimer::timeout,
-            this, &SessionHistoryDialog::onSampleRefreshTimeout);
+    connect(
+        sampleRefreshTimer_, &QTimer::timeout, this, &SessionHistoryDialog::onSampleRefreshTimeout);
     sampleRefreshTimer_->start(60000);
 }
 
@@ -249,8 +261,10 @@ void SessionHistoryDialog::setupUi() {
     layout->addWidget(splitter_);
 
     // Connect selection signal
-    connect(tableView_->selectionModel(), &QItemSelectionModel::selectionChanged,
-            this, &SessionHistoryDialog::onSessionSelectionChanged);
+    connect(tableView_->selectionModel(),
+            &QItemSelectionModel::selectionChanged,
+            this,
+            &SessionHistoryDialog::onSessionSelectionChanged);
 
     // Button bar
     auto* refreshButton = new QPushButton(tr("Refresh"), this);
@@ -284,11 +298,9 @@ void SessionHistoryDialog::refresh() {
             // Request sessions for this account
             auto result = clientManager_->listSessions(accountId_);
             if (result) {
-                return FetchResult{
-                    .success = true,
-                    .sessions = std::move(result->sessions),
-                    .total_count = result->total_count
-                };
+                return FetchResult{.success = true,
+                                   .sessions = std::move(result->sessions),
+                                   .total_count = result->total_count};
             }
             return FetchResult{.success = false};
         } catch (const std::exception& e) {
@@ -308,8 +320,8 @@ void SessionHistoryDialog::onSessionsLoaded() {
 
         // Inject live bytes for the active session (DB value is only written at logout)
         if (clientManager_ && clientManager_->isConnected()) {
-            model_->updateActiveBytesFromClient(
-                clientManager_->bytesSent(), clientManager_->bytesReceived());
+            model_->updateActiveBytesFromClient(clientManager_->bytesSent(),
+                                                clientManager_->bytesReceived());
         }
 
         // Resize columns to content
@@ -326,19 +338,21 @@ void SessionHistoryDialog::onSessionsLoaded() {
     }
 }
 
-void SessionHistoryDialog::onSessionSelectionChanged(
-    const QItemSelection& selected, const QItemSelection&) {
+void SessionHistoryDialog::onSessionSelectionChanged(const QItemSelection& selected,
+                                                     const QItemSelection&) {
 
-    if (selected.isEmpty()) return;
+    if (selected.isEmpty())
+        return;
 
     const int row = selected.indexes().first().row();
-    if (row < 0 || row >= static_cast<int>(model_->sessions().size())) return;
+    if (row < 0 || row >= static_cast<int>(model_->sessions().size()))
+        return;
 
     const auto& session = model_->sessions()[static_cast<std::size_t>(row)];
     const auto session_id = session.id;
     const bool is_active = !session.end_time.has_value();
-    auto qdt = QDateTime::fromSecsSinceEpoch(
-        std::chrono::system_clock::to_time_t(session.start_time));
+    auto qdt =
+        QDateTime::fromSecsSinceEpoch(std::chrono::system_clock::to_time_t(session.start_time));
     const QString label = qdt.toString("yyyy-MM-dd hh:mm:ss");
 
     // Store selected session for auto-refresh
@@ -354,20 +368,22 @@ void SessionHistoryDialog::onSessionSelectionChanged(
         try {
             auto samples = clientManager_->getSessionSamples(session_id);
             if (samples) {
-                return FetchSamplesResult{
-                    .success = true,
-                    .is_active = is_active,
-                    .session_id = session_id,
-                    .session_label = label,
-                    .samples = std::move(*samples)
-                };
+                return FetchSamplesResult{.success = true,
+                                          .is_active = is_active,
+                                          .session_id = session_id,
+                                          .session_label = label,
+                                          .samples = std::move(*samples)};
             }
-            return FetchSamplesResult{.success = false, .is_active = is_active,
-                                      .session_id = session_id, .session_label = label};
+            return FetchSamplesResult{.success = false,
+                                      .is_active = is_active,
+                                      .session_id = session_id,
+                                      .session_label = label};
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), error) << "Failed to fetch samples: " << e.what();
-            return FetchSamplesResult{.success = false, .is_active = is_active,
-                                      .session_id = session_id, .session_label = label};
+            return FetchSamplesResult{.success = false,
+                                      .is_active = is_active,
+                                      .session_id = session_id,
+                                      .session_label = label};
         }
     });
 
@@ -397,8 +413,8 @@ void SessionHistoryDialog::onSamplesLoaded() {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Displaying " << result.samples.size()
-                               << " samples for session " << result.session_label.toStdString();
+    BOOST_LOG_SEV(lg(), debug) << "Displaying " << result.samples.size() << " samples for session "
+                               << result.session_label.toStdString();
 
     auto* sent_series = new QLineSeries();
     sent_series->setName(tr("Sent (bytes)"));
@@ -441,7 +457,8 @@ void SessionHistoryDialog::onSamplesLoaded() {
     chart->addAxis(x_axis, Qt::AlignBottom);
     sent_series->attachAxis(x_axis);
     recv_series->attachAxis(x_axis);
-    if (latency_series) latency_series->attachAxis(x_axis);
+    if (latency_series)
+        latency_series->attachAxis(x_axis);
 
     // Left Y axis: bytes
     auto* y_bytes = new QValueAxis();
@@ -460,28 +477,31 @@ void SessionHistoryDialog::onSamplesLoaded() {
         latency_series->attachAxis(y_latency);
     }
 
-    chart->setTitle(result.is_active
-        ? tr("Session: %1 (in progress — partial data)").arg(result.session_label)
-        : tr("Session: %1").arg(result.session_label));
+    chart->setTitle(result.is_active ?
+                        tr("Session: %1 (in progress — partial data)").arg(result.session_label) :
+                        tr("Session: %1").arg(result.session_label));
     chart->legend()->setVisible(true);
 
     // Colour the series
-    sent_series->setColor(QColor(30, 144, 255));   // dodger blue
-    recv_series->setColor(QColor(50, 205, 50));    // lime green
+    sent_series->setColor(QColor(30, 144, 255)); // dodger blue
+    recv_series->setColor(QColor(50, 205, 50));  // lime green
     if (latency_series) {
-        latency_series->setColor(QColor(255, 165, 0));  // orange
+        latency_series->setColor(QColor(255, 165, 0)); // orange
     }
 }
 
 void SessionHistoryDialog::onSampleRefreshTimeout() {
-    if (!clientManager_ || !clientManager_->isConnected()) return;
+    if (!clientManager_ || !clientManager_->isConnected())
+        return;
 
     // Update live byte counters for the active session row (no model reset)
-    model_->updateActiveBytesFromClient(
-        clientManager_->bytesSent(), clientManager_->bytesReceived());
+    model_->updateActiveBytesFromClient(clientManager_->bytesSent(),
+                                        clientManager_->bytesReceived());
 
-    if (!hasSelectedSession_ || !selectedSessionActive_) return;
-    if (samplesWatcher_->isRunning()) return;
+    if (!hasSelectedSession_ || !selectedSessionActive_)
+        return;
+    if (samplesWatcher_->isRunning())
+        return;
 
     BOOST_LOG_SEV(lg(), debug) << "Auto-refreshing samples for active session";
 
@@ -493,20 +513,22 @@ void SessionHistoryDialog::onSampleRefreshTimeout() {
         try {
             auto samples = clientManager_->getSessionSamples(session_id);
             if (samples) {
-                return FetchSamplesResult{
-                    .success = true,
-                    .is_active = is_active,
-                    .session_id = session_id,
-                    .session_label = label,
-                    .samples = std::move(*samples)
-                };
+                return FetchSamplesResult{.success = true,
+                                          .is_active = is_active,
+                                          .session_id = session_id,
+                                          .session_label = label,
+                                          .samples = std::move(*samples)};
             }
-            return FetchSamplesResult{.success = false, .is_active = is_active,
-                                      .session_id = session_id, .session_label = label};
+            return FetchSamplesResult{.success = false,
+                                      .is_active = is_active,
+                                      .session_id = session_id,
+                                      .session_label = label};
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), error) << "Failed to auto-refresh samples: " << e.what();
-            return FetchSamplesResult{.success = false, .is_active = is_active,
-                                      .session_id = session_id, .session_label = label};
+            return FetchSamplesResult{.success = false,
+                                      .is_active = is_active,
+                                      .session_id = session_id,
+                                      .session_label = label};
         }
     });
 

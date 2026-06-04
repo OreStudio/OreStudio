@@ -18,42 +18,40 @@
  *
  */
 #include "ores.qt/BusinessCentreMdiWindow.hpp"
-
-#include <QVBoxLayout>
-#include <QHeaderView>
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
+#include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/EntityItemDelegate.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata.api/messaging/business_centre_protocol.hpp"
+#include <QFutureWatcher>
+#include <QHeaderView>
+#include <QMessageBox>
+#include <QVBoxLayout>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-BusinessCentreMdiWindow::BusinessCentreMdiWindow(
-    ClientManager* clientManager,
-    ImageCache* imageCache,
-    const QString& username,
-    QWidget* parent)
-    : EntityListMdiWindow(parent),
-      clientManager_(clientManager),
-      imageCache_(imageCache),
-      username_(username),
-      toolbar_(nullptr),
-      tableView_(nullptr),
-      pagination_widget_(nullptr),
-      model_(nullptr),
-      proxyModel_(nullptr),
-      reloadAction_(nullptr),
-      addAction_(nullptr),
-      editAction_(nullptr),
-      deleteAction_(nullptr),
-      historyAction_(nullptr) {
+BusinessCentreMdiWindow::BusinessCentreMdiWindow(ClientManager* clientManager,
+                                                 ImageCache* imageCache,
+                                                 const QString& username,
+                                                 QWidget* parent)
+    : EntityListMdiWindow(parent)
+    , clientManager_(clientManager)
+    , imageCache_(imageCache)
+    , username_(username)
+    , toolbar_(nullptr)
+    , tableView_(nullptr)
+    , pagination_widget_(nullptr)
+    , model_(nullptr)
+    , proxyModel_(nullptr)
+    , reloadAction_(nullptr)
+    , addAction_(nullptr)
+    , editAction_(nullptr)
+    , deleteAction_(nullptr)
+    , historyAction_(nullptr) {
 
     setupUi();
     setupConnections();
@@ -84,50 +82,37 @@ void BusinessCentreMdiWindow::setupToolbar() {
     toolbar_->setIconSize(QSize(20, 20));
 
     reloadAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::ArrowClockwise, IconUtils::DefaultIconColor),
+        IconUtils::createRecoloredIcon(Icon::ArrowClockwise, IconUtils::DefaultIconColor),
         tr("Reload"));
-    connect(reloadAction_, &QAction::triggered, this,
-            &EntityListMdiWindow::reload);
+    connect(reloadAction_, &QAction::triggered, this, &EntityListMdiWindow::reload);
 
     initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowClockwise));
 
     toolbar_->addSeparator();
 
     addAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::Add, IconUtils::DefaultIconColor),
-        tr("Add"));
+        IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor), tr("Add"));
     addAction_->setToolTip(tr("Add new business centre"));
-    connect(addAction_, &QAction::triggered, this,
-            &BusinessCentreMdiWindow::addNew);
+    connect(addAction_, &QAction::triggered, this, &BusinessCentreMdiWindow::addNew);
 
     editAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::Edit, IconUtils::DefaultIconColor),
-        tr("Edit"));
+        IconUtils::createRecoloredIcon(Icon::Edit, IconUtils::DefaultIconColor), tr("Edit"));
     editAction_->setToolTip(tr("Edit selected business centre"));
     editAction_->setEnabled(false);
-    connect(editAction_, &QAction::triggered, this,
-            &BusinessCentreMdiWindow::editSelected);
+    connect(editAction_, &QAction::triggered, this, &BusinessCentreMdiWindow::editSelected);
 
     deleteAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::Delete, IconUtils::DefaultIconColor),
-        tr("Delete"));
+        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor), tr("Delete"));
     deleteAction_->setToolTip(tr("Delete selected business centre"));
     deleteAction_->setEnabled(false);
-    connect(deleteAction_, &QAction::triggered, this,
-            &BusinessCentreMdiWindow::deleteSelected);
+    connect(deleteAction_, &QAction::triggered, this, &BusinessCentreMdiWindow::deleteSelected);
 
     historyAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::History, IconUtils::DefaultIconColor),
-        tr("History"));
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor), tr("History"));
     historyAction_->setToolTip(tr("View business centre history"));
     historyAction_->setEnabled(false);
-    connect(historyAction_, &QAction::triggered, this,
-            &BusinessCentreMdiWindow::viewHistorySelected);
+    connect(
+        historyAction_, &QAction::triggered, this, &BusinessCentreMdiWindow::viewHistorySelected);
 }
 
 void BusinessCentreMdiWindow::setupTable() {
@@ -143,37 +128,44 @@ void BusinessCentreMdiWindow::setupTable() {
     tableView_->setSortingEnabled(true);
     tableView_->setAlternatingRowColors(true);
 
-    tableView_->setItemDelegate(new EntityItemDelegate(
-        ClientBusinessCentreModel::columnStyles(), tableView_));
+    tableView_->setItemDelegate(
+        new EntityItemDelegate(ClientBusinessCentreModel::columnStyles(), tableView_));
 
     tableView_->verticalHeader()->setVisible(false);
 
-    initializeTableSettings(tableView_, model_, ClientBusinessCentreModel::kSettingsGroup,
-        ClientBusinessCentreModel::defaultHiddenColumns(), ClientBusinessCentreModel::kDefaultWindowSize, 3);
+    initializeTableSettings(tableView_,
+                            model_,
+                            ClientBusinessCentreModel::kSettingsGroup,
+                            ClientBusinessCentreModel::defaultHiddenColumns(),
+                            ClientBusinessCentreModel::kDefaultWindowSize,
+                            3);
 }
 
 void BusinessCentreMdiWindow::setupConnections() {
-    connect(model_, &ClientBusinessCentreModel::dataLoaded,
-            this, &BusinessCentreMdiWindow::onDataLoaded);
-    connect(model_, &ClientBusinessCentreModel::loadError,
-            this, &BusinessCentreMdiWindow::onLoadError);
+    connect(model_,
+            &ClientBusinessCentreModel::dataLoaded,
+            this,
+            &BusinessCentreMdiWindow::onDataLoaded);
+    connect(
+        model_, &ClientBusinessCentreModel::loadError, this, &BusinessCentreMdiWindow::onLoadError);
     connectModel(model_);
 
-    connect(tableView_->selectionModel(), &QItemSelectionModel::selectionChanged,
-            this, &BusinessCentreMdiWindow::onSelectionChanged);
-    connect(tableView_, &QTableView::doubleClicked,
-            this, &BusinessCentreMdiWindow::onDoubleClicked);
+    connect(tableView_->selectionModel(),
+            &QItemSelectionModel::selectionChanged,
+            this,
+            &BusinessCentreMdiWindow::onSelectionChanged);
+    connect(
+        tableView_, &QTableView::doubleClicked, this, &BusinessCentreMdiWindow::onDoubleClicked);
 
     // Connect pagination widget signals
-    connect(pagination_widget_, &PaginationWidget::page_size_changed,
-            this, [this](std::uint32_t size) {
-        BOOST_LOG_SEV(lg(), debug) << "Page size changed to: " << size;
-        model_->set_page_size(size);
-        model_->refresh(true);
-    });
+    connect(
+        pagination_widget_, &PaginationWidget::page_size_changed, this, [this](std::uint32_t size) {
+            BOOST_LOG_SEV(lg(), debug) << "Page size changed to: " << size;
+            model_->set_page_size(size);
+            model_->refresh(true);
+        });
 
-    connect(pagination_widget_, &PaginationWidget::load_all_requested,
-            this, [this]() {
+    connect(pagination_widget_, &PaginationWidget::load_all_requested, this, [this]() {
         BOOST_LOG_SEV(lg(), debug) << "Load all requested from pagination widget";
         const auto total = model_->total_available_count();
         if (total > 0 && total <= 1000) {
@@ -181,19 +173,21 @@ void BusinessCentreMdiWindow::setupConnections() {
             model_->set_page_size(total);
             model_->refresh(true);
         } else if (total > 1000) {
-            BOOST_LOG_SEV(lg(), warn) << "Total count " << total
-                                      << " exceeds maximum page size of 1000";
+            BOOST_LOG_SEV(lg(), warn)
+                << "Total count " << total << " exceeds maximum page size of 1000";
             emit statusChanged("Cannot load all - too many records (max 1000)");
         }
     });
 
-    connect(pagination_widget_, &PaginationWidget::page_requested,
-            this, [this](std::uint32_t offset, std::uint32_t limit) {
-        BOOST_LOG_SEV(lg(), debug) << "Page requested: offset=" << offset
-                                   << ", limit=" << limit;
-        emit statusChanged("Loading business centres...");
-        model_->load_page(offset, limit);
-    });
+    connect(pagination_widget_,
+            &PaginationWidget::page_requested,
+            this,
+            [this](std::uint32_t offset, std::uint32_t limit) {
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Page requested: offset=" << offset << ", limit=" << limit;
+                emit statusChanged("Loading business centres...");
+                model_->load_page(offset, limit);
+            });
 }
 
 void BusinessCentreMdiWindow::doReload() {
@@ -211,14 +205,11 @@ void BusinessCentreMdiWindow::onDataLoaded() {
     const bool has_more = loaded < total && total > 0 && total <= 1000;
     pagination_widget_->set_load_all_enabled(has_more);
 
-    const QString message = QString("Loaded %1 of %2 business centres")
-                              .arg(loaded)
-                              .arg(total);
+    const QString message = QString("Loaded %1 of %2 business centres").arg(loaded).arg(total);
     emit statusChanged(message);
 }
 
-void BusinessCentreMdiWindow::onLoadError(const QString& error_message,
-                                          const QString& details) {
+void BusinessCentreMdiWindow::onLoadError(const QString& error_message, const QString& details) {
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);
@@ -272,8 +263,7 @@ void BusinessCentreMdiWindow::viewHistorySelected() {
 
     auto sourceIndex = proxyModel_->mapToSource(selected.first());
     if (auto* bc = model_->getBusinessCentre(sourceIndex.row())) {
-        BOOST_LOG_SEV(lg(), debug) << "Emitting showBusinessCentreHistory for code: "
-                                   << bc->code;
+        BOOST_LOG_SEV(lg(), debug) << "Emitting showBusinessCentreHistory for code: " << bc->code;
         emit showBusinessCentreHistory(*bc);
     }
 }
@@ -286,8 +276,8 @@ void BusinessCentreMdiWindow::deleteSelected() {
     }
 
     if (!clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot delete business centre while disconnected.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot delete business centre while disconnected.");
         return;
     }
 
@@ -304,20 +294,19 @@ void BusinessCentreMdiWindow::deleteSelected() {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Delete requested for " << codes.size()
-                               << " business centres";
+    BOOST_LOG_SEV(lg(), debug) << "Delete requested for " << codes.size() << " business centres";
 
     QString confirmMessage;
     if (codes.size() == 1) {
         confirmMessage = QString("Are you sure you want to delete business centre '%1'?")
-            .arg(QString::fromStdString(codes.front()));
+                             .arg(QString::fromStdString(codes.front()));
     } else {
-        confirmMessage = QString("Are you sure you want to delete %1 business centres?")
-            .arg(codes.size());
+        confirmMessage =
+            QString("Are you sure you want to delete %1 business centres?").arg(codes.size());
     }
 
-    auto reply = MessageBoxHelper::question(this, "Delete Business Centre",
-        confirmMessage, QMessageBox::Yes | QMessageBox::No);
+    auto reply = MessageBoxHelper::question(
+        this, "Delete Business Centre", confirmMessage, QMessageBox::Yes | QMessageBox::No);
 
     if (reply != QMessageBox::Yes) {
         BOOST_LOG_SEV(lg(), debug) << "Delete cancelled by user";
@@ -329,10 +318,11 @@ void BusinessCentreMdiWindow::deleteSelected() {
 
     auto task = [cm = clientManager_, codes]() -> DeleteResult {
         DeleteResult results;
-        if (!cm) return {};
+        if (!cm)
+            return {};
 
-        BOOST_LOG_SEV(lg(), debug) << "Making batch delete request for "
-                                   << codes.size() << " business centres";
+        BOOST_LOG_SEV(lg(), debug)
+            << "Making batch delete request for " << codes.size() << " business centres";
 
         refdata::messaging::delete_business_centre_request request;
         request.codes = codes;
@@ -354,8 +344,7 @@ void BusinessCentreMdiWindow::deleteSelected() {
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, watcher]() {
         auto results = watcher->result();
         watcher->deleteLater();
 
@@ -369,8 +358,8 @@ void BusinessCentreMdiWindow::deleteSelected() {
                 success_count++;
                 emit self->businessCentreDeleted(QString::fromStdString(code));
             } else {
-                BOOST_LOG_SEV(lg(), error) << "Business centre deletion failed: "
-                                           << code << " - " << message;
+                BOOST_LOG_SEV(lg(), error)
+                    << "Business centre deletion failed: " << code << " - " << message;
                 failure_count++;
                 if (first_error.isEmpty()) {
                     first_error = QString::fromStdString(message);
@@ -381,21 +370,21 @@ void BusinessCentreMdiWindow::deleteSelected() {
         self->model_->refresh();
 
         if (failure_count == 0) {
-            QString msg = success_count == 1
-                ? "Successfully deleted 1 business centre"
-                : QString("Successfully deleted %1 business centres").arg(success_count);
+            QString msg =
+                success_count == 1 ?
+                    "Successfully deleted 1 business centre" :
+                    QString("Successfully deleted %1 business centres").arg(success_count);
             emit self->statusChanged(msg);
         } else if (success_count == 0) {
             QString msg = QString("Failed to delete %1 %2: %3")
-                .arg(failure_count)
-                .arg(failure_count == 1 ? "business centre" : "business centres")
-                .arg(first_error);
+                              .arg(failure_count)
+                              .arg(failure_count == 1 ? "business centre" : "business centres")
+                              .arg(first_error);
             emit self->errorOccurred(msg);
             MessageBoxHelper::critical(self, "Delete Failed", msg);
         } else {
-            QString msg = QString("Deleted %1, failed to delete %2")
-                .arg(success_count)
-                .arg(failure_count);
+            QString msg =
+                QString("Deleted %1, failed to delete %2").arg(success_count).arg(failure_count);
             emit self->statusChanged(msg);
             MessageBoxHelper::warning(self, "Partial Success", msg);
         }

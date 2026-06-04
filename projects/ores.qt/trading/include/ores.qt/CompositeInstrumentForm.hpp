@@ -20,11 +20,11 @@
 #ifndef ORES_QT_COMPOSITE_INSTRUMENT_FORM_HPP
 #define ORES_QT_COMPOSITE_INSTRUMENT_FORM_HPP
 
-#include <vector>
-#include "ores.qt/IInstrumentForm.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/IInstrumentForm.hpp"
 #include "ores.trading.api/domain/composite_instrument.hpp"
 #include "ores.trading.api/domain/composite_leg.hpp"
+#include <vector>
 
 namespace Ui {
 class CompositeInstrumentForm;
@@ -42,8 +42,7 @@ class CompositeInstrumentForm final : public IInstrumentForm {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.composite_instrument_form";
+    inline static std::string_view logger_name = "ores.qt.composite_instrument_form";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -62,20 +61,17 @@ public:
                   std::vector<trading::domain::composite_leg> legs) override;
     void clear() override;
 
-    void setTradeType(const QString& code,
-        bool has_options, bool has_extension) override;
+    void setTradeType(const QString& code, bool has_options, bool has_extension) override;
 
     void setReadOnly(bool readOnly) override;
     bool isDirty() const override;
     bool isLoaded() const override;
 
-    void setChangeReason(
-        const std::string& code, const std::string& commentary) override;
+    void setChangeReason(const std::string& code, const std::string& commentary) override;
     void writeUiToInstrument() override;
 
-    void saveInstrument(
-        std::function<void(const std::string& id)> on_success,
-        std::function<void(const QString& error)> on_failure) override;
+    void saveInstrument(std::function<void(const std::string& id)> on_success,
+                        std::function<void(const QString& error)> on_failure) override;
 
 private:
     void setupConnections();

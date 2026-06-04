@@ -18,38 +18,43 @@
  *
  */
 #include "ores.qt/ClientBadgeDefinitionModel.hpp"
-
-#include <QtConcurrent>
 #include "ores.dq.api/messaging/badge_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    std::string badge_definition_key_extractor(const dq::domain::badge_definition& e) {
-        return e.code;
-    }
+std::string badge_definition_key_extractor(const dq::domain::badge_definition& e) {
+    return e.code;
+}
 }
 
-ClientBadgeDefinitionModel::ClientBadgeDefinitionModel(
-    ClientManager* clientManager, QObject* parent)
-    : AbstractClientModel(parent),
-      clientManager_(clientManager),
-      watcher_(new QFutureWatcher<FetchResult>(this)),
-      recencyTracker_(badge_definition_key_extractor),
-      pulseManager_(new RecencyPulseManager(this)) {
+ClientBadgeDefinitionModel::ClientBadgeDefinitionModel(ClientManager* clientManager,
+                                                       QObject* parent)
+    : AbstractClientModel(parent)
+    , clientManager_(clientManager)
+    , watcher_(new QFutureWatcher<FetchResult>(this))
+    , recencyTracker_(badge_definition_key_extractor)
+    , pulseManager_(new RecencyPulseManager(this)) {
 
-    connect(watcher_, &QFutureWatcher<FetchResult>::finished,
-            this, &ClientBadgeDefinitionModel::onDefinitionsLoaded);
+    connect(watcher_,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            &ClientBadgeDefinitionModel::onDefinitionsLoaded);
 
-    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
-            this, &ClientBadgeDefinitionModel::onPulseStateChanged);
-    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
-            this, &ClientBadgeDefinitionModel::onPulsingComplete);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulse_state_changed,
+            this,
+            &ClientBadgeDefinitionModel::onPulseStateChanged);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulsing_complete,
+            this,
+            &ClientBadgeDefinitionModel::onPulsingComplete);
 }
 
 int ClientBadgeDefinitionModel::rowCount(const QModelIndex& parent) const {
@@ -64,8 +69,7 @@ int ClientBadgeDefinitionModel::columnCount(const QModelIndex& parent) const {
     return ColumnCount;
 }
 
-QVariant ClientBadgeDefinitionModel::data(
-    const QModelIndex& index, int role) const {
+QVariant ClientBadgeDefinitionModel::data(const QModelIndex& index, int role) const {
     if (!index.isValid())
         return {};
 
@@ -77,28 +81,28 @@ QVariant ClientBadgeDefinitionModel::data(
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-        case Code:
-            return QString::fromStdString(definition.code);
-        case Name:
-            return QString::fromStdString(definition.name);
-        case Description:
-            return QString::fromStdString(definition.description);
-        case BackgroundColour:
-            return QString::fromStdString(definition.background_colour);
-        case TextColour:
-            return QString::fromStdString(definition.text_colour);
-        case SeverityCode:
-            return QString::fromStdString(definition.severity_code);
-        case DisplayOrder:
-            return static_cast<qlonglong>(definition.display_order);
-        case Version:
-            return static_cast<qlonglong>(definition.version);
-        case ModifiedBy:
-            return QString::fromStdString(definition.modified_by);
-        case RecordedAt:
-            return relative_time_helper::format(definition.recorded_at);
-        default:
-            return {};
+            case Code:
+                return QString::fromStdString(definition.code);
+            case Name:
+                return QString::fromStdString(definition.name);
+            case Description:
+                return QString::fromStdString(definition.description);
+            case BackgroundColour:
+                return QString::fromStdString(definition.background_colour);
+            case TextColour:
+                return QString::fromStdString(definition.text_colour);
+            case SeverityCode:
+                return QString::fromStdString(definition.severity_code);
+            case DisplayOrder:
+                return static_cast<qlonglong>(definition.display_order);
+            case Version:
+                return static_cast<qlonglong>(definition.version);
+            case ModifiedBy:
+                return QString::fromStdString(definition.modified_by);
+            case RecordedAt:
+                return relative_time_helper::format(definition.recorded_at);
+            default:
+                return {};
         }
     }
 
@@ -109,34 +113,34 @@ QVariant ClientBadgeDefinitionModel::data(
     return {};
 }
 
-QVariant ClientBadgeDefinitionModel::headerData(
-    int section, Qt::Orientation orientation, int role) const {
+QVariant
+ClientBadgeDefinitionModel::headerData(int section, Qt::Orientation orientation, int role) const {
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return {};
 
     switch (section) {
-    case Code:
-        return tr("Code");
-    case Name:
-        return tr("Name");
-    case Description:
-        return tr("Description");
-    case BackgroundColour:
-        return tr("Background");
-    case TextColour:
-        return tr("Text");
-    case SeverityCode:
-        return tr("Severity");
-    case DisplayOrder:
-        return tr("Order");
-    case Version:
-        return tr("Version");
-    case ModifiedBy:
-        return tr("Modified By");
-    case RecordedAt:
-        return tr("Recorded At");
-    default:
-        return {};
+        case Code:
+            return tr("Code");
+        case Name:
+            return tr("Name");
+        case Description:
+            return tr("Description");
+        case BackgroundColour:
+            return tr("Background");
+        case TextColour:
+            return tr("Text");
+        case SeverityCode:
+            return tr("Severity");
+        case DisplayOrder:
+            return tr("Order");
+        case Version:
+            return tr("Version");
+        case ModifiedBy:
+            return tr("Modified By");
+        case RecordedAt:
+            return tr("Recorded At");
+        default:
+            return {};
     }
 }
 
@@ -166,8 +170,7 @@ void ClientBadgeDefinitionModel::refresh() {
     fetch_definitions(0, page_size_);
 }
 
-void ClientBadgeDefinitionModel::load_page(std::uint32_t offset,
-                                          std::uint32_t limit) {
+void ClientBadgeDefinitionModel::load_page(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "load_page: offset=" << offset << ", limit=" << limit;
 
     if (is_fetching_) {
@@ -191,18 +194,19 @@ void ClientBadgeDefinitionModel::load_page(std::uint32_t offset,
     fetch_definitions(offset, limit);
 }
 
-void ClientBadgeDefinitionModel::fetch_definitions(
-    std::uint32_t offset, std::uint32_t limit) {
+void ClientBadgeDefinitionModel::fetch_definitions(std::uint32_t offset, std::uint32_t limit) {
     is_fetching_ = true;
     QPointer<ClientBadgeDefinitionModel> self = this;
 
-    QFuture<FetchResult> future =
-        QtConcurrent::run([self, offset, limit]() -> FetchResult {
-            return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
-                BOOST_LOG_SEV(lg(), debug) << "Making badge definitions request with offset="
-                                           << offset << ", limit=" << limit;
+    QFuture<FetchResult> future = QtConcurrent::run([self, offset, limit]() -> FetchResult {
+        return exception_helper::wrap_async_fetch<FetchResult>(
+            [&]() -> FetchResult {
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Making badge definitions request with offset=" << offset
+                    << ", limit=" << limit;
                 if (!self || !self->clientManager_) {
-                    return {.success = false, .definitions = {},
+                    return {.success = false,
+                            .definitions = {},
                             .total_available_count = 0,
                             .error_message = "Model was destroyed",
                             .error_details = {}};
@@ -210,29 +214,31 @@ void ClientBadgeDefinitionModel::fetch_definitions(
 
                 dq::messaging::get_badge_definitions_request request;
 
-                auto result = self->clientManager_->
-                    process_authenticated_request(std::move(request));
+                auto result =
+                    self->clientManager_->process_authenticated_request(std::move(request));
 
                 if (!result) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to fetch badge definitions: "
-                                               << result.error();
-                    return {.success = false, .definitions = {},
+                    BOOST_LOG_SEV(lg(), error)
+                        << "Failed to fetch badge definitions: " << result.error();
+                    return {.success = false,
+                            .definitions = {},
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(
                                 "Failed to fetch badge definitions: " + result.error()),
                             .error_details = {}};
                 }
 
-                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->definitions.size()
-                                           << " badge definitions";
-                const std::uint32_t count =
-                    static_cast<std::uint32_t>(result->definitions.size());
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Fetched " << result->definitions.size() << " badge definitions";
+                const std::uint32_t count = static_cast<std::uint32_t>(result->definitions.size());
                 return {.success = true,
                         .definitions = std::move(result->definitions),
                         .total_available_count = count,
-                        .error_message = {}, .error_details = {}};
-            }, "badge definitions");
-        });
+                        .error_message = {},
+                        .error_details = {}};
+            },
+            "badge definitions");
+    });
 
     watcher_->setFuture(future);
 }
@@ -243,8 +249,8 @@ void ClientBadgeDefinitionModel::onDefinitionsLoaded() {
     const auto result = watcher_->result();
 
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to fetch badge definitions: "
-                                   << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to fetch badge definitions: " << result.error_message.toStdString();
         emit loadError(result.error_message, result.error_details);
         return;
     }
@@ -283,16 +289,14 @@ void ClientBadgeDefinitionModel::set_page_size(std::uint32_t size) {
     }
 }
 
-const dq::domain::badge_definition*
-ClientBadgeDefinitionModel::getDefinition(int row) const {
+const dq::domain::badge_definition* ClientBadgeDefinitionModel::getDefinition(int row) const {
     const auto idx = static_cast<std::size_t>(row);
     if (idx >= definitions_.size())
         return nullptr;
     return &definitions_[idx];
 }
 
-QVariant ClientBadgeDefinitionModel::recency_foreground_color(
-    const std::string& code) const {
+QVariant ClientBadgeDefinitionModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {
         return color_constants::stale_indicator;
     }
@@ -301,8 +305,8 @@ QVariant ClientBadgeDefinitionModel::recency_foreground_color(
 
 void ClientBadgeDefinitionModel::onPulseStateChanged(bool /*isOn*/) {
     if (!definitions_.empty()) {
-        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
-            {Qt::ForegroundRole});
+        emit dataChanged(
+            index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::ForegroundRole});
     }
 }
 

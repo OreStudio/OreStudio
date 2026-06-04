@@ -20,17 +20,17 @@
 #ifndef ORES_QT_APP_VERSION_DETAIL_DIALOG_HPP
 #define ORES_QT_APP_VERSION_DETAIL_DIALOG_HPP
 
-#include <QUrl>
-#include <QString>
-#include <functional>
-#include <vector>
-#include "ores.qt/ClientManager.hpp"
-#include "ores.qt/DetailDialogBase.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.compute.api/domain/app.hpp"
 #include "ores.compute.api/domain/app_version.hpp"
 #include "ores.compute.api/domain/app_version_platform.hpp"
 #include "ores.compute.api/messaging/platform_protocol.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/DetailDialogBase.hpp"
+#include <QString>
+#include <QUrl>
+#include <functional>
+#include <vector>
 
 class QNetworkAccessManager;
 
@@ -51,8 +51,7 @@ class AppVersionDetailDialog final : public DetailDialogBase {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.app_version_detail_dialog";
+    inline static std::string_view logger_name = "ores.qt.app_version_detail_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -89,16 +88,18 @@ protected:
     QTabWidget* tabWidget() const override;
     QWidget* provenanceTab() const override;
     ProvenanceWidget* provenanceWidget() const override;
-    bool hasUnsavedChanges() const override { return hasChanges_; }
+    bool hasUnsavedChanges() const override {
+        return hasChanges_;
+    }
 
 private:
     struct AppEntry {
-        std::string id;   // UUID string
+        std::string id; // UUID string
         std::string name;
     };
 
     struct PlatformEntry {
-        std::string id;          // UUID string
+        std::string id; // UUID string
         std::string code;
         std::string display_name;
     };
@@ -117,8 +118,8 @@ private:
         std::string platform_id;
         std::string platform_code;
         std::string platform_name;
-        QString local_file;       // selected local path, empty until Browse
-        QString remote_uri;       // set after successful PUT or on preload
+        QString local_file; // selected local path, empty until Browse
+        QString remote_uri; // set after successful PUT or on preload
         State state = State::NoFile;
         QString error;
     };
@@ -132,8 +133,7 @@ private:
     void populatePlatformsTab();
     void syncPackagesTab();
     void updatePackagesTableRow(int row);
-    void setPackageRowState(int row, PackageRow::State state,
-        const QString& error = {});
+    void setPackageRowState(int row, PackageRow::State state, const QString& error = {});
     void updateUiFromVersion();
     void updateVersionFromUi();
     void updateSaveButtonState();

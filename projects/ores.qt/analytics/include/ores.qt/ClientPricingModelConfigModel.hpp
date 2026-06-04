@@ -20,15 +20,15 @@
 #ifndef ORES_QT_CLIENT_PRICING_MODEL_CONFIG_MODEL_HPP
 #define ORES_QT_CLIENT_PRICING_MODEL_CONFIG_MODEL_HPP
 
-#include <vector>
-#include <QFutureWatcher>
-#include <QAbstractTableModel>
+#include "ores.analytics.api/domain/pricing_model_config.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/AbstractClientModel.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/RecencyPulseManager.hpp"
 #include "ores.qt/RecencyTracker.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.analytics.api/domain/pricing_model_config.hpp"
+#include <QAbstractTableModel>
+#include <QFutureWatcher>
+#include <vector>
 
 namespace ores::qt {
 
@@ -42,8 +42,7 @@ class ClientPricingModelConfigModel final : public AbstractClientModel {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.client_pricing_model_config_model";
+    inline static std::string_view logger_name = "ores.qt.client_pricing_model_config_model";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -55,26 +54,17 @@ public:
     /**
      * @brief Enumeration of table columns for type-safe column access.
      */
-    enum Column {
-        Name,
-        ConfigVariant,
-        Description,
-        Version,
-        ModifiedBy,
-        RecordedAt,
-        ColumnCount
-    };
+    enum Column { Name, ConfigVariant, Description, Version, ModifiedBy, RecordedAt, ColumnCount };
 
-    explicit ClientPricingModelConfigModel(ClientManager* clientManager,
-                                       QObject* parent = nullptr);
+    explicit ClientPricingModelConfigModel(ClientManager* clientManager, QObject* parent = nullptr);
     ~ClientPricingModelConfigModel() override = default;
 
     // QAbstractTableModel interface
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-    QVariant headerData(int section, Qt::Orientation orientation,
-        int role = Qt::DisplayRole) const override;
+    QVariant
+    headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
     /**
      * @brief Refresh pricing model configuration data from server asynchronously.
@@ -97,7 +87,9 @@ public:
     /**
      * @brief Get the page size used for pagination.
      */
-    std::uint32_t page_size() const { return page_size_; }
+    std::uint32_t page_size() const {
+        return page_size_;
+    }
 
     /**
      * @brief Set the page size for pagination.
@@ -107,7 +99,9 @@ public:
     /**
      * @brief Get the total number of records available on the server.
      */
-    std::uint32_t total_available_count() const { return total_available_count_; }
+    std::uint32_t total_available_count() const {
+        return total_available_count_;
+    }
 
 private slots:
     void onConfigsLoaded();
@@ -134,8 +128,10 @@ private:
     std::uint32_t total_available_count_{0};
     bool is_fetching_{false};
 
-    using PricingModelConfigKeyExtractor = std::string(*)(const analytics::domain::pricing_model_config&);
-    RecencyTracker<analytics::domain::pricing_model_config, PricingModelConfigKeyExtractor> recencyTracker_;
+    using PricingModelConfigKeyExtractor =
+        std::string (*)(const analytics::domain::pricing_model_config&);
+    RecencyTracker<analytics::domain::pricing_model_config, PricingModelConfigKeyExtractor>
+        recencyTracker_;
     RecencyPulseManager* pulseManager_;
 };
 

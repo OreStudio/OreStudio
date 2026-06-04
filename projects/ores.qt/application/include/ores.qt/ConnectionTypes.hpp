@@ -20,10 +20,10 @@
 #ifndef ORES_QT_CONNECTION_TYPES_HPP
 #define ORES_QT_CONNECTION_TYPES_HPP
 
+#include <QColor>
+#include <QString>
 #include <functional>
 #include <vector>
-#include <QString>
-#include <QColor>
 
 namespace ores::qt {
 
@@ -39,14 +39,14 @@ using TestConnectionCallback = std::function<QString(
  * @brief Predefined tag colors for consistent UI display.
  */
 inline const std::vector<QColor> tag_colors = {
-    QColor(59, 130, 246),   // Blue
-    QColor(34, 197, 94),    // Green
-    QColor(234, 179, 8),    // Amber
-    QColor(239, 68, 68),    // Red
-    QColor(168, 85, 247),   // Purple
-    QColor(236, 72, 153),   // Pink
-    QColor(20, 184, 166),   // Teal
-    QColor(249, 115, 22),   // Orange
+    QColor(59, 130, 246), // Blue
+    QColor(34, 197, 94),  // Green
+    QColor(234, 179, 8),  // Amber
+    QColor(239, 68, 68),  // Red
+    QColor(168, 85, 247), // Purple
+    QColor(236, 72, 153), // Pink
+    QColor(20, 184, 166), // Teal
+    QColor(249, 115, 22), // Orange
 };
 
 /**

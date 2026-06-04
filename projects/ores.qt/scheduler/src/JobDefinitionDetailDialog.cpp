@@ -18,31 +18,30 @@
  *
  */
 #include "ores.qt/JobDefinitionDetailDialog.hpp"
-
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include <QPlainTextEdit>
-#include <chrono>
-#include <boost/uuid/random_generator.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include "ui_JobDefinitionDetailDialog.h"
-#include "ores.scheduler.api/domain/cron_expression.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/CronExpressionWidget.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/ChangeReasonDialog.hpp"
-#include "ores.scheduler.api/rfl/reflectors.hpp"
+#include "ores.scheduler.api/domain/cron_expression.hpp"
 #include "ores.scheduler.api/messaging/scheduler_protocol.hpp"
+#include "ores.scheduler.api/rfl/reflectors.hpp"
+#include "ui_JobDefinitionDetailDialog.h"
+#include <QFutureWatcher>
+#include <QMessageBox>
+#include <QPlainTextEdit>
+#include <QtConcurrent>
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <chrono>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 JobDefinitionDetailDialog::JobDefinitionDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent),
-      ui_(new Ui::JobDefinitionDetailDialog),
-      clientManager_(nullptr) {
+    : DetailDialogBase(parent)
+    , ui_(new Ui::JobDefinitionDetailDialog)
+    , clientManager_(nullptr) {
 
     ui_->setupUi(this);
     setupUi();
@@ -78,22 +77,32 @@ void JobDefinitionDetailDialog::setupUi() {
 }
 
 void JobDefinitionDetailDialog::setupConnections() {
-    connect(ui_->saveButton, &QPushButton::clicked, this,
-            &JobDefinitionDetailDialog::onSaveClicked);
-    connect(ui_->unscheduleButton, &QPushButton::clicked, this,
+    connect(
+        ui_->saveButton, &QPushButton::clicked, this, &JobDefinitionDetailDialog::onSaveClicked);
+    connect(ui_->unscheduleButton,
+            &QPushButton::clicked,
+            this,
             &JobDefinitionDetailDialog::onUnscheduleClicked);
-    connect(ui_->closeButton, &QPushButton::clicked, this,
-            &JobDefinitionDetailDialog::onCloseClicked);
+    connect(
+        ui_->closeButton, &QPushButton::clicked, this, &JobDefinitionDetailDialog::onCloseClicked);
 
-    connect(ui_->jobNameEdit, &QLineEdit::textChanged, this,
-            &JobDefinitionDetailDialog::onCodeChanged);
-    connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this,
+    connect(
+        ui_->jobNameEdit, &QLineEdit::textChanged, this, &JobDefinitionDetailDialog::onCodeChanged);
+    connect(ui_->descriptionEdit,
+            &QPlainTextEdit::textChanged,
+            this,
             &JobDefinitionDetailDialog::onFieldChanged);
-    connect(ui_->commandEdit, &QPlainTextEdit::textChanged, this,
+    connect(ui_->commandEdit,
+            &QPlainTextEdit::textChanged,
+            this,
             &JobDefinitionDetailDialog::onFieldChanged);
-    connect(ui_->cronWidget, &CronExpressionWidget::cronChanged, this,
+    connect(ui_->cronWidget,
+            &CronExpressionWidget::cronChanged,
+            this,
             &JobDefinitionDetailDialog::onFieldChanged);
-    connect(ui_->databaseNameEdit, &QLineEdit::textChanged, this,
+    connect(ui_->databaseNameEdit,
+            &QLineEdit::textChanged,
+            this,
             &JobDefinitionDetailDialog::onFieldChanged);
 }
 
@@ -105,8 +114,7 @@ void JobDefinitionDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
 
-void JobDefinitionDetailDialog::setDefinition(
-    const scheduler::domain::job_definition& definition) {
+void JobDefinitionDetailDialog::setDefinition(const scheduler::domain::job_definition& definition) {
     definition_ = definition;
     updateUiFromDefinition();
 }
@@ -198,25 +206,23 @@ bool JobDefinitionDetailDialog::validateInput() {
 
 void JobDefinitionDetailDialog::onSaveClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot save job definition while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot save job definition while disconnected from server.");
         return;
     }
 
     if (!validateInput()) {
-        MessageBoxHelper::warning(this, "Invalid Input",
-            "Please fill in all required fields.");
+        MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
 
-    const auto crOpType = createMode_
-        ? ChangeReasonDialog::OperationType::Create
-        : ChangeReasonDialog::OperationType::Amend;
-    const auto crSel = promptChangeReason(crOpType, hasChanges_,
-        createMode_ ? "system" : "common");
-    if (!crSel) return;
+    const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
+                                        ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
+    if (!crSel)
+        return;
     std::string change_reason_code = crSel->reason_code;
-    std::string change_commentary  = crSel->commentary;
+    std::string change_commentary = crSel->commentary;
 
     updateDefinitionFromUi();
 
@@ -229,8 +235,8 @@ void JobDefinitionDetailDialog::onSaveClicked() {
         std::string message;
     };
 
-    auto task = [self, definition = definition_,
-                 change_reason_code, change_commentary]() -> SaveResult {
+    auto task =
+        [self, definition = definition_, change_reason_code, change_commentary]() -> SaveResult {
         if (!self || !self->clientManager_) {
             return {false, "Dialog closed"};
         }
@@ -238,8 +244,9 @@ void JobDefinitionDetailDialog::onSaveClicked() {
         scheduler::messaging::schedule_job_request request;
         request.definition = definition;
         request.change_reason_code = change_reason_code;
-        request.change_commentary  = change_commentary;
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+        request.change_commentary = change_commentary;
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -250,8 +257,7 @@ void JobDefinitionDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
@@ -276,13 +282,15 @@ void JobDefinitionDetailDialog::onSaveClicked() {
 
 void JobDefinitionDetailDialog::onUnscheduleClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot delete job definition while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot delete job definition while disconnected from server.");
         return;
     }
 
     QString code = QString::fromStdString(definition_.job_name);
-    auto reply = MessageBoxHelper::question(this, "Unschedule Job Definition",
+    auto reply = MessageBoxHelper::question(
+        this,
+        "Unschedule Job Definition",
         QString("Are you sure you want to unschedule job definition '%1'?").arg(code),
         QMessageBox::Yes | QMessageBox::No);
 
@@ -290,11 +298,11 @@ void JobDefinitionDetailDialog::onUnscheduleClicked() {
         return;
     }
 
-    const auto crSel = promptChangeReason(
-        ChangeReasonDialog::OperationType::Delete, false);
-    if (!crSel) return;
+    const auto crSel = promptChangeReason(ChangeReasonDialog::OperationType::Delete, false);
+    if (!crSel)
+        return;
     std::string change_reason_code = crSel->reason_code;
-    std::string change_commentary  = crSel->commentary;
+    std::string change_commentary = crSel->commentary;
 
     BOOST_LOG_SEV(lg(), info) << "Unscheduling job definition: " << definition_.job_name;
 
@@ -305,8 +313,8 @@ void JobDefinitionDetailDialog::onUnscheduleClicked() {
         std::string message;
     };
 
-    auto task = [self, id = definition_.id,
-                 change_reason_code, change_commentary]() -> DeleteResult {
+    auto task =
+        [self, id = definition_.id, change_reason_code, change_commentary]() -> DeleteResult {
         if (!self || !self->clientManager_) {
             return {false, "Dialog closed"};
         }
@@ -314,8 +322,9 @@ void JobDefinitionDetailDialog::onUnscheduleClicked() {
         scheduler::messaging::unschedule_job_request request;
         request.job_definition_id = boost::uuids::to_string(id);
         request.change_reason_code = change_reason_code;
-        request.change_commentary  = change_commentary;
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+        request.change_commentary = change_commentary;
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -326,8 +335,7 @@ void JobDefinitionDetailDialog::onUnscheduleClicked() {
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
-            self, [self, code, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, code, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 

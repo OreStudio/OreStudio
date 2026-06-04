@@ -17,22 +17,20 @@
  *
  */
 #include "ores.qt/PartyPlugin.hpp"
-
-#include <QMenu>
-#include <QAction>
-
-#include "ores.qt/IconUtils.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.qt/DetachableMdiSubWindow.hpp"
-#include "ores.qt/PartyTypeController.hpp"
-#include "ores.qt/PartyStatusController.hpp"
-#include "ores.qt/PartyIdSchemeController.hpp"
-#include "ores.qt/ContactTypeController.hpp"
-#include "ores.qt/PartyController.hpp"
-#include "ores.qt/CounterpartyController.hpp"
 #include "ores.qt/BusinessCentreController.hpp"
 #include "ores.qt/BusinessUnitController.hpp"
 #include "ores.qt/BusinessUnitTypeController.hpp"
+#include "ores.qt/ContactTypeController.hpp"
+#include "ores.qt/CounterpartyController.hpp"
+#include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/PartyController.hpp"
+#include "ores.qt/PartyIdSchemeController.hpp"
+#include "ores.qt/PartyStatusController.hpp"
+#include "ores.qt/PartyTypeController.hpp"
+#include <QAction>
+#include <QMenu>
 
 namespace ores::qt {
 
@@ -45,7 +43,8 @@ auto& lg() {
 }
 }
 
-PartyPlugin::PartyPlugin(QObject* parent) : PluginBase(parent) {
+PartyPlugin::PartyPlugin(QObject* parent)
+    : PluginBase(parent) {
     BOOST_LOG_SEV(lg(), debug) << "Plugin initialised.";
 }
 
@@ -60,49 +59,84 @@ void PartyPlugin::on_login(const plugin_context& ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Login event received.";
     ctx_ = ctx;
 
-    partyTypeController_ = std::make_unique<PartyTypeController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
+    partyTypeController_ = std::make_unique<PartyTypeController>(ctx_.main_window,
+                                                                 ctx_.mdi_area,
+                                                                 ctx_.client_manager,
+                                                                 ctx_.change_reason_cache,
+                                                                 ctx_.username,
+                                                                 this);
     connectControllerSignals(partyTypeController_.get());
 
-    partyStatusController_ = std::make_unique<PartyStatusController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
+    partyStatusController_ = std::make_unique<PartyStatusController>(ctx_.main_window,
+                                                                     ctx_.mdi_area,
+                                                                     ctx_.client_manager,
+                                                                     ctx_.change_reason_cache,
+                                                                     ctx_.username,
+                                                                     this);
     connectControllerSignals(partyStatusController_.get());
 
-    partyIdSchemeController_ = std::make_unique<PartyIdSchemeController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
+    partyIdSchemeController_ = std::make_unique<PartyIdSchemeController>(ctx_.main_window,
+                                                                         ctx_.mdi_area,
+                                                                         ctx_.client_manager,
+                                                                         ctx_.change_reason_cache,
+                                                                         ctx_.username,
+                                                                         this);
     connectControllerSignals(partyIdSchemeController_.get());
 
-    contactTypeController_ = std::make_unique<ContactTypeController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
+    contactTypeController_ = std::make_unique<ContactTypeController>(ctx_.main_window,
+                                                                     ctx_.mdi_area,
+                                                                     ctx_.client_manager,
+                                                                     ctx_.change_reason_cache,
+                                                                     ctx_.username,
+                                                                     this);
     connectControllerSignals(contactTypeController_.get());
 
-    partyController_ = std::make_unique<PartyController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.image_cache,
-        ctx_.change_reason_cache, ctx_.badge_cache, ctx_.username, this);
+    partyController_ = std::make_unique<PartyController>(ctx_.main_window,
+                                                         ctx_.mdi_area,
+                                                         ctx_.client_manager,
+                                                         ctx_.image_cache,
+                                                         ctx_.change_reason_cache,
+                                                         ctx_.badge_cache,
+                                                         ctx_.username,
+                                                         this);
     connectControllerSignals(partyController_.get());
 
-    counterpartyController_ = std::make_unique<CounterpartyController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.image_cache,
-        ctx_.change_reason_cache, ctx_.badge_cache, ctx_.username, this);
+    counterpartyController_ = std::make_unique<CounterpartyController>(ctx_.main_window,
+                                                                       ctx_.mdi_area,
+                                                                       ctx_.client_manager,
+                                                                       ctx_.image_cache,
+                                                                       ctx_.change_reason_cache,
+                                                                       ctx_.badge_cache,
+                                                                       ctx_.username,
+                                                                       this);
     connectControllerSignals(counterpartyController_.get());
 
-    businessCentreController_ = std::make_unique<BusinessCentreController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.image_cache,
-        ctx_.change_reason_cache, ctx_.username, this);
+    businessCentreController_ = std::make_unique<BusinessCentreController>(ctx_.main_window,
+                                                                           ctx_.mdi_area,
+                                                                           ctx_.client_manager,
+                                                                           ctx_.image_cache,
+                                                                           ctx_.change_reason_cache,
+                                                                           ctx_.username,
+                                                                           this);
     connectControllerSignals(businessCentreController_.get());
 
-    businessUnitController_ = std::make_unique<BusinessUnitController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.image_cache,
-        ctx_.change_reason_cache, ctx_.badge_cache, ctx_.username, this);
+    businessUnitController_ = std::make_unique<BusinessUnitController>(ctx_.main_window,
+                                                                       ctx_.mdi_area,
+                                                                       ctx_.client_manager,
+                                                                       ctx_.image_cache,
+                                                                       ctx_.change_reason_cache,
+                                                                       ctx_.badge_cache,
+                                                                       ctx_.username,
+                                                                       this);
     connectControllerSignals(businessUnitController_.get());
 
-    businessUnitTypeController_ = std::make_unique<BusinessUnitTypeController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
+    businessUnitTypeController_ =
+        std::make_unique<BusinessUnitTypeController>(ctx_.main_window,
+                                                     ctx_.mdi_area,
+                                                     ctx_.client_manager,
+                                                     ctx_.change_reason_cache,
+                                                     ctx_.username,
+                                                     this);
     connectControllerSignals(businessUnitTypeController_.get());
 }
 
@@ -111,34 +145,40 @@ void PartyPlugin::on_login(const plugin_context& ctx) {
 // ---------------------------------------------------------------------------
 void PartyPlugin::setup_menus(const shared_menus_context& smc) {
     BOOST_LOG_SEV(lg(), debug) << "Registering entries in shared menus."
-        << " reference_data=" << (smc.reference_data_menu ? "ok" : "null");
+                               << " reference_data=" << (smc.reference_data_menu ? "ok" : "null");
     auto* ref = smc.reference_data_menu;
     if (!ref)
         return;
 
     using IC = IconUtils;
-    auto ico = [](Icon i) { return IC::createRecoloredIcon(i, IC::DefaultIconColor); };
+    auto ico = [](Icon i) {
+        return IC::createRecoloredIcon(i, IC::DefaultIconColor);
+    };
 
     ref->addSeparator();
 
     act_parties_ = ref->addAction(ico(Icon::Organization), tr("&Parties"));
     connect(act_parties_, &QAction::triggered, this, [this]() {
-        if (partyController_) partyController_->showListWindow();
+        if (partyController_)
+            partyController_->showListWindow();
     });
     act_counterparties_ = ref->addAction(ico(Icon::Handshake), tr("&Counterparties"));
     connect(act_counterparties_, &QAction::triggered, this, [this]() {
-        if (counterpartyController_) counterpartyController_->showListWindow();
+        if (counterpartyController_)
+            counterpartyController_->showListWindow();
     });
 
     ref->addSeparator();
 
     act_business_centres_ = ref->addAction(ico(Icon::BuildingBank), tr("&Business Centres"));
     connect(act_business_centres_, &QAction::triggered, this, [this]() {
-        if (businessCentreController_) businessCentreController_->showListWindow();
+        if (businessCentreController_)
+            businessCentreController_->showListWindow();
     });
     act_business_units_ = ref->addAction(ico(Icon::PeopleTeam), tr("Business &Units"));
     connect(act_business_units_, &QAction::triggered, this, [this]() {
-        if (businessUnitController_) businessUnitController_->showListWindow();
+        if (businessUnitController_)
+            businessUnitController_->showListWindow();
     });
 
     ref->addSeparator();
@@ -146,25 +186,30 @@ void PartyPlugin::setup_menus(const shared_menus_context& smc) {
     auto* menuOrgCodes = ref->addMenu(tr("Organisation &Codes"));
     auto* actPartyTypes = menuOrgCodes->addAction(ico(Icon::Tag), tr("Party &Types"));
     connect(actPartyTypes, &QAction::triggered, this, [this]() {
-        if (partyTypeController_) partyTypeController_->showListWindow();
+        if (partyTypeController_)
+            partyTypeController_->showListWindow();
     });
     auto* actPartyStatuses = menuOrgCodes->addAction(ico(Icon::Flag), tr("Party &Statuses"));
     connect(actPartyStatuses, &QAction::triggered, this, [this]() {
-        if (partyStatusController_) partyStatusController_->showListWindow();
+        if (partyStatusController_)
+            partyStatusController_->showListWindow();
     });
     auto* actPartyIdSchemes = menuOrgCodes->addAction(ico(Icon::Key), tr("Party &ID Schemes"));
     connect(actPartyIdSchemes, &QAction::triggered, this, [this]() {
-        if (partyIdSchemeController_) partyIdSchemeController_->showListWindow();
+        if (partyIdSchemeController_)
+            partyIdSchemeController_->showListWindow();
     });
-    auto* actContactTypes = menuOrgCodes->addAction(
-        ico(Icon::PersonAccounts), tr("&Contact Types"));
+    auto* actContactTypes =
+        menuOrgCodes->addAction(ico(Icon::PersonAccounts), tr("&Contact Types"));
     connect(actContactTypes, &QAction::triggered, this, [this]() {
-        if (contactTypeController_) contactTypeController_->showListWindow();
+        if (contactTypeController_)
+            contactTypeController_->showListWindow();
     });
-    auto* actBizUnitTypes = menuOrgCodes->addAction(
-        ico(Icon::PeopleTeam), tr("Business Unit &Types"));
+    auto* actBizUnitTypes =
+        menuOrgCodes->addAction(ico(Icon::PeopleTeam), tr("Business Unit &Types"));
     connect(actBizUnitTypes, &QAction::triggered, this, [this]() {
-        if (businessUnitTypeController_) businessUnitTypeController_->showListWindow();
+        if (businessUnitTypeController_)
+            businessUnitTypeController_->showListWindow();
     });
 }
 

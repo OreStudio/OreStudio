@@ -18,39 +18,43 @@
  *
  */
 #include "ores.qt/ClientJobDefinitionModel.hpp"
-
-#include <QtConcurrent>
-#include "ores.scheduler.api/rfl/reflectors.hpp"
-#include "ores.scheduler.api/messaging/scheduler_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
+#include "ores.scheduler.api/messaging/scheduler_protocol.hpp"
+#include "ores.scheduler.api/rfl/reflectors.hpp"
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    std::string job_definition_key_extractor(const scheduler::domain::job_definition& e) {
-        return e.job_name;
-    }
+std::string job_definition_key_extractor(const scheduler::domain::job_definition& e) {
+    return e.job_name;
+}
 }
 
-ClientJobDefinitionModel::ClientJobDefinitionModel(
-    ClientManager* clientManager, QObject* parent)
-    : AbstractClientModel(parent),
-      clientManager_(clientManager),
-      watcher_(new QFutureWatcher<FetchResult>(this)),
-      recencyTracker_(job_definition_key_extractor, JobDefinitionTimestampExtractor{}),
-      pulseManager_(new RecencyPulseManager(this)) {
+ClientJobDefinitionModel::ClientJobDefinitionModel(ClientManager* clientManager, QObject* parent)
+    : AbstractClientModel(parent)
+    , clientManager_(clientManager)
+    , watcher_(new QFutureWatcher<FetchResult>(this))
+    , recencyTracker_(job_definition_key_extractor, JobDefinitionTimestampExtractor{})
+    , pulseManager_(new RecencyPulseManager(this)) {
 
-    connect(watcher_, &QFutureWatcher<FetchResult>::finished,
-            this, &ClientJobDefinitionModel::onDefinitionsLoaded);
+    connect(watcher_,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            &ClientJobDefinitionModel::onDefinitionsLoaded);
 
-    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
-            this, &ClientJobDefinitionModel::onPulseStateChanged);
-    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
-            this, &ClientJobDefinitionModel::onPulsingComplete);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulse_state_changed,
+            this,
+            &ClientJobDefinitionModel::onPulseStateChanged);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulsing_complete,
+            this,
+            &ClientJobDefinitionModel::onPulsingComplete);
 }
 
 int ClientJobDefinitionModel::rowCount(const QModelIndex& parent) const {
@@ -65,8 +69,7 @@ int ClientJobDefinitionModel::columnCount(const QModelIndex& parent) const {
     return ColumnCount;
 }
 
-QVariant ClientJobDefinitionModel::data(
-    const QModelIndex& index, int role) const {
+QVariant ClientJobDefinitionModel::data(const QModelIndex& index, int role) const {
     if (!index.isValid())
         return {};
 
@@ -78,24 +81,24 @@ QVariant ClientJobDefinitionModel::data(
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-        case JobName:
-            return QString::fromStdString(definition.job_name);
-        case Description:
-            return QString::fromStdString(definition.description);
-        case Schedule:
-            return QString::fromStdString(definition.schedule_expression.to_string());
-        case DatabaseName:
-            return QString::fromStdString(definition.action_type);
-        case Active:
-            return definition.is_active ? tr("Active") : tr("Inactive");
-        case Version:
-            return definition.version;
-        case ModifiedBy:
-            return QString::fromStdString(definition.modified_by);
-        case RecordedAt:
-            return relative_time_helper::format(definition.recorded_at);
-        default:
-            return {};
+            case JobName:
+                return QString::fromStdString(definition.job_name);
+            case Description:
+                return QString::fromStdString(definition.description);
+            case Schedule:
+                return QString::fromStdString(definition.schedule_expression.to_string());
+            case DatabaseName:
+                return QString::fromStdString(definition.action_type);
+            case Active:
+                return definition.is_active ? tr("Active") : tr("Inactive");
+            case Version:
+                return definition.version;
+            case ModifiedBy:
+                return QString::fromStdString(definition.modified_by);
+            case RecordedAt:
+                return relative_time_helper::format(definition.recorded_at);
+            default:
+                return {};
         }
     }
 
@@ -106,30 +109,30 @@ QVariant ClientJobDefinitionModel::data(
     return {};
 }
 
-QVariant ClientJobDefinitionModel::headerData(
-    int section, Qt::Orientation orientation, int role) const {
+QVariant
+ClientJobDefinitionModel::headerData(int section, Qt::Orientation orientation, int role) const {
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return {};
 
     switch (section) {
-    case JobName:
-        return tr("Job Name");
-    case Description:
-        return tr("Description");
-    case Schedule:
-        return tr("Schedule");
-    case DatabaseName:
-        return tr("Database");
-    case Active:
-        return tr("Active");
-    case Version:
-        return tr("Version");
-    case ModifiedBy:
-        return tr("Modified By");
-    case RecordedAt:
-        return tr("Recorded At");
-    default:
-        return {};
+        case JobName:
+            return tr("Job Name");
+        case Description:
+            return tr("Description");
+        case Schedule:
+            return tr("Schedule");
+        case DatabaseName:
+            return tr("Database");
+        case Active:
+            return tr("Active");
+        case Version:
+            return tr("Version");
+        case ModifiedBy:
+            return tr("Modified By");
+        case RecordedAt:
+            return tr("Recorded At");
+        default:
+            return {};
     }
 }
 
@@ -159,8 +162,7 @@ void ClientJobDefinitionModel::refresh() {
     fetch_definitions(0, page_size_);
 }
 
-void ClientJobDefinitionModel::load_page(std::uint32_t offset,
-                                          std::uint32_t limit) {
+void ClientJobDefinitionModel::load_page(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "load_page: offset=" << offset << ", limit=" << limit;
 
     if (is_fetching_) {
@@ -184,18 +186,19 @@ void ClientJobDefinitionModel::load_page(std::uint32_t offset,
     fetch_definitions(offset, limit);
 }
 
-void ClientJobDefinitionModel::fetch_definitions(
-    std::uint32_t offset, std::uint32_t limit) {
+void ClientJobDefinitionModel::fetch_definitions(std::uint32_t offset, std::uint32_t limit) {
     is_fetching_ = true;
     QPointer<ClientJobDefinitionModel> self = this;
 
-    QFuture<FetchResult> future =
-        QtConcurrent::run([self, offset, limit]() -> FetchResult {
-            return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
-                BOOST_LOG_SEV(lg(), debug) << "Making job definitions request with offset="
-                                           << offset << ", limit=" << limit;
+    QFuture<FetchResult> future = QtConcurrent::run([self, offset, limit]() -> FetchResult {
+        return exception_helper::wrap_async_fetch<FetchResult>(
+            [&]() -> FetchResult {
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Making job definitions request with offset=" << offset
+                    << ", limit=" << limit;
                 if (!self || !self->clientManager_) {
-                    return {.success = false, .definitions = {},
+                    return {.success = false,
+                            .definitions = {},
                             .total_available_count = 0,
                             .error_message = "Model was destroyed",
                             .error_details = {}};
@@ -203,29 +206,31 @@ void ClientJobDefinitionModel::fetch_definitions(
 
                 scheduler::messaging::get_job_definitions_request request;
 
-                auto result = self->clientManager_->
-                    process_authenticated_request(std::move(request));
+                auto result =
+                    self->clientManager_->process_authenticated_request(std::move(request));
 
                 if (!result) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to fetch job definitions: "
-                                               << result.error();
-                    return {.success = false, .definitions = {},
+                    BOOST_LOG_SEV(lg(), error)
+                        << "Failed to fetch job definitions: " << result.error();
+                    return {.success = false,
+                            .definitions = {},
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(
                                 "Failed to fetch job definitions: " + result.error()),
                             .error_details = {}};
                 }
 
-                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->definitions.size()
-                                           << " job definitions";
-                const std::uint32_t count =
-                    static_cast<std::uint32_t>(result->definitions.size());
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Fetched " << result->definitions.size() << " job definitions";
+                const std::uint32_t count = static_cast<std::uint32_t>(result->definitions.size());
                 return {.success = true,
                         .definitions = std::move(result->definitions),
                         .total_available_count = count,
-                        .error_message = {}, .error_details = {}};
-            }, "job definitions");
-        });
+                        .error_message = {},
+                        .error_details = {}};
+            },
+            "job definitions");
+    });
 
     watcher_->setFuture(future);
 }
@@ -236,8 +241,8 @@ void ClientJobDefinitionModel::onDefinitionsLoaded() {
     const auto result = watcher_->result();
 
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to fetch job definitions: "
-                                   << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to fetch job definitions: " << result.error_message.toStdString();
         emit loadError(result.error_message, result.error_details);
         return;
     }
@@ -276,16 +281,14 @@ void ClientJobDefinitionModel::set_page_size(std::uint32_t size) {
     }
 }
 
-const scheduler::domain::job_definition*
-ClientJobDefinitionModel::getDefinition(int row) const {
+const scheduler::domain::job_definition* ClientJobDefinitionModel::getDefinition(int row) const {
     const auto idx = static_cast<std::size_t>(row);
     if (idx >= definitions_.size())
         return nullptr;
     return &definitions_[idx];
 }
 
-QVariant ClientJobDefinitionModel::recency_foreground_color(
-    const std::string& code) const {
+QVariant ClientJobDefinitionModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {
         return color_constants::stale_indicator;
     }
@@ -294,8 +297,8 @@ QVariant ClientJobDefinitionModel::recency_foreground_color(
 
 void ClientJobDefinitionModel::onPulseStateChanged(bool /*isOn*/) {
     if (!definitions_.empty()) {
-        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
-            {Qt::ForegroundRole});
+        emit dataChanged(
+            index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::ForegroundRole});
     }
 }
 

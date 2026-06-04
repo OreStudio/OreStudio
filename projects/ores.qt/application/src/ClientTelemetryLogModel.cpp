@@ -18,24 +18,25 @@
  *
  */
 #include "ores.qt/ClientTelemetryLogModel.hpp"
-
-#include <QtConcurrent>
-#include <QDateTime>
-#include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.telemetry.core/messaging/telemetry_protocol.hpp"
+#include <QDateTime>
+#include <QtConcurrent>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-ClientTelemetryLogModel::
-ClientTelemetryLogModel(ClientManager* clientManager, QObject* parent)
-    : AbstractClientModel(parent), clientManager_(clientManager),
-      watcher_(new QFutureWatcher<FetchResult>(this)) {
+ClientTelemetryLogModel::ClientTelemetryLogModel(ClientManager* clientManager, QObject* parent)
+    : AbstractClientModel(parent)
+    , clientManager_(clientManager)
+    , watcher_(new QFutureWatcher<FetchResult>(this)) {
 
-    connect(watcher_, &QFutureWatcher<FetchResult>::finished,
-            this, &ClientTelemetryLogModel::onLogsLoaded);
+    connect(watcher_,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            &ClientTelemetryLogModel::onLogsLoaded);
 
     // Default to last 24 hours
     end_time_ = std::chrono::system_clock::now();
@@ -68,48 +69,55 @@ QVariant ClientTelemetryLogModel::data(const QModelIndex& index, int role) const
         return {};
 
     switch (index.column()) {
-    case Column::Timestamp: {
-        const auto msecs = std::chrono::duration_cast<std::chrono::milliseconds>(
-            entry.timestamp.time_since_epoch()).count();
-        return QDateTime::fromMSecsSinceEpoch(msecs).toString("yyyy-MM-dd hh:mm:ss.zzz");
-    }
-    case Column::Level:
-        return QString::fromStdString(entry.level);
-    case Column::Source:
-        return QString::fromStdString(entry.source_name);
-    case Column::Component:
-        return QString::fromStdString(entry.component);
-    case Column::Tag:
-        return QString::fromStdString(entry.tag);
-    case Column::Message:
-        return QString::fromStdString(entry.message);
-    default:
-        return {};
+        case Column::Timestamp: {
+            const auto msecs = std::chrono::duration_cast<std::chrono::milliseconds>(
+                                   entry.timestamp.time_since_epoch())
+                                   .count();
+            return QDateTime::fromMSecsSinceEpoch(msecs).toString("yyyy-MM-dd hh:mm:ss.zzz");
+        }
+        case Column::Level:
+            return QString::fromStdString(entry.level);
+        case Column::Source:
+            return QString::fromStdString(entry.source_name);
+        case Column::Component:
+            return QString::fromStdString(entry.component);
+        case Column::Tag:
+            return QString::fromStdString(entry.tag);
+        case Column::Message:
+            return QString::fromStdString(entry.message);
+        default:
+            return {};
     }
 }
 
-QVariant ClientTelemetryLogModel::
-headerData(int section, Qt::Orientation orientation, int role) const {
+QVariant
+ClientTelemetryLogModel::headerData(int section, Qt::Orientation orientation, int role) const {
     if (role != Qt::DisplayRole)
         return {};
 
     if (orientation == Qt::Horizontal) {
         switch (section) {
-        case Column::Timestamp: return tr("Timestamp");
-        case Column::Level: return tr("Level");
-        case Column::Source: return tr("Source");
-        case Column::Component: return tr("Component");
-        case Column::Tag: return tr("Tag");
-        case Column::Message: return tr("Message");
-        default: return {};
+            case Column::Timestamp:
+                return tr("Timestamp");
+            case Column::Level:
+                return tr("Level");
+            case Column::Source:
+                return tr("Source");
+            case Column::Component:
+                return tr("Component");
+            case Column::Tag:
+                return tr("Tag");
+            case Column::Message:
+                return tr("Message");
+            default:
+                return {};
         }
     }
 
     return {};
 }
 
-void ClientTelemetryLogModel::
-load_session_logs(const boost::uuids::uuid& session_id) {
+void ClientTelemetryLogModel::load_session_logs(const boost::uuids::uuid& session_id) {
     BOOST_LOG_SEV(lg(), debug) << "Loading logs for session: "
                                << boost::uuids::to_string(session_id);
     current_session_id_ = session_id;
@@ -117,9 +125,8 @@ load_session_logs(const boost::uuids::uuid& session_id) {
     fetch_logs();
 }
 
-void ClientTelemetryLogModel::
-load_logs(std::chrono::system_clock::time_point start_time,
-          std::chrono::system_clock::time_point end_time) {
+void ClientTelemetryLogModel::load_logs(std::chrono::system_clock::time_point start_time,
+                                        std::chrono::system_clock::time_point end_time) {
     BOOST_LOG_SEV(lg(), debug) << "Loading logs for time range.";
     current_session_id_ = std::nullopt;
     start_time_ = start_time;
@@ -129,8 +136,7 @@ load_logs(std::chrono::system_clock::time_point start_time,
 }
 
 void ClientTelemetryLogModel::load_page(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Loading page: offset=" << offset
-                               << ", limit=" << limit;
+    BOOST_LOG_SEV(lg(), debug) << "Loading page: offset=" << offset << ", limit=" << limit;
     current_offset_ = offset;
     page_size_ = limit;
     fetch_logs();
@@ -145,8 +151,7 @@ void ClientTelemetryLogModel::clear() {
     }
 }
 
-const telemetry::domain::telemetry_log_entry*
-ClientTelemetryLogModel::get_entry(int row) const {
+const telemetry::domain::telemetry_log_entry* ClientTelemetryLogModel::get_entry(int row) const {
     if (row < 0 || row >= static_cast<int>(entries_.size()))
         return nullptr;
     return &entries_[row];
@@ -154,31 +159,26 @@ ClientTelemetryLogModel::get_entry(int row) const {
 
 void ClientTelemetryLogModel::set_page_size(std::uint32_t size) {
     if (size == 0 || size > 10000) {
-        BOOST_LOG_SEV(lg(), warn) << "Invalid page size: " << size
-                                  << ". Using default: 100";
+        BOOST_LOG_SEV(lg(), warn) << "Invalid page size: " << size << ". Using default: 100";
         page_size_ = 100;
     } else {
         page_size_ = size;
     }
 }
 
-void ClientTelemetryLogModel::
-set_min_level(const std::optional<std::string>& level) {
+void ClientTelemetryLogModel::set_min_level(const std::optional<std::string>& level) {
     min_level_ = level;
 }
 
-void ClientTelemetryLogModel::
-set_message_filter(const std::optional<std::string>& text) {
+void ClientTelemetryLogModel::set_message_filter(const std::optional<std::string>& text) {
     message_filter_ = text;
 }
 
-void ClientTelemetryLogModel::
-set_tag_filter(const std::optional<std::string>& tag) {
+void ClientTelemetryLogModel::set_tag_filter(const std::optional<std::string>& tag) {
     tag_filter_ = tag;
 }
 
-void ClientTelemetryLogModel::
-set_component_filter(const std::optional<std::string>& component) {
+void ClientTelemetryLogModel::set_component_filter(const std::optional<std::string>& component) {
     component_filter_ = component;
 }
 
@@ -206,13 +206,22 @@ void ClientTelemetryLogModel::fetch_logs() {
     auto offset = current_offset_;
     auto limit = page_size_;
 
-    QFuture<FetchResult> future =
-        QtConcurrent::run([self, session_id, start, end, min_level,
-                          msg_filter, tag_filter, component_filter,
-                          offset, limit]() -> FetchResult {
-            return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
+    QFuture<FetchResult> future = QtConcurrent::run([self,
+                                                     session_id,
+                                                     start,
+                                                     end,
+                                                     min_level,
+                                                     msg_filter,
+                                                     tag_filter,
+                                                     component_filter,
+                                                     offset,
+                                                     limit]() -> FetchResult {
+        return exception_helper::wrap_async_fetch<FetchResult>(
+            [&]() -> FetchResult {
                 if (!self || !self->clientManager_) {
-                    return {.success = false, .entries = {}, .total_count = 0,
+                    return {.success = false,
+                            .entries = {},
+                            .total_count = 0,
                             .error_message = "Model was destroyed",
                             .error_details = {}};
                 }
@@ -228,39 +237,44 @@ void ClientTelemetryLogModel::fetch_logs() {
                 request.query.offset = offset;
                 request.query.limit = limit;
 
-                BOOST_LOG_SEV(lg(), debug) << "Fetching telemetry logs with offset="
-                                           << offset << ", limit=" << limit;
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Fetching telemetry logs with offset=" << offset << ", limit=" << limit;
 
-                auto result = self->clientManager_->
-                    process_authenticated_request(std::move(request));
+                auto result =
+                    self->clientManager_->process_authenticated_request(std::move(request));
 
                 if (!result) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to fetch telemetry logs: "
-                                               << result.error();
-                    return {.success = false, .entries = {}, .total_count = 0,
+                    BOOST_LOG_SEV(lg(), error)
+                        << "Failed to fetch telemetry logs: " << result.error();
+                    return {.success = false,
+                            .entries = {},
+                            .total_count = 0,
                             .error_message = QString::fromStdString(
                                 "Failed to fetch telemetry logs: " + result.error()),
                             .error_details = {}};
                 }
 
                 if (!result->success) {
-                    BOOST_LOG_SEV(lg(), error) << "Server returned error: "
-                                               << result->message;
-                    return {.success = false, .entries = {}, .total_count = 0,
-                            .error_message = QString::fromStdString(
-                                "Server error: " + result->message),
+                    BOOST_LOG_SEV(lg(), error) << "Server returned error: " << result->message;
+                    return {.success = false,
+                            .entries = {},
+                            .total_count = 0,
+                            .error_message =
+                                QString::fromStdString("Server error: " + result->message),
                             .error_details = {}};
                 }
 
                 BOOST_LOG_SEV(lg(), debug) << "Received " << result->entries.size()
-                                           << " log entries, total: "
-                                           << result->total_count;
+                                           << " log entries, total: " << result->total_count;
 
-                return {.success = true, .entries = std::move(result->entries),
+                return {.success = true,
+                        .entries = std::move(result->entries),
                         .total_count = result->total_count,
-                        .error_message = {}, .error_details = {}};
-            }, "telemetry logs");
-        });
+                        .error_message = {},
+                        .error_details = {}};
+            },
+            "telemetry logs");
+    });
 
     watcher_->setFuture(future);
 }
@@ -271,8 +285,8 @@ void ClientTelemetryLogModel::onLogsLoaded() {
     const auto result = watcher_->result();
 
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to fetch telemetry logs: "
-                                   << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to fetch telemetry logs: " << result.error_message.toStdString();
         emit loadError(result.error_message, result.error_details);
         return;
     }
@@ -283,8 +297,7 @@ void ClientTelemetryLogModel::onLogsLoaded() {
     endResetModel();
 
     BOOST_LOG_SEV(lg(), info) << "Loaded " << entries_.size()
-                              << " log entries. Total available: "
-                              << total_available_count_;
+                              << " log entries. Total available: " << total_available_count_;
     emit dataLoaded();
 }
 

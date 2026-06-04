@@ -20,17 +20,17 @@
 #ifndef ORES_QT_CLIENT_BOOK_STATUS_MODEL_HPP
 #define ORES_QT_CLIENT_BOOK_STATUS_MODEL_HPP
 
-#include <vector>
-#include <QSize>
-#include <QFutureWatcher>
-#include <QAbstractTableModel>
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/AbstractClientModel.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ColumnMetadata.hpp"
 #include "ores.qt/RecencyPulseManager.hpp"
 #include "ores.qt/RecencyTracker.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/book_status.hpp"
+#include <QAbstractTableModel>
+#include <QFutureWatcher>
+#include <QSize>
+#include <vector>
 
 namespace ores::qt {
 
@@ -44,8 +44,7 @@ class ClientBookStatusModel final : public AbstractClientModel {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.client_book_status_model";
+    inline static std::string_view logger_name = "ores.qt.client_book_status_model";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -74,57 +73,42 @@ public:
      * Order must match the Column enum.
      */
     static constexpr std::size_t kColumnCount = std::size_t(ColumnCount);
-    static constexpr std::array<ColumnMetadata, kColumnCount> kColumns = {{
-        {
-            .column = Code,
-            .header = std::string_view("Code"),
-            .style = column_style::text_left,
-            .hidden_by_default = false,
-            .default_width = kColumnWidthAuto
-        },
-        {
-            .column = Name,
-            .header = std::string_view("Name"),
-            .style = column_style::text_left,
-            .hidden_by_default = false,
-            .default_width = kColumnWidthAuto
-        },
-        {
-            .column = Description,
-            .header = std::string_view("Description"),
-            .style = column_style::text_left,
-            .hidden_by_default = false,
-            .default_width = kColumnWidthAuto
-        },
-        {
-            .column = DisplayOrder,
-            .header = std::string_view("Display Order"),
-            .style = column_style::mono_center,
-            .hidden_by_default = false,
-            .default_width = 70
-        },
-        {
-            .column = Version,
-            .header = std::string_view("Version"),
-            .style = column_style::mono_center,
-            .hidden_by_default = false,
-            .default_width = 70
-        },
-        {
-            .column = ModifiedBy,
-            .header = std::string_view("Modified By"),
-            .style = column_style::text_left,
-            .hidden_by_default = false,
-            .default_width = kColumnWidthAuto
-        },
-        {
-            .column = RecordedAt,
-            .header = std::string_view("Recorded At"),
-            .style = column_style::mono_left,
-            .hidden_by_default = false,
-            .default_width = kColumnWidthAuto
-        }
-    }};
+    static constexpr std::array<ColumnMetadata, kColumnCount> kColumns = {
+        {{.column = Code,
+          .header = std::string_view("Code"),
+          .style = column_style::text_left,
+          .hidden_by_default = false,
+          .default_width = kColumnWidthAuto},
+         {.column = Name,
+          .header = std::string_view("Name"),
+          .style = column_style::text_left,
+          .hidden_by_default = false,
+          .default_width = kColumnWidthAuto},
+         {.column = Description,
+          .header = std::string_view("Description"),
+          .style = column_style::text_left,
+          .hidden_by_default = false,
+          .default_width = kColumnWidthAuto},
+         {.column = DisplayOrder,
+          .header = std::string_view("Display Order"),
+          .style = column_style::mono_center,
+          .hidden_by_default = false,
+          .default_width = 70},
+         {.column = Version,
+          .header = std::string_view("Version"),
+          .style = column_style::mono_center,
+          .hidden_by_default = false,
+          .default_width = 70},
+         {.column = ModifiedBy,
+          .header = std::string_view("Modified By"),
+          .style = column_style::text_left,
+          .hidden_by_default = false,
+          .default_width = kColumnWidthAuto},
+         {.column = RecordedAt,
+          .header = std::string_view("Recorded At"),
+          .style = column_style::mono_left,
+          .hidden_by_default = false,
+          .default_width = kColumnWidthAuto}}};
 
     /**
      * @brief Default window size for the book status list window.
@@ -154,21 +138,19 @@ public:
      * @brief Returns a static QVector of hidden column indices (built once per process).
      */
     static QVector<int> defaultHiddenColumns() {
-        static QVector<int> const result =
-            ::ores::qt::defaultHiddenColumns<kColumnCount>(kColumns);
+        static QVector<int> const result = ::ores::qt::defaultHiddenColumns<kColumnCount>(kColumns);
         return result;
     }
 
-    explicit ClientBookStatusModel(ClientManager* clientManager,
-                                   QObject* parent = nullptr);
+    explicit ClientBookStatusModel(ClientManager* clientManager, QObject* parent = nullptr);
     ~ClientBookStatusModel() override = default;
 
     // QAbstractTableModel interface
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-    QVariant headerData(int section, Qt::Orientation orientation,
-        int role = Qt::DisplayRole) const override;
+    QVariant
+    headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
     /**
      * @brief Refresh book status data from server asynchronously.
@@ -212,7 +194,7 @@ private:
     QFutureWatcher<FetchResult>* watcher_;
     bool is_fetching_{false};
 
-    using BookStatusKeyExtractor = std::string(*)(const refdata::domain::book_status&);
+    using BookStatusKeyExtractor = std::string (*)(const refdata::domain::book_status&);
     RecencyTracker<refdata::domain::book_status, BookStatusKeyExtractor> recencyTracker_;
     RecencyPulseManager* pulseManager_;
 };

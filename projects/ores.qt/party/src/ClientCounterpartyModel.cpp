@@ -18,48 +18,54 @@
  *
  */
 #include "ores.qt/ClientCounterpartyModel.hpp"
-
-#include <QtConcurrent>
-#include "ores.refdata.api/messaging/counterparty_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/LookupFetcher.hpp"
-#include "ores.qt/TextUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
+#include "ores.qt/TextUtils.hpp"
+#include "ores.refdata.api/messaging/counterparty_protocol.hpp"
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    std::string counterparty_key_extractor(const refdata::domain::counterparty& e) {
-        return e.short_code;
-    }
+std::string counterparty_key_extractor(const refdata::domain::counterparty& e) {
+    return e.short_code;
+}
 }
 
-ClientCounterpartyModel::ClientCounterpartyModel(
-    ClientManager* clientManager, ImageCache* imageCache, QObject* parent)
-    : AbstractClientModel(parent),
-      clientManager_(clientManager),
-      imageCache_(imageCache),
-      watcher_(new QFutureWatcher<FetchResult>(this)),
-      recencyTracker_(counterparty_key_extractor),
-      pulseManager_(new RecencyPulseManager(this)) {
+ClientCounterpartyModel::ClientCounterpartyModel(ClientManager* clientManager,
+                                                 ImageCache* imageCache,
+                                                 QObject* parent)
+    : AbstractClientModel(parent)
+    , clientManager_(clientManager)
+    , imageCache_(imageCache)
+    , watcher_(new QFutureWatcher<FetchResult>(this))
+    , recencyTracker_(counterparty_key_extractor)
+    , pulseManager_(new RecencyPulseManager(this)) {
 
-    connect(watcher_, &QFutureWatcher<FetchResult>::finished,
-            this, &ClientCounterpartyModel::onCounterpartysLoaded);
+    connect(watcher_,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            &ClientCounterpartyModel::onCounterpartysLoaded);
 
-    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
-            this, &ClientCounterpartyModel::onPulseStateChanged);
-    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
-            this, &ClientCounterpartyModel::onPulsingComplete);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulse_state_changed,
+            this,
+            &ClientCounterpartyModel::onPulseStateChanged);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulsing_complete,
+            this,
+            &ClientCounterpartyModel::onPulsingComplete);
 
     if (imageCache_) {
-        connect(imageCache_, &ImageCache::imageLoaded,
-                this, [this](const QString&) {
+        connect(imageCache_, &ImageCache::imageLoaded, this, [this](const QString&) {
             if (!counterparties_.empty()) {
                 emit dataChanged(index(0, BusinessCenterCode),
-                    index(rowCount() - 1, BusinessCenterCode), {Qt::DecorationRole});
+                                 index(rowCount() - 1, BusinessCenterCode),
+                                 {Qt::DecorationRole});
             }
         });
     }
@@ -79,8 +85,7 @@ int ClientCounterpartyModel::columnCount(const QModelIndex& parent) const {
     return ColumnCount;
 }
 
-QVariant ClientCounterpartyModel::data(
-    const QModelIndex& index, int role) const {
+QVariant ClientCounterpartyModel::data(const QModelIndex& index, int role) const {
     if (!index.isValid())
         return {};
 
@@ -103,27 +108,27 @@ QVariant ClientCounterpartyModel::data(
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-        case ShortCode:
-            return QString::fromStdString(counterparty.short_code);
-        case FullName:
-            return TextUtils::display_name_with_transliteration(
-                counterparty.full_name, counterparty.transliterated_name);
-        case TransliteratedName:
-            return QString::fromStdString(counterparty.transliterated_name.value_or(""));
-        case PartyType:
-            return QString::fromStdString(counterparty.party_type);
-        case Status:
-            return QString::fromStdString(counterparty.status);
-        case BusinessCenterCode:
-            return QString::fromStdString(counterparty.business_center_code);
-        case Version:
-            return counterparty.version;
-        case ModifiedBy:
-            return QString::fromStdString(counterparty.modified_by);
-        case RecordedAt:
-            return relative_time_helper::format(counterparty.recorded_at);
-        default:
-            return {};
+            case ShortCode:
+                return QString::fromStdString(counterparty.short_code);
+            case FullName:
+                return TextUtils::display_name_with_transliteration(
+                    counterparty.full_name, counterparty.transliterated_name);
+            case TransliteratedName:
+                return QString::fromStdString(counterparty.transliterated_name.value_or(""));
+            case PartyType:
+                return QString::fromStdString(counterparty.party_type);
+            case Status:
+                return QString::fromStdString(counterparty.status);
+            case BusinessCenterCode:
+                return QString::fromStdString(counterparty.business_center_code);
+            case Version:
+                return counterparty.version;
+            case ModifiedBy:
+                return QString::fromStdString(counterparty.modified_by);
+            case RecordedAt:
+                return relative_time_helper::format(counterparty.recorded_at);
+            default:
+                return {};
         }
     }
 
@@ -134,32 +139,32 @@ QVariant ClientCounterpartyModel::data(
     return {};
 }
 
-QVariant ClientCounterpartyModel::headerData(
-    int section, Qt::Orientation orientation, int role) const {
+QVariant
+ClientCounterpartyModel::headerData(int section, Qt::Orientation orientation, int role) const {
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return {};
 
     switch (section) {
-    case ShortCode:
-        return tr("Code");
-    case FullName:
-        return tr("Name");
-    case TransliteratedName:
-        return tr("Transliterated Name");
-    case PartyType:
-        return tr("Type");
-    case Status:
-        return tr("Status");
-    case BusinessCenterCode:
-        return tr("Centre");
-    case Version:
-        return tr("Version");
-    case ModifiedBy:
-        return tr("Modified By");
-    case RecordedAt:
-        return tr("Recorded At");
-    default:
-        return {};
+        case ShortCode:
+            return tr("Code");
+        case FullName:
+            return tr("Name");
+        case TransliteratedName:
+            return tr("Transliterated Name");
+        case PartyType:
+            return tr("Type");
+        case Status:
+            return tr("Status");
+        case BusinessCenterCode:
+            return tr("Centre");
+        case Version:
+            return tr("Version");
+        case ModifiedBy:
+            return tr("Modified By");
+        case RecordedAt:
+            return tr("Recorded At");
+        default:
+            return {};
     }
 }
 
@@ -189,8 +194,7 @@ void ClientCounterpartyModel::refresh(bool /*replace*/) {
     fetch_counterparties(0, page_size_);
 }
 
-void ClientCounterpartyModel::load_page(std::uint32_t offset,
-                                          std::uint32_t limit) {
+void ClientCounterpartyModel::load_page(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "load_page: offset=" << offset << ", limit=" << limit;
 
     if (is_fetching_) {
@@ -214,18 +218,18 @@ void ClientCounterpartyModel::load_page(std::uint32_t offset,
     fetch_counterparties(offset, limit);
 }
 
-void ClientCounterpartyModel::fetch_counterparties(std::uint32_t offset,
-                                                     std::uint32_t limit) {
+void ClientCounterpartyModel::fetch_counterparties(std::uint32_t offset, std::uint32_t limit) {
     is_fetching_ = true;
     QPointer<ClientCounterpartyModel> self = this;
 
-    QFuture<FetchResult> future =
-        QtConcurrent::run([self, offset, limit]() -> FetchResult {
-            return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
-                BOOST_LOG_SEV(lg(), debug) << "Making counterparties request with offset="
-                                           << offset << ", limit=" << limit;
+    QFuture<FetchResult> future = QtConcurrent::run([self, offset, limit]() -> FetchResult {
+        return exception_helper::wrap_async_fetch<FetchResult>(
+            [&]() -> FetchResult {
+                BOOST_LOG_SEV(lg(), debug) << "Making counterparties request with offset=" << offset
+                                           << ", limit=" << limit;
                 if (!self || !self->clientManager_) {
-                    return {.success = false, .counterparties = {},
+                    return {.success = false,
+                            .counterparties = {},
                             .total_available_count = 0,
                             .error_message = "Model was destroyed",
                             .error_details = {}};
@@ -235,28 +239,32 @@ void ClientCounterpartyModel::fetch_counterparties(std::uint32_t offset,
                 request.offset = offset;
                 request.limit = limit;
 
-                auto result = self->clientManager_->
-                    process_authenticated_request(std::move(request));
+                auto result =
+                    self->clientManager_->process_authenticated_request(std::move(request));
 
                 if (!result) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to fetch counterparties: "
-                                               << result.error();
-                    return {.success = false, .counterparties = {},
+                    BOOST_LOG_SEV(lg(), error)
+                        << "Failed to fetch counterparties: " << result.error();
+                    return {.success = false,
+                            .counterparties = {},
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(
                                 "Failed to fetch counterparties: " + result.error()),
                             .error_details = {}};
                 }
 
-                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->counterparties.size()
-                                           << " counterparties, total available: "
-                                           << result->total_available_count;
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Fetched " << result->counterparties.size()
+                    << " counterparties, total available: " << result->total_available_count;
                 return {.success = true,
                         .counterparties = std::move(result->counterparties),
-                        .total_available_count = static_cast<std::uint32_t>(result->total_available_count),
-                        .error_message = {}, .error_details = {}};
-            }, "counterparties");
-        });
+                        .total_available_count =
+                            static_cast<std::uint32_t>(result->total_available_count),
+                        .error_message = {},
+                        .error_details = {}};
+            },
+            "counterparties");
+    });
 
     watcher_->setFuture(future);
 }
@@ -267,8 +275,8 @@ void ClientCounterpartyModel::onCounterpartysLoaded() {
     const auto result = watcher_->result();
 
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to fetch counterparties: "
-                                   << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to fetch counterparties: " << result.error_message.toStdString();
         emit loadError(result.error_message, result.error_details);
         return;
     }
@@ -296,8 +304,7 @@ void ClientCounterpartyModel::onCounterpartysLoaded() {
     emit dataLoaded();
 }
 
-const refdata::domain::counterparty*
-ClientCounterpartyModel::getCounterparty(int row) const {
+const refdata::domain::counterparty* ClientCounterpartyModel::getCounterparty(int row) const {
     const auto idx = static_cast<std::size_t>(row);
     if (idx >= counterparties_.size())
         return nullptr;
@@ -315,8 +322,7 @@ void ClientCounterpartyModel::set_page_size(std::uint32_t size) {
     }
 }
 
-QVariant ClientCounterpartyModel::recency_foreground_color(
-    const std::string& code) const {
+QVariant ClientCounterpartyModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {
         return color_constants::stale_indicator;
     }
@@ -325,8 +331,8 @@ QVariant ClientCounterpartyModel::recency_foreground_color(
 
 void ClientCounterpartyModel::onPulseStateChanged(bool /*isOn*/) {
     if (!counterparties_.empty()) {
-        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
-            {Qt::ForegroundRole});
+        emit dataChanged(
+            index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::ForegroundRole});
     }
 }
 
@@ -343,8 +349,7 @@ void ClientCounterpartyModel::fetch_business_centres() {
     QPointer<ClientCounterpartyModel> self = this;
 
     auto* watcher = new QFutureWatcher<MapType>(this);
-    connect(watcher, &QFutureWatcher<MapType>::finished,
-            this, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<MapType>::finished, this, [self, watcher]() {
         auto mapping = watcher->result();
         watcher->deleteLater();
         if (!self || mapping.empty())
@@ -354,13 +359,13 @@ void ClientCounterpartyModel::fetch_business_centres() {
 
         if (!self->counterparties_.empty()) {
             emit self->dataChanged(self->index(0, 0),
-                self->index(self->rowCount() - 1, self->columnCount() - 1),
-                {Qt::DecorationRole});
+                                   self->index(self->rowCount() - 1, self->columnCount() - 1),
+                                   {Qt::DecorationRole});
         }
     });
 
-    watcher->setFuture(QtConcurrent::run(
-        [cm = clientManager_]() { return fetch_business_centre_image_map(cm); }));
+    watcher->setFuture(
+        QtConcurrent::run([cm = clientManager_]() { return fetch_business_centre_image_map(cm); }));
 }
 
 }

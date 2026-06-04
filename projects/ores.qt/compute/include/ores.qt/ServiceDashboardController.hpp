@@ -20,13 +20,13 @@
 #ifndef ORES_QT_SERVICE_DASHBOARD_CONTROLLER_HPP
 #define ORES_QT_SERVICE_DASHBOARD_CONTROLLER_HPP
 
-#include <QObject>
-#include <QPointer>
-#include <QMdiArea>
-#include <QMainWindow>
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
-#include "ores.logging/make_logger.hpp"
+#include <QMainWindow>
+#include <QMdiArea>
+#include <QObject>
+#include <QPointer>
 
 namespace ores::qt {
 
@@ -39,8 +39,7 @@ class ServiceDashboardController final : public QObject {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.service_dashboard_controller";
+    inline static std::string_view logger_name = "ores.qt.service_dashboard_controller";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -49,11 +48,10 @@ private:
     }
 
 public:
-    ServiceDashboardController(
-        QMainWindow* mainWindow,
-        QMdiArea* mdiArea,
-        ClientManager* clientManager,
-        QObject* parent = nullptr);
+    ServiceDashboardController(QMainWindow* mainWindow,
+                               QMdiArea* mdiArea,
+                               ClientManager* clientManager,
+                               QObject* parent = nullptr);
 
     void showDashboard();
     void closeAllWindows();

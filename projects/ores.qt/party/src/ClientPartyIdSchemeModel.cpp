@@ -18,38 +18,42 @@
  *
  */
 #include "ores.qt/ClientPartyIdSchemeModel.hpp"
-
-#include <QtConcurrent>
-#include "ores.refdata.api/messaging/party_id_scheme_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
+#include "ores.refdata.api/messaging/party_id_scheme_protocol.hpp"
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    std::string party_id_scheme_key_extractor(const refdata::domain::party_id_scheme& e) {
-        return e.code;
-    }
+std::string party_id_scheme_key_extractor(const refdata::domain::party_id_scheme& e) {
+    return e.code;
+}
 }
 
-ClientPartyIdSchemeModel::ClientPartyIdSchemeModel(
-    ClientManager* clientManager, QObject* parent)
-    : AbstractClientModel(parent),
-      clientManager_(clientManager),
-      watcher_(new QFutureWatcher<FetchResult>(this)),
-      recencyTracker_(party_id_scheme_key_extractor),
-      pulseManager_(new RecencyPulseManager(this)) {
+ClientPartyIdSchemeModel::ClientPartyIdSchemeModel(ClientManager* clientManager, QObject* parent)
+    : AbstractClientModel(parent)
+    , clientManager_(clientManager)
+    , watcher_(new QFutureWatcher<FetchResult>(this))
+    , recencyTracker_(party_id_scheme_key_extractor)
+    , pulseManager_(new RecencyPulseManager(this)) {
 
-    connect(watcher_, &QFutureWatcher<FetchResult>::finished,
-            this, &ClientPartyIdSchemeModel::onSchemesLoaded);
+    connect(watcher_,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            &ClientPartyIdSchemeModel::onSchemesLoaded);
 
-    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
-            this, &ClientPartyIdSchemeModel::onPulseStateChanged);
-    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
-            this, &ClientPartyIdSchemeModel::onPulsingComplete);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulse_state_changed,
+            this,
+            &ClientPartyIdSchemeModel::onPulseStateChanged);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulsing_complete,
+            this,
+            &ClientPartyIdSchemeModel::onPulsingComplete);
 }
 
 int ClientPartyIdSchemeModel::rowCount(const QModelIndex& parent) const {
@@ -64,8 +68,7 @@ int ClientPartyIdSchemeModel::columnCount(const QModelIndex& parent) const {
     return ColumnCount;
 }
 
-QVariant ClientPartyIdSchemeModel::data(
-    const QModelIndex& index, int role) const {
+QVariant ClientPartyIdSchemeModel::data(const QModelIndex& index, int role) const {
     if (!index.isValid())
         return {};
 
@@ -77,24 +80,24 @@ QVariant ClientPartyIdSchemeModel::data(
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-        case Code:
-            return QString::fromStdString(scheme.code);
-        case Name:
-            return QString::fromStdString(scheme.name);
-        case Description:
-            return QString::fromStdString(scheme.description);
-        case CodingSchemeCode:
-            return QString::fromStdString(scheme.coding_scheme_code);
-        case DisplayOrder:
-            return scheme.display_order;
-        case Version:
-            return scheme.version;
-        case ModifiedBy:
-            return QString::fromStdString(scheme.modified_by);
-        case RecordedAt:
-            return relative_time_helper::format(scheme.recorded_at);
-        default:
-            return {};
+            case Code:
+                return QString::fromStdString(scheme.code);
+            case Name:
+                return QString::fromStdString(scheme.name);
+            case Description:
+                return QString::fromStdString(scheme.description);
+            case CodingSchemeCode:
+                return QString::fromStdString(scheme.coding_scheme_code);
+            case DisplayOrder:
+                return scheme.display_order;
+            case Version:
+                return scheme.version;
+            case ModifiedBy:
+                return QString::fromStdString(scheme.modified_by);
+            case RecordedAt:
+                return relative_time_helper::format(scheme.recorded_at);
+            default:
+                return {};
         }
     }
 
@@ -105,30 +108,30 @@ QVariant ClientPartyIdSchemeModel::data(
     return {};
 }
 
-QVariant ClientPartyIdSchemeModel::headerData(
-    int section, Qt::Orientation orientation, int role) const {
+QVariant
+ClientPartyIdSchemeModel::headerData(int section, Qt::Orientation orientation, int role) const {
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return {};
 
     switch (section) {
-    case Code:
-        return tr("Code");
-    case Name:
-        return tr("Name");
-    case Description:
-        return tr("Description");
-    case CodingSchemeCode:
-        return tr("Coding Scheme");
-    case DisplayOrder:
-        return tr("Order");
-    case Version:
-        return tr("Version");
-    case ModifiedBy:
-        return tr("Modified By");
-    case RecordedAt:
-        return tr("Recorded At");
-    default:
-        return {};
+        case Code:
+            return tr("Code");
+        case Name:
+            return tr("Name");
+        case Description:
+            return tr("Description");
+        case CodingSchemeCode:
+            return tr("Coding Scheme");
+        case DisplayOrder:
+            return tr("Order");
+        case Version:
+            return tr("Version");
+        case ModifiedBy:
+            return tr("Modified By");
+        case RecordedAt:
+            return tr("Recorded At");
+        default:
+            return {};
     }
 }
 
@@ -158,8 +161,7 @@ void ClientPartyIdSchemeModel::refresh() {
     fetch_schemes(0, page_size_);
 }
 
-void ClientPartyIdSchemeModel::load_page(std::uint32_t offset,
-                                          std::uint32_t limit) {
+void ClientPartyIdSchemeModel::load_page(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "load_page: offset=" << offset << ", limit=" << limit;
 
     if (is_fetching_) {
@@ -183,18 +185,19 @@ void ClientPartyIdSchemeModel::load_page(std::uint32_t offset,
     fetch_schemes(offset, limit);
 }
 
-void ClientPartyIdSchemeModel::fetch_schemes(
-    std::uint32_t offset, std::uint32_t limit) {
+void ClientPartyIdSchemeModel::fetch_schemes(std::uint32_t offset, std::uint32_t limit) {
     is_fetching_ = true;
     QPointer<ClientPartyIdSchemeModel> self = this;
 
-    QFuture<FetchResult> future =
-        QtConcurrent::run([self, offset, limit]() -> FetchResult {
-            return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
-                BOOST_LOG_SEV(lg(), debug) << "Making party ID schemes request with offset="
-                                           << offset << ", limit=" << limit;
+    QFuture<FetchResult> future = QtConcurrent::run([self, offset, limit]() -> FetchResult {
+        return exception_helper::wrap_async_fetch<FetchResult>(
+            [&]() -> FetchResult {
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Making party ID schemes request with offset=" << offset
+                    << ", limit=" << limit;
                 if (!self || !self->clientManager_) {
-                    return {.success = false, .schemes = {},
+                    return {.success = false,
+                            .schemes = {},
                             .total_available_count = 0,
                             .error_message = "Model was destroyed",
                             .error_details = {}};
@@ -202,29 +205,32 @@ void ClientPartyIdSchemeModel::fetch_schemes(
 
                 refdata::messaging::get_party_id_schemes_request request;
 
-                auto result = self->clientManager_->
-                    process_authenticated_request(std::move(request));
+                auto result =
+                    self->clientManager_->process_authenticated_request(std::move(request));
 
                 if (!result) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to fetch party ID schemes: "
-                                               << result.error();
-                    return {.success = false, .schemes = {},
+                    BOOST_LOG_SEV(lg(), error)
+                        << "Failed to fetch party ID schemes: " << result.error();
+                    return {.success = false,
+                            .schemes = {},
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(
                                 "Failed to fetch party ID schemes: " + result.error()),
                             .error_details = {}};
                 }
 
-                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->party_id_schemes.size()
-                                           << " party ID schemes";
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Fetched " << result->party_id_schemes.size() << " party ID schemes";
                 const std::uint32_t count =
                     static_cast<std::uint32_t>(result->party_id_schemes.size());
                 return {.success = true,
                         .schemes = std::move(result->party_id_schemes),
                         .total_available_count = count,
-                        .error_message = {}, .error_details = {}};
-            }, "party ID schemes");
-        });
+                        .error_message = {},
+                        .error_details = {}};
+            },
+            "party ID schemes");
+    });
 
     watcher_->setFuture(future);
 }
@@ -235,8 +241,8 @@ void ClientPartyIdSchemeModel::onSchemesLoaded() {
     const auto result = watcher_->result();
 
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to fetch party ID schemes: "
-                                   << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to fetch party ID schemes: " << result.error_message.toStdString();
         emit loadError(result.error_message, result.error_details);
         return;
     }
@@ -275,16 +281,14 @@ void ClientPartyIdSchemeModel::set_page_size(std::uint32_t size) {
     }
 }
 
-const refdata::domain::party_id_scheme*
-ClientPartyIdSchemeModel::getScheme(int row) const {
+const refdata::domain::party_id_scheme* ClientPartyIdSchemeModel::getScheme(int row) const {
     const auto idx = static_cast<std::size_t>(row);
     if (idx >= schemes_.size())
         return nullptr;
     return &schemes_[idx];
 }
 
-QVariant ClientPartyIdSchemeModel::recency_foreground_color(
-    const std::string& code) const {
+QVariant ClientPartyIdSchemeModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {
         return color_constants::stale_indicator;
     }
@@ -293,8 +297,8 @@ QVariant ClientPartyIdSchemeModel::recency_foreground_color(
 
 void ClientPartyIdSchemeModel::onPulseStateChanged(bool /*isOn*/) {
     if (!schemes_.empty()) {
-        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
-            {Qt::ForegroundRole});
+        emit dataChanged(
+            index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::ForegroundRole});
     }
 }
 

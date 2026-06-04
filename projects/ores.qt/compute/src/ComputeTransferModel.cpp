@@ -18,7 +18,6 @@
  *
  */
 #include "ores.qt/ComputeTransferModel.hpp"
-
 #include <algorithm>
 
 namespace ores::qt {
@@ -27,30 +26,39 @@ ComputeTransferModel::ComputeTransferModel(QObject* parent)
     : QAbstractTableModel(parent) {}
 
 int ComputeTransferModel::rowCount(const QModelIndex& parent) const {
-    if (parent.isValid()) return 0;
+    if (parent.isValid())
+        return 0;
     return static_cast<int>(transfers_.size());
 }
 
 int ComputeTransferModel::columnCount(const QModelIndex& parent) const {
-    if (parent.isValid()) return 0;
+    if (parent.isValid())
+        return 0;
     return ColumnCount;
 }
 
-QVariant ComputeTransferModel::data(
-    const QModelIndex& index, int role) const {
-    if (!index.isValid()) return {};
+QVariant ComputeTransferModel::data(const QModelIndex& index, int role) const {
+    if (!index.isValid())
+        return {};
     const auto row = static_cast<std::size_t>(index.row());
-    if (row >= transfers_.size()) return {};
+    if (row >= transfers_.size())
+        return {};
     const auto& t = transfers_[row];
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-        case Direction: return t.direction;
-        case Filename:  return t.filename;
-        case Progress:  return t.progress;
-        case Speed:     return t.speed;
-        case Status:    return t.status;
-        default:        return {};
+            case Direction:
+                return t.direction;
+            case Filename:
+                return t.filename;
+            case Progress:
+                return t.progress;
+            case Speed:
+                return t.speed;
+            case Status:
+                return t.status;
+            default:
+                return {};
         }
     }
 
@@ -62,66 +70,70 @@ QVariant ComputeTransferModel::data(
     return {};
 }
 
-QVariant ComputeTransferModel::headerData(
-    int section, Qt::Orientation orientation, int role) const {
-    if (orientation != Qt::Horizontal || role != Qt::DisplayRole) return {};
+QVariant
+ComputeTransferModel::headerData(int section, Qt::Orientation orientation, int role) const {
+    if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
+        return {};
     switch (section) {
-    case Direction: return tr("Dir");
-    case Filename:  return tr("File");
-    case Progress:  return tr("Progress");
-    case Speed:     return tr("Speed");
-    case Status:    return tr("Status");
-    default:        return {};
+        case Direction:
+            return tr("Dir");
+        case Filename:
+            return tr("File");
+        case Progress:
+            return tr("Progress");
+        case Speed:
+            return tr("Speed");
+        case Status:
+            return tr("Status");
+        default:
+            return {};
     }
 }
 
-int ComputeTransferModel::add_transfer(
-    const QString& id, const QString& direction, const QString& filename) {
+int ComputeTransferModel::add_transfer(const QString& id,
+                                       const QString& direction,
+                                       const QString& filename) {
     const int row = static_cast<int>(transfers_.size());
     beginInsertRows({}, row, row);
-    transfers_.push_back({
-        .id        = id,
-        .direction = direction,
-        .filename  = filename,
-        .progress  = 0,
-        .speed     = {},
-        .status    = tr("Transferring")
-    });
+    transfers_.push_back({.id = id,
+                          .direction = direction,
+                          .filename = filename,
+                          .progress = 0,
+                          .speed = {},
+                          .status = tr("Transferring")});
     endInsertRows();
     return row;
 }
 
-void ComputeTransferModel::update_progress(
-    const QString& id, int progress, const QString& speed) {
+void ComputeTransferModel::update_progress(const QString& id, int progress, const QString& speed) {
     const int row = find_row(id);
-    if (row < 0) return;
+    if (row < 0)
+        return;
     auto& t = transfers_[static_cast<std::size_t>(row)];
     t.progress = std::clamp(progress, 0, 100);
-    t.speed    = speed;
-    emit dataChanged(index(row, Progress), index(row, Speed),
-        {Qt::DisplayRole, Qt::UserRole});
+    t.speed = speed;
+    emit dataChanged(index(row, Progress), index(row, Speed), {Qt::DisplayRole, Qt::UserRole});
 }
 
 void ComputeTransferModel::complete_transfer(const QString& id) {
     const int row = find_row(id);
-    if (row < 0) return;
+    if (row < 0)
+        return;
     auto& t = transfers_[static_cast<std::size_t>(row)];
     t.progress = 100;
-    t.speed    = {};
-    t.status   = tr("Complete");
-    emit dataChanged(index(row, Progress), index(row, Status),
-        {Qt::DisplayRole, Qt::UserRole});
+    t.speed = {};
+    t.status = tr("Complete");
+    emit dataChanged(index(row, Progress), index(row, Status), {Qt::DisplayRole, Qt::UserRole});
 }
 
-void ComputeTransferModel::fail_transfer(
-    const QString& id, const QString& reason) {
+void ComputeTransferModel::fail_transfer(const QString& id, const QString& reason) {
     const int row = find_row(id);
-    if (row < 0) return;
+    if (row < 0)
+        return;
     auto& t = transfers_[static_cast<std::size_t>(row)];
-    t.speed  = {};
+    t.speed = {};
     t.status = reason.isEmpty() ? tr("Failed") : tr("Failed: %1").arg(reason);
-    emit dataChanged(index(row, Speed), index(row, Status),
-        {Qt::DisplayRole});
+    emit dataChanged(index(row, Speed), index(row, Status), {Qt::DisplayRole});
 }
 
 void ComputeTransferModel::clear_finished() {

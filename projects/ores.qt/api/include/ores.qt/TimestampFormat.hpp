@@ -20,10 +20,10 @@
 #ifndef ORES_QT_TIMESTAMP_FORMAT_HPP
 #define ORES_QT_TIMESTAMP_FORMAT_HPP
 
+#include "ores.qt/export.hpp"
 #include <QString>
 #include <chrono>
 #include <string>
-#include "ores.qt/export.hpp"
 
 namespace ores::qt {
 

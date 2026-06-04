@@ -20,22 +20,21 @@
 #ifndef ORES_QT_PARTY_PROVISIONING_WIZARD_HPP
 #define ORES_QT_PARTY_PROVISIONING_WIZARD_HPP
 
-#include <QWizard>
-#include <QWizardPage>
-#include <QComboBox>
-#include <QLabel>
-#include <QProgressBar>
-#include <QTextEdit>
-#include <QListWidget>
-#include <optional>
-#include <cstdint>
-#include <vector>
-#include <string>
+#include "ores.dq.api/messaging/report_definition_template_protocol.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
-#include "ores.dq.api/messaging/report_definition_template_protocol.hpp"
-
 #include "ores.qt/WorkflowStepsWidget.hpp"
+#include <QComboBox>
+#include <QLabel>
+#include <QListWidget>
+#include <QProgressBar>
+#include <QTextEdit>
+#include <QWizard>
+#include <QWizardPage>
+#include <cstdint>
+#include <optional>
+#include <string>
+#include <vector>
 
 namespace ores::qt {
 
@@ -62,8 +61,7 @@ class PartyProvisioningWizard final : public QWizard {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.party_provisioning_wizard";
+    inline static std::string_view logger_name = "ores.qt.party_provisioning_wizard";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -91,25 +89,41 @@ public:
         std::string concurrency_policy;
     };
 
-    explicit PartyProvisioningWizard(
-        ClientManager* clientManager,
-        QWidget* parent = nullptr);
+    explicit PartyProvisioningWizard(ClientManager* clientManager, QWidget* parent = nullptr);
 
     ~PartyProvisioningWizard() override = default;
 
-    ClientManager* clientManager() const { return clientManager_; }
+    ClientManager* clientManager() const {
+        return clientManager_;
+    }
 
-    QString selectedBundleCode() const { return selectedBundleCode_; }
-    void setSelectedBundleCode(const QString& code) { selectedBundleCode_ = code; }
+    QString selectedBundleCode() const {
+        return selectedBundleCode_;
+    }
+    void setSelectedBundleCode(const QString& code) {
+        selectedBundleCode_ = code;
+    }
 
-    QString leiDatasetSize() const { return leiDatasetSize_; }
-    void setLeiDatasetSize(const QString& size) { leiDatasetSize_ = size; }
+    QString leiDatasetSize() const {
+        return leiDatasetSize_;
+    }
+    void setLeiDatasetSize(const QString& size) {
+        leiDatasetSize_ = size;
+    }
 
-    bool organisationPublished() const { return organisationPublished_; }
-    void setOrganisationPublished(bool v) { organisationPublished_ = v; }
+    bool organisationPublished() const {
+        return organisationPublished_;
+    }
+    void setOrganisationPublished(bool v) {
+        organisationPublished_ = v;
+    }
 
-    std::vector<ReportSpec> selectedReports() const { return selectedReports_; }
-    void setSelectedReports(std::vector<ReportSpec> r) { selectedReports_ = std::move(r); }
+    std::vector<ReportSpec> selectedReports() const {
+        return selectedReports_;
+    }
+    void setSelectedReports(std::vector<ReportSpec> r) {
+        selectedReports_ = std::move(r);
+    }
 
 signals:
     void provisioningCompleted();
@@ -174,8 +188,7 @@ class PartyReportSetupPage final : public QWizardPage {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.party_report_setup_page";
+    inline static std::string_view logger_name = "ores.qt.party_report_setup_page";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -191,7 +204,8 @@ public:
 private:
     void setupUI();
     void loadTemplates();
-    void populateList(const std::vector<ores::dq::messaging::dq_report_definition_template>& templates);
+    void
+    populateList(const std::vector<ores::dq::messaging::dq_report_definition_template>& templates);
 
     PartyProvisioningWizard* wizard_;
     QLabel* loadingLabel_;
@@ -217,8 +231,7 @@ class PartyExecutePage final : public QWizardPage {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.party_execute_page";
+    inline static std::string_view logger_name = "ores.qt.party_execute_page";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -261,8 +274,7 @@ class PartyApplyAndSummaryPage final : public QWizardPage {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.party_apply_and_summary_page";
+    inline static std::string_view logger_name = "ores.qt.party_apply_and_summary_page";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;

@@ -20,14 +20,14 @@
 #ifndef ORES_QT_APP_VERSION_CONTROLLER_HPP
 #define ORES_QT_APP_VERSION_CONTROLLER_HPP
 
-#include <string>
-#include <QMdiArea>
-#include <QMainWindow>
-#include "ores.qt/EntityController.hpp"
-#include "ores.qt/ClientManager.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.compute.api/domain/app_version.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/EntityController.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
+#include <QMainWindow>
+#include <QMdiArea>
+#include <string>
 
 namespace ores::qt {
 
@@ -45,8 +45,7 @@ class AppVersionController final : public EntityController {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.app_version_controller";
+    inline static std::string_view logger_name = "ores.qt.app_version_controller";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -55,13 +54,12 @@ private:
     }
 
 public:
-    AppVersionController(
-        QMainWindow* mainWindow,
-        QMdiArea* mdiArea,
-        ClientManager* clientManager,
-        ChangeReasonCache* changeReasonCache,
-        const QString& username,
-        QObject* parent = nullptr);
+    AppVersionController(QMainWindow* mainWindow,
+                         QMdiArea* mdiArea,
+                         ClientManager* clientManager,
+                         ChangeReasonCache* changeReasonCache,
+                         const QString& username,
+                         QObject* parent = nullptr);
 
     void showListWindow() override;
     void closeAllWindows() override;
@@ -80,8 +78,7 @@ private slots:
     void onAddNewRequested();
     void onShowHistory(const compute::domain::app_version& app_version);
     void onRevertVersion(const compute::domain::app_version& app_version);
-    void onOpenVersion(const compute::domain::app_version& app_version,
-                       int versionNumber);
+    void onOpenVersion(const compute::domain::app_version& app_version, int versionNumber);
 
 private:
     void showAddWindow();

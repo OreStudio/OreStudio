@@ -20,18 +20,18 @@
 #ifndef ORES_QT_DATASET_VIEW_DIALOG_HPP
 #define ORES_QT_DATASET_VIEW_DIALOG_HPP
 
+#include "ores.dq.api/domain/dataset.hpp"
+#include "ores.dq.api/domain/dataset_dependency.hpp"
+#include "ores.dq.api/domain/methodology.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <QDialog>
+#include <QGraphicsScene>
+#include <QGraphicsView>
+#include <QTabWidget>
+#include <QTextBrowser>
+#include <QTreeWidget>
 #include <map>
 #include <vector>
-#include <QDialog>
-#include <QTabWidget>
-#include <QTreeWidget>
-#include <QTextBrowser>
-#include <QGraphicsView>
-#include <QGraphicsScene>
-#include "ores.dq.api/domain/dataset.hpp"
-#include "ores.dq.api/domain/methodology.hpp"
-#include "ores.dq.api/domain/dataset_dependency.hpp"
-#include "ores.logging/make_logger.hpp"
 
 namespace ores::qt {
 class ClientManager;
@@ -82,14 +82,12 @@ private:
     }
 
 public:
-    explicit DatasetViewDialog(ClientManager* clientManager,
-                               QWidget* parent = nullptr);
+    explicit DatasetViewDialog(ClientManager* clientManager, QWidget* parent = nullptr);
     ~DatasetViewDialog() override;
 
     void setDataset(const dq::domain::dataset& dataset);
     void setMethodologies(const std::vector<dq::domain::methodology>& methodologies);
-    void setDatasetDependencies(
-        const std::vector<dq::domain::dataset_dependency>& dependencies);
+    void setDatasetDependencies(const std::vector<dq::domain::dataset_dependency>& dependencies);
     void setDatasetNames(const std::map<std::string, std::string>& codeToName);
 
 private:
@@ -105,32 +103,48 @@ private:
     void updateLineageView();
 
     // Helper to add property to tree widget
-    void addProperty(QTreeWidget* tree, const QString& name, const QString& value,
-        const QString& tooltip = {});
+    void addProperty(QTreeWidget* tree,
+                     const QString& name,
+                     const QString& value,
+                     const QString& tooltip = {});
     void addSectionHeader(QTreeWidget* tree, const QString& title);
 
     QString findMethodologyName(const std::optional<boost::uuids::uuid>& methodologyId) const;
-    const dq::domain::methodology* findMethodology(
-        const std::optional<boost::uuids::uuid>& methodologyId) const;
+    const dq::domain::methodology*
+    findMethodology(const std::optional<boost::uuids::uuid>& methodologyId) const;
 
     // Lineage diagram helper methods
-    qreal createLineageNode(QGraphicsScene* scene, qreal x, qreal y,
-        const QString& headerText, const QStringList& labels,
-        const QStringList& values, const QColor& headerColor,
-        bool hasInputSocket, bool hasOutputSocket) const;
-    void createLineageNodeBody(QGraphicsScene* scene, qreal x, qreal y,
-        qreal nodeHeight, const QString& tooltip) const;
-    void createLineageNodeHeader(QGraphicsScene* scene, qreal x, qreal y,
-        const QString& headerText, const QColor& headerColor,
-        const QString& tooltip) const;
-    void createLineageNodeProperties(QGraphicsScene* scene, qreal x, qreal y,
-        const QStringList& labels, const QStringList& values) const;
-    void createLineageNodeSockets(QGraphicsScene* scene, qreal x, qreal y,
-        qreal nodeHeight, bool hasInputSocket, bool hasOutputSocket) const;
-    void drawLineageConnection(QGraphicsScene* scene,
-        qreal x1, qreal y1, qreal x2, qreal y2) const;
-    void drawLabeledConnection(QGraphicsScene* scene,
-        qreal x1, qreal y1, qreal x2, qreal y2, const QString& label) const;
+    qreal createLineageNode(QGraphicsScene* scene,
+                            qreal x,
+                            qreal y,
+                            const QString& headerText,
+                            const QStringList& labels,
+                            const QStringList& values,
+                            const QColor& headerColor,
+                            bool hasInputSocket,
+                            bool hasOutputSocket) const;
+    void createLineageNodeBody(
+        QGraphicsScene* scene, qreal x, qreal y, qreal nodeHeight, const QString& tooltip) const;
+    void createLineageNodeHeader(QGraphicsScene* scene,
+                                 qreal x,
+                                 qreal y,
+                                 const QString& headerText,
+                                 const QColor& headerColor,
+                                 const QString& tooltip) const;
+    void createLineageNodeProperties(QGraphicsScene* scene,
+                                     qreal x,
+                                     qreal y,
+                                     const QStringList& labels,
+                                     const QStringList& values) const;
+    void createLineageNodeSockets(QGraphicsScene* scene,
+                                  qreal x,
+                                  qreal y,
+                                  qreal nodeHeight,
+                                  bool hasInputSocket,
+                                  bool hasOutputSocket) const;
+    void drawLineageConnection(QGraphicsScene* scene, qreal x1, qreal y1, qreal x2, qreal y2) const;
+    void drawLabeledConnection(
+        QGraphicsScene* scene, qreal x1, qreal y1, qreal x2, qreal y2, const QString& label) const;
 
     // Tab widget
     QTabWidget* tabWidget_;
@@ -153,7 +167,7 @@ private:
     dq::domain::dataset dataset_;
     std::vector<dq::domain::methodology> methodologies_;
     std::vector<dq::domain::dataset_dependency> datasetDependencies_;
-    std::map<std::string, std::string> datasetNames_;  // code -> name lookup
+    std::map<std::string, std::string> datasetNames_; // code -> name lookup
 
     // Lineage styling properties (QSS-configurable)
     QColor lineageBackground_{0x2D, 0x2D, 0x30};
@@ -167,8 +181,8 @@ private:
     QColor lineageHeaderOrigin_{0x3B, 0x82, 0xF6};
     QColor lineageHeaderMethod_{0x8B, 0x5C, 0xF6};
     QColor lineageHeaderDataset_{0x22, 0xC5, 0x5E};
-    QColor lineageHeaderCatalog_{0xF9, 0x73, 0x16};  // Orange for catalog
-    qreal lineageNodeWidth_{200};  // Wider to accommodate long dataset names
+    QColor lineageHeaderCatalog_{0xF9, 0x73, 0x16}; // Orange for catalog
+    qreal lineageNodeWidth_{200};                   // Wider to accommodate long dataset names
     qreal lineageHeaderHeight_{18};
     qreal lineageRowHeight_{14};
     qreal lineageNodeSpacing_{60};

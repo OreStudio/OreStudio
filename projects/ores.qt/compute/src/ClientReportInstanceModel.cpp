@@ -18,39 +18,43 @@
  *
  */
 #include "ores.qt/ClientReportInstanceModel.hpp"
-
-#include <QtConcurrent>
-#include <boost/uuid/uuid_io.hpp>
-#include "ores.reporting.api/messaging/report_instance_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
+#include "ores.reporting.api/messaging/report_instance_protocol.hpp"
+#include <QtConcurrent>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    std::string report_instance_key_extractor(const reporting::domain::report_instance& e) {
-        return e.name;
-    }
+std::string report_instance_key_extractor(const reporting::domain::report_instance& e) {
+    return e.name;
+}
 }
 
-ClientReportInstanceModel::ClientReportInstanceModel(
-    ClientManager* clientManager, QObject* parent)
-    : AbstractClientModel(parent),
-      clientManager_(clientManager),
-      watcher_(new QFutureWatcher<FetchResult>(this)),
-      recencyTracker_(report_instance_key_extractor),
-      pulseManager_(new RecencyPulseManager(this)) {
+ClientReportInstanceModel::ClientReportInstanceModel(ClientManager* clientManager, QObject* parent)
+    : AbstractClientModel(parent)
+    , clientManager_(clientManager)
+    , watcher_(new QFutureWatcher<FetchResult>(this))
+    , recencyTracker_(report_instance_key_extractor)
+    , pulseManager_(new RecencyPulseManager(this)) {
 
-    connect(watcher_, &QFutureWatcher<FetchResult>::finished,
-            this, &ClientReportInstanceModel::onInstancesLoaded);
+    connect(watcher_,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            &ClientReportInstanceModel::onInstancesLoaded);
 
-    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
-            this, &ClientReportInstanceModel::onPulseStateChanged);
-    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
-            this, &ClientReportInstanceModel::onPulsingComplete);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulse_state_changed,
+            this,
+            &ClientReportInstanceModel::onPulseStateChanged);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulsing_complete,
+            this,
+            &ClientReportInstanceModel::onPulsingComplete);
 }
 
 int ClientReportInstanceModel::rowCount(const QModelIndex& parent) const {
@@ -65,8 +69,7 @@ int ClientReportInstanceModel::columnCount(const QModelIndex& parent) const {
     return ColumnCount;
 }
 
-QVariant ClientReportInstanceModel::data(
-    const QModelIndex& index, int role) const {
+QVariant ClientReportInstanceModel::data(const QModelIndex& index, int role) const {
     if (!index.isValid())
         return {};
 
@@ -78,24 +81,24 @@ QVariant ClientReportInstanceModel::data(
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-        case Name:
-            return QString::fromStdString(instance.name);
-        case DefinitionId:
-            return QString::fromStdString(boost::uuids::to_string(instance.definition_id));
-        case TriggerRunId:
-            return static_cast<qlonglong>(instance.trigger_run_id);
-        case OutputMessage:
-            return QString::fromStdString(instance.output_message);
-        case StartedAt:
-            return relative_time_helper::format(instance.started_at);
-        case CompletedAt:
-            return relative_time_helper::format(instance.completed_at);
-        case Version:
-            return static_cast<qlonglong>(instance.version);
-        case ModifiedBy:
-            return QString::fromStdString(instance.modified_by);
-        default:
-            return {};
+            case Name:
+                return QString::fromStdString(instance.name);
+            case DefinitionId:
+                return QString::fromStdString(boost::uuids::to_string(instance.definition_id));
+            case TriggerRunId:
+                return static_cast<qlonglong>(instance.trigger_run_id);
+            case OutputMessage:
+                return QString::fromStdString(instance.output_message);
+            case StartedAt:
+                return relative_time_helper::format(instance.started_at);
+            case CompletedAt:
+                return relative_time_helper::format(instance.completed_at);
+            case Version:
+                return static_cast<qlonglong>(instance.version);
+            case ModifiedBy:
+                return QString::fromStdString(instance.modified_by);
+            default:
+                return {};
         }
     }
 
@@ -106,30 +109,30 @@ QVariant ClientReportInstanceModel::data(
     return {};
 }
 
-QVariant ClientReportInstanceModel::headerData(
-    int section, Qt::Orientation orientation, int role) const {
+QVariant
+ClientReportInstanceModel::headerData(int section, Qt::Orientation orientation, int role) const {
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return {};
 
     switch (section) {
-    case Name:
-        return tr("Name");
-    case DefinitionId:
-        return tr("Definition");
-    case TriggerRunId:
-        return tr("Trigger Run");
-    case OutputMessage:
-        return tr("Output");
-    case StartedAt:
-        return tr("Started At");
-    case CompletedAt:
-        return tr("Completed");
-    case Version:
-        return tr("Version");
-    case ModifiedBy:
-        return tr("Modified By");
-    default:
-        return {};
+        case Name:
+            return tr("Name");
+        case DefinitionId:
+            return tr("Definition");
+        case TriggerRunId:
+            return tr("Trigger Run");
+        case OutputMessage:
+            return tr("Output");
+        case StartedAt:
+            return tr("Started At");
+        case CompletedAt:
+            return tr("Completed");
+        case Version:
+            return tr("Version");
+        case ModifiedBy:
+            return tr("Modified By");
+        default:
+            return {};
     }
 }
 
@@ -159,8 +162,7 @@ void ClientReportInstanceModel::refresh() {
     fetch_instances(0, page_size_);
 }
 
-void ClientReportInstanceModel::load_page(std::uint32_t offset,
-                                          std::uint32_t limit) {
+void ClientReportInstanceModel::load_page(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "load_page: offset=" << offset << ", limit=" << limit;
 
     if (is_fetching_) {
@@ -184,18 +186,19 @@ void ClientReportInstanceModel::load_page(std::uint32_t offset,
     fetch_instances(offset, limit);
 }
 
-void ClientReportInstanceModel::fetch_instances(
-    std::uint32_t offset, std::uint32_t limit) {
+void ClientReportInstanceModel::fetch_instances(std::uint32_t offset, std::uint32_t limit) {
     is_fetching_ = true;
     QPointer<ClientReportInstanceModel> self = this;
 
-    QFuture<FetchResult> future =
-        QtConcurrent::run([self, offset, limit]() -> FetchResult {
-            return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
-                BOOST_LOG_SEV(lg(), debug) << "Making report instances request with offset="
-                                           << offset << ", limit=" << limit;
+    QFuture<FetchResult> future = QtConcurrent::run([self, offset, limit]() -> FetchResult {
+        return exception_helper::wrap_async_fetch<FetchResult>(
+            [&]() -> FetchResult {
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Making report instances request with offset=" << offset
+                    << ", limit=" << limit;
                 if (!self || !self->clientManager_) {
-                    return {.success = false, .instances = {},
+                    return {.success = false,
+                            .instances = {},
                             .total_available_count = 0,
                             .error_message = "Model was destroyed",
                             .error_details = {}};
@@ -203,29 +206,31 @@ void ClientReportInstanceModel::fetch_instances(
 
                 reporting::messaging::get_report_instances_request request;
 
-                auto result = self->clientManager_->
-                    process_authenticated_request(std::move(request));
+                auto result =
+                    self->clientManager_->process_authenticated_request(std::move(request));
 
                 if (!result) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to fetch report instances: "
-                                               << result.error();
-                    return {.success = false, .instances = {},
+                    BOOST_LOG_SEV(lg(), error)
+                        << "Failed to fetch report instances: " << result.error();
+                    return {.success = false,
+                            .instances = {},
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(
                                 "Failed to fetch report instances: " + result.error()),
                             .error_details = {}};
                 }
 
-                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->instances.size()
-                                           << " report instances";
-                const std::uint32_t count =
-                    static_cast<std::uint32_t>(result->instances.size());
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Fetched " << result->instances.size() << " report instances";
+                const std::uint32_t count = static_cast<std::uint32_t>(result->instances.size());
                 return {.success = true,
                         .instances = std::move(result->instances),
                         .total_available_count = count,
-                        .error_message = {}, .error_details = {}};
-            }, "report instances");
-        });
+                        .error_message = {},
+                        .error_details = {}};
+            },
+            "report instances");
+    });
 
     watcher_->setFuture(future);
 }
@@ -236,8 +241,8 @@ void ClientReportInstanceModel::onInstancesLoaded() {
     const auto result = watcher_->result();
 
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to fetch report instances: "
-                                   << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to fetch report instances: " << result.error_message.toStdString();
         emit loadError(result.error_message, result.error_details);
         return;
     }
@@ -276,16 +281,14 @@ void ClientReportInstanceModel::set_page_size(std::uint32_t size) {
     }
 }
 
-const reporting::domain::report_instance*
-ClientReportInstanceModel::getInstance(int row) const {
+const reporting::domain::report_instance* ClientReportInstanceModel::getInstance(int row) const {
     const auto idx = static_cast<std::size_t>(row);
     if (idx >= instances_.size())
         return nullptr;
     return &instances_[idx];
 }
 
-QVariant ClientReportInstanceModel::recency_foreground_color(
-    const std::string& code) const {
+QVariant ClientReportInstanceModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {
         return color_constants::stale_indicator;
     }
@@ -294,8 +297,8 @@ QVariant ClientReportInstanceModel::recency_foreground_color(
 
 void ClientReportInstanceModel::onPulseStateChanged(bool /*isOn*/) {
     if (!instances_.empty()) {
-        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
-            {Qt::ForegroundRole});
+        emit dataChanged(
+            index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::ForegroundRole});
     }
 }
 

@@ -18,29 +18,27 @@
  *
  */
 #include "ores.qt/ComputeConsoleController.hpp"
-
 #include "ores.qt/BadgeCache.hpp"
-#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ComputeConsoleWindow.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/IconUtils.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-ComputeConsoleController::ComputeConsoleController(
-    QMainWindow* mainWindow,
-    QMdiArea* mdiArea,
-    ClientManager* clientManager,
-    ChangeReasonCache* changeReasonCache,
-    BadgeCache* badgeCache,
-    QObject* parent)
-    : QObject(parent),
-      mainWindow_(mainWindow),
-      mdiArea_(mdiArea),
-      clientManager_(clientManager),
-      changeReasonCache_(changeReasonCache),
-      badgeCache_(badgeCache) {
+ComputeConsoleController::ComputeConsoleController(QMainWindow* mainWindow,
+                                                   QMdiArea* mdiArea,
+                                                   ClientManager* clientManager,
+                                                   ChangeReasonCache* changeReasonCache,
+                                                   BadgeCache* badgeCache,
+                                                   QObject* parent)
+    : QObject(parent)
+    , mainWindow_(mainWindow)
+    , mdiArea_(mdiArea)
+    , clientManager_(clientManager)
+    , changeReasonCache_(changeReasonCache)
+    , badgeCache_(badgeCache) {
 
     BOOST_LOG_SEV(lg(), debug) << "ComputeConsoleController created";
 }
@@ -56,32 +54,37 @@ void ComputeConsoleController::showConsole() {
     consoleWindow_ = new ComputeConsoleWindow(clientManager_, changeReasonCache_, badgeCache_);
     consoleWindow_->setHttpBaseUrl(http_base_url_);
 
-    connect(consoleWindow_, &ComputeConsoleWindow::statusChanged,
-            this, [self = QPointer<ComputeConsoleController>(this)](
-                      const QString& msg) {
-        if (!self) return;
-        emit self->statusMessage(msg);
-    });
-    connect(consoleWindow_, &ComputeConsoleWindow::errorOccurred,
-            this, [self = QPointer<ComputeConsoleController>(this)](
-                      const QString& err) {
-        if (!self) return;
-        emit self->errorMessage(err);
-    });
+    connect(consoleWindow_,
+            &ComputeConsoleWindow::statusChanged,
+            this,
+            [self = QPointer<ComputeConsoleController>(this)](const QString& msg) {
+                if (!self)
+                    return;
+                emit self->statusMessage(msg);
+            });
+    connect(consoleWindow_,
+            &ComputeConsoleWindow::errorOccurred,
+            this,
+            [self = QPointer<ComputeConsoleController>(this)](const QString& err) {
+                if (!self)
+                    return;
+                emit self->errorMessage(err);
+            });
 
     subWindow_ = new DetachableMdiSubWindow(mainWindow_);
     subWindow_->setAttribute(Qt::WA_DeleteOnClose);
     subWindow_->setWidget(consoleWindow_);
     subWindow_->setWindowTitle(tr("Compute Console"));
-    subWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::ServerLink, IconUtils::DefaultIconColor));
+    subWindow_->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::ServerLink, IconUtils::DefaultIconColor));
 
-    connect(subWindow_, &QObject::destroyed, this,
-            [self = QPointer<ComputeConsoleController>(this)]() {
-        if (!self) return;
-        self->consoleWindow_ = nullptr;
-        self->subWindow_ = nullptr;
-    });
+    connect(
+        subWindow_, &QObject::destroyed, this, [self = QPointer<ComputeConsoleController>(this)]() {
+            if (!self)
+                return;
+            self->consoleWindow_ = nullptr;
+            self->subWindow_ = nullptr;
+        });
 
     mdiArea_->addSubWindow(subWindow_);
     subWindow_->resize(consoleWindow_->sizeHint());
@@ -91,9 +94,8 @@ void ComputeConsoleController::showConsole() {
 }
 
 void ComputeConsoleController::setHttpBaseUrl(const std::string& url) {
-    BOOST_LOG_SEV(lg(), info)
-        << "setHttpBaseUrl url='" << (url.empty() ? "(empty)" : url)
-        << "', console_window=" << (consoleWindow_ ? "present" : "null");
+    BOOST_LOG_SEV(lg(), info) << "setHttpBaseUrl url='" << (url.empty() ? "(empty)" : url)
+                              << "', console_window=" << (consoleWindow_ ? "present" : "null");
     http_base_url_ = url;
     if (consoleWindow_)
         consoleWindow_->setHttpBaseUrl(url);

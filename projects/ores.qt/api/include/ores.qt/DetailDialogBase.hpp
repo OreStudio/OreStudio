@@ -20,13 +20,13 @@
 #ifndef ORES_QT_DETAIL_DIALOG_BASE_HPP
 #define ORES_QT_DETAIL_DIALOG_BASE_HPP
 
+#include "ores.qt/ChangeReasonDialog.hpp"
+#include "ores.qt/export.hpp"
+#include <QWidget>
 #include <chrono>
 #include <optional>
 #include <string>
 #include <string_view>
-#include <QWidget>
-#include "ores.qt/ChangeReasonDialog.hpp"
-#include "ores.qt/export.hpp"
 
 class QTabWidget;
 
@@ -81,7 +81,9 @@ public:
     ~DetailDialogBase() override;
 
     /** Returns true if the dialog has unsaved changes. Subclasses override. */
-    virtual bool hasUnsavedChanges() const { return false; }
+    virtual bool hasUnsavedChanges() const {
+        return false;
+    }
 
     /** Called when server-side data has changed; override to show stale state. */
     virtual void markAsStale() {}
@@ -93,7 +95,9 @@ public:
      * Used by DetachableMdiSubWindow::closeEvent() to avoid showing a second
      * confirmation when the close was initiated via the dialog's Close button.
      */
-    bool isCloseConfirmed() const { return closeConfirmed_; }
+    bool isCloseConfirmed() const {
+        return closeConfirmed_;
+    }
 
     /**
      * @brief Inject the shared change reason cache.
@@ -102,7 +106,9 @@ public:
      * Once set, derived classes can call promptChangeReason() without passing
      * the cache explicitly.
      */
-    void setChangeReasonCache(ChangeReasonCache* cache) { changeReasonCache_ = cache; }
+    void setChangeReasonCache(ChangeReasonCache* cache) {
+        changeReasonCache_ = cache;
+    }
 
     /**
      * @brief Inject the shared badge cache.
@@ -111,7 +117,9 @@ public:
      * that renders badges (via BadgeLabelUtils). May be left unset; badge
      * rendering then uses the fallback colours.
      */
-    void setBadgeCache(BadgeCache* cache) { badgeCache_ = cache; }
+    void setBadgeCache(BadgeCache* cache) {
+        badgeCache_ = cache;
+    }
 
 signals:
     /**
@@ -146,7 +154,9 @@ protected:
     /**
      * @brief Request closure of the container window.
      */
-    void requestClose() { emit closeRequested(); }
+    void requestClose() {
+        emit closeRequested();
+    }
 
     /**
      * @brief Notify that a save operation completed successfully.
@@ -180,7 +190,7 @@ protected:
      * Use when reading a spin box value that maps to a nullable database column
      * where zero means "not set".
      */
-    template<typename T>
+    template <typename T>
     static std::optional<T> nulloptIfZero(T v) {
         return v != T{} ? std::optional<T>(v) : std::nullopt;
     }
@@ -253,7 +263,9 @@ protected:
                        std::string_view category = "system");
 
 protected:
-    [[nodiscard]] BadgeCache* badgeCache() const { return badgeCache_; }
+    [[nodiscard]] BadgeCache* badgeCache() const {
+        return badgeCache_;
+    }
 
 private:
     bool closeConfirmed_ = false;

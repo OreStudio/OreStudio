@@ -20,10 +20,10 @@
 #ifndef ORES_QT_BADGE_DEFINITION_DETAIL_DIALOG_HPP
 #define ORES_QT_BADGE_DEFINITION_DETAIL_DIALOG_HPP
 
+#include "ores.dq.api/domain/badge_definition.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.dq.api/domain/badge_definition.hpp"
 
 namespace Ui {
 class BadgeDefinitionDetailDialog;
@@ -42,8 +42,7 @@ class BadgeDefinitionDetailDialog final : public DetailDialogBase {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.badge_definition_detail_dialog";
+    inline static std::string_view logger_name = "ores.qt.badge_definition_detail_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -75,7 +74,9 @@ protected:
     QTabWidget* tabWidget() const override;
     QWidget* provenanceTab() const override;
     ProvenanceWidget* provenanceWidget() const override;
-    bool hasUnsavedChanges() const override { return hasChanges_; }
+    bool hasUnsavedChanges() const override {
+        return hasChanges_;
+    }
 
 private:
     void setupUi();

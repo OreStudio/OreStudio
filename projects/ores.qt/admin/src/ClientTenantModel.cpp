@@ -18,38 +18,42 @@
  *
  */
 #include "ores.qt/ClientTenantModel.hpp"
-
-#include <QtConcurrent>
 #include "ores.iam.api/messaging/tenant_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    std::string tenant_key_extractor(const iam::domain::tenant& e) {
-        return e.code;
-    }
+std::string tenant_key_extractor(const iam::domain::tenant& e) {
+    return e.code;
+}
 }
 
-ClientTenantModel::ClientTenantModel(
-    ClientManager* clientManager, QObject* parent)
-    : AbstractClientModel(parent),
-      clientManager_(clientManager),
-      watcher_(new QFutureWatcher<FetchResult>(this)),
-      recencyTracker_(tenant_key_extractor),
-      pulseManager_(new RecencyPulseManager(this)) {
+ClientTenantModel::ClientTenantModel(ClientManager* clientManager, QObject* parent)
+    : AbstractClientModel(parent)
+    , clientManager_(clientManager)
+    , watcher_(new QFutureWatcher<FetchResult>(this))
+    , recencyTracker_(tenant_key_extractor)
+    , pulseManager_(new RecencyPulseManager(this)) {
 
-    connect(watcher_, &QFutureWatcher<FetchResult>::finished,
-            this, &ClientTenantModel::onTenantsLoaded);
+    connect(watcher_,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            &ClientTenantModel::onTenantsLoaded);
 
-    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
-            this, &ClientTenantModel::onPulseStateChanged);
-    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
-            this, &ClientTenantModel::onPulsingComplete);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulse_state_changed,
+            this,
+            &ClientTenantModel::onPulseStateChanged);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulsing_complete,
+            this,
+            &ClientTenantModel::onPulsingComplete);
 }
 
 int ClientTenantModel::rowCount(const QModelIndex& parent) const {
@@ -64,8 +68,7 @@ int ClientTenantModel::columnCount(const QModelIndex& parent) const {
     return ColumnCount;
 }
 
-QVariant ClientTenantModel::data(
-    const QModelIndex& index, int role) const {
+QVariant ClientTenantModel::data(const QModelIndex& index, int role) const {
     if (!index.isValid())
         return {};
 
@@ -77,24 +80,24 @@ QVariant ClientTenantModel::data(
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-        case Code:
-            return QString::fromStdString(tenant.code);
-        case Name:
-            return QString::fromStdString(tenant.name);
-        case Type:
-            return QString::fromStdString(tenant.type);
-        case Hostname:
-            return QString::fromStdString(tenant.hostname);
-        case Status:
-            return QString::fromStdString(tenant.status);
-        case Version:
-            return tenant.version;
-        case ModifiedBy:
-            return QString::fromStdString(tenant.modified_by);
-        case RecordedAt:
-            return relative_time_helper::format(tenant.recorded_at);
-        default:
-            return {};
+            case Code:
+                return QString::fromStdString(tenant.code);
+            case Name:
+                return QString::fromStdString(tenant.name);
+            case Type:
+                return QString::fromStdString(tenant.type);
+            case Hostname:
+                return QString::fromStdString(tenant.hostname);
+            case Status:
+                return QString::fromStdString(tenant.status);
+            case Version:
+                return tenant.version;
+            case ModifiedBy:
+                return QString::fromStdString(tenant.modified_by);
+            case RecordedAt:
+                return relative_time_helper::format(tenant.recorded_at);
+            default:
+                return {};
         }
     }
 
@@ -105,30 +108,29 @@ QVariant ClientTenantModel::data(
     return {};
 }
 
-QVariant ClientTenantModel::headerData(
-    int section, Qt::Orientation orientation, int role) const {
+QVariant ClientTenantModel::headerData(int section, Qt::Orientation orientation, int role) const {
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return {};
 
     switch (section) {
-    case Code:
-        return tr("Code");
-    case Name:
-        return tr("Name");
-    case Type:
-        return tr("Type");
-    case Hostname:
-        return tr("Hostname");
-    case Status:
-        return tr("Status");
-    case Version:
-        return tr("Version");
-    case ModifiedBy:
-        return tr("Modified By");
-    case RecordedAt:
-        return tr("Recorded At");
-    default:
-        return {};
+        case Code:
+            return tr("Code");
+        case Name:
+            return tr("Name");
+        case Type:
+            return tr("Type");
+        case Hostname:
+            return tr("Hostname");
+        case Status:
+            return tr("Status");
+        case Version:
+            return tr("Version");
+        case ModifiedBy:
+            return tr("Modified By");
+        case RecordedAt:
+            return tr("Recorded At");
+        default:
+            return {};
     }
 }
 
@@ -149,27 +151,34 @@ void ClientTenantModel::refresh() {
     QPointer<ClientTenantModel> self = this;
 
     QFuture<FetchResult> future = QtConcurrent::run([self]() -> FetchResult {
-        return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
-            if (!self || !self->clientManager_) {
-                return {.success = false, .tenants = {},
-                        .error_message = "Model was destroyed",
-                        .error_details = {}};
-            }
+        return exception_helper::wrap_async_fetch<FetchResult>(
+            [&]() -> FetchResult {
+                if (!self || !self->clientManager_) {
+                    return {.success = false,
+                            .tenants = {},
+                            .error_message = "Model was destroyed",
+                            .error_details = {}};
+                }
 
-            iam::messaging::get_tenants_request request;
-            auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
-            if (!response_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to send request";
-                return {.success = false, .tenants = {},
-                        .error_message = "Failed to send request",
-                        .error_details = {}};
-            }
+                iam::messaging::get_tenants_request request;
+                auto response_result =
+                    self->clientManager_->process_authenticated_request(std::move(request));
+                if (!response_result) {
+                    BOOST_LOG_SEV(lg(), error) << "Failed to send request";
+                    return {.success = false,
+                            .tenants = {},
+                            .error_message = "Failed to send request",
+                            .error_details = {}};
+                }
 
-            BOOST_LOG_SEV(lg(), debug) << "Fetched " << response_result->tenants.size()
-                                       << " tenants";
-            return {.success = true, .tenants = std::move(response_result->tenants),
-                    .error_message = {}, .error_details = {}};
-        }, "tenants");
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Fetched " << response_result->tenants.size() << " tenants";
+                return {.success = true,
+                        .tenants = std::move(response_result->tenants),
+                        .error_message = {},
+                        .error_details = {}};
+            },
+            "tenants");
     });
 
     watcher_->setFuture(future);
@@ -181,8 +190,8 @@ void ClientTenantModel::onTenantsLoaded() {
     const auto result = watcher_->result();
 
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to fetch tenants: "
-                                   << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to fetch tenants: " << result.error_message.toStdString();
         emit loadError(result.error_message, result.error_details);
         return;
     }
@@ -194,24 +203,22 @@ void ClientTenantModel::onTenantsLoaded() {
     const bool has_recent = recencyTracker_.update(tenants_);
     if (has_recent && !pulseManager_->is_pulsing()) {
         pulseManager_->start_pulsing();
-        BOOST_LOG_SEV(lg(), debug) << "Found " << recencyTracker_.recent_count()
-                                   << " tenants newer than last reload";
+        BOOST_LOG_SEV(lg(), debug)
+            << "Found " << recencyTracker_.recent_count() << " tenants newer than last reload";
     }
 
     BOOST_LOG_SEV(lg(), info) << "Loaded " << tenants_.size() << " tenants";
     emit dataLoaded();
 }
 
-const iam::domain::tenant*
-ClientTenantModel::getTenant(int row) const {
+const iam::domain::tenant* ClientTenantModel::getTenant(int row) const {
     const auto idx = static_cast<std::size_t>(row);
     if (idx >= tenants_.size())
         return nullptr;
     return &tenants_[idx];
 }
 
-QVariant ClientTenantModel::recency_foreground_color(
-    const std::string& code) const {
+QVariant ClientTenantModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {
         return color_constants::stale_indicator;
     }
@@ -220,8 +227,8 @@ QVariant ClientTenantModel::recency_foreground_color(
 
 void ClientTenantModel::onPulseStateChanged(bool /*isOn*/) {
     if (!tenants_.empty()) {
-        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
-            {Qt::ForegroundRole});
+        emit dataChanged(
+            index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::ForegroundRole});
     }
 }
 

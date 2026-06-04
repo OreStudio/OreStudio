@@ -17,20 +17,20 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/CommandLineParser.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/MainWindow.hpp"
+#include "ores.qt/PluginRegistry.hpp"
+#include "ores.qt/SplashScreen.hpp"
+#include "ores.telemetry.core/log/lifecycle_manager.hpp"
+#include "ores.utility/version/version.hpp"
 #include <QApplication>
 #include <QFile>
 #include <QIcon>
 #include <QStyleFactory>
 #include <QTextStream>
 #include <QTimer>
-#include "ores.utility/version/version.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.telemetry.core/log/lifecycle_manager.hpp"
-#include "ores.qt/CommandLineParser.hpp"
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/MainWindow.hpp"
-#include "ores.qt/SplashScreen.hpp"
-#include "ores.qt/PluginRegistry.hpp"
 
 namespace {
 
@@ -40,7 +40,7 @@ using namespace ores::logging;
 
 } // namespace
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
     QApplication app(argc, argv);
     QCoreApplication::setApplicationName("ores.qt");
     QCoreApplication::setApplicationVersion(ORES_VERSION);
@@ -55,8 +55,7 @@ int main(int argc, char *argv[]) {
 
     auto lg(make_logger(logger_name));
 
-    BOOST_LOG_SEV(lg, info) << ores::utility::version::format_startup_message(
-        "ORE Studio Qt");
+    BOOST_LOG_SEV(lg, info) << ores::utility::version::format_startup_message("ORE Studio Qt");
 
     // Set Fusion style for consistent cross-platform appearance.
     // This is especially important for WSL where Qt may detect a different
@@ -92,7 +91,8 @@ int main(int argc, char *argv[]) {
     splash.show();
 
     const int splashDuration = 3000; // ms
-    const QString buildInfo = QString("v%1 %2").arg(ORES_VERSION).arg(ores::utility::version::build_info());
+    const QString buildInfo =
+        QString("v%1 %2").arg(ORES_VERSION).arg(ores::utility::version::build_info());
     splash.setMessage(buildInfo);
 
     ores::qt::MainWindow mainWindow;
@@ -104,7 +104,8 @@ int main(int argc, char *argv[]) {
         mainWindow.setInstanceInfo(instanceName, instanceColor);
         BOOST_LOG_SEV(lg, info) << "Instance info: name='" << instanceName.toStdString()
                                 << "', color="
-                                << (instanceColor.isValid() ? instanceColor.name().toStdString() : "none");
+                                << (instanceColor.isValid() ? instanceColor.name().toStdString() :
+                                                              "none");
     }
 
     // Set HTTP base URL for compute service file uploads

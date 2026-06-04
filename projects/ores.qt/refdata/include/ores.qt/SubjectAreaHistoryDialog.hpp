@@ -20,12 +20,12 @@
 #ifndef ORES_QT_SUBJECT_AREA_HISTORY_DIALOG_HPP
 #define ORES_QT_SUBJECT_AREA_HISTORY_DIALOG_HPP
 
-#include <QWidget>
-#include <QToolBar>
-#include <QTableWidget>
-#include "ores.qt/ClientManager.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.dq.api/domain/subject_area.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include <QTableWidget>
+#include <QToolBar>
+#include <QWidget>
 
 namespace Ui {
 class SubjectAreaHistoryDialog;
@@ -37,8 +37,7 @@ class SubjectAreaHistoryDialog final : public QWidget {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.subject_area_history_dialog";
+    inline static std::string_view logger_name = "ores.qt.subject_area_history_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -47,11 +46,10 @@ private:
     }
 
 public:
-    explicit SubjectAreaHistoryDialog(
-        const QString& name,
-        const QString& domain_name,
-        ClientManager* clientManager,
-        QWidget* parent = nullptr);
+    explicit SubjectAreaHistoryDialog(const QString& name,
+                                      const QString& domain_name,
+                                      ClientManager* clientManager,
+                                      QWidget* parent = nullptr);
     ~SubjectAreaHistoryDialog() override;
 
     void loadHistory();
@@ -59,8 +57,7 @@ public:
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
-    void openVersionRequested(const dq::domain::subject_area& subject_area,
-                              int versionNumber);
+    void openVersionRequested(const dq::domain::subject_area& subject_area, int versionNumber);
     void revertVersionRequested(const dq::domain::subject_area& subject_area);
 
 private slots:

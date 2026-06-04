@@ -21,12 +21,12 @@
 #ifndef ORES_QT_ICON_UTILS_HPP
 #define ORES_QT_ICON_UTILS_HPP
 
-#include <QIcon>
-#include <QColor>
-#include <QString>
-#include <optional>
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/export.hpp"
+#include <QColor>
+#include <QIcon>
+#include <QString>
+#include <optional>
 
 namespace ores::qt {
 
@@ -51,9 +51,9 @@ enum class Icon {
     CalendarAdd,    ///< Schedule a new job (calendar with +)
     CalendarCancel, ///< Unschedule a job (calendar with X)
     CalendarClock,  ///< Scheduled jobs / scheduler concept (calendar with clock)
-    BookOpenFilled,   // filled variant: trading books (active state)
+    BookOpenFilled, // filled variant: trading books (active state)
     Briefcase,
-    BriefcaseFilled,  // filled variant: real portfolios (active state)
+    BriefcaseFilled, // filled variant: real portfolios (active state)
     Building,
     BuildingBank,
     BuildingSkyscraper,
@@ -127,12 +127,7 @@ enum class Icon {
 /**
  * @brief Enumeration of available icon themes/styles.
  */
-enum class IconTheme {
-    FluentUIRegular,
-    FluentUIFilled,
-    SolarizedLinear,
-    SolarizedBold
-};
+enum class IconTheme { FluentUIRegular, FluentUIFilled, SolarizedLinear, SolarizedBold };
 
 /**
  * @brief Utility class for icon manipulation operations.
@@ -162,13 +157,17 @@ public:
      * @brief Sets the global icon theme.
      * @param theme The theme to use globally.
      */
-    static void setTheme(IconTheme theme) { currentTheme_ = theme; }
+    static void setTheme(IconTheme theme) {
+        currentTheme_ = theme;
+    }
 
     /**
      * @brief Gets the current global icon theme.
      * @return The current global theme.
      */
-    static IconTheme currentTheme() { return currentTheme_; }
+    static IconTheme currentTheme() {
+        return currentTheme_;
+    }
 
     /**
      * @brief Gets the resource path for a semantic icon using the current global theme.

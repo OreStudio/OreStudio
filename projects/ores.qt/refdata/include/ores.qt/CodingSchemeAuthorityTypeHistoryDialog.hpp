@@ -20,12 +20,12 @@
 #ifndef ORES_QT_CODING_SCHEME_AUTHORITY_TYPE_HISTORY_DIALOG_HPP
 #define ORES_QT_CODING_SCHEME_AUTHORITY_TYPE_HISTORY_DIALOG_HPP
 
-#include <QWidget>
-#include <QToolBar>
-#include <QTableWidget>
-#include "ores.qt/ClientManager.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.dq.api/domain/coding_scheme_authority_type.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include <QTableWidget>
+#include <QToolBar>
+#include <QWidget>
 
 namespace Ui {
 class CodingSchemeAuthorityTypeHistoryDialog;
@@ -47,10 +47,9 @@ private:
     }
 
 public:
-    explicit CodingSchemeAuthorityTypeHistoryDialog(
-        const QString& code,
-        ClientManager* clientManager,
-        QWidget* parent = nullptr);
+    explicit CodingSchemeAuthorityTypeHistoryDialog(const QString& code,
+                                                    ClientManager* clientManager,
+                                                    QWidget* parent = nullptr);
     ~CodingSchemeAuthorityTypeHistoryDialog() override;
 
     void loadHistory();
@@ -58,7 +57,8 @@ public:
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
-    void openVersionRequested(const dq::domain::coding_scheme_authority_type& authorityType, int versionNumber);
+    void openVersionRequested(const dq::domain::coding_scheme_authority_type& authorityType,
+                              int versionNumber);
     void revertVersionRequested(const dq::domain::coding_scheme_authority_type& authorityType);
 
 private slots:

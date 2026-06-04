@@ -20,14 +20,15 @@
 #include "ores.qt/BadgeLabelUtils.hpp"
 #include "ores.qt/BadgeCache.hpp"
 #include "ores.qt/ColorConstants.hpp"
-
 #include <QColor>
 
 namespace ores::qt {
 
-void BadgeLabelUtils::apply(QLabel* label, const BadgeCache* cache,
-    const std::string& domain, const std::string& value,
-    const QString& text) {
+void BadgeLabelUtils::apply(QLabel* label,
+                            const BadgeCache* cache,
+                            const std::string& domain,
+                            const std::string& value,
+                            const QString& text) {
     if (!label)
         return;
 
@@ -50,15 +51,15 @@ void BadgeLabelUtils::apply(QLabel* label, const BadgeCache* cache,
 
     label->setText(text);
     label->setAlignment(Qt::AlignCenter);
-    label->setStyleSheet(QString(
-        "QLabel {"
-        "  background-color: %1;"
-        "  color: %2;"
-        "  border-radius: 8px;"
-        "  padding: 2px 10px;"
-        "  font-size: 11px;"
-        "  font-weight: bold;"
-        "}").arg(bg.name(), fg.name()));
+    label->setStyleSheet(QString("QLabel {"
+                                 "  background-color: %1;"
+                                 "  color: %2;"
+                                 "  border-radius: 8px;"
+                                 "  padding: 2px 10px;"
+                                 "  font-size: 11px;"
+                                 "  font-weight: bold;"
+                                 "}")
+                             .arg(bg.name(), fg.name()));
 }
 
 void BadgeLabelUtils::clear(QLabel* label) {

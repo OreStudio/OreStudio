@@ -20,12 +20,12 @@
 #ifndef ORES_QT_CONCURRENCY_POLICY_HISTORY_DIALOG_HPP
 #define ORES_QT_CONCURRENCY_POLICY_HISTORY_DIALOG_HPP
 
-#include <QWidget>
-#include <QToolBar>
-#include <QTableWidget>
-#include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
 #include "ores.reporting.api/domain/concurrency_policy.hpp"
+#include <QTableWidget>
+#include <QToolBar>
+#include <QWidget>
 
 namespace Ui {
 class ConcurrencyPolicyHistoryDialog;
@@ -43,8 +43,7 @@ class ConcurrencyPolicyHistoryDialog final : public QWidget {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.concurrency_policy_history_dialog";
+    inline static std::string_view logger_name = "ores.qt.concurrency_policy_history_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -53,10 +52,9 @@ private:
     }
 
 public:
-    explicit ConcurrencyPolicyHistoryDialog(
-        const QString& code,
-        ClientManager* clientManager,
-        QWidget* parent = nullptr);
+    explicit ConcurrencyPolicyHistoryDialog(const QString& code,
+                                            ClientManager* clientManager,
+                                            QWidget* parent = nullptr);
     ~ConcurrencyPolicyHistoryDialog() override;
 
     void loadHistory();

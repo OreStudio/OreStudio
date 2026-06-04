@@ -20,13 +20,13 @@
 #ifndef ORES_QT_TAG_SELECTOR_WIDGET_HPP
 #define ORES_QT_TAG_SELECTOR_WIDGET_HPP
 
-#include <QWidget>
-#include <QHBoxLayout>
-#include <QToolButton>
-#include <QMenu>
-#include <vector>
-#include <boost/uuid/uuid.hpp>
 #include "ores.connections/domain/tag.hpp"
+#include <QHBoxLayout>
+#include <QMenu>
+#include <QToolButton>
+#include <QWidget>
+#include <boost/uuid/uuid.hpp>
+#include <vector>
 
 namespace ores::connections::service {
 class connection_manager;
@@ -45,7 +45,7 @@ class TagSelectorWidget : public QWidget {
 
 public:
     explicit TagSelectorWidget(connections::service::connection_manager* manager,
-                                QWidget* parent = nullptr);
+                               QWidget* parent = nullptr);
 
     /**
      * @brief Set the currently selected tags.

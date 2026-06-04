@@ -20,17 +20,17 @@
 #ifndef ORES_QT_PORTFOLIO_EXPLORER_TRADE_MODEL_HPP
 #define ORES_QT_PORTFOLIO_EXPLORER_TRADE_MODEL_HPP
 
-#include <string>
-#include <vector>
-#include <optional>
-#include <unordered_map>
-#include <QFutureWatcher>
-#include <QAbstractTableModel>
-#include <boost/uuid/uuid.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.trading.api/domain/trade.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
+#include <QAbstractTableModel>
+#include <QFutureWatcher>
+#include <boost/uuid/uuid.hpp>
+#include <optional>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 namespace ores::qt {
 
@@ -52,8 +52,7 @@ class PortfolioExplorerTradeModel final : public QAbstractTableModel {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.portfolio_explorer_trade_model";
+    inline static std::string_view logger_name = "ores.qt.portfolio_explorer_trade_model";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -77,16 +76,15 @@ public:
         ColumnCount
     };
 
-    explicit PortfolioExplorerTradeModel(ClientManager* clientManager,
-                                     QObject* parent = nullptr);
+    explicit PortfolioExplorerTradeModel(ClientManager* clientManager, QObject* parent = nullptr);
     ~PortfolioExplorerTradeModel() override = default;
 
     // QAbstractTableModel interface
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-    QVariant headerData(int section, Qt::Orientation orientation,
-        int role = Qt::DisplayRole) const override;
+    QVariant
+    headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
     /**
      * @brief Set book/portfolio filter and clear existing data.
@@ -97,8 +95,7 @@ public:
     /**
      * @brief Set the counterparty lookup map (UUID string -> CounterpartyInfo).
      */
-    void set_counterparty_map(
-        std::unordered_map<std::string, CounterpartyInfo> cpty_map);
+    void set_counterparty_map(std::unordered_map<std::string, CounterpartyInfo> cpty_map);
 
     /**
      * @brief Refresh trade data from server using current filter.
@@ -113,7 +110,9 @@ public:
     /**
      * @brief Get total available count from last fetch.
      */
-    std::uint32_t total_available_count() const { return total_available_count_; }
+    std::uint32_t total_available_count() const {
+        return total_available_count_;
+    }
 
     /**
      * @brief Get the trade at the given row.

@@ -18,17 +18,17 @@
  *
  */
 #include "ores.qt/DelegatePaintUtils.hpp"
-
-#include <QIcon>
-#include <QPixmap>
-#include <QPalette>
 #include <QFontMetrics>
+#include <QIcon>
+#include <QPalette>
+#include <QPixmap>
 
 namespace ores::qt {
 
 void DelegatePaintUtils::paint_centered_icon(QPainter* painter,
-    const QStyleOptionViewItem& option, const QModelIndex& index,
-    int padding) {
+                                             const QStyleOptionViewItem& option,
+                                             const QModelIndex& index,
+                                             int padding) {
     QVariant data = index.data(Qt::DecorationRole);
     if (!data.isValid())
         return;
@@ -40,10 +40,8 @@ void DelegatePaintUtils::paint_centered_icon(QPainter* painter,
     QRect targetRect = option.rect.adjusted(padding, padding, -padding, -padding);
 
     QPixmap pixmap = icon.pixmap(targetRect.size());
-    if (pixmap.width() > targetRect.width() ||
-        pixmap.height() > targetRect.height()) {
-        pixmap = pixmap.scaled(targetRect.size(),
-            Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    if (pixmap.width() > targetRect.width() || pixmap.height() > targetRect.height()) {
+        pixmap = pixmap.scaled(targetRect.size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
     }
 
     QPoint center = option.rect.center() - pixmap.rect().center();
@@ -56,7 +54,7 @@ void DelegatePaintUtils::paint_centered_icon(QPainter* painter,
 }
 
 void DelegatePaintUtils::apply_foreground_role(QStyleOptionViewItem& opt,
-    const QModelIndex& index) {
+                                               const QModelIndex& index) {
     QVariant fgData = index.data(Qt::ForegroundRole);
     if (fgData.isValid()) {
         opt.palette.setColor(QPalette::Text, fgData.value<QColor>());
@@ -65,8 +63,11 @@ void DelegatePaintUtils::apply_foreground_role(QStyleOptionViewItem& opt,
 }
 
 void DelegatePaintUtils::draw_centered_badge(QPainter* painter,
-    const QRect& rect, const QString& text, const QColor& bg,
-    const QColor& fg, const QFont& font) {
+                                             const QRect& rect,
+                                             const QString& text,
+                                             const QColor& bg,
+                                             const QColor& fg,
+                                             const QFont& font) {
     painter->save();
     painter->setRenderHint(QPainter::Antialiasing, true);
 
@@ -92,9 +93,14 @@ void DelegatePaintUtils::draw_centered_badge(QPainter* painter,
     painter->restore();
 }
 
-void DelegatePaintUtils::draw_inline_badge(QPainter* painter, QRect& rect,
-    const QString& text, const QColor& bg, const QColor& fg,
-    const QFont& font, int padding, int spacing) {
+void DelegatePaintUtils::draw_inline_badge(QPainter* painter,
+                                           QRect& rect,
+                                           const QString& text,
+                                           const QColor& bg,
+                                           const QColor& fg,
+                                           const QFont& font,
+                                           int padding,
+                                           int spacing) {
     painter->save();
     painter->setRenderHint(QPainter::Antialiasing, true);
 

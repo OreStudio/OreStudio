@@ -20,17 +20,17 @@
 #ifndef ORES_QT_MARKET_FIXINGS_MDI_WINDOW_HPP
 #define ORES_QT_MARKET_FIXINGS_MDI_WINDOW_HPP
 
-#include <memory>
+#include "ores.logging/make_logger.hpp"
+#include "ores.marketdata.api/domain/market_series.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/ClientMarketSeriesModel.hpp"
+#include "ores.qt/EntityListMdiWindow.hpp"
+#include "ores.qt/PaginationWidget.hpp"
+#include <QSortFilterProxyModel>
 #include <QTableView>
 #include <QToolBar>
 #include <QVBoxLayout>
-#include <QSortFilterProxyModel>
-#include "ores.qt/EntityListMdiWindow.hpp"
-#include "ores.qt/ClientManager.hpp"
-#include "ores.qt/ClientMarketSeriesModel.hpp"
-#include "ores.qt/PaginationWidget.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.marketdata.api/domain/market_series.hpp"
+#include <memory>
 
 namespace ores::qt {
 
@@ -45,8 +45,7 @@ class MarketFixingsMdiWindow final : public EntityListMdiWindow {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.market_fixings_mdi_window";
+    inline static std::string_view logger_name = "ores.qt.market_fixings_mdi_window";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -60,7 +59,9 @@ public:
                                     QWidget* parent = nullptr);
     ~MarketFixingsMdiWindow() override = default;
 
-    ClientMarketSeriesModel* seriesModel() const { return model_.get(); }
+    ClientMarketSeriesModel* seriesModel() const {
+        return model_.get();
+    }
 
 public slots:
     void doReload() override;

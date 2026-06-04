@@ -18,26 +18,25 @@
  *
  */
 #include "ores.qt/PurposeTypeDetailDialog.hpp"
-
-#include <QPlainTextEdit>
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include "ui_PurposeTypeDetailDialog.h"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata.api/messaging/purpose_type_protocol.hpp"
+#include "ui_PurposeTypeDetailDialog.h"
+#include <QFutureWatcher>
+#include <QMessageBox>
+#include <QPlainTextEdit>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 PurposeTypeDetailDialog::PurposeTypeDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent),
-      ui_(new Ui::PurposeTypeDetailDialog),
-      clientManager_(nullptr) {
+    : DetailDialogBase(parent)
+    , ui_(new Ui::PurposeTypeDetailDialog)
+    , clientManager_(nullptr) {
 
     ui_->setupUi(this);
     WidgetUtils::setupComboBoxes(this);
@@ -49,9 +48,15 @@ PurposeTypeDetailDialog::~PurposeTypeDetailDialog() {
     delete ui_;
 }
 
-QTabWidget* PurposeTypeDetailDialog::tabWidget() const { return ui_->tabWidget; }
-QWidget* PurposeTypeDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
-ProvenanceWidget* PurposeTypeDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
+QTabWidget* PurposeTypeDetailDialog::tabWidget() const {
+    return ui_->tabWidget;
+}
+QWidget* PurposeTypeDetailDialog::provenanceTab() const {
+    return ui_->provenanceTab;
+}
+ProvenanceWidget* PurposeTypeDetailDialog::provenanceWidget() const {
+    return ui_->provenanceWidget;
+}
 
 void PurposeTypeDetailDialog::setupUi() {
     ui_->saveButton->setIcon(
@@ -66,18 +71,17 @@ void PurposeTypeDetailDialog::setupUi() {
 }
 
 void PurposeTypeDetailDialog::setupConnections() {
-    connect(ui_->saveButton, &QPushButton::clicked, this,
-            &PurposeTypeDetailDialog::onSaveClicked);
-    connect(ui_->deleteButton, &QPushButton::clicked, this,
-            &PurposeTypeDetailDialog::onDeleteClicked);
-    connect(ui_->closeButton, &QPushButton::clicked, this,
-            &PurposeTypeDetailDialog::onCloseClicked);
+    connect(ui_->saveButton, &QPushButton::clicked, this, &PurposeTypeDetailDialog::onSaveClicked);
+    connect(
+        ui_->deleteButton, &QPushButton::clicked, this, &PurposeTypeDetailDialog::onDeleteClicked);
+    connect(
+        ui_->closeButton, &QPushButton::clicked, this, &PurposeTypeDetailDialog::onCloseClicked);
 
-    connect(ui_->codeEdit, &QLineEdit::textChanged, this,
-            &PurposeTypeDetailDialog::onCodeChanged);
-    connect(ui_->nameEdit, &QLineEdit::textChanged, this,
-            &PurposeTypeDetailDialog::onFieldChanged);
-    connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this,
+    connect(ui_->codeEdit, &QLineEdit::textChanged, this, &PurposeTypeDetailDialog::onCodeChanged);
+    connect(ui_->nameEdit, &QLineEdit::textChanged, this, &PurposeTypeDetailDialog::onFieldChanged);
+    connect(ui_->descriptionEdit,
+            &QPlainTextEdit::textChanged,
+            this,
             &PurposeTypeDetailDialog::onFieldChanged);
 }
 
@@ -89,8 +93,7 @@ void PurposeTypeDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
 
-void PurposeTypeDetailDialog::setType(
-    const refdata::domain::purpose_type& pt) {
+void PurposeTypeDetailDialog::setType(const refdata::domain::purpose_type& pt) {
     type_ = pt;
     updateUiFromType();
 }
@@ -120,9 +123,12 @@ void PurposeTypeDetailDialog::updateUiFromType() {
     ui_->nameEdit->setText(QString::fromStdString(type_.name));
     ui_->descriptionEdit->setPlainText(QString::fromStdString(type_.description));
 
-    populateProvenance(type_.version, type_.modified_by,
-        type_.performed_by, type_.recorded_at,
-        type_.change_reason_code, type_.change_commentary);
+    populateProvenance(type_.version,
+                       type_.modified_by,
+                       type_.performed_by,
+                       type_.recorded_at,
+                       type_.change_reason_code,
+                       type_.change_commentary);
     hasChanges_ = false;
     updateSaveButtonState();
 }
@@ -161,25 +167,24 @@ bool PurposeTypeDetailDialog::validateInput() {
 
 void PurposeTypeDetailDialog::onSaveClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot save purpose type while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot save purpose type while disconnected from server.");
         return;
     }
 
     if (!validateInput()) {
-        MessageBoxHelper::warning(this, "Invalid Input",
-            "Please fill in all required fields (Code and Name).");
+        MessageBoxHelper::warning(
+            this, "Invalid Input", "Please fill in all required fields (Code and Name).");
         return;
     }
 
     updateTypeFromUi();
 
-    const auto crOpType = createMode_
-        ? ChangeReasonDialog::OperationType::Create
-        : ChangeReasonDialog::OperationType::Amend;
-    const auto crSel = promptChangeReason(crOpType, hasChanges_,
-        createMode_ ? "system" : "common");
-    if (!crSel) return;
+    const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
+                                        ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
+    if (!crSel)
+        return;
     type_.change_reason_code = crSel->reason_code;
     type_.change_commentary = crSel->commentary;
 
@@ -199,7 +204,8 @@ void PurposeTypeDetailDialog::onSaveClicked() {
 
         refdata::messaging::save_purpose_type_request request;
         request.data = type;
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -210,8 +216,7 @@ void PurposeTypeDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
@@ -236,13 +241,15 @@ void PurposeTypeDetailDialog::onSaveClicked() {
 
 void PurposeTypeDetailDialog::onDeleteClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot delete purpose type while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot delete purpose type while disconnected from server.");
         return;
     }
 
     QString code = QString::fromStdString(type_.code);
-    auto reply = MessageBoxHelper::question(this, "Delete Purpose Type",
+    auto reply = MessageBoxHelper::question(
+        this,
+        "Delete Purpose Type",
         QString("Are you sure you want to delete purpose type '%1'?").arg(code),
         QMessageBox::Yes | QMessageBox::No);
 
@@ -250,9 +257,10 @@ void PurposeTypeDetailDialog::onDeleteClicked() {
         return;
     }
 
-    const auto crSel = promptChangeReason(
-        ChangeReasonDialog::OperationType::Delete, true, "common");
-    if (!crSel) return;
+    const auto crSel =
+        promptChangeReason(ChangeReasonDialog::OperationType::Delete, true, "common");
+    if (!crSel)
+        return;
 
     BOOST_LOG_SEV(lg(), info) << "Deleting purpose type: " << type_.code;
 
@@ -270,7 +278,8 @@ void PurposeTypeDetailDialog::onDeleteClicked() {
 
         refdata::messaging::delete_purpose_type_request request;
         request.type = code;
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -281,8 +290,7 @@ void PurposeTypeDetailDialog::onDeleteClicked() {
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
-            self, [self, code, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, code, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 

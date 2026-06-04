@@ -19,9 +19,9 @@
 #ifndef ORES_QT_ADMIN_PLUGIN_HPP
 #define ORES_QT_ADMIN_PLUGIN_HPP
 
-#include <memory>
-#include <QList>
 #include "ores.qt/PluginBase.hpp"
+#include <QList>
+#include <memory>
 
 class QAction;
 
@@ -50,8 +50,12 @@ public:
     explicit AdminPlugin(QObject* parent = nullptr);
     ~AdminPlugin() override;
 
-    QString name() const override { return QStringLiteral("ores.qt.admin"); }
-    int load_order() const override { return 50; }  // setup_menus only; no standalone menus
+    QString name() const override {
+        return QStringLiteral("ores.qt.admin");
+    }
+    int load_order() const override {
+        return 50;
+    } // setup_menus only; no standalone menus
 
     void on_login(const plugin_context& ctx) override;
     void setup_menus(const shared_menus_context& ctx) override;
@@ -70,13 +74,13 @@ private:
     QAction* act_system_settings_{nullptr};
     QAction* act_reset_system_{nullptr};
 
-    std::unique_ptr<AccountController>          accountController_;
-    std::unique_ptr<RoleController>             roleController_;
-    std::unique_ptr<TenantController>           tenantController_;
-    std::unique_ptr<TenantTypeController>       tenantTypeController_;
-    std::unique_ptr<SystemSettingController>    systemSettingController_;
-    std::unique_ptr<BadgeDefinitionController>  badgeDefinitionController_;
-    std::unique_ptr<BadgeSeverityController>    badgeSeverityController_;
+    std::unique_ptr<AccountController> accountController_;
+    std::unique_ptr<RoleController> roleController_;
+    std::unique_ptr<TenantController> tenantController_;
+    std::unique_ptr<TenantTypeController> tenantTypeController_;
+    std::unique_ptr<SystemSettingController> systemSettingController_;
+    std::unique_ptr<BadgeDefinitionController> badgeDefinitionController_;
+    std::unique_ptr<BadgeSeverityController> badgeSeverityController_;
 };
 
 }

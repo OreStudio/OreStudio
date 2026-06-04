@@ -20,12 +20,12 @@
 #ifndef ORES_QT_INSTRUMENT_FORM_REGISTRY_HPP
 #define ORES_QT_INSTRUMENT_FORM_REGISTRY_HPP
 
+#include "ores.trading.api/domain/product_type.hpp"
+#include <QString>
+#include <QWidget>
 #include <functional>
 #include <map>
 #include <vector>
-#include <QString>
-#include <QWidget>
-#include "ores.trading.api/domain/product_type.hpp"
 
 namespace ores::qt {
 
@@ -54,8 +54,7 @@ public:
     void registerForm(product_type pt, QString displayName, Factory factory);
 
     [[nodiscard]] bool contains(product_type pt) const noexcept;
-    [[nodiscard]] IInstrumentForm* createForm(
-        product_type pt, QWidget* parent) const;
+    [[nodiscard]] IInstrumentForm* createForm(product_type pt, QWidget* parent) const;
     [[nodiscard]] QString displayName(product_type pt) const;
     [[nodiscard]] std::vector<product_type> registeredTypes() const;
 
@@ -64,10 +63,9 @@ public:
     /// Register a dedicated form for a single trade type code.
     void registerTypeForm(const QString& trade_type_code, Factory factory);
 
-    [[nodiscard]] bool containsTypeForm(
-        const QString& trade_type_code) const noexcept;
-    [[nodiscard]] IInstrumentForm* createTypeForm(
-        const QString& trade_type_code, QWidget* parent) const;
+    [[nodiscard]] bool containsTypeForm(const QString& trade_type_code) const noexcept;
+    [[nodiscard]] IInstrumentForm* createTypeForm(const QString& trade_type_code,
+                                                  QWidget* parent) const;
 
     /// All registered type codes, in registration order.
     [[nodiscard]] std::vector<QString> registeredTypeCodes() const;
@@ -80,7 +78,9 @@ private:
     std::vector<product_type> order_;
     std::map<product_type, Entry> entries_;
 
-    struct TypeEntry { Factory factory; };
+    struct TypeEntry {
+        Factory factory;
+    };
     std::vector<QString> typeOrder_;
     std::map<QString, TypeEntry> typeEntries_;
 };

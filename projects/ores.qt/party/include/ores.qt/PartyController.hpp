@@ -20,15 +20,15 @@
 #ifndef ORES_QT_PARTY_CONTROLLER_HPP
 #define ORES_QT_PARTY_CONTROLLER_HPP
 
-#include <QDateTime>
-#include <QMdiArea>
-#include <QMainWindow>
-#include "ores.qt/EntityController.hpp"
-#include "ores.qt/ClientManager.hpp"
-#include "ores.qt/ImageCache.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata.api/domain/party.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/EntityController.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
+#include "ores.qt/ImageCache.hpp"
+#include "ores.refdata.api/domain/party.hpp"
+#include <QDateTime>
+#include <QMainWindow>
+#include <QMdiArea>
 
 namespace ores::qt {
 
@@ -47,8 +47,7 @@ class PartyController final : public EntityController {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.party_controller";
+    inline static std::string_view logger_name = "ores.qt.party_controller";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -57,15 +56,14 @@ private:
     }
 
 public:
-    PartyController(
-        QMainWindow* mainWindow,
-        QMdiArea* mdiArea,
-        ClientManager* clientManager,
-        ImageCache* imageCache,
-        ChangeReasonCache* changeReasonCache,
-        BadgeCache* badgeCache,
-        const QString& username,
-        QObject* parent = nullptr);
+    PartyController(QMainWindow* mainWindow,
+                    QMdiArea* mdiArea,
+                    ClientManager* clientManager,
+                    ImageCache* imageCache,
+                    ChangeReasonCache* changeReasonCache,
+                    BadgeCache* badgeCache,
+                    const QString& username,
+                    QObject* parent = nullptr);
 
     ~PartyController() override;
 
@@ -85,10 +83,11 @@ private slots:
     void onAddNewRequested();
     void onShowHistory(const refdata::domain::party& party);
     void onRevertVersion(const refdata::domain::party& party);
-    void onOpenVersion(const refdata::domain::party& party,
-                       int versionNumber);
-    void onNotificationReceived(const QString& eventType, const QDateTime& timestamp,
-                                const QStringList& entityIds, const QString& tenantId);
+    void onOpenVersion(const refdata::domain::party& party, int versionNumber);
+    void onNotificationReceived(const QString& eventType,
+                                const QDateTime& timestamp,
+                                const QStringList& entityIds,
+                                const QString& tenantId);
 
 private:
     void showAddWindow();

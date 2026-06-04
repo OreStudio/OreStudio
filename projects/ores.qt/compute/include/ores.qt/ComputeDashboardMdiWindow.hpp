@@ -20,15 +20,15 @@
 #ifndef ORES_QT_COMPUTE_DASHBOARD_MDI_WINDOW_HPP
 #define ORES_QT_COMPUTE_DASHBOARD_MDI_WINDOW_HPP
 
-#include <QTimer>
-#include <QLabel>
-#include <QWidget>
-#include <QToolBar>
-#include <QGroupBox>
-#include <QGridLayout>
-#include <QVBoxLayout>
-#include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include <QGridLayout>
+#include <QGroupBox>
+#include <QLabel>
+#include <QTimer>
+#include <QToolBar>
+#include <QVBoxLayout>
+#include <QWidget>
 
 namespace ores::qt {
 
@@ -43,8 +43,7 @@ class ComputeDashboardMdiWindow final : public QWidget {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.compute_dashboard_mdi_window";
+    inline static std::string_view logger_name = "ores.qt.compute_dashboard_mdi_window";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -53,12 +52,12 @@ private:
     }
 
 public:
-    explicit ComputeDashboardMdiWindow(
-        ClientManager* clientManager,
-        QWidget* parent = nullptr);
+    explicit ComputeDashboardMdiWindow(ClientManager* clientManager, QWidget* parent = nullptr);
     ~ComputeDashboardMdiWindow() override = default;
 
-    QSize sizeHint() const override { return {600, 400}; }
+    QSize sizeHint() const override {
+        return {600, 400};
+    }
 
 public slots:
     void refresh();
@@ -83,12 +82,12 @@ private:
     QAction* autoRefreshAction_;
 
     // Grid stats labels (sourced from get_grid_stats_response)
-    QLabel* totalHostsLabel_;      // total_hosts
-    QLabel* idleHostsLabel_;       // idle_hosts
-    QLabel* totalWorkunitLabel_;   // total_workunits
-    QLabel* inProgressLabel_;      // results_in_progress
-    QLabel* completedLabel_;       // results_done
-    QLabel* successfulLabel_;      // outcomes_success (last 24 h)
+    QLabel* totalHostsLabel_;    // total_hosts
+    QLabel* idleHostsLabel_;     // idle_hosts
+    QLabel* totalWorkunitLabel_; // total_workunits
+    QLabel* inProgressLabel_;    // results_in_progress
+    QLabel* completedLabel_;     // results_done
+    QLabel* successfulLabel_;    // outcomes_success (last 24 h)
 
     // Auto-refresh timer (10 seconds)
     QTimer* autoRefreshTimer_;

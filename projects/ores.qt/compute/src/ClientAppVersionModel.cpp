@@ -18,39 +18,43 @@
  *
  */
 #include "ores.qt/ClientAppVersionModel.hpp"
-
-#include <QtConcurrent>
-#include <boost/uuid/uuid_io.hpp>
 #include "ores.compute.api/messaging/app_version_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
+#include <QtConcurrent>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    std::string app_version_key_extractor(const compute::domain::app_version& e) {
-        return e.wrapper_version;
-    }
+std::string app_version_key_extractor(const compute::domain::app_version& e) {
+    return e.wrapper_version;
+}
 }
 
-ClientAppVersionModel::ClientAppVersionModel(
-    ClientManager* clientManager, QObject* parent)
-    : AbstractClientModel(parent),
-      clientManager_(clientManager),
-      watcher_(new QFutureWatcher<FetchResult>(this)),
-      recencyTracker_(app_version_key_extractor),
-      pulseManager_(new RecencyPulseManager(this)) {
+ClientAppVersionModel::ClientAppVersionModel(ClientManager* clientManager, QObject* parent)
+    : AbstractClientModel(parent)
+    , clientManager_(clientManager)
+    , watcher_(new QFutureWatcher<FetchResult>(this))
+    , recencyTracker_(app_version_key_extractor)
+    , pulseManager_(new RecencyPulseManager(this)) {
 
-    connect(watcher_, &QFutureWatcher<FetchResult>::finished,
-            this, &ClientAppVersionModel::onVersionsLoaded);
+    connect(watcher_,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            &ClientAppVersionModel::onVersionsLoaded);
 
-    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
-            this, &ClientAppVersionModel::onPulseStateChanged);
-    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
-            this, &ClientAppVersionModel::onPulsingComplete);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulse_state_changed,
+            this,
+            &ClientAppVersionModel::onPulseStateChanged);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulsing_complete,
+            this,
+            &ClientAppVersionModel::onPulsingComplete);
 }
 
 int ClientAppVersionModel::rowCount(const QModelIndex& parent) const {
@@ -65,8 +69,7 @@ int ClientAppVersionModel::columnCount(const QModelIndex& parent) const {
     return ColumnCount;
 }
 
-QVariant ClientAppVersionModel::data(
-    const QModelIndex& index, int role) const {
+QVariant ClientAppVersionModel::data(const QModelIndex& index, int role) const {
     if (!index.isValid())
         return {};
 
@@ -78,20 +81,20 @@ QVariant ClientAppVersionModel::data(
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-        case AppId:
-            return QString::fromStdString(boost::uuids::to_string(app_version.app_id));
-        case WrapperVersion:
-            return QString::fromStdString(app_version.wrapper_version);
-        case EngineVersion:
-            return QString::fromStdString(app_version.engine_version);
-        case MinRamMb:
-            return static_cast<qlonglong>(app_version.min_ram_mb);
-        case Version:
-            return static_cast<qlonglong>(app_version.version);
-        case ModifiedBy:
-            return QString::fromStdString(app_version.modified_by);
-        default:
-            return {};
+            case AppId:
+                return QString::fromStdString(boost::uuids::to_string(app_version.app_id));
+            case WrapperVersion:
+                return QString::fromStdString(app_version.wrapper_version);
+            case EngineVersion:
+                return QString::fromStdString(app_version.engine_version);
+            case MinRamMb:
+                return static_cast<qlonglong>(app_version.min_ram_mb);
+            case Version:
+                return static_cast<qlonglong>(app_version.version);
+            case ModifiedBy:
+                return QString::fromStdString(app_version.modified_by);
+            default:
+                return {};
         }
     }
 
@@ -102,26 +105,26 @@ QVariant ClientAppVersionModel::data(
     return {};
 }
 
-QVariant ClientAppVersionModel::headerData(
-    int section, Qt::Orientation orientation, int role) const {
+QVariant
+ClientAppVersionModel::headerData(int section, Qt::Orientation orientation, int role) const {
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return {};
 
     switch (section) {
-    case AppId:
-        return tr("App ID");
-    case WrapperVersion:
-        return tr("Wrapper Version");
-    case EngineVersion:
-        return tr("Engine Version");
-    case MinRamMb:
-        return tr("Min RAM (MB)");
-    case Version:
-        return tr("Version");
-    case ModifiedBy:
-        return tr("Modified By");
-    default:
-        return {};
+        case AppId:
+            return tr("App ID");
+        case WrapperVersion:
+            return tr("Wrapper Version");
+        case EngineVersion:
+            return tr("Engine Version");
+        case MinRamMb:
+            return tr("Min RAM (MB)");
+        case Version:
+            return tr("Version");
+        case ModifiedBy:
+            return tr("Modified By");
+        default:
+            return {};
     }
 }
 
@@ -151,8 +154,7 @@ void ClientAppVersionModel::refresh() {
     fetch_app_versions(0, page_size_);
 }
 
-void ClientAppVersionModel::load_page(std::uint32_t offset,
-                                          std::uint32_t limit) {
+void ClientAppVersionModel::load_page(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "load_page: offset=" << offset << ", limit=" << limit;
 
     if (is_fetching_) {
@@ -176,18 +178,18 @@ void ClientAppVersionModel::load_page(std::uint32_t offset,
     fetch_app_versions(offset, limit);
 }
 
-void ClientAppVersionModel::fetch_app_versions(
-    std::uint32_t offset, std::uint32_t limit) {
+void ClientAppVersionModel::fetch_app_versions(std::uint32_t offset, std::uint32_t limit) {
     is_fetching_ = true;
     QPointer<ClientAppVersionModel> self = this;
 
-    QFuture<FetchResult> future =
-        QtConcurrent::run([self, offset, limit]() -> FetchResult {
-            return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
-                BOOST_LOG_SEV(lg(), debug) << "Making app versions request with offset="
-                                           << offset << ", limit=" << limit;
+    QFuture<FetchResult> future = QtConcurrent::run([self, offset, limit]() -> FetchResult {
+        return exception_helper::wrap_async_fetch<FetchResult>(
+            [&]() -> FetchResult {
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Making app versions request with offset=" << offset << ", limit=" << limit;
                 if (!self || !self->clientManager_) {
-                    return {.success = false, .app_versions = {},
+                    return {.success = false,
+                            .app_versions = {},
                             .total_available_count = 0,
                             .error_message = "Model was destroyed",
                             .error_details = {}};
@@ -197,28 +199,32 @@ void ClientAppVersionModel::fetch_app_versions(
                 request.offset = offset;
                 request.limit = limit;
 
-                auto result = self->clientManager_->
-                    process_authenticated_request(std::move(request));
+                auto result =
+                    self->clientManager_->process_authenticated_request(std::move(request));
 
                 if (!result) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to fetch app versions: "
-                                               << result.error();
-                    return {.success = false, .app_versions = {},
+                    BOOST_LOG_SEV(lg(), error)
+                        << "Failed to fetch app versions: " << result.error();
+                    return {.success = false,
+                            .app_versions = {},
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(
                                 "Failed to fetch app versions: " + result.error()),
                             .error_details = {}};
                 }
 
-                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->app_versions.size()
-                                           << " app versions, total available: "
-                                           << result->total_available_count;
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Fetched " << result->app_versions.size()
+                    << " app versions, total available: " << result->total_available_count;
                 return {.success = true,
                         .app_versions = std::move(result->app_versions),
-                        .total_available_count = static_cast<std::uint32_t>(result->total_available_count),
-                        .error_message = {}, .error_details = {}};
-            }, "app versions");
-        });
+                        .total_available_count =
+                            static_cast<std::uint32_t>(result->total_available_count),
+                        .error_message = {},
+                        .error_details = {}};
+            },
+            "app versions");
+    });
 
     watcher_->setFuture(future);
 }
@@ -229,8 +235,8 @@ void ClientAppVersionModel::onVersionsLoaded() {
     const auto result = watcher_->result();
 
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to fetch app versions: "
-                                   << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to fetch app versions: " << result.error_message.toStdString();
         emit loadError(result.error_message, result.error_details);
         return;
     }
@@ -269,16 +275,14 @@ void ClientAppVersionModel::set_page_size(std::uint32_t size) {
     }
 }
 
-const compute::domain::app_version*
-ClientAppVersionModel::getVersion(int row) const {
+const compute::domain::app_version* ClientAppVersionModel::getVersion(int row) const {
     const auto idx = static_cast<std::size_t>(row);
     if (idx >= app_versions_.size())
         return nullptr;
     return &app_versions_[idx];
 }
 
-QVariant ClientAppVersionModel::recency_foreground_color(
-    const std::string& code) const {
+QVariant ClientAppVersionModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {
         return color_constants::stale_indicator;
     }
@@ -287,8 +291,8 @@ QVariant ClientAppVersionModel::recency_foreground_color(
 
 void ClientAppVersionModel::onPulseStateChanged(bool /*isOn*/) {
     if (!app_versions_.empty()) {
-        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
-            {Qt::ForegroundRole});
+        emit dataChanged(
+            index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::ForegroundRole});
     }
 }
 

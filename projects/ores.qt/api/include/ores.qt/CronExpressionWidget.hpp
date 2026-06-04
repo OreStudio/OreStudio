@@ -20,10 +20,10 @@
 #ifndef ORES_QT_CRON_EXPRESSION_WIDGET_HPP
 #define ORES_QT_CRON_EXPRESSION_WIDGET_HPP
 
-#include <QWidget>
+#include "ores.qt/export.hpp"
 #include <QLineEdit>
 #include <QString>
-#include "ores.qt/export.hpp"
+#include <QWidget>
 
 class QPushButton;
 
@@ -65,7 +65,7 @@ private slots:
 private:
     void updateValidationStyle();
 
-    QLineEdit*   expressionEdit_;
+    QLineEdit* expressionEdit_;
     QPushButton* builderButton_;
 };
 

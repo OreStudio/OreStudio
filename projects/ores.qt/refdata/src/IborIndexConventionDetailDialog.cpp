@@ -18,23 +18,22 @@
  *
  */
 #include "ores.qt/IborIndexConventionDetailDialog.hpp"
-
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include "ui_IborIndexConventionDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.refdata.api/messaging/ibor_index_convention_protocol.hpp"
+#include "ui_IborIndexConventionDetailDialog.h"
+#include <QFutureWatcher>
+#include <QMessageBox>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 IborIndexConventionDetailDialog::IborIndexConventionDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent),
-      ui_(new Ui::IborIndexConventionDetailDialog),
-      clientManager_(nullptr) {
+    : DetailDialogBase(parent)
+    , ui_(new Ui::IborIndexConventionDetailDialog)
+    , clientManager_(nullptr) {
 
     ui_->setupUi(this);
     setupUi();
@@ -70,20 +69,34 @@ void IborIndexConventionDetailDialog::setupUi() {
 }
 
 void IborIndexConventionDetailDialog::setupConnections() {
-    connect(ui_->saveButton, &QPushButton::clicked, this,
+    connect(ui_->saveButton,
+            &QPushButton::clicked,
+            this,
             &IborIndexConventionDetailDialog::onSaveClicked);
-    connect(ui_->deleteButton, &QPushButton::clicked, this,
+    connect(ui_->deleteButton,
+            &QPushButton::clicked,
+            this,
             &IborIndexConventionDetailDialog::onDeleteClicked);
-    connect(ui_->closeButton, &QPushButton::clicked, this,
+    connect(ui_->closeButton,
+            &QPushButton::clicked,
+            this,
             &IborIndexConventionDetailDialog::onCloseClicked);
 
-    connect(ui_->idEdit, &QLineEdit::textChanged, this,
+    connect(ui_->idEdit,
+            &QLineEdit::textChanged,
+            this,
             &IborIndexConventionDetailDialog::onCodeChanged);
-    connect(ui_->fixingCalendarEdit, &QLineEdit::textChanged, this,
+    connect(ui_->fixingCalendarEdit,
+            &QLineEdit::textChanged,
+            this,
             &IborIndexConventionDetailDialog::onFieldChanged);
-    connect(ui_->dayCountFractionEdit, &QLineEdit::textChanged, this,
+    connect(ui_->dayCountFractionEdit,
+            &QLineEdit::textChanged,
+            this,
             &IborIndexConventionDetailDialog::onFieldChanged);
-    connect(ui_->businessDayConventionEdit, &QLineEdit::textChanged, this,
+    connect(ui_->businessDayConventionEdit,
+            &QLineEdit::textChanged,
+            this,
             &IborIndexConventionDetailDialog::onFieldChanged);
 }
 
@@ -172,31 +185,27 @@ bool IborIndexConventionDetailDialog::validateInput() {
     const QString day_count_fraction_val = ui_->dayCountFractionEdit->text().trimmed();
     const QString business_day_convention_val = ui_->businessDayConventionEdit->text().trimmed();
 
-    return true
-        && !id_val.isEmpty()
-        && !fixing_calendar_val.isEmpty()
-        && !day_count_fraction_val.isEmpty()
-        && !business_day_convention_val.isEmpty()
-    ;
+    return true && !id_val.isEmpty() && !fixing_calendar_val.isEmpty() &&
+           !day_count_fraction_val.isEmpty() && !business_day_convention_val.isEmpty();
 }
 
 void IborIndexConventionDetailDialog::onSaveClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
+        MessageBoxHelper::warning(
+            this,
+            "Disconnected",
             "Cannot save IBOR index convention while disconnected from server.");
         return;
     }
 
     if (!validateInput()) {
-        MessageBoxHelper::warning(this, "Invalid Input",
-            "Please fill in all required fields.");
+        MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
 
     updateConventionFromUi();
 
-    BOOST_LOG_SEV(lg(), info) << "Saving IBOR index convention: "
-        << ic_.id;
+    BOOST_LOG_SEV(lg(), info) << "Saving IBOR index convention: " << ic_.id;
 
     QPointer<IborIndexConventionDetailDialog> self = this;
 
@@ -212,8 +221,8 @@ void IborIndexConventionDetailDialog::onSaveClicked() {
 
         refdata::messaging::save_ibor_index_convention_request request;
         request.data = ic;
-        auto response_result = self->clientManager_->
-            process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -223,15 +232,13 @@ void IborIndexConventionDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "IBOR Index Convention saved successfully";
-            QString code = QString::fromStdString(
-                self->ic_.id);
+            QString code = QString::fromStdString(self->ic_.id);
             self->hasChanges_ = false;
             self->updateSaveButtonState();
             emit self->icSaved(code);
@@ -250,14 +257,17 @@ void IborIndexConventionDetailDialog::onSaveClicked() {
 
 void IborIndexConventionDetailDialog::onDeleteClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
+        MessageBoxHelper::warning(
+            this,
+            "Disconnected",
             "Cannot delete IBOR index convention while disconnected from server.");
         return;
     }
 
-    QString code = QString::fromStdString(
-        ic_.id);
-    auto reply = MessageBoxHelper::question(this, "Delete IBOR Index Convention",
+    QString code = QString::fromStdString(ic_.id);
+    auto reply = MessageBoxHelper::question(
+        this,
+        "Delete IBOR Index Convention",
         QString("Are you sure you want to delete IBOR index convention '%1'?").arg(code),
         QMessageBox::Yes | QMessageBox::No);
 
@@ -265,8 +275,7 @@ void IborIndexConventionDetailDialog::onDeleteClicked() {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Deleting IBOR index convention: "
-        << ic_.id;
+    BOOST_LOG_SEV(lg(), info) << "Deleting IBOR index convention: " << ic_.id;
 
     QPointer<IborIndexConventionDetailDialog> self = this;
 
@@ -282,8 +291,8 @@ void IborIndexConventionDetailDialog::onDeleteClicked() {
 
         refdata::messaging::delete_ibor_index_convention_request request;
         request.codes = {code};
-        auto response_result = self->clientManager_->
-            process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -293,15 +302,13 @@ void IborIndexConventionDetailDialog::onDeleteClicked() {
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
-            self, [self, code, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, code, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "IBOR Index Convention deleted successfully";
-            emit self->statusMessage(
-                QString("IBOR Index Convention '%1' deleted").arg(code));
+            emit self->statusMessage(QString("IBOR Index Convention '%1' deleted").arg(code));
             emit self->icDeleted(code);
             self->requestClose();
         } else {

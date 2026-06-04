@@ -17,20 +17,18 @@
  *
  */
 #include "ores.qt/WorkflowInstanceDetailDialog.hpp"
-
-#include <QVBoxLayout>
+#include <QDialogButtonBox>
 #include <QHBoxLayout>
 #include <QSplitter>
-#include <QDialogButtonBox>
+#include <QVBoxLayout>
 
 namespace ores::qt {
 
-WorkflowInstanceDetailDialog::WorkflowInstanceDetailDialog(
-    ClientManager* clientManager,
-    const QString& workflowId,
-    const QString& workflowType,
-    const QString& workflowStatus,
-    QWidget* parent)
+WorkflowInstanceDetailDialog::WorkflowInstanceDetailDialog(ClientManager* clientManager,
+                                                           const QString& workflowId,
+                                                           const QString& workflowType,
+                                                           const QString& workflowStatus,
+                                                           QWidget* parent)
     : QDialog(parent)
     , clientManager_(clientManager)
     , workflowId_(workflowId)
@@ -52,12 +50,10 @@ void WorkflowInstanceDetailDialog::setupUi() {
     // ── Header info ───────────────────────────────────────────────────────────
     auto* headerLayout = new QHBoxLayout;
 
-    auto* typeLabel = new QLabel(
-        tr("<b>Type:</b> %1").arg(workflowType_), this);
+    auto* typeLabel = new QLabel(tr("<b>Type:</b> %1").arg(workflowType_), this);
     headerLayout->addWidget(typeLabel);
 
-    statusLabel_ = new QLabel(
-        tr("<b>Status:</b> %1").arg(workflowStatus_), this);
+    statusLabel_ = new QLabel(tr("<b>Status:</b> %1").arg(workflowStatus_), this);
     headerLayout->addWidget(statusLabel_);
 
     auto* idLabel = new QLabel(this);
@@ -82,11 +78,12 @@ void WorkflowInstanceDetailDialog::setupUi() {
 
     layout->addWidget(splitter);
 
-    connect(stepsWidget_, &WorkflowStepsWidget::stepSelected,
-        this, [this](const ores::workflow::messaging::workflow_step_summary& step) {
-            logWidget_->showLog(
-                QString::fromStdString(step.name), step.log);
-        });
+    connect(stepsWidget_,
+            &WorkflowStepsWidget::stepSelected,
+            this,
+            [this](const ores::workflow::messaging::workflow_step_summary& step) {
+                logWidget_->showLog(QString::fromStdString(step.name), step.log);
+            });
 
     // ── Buttons ───────────────────────────────────────────────────────────────
     auto* buttons = new QDialogButtonBox(QDialogButtonBox::Close, this);
@@ -98,4 +95,4 @@ void WorkflowInstanceDetailDialog::loadSteps() {
     stepsWidget_->setInstance(QUuid::fromString(workflowId_));
 }
 
-}  // namespace ores::qt
+} // namespace ores::qt

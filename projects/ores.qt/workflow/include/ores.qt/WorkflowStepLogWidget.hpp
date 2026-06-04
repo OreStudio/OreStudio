@@ -19,12 +19,12 @@
 #ifndef ORES_QT_WORKFLOW_STEP_LOG_WIDGET_HPP
 #define ORES_QT_WORKFLOW_STEP_LOG_WIDGET_HPP
 
-#include <vector>
-#include <QLabel>
-#include <QWidget>
-#include <QTableWidget>
 #include "ores.qt/WorkflowExport.hpp"
 #include "ores.workflow.api/messaging/step_log_types.hpp"
+#include <QLabel>
+#include <QTableWidget>
+#include <QWidget>
+#include <vector>
 
 namespace ores::qt {
 
@@ -48,7 +48,7 @@ public:
      * placeholder row is shown.
      */
     void showLog(const QString& stepName,
-        const std::vector<ores::workflow::messaging::step_log_entry>& entries);
+                 const std::vector<ores::workflow::messaging::step_log_entry>& entries);
 
     /**
      * @brief Reset to the "no step selected" placeholder state.
@@ -62,6 +62,6 @@ private:
     QTableWidget* logTable_;
 };
 
-}  // namespace ores::qt
+} // namespace ores::qt
 
 #endif

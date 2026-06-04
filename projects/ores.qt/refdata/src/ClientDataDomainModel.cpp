@@ -18,47 +18,53 @@
  *
  */
 #include "ores.qt/ClientDataDomainModel.hpp"
-
-#include <QtConcurrent>
+#include "ores.dq.api/messaging/data_organization_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.dq.api/messaging/data_organization_protocol.hpp"
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    std::string data_domain_key_extractor(const dq::domain::data_domain& e) {
-        return e.name;
-    }
+std::string data_domain_key_extractor(const dq::domain::data_domain& e) {
+    return e.name;
+}
 }
 
-ClientDataDomainModel::ClientDataDomainModel(
-    ClientManager* clientManager, QObject* parent)
-    : AbstractClientModel(parent),
-      clientManager_(clientManager),
-      watcher_(new QFutureWatcher<FetchResult>(this)),
-      recencyTracker_(data_domain_key_extractor),
-      pulseManager_(new RecencyPulseManager(this)) {
+ClientDataDomainModel::ClientDataDomainModel(ClientManager* clientManager, QObject* parent)
+    : AbstractClientModel(parent)
+    , clientManager_(clientManager)
+    , watcher_(new QFutureWatcher<FetchResult>(this))
+    , recencyTracker_(data_domain_key_extractor)
+    , pulseManager_(new RecencyPulseManager(this)) {
 
-    connect(watcher_, &QFutureWatcher<FetchResult>::finished,
-            this, &ClientDataDomainModel::onDomainsLoaded);
+    connect(watcher_,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            &ClientDataDomainModel::onDomainsLoaded);
 
-    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
-        this, &ClientDataDomainModel::onPulseStateChanged);
-    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
-        this, &ClientDataDomainModel::onPulsingComplete);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulse_state_changed,
+            this,
+            &ClientDataDomainModel::onPulseStateChanged);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulsing_complete,
+            this,
+            &ClientDataDomainModel::onPulsingComplete);
 }
 
 int ClientDataDomainModel::rowCount(const QModelIndex& parent) const {
-    if (parent.isValid()) return 0;
+    if (parent.isValid())
+        return 0;
     return static_cast<int>(domains_.size());
 }
 
 int ClientDataDomainModel::columnCount(const QModelIndex& parent) const {
-    if (parent.isValid()) return 0;
+    if (parent.isValid())
+        return 0;
     return ColumnCount;
 }
 
@@ -70,12 +76,18 @@ QVariant ClientDataDomainModel::data(const QModelIndex& index, int role) const {
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-        case Name: return QString::fromStdString(domain.name);
-        case Description: return QString::fromStdString(domain.description);
-        case Version: return domain.version;
-        case ModifiedBy: return QString::fromStdString(domain.modified_by);
-        case RecordedAt: return relative_time_helper::format(domain.recorded_at);
-        default: return {};
+            case Name:
+                return QString::fromStdString(domain.name);
+            case Description:
+                return QString::fromStdString(domain.description);
+            case Version:
+                return domain.version;
+            case ModifiedBy:
+                return QString::fromStdString(domain.modified_by);
+            case RecordedAt:
+                return relative_time_helper::format(domain.recorded_at);
+            default:
+                return {};
         }
     }
 
@@ -86,18 +98,24 @@ QVariant ClientDataDomainModel::data(const QModelIndex& index, int role) const {
     return {};
 }
 
-QVariant ClientDataDomainModel::headerData(int section,
-    Qt::Orientation orientation, int role) const {
+QVariant
+ClientDataDomainModel::headerData(int section, Qt::Orientation orientation, int role) const {
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return {};
 
     switch (section) {
-    case Name: return tr("Name");
-    case Description: return tr("Description");
-    case Version: return tr("Version");
-    case ModifiedBy: return tr("Modified By");
-    case RecordedAt: return tr("Recorded At");
-    default: return {};
+        case Name:
+            return tr("Name");
+        case Description:
+            return tr("Description");
+        case Version:
+            return tr("Version");
+        case ModifiedBy:
+            return tr("Modified By");
+        case RecordedAt:
+            return tr("Recorded At");
+        default:
+            return {};
     }
 }
 
@@ -111,27 +129,34 @@ void ClientDataDomainModel::refresh() {
     QPointer<ClientDataDomainModel> self = this;
 
     QFuture<FetchResult> future = QtConcurrent::run([self]() -> FetchResult {
-        return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
-            if (!self || !self->clientManager_) {
-                return {.success = false, .domains = {},
-                        .error_message = "Model was destroyed",
-                        .error_details = {}};
-            }
+        return exception_helper::wrap_async_fetch<FetchResult>(
+            [&]() -> FetchResult {
+                if (!self || !self->clientManager_) {
+                    return {.success = false,
+                            .domains = {},
+                            .error_message = "Model was destroyed",
+                            .error_details = {}};
+                }
 
-            dq::messaging::get_data_domains_request request;
-            auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
-            if (!response_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to send request";
-                return {.success = false, .domains = {},
-                        .error_message = "Failed to send request",
-                        .error_details = {}};
-            }
+                dq::messaging::get_data_domains_request request;
+                auto response_result =
+                    self->clientManager_->process_authenticated_request(std::move(request));
+                if (!response_result) {
+                    BOOST_LOG_SEV(lg(), error) << "Failed to send request";
+                    return {.success = false,
+                            .domains = {},
+                            .error_message = "Failed to send request",
+                            .error_details = {}};
+                }
 
-            BOOST_LOG_SEV(lg(), debug) << "Fetched " << response_result->domains.size()
-                                       << " data domains";
-            return {.success = true, .domains = std::move(response_result->domains),
-                    .error_message = {}, .error_details = {}};
-        }, "data domains");
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Fetched " << response_result->domains.size() << " data domains";
+                return {.success = true,
+                        .domains = std::move(response_result->domains),
+                        .error_message = {},
+                        .error_details = {}};
+            },
+            "data domains");
     });
 
     watcher_->setFuture(future);
@@ -143,8 +168,8 @@ void ClientDataDomainModel::onDomainsLoaded() {
     const auto result = watcher_->result();
 
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to fetch data domains: "
-                                   << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to fetch data domains: " << result.error_message.toStdString();
         emit loadError(result.error_message, result.error_details);
         return;
     }
@@ -154,18 +179,16 @@ void ClientDataDomainModel::onDomainsLoaded() {
     const bool has_recent = recencyTracker_.update(domains_);
     if (has_recent && !pulseManager_->is_pulsing()) {
         pulseManager_->start_pulsing();
-        BOOST_LOG_SEV(lg(), debug) << "Found " << recencyTracker_.recent_count()
-                                   << " domains newer than last reload";
+        BOOST_LOG_SEV(lg(), debug)
+            << "Found " << recencyTracker_.recent_count() << " domains newer than last reload";
     }
     endResetModel();
 
-    BOOST_LOG_SEV(lg(), debug) << "Loaded " << domains_.size()
-                               << " data domains";
+    BOOST_LOG_SEV(lg(), debug) << "Loaded " << domains_.size() << " data domains";
     emit dataLoaded();
 }
 
-const dq::domain::data_domain* ClientDataDomainModel::getDomain(
-    int row) const {
+const dq::domain::data_domain* ClientDataDomainModel::getDomain(int row) const {
     if (row < 0 || row >= static_cast<int>(domains_.size()))
         return nullptr;
     return &domains_[row];
@@ -173,8 +196,8 @@ const dq::domain::data_domain* ClientDataDomainModel::getDomain(
 
 void ClientDataDomainModel::onPulseStateChanged(bool /*isOn*/) {
     if (!domains_.empty()) {
-        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
-            {Qt::ForegroundRole});
+        emit dataChanged(
+            index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::ForegroundRole});
     }
 }
 
@@ -183,8 +206,7 @@ void ClientDataDomainModel::onPulsingComplete() {
     recencyTracker_.clear();
 }
 
-QVariant ClientDataDomainModel::recency_foreground_color(
-    const std::string& name) const {
+QVariant ClientDataDomainModel::recency_foreground_color(const std::string& name) const {
     if (recencyTracker_.is_recent(name) && pulseManager_->is_pulse_on()) {
         return color_constants::stale_indicator;
     }

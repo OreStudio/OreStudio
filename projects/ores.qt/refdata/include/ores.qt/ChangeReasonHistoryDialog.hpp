@@ -20,17 +20,17 @@
 #ifndef ORES_QT_CHANGE_REASON_HISTORY_DIALOG_HPP
 #define ORES_QT_CHANGE_REASON_HISTORY_DIALOG_HPP
 
-#include <memory>
-#include <QPair>
-#include <QWidget>
-#include <QString>
-#include <QVector>
-#include <QToolBar>
-#include <QAction>
-#include "ores.qt/ClientManager.hpp"
 #include "ores.dq.api/domain/change_reason.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
 #include "ui_ChangeReasonHistoryDialog.h"
+#include <QAction>
+#include <QPair>
+#include <QString>
+#include <QToolBar>
+#include <QVector>
+#include <QWidget>
+#include <memory>
 
 namespace Ui {
 class ChangeReasonHistoryDialog;
@@ -45,8 +45,7 @@ class ChangeReasonHistoryDialog : public QWidget {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.change_reason_history_dialog";
+    inline static std::string_view logger_name = "ores.qt.change_reason_history_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -58,8 +57,8 @@ private:
 
 public:
     explicit ChangeReasonHistoryDialog(QString code,
-        ClientManager* clientManager,
-        QWidget* parent = nullptr);
+                                       ClientManager* clientManager,
+                                       QWidget* parent = nullptr);
     ~ChangeReasonHistoryDialog() override;
 
     void loadHistory();
@@ -77,7 +76,9 @@ public:
     /**
      * @brief Returns the code of the change reason.
      */
-    [[nodiscard]] QString code() const { return code_; }
+    [[nodiscard]] QString code() const {
+        return code_;
+    }
 
 signals:
     void statusChanged(const QString& message);
@@ -88,8 +89,7 @@ signals:
      * @param reason The change reason data at the selected version.
      * @param versionNumber The version number being viewed.
      */
-    void openVersionRequested(const dq::domain::change_reason& reason,
-        int versionNumber);
+    void openVersionRequested(const dq::domain::change_reason& reason, int versionNumber);
 
     /**
      * @brief Emitted when user requests to revert to a selected version.
@@ -115,9 +115,8 @@ private:
      * @return Vector of (field_name, (old_value, new_value)) pairs.
      */
     using DiffResult = QVector<QPair<QString, QPair<QString, QString>>>;
-    DiffResult calculateDiff(
-        const dq::domain::change_reason& current,
-        const dq::domain::change_reason& previous);
+    DiffResult calculateDiff(const dq::domain::change_reason& current,
+                             const dq::domain::change_reason& previous);
 
     void setupToolbar();
     void updateButtonStates();

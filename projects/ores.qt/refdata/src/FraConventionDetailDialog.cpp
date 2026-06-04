@@ -18,23 +18,22 @@
  *
  */
 #include "ores.qt/FraConventionDetailDialog.hpp"
-
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include "ui_FraConventionDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.refdata.api/messaging/fra_convention_protocol.hpp"
+#include "ui_FraConventionDetailDialog.h"
+#include <QFutureWatcher>
+#include <QMessageBox>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 FraConventionDetailDialog::FraConventionDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent),
-      ui_(new Ui::FraConventionDetailDialog),
-      clientManager_(nullptr) {
+    : DetailDialogBase(parent)
+    , ui_(new Ui::FraConventionDetailDialog)
+    , clientManager_(nullptr) {
 
     ui_->setupUi(this);
     setupUi();
@@ -70,17 +69,18 @@ void FraConventionDetailDialog::setupUi() {
 }
 
 void FraConventionDetailDialog::setupConnections() {
-    connect(ui_->saveButton, &QPushButton::clicked, this,
-            &FraConventionDetailDialog::onSaveClicked);
-    connect(ui_->deleteButton, &QPushButton::clicked, this,
+    connect(
+        ui_->saveButton, &QPushButton::clicked, this, &FraConventionDetailDialog::onSaveClicked);
+    connect(ui_->deleteButton,
+            &QPushButton::clicked,
+            this,
             &FraConventionDetailDialog::onDeleteClicked);
-    connect(ui_->closeButton, &QPushButton::clicked, this,
-            &FraConventionDetailDialog::onCloseClicked);
+    connect(
+        ui_->closeButton, &QPushButton::clicked, this, &FraConventionDetailDialog::onCloseClicked);
 
-    connect(ui_->idEdit, &QLineEdit::textChanged, this,
-            &FraConventionDetailDialog::onCodeChanged);
-    connect(ui_->indexEdit, &QLineEdit::textChanged, this,
-            &FraConventionDetailDialog::onFieldChanged);
+    connect(ui_->idEdit, &QLineEdit::textChanged, this, &FraConventionDetailDialog::onCodeChanged);
+    connect(
+        ui_->indexEdit, &QLineEdit::textChanged, this, &FraConventionDetailDialog::onFieldChanged);
 }
 
 void FraConventionDetailDialog::setClientManager(ClientManager* clientManager) {
@@ -91,8 +91,7 @@ void FraConventionDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
 
-void FraConventionDetailDialog::setConvention(
-    const refdata::domain::fra_convention& fc) {
+void FraConventionDetailDialog::setConvention(const refdata::domain::fra_convention& fc) {
     fc_ = fc;
     updateUiFromConvention();
 }
@@ -156,29 +155,24 @@ bool FraConventionDetailDialog::validateInput() {
     const QString id_val = ui_->idEdit->text().trimmed();
     const QString index_val = ui_->indexEdit->text().trimmed();
 
-    return true
-        && !id_val.isEmpty()
-        && !index_val.isEmpty()
-    ;
+    return true && !id_val.isEmpty() && !index_val.isEmpty();
 }
 
 void FraConventionDetailDialog::onSaveClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot save FRA convention while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot save FRA convention while disconnected from server.");
         return;
     }
 
     if (!validateInput()) {
-        MessageBoxHelper::warning(this, "Invalid Input",
-            "Please fill in all required fields.");
+        MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
 
     updateConventionFromUi();
 
-    BOOST_LOG_SEV(lg(), info) << "Saving FRA convention: "
-        << fc_.id;
+    BOOST_LOG_SEV(lg(), info) << "Saving FRA convention: " << fc_.id;
 
     QPointer<FraConventionDetailDialog> self = this;
 
@@ -194,8 +188,8 @@ void FraConventionDetailDialog::onSaveClicked() {
 
         refdata::messaging::save_fra_convention_request request;
         request.data = fc;
-        auto response_result = self->clientManager_->
-            process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -205,15 +199,13 @@ void FraConventionDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "FRA Convention saved successfully";
-            QString code = QString::fromStdString(
-                self->fc_.id);
+            QString code = QString::fromStdString(self->fc_.id);
             self->hasChanges_ = false;
             self->updateSaveButtonState();
             emit self->fcSaved(code);
@@ -232,14 +224,15 @@ void FraConventionDetailDialog::onSaveClicked() {
 
 void FraConventionDetailDialog::onDeleteClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot delete FRA convention while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot delete FRA convention while disconnected from server.");
         return;
     }
 
-    QString code = QString::fromStdString(
-        fc_.id);
-    auto reply = MessageBoxHelper::question(this, "Delete FRA Convention",
+    QString code = QString::fromStdString(fc_.id);
+    auto reply = MessageBoxHelper::question(
+        this,
+        "Delete FRA Convention",
         QString("Are you sure you want to delete FRA convention '%1'?").arg(code),
         QMessageBox::Yes | QMessageBox::No);
 
@@ -247,8 +240,7 @@ void FraConventionDetailDialog::onDeleteClicked() {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Deleting FRA convention: "
-        << fc_.id;
+    BOOST_LOG_SEV(lg(), info) << "Deleting FRA convention: " << fc_.id;
 
     QPointer<FraConventionDetailDialog> self = this;
 
@@ -264,8 +256,8 @@ void FraConventionDetailDialog::onDeleteClicked() {
 
         refdata::messaging::delete_fra_convention_request request;
         request.codes = {code};
-        auto response_result = self->clientManager_->
-            process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -275,15 +267,13 @@ void FraConventionDetailDialog::onDeleteClicked() {
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
-            self, [self, code, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, code, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "FRA Convention deleted successfully";
-            emit self->statusMessage(
-                QString("FRA Convention '%1' deleted").arg(code));
+            emit self->statusMessage(QString("FRA Convention '%1' deleted").arg(code));
             emit self->fcDeleted(code);
             self->requestClose();
         } else {

@@ -20,8 +20,8 @@
 #ifndef ORES_QT_CREATE_QUEUE_DIALOG_HPP
 #define ORES_QT_CREATE_QUEUE_DIALOG_HPP
 
-#include <QDialog>
 #include <QComboBox>
+#include <QDialog>
 #include <QLineEdit>
 #include <QPushButton>
 
@@ -39,19 +39,19 @@ class CreateQueueDialog final : public QDialog {
 public:
     explicit CreateQueueDialog(QWidget* parent = nullptr);
 
-    QString queueName()   const;
-    QString scopeType()   const;  // "party", "tenant", or "system"
-    QString queueType()   const;  // "task" or "channel"
+    QString queueName() const;
+    QString scopeType() const; // "party", "tenant", or "system"
+    QString queueType() const; // "task" or "channel"
     QString description() const;
 
 private slots:
     void onNameChanged(const QString& text);
 
 private:
-    QLineEdit*   nameEdit_;
-    QComboBox*   scopeCombo_;
-    QComboBox*   typeCombo_;
-    QLineEdit*   descriptionEdit_;
+    QLineEdit* nameEdit_;
+    QComboBox* scopeCombo_;
+    QComboBox* typeCombo_;
+    QLineEdit* descriptionEdit_;
     QPushButton* createButton_;
 };
 

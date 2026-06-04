@@ -18,28 +18,27 @@
  *
  */
 #include "ores.qt/SwapInstrumentForm.hpp"
-
-#include <QComboBox>
-#include <QPointer>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include <boost/uuid/uuid_io.hpp>
-#include "ui_SwapInstrumentForm.h"
 #include "ores.qt/ClientManager.hpp"
-#include "ores.qt/ImageCache.hpp"
 #include "ores.qt/FlagIconHelper.hpp"
-#include "ores.qt/LookupFetcher.hpp"
+#include "ores.qt/ImageCache.hpp"
 #include "ores.qt/InstrumentFormUtils.hpp"
-#include "ores.trading.api/messaging/instrument_protocol.hpp"
-#include "ores.trading.api/domain/fra_instrument.hpp"
-#include "ores.trading.api/domain/vanilla_swap_instrument.hpp"
-#include "ores.trading.api/domain/cap_floor_instrument.hpp"
-#include "ores.trading.api/domain/swaption_instrument.hpp"
+#include "ores.qt/LookupFetcher.hpp"
 #include "ores.trading.api/domain/balance_guaranteed_swap_instrument.hpp"
 #include "ores.trading.api/domain/callable_swap_instrument.hpp"
-#include "ores.trading.api/domain/knock_out_swap_instrument.hpp"
+#include "ores.trading.api/domain/cap_floor_instrument.hpp"
+#include "ores.trading.api/domain/fra_instrument.hpp"
 #include "ores.trading.api/domain/inflation_swap_instrument.hpp"
+#include "ores.trading.api/domain/knock_out_swap_instrument.hpp"
 #include "ores.trading.api/domain/rpa_instrument.hpp"
+#include "ores.trading.api/domain/swaption_instrument.hpp"
+#include "ores.trading.api/domain/vanilla_swap_instrument.hpp"
+#include "ores.trading.api/messaging/instrument_protocol.hpp"
+#include "ui_SwapInstrumentForm.h"
+#include <QComboBox>
+#include <QFutureWatcher>
+#include <QPointer>
+#include <QtConcurrent>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
@@ -54,7 +53,7 @@ namespace {
 using State = SwapInstrumentForm::SwapFormState;
 
 // Common provenance fields shared by all per-type domain structs.
-template<typename T>
+template <typename T>
 void copy_provenance(State& s, const T& i) {
     s.instrument_id = i.identity.instrument_id;
     s.trade_id = i.identity.trade_id;
@@ -107,8 +106,7 @@ State from_swaption(const trading::domain::swaption_instrument& i) {
     return s;
 }
 
-State from_balance_guaranteed_swap(
-    const trading::domain::balance_guaranteed_swap_instrument& i) {
+State from_balance_guaranteed_swap(const trading::domain::balance_guaranteed_swap_instrument& i) {
     State s;
     copy_provenance(s, i);
     s.start_date = i.start_date;
@@ -129,8 +127,7 @@ State from_callable_swap(const trading::domain::callable_swap_instrument& i) {
     return s;
 }
 
-State from_knock_out_swap(
-    const trading::domain::knock_out_swap_instrument& i) {
+State from_knock_out_swap(const trading::domain::knock_out_swap_instrument& i) {
     State s;
     copy_provenance(s, i);
     s.start_date = i.start_date;
@@ -139,8 +136,7 @@ State from_knock_out_swap(
     return s;
 }
 
-State from_inflation_swap(
-    const trading::domain::inflation_swap_instrument& i) {
+State from_inflation_swap(const trading::domain::inflation_swap_instrument& i) {
     State s;
     copy_provenance(s, i);
     s.start_date = i.start_date;
@@ -168,7 +164,7 @@ State from_rpa(const trading::domain::rpa_instrument& i) {
 // Domain builders: SwapFormState → per-type domain object
 // ---------------------------------------------------------------------------
 
-template<typename T>
+template <typename T>
 void apply_provenance(T& instr, const State& s, const std::string& username) {
     instr.identity.instrument_id = s.instrument_id;
     instr.identity.trade_id = s.trade_id;
@@ -179,8 +175,7 @@ void apply_provenance(T& instr, const State& s, const std::string& username) {
     instr.audit.change_commentary = s.change_commentary;
 }
 
-trading::domain::fra_instrument build_fra(const State& s,
-    const std::string& username) {
+trading::domain::fra_instrument build_fra(const State& s, const std::string& username) {
     trading::domain::fra_instrument r;
     apply_provenance(r, s, username);
     r.start_date = s.start_date;
@@ -195,7 +190,7 @@ trading::domain::fra_instrument build_fra(const State& s,
 }
 
 trading::domain::vanilla_swap_instrument build_vanilla_swap(const State& s,
-    const std::string& username) {
+                                                            const std::string& username) {
     trading::domain::vanilla_swap_instrument r;
     apply_provenance(r, s, username);
     r.start_date = s.start_date;
@@ -204,8 +199,7 @@ trading::domain::vanilla_swap_instrument build_vanilla_swap(const State& s,
     return r;
 }
 
-trading::domain::cap_floor_instrument build_cap_floor(const State& s,
-    const std::string& username) {
+trading::domain::cap_floor_instrument build_cap_floor(const State& s, const std::string& username) {
     trading::domain::cap_floor_instrument r;
     apply_provenance(r, s, username);
     r.start_date = s.start_date;
@@ -214,8 +208,7 @@ trading::domain::cap_floor_instrument build_cap_floor(const State& s,
     return r;
 }
 
-trading::domain::swaption_instrument build_swaption(const State& s,
-    const std::string& username) {
+trading::domain::swaption_instrument build_swaption(const State& s, const std::string& username) {
     trading::domain::swaption_instrument r;
     apply_provenance(r, s, username);
     r.start_date = s.start_date;
@@ -236,7 +229,7 @@ build_balance_guaranteed_swap(const State& s, const std::string& username) {
 }
 
 trading::domain::callable_swap_instrument build_callable_swap(const State& s,
-    const std::string& username) {
+                                                              const std::string& username) {
     trading::domain::callable_swap_instrument r;
     apply_provenance(r, s, username);
     r.start_date = s.start_date;
@@ -248,7 +241,7 @@ trading::domain::callable_swap_instrument build_callable_swap(const State& s,
 }
 
 trading::domain::knock_out_swap_instrument build_knock_out_swap(const State& s,
-    const std::string& username) {
+                                                                const std::string& username) {
     trading::domain::knock_out_swap_instrument r;
     apply_provenance(r, s, username);
     r.start_date = s.start_date;
@@ -258,7 +251,7 @@ trading::domain::knock_out_swap_instrument build_knock_out_swap(const State& s,
 }
 
 trading::domain::inflation_swap_instrument build_inflation_swap(const State& s,
-    const std::string& username) {
+                                                                const std::string& username) {
     trading::domain::inflation_swap_instrument r;
     apply_provenance(r, s, username);
     r.start_date = s.start_date;
@@ -270,8 +263,7 @@ trading::domain::inflation_swap_instrument build_inflation_swap(const State& s,
     return r;
 }
 
-trading::domain::rpa_instrument build_rpa(const State& s,
-    const std::string& username) {
+trading::domain::rpa_instrument build_rpa(const State& s, const std::string& username) {
     trading::domain::rpa_instrument r;
     apply_provenance(r, s, username);
     r.start_date = s.start_date;
@@ -290,42 +282,46 @@ trading::domain::rpa_instrument build_rpa(const State& s,
 // ---------------------------------------------------------------------------
 
 SwapInstrumentForm::SwapInstrumentForm(QWidget* parent)
-    : IInstrumentForm(parent),
-      ui_(new Ui::SwapInstrumentForm) {
+    : IInstrumentForm(parent)
+    , ui_(new Ui::SwapInstrumentForm) {
     ui_->setupUi(this);
     // Rates extension sub-tab is hidden until setTradeType() reveals it.
-    ui_->subTabWidget->setTabVisible(
-        ui_->subTabWidget->indexOf(ui_->ratesTab), false);
+    ui_->subTabWidget->setTabVisible(ui_->subTabWidget->indexOf(ui_->ratesTab), false);
     setupConnections();
 }
 
 SwapInstrumentForm::~SwapInstrumentForm() = default;
 
 void SwapInstrumentForm::setupConnections() {
-    auto markChanged = [this]() { onFieldChanged(); };
-    auto markChangedStr = [this](const QString&) { onFieldChanged(); };
-    auto markChangedDate = [this](const QDate&) { onFieldChanged(); };
+    auto markChanged = [this]() {
+        onFieldChanged();
+    };
+    auto markChangedStr = [this](const QString&) {
+        onFieldChanged();
+    };
+    auto markChangedDate = [this](const QDate&) {
+        onFieldChanged();
+    };
     connect(ui_->tradeTypeCodeEdit, &QLineEdit::textChanged, this, markChanged);
-    connect(ui_->currencyCombo, &QComboBox::currentTextChanged,
-            this, markChangedStr);
+    connect(ui_->currencyCombo, &QComboBox::currentTextChanged, this, markChangedStr);
     connect(ui_->startDateEdit, &QDateEdit::dateChanged, this, markChangedDate);
     connect(ui_->maturityDateEdit, &QDateEdit::dateChanged, this, markChangedDate);
     connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this, markChanged);
     connect(ui_->fraFixingDateEdit, &QDateEdit::dateChanged, this, markChangedDate);
-    connect(ui_->fraSettlementDateEdit, &QDateEdit::dateChanged,
-            this, markChangedDate);
+    connect(ui_->fraSettlementDateEdit, &QDateEdit::dateChanged, this, markChangedDate);
     connect(ui_->rpaCounterpartyEdit, &QLineEdit::textChanged, this, markChanged);
     connect(ui_->inflationIndexCodeEdit, &QLineEdit::textChanged, this, markChanged);
     connect(ui_->callableDatesJsonEdit, &QPlainTextEdit::textChanged, this, markChanged);
     connect(ui_->notionalSpinBox,
             QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-            this, markChanged);
-    connect(ui_->lockoutDaysSpinBox,
-            QOverload<int>::of(&QSpinBox::valueChanged),
-            this, markChanged);
+            this,
+            markChanged);
+    connect(
+        ui_->lockoutDaysSpinBox, QOverload<int>::of(&QSpinBox::valueChanged), this, markChanged);
     connect(ui_->baseCpiSpinBox,
             QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-            this, markChanged);
+            this,
+            markChanged);
 }
 
 void SwapInstrumentForm::setClientManager(ClientManager* cm) {
@@ -335,20 +331,20 @@ void SwapInstrumentForm::setClientManager(ClientManager* cm) {
 
 void SwapInstrumentForm::setImageCache(ImageCache* cache) {
     imageCache_ = cache;
-    setup_flag_combo(this, ui_->currencyCombo, imageCache_,
-                     FlagSource::Currency);
+    setup_flag_combo(this, ui_->currencyCombo, imageCache_, FlagSource::Currency);
 }
 
 void SwapInstrumentForm::populateCurrencies() {
-    if (!clientManager_) return;
+    if (!clientManager_)
+        return;
 
     QPointer<SwapInstrumentForm> self = this;
     auto* watcher = new QFutureWatcher<std::vector<std::string>>(self);
-    connect(watcher, &QFutureWatcher<std::vector<std::string>>::finished, self,
-        [self, watcher]() {
+    connect(watcher, &QFutureWatcher<std::vector<std::string>>::finished, self, [self, watcher]() {
         auto codes = watcher->result();
         watcher->deleteLater();
-        if (!self) return;
+        if (!self)
+            return;
         auto* cb = self->ui_->currencyCombo;
         cb->blockSignals(true);
         cb->clear();
@@ -362,9 +358,7 @@ void SwapInstrumentForm::populateCurrencies() {
     });
 
     auto* cm = clientManager_;
-    watcher->setFuture(QtConcurrent::run([cm]() {
-        return fetch_currency_codes(cm);
-    }));
+    watcher->setFuture(QtConcurrent::run([cm]() { return fetch_currency_codes(cm); }));
 }
 
 void SwapInstrumentForm::setUsername(const std::string& username) {
@@ -382,10 +376,10 @@ void SwapInstrumentForm::clear() {
 }
 
 void SwapInstrumentForm::setTradeType(const QString& code,
-    bool /*has_options*/, bool has_extension) {
+                                      bool /*has_options*/,
+                                      bool has_extension) {
     state_.trade_type_code = code.trimmed().toStdString();
-    ui_->subTabWidget->setTabVisible(
-        ui_->subTabWidget->indexOf(ui_->ratesTab), has_extension);
+    ui_->subTabWidget->setTabVisible(ui_->subTabWidget->indexOf(ui_->ratesTab), has_extension);
 }
 
 void SwapInstrumentForm::setReadOnly(bool readOnly) {
@@ -404,11 +398,14 @@ void SwapInstrumentForm::setReadOnly(bool readOnly) {
     ui_->baseCpiSpinBox->setReadOnly(readOnly);
 }
 
-bool SwapInstrumentForm::isDirty() const { return dirty_; }
-bool SwapInstrumentForm::isLoaded() const { return loaded_; }
+bool SwapInstrumentForm::isDirty() const {
+    return dirty_;
+}
+bool SwapInstrumentForm::isLoaded() const {
+    return loaded_;
+}
 
-void SwapInstrumentForm::setChangeReason(
-    const std::string& code, const std::string& commentary) {
+void SwapInstrumentForm::setChangeReason(const std::string& code, const std::string& commentary) {
     state_.change_reason_code = code;
     state_.change_commentary = commentary;
 }
@@ -416,25 +413,20 @@ void SwapInstrumentForm::setChangeReason(
 void SwapInstrumentForm::writeUiToInstrument() {
     state_.start_date = ui_->startDateEdit->isoDate();
     state_.maturity_date = ui_->maturityDateEdit->isoDate();
-    state_.description =
-        ui_->descriptionEdit->toPlainText().trimmed().toStdString();
+    state_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
 
     // FRA-specific
-    state_.currency =
-        InstrumentFormUtils::getComboValue(ui_->currencyCombo);
+    state_.currency = InstrumentFormUtils::getComboValue(ui_->currencyCombo);
     state_.notional = ui_->notionalSpinBox->value();
 
     // Callable swap-specific
-    state_.call_dates_json =
-        ui_->callableDatesJsonEdit->toPlainText().trimmed().toStdString();
+    state_.call_dates_json = ui_->callableDatesJsonEdit->toPlainText().trimmed().toStdString();
 
     // RPA-specific
-    state_.reference_counterparty =
-        ui_->rpaCounterpartyEdit->text().trimmed().toStdString();
+    state_.reference_counterparty = ui_->rpaCounterpartyEdit->text().trimmed().toStdString();
 
     // Inflation swap-specific
-    state_.inflation_index_code =
-        ui_->inflationIndexCodeEdit->text().trimmed().toStdString();
+    state_.inflation_index_code = ui_->inflationIndexCodeEdit->text().trimmed().toStdString();
     {
         const double cpi = ui_->baseCpiSpinBox->value();
         state_.base_cpi = (cpi > 0.0) ? std::optional<double>(cpi) : std::nullopt;
@@ -444,9 +436,8 @@ void SwapInstrumentForm::writeUiToInstrument() {
     state_.performed_by = username_;
 }
 
-void SwapInstrumentForm::populate(
-    const trading::domain::fra_instrument& instr,
-    std::vector<trading::domain::swap_leg> legs) {
+void SwapInstrumentForm::populate(const trading::domain::fra_instrument& instr,
+                                  std::vector<trading::domain::swap_leg> legs) {
     const std::string ttc = state_.trade_type_code;
     state_ = from_fra(instr);
     state_.trade_type_code = ttc;
@@ -458,9 +449,8 @@ void SwapInstrumentForm::populate(
     emit instrumentLoaded();
 }
 
-void SwapInstrumentForm::populate(
-    const trading::domain::vanilla_swap_instrument& instr,
-    std::vector<trading::domain::swap_leg> legs) {
+void SwapInstrumentForm::populate(const trading::domain::vanilla_swap_instrument& instr,
+                                  std::vector<trading::domain::swap_leg> legs) {
     const std::string ttc = state_.trade_type_code;
     state_ = from_vanilla_swap(instr);
     state_.trade_type_code = ttc;
@@ -472,9 +462,8 @@ void SwapInstrumentForm::populate(
     emit instrumentLoaded();
 }
 
-void SwapInstrumentForm::populate(
-    const trading::domain::cap_floor_instrument& instr,
-    std::vector<trading::domain::swap_leg> legs) {
+void SwapInstrumentForm::populate(const trading::domain::cap_floor_instrument& instr,
+                                  std::vector<trading::domain::swap_leg> legs) {
     const std::string ttc = state_.trade_type_code;
     state_ = from_cap_floor(instr);
     state_.trade_type_code = ttc;
@@ -486,9 +475,8 @@ void SwapInstrumentForm::populate(
     emit instrumentLoaded();
 }
 
-void SwapInstrumentForm::populate(
-    const trading::domain::swaption_instrument& instr,
-    std::vector<trading::domain::swap_leg> legs) {
+void SwapInstrumentForm::populate(const trading::domain::swaption_instrument& instr,
+                                  std::vector<trading::domain::swap_leg> legs) {
     const std::string ttc = state_.trade_type_code;
     state_ = from_swaption(instr);
     state_.trade_type_code = ttc;
@@ -500,9 +488,8 @@ void SwapInstrumentForm::populate(
     emit instrumentLoaded();
 }
 
-void SwapInstrumentForm::populate(
-    const trading::domain::balance_guaranteed_swap_instrument& instr,
-    std::vector<trading::domain::swap_leg> legs) {
+void SwapInstrumentForm::populate(const trading::domain::balance_guaranteed_swap_instrument& instr,
+                                  std::vector<trading::domain::swap_leg> legs) {
     const std::string ttc = state_.trade_type_code;
     state_ = from_balance_guaranteed_swap(instr);
     state_.trade_type_code = ttc;
@@ -514,9 +501,8 @@ void SwapInstrumentForm::populate(
     emit instrumentLoaded();
 }
 
-void SwapInstrumentForm::populate(
-    const trading::domain::callable_swap_instrument& instr,
-    std::vector<trading::domain::swap_leg> legs) {
+void SwapInstrumentForm::populate(const trading::domain::callable_swap_instrument& instr,
+                                  std::vector<trading::domain::swap_leg> legs) {
     const std::string ttc = state_.trade_type_code;
     state_ = from_callable_swap(instr);
     state_.trade_type_code = ttc;
@@ -528,9 +514,8 @@ void SwapInstrumentForm::populate(
     emit instrumentLoaded();
 }
 
-void SwapInstrumentForm::populate(
-    const trading::domain::knock_out_swap_instrument& instr,
-    std::vector<trading::domain::swap_leg> legs) {
+void SwapInstrumentForm::populate(const trading::domain::knock_out_swap_instrument& instr,
+                                  std::vector<trading::domain::swap_leg> legs) {
     const std::string ttc = state_.trade_type_code;
     state_ = from_knock_out_swap(instr);
     state_.trade_type_code = ttc;
@@ -542,9 +527,8 @@ void SwapInstrumentForm::populate(
     emit instrumentLoaded();
 }
 
-void SwapInstrumentForm::populate(
-    const trading::domain::inflation_swap_instrument& instr,
-    std::vector<trading::domain::swap_leg> legs) {
+void SwapInstrumentForm::populate(const trading::domain::inflation_swap_instrument& instr,
+                                  std::vector<trading::domain::swap_leg> legs) {
     const std::string ttc = state_.trade_type_code;
     state_ = from_inflation_swap(instr);
     state_.trade_type_code = ttc;
@@ -556,9 +540,8 @@ void SwapInstrumentForm::populate(
     emit instrumentLoaded();
 }
 
-void SwapInstrumentForm::populate(
-    const trading::domain::rpa_instrument& instr,
-    std::vector<trading::domain::swap_leg> legs) {
+void SwapInstrumentForm::populate(const trading::domain::rpa_instrument& instr,
+                                  std::vector<trading::domain::swap_leg> legs) {
     const std::string ttc = state_.trade_type_code;
     state_ = from_rpa(instr);
     state_.trade_type_code = ttc;
@@ -588,25 +571,20 @@ void SwapInstrumentForm::populateFromState() {
     };
 
     block(true);
-    ui_->tradeTypeCodeEdit->setText(
-        QString::fromStdString(state_.trade_type_code));
+    ui_->tradeTypeCodeEdit->setText(QString::fromStdString(state_.trade_type_code));
     ui_->notionalSpinBox->setValue(state_.notional);
     InstrumentFormUtils::setComboValue(ui_->currencyCombo, state_.currency);
     ui_->startDateEdit->setIsoDate(state_.start_date);
     ui_->maturityDateEdit->setIsoDate(state_.maturity_date);
-    ui_->descriptionEdit->setPlainText(
-        QString::fromStdString(state_.description));
+    ui_->descriptionEdit->setPlainText(QString::fromStdString(state_.description));
     // FRA extension widgets — not populated from per-type domain objects
     // (these UI widgets will be repurposed in a future UI redesign).
     ui_->fraFixingDateEdit->setIsoDate("");
     ui_->fraSettlementDateEdit->setIsoDate("");
     ui_->lockoutDaysSpinBox->setValue(state_.lockout_days.value_or(0));
-    ui_->callableDatesJsonEdit->setPlainText(
-        QString::fromStdString(state_.call_dates_json));
-    ui_->rpaCounterpartyEdit->setText(
-        QString::fromStdString(state_.reference_counterparty));
-    ui_->inflationIndexCodeEdit->setText(
-        QString::fromStdString(state_.inflation_index_code));
+    ui_->callableDatesJsonEdit->setPlainText(QString::fromStdString(state_.call_dates_json));
+    ui_->rpaCounterpartyEdit->setText(QString::fromStdString(state_.reference_counterparty));
+    ui_->inflationIndexCodeEdit->setText(QString::fromStdString(state_.inflation_index_code));
     ui_->baseCpiSpinBox->setValue(state_.base_cpi.value_or(0.0));
     block(false);
 }
@@ -623,102 +601,105 @@ void SwapInstrumentForm::emitProvenance() {
 }
 
 void SwapInstrumentForm::onFieldChanged() {
-    if (!loaded_) return;
+    if (!loaded_)
+        return;
     dirty_ = true;
     emit changed();
 }
 
-void SwapInstrumentForm::saveInstrument(
-    std::function<void(const std::string&)> on_success,
-    std::function<void(const QString&)> on_failure) {
+void SwapInstrumentForm::saveInstrument(std::function<void(const std::string&)> on_success,
+                                        std::function<void(const QString&)> on_failure) {
 
     if (!clientManager_) {
         on_failure(QStringLiteral("Dialog closed"));
         return;
     }
 
-    struct SaveResult { bool success; std::string message; };
+    struct SaveResult {
+        bool success;
+        std::string message;
+    };
 
     QPointer<SwapInstrumentForm> self = this;
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished, self,
-        [self, watcher,
-         on_success = std::move(on_success),
-         on_failure = std::move(on_failure)]() {
-        auto result = watcher->result();
-        watcher->deleteLater();
-        if (!self) return;
+    connect(
+        watcher,
+        &QFutureWatcher<SaveResult>::finished,
+        self,
+        [self, watcher, on_success = std::move(on_success), on_failure = std::move(on_failure)]() {
+            auto result = watcher->result();
+            watcher->deleteLater();
+            if (!self)
+                return;
 
-        if (!result.success) {
-            BOOST_LOG_SEV(lg(), error)
-                << "Swap instrument save failed: " << result.message;
-            on_failure(QString::fromStdString(result.message));
-            return;
-        }
+            if (!result.success) {
+                BOOST_LOG_SEV(lg(), error) << "Swap instrument save failed: " << result.message;
+                on_failure(QString::fromStdString(result.message));
+                return;
+            }
 
-        BOOST_LOG_SEV(lg(), info) << "Swap instrument saved";
-        self->dirty_ = false;
-        self->emitProvenance();
-        on_success(boost::uuids::to_string(self->state_.instrument_id));
-    });
+            BOOST_LOG_SEV(lg(), info) << "Swap instrument saved";
+            self->dirty_ = false;
+            self->emitProvenance();
+            on_success(boost::uuids::to_string(self->state_.instrument_id));
+        });
 
     auto* cm = clientManager_;
     auto state = state_;
     auto username = username_;
     watcher->setFuture(QtConcurrent::run(
-        [cm, state = std::move(state),
-         username = std::move(username)]() -> SaveResult {
-        if (!cm)
-            return {false, "Dialog closed"};
+        [cm, state = std::move(state), username = std::move(username)]() -> SaveResult {
+            if (!cm)
+                return {false, "Dialog closed"};
 
-        const auto& ttc = state.trade_type_code;
-        auto send = [&](auto req) -> SaveResult {
-            auto r = cm->process_authenticated_request(std::move(req));
-            if (!r) return {false, "Failed to communicate with server"};
-            return {r->success, r->message};
-        };
+            const auto& ttc = state.trade_type_code;
+            auto send = [&](auto req) -> SaveResult {
+                auto r = cm->process_authenticated_request(std::move(req));
+                if (!r)
+                    return {false, "Failed to communicate with server"};
+                return {r->success, r->message};
+            };
 
-        using namespace trading::messaging;
-        if (ttc == "ForwardRateAgreement") {
-            save_fra_instrument_request req;
-            req.data = build_fra(state, username);
-            return send(std::move(req));
-        } else if (ttc == "Swap" || ttc == "CrossCurrencySwap"
-                   || ttc == "FlexiSwap") {
-            save_vanilla_swap_instrument_request req;
-            req.data = build_vanilla_swap(state, username);
-            return send(std::move(req));
-        } else if (ttc == "CapFloor") {
-            save_cap_floor_instrument_request req;
-            req.data = build_cap_floor(state, username);
-            return send(std::move(req));
-        } else if (ttc == "Swaption") {
-            save_swaption_instrument_request req;
-            req.data = build_swaption(state, username);
-            return send(std::move(req));
-        } else if (ttc == "BalanceGuaranteedSwap") {
-            save_balance_guaranteed_swap_instrument_request req;
-            req.data = build_balance_guaranteed_swap(state, username);
-            return send(std::move(req));
-        } else if (ttc == "CallableSwap") {
-            save_callable_swap_instrument_request req;
-            req.data = build_callable_swap(state, username);
-            return send(std::move(req));
-        } else if (ttc == "KnockOutSwap") {
-            save_knock_out_swap_instrument_request req;
-            req.data = build_knock_out_swap(state, username);
-            return send(std::move(req));
-        } else if (ttc == "InflationSwap") {
-            save_inflation_swap_instrument_request req;
-            req.data = build_inflation_swap(state, username);
-            return send(std::move(req));
-        } else if (ttc == "RiskParticipationAgreement") {
-            save_rpa_instrument_request req;
-            req.data = build_rpa(state, username);
-            return send(std::move(req));
-        }
-        return {false, "Unknown swap trade type: " + ttc};
-    }));
+            using namespace trading::messaging;
+            if (ttc == "ForwardRateAgreement") {
+                save_fra_instrument_request req;
+                req.data = build_fra(state, username);
+                return send(std::move(req));
+            } else if (ttc == "Swap" || ttc == "CrossCurrencySwap" || ttc == "FlexiSwap") {
+                save_vanilla_swap_instrument_request req;
+                req.data = build_vanilla_swap(state, username);
+                return send(std::move(req));
+            } else if (ttc == "CapFloor") {
+                save_cap_floor_instrument_request req;
+                req.data = build_cap_floor(state, username);
+                return send(std::move(req));
+            } else if (ttc == "Swaption") {
+                save_swaption_instrument_request req;
+                req.data = build_swaption(state, username);
+                return send(std::move(req));
+            } else if (ttc == "BalanceGuaranteedSwap") {
+                save_balance_guaranteed_swap_instrument_request req;
+                req.data = build_balance_guaranteed_swap(state, username);
+                return send(std::move(req));
+            } else if (ttc == "CallableSwap") {
+                save_callable_swap_instrument_request req;
+                req.data = build_callable_swap(state, username);
+                return send(std::move(req));
+            } else if (ttc == "KnockOutSwap") {
+                save_knock_out_swap_instrument_request req;
+                req.data = build_knock_out_swap(state, username);
+                return send(std::move(req));
+            } else if (ttc == "InflationSwap") {
+                save_inflation_swap_instrument_request req;
+                req.data = build_inflation_swap(state, username);
+                return send(std::move(req));
+            } else if (ttc == "RiskParticipationAgreement") {
+                save_rpa_instrument_request req;
+                req.data = build_rpa(state, username);
+                return send(std::move(req));
+            }
+            return {false, "Unknown swap trade type: " + ttc};
+        }));
 }
 
 }

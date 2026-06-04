@@ -20,10 +20,10 @@
 #ifndef ORES_QT_PASSWORD_MATCH_INDICATOR_HPP
 #define ORES_QT_PASSWORD_MATCH_INDICATOR_HPP
 
-#include <QString>
+#include "ores.qt/export.hpp"
 #include <QLineEdit>
 #include <QObject>
-#include "ores.qt/export.hpp"
+#include <QString>
 
 namespace ores::qt {
 
@@ -47,8 +47,9 @@ struct ORES_QT_API PasswordMatchIndicator {
      * passwords match, and red border when they don't.
      */
     static void updateFieldBorder(QLineEdit* field,
-        const QString& password, const QString& confirm,
-        const QString& defaultStyle = {}) {
+                                  const QString& password,
+                                  const QString& confirm,
+                                  const QString& defaultStyle = {}) {
         if (confirm.isEmpty()) {
             field->setStyleSheet(defaultStyle);
         } else if (password == confirm) {
@@ -63,8 +64,8 @@ struct ORES_QT_API PasswordMatchIndicator {
      * updates automatically on every keystroke.
      */
     static void connectFields(QLineEdit* passwordField,
-        QLineEdit* confirmField,
-        const QString& defaultStyle = {});
+                              QLineEdit* confirmField,
+                              const QString& defaultStyle = {});
 };
 
 }

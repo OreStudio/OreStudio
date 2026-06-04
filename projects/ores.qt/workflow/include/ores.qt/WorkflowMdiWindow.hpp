@@ -19,24 +19,24 @@
 #ifndef ORES_QT_WORKFLOW_MDI_WINDOW_HPP
 #define ORES_QT_WORKFLOW_MDI_WINDOW_HPP
 
-#include <vector>
-#include <QTimer>
-#include <QLabel>
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/EntityListMdiWindow.hpp"
+#include "ores.workflow.api/messaging/workflow_query_protocol.hpp"
 #include <QAction>
 #include <QComboBox>
 #include <QDateTime>
+#include <QFutureWatcher>
 #include <QGroupBox>
+#include <QLabel>
 #include <QLineEdit>
 #include <QSplitter>
+#include <QStringList>
 #include <QTabWidget>
 #include <QTableWidget>
+#include <QTimer>
 #include <QToolBar>
-#include <QStringList>
-#include <QFutureWatcher>
-#include "ores.qt/ClientManager.hpp"
-#include "ores.qt/EntityListMdiWindow.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.workflow.api/messaging/workflow_query_protocol.hpp"
+#include <vector>
 
 namespace ores::qt {
 
@@ -58,8 +58,7 @@ class WorkflowMdiWindow final : public EntityListMdiWindow {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.workflow_mdi_window";
+    inline static std::string_view logger_name = "ores.qt.workflow_mdi_window";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -81,8 +80,7 @@ private:
 
 
 public:
-    explicit WorkflowMdiWindow(ClientManager* clientManager,
-                               QWidget* parent = nullptr);
+    explicit WorkflowMdiWindow(ClientManager* clientManager, QWidget* parent = nullptr);
     ~WorkflowMdiWindow() override = default;
 
 signals:
@@ -102,8 +100,10 @@ private slots:
     void onInstanceSelectionChanged();
     void onStepsFetchFinished();
     void onStepDoubleClicked(int row, int col);
-    void onNotificationReceived(const QString& eventType, const QDateTime& timestamp,
-                                const QStringList& entityIds, const QString& tenantId);
+    void onNotificationReceived(const QString& eventType,
+                                const QDateTime& timestamp,
+                                const QStringList& entityIds,
+                                const QString& tenantId);
     void onFilterChanged();
 
 private:
@@ -119,8 +119,7 @@ private:
     void populateExecutionList(
         const std::vector<ores::workflow::messaging::workflow_instance_summary>& instances);
     void loadStepsForInstance(const QString& instanceId);
-    void populateSteps(
-        const std::vector<ores::workflow::messaging::workflow_step_summary>& steps);
+    void populateSteps(const std::vector<ores::workflow::messaging::workflow_step_summary>& steps);
 
     ClientManager* clientManager_;
 

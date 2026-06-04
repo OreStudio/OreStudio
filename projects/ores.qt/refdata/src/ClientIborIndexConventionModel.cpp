@@ -18,38 +18,43 @@
  *
  */
 #include "ores.qt/ClientIborIndexConventionModel.hpp"
-
-#include <QtConcurrent>
-#include "ores.refdata.api/messaging/ibor_index_convention_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
+#include "ores.refdata.api/messaging/ibor_index_convention_protocol.hpp"
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    std::string ibor_index_convention_key_extractor(const refdata::domain::ibor_index_convention& e) {
-        return e.id;
-    }
+std::string ibor_index_convention_key_extractor(const refdata::domain::ibor_index_convention& e) {
+    return e.id;
+}
 }
 
-ClientIborIndexConventionModel::ClientIborIndexConventionModel(
-    ClientManager* clientManager, QObject* parent)
-    : AbstractClientModel(parent),
-      clientManager_(clientManager),
-      watcher_(new QFutureWatcher<FetchResult>(this)),
-      recencyTracker_(ibor_index_convention_key_extractor),
-      pulseManager_(new RecencyPulseManager(this)) {
+ClientIborIndexConventionModel::ClientIborIndexConventionModel(ClientManager* clientManager,
+                                                               QObject* parent)
+    : AbstractClientModel(parent)
+    , clientManager_(clientManager)
+    , watcher_(new QFutureWatcher<FetchResult>(this))
+    , recencyTracker_(ibor_index_convention_key_extractor)
+    , pulseManager_(new RecencyPulseManager(this)) {
 
-    connect(watcher_, &QFutureWatcher<FetchResult>::finished,
-            this, &ClientIborIndexConventionModel::onConventionsLoaded);
+    connect(watcher_,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            &ClientIborIndexConventionModel::onConventionsLoaded);
 
-    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
-            this, &ClientIborIndexConventionModel::onPulseStateChanged);
-    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
-            this, &ClientIborIndexConventionModel::onPulsingComplete);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulse_state_changed,
+            this,
+            &ClientIborIndexConventionModel::onPulseStateChanged);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulsing_complete,
+            this,
+            &ClientIborIndexConventionModel::onPulsingComplete);
 }
 
 int ClientIborIndexConventionModel::rowCount(const QModelIndex& parent) const {
@@ -64,8 +69,7 @@ int ClientIborIndexConventionModel::columnCount(const QModelIndex& parent) const
     return ColumnCount;
 }
 
-QVariant ClientIborIndexConventionModel::data(
-    const QModelIndex& index, int role) const {
+QVariant ClientIborIndexConventionModel::data(const QModelIndex& index, int role) const {
     if (!index.isValid())
         return {};
 
@@ -77,22 +81,22 @@ QVariant ClientIborIndexConventionModel::data(
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-        case Id:
-            return QString::fromStdString(ic.id);
-        case FixingCalendar:
-            return QString::fromStdString(ic.fixing_calendar);
-        case DayCountFraction:
-            return QString::fromStdString(ic.day_count_fraction);
-        case SettlementDays:
-            return static_cast<qlonglong>(ic.settlement_days);
-        case Version:
-            return static_cast<qlonglong>(ic.version);
-        case ModifiedBy:
-            return QString::fromStdString(ic.modified_by);
-        case RecordedAt:
-            return relative_time_helper::format(ic.recorded_at);
-        default:
-            return {};
+            case Id:
+                return QString::fromStdString(ic.id);
+            case FixingCalendar:
+                return QString::fromStdString(ic.fixing_calendar);
+            case DayCountFraction:
+                return QString::fromStdString(ic.day_count_fraction);
+            case SettlementDays:
+                return static_cast<qlonglong>(ic.settlement_days);
+            case Version:
+                return static_cast<qlonglong>(ic.version);
+            case ModifiedBy:
+                return QString::fromStdString(ic.modified_by);
+            case RecordedAt:
+                return relative_time_helper::format(ic.recorded_at);
+            default:
+                return {};
         }
     }
 
@@ -103,28 +107,29 @@ QVariant ClientIborIndexConventionModel::data(
     return {};
 }
 
-QVariant ClientIborIndexConventionModel::headerData(
-    int section, Qt::Orientation orientation, int role) const {
+QVariant ClientIborIndexConventionModel::headerData(int section,
+                                                    Qt::Orientation orientation,
+                                                    int role) const {
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return {};
 
     switch (section) {
-    case Id:
-        return tr("Id");
-    case FixingCalendar:
-        return tr("Fixing Calendar");
-    case DayCountFraction:
-        return tr("DCF");
-    case SettlementDays:
-        return tr("Settlement Days");
-    case Version:
-        return tr("Version");
-    case ModifiedBy:
-        return tr("Modified By");
-    case RecordedAt:
-        return tr("Recorded At");
-    default:
-        return {};
+        case Id:
+            return tr("Id");
+        case FixingCalendar:
+            return tr("Fixing Calendar");
+        case DayCountFraction:
+            return tr("DCF");
+        case SettlementDays:
+            return tr("Settlement Days");
+        case Version:
+            return tr("Version");
+        case ModifiedBy:
+            return tr("Modified By");
+        case RecordedAt:
+            return tr("Recorded At");
+        default:
+            return {};
     }
 }
 
@@ -154,8 +159,7 @@ void ClientIborIndexConventionModel::refresh() {
     fetch_ibor_index_conventions(0, page_size_);
 }
 
-void ClientIborIndexConventionModel::load_page(std::uint32_t offset,
-                                          std::uint32_t limit) {
+void ClientIborIndexConventionModel::load_page(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "load_page: offset=" << offset << ", limit=" << limit;
 
     if (is_fetching_) {
@@ -179,18 +183,20 @@ void ClientIborIndexConventionModel::load_page(std::uint32_t offset,
     fetch_ibor_index_conventions(offset, limit);
 }
 
-void ClientIborIndexConventionModel::fetch_ibor_index_conventions(
-    std::uint32_t offset, std::uint32_t limit) {
+void ClientIborIndexConventionModel::fetch_ibor_index_conventions(std::uint32_t offset,
+                                                                  std::uint32_t limit) {
     is_fetching_ = true;
     QPointer<ClientIborIndexConventionModel> self = this;
 
-    QFuture<FetchResult> future =
-        QtConcurrent::run([self, offset, limit]() -> FetchResult {
-            return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
-                BOOST_LOG_SEV(lg(), debug) << "Making IBOR index conventions request with offset="
-                                           << offset << ", limit=" << limit;
+    QFuture<FetchResult> future = QtConcurrent::run([self, offset, limit]() -> FetchResult {
+        return exception_helper::wrap_async_fetch<FetchResult>(
+            [&]() -> FetchResult {
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Making IBOR index conventions request with offset=" << offset
+                    << ", limit=" << limit;
                 if (!self || !self->clientManager_) {
-                    return {.success = false, .ibor_index_conventions = {},
+                    return {.success = false,
+                            .ibor_index_conventions = {},
                             .total_available_count = 0,
                             .error_message = "Model was destroyed",
                             .error_details = {}};
@@ -198,12 +204,13 @@ void ClientIborIndexConventionModel::fetch_ibor_index_conventions(
 
                 refdata::messaging::get_ibor_index_conventions_request request;
 
-                auto result = self->clientManager_->
-                    process_authenticated_request(std::move(request));
+                auto result =
+                    self->clientManager_->process_authenticated_request(std::move(request));
 
                 if (!result) {
                     BOOST_LOG_SEV(lg(), error) << "Failed to send request: " << result.error();
-                    return {.success = false, .ibor_index_conventions = {},
+                    return {.success = false,
+                            .ibor_index_conventions = {},
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(result.error()),
                             .error_details = {}};
@@ -216,9 +223,11 @@ void ClientIborIndexConventionModel::fetch_ibor_index_conventions(
                 return {.success = true,
                         .ibor_index_conventions = std::move(result->ibor_index_conventions),
                         .total_available_count = count,
-                        .error_message = {}, .error_details = {}};
-            }, "IBOR index conventions");
-        });
+                        .error_message = {},
+                        .error_details = {}};
+            },
+            "IBOR index conventions");
+    });
 
     watcher_->setFuture(future);
 }
@@ -229,8 +238,8 @@ void ClientIborIndexConventionModel::onConventionsLoaded() {
     const auto result = watcher_->result();
 
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to fetch IBOR index conventions: "
-                                   << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to fetch IBOR index conventions: " << result.error_message.toStdString();
         emit loadError(result.error_message, result.error_details);
         return;
     }
@@ -277,8 +286,7 @@ ClientIborIndexConventionModel::getConvention(int row) const {
     return &ibor_index_conventions_[idx];
 }
 
-QVariant ClientIborIndexConventionModel::recency_foreground_color(
-    const std::string& code) const {
+QVariant ClientIborIndexConventionModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {
         return color_constants::stale_indicator;
     }
@@ -287,8 +295,8 @@ QVariant ClientIborIndexConventionModel::recency_foreground_color(
 
 void ClientIborIndexConventionModel::onPulseStateChanged(bool /*isOn*/) {
     if (!ibor_index_conventions_.empty()) {
-        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
-            {Qt::ForegroundRole});
+        emit dataChanged(
+            index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::ForegroundRole});
     }
 }
 

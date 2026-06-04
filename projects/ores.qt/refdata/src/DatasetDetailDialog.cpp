@@ -18,33 +18,32 @@
  *
  */
 #include "ores.qt/DatasetDetailDialog.hpp"
-
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/uuid/random_generator.hpp>
-#include <boost/uuid/string_generator.hpp>
-#include "ui_DatasetDetailDialog.h"
-#include "ores.qt/IconUtils.hpp"
+#include "ores.dq.api/messaging/coding_scheme_protocol.hpp"
+#include "ores.dq.api/messaging/data_organization_protocol.hpp"
+#include "ores.dq.api/messaging/dataset_protocol.hpp"
+#include "ores.dq.api/messaging/dimension_protocol.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
+#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.dq.api/messaging/dataset_protocol.hpp"
-#include "ores.dq.api/messaging/data_organization_protocol.hpp"
-#include "ores.dq.api/messaging/dimension_protocol.hpp"
-#include "ores.dq.api/messaging/coding_scheme_protocol.hpp"
+#include "ui_DatasetDetailDialog.h"
+#include <QFutureWatcher>
+#include <QMessageBox>
+#include <QtConcurrent>
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/string_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 DatasetDetailDialog::DatasetDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent),
-      ui_(new Ui::DatasetDetailDialog),
-      clientManager_(nullptr),
-      isCreateMode_(true),
-      isReadOnly_(false) {
+    : DetailDialogBase(parent)
+    , ui_(new Ui::DatasetDetailDialog)
+    , clientManager_(nullptr)
+    , isCreateMode_(true)
+    , isReadOnly_(false) {
 
     ui_->setupUi(this);
     WidgetUtils::setupComboBoxes(this);
@@ -56,33 +55,40 @@ DatasetDetailDialog::~DatasetDetailDialog() {
     delete ui_;
 }
 
-QTabWidget* DatasetDetailDialog::tabWidget() const { return ui_->tabWidget; }
-QWidget* DatasetDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
-ProvenanceWidget* DatasetDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
+QTabWidget* DatasetDetailDialog::tabWidget() const {
+    return ui_->tabWidget;
+}
+QWidget* DatasetDetailDialog::provenanceTab() const {
+    return ui_->provenanceTab;
+}
+ProvenanceWidget* DatasetDetailDialog::provenanceWidget() const {
+    return ui_->provenanceWidget;
+}
 
 void DatasetDetailDialog::setupConnections() {
-    connect(ui_->saveButton, &QPushButton::clicked,
-            this, &DatasetDetailDialog::onSaveClicked);
-    connect(ui_->deleteButton, &QPushButton::clicked,
-            this, &DatasetDetailDialog::onDeleteClicked);
+    connect(ui_->saveButton, &QPushButton::clicked, this, &DatasetDetailDialog::onSaveClicked);
+    connect(ui_->deleteButton, &QPushButton::clicked, this, &DatasetDetailDialog::onDeleteClicked);
     ui_->closeButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
-    connect(ui_->closeButton, &QPushButton::clicked, this,
-            &DatasetDetailDialog::onCloseClicked);
+    connect(ui_->closeButton, &QPushButton::clicked, this, &DatasetDetailDialog::onCloseClicked);
 }
 
 void DatasetDetailDialog::loadLookupData() {
-    if (!clientManager_ || !clientManager_->isConnected()) return;
+    if (!clientManager_ || !clientManager_->isConnected())
+        return;
 
     QPointer<DatasetDetailDialog> self = this;
 
     // Load catalogs
     auto catalogTask = [self]() -> std::vector<std::string> {
-        if (!self || !self->clientManager_) return {};
+        if (!self || !self->clientManager_)
+            return {};
 
         dq::messaging::get_catalogs_request request;
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
-        if (!response_result) return {};
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
+        if (!response_result)
+            return {};
 
         std::vector<std::string> names;
         names.push_back(""); // Empty option
@@ -93,26 +99,32 @@ void DatasetDetailDialog::loadLookupData() {
     };
 
     auto* catalogWatcher = new QFutureWatcher<std::vector<std::string>>(this);
-    connect(catalogWatcher, &QFutureWatcher<std::vector<std::string>>::finished,
-            this, [self, catalogWatcher]() {
-        auto names = catalogWatcher->result();
-        catalogWatcher->deleteLater();
-        if (!self) return;
+    connect(catalogWatcher,
+            &QFutureWatcher<std::vector<std::string>>::finished,
+            this,
+            [self, catalogWatcher]() {
+                auto names = catalogWatcher->result();
+                catalogWatcher->deleteLater();
+                if (!self)
+                    return;
 
-        self->ui_->catalogCombo->clear();
-        for (const auto& name : names) {
-            self->ui_->catalogCombo->addItem(QString::fromStdString(name));
-        }
-    });
+                self->ui_->catalogCombo->clear();
+                for (const auto& name : names) {
+                    self->ui_->catalogCombo->addItem(QString::fromStdString(name));
+                }
+            });
     catalogWatcher->setFuture(QtConcurrent::run(catalogTask));
 
     // Load subject areas
     auto saTask = [self]() -> std::vector<std::string> {
-        if (!self || !self->clientManager_) return {};
+        if (!self || !self->clientManager_)
+            return {};
 
         dq::messaging::get_subject_areas_request request;
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
-        if (!response_result) return {};
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
+        if (!response_result)
+            return {};
 
         std::vector<std::string> names;
         for (const auto& sa : response_result->subject_areas) {
@@ -122,26 +134,30 @@ void DatasetDetailDialog::loadLookupData() {
     };
 
     auto* saWatcher = new QFutureWatcher<std::vector<std::string>>(this);
-    connect(saWatcher, &QFutureWatcher<std::vector<std::string>>::finished,
-            this, [self, saWatcher]() {
-        auto names = saWatcher->result();
-        saWatcher->deleteLater();
-        if (!self) return;
+    connect(
+        saWatcher, &QFutureWatcher<std::vector<std::string>>::finished, this, [self, saWatcher]() {
+            auto names = saWatcher->result();
+            saWatcher->deleteLater();
+            if (!self)
+                return;
 
-        self->ui_->subjectAreaCombo->clear();
-        for (const auto& name : names) {
-            self->ui_->subjectAreaCombo->addItem(QString::fromStdString(name));
-        }
-    });
+            self->ui_->subjectAreaCombo->clear();
+            for (const auto& name : names) {
+                self->ui_->subjectAreaCombo->addItem(QString::fromStdString(name));
+            }
+        });
     saWatcher->setFuture(QtConcurrent::run(saTask));
 
     // Load data domains
     auto ddTask = [self]() -> std::vector<std::string> {
-        if (!self || !self->clientManager_) return {};
+        if (!self || !self->clientManager_)
+            return {};
 
         dq::messaging::get_data_domains_request request;
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
-        if (!response_result) return {};
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
+        if (!response_result)
+            return {};
 
         std::vector<std::string> names;
         for (const auto& dd : response_result->domains) {
@@ -151,26 +167,30 @@ void DatasetDetailDialog::loadLookupData() {
     };
 
     auto* ddWatcher = new QFutureWatcher<std::vector<std::string>>(this);
-    connect(ddWatcher, &QFutureWatcher<std::vector<std::string>>::finished,
-            this, [self, ddWatcher]() {
-        auto names = ddWatcher->result();
-        ddWatcher->deleteLater();
-        if (!self) return;
+    connect(
+        ddWatcher, &QFutureWatcher<std::vector<std::string>>::finished, this, [self, ddWatcher]() {
+            auto names = ddWatcher->result();
+            ddWatcher->deleteLater();
+            if (!self)
+                return;
 
-        self->ui_->domainCombo->clear();
-        for (const auto& name : names) {
-            self->ui_->domainCombo->addItem(QString::fromStdString(name));
-        }
-    });
+            self->ui_->domainCombo->clear();
+            for (const auto& name : names) {
+                self->ui_->domainCombo->addItem(QString::fromStdString(name));
+            }
+        });
     ddWatcher->setFuture(QtConcurrent::run(ddTask));
 
     // Load origin dimensions
     auto originTask = [self]() -> std::vector<std::string> {
-        if (!self || !self->clientManager_) return {};
+        if (!self || !self->clientManager_)
+            return {};
 
         dq::messaging::get_origin_dimensions_request request;
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
-        if (!response_result) return {};
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
+        if (!response_result)
+            return {};
 
         std::vector<std::string> codes;
         for (const auto& od : response_result->origin_dimensions) {
@@ -180,26 +200,32 @@ void DatasetDetailDialog::loadLookupData() {
     };
 
     auto* originWatcher = new QFutureWatcher<std::vector<std::string>>(this);
-    connect(originWatcher, &QFutureWatcher<std::vector<std::string>>::finished,
-            this, [self, originWatcher]() {
-        auto codes = originWatcher->result();
-        originWatcher->deleteLater();
-        if (!self) return;
+    connect(originWatcher,
+            &QFutureWatcher<std::vector<std::string>>::finished,
+            this,
+            [self, originWatcher]() {
+                auto codes = originWatcher->result();
+                originWatcher->deleteLater();
+                if (!self)
+                    return;
 
-        self->ui_->originCombo->clear();
-        for (const auto& code : codes) {
-            self->ui_->originCombo->addItem(QString::fromStdString(code));
-        }
-    });
+                self->ui_->originCombo->clear();
+                for (const auto& code : codes) {
+                    self->ui_->originCombo->addItem(QString::fromStdString(code));
+                }
+            });
     originWatcher->setFuture(QtConcurrent::run(originTask));
 
     // Load nature dimensions
     auto natureTask = [self]() -> std::vector<std::string> {
-        if (!self || !self->clientManager_) return {};
+        if (!self || !self->clientManager_)
+            return {};
 
         dq::messaging::get_nature_dimensions_request request;
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
-        if (!response_result) return {};
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
+        if (!response_result)
+            return {};
 
         std::vector<std::string> codes;
         for (const auto& nd : response_result->nature_dimensions) {
@@ -209,26 +235,32 @@ void DatasetDetailDialog::loadLookupData() {
     };
 
     auto* natureWatcher = new QFutureWatcher<std::vector<std::string>>(this);
-    connect(natureWatcher, &QFutureWatcher<std::vector<std::string>>::finished,
-            this, [self, natureWatcher]() {
-        auto codes = natureWatcher->result();
-        natureWatcher->deleteLater();
-        if (!self) return;
+    connect(natureWatcher,
+            &QFutureWatcher<std::vector<std::string>>::finished,
+            this,
+            [self, natureWatcher]() {
+                auto codes = natureWatcher->result();
+                natureWatcher->deleteLater();
+                if (!self)
+                    return;
 
-        self->ui_->natureCombo->clear();
-        for (const auto& code : codes) {
-            self->ui_->natureCombo->addItem(QString::fromStdString(code));
-        }
-    });
+                self->ui_->natureCombo->clear();
+                for (const auto& code : codes) {
+                    self->ui_->natureCombo->addItem(QString::fromStdString(code));
+                }
+            });
     natureWatcher->setFuture(QtConcurrent::run(natureTask));
 
     // Load treatment dimensions
     auto treatmentTask = [self]() -> std::vector<std::string> {
-        if (!self || !self->clientManager_) return {};
+        if (!self || !self->clientManager_)
+            return {};
 
         dq::messaging::get_treatment_dimensions_request request;
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
-        if (!response_result) return {};
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
+        if (!response_result)
+            return {};
 
         std::vector<std::string> codes;
         for (const auto& td : response_result->treatment_dimensions) {
@@ -238,26 +270,32 @@ void DatasetDetailDialog::loadLookupData() {
     };
 
     auto* treatmentWatcher = new QFutureWatcher<std::vector<std::string>>(this);
-    connect(treatmentWatcher, &QFutureWatcher<std::vector<std::string>>::finished,
-            this, [self, treatmentWatcher]() {
-        auto codes = treatmentWatcher->result();
-        treatmentWatcher->deleteLater();
-        if (!self) return;
+    connect(treatmentWatcher,
+            &QFutureWatcher<std::vector<std::string>>::finished,
+            this,
+            [self, treatmentWatcher]() {
+                auto codes = treatmentWatcher->result();
+                treatmentWatcher->deleteLater();
+                if (!self)
+                    return;
 
-        self->ui_->treatmentCombo->clear();
-        for (const auto& code : codes) {
-            self->ui_->treatmentCombo->addItem(QString::fromStdString(code));
-        }
-    });
+                self->ui_->treatmentCombo->clear();
+                for (const auto& code : codes) {
+                    self->ui_->treatmentCombo->addItem(QString::fromStdString(code));
+                }
+            });
     treatmentWatcher->setFuture(QtConcurrent::run(treatmentTask));
 
     // Load coding schemes
     auto csTask = [self]() -> std::vector<std::string> {
-        if (!self || !self->clientManager_) return {};
+        if (!self || !self->clientManager_)
+            return {};
 
         dq::messaging::get_coding_schemes_request request;
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
-        if (!response_result) return {};
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
+        if (!response_result)
+            return {};
 
         std::vector<std::string> codes;
         codes.push_back(""); // Empty option
@@ -268,26 +306,30 @@ void DatasetDetailDialog::loadLookupData() {
     };
 
     auto* csWatcher = new QFutureWatcher<std::vector<std::string>>(this);
-    connect(csWatcher, &QFutureWatcher<std::vector<std::string>>::finished,
-            this, [self, csWatcher]() {
-        auto codes = csWatcher->result();
-        csWatcher->deleteLater();
-        if (!self) return;
+    connect(
+        csWatcher, &QFutureWatcher<std::vector<std::string>>::finished, this, [self, csWatcher]() {
+            auto codes = csWatcher->result();
+            csWatcher->deleteLater();
+            if (!self)
+                return;
 
-        self->ui_->codingSchemeCombo->clear();
-        for (const auto& code : codes) {
-            self->ui_->codingSchemeCombo->addItem(QString::fromStdString(code));
-        }
-    });
+            self->ui_->codingSchemeCombo->clear();
+            for (const auto& code : codes) {
+                self->ui_->codingSchemeCombo->addItem(QString::fromStdString(code));
+            }
+        });
     csWatcher->setFuture(QtConcurrent::run(csTask));
 
     // Load methodologies
     auto methTask = [self]() -> std::vector<std::pair<boost::uuids::uuid, std::string>> {
-        if (!self || !self->clientManager_) return {};
+        if (!self || !self->clientManager_)
+            return {};
 
         dq::messaging::get_methodologies_request request;
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
-        if (!response_result) return {};
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
+        if (!response_result)
+            return {};
 
         std::vector<std::pair<boost::uuids::uuid, std::string>> methodologies;
         for (const auto& m : response_result->methodologies) {
@@ -296,20 +338,24 @@ void DatasetDetailDialog::loadLookupData() {
         return methodologies;
     };
 
-    auto* methWatcher = new QFutureWatcher<std::vector<std::pair<boost::uuids::uuid, std::string>>>(this);
-    connect(methWatcher, &QFutureWatcher<std::vector<std::pair<boost::uuids::uuid, std::string>>>::finished,
-            this, [self, methWatcher]() {
-        auto meths = methWatcher->result();
-        methWatcher->deleteLater();
-        if (!self) return;
+    auto* methWatcher =
+        new QFutureWatcher<std::vector<std::pair<boost::uuids::uuid, std::string>>>(this);
+    connect(methWatcher,
+            &QFutureWatcher<std::vector<std::pair<boost::uuids::uuid, std::string>>>::finished,
+            this,
+            [self, methWatcher]() {
+                auto meths = methWatcher->result();
+                methWatcher->deleteLater();
+                if (!self)
+                    return;
 
-        self->methodologies_ = meths;
-        self->ui_->methodologyCombo->clear();
-        self->ui_->methodologyCombo->addItem(""); // Empty option
-        for (const auto& [id, name] : meths) {
-            self->ui_->methodologyCombo->addItem(QString::fromStdString(name));
-        }
-    });
+                self->methodologies_ = meths;
+                self->ui_->methodologyCombo->clear();
+                self->ui_->methodologyCombo->addItem(""); // Empty option
+                for (const auto& [id, name] : meths) {
+                    self->ui_->methodologyCombo->addItem(QString::fromStdString(name));
+                }
+            });
     methWatcher->setFuture(QtConcurrent::run(methTask));
 }
 
@@ -331,33 +377,43 @@ void DatasetDetailDialog::setDataset(const dq::domain::dataset& dataset) {
 
     if (dataset.catalog_name) {
         int idx = ui_->catalogCombo->findText(QString::fromStdString(*dataset.catalog_name));
-        if (idx >= 0) ui_->catalogCombo->setCurrentIndex(idx);
+        if (idx >= 0)
+            ui_->catalogCombo->setCurrentIndex(idx);
     }
 
     int saIdx = ui_->subjectAreaCombo->findText(QString::fromStdString(dataset.subject_area_name));
-    if (saIdx >= 0) ui_->subjectAreaCombo->setCurrentIndex(saIdx);
+    if (saIdx >= 0)
+        ui_->subjectAreaCombo->setCurrentIndex(saIdx);
 
     int ddIdx = ui_->domainCombo->findText(QString::fromStdString(dataset.domain_name));
-    if (ddIdx >= 0) ui_->domainCombo->setCurrentIndex(ddIdx);
+    if (ddIdx >= 0)
+        ui_->domainCombo->setCurrentIndex(ddIdx);
 
     int originIdx = ui_->originCombo->findText(QString::fromStdString(dataset.origin_code));
-    if (originIdx >= 0) ui_->originCombo->setCurrentIndex(originIdx);
+    if (originIdx >= 0)
+        ui_->originCombo->setCurrentIndex(originIdx);
 
     int natureIdx = ui_->natureCombo->findText(QString::fromStdString(dataset.nature_code));
-    if (natureIdx >= 0) ui_->natureCombo->setCurrentIndex(natureIdx);
+    if (natureIdx >= 0)
+        ui_->natureCombo->setCurrentIndex(natureIdx);
 
-    int treatmentIdx = ui_->treatmentCombo->findText(QString::fromStdString(dataset.treatment_code));
-    if (treatmentIdx >= 0) ui_->treatmentCombo->setCurrentIndex(treatmentIdx);
+    int treatmentIdx =
+        ui_->treatmentCombo->findText(QString::fromStdString(dataset.treatment_code));
+    if (treatmentIdx >= 0)
+        ui_->treatmentCombo->setCurrentIndex(treatmentIdx);
 
     if (dataset.coding_scheme_code) {
-        int csIdx = ui_->codingSchemeCombo->findText(QString::fromStdString(*dataset.coding_scheme_code));
-        if (csIdx >= 0) ui_->codingSchemeCombo->setCurrentIndex(csIdx);
+        int csIdx =
+            ui_->codingSchemeCombo->findText(QString::fromStdString(*dataset.coding_scheme_code));
+        if (csIdx >= 0)
+            ui_->codingSchemeCombo->setCurrentIndex(csIdx);
     }
 
     if (dataset.methodology_id) {
         for (size_t i = 0; i < methodologies_.size(); ++i) {
             if (methodologies_[i].first == *dataset.methodology_id) {
-                ui_->methodologyCombo->setCurrentIndex(static_cast<int>(i + 1)); // +1 for empty option
+                ui_->methodologyCombo->setCurrentIndex(
+                    static_cast<int>(i + 1)); // +1 for empty option
                 break;
             }
         }
@@ -367,12 +423,17 @@ void DatasetDetailDialog::setDataset(const dq::domain::dataset& dataset) {
         ui_->licenseEdit->setText(QString::fromStdString(*dataset.license_info));
     }
 
-    auto asOfDate = std::chrono::duration_cast<std::chrono::seconds>(
-        dataset.as_of_date.time_since_epoch()).count();
+    auto asOfDate =
+        std::chrono::duration_cast<std::chrono::seconds>(dataset.as_of_date.time_since_epoch())
+            .count();
     ui_->asOfDateEdit->setDate(QDateTime::fromSecsSinceEpoch(asOfDate).date());
 
-    populateProvenance(dataset_.version, dataset_.modified_by, dataset_.performed_by,
-                       dataset_.recorded_at, "", dataset_.change_commentary);
+    populateProvenance(dataset_.version,
+                       dataset_.modified_by,
+                       dataset_.performed_by,
+                       dataset_.recorded_at,
+                       "",
+                       dataset_.change_commentary);
 
     updateUiState();
 }
@@ -409,14 +470,12 @@ void DatasetDetailDialog::onSaveClicked() {
     QString code = ui_->codeEdit->text().trimmed();
 
     if (name.isEmpty()) {
-        MessageBoxHelper::warning(this, tr("Validation Error"),
-                                  tr("Name is required."));
+        MessageBoxHelper::warning(this, tr("Validation Error"), tr("Name is required."));
         return;
     }
 
     if (code.isEmpty()) {
-        MessageBoxHelper::warning(this, tr("Validation Error"),
-                                  tr("Code is required."));
+        MessageBoxHelper::warning(this, tr("Validation Error"), tr("Code is required."));
         return;
     }
 
@@ -458,32 +517,37 @@ void DatasetDetailDialog::onSaveClicked() {
     }
 
     QDate asOfDate = ui_->asOfDateEdit->date();
-    dataset.as_of_date = std::chrono::system_clock::from_time_t(
-        QDateTime(asOfDate, QTime(0, 0)).toSecsSinceEpoch());
+    dataset.as_of_date =
+        std::chrono::system_clock::from_time_t(QDateTime(asOfDate, QTime(0, 0)).toSecsSinceEpoch());
     dataset.ingestion_timestamp = std::chrono::system_clock::now();
 
     {
-        const auto crOpType = isCreateMode_
-            ? ChangeReasonDialog::OperationType::Create
-            : ChangeReasonDialog::OperationType::Amend;
-        const auto crSel = promptChangeReason(crOpType, true,
-            isCreateMode_ ? "system" : "common");
-        if (!crSel) return;
+        const auto crOpType = isCreateMode_ ? ChangeReasonDialog::OperationType::Create :
+                                              ChangeReasonDialog::OperationType::Amend;
+        const auto crSel = promptChangeReason(crOpType, true, isCreateMode_ ? "system" : "common");
+        if (!crSel)
+            return;
         dataset.change_commentary = crSel->commentary;
     }
 
     QPointer<DatasetDetailDialog> self = this;
     boost::uuids::uuid datasetId = dataset.id;
 
-    struct SaveResult { bool success; std::string message; };
+    struct SaveResult {
+        bool success;
+        std::string message;
+    };
 
     auto task = [self, dataset]() -> SaveResult {
-        if (!self || !self->clientManager_) return {false, "Dialog closed"};
+        if (!self || !self->clientManager_)
+            return {false, "Dialog closed"};
 
         dq::messaging::save_dataset_request request;
         request.datasets.push_back(dataset);
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
-        if (!response_result) return {false, "Failed to communicate with server"};
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
+        if (!response_result)
+            return {false, "Failed to communicate with server"};
 
         return {response_result->success, response_result->message};
     };
@@ -493,7 +557,8 @@ void DatasetDetailDialog::onSaveClicked() {
         auto result = watcher->result();
         watcher->deleteLater();
 
-        if (!self) return;
+        if (!self)
+            return;
 
         if (result.success) {
             emit self->datasetSaved(datasetId);
@@ -508,28 +573,34 @@ void DatasetDetailDialog::onSaveClicked() {
 }
 
 void DatasetDetailDialog::onDeleteClicked() {
-    auto reply = MessageBoxHelper::question(this, tr("Confirm Delete"),
-        tr("Delete dataset '%1'?").arg(ui_->nameEdit->text()),
-        QMessageBox::Yes | QMessageBox::No);
+    auto reply = MessageBoxHelper::question(this,
+                                            tr("Confirm Delete"),
+                                            tr("Delete dataset '%1'?").arg(ui_->nameEdit->text()),
+                                            QMessageBox::Yes | QMessageBox::No);
 
-    if (reply != QMessageBox::Yes) return;
+    if (reply != QMessageBox::Yes)
+        return;
 
     {
-        const auto crSel = promptChangeReason(
-            ChangeReasonDialog::OperationType::Delete, true, "common");
-        if (!crSel) return;
+        const auto crSel =
+            promptChangeReason(ChangeReasonDialog::OperationType::Delete, true, "common");
+        if (!crSel)
+            return;
     }
 
     QPointer<DatasetDetailDialog> self = this;
     boost::uuids::uuid datasetId = dataset_.id;
 
     auto task = [self, datasetId]() -> bool {
-        if (!self || !self->clientManager_) return false;
+        if (!self || !self->clientManager_)
+            return false;
 
         dq::messaging::delete_dataset_request request;
         request.ids.push_back(boost::uuids::to_string(datasetId));
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
-        if (!response_result) return false;
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
+        if (!response_result)
+            return false;
 
         return response_result->success;
     };
@@ -539,7 +610,8 @@ void DatasetDetailDialog::onDeleteClicked() {
         bool success = watcher->result();
         watcher->deleteLater();
 
-        if (!self) return;
+        if (!self)
+            return;
 
         if (success) {
             emit self->statusMessage(tr("Dataset deleted successfully"));

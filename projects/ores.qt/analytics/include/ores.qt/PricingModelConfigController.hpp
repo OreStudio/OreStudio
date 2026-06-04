@@ -20,13 +20,13 @@
 #ifndef ORES_QT_PRICING_MODEL_CONFIG_CONTROLLER_HPP
 #define ORES_QT_PRICING_MODEL_CONFIG_CONTROLLER_HPP
 
-#include <QMdiArea>
-#include <QMainWindow>
-#include "ores.qt/EntityController.hpp"
-#include "ores.qt/ClientManager.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.analytics.api/domain/pricing_model_config.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/EntityController.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
+#include <QMainWindow>
+#include <QMdiArea>
 
 namespace ores::qt {
 
@@ -43,8 +43,7 @@ class PricingModelConfigController final : public EntityController {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.pricing_model_config_controller";
+    inline static std::string_view logger_name = "ores.qt.pricing_model_config_controller";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -53,12 +52,11 @@ private:
     }
 
 public:
-    PricingModelConfigController(
-        QMainWindow* mainWindow,
-        QMdiArea* mdiArea,
-        ClientManager* clientManager,
-        const QString& username,
-        QObject* parent = nullptr);
+    PricingModelConfigController(QMainWindow* mainWindow,
+                                 QMdiArea* mdiArea,
+                                 ClientManager* clientManager,
+                                 const QString& username,
+                                 QObject* parent = nullptr);
 
     void showListWindow() override;
     void closeAllWindows() override;
@@ -76,8 +74,7 @@ private slots:
     void onAddNewRequested();
     void onShowHistory(const analytics::domain::pricing_model_config& config);
     void onRevertVersion(const analytics::domain::pricing_model_config& config);
-    void onOpenVersion(const analytics::domain::pricing_model_config& config,
-                       int versionNumber);
+    void onOpenVersion(const analytics::domain::pricing_model_config& config, int versionNumber);
 
 private:
     void showAddWindow();

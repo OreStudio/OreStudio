@@ -20,13 +20,13 @@
 #ifndef ORES_QT_PARTY_HISTORY_DIALOG_HPP
 #define ORES_QT_PARTY_HISTORY_DIALOG_HPP
 
-#include <QWidget>
-#include <QToolBar>
-#include <QTableWidget>
-#include <boost/uuid/uuid.hpp>
-#include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
 #include "ores.refdata.api/domain/party.hpp"
+#include <QTableWidget>
+#include <QToolBar>
+#include <QWidget>
+#include <boost/uuid/uuid.hpp>
 
 namespace Ui {
 class PartyHistoryDialog;
@@ -44,8 +44,7 @@ class PartyHistoryDialog final : public QWidget {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.party_history_dialog";
+    inline static std::string_view logger_name = "ores.qt.party_history_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -54,11 +53,10 @@ private:
     }
 
 public:
-    explicit PartyHistoryDialog(
-        const boost::uuids::uuid& id,
-        const QString& code,
-        ClientManager* clientManager,
-        QWidget* parent = nullptr);
+    explicit PartyHistoryDialog(const boost::uuids::uuid& id,
+                                const QString& code,
+                                ClientManager* clientManager,
+                                QWidget* parent = nullptr);
     ~PartyHistoryDialog() override;
 
     void loadHistory();
@@ -66,8 +64,7 @@ public:
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
-    void openVersionRequested(const refdata::domain::party& party,
-                              int versionNumber);
+    void openVersionRequested(const refdata::domain::party& party, int versionNumber);
     void revertVersionRequested(const refdata::domain::party& party);
 
 private slots:

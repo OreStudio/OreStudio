@@ -17,26 +17,24 @@
  *
  */
 #include "ores.qt/ComputePlugin.hpp"
-
-#include <QMenu>
-#include <QAction>
-#include <QMdiArea>
-#include <QMainWindow>
-#include <QStatusBar>
 #include "ores.logging/make_logger.hpp"
-
-#include "ores.qt/DetachableMdiSubWindow.hpp"
-#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/AppController.hpp"
 #include "ores.qt/AppVersionController.hpp"
-#include "ores.qt/ComputeDashboardController.hpp"
 #include "ores.qt/ComputeConsoleController.hpp"
-#include "ores.qt/ServiceDashboardController.hpp"
-#include "ores.qt/QueueMonitorController.hpp"
-#include "ores.qt/ReportTypeController.hpp"
+#include "ores.qt/ComputeDashboardController.hpp"
 #include "ores.qt/ConcurrencyPolicyController.hpp"
+#include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/QueueMonitorController.hpp"
 #include "ores.qt/ReportDefinitionController.hpp"
 #include "ores.qt/ReportInstanceController.hpp"
+#include "ores.qt/ReportTypeController.hpp"
+#include "ores.qt/ServiceDashboardController.hpp"
+#include <QAction>
+#include <QMainWindow>
+#include <QMdiArea>
+#include <QMenu>
+#include <QStatusBar>
 
 namespace ores::qt {
 
@@ -55,7 +53,8 @@ auto ico(Icon icon) {
 
 }
 
-ComputePlugin::ComputePlugin(QObject* parent) : PluginBase(parent) {
+ComputePlugin::ComputePlugin(QObject* parent)
+    : PluginBase(parent) {
     BOOST_LOG_SEV(lg(), debug) << "Plugin initialised.";
 }
 
@@ -67,103 +66,150 @@ void ComputePlugin::on_login(const plugin_context& ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Login event received.";
     ctx_ = ctx;
 
-    BOOST_LOG_SEV(lg(), info)
-        << "on_login ctx http_base_url='"
-        << (ctx_.http_base_url.empty() ? "(empty)" : ctx_.http_base_url)
-        << "'";
+    BOOST_LOG_SEV(lg(), info) << "on_login ctx http_base_url='"
+                              << (ctx_.http_base_url.empty() ? "(empty)" : ctx_.http_base_url)
+                              << "'";
 
-    appController_ = std::make_unique<AppController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
+    appController_ = std::make_unique<AppController>(ctx_.main_window,
+                                                     ctx_.mdi_area,
+                                                     ctx_.client_manager,
+                                                     ctx_.change_reason_cache,
+                                                     ctx_.username,
+                                                     this);
     connectControllerSignals(appController_.get());
 
-    appVersionController_ = std::make_unique<AppVersionController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
+    appVersionController_ = std::make_unique<AppVersionController>(ctx_.main_window,
+                                                                   ctx_.mdi_area,
+                                                                   ctx_.client_manager,
+                                                                   ctx_.change_reason_cache,
+                                                                   ctx_.username,
+                                                                   this);
     if (!ctx_.http_base_url.empty())
         appVersionController_->setHttpBaseUrl(ctx_.http_base_url);
     connectControllerSignals(appVersionController_.get());
 
     computeDashboardController_ = std::make_unique<ComputeDashboardController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, this);
-    connect(computeDashboardController_.get(), &ComputeDashboardController::statusMessage,
-            this, &PluginBase::statusMessage);
-    connect(computeDashboardController_.get(), &ComputeDashboardController::errorMessage,
-            this, [this](const QString& msg) { emit statusMessage(msg); });
-    connect(computeDashboardController_.get(), &ComputeDashboardController::detachableWindowCreated,
-            this, &PluginBase::windowCreated);
-    connect(computeDashboardController_.get(), &ComputeDashboardController::detachableWindowDestroyed,
-            this, &PluginBase::windowDestroyed);
+    connect(computeDashboardController_.get(),
+            &ComputeDashboardController::statusMessage,
+            this,
+            &PluginBase::statusMessage);
+    connect(computeDashboardController_.get(),
+            &ComputeDashboardController::errorMessage,
+            this,
+            [this](const QString& msg) { emit statusMessage(msg); });
+    connect(computeDashboardController_.get(),
+            &ComputeDashboardController::detachableWindowCreated,
+            this,
+            &PluginBase::windowCreated);
+    connect(computeDashboardController_.get(),
+            &ComputeDashboardController::detachableWindowDestroyed,
+            this,
+            &PluginBase::windowDestroyed);
 
-    computeConsoleController_ = std::make_unique<ComputeConsoleController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.badge_cache, this);
+    computeConsoleController_ = std::make_unique<ComputeConsoleController>(ctx_.main_window,
+                                                                           ctx_.mdi_area,
+                                                                           ctx_.client_manager,
+                                                                           ctx_.change_reason_cache,
+                                                                           ctx_.badge_cache,
+                                                                           this);
     if (!ctx_.http_base_url.empty())
         computeConsoleController_->setHttpBaseUrl(ctx_.http_base_url);
-    connect(computeConsoleController_.get(), &ComputeConsoleController::statusMessage,
-            this, &PluginBase::statusMessage);
-    connect(computeConsoleController_.get(), &ComputeConsoleController::errorMessage,
-            this, [this](const QString& msg) { emit statusMessage(msg); });
-    connect(computeConsoleController_.get(), &ComputeConsoleController::detachableWindowCreated,
-            this, &PluginBase::windowCreated);
-    connect(computeConsoleController_.get(), &ComputeConsoleController::detachableWindowDestroyed,
-            this, &PluginBase::windowDestroyed);
+    connect(computeConsoleController_.get(),
+            &ComputeConsoleController::statusMessage,
+            this,
+            &PluginBase::statusMessage);
+    connect(computeConsoleController_.get(),
+            &ComputeConsoleController::errorMessage,
+            this,
+            [this](const QString& msg) { emit statusMessage(msg); });
+    connect(computeConsoleController_.get(),
+            &ComputeConsoleController::detachableWindowCreated,
+            this,
+            &PluginBase::windowCreated);
+    connect(computeConsoleController_.get(),
+            &ComputeConsoleController::detachableWindowDestroyed,
+            this,
+            &PluginBase::windowDestroyed);
 
     serviceDashboardController_ = std::make_unique<ServiceDashboardController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, this);
-    connect(serviceDashboardController_.get(), &ServiceDashboardController::statusMessage,
-            this, &PluginBase::statusMessage);
-    connect(serviceDashboardController_.get(), &ServiceDashboardController::errorMessage,
-            this, [this](const QString& msg) { emit statusMessage(msg); });
-    connect(serviceDashboardController_.get(), &ServiceDashboardController::detachableWindowCreated,
-            this, &PluginBase::windowCreated);
-    connect(serviceDashboardController_.get(), &ServiceDashboardController::detachableWindowDestroyed,
-            this, &PluginBase::windowDestroyed);
+    connect(serviceDashboardController_.get(),
+            &ServiceDashboardController::statusMessage,
+            this,
+            &PluginBase::statusMessage);
+    connect(serviceDashboardController_.get(),
+            &ServiceDashboardController::errorMessage,
+            this,
+            [this](const QString& msg) { emit statusMessage(msg); });
+    connect(serviceDashboardController_.get(),
+            &ServiceDashboardController::detachableWindowCreated,
+            this,
+            &PluginBase::windowCreated);
+    connect(serviceDashboardController_.get(),
+            &ServiceDashboardController::detachableWindowDestroyed,
+            this,
+            &PluginBase::windowDestroyed);
 
     queueMonitorController_ = std::make_unique<QueueMonitorController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
     connectControllerSignals(queueMonitorController_.get());
 
-    reportTypeController_ = std::make_unique<ReportTypeController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
+    reportTypeController_ = std::make_unique<ReportTypeController>(ctx_.main_window,
+                                                                   ctx_.mdi_area,
+                                                                   ctx_.client_manager,
+                                                                   ctx_.change_reason_cache,
+                                                                   ctx_.username,
+                                                                   this);
     connectControllerSignals(reportTypeController_.get());
 
-    concurrencyPolicyController_ = std::make_unique<ConcurrencyPolicyController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
+    concurrencyPolicyController_ =
+        std::make_unique<ConcurrencyPolicyController>(ctx_.main_window,
+                                                      ctx_.mdi_area,
+                                                      ctx_.client_manager,
+                                                      ctx_.change_reason_cache,
+                                                      ctx_.username,
+                                                      this);
     connectControllerSignals(concurrencyPolicyController_.get());
 
-    reportDefinitionController_ = std::make_unique<ReportDefinitionController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.badge_cache, ctx_.username, this);
+    reportDefinitionController_ =
+        std::make_unique<ReportDefinitionController>(ctx_.main_window,
+                                                     ctx_.mdi_area,
+                                                     ctx_.client_manager,
+                                                     ctx_.change_reason_cache,
+                                                     ctx_.badge_cache,
+                                                     ctx_.username,
+                                                     this);
     connectControllerSignals(reportDefinitionController_.get());
 
-    reportInstanceController_ = std::make_unique<ReportInstanceController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
+    reportInstanceController_ = std::make_unique<ReportInstanceController>(ctx_.main_window,
+                                                                           ctx_.mdi_area,
+                                                                           ctx_.client_manager,
+                                                                           ctx_.change_reason_cache,
+                                                                           ctx_.username,
+                                                                           this);
     connectControllerSignals(reportInstanceController_.get());
 }
 
 void ComputePlugin::setup_menus(const shared_menus_context& smc) {
     BOOST_LOG_SEV(lg(), debug) << "Registering entries in shared menus."
-        << " analytics=" << (smc.analytics_menu ? "ok" : "null")
-        << " system=" << (smc.system_menu ? "ok" : "null")
-        << " telemetry=" << (smc.telemetry_menu ? "ok" : "null");
+                               << " analytics=" << (smc.analytics_menu ? "ok" : "null")
+                               << " system=" << (smc.system_menu ? "ok" : "null")
+                               << " telemetry=" << (smc.telemetry_menu ? "ok" : "null");
 
     // ---- Analytics menu: reporting + compute items ----------------------
     if (smc.analytics_menu) {
         smc.analytics_menu->addSeparator();
 
-        act_report_definitions_ = smc.analytics_menu->addAction(
-            ico(Icon::ChartMultiple), tr("Report &Definitions"));
+        act_report_definitions_ =
+            smc.analytics_menu->addAction(ico(Icon::ChartMultiple), tr("Report &Definitions"));
         connect(act_report_definitions_, &QAction::triggered, this, [this]() {
             if (reportDefinitionController_)
                 reportDefinitionController_->showListWindow();
         });
 
-        act_report_instances_ = smc.analytics_menu->addAction(
-            ico(Icon::Record), tr("Report &Instances"));
+        act_report_instances_ =
+            smc.analytics_menu->addAction(ico(Icon::Record), tr("Report &Instances"));
         connect(act_report_instances_, &QAction::triggered, this, [this]() {
             if (reportInstanceController_)
                 reportInstanceController_->showListWindow();
@@ -171,15 +217,13 @@ void ComputePlugin::setup_menus(const shared_menus_context& smc) {
 
         smc.analytics_menu->addSeparator();
 
-        auto* actDashboard = smc.analytics_menu->addAction(
-            ico(Icon::Chart), tr("&Dashboard"));
+        auto* actDashboard = smc.analytics_menu->addAction(ico(Icon::Chart), tr("&Dashboard"));
         connect(actDashboard, &QAction::triggered, this, [this]() {
             if (computeDashboardController_)
                 computeDashboardController_->showDashboard();
         });
 
-        auto* actConsole = smc.analytics_menu->addAction(
-            ico(Icon::ServerLink), tr("&Console"));
+        auto* actConsole = smc.analytics_menu->addAction(ico(Icon::ServerLink), tr("&Console"));
         connect(actConsole, &QAction::triggered, this, [this]() {
             if (computeConsoleController_)
                 computeConsoleController_->showConsole();
@@ -187,29 +231,31 @@ void ComputePlugin::setup_menus(const shared_menus_context& smc) {
 
         smc.analytics_menu->addSeparator();
 
-        auto* actApps = smc.analytics_menu->addAction(
-            ico(Icon::TasksApp), tr("&Apps"));
+        auto* actApps = smc.analytics_menu->addAction(ico(Icon::TasksApp), tr("&Apps"));
         connect(actApps, &QAction::triggered, this, [this]() {
-            if (appController_) appController_->showListWindow();
+            if (appController_)
+                appController_->showListWindow();
         });
 
-        auto* actAppVersions = smc.analytics_menu->addAction(
-            ico(Icon::TasksApp), tr("App &Versions"));
+        auto* actAppVersions =
+            smc.analytics_menu->addAction(ico(Icon::TasksApp), tr("App &Versions"));
         connect(actAppVersions, &QAction::triggered, this, [this]() {
-            if (appVersionController_) appVersionController_->showListWindow();
+            if (appVersionController_)
+                appVersionController_->showListWindow();
         });
     }
 
     // ---- Analytics Codes: report types + concurrency policies -----------
     if (smc.analytics_codes_menu) {
-        auto* actReportTypes = smc.analytics_codes_menu->addAction(
-            ico(Icon::Chart), tr("Report &Types"));
+        auto* actReportTypes =
+            smc.analytics_codes_menu->addAction(ico(Icon::Chart), tr("Report &Types"));
         connect(actReportTypes, &QAction::triggered, this, [this]() {
-            if (reportTypeController_) reportTypeController_->showListWindow();
+            if (reportTypeController_)
+                reportTypeController_->showListWindow();
         });
 
-        auto* actConcurrencyPolicies = smc.analytics_codes_menu->addAction(
-            ico(Icon::Settings), tr("&Concurrency Policies"));
+        auto* actConcurrencyPolicies =
+            smc.analytics_codes_menu->addAction(ico(Icon::Settings), tr("&Concurrency Policies"));
         connect(actConcurrencyPolicies, &QAction::triggered, this, [this]() {
             if (concurrencyPolicyController_)
                 concurrencyPolicyController_->showListWindow();
@@ -225,15 +271,17 @@ void ComputePlugin::setup_menus(const shared_menus_context& smc) {
 
         auto* actQueueMonitor = msgQueue->addAction(ico(Icon::Server), tr("&Queue Monitor"));
         connect(actQueueMonitor, &QAction::triggered, this, [this]() {
-            if (queueMonitorController_) queueMonitorController_->showListWindow();
+            if (queueMonitorController_)
+                queueMonitorController_->showListWindow();
         });
 
         // ---- System > Telemetry > Service Dashboard (first item) --------
-        auto* firstTelemetryAction = smc.telemetry_menu->actions().isEmpty()
-            ? nullptr : smc.telemetry_menu->actions().first();
+        auto* firstTelemetryAction = smc.telemetry_menu->actions().isEmpty() ?
+                                         nullptr :
+                                         smc.telemetry_menu->actions().first();
 
-        auto* actServiceDashboard = new QAction(
-            ico(Icon::Chart), tr("&Service Dashboard..."), this);
+        auto* actServiceDashboard =
+            new QAction(ico(Icon::Chart), tr("&Service Dashboard..."), this);
         connect(actServiceDashboard, &QAction::triggered, this, [this]() {
             if (serviceDashboardController_)
                 serviceDashboardController_->showDashboard();

@@ -18,38 +18,42 @@
  *
  */
 #include "ores.qt/ClientSwapConventionModel.hpp"
-
-#include <QtConcurrent>
-#include "ores.refdata.api/messaging/swap_convention_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
+#include "ores.refdata.api/messaging/swap_convention_protocol.hpp"
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    std::string swap_convention_key_extractor(const refdata::domain::swap_convention& e) {
-        return e.id;
-    }
+std::string swap_convention_key_extractor(const refdata::domain::swap_convention& e) {
+    return e.id;
+}
 }
 
-ClientSwapConventionModel::ClientSwapConventionModel(
-    ClientManager* clientManager, QObject* parent)
-    : AbstractClientModel(parent),
-      clientManager_(clientManager),
-      watcher_(new QFutureWatcher<FetchResult>(this)),
-      recencyTracker_(swap_convention_key_extractor),
-      pulseManager_(new RecencyPulseManager(this)) {
+ClientSwapConventionModel::ClientSwapConventionModel(ClientManager* clientManager, QObject* parent)
+    : AbstractClientModel(parent)
+    , clientManager_(clientManager)
+    , watcher_(new QFutureWatcher<FetchResult>(this))
+    , recencyTracker_(swap_convention_key_extractor)
+    , pulseManager_(new RecencyPulseManager(this)) {
 
-    connect(watcher_, &QFutureWatcher<FetchResult>::finished,
-            this, &ClientSwapConventionModel::onConventionsLoaded);
+    connect(watcher_,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            &ClientSwapConventionModel::onConventionsLoaded);
 
-    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
-            this, &ClientSwapConventionModel::onPulseStateChanged);
-    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
-            this, &ClientSwapConventionModel::onPulsingComplete);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulse_state_changed,
+            this,
+            &ClientSwapConventionModel::onPulseStateChanged);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulsing_complete,
+            this,
+            &ClientSwapConventionModel::onPulsingComplete);
 }
 
 int ClientSwapConventionModel::rowCount(const QModelIndex& parent) const {
@@ -64,8 +68,7 @@ int ClientSwapConventionModel::columnCount(const QModelIndex& parent) const {
     return ColumnCount;
 }
 
-QVariant ClientSwapConventionModel::data(
-    const QModelIndex& index, int role) const {
+QVariant ClientSwapConventionModel::data(const QModelIndex& index, int role) const {
     if (!index.isValid())
         return {};
 
@@ -77,22 +80,22 @@ QVariant ClientSwapConventionModel::data(
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-        case Id:
-            return QString::fromStdString(sc.id);
-        case FixedFrequency:
-            return QString::fromStdString(sc.fixed_frequency);
-        case FixedDayCountFraction:
-            return QString::fromStdString(sc.fixed_day_count_fraction);
-        case Index:
-            return QString::fromStdString(sc.index);
-        case Version:
-            return static_cast<qlonglong>(sc.version);
-        case ModifiedBy:
-            return QString::fromStdString(sc.modified_by);
-        case RecordedAt:
-            return relative_time_helper::format(sc.recorded_at);
-        default:
-            return {};
+            case Id:
+                return QString::fromStdString(sc.id);
+            case FixedFrequency:
+                return QString::fromStdString(sc.fixed_frequency);
+            case FixedDayCountFraction:
+                return QString::fromStdString(sc.fixed_day_count_fraction);
+            case Index:
+                return QString::fromStdString(sc.index);
+            case Version:
+                return static_cast<qlonglong>(sc.version);
+            case ModifiedBy:
+                return QString::fromStdString(sc.modified_by);
+            case RecordedAt:
+                return relative_time_helper::format(sc.recorded_at);
+            default:
+                return {};
         }
     }
 
@@ -103,28 +106,28 @@ QVariant ClientSwapConventionModel::data(
     return {};
 }
 
-QVariant ClientSwapConventionModel::headerData(
-    int section, Qt::Orientation orientation, int role) const {
+QVariant
+ClientSwapConventionModel::headerData(int section, Qt::Orientation orientation, int role) const {
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return {};
 
     switch (section) {
-    case Id:
-        return tr("Id");
-    case FixedFrequency:
-        return tr("Fixed Freq");
-    case FixedDayCountFraction:
-        return tr("Fixed DCF");
-    case Index:
-        return tr("Index");
-    case Version:
-        return tr("Version");
-    case ModifiedBy:
-        return tr("Modified By");
-    case RecordedAt:
-        return tr("Recorded At");
-    default:
-        return {};
+        case Id:
+            return tr("Id");
+        case FixedFrequency:
+            return tr("Fixed Freq");
+        case FixedDayCountFraction:
+            return tr("Fixed DCF");
+        case Index:
+            return tr("Index");
+        case Version:
+            return tr("Version");
+        case ModifiedBy:
+            return tr("Modified By");
+        case RecordedAt:
+            return tr("Recorded At");
+        default:
+            return {};
     }
 }
 
@@ -154,8 +157,7 @@ void ClientSwapConventionModel::refresh() {
     fetch_swap_conventions(0, page_size_);
 }
 
-void ClientSwapConventionModel::load_page(std::uint32_t offset,
-                                          std::uint32_t limit) {
+void ClientSwapConventionModel::load_page(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "load_page: offset=" << offset << ", limit=" << limit;
 
     if (is_fetching_) {
@@ -179,18 +181,19 @@ void ClientSwapConventionModel::load_page(std::uint32_t offset,
     fetch_swap_conventions(offset, limit);
 }
 
-void ClientSwapConventionModel::fetch_swap_conventions(
-    std::uint32_t offset, std::uint32_t limit) {
+void ClientSwapConventionModel::fetch_swap_conventions(std::uint32_t offset, std::uint32_t limit) {
     is_fetching_ = true;
     QPointer<ClientSwapConventionModel> self = this;
 
-    QFuture<FetchResult> future =
-        QtConcurrent::run([self, offset, limit]() -> FetchResult {
-            return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
-                BOOST_LOG_SEV(lg(), debug) << "Making swap conventions request with offset="
-                                           << offset << ", limit=" << limit;
+    QFuture<FetchResult> future = QtConcurrent::run([self, offset, limit]() -> FetchResult {
+        return exception_helper::wrap_async_fetch<FetchResult>(
+            [&]() -> FetchResult {
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Making swap conventions request with offset=" << offset
+                    << ", limit=" << limit;
                 if (!self || !self->clientManager_) {
-                    return {.success = false, .swap_conventions = {},
+                    return {.success = false,
+                            .swap_conventions = {},
                             .total_available_count = 0,
                             .error_message = "Model was destroyed",
                             .error_details = {}};
@@ -198,27 +201,30 @@ void ClientSwapConventionModel::fetch_swap_conventions(
 
                 refdata::messaging::get_swap_conventions_request request;
 
-                auto result = self->clientManager_->
-                    process_authenticated_request(std::move(request));
+                auto result =
+                    self->clientManager_->process_authenticated_request(std::move(request));
 
                 if (!result) {
                     BOOST_LOG_SEV(lg(), error) << "Failed to send request: " << result.error();
-                    return {.success = false, .swap_conventions = {},
+                    return {.success = false,
+                            .swap_conventions = {},
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(result.error()),
                             .error_details = {}};
                 }
 
-                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->swap_conventions.size()
-                                           << " swap conventions";
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Fetched " << result->swap_conventions.size() << " swap conventions";
                 const std::uint32_t count =
                     static_cast<std::uint32_t>(result->swap_conventions.size());
                 return {.success = true,
                         .swap_conventions = std::move(result->swap_conventions),
                         .total_available_count = count,
-                        .error_message = {}, .error_details = {}};
-            }, "swap conventions");
-        });
+                        .error_message = {},
+                        .error_details = {}};
+            },
+            "swap conventions");
+    });
 
     watcher_->setFuture(future);
 }
@@ -229,8 +235,8 @@ void ClientSwapConventionModel::onConventionsLoaded() {
     const auto result = watcher_->result();
 
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to fetch swap conventions: "
-                                   << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to fetch swap conventions: " << result.error_message.toStdString();
         emit loadError(result.error_message, result.error_details);
         return;
     }
@@ -269,16 +275,14 @@ void ClientSwapConventionModel::set_page_size(std::uint32_t size) {
     }
 }
 
-const refdata::domain::swap_convention*
-ClientSwapConventionModel::getConvention(int row) const {
+const refdata::domain::swap_convention* ClientSwapConventionModel::getConvention(int row) const {
     const auto idx = static_cast<std::size_t>(row);
     if (idx >= swap_conventions_.size())
         return nullptr;
     return &swap_conventions_[idx];
 }
 
-QVariant ClientSwapConventionModel::recency_foreground_color(
-    const std::string& code) const {
+QVariant ClientSwapConventionModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {
         return color_constants::stale_indicator;
     }
@@ -287,8 +291,8 @@ QVariant ClientSwapConventionModel::recency_foreground_color(
 
 void ClientSwapConventionModel::onPulseStateChanged(bool /*isOn*/) {
     if (!swap_conventions_.empty()) {
-        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
-            {Qt::ForegroundRole});
+        emit dataChanged(
+            index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::ForegroundRole});
     }
 }
 

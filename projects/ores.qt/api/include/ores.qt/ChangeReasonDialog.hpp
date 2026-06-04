@@ -20,15 +20,15 @@
 #ifndef ORES_QT_CHANGE_REASON_DIALOG_HPP
 #define ORES_QT_CHANGE_REASON_DIALOG_HPP
 
-#include <QDialog>
-#include <QComboBox>
-#include <QTextEdit>
-#include <QLabel>
-#include <QPushButton>
-#include <QDialogButtonBox>
-#include <vector>
 #include "ores.dq.api/domain/change_reason.hpp"
 #include "ores.qt/export.hpp"
+#include <QComboBox>
+#include <QDialog>
+#include <QDialogButtonBox>
+#include <QLabel>
+#include <QPushButton>
+#include <QTextEdit>
+#include <vector>
 
 namespace ores::qt {
 
@@ -56,9 +56,9 @@ public:
      * @brief Type of operation requiring a change reason.
      */
     enum class OperationType {
-        Create,  ///< Creating a new entity
-        Amend,   ///< Updating an existing entity
-        Delete   ///< Deleting an entity
+        Create, ///< Creating a new entity
+        Amend,  ///< Updating an existing entity
+        Delete  ///< Deleting an entity
     };
 
     /**
@@ -72,11 +72,10 @@ public:
      *        Ignored for Create operations (all reasons are always enabled).
      * @param parent Parent widget
      */
-    explicit ChangeReasonDialog(
-        const std::vector<dq::domain::change_reason>& reasons,
-        OperationType operation,
-        bool hasFieldChanges,
-        QWidget* parent = nullptr);
+    explicit ChangeReasonDialog(const std::vector<dq::domain::change_reason>& reasons,
+                                OperationType operation,
+                                bool hasFieldChanges,
+                                QWidget* parent = nullptr);
 
     ~ChangeReasonDialog() override = default;
 

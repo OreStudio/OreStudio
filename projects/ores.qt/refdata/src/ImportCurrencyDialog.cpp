@@ -18,37 +18,35 @@
  *
  */
 #include "ores.qt/ImportCurrencyDialog.hpp"
-
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QHeaderView>
-#include <QFileInfo>
-#include <QtConcurrent/QtConcurrent>
+#include "ores.ore.core/xml/importer.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.refdata.api/messaging/protocol.hpp"
-#include "ores.ore.core/xml/importer.hpp"
+#include <QFileInfo>
+#include <QHBoxLayout>
+#include <QHeaderView>
+#include <QVBoxLayout>
+#include <QtConcurrent/QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-ImportCurrencyDialog::ImportCurrencyDialog(
-    const std::vector<refdata::domain::currency>& currencies,
-    const QString& filename,
-    ClientManager* clientManager,
-    const QString& username,
-    QWidget* parent)
-    : QDialog(parent),
-      currencies_(currencies),
-      filename_(filename),
-      clientManager_(clientManager),
-      username_(username),
-      importInProgress_(false),
-      cancelRequested_(false) {
+ImportCurrencyDialog::ImportCurrencyDialog(const std::vector<refdata::domain::currency>& currencies,
+                                           const QString& filename,
+                                           ClientManager* clientManager,
+                                           const QString& username,
+                                           QWidget* parent)
+    : QDialog(parent)
+    , currencies_(currencies)
+    , filename_(filename)
+    , clientManager_(clientManager)
+    , username_(username)
+    , importInProgress_(false)
+    , cancelRequested_(false) {
 
     BOOST_LOG_SEV(lg(), debug) << "Creating import currency dialog for file: "
-                               << filename.toStdString()
-                               << " with " << currencies.size() << " currencies";
+                               << filename.toStdString() << " with " << currencies.size()
+                               << " currencies";
 
     // Validate all currencies using shared validation
     validation_errors_.reserve(currencies.size());
@@ -84,8 +82,10 @@ void ImportCurrencyDialog::setupUI() {
     // Using stateChanged for Qt 6.x compatibility (checkStateChanged added in 6.7)
     QT_WARNING_PUSH
     QT_WARNING_DISABLE_DEPRECATED
-    connect(selectAllCheckbox_, &QCheckBox::stateChanged,
-            this, &ImportCurrencyDialog::onSelectAllChanged);
+    connect(selectAllCheckbox_,
+            &QCheckBox::stateChanged,
+            this,
+            &ImportCurrencyDialog::onSelectAllChanged);
     QT_WARNING_POP
     selectionLayout->addWidget(selectAllCheckbox_);
 
@@ -97,14 +97,12 @@ void ImportCurrencyDialog::setupUI() {
     // Currency table
     currencyTable_ = new QTableWidget(this);
     currencyTable_->setColumnCount(6);
-    currencyTable_->setHorizontalHeaderLabels({
-        "", "ISO Code", "Name", "Symbol", "Fraction Symbol", "Fractions/Unit"
-    });
+    currencyTable_->setHorizontalHeaderLabels(
+        {"", "ISO Code", "Name", "Symbol", "Fraction Symbol", "Fractions/Unit"});
     currencyTable_->setSelectionBehavior(QAbstractItemView::SelectRows);
     currencyTable_->setEditTriggers(QAbstractItemView::NoEditTriggers);
     currencyTable_->horizontalHeader()->setStretchLastSection(false);
-    currencyTable_->horizontalHeader()->setSectionResizeMode(
-        QHeaderView::ResizeToContents);
+    currencyTable_->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     currencyTable_->verticalHeader()->setVisible(false);
     mainLayout->addWidget(currencyTable_);
 
@@ -124,21 +122,18 @@ void ImportCurrencyDialog::setupUI() {
     buttonLayout->addStretch();
 
     importButton_ = new QPushButton("Import");
-    connect(importButton_, &QPushButton::clicked,
-            this, &ImportCurrencyDialog::onImportClicked);
+    connect(importButton_, &QPushButton::clicked, this, &ImportCurrencyDialog::onImportClicked);
     buttonLayout->addWidget(importButton_);
 
     cancelButton_ = new QPushButton("Cancel");
-    connect(cancelButton_, &QPushButton::clicked,
-            this, &ImportCurrencyDialog::onCancelClicked);
+    connect(cancelButton_, &QPushButton::clicked, this, &ImportCurrencyDialog::onCancelClicked);
     buttonLayout->addWidget(cancelButton_);
 
     mainLayout->addLayout(buttonLayout);
 }
 
 void ImportCurrencyDialog::populateTable() {
-    BOOST_LOG_SEV(lg(), debug) << "Populating table with "
-                               << currencies_.size() << " currencies";
+    BOOST_LOG_SEV(lg(), debug) << "Populating table with " << currencies_.size() << " currencies";
 
     currencyTable_->setRowCount(static_cast<int>(currencies_.size()));
 
@@ -161,16 +156,18 @@ void ImportCurrencyDialog::populateTable() {
         // Using stateChanged for Qt 6.x compatibility (checkStateChanged added in 6.7)
         QT_WARNING_PUSH
         QT_WARNING_DISABLE_DEPRECATED
-        connect(checkBox, &QCheckBox::stateChanged,
-                this, &ImportCurrencyDialog::onCurrencyCheckChanged);
+        connect(checkBox,
+                &QCheckBox::stateChanged,
+                this,
+                &ImportCurrencyDialog::onCurrencyCheckChanged);
         QT_WARNING_POP
 
         // If currency is invalid, disable and uncheck the checkbox
         if (!is_valid) {
             checkBox->setChecked(false);
             checkBox->setEnabled(false);
-            checkBoxWidget->setToolTip(QString("Cannot import: %1")
-                .arg(QString::fromStdString(validation_error)));
+            checkBoxWidget->setToolTip(
+                QString("Cannot import: %1").arg(QString::fromStdString(validation_error)));
             invalid_count++;
         } else {
             checkBox->setChecked(true);
@@ -181,22 +178,19 @@ void ImportCurrencyDialog::populateTable() {
         currencyTable_->setCellWidget(static_cast<int>(i), 0, checkBoxWidget);
 
         // Currency data columns
-        auto* isoItem = new QTableWidgetItem(
-            QString::fromStdString(currency.iso_code));
-        auto* nameItem = new QTableWidgetItem(
-            QString::fromStdString(currency.name));
-        auto* symbolItem = new QTableWidgetItem(
-            QString::fromStdString(currency.symbol));
-        auto* fractionSymbolItem = new QTableWidgetItem(
-            QString::fromStdString(currency.fraction_symbol));
-        auto* fractionsPerUnitItem = new QTableWidgetItem(
-            QString::number(currency.fractions_per_unit));
+        auto* isoItem = new QTableWidgetItem(QString::fromStdString(currency.iso_code));
+        auto* nameItem = new QTableWidgetItem(QString::fromStdString(currency.name));
+        auto* symbolItem = new QTableWidgetItem(QString::fromStdString(currency.symbol));
+        auto* fractionSymbolItem =
+            new QTableWidgetItem(QString::fromStdString(currency.fraction_symbol));
+        auto* fractionsPerUnitItem =
+            new QTableWidgetItem(QString::number(currency.fractions_per_unit));
 
         // If invalid, color the row red and add tooltips
         if (!is_valid) {
             const QBrush errorBrush(QColor(255, 200, 200));
-            const QString tooltip = QString("Validation errors:\n%1")
-                .arg(QString::fromStdString(validation_error));
+            const QString tooltip =
+                QString("Validation errors:\n%1").arg(QString::fromStdString(validation_error));
 
             isoItem->setBackground(errorBrush);
             isoItem->setToolTip(tooltip);
@@ -217,8 +211,7 @@ void ImportCurrencyDialog::populateTable() {
         currencyTable_->setItem(static_cast<int>(i), 5, fractionsPerUnitItem);
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Table populated successfully - "
-                               << valid_count << " valid, "
+    BOOST_LOG_SEV(lg(), debug) << "Table populated successfully - " << valid_count << " valid, "
                                << invalid_count << " invalid currencies";
 }
 
@@ -235,9 +228,7 @@ void ImportCurrencyDialog::updateSelectionCount() {
     }
 
     selectionCountLabel_->setText(
-        QString("(%1 of %2 currencies selected)")
-        .arg(selectedCount)
-        .arg(currencies_.size()));
+        QString("(%1 of %2 currencies selected)").arg(selectedCount).arg(currencies_.size()));
 
     updateImportButtonState();
 }
@@ -257,8 +248,7 @@ void ImportCurrencyDialog::updateImportButtonState() {
     importButton_->setEnabled(selectedCount > 0 && !importInProgress_);
 }
 
-std::vector<refdata::domain::currency>
-ImportCurrencyDialog::getSelectedCurrencies() const {
+std::vector<refdata::domain::currency> ImportCurrencyDialog::getSelectedCurrencies() const {
     std::vector<refdata::domain::currency> selected;
 
     for (int i = 0; i < currencyTable_->rowCount(); ++i) {
@@ -271,8 +261,7 @@ ImportCurrencyDialog::getSelectedCurrencies() const {
         }
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Retrieved " << selected.size()
-                               << " selected currencies";
+    BOOST_LOG_SEV(lg(), debug) << "Retrieved " << selected.size() << " selected currencies";
     return selected;
 }
 
@@ -325,8 +314,8 @@ void ImportCurrencyDialog::onImportClicked() {
 
     if (!clientManager_ || !clientManager_->isConnected()) {
         BOOST_LOG_SEV(lg(), warn) << "Import cancelled: client disconnected";
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot import currencies while disconnected.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot import currencies while disconnected.");
         return;
     }
 
@@ -355,71 +344,68 @@ void ImportCurrencyDialog::onImportClicked() {
     auto self = this;
 
     // Run import in background thread
-    QFuture<std::pair<int, int>> future =
-        QtConcurrent::run([self, selected, total]() -> std::pair<int, int> {
-            using namespace ores::refdata::messaging;
+    QFuture<std::pair<int, int>> future = QtConcurrent::run([self,
+                                                             selected,
+                                                             total]() -> std::pair<int, int> {
+        using namespace ores::refdata::messaging;
 
-            int success_count = 0;
-            int current = 0;
+        int success_count = 0;
+        int current = 0;
 
-            for (const auto& currency : selected) {
-                // Check if cancellation was requested
-                if (self->cancelRequested_.load()) {
-                    BOOST_LOG_SEV(lg(), info) << "Import cancelled by user at currency "
-                                               << current << " of " << total;
-                    break;
-                }
-
-                current++;
-
-                // Update UI on main thread
-                QMetaObject::invokeMethod(self, [self, currency, current, total]() {
-                    self->progressBar_->setValue(current);
-                    self->statusLabel_->setText(
-                        QString("Importing %1 (%2 of %3)...")
-                        .arg(QString::fromStdString(currency.iso_code))
-                        .arg(current)
-                        .arg(total));
-                }, Qt::QueuedConnection);
-
-                try {
-                    // Set modified_by to current user
-                    auto currency_to_import = currency;
-                    currency_to_import.modified_by = self->username_.toStdString();
-
-                    auto request = save_currency_request::from(currency_to_import);
-                    auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
-
-                    if (!response_result) {
-                        BOOST_LOG_SEV(lg(), warn)
-                            << "Failed to import currency: "
-                            << currency.iso_code;
-                        continue;
-                    }
-
-                    if (response_result->success) {
-                        success_count++;
-                        BOOST_LOG_SEV(lg(), debug)
-                            << "Successfully imported: " << currency.iso_code;
-                    } else {
-                        BOOST_LOG_SEV(lg(), warn)
-                            << "Server rejected currency: "
-                            << currency.iso_code;
-                    }
-                } catch (const std::exception& e) {
-                    BOOST_LOG_SEV(lg(), error)
-                        << "Error importing currency "
-                        << currency.iso_code << ": " << e.what();
-                }
+        for (const auto& currency : selected) {
+            // Check if cancellation was requested
+            if (self->cancelRequested_.load()) {
+                BOOST_LOG_SEV(lg(), info)
+                    << "Import cancelled by user at currency " << current << " of " << total;
+                break;
             }
 
-            return {success_count, total};
-        });
+            current++;
+
+            // Update UI on main thread
+            QMetaObject::invokeMethod(
+                self,
+                [self, currency, current, total]() {
+                    self->progressBar_->setValue(current);
+                    self->statusLabel_->setText(QString("Importing %1 (%2 of %3)...")
+                                                    .arg(QString::fromStdString(currency.iso_code))
+                                                    .arg(current)
+                                                    .arg(total));
+                },
+                Qt::QueuedConnection);
+
+            try {
+                // Set modified_by to current user
+                auto currency_to_import = currency;
+                currency_to_import.modified_by = self->username_.toStdString();
+
+                auto request = save_currency_request::from(currency_to_import);
+                auto response_result =
+                    self->clientManager_->process_authenticated_request(std::move(request));
+
+                if (!response_result) {
+                    BOOST_LOG_SEV(lg(), warn) << "Failed to import currency: " << currency.iso_code;
+                    continue;
+                }
+
+                if (response_result->success) {
+                    success_count++;
+                    BOOST_LOG_SEV(lg(), debug) << "Successfully imported: " << currency.iso_code;
+                } else {
+                    BOOST_LOG_SEV(lg(), warn) << "Server rejected currency: " << currency.iso_code;
+                }
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(lg(), error)
+                    << "Error importing currency " << currency.iso_code << ": " << e.what();
+            }
+        }
+
+        return {success_count, total};
+    });
 
     // Watch for completion
     auto* watcher = new QFutureWatcher<std::pair<int, int>>(this);
-    connect(watcher, &QFutureWatcher<std::pair<int, int>>::finished,
-            this, [this, watcher]() {
+    connect(watcher, &QFutureWatcher<std::pair<int, int>>::finished, this, [this, watcher]() {
         auto result = watcher->result();
         const int success_count = result.first;
         const int total_count = result.second;
@@ -432,16 +418,14 @@ void ImportCurrencyDialog::onImportClicked() {
 
         // Check if import was cancelled
         if (cancelRequested_.load()) {
-            BOOST_LOG_SEV(lg(), info)
-                << "Import cancelled after importing " << success_count
-                << " of " << total_count << " currencies";
+            BOOST_LOG_SEV(lg(), info) << "Import cancelled after importing " << success_count
+                                      << " of " << total_count << " currencies";
 
             emit importCancelled();
             reject();
         } else {
-            BOOST_LOG_SEV(lg(), info)
-                << "Import completed: " << success_count
-                << " of " << total_count << " currencies imported successfully";
+            BOOST_LOG_SEV(lg(), info) << "Import completed: " << success_count << " of "
+                                      << total_count << " currencies imported successfully";
 
             emit importCompleted(success_count, total_count);
             accept();

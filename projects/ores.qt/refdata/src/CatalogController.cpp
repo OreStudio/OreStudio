@@ -18,41 +18,37 @@
  *
  */
 #include "ores.qt/CatalogController.hpp"
+#include "ores.dq.api/eventing/catalog_changed_event.hpp"
+#include "ores.eventing/domain/event_traits.hpp"
+#include "ores.qt/CatalogDetailDialog.hpp"
+#include "ores.qt/CatalogHistoryDialog.hpp"
+#include "ores.qt/CatalogMdiWindow.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
-
+#include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/IconUtils.hpp"
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/CatalogMdiWindow.hpp"
-#include "ores.qt/CatalogDetailDialog.hpp"
-#include "ores.qt/CatalogHistoryDialog.hpp"
-#include "ores.qt/DetachableMdiSubWindow.hpp"
-#include "ores.eventing/domain/event_traits.hpp"
-#include "ores.dq.api/eventing/catalog_changed_event.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    constexpr std::string_view catalog_event_name =
-        eventing::domain::event_traits<
-            dq::eventing::catalog_changed_event>::name;
+constexpr std::string_view catalog_event_name =
+    eventing::domain::event_traits<dq::eventing::catalog_changed_event>::name;
 }
 
-CatalogController::CatalogController(
-    QMainWindow* mainWindow,
-    QMdiArea* mdiArea,
-    ClientManager* clientManager,
-    ChangeReasonCache* changeReasonCache,
-    const QString& username,
-    QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username,
-                       catalog_event_name, parent),
-      changeReasonCache_(changeReasonCache),
-      listWindow_(nullptr),
-      listMdiSubWindow_(nullptr) {
+CatalogController::CatalogController(QMainWindow* mainWindow,
+                                     QMdiArea* mdiArea,
+                                     ClientManager* clientManager,
+                                     ChangeReasonCache* changeReasonCache,
+                                     const QString& username,
+                                     QObject* parent)
+    : EntityController(mainWindow, mdiArea, clientManager, username, catalog_event_name, parent)
+    , changeReasonCache_(changeReasonCache)
+    , listWindow_(nullptr)
+    , listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "CatalogController created";
 }
@@ -72,23 +68,27 @@ void CatalogController::showListWindow() {
 
     listWindow_ = new CatalogMdiWindow(clientManager_, username_);
 
-    connect(listWindow_, &CatalogMdiWindow::statusChanged,
-            this, &CatalogController::statusMessage);
-    connect(listWindow_, &CatalogMdiWindow::errorOccurred,
-            this, &CatalogController::errorMessage);
-    connect(listWindow_, &CatalogMdiWindow::showCatalogDetails,
-            this, &CatalogController::onShowDetails);
-    connect(listWindow_, &CatalogMdiWindow::addNewRequested,
-            this, &CatalogController::onAddNewRequested);
-    connect(listWindow_, &CatalogMdiWindow::showCatalogHistory,
-            this, &CatalogController::onShowHistory);
+    connect(listWindow_, &CatalogMdiWindow::statusChanged, this, &CatalogController::statusMessage);
+    connect(listWindow_, &CatalogMdiWindow::errorOccurred, this, &CatalogController::errorMessage);
+    connect(listWindow_,
+            &CatalogMdiWindow::showCatalogDetails,
+            this,
+            &CatalogController::onShowDetails);
+    connect(listWindow_,
+            &CatalogMdiWindow::addNewRequested,
+            this,
+            &CatalogController::onAddNewRequested);
+    connect(listWindow_,
+            &CatalogMdiWindow::showCatalogHistory,
+            this,
+            &CatalogController::onShowHistory);
 
     // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Catalogs");
-    listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Library, IconUtils::DefaultIconColor));
+    listMdiSubWindow_->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Library, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -98,13 +98,16 @@ void CatalogController::showListWindow() {
     track_window(key, listMdiSubWindow_);
     register_detachable_window(listMdiSubWindow_);
 
-    connect(listMdiSubWindow_, &QObject::destroyed, this,
+    connect(listMdiSubWindow_,
+            &QObject::destroyed,
+            this,
             [self = QPointer<CatalogController>(this), key]() {
-        if (!self) return;
-        self->untrack_window(key);
-        self->listWindow_ = nullptr;
-        self->listMdiSubWindow_ = nullptr;
-    });
+                if (!self)
+                    return;
+                self->untrack_window(key);
+                self->listWindow_ = nullptr;
+                self->listMdiSubWindow_ = nullptr;
+            });
 
     BOOST_LOG_SEV(lg(), debug) << "Catalog list window created";
 }
@@ -141,8 +144,7 @@ void CatalogController::onAddNewRequested() {
 }
 
 void CatalogController::onShowHistory(const QString& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Show history requested for: "
-                               << name.toStdString();
+    BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << name.toStdString();
     showHistoryWindow(name);
 }
 
@@ -156,23 +158,26 @@ void CatalogController::showAddWindow() {
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
 
-    connect(detailDialog, &CatalogDetailDialog::statusMessage,
-            this, &CatalogController::statusMessage);
-    connect(detailDialog, &CatalogDetailDialog::errorMessage,
-            this, &CatalogController::errorMessage);
-    connect(detailDialog, &CatalogDetailDialog::catalogSaved,
-            this, [self = QPointer<CatalogController>(this)](const QString& name) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Catalog saved: " << name.toStdString();
-        self->handleEntitySaved();
-    });
+    connect(
+        detailDialog, &CatalogDetailDialog::statusMessage, this, &CatalogController::statusMessage);
+    connect(
+        detailDialog, &CatalogDetailDialog::errorMessage, this, &CatalogController::errorMessage);
+    connect(detailDialog,
+            &CatalogDetailDialog::catalogSaved,
+            this,
+            [self = QPointer<CatalogController>(this)](const QString& name) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Catalog saved: " << name.toStdString();
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Catalog");
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Library, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Library, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -199,36 +204,41 @@ void CatalogController::showDetailWindow(const dq::domain::catalog& catalog) {
     detailDialog->setCreateMode(false);
     detailDialog->setCatalog(catalog);
 
-    connect(detailDialog, &CatalogDetailDialog::statusMessage,
-            this, &CatalogController::statusMessage);
-    connect(detailDialog, &CatalogDetailDialog::errorMessage,
-            this, &CatalogController::errorMessage);
-    connect(detailDialog, &CatalogDetailDialog::catalogSaved,
-            this, [self = QPointer<CatalogController>(this)](const QString& name) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Catalog saved: " << name.toStdString();
-        self->handleEntitySaved();
-    });
-    connect(detailDialog, &CatalogDetailDialog::catalogDeleted,
-            this, [self = QPointer<CatalogController>(this), key](const QString& name) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Catalog deleted: " << name.toStdString();
-        self->handleEntityDeleted();
-    });
+    connect(
+        detailDialog, &CatalogDetailDialog::statusMessage, this, &CatalogController::statusMessage);
+    connect(
+        detailDialog, &CatalogDetailDialog::errorMessage, this, &CatalogController::errorMessage);
+    connect(detailDialog,
+            &CatalogDetailDialog::catalogSaved,
+            this,
+            [self = QPointer<CatalogController>(this)](const QString& name) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Catalog saved: " << name.toStdString();
+                self->handleEntitySaved();
+            });
+    connect(detailDialog,
+            &CatalogDetailDialog::catalogDeleted,
+            this,
+            [self = QPointer<CatalogController>(this), key](const QString& name) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Catalog deleted: " << name.toStdString();
+                self->handleEntityDeleted();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Catalog: %1").arg(identifier));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Library, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Library, IconUtils::DefaultIconColor));
 
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<CatalogController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, key]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, key]() {
         if (self) {
             self->untrack_window(key);
         }
@@ -239,37 +249,43 @@ void CatalogController::showDetailWindow(const dq::domain::catalog& catalog) {
 }
 
 void CatalogController::showHistoryWindow(const QString& name) {
-    BOOST_LOG_SEV(lg(), info) << "Opening history window for catalog: "
-                              << name.toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Opening history window for catalog: " << name.toStdString();
 
     const QString windowKey = build_window_key("history", name);
 
     if (try_reuse_window(windowKey)) {
-        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: "
-                                  << name.toStdString();
+        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: " << name.toStdString();
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
-                              << name.toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << name.toStdString();
 
-    auto* historyDialog = new CatalogHistoryDialog(
-        name, clientManager_, mainWindow_);
+    auto* historyDialog = new CatalogHistoryDialog(name, clientManager_, mainWindow_);
 
-    connect(historyDialog, &CatalogHistoryDialog::statusChanged,
-            this, [self = QPointer<CatalogController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(historyDialog, &CatalogHistoryDialog::errorOccurred,
-            this, [self = QPointer<CatalogController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
-    connect(historyDialog, &CatalogHistoryDialog::revertVersionRequested,
-            this, &CatalogController::onRevertVersion);
-    connect(historyDialog, &CatalogHistoryDialog::openVersionRequested,
-            this, &CatalogController::onOpenVersion);
+    connect(historyDialog,
+            &CatalogHistoryDialog::statusChanged,
+            this,
+            [self = QPointer<CatalogController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(historyDialog,
+            &CatalogHistoryDialog::errorOccurred,
+            this,
+            [self = QPointer<CatalogController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
+    connect(historyDialog,
+            &CatalogHistoryDialog::revertVersionRequested,
+            this,
+            &CatalogController::onRevertVersion);
+    connect(historyDialog,
+            &CatalogHistoryDialog::openVersionRequested,
+            this,
+            &CatalogController::onOpenVersion);
 
     historyDialog->loadHistory();
 
@@ -277,15 +293,14 @@ void CatalogController::showHistoryWindow(const QString& name) {
     historyWindow->setAttribute(Qt::WA_DeleteOnClose);
     historyWindow->setWidget(historyDialog);
     historyWindow->setWindowTitle(QString("Catalog History: %1").arg(name));
-    historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    historyWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
 
     QPointer<CatalogController> self = this;
-    connect(historyWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -294,14 +309,13 @@ void CatalogController::showHistoryWindow(const QString& name) {
     show_managed_window(historyWindow, listMdiSubWindow_);
 }
 
-void CatalogController::onOpenVersion(
-    const dq::domain::catalog& catalog, int versionNumber) {
+void CatalogController::onOpenVersion(const dq::domain::catalog& catalog, int versionNumber) {
     BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
                               << " for catalog: " << catalog.name;
 
     const QString name = QString::fromStdString(catalog.name);
-    const QString windowKey = build_window_key("version", QString("%1_v%2")
-        .arg(name).arg(versionNumber));
+    const QString windowKey =
+        build_window_key("version", QString("%1_v%2").arg(name).arg(versionNumber));
 
     if (try_reuse_window(windowKey)) {
         BOOST_LOG_SEV(lg(), info) << "Reusing existing version window";
@@ -316,31 +330,35 @@ void CatalogController::onOpenVersion(
     detailDialog->setCatalog(catalog);
     detailDialog->setReadOnly(true);
 
-    connect(detailDialog, &CatalogDetailDialog::statusMessage,
-            this, [self = QPointer<CatalogController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(detailDialog, &CatalogDetailDialog::errorMessage,
-            this, [self = QPointer<CatalogController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
+    connect(detailDialog,
+            &CatalogDetailDialog::statusMessage,
+            this,
+            [self = QPointer<CatalogController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(detailDialog,
+            &CatalogDetailDialog::errorMessage,
+            this,
+            [self = QPointer<CatalogController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Catalog: %1 (Version %2)")
-        .arg(name).arg(versionNumber));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(QString("Catalog: %1 (Version %2)").arg(name).arg(versionNumber));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     track_window(windowKey, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<CatalogController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -351,8 +369,7 @@ void CatalogController::onOpenVersion(
 }
 
 void CatalogController::onRevertVersion(const dq::domain::catalog& catalog) {
-    BOOST_LOG_SEV(lg(), info) << "Reverting catalog to version: "
-                              << catalog.version;
+    BOOST_LOG_SEV(lg(), info) << "Reverting catalog to version: " << catalog.version;
 
     auto* detailDialog = new CatalogDetailDialog(mainWindow_);
     if (changeReasonCache_)
@@ -362,27 +379,28 @@ void CatalogController::onRevertVersion(const dq::domain::catalog& catalog) {
     detailDialog->setCatalog(catalog);
     detailDialog->setCreateMode(false);
 
-    connect(detailDialog, &CatalogDetailDialog::statusMessage,
-            this, &CatalogController::statusMessage);
-    connect(detailDialog, &CatalogDetailDialog::errorMessage,
-            this, &CatalogController::errorMessage);
-    connect(detailDialog, &CatalogDetailDialog::catalogSaved,
-            this, [self = QPointer<CatalogController>(this)](const QString& name) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Catalog reverted: " << name.toStdString();
-        emit self->statusMessage(
-            QString("Catalog '%1' reverted successfully").arg(name));
-        self->handleEntitySaved();
-    });
+    connect(
+        detailDialog, &CatalogDetailDialog::statusMessage, this, &CatalogController::statusMessage);
+    connect(
+        detailDialog, &CatalogDetailDialog::errorMessage, this, &CatalogController::errorMessage);
+    connect(detailDialog,
+            &CatalogDetailDialog::catalogSaved,
+            this,
+            [self = QPointer<CatalogController>(this)](const QString& name) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Catalog reverted: " << name.toStdString();
+                emit self->statusMessage(QString("Catalog '%1' reverted successfully").arg(name));
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Revert Catalog: %1")
-        .arg(QString::fromStdString(catalog.name)));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowRotateCounterclockwise,
-        IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("Revert Catalog: %1").arg(QString::fromStdString(catalog.name)));
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
+                                                               IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 

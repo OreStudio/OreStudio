@@ -18,34 +18,30 @@
  *
  */
 #include "ores.qt/JobInstanceMdiWindow.hpp"
-
-#include <QLabel>
-#include <QVBoxLayout>
-#include <QHeaderView>
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include <QHeaderView>
+#include <QLabel>
+#include <QVBoxLayout>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-JobInstanceMdiWindow::JobInstanceMdiWindow(
-    ClientManager* clientManager,
-    QWidget* parent)
-    : EntityListMdiWindow(parent),
-      clientManager_(clientManager),
-      toolbar_(nullptr),
-      tableView_(nullptr),
-      model_(nullptr),
-      proxyModel_(nullptr),
-      reloadAction_(nullptr),
-      autoRefreshAction_(nullptr),
-      intervalSpin_(nullptr),
-      autoRefreshTimer_(new QTimer(this)) {
+JobInstanceMdiWindow::JobInstanceMdiWindow(ClientManager* clientManager, QWidget* parent)
+    : EntityListMdiWindow(parent)
+    , clientManager_(clientManager)
+    , toolbar_(nullptr)
+    , tableView_(nullptr)
+    , model_(nullptr)
+    , proxyModel_(nullptr)
+    , reloadAction_(nullptr)
+    , autoRefreshAction_(nullptr)
+    , intervalSpin_(nullptr)
+    , autoRefreshTimer_(new QTimer(this)) {
 
     autoRefreshTimer_->setInterval(15000); // default 15 s
-    connect(autoRefreshTimer_, &QTimer::timeout,
-            this, &EntityListMdiWindow::reload);
+    connect(autoRefreshTimer_, &QTimer::timeout, this, &EntityListMdiWindow::reload);
 
     setupUi();
     setupConnections();
@@ -68,11 +64,9 @@ void JobInstanceMdiWindow::setupToolbar() {
     toolbar_->setIconSize(QSize(20, 20));
 
     reloadAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::ArrowClockwise, IconUtils::DefaultIconColor),
+        IconUtils::createRecoloredIcon(Icon::ArrowClockwise, IconUtils::DefaultIconColor),
         tr("Reload"));
-    connect(reloadAction_, &QAction::triggered,
-            this, &EntityListMdiWindow::reload);
+    connect(reloadAction_, &QAction::triggered, this, &EntityListMdiWindow::reload);
 
     initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowClockwise));
 
@@ -83,8 +77,8 @@ void JobInstanceMdiWindow::setupToolbar() {
         tr("Auto Refresh"));
     autoRefreshAction_->setCheckable(true);
     autoRefreshAction_->setChecked(false);
-    connect(autoRefreshAction_, &QAction::toggled,
-            this, &JobInstanceMdiWindow::onAutoRefreshToggled);
+    connect(
+        autoRefreshAction_, &QAction::toggled, this, &JobInstanceMdiWindow::onAutoRefreshToggled);
 
     toolbar_->addWidget(new QLabel(tr(" Every "), this));
 
@@ -93,8 +87,10 @@ void JobInstanceMdiWindow::setupToolbar() {
     intervalSpin_->setValue(15);
     intervalSpin_->setSuffix(tr(" s"));
     intervalSpin_->setToolTip(tr("Auto-refresh interval in seconds"));
-    connect(intervalSpin_, &QSpinBox::valueChanged,
-            this, &JobInstanceMdiWindow::onAutoRefreshIntervalChanged);
+    connect(intervalSpin_,
+            &QSpinBox::valueChanged,
+            this,
+            &JobInstanceMdiWindow::onAutoRefreshIntervalChanged);
     toolbar_->addWidget(intervalSpin_);
 }
 
@@ -112,21 +108,20 @@ void JobInstanceMdiWindow::setupTable() {
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
 
-    initializeTableSettings(tableView_, model_,
-        "JobInstanceListWindow",
-        {ClientJobInstanceModel::ErrorMessage},
-        {960, 420}, 1);
+    initializeTableSettings(tableView_,
+                            model_,
+                            "JobInstanceListWindow",
+                            {ClientJobInstanceModel::ErrorMessage},
+                            {960, 420},
+                            1);
 }
 
 void JobInstanceMdiWindow::setupConnections() {
-    connect(model_, &ClientJobInstanceModel::dataLoaded,
-            this, &JobInstanceMdiWindow::onDataLoaded);
-    connect(model_, &ClientJobInstanceModel::loadError,
-            this, &JobInstanceMdiWindow::onLoadError);
+    connect(model_, &ClientJobInstanceModel::dataLoaded, this, &JobInstanceMdiWindow::onDataLoaded);
+    connect(model_, &ClientJobInstanceModel::loadError, this, &JobInstanceMdiWindow::onLoadError);
     connectModel(model_);
 
-    connect(tableView_, &QTableView::doubleClicked,
-            this, &JobInstanceMdiWindow::onDoubleClicked);
+    connect(tableView_, &QTableView::doubleClicked, this, &JobInstanceMdiWindow::onDoubleClicked);
 }
 
 void JobInstanceMdiWindow::doReload() {
@@ -140,15 +135,15 @@ void JobInstanceMdiWindow::onDataLoaded() {
     emit statusChanged(tr("Loaded %1 job instances").arg(loaded));
 }
 
-void JobInstanceMdiWindow::onLoadError(const QString& error_message,
-                                        const QString& details) {
+void JobInstanceMdiWindow::onLoadError(const QString& error_message, const QString& details) {
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);
 }
 
 void JobInstanceMdiWindow::onDoubleClicked(const QModelIndex& index) {
-    if (!index.isValid()) return;
+    if (!index.isValid())
+        return;
 
     const auto sourceIndex = proxyModel_->mapToSource(index);
     if (const auto* inst = model_->getInstance(sourceIndex.row()))

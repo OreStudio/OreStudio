@@ -18,31 +18,30 @@
  *
  */
 #include "ores.qt/ConnectionBrowserMdiWindow.hpp"
-#include "ores.qt/ConnectionTreeModel.hpp"
+#include "ores.connections/service/connection_manager.hpp"
 #include "ores.qt/AddItemDialog.hpp"
+#include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ConnectionDetailPanel.hpp"
 #include "ores.qt/ConnectionItemDelegate.hpp"
+#include "ores.qt/ConnectionTreeModel.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
-#include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/UiPersistence.hpp"
-#include "ores.connections/service/connection_manager.hpp"
 #include <QHeaderView>
 #include <QMenu>
-#include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
 ConnectionBrowserMdiWindow::ConnectionBrowserMdiWindow(
-    connections::service::connection_manager* manager,
-    QWidget* parent)
-    : QWidget(parent),
-      manager_(manager),
-      mdiArea_(nullptr),
-      mainWindow_(nullptr),
-      allDetachableWindows_(nullptr) {
+    connections::service::connection_manager* manager, QWidget* parent)
+    : QWidget(parent)
+    , manager_(manager)
+    , mdiArea_(nullptr)
+    , mainWindow_(nullptr)
+    , allDetachableWindows_(nullptr) {
 
     setupUI();
     savedWindowSize_ = UiPersistence::restoreSize(settings_group_, {800, 500});
@@ -68,8 +67,10 @@ void ConnectionBrowserMdiWindow::setTestCallback(TestConnectionCallback callback
     testCallback_ = std::move(callback);
 }
 
-void ConnectionBrowserMdiWindow::setMdiArea(QMdiArea* mdiArea, QMainWindow* mainWindow,
-                                             QList<QPointer<DetachableMdiSubWindow>>* allDetachableWindows) {
+void ConnectionBrowserMdiWindow::setMdiArea(
+    QMdiArea* mdiArea,
+    QMainWindow* mainWindow,
+    QList<QPointer<DetachableMdiSubWindow>>* allDetachableWindows) {
     mdiArea_ = mdiArea;
     mainWindow_ = mainWindow;
     allDetachableWindows_ = allDetachableWindows;
@@ -87,25 +88,21 @@ void ConnectionBrowserMdiWindow::setupUI() {
     toolBar_->setIconSize(QSize(20, 20));
 
     addAction_ = toolBar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor),
-        tr("Add"));
+        IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor), tr("Add"));
     addAction_->setToolTip(tr("Add a new folder, environment, or connection"));
 
     toolBar_->addSeparator();
 
     editAction_ = toolBar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Edit, IconUtils::DefaultIconColor),
-        tr("Edit"));
+        IconUtils::createRecoloredIcon(Icon::Edit, IconUtils::DefaultIconColor), tr("Edit"));
     editAction_->setToolTip(tr("Edit selected item"));
 
     copyAction_ = toolBar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Copy, IconUtils::DefaultIconColor),
-        tr("Copy"));
+        IconUtils::createRecoloredIcon(Icon::Copy, IconUtils::DefaultIconColor), tr("Copy"));
     copyAction_->setToolTip(tr("Copy selected item (appends \" (copy)\" to the name)"));
 
     deleteAction_ = toolBar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor),
-        tr("Delete"));
+        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor), tr("Delete"));
     deleteAction_->setToolTip(tr("Delete selected item"));
 
     toolBar_->addSeparator();
@@ -145,7 +142,7 @@ void ConnectionBrowserMdiWindow::setupUI() {
     treeView_->setSelectionMode(QAbstractItemView::SingleSelection);
     // Enable inline rename via F2 or slow double-click on selected item
     treeView_->setEditTriggers(QAbstractItemView::EditKeyPressed |
-                                QAbstractItemView::SelectedClicked);
+                               QAbstractItemView::SelectedClicked);
     treeView_->setExpandsOnDoubleClick(false); // We handle double-click ourselves
     treeView_->setUniformRowHeights(true);
     treeView_->setIconSize(QSize(20, 20)); // Larger icons for better visibility
@@ -187,42 +184,47 @@ void ConnectionBrowserMdiWindow::setupUI() {
     });
 
     // Connect signals
-    connect(addAction_, &QAction::triggered,
-            this, &ConnectionBrowserMdiWindow::openAddDialog);
-    connect(editAction_, &QAction::triggered,
-            this, &ConnectionBrowserMdiWindow::editSelected);
-    connect(copyAction_, &QAction::triggered,
-            this, &ConnectionBrowserMdiWindow::copySelected);
-    connect(deleteAction_, &QAction::triggered,
-            this, &ConnectionBrowserMdiWindow::deleteSelected);
-    connect(connectAction_, &QAction::triggered,
-            this, &ConnectionBrowserMdiWindow::connectToSelected);
-    connect(refreshAction_, &QAction::triggered,
-            this, &ConnectionBrowserMdiWindow::reload);
-    connect(changeMasterPasswordAction_, &QAction::triggered,
-            this, &ConnectionBrowserMdiWindow::changeMasterPassword);
-    connect(purgeDatabaseAction_, &QAction::triggered,
-            this, &ConnectionBrowserMdiWindow::purgeDatabase);
+    connect(addAction_, &QAction::triggered, this, &ConnectionBrowserMdiWindow::openAddDialog);
+    connect(editAction_, &QAction::triggered, this, &ConnectionBrowserMdiWindow::editSelected);
+    connect(copyAction_, &QAction::triggered, this, &ConnectionBrowserMdiWindow::copySelected);
+    connect(deleteAction_, &QAction::triggered, this, &ConnectionBrowserMdiWindow::deleteSelected);
+    connect(
+        connectAction_, &QAction::triggered, this, &ConnectionBrowserMdiWindow::connectToSelected);
+    connect(refreshAction_, &QAction::triggered, this, &ConnectionBrowserMdiWindow::reload);
+    connect(changeMasterPasswordAction_,
+            &QAction::triggered,
+            this,
+            &ConnectionBrowserMdiWindow::changeMasterPassword);
+    connect(purgeDatabaseAction_,
+            &QAction::triggered,
+            this,
+            &ConnectionBrowserMdiWindow::purgeDatabase);
 
-    connect(treeView_->selectionModel(), &QItemSelectionModel::selectionChanged,
-            this, &ConnectionBrowserMdiWindow::onSelectionChanged);
-    connect(treeView_, &QTreeView::doubleClicked,
-            this, &ConnectionBrowserMdiWindow::onDoubleClicked);
-    connect(treeView_, &QTreeView::customContextMenuRequested,
-            this, &ConnectionBrowserMdiWindow::showContextMenu);
-    connect(treeView_, &QTreeView::expanded,
-            this, [this](const QModelIndex& index) {
-                model_->setFolderExpanded(index, true);
-            });
-    connect(treeView_, &QTreeView::collapsed,
-            this, [this](const QModelIndex& index) {
-                model_->setFolderExpanded(index, false);
-            });
+    connect(treeView_->selectionModel(),
+            &QItemSelectionModel::selectionChanged,
+            this,
+            &ConnectionBrowserMdiWindow::onSelectionChanged);
+    connect(
+        treeView_, &QTreeView::doubleClicked, this, &ConnectionBrowserMdiWindow::onDoubleClicked);
+    connect(treeView_,
+            &QTreeView::customContextMenuRequested,
+            this,
+            &ConnectionBrowserMdiWindow::showContextMenu);
+    connect(treeView_, &QTreeView::expanded, this, [this](const QModelIndex& index) {
+        model_->setFolderExpanded(index, true);
+    });
+    connect(treeView_, &QTreeView::collapsed, this, [this](const QModelIndex& index) {
+        model_->setFolderExpanded(index, false);
+    });
 
-    connect(model_.get(), &ConnectionTreeModel::errorOccurred,
-            this, &ConnectionBrowserMdiWindow::errorOccurred);
-    connect(model_.get(), &ConnectionTreeModel::dataRefreshed,
-            this, &ConnectionBrowserMdiWindow::restoreExpansionState);
+    connect(model_.get(),
+            &ConnectionTreeModel::errorOccurred,
+            this,
+            &ConnectionBrowserMdiWindow::errorOccurred);
+    connect(model_.get(),
+            &ConnectionTreeModel::dataRefreshed,
+            this,
+            &ConnectionBrowserMdiWindow::restoreExpansionState);
 
     // Start with tree expanded
     treeView_->expandAll();
@@ -331,22 +333,32 @@ void ConnectionBrowserMdiWindow::openAddDialog() {
     }
 
     // Connect signals for refresh
-    connect(dialog, &AddItemDialog::folderSaved, this, [this](const boost::uuids::uuid&, const QString& name) {
-        model_->refresh();
-        restoreExpansionState();
-        emit statusChanged(tr("Folder created: %1").arg(name));
-    });
-    connect(dialog, &AddItemDialog::environmentSaved, this, [this](const boost::uuids::uuid&, const QString& name) {
-        model_->refresh();
-        restoreExpansionState();
-        emit statusChanged(tr("Environment created: %1").arg(name));
-    });
-    connect(dialog, &AddItemDialog::connectionSaved, this, [this](const boost::uuids::uuid&, const QString& name) {
-        model_->refresh();
-        restoreExpansionState();
-        emit statusChanged(tr("Connection created: %1").arg(name));
-    });
-    connect(dialog, &AddItemDialog::statusMessage, this, &ConnectionBrowserMdiWindow::statusChanged);
+    connect(dialog,
+            &AddItemDialog::folderSaved,
+            this,
+            [this](const boost::uuids::uuid&, const QString& name) {
+                model_->refresh();
+                restoreExpansionState();
+                emit statusChanged(tr("Folder created: %1").arg(name));
+            });
+    connect(dialog,
+            &AddItemDialog::environmentSaved,
+            this,
+            [this](const boost::uuids::uuid&, const QString& name) {
+                model_->refresh();
+                restoreExpansionState();
+                emit statusChanged(tr("Environment created: %1").arg(name));
+            });
+    connect(dialog,
+            &AddItemDialog::connectionSaved,
+            this,
+            [this](const boost::uuids::uuid&, const QString& name) {
+                model_->refresh();
+                restoreExpansionState();
+                emit statusChanged(tr("Connection created: %1").arg(name));
+            });
+    connect(
+        dialog, &AddItemDialog::statusMessage, this, &ConnectionBrowserMdiWindow::statusChanged);
     connect(dialog, &AddItemDialog::errorMessage, this, &ConnectionBrowserMdiWindow::errorOccurred);
 
     // Create as MDI sub-window if MDI area is available
@@ -354,8 +366,8 @@ void ConnectionBrowserMdiWindow::openAddDialog() {
         auto* subWindow = new DetachableMdiSubWindow(mainWindow_);
         subWindow->setWidget(dialog);
         subWindow->setWindowTitle(tr("Add Item"));
-        subWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-            Icon::Add, IconUtils::DefaultIconColor));
+        subWindow->setWindowIcon(
+            IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor));
         subWindow->setAttribute(Qt::WA_DeleteOnClose);
         subWindow->resize(450, 520);
 
@@ -413,11 +425,14 @@ void ConnectionBrowserMdiWindow::editSelected() {
         windowTitle = tr("Edit Folder: %1").arg(QString::fromStdString(folder->name));
         iconType = Icon::Folder;
 
-        connect(dialog, &AddItemDialog::folderSaved, this, [this](const boost::uuids::uuid&, const QString& name) {
-            model_->refresh();
-            restoreExpansionState();
-            emit statusChanged(tr("Folder updated: %1").arg(name));
-        });
+        connect(dialog,
+                &AddItemDialog::folderSaved,
+                this,
+                [this](const boost::uuids::uuid&, const QString& name) {
+                    model_->refresh();
+                    restoreExpansionState();
+                    emit statusChanged(tr("Folder updated: %1").arg(name));
+                });
     } else if (node->type == ConnectionTreeNode::Type::Environment) {
         auto env = model_->getEnvironmentFromIndex(current);
         if (!env) {
@@ -438,11 +453,14 @@ void ConnectionBrowserMdiWindow::editSelected() {
             BOOST_LOG_SEV(lg(), error) << "Failed to load tags for environment: " << e.what();
         }
 
-        connect(dialog, &AddItemDialog::environmentSaved, this, [this](const boost::uuids::uuid&, const QString& name) {
-            model_->refresh();
-            restoreExpansionState();
-            emit statusChanged(tr("Environment updated: %1").arg(name));
-        });
+        connect(dialog,
+                &AddItemDialog::environmentSaved,
+                this,
+                [this](const boost::uuids::uuid&, const QString& name) {
+                    model_->refresh();
+                    restoreExpansionState();
+                    emit statusChanged(tr("Environment updated: %1").arg(name));
+                });
     } else if (node->type == ConnectionTreeNode::Type::Connection) {
         auto conn = model_->getConnectionFromIndex(current);
         if (!conn) {
@@ -466,17 +484,21 @@ void ConnectionBrowserMdiWindow::editSelected() {
             BOOST_LOG_SEV(lg(), error) << "Failed to load tags for connection: " << e.what();
         }
 
-        connect(dialog, &AddItemDialog::connectionSaved, this, [this](const boost::uuids::uuid&, const QString& name) {
-            model_->refresh();
-            restoreExpansionState();
-            emit statusChanged(tr("Connection updated: %1").arg(name));
-        });
+        connect(dialog,
+                &AddItemDialog::connectionSaved,
+                this,
+                [this](const boost::uuids::uuid&, const QString& name) {
+                    model_->refresh();
+                    restoreExpansionState();
+                    emit statusChanged(tr("Connection updated: %1").arg(name));
+                });
     } else {
         delete dialog;
         return;
     }
 
-    connect(dialog, &AddItemDialog::statusMessage, this, &ConnectionBrowserMdiWindow::statusChanged);
+    connect(
+        dialog, &AddItemDialog::statusMessage, this, &ConnectionBrowserMdiWindow::statusChanged);
     connect(dialog, &AddItemDialog::errorMessage, this, &ConnectionBrowserMdiWindow::errorOccurred);
 
     // Create as MDI sub-window if MDI area is available
@@ -484,7 +506,8 @@ void ConnectionBrowserMdiWindow::editSelected() {
         auto* subWindow = new DetachableMdiSubWindow(mainWindow_);
         subWindow->setWidget(dialog);
         subWindow->setWindowTitle(windowTitle);
-        subWindow->setWindowIcon(IconUtils::createRecoloredIcon(iconType, IconUtils::DefaultIconColor));
+        subWindow->setWindowIcon(
+            IconUtils::createRecoloredIcon(iconType, IconUtils::DefaultIconColor));
         subWindow->setAttribute(Qt::WA_DeleteOnClose);
         subWindow->resize(450, 520);
 
@@ -527,7 +550,8 @@ void ConnectionBrowserMdiWindow::copySelected() {
     try {
         if (node->type == ConnectionTreeNode::Type::Folder) {
             auto folder = model_->getFolderFromIndex(current);
-            if (!folder) return;
+            if (!folder)
+                return;
 
             connections::domain::folder copy = *folder;
             copy.id = boost::uuids::random_generator()();
@@ -541,7 +565,8 @@ void ConnectionBrowserMdiWindow::copySelected() {
 
         } else if (node->type == ConnectionTreeNode::Type::Environment) {
             auto env = model_->getEnvironmentFromIndex(current);
-            if (!env) return;
+            if (!env)
+                return;
 
             connections::domain::environment copy = *env;
             copy.id = boost::uuids::random_generator()();
@@ -561,7 +586,8 @@ void ConnectionBrowserMdiWindow::copySelected() {
 
         } else if (node->type == ConnectionTreeNode::Type::Connection) {
             auto conn = model_->getConnectionFromIndex(current);
-            if (!conn) return;
+            if (!conn)
+                return;
 
             connections::domain::connection copy = *conn;
             copy.id = boost::uuids::random_generator()();
@@ -614,14 +640,11 @@ void ConnectionBrowserMdiWindow::deleteSelected() {
                       .arg(itemName);
     } else {
         itemType = tr("connection");
-        message = tr("Are you sure you want to delete the connection '%1'?")
-                      .arg(itemName);
+        message = tr("Are you sure you want to delete the connection '%1'?").arg(itemName);
     }
 
-    auto result = MessageBoxHelper::question(this,
-        tr("Confirm Delete"),
-        message,
-        QMessageBox::Yes | QMessageBox::No);
+    auto result = MessageBoxHelper::question(
+        this, tr("Confirm Delete"), message, QMessageBox::Yes | QMessageBox::No);
 
     if (result != QMessageBox::Yes) {
         return;
@@ -643,8 +666,8 @@ void ConnectionBrowserMdiWindow::deleteSelected() {
         restoreExpansionState();
         emit statusChanged(tr("%1 deleted: %2").arg(itemType, itemName));
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to delete " << itemType.toStdString()
-                                   << ": " << e.what();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to delete " << itemType.toStdString() << ": " << e.what();
         emit errorOccurred(tr("Failed to delete %1: %2").arg(itemType, e.what()));
     }
 }
@@ -732,7 +755,8 @@ void ConnectionBrowserMdiWindow::changeMasterPassword() {
 void ConnectionBrowserMdiWindow::purgeDatabase() {
     using namespace ores::logging;
 
-    auto result = MessageBoxHelper::question(this,
+    auto result = MessageBoxHelper::question(
+        this,
         tr("Purge Database"),
         tr("This will permanently delete ALL saved connections, environments, and folders.\n\n"
            "This action cannot be undone. Are you sure?"),

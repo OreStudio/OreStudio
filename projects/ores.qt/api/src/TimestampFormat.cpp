@@ -18,9 +18,8 @@
  *
  */
 #include "ores.qt/TimestampFormat.hpp"
-
-#include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.platform/time/datetime.hpp"
+#include "ores.qt/RelativeTimeHelper.hpp"
 
 namespace ores::qt {
 
@@ -34,19 +33,16 @@ void timestamp_formatter::set_mode(timestamp_display_mode m) {
     mode_ = m;
 }
 
-QString timestamp_formatter::format(
-    const std::chrono::system_clock::time_point& tp) {
+QString timestamp_formatter::format(const std::chrono::system_clock::time_point& tp) {
     if (mode_ == timestamp_display_mode::relative) {
         return relative_time_helper::format_relative(tp);
     }
-    return QString::fromStdString(
-        platform::time::datetime::to_local_display_string(tp));
+    return QString::fromStdString(platform::time::datetime::to_local_display_string(tp));
 }
 
 QString timestamp_formatter::format(const std::string& recorded_at) {
     if (mode_ == timestamp_display_mode::relative) {
-        return relative_time_helper::format_relative(
-            QString::fromStdString(recorded_at));
+        return relative_time_helper::format_relative(QString::fromStdString(recorded_at));
     }
     return QString::fromStdString(recorded_at);
 }

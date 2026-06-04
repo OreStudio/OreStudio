@@ -18,29 +18,26 @@
  *
  */
 #include "ores.qt/SchedulerMonitorMdiWindow.hpp"
-
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
 #include <QHeaderView>
 #include <QLabel>
 #include <QPointer>
 #include <QtConcurrent>
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/MessageBoxHelper.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-SchedulerMonitorMdiWindow::SchedulerMonitorMdiWindow(
-    ClientManager* clientManager,
-    QWidget* parent)
-    : QWidget(parent),
-      clientManager_(clientManager),
-      toolbar_(nullptr),
-      refreshAction_(nullptr),
-      autoRefreshAction_(nullptr),
-      intervalSpin_(nullptr),
-      table_(nullptr),
-      autoRefreshTimer_(new QTimer(this)) {
+SchedulerMonitorMdiWindow::SchedulerMonitorMdiWindow(ClientManager* clientManager, QWidget* parent)
+    : QWidget(parent)
+    , clientManager_(clientManager)
+    , toolbar_(nullptr)
+    , refreshAction_(nullptr)
+    , autoRefreshAction_(nullptr)
+    , intervalSpin_(nullptr)
+    , table_(nullptr)
+    , autoRefreshTimer_(new QTimer(this)) {
 
     setupUi();
 
@@ -71,8 +68,10 @@ void SchedulerMonitorMdiWindow::setupUi() {
         tr("Auto Refresh"));
     autoRefreshAction_->setCheckable(true);
     autoRefreshAction_->setChecked(false);
-    connect(autoRefreshAction_, &QAction::toggled,
-            this, &SchedulerMonitorMdiWindow::onAutoRefreshToggled);
+    connect(autoRefreshAction_,
+            &QAction::toggled,
+            this,
+            &SchedulerMonitorMdiWindow::onAutoRefreshToggled);
 
     toolbar_->addWidget(new QLabel(tr(" Every "), this));
 
@@ -81,16 +80,22 @@ void SchedulerMonitorMdiWindow::setupUi() {
     intervalSpin_->setValue(15);
     intervalSpin_->setSuffix(tr(" s"));
     intervalSpin_->setToolTip(tr("Auto-refresh interval in seconds"));
-    connect(intervalSpin_, &QSpinBox::valueChanged,
-            this, &SchedulerMonitorMdiWindow::onAutoRefreshIntervalChanged);
+    connect(intervalSpin_,
+            &QSpinBox::valueChanged,
+            this,
+            &SchedulerMonitorMdiWindow::onAutoRefreshIntervalChanged);
     toolbar_->addWidget(intervalSpin_);
 
     layout->addWidget(toolbar_);
 
     table_ = new QTableWidget(0, ColCount, this);
-    table_->setHorizontalHeaderLabels({
-        tr("Job Name"), tr("Schedule"), tr("Active"),
-        tr("Last Run"), tr("Last Status"), tr("Next Fire"), tr("Running")});
+    table_->setHorizontalHeaderLabels({tr("Job Name"),
+                                       tr("Schedule"),
+                                       tr("Active"),
+                                       tr("Last Run"),
+                                       tr("Last Status"),
+                                       tr("Next Fire"),
+                                       tr("Running")});
     table_->setSelectionBehavior(QAbstractItemView::SelectRows);
     table_->setSelectionMode(QAbstractItemView::SingleSelection);
     table_->setAlternatingRowColors(true);
@@ -141,15 +146,15 @@ void SchedulerMonitorMdiWindow::refresh() {
     });
 
     auto* watcher = new QFutureWatcher<FetchResult>(this);
-    connect(watcher, &QFutureWatcher<FetchResult>::finished,
-            this, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<FetchResult>::finished, this, [self, watcher]() {
         watcher->deleteLater();
-        if (!self) return;
+        if (!self)
+            return;
 
         const auto res = watcher->result();
         if (!res.error.isEmpty()) {
-            BOOST_LOG_SEV(lg(), error) << "Scheduler status fetch failed: "
-                                       << res.error.toStdString();
+            BOOST_LOG_SEV(lg(), error)
+                << "Scheduler status fetch failed: " << res.error.toStdString();
             emit self->errorOccurred(res.error);
             return;
         }
@@ -159,8 +164,7 @@ void SchedulerMonitorMdiWindow::refresh() {
         const int active = res.response.total_active;
         const int running = res.response.total_running;
         emit self->statusChanged(
-            tr("Scheduler: %1 active job(s), %2 currently running")
-                .arg(active).arg(running));
+            tr("Scheduler: %1 active job(s), %2 currently running").arg(active).arg(running));
     });
 
     watcher->setFuture(future);
@@ -186,17 +190,17 @@ void SchedulerMonitorMdiWindow::applyStatus(
     for (int r = 0; r < static_cast<int>(jobs.size()); ++r) {
         const auto& j = jobs[static_cast<std::size_t>(r)];
 
-        cell(r, ColJobName,    QString::fromStdString(j.job_name));
-        cell(r, ColSchedule,   QString::fromStdString(j.schedule_expression));
-        cell(r, ColActive,     j.is_active ? tr("Active") : tr("Paused"));
-        cell(r, ColLastRun,    j.last_run_at
-            ? QString::fromStdString(*j.last_run_at) : tr("Never"));
-        cell(r, ColLastStatus, j.last_run_status
-            ? QString::fromStdString(*j.last_run_status) : tr("—"));
-        cell(r, ColNextFire,   (j.is_active && j.next_fire_at)
-            ? QString::fromStdString(*j.next_fire_at) : tr("—"));
-        cell(r, ColRunning,    j.running_count > 0
-            ? QString::number(j.running_count) : tr("—"));
+        cell(r, ColJobName, QString::fromStdString(j.job_name));
+        cell(r, ColSchedule, QString::fromStdString(j.schedule_expression));
+        cell(r, ColActive, j.is_active ? tr("Active") : tr("Paused"));
+        cell(r, ColLastRun, j.last_run_at ? QString::fromStdString(*j.last_run_at) : tr("Never"));
+        cell(r,
+             ColLastStatus,
+             j.last_run_status ? QString::fromStdString(*j.last_run_status) : tr("—"));
+        cell(r,
+             ColNextFire,
+             (j.is_active && j.next_fire_at) ? QString::fromStdString(*j.next_fire_at) : tr("—"));
+        cell(r, ColRunning, j.running_count > 0 ? QString::number(j.running_count) : tr("—"));
 
         // Colour last-status cell
         if (auto* statusItem = table_->item(r, ColLastStatus)) {

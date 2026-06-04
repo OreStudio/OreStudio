@@ -18,65 +18,72 @@
  *
  */
 #include "ores.qt/WorkspaceController.hpp"
-
+#include "ores.eventing/domain/event_traits.hpp"
+#include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/UiPersistence.hpp"
+#include "ores.qt/WorkspaceDetailDialog.hpp"
+#include "ores.qt/WorkspaceHistoryDialog.hpp"
+#include "ores.qt/WorkspaceMdiWindow.hpp"
+#include "ores.workspace.api/eventing/workspace_changed_event.hpp"
 #include <QDateTime>
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
 #include <QStringList>
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/UiPersistence.hpp"
-#include "ores.qt/WorkspaceMdiWindow.hpp"
-#include "ores.qt/WorkspaceDetailDialog.hpp"
-#include "ores.qt/WorkspaceHistoryDialog.hpp"
-#include "ores.qt/DetachableMdiSubWindow.hpp"
-#include "ores.eventing/domain/event_traits.hpp"
-#include "ores.workspace.api/eventing/workspace_changed_event.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    constexpr std::string_view workspace_event_name =
-        eventing::domain::event_traits<workspace::eventing::workspace_changed_event>::name;
+constexpr std::string_view workspace_event_name =
+    eventing::domain::event_traits<workspace::eventing::workspace_changed_event>::name;
 }
 
-WorkspaceController::WorkspaceController(
-    QMainWindow* mainWindow,
-    QMdiArea* mdiArea,
-    ClientManager* clientManager,
-    const QString& username,
-    BadgeCache* badgeCache,
-    QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username,
-          std::string_view{}, parent),
-      badgeCache_(badgeCache),
-      listWindow_(nullptr),
-      listMdiSubWindow_(nullptr) {
+WorkspaceController::WorkspaceController(QMainWindow* mainWindow,
+                                         QMdiArea* mdiArea,
+                                         ClientManager* clientManager,
+                                         const QString& username,
+                                         BadgeCache* badgeCache,
+                                         QObject* parent)
+    : EntityController(mainWindow, mdiArea, clientManager, username, std::string_view{}, parent)
+    , badgeCache_(badgeCache)
+    , listWindow_(nullptr)
+    , listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "WorkspaceController created";
 
     if (clientManager_) {
-        connect(clientManager_, &ClientManager::notificationReceived,
-                this, &WorkspaceController::onNotificationReceived);
+        connect(clientManager_,
+                &ClientManager::notificationReceived,
+                this,
+                &WorkspaceController::onNotificationReceived);
 
-        connect(clientManager_, &ClientManager::loggedIn,
-                this, [self = QPointer<WorkspaceController>(this)]() {
-            if (!self) return;
-            BOOST_LOG_SEV(lg(), info) << "Subscribing to workspace change events";
-            self->clientManager_->subscribeToEvent(std::string{workspace_event_name});
-        });
+        connect(clientManager_,
+                &ClientManager::loggedIn,
+                this,
+                [self = QPointer<WorkspaceController>(this)]() {
+                    if (!self)
+                        return;
+                    BOOST_LOG_SEV(lg(), info) << "Subscribing to workspace change events";
+                    self->clientManager_->subscribeToEvent(std::string{workspace_event_name});
+                });
 
-        connect(clientManager_, &ClientManager::reconnected,
-                this, [self = QPointer<WorkspaceController>(this)]() {
-            if (!self) return;
-            BOOST_LOG_SEV(lg(), info) << "Re-subscribing to workspace change events after reconnect";
-            self->clientManager_->subscribeToEvent(std::string{workspace_event_name});
-        });
+        connect(clientManager_,
+                &ClientManager::reconnected,
+                this,
+                [self = QPointer<WorkspaceController>(this)]() {
+                    if (!self)
+                        return;
+                    BOOST_LOG_SEV(lg(), info)
+                        << "Re-subscribing to workspace change events after reconnect";
+                    self->clientManager_->subscribeToEvent(std::string{workspace_event_name});
+                });
 
         if (clientManager_->isConnected()) {
-            BOOST_LOG_SEV(lg(), info) << "Already connected, subscribing to workspace change events";
+            BOOST_LOG_SEV(lg(), info)
+                << "Already connected, subscribing to workspace change events";
             clientManager_->subscribeToEvent(std::string{workspace_event_name});
         }
     }
@@ -104,23 +111,29 @@ void WorkspaceController::showListWindow() {
     listWindow_ = new WorkspaceMdiWindow(clientManager_, username_, badgeCache_);
 
     // Connect signals
-    connect(listWindow_, &WorkspaceMdiWindow::statusChanged,
-            this, &WorkspaceController::statusMessage);
-    connect(listWindow_, &WorkspaceMdiWindow::errorOccurred,
-            this, &WorkspaceController::errorMessage);
-    connect(listWindow_, &WorkspaceMdiWindow::showWorkspaceDetails,
-            this, &WorkspaceController::onShowDetails);
-    connect(listWindow_, &WorkspaceMdiWindow::addNewRequested,
-            this, &WorkspaceController::onAddNewRequested);
-    connect(listWindow_, &WorkspaceMdiWindow::showWorkspaceHistory,
-            this, &WorkspaceController::onShowHistory);
+    connect(
+        listWindow_, &WorkspaceMdiWindow::statusChanged, this, &WorkspaceController::statusMessage);
+    connect(
+        listWindow_, &WorkspaceMdiWindow::errorOccurred, this, &WorkspaceController::errorMessage);
+    connect(listWindow_,
+            &WorkspaceMdiWindow::showWorkspaceDetails,
+            this,
+            &WorkspaceController::onShowDetails);
+    connect(listWindow_,
+            &WorkspaceMdiWindow::addNewRequested,
+            this,
+            &WorkspaceController::onAddNewRequested);
+    connect(listWindow_,
+            &WorkspaceMdiWindow::showWorkspaceHistory,
+            this,
+            &WorkspaceController::onShowHistory);
 
     // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Workspaces");
-    listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Database, IconUtils::DefaultIconColor));
+    listMdiSubWindow_->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Database, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -134,12 +147,16 @@ void WorkspaceController::showListWindow() {
     UiPersistence::restoreMdiGeometry(key, listMdiSubWindow_);
 
     // Cleanup when closed
-    connect(listMdiSubWindow_, &QObject::destroyed, this, [self = QPointer<WorkspaceController>(this), key]() {
-        if (!self) return;
-        self->untrack_window(key);
-        self->listWindow_ = nullptr;
-        self->listMdiSubWindow_ = nullptr;
-    });
+    connect(listMdiSubWindow_,
+            &QObject::destroyed,
+            this,
+            [self = QPointer<WorkspaceController>(this), key]() {
+                if (!self)
+                    return;
+                self->untrack_window(key);
+                self->listWindow_ = nullptr;
+                self->listMdiSubWindow_ = nullptr;
+            });
 
     BOOST_LOG_SEV(lg(), debug) << "Workspace list window created";
 }
@@ -166,8 +183,7 @@ void WorkspaceController::reloadListWindow() {
     }
 }
 
-void WorkspaceController::onShowDetails(
-    const workspace::domain::workspace& workspace) {
+void WorkspaceController::onShowDetails(const workspace::domain::workspace& workspace) {
     BOOST_LOG_SEV(lg(), debug) << "Show details for: " << workspace.name;
     showDetailWindow(workspace);
 }
@@ -177,8 +193,7 @@ void WorkspaceController::onAddNewRequested() {
     showAddWindow();
 }
 
-void WorkspaceController::onShowHistory(
-    const workspace::domain::workspace& workspace) {
+void WorkspaceController::onShowHistory(const workspace::domain::workspace& workspace) {
     BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << workspace.name;
     showHistoryWindow(workspace);
 }
@@ -192,23 +207,30 @@ void WorkspaceController::showAddWindow() {
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
 
-    connect(detailDialog, &WorkspaceDetailDialog::statusMessage,
-            this, &WorkspaceController::statusMessage);
-    connect(detailDialog, &WorkspaceDetailDialog::errorMessage,
-            this, &WorkspaceController::errorMessage);
-    connect(detailDialog, &WorkspaceDetailDialog::workspaceSaved,
-            this, [self = QPointer<WorkspaceController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Workspace saved: " << code.toStdString();
-        self->handleEntitySaved();
-    });
+    connect(detailDialog,
+            &WorkspaceDetailDialog::statusMessage,
+            this,
+            &WorkspaceController::statusMessage);
+    connect(detailDialog,
+            &WorkspaceDetailDialog::errorMessage,
+            this,
+            &WorkspaceController::errorMessage);
+    connect(detailDialog,
+            &WorkspaceDetailDialog::workspaceSaved,
+            this,
+            [self = QPointer<WorkspaceController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Workspace saved: " << code.toStdString();
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Workspace");
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Database, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Database, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -216,8 +238,7 @@ void WorkspaceController::showAddWindow() {
     show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
-void WorkspaceController::showDetailWindow(
-    const workspace::domain::workspace& workspace) {
+void WorkspaceController::showDetailWindow(const workspace::domain::workspace& workspace) {
 
     const QString identifier = QString::fromStdString(workspace.name);
     const QString key = build_window_key("details", identifier);
@@ -236,29 +257,39 @@ void WorkspaceController::showDetailWindow(
     detailDialog->setCreateMode(false);
     detailDialog->setWorkspace(workspace);
 
-    connect(detailDialog, &WorkspaceDetailDialog::statusMessage,
-            this, &WorkspaceController::statusMessage);
-    connect(detailDialog, &WorkspaceDetailDialog::errorMessage,
-            this, &WorkspaceController::errorMessage);
-    connect(detailDialog, &WorkspaceDetailDialog::workspaceSaved,
-            this, [self = QPointer<WorkspaceController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Workspace saved: " << code.toStdString();
-        self->handleEntitySaved();
-    });
-    connect(detailDialog, &WorkspaceDetailDialog::workspaceDeleted,
-            this, [self = QPointer<WorkspaceController>(this), key](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Workspace deleted: " << code.toStdString();
-        self->handleEntityDeleted();
-    });
+    connect(detailDialog,
+            &WorkspaceDetailDialog::statusMessage,
+            this,
+            &WorkspaceController::statusMessage);
+    connect(detailDialog,
+            &WorkspaceDetailDialog::errorMessage,
+            this,
+            &WorkspaceController::errorMessage);
+    connect(detailDialog,
+            &WorkspaceDetailDialog::workspaceSaved,
+            this,
+            [self = QPointer<WorkspaceController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Workspace saved: " << code.toStdString();
+                self->handleEntitySaved();
+            });
+    connect(detailDialog,
+            &WorkspaceDetailDialog::workspaceDeleted,
+            this,
+            [self = QPointer<WorkspaceController>(this), key](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Workspace deleted: " << code.toStdString();
+                self->handleEntityDeleted();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Workspace: %1").arg(identifier));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Database, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Database, IconUtils::DefaultIconColor));
 
     // Track window
     track_window(key, detailWindow);
@@ -267,8 +298,7 @@ void WorkspaceController::showDetailWindow(
     UiPersistence::restoreMdiGeometry(key, detailWindow);
 
     QPointer<WorkspaceController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, key]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, key]() {
         if (self) {
             self->untrack_window(key);
         }
@@ -278,41 +308,47 @@ void WorkspaceController::showDetailWindow(
     show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
-void WorkspaceController::showHistoryWindow(
-    const workspace::domain::workspace& workspace) {
+void WorkspaceController::showHistoryWindow(const workspace::domain::workspace& workspace) {
     const QString code = QString::fromStdString(workspace.name);
-    BOOST_LOG_SEV(lg(), info) << "Opening history window for workspace: "
-                              << workspace.name;
+    BOOST_LOG_SEV(lg(), info) << "Opening history window for workspace: " << workspace.name;
 
     const QString windowKey = build_window_key("history", code);
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
-        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: "
-                                  << workspace.name;
+        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: " << workspace.name;
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
-                              << workspace.name;
+    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << workspace.name;
 
-    auto* historyDialog = new WorkspaceHistoryDialog(
-        workspace.id, code, clientManager_, mainWindow_);
+    auto* historyDialog =
+        new WorkspaceHistoryDialog(workspace.id, code, clientManager_, mainWindow_);
 
-    connect(historyDialog, &WorkspaceHistoryDialog::statusChanged,
-            this, [self = QPointer<WorkspaceController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(historyDialog, &WorkspaceHistoryDialog::errorOccurred,
-            this, [self = QPointer<WorkspaceController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
-    connect(historyDialog, &WorkspaceHistoryDialog::revertVersionRequested,
-            this, &WorkspaceController::onRevertVersion);
-    connect(historyDialog, &WorkspaceHistoryDialog::openVersionRequested,
-            this, &WorkspaceController::onOpenVersion);
+    connect(historyDialog,
+            &WorkspaceHistoryDialog::statusChanged,
+            this,
+            [self = QPointer<WorkspaceController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(historyDialog,
+            &WorkspaceHistoryDialog::errorOccurred,
+            this,
+            [self = QPointer<WorkspaceController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
+    connect(historyDialog,
+            &WorkspaceHistoryDialog::revertVersionRequested,
+            this,
+            &WorkspaceController::onRevertVersion);
+    connect(historyDialog,
+            &WorkspaceHistoryDialog::openVersionRequested,
+            this,
+            &WorkspaceController::onOpenVersion);
 
     // Load history data
     historyDialog->loadHistory();
@@ -321,8 +357,8 @@ void WorkspaceController::showHistoryWindow(
     historyWindow->setAttribute(Qt::WA_DeleteOnClose);
     historyWindow->setWidget(historyDialog);
     historyWindow->setWindowTitle(QString("Workspace History: %1").arg(code));
-    historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    historyWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     // Track this history window
     track_window(windowKey, historyWindow);
@@ -331,8 +367,7 @@ void WorkspaceController::showHistoryWindow(
     UiPersistence::restoreMdiGeometry(windowKey, historyWindow);
 
     QPointer<WorkspaceController> self = this;
-    connect(historyWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -341,14 +376,14 @@ void WorkspaceController::showHistoryWindow(
     show_managed_window(historyWindow, listMdiSubWindow_);
 }
 
-void WorkspaceController::onOpenVersion(
-    const workspace::domain::workspace& workspace, int versionNumber) {
+void WorkspaceController::onOpenVersion(const workspace::domain::workspace& workspace,
+                                        int versionNumber) {
     BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
                               << " for workspace: " << workspace.name;
 
     const QString code = QString::fromStdString(workspace.name);
-    const QString windowKey = build_window_key("version", QString("%1_v%2")
-        .arg(code).arg(versionNumber));
+    const QString windowKey =
+        build_window_key("version", QString("%1_v%2").arg(code).arg(versionNumber));
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
@@ -363,31 +398,36 @@ void WorkspaceController::onOpenVersion(
     detailDialog->setWorkspace(workspace);
     detailDialog->setReadOnly(true);
 
-    connect(detailDialog, &WorkspaceDetailDialog::statusMessage,
-            this, [self = QPointer<WorkspaceController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(detailDialog, &WorkspaceDetailDialog::errorMessage,
-            this, [self = QPointer<WorkspaceController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
+    connect(detailDialog,
+            &WorkspaceDetailDialog::statusMessage,
+            this,
+            [self = QPointer<WorkspaceController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(detailDialog,
+            &WorkspaceDetailDialog::errorMessage,
+            this,
+            [self = QPointer<WorkspaceController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Workspace: %1 (Version %2)")
-        .arg(code).arg(versionNumber));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("Workspace: %1 (Version %2)").arg(code).arg(versionNumber));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     track_window(windowKey, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<WorkspaceController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -397,10 +437,8 @@ void WorkspaceController::onOpenVersion(
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
-void WorkspaceController::onRevertVersion(
-    const workspace::domain::workspace& workspace) {
-    BOOST_LOG_SEV(lg(), info) << "Reverting workspace to version: "
-                              << workspace.version;
+void WorkspaceController::onRevertVersion(const workspace::domain::workspace& workspace) {
+    BOOST_LOG_SEV(lg(), info) << "Reverting workspace to version: " << workspace.version;
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new WorkspaceDetailDialog(mainWindow_);
@@ -410,25 +448,32 @@ void WorkspaceController::onRevertVersion(
     detailDialog->setWorkspace(workspace);
     detailDialog->setCreateMode(false);
 
-    connect(detailDialog, &WorkspaceDetailDialog::statusMessage,
-            this, &WorkspaceController::statusMessage);
-    connect(detailDialog, &WorkspaceDetailDialog::errorMessage,
-            this, &WorkspaceController::errorMessage);
-    connect(detailDialog, &WorkspaceDetailDialog::workspaceSaved,
-            this, [self = QPointer<WorkspaceController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Workspace reverted: " << code.toStdString();
-        emit self->statusMessage(QString("Workspace '%1' reverted successfully").arg(code));
-        self->handleEntitySaved();
-    });
+    connect(detailDialog,
+            &WorkspaceDetailDialog::statusMessage,
+            this,
+            &WorkspaceController::statusMessage);
+    connect(detailDialog,
+            &WorkspaceDetailDialog::errorMessage,
+            this,
+            &WorkspaceController::errorMessage);
+    connect(detailDialog,
+            &WorkspaceDetailDialog::workspaceSaved,
+            this,
+            [self = QPointer<WorkspaceController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Workspace reverted: " << code.toStdString();
+                emit self->statusMessage(QString("Workspace '%1' reverted successfully").arg(code));
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Revert Workspace: %1")
-        .arg(QString::fromStdString(workspace.name)));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("Revert Workspace: %1").arg(QString::fromStdString(workspace.name)));
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
+                                                               IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -440,15 +485,16 @@ EntityListMdiWindow* WorkspaceController::listWindow() const {
     return listWindow_;
 }
 
-void WorkspaceController::onNotificationReceived(
-    const QString& eventType, const QDateTime& timestamp,
-    const QStringList& entityIds, const QString& /*tenantId*/) {
+void WorkspaceController::onNotificationReceived(const QString& eventType,
+                                                 const QDateTime& timestamp,
+                                                 const QStringList& entityIds,
+                                                 const QString& /*tenantId*/) {
     if (eventType != QString::fromStdString(std::string{workspace_event_name}))
         return;
 
     BOOST_LOG_SEV(lg(), info) << "Received workspace change notification at "
-                              << timestamp.toString(Qt::ISODate).toStdString()
-                              << " with " << entityIds.size() << " workspace IDs";
+                              << timestamp.toString(Qt::ISODate).toStdString() << " with "
+                              << entityIds.size() << " workspace IDs";
 
     if (listWindow_)
         listWindow_->markAsStale();

@@ -18,38 +18,36 @@
  *
  */
 #include "ores.qt/BadgeDefinitionMdiWindow.hpp"
-
-#include <QVBoxLayout>
-#include <QHeaderView>
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
+#include "ores.dq.api/messaging/badge_protocol.hpp"
+#include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/ColorConstants.hpp"
-#include "ores.dq.api/messaging/badge_protocol.hpp"
+#include <QFutureWatcher>
+#include <QHeaderView>
+#include <QMessageBox>
+#include <QVBoxLayout>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-BadgeDefinitionMdiWindow::BadgeDefinitionMdiWindow(
-    ClientManager* clientManager,
-    const QString& username,
-    QWidget* parent)
-    : EntityListMdiWindow(parent),
-      clientManager_(clientManager),
-      username_(username),
-      toolbar_(nullptr),
-      tableView_(nullptr),
-      model_(nullptr),
-      proxyModel_(nullptr),
-      paginationWidget_(nullptr),
-      reloadAction_(nullptr),
-      addAction_(nullptr),
-      editAction_(nullptr),
-      deleteAction_(nullptr),
-      historyAction_(nullptr) {
+BadgeDefinitionMdiWindow::BadgeDefinitionMdiWindow(ClientManager* clientManager,
+                                                   const QString& username,
+                                                   QWidget* parent)
+    : EntityListMdiWindow(parent)
+    , clientManager_(clientManager)
+    , username_(username)
+    , toolbar_(nullptr)
+    , tableView_(nullptr)
+    , model_(nullptr)
+    , proxyModel_(nullptr)
+    , paginationWidget_(nullptr)
+    , reloadAction_(nullptr)
+    , addAction_(nullptr)
+    , editAction_(nullptr)
+    , deleteAction_(nullptr)
+    , historyAction_(nullptr) {
 
     setupUi();
     setupConnections();
@@ -78,50 +76,37 @@ void BadgeDefinitionMdiWindow::setupToolbar() {
     toolbar_->setIconSize(QSize(20, 20));
 
     reloadAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::ArrowClockwise, IconUtils::DefaultIconColor),
+        IconUtils::createRecoloredIcon(Icon::ArrowClockwise, IconUtils::DefaultIconColor),
         tr("Reload"));
-    connect(reloadAction_, &QAction::triggered, this,
-            &EntityListMdiWindow::reload);
+    connect(reloadAction_, &QAction::triggered, this, &EntityListMdiWindow::reload);
 
     initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowClockwise));
 
     toolbar_->addSeparator();
 
     addAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::Add, IconUtils::DefaultIconColor),
-        tr("Add"));
+        IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor), tr("Add"));
     addAction_->setToolTip(tr("Add new badge definition"));
-    connect(addAction_, &QAction::triggered, this,
-            &BadgeDefinitionMdiWindow::addNew);
+    connect(addAction_, &QAction::triggered, this, &BadgeDefinitionMdiWindow::addNew);
 
     editAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::Edit, IconUtils::DefaultIconColor),
-        tr("Edit"));
+        IconUtils::createRecoloredIcon(Icon::Edit, IconUtils::DefaultIconColor), tr("Edit"));
     editAction_->setToolTip(tr("Edit selected badge definition"));
     editAction_->setEnabled(false);
-    connect(editAction_, &QAction::triggered, this,
-            &BadgeDefinitionMdiWindow::editSelected);
+    connect(editAction_, &QAction::triggered, this, &BadgeDefinitionMdiWindow::editSelected);
 
     deleteAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::Delete, IconUtils::DefaultIconColor),
-        tr("Delete"));
+        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor), tr("Delete"));
     deleteAction_->setToolTip(tr("Delete selected badge definition"));
     deleteAction_->setEnabled(false);
-    connect(deleteAction_, &QAction::triggered, this,
-            &BadgeDefinitionMdiWindow::deleteSelected);
+    connect(deleteAction_, &QAction::triggered, this, &BadgeDefinitionMdiWindow::deleteSelected);
 
     historyAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::History, IconUtils::DefaultIconColor),
-        tr("History"));
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor), tr("History"));
     historyAction_->setToolTip(tr("View badge definition history"));
     historyAction_->setEnabled(false);
-    connect(historyAction_, &QAction::triggered, this,
-            &BadgeDefinitionMdiWindow::viewHistorySelected);
+    connect(
+        historyAction_, &QAction::triggered, this, &BadgeDefinitionMdiWindow::viewHistorySelected);
 }
 
 void BadgeDefinitionMdiWindow::setupTable() {
@@ -138,31 +123,38 @@ void BadgeDefinitionMdiWindow::setupTable() {
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
 
-    initializeTableSettings(tableView_, model_,
-        "BadgeDefinitionListWindow",
-        {ClientBadgeDefinitionModel::Description},
-        {900, 400}, 1);
+    initializeTableSettings(tableView_,
+                            model_,
+                            "BadgeDefinitionListWindow",
+                            {ClientBadgeDefinitionModel::Description},
+                            {900, 400},
+                            1);
 }
 
 void BadgeDefinitionMdiWindow::setupConnections() {
-    connect(model_, &ClientBadgeDefinitionModel::dataLoaded,
-            this, &BadgeDefinitionMdiWindow::onDataLoaded);
-    connect(model_, &ClientBadgeDefinitionModel::loadError,
-            this, &BadgeDefinitionMdiWindow::onLoadError);
+    connect(model_,
+            &ClientBadgeDefinitionModel::dataLoaded,
+            this,
+            &BadgeDefinitionMdiWindow::onDataLoaded);
+    connect(model_,
+            &ClientBadgeDefinitionModel::loadError,
+            this,
+            &BadgeDefinitionMdiWindow::onLoadError);
 
-    connect(tableView_->selectionModel(), &QItemSelectionModel::selectionChanged,
-            this, &BadgeDefinitionMdiWindow::onSelectionChanged);
-    connect(tableView_, &QTableView::doubleClicked,
-            this, &BadgeDefinitionMdiWindow::onDoubleClicked);
+    connect(tableView_->selectionModel(),
+            &QItemSelectionModel::selectionChanged,
+            this,
+            &BadgeDefinitionMdiWindow::onSelectionChanged);
+    connect(
+        tableView_, &QTableView::doubleClicked, this, &BadgeDefinitionMdiWindow::onDoubleClicked);
 
-    connect(paginationWidget_, &PaginationWidget::page_size_changed,
-            this, [this](std::uint32_t size) {
-        model_->set_page_size(size);
-        model_->refresh();
-    });
+    connect(
+        paginationWidget_, &PaginationWidget::page_size_changed, this, [this](std::uint32_t size) {
+            model_->set_page_size(size);
+            model_->refresh();
+        });
 
-    connect(paginationWidget_, &PaginationWidget::load_all_requested,
-            this, [this]() {
+    connect(paginationWidget_, &PaginationWidget::load_all_requested, this, [this]() {
         const auto total = model_->total_available_count();
         if (total > 0 && total <= 1000) {
             model_->set_page_size(total);
@@ -170,10 +162,11 @@ void BadgeDefinitionMdiWindow::setupConnections() {
         }
     });
 
-    connect(paginationWidget_, &PaginationWidget::page_requested,
-            this, [this](std::uint32_t offset, std::uint32_t limit) {
-        model_->load_page(offset, limit);
-    });
+    connect(
+        paginationWidget_,
+        &PaginationWidget::page_requested,
+        this,
+        [this](std::uint32_t offset, std::uint32_t limit) { model_->load_page(offset, limit); });
 
     connectModel(model_);
 }
@@ -190,12 +183,11 @@ void BadgeDefinitionMdiWindow::onDataLoaded() {
     emit statusChanged(tr("Loaded %1 of %2 badge definitions").arg(loaded).arg(total));
 
     paginationWidget_->update_state(loaded, total);
-    paginationWidget_->set_load_all_enabled(
-        loaded < static_cast<int>(total) && total > 0 && total <= 1000);
+    paginationWidget_->set_load_all_enabled(loaded < static_cast<int>(total) && total > 0 &&
+                                            total <= 1000);
 }
 
-void BadgeDefinitionMdiWindow::onLoadError(const QString& error_message,
-                                          const QString& details) {
+void BadgeDefinitionMdiWindow::onLoadError(const QString& error_message, const QString& details) {
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);
@@ -249,8 +241,8 @@ void BadgeDefinitionMdiWindow::viewHistorySelected() {
 
     auto sourceIndex = proxyModel_->mapToSource(selected.first());
     if (auto* definition = model_->getDefinition(sourceIndex.row())) {
-        BOOST_LOG_SEV(lg(), debug) << "Emitting showDefinitionHistory for code: "
-                                   << definition->code;
+        BOOST_LOG_SEV(lg(), debug)
+            << "Emitting showDefinitionHistory for code: " << definition->code;
         emit showDefinitionHistory(*definition);
     }
 }
@@ -263,8 +255,8 @@ void BadgeDefinitionMdiWindow::deleteSelected() {
     }
 
     if (!clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot delete badge definition while disconnected.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot delete badge definition while disconnected.");
         return;
     }
 
@@ -281,20 +273,19 @@ void BadgeDefinitionMdiWindow::deleteSelected() {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Delete requested for " << codes.size()
-                               << " badge definitions";
+    BOOST_LOG_SEV(lg(), debug) << "Delete requested for " << codes.size() << " badge definitions";
 
     QString confirmMessage;
     if (codes.size() == 1) {
         confirmMessage = QString("Are you sure you want to delete badge definition '%1'?")
-            .arg(QString::fromStdString(codes.front()));
+                             .arg(QString::fromStdString(codes.front()));
     } else {
-        confirmMessage = QString("Are you sure you want to delete %1 badge definitions?")
-            .arg(codes.size());
+        confirmMessage =
+            QString("Are you sure you want to delete %1 badge definitions?").arg(codes.size());
     }
 
-    auto reply = MessageBoxHelper::question(this, "Delete Badge Definition",
-        confirmMessage, QMessageBox::Yes | QMessageBox::No);
+    auto reply = MessageBoxHelper::question(
+        this, "Delete Badge Definition", confirmMessage, QMessageBox::Yes | QMessageBox::No);
 
     if (reply != QMessageBox::Yes) {
         BOOST_LOG_SEV(lg(), debug) << "Delete cancelled by user";
@@ -310,15 +301,16 @@ void BadgeDefinitionMdiWindow::deleteSelected() {
     QPointer<BadgeDefinitionMdiWindow> self = this;
 
     auto task = [self, codes]() -> BatchDeleteResult {
-        if (!self) return {false, "Window closed", {}};
+        if (!self)
+            return {false, "Window closed", {}};
 
-        BOOST_LOG_SEV(lg(), debug) << "Making batch delete request for "
-                                   << codes.size() << " badge definitions";
+        BOOST_LOG_SEV(lg(), debug)
+            << "Making batch delete request for " << codes.size() << " badge definitions";
 
         dq::messaging::delete_badge_definition_request request;
         request.codes = codes;
-        auto response_result = self->clientManager_->
-            process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, response_result.error(), {}};
@@ -328,8 +320,7 @@ void BadgeDefinitionMdiWindow::deleteSelected() {
     };
 
     auto* watcher = new QFutureWatcher<BatchDeleteResult>(self);
-    connect(watcher, &QFutureWatcher<BatchDeleteResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<BatchDeleteResult>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
@@ -341,9 +332,9 @@ void BadgeDefinitionMdiWindow::deleteSelected() {
                 emit self->definitionDeleted(QString::fromStdString(code));
             }
             const int count = static_cast<int>(result.codes.size());
-            QString msg = count == 1
-                ? "Successfully deleted 1 badge definition"
-                : QString("Successfully deleted %1 badge definitions").arg(count);
+            QString msg = count == 1 ?
+                              "Successfully deleted 1 badge definition" :
+                              QString("Successfully deleted %1 badge definitions").arg(count);
             emit self->statusChanged(msg);
         } else {
             BOOST_LOG_SEV(lg(), error) << "Batch delete failed: " << result.message;

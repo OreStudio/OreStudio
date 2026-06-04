@@ -27,13 +27,13 @@
 // gives MSVC a clean slate; the flat/FX/equity types in parse_trade_instrument.cpp
 // never enter this compilation context.
 
-#include <optional>
-#include <vector>
-#include <rfl/json.hpp>
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/IInstrumentFormPopulator.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "parse_swap_impl.hpp"
+#include <optional>
+#include <rfl/json.hpp>
+#include <vector>
 
 namespace {
 
@@ -46,7 +46,7 @@ inline std::string_view logger_name = "ores.qt.parse_swap_instruments";
     return instance;
 }
 
-template<typename T>
+template <typename T>
 static std::optional<T> try_parse(const std::string& raw) {
     auto r = rfl::json::read<T>(raw);
     if (!r) {
@@ -58,47 +58,87 @@ static std::optional<T> try_parse(const std::string& raw) {
 }
 
 // Shared legs wrapper: swap_leg is the same for all 9 swap types.
-struct swap_legs_inner { std::vector<td::swap_leg> legs; };
-struct swap_legs_outer { swap_legs_inner instrument; };
+struct swap_legs_inner {
+    std::vector<td::swap_leg> legs;
+};
+struct swap_legs_outer {
+    swap_legs_inner instrument;
+};
 
 // Per-type instrument wrappers: read response["instrument"]["instrument"].
-struct fra_instr_inner          { td::fra_instrument                    instrument; };
-struct fra_instr_outer          { fra_instr_inner                       instrument; };
+struct fra_instr_inner {
+    td::fra_instrument instrument;
+};
+struct fra_instr_outer {
+    fra_instr_inner instrument;
+};
 
-struct vanilla_swap_instr_inner { td::vanilla_swap_instrument           instrument; };
-struct vanilla_swap_instr_outer { vanilla_swap_instr_inner              instrument; };
+struct vanilla_swap_instr_inner {
+    td::vanilla_swap_instrument instrument;
+};
+struct vanilla_swap_instr_outer {
+    vanilla_swap_instr_inner instrument;
+};
 
-struct cap_floor_instr_inner    { td::cap_floor_instrument              instrument; };
-struct cap_floor_instr_outer    { cap_floor_instr_inner                 instrument; };
+struct cap_floor_instr_inner {
+    td::cap_floor_instrument instrument;
+};
+struct cap_floor_instr_outer {
+    cap_floor_instr_inner instrument;
+};
 
-struct swaption_instr_inner     { td::swaption_instrument               instrument; };
-struct swaption_instr_outer     { swaption_instr_inner                  instrument; };
+struct swaption_instr_inner {
+    td::swaption_instrument instrument;
+};
+struct swaption_instr_outer {
+    swaption_instr_inner instrument;
+};
 
-struct bgs_instr_inner          { td::balance_guaranteed_swap_instrument instrument; };
-struct bgs_instr_outer          { bgs_instr_inner                       instrument; };
+struct bgs_instr_inner {
+    td::balance_guaranteed_swap_instrument instrument;
+};
+struct bgs_instr_outer {
+    bgs_instr_inner instrument;
+};
 
-struct callable_swap_instr_inner { td::callable_swap_instrument         instrument; };
-struct callable_swap_instr_outer { callable_swap_instr_inner            instrument; };
+struct callable_swap_instr_inner {
+    td::callable_swap_instrument instrument;
+};
+struct callable_swap_instr_outer {
+    callable_swap_instr_inner instrument;
+};
 
-struct knock_out_swap_instr_inner { td::knock_out_swap_instrument       instrument; };
-struct knock_out_swap_instr_outer { knock_out_swap_instr_inner          instrument; };
+struct knock_out_swap_instr_inner {
+    td::knock_out_swap_instrument instrument;
+};
+struct knock_out_swap_instr_outer {
+    knock_out_swap_instr_inner instrument;
+};
 
-struct inflation_swap_instr_inner { td::inflation_swap_instrument       instrument; };
-struct inflation_swap_instr_outer { inflation_swap_instr_inner          instrument; };
+struct inflation_swap_instr_inner {
+    td::inflation_swap_instrument instrument;
+};
+struct inflation_swap_instr_outer {
+    inflation_swap_instr_inner instrument;
+};
 
-struct rpa_instr_inner          { td::rpa_instrument                    instrument; };
-struct rpa_instr_outer          { rpa_instr_inner                       instrument; };
+struct rpa_instr_inner {
+    td::rpa_instrument instrument;
+};
+struct rpa_instr_outer {
+    rpa_instr_inner instrument;
+};
 
-template<typename InstrOuter, typename LegsOuter>
+template <typename InstrOuter, typename LegsOuter>
 static bool try_parse_and_populate(const std::string& raw,
-    ores::qt::IInstrumentFormPopulator& populator)
-{
+                                   ores::qt::IInstrumentFormPopulator& populator) {
     auto r_instr = try_parse<InstrOuter>(raw);
-    if (!r_instr) return false;
+    if (!r_instr)
+        return false;
     auto r_legs = try_parse<LegsOuter>(raw);
-    if (!r_legs) return false;
-    populator.populate(r_instr->instrument.instrument,
-                       std::move(r_legs->instrument.legs));
+    if (!r_legs)
+        return false;
+    populator.populate(r_instr->instrument.instrument, std::move(r_legs->instrument.legs));
     return true;
 }
 
@@ -106,9 +146,9 @@ static bool try_parse_and_populate(const std::string& raw,
 
 namespace ores::qt::internal {
 
-bool parse_swap_instrument(const std::string& raw, const std::string& ttc,
-    ores::qt::IInstrumentFormPopulator& pop)
-{
+bool parse_swap_instrument(const std::string& raw,
+                           const std::string& ttc,
+                           ores::qt::IInstrumentFormPopulator& pop) {
     using namespace ores::logging;
 
     if (ttc == "ForwardRateAgreement") {
@@ -124,7 +164,8 @@ bool parse_swap_instrument(const std::string& raw, const std::string& ttc,
         BOOST_LOG_SEV(lg(), debug) << "parse_swap_instrument: reading swaption_instrument";
         return try_parse_and_populate<swaption_instr_outer, swap_legs_outer>(raw, pop);
     } else if (ttc == "BalanceGuaranteedSwap") {
-        BOOST_LOG_SEV(lg(), debug) << "parse_swap_instrument: reading balance_guaranteed_swap_instrument";
+        BOOST_LOG_SEV(lg(), debug)
+            << "parse_swap_instrument: reading balance_guaranteed_swap_instrument";
         return try_parse_and_populate<bgs_instr_outer, swap_legs_outer>(raw, pop);
     } else if (ttc == "CallableSwap") {
         BOOST_LOG_SEV(lg(), debug) << "parse_swap_instrument: reading callable_swap_instrument";
@@ -140,8 +181,7 @@ bool parse_swap_instrument(const std::string& raw, const std::string& ttc,
         return try_parse_and_populate<rpa_instr_outer, swap_legs_outer>(raw, pop);
     }
 
-    BOOST_LOG_SEV(lg(), warn)
-        << "parse_swap_instrument: unknown trade_type: " << ttc;
+    BOOST_LOG_SEV(lg(), warn) << "parse_swap_instrument: unknown trade_type: " << ttc;
     return false;
 }
 

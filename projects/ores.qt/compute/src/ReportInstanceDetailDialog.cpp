@@ -18,27 +18,26 @@
  *
  */
 #include "ores.qt/ReportInstanceDetailDialog.hpp"
-
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include <QPlainTextEdit>
-#include <boost/uuid/random_generator.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include "ui_ReportInstanceDetailDialog.h"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.reporting.api/messaging/report_instance_protocol.hpp"
+#include "ui_ReportInstanceDetailDialog.h"
+#include <QFutureWatcher>
+#include <QMessageBox>
+#include <QPlainTextEdit>
+#include <QtConcurrent>
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 ReportInstanceDetailDialog::ReportInstanceDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent),
-      ui_(new Ui::ReportInstanceDetailDialog),
-      clientManager_(nullptr) {
+    : DetailDialogBase(parent)
+    , ui_(new Ui::ReportInstanceDetailDialog)
+    , clientManager_(nullptr) {
 
     ui_->setupUi(this);
     setupUi();
@@ -74,18 +73,24 @@ void ReportInstanceDetailDialog::setupUi() {
 }
 
 void ReportInstanceDetailDialog::setupConnections() {
-    connect(ui_->saveButton, &QPushButton::clicked, this,
-            &ReportInstanceDetailDialog::onSaveClicked);
-    connect(ui_->deleteButton, &QPushButton::clicked, this,
+    connect(
+        ui_->saveButton, &QPushButton::clicked, this, &ReportInstanceDetailDialog::onSaveClicked);
+    connect(ui_->deleteButton,
+            &QPushButton::clicked,
+            this,
             &ReportInstanceDetailDialog::onDeleteClicked);
-    connect(ui_->closeButton, &QPushButton::clicked, this,
-            &ReportInstanceDetailDialog::onCloseClicked);
+    connect(
+        ui_->closeButton, &QPushButton::clicked, this, &ReportInstanceDetailDialog::onCloseClicked);
 
-    connect(ui_->nameEdit, &QLineEdit::textChanged, this,
-            &ReportInstanceDetailDialog::onCodeChanged);
-    connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this,
+    connect(
+        ui_->nameEdit, &QLineEdit::textChanged, this, &ReportInstanceDetailDialog::onCodeChanged);
+    connect(ui_->descriptionEdit,
+            &QPlainTextEdit::textChanged,
+            this,
             &ReportInstanceDetailDialog::onFieldChanged);
-    connect(ui_->outputEdit, &QPlainTextEdit::textChanged, this,
+    connect(ui_->outputEdit,
+            &QPlainTextEdit::textChanged,
+            this,
             &ReportInstanceDetailDialog::onFieldChanged);
 }
 
@@ -97,8 +102,7 @@ void ReportInstanceDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
 
-void ReportInstanceDetailDialog::setInstance(
-    const reporting::domain::report_instance& instance) {
+void ReportInstanceDetailDialog::setInstance(const reporting::domain::report_instance& instance) {
     instance_ = instance;
     updateUiFromInstance();
 }
@@ -173,25 +177,23 @@ bool ReportInstanceDetailDialog::validateInput() {
 
 void ReportInstanceDetailDialog::onSaveClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot save report instance while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot save report instance while disconnected from server.");
         return;
     }
 
     if (!validateInput()) {
-        MessageBoxHelper::warning(this, "Invalid Input",
-            "Please fill in all required fields.");
+        MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
 
     updateInstanceFromUi();
 
-    const auto crOpType = createMode_
-        ? ChangeReasonDialog::OperationType::Create
-        : ChangeReasonDialog::OperationType::Amend;
-    const auto crSel = promptChangeReason(crOpType, hasChanges_,
-        createMode_ ? "system" : "common");
-    if (!crSel) return;
+    const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
+                                        ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
+    if (!crSel)
+        return;
     instance_.change_reason_code = crSel->reason_code;
     instance_.change_commentary = crSel->commentary;
 
@@ -211,7 +213,8 @@ void ReportInstanceDetailDialog::onSaveClicked() {
 
         reporting::messaging::save_report_instance_request request;
         request.instance = instance;
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -222,8 +225,7 @@ void ReportInstanceDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
@@ -248,13 +250,15 @@ void ReportInstanceDetailDialog::onSaveClicked() {
 
 void ReportInstanceDetailDialog::onDeleteClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot delete report instance while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot delete report instance while disconnected from server.");
         return;
     }
 
     QString code = QString::fromStdString(instance_.name);
-    auto reply = MessageBoxHelper::question(this, "Delete Report Instance",
+    auto reply = MessageBoxHelper::question(
+        this,
+        "Delete Report Instance",
         QString("Are you sure you want to delete report instance '%1'?").arg(code),
         QMessageBox::Yes | QMessageBox::No);
 
@@ -262,9 +266,10 @@ void ReportInstanceDetailDialog::onDeleteClicked() {
         return;
     }
 
-    const auto crSel = promptChangeReason(
-        ChangeReasonDialog::OperationType::Delete, true, "common");
-    if (!crSel) return;
+    const auto crSel =
+        promptChangeReason(ChangeReasonDialog::OperationType::Delete, true, "common");
+    if (!crSel)
+        return;
 
     BOOST_LOG_SEV(lg(), info) << "Deleting report instance: " << instance_.name;
 
@@ -282,7 +287,8 @@ void ReportInstanceDetailDialog::onDeleteClicked() {
 
         reporting::messaging::delete_report_instance_request request;
         request.ids.push_back(boost::uuids::to_string(id));
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -292,8 +298,7 @@ void ReportInstanceDetailDialog::onDeleteClicked() {
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
-            self, [self, code, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, code, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 

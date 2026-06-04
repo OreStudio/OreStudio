@@ -20,17 +20,17 @@
 #ifndef ORES_QT_ACCOUNT_DETAIL_DIALOG_HPP
 #define ORES_QT_ACCOUNT_DETAIL_DIALOG_HPP
 
-#include <QToolBar>
-#include <QAction>
-#include <memory>
-#include <optional>
 #include "ores.iam.api/domain/account.hpp"
 #include "ores.iam.api/domain/login_info.hpp"
-#include "ores.qt/ClientManager.hpp"
-#include "ores.qt/AccountRolesWidget.hpp"
-#include "ores.qt/AccountPartiesWidget.hpp"
-#include "ores.qt/DetailDialogBase.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/AccountPartiesWidget.hpp"
+#include "ores.qt/AccountRolesWidget.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/DetailDialogBase.hpp"
+#include <QAction>
+#include <QToolBar>
+#include <memory>
+#include <optional>
 
 
 namespace Ui {
@@ -57,8 +57,7 @@ class AccountDetailDialog final : public DetailDialogBase {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.account_detail_dialog";
+    inline static std::string_view logger_name = "ores.qt.account_detail_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -155,7 +154,9 @@ protected:
     QTabWidget* tabWidget() const override;
     QWidget* provenanceTab() const override;
     ProvenanceWidget* provenanceWidget() const override;
-    bool hasUnsavedChanges() const override { return isDirty_; }
+    bool hasUnsavedChanges() const override {
+        return isDirty_;
+    }
 
 private slots:
     void onSaveClicked();
@@ -181,10 +182,10 @@ private:
     QToolBar* toolBar_;
     QAction* revertAction_;
 
-    ClientManager*     clientManager_;
+    ClientManager* clientManager_;
     iam::domain::account currentAccount_;
     std::optional<iam::domain::login_info> currentLoginInfo_;
-    AccountRolesWidget*   rolesWidget_;
+    AccountRolesWidget* rolesWidget_;
     AccountPartiesWidget* partiesWidget_;
 };
 

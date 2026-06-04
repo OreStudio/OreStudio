@@ -20,16 +20,16 @@
 #ifndef ORES_QT_CHANGE_REASON_DETAIL_DIALOG_HPP
 #define ORES_QT_CHANGE_REASON_DETAIL_DIALOG_HPP
 
-#include <vector>
-#include <QAction>
-#include <QTabWidget>
-#include <QToolBar>
+#include "ores.dq.api/domain/change_reason.hpp"
+#include "ores.dq.api/domain/change_reason_category.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.qt/ProvenanceWidget.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.dq.api/domain/change_reason.hpp"
-#include "ores.dq.api/domain/change_reason_category.hpp"
+#include <QAction>
+#include <QTabWidget>
+#include <QToolBar>
+#include <vector>
 
 namespace Ui {
 class ChangeReasonDetailDialog;
@@ -47,8 +47,7 @@ class ChangeReasonDetailDialog : public DetailDialogBase {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.change_reason_detail_dialog";
+    inline static std::string_view logger_name = "ores.qt.change_reason_detail_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -67,16 +66,19 @@ public:
     dq::domain::change_reason getChangeReason() const;
     void setCreateMode(bool createMode);
     void setReadOnly(bool readOnly, int versionNumber = 0);
-    void setHistory(const std::vector<dq::domain::change_reason>& history,
-                    int versionNumber);
+    void setHistory(const std::vector<dq::domain::change_reason>& history, int versionNumber);
     void clearDialog();
     void save();
 
     void setCategories(const std::vector<dq::domain::change_reason_category>& categories);
 
     QString changeReasonCode() const;
-    bool isDirty() const { return isDirty_; }
-    bool isReadOnly() const { return isReadOnly_; }
+    bool isDirty() const {
+        return isDirty_;
+    }
+    bool isReadOnly() const {
+        return isReadOnly_;
+    }
 
 signals:
     void isDirtyChanged(bool dirty);
@@ -87,7 +89,9 @@ protected:
     QTabWidget* tabWidget() const override;
     QWidget* provenanceTab() const override;
     ProvenanceWidget* provenanceWidget() const override;
-    bool hasUnsavedChanges() const override { return isDirty_; }
+    bool hasUnsavedChanges() const override {
+        return isDirty_;
+    }
 
 private slots:
     void onSaveClicked();

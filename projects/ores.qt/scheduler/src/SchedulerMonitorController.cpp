@@ -18,34 +18,34 @@
  *
  */
 #include "ores.qt/SchedulerMonitorController.hpp"
-
-#include <QPointer>
+#include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/SchedulerMonitorMdiWindow.hpp"
-#include "ores.qt/DetachableMdiSubWindow.hpp"
+#include <QPointer>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-SchedulerMonitorController::SchedulerMonitorController(
-    QMainWindow* mainWindow,
-    QMdiArea* mdiArea,
-    ClientManager* clientManager,
-    QObject* parent)
-    : QObject(parent),
-      mainWindow_(mainWindow),
-      mdiArea_(mdiArea),
-      clientManager_(clientManager) {
+SchedulerMonitorController::SchedulerMonitorController(QMainWindow* mainWindow,
+                                                       QMdiArea* mdiArea,
+                                                       ClientManager* clientManager,
+                                                       QObject* parent)
+    : QObject(parent)
+    , mainWindow_(mainWindow)
+    , mdiArea_(mdiArea)
+    , clientManager_(clientManager) {
 
-    connect(clientManager_, &ClientManager::notificationReceived,
-        this, [this](const QString& eventType, const QDateTime&,
-                     const QStringList&, const QString&) {
-            if (eventType == QString::fromUtf8(event_subject.data(),
-                    static_cast<int>(event_subject.size())) && window_) {
-                window_->refresh();
-            }
-        });
+    connect(clientManager_,
+            &ClientManager::notificationReceived,
+            this,
+            [this](const QString& eventType, const QDateTime&, const QStringList&, const QString&) {
+                if (eventType == QString::fromUtf8(event_subject.data(),
+                                                   static_cast<int>(event_subject.size())) &&
+                    window_) {
+                    window_->refresh();
+                }
+            });
 
     connect(clientManager_, &ClientManager::loggedIn, this, [this]() {
         clientManager_->subscribeToEvent(std::string(event_subject));
@@ -72,28 +72,35 @@ void SchedulerMonitorController::showWindow() {
 
     window_ = new SchedulerMonitorMdiWindow(clientManager_);
 
-    connect(window_, &SchedulerMonitorMdiWindow::statusChanged,
-            this, &SchedulerMonitorController::statusMessage);
-    connect(window_, &SchedulerMonitorMdiWindow::errorOccurred,
-            this, &SchedulerMonitorController::errorMessage);
+    connect(window_,
+            &SchedulerMonitorMdiWindow::statusChanged,
+            this,
+            &SchedulerMonitorController::statusMessage);
+    connect(window_,
+            &SchedulerMonitorMdiWindow::errorOccurred,
+            this,
+            &SchedulerMonitorController::errorMessage);
 
     mdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     mdiSubWindow_->setWidget(window_);
     mdiSubWindow_->setWindowTitle(tr("Scheduler Monitor"));
-    mdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Clock, IconUtils::DefaultIconColor));
+    mdiSubWindow_->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Clock, IconUtils::DefaultIconColor));
     mdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     mdiSubWindow_->resize(window_->sizeHint());
 
     mdiArea_->addSubWindow(mdiSubWindow_);
     mdiSubWindow_->show();
 
-    connect(mdiSubWindow_, &QObject::destroyed,
-            this, [self = QPointer<SchedulerMonitorController>(this)]() {
-        if (!self) return;
-        self->window_ = nullptr;
-        self->mdiSubWindow_ = nullptr;
-    });
+    connect(mdiSubWindow_,
+            &QObject::destroyed,
+            this,
+            [self = QPointer<SchedulerMonitorController>(this)]() {
+                if (!self)
+                    return;
+                self->window_ = nullptr;
+                self->mdiSubWindow_ = nullptr;
+            });
 }
 
 void SchedulerMonitorController::closeWindow() {

@@ -18,27 +18,26 @@
  *
  */
 #include "ores.qt/EntityListMdiWindow.hpp"
-
-#include <QHeaderView>
-#include <QHBoxLayout>
-#include <QMenu>
-#include <QProgressBar>
-#include <QWidget>
-#include <QSizePolicy>
 #include "ores.qt/ClientManager.hpp"
-#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/PaginationWidget.hpp"
 #include "ores.qt/UiPersistence.hpp"
 #include "ores.qt/WorkspaceSelector.hpp"
+#include <QHBoxLayout>
+#include <QHeaderView>
+#include <QMenu>
+#include <QProgressBar>
+#include <QSizePolicy>
+#include <QWidget>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 EntityListMdiWindow::EntityListMdiWindow(QWidget* parent)
-    : QWidget(parent),
-      pulseTimer_(new QTimer(this)) {
+    : QWidget(parent)
+    , pulseTimer_(new QTimer(this)) {
     connect(pulseTimer_, &QTimer::timeout, this, &EntityListMdiWindow::onPulseTimeout);
 }
 
@@ -50,7 +49,7 @@ void EntityListMdiWindow::closeEvent(QCloseEvent* event) {
 }
 
 void EntityListMdiWindow::initializeStaleIndicator(QAction* refreshAction,
-                                                    const QString& iconPath) {
+                                                   const QString& iconPath) {
     refreshAction_ = refreshAction;
 
     // Store normal icon and create pulse (orange) icon
@@ -115,7 +114,7 @@ void EntityListMdiWindow::reload() {
 QProgressBar* EntityListMdiWindow::loadingBar() {
     if (!loadingBar_) {
         loadingBar_ = new QProgressBar(this);
-        loadingBar_->setRange(0, 0);  // indeterminate (marquee) mode
+        loadingBar_->setRange(0, 0); // indeterminate (marquee) mode
         loadingBar_->setFixedHeight(20);
         loadingBar_->setTextVisible(false);
         loadingBar_->hide();
@@ -124,23 +123,26 @@ QProgressBar* EntityListMdiWindow::loadingBar() {
 }
 
 void EntityListMdiWindow::beginLoading() {
-    if (loadingBar_) loadingBar_->show();
-    if (refreshAction_) refreshAction_->setEnabled(false);
+    if (loadingBar_)
+        loadingBar_->show();
+    if (refreshAction_)
+        refreshAction_->setEnabled(false);
 }
 
 void EntityListMdiWindow::endLoading() {
-    if (loadingBar_) loadingBar_->hide();
-    if (refreshAction_) refreshAction_->setEnabled(true);
+    if (loadingBar_)
+        loadingBar_->hide();
+    if (refreshAction_)
+        refreshAction_->setEnabled(true);
 }
 
-void EntityListMdiWindow::initializeTableSettings(
-    QTableView* tableView,
-    QAbstractItemModel* sourceModel,
-    std::string_view settingsGroup,
-    const QVector<int>& defaultHiddenColumns,
-    const QSize& defaultSize,
-    int settingsVersion,
-    QSplitter* splitter) {
+void EntityListMdiWindow::initializeTableSettings(QTableView* tableView,
+                                                  QAbstractItemModel* sourceModel,
+                                                  std::string_view settingsGroup,
+                                                  const QVector<int>& defaultHiddenColumns,
+                                                  const QSize& defaultSize,
+                                                  int settingsVersion,
+                                                  QSplitter* splitter) {
 
     settingsTableView_ = tableView;
     settingsModel_ = sourceModel;
@@ -154,8 +156,8 @@ void EntityListMdiWindow::initializeTableSettings(
     header->setSectionResizeMode(QHeaderView::Interactive);
 
     if (settingsSplitter_) {
-        connect(settingsSplitter_, &QSplitter::splitterMoved,
-                this, &EntityListMdiWindow::saveSettings);
+        connect(
+            settingsSplitter_, &QSplitter::splitterMoved, this, &EntityListMdiWindow::saveSettings);
     }
 
     setupColumnVisibility();
@@ -197,13 +199,13 @@ void EntityListMdiWindow::restoreTableSettings() {
 void EntityListMdiWindow::setupColumnVisibility() {
     auto* header = settingsTableView_->horizontalHeader();
     header->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(header, &QHeaderView::customContextMenuRequested,
-            this, &EntityListMdiWindow::showHeaderContextMenu);
+    connect(header,
+            &QHeaderView::customContextMenuRequested,
+            this,
+            &EntityListMdiWindow::showHeaderContextMenu);
 
-    connect(header, &QHeaderView::sectionMoved,
-            this, &EntityListMdiWindow::saveSettings);
-    connect(header, &QHeaderView::sectionResized,
-            this, &EntityListMdiWindow::saveSettings);
+    connect(header, &QHeaderView::sectionMoved, this, &EntityListMdiWindow::saveSettings);
+    connect(header, &QHeaderView::sectionResized, this, &EntityListMdiWindow::saveSettings);
 }
 
 void EntityListMdiWindow::showHeaderContextMenu(const QPoint& pos) {
@@ -212,15 +214,14 @@ void EntityListMdiWindow::showHeaderContextMenu(const QPoint& pos) {
     menu.setTitle(tr("Columns"));
 
     for (int col = 0; col < settingsModel_->columnCount(); ++col) {
-        QString columnName = settingsModel_->headerData(
-            col, Qt::Horizontal, Qt::DisplayRole).toString();
+        QString columnName =
+            settingsModel_->headerData(col, Qt::Horizontal, Qt::DisplayRole).toString();
 
         QAction* action = menu.addAction(columnName);
         action->setCheckable(true);
         action->setChecked(!header->isSectionHidden(col));
 
-        connect(action, &QAction::toggled, this,
-                [this, header, col](bool visible) {
+        connect(action, &QAction::toggled, this, [this, header, col](bool visible) {
             header->setSectionHidden(col, !visible);
             saveSettings();
         });
@@ -230,14 +231,13 @@ void EntityListMdiWindow::showHeaderContextMenu(const QPoint& pos) {
 }
 
 void EntityListMdiWindow::connectModel(AbstractClientModel* model) {
-    connect(model, &AbstractClientModel::dataLoaded,
-            this, &EntityListMdiWindow::endLoading);
-    connect(model, &AbstractClientModel::loadError,
-            this, [this](const QString&, const QString&) { endLoading(); });
+    connect(model, &AbstractClientModel::dataLoaded, this, &EntityListMdiWindow::endLoading);
+    connect(model, &AbstractClientModel::loadError, this, [this](const QString&, const QString&) {
+        endLoading();
+    });
 }
 
-QWidget* EntityListMdiWindow::createBottomBar(PaginationWidget* pagination,
-                                               ClientManager* cm) {
+QWidget* EntityListMdiWindow::createBottomBar(PaginationWidget* pagination, ClientManager* cm) {
     auto* bar = new QWidget(this);
     auto* h = new QHBoxLayout(bar);
     h->setContentsMargins(0, 0, 0, 0);
@@ -255,8 +255,10 @@ WorkspaceSelector* EntityListMdiWindow::createWorkspaceSelector(ClientManager* c
     selector->setCurrentContext(windowWorkspaceContext_);
     if (!isWorkspaceScoped())
         selector->setEnabled(false);
-    connect(selector, &WorkspaceSelector::workspaceChanged,
-            this, &EntityListMdiWindow::onWindowWorkspaceChanged);
+    connect(selector,
+            &WorkspaceSelector::workspaceChanged,
+            this,
+            &EntityListMdiWindow::onWindowWorkspaceChanged);
     return selector;
 }
 

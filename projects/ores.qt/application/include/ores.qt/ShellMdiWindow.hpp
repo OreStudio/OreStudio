@@ -20,25 +20,25 @@
 #ifndef ORES_QT_SHELL_MDI_WINDOW_HPP
 #define ORES_QT_SHELL_MDI_WINDOW_HPP
 
-#include <deque>
-#include <mutex>
-#include <thread>
-#include <string>
-#include <vector>
-#include <memory>
-#include <streambuf>
-#include <condition_variable>
+#include "ores.logging/make_logger.hpp"
+#include "ores.nats/service/nats_client.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.shell/app/repl.hpp"
+#include <QCloseEvent>
 #include <QColor>
-#include <QWidget>
-#include <QToolBar>
 #include <QLineEdit>
 #include <QPlainTextEdit>
+#include <QToolBar>
 #include <QVBoxLayout>
-#include <QCloseEvent>
-#include "ores.qt/ClientManager.hpp"
-#include "ores.nats/service/nats_client.hpp"
-#include "ores.shell/app/repl.hpp"
-#include "ores.logging/make_logger.hpp"
+#include <QWidget>
+#include <condition_variable>
+#include <deque>
+#include <memory>
+#include <mutex>
+#include <streambuf>
+#include <string>
+#include <thread>
+#include <vector>
 
 namespace ores::qt {
 
@@ -110,8 +110,7 @@ class ShellMdiWindow : public QWidget {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.shell_mdi_window";
+    inline static std::string_view logger_name = "ores.qt.shell_mdi_window";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -120,8 +119,7 @@ private:
     }
 
 public:
-    explicit ShellMdiWindow(ClientManager* clientManager,
-                            QWidget* parent = nullptr);
+    explicit ShellMdiWindow(ClientManager* clientManager, QWidget* parent = nullptr);
     ~ShellMdiWindow() override;
 
 signals:

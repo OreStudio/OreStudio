@@ -20,15 +20,15 @@
 #ifndef ORES_QT_CHANGE_REASON_MDI_WINDOW_HPP
 #define ORES_QT_CHANGE_REASON_MDI_WINDOW_HPP
 
-#include <QAction>
-#include <QToolBar>
-#include <QTableView>
-#include <QSortFilterProxyModel>
-#include "ores.qt/EntityListMdiWindow.hpp"
-#include "ores.qt/ClientManager.hpp"
-#include "ores.qt/ClientChangeReasonModel.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.dq.api/domain/change_reason.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientChangeReasonModel.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/EntityListMdiWindow.hpp"
+#include <QAction>
+#include <QSortFilterProxyModel>
+#include <QTableView>
+#include <QToolBar>
 
 namespace ores::qt {
 
@@ -42,8 +42,7 @@ class ChangeReasonMdiWindow final : public EntityListMdiWindow {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.change_reason_mdi_window";
+    inline static std::string_view logger_name = "ores.qt.change_reason_mdi_window";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -52,10 +51,9 @@ private:
     }
 
 public:
-    explicit ChangeReasonMdiWindow(
-        ClientManager* clientManager,
-        const QString& username,
-        QWidget* parent = nullptr);
+    explicit ChangeReasonMdiWindow(ClientManager* clientManager,
+                                   const QString& username,
+                                   QWidget* parent = nullptr);
     ~ChangeReasonMdiWindow() override = default;
 
 public slots:

@@ -18,26 +18,24 @@
  *
  */
 #include "ores.qt/CodingSchemeAuthorityTypeController.hpp"
+#include "ores.dq.api/eventing/coding_scheme_authority_type_changed_event.hpp"
+#include "ores.eventing/domain/event_traits.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
-
-#include <QMdiSubWindow>
-#include <QMessageBox>
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/CodingSchemeAuthorityTypeMdiWindow.hpp"
 #include "ores.qt/CodingSchemeAuthorityTypeDetailDialog.hpp"
 #include "ores.qt/CodingSchemeAuthorityTypeHistoryDialog.hpp"
+#include "ores.qt/CodingSchemeAuthorityTypeMdiWindow.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
-#include "ores.eventing/domain/event_traits.hpp"
-#include "ores.dq.api/eventing/coding_scheme_authority_type_changed_event.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include <QMdiSubWindow>
+#include <QMessageBox>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    constexpr std::string_view authority_type_event_name =
-        eventing::domain::event_traits<
-            dq::eventing::coding_scheme_authority_type_changed_event>::name;
+constexpr std::string_view authority_type_event_name =
+    eventing::domain::event_traits<dq::eventing::coding_scheme_authority_type_changed_event>::name;
 }
 
 CodingSchemeAuthorityTypeController::CodingSchemeAuthorityTypeController(
@@ -47,10 +45,11 @@ CodingSchemeAuthorityTypeController::CodingSchemeAuthorityTypeController(
     ChangeReasonCache* changeReasonCache,
     const QString& username,
     QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username, authority_type_event_name, parent),
-      changeReasonCache_(changeReasonCache),
-      listWindow_(nullptr),
-      listMdiSubWindow_(nullptr) {
+    : EntityController(
+          mainWindow, mdiArea, clientManager, username, authority_type_event_name, parent)
+    , changeReasonCache_(changeReasonCache)
+    , listWindow_(nullptr)
+    , listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "CodingSchemeAuthorityTypeController created";
 }
@@ -70,22 +69,32 @@ void CodingSchemeAuthorityTypeController::showListWindow() {
 
     listWindow_ = new CodingSchemeAuthorityTypeMdiWindow(clientManager_, username_);
 
-    connect(listWindow_, &CodingSchemeAuthorityTypeMdiWindow::statusChanged,
-            this, &CodingSchemeAuthorityTypeController::statusMessage);
-    connect(listWindow_, &CodingSchemeAuthorityTypeMdiWindow::errorOccurred,
-            this, &CodingSchemeAuthorityTypeController::errorMessage);
-    connect(listWindow_, &CodingSchemeAuthorityTypeMdiWindow::showAuthorityTypeDetails,
-            this, &CodingSchemeAuthorityTypeController::onShowDetails);
-    connect(listWindow_, &CodingSchemeAuthorityTypeMdiWindow::addNewRequested,
-            this, &CodingSchemeAuthorityTypeController::onAddNewRequested);
-    connect(listWindow_, &CodingSchemeAuthorityTypeMdiWindow::showAuthorityTypeHistory,
-            this, &CodingSchemeAuthorityTypeController::onShowHistory);
+    connect(listWindow_,
+            &CodingSchemeAuthorityTypeMdiWindow::statusChanged,
+            this,
+            &CodingSchemeAuthorityTypeController::statusMessage);
+    connect(listWindow_,
+            &CodingSchemeAuthorityTypeMdiWindow::errorOccurred,
+            this,
+            &CodingSchemeAuthorityTypeController::errorMessage);
+    connect(listWindow_,
+            &CodingSchemeAuthorityTypeMdiWindow::showAuthorityTypeDetails,
+            this,
+            &CodingSchemeAuthorityTypeController::onShowDetails);
+    connect(listWindow_,
+            &CodingSchemeAuthorityTypeMdiWindow::addNewRequested,
+            this,
+            &CodingSchemeAuthorityTypeController::onAddNewRequested);
+    connect(listWindow_,
+            &CodingSchemeAuthorityTypeMdiWindow::showAuthorityTypeHistory,
+            this,
+            &CodingSchemeAuthorityTypeController::onShowHistory);
 
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Coding Scheme Authority Types");
-    listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Tag, IconUtils::DefaultIconColor));
+    listMdiSubWindow_->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -95,12 +104,16 @@ void CodingSchemeAuthorityTypeController::showListWindow() {
     track_window(key, listMdiSubWindow_);
     register_detachable_window(listMdiSubWindow_);
 
-    connect(listMdiSubWindow_, &QObject::destroyed, this, [self = QPointer<CodingSchemeAuthorityTypeController>(this), key]() {
-        if (!self) return;
-        self->untrack_window(key);
-        self->listWindow_ = nullptr;
-        self->listMdiSubWindow_ = nullptr;
-    });
+    connect(listMdiSubWindow_,
+            &QObject::destroyed,
+            this,
+            [self = QPointer<CodingSchemeAuthorityTypeController>(this), key]() {
+                if (!self)
+                    return;
+                self->untrack_window(key);
+                self->listWindow_ = nullptr;
+                self->listMdiSubWindow_ = nullptr;
+            });
 
     BOOST_LOG_SEV(lg(), debug) << "Coding scheme authority type list window created";
 }
@@ -152,23 +165,30 @@ void CodingSchemeAuthorityTypeController::showAddWindow() {
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
 
-    connect(detailDialog, &CodingSchemeAuthorityTypeDetailDialog::statusMessage,
-            this, &CodingSchemeAuthorityTypeController::statusMessage);
-    connect(detailDialog, &CodingSchemeAuthorityTypeDetailDialog::errorMessage,
-            this, &CodingSchemeAuthorityTypeController::errorMessage);
-    connect(detailDialog, &CodingSchemeAuthorityTypeDetailDialog::authorityTypeSaved,
-            this, [self = QPointer<CodingSchemeAuthorityTypeController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Authority type saved: " << code.toStdString();
-        self->handleEntitySaved();
-    });
+    connect(detailDialog,
+            &CodingSchemeAuthorityTypeDetailDialog::statusMessage,
+            this,
+            &CodingSchemeAuthorityTypeController::statusMessage);
+    connect(detailDialog,
+            &CodingSchemeAuthorityTypeDetailDialog::errorMessage,
+            this,
+            &CodingSchemeAuthorityTypeController::errorMessage);
+    connect(detailDialog,
+            &CodingSchemeAuthorityTypeDetailDialog::authorityTypeSaved,
+            this,
+            [self = QPointer<CodingSchemeAuthorityTypeController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Authority type saved: " << code.toStdString();
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Authority Type");
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Tag, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -197,36 +217,45 @@ void CodingSchemeAuthorityTypeController::showDetailWindow(
     detailDialog->setCreateMode(false);
     detailDialog->setAuthorityType(authorityType);
 
-    connect(detailDialog, &CodingSchemeAuthorityTypeDetailDialog::statusMessage,
-            this, &CodingSchemeAuthorityTypeController::statusMessage);
-    connect(detailDialog, &CodingSchemeAuthorityTypeDetailDialog::errorMessage,
-            this, &CodingSchemeAuthorityTypeController::errorMessage);
-    connect(detailDialog, &CodingSchemeAuthorityTypeDetailDialog::authorityTypeSaved,
-            this, [self = QPointer<CodingSchemeAuthorityTypeController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Authority type saved: " << code.toStdString();
-        self->handleEntitySaved();
-    });
-    connect(detailDialog, &CodingSchemeAuthorityTypeDetailDialog::authorityTypeDeleted,
-            this, [self = QPointer<CodingSchemeAuthorityTypeController>(this), key](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Authority type deleted: " << code.toStdString();
-        self->handleEntityDeleted();
-    });
+    connect(detailDialog,
+            &CodingSchemeAuthorityTypeDetailDialog::statusMessage,
+            this,
+            &CodingSchemeAuthorityTypeController::statusMessage);
+    connect(detailDialog,
+            &CodingSchemeAuthorityTypeDetailDialog::errorMessage,
+            this,
+            &CodingSchemeAuthorityTypeController::errorMessage);
+    connect(detailDialog,
+            &CodingSchemeAuthorityTypeDetailDialog::authorityTypeSaved,
+            this,
+            [self = QPointer<CodingSchemeAuthorityTypeController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Authority type saved: " << code.toStdString();
+                self->handleEntitySaved();
+            });
+    connect(detailDialog,
+            &CodingSchemeAuthorityTypeDetailDialog::authorityTypeDeleted,
+            this,
+            [self = QPointer<CodingSchemeAuthorityTypeController>(this), key](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Authority type deleted: " << code.toStdString();
+                self->handleEntityDeleted();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Authority Type: %1").arg(identifier));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Tag, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor));
 
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<CodingSchemeAuthorityTypeController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, key]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, key]() {
         if (self) {
             self->untrack_window(key);
         }
@@ -243,30 +272,39 @@ void CodingSchemeAuthorityTypeController::showHistoryWindow(const QString& code)
     const QString windowKey = build_window_key("history", code);
 
     if (try_reuse_window(windowKey)) {
-        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: "
-                                  << code.toStdString();
+        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: " << code.toStdString();
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
-                              << code.toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << code.toStdString();
 
-    auto* historyDialog = new CodingSchemeAuthorityTypeHistoryDialog(code, clientManager_, mainWindow_);
+    auto* historyDialog =
+        new CodingSchemeAuthorityTypeHistoryDialog(code, clientManager_, mainWindow_);
 
-    connect(historyDialog, &CodingSchemeAuthorityTypeHistoryDialog::statusChanged,
-            this, [self = QPointer<CodingSchemeAuthorityTypeController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(historyDialog, &CodingSchemeAuthorityTypeHistoryDialog::errorOccurred,
-            this, [self = QPointer<CodingSchemeAuthorityTypeController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
-    connect(historyDialog, &CodingSchemeAuthorityTypeHistoryDialog::revertVersionRequested,
-            this, &CodingSchemeAuthorityTypeController::onRevertVersion);
-    connect(historyDialog, &CodingSchemeAuthorityTypeHistoryDialog::openVersionRequested,
-            this, &CodingSchemeAuthorityTypeController::onOpenVersion);
+    connect(historyDialog,
+            &CodingSchemeAuthorityTypeHistoryDialog::statusChanged,
+            this,
+            [self = QPointer<CodingSchemeAuthorityTypeController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(historyDialog,
+            &CodingSchemeAuthorityTypeHistoryDialog::errorOccurred,
+            this,
+            [self = QPointer<CodingSchemeAuthorityTypeController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
+    connect(historyDialog,
+            &CodingSchemeAuthorityTypeHistoryDialog::revertVersionRequested,
+            this,
+            &CodingSchemeAuthorityTypeController::onRevertVersion);
+    connect(historyDialog,
+            &CodingSchemeAuthorityTypeHistoryDialog::openVersionRequested,
+            this,
+            &CodingSchemeAuthorityTypeController::onOpenVersion);
 
     historyDialog->loadHistory();
 
@@ -274,15 +312,14 @@ void CodingSchemeAuthorityTypeController::showHistoryWindow(const QString& code)
     historyWindow->setAttribute(Qt::WA_DeleteOnClose);
     historyWindow->setWidget(historyDialog);
     historyWindow->setWindowTitle(QString("Authority Type History: %1").arg(code));
-    historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    historyWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
 
     QPointer<CodingSchemeAuthorityTypeController> self = this;
-    connect(historyWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -297,8 +334,8 @@ void CodingSchemeAuthorityTypeController::onOpenVersion(
                               << " for authority type: " << authorityType.code;
 
     const QString code = QString::fromStdString(authorityType.code);
-    const QString windowKey = build_window_key("version", QString("%1_v%2")
-        .arg(code).arg(versionNumber));
+    const QString windowKey =
+        build_window_key("version", QString("%1_v%2").arg(code).arg(versionNumber));
 
     if (try_reuse_window(windowKey)) {
         BOOST_LOG_SEV(lg(), info) << "Reusing existing version window";
@@ -313,31 +350,36 @@ void CodingSchemeAuthorityTypeController::onOpenVersion(
     detailDialog->setAuthorityType(authorityType);
     detailDialog->setReadOnly(true);
 
-    connect(detailDialog, &CodingSchemeAuthorityTypeDetailDialog::statusMessage,
-            this, [self = QPointer<CodingSchemeAuthorityTypeController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(detailDialog, &CodingSchemeAuthorityTypeDetailDialog::errorMessage,
-            this, [self = QPointer<CodingSchemeAuthorityTypeController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
+    connect(detailDialog,
+            &CodingSchemeAuthorityTypeDetailDialog::statusMessage,
+            this,
+            [self = QPointer<CodingSchemeAuthorityTypeController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(detailDialog,
+            &CodingSchemeAuthorityTypeDetailDialog::errorMessage,
+            this,
+            [self = QPointer<CodingSchemeAuthorityTypeController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Authority Type: %1 (Version %2)")
-        .arg(code).arg(versionNumber));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("Authority Type: %1 (Version %2)").arg(code).arg(versionNumber));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     track_window(windowKey, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<CodingSchemeAuthorityTypeController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -349,8 +391,7 @@ void CodingSchemeAuthorityTypeController::onOpenVersion(
 
 void CodingSchemeAuthorityTypeController::onRevertVersion(
     const dq::domain::coding_scheme_authority_type& authorityType) {
-    BOOST_LOG_SEV(lg(), info) << "Reverting authority type to version: "
-                              << authorityType.version;
+    BOOST_LOG_SEV(lg(), info) << "Reverting authority type to version: " << authorityType.version;
 
     auto* detailDialog = new CodingSchemeAuthorityTypeDetailDialog(mainWindow_);
     if (changeReasonCache_)
@@ -360,25 +401,33 @@ void CodingSchemeAuthorityTypeController::onRevertVersion(
     detailDialog->setAuthorityType(authorityType);
     detailDialog->setCreateMode(false);
 
-    connect(detailDialog, &CodingSchemeAuthorityTypeDetailDialog::statusMessage,
-            this, &CodingSchemeAuthorityTypeController::statusMessage);
-    connect(detailDialog, &CodingSchemeAuthorityTypeDetailDialog::errorMessage,
-            this, &CodingSchemeAuthorityTypeController::errorMessage);
-    connect(detailDialog, &CodingSchemeAuthorityTypeDetailDialog::authorityTypeSaved,
-            this, [self = QPointer<CodingSchemeAuthorityTypeController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Authority type reverted: " << code.toStdString();
-        emit self->statusMessage(QString("Authority type '%1' reverted successfully").arg(code));
-        self->handleEntitySaved();
-    });
+    connect(detailDialog,
+            &CodingSchemeAuthorityTypeDetailDialog::statusMessage,
+            this,
+            &CodingSchemeAuthorityTypeController::statusMessage);
+    connect(detailDialog,
+            &CodingSchemeAuthorityTypeDetailDialog::errorMessage,
+            this,
+            &CodingSchemeAuthorityTypeController::errorMessage);
+    connect(detailDialog,
+            &CodingSchemeAuthorityTypeDetailDialog::authorityTypeSaved,
+            this,
+            [self = QPointer<CodingSchemeAuthorityTypeController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Authority type reverted: " << code.toStdString();
+                emit self->statusMessage(
+                    QString("Authority type '%1' reverted successfully").arg(code));
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Revert Authority Type: %1")
-        .arg(QString::fromStdString(authorityType.code)));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("Revert Authority Type: %1").arg(QString::fromStdString(authorityType.code)));
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
+                                                               IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 

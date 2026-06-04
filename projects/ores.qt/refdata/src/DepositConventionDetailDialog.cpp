@@ -18,23 +18,22 @@
  *
  */
 #include "ores.qt/DepositConventionDetailDialog.hpp"
-
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include "ui_DepositConventionDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.refdata.api/messaging/deposit_convention_protocol.hpp"
+#include "ui_DepositConventionDetailDialog.h"
+#include <QFutureWatcher>
+#include <QMessageBox>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 DepositConventionDetailDialog::DepositConventionDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent),
-      ui_(new Ui::DepositConventionDetailDialog),
-      clientManager_(nullptr) {
+    : DetailDialogBase(parent)
+    , ui_(new Ui::DepositConventionDetailDialog)
+    , clientManager_(nullptr) {
 
     ui_->setupUi(this);
     setupUi();
@@ -70,22 +69,36 @@ void DepositConventionDetailDialog::setupUi() {
 }
 
 void DepositConventionDetailDialog::setupConnections() {
-    connect(ui_->saveButton, &QPushButton::clicked, this,
+    connect(ui_->saveButton,
+            &QPushButton::clicked,
+            this,
             &DepositConventionDetailDialog::onSaveClicked);
-    connect(ui_->deleteButton, &QPushButton::clicked, this,
+    connect(ui_->deleteButton,
+            &QPushButton::clicked,
+            this,
             &DepositConventionDetailDialog::onDeleteClicked);
-    connect(ui_->closeButton, &QPushButton::clicked, this,
+    connect(ui_->closeButton,
+            &QPushButton::clicked,
+            this,
             &DepositConventionDetailDialog::onCloseClicked);
 
-    connect(ui_->idEdit, &QLineEdit::textChanged, this,
-            &DepositConventionDetailDialog::onCodeChanged);
-    connect(ui_->indexEdit, &QLineEdit::textChanged, this,
+    connect(
+        ui_->idEdit, &QLineEdit::textChanged, this, &DepositConventionDetailDialog::onCodeChanged);
+    connect(ui_->indexEdit,
+            &QLineEdit::textChanged,
+            this,
             &DepositConventionDetailDialog::onFieldChanged);
-    connect(ui_->calendarEdit, &QLineEdit::textChanged, this,
+    connect(ui_->calendarEdit,
+            &QLineEdit::textChanged,
+            this,
             &DepositConventionDetailDialog::onFieldChanged);
-    connect(ui_->conventionEdit, &QLineEdit::textChanged, this,
+    connect(ui_->conventionEdit,
+            &QLineEdit::textChanged,
+            this,
             &DepositConventionDetailDialog::onFieldChanged);
-    connect(ui_->dayCountFractionEdit, &QLineEdit::textChanged, this,
+    connect(ui_->dayCountFractionEdit,
+            &QLineEdit::textChanged,
+            this,
             &DepositConventionDetailDialog::onFieldChanged);
 }
 
@@ -97,8 +110,7 @@ void DepositConventionDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
 
-void DepositConventionDetailDialog::setConvention(
-    const refdata::domain::deposit_convention& dc) {
+void DepositConventionDetailDialog::setConvention(const refdata::domain::deposit_convention& dc) {
     dc_ = dc;
     updateUiFromConvention();
 }
@@ -126,23 +138,17 @@ void DepositConventionDetailDialog::setReadOnly(bool readOnly) {
 void DepositConventionDetailDialog::updateUiFromConvention() {
     ui_->idEdit->setText(QString::fromStdString(dc_.id));
     ui_->indexBasedEdit->setChecked(dc_.index_based);
-    ui_->indexEdit->setText(dc_.index
-        ? QString::fromStdString(*dc_.index)
-        : QString{});
-    ui_->calendarEdit->setText(dc_.calendar
-        ? QString::fromStdString(*dc_.calendar)
-        : QString{});
-    ui_->conventionEdit->setText(dc_.convention
-        ? QString::fromStdString(*dc_.convention)
-        : QString{});
-    ui_->dayCountFractionEdit->setText(dc_.day_count_fraction
-        ? QString::fromStdString(*dc_.day_count_fraction)
-        : QString{});
-    ui_->endOfMonthEdit->setCheckState(dc_.end_of_month
-        ? (*dc_.end_of_month ? Qt::Checked : Qt::Unchecked)
-        : Qt::PartiallyChecked);
-    ui_->settlementDaysEdit->setValue(dc_.settlement_days.value_or(
-        ui_->settlementDaysEdit->minimum()));
+    ui_->indexEdit->setText(dc_.index ? QString::fromStdString(*dc_.index) : QString{});
+    ui_->calendarEdit->setText(dc_.calendar ? QString::fromStdString(*dc_.calendar) : QString{});
+    ui_->conventionEdit->setText(dc_.convention ? QString::fromStdString(*dc_.convention) :
+                                                  QString{});
+    ui_->dayCountFractionEdit->setText(
+        dc_.day_count_fraction ? QString::fromStdString(*dc_.day_count_fraction) : QString{});
+    ui_->endOfMonthEdit->setCheckState(dc_.end_of_month ?
+                                           (*dc_.end_of_month ? Qt::Checked : Qt::Unchecked) :
+                                           Qt::PartiallyChecked);
+    ui_->settlementDaysEdit->setValue(
+        dc_.settlement_days.value_or(ui_->settlementDaysEdit->minimum()));
 
     populateProvenance(dc_.version,
                        dc_.modified_by,
@@ -162,8 +168,7 @@ void DepositConventionDetailDialog::updateConventionFromUi() {
     dc_.index_based = ui_->indexBasedEdit->isChecked();
     {
         const auto index_str = ui_->indexEdit->text().trimmed().toStdString();
-        dc_.index =
-            index_str.empty() ? std::nullopt : std::optional<std::string>(index_str);
+        dc_.index = index_str.empty() ? std::nullopt : std::optional<std::string>(index_str);
     }
     {
         const auto calendar_str = ui_->calendarEdit->text().trimmed().toStdString();
@@ -176,20 +181,22 @@ void DepositConventionDetailDialog::updateConventionFromUi() {
             convention_str.empty() ? std::nullopt : std::optional<std::string>(convention_str);
     }
     {
-        const auto day_count_fraction_str = ui_->dayCountFractionEdit->text().trimmed().toStdString();
-        dc_.day_count_fraction =
-            day_count_fraction_str.empty() ? std::nullopt : std::optional<std::string>(day_count_fraction_str);
+        const auto day_count_fraction_str =
+            ui_->dayCountFractionEdit->text().trimmed().toStdString();
+        dc_.day_count_fraction = day_count_fraction_str.empty() ?
+                                     std::nullopt :
+                                     std::optional<std::string>(day_count_fraction_str);
     }
     switch (ui_->endOfMonthEdit->checkState()) {
-    case Qt::Checked:
-        dc_.end_of_month = std::optional<bool>(true);
-        break;
-    case Qt::Unchecked:
-        dc_.end_of_month = std::optional<bool>(false);
-        break;
-    default:
-        dc_.end_of_month = std::nullopt;
-        break;
+        case Qt::Checked:
+            dc_.end_of_month = std::optional<bool>(true);
+            break;
+        case Qt::Unchecked:
+            dc_.end_of_month = std::optional<bool>(false);
+            break;
+        default:
+            dc_.end_of_month = std::nullopt;
+            break;
     }
     if (ui_->settlementDaysEdit->value() == ui_->settlementDaysEdit->minimum())
         dc_.settlement_days = std::nullopt;
@@ -216,28 +223,24 @@ void DepositConventionDetailDialog::updateSaveButtonState() {
 bool DepositConventionDetailDialog::validateInput() {
     const QString id_val = ui_->idEdit->text().trimmed();
 
-    return true
-        && !id_val.isEmpty()
-    ;
+    return true && !id_val.isEmpty();
 }
 
 void DepositConventionDetailDialog::onSaveClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot save deposit convention while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot save deposit convention while disconnected from server.");
         return;
     }
 
     if (!validateInput()) {
-        MessageBoxHelper::warning(this, "Invalid Input",
-            "Please fill in all required fields.");
+        MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
 
     updateConventionFromUi();
 
-    BOOST_LOG_SEV(lg(), info) << "Saving deposit convention: "
-        << dc_.id;
+    BOOST_LOG_SEV(lg(), info) << "Saving deposit convention: " << dc_.id;
 
     QPointer<DepositConventionDetailDialog> self = this;
 
@@ -253,8 +256,8 @@ void DepositConventionDetailDialog::onSaveClicked() {
 
         refdata::messaging::save_deposit_convention_request request;
         request.data = dc;
-        auto response_result = self->clientManager_->
-            process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -264,15 +267,13 @@ void DepositConventionDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Deposit Convention saved successfully";
-            QString code = QString::fromStdString(
-                self->dc_.id);
+            QString code = QString::fromStdString(self->dc_.id);
             self->hasChanges_ = false;
             self->updateSaveButtonState();
             emit self->dcSaved(code);
@@ -291,14 +292,17 @@ void DepositConventionDetailDialog::onSaveClicked() {
 
 void DepositConventionDetailDialog::onDeleteClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
+        MessageBoxHelper::warning(
+            this,
+            "Disconnected",
             "Cannot delete deposit convention while disconnected from server.");
         return;
     }
 
-    QString code = QString::fromStdString(
-        dc_.id);
-    auto reply = MessageBoxHelper::question(this, "Delete Deposit Convention",
+    QString code = QString::fromStdString(dc_.id);
+    auto reply = MessageBoxHelper::question(
+        this,
+        "Delete Deposit Convention",
         QString("Are you sure you want to delete deposit convention '%1'?").arg(code),
         QMessageBox::Yes | QMessageBox::No);
 
@@ -306,8 +310,7 @@ void DepositConventionDetailDialog::onDeleteClicked() {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Deleting deposit convention: "
-        << dc_.id;
+    BOOST_LOG_SEV(lg(), info) << "Deleting deposit convention: " << dc_.id;
 
     QPointer<DepositConventionDetailDialog> self = this;
 
@@ -323,8 +326,8 @@ void DepositConventionDetailDialog::onDeleteClicked() {
 
         refdata::messaging::delete_deposit_convention_request request;
         request.codes = {code};
-        auto response_result = self->clientManager_->
-            process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -334,15 +337,13 @@ void DepositConventionDetailDialog::onDeleteClicked() {
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
-            self, [self, code, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, code, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Deposit Convention deleted successfully";
-            emit self->statusMessage(
-                QString("Deposit Convention '%1' deleted").arg(code));
+            emit self->statusMessage(QString("Deposit Convention '%1' deleted").arg(code));
             emit self->dcDeleted(code);
             self->requestClose();
         } else {

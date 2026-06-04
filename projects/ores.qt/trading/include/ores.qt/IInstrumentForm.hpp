@@ -20,12 +20,12 @@
 #ifndef ORES_QT_I_INSTRUMENT_FORM_HPP
 #define ORES_QT_I_INSTRUMENT_FORM_HPP
 
+#include "ores.qt/IInstrumentFormPopulator.hpp"
+#include <QString>
+#include <QWidget>
 #include <chrono>
 #include <functional>
 #include <string>
-#include <QString>
-#include <QWidget>
-#include "ores.qt/IInstrumentFormPopulator.hpp"
 
 namespace ores::qt {
 
@@ -98,8 +98,7 @@ public:
      * The form decides how to lay out its sub-sections based on these
      * flags — typically by toggling the visibility of internal tabs.
      */
-    virtual void setTradeType(const QString& code,
-        bool has_options, bool has_extension) = 0;
+    virtual void setTradeType(const QString& code, bool has_options, bool has_extension) = 0;
 
     /// Toggle read-only on every editable widget.
     virtual void setReadOnly(bool readOnly) = 0;
@@ -118,8 +117,7 @@ public:
      * it identically to both the trade and the instrument so that the two
      * audit trails stay aligned.
      */
-    virtual void setChangeReason(
-        const std::string& code, const std::string& commentary) = 0;
+    virtual void setChangeReason(const std::string& code, const std::string& commentary) = 0;
 
     /// Pull the current UI values into the in-flight domain object.
     virtual void writeUiToInstrument() = 0;
@@ -134,9 +132,8 @@ public:
      *                    error message; the dialog should abort the trade
      *                    save and surface the error to the user.
      */
-    virtual void saveInstrument(
-        std::function<void(const std::string& id)> on_success,
-        std::function<void(const QString& error)> on_failure) = 0;
+    virtual void saveInstrument(std::function<void(const std::string& id)> on_success,
+                                std::function<void(const QString& error)> on_failure) = 0;
 
 signals:
     /// Emitted when any field changes (after the initial load).

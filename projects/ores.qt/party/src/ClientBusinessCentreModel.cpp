@@ -18,56 +18,62 @@
  *
  */
 #include "ores.qt/ClientBusinessCentreModel.hpp"
-
-#include <QtConcurrent>
-#include <boost/uuid/uuid_io.hpp>
-#include "ores.refdata.api/messaging/business_centre_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
+#include "ores.refdata.api/messaging/business_centre_protocol.hpp"
+#include <QtConcurrent>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    std::string business_centre_key_extractor(const refdata::domain::business_centre& e) {
-        return e.code;
-    }
+std::string business_centre_key_extractor(const refdata::domain::business_centre& e) {
+    return e.code;
+}
 }
 
-ClientBusinessCentreModel::ClientBusinessCentreModel(
-    ClientManager* clientManager, ImageCache* imageCache, QObject* parent)
-    : AbstractClientModel(parent),
-      clientManager_(clientManager),
-      imageCache_(imageCache),
-      watcher_(new QFutureWatcher<FetchResult>(this)),
-      recencyTracker_(business_centre_key_extractor),
-      pulseManager_(new RecencyPulseManager(this)) {
+ClientBusinessCentreModel::ClientBusinessCentreModel(ClientManager* clientManager,
+                                                     ImageCache* imageCache,
+                                                     QObject* parent)
+    : AbstractClientModel(parent)
+    , clientManager_(clientManager)
+    , imageCache_(imageCache)
+    , watcher_(new QFutureWatcher<FetchResult>(this))
+    , recencyTracker_(business_centre_key_extractor)
+    , pulseManager_(new RecencyPulseManager(this)) {
 
-    connect(watcher_, &QFutureWatcher<FetchResult>::finished,
-            this, &ClientBusinessCentreModel::onBusinessCentresLoaded);
+    connect(watcher_,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            &ClientBusinessCentreModel::onBusinessCentresLoaded);
 
-    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
-            this, &ClientBusinessCentreModel::onPulseStateChanged);
-    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
-            this, &ClientBusinessCentreModel::onPulsingComplete);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulse_state_changed,
+            this,
+            &ClientBusinessCentreModel::onPulseStateChanged);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulsing_complete,
+            this,
+            &ClientBusinessCentreModel::onPulsingComplete);
 
     // Connect to image cache to refresh decorations when images are loaded
     if (imageCache_) {
         connect(imageCache_, &ImageCache::imagesLoaded, this, [this]() {
             if (!business_centres_.empty()) {
                 emit dataChanged(index(0, Column::CountryAlpha2),
-                    index(rowCount() - 1, Column::CountryAlpha2),
-                    {Qt::DecorationRole});
+                                 index(rowCount() - 1, Column::CountryAlpha2),
+                                 {Qt::DecorationRole});
             }
         });
 
         connect(imageCache_, &ImageCache::imageLoaded, this, [this](const QString&) {
             if (!business_centres_.empty()) {
                 emit dataChanged(index(0, Column::CountryAlpha2),
-                    index(rowCount() - 1, Column::CountryAlpha2),
-                    {Qt::DecorationRole});
+                                 index(rowCount() - 1, Column::CountryAlpha2),
+                                 {Qt::DecorationRole});
             }
         });
     }
@@ -85,8 +91,7 @@ int ClientBusinessCentreModel::columnCount(const QModelIndex& parent) const {
     return ColumnCount;
 }
 
-QVariant ClientBusinessCentreModel::data(
-    const QModelIndex& index, int role) const {
+QVariant ClientBusinessCentreModel::data(const QModelIndex& index, int role) const {
     if (!index.isValid())
         return {};
 
@@ -110,28 +115,28 @@ QVariant ClientBusinessCentreModel::data(
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-        case Code:
-            return QString::fromStdString(bc.code);
-        case CountryAlpha2:
-            return QString::fromStdString(bc.country_alpha2_code);
-        case City:
-            return QString::fromStdString(bc.city_name);
-        case Source:
-            return QString::fromStdString(bc.source);
-        case Description: {
-            const auto text = QString::fromStdString(bc.description);
-            return text.length() > 30 ? text.left(30) + QStringLiteral("...") : text;
-        }
-        case CodingScheme:
-            return QString::fromStdString(bc.coding_scheme_code);
-        case Version:
-            return bc.version;
-        case ModifiedBy:
-            return QString::fromStdString(bc.modified_by);
-        case RecordedAt:
-            return relative_time_helper::format(bc.recorded_at);
-        default:
-            return {};
+            case Code:
+                return QString::fromStdString(bc.code);
+            case CountryAlpha2:
+                return QString::fromStdString(bc.country_alpha2_code);
+            case City:
+                return QString::fromStdString(bc.city_name);
+            case Source:
+                return QString::fromStdString(bc.source);
+            case Description: {
+                const auto text = QString::fromStdString(bc.description);
+                return text.length() > 30 ? text.left(30) + QStringLiteral("...") : text;
+            }
+            case CodingScheme:
+                return QString::fromStdString(bc.coding_scheme_code);
+            case Version:
+                return bc.version;
+            case ModifiedBy:
+                return QString::fromStdString(bc.modified_by);
+            case RecordedAt:
+                return relative_time_helper::format(bc.recorded_at);
+            default:
+                return {};
         }
     }
 
@@ -142,32 +147,32 @@ QVariant ClientBusinessCentreModel::data(
     return {};
 }
 
-QVariant ClientBusinessCentreModel::headerData(
-    int section, Qt::Orientation orientation, int role) const {
+QVariant
+ClientBusinessCentreModel::headerData(int section, Qt::Orientation orientation, int role) const {
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return {};
 
     switch (section) {
-    case Code:
-        return tr("Code");
-    case CountryAlpha2:
-        return tr("Country");
-    case City:
-        return tr("City");
-    case Source:
-        return tr("Source");
-    case Description:
-        return tr("Description");
-    case CodingScheme:
-        return tr("Coding Scheme");
-    case Version:
-        return tr("Version");
-    case ModifiedBy:
-        return tr("Modified By");
-    case RecordedAt:
-        return tr("Recorded At");
-    default:
-        return {};
+        case Code:
+            return tr("Code");
+        case CountryAlpha2:
+            return tr("Country");
+        case City:
+            return tr("City");
+        case Source:
+            return tr("Source");
+        case Description:
+            return tr("Description");
+        case CodingScheme:
+            return tr("Coding Scheme");
+        case Version:
+            return tr("Version");
+        case ModifiedBy:
+            return tr("Modified By");
+        case RecordedAt:
+            return tr("Recorded At");
+        default:
+            return {};
     }
 }
 
@@ -197,8 +202,7 @@ void ClientBusinessCentreModel::refresh(bool /*replace*/) {
     fetch_business_centres(0, page_size_);
 }
 
-void ClientBusinessCentreModel::load_page(std::uint32_t offset,
-                                          std::uint32_t limit) {
+void ClientBusinessCentreModel::load_page(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "load_page: offset=" << offset << ", limit=" << limit;
 
     if (is_fetching_) {
@@ -222,18 +226,19 @@ void ClientBusinessCentreModel::load_page(std::uint32_t offset,
     fetch_business_centres(offset, limit);
 }
 
-void ClientBusinessCentreModel::fetch_business_centres(std::uint32_t offset,
-                                                       std::uint32_t limit) {
+void ClientBusinessCentreModel::fetch_business_centres(std::uint32_t offset, std::uint32_t limit) {
     is_fetching_ = true;
     QPointer<ClientBusinessCentreModel> self = this;
 
-    QFuture<FetchResult> future =
-        QtConcurrent::run([self, offset, limit]() -> FetchResult {
-            return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
-                BOOST_LOG_SEV(lg(), debug) << "Making business centres request with offset="
-                                           << offset << ", limit=" << limit;
+    QFuture<FetchResult> future = QtConcurrent::run([self, offset, limit]() -> FetchResult {
+        return exception_helper::wrap_async_fetch<FetchResult>(
+            [&]() -> FetchResult {
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Making business centres request with offset=" << offset
+                    << ", limit=" << limit;
                 if (!self || !self->clientManager_) {
-                    return {.success = false, .business_centres = {},
+                    return {.success = false,
+                            .business_centres = {},
                             .total_available_count = 0,
                             .error_message = "Model was destroyed",
                             .error_details = {}};
@@ -243,28 +248,32 @@ void ClientBusinessCentreModel::fetch_business_centres(std::uint32_t offset,
                 request.offset = offset;
                 request.limit = limit;
 
-                auto result = self->clientManager_->
-                    process_authenticated_request(std::move(request));
+                auto result =
+                    self->clientManager_->process_authenticated_request(std::move(request));
 
                 if (!result) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to fetch business centres: "
-                                               << result.error();
-                    return {.success = false, .business_centres = {},
+                    BOOST_LOG_SEV(lg(), error)
+                        << "Failed to fetch business centres: " << result.error();
+                    return {.success = false,
+                            .business_centres = {},
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(
                                 "Failed to fetch business centres: " + result.error()),
                             .error_details = {}};
                 }
 
-                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->business_centres.size()
-                                           << " business centres, total available: "
-                                           << result->total_available_count;
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Fetched " << result->business_centres.size()
+                    << " business centres, total available: " << result->total_available_count;
                 return {.success = true,
                         .business_centres = std::move(result->business_centres),
-                        .total_available_count = static_cast<std::uint32_t>(result->total_available_count),
-                        .error_message = {}, .error_details = {}};
-            }, "business centres");
-        });
+                        .total_available_count =
+                            static_cast<std::uint32_t>(result->total_available_count),
+                        .error_message = {},
+                        .error_details = {}};
+            },
+            "business centres");
+    });
 
     watcher_->setFuture(future);
 }
@@ -275,8 +284,8 @@ void ClientBusinessCentreModel::onBusinessCentresLoaded() {
     const auto result = watcher_->result();
 
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to fetch business centres: "
-                                   << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to fetch business centres: " << result.error_message.toStdString();
         emit loadError(result.error_message, result.error_details);
         return;
     }
@@ -323,8 +332,7 @@ void ClientBusinessCentreModel::set_page_size(std::uint32_t size) {
     }
 }
 
-QVariant ClientBusinessCentreModel::recency_foreground_color(
-    const std::string& code) const {
+QVariant ClientBusinessCentreModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {
         return color_constants::stale_indicator;
     }
@@ -333,8 +341,8 @@ QVariant ClientBusinessCentreModel::recency_foreground_color(
 
 void ClientBusinessCentreModel::onPulseStateChanged(bool /*isOn*/) {
     if (!business_centres_.empty()) {
-        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
-            {Qt::ForegroundRole});
+        emit dataChanged(
+            index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::ForegroundRole});
     }
 }
 

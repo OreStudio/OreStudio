@@ -18,23 +18,22 @@
  *
  */
 #include "ores.qt/CdsConventionDetailDialog.hpp"
-
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include "ui_CdsConventionDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.refdata.api/messaging/cds_convention_protocol.hpp"
+#include "ui_CdsConventionDetailDialog.h"
+#include <QFutureWatcher>
+#include <QMessageBox>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 CdsConventionDetailDialog::CdsConventionDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent),
-      ui_(new Ui::CdsConventionDetailDialog),
-      clientManager_(nullptr) {
+    : DetailDialogBase(parent)
+    , ui_(new Ui::CdsConventionDetailDialog)
+    , clientManager_(nullptr) {
 
     ui_->setupUi(this);
     setupUi();
@@ -70,26 +69,37 @@ void CdsConventionDetailDialog::setupUi() {
 }
 
 void CdsConventionDetailDialog::setupConnections() {
-    connect(ui_->saveButton, &QPushButton::clicked, this,
-            &CdsConventionDetailDialog::onSaveClicked);
-    connect(ui_->deleteButton, &QPushButton::clicked, this,
+    connect(
+        ui_->saveButton, &QPushButton::clicked, this, &CdsConventionDetailDialog::onSaveClicked);
+    connect(ui_->deleteButton,
+            &QPushButton::clicked,
+            this,
             &CdsConventionDetailDialog::onDeleteClicked);
-    connect(ui_->closeButton, &QPushButton::clicked, this,
-            &CdsConventionDetailDialog::onCloseClicked);
+    connect(
+        ui_->closeButton, &QPushButton::clicked, this, &CdsConventionDetailDialog::onCloseClicked);
 
-    connect(ui_->idEdit, &QLineEdit::textChanged, this,
-            &CdsConventionDetailDialog::onCodeChanged);
-    connect(ui_->calendarEdit, &QLineEdit::textChanged, this,
+    connect(ui_->idEdit, &QLineEdit::textChanged, this, &CdsConventionDetailDialog::onCodeChanged);
+    connect(ui_->calendarEdit,
+            &QLineEdit::textChanged,
+            this,
             &CdsConventionDetailDialog::onFieldChanged);
-    connect(ui_->frequencyEdit, &QLineEdit::textChanged, this,
+    connect(ui_->frequencyEdit,
+            &QLineEdit::textChanged,
+            this,
             &CdsConventionDetailDialog::onFieldChanged);
-    connect(ui_->paymentConventionEdit, &QLineEdit::textChanged, this,
+    connect(ui_->paymentConventionEdit,
+            &QLineEdit::textChanged,
+            this,
             &CdsConventionDetailDialog::onFieldChanged);
-    connect(ui_->ruleEdit, &QLineEdit::textChanged, this,
+    connect(
+        ui_->ruleEdit, &QLineEdit::textChanged, this, &CdsConventionDetailDialog::onFieldChanged);
+    connect(ui_->dayCountFractionEdit,
+            &QLineEdit::textChanged,
+            this,
             &CdsConventionDetailDialog::onFieldChanged);
-    connect(ui_->dayCountFractionEdit, &QLineEdit::textChanged, this,
-            &CdsConventionDetailDialog::onFieldChanged);
-    connect(ui_->lastPeriodDayCountFractionEdit, &QLineEdit::textChanged, this,
+    connect(ui_->lastPeriodDayCountFractionEdit,
+            &QLineEdit::textChanged,
+            this,
             &CdsConventionDetailDialog::onFieldChanged);
 }
 
@@ -101,8 +111,7 @@ void CdsConventionDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
 
-void CdsConventionDetailDialog::setConvention(
-    const refdata::domain::cds_convention& cc) {
+void CdsConventionDetailDialog::setConvention(const refdata::domain::cds_convention& cc) {
     cc_ = cc;
     updateUiFromConvention();
 }
@@ -137,11 +146,12 @@ void CdsConventionDetailDialog::updateUiFromConvention() {
     ui_->ruleEdit->setText(QString::fromStdString(cc_.rule));
     ui_->dayCountFractionEdit->setText(QString::fromStdString(cc_.day_count_fraction));
     ui_->settlementDaysEdit->setValue(cc_.settlement_days);
-    ui_->upfrontSettlementDaysEdit->setValue(cc_.upfront_settlement_days.value_or(
-        ui_->upfrontSettlementDaysEdit->minimum()));
-    ui_->lastPeriodDayCountFractionEdit->setText(cc_.last_period_day_count_fraction
-        ? QString::fromStdString(*cc_.last_period_day_count_fraction)
-        : QString{});
+    ui_->upfrontSettlementDaysEdit->setValue(
+        cc_.upfront_settlement_days.value_or(ui_->upfrontSettlementDaysEdit->minimum()));
+    ui_->lastPeriodDayCountFractionEdit->setText(
+        cc_.last_period_day_count_fraction ?
+            QString::fromStdString(*cc_.last_period_day_count_fraction) :
+            QString{});
     ui_->settlesAccrualEdit->setChecked(cc_.settles_accrual);
     ui_->paysAtDefaultTimeEdit->setChecked(cc_.pays_at_default_time);
 
@@ -171,9 +181,12 @@ void CdsConventionDetailDialog::updateConventionFromUi() {
     else
         cc_.upfront_settlement_days = ui_->upfrontSettlementDaysEdit->value();
     {
-        const auto last_period_day_count_fraction_str = ui_->lastPeriodDayCountFractionEdit->text().trimmed().toStdString();
+        const auto last_period_day_count_fraction_str =
+            ui_->lastPeriodDayCountFractionEdit->text().trimmed().toStdString();
         cc_.last_period_day_count_fraction =
-            last_period_day_count_fraction_str.empty() ? std::nullopt : std::optional<std::string>(last_period_day_count_fraction_str);
+            last_period_day_count_fraction_str.empty() ?
+                std::nullopt :
+                std::optional<std::string>(last_period_day_count_fraction_str);
     }
     cc_.settles_accrual = ui_->settlesAccrualEdit->isChecked();
     cc_.pays_at_default_time = ui_->paysAtDefaultTimeEdit->isChecked();
@@ -203,33 +216,26 @@ bool CdsConventionDetailDialog::validateInput() {
     const QString rule_val = ui_->ruleEdit->text().trimmed();
     const QString day_count_fraction_val = ui_->dayCountFractionEdit->text().trimmed();
 
-    return true
-        && !id_val.isEmpty()
-        && !calendar_val.isEmpty()
-        && !frequency_val.isEmpty()
-        && !payment_convention_val.isEmpty()
-        && !rule_val.isEmpty()
-        && !day_count_fraction_val.isEmpty()
-    ;
+    return true && !id_val.isEmpty() && !calendar_val.isEmpty() && !frequency_val.isEmpty() &&
+           !payment_convention_val.isEmpty() && !rule_val.isEmpty() &&
+           !day_count_fraction_val.isEmpty();
 }
 
 void CdsConventionDetailDialog::onSaveClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot save CDS convention while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot save CDS convention while disconnected from server.");
         return;
     }
 
     if (!validateInput()) {
-        MessageBoxHelper::warning(this, "Invalid Input",
-            "Please fill in all required fields.");
+        MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
 
     updateConventionFromUi();
 
-    BOOST_LOG_SEV(lg(), info) << "Saving CDS convention: "
-        << cc_.id;
+    BOOST_LOG_SEV(lg(), info) << "Saving CDS convention: " << cc_.id;
 
     QPointer<CdsConventionDetailDialog> self = this;
 
@@ -245,8 +251,8 @@ void CdsConventionDetailDialog::onSaveClicked() {
 
         refdata::messaging::save_cds_convention_request request;
         request.data = cc;
-        auto response_result = self->clientManager_->
-            process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -256,15 +262,13 @@ void CdsConventionDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "CDS Convention saved successfully";
-            QString code = QString::fromStdString(
-                self->cc_.id);
+            QString code = QString::fromStdString(self->cc_.id);
             self->hasChanges_ = false;
             self->updateSaveButtonState();
             emit self->ccSaved(code);
@@ -283,14 +287,15 @@ void CdsConventionDetailDialog::onSaveClicked() {
 
 void CdsConventionDetailDialog::onDeleteClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot delete CDS convention while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot delete CDS convention while disconnected from server.");
         return;
     }
 
-    QString code = QString::fromStdString(
-        cc_.id);
-    auto reply = MessageBoxHelper::question(this, "Delete CDS Convention",
+    QString code = QString::fromStdString(cc_.id);
+    auto reply = MessageBoxHelper::question(
+        this,
+        "Delete CDS Convention",
         QString("Are you sure you want to delete CDS convention '%1'?").arg(code),
         QMessageBox::Yes | QMessageBox::No);
 
@@ -298,8 +303,7 @@ void CdsConventionDetailDialog::onDeleteClicked() {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Deleting CDS convention: "
-        << cc_.id;
+    BOOST_LOG_SEV(lg(), info) << "Deleting CDS convention: " << cc_.id;
 
     QPointer<CdsConventionDetailDialog> self = this;
 
@@ -315,8 +319,8 @@ void CdsConventionDetailDialog::onDeleteClicked() {
 
         refdata::messaging::delete_cds_convention_request request;
         request.codes = {code};
-        auto response_result = self->clientManager_->
-            process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -326,15 +330,13 @@ void CdsConventionDetailDialog::onDeleteClicked() {
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
-            self, [self, code, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, code, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "CDS Convention deleted successfully";
-            emit self->statusMessage(
-                QString("CDS Convention '%1' deleted").arg(code));
+            emit self->statusMessage(QString("CDS Convention '%1' deleted").arg(code));
             emit self->ccDeleted(code);
             self->requestClose();
         } else {

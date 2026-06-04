@@ -20,12 +20,12 @@
 #ifndef ORES_QT_CATALOG_CONTROLLER_HPP
 #define ORES_QT_CATALOG_CONTROLLER_HPP
 
+#include "ores.dq.api/domain/catalog.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/EntityController.hpp"
 #include <QMainWindow>
 #include <QMdiArea>
 #include <QPointer>
-#include "ores.qt/EntityController.hpp"
-#include "ores.dq.api/domain/catalog.hpp"
-#include "ores.logging/make_logger.hpp"
 
 namespace ores::qt {
 
@@ -49,13 +49,12 @@ private:
     }
 
 public:
-    CatalogController(
-        QMainWindow* mainWindow,
-        QMdiArea* mdiArea,
-        ClientManager* clientManager,
-        ChangeReasonCache* changeReasonCache,
-        const QString& username,
-        QObject* parent = nullptr);
+    CatalogController(QMainWindow* mainWindow,
+                      QMdiArea* mdiArea,
+                      ClientManager* clientManager,
+                      ChangeReasonCache* changeReasonCache,
+                      const QString& username,
+                      QObject* parent = nullptr);
 
     void showListWindow() override;
     void closeAllWindows() override;

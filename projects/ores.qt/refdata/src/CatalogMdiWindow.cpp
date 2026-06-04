@@ -18,17 +18,16 @@
  *
  */
 #include "ores.qt/CatalogMdiWindow.hpp"
-
-#include <QVBoxLayout>
+#include "ores.dq.api/messaging/data_organization_protocol.hpp"
+#include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/EntityItemDelegate.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/WidgetUtils.hpp"
+#include <QFutureWatcher>
 #include <QHeaderView>
 #include <QMessageBox>
+#include <QVBoxLayout>
 #include <QtConcurrent>
-#include <QFutureWatcher>
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/EntityItemDelegate.hpp"
-#include "ores.qt/ColorConstants.hpp"
-#include "ores.qt/WidgetUtils.hpp"
-#include "ores.dq.api/messaging/data_organization_protocol.hpp"
 
 namespace ores::qt {
 
@@ -37,12 +36,12 @@ using namespace ores::logging;
 CatalogMdiWindow::CatalogMdiWindow(ClientManager* clientManager,
                                    const QString& username,
                                    QWidget* parent)
-    : EntityListMdiWindow(parent),
-      clientManager_(clientManager),
-      username_(username),
-      tableView_(nullptr),
-      model_(nullptr),
-      toolbar_(nullptr) {
+    : EntityListMdiWindow(parent)
+    , clientManager_(clientManager)
+    , username_(username)
+    , tableView_(nullptr)
+    , model_(nullptr)
+    , toolbar_(nullptr) {
 
     setupUi();
     setupToolbar();
@@ -61,16 +60,19 @@ void CatalogMdiWindow::setupUi() {
     tableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
     tableView_->setSelectionMode(QAbstractItemView::SingleSelection);
     tableView_->setSortingEnabled(true);
-    tableView_->setItemDelegate(new EntityItemDelegate(
-        ClientCatalogModel::columnStyles(), tableView_));
+    tableView_->setItemDelegate(
+        new EntityItemDelegate(ClientCatalogModel::columnStyles(), tableView_));
     tableView_->verticalHeader()->setVisible(false);
 
     model_ = new ClientCatalogModel(clientManager_, this);
     tableView_->setModel(model_);
 
-    initializeTableSettings(tableView_, model_,
-        ClientCatalogModel::kSettingsGroup,
-        ClientCatalogModel::defaultHiddenColumns(), ClientCatalogModel::kDefaultWindowSize, 1);
+    initializeTableSettings(tableView_,
+                            model_,
+                            ClientCatalogModel::kSettingsGroup,
+                            ClientCatalogModel::defaultHiddenColumns(),
+                            ClientCatalogModel::kDefaultWindowSize,
+                            1);
 
     layout->addWidget(loadingBar());
     layout->addWidget(tableView_);
@@ -83,39 +85,30 @@ void CatalogMdiWindow::setupToolbar() {
     toolbar_->setIconSize(QSize(20, 20));
 
     addAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::Add, IconUtils::DefaultIconColor),
-        tr("Add"));
+        IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor), tr("Add"));
     addAction_->setToolTip(tr("Add a new catalog"));
 
     editAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::Edit, IconUtils::DefaultIconColor),
-        tr("Edit"));
+        IconUtils::createRecoloredIcon(Icon::Edit, IconUtils::DefaultIconColor), tr("Edit"));
     editAction_->setToolTip(tr("Edit the selected catalog"));
     editAction_->setEnabled(false);
 
     deleteAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::Delete, IconUtils::DefaultIconColor),
-        tr("Delete"));
+        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor), tr("Delete"));
     deleteAction_->setToolTip(tr("Delete the selected catalog"));
     deleteAction_->setEnabled(false);
 
     toolbar_->addSeparator();
 
     historyAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::History, IconUtils::DefaultIconColor),
-        tr("History"));
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor), tr("History"));
     historyAction_->setToolTip(tr("View version history"));
     historyAction_->setEnabled(false);
 
     toolbar_->addSeparator();
 
     refreshAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::ArrowSync, IconUtils::DefaultIconColor),
+        IconUtils::createRecoloredIcon(Icon::ArrowSync, IconUtils::DefaultIconColor),
         tr("Refresh"));
 
     initializeStaleIndicator(refreshAction_, IconUtils::iconPath(Icon::ArrowSync));
@@ -133,32 +126,24 @@ void CatalogMdiWindow::setupConnections() {
         emit statusChanged(tr("Catalogs loaded"));
         updateActionStates();
     });
-    connect(model_, &ClientCatalogModel::errorOccurred,
-            this, &CatalogMdiWindow::errorOccurred);
+    connect(model_, &ClientCatalogModel::errorOccurred, this, &CatalogMdiWindow::errorOccurred);
 
-    connect(tableView_->selectionModel(), &QItemSelectionModel::selectionChanged,
-            this, [this]() { updateActionStates(); });
-    connect(tableView_, &QTableView::doubleClicked,
-            this, &CatalogMdiWindow::onDoubleClicked);
+    connect(tableView_->selectionModel(), &QItemSelectionModel::selectionChanged, this, [this]() {
+        updateActionStates();
+    });
+    connect(tableView_, &QTableView::doubleClicked, this, &CatalogMdiWindow::onDoubleClicked);
 
-    connect(addAction_, &QAction::triggered,
-            this, &CatalogMdiWindow::onAddClicked);
-    connect(editAction_, &QAction::triggered,
-            this, &CatalogMdiWindow::onEditClicked);
-    connect(deleteAction_, &QAction::triggered,
-            this, &CatalogMdiWindow::onDeleteClicked);
-    connect(historyAction_, &QAction::triggered,
-            this, &CatalogMdiWindow::onHistoryClicked);
-    connect(refreshAction_, &QAction::triggered,
-            this, &CatalogMdiWindow::onRefreshClicked);
+    connect(addAction_, &QAction::triggered, this, &CatalogMdiWindow::onAddClicked);
+    connect(editAction_, &QAction::triggered, this, &CatalogMdiWindow::onEditClicked);
+    connect(deleteAction_, &QAction::triggered, this, &CatalogMdiWindow::onDeleteClicked);
+    connect(historyAction_, &QAction::triggered, this, &CatalogMdiWindow::onHistoryClicked);
+    connect(refreshAction_, &QAction::triggered, this, &CatalogMdiWindow::onRefreshClicked);
 
-    connect(model_, &ClientCatalogModel::loadFinished,
-            this, [this]() { endLoading(); });
-    connect(model_, &ClientCatalogModel::errorOccurred,
-            this, [this](const QString& message) {
-                endLoading();
-                emit errorOccurred(message);
-            });
+    connect(model_, &ClientCatalogModel::loadFinished, this, [this]() { endLoading(); });
+    connect(model_, &ClientCatalogModel::errorOccurred, this, [this](const QString& message) {
+        endLoading();
+        emit errorOccurred(message);
+    });
 }
 
 void CatalogMdiWindow::updateActionStates() {
@@ -195,10 +180,11 @@ void CatalogMdiWindow::onDeleteClicked() {
     const auto& catalog = model_->catalogAt(row);
     QString name = QString::fromStdString(catalog.name);
 
-    auto result = QMessageBox::question(
-        this, tr("Confirm Delete"),
-        tr("Are you sure you want to delete catalog '%1'?").arg(name),
-        QMessageBox::Yes | QMessageBox::No);
+    auto result =
+        QMessageBox::question(this,
+                              tr("Confirm Delete"),
+                              tr("Are you sure you want to delete catalog '%1'?").arg(name),
+                              QMessageBox::Yes | QMessageBox::No);
 
     if (result != QMessageBox::Yes)
         return;
@@ -221,7 +207,7 @@ void CatalogMdiWindow::onDeleteClicked() {
         dq::messaging::delete_catalog_request request;
         request.codes.push_back(name);
         auto response_result =
-self->clientManager_->process_authenticated_request(std::move(request));
+            self->clientManager_->process_authenticated_request(std::move(request));
         if (!response_result)
             return {false, "Failed to communicate with server"};
 
@@ -229,16 +215,15 @@ self->clientManager_->process_authenticated_request(std::move(request));
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(this);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished, this,
-            [self, watcher, name]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, this, [self, watcher, name]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
-        if (!self) return;
+        if (!self)
+            return;
 
         if (result.success) {
-            emit self->statusChanged(
-                tr("Catalog '%1' deleted successfully").arg(name));
+            emit self->statusChanged(tr("Catalog '%1' deleted successfully").arg(name));
             self->reload();
         } else {
             emit self->errorOccurred(QString::fromStdString(result.message));

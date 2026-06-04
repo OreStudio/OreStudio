@@ -17,13 +17,11 @@
  *
  */
 #include "ores.qt/MktdataPlugin.hpp"
-
-#include <QMenu>
-#include <QAction>
-
-#include "ores.qt/IconUtils.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MarketDataController.hpp"
+#include <QAction>
+#include <QMenu>
 
 namespace ores::qt {
 
@@ -36,7 +34,8 @@ auto& lg() {
 }
 }
 
-MktdataPlugin::MktdataPlugin(QObject* parent) : PluginBase(parent) {
+MktdataPlugin::MktdataPlugin(QObject* parent)
+    : PluginBase(parent) {
     BOOST_LOG_SEV(lg(), debug) << "Plugin initialised.";
 }
 
@@ -53,15 +52,22 @@ void MktdataPlugin::on_login(const plugin_context& ctx) {
 
     marketDataController_ = std::make_unique<MarketDataController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username);
-    connect(marketDataController_.get(), &MarketDataController::statusMessage,
-            this, &PluginBase::statusMessage);
-    connect(marketDataController_.get(), &MarketDataController::errorMessage,
-            this, &PluginBase::statusMessage);
-    connect(marketDataController_.get(), &MarketDataController::detachableWindowCreated,
-            this, &PluginBase::windowCreated);
-    connect(marketDataController_.get(), &MarketDataController::detachableWindowDestroyed,
-            this, &PluginBase::windowDestroyed);
-
+    connect(marketDataController_.get(),
+            &MarketDataController::statusMessage,
+            this,
+            &PluginBase::statusMessage);
+    connect(marketDataController_.get(),
+            &MarketDataController::errorMessage,
+            this,
+            &PluginBase::statusMessage);
+    connect(marketDataController_.get(),
+            &MarketDataController::detachableWindowCreated,
+            this,
+            &PluginBase::windowCreated);
+    connect(marketDataController_.get(),
+            &MarketDataController::detachableWindowDestroyed,
+            this,
+            &PluginBase::windowDestroyed);
 }
 
 // ---------------------------------------------------------------------------
@@ -70,18 +76,23 @@ void MktdataPlugin::on_login(const plugin_context& ctx) {
 QList<QMenu*> MktdataPlugin::create_menus() {
     BOOST_LOG_SEV(lg(), debug) << "Building plugin menus.";
     using IC = IconUtils;
-    auto ico = [](Icon i) { return IC::createRecoloredIcon(i, IC::DefaultIconColor); };
+    auto ico = [](Icon i) {
+        return IC::createRecoloredIcon(i, IC::DefaultIconColor);
+    };
 
     // ---- Market Data ------------------------------------------------
     auto* menuMarketData = new QMenu(tr("&Market Data"));
 
-    auto* actMarketSeries = menuMarketData->addAction(ico(Icon::ChartMultiple), tr("Market &Series"));
+    auto* actMarketSeries =
+        menuMarketData->addAction(ico(Icon::ChartMultiple), tr("Market &Series"));
     connect(actMarketSeries, &QAction::triggered, this, [this]() {
-        if (marketDataController_) marketDataController_->showListWindow();
+        if (marketDataController_)
+            marketDataController_->showListWindow();
     });
     auto* actMarketFixings = menuMarketData->addAction(ico(Icon::Chart), tr("Market &Fixings"));
     connect(actMarketFixings, &QAction::triggered, this, [this]() {
-        if (marketDataController_) marketDataController_->showFixingsWindow();
+        if (marketDataController_)
+            marketDataController_->showFixingsWindow();
     });
     BOOST_LOG_SEV(lg(), debug) << "Plugin menus ready.";
     return {menuMarketData};

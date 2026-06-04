@@ -20,19 +20,19 @@
 #ifndef ORES_QT_ENTITY_LIST_MDI_WINDOW_HPP
 #define ORES_QT_ENTITY_LIST_MDI_WINDOW_HPP
 
-#include <string_view>
-#include <QWidget>
-#include <QAction>
-#include <QTimer>
-#include <QIcon>
-#include <QCloseEvent>
-#include <QProgressBar>
-#include <QSplitter>
-#include <QTableView>
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/AbstractClientModel.hpp"
 #include "ores.qt/WorkspaceContext.hpp"
 #include "ores.qt/export.hpp"
+#include <QAction>
+#include <QCloseEvent>
+#include <QIcon>
+#include <QProgressBar>
+#include <QSplitter>
+#include <QTableView>
+#include <QTimer>
+#include <QWidget>
+#include <string_view>
 
 namespace ores::qt {
 
@@ -144,12 +144,12 @@ protected:
      * @param settingsVersion Bump when column layout changes to discard old state
      */
     void initializeTableSettings(QTableView* tableView,
-                                  QAbstractItemModel* sourceModel,
-                                  std::string_view settingsGroup,
-                                  const QVector<int>& defaultHiddenColumns = {},
-                                  const QSize& defaultSize = {900, 400},
-                                  int settingsVersion = 1,
-                                  QSplitter* splitter = nullptr);
+                                 QAbstractItemModel* sourceModel,
+                                 std::string_view settingsGroup,
+                                 const QVector<int>& defaultHiddenColumns = {},
+                                 const QSize& defaultSize = {900, 400},
+                                 int settingsVersion = 1,
+                                 QSplitter* splitter = nullptr);
 
     /**
      * @brief Initialize the stale indicator support.
@@ -210,8 +210,7 @@ protected:
      * @param cm          If non-null, adds a workspace selector on the left.
      * @return            A new QWidget owned by this window.
      */
-    QWidget* createBottomBar(class PaginationWidget* pagination,
-                             ClientManager* cm = nullptr);
+    QWidget* createBottomBar(class PaginationWidget* pagination, ClientManager* cm = nullptr);
 
     /**
      * @brief Create a workspace selector widget bound to this window.
@@ -246,14 +245,18 @@ protected:
      * Override and return false for Live-only entities (books, portfolios)
      * that are always stored under the Live workspace sentinel.
      */
-    virtual bool isWorkspaceScoped() const { return true; }
+    virtual bool isWorkspaceScoped() const {
+        return true;
+    }
 
     /**
      * @brief Get the normal (non-stale) tooltip text for the refresh action.
      *
      * Override this to customize the tooltip text.
      */
-    virtual QString normalRefreshTooltip() const { return tr("Refresh"); }
+    virtual QString normalRefreshTooltip() const {
+        return tr("Refresh");
+    }
 
     /**
      * @brief Get the stale tooltip text for the refresh action.

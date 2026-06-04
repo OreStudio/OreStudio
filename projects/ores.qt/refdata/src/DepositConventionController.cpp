@@ -18,30 +18,27 @@
  *
  */
 #include "ores.qt/DepositConventionController.hpp"
-
+#include "ores.qt/DepositConventionDetailDialog.hpp"
+#include "ores.qt/DepositConventionHistoryDialog.hpp"
+#include "ores.qt/DepositConventionMdiWindow.hpp"
+#include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/IconUtils.hpp"
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/DepositConventionMdiWindow.hpp"
-#include "ores.qt/DepositConventionDetailDialog.hpp"
-#include "ores.qt/DepositConventionHistoryDialog.hpp"
-#include "ores.qt/DetachableMdiSubWindow.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-DepositConventionController::DepositConventionController(
-    QMainWindow* mainWindow,
-    QMdiArea* mdiArea,
-    ClientManager* clientManager,
-    const QString& username,
-    QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username,
-          std::string_view{}, parent),
-      listWindow_(nullptr),
-      listMdiSubWindow_(nullptr) {
+DepositConventionController::DepositConventionController(QMainWindow* mainWindow,
+                                                         QMdiArea* mdiArea,
+                                                         ClientManager* clientManager,
+                                                         const QString& username,
+                                                         QObject* parent)
+    : EntityController(mainWindow, mdiArea, clientManager, username, std::string_view{}, parent)
+    , listWindow_(nullptr)
+    , listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "DepositConventionController created";
 }
@@ -59,23 +56,33 @@ void DepositConventionController::showListWindow() {
     listWindow_ = new DepositConventionMdiWindow(clientManager_, username_);
 
     // Connect signals
-    connect(listWindow_, &DepositConventionMdiWindow::statusChanged,
-            this, &DepositConventionController::statusMessage);
-    connect(listWindow_, &DepositConventionMdiWindow::errorOccurred,
-            this, &DepositConventionController::errorMessage);
-    connect(listWindow_, &DepositConventionMdiWindow::showConventionDetails,
-            this, &DepositConventionController::onShowDetails);
-    connect(listWindow_, &DepositConventionMdiWindow::addNewRequested,
-            this, &DepositConventionController::onAddNewRequested);
-    connect(listWindow_, &DepositConventionMdiWindow::showConventionHistory,
-            this, &DepositConventionController::onShowHistory);
+    connect(listWindow_,
+            &DepositConventionMdiWindow::statusChanged,
+            this,
+            &DepositConventionController::statusMessage);
+    connect(listWindow_,
+            &DepositConventionMdiWindow::errorOccurred,
+            this,
+            &DepositConventionController::errorMessage);
+    connect(listWindow_,
+            &DepositConventionMdiWindow::showConventionDetails,
+            this,
+            &DepositConventionController::onShowDetails);
+    connect(listWindow_,
+            &DepositConventionMdiWindow::addNewRequested,
+            this,
+            &DepositConventionController::onAddNewRequested);
+    connect(listWindow_,
+            &DepositConventionMdiWindow::showConventionHistory,
+            this,
+            &DepositConventionController::onShowHistory);
 
     // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Deposit Conventions");
-    listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Chart, IconUtils::DefaultIconColor));
+    listMdiSubWindow_->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -87,12 +94,16 @@ void DepositConventionController::showListWindow() {
     register_detachable_window(listMdiSubWindow_);
 
     // Cleanup when closed
-    connect(listMdiSubWindow_, &QObject::destroyed, this, [self = QPointer<DepositConventionController>(this), key]() {
-        if (!self) return;
-        self->untrack_window(key);
-        self->listWindow_ = nullptr;
-        self->listMdiSubWindow_ = nullptr;
-    });
+    connect(listMdiSubWindow_,
+            &QObject::destroyed,
+            this,
+            [self = QPointer<DepositConventionController>(this), key]() {
+                if (!self)
+                    return;
+                self->untrack_window(key);
+                self->listWindow_ = nullptr;
+                self->listMdiSubWindow_ = nullptr;
+            });
 
     BOOST_LOG_SEV(lg(), debug) << "Deposit Convention list window created";
 }
@@ -119,8 +130,7 @@ void DepositConventionController::reloadListWindow() {
     }
 }
 
-void DepositConventionController::onShowDetails(
-    const refdata::domain::deposit_convention& dc) {
+void DepositConventionController::onShowDetails(const refdata::domain::deposit_convention& dc) {
     BOOST_LOG_SEV(lg(), debug) << "Show details for: " << dc.id;
     showDetailWindow(dc);
 }
@@ -130,8 +140,7 @@ void DepositConventionController::onAddNewRequested() {
     showAddWindow();
 }
 
-void DepositConventionController::onShowHistory(
-    const refdata::domain::deposit_convention& dc) {
+void DepositConventionController::onShowHistory(const refdata::domain::deposit_convention& dc) {
     BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << dc.id;
     showHistoryWindow(QString::fromStdString(dc.id));
 }
@@ -144,23 +153,30 @@ void DepositConventionController::showAddWindow() {
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
 
-    connect(detailDialog, &DepositConventionDetailDialog::statusMessage,
-            this, &DepositConventionController::statusMessage);
-    connect(detailDialog, &DepositConventionDetailDialog::errorMessage,
-            this, &DepositConventionController::errorMessage);
-    connect(detailDialog, &DepositConventionDetailDialog::dcSaved,
-            this, [self = QPointer<DepositConventionController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Deposit Convention saved: " << code.toStdString();
-        self->handleEntitySaved();
-    });
+    connect(detailDialog,
+            &DepositConventionDetailDialog::statusMessage,
+            this,
+            &DepositConventionController::statusMessage);
+    connect(detailDialog,
+            &DepositConventionDetailDialog::errorMessage,
+            this,
+            &DepositConventionController::errorMessage);
+    connect(detailDialog,
+            &DepositConventionDetailDialog::dcSaved,
+            this,
+            [self = QPointer<DepositConventionController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Deposit Convention saved: " << code.toStdString();
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Deposit Convention");
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Chart, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -168,8 +184,7 @@ void DepositConventionController::showAddWindow() {
     show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
-void DepositConventionController::showDetailWindow(
-    const refdata::domain::deposit_convention& dc) {
+void DepositConventionController::showDetailWindow(const refdata::domain::deposit_convention& dc) {
 
     const QString identifier = QString::fromStdString(dc.id);
     const QString key = build_window_key("details", identifier);
@@ -187,37 +202,46 @@ void DepositConventionController::showDetailWindow(
     detailDialog->setCreateMode(false);
     detailDialog->setConvention(dc);
 
-    connect(detailDialog, &DepositConventionDetailDialog::statusMessage,
-            this, &DepositConventionController::statusMessage);
-    connect(detailDialog, &DepositConventionDetailDialog::errorMessage,
-            this, &DepositConventionController::errorMessage);
-    connect(detailDialog, &DepositConventionDetailDialog::dcSaved,
-            this, [self = QPointer<DepositConventionController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Deposit Convention saved: " << code.toStdString();
-        self->handleEntitySaved();
-    });
-    connect(detailDialog, &DepositConventionDetailDialog::dcDeleted,
-            this, [self = QPointer<DepositConventionController>(this), key](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Deposit Convention deleted: " << code.toStdString();
-        self->handleEntityDeleted();
-    });
+    connect(detailDialog,
+            &DepositConventionDetailDialog::statusMessage,
+            this,
+            &DepositConventionController::statusMessage);
+    connect(detailDialog,
+            &DepositConventionDetailDialog::errorMessage,
+            this,
+            &DepositConventionController::errorMessage);
+    connect(detailDialog,
+            &DepositConventionDetailDialog::dcSaved,
+            this,
+            [self = QPointer<DepositConventionController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Deposit Convention saved: " << code.toStdString();
+                self->handleEntitySaved();
+            });
+    connect(detailDialog,
+            &DepositConventionDetailDialog::dcDeleted,
+            this,
+            [self = QPointer<DepositConventionController>(this), key](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Deposit Convention deleted: " << code.toStdString();
+                self->handleEntityDeleted();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Deposit Convention: %1").arg(identifier));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Chart, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
 
     // Track window
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<DepositConventionController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, key]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, key]() {
         if (self) {
             self->untrack_window(key);
         }
@@ -235,30 +259,38 @@ void DepositConventionController::showHistoryWindow(const QString& code) {
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
-        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: "
-                                  << code.toStdString();
+        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: " << code.toStdString();
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
-                              << code.toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << code.toStdString();
 
     auto* historyDialog = new DepositConventionHistoryDialog(code, clientManager_, mainWindow_);
 
-    connect(historyDialog, &DepositConventionHistoryDialog::statusChanged,
-            this, [self = QPointer<DepositConventionController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(historyDialog, &DepositConventionHistoryDialog::errorOccurred,
-            this, [self = QPointer<DepositConventionController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
-    connect(historyDialog, &DepositConventionHistoryDialog::revertVersionRequested,
-            this, &DepositConventionController::onRevertVersion);
-    connect(historyDialog, &DepositConventionHistoryDialog::openVersionRequested,
-            this, &DepositConventionController::onOpenVersion);
+    connect(historyDialog,
+            &DepositConventionHistoryDialog::statusChanged,
+            this,
+            [self = QPointer<DepositConventionController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(historyDialog,
+            &DepositConventionHistoryDialog::errorOccurred,
+            this,
+            [self = QPointer<DepositConventionController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
+    connect(historyDialog,
+            &DepositConventionHistoryDialog::revertVersionRequested,
+            this,
+            &DepositConventionController::onRevertVersion);
+    connect(historyDialog,
+            &DepositConventionHistoryDialog::openVersionRequested,
+            this,
+            &DepositConventionController::onOpenVersion);
 
     // Load history data
     historyDialog->loadHistory();
@@ -267,16 +299,15 @@ void DepositConventionController::showHistoryWindow(const QString& code) {
     historyWindow->setAttribute(Qt::WA_DeleteOnClose);
     historyWindow->setWidget(historyDialog);
     historyWindow->setWindowTitle(QString("Deposit Convention History: %1").arg(code));
-    historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    historyWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     // Track this history window
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
 
     QPointer<DepositConventionController> self = this;
-    connect(historyWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -285,14 +316,14 @@ void DepositConventionController::showHistoryWindow(const QString& code) {
     show_managed_window(historyWindow, listMdiSubWindow_);
 }
 
-void DepositConventionController::onOpenVersion(
-    const refdata::domain::deposit_convention& dc, int versionNumber) {
+void DepositConventionController::onOpenVersion(const refdata::domain::deposit_convention& dc,
+                                                int versionNumber) {
     BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
                               << " for deposit convention: " << dc.id;
 
     const QString code = QString::fromStdString(dc.id);
-    const QString windowKey = build_window_key("version", QString("%1_v%2")
-        .arg(code).arg(versionNumber));
+    const QString windowKey =
+        build_window_key("version", QString("%1_v%2").arg(code).arg(versionNumber));
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
@@ -306,31 +337,36 @@ void DepositConventionController::onOpenVersion(
     detailDialog->setConvention(dc);
     detailDialog->setReadOnly(true);
 
-    connect(detailDialog, &DepositConventionDetailDialog::statusMessage,
-            this, [self = QPointer<DepositConventionController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(detailDialog, &DepositConventionDetailDialog::errorMessage,
-            this, [self = QPointer<DepositConventionController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
+    connect(detailDialog,
+            &DepositConventionDetailDialog::statusMessage,
+            this,
+            [self = QPointer<DepositConventionController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(detailDialog,
+            &DepositConventionDetailDialog::errorMessage,
+            this,
+            [self = QPointer<DepositConventionController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Deposit Convention: %1 (Version %2)")
-        .arg(code).arg(versionNumber));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("Deposit Convention: %1 (Version %2)").arg(code).arg(versionNumber));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     track_window(windowKey, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<DepositConventionController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -340,10 +376,8 @@ void DepositConventionController::onOpenVersion(
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
-void DepositConventionController::onRevertVersion(
-    const refdata::domain::deposit_convention& dc) {
-    BOOST_LOG_SEV(lg(), info) << "Reverting deposit convention to version: "
-                              << dc.version;
+void DepositConventionController::onRevertVersion(const refdata::domain::deposit_convention& dc) {
+    BOOST_LOG_SEV(lg(), info) << "Reverting deposit convention to version: " << dc.version;
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new DepositConventionDetailDialog(mainWindow_);
@@ -352,25 +386,33 @@ void DepositConventionController::onRevertVersion(
     detailDialog->setConvention(dc);
     detailDialog->setCreateMode(false);
 
-    connect(detailDialog, &DepositConventionDetailDialog::statusMessage,
-            this, &DepositConventionController::statusMessage);
-    connect(detailDialog, &DepositConventionDetailDialog::errorMessage,
-            this, &DepositConventionController::errorMessage);
-    connect(detailDialog, &DepositConventionDetailDialog::dcSaved,
-            this, [self = QPointer<DepositConventionController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Deposit Convention reverted: " << code.toStdString();
-        emit self->statusMessage(QString("Deposit Convention '%1' reverted successfully").arg(code));
-        self->handleEntitySaved();
-    });
+    connect(detailDialog,
+            &DepositConventionDetailDialog::statusMessage,
+            this,
+            &DepositConventionController::statusMessage);
+    connect(detailDialog,
+            &DepositConventionDetailDialog::errorMessage,
+            this,
+            &DepositConventionController::errorMessage);
+    connect(detailDialog,
+            &DepositConventionDetailDialog::dcSaved,
+            this,
+            [self = QPointer<DepositConventionController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Deposit Convention reverted: " << code.toStdString();
+                emit self->statusMessage(
+                    QString("Deposit Convention '%1' reverted successfully").arg(code));
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Revert Deposit Convention: %1")
-        .arg(QString::fromStdString(dc.id)));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("Revert Deposit Convention: %1").arg(QString::fromStdString(dc.id)));
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
+                                                               IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 

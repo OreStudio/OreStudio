@@ -18,52 +18,57 @@
  *
  */
 #include "ores.qt/ClientCurrencyModel.hpp"
-
-#include <QtConcurrent>
-#include <QColor>
-#include <QDateTime>
-#include <boost/uuid/uuid_io.hpp>
-#include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/ImageCache.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.refdata.api/messaging/protocol.hpp"
+#include <QColor>
+#include <QDateTime>
+#include <QtConcurrent>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    std::string currency_key_extractor(const refdata::domain::currency& c) {
-        return c.iso_code;
-    }
+std::string currency_key_extractor(const refdata::domain::currency& c) {
+    return c.iso_code;
+}
 }
 
-ClientCurrencyModel::
-ClientCurrencyModel(ClientManager* clientManager, ImageCache* imageCache,
-    QObject* parent)
-    : AbstractClientModel(parent), clientManager_(clientManager),
-      imageCache_(imageCache),
-      watcher_(new QFutureWatcher<FutureWatcherResult>(this)),
-      recencyTracker_(currency_key_extractor),
-      pulseManager_(new RecencyPulseManager(this)) {
+ClientCurrencyModel::ClientCurrencyModel(ClientManager* clientManager,
+                                         ImageCache* imageCache,
+                                         QObject* parent)
+    : AbstractClientModel(parent)
+    , clientManager_(clientManager)
+    , imageCache_(imageCache)
+    , watcher_(new QFutureWatcher<FutureWatcherResult>(this))
+    , recencyTracker_(currency_key_extractor)
+    , pulseManager_(new RecencyPulseManager(this)) {
 
     connect(watcher_,
-        &QFutureWatcher<FutureWatcherResult>::finished,
-        this, &ClientCurrencyModel::onCurrenciesLoaded);
+            &QFutureWatcher<FutureWatcherResult>::finished,
+            this,
+            &ClientCurrencyModel::onCurrenciesLoaded);
 
-    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
-        this, &ClientCurrencyModel::onPulseStateChanged);
-    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
-        this, &ClientCurrencyModel::onPulsingComplete);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulse_state_changed,
+            this,
+            &ClientCurrencyModel::onPulseStateChanged);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulsing_complete,
+            this,
+            &ClientCurrencyModel::onPulsingComplete);
 
     // Connect to image cache to refresh decorations when images are loaded
     if (imageCache_) {
         connect(imageCache_, &ImageCache::imagesLoaded, this, [this]() {
             if (!currencies_.empty()) {
                 emit dataChanged(index(0, Column::IsoCode),
-                    index(rowCount() - 1, Column::IsoCode),
-                    {Qt::DecorationRole});
+                                 index(rowCount() - 1, Column::IsoCode),
+                                 {Qt::DecorationRole});
             }
         });
 
@@ -71,8 +76,8 @@ ClientCurrencyModel(ClientManager* clientManager, ImageCache* imageCache,
         connect(imageCache_, &ImageCache::imageLoaded, this, [this](const QString&) {
             if (!currencies_.empty()) {
                 emit dataChanged(index(0, Column::IsoCode),
-                    index(rowCount() - 1, Column::IsoCode),
-                    {Qt::DecorationRole});
+                                 index(rowCount() - 1, Column::IsoCode),
+                                 {Qt::DecorationRole});
             }
         });
     }
@@ -117,46 +122,75 @@ QVariant ClientCurrencyModel::data(const QModelIndex& index, int role) const {
         return {};
 
     switch (index.column()) {
-    case Column::CurrencyName: return QString::fromStdString(currency.name);
-    case Column::IsoCode: return QString::fromStdString(currency.iso_code);
-    case Column::Version: return currency.version;
-    case Column::NumericCode: return QString::fromStdString(currency.numeric_code);
-    case Column::Symbol: return QString::fromStdString(currency.symbol);
-    case Column::FractionSymbol: return QString::fromStdString(currency.fraction_symbol);
-    case Column::FractionsPerUnit: return currency.fractions_per_unit;
-    case Column::RoundingType: return QString::fromStdString(currency.rounding_type);
-    case Column::RoundingPrecision: return currency.rounding_precision;
-    case Column::Format: return QString::fromStdString(currency.format);
-    case Column::MonetaryNature: return QString::fromStdString(currency.monetary_nature);
-    case Column::MarketTier: return QString::fromStdString(currency.market_tier);
-    case Column::ModifiedBy: return QString::fromStdString(currency.modified_by);
-    case Column::RecordedAt: return relative_time_helper::format(currency.recorded_at);
-    default: return {};
+        case Column::CurrencyName:
+            return QString::fromStdString(currency.name);
+        case Column::IsoCode:
+            return QString::fromStdString(currency.iso_code);
+        case Column::Version:
+            return currency.version;
+        case Column::NumericCode:
+            return QString::fromStdString(currency.numeric_code);
+        case Column::Symbol:
+            return QString::fromStdString(currency.symbol);
+        case Column::FractionSymbol:
+            return QString::fromStdString(currency.fraction_symbol);
+        case Column::FractionsPerUnit:
+            return currency.fractions_per_unit;
+        case Column::RoundingType:
+            return QString::fromStdString(currency.rounding_type);
+        case Column::RoundingPrecision:
+            return currency.rounding_precision;
+        case Column::Format:
+            return QString::fromStdString(currency.format);
+        case Column::MonetaryNature:
+            return QString::fromStdString(currency.monetary_nature);
+        case Column::MarketTier:
+            return QString::fromStdString(currency.market_tier);
+        case Column::ModifiedBy:
+            return QString::fromStdString(currency.modified_by);
+        case Column::RecordedAt:
+            return relative_time_helper::format(currency.recorded_at);
+        default:
+            return {};
     }
 }
 
-QVariant ClientCurrencyModel::
-headerData(int section, Qt::Orientation orientation, int role) const {
+QVariant ClientCurrencyModel::headerData(int section, Qt::Orientation orientation, int role) const {
     if (role != Qt::DisplayRole)
         return {};
 
     if (orientation == Qt::Horizontal) {
         switch (section) {
-        case Column::CurrencyName: return tr("Currency Name");
-        case Column::IsoCode: return tr("Code");
-        case Column::Version: return tr("Version");
-        case Column::NumericCode: return tr("Numeric Code");
-        case Column::Symbol: return tr("Symbol");
-        case Column::FractionSymbol: return tr("Frac. Symbol");
-        case Column::FractionsPerUnit: return tr("Frac. per unit");
-        case Column::RoundingType: return tr("Rounding type");
-        case Column::RoundingPrecision: return tr("Rounding precision");
-        case Column::Format: return tr("Format");
-        case Column::MonetaryNature: return tr("Monetary Nature");
-        case Column::MarketTier: return tr("Market Tier");
-        case Column::ModifiedBy: return tr("Modified By");
-        case Column::RecordedAt: return tr("Recorded At");
-        default: return {};
+            case Column::CurrencyName:
+                return tr("Currency Name");
+            case Column::IsoCode:
+                return tr("Code");
+            case Column::Version:
+                return tr("Version");
+            case Column::NumericCode:
+                return tr("Numeric Code");
+            case Column::Symbol:
+                return tr("Symbol");
+            case Column::FractionSymbol:
+                return tr("Frac. Symbol");
+            case Column::FractionsPerUnit:
+                return tr("Frac. per unit");
+            case Column::RoundingType:
+                return tr("Rounding type");
+            case Column::RoundingPrecision:
+                return tr("Rounding precision");
+            case Column::Format:
+                return tr("Format");
+            case Column::MonetaryNature:
+                return tr("Monetary Nature");
+            case Column::MarketTier:
+                return tr("Market Tier");
+            case Column::ModifiedBy:
+                return tr("Modified By");
+            case Column::RecordedAt:
+                return tr("Recorded At");
+            default:
+                return {};
         }
     }
 
@@ -214,50 +248,59 @@ void ClientCurrencyModel::load_page(std::uint32_t offset, std::uint32_t limit) {
     fetch_currencies(offset, limit);
 }
 
-void ClientCurrencyModel::fetch_currencies(std::uint32_t offset,
-                                            std::uint32_t limit) {
+void ClientCurrencyModel::fetch_currencies(std::uint32_t offset, std::uint32_t limit) {
     is_fetching_ = true;
     QPointer<ClientCurrencyModel> self = this;
 
     QFuture<FutureWatcherResult> future =
         QtConcurrent::run([self, offset, limit]() -> FutureWatcherResult {
-            return exception_helper::wrap_async_fetch<FutureWatcherResult>([&]() -> FutureWatcherResult {
-                BOOST_LOG_SEV(lg(), debug) << "Making a currencies request with offset="
-                                           << offset << ", limit=" << limit;
-                if (!self || !self->clientManager_) {
-                    return {.success = false, .currencies = {}, .total_available_count = 0,
-                            .error_message = "Model was destroyed",
+            return exception_helper::wrap_async_fetch<FutureWatcherResult>(
+                [&]() -> FutureWatcherResult {
+                    BOOST_LOG_SEV(lg(), debug)
+                        << "Making a currencies request with offset=" << offset
+                        << ", limit=" << limit;
+                    if (!self || !self->clientManager_) {
+                        return {.success = false,
+                                .currencies = {},
+                                .total_available_count = 0,
+                                .error_message = "Model was destroyed",
+                                .error_details = {}};
+                    }
+
+                    // Fetch currencies using typed request
+                    refdata::messaging::get_currencies_request request;
+                    request.offset = offset;
+                    request.limit = limit;
+
+                    auto result =
+                        self->clientManager_->process_authenticated_request(std::move(request));
+
+                    if (!result) {
+                        BOOST_LOG_SEV(lg(), error)
+                            << "Failed to fetch currencies: " << result.error();
+                        return {.success = false,
+                                .currencies = {},
+                                .total_available_count = 0,
+                                .error_message = QString::fromStdString(
+                                    "Failed to fetch currencies: " + result.error()),
+                                .error_details = {}};
+                    }
+
+                    BOOST_LOG_SEV(lg(), debug)
+                        << "Received " << result->currencies.size()
+                        << " currencies, total available: " << result->total_available_count;
+
+                    return {.success = true,
+                            .currencies = std::move(result->currencies),
+                            .total_available_count =
+                                static_cast<std::uint32_t>(result->total_available_count),
+                            .error_message = {},
                             .error_details = {}};
-                }
-
-                // Fetch currencies using typed request
-                refdata::messaging::get_currencies_request request;
-                request.offset = offset;
-                request.limit = limit;
-
-                auto result = self->clientManager_->
-                    process_authenticated_request(std::move(request));
-
-                if (!result) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to fetch currencies: "
-                                               << result.error();
-                    return {.success = false, .currencies = {}, .total_available_count = 0,
-                            .error_message = QString::fromStdString(
-                                "Failed to fetch currencies: " + result.error()),
-                            .error_details = {}};
-                }
-
-                BOOST_LOG_SEV(lg(), debug) << "Received " << result->currencies.size()
-                                           << " currencies, total available: "
-                                           << result->total_available_count;
-
-                return {.success = true, .currencies = std::move(result->currencies),
-                        .total_available_count = static_cast<std::uint32_t>(result->total_available_count),
-                        .error_message = {}, .error_details = {}};
-            }, "currencies");
+                },
+                "currencies");
         });
 
-     watcher_->setFuture(future);
+    watcher_->setFuture(future);
 }
 
 void ClientCurrencyModel::onCurrenciesLoaded() {
@@ -267,8 +310,8 @@ void ClientCurrencyModel::onCurrenciesLoaded() {
     const auto result = watcher_->result();
 
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to fetch currencies: "
-                                   << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to fetch currencies: " << result.error_message.toStdString();
         emit loadError(result.error_message, result.error_details);
         return;
     }
@@ -318,8 +361,7 @@ void ClientCurrencyModel::set_page_size(std::uint32_t size) {
     }
 }
 
-QVariant ClientCurrencyModel::
-foreground_color(const std::string& iso_code) const {
+QVariant ClientCurrencyModel::foreground_color(const std::string& iso_code) const {
     // Synthetic currencies always show blue (no pulsing)
     if (synthetic_iso_codes_.find(iso_code) != synthetic_iso_codes_.end()) {
         return color_constants::synthetic_indicator;
@@ -333,8 +375,8 @@ foreground_color(const std::string& iso_code) const {
     return {};
 }
 
-void ClientCurrencyModel::
-add_synthetic_currencies(std::vector<refdata::domain::currency> currencies) {
+void ClientCurrencyModel::add_synthetic_currencies(
+    std::vector<refdata::domain::currency> currencies) {
     if (currencies.empty()) {
         return;
     }
@@ -352,9 +394,8 @@ add_synthetic_currencies(std::vector<refdata::domain::currency> currencies) {
     }
     endInsertRows();
 
-    BOOST_LOG_SEV(lg(), debug) << "Model now has " << currencies_.size()
-                               << " currencies (" << synthetic_iso_codes_.size()
-                               << " synthetic)";
+    BOOST_LOG_SEV(lg(), debug) << "Model now has " << currencies_.size() << " currencies ("
+                               << synthetic_iso_codes_.size() << " synthetic)";
 }
 
 bool ClientCurrencyModel::is_synthetic(const std::string& iso_code) const {
@@ -368,31 +409,31 @@ void ClientCurrencyModel::mark_as_saved(const std::string& iso_code) {
         BOOST_LOG_SEV(lg(), debug) << "Marked currency as saved: " << iso_code;
 
         // Find the row and emit dataChanged for the color update
-        auto currency_it = std::find_if(currencies_.begin(), currencies_.end(),
-            [&iso_code](const auto& currency) {
+        auto currency_it =
+            std::find_if(currencies_.begin(), currencies_.end(), [&iso_code](const auto& currency) {
                 return currency.iso_code == iso_code;
             });
         if (currency_it != currencies_.end()) {
             const auto row = std::distance(currencies_.begin(), currency_it);
             emit dataChanged(index(static_cast<int>(row), 0),
-                index(static_cast<int>(row), columnCount() - 1),
-                {Qt::ForegroundRole});
+                             index(static_cast<int>(row), columnCount() - 1),
+                             {Qt::ForegroundRole});
         }
     }
 }
 
 void ClientCurrencyModel::clear_synthetic_markers() {
     if (!synthetic_iso_codes_.empty()) {
-        BOOST_LOG_SEV(lg(), debug) << "Clearing " << synthetic_iso_codes_.size()
-                                   << " synthetic markers";
+        BOOST_LOG_SEV(lg(), debug)
+            << "Clearing " << synthetic_iso_codes_.size() << " synthetic markers";
         synthetic_iso_codes_.clear();
     }
 }
 
 void ClientCurrencyModel::onPulseStateChanged(bool /*isOn*/) {
     if (!currencies_.empty()) {
-        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
-            {Qt::ForegroundRole});
+        emit dataChanged(
+            index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::ForegroundRole});
     }
 }
 

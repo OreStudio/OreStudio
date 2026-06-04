@@ -20,13 +20,12 @@
 #ifndef ORES_QT_PRICING_MODEL_PRODUCT_DETAIL_DIALOG_HPP
 #define ORES_QT_PRICING_MODEL_PRODUCT_DETAIL_DIALOG_HPP
 
-#include <vector>
+#include "ores.analytics.api/domain/pricing_engine_type.hpp"
+#include "ores.analytics.api/domain/pricing_model_product.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.analytics.api/domain/pricing_model_product.hpp"
-
-#include "ores.analytics.api/domain/pricing_engine_type.hpp"
+#include <vector>
 
 
 namespace Ui {
@@ -46,8 +45,7 @@ class PricingModelProductDetailDialog final : public DetailDialogBase {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.pricing_model_product_detail_dialog";
+    inline static std::string_view logger_name = "ores.qt.pricing_model_product_detail_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -82,7 +80,9 @@ protected:
     QTabWidget* tabWidget() const override;
     QWidget* provenanceTab() const override;
     ProvenanceWidget* provenanceWidget() const override;
-    bool hasUnsavedChanges() const override { return hasChanges_; }
+    bool hasUnsavedChanges() const override {
+        return hasChanges_;
+    }
 
 private:
     void setupUi();
@@ -105,7 +105,6 @@ private:
     bool hasChanges_{false};
 
     std::vector<analytics::domain::pricing_engine_type> pricingEngineTypes_;
-
 };
 
 }

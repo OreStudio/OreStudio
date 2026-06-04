@@ -18,48 +18,54 @@
  *
  */
 #include "ores.qt/ClientMethodologyModel.hpp"
-
+#include "ores.dq.api/messaging/data_organization_protocol.hpp"
+#include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/ExceptionHelper.hpp"
+#include "ores.qt/RelativeTimeHelper.hpp"
 #include <QtConcurrent>
 #include <boost/uuid/uuid_io.hpp>
-#include "ores.qt/ExceptionHelper.hpp"
-#include "ores.qt/ColorConstants.hpp"
-#include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.dq.api/messaging/data_organization_protocol.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    std::string methodology_key_extractor(const dq::domain::methodology& e) {
-        return boost::uuids::to_string(e.id);
-    }
+std::string methodology_key_extractor(const dq::domain::methodology& e) {
+    return boost::uuids::to_string(e.id);
+}
 }
 
-ClientMethodologyModel::ClientMethodologyModel(
-    ClientManager* clientManager, QObject* parent)
-    : AbstractClientModel(parent),
-      clientManager_(clientManager),
-      watcher_(new QFutureWatcher<FetchResult>(this)),
-      recencyTracker_(methodology_key_extractor),
-      pulseManager_(new RecencyPulseManager(this)) {
+ClientMethodologyModel::ClientMethodologyModel(ClientManager* clientManager, QObject* parent)
+    : AbstractClientModel(parent)
+    , clientManager_(clientManager)
+    , watcher_(new QFutureWatcher<FetchResult>(this))
+    , recencyTracker_(methodology_key_extractor)
+    , pulseManager_(new RecencyPulseManager(this)) {
 
-    connect(watcher_, &QFutureWatcher<FetchResult>::finished,
-            this, &ClientMethodologyModel::onMethodologiesLoaded);
+    connect(watcher_,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            &ClientMethodologyModel::onMethodologiesLoaded);
 
-    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
-            this, &ClientMethodologyModel::onPulseStateChanged);
-    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
-            this, &ClientMethodologyModel::onPulsingComplete);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulse_state_changed,
+            this,
+            &ClientMethodologyModel::onPulseStateChanged);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulsing_complete,
+            this,
+            &ClientMethodologyModel::onPulsingComplete);
 }
 
 int ClientMethodologyModel::rowCount(const QModelIndex& parent) const {
-    if (parent.isValid()) return 0;
+    if (parent.isValid())
+        return 0;
     return static_cast<int>(methodologies_.size());
 }
 
 int ClientMethodologyModel::columnCount(const QModelIndex& parent) const {
-    if (parent.isValid()) return 0;
+    if (parent.isValid())
+        return 0;
     return ColumnCount;
 }
 
@@ -71,16 +77,22 @@ QVariant ClientMethodologyModel::data(const QModelIndex& index, int role) const 
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-        case Name: return QString::fromStdString(methodology.name);
-        case Description: return QString::fromStdString(methodology.description);
-        case LogicReference:
-            return methodology.logic_reference
-                ? QString::fromStdString(*methodology.logic_reference)
-                : QString();
-        case Version: return methodology.version;
-        case ModifiedBy: return QString::fromStdString(methodology.modified_by);
-        case RecordedAt: return relative_time_helper::format(methodology.recorded_at);
-        default: return {};
+            case Name:
+                return QString::fromStdString(methodology.name);
+            case Description:
+                return QString::fromStdString(methodology.description);
+            case LogicReference:
+                return methodology.logic_reference ?
+                           QString::fromStdString(*methodology.logic_reference) :
+                           QString();
+            case Version:
+                return methodology.version;
+            case ModifiedBy:
+                return QString::fromStdString(methodology.modified_by);
+            case RecordedAt:
+                return relative_time_helper::format(methodology.recorded_at);
+            default:
+                return {};
         }
     }
 
@@ -91,19 +103,26 @@ QVariant ClientMethodologyModel::data(const QModelIndex& index, int role) const 
     return {};
 }
 
-QVariant ClientMethodologyModel::headerData(int section,
-    Qt::Orientation orientation, int role) const {
+QVariant
+ClientMethodologyModel::headerData(int section, Qt::Orientation orientation, int role) const {
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return {};
 
     switch (section) {
-    case Name: return tr("Name");
-    case Description: return tr("Description");
-    case LogicReference: return tr("Logic Reference");
-    case Version: return tr("Version");
-    case ModifiedBy: return tr("Modified By");
-    case RecordedAt: return tr("Recorded At");
-    default: return {};
+        case Name:
+            return tr("Name");
+        case Description:
+            return tr("Description");
+        case LogicReference:
+            return tr("Logic Reference");
+        case Version:
+            return tr("Version");
+        case ModifiedBy:
+            return tr("Modified By");
+        case RecordedAt:
+            return tr("Recorded At");
+        default:
+            return {};
     }
 }
 
@@ -117,27 +136,34 @@ void ClientMethodologyModel::refresh() {
     QPointer<ClientMethodologyModel> self = this;
 
     QFuture<FetchResult> future = QtConcurrent::run([self]() -> FetchResult {
-        return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
-            if (!self || !self->clientManager_) {
-                return {.success = false, .methodologies = {},
-                        .error_message = "Model was destroyed",
-                        .error_details = {}};
-            }
+        return exception_helper::wrap_async_fetch<FetchResult>(
+            [&]() -> FetchResult {
+                if (!self || !self->clientManager_) {
+                    return {.success = false,
+                            .methodologies = {},
+                            .error_message = "Model was destroyed",
+                            .error_details = {}};
+                }
 
-            dq::messaging::get_methodologies_request request;
-            auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
-            if (!response_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to send request";
-                return {.success = false, .methodologies = {},
-                        .error_message = "Failed to send request",
-                        .error_details = {}};
-            }
+                dq::messaging::get_methodologies_request request;
+                auto response_result =
+                    self->clientManager_->process_authenticated_request(std::move(request));
+                if (!response_result) {
+                    BOOST_LOG_SEV(lg(), error) << "Failed to send request";
+                    return {.success = false,
+                            .methodologies = {},
+                            .error_message = "Failed to send request",
+                            .error_details = {}};
+                }
 
-            BOOST_LOG_SEV(lg(), debug) << "Fetched " << response_result->methodologies.size()
-                                       << " methodologies";
-            return {.success = true, .methodologies = std::move(response_result->methodologies),
-                    .error_message = {}, .error_details = {}};
-        }, "methodologies");
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Fetched " << response_result->methodologies.size() << " methodologies";
+                return {.success = true,
+                        .methodologies = std::move(response_result->methodologies),
+                        .error_message = {},
+                        .error_details = {}};
+            },
+            "methodologies");
     });
 
     watcher_->setFuture(future);
@@ -149,8 +175,8 @@ void ClientMethodologyModel::onMethodologiesLoaded() {
     const auto result = watcher_->result();
 
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to fetch methodologies: "
-                                   << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to fetch methodologies: " << result.error_message.toStdString();
         emit loadError(result.error_message, result.error_details);
         return;
     }
@@ -166,13 +192,11 @@ void ClientMethodologyModel::onMethodologiesLoaded() {
                                    << " methodologies newer than last reload";
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Loaded " << methodologies_.size()
-                               << " methodologies";
+    BOOST_LOG_SEV(lg(), debug) << "Loaded " << methodologies_.size() << " methodologies";
     emit dataLoaded();
 }
 
-const dq::domain::methodology* ClientMethodologyModel::getMethodology(
-    int row) const {
+const dq::domain::methodology* ClientMethodologyModel::getMethodology(int row) const {
     if (row < 0 || row >= static_cast<int>(methodologies_.size()))
         return nullptr;
     return &methodologies_[row];
@@ -180,8 +204,8 @@ const dq::domain::methodology* ClientMethodologyModel::getMethodology(
 
 void ClientMethodologyModel::onPulseStateChanged(bool /*isOn*/) {
     if (!methodologies_.empty()) {
-        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
-            {Qt::ForegroundRole});
+        emit dataChanged(
+            index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::ForegroundRole});
     }
 }
 
@@ -190,8 +214,7 @@ void ClientMethodologyModel::onPulsingComplete() {
     recencyTracker_.clear();
 }
 
-QVariant ClientMethodologyModel::recency_foreground_color(
-    const boost::uuids::uuid& id) const {
+QVariant ClientMethodologyModel::recency_foreground_color(const boost::uuids::uuid& id) const {
     if (recencyTracker_.is_recent(boost::uuids::to_string(id)) && pulseManager_->is_pulse_on()) {
         return color_constants::stale_indicator;
     }

@@ -19,8 +19,8 @@
 #ifndef ORES_QT_DATA_TRANSFER_PLUGIN_HPP
 #define ORES_QT_DATA_TRANSFER_PLUGIN_HPP
 
-#include <QList>
 #include "ores.qt/PluginBase.hpp"
+#include <QList>
 
 namespace ores::qt {
 
@@ -40,8 +40,12 @@ public:
     explicit DataTransferPlugin(QObject* parent = nullptr);
     ~DataTransferPlugin() override;
 
-    QString name() const override { return QStringLiteral("ores.qt.data_transfer"); }
-    int load_order() const override { return 375; }
+    QString name() const override {
+        return QStringLiteral("ores.qt.data_transfer");
+    }
+    int load_order() const override {
+        return 375;
+    }
 
     void on_login(const plugin_context& ctx) override;
     void setup_menus(const shared_menus_context& ctx) override;

@@ -18,28 +18,26 @@
  *
  */
 #include "ores.qt/RoleDetailDialog.hpp"
+#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-
+#include "ui_RoleDetailDialog.h"
 #include <QListWidgetItem>
 #include <algorithm>
-#include "ui_RoleDetailDialog.h"
-#include "ores.qt/IconUtils.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 RoleDetailDialog::RoleDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent),
-      ui_(std::make_unique<Ui::RoleDetailDialog>()) {
+    : DetailDialogBase(parent)
+    , ui_(std::make_unique<Ui::RoleDetailDialog>()) {
 
     ui_->setupUi(this);
     WidgetUtils::setupComboBoxes(this);
 
     ui_->closeButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
-    connect(ui_->closeButton, &QPushButton::clicked, this,
-            &RoleDetailDialog::onCloseClicked);
+    connect(ui_->closeButton, &QPushButton::clicked, this, &RoleDetailDialog::onCloseClicked);
 
     BOOST_LOG_SEV(lg(), debug) << "RoleDetailDialog created";
 }
@@ -48,9 +46,15 @@ RoleDetailDialog::~RoleDetailDialog() {
     BOOST_LOG_SEV(lg(), debug) << "RoleDetailDialog destroyed";
 }
 
-QTabWidget* RoleDetailDialog::tabWidget() const { return ui_->tabWidget; }
-QWidget* RoleDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
-ProvenanceWidget* RoleDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
+QTabWidget* RoleDetailDialog::tabWidget() const {
+    return ui_->tabWidget;
+}
+QWidget* RoleDetailDialog::provenanceTab() const {
+    return ui_->provenanceTab;
+}
+ProvenanceWidget* RoleDetailDialog::provenanceWidget() const {
+    return ui_->provenanceWidget;
+}
 
 void RoleDetailDialog::setRole(const iam::domain::role& role) {
     BOOST_LOG_SEV(lg(), debug) << "Setting role: " << role.name;
@@ -62,8 +66,7 @@ void RoleDetailDialog::setRole(const iam::domain::role& role) {
     ui_->descriptionEdit->setPlainText(QString::fromStdString(role.description));
 
     // Populate provenance
-    populateProvenance(role.version, role.modified_by, role.performed_by,
-        role.recorded_at, "", "");
+    populateProvenance(role.version, role.modified_by, role.performed_by, role.recorded_at, "", "");
 
     // Populate permissions list
     populatePermissionsList();
@@ -99,8 +102,8 @@ void RoleDetailDialog::populatePermissionsList() {
             const auto resource = code.substr(0, pos);
             const auto action = code.substr(pos + 1);
             tooltip = QString("Permission to %1 %2")
-                .arg(QString::fromStdString(action))
-                .arg(QString::fromStdString(resource));
+                          .arg(QString::fromStdString(action))
+                          .arg(QString::fromStdString(resource));
         }
 
         if (!tooltip.isEmpty()) {

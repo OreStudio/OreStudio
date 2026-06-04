@@ -20,15 +20,15 @@
 #ifndef ORES_QT_TELEMETRYSETTINGSDIALOG_HPP
 #define ORES_QT_TELEMETRYSETTINGSDIALOG_HPP
 
-#include <QDialog>
+#include "ores.logging/logging_options.hpp"
+#include "ores.logging/make_logger.hpp"
 #include <QCheckBox>
 #include <QComboBox>
+#include <QDialog>
 #include <QLineEdit>
-#include <QSpinBox>
 #include <QPushButton>
+#include <QSpinBox>
 #include <QTabWidget>
-#include "ores.logging/make_logger.hpp"
-#include "ores.logging/logging_options.hpp"
 
 namespace ores::qt {
 
@@ -104,7 +104,9 @@ public:
      * @brief Get the settings key prefix for telemetry settings.
      * @return The settings key prefix.
      */
-    static QString settingsPrefix() { return "telemetry"; }
+    static QString settingsPrefix() {
+        return "telemetry";
+    }
 
 private slots:
     void onApplyClicked();

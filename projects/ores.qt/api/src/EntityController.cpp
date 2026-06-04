@@ -18,32 +18,30 @@
  *
  */
 #include "ores.qt/EntityController.hpp"
-
-#include <QEvent>
-#include <QPointer>
-#include <QVariant>
-#include <QDynamicPropertyChangeEvent>
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
 #include "ores.qt/WorkspaceContext.hpp"
+#include <QDynamicPropertyChangeEvent>
+#include <QEvent>
+#include <QPointer>
+#include <QVariant>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-EntityController::EntityController(
-    QMainWindow* mainWindow,
-    QMdiArea* mdiArea,
-    ClientManager* clientManager,
-    const QString& username,
-    std::string_view eventName,
-    QObject* parent)
-    : QObject(parent),
-      mainWindow_(mainWindow),
-      mdiArea_(mdiArea),
-      clientManager_(clientManager),
-      username_(username),
-      eventName_(eventName) {
+EntityController::EntityController(QMainWindow* mainWindow,
+                                   QMdiArea* mdiArea,
+                                   ClientManager* clientManager,
+                                   const QString& username,
+                                   std::string_view eventName,
+                                   QObject* parent)
+    : QObject(parent)
+    , mainWindow_(mainWindow)
+    , mdiArea_(mdiArea)
+    , clientManager_(clientManager)
+    , username_(username)
+    , eventName_(eventName) {
 
     if (!eventName_.empty()) {
         setupEventSubscription();
@@ -69,29 +67,36 @@ void EntityController::setupEventSubscription() {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Setting up event subscription for: "
-                               << eventName_;
+    BOOST_LOG_SEV(lg(), debug) << "Setting up event subscription for: " << eventName_;
 
-    connect(clientManager_, &ClientManager::notificationReceived,
-            this, &EntityController::onNotificationReceived);
+    connect(clientManager_,
+            &ClientManager::notificationReceived,
+            this,
+            &EntityController::onNotificationReceived);
 
-    connect(clientManager_, &ClientManager::loggedIn,
-            this, [self = QPointer<EntityController>(this)]() {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Subscribing to " << self->eventName_ << " events";
-        self->clientManager_->subscribeToEvent(self->eventName_);
-    });
+    connect(clientManager_,
+            &ClientManager::loggedIn,
+            this,
+            [self = QPointer<EntityController>(this)]() {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Subscribing to " << self->eventName_ << " events";
+                self->clientManager_->subscribeToEvent(self->eventName_);
+            });
 
-    connect(clientManager_, &ClientManager::reconnected,
-            this, [self = QPointer<EntityController>(this)]() {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Re-subscribing to " << self->eventName_ << " events";
-        self->clientManager_->subscribeToEvent(self->eventName_);
-    });
+    connect(clientManager_,
+            &ClientManager::reconnected,
+            this,
+            [self = QPointer<EntityController>(this)]() {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Re-subscribing to " << self->eventName_ << " events";
+                self->clientManager_->subscribeToEvent(self->eventName_);
+            });
 
     if (clientManager_->isConnected()) {
-        BOOST_LOG_SEV(lg(), info) << "Already connected, subscribing to "
-                                  << eventName_ << " events";
+        BOOST_LOG_SEV(lg(), info) << "Already connected, subscribing to " << eventName_
+                                  << " events";
         clientManager_->subscribeToEvent(eventName_);
     }
 }
@@ -105,17 +110,18 @@ void EntityController::teardownEventSubscription() {
     clientManager_->unsubscribeFromEvent(eventName_);
 }
 
-void EntityController::onNotificationReceived(
-    const QString& eventType, const QDateTime& timestamp,
-    const QStringList& entityIds, const QString& tenantId) {
+void EntityController::onNotificationReceived(const QString& eventType,
+                                              const QDateTime& timestamp,
+                                              const QStringList& entityIds,
+                                              const QString& tenantId) {
 
     if (eventType != QString::fromStdString(eventName_)) {
         return;
     }
 
     BOOST_LOG_SEV(lg(), info) << "Received " << eventName_ << " notification at "
-                              << timestamp.toString(Qt::ISODate).toStdString()
-                              << " with " << entityIds.size() << " entities"
+                              << timestamp.toString(Qt::ISODate).toStdString() << " with "
+                              << entityIds.size() << " entities"
                               << ", tenant: " << tenantId.toStdString();
 
     if (auto* window = listWindow(); window != nullptr) {
@@ -124,8 +130,7 @@ void EntityController::onNotificationReceived(
     }
 }
 
-void EntityController::setClientManager(ClientManager* clientManager,
-    const QString& username) {
+void EntityController::setClientManager(ClientManager* clientManager, const QString& username) {
     clientManager_ = clientManager;
     username_ = username;
 }
@@ -137,8 +142,7 @@ void EntityController::setWorkspaceContext(const WorkspaceContext& ctx) {
 }
 
 bool EntityController::eventFilter(QObject* watched, QEvent* event) {
-    if (watched == mdiArea_ &&
-        event->type() == QEvent::DynamicPropertyChange) {
+    if (watched == mdiArea_ && event->type() == QEvent::DynamicPropertyChange) {
         const auto* pe = static_cast<QDynamicPropertyChangeEvent*>(event);
         if (pe->propertyName() == "ores_workspace_context") {
             const auto wvar = mdiArea_->property("ores_workspace_context");
@@ -151,7 +155,7 @@ bool EntityController::eventFilter(QObject* watched, QEvent* event) {
 }
 
 QString EntityController::build_window_key(const QString& windowType,
-    const QString& identifier) const {
+                                           const QString& identifier) const {
     return QString("%1.%2").arg(windowType, identifier);
 }
 
@@ -180,8 +184,7 @@ void EntityController::bring_window_to_front(DetachableMdiSubWindow* window) {
     }
 }
 
-void EntityController::track_window(const QString& key,
-    DetachableMdiSubWindow* window) {
+void EntityController::track_window(const QString& key, DetachableMdiSubWindow* window) {
     managed_windows_[key] = window;
 }
 
@@ -190,7 +193,8 @@ void EntityController::untrack_window(const QString& key) {
 }
 
 void EntityController::show_managed_window(DetachableMdiSubWindow* window,
-    DetachableMdiSubWindow* referenceWindow, QPoint offset) {
+                                           DetachableMdiSubWindow* referenceWindow,
+                                           QPoint offset) {
     // Set flags before addSubWindow so the MDI area decorates the subwindow
     // exactly once with the correct flags.  Setting flags after addSubWindow
     // triggers a re-decoration that leaves a blank black strip above the content.
@@ -201,8 +205,7 @@ void EntityController::show_managed_window(DetachableMdiSubWindow* window,
     if (wvar.isValid()) {
         const auto wctx = wvar.value<WorkspaceContext>();
         if (!wctx.is_live()) {
-            window->setWindowTitle(
-                window->windowTitle() + " [" + wctx.name + "]");
+            window->setWindowTitle(window->windowTitle() + " [" + wctx.name + "]");
         }
     }
 
@@ -226,7 +229,7 @@ void EntityController::show_managed_window(DetachableMdiSubWindow* window,
 }
 
 void EntityController::connect_dialog_close(DetailDialogBase* dialog,
-    DetachableMdiSubWindow* window) {
+                                            DetachableMdiSubWindow* window) {
     connect(dialog, &DetailDialogBase::closeRequested, window, &QWidget::close);
 }
 

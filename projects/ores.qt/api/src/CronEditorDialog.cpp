@@ -18,26 +18,26 @@
  *
  */
 #include "ores.qt/CronEditorDialog.hpp"
-
-#include <QRadioButton>
+#include <QButtonGroup>
 #include <QCheckBox>
 #include <QComboBox>
+#include <QDialogButtonBox>
+#include <QFrame>
+#include <QGridLayout>
+#include <QHBoxLayout>
 #include <QLabel>
+#include <QRadioButton>
 #include <QTabWidget>
 #include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QGridLayout>
-#include <QDialogButtonBox>
-#include <QButtonGroup>
 #include <QWidget>
-#include <QFrame>
 
 namespace ores::qt {
 
 // ── CronFieldWidget ──────────────────────────────────────────────────────────
 
 CronFieldWidget::CronFieldWidget(const FieldConfig& cfg, QWidget* parent)
-    : QWidget(parent), cfg_(cfg) {
+    : QWidget(parent)
+    , cfg_(cfg) {
 
     auto* mainLayout = new QVBoxLayout(this);
     mainLayout->setSpacing(10);
@@ -58,7 +58,7 @@ CronFieldWidget::CronFieldWidget(const FieldConfig& cfg, QWidget* parent)
     for (int v = cfg.min_val; v <= cfg.max_val; ++v)
         startCombo_->addItem(labelFor(v), v);
 
-    auto* freqRow    = new QWidget(this);
+    auto* freqRow = new QWidget(this);
     auto* freqLayout = new QHBoxLayout(freqRow);
     freqLayout->setContentsMargins(0, 0, 0, 0);
     freqLayout->addWidget(freqRadio_);
@@ -83,7 +83,7 @@ CronFieldWidget::CronFieldWidget(const FieldConfig& cfg, QWidget* parent)
     }
     maxCombo_->setCurrentIndex(maxCombo_->count() - 1);
 
-    auto* rangeRow    = new QWidget(this);
+    auto* rangeRow = new QWidget(this);
     auto* rangeLayout = new QHBoxLayout(rangeRow);
     rangeLayout->setContentsMargins(0, 0, 0, 0);
     rangeLayout->addWidget(rangeRadio_);
@@ -106,7 +106,7 @@ CronFieldWidget::CronFieldWidget(const FieldConfig& cfg, QWidget* parent)
     choiceRadio_ = new QRadioButton(tr("Choice"), this);
     buttonGroup->addButton(choiceRadio_);
 
-    auto* choiceHeader       = new QWidget(this);
+    auto* choiceHeader = new QWidget(this);
     auto* choiceHeaderLayout = new QHBoxLayout(choiceHeader);
     choiceHeaderLayout->setContentsMargins(0, 0, 0, 0);
     choiceHeaderLayout->addWidget(choiceRadio_);
@@ -123,25 +123,21 @@ CronFieldWidget::CronFieldWidget(const FieldConfig& cfg, QWidget* parent)
         auto* cb = new QCheckBox(labelFor(cfg.min_val + i), gridWidget);
         checkboxes_.push_back(cb);
         connect(cb, &QCheckBox::toggled, this, &CronFieldWidget::changed);
-        gridLayout->addWidget(cb, i / cfg.checkboxes_per_row,
-                              i % cfg.checkboxes_per_row);
+        gridLayout->addWidget(cb, i / cfg.checkboxes_per_row, i % cfg.checkboxes_per_row);
     }
     mainLayout->addWidget(gridWidget);
     mainLayout->addStretch();
 
     // ── Connections ───────────────────────────────────────────────────────
-    connect(buttonGroup, &QButtonGroup::buttonClicked,
-            this, &CronFieldWidget::onModeClicked);
+    connect(buttonGroup, &QButtonGroup::buttonClicked, this, &CronFieldWidget::onModeClicked);
 
-    auto emitChanged = [this]() { emit changed(); };
-    connect(everyCombo_, QOverload<int>::of(&QComboBox::currentIndexChanged),
-            this, emitChanged);
-    connect(startCombo_, QOverload<int>::of(&QComboBox::currentIndexChanged),
-            this, emitChanged);
-    connect(minCombo_,   QOverload<int>::of(&QComboBox::currentIndexChanged),
-            this, emitChanged);
-    connect(maxCombo_,   QOverload<int>::of(&QComboBox::currentIndexChanged),
-            this, emitChanged);
+    auto emitChanged = [this]() {
+        emit changed();
+    };
+    connect(everyCombo_, QOverload<int>::of(&QComboBox::currentIndexChanged), this, emitChanged);
+    connect(startCombo_, QOverload<int>::of(&QComboBox::currentIndexChanged), this, emitChanged);
+    connect(minCombo_, QOverload<int>::of(&QComboBox::currentIndexChanged), this, emitChanged);
+    connect(maxCombo_, QOverload<int>::of(&QComboBox::currentIndexChanged), this, emitChanged);
 
     freqRadio_->setChecked(true);
     updateEnabled();
@@ -162,8 +158,8 @@ void CronFieldWidget::onModeClicked() {
 }
 
 void CronFieldWidget::updateEnabled() {
-    const bool isFreq   = freqRadio_->isChecked();
-    const bool isRange  = rangeRadio_->isChecked();
+    const bool isFreq = freqRadio_->isChecked();
+    const bool isRange = rangeRadio_->isChecked();
     const bool isChoice = choiceRadio_->isChecked();
 
     everyCombo_->setEnabled(isFreq);
@@ -176,13 +172,12 @@ void CronFieldWidget::updateEnabled() {
 
 QString CronFieldWidget::value() const {
     if (freqRadio_->isChecked()) {
-        const int step  = everyCombo_->currentData().toInt();
+        const int step = everyCombo_->currentData().toInt();
         const int start = startCombo_->currentData().toInt();
         const bool atMin = (start == cfg_.min_val);
         if (step == 1)
             return atMin ? "*" : QString::number(start);
-        return atMin ? QString("*/%1").arg(step)
-                     : QString("%1/%2").arg(start).arg(step);
+        return atMin ? QString("*/%1").arg(step) : QString("%1/%2").arg(start).arg(step);
     }
 
     if (rangeRadio_->isChecked()) {
@@ -215,7 +210,8 @@ void CronFieldWidget::setValue(const QString& field) {
     const QSignalBlocker sb_start(startCombo_);
     const QSignalBlocker sb_min(minCombo_);
     const QSignalBlocker sb_max(maxCombo_);
-    for (auto* cb : checkboxes_) cb->blockSignals(true);
+    for (auto* cb : checkboxes_)
+        cb->blockSignals(true);
 
     auto findAndSet = [](QComboBox* combo, int target) {
         for (int i = 0; i < combo->count(); ++i) {
@@ -233,7 +229,7 @@ void CronFieldWidget::setValue(const QString& field) {
     } else if (f.contains('/')) {
         freqRadio_->setChecked(true);
         const QStringList parts = f.split('/');
-        const int step  = parts[1].toInt();
+        const int step = parts[1].toInt();
         const int start = (parts[0] == "*") ? cfg_.min_val : parts[0].toInt();
         findAndSet(everyCombo_, step);
         findAndSet(startCombo_, start);
@@ -244,7 +240,8 @@ void CronFieldWidget::setValue(const QString& field) {
         findAndSet(maxCombo_, parts[1].toInt());
     } else {
         choiceRadio_->setChecked(true);
-        for (auto* cb : checkboxes_) cb->setChecked(false);
+        for (auto* cb : checkboxes_)
+            cb->setChecked(false);
         for (const QString& v : f.split(',')) {
             bool ok = false;
             const int n = v.trimmed().toInt(&ok);
@@ -256,7 +253,8 @@ void CronFieldWidget::setValue(const QString& field) {
         }
     }
 
-    for (auto* cb : checkboxes_) cb->blockSignals(false);
+    for (auto* cb : checkboxes_)
+        cb->blockSignals(false);
     updateEnabled();
 }
 
@@ -266,53 +264,53 @@ namespace {
 
 CronFieldWidget* makeMinuteField(QWidget* parent) {
     FieldConfig cfg;
-    cfg.min_val            = 0;
-    cfg.max_val            = 59;
-    cfg.freq_steps         = {2, 3, 4, 5, 6, 10, 12, 15, 20, 30};
+    cfg.min_val = 0;
+    cfg.max_val = 59;
+    cfg.freq_steps = {2, 3, 4, 5, 6, 10, 12, 15, 20, 30};
     cfg.checkboxes_per_row = 10;
     return new CronFieldWidget(cfg, parent);
 }
 
 CronFieldWidget* makeHourField(QWidget* parent) {
     FieldConfig cfg;
-    cfg.min_val            = 0;
-    cfg.max_val            = 23;
-    cfg.freq_steps         = {2, 3, 4, 6, 8, 12};
+    cfg.min_val = 0;
+    cfg.max_val = 23;
+    cfg.freq_steps = {2, 3, 4, 6, 8, 12};
     cfg.checkboxes_per_row = 12;
     return new CronFieldWidget(cfg, parent);
 }
 
 CronFieldWidget* makeDayField(QWidget* parent) {
     FieldConfig cfg;
-    cfg.min_val            = 1;
-    cfg.max_val            = 31;
-    cfg.freq_steps         = {2, 3, 4, 5, 7, 10, 14};
+    cfg.min_val = 1;
+    cfg.max_val = 31;
+    cfg.freq_steps = {2, 3, 4, 5, 7, 10, 14};
     cfg.checkboxes_per_row = 10;
     return new CronFieldWidget(cfg, parent);
 }
 
 CronFieldWidget* makeMonthField(QWidget* parent) {
     FieldConfig cfg;
-    cfg.min_val            = 1;
-    cfg.max_val            = 12;
-    cfg.labels             = {"Jan","Feb","Mar","Apr","May","Jun",
-                              "Jul","Aug","Sep","Oct","Nov","Dec"};
-    cfg.freq_steps         = {2, 3, 4, 6};
+    cfg.min_val = 1;
+    cfg.max_val = 12;
+    cfg.labels = {
+        "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+    cfg.freq_steps = {2, 3, 4, 6};
     cfg.checkboxes_per_row = 6;
     return new CronFieldWidget(cfg, parent);
 }
 
 CronFieldWidget* makeWeekdayField(QWidget* parent) {
     FieldConfig cfg;
-    cfg.min_val            = 0;
-    cfg.max_val            = 6;
-    cfg.labels             = {"Sun","Mon","Tue","Wed","Thu","Fri","Sat"};
-    cfg.freq_steps         = {2, 3};
+    cfg.min_val = 0;
+    cfg.max_val = 6;
+    cfg.labels = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+    cfg.freq_steps = {2, 3};
     cfg.checkboxes_per_row = 7;
     return new CronFieldWidget(cfg, parent);
 }
 
-}  // anonymous namespace
+} // anonymous namespace
 
 // ── CronEditorDialog ──────────────────────────────────────────────────────────
 
@@ -329,39 +327,38 @@ CronEditorDialog::CronEditorDialog(QWidget* parent)
     descriptionLabel_ = new QLabel(this);
     descriptionLabel_->setWordWrap(true);
     descriptionLabel_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-    auto* descFrame  = new QFrame(this);
+    auto* descFrame = new QFrame(this);
     descFrame->setFrameShape(QFrame::StyledPanel);
     auto* descLayout = new QHBoxLayout(descFrame);
     descLayout->addWidget(descriptionLabel_);
     mainLayout->addWidget(descFrame);
 
     // Tabs
-    tabWidget_    = new QTabWidget(this);
-    minuteField_  = makeMinuteField(tabWidget_);
-    hourField_    = makeHourField(tabWidget_);
-    dayField_     = makeDayField(tabWidget_);
-    monthField_   = makeMonthField(tabWidget_);
+    tabWidget_ = new QTabWidget(this);
+    minuteField_ = makeMinuteField(tabWidget_);
+    hourField_ = makeHourField(tabWidget_);
+    dayField_ = makeDayField(tabWidget_);
+    monthField_ = makeMonthField(tabWidget_);
     weekdayField_ = makeWeekdayField(tabWidget_);
 
-    tabWidget_->addTab(minuteField_,  tr("Minutes"));
-    tabWidget_->addTab(hourField_,    tr("Hours"));
-    tabWidget_->addTab(dayField_,     tr("Days of Month"));
-    tabWidget_->addTab(monthField_,   tr("Month"));
+    tabWidget_->addTab(minuteField_, tr("Minutes"));
+    tabWidget_->addTab(hourField_, tr("Hours"));
+    tabWidget_->addTab(dayField_, tr("Days of Month"));
+    tabWidget_->addTab(monthField_, tr("Month"));
     tabWidget_->addTab(weekdayField_, tr("Days of Week"));
     mainLayout->addWidget(tabWidget_);
 
     // OK / Cancel
-    auto* buttons = new QDialogButtonBox(
-        QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
+    auto* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
     connect(buttons, &QDialogButtonBox::accepted, this, &QDialog::accept);
     connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
     mainLayout->addWidget(buttons);
 
     // Update description whenever any field changes
-    connect(minuteField_,  &CronFieldWidget::changed, this, &CronEditorDialog::onFieldChanged);
-    connect(hourField_,    &CronFieldWidget::changed, this, &CronEditorDialog::onFieldChanged);
-    connect(dayField_,     &CronFieldWidget::changed, this, &CronEditorDialog::onFieldChanged);
-    connect(monthField_,   &CronFieldWidget::changed, this, &CronEditorDialog::onFieldChanged);
+    connect(minuteField_, &CronFieldWidget::changed, this, &CronEditorDialog::onFieldChanged);
+    connect(hourField_, &CronFieldWidget::changed, this, &CronEditorDialog::onFieldChanged);
+    connect(dayField_, &CronFieldWidget::changed, this, &CronEditorDialog::onFieldChanged);
+    connect(monthField_, &CronFieldWidget::changed, this, &CronEditorDialog::onFieldChanged);
     connect(weekdayField_, &CronFieldWidget::changed, this, &CronEditorDialog::onFieldChanged);
 }
 
@@ -396,10 +393,10 @@ QString CronEditorDialog::describeExpression() const {
     if (p.size() != 5)
         return expr;
 
-    const QString& min     = p[0];
-    const QString& hour    = p[1];
-    const QString& day     = p[2];
-    const QString& month   = p[3];
+    const QString& min = p[0];
+    const QString& hour = p[1];
+    const QString& day = p[2];
+    const QString& month = p[3];
     const QString& weekday = p[4];
 
     if (min == "*" && hour == "*" && day == "*" && month == "*" && weekday == "*")
@@ -411,21 +408,19 @@ QString CronEditorDialog::describeExpression() const {
     auto formatHour = [](const QString& h) -> QString {
         bool ok = false;
         const int n = h.toInt(&ok);
-        if (!ok || n < 0 || n > 23) return h + ":00";
-        const QString suffix  = (n < 12) ? "AM" : "PM";
-        const int     display = (n == 0) ? 12 : (n <= 12 ? n : n - 12);
+        if (!ok || n < 0 || n > 23)
+            return h + ":00";
+        const QString suffix = (n < 12) ? "AM" : "PM";
+        const int display = (n == 0) ? 12 : (n <= 12 ? n : n - 12);
         return QString("%1:00 %2").arg(display).arg(suffix);
     };
 
     static const QStringList dayNames = {
-        "", "Monday", "Tuesday", "Wednesday",
-        "Thursday", "Friday", "Saturday", "Sunday"
-    };
+        "", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
     static const QStringList ordinals = {
-        "", "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th",
-        "11th","12th","13th","14th","15th","16th","17th","18th","19th","20th",
-        "21st","22nd","23rd","24th","25th","26th","27th","28th","29th","30th","31st"
-    };
+        "",     "1st",  "2nd",  "3rd",  "4th",  "5th",  "6th",  "7th",  "8th",  "9th",  "10th",
+        "11th", "12th", "13th", "14th", "15th", "16th", "17th", "18th", "19th", "20th", "21st",
+        "22nd", "23rd", "24th", "25th", "26th", "27th", "28th", "29th", "30th", "31st"};
 
     if (min == "0" && day == "*" && month == "*") {
         if (weekday == "*")
@@ -445,11 +440,10 @@ QString CronEditorDialog::describeExpression() const {
         bool dayOk = false;
         const int d = day.toInt(&dayOk);
         if (dayOk && d >= 1 && d <= 31)
-            return tr("At %1, on the %2 of every month")
-                .arg(formatHour(hour)).arg(ordinals[d]);
+            return tr("At %1, on the %2 of every month").arg(formatHour(hour)).arg(ordinals[d]);
     }
 
     return expr;
 }
 
-}  // namespace ores::qt
+} // namespace ores::qt

@@ -20,15 +20,15 @@
 #include "ores.qt/MasterPasswordDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/PasswordMatchIndicator.hpp"
-#include <QVBoxLayout>
 #include <QFormLayout>
 #include <QMessageBox>
+#include <QVBoxLayout>
 
 namespace ores::qt {
 
 MasterPasswordDialog::MasterPasswordDialog(Mode mode, QWidget* parent)
-    : QDialog(parent),
-      mode_(mode) {
+    : QDialog(parent)
+    , mode_(mode) {
 
     setupUI();
 }
@@ -55,46 +55,46 @@ void MasterPasswordDialog::setupUI() {
     confirmPasswordEdit_ = new QLineEdit(this);
     confirmPasswordEdit_->setEchoMode(QLineEdit::Password);
 
-    const auto lockIcon = IconUtils::createRecoloredIcon(
-        Icon::LockClosed, IconUtils::DefaultIconColor);
-    const auto keyIcon = IconUtils::createRecoloredIcon(
-        Icon::KeyMultiple, IconUtils::DefaultIconColor);
+    const auto lockIcon =
+        IconUtils::createRecoloredIcon(Icon::LockClosed, IconUtils::DefaultIconColor);
+    const auto keyIcon =
+        IconUtils::createRecoloredIcon(Icon::KeyMultiple, IconUtils::DefaultIconColor);
 
     switch (mode_) {
-    case Mode::Unlock:
-        setWindowTitle(tr("Unlock Connections"));
-        setWindowIcon(lockIcon);
-        infoLabel_->setText(tr("Enter the master password to access your saved connections."));
-        formLayout->addRow(tr("Password:"), currentPasswordEdit_);
-        newPasswordEdit_->hide();
-        confirmPasswordEdit_->hide();
-        break;
+        case Mode::Unlock:
+            setWindowTitle(tr("Unlock Connections"));
+            setWindowIcon(lockIcon);
+            infoLabel_->setText(tr("Enter the master password to access your saved connections."));
+            formLayout->addRow(tr("Password:"), currentPasswordEdit_);
+            newPasswordEdit_->hide();
+            confirmPasswordEdit_->hide();
+            break;
 
-    case Mode::Create:
-        setWindowTitle(tr("Create Master Password"));
-        setWindowIcon(keyIcon);
-        infoLabel_->setText(tr(
-            "Create a master password to protect your saved connection credentials.\n\n"
-            "This password will be used to encrypt your server passwords. "
-            "Make sure you remember it - there is no way to recover encrypted passwords "
-            "without it.\n\n"
-            "You may leave this blank if you don't want password protection, "
-            "but your saved passwords will not be encrypted."));
-        currentPasswordEdit_->hide();
-        formLayout->addRow(tr("New Password:"), newPasswordEdit_);
-        formLayout->addRow(tr("Confirm Password:"), confirmPasswordEdit_);
-        break;
+        case Mode::Create:
+            setWindowTitle(tr("Create Master Password"));
+            setWindowIcon(keyIcon);
+            infoLabel_->setText(
+                tr("Create a master password to protect your saved connection credentials.\n\n"
+                   "This password will be used to encrypt your server passwords. "
+                   "Make sure you remember it - there is no way to recover encrypted passwords "
+                   "without it.\n\n"
+                   "You may leave this blank if you don't want password protection, "
+                   "but your saved passwords will not be encrypted."));
+            currentPasswordEdit_->hide();
+            formLayout->addRow(tr("New Password:"), newPasswordEdit_);
+            formLayout->addRow(tr("Confirm Password:"), confirmPasswordEdit_);
+            break;
 
-    case Mode::Change:
-        setWindowTitle(tr("Change Master Password"));
-        setWindowIcon(keyIcon);
-        infoLabel_->setText(tr(
-            "Enter your current password and a new password.\n\n"
-            "All stored connection passwords will be re-encrypted with the new password."));
-        formLayout->addRow(tr("Current Password:"), currentPasswordEdit_);
-        formLayout->addRow(tr("New Password:"), newPasswordEdit_);
-        formLayout->addRow(tr("Confirm New Password:"), confirmPasswordEdit_);
-        break;
+        case Mode::Change:
+            setWindowTitle(tr("Change Master Password"));
+            setWindowIcon(keyIcon);
+            infoLabel_->setText(
+                tr("Enter your current password and a new password.\n\n"
+                   "All stored connection passwords will be re-encrypted with the new password."));
+            formLayout->addRow(tr("Current Password:"), currentPasswordEdit_);
+            formLayout->addRow(tr("New Password:"), newPasswordEdit_);
+            formLayout->addRow(tr("Confirm New Password:"), confirmPasswordEdit_);
+            break;
     }
 
     showPasswordCheck_ = new QCheckBox(tr("Show password"), this);
@@ -102,30 +102,36 @@ void MasterPasswordDialog::setupUI() {
 
     layout->addLayout(formLayout);
 
-    buttonBox_ = new QDialogButtonBox(
-        QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
+    buttonBox_ = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
     layout->addWidget(buttonBox_);
 
     setMinimumWidth(400);
 
     // Connections
-    connect(currentPasswordEdit_, &QLineEdit::textChanged,
-            this, &MasterPasswordDialog::updateOkButtonState);
+    connect(currentPasswordEdit_,
+            &QLineEdit::textChanged,
+            this,
+            &MasterPasswordDialog::updateOkButtonState);
     PasswordMatchIndicator::connectFields(newPasswordEdit_, confirmPasswordEdit_);
-    connect(newPasswordEdit_, &QLineEdit::textChanged,
-            this, &MasterPasswordDialog::updateOkButtonState);
-    connect(confirmPasswordEdit_, &QLineEdit::textChanged,
-            this, &MasterPasswordDialog::updateOkButtonState);
+    connect(newPasswordEdit_,
+            &QLineEdit::textChanged,
+            this,
+            &MasterPasswordDialog::updateOkButtonState);
+    connect(confirmPasswordEdit_,
+            &QLineEdit::textChanged,
+            this,
+            &MasterPasswordDialog::updateOkButtonState);
     connect(showPasswordCheck_, &QCheckBox::toggled, this, [this](bool checked) {
         const auto mode = checked ? QLineEdit::Normal : QLineEdit::Password;
-        if (!currentPasswordEdit_->isHidden()) currentPasswordEdit_->setEchoMode(mode);
-        if (!newPasswordEdit_->isHidden())     newPasswordEdit_->setEchoMode(mode);
-        if (!confirmPasswordEdit_->isHidden()) confirmPasswordEdit_->setEchoMode(mode);
+        if (!currentPasswordEdit_->isHidden())
+            currentPasswordEdit_->setEchoMode(mode);
+        if (!newPasswordEdit_->isHidden())
+            newPasswordEdit_->setEchoMode(mode);
+        if (!confirmPasswordEdit_->isHidden())
+            confirmPasswordEdit_->setEchoMode(mode);
     });
-    connect(buttonBox_, &QDialogButtonBox::accepted,
-            this, &MasterPasswordDialog::onOkClicked);
-    connect(buttonBox_, &QDialogButtonBox::rejected,
-            this, &QDialog::reject);
+    connect(buttonBox_, &QDialogButtonBox::accepted, this, &MasterPasswordDialog::onOkClicked);
+    connect(buttonBox_, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
     updateOkButtonState();
 
@@ -152,20 +158,20 @@ void MasterPasswordDialog::updateOkButtonState() {
     bool valid = false;
 
     switch (mode_) {
-    case Mode::Unlock:
-        valid = !currentPasswordEdit_->text().isEmpty();
-        break;
+        case Mode::Unlock:
+            valid = !currentPasswordEdit_->text().isEmpty();
+            break;
 
-    case Mode::Create:
-        // Allow blank password - just require both fields match
-        valid = newPasswordEdit_->text() == confirmPasswordEdit_->text();
-        break;
+        case Mode::Create:
+            // Allow blank password - just require both fields match
+            valid = newPasswordEdit_->text() == confirmPasswordEdit_->text();
+            break;
 
-    case Mode::Change:
-        // Allow blank new password (removes protection) - just require current and match
-        valid = !currentPasswordEdit_->text().isEmpty() &&
-                newPasswordEdit_->text() == confirmPasswordEdit_->text();
-        break;
+        case Mode::Change:
+            // Allow blank new password (removes protection) - just require current and match
+            valid = !currentPasswordEdit_->text().isEmpty() &&
+                    newPasswordEdit_->text() == confirmPasswordEdit_->text();
+            break;
     }
 
     okButton->setEnabled(valid);
@@ -173,40 +179,39 @@ void MasterPasswordDialog::updateOkButtonState() {
 
 bool MasterPasswordDialog::validateInput() {
     switch (mode_) {
-    case Mode::Unlock:
-        if (currentPasswordEdit_->text().isEmpty()) {
-            QMessageBox::warning(this, tr("Validation Error"),
-                tr("Please enter your master password."));
-            currentPasswordEdit_->setFocus();
-            return false;
-        }
-        break;
+        case Mode::Unlock:
+            if (currentPasswordEdit_->text().isEmpty()) {
+                QMessageBox::warning(
+                    this, tr("Validation Error"), tr("Please enter your master password."));
+                currentPasswordEdit_->setFocus();
+                return false;
+            }
+            break;
 
-    case Mode::Create:
-        // Allow blank password - just require both fields match
-        if (newPasswordEdit_->text() != confirmPasswordEdit_->text()) {
-            QMessageBox::warning(this, tr("Validation Error"),
-                tr("Passwords do not match."));
-            confirmPasswordEdit_->setFocus();
-            return false;
-        }
-        break;
+        case Mode::Create:
+            // Allow blank password - just require both fields match
+            if (newPasswordEdit_->text() != confirmPasswordEdit_->text()) {
+                QMessageBox::warning(this, tr("Validation Error"), tr("Passwords do not match."));
+                confirmPasswordEdit_->setFocus();
+                return false;
+            }
+            break;
 
-    case Mode::Change:
-        if (currentPasswordEdit_->text().isEmpty()) {
-            QMessageBox::warning(this, tr("Validation Error"),
-                tr("Please enter your current password."));
-            currentPasswordEdit_->setFocus();
-            return false;
-        }
-        // Allow blank new password (removes protection) - just require match
-        if (newPasswordEdit_->text() != confirmPasswordEdit_->text()) {
-            QMessageBox::warning(this, tr("Validation Error"),
-                tr("New passwords do not match."));
-            confirmPasswordEdit_->setFocus();
-            return false;
-        }
-        break;
+        case Mode::Change:
+            if (currentPasswordEdit_->text().isEmpty()) {
+                QMessageBox::warning(
+                    this, tr("Validation Error"), tr("Please enter your current password."));
+                currentPasswordEdit_->setFocus();
+                return false;
+            }
+            // Allow blank new password (removes protection) - just require match
+            if (newPasswordEdit_->text() != confirmPasswordEdit_->text()) {
+                QMessageBox::warning(
+                    this, tr("Validation Error"), tr("New passwords do not match."));
+                confirmPasswordEdit_->setFocus();
+                return false;
+            }
+            break;
     }
 
     return true;

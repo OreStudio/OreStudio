@@ -20,11 +20,11 @@
 #ifndef ORES_QT_RELATIVE_TIME_HELPER_HPP
 #define ORES_QT_RELATIVE_TIME_HELPER_HPP
 
+#include "ores.qt/export.hpp"
 #include <QString>
 #include <chrono>
 #include <optional>
 #include <string>
-#include "ores.qt/export.hpp"
 
 namespace ores::qt {
 
@@ -69,8 +69,7 @@ public:
     /**
      * @brief Formats an optional time_point as relative time, or "N/A" if absent.
      */
-    static QString format(
-        const std::optional<std::chrono::system_clock::time_point>& recorded_at) {
+    static QString format(const std::optional<std::chrono::system_clock::time_point>& recorded_at) {
         return recorded_at ? format(*recorded_at) : QStringLiteral("N/A");
     }
 
@@ -82,8 +81,7 @@ public:
     /**
      * @brief Always formats as relative time, regardless of global mode.
      */
-    static QString format_relative(
-        const std::chrono::system_clock::time_point& recorded_at);
+    static QString format_relative(const std::chrono::system_clock::time_point& recorded_at);
 };
 
 }

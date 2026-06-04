@@ -20,14 +20,14 @@
 #ifndef ORES_QT_CODING_SCHEME_AUTHORITY_TYPE_MDI_WINDOW_HPP
 #define ORES_QT_CODING_SCHEME_AUTHORITY_TYPE_MDI_WINDOW_HPP
 
+#include "ores.dq.api/domain/coding_scheme_authority_type.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientCodingSchemeAuthorityTypeModel.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/EntityListMdiWindow.hpp"
+#include <QSortFilterProxyModel>
 #include <QTableView>
 #include <QToolBar>
-#include <QSortFilterProxyModel>
-#include "ores.qt/EntityListMdiWindow.hpp"
-#include "ores.qt/ClientManager.hpp"
-#include "ores.qt/ClientCodingSchemeAuthorityTypeModel.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.dq.api/domain/coding_scheme_authority_type.hpp"
 
 namespace ores::qt {
 
@@ -35,8 +35,7 @@ class CodingSchemeAuthorityTypeMdiWindow final : public EntityListMdiWindow {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.coding_scheme_authority_type_mdi_window";
+    inline static std::string_view logger_name = "ores.qt.coding_scheme_authority_type_mdi_window";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -46,8 +45,8 @@ private:
 
 public:
     explicit CodingSchemeAuthorityTypeMdiWindow(ClientManager* clientManager,
-                                                 const QString& username,
-                                                 QWidget* parent = nullptr);
+                                                const QString& username,
+                                                QWidget* parent = nullptr);
     ~CodingSchemeAuthorityTypeMdiWindow() override = default;
 
 public slots:

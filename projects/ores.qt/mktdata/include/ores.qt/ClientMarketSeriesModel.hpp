@@ -20,14 +20,14 @@
 #ifndef ORES_QT_CLIENT_MARKET_SERIES_MODEL_HPP
 #define ORES_QT_CLIENT_MARKET_SERIES_MODEL_HPP
 
-#include <vector>
-#include <string>
-#include <QSize>
-#include <QFutureWatcher>
-#include "ores.qt/AbstractClientModel.hpp"
-#include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
+#include "ores.qt/AbstractClientModel.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include <QFutureWatcher>
+#include <QSize>
+#include <string>
+#include <vector>
 
 namespace ores::qt {
 
@@ -38,8 +38,7 @@ class ClientMarketSeriesModel final : public AbstractClientModel {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.client_market_series_model";
+    inline static std::string_view logger_name = "ores.qt.client_market_series_model";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -64,23 +63,26 @@ public:
     inline static const QSize kDefaultWindowSize = {1100, 600};
     static constexpr std::string_view kSettingsGroup = "MarketSeriesListWindow";
 
-    explicit ClientMarketSeriesModel(ClientManager* clientManager,
-                                     QObject* parent = nullptr);
+    explicit ClientMarketSeriesModel(ClientManager* clientManager, QObject* parent = nullptr);
     ~ClientMarketSeriesModel() override = default;
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-    QVariant headerData(int section, Qt::Orientation orientation,
-        int role = Qt::DisplayRole) const override;
+    QVariant
+    headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
     void refresh(bool replace = true);
     void load_page(std::uint32_t offset, std::uint32_t limit);
     void set_series_type_filter(const std::string& series_type);
 
     const marketdata::domain::market_series* getSeries(int row) const;
-    std::uint32_t total_available_count() const { return total_available_count_; }
-    std::uint32_t page_size() const { return page_size_; }
+    std::uint32_t total_available_count() const {
+        return total_available_count_;
+    }
+    std::uint32_t page_size() const {
+        return page_size_;
+    }
     void set_page_size(std::uint32_t size);
 
 private slots:

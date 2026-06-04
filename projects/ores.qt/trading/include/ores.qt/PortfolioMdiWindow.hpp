@@ -20,15 +20,15 @@
 #ifndef ORES_QT_PORTFOLIO_MDI_WINDOW_HPP
 #define ORES_QT_PORTFOLIO_MDI_WINDOW_HPP
 
-#include <QToolBar>
-#include <QTableView>
-#include <QSortFilterProxyModel>
-#include "ores.qt/EntityListMdiWindow.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ClientPortfolioModel.hpp"
+#include "ores.qt/EntityListMdiWindow.hpp"
 #include "ores.qt/PaginationWidget.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/portfolio.hpp"
+#include <QSortFilterProxyModel>
+#include <QTableView>
+#include <QToolBar>
 
 namespace ores::qt {
 
@@ -44,8 +44,7 @@ class PortfolioMdiWindow final : public EntityListMdiWindow {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.portfolio_mdi_window";
+    inline static std::string_view logger_name = "ores.qt.portfolio_mdi_window";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -54,12 +53,11 @@ private:
     }
 
 public:
-    explicit PortfolioMdiWindow(
-        ClientManager* clientManager,
-        ImageCache* imageCache,
-        const QString& username,
-        BadgeCache* badgeCache,
-        QWidget* parent = nullptr);
+    explicit PortfolioMdiWindow(ClientManager* clientManager,
+                                ImageCache* imageCache,
+                                const QString& username,
+                                BadgeCache* badgeCache,
+                                QWidget* parent = nullptr);
     ~PortfolioMdiWindow() override = default;
 
 public slots:
@@ -87,7 +85,9 @@ private slots:
 protected:
     void onWindowWorkspaceChanged(const WorkspaceContext& ctx) override;
 
-    bool isWorkspaceScoped() const override { return false; }
+    bool isWorkspaceScoped() const override {
+        return false;
+    }
 
     QString normalRefreshTooltip() const override {
         return tr("Refresh portfolios");

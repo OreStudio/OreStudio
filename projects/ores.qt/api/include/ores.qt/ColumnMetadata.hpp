@@ -20,11 +20,11 @@
 #ifndef ORES_QT_COLUMN_METADATA_HPP
 #define ORES_QT_COLUMN_METADATA_HPP
 
+#include <QVector>
 #include <array>
 #include <cstddef>
 #include <string_view>
 #include <vector>
-#include <QVector>
 
 namespace ores::qt {
 
@@ -40,15 +40,15 @@ inline constexpr int kColumnWidthAuto = -1;
  * @brief Column rendering style for table delegates.
  */
 enum class column_style {
-    text_left,          ///< Proportional font, left-aligned (default).
-    text_center,        ///< Proportional font, centered.
-    mono_left,          ///< Monospace, left-aligned.
-    mono_center,        ///< Monospace, centered.
-    mono_bold_left,     ///< Monospace bold, left-aligned.
-    mono_right,         ///< Monospace, right-aligned.
-    mono_bold_center,   ///< Monospace bold, centered.
-    icon_centered,      ///< Centered DecorationRole icon (flag columns).
-    badge_centered      ///< Coloured badge pill, centered.
+    text_left,        ///< Proportional font, left-aligned (default).
+    text_center,      ///< Proportional font, centered.
+    mono_left,        ///< Monospace, left-aligned.
+    mono_center,      ///< Monospace, centered.
+    mono_bold_left,   ///< Monospace bold, left-aligned.
+    mono_right,       ///< Monospace, right-aligned.
+    mono_bold_center, ///< Monospace bold, centered.
+    icon_centered,    ///< Centered DecorationRole icon (flag columns).
+    badge_centered    ///< Coloured badge pill, centered.
 };
 
 /**

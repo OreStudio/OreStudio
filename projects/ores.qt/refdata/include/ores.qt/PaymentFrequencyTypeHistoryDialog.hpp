@@ -20,12 +20,12 @@
 #ifndef ORES_QT_PAYMENT_FREQUENCY_TYPE_HISTORY_DIALOG_HPP
 #define ORES_QT_PAYMENT_FREQUENCY_TYPE_HISTORY_DIALOG_HPP
 
-#include <QWidget>
-#include <QToolBar>
-#include <QTableWidget>
-#include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
 #include "ores.trading.api/domain/payment_frequency_type.hpp"
+#include <QTableWidget>
+#include <QToolBar>
+#include <QWidget>
 
 namespace Ui {
 class PaymentFrequencyTypeHistoryDialog;
@@ -43,8 +43,7 @@ class PaymentFrequencyTypeHistoryDialog final : public QWidget {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.payment_frequency_type_history_dialog";
+    inline static std::string_view logger_name = "ores.qt.payment_frequency_type_history_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -53,10 +52,9 @@ private:
     }
 
 public:
-    explicit PaymentFrequencyTypeHistoryDialog(
-        const QString& code,
-        ClientManager* clientManager,
-        QWidget* parent = nullptr);
+    explicit PaymentFrequencyTypeHistoryDialog(const QString& code,
+                                               ClientManager* clientManager,
+                                               QWidget* parent = nullptr);
     ~PaymentFrequencyTypeHistoryDialog() override;
 
     void loadHistory();

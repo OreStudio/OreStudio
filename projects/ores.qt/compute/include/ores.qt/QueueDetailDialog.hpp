@@ -20,20 +20,20 @@
 #ifndef ORES_QT_QUEUE_DETAIL_DIALOG_HPP
 #define ORES_QT_QUEUE_DETAIL_DIALOG_HPP
 
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include <QComboBox>
+#include <QFutureWatcher>
+#include <QLabel>
+#include <QLineEdit>
+#include <QPlainTextEdit>
+#include <QSpinBox>
+#include <QTabWidget>
+#include <QTableWidget>
+#include <QToolBar>
+#include <QWidget>
 #include <cstdint>
 #include <vector>
-#include <QWidget>
-#include <QToolBar>
-#include <QTabWidget>
-#include <QSpinBox>
-#include <QComboBox>
-#include <QLineEdit>
-#include <QTableWidget>
-#include <QPlainTextEdit>
-#include <QLabel>
-#include <QFutureWatcher>
-#include "ores.qt/ClientManager.hpp"
-#include "ores.logging/make_logger.hpp"
 
 namespace ores::qt {
 
@@ -48,8 +48,7 @@ class QueueDetailDialog final : public QWidget {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.queue_detail_dialog";
+    inline static std::string_view logger_name = "ores.qt.queue_detail_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -64,7 +63,9 @@ public:
                                QWidget* parent = nullptr);
     ~QueueDetailDialog() override = default;
 
-    QSize sizeHint() const override { return {750, 520}; }
+    QSize sizeHint() const override {
+        return {750, 520};
+    }
 
 signals:
     void statusChanged(const QString& message);
@@ -89,7 +90,7 @@ private:
     struct MessageRow {
         std::uint64_t sequence{0};
         std::string subject;
-        std::string timestamp;   // formatted string
+        std::string timestamp; // formatted string
         std::string payload;
     };
 
@@ -108,8 +109,8 @@ private:
     void populateMessagesTable(const std::vector<MessageRow>& messages);
     void updateDeleteAction();
 
-    QString streamName_;    // NATS stream name (used as identifier)
-    QString displayName_;   // human-readable name shown in UI
+    QString streamName_;  // NATS stream name (used as identifier)
+    QString displayName_; // human-readable name shown in UI
     ClientManager* clientManager_;
 
     QToolBar* toolbar_;

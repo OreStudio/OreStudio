@@ -18,27 +18,26 @@
  *
  */
 #include "ores.qt/OriginDimensionDetailDialog.hpp"
-
-#include <QPlainTextEdit>
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include "ui_OriginDimensionDetailDialog.h"
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/ColorConstants.hpp"
-#include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/ChangeReasonDialog.hpp"
-#include "ores.qt/WidgetUtils.hpp"
 #include "ores.dq.api/messaging/dimension_protocol.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
+#include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/WidgetUtils.hpp"
+#include "ui_OriginDimensionDetailDialog.h"
+#include <QFutureWatcher>
+#include <QMessageBox>
+#include <QPlainTextEdit>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 OriginDimensionDetailDialog::OriginDimensionDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent),
-      ui_(new Ui::OriginDimensionDetailDialog),
-      clientManager_(nullptr) {
+    : DetailDialogBase(parent)
+    , ui_(new Ui::OriginDimensionDetailDialog)
+    , clientManager_(nullptr) {
 
     ui_->setupUi(this);
     WidgetUtils::setupComboBoxes(this);
@@ -50,9 +49,15 @@ OriginDimensionDetailDialog::~OriginDimensionDetailDialog() {
     delete ui_;
 }
 
-QTabWidget* OriginDimensionDetailDialog::tabWidget() const { return ui_->tabWidget; }
-QWidget* OriginDimensionDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
-ProvenanceWidget* OriginDimensionDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
+QTabWidget* OriginDimensionDetailDialog::tabWidget() const {
+    return ui_->tabWidget;
+}
+QWidget* OriginDimensionDetailDialog::provenanceTab() const {
+    return ui_->provenanceTab;
+}
+ProvenanceWidget* OriginDimensionDetailDialog::provenanceWidget() const {
+    return ui_->provenanceWidget;
+}
 
 void OriginDimensionDetailDialog::setupUi() {
     ui_->saveButton->setIcon(
@@ -67,18 +72,24 @@ void OriginDimensionDetailDialog::setupUi() {
 }
 
 void OriginDimensionDetailDialog::setupConnections() {
-    connect(ui_->saveButton, &QPushButton::clicked, this,
-            &OriginDimensionDetailDialog::onSaveClicked);
-    connect(ui_->deleteButton, &QPushButton::clicked, this,
+    connect(
+        ui_->saveButton, &QPushButton::clicked, this, &OriginDimensionDetailDialog::onSaveClicked);
+    connect(ui_->deleteButton,
+            &QPushButton::clicked,
+            this,
             &OriginDimensionDetailDialog::onDeleteClicked);
-    connect(ui_->closeButton, &QPushButton::clicked, this,
+    connect(ui_->closeButton,
+            &QPushButton::clicked,
+            this,
             &OriginDimensionDetailDialog::onCloseClicked);
 
-    connect(ui_->codeEdit, &QLineEdit::textChanged, this,
-            &OriginDimensionDetailDialog::onCodeChanged);
-    connect(ui_->nameEdit, &QLineEdit::textChanged, this,
-            &OriginDimensionDetailDialog::onFieldChanged);
-    connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this,
+    connect(
+        ui_->codeEdit, &QLineEdit::textChanged, this, &OriginDimensionDetailDialog::onCodeChanged);
+    connect(
+        ui_->nameEdit, &QLineEdit::textChanged, this, &OriginDimensionDetailDialog::onFieldChanged);
+    connect(ui_->descriptionEdit,
+            &QPlainTextEdit::textChanged,
+            this,
             &OriginDimensionDetailDialog::onFieldChanged);
 }
 
@@ -90,8 +101,7 @@ void OriginDimensionDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
 
-void OriginDimensionDetailDialog::setDimension(
-    const dq::domain::origin_dimension& dimension) {
+void OriginDimensionDetailDialog::setDimension(const dq::domain::origin_dimension& dimension) {
     dimension_ = dimension;
     updateUiFromDimension();
 }
@@ -121,9 +131,12 @@ void OriginDimensionDetailDialog::updateUiFromDimension() {
     ui_->nameEdit->setText(QString::fromStdString(dimension_.name));
     ui_->descriptionEdit->setPlainText(QString::fromStdString(dimension_.description));
 
-    populateProvenance(dimension_.version, dimension_.modified_by,
-                       dimension_.performed_by, dimension_.recorded_at,
-                       "", dimension_.change_commentary);
+    populateProvenance(dimension_.version,
+                       dimension_.modified_by,
+                       dimension_.performed_by,
+                       dimension_.recorded_at,
+                       "",
+                       dimension_.change_commentary);
     hasChanges_ = false;
     updateSaveButtonState();
 }
@@ -161,25 +174,24 @@ bool OriginDimensionDetailDialog::validateInput() {
 
 void OriginDimensionDetailDialog::onSaveClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot save origin dimension while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot save origin dimension while disconnected from server.");
         return;
     }
 
     if (!validateInput()) {
-        MessageBoxHelper::warning(this, "Invalid Input",
-            "Please fill in all required fields (Code and Name).");
+        MessageBoxHelper::warning(
+            this, "Invalid Input", "Please fill in all required fields (Code and Name).");
         return;
     }
 
     updateDimensionFromUi();
 
-    const auto crOpType = createMode_
-        ? ChangeReasonDialog::OperationType::Create
-        : ChangeReasonDialog::OperationType::Amend;
-    const auto crSel = promptChangeReason(crOpType, hasChanges_,
-        createMode_ ? "system" : "common");
-    if (!crSel) return;
+    const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
+                                        ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
+    if (!crSel)
+        return;
     dimension_.change_commentary = crSel->commentary;
 
     BOOST_LOG_SEV(lg(), info) << "Saving origin dimension: " << dimension_.code;
@@ -198,7 +210,8 @@ void OriginDimensionDetailDialog::onSaveClicked() {
 
         dq::messaging::save_origin_dimension_request request;
         request.data = dimension;
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -209,8 +222,7 @@ void OriginDimensionDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
@@ -235,13 +247,15 @@ void OriginDimensionDetailDialog::onSaveClicked() {
 
 void OriginDimensionDetailDialog::onDeleteClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot delete origin dimension while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot delete origin dimension while disconnected from server.");
         return;
     }
 
     QString code = QString::fromStdString(dimension_.code);
-    auto reply = MessageBoxHelper::question(this, "Delete Origin Dimension",
+    auto reply = MessageBoxHelper::question(
+        this,
+        "Delete Origin Dimension",
         QString("Are you sure you want to delete origin dimension '%1'?").arg(code),
         QMessageBox::Yes | QMessageBox::No);
 
@@ -249,9 +263,10 @@ void OriginDimensionDetailDialog::onDeleteClicked() {
         return;
     }
 
-    const auto crSel = promptChangeReason(
-        ChangeReasonDialog::OperationType::Delete, true, "common");
-    if (!crSel) return;
+    const auto crSel =
+        promptChangeReason(ChangeReasonDialog::OperationType::Delete, true, "common");
+    if (!crSel)
+        return;
 
     BOOST_LOG_SEV(lg(), info) << "Deleting origin dimension: " << dimension_.code;
 
@@ -269,7 +284,8 @@ void OriginDimensionDetailDialog::onDeleteClicked() {
 
         dq::messaging::delete_origin_dimension_request request;
         request.codes.push_back({code});
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -280,8 +296,7 @@ void OriginDimensionDetailDialog::onDeleteClicked() {
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
-            self, [self, code, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, code, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 

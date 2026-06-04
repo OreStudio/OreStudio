@@ -20,16 +20,16 @@
 #ifndef ORES_QT_COUNTRY_MDI_WINDOW_HPP
 #define ORES_QT_COUNTRY_MDI_WINDOW_HPP
 
-#include <QTableView>
-#include <QVBoxLayout>
-#include <QToolBar>
-#include <QSortFilterProxyModel>
-#include <memory>
-#include "ores.qt/EntityListMdiWindow.hpp"
-#include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientCountryModel.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/EntityListMdiWindow.hpp"
 #include "ores.qt/PaginationWidget.hpp"
+#include <QSortFilterProxyModel>
+#include <QTableView>
+#include <QToolBar>
+#include <QVBoxLayout>
+#include <memory>
 
 namespace ores::qt {
 
@@ -42,8 +42,7 @@ class CountryMdiWindow : public EntityListMdiWindow {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.country_mdi_window";
+    inline static std::string_view logger_name = "ores.qt.country_mdi_window";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -58,7 +57,9 @@ public:
                               QWidget* parent = nullptr);
     ~CountryMdiWindow() override;
 
-    ClientCountryModel* countryModel() const { return countryModel_.get(); }
+    ClientCountryModel* countryModel() const {
+        return countryModel_.get();
+    }
 
 signals:
     void statusChanged(const QString& message);
@@ -85,7 +86,9 @@ private slots:
     void onConnectionStateChanged();
 
 protected:
-    QString normalRefreshTooltip() const override { return tr("Refresh countries"); }
+    QString normalRefreshTooltip() const override {
+        return tr("Refresh countries");
+    }
 
 private:
     void updateActionStates();

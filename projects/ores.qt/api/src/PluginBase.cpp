@@ -21,17 +21,16 @@
 
 namespace ores::qt {
 
-PluginBase::PluginBase(QObject* parent) : QObject(parent) {}
+PluginBase::PluginBase(QObject* parent)
+    : QObject(parent) {}
 
 void PluginBase::connectControllerSignals(EntityController* ctrl) {
-    connect(ctrl, &EntityController::statusMessage,
-            this, &PluginBase::statusMessage);
-    connect(ctrl, &EntityController::errorMessage,
-            this, [this](const QString& msg) { emit statusMessage(msg); });
-    connect(ctrl, &EntityController::detachableWindowCreated,
-            this, &PluginBase::windowCreated);
-    connect(ctrl, &EntityController::detachableWindowDestroyed,
-            this, &PluginBase::windowDestroyed);
+    connect(ctrl, &EntityController::statusMessage, this, &PluginBase::statusMessage);
+    connect(ctrl, &EntityController::errorMessage, this, [this](const QString& msg) {
+        emit statusMessage(msg);
+    });
+    connect(ctrl, &EntityController::detachableWindowCreated, this, &PluginBase::windowCreated);
+    connect(ctrl, &EntityController::detachableWindowDestroyed, this, &PluginBase::windowDestroyed);
 }
 
 }

@@ -19,12 +19,12 @@
 #ifndef ORES_QT_WORKFLOW_INSTANCE_DETAIL_DIALOG_HPP
 #define ORES_QT_WORKFLOW_INSTANCE_DETAIL_DIALOG_HPP
 
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/WorkflowStepLogWidget.hpp"
+#include "ores.qt/WorkflowStepsWidget.hpp"
 #include <QDialog>
 #include <QLabel>
-#include "ores.qt/ClientManager.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.qt/WorkflowStepsWidget.hpp"
-#include "ores.qt/WorkflowStepLogWidget.hpp"
 
 namespace ores::qt {
 
@@ -38,8 +38,7 @@ class WorkflowInstanceDetailDialog final : public QDialog {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.workflow_instance_detail_dialog";
+    inline static std::string_view logger_name = "ores.qt.workflow_instance_detail_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -48,12 +47,11 @@ private:
     }
 
 public:
-    WorkflowInstanceDetailDialog(
-        ClientManager* clientManager,
-        const QString& workflowId,
-        const QString& workflowType,
-        const QString& workflowStatus,
-        QWidget* parent = nullptr);
+    WorkflowInstanceDetailDialog(ClientManager* clientManager,
+                                 const QString& workflowId,
+                                 const QString& workflowType,
+                                 const QString& workflowStatus,
+                                 QWidget* parent = nullptr);
 
     /**
      * @brief Triggers an immediate step fetch (delegates to WorkflowStepsWidget).
@@ -73,6 +71,6 @@ private:
     WorkflowStepLogWidget* logWidget_;
 };
 
-}  // namespace ores::qt
+} // namespace ores::qt
 
 #endif

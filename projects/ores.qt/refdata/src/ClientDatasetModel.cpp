@@ -18,48 +18,54 @@
  *
  */
 #include "ores.qt/ClientDatasetModel.hpp"
-
+#include "ores.dq.api/messaging/dataset_protocol.hpp"
+#include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/ExceptionHelper.hpp"
+#include "ores.qt/RelativeTimeHelper.hpp"
 #include <QtConcurrent>
 #include <boost/uuid/uuid_io.hpp>
-#include "ores.qt/ExceptionHelper.hpp"
-#include "ores.qt/ColorConstants.hpp"
-#include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.dq.api/messaging/dataset_protocol.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    std::string dataset_key_extractor(const dq::domain::dataset& e) {
-        return boost::uuids::to_string(e.id);
-    }
+std::string dataset_key_extractor(const dq::domain::dataset& e) {
+    return boost::uuids::to_string(e.id);
+}
 }
 
-ClientDatasetModel::ClientDatasetModel(
-    ClientManager* clientManager, QObject* parent)
-    : AbstractClientModel(parent),
-      clientManager_(clientManager),
-      watcher_(new QFutureWatcher<FetchResult>(this)),
-      recencyTracker_(dataset_key_extractor),
-      pulseManager_(new RecencyPulseManager(this)) {
+ClientDatasetModel::ClientDatasetModel(ClientManager* clientManager, QObject* parent)
+    : AbstractClientModel(parent)
+    , clientManager_(clientManager)
+    , watcher_(new QFutureWatcher<FetchResult>(this))
+    , recencyTracker_(dataset_key_extractor)
+    , pulseManager_(new RecencyPulseManager(this)) {
 
-    connect(watcher_, &QFutureWatcher<FetchResult>::finished,
-            this, &ClientDatasetModel::onDatasetsLoaded);
+    connect(watcher_,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            &ClientDatasetModel::onDatasetsLoaded);
 
-    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
-            this, &ClientDatasetModel::onPulseStateChanged);
-    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
-            this, &ClientDatasetModel::onPulsingComplete);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulse_state_changed,
+            this,
+            &ClientDatasetModel::onPulseStateChanged);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulsing_complete,
+            this,
+            &ClientDatasetModel::onPulsingComplete);
 }
 
 int ClientDatasetModel::rowCount(const QModelIndex& parent) const {
-    if (parent.isValid()) return 0;
+    if (parent.isValid())
+        return 0;
     return static_cast<int>(datasets_.size());
 }
 
 int ClientDatasetModel::columnCount(const QModelIndex& parent) const {
-    if (parent.isValid()) return 0;
+    if (parent.isValid())
+        return 0;
     return ColumnCount;
 }
 
@@ -71,24 +77,37 @@ QVariant ClientDatasetModel::data(const QModelIndex& index, int role) const {
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-        case Name: return QString::fromStdString(dataset.name);
-        case Code: return QString::fromStdString(dataset.code);
-        case Catalog:
-            return dataset.catalog_name
-                ? QString::fromStdString(*dataset.catalog_name)
-                : QString();
-        case SubjectArea: return QString::fromStdString(dataset.subject_area_name);
-        case Domain: return QString::fromStdString(dataset.domain_name);
-        case Origin: return QString::fromStdString(dataset.origin_code);
-        case Nature: return QString::fromStdString(dataset.nature_code);
-        case Treatment: return QString::fromStdString(dataset.treatment_code);
-        case SourceSystem: return QString::fromStdString(dataset.source_system_id);
-        case AsOfDate: return relative_time_helper::format(dataset.as_of_date);
-        case Version: return dataset.version;
-        case ModifiedBy: return QString::fromStdString(dataset.modified_by);
-        case RecordedAt: return relative_time_helper::format(dataset.recorded_at);
-        case Tags: return QString();
-        default: return {};
+            case Name:
+                return QString::fromStdString(dataset.name);
+            case Code:
+                return QString::fromStdString(dataset.code);
+            case Catalog:
+                return dataset.catalog_name ? QString::fromStdString(*dataset.catalog_name) :
+                                              QString();
+            case SubjectArea:
+                return QString::fromStdString(dataset.subject_area_name);
+            case Domain:
+                return QString::fromStdString(dataset.domain_name);
+            case Origin:
+                return QString::fromStdString(dataset.origin_code);
+            case Nature:
+                return QString::fromStdString(dataset.nature_code);
+            case Treatment:
+                return QString::fromStdString(dataset.treatment_code);
+            case SourceSystem:
+                return QString::fromStdString(dataset.source_system_id);
+            case AsOfDate:
+                return relative_time_helper::format(dataset.as_of_date);
+            case Version:
+                return dataset.version;
+            case ModifiedBy:
+                return QString::fromStdString(dataset.modified_by);
+            case RecordedAt:
+                return relative_time_helper::format(dataset.recorded_at);
+            case Tags:
+                return QString();
+            default:
+                return {};
         }
     }
 
@@ -112,27 +131,41 @@ QVariant ClientDatasetModel::data(const QModelIndex& index, int role) const {
     return {};
 }
 
-QVariant ClientDatasetModel::headerData(int section,
-    Qt::Orientation orientation, int role) const {
+QVariant ClientDatasetModel::headerData(int section, Qt::Orientation orientation, int role) const {
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return {};
 
     switch (section) {
-    case Name: return tr("Name");
-    case Code: return tr("Code");
-    case Catalog: return tr("Catalog");
-    case SubjectArea: return tr("Subject Area");
-    case Domain: return tr("Domain");
-    case Origin: return tr("Origin");
-    case Nature: return tr("Nature");
-    case Treatment: return tr("Treatment");
-    case SourceSystem: return tr("Source");
-    case AsOfDate: return tr("As Of Date");
-    case Version: return tr("Version");
-    case ModifiedBy: return tr("Modified By");
-    case RecordedAt: return tr("Recorded At");
-    case Tags: return tr("Dimensions");
-    default: return {};
+        case Name:
+            return tr("Name");
+        case Code:
+            return tr("Code");
+        case Catalog:
+            return tr("Catalog");
+        case SubjectArea:
+            return tr("Subject Area");
+        case Domain:
+            return tr("Domain");
+        case Origin:
+            return tr("Origin");
+        case Nature:
+            return tr("Nature");
+        case Treatment:
+            return tr("Treatment");
+        case SourceSystem:
+            return tr("Source");
+        case AsOfDate:
+            return tr("As Of Date");
+        case Version:
+            return tr("Version");
+        case ModifiedBy:
+            return tr("Modified By");
+        case RecordedAt:
+            return tr("Recorded At");
+        case Tags:
+            return tr("Dimensions");
+        default:
+            return {};
     }
 }
 
@@ -146,27 +179,34 @@ void ClientDatasetModel::refresh() {
     QPointer<ClientDatasetModel> self = this;
 
     QFuture<FetchResult> future = QtConcurrent::run([self]() -> FetchResult {
-        return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
-            if (!self || !self->clientManager_) {
-                return {.success = false, .datasets = {},
-                        .error_message = "Model was destroyed",
-                        .error_details = {}};
-            }
+        return exception_helper::wrap_async_fetch<FetchResult>(
+            [&]() -> FetchResult {
+                if (!self || !self->clientManager_) {
+                    return {.success = false,
+                            .datasets = {},
+                            .error_message = "Model was destroyed",
+                            .error_details = {}};
+                }
 
-            dq::messaging::get_datasets_request request;
-            auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
-            if (!response_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to send request";
-                return {.success = false, .datasets = {},
-                        .error_message = "Failed to send request",
-                        .error_details = {}};
-            }
+                dq::messaging::get_datasets_request request;
+                auto response_result =
+                    self->clientManager_->process_authenticated_request(std::move(request));
+                if (!response_result) {
+                    BOOST_LOG_SEV(lg(), error) << "Failed to send request";
+                    return {.success = false,
+                            .datasets = {},
+                            .error_message = "Failed to send request",
+                            .error_details = {}};
+                }
 
-            BOOST_LOG_SEV(lg(), debug) << "Fetched " << response_result->datasets.size()
-                                       << " datasets";
-            return {.success = true, .datasets = std::move(response_result->datasets),
-                    .error_message = {}, .error_details = {}};
-        }, "datasets");
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Fetched " << response_result->datasets.size() << " datasets";
+                return {.success = true,
+                        .datasets = std::move(response_result->datasets),
+                        .error_message = {},
+                        .error_details = {}};
+            },
+            "datasets");
     });
 
     watcher_->setFuture(future);
@@ -178,8 +218,8 @@ void ClientDatasetModel::onDatasetsLoaded() {
     const auto result = watcher_->result();
 
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to fetch datasets: "
-                                   << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to fetch datasets: " << result.error_message.toStdString();
         emit loadError(result.error_message, result.error_details);
         return;
     }
@@ -191,17 +231,15 @@ void ClientDatasetModel::onDatasetsLoaded() {
     const bool has_recent = recencyTracker_.update(datasets_);
     if (has_recent && !pulseManager_->is_pulsing()) {
         pulseManager_->start_pulsing();
-        BOOST_LOG_SEV(lg(), debug) << "Found " << recencyTracker_.recent_count()
-                                   << " datasets newer than last reload";
+        BOOST_LOG_SEV(lg(), debug)
+            << "Found " << recencyTracker_.recent_count() << " datasets newer than last reload";
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Loaded " << datasets_.size()
-                               << " datasets";
+    BOOST_LOG_SEV(lg(), debug) << "Loaded " << datasets_.size() << " datasets";
     emit dataLoaded();
 }
 
-const dq::domain::dataset* ClientDatasetModel::getDataset(
-    int row) const {
+const dq::domain::dataset* ClientDatasetModel::getDataset(int row) const {
     if (row < 0 || row >= static_cast<int>(datasets_.size()))
         return nullptr;
     return &datasets_[row];
@@ -209,8 +247,8 @@ const dq::domain::dataset* ClientDatasetModel::getDataset(
 
 void ClientDatasetModel::onPulseStateChanged(bool /*isOn*/) {
     if (!datasets_.empty()) {
-        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
-            {Qt::ForegroundRole});
+        emit dataChanged(
+            index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::ForegroundRole});
     }
 }
 
@@ -219,8 +257,7 @@ void ClientDatasetModel::onPulsingComplete() {
     recencyTracker_.clear();
 }
 
-QVariant ClientDatasetModel::recency_foreground_color(
-    const boost::uuids::uuid& id) const {
+QVariant ClientDatasetModel::recency_foreground_color(const boost::uuids::uuid& id) const {
     if (recencyTracker_.is_recent(boost::uuids::to_string(id)) && pulseManager_->is_pulse_on()) {
         return color_constants::stale_indicator;
     }

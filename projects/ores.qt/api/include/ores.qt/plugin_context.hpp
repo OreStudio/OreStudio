@@ -19,17 +19,19 @@
 #ifndef ORES_QT_PLUGIN_CONTEXT_HPP
 #define ORES_QT_PLUGIN_CONTEXT_HPP
 
+#include "ores.qt/WorkspaceContext.hpp"
+#include "ores.qt/export.hpp"
+#include <QString>
 #include <memory>
 #include <string>
-#include <QString>
-#include "ores.qt/export.hpp"
-#include "ores.qt/WorkspaceContext.hpp"
 
 class QMainWindow;
 class QMdiArea;
 class QStatusBar;
 
-namespace ores::eventing::service { class event_bus; }
+namespace ores::eventing::service {
+class event_bus;
+}
 
 namespace ores::qt {
 
@@ -46,17 +48,17 @@ class BadgeCache;
  * plugins must not delete any of these pointers.
  */
 struct ORES_QT_API plugin_context {
-    QMainWindow*  main_window         = nullptr;
-    QMdiArea*     mdi_area            = nullptr;
-    QStatusBar*   status_bar          = nullptr;
-    ClientManager*      client_manager      = nullptr;
-    ImageCache*         image_cache         = nullptr;
-    ChangeReasonCache*  change_reason_cache = nullptr;
-    BadgeCache*         badge_cache         = nullptr;
+    QMainWindow* main_window = nullptr;
+    QMdiArea* mdi_area = nullptr;
+    QStatusBar* status_bar = nullptr;
+    ClientManager* client_manager = nullptr;
+    ImageCache* image_cache = nullptr;
+    ChangeReasonCache* change_reason_cache = nullptr;
+    BadgeCache* badge_cache = nullptr;
     std::shared_ptr<eventing::service::event_bus> event_bus;
-    QString           username;
-    std::string       http_base_url;
-    WorkspaceContext  workspace_context;
+    QString username;
+    std::string http_base_url;
+    WorkspaceContext workspace_context;
 };
 
 }

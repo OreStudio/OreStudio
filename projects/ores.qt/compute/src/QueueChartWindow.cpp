@@ -18,14 +18,13 @@
  *
  */
 #include "ores.qt/QueueChartWindow.hpp"
-
+#include "ores.qt/IconUtils.hpp"
 #include <QLabel>
 #include <QPainter>
 #include <QVBoxLayout>
 #include <QtCharts/QChart>
 #include <QtCharts/QDateTimeAxis>
 #include <QtCharts/QValueAxis>
-#include "ores.qt/IconUtils.hpp"
 
 namespace ores::qt {
 
@@ -35,14 +34,14 @@ QueueChartWindow::QueueChartWindow(const QString& queueId,
                                    const QString& queueName,
                                    ClientManager* clientManager,
                                    QWidget* parent)
-    : QWidget(parent),
-      queueId_(queueId),
-      queueName_(queueName),
-      clientManager_(clientManager),
-      toolbar_(nullptr),
-      reloadAction_(nullptr),
-      rangeCombo_(nullptr),
-      chartView_(nullptr) {
+    : QWidget(parent)
+    , queueId_(queueId)
+    , queueName_(queueName)
+    , clientManager_(clientManager)
+    , toolbar_(nullptr)
+    , reloadAction_(nullptr)
+    , rangeCombo_(nullptr)
+    , chartView_(nullptr) {
 
     setupUi();
     reload();
@@ -67,11 +66,9 @@ void QueueChartWindow::setupToolbar() {
     toolbar_->setIconSize(QSize(20, 20));
 
     reloadAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::ArrowClockwise,
-                                       IconUtils::DefaultIconColor),
+        IconUtils::createRecoloredIcon(Icon::ArrowClockwise, IconUtils::DefaultIconColor),
         tr("Reload"));
-    connect(reloadAction_, &QAction::triggered,
-            this, &QueueChartWindow::reload);
+    connect(reloadAction_, &QAction::triggered, this, &QueueChartWindow::reload);
 
     toolbar_->addSeparator();
 
@@ -80,16 +77,18 @@ void QueueChartWindow::setupToolbar() {
     toolbar_->addWidget(rangeLabel);
 
     rangeCombo_ = new QComboBox(toolbar_);
-    rangeCombo_->addItem(tr("Last 1 hour"),   static_cast<int>(TimeRange::LastHour));
-    rangeCombo_->addItem(tr("Last 6 hours"),  static_cast<int>(TimeRange::Last6Hours));
+    rangeCombo_->addItem(tr("Last 1 hour"), static_cast<int>(TimeRange::LastHour));
+    rangeCombo_->addItem(tr("Last 6 hours"), static_cast<int>(TimeRange::Last6Hours));
     rangeCombo_->addItem(tr("Last 24 hours"), static_cast<int>(TimeRange::Last24Hours));
-    rangeCombo_->addItem(tr("Last 7 days"),   static_cast<int>(TimeRange::Last7Days));
-    rangeCombo_->addItem(tr("All time"),      static_cast<int>(TimeRange::AllTime));
+    rangeCombo_->addItem(tr("Last 7 days"), static_cast<int>(TimeRange::Last7Days));
+    rangeCombo_->addItem(tr("All time"), static_cast<int>(TimeRange::AllTime));
     rangeCombo_->setCurrentIndex(0);
     toolbar_->addWidget(rangeCombo_);
 
-    connect(rangeCombo_, QOverload<int>::of(&QComboBox::currentIndexChanged),
-            this, &QueueChartWindow::onTimeRangeChanged);
+    connect(rangeCombo_,
+            QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this,
+            &QueueChartWindow::onTimeRangeChanged);
 }
 
 void QueueChartWindow::setupChart() {
@@ -105,7 +104,7 @@ void QueueChartWindow::setupChart() {
 void QueueChartWindow::reload() {
     clearChart(tr("Stream: %1\n\nHistorical statistics recording is not yet available.\n"
                   "See backlog: 'Record NATS JetStream stats to TimescaleDB'.")
-               .arg(queueName_));
+                   .arg(queueName_));
     emit statusChanged(tr("No historical data for '%1'").arg(queueName_));
 }
 

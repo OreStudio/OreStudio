@@ -20,35 +20,35 @@
 #ifndef ORES_QT_CLIENT_MANAGER_HPP
 #define ORES_QT_CLIENT_MANAGER_HPP
 
+#include "ores.eventing/service/event_bus.hpp"
+#include "ores.iam.api/domain/session.hpp"
+#include "ores.iam.api/messaging/session_samples_protocol.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.nats/service/jetstream_admin.hpp"
+#include "ores.nats/service/nats_client.hpp"
+#include "ores.nats/service/nats_connect_error.hpp"
+#include "ores.nats/service/session_expired_error.hpp"
+#include "ores.nats/service/subscription.hpp"
+#include "ores.qt/WorkspaceContext.hpp"
+#include "ores.qt/export.hpp"
+#include "ores.trading.api/messaging/trade_protocol.hpp"
+#include "ores.utility/rfl/reflectors.hpp"
+#include <QDateTime>
+#include <QObject>
+#include <QTimer>
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <atomic>
 #include <chrono>
 #include <concepts>
 #include <expected>
+#include <filesystem>
 #include <memory>
 #include <optional>
+#include <rfl/json.hpp>
 #include <string>
 #include <vector>
-#include <filesystem>
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/uuid/random_generator.hpp>
-#include <rfl/json.hpp>
-#include <QObject>
-#include <QTimer>
-#include "ores.utility/rfl/reflectors.hpp"
-#include <QDateTime>
-#include "ores.nats/service/nats_client.hpp"
-#include "ores.nats/service/nats_connect_error.hpp"
-#include "ores.nats/service/session_expired_error.hpp"
-#include "ores.nats/service/jetstream_admin.hpp"
-#include "ores.nats/service/subscription.hpp"
-#include "ores.eventing/service/event_bus.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.iam.api/domain/session.hpp"
-#include "ores.iam.api/messaging/session_samples_protocol.hpp"
-#include "ores.trading.api/messaging/trade_protocol.hpp"
-#include "ores.qt/WorkspaceContext.hpp"
-#include "ores.qt/export.hpp"
 
 namespace ores::qt {
 
@@ -77,7 +77,9 @@ struct PartyInfo {
     QString party_category;       // "System" or "Operational"
     QString business_center_code; // FpML code, e.g. "GBLO", "USNY"
 
-    bool is_system() const { return party_category == "System"; }
+    bool is_system() const {
+        return party_category == "System";
+    }
 };
 
 /**
@@ -130,8 +132,7 @@ class ORES_QT_API ClientManager : public QObject {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.client_manager";
+    inline static std::string_view logger_name = "ores.qt.client_manager";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -155,12 +156,16 @@ public:
      * Must be called before @c connect(). Format: "ores.{tier}.{instance}",
      * e.g. "ores.dev.local1". Leave empty to use subjects without a prefix.
      */
-    void setSubjectPrefix(const std::string& prefix) { subject_prefix_ = prefix; }
+    void setSubjectPrefix(const std::string& prefix) {
+        subject_prefix_ = prefix;
+    }
 
     /**
      * @brief Get the current NATS subject prefix.
      */
-    const std::string& subjectPrefix() const { return subject_prefix_; }
+    const std::string& subjectPrefix() const {
+        return subject_prefix_;
+    }
 
     /**
      * @brief Connect to the NATS server without logging in.
@@ -175,30 +180,27 @@ public:
     /**
      * @brief Connect to the server and perform login.
      */
-    LoginResult connectAndLogin(
-        const std::string& host,
-        std::uint16_t port,
-        const std::string& username,
-        const std::string& password);
+    LoginResult connectAndLogin(const std::string& host,
+                                std::uint16_t port,
+                                const std::string& username,
+                                const std::string& password);
 
     /**
      * @brief Test a connection without affecting main client state.
      */
-    LoginResult testConnection(
-        const std::string& host,
-        std::uint16_t port,
-        const std::string& username,
-        const std::string& password);
+    LoginResult testConnection(const std::string& host,
+                               std::uint16_t port,
+                               const std::string& username,
+                               const std::string& password);
 
     /**
      * @brief Connect to the server and attempt signup.
      */
-    SignupResult signup(
-        const std::string& host,
-        std::uint16_t port,
-        const std::string& username,
-        const std::string& email,
-        const std::string& password);
+    SignupResult signup(const std::string& host,
+                        std::uint16_t port,
+                        const std::string& username,
+                        const std::string& email,
+                        const std::string& password);
 
     /**
      * @brief Logout the current user and disconnect from the server.
@@ -223,12 +225,16 @@ public:
      * @deprecated Permission checks are now performed server-side via RBAC.
      */
     [[deprecated("Permission checks are now server-side via RBAC")]]
-    bool isAdmin() const { return false; }
+    bool isAdmin() const {
+        return false;
+    }
 
     /**
      * @brief Check if currently logged in.
      */
-    bool isLoggedIn() const { return session_.is_logged_in(); }
+    bool isLoggedIn() const {
+        return session_.is_logged_in();
+    }
 
     /**
      * @brief Create a JetStream admin handle for managing streams and consumers.
@@ -241,30 +247,38 @@ public:
      * @brief Get the current logged-in user's username.
      */
     std::string currentUsername() const {
-        if (!session_.is_logged_in()) return {};
+        if (!session_.is_logged_in())
+            return {};
         return session_.auth().username;
     }
 
     /**
      * @brief Get the current logged-in user's email.
      */
-    std::string currentEmail() const { return current_email_; }
+    std::string currentEmail() const {
+        return current_email_;
+    }
 
     /**
      * @brief Set the current logged-in user's email.
      */
-    void setCurrentEmail(const std::string& email) { current_email_ = email; }
+    void setCurrentEmail(const std::string& email) {
+        current_email_ = email;
+    }
 
     /**
      * @brief Get the account ID if logged in.
      */
-    std::optional<boost::uuids::uuid> accountId() const { return current_account_id_; }
+    std::optional<boost::uuids::uuid> accountId() const {
+        return current_account_id_;
+    }
 
     /**
      * @brief Get the server address string.
      */
     std::string serverAddress() const {
-        if (!isConnected()) return "";
+        if (!isConnected())
+            return "";
         return connected_host_ + ":" + std::to_string(connected_port_);
     }
 
@@ -272,7 +286,8 @@ public:
      * @brief Get the connected server hostname.
      */
     std::string connectedHost() const {
-        if (!isConnected()) return "";
+        if (!isConnected())
+            return "";
         return connected_host_;
     }
 
@@ -280,44 +295,59 @@ public:
      * @brief Get the connected server port.
      */
     std::uint16_t connectedPort() const {
-        if (!isConnected()) return 0;
+        if (!isConnected())
+            return 0;
         return connected_port_;
     }
 
     /**
      * @brief Get the stored username used for the current session.
      */
-    std::string storedUsername() const { return stored_username_; }
+    std::string storedUsername() const {
+        return stored_username_;
+    }
 
     /**
      * @brief Get the stored password used for the current session.
      */
-    std::string storedPassword() const { return stored_password_; }
+    std::string storedPassword() const {
+        return stored_password_;
+    }
 
     /**
      * @brief Get the UUID of the currently selected party.
      */
-    boost::uuids::uuid currentPartyId() const { return current_party_id_; }
+    boost::uuids::uuid currentPartyId() const {
+        return current_party_id_;
+    }
 
     /**
      * @brief Get the name of the currently selected party.
      */
-    QString currentPartyName() const { return current_party_name_; }
+    QString currentPartyName() const {
+        return current_party_name_;
+    }
 
     /**
      * @brief Get the category of the currently selected party.
      */
-    QString currentPartyCategory() const { return current_party_category_; }
+    QString currentPartyCategory() const {
+        return current_party_category_;
+    }
 
     /**
      * @brief Returns true if the currently selected party is the system party.
      */
-    bool isSystemParty() const { return current_party_category_ == "System"; }
+    bool isSystemParty() const {
+        return current_party_category_ == "System";
+    }
 
     /**
      * @brief Whether the last selectParty call indicated the party needs setup.
      */
-    bool lastPartySetupRequired() const { return last_party_setup_required_; }
+    bool lastPartySetupRequired() const {
+        return last_party_setup_required_;
+    }
 
     /**
      * @brief HTTP base URL discovered during login via NATS service discovery.
@@ -325,7 +355,9 @@ public:
      * Populated by login() on success. Empty between disconnect() and the next
      * successful login.
      */
-    const std::string& httpBaseUrl() const { return http_base_url_; }
+    const std::string& httpBaseUrl() const {
+        return http_base_url_;
+    }
 
     /**
      * @brief Select a party for the current session.
@@ -349,18 +381,16 @@ public:
         try {
             const auto json_body = rfl::json::write(request);
             auto msg = session_.request(RequestType::nats_subject, json_body);
-            const std::string_view data(
-                reinterpret_cast<const char*>(msg.data.data()),
-                msg.data.size());
+            const std::string_view data(reinterpret_cast<const char*>(msg.data.data()),
+                                        msg.data.size());
             auto result = rfl::json::read<ResponseType>(data);
             if (!result) {
-                return std::unexpected(
-                    std::string("Failed to deserialize response: ") +
-                    result.error().what());
+                return std::unexpected(std::string("Failed to deserialize response: ") +
+                                       result.error().what());
             }
             return std::move(*result);
         } catch (const ores::nats::service::nats_connect_error&) {
-            throw;  // Propagate so connect() can map to a user-visible message
+            throw; // Propagate so connect() can map to a user-visible message
         } catch (const std::exception& e) {
             return std::unexpected(std::string(e.what()));
         }
@@ -378,7 +408,7 @@ public:
      */
     template <nats_request RequestType>
     auto process_authenticated_request(RequestType request,
-        std::chrono::milliseconds timeout = std::chrono::seconds(30))
+                                       std::chrono::milliseconds timeout = std::chrono::seconds(30))
         -> std::expected<typename RequestType::response_type, std::string> {
         using ResponseType = typename RequestType::response_type;
         try {
@@ -386,13 +416,12 @@ public:
                 RequestType::nats_subject, rfl::json::write(request), timeout);
             auto result = rfl::json::read<ResponseType>(raw);
             if (!result) {
-                return std::unexpected(
-                    std::string("Failed to deserialize response: ") +
-                    result.error().what());
+                return std::unexpected(std::string("Failed to deserialize response: ") +
+                                       result.error().what());
             }
             return std::move(*result);
         } catch (const ores::nats::service::nats_connect_error&) {
-            throw;  // Propagate so connect() can map to a user-visible message
+            throw; // Propagate so connect() can map to a user-visible message
         } catch (const ores::nats::service::session_expired_error& e) {
             using namespace ores::logging;
             BOOST_LOG_SEV(lg(), warn) << "Session expired: " << e.what();
@@ -415,15 +444,14 @@ public:
      */
     std::expected<trading::messaging::export_portfolio_response, std::string>
     exportPortfolio(trading::messaging::export_portfolio_request request,
-        std::chrono::milliseconds timeout = std::chrono::seconds(30));
+                    std::chrono::milliseconds timeout = std::chrono::seconds(30));
 
     /**
      * @brief List sessions for an account.
      */
-    std::optional<SessionListResult> listSessions(
-        const boost::uuids::uuid& accountId,
-        std::uint32_t limit = 100,
-        std::uint32_t offset = 0);
+    std::optional<SessionListResult> listSessions(const boost::uuids::uuid& accountId,
+                                                  std::uint32_t limit = 100,
+                                                  std::uint32_t offset = 0);
 
     /**
      * @brief List trades under a taxonomy node.
@@ -432,10 +460,10 @@ public:
      * resolves it to the book-id subtree. Omit @p node_id to list all trades
      * visible to the tenant.
      */
-    std::optional<TradeListResult> listTrades(
-        std::optional<boost::uuids::uuid> node_id = std::nullopt,
-        std::uint32_t offset = 0,
-        std::uint32_t limit = 100);
+    std::optional<TradeListResult>
+    listTrades(std::optional<boost::uuids::uuid> node_id = std::nullopt,
+               std::uint32_t offset = 0,
+               std::uint32_t limit = 100);
 
     /**
      * @brief Fetch a single trade and dispatch its instrument to the populator.
@@ -448,9 +476,8 @@ public:
      * @param populator Receives the concrete instrument via the matching overload.
      * @return The trade on success, nullopt on failure or not found.
      */
-    std::optional<trading::domain::trade>
-    getTradeInstrument(const std::string& trade_id,
-                       IInstrumentFormPopulator& populator);
+    std::optional<trading::domain::trade> getTradeInstrument(const std::string& trade_id,
+                                                             IInstrumentFormPopulator& populator);
 
     /**
      * @brief Get active sessions for the current user.
@@ -467,9 +494,15 @@ public:
     // Connection Status Accessors (stubbed for NATS - not all available)
     // =========================================================================
 
-    std::uint64_t bytesSent() const { return 0; }
-    std::uint64_t bytesReceived() const { return 0; }
-    std::uint64_t lastRttMs() const { return 0; }
+    std::uint64_t bytesSent() const {
+        return 0;
+    }
+    std::uint64_t bytesReceived() const {
+        return 0;
+    }
+    std::uint64_t lastRttMs() const {
+        return 0;
+    }
 
     std::optional<std::chrono::steady_clock::time_point> disconnectedSince() const {
         return disconnected_since_;
@@ -479,10 +512,16 @@ public:
     // Session Recording (stubbed - not applicable for NATS)
     // =========================================================================
 
-    bool enableRecording(const std::filesystem::path&) { return false; }
+    bool enableRecording(const std::filesystem::path&) {
+        return false;
+    }
     void disableRecording() {}
-    bool isRecording() const { return false; }
-    std::filesystem::path recordingFilePath() const { return {}; }
+    bool isRecording() const {
+        return false;
+    }
+    std::filesystem::path recordingFilePath() const {
+        return {};
+    }
     void setRecordingDirectory(const std::filesystem::path& dir) {
         recording_directory_ = dir;
     }
@@ -504,12 +543,16 @@ public:
      * All subsequent authenticated_request calls will forward the new workspace
      * id as X-Workspace-Id.
      */
-    void setWorkspaceContext(const WorkspaceContext& ctx) { workspace_context_ = ctx; }
+    void setWorkspaceContext(const WorkspaceContext& ctx) {
+        workspace_context_ = ctx;
+    }
 
     /**
      * @brief Get the current application-level workspace context.
      */
-    const WorkspaceContext& workspaceContext() const { return workspace_context_; }
+    const WorkspaceContext& workspaceContext() const {
+        return workspace_context_;
+    }
 
     /**
      * @brief Process an authenticated request with an explicit workspace override.
@@ -520,19 +563,19 @@ public:
      */
     template <nats_request RequestType>
     auto process_authenticated_request(RequestType request,
-        const std::string& workspace_id_override,
-        std::chrono::milliseconds timeout = fast_timeout)
+                                       const std::string& workspace_id_override,
+                                       std::chrono::milliseconds timeout = fast_timeout)
         -> std::expected<typename RequestType::response_type, std::string> {
         using ResponseType = typename RequestType::response_type;
         try {
-            const auto raw = send_authenticated_request_with_workspace(
-                RequestType::nats_subject, rfl::json::write(request),
-                workspace_id_override, timeout);
+            const auto raw = send_authenticated_request_with_workspace(RequestType::nats_subject,
+                                                                       rfl::json::write(request),
+                                                                       workspace_id_override,
+                                                                       timeout);
             auto result = rfl::json::read<ResponseType>(raw);
             if (!result) {
-                return std::unexpected(
-                    std::string("Failed to deserialize response: ") +
-                    result.error().what());
+                return std::unexpected(std::string("Failed to deserialize response: ") +
+                                       result.error().what());
             }
             return std::move(*result);
         } catch (const ores::nats::service::nats_connect_error&) {
@@ -556,22 +599,24 @@ public:
      */
     template <nats_request RequestType>
     auto process_authenticated_request(RequestType request,
-        const WorkspaceContext& workspace_ctx,
-        std::chrono::milliseconds timeout = fast_timeout)
+                                       const WorkspaceContext& workspace_ctx,
+                                       std::chrono::milliseconds timeout = fast_timeout)
         -> std::expected<typename RequestType::response_type, std::string> {
         using ResponseType = typename RequestType::response_type;
         try {
             std::vector<std::string> chain;
             for (const auto& wid : workspace_ctx.resolution_order)
                 chain.push_back(wid.toStdString());
-            const auto raw = send_authenticated_request_with_workspace_ctx(
-                RequestType::nats_subject, rfl::json::write(request),
-                workspace_ctx.id.toStdString(), std::move(chain), timeout);
+            const auto raw =
+                send_authenticated_request_with_workspace_ctx(RequestType::nats_subject,
+                                                              rfl::json::write(request),
+                                                              workspace_ctx.id.toStdString(),
+                                                              std::move(chain),
+                                                              timeout);
             auto result = rfl::json::read<ResponseType>(raw);
             if (!result) {
-                return std::unexpected(
-                    std::string("Failed to deserialize response: ") +
-                    result.error().what());
+                return std::unexpected(std::string("Failed to deserialize response: ") +
+                                       result.error().what());
             }
             return std::move(*result);
         } catch (const ores::nats::service::nats_connect_error&) {
@@ -603,9 +648,12 @@ signals:
      */
     void sessionExpired();
 
-    void notificationReceived(const QString& eventType, const QDateTime& timestamp,
-                              const QStringList& entityIds, const QString& tenantId,
-                              int payloadType, const QByteArray& payload);
+    void notificationReceived(const QString& eventType,
+                              const QDateTime& timestamp,
+                              const QStringList& entityIds,
+                              const QString& tenantId,
+                              int payloadType,
+                              const QByteArray& payload);
 
     void recordingStarted(const QString& filePath);
     void recordingStopped();
@@ -639,10 +687,9 @@ private:
      * Handles auth check, correlation ID, and session scoping. Throws on any
      * error; does not deserialize — that is the caller's responsibility.
      */
-    std::string send_authenticated_request(
-        std::string_view subject,
-        std::string json_body,
-        std::chrono::milliseconds timeout);
+    std::string send_authenticated_request(std::string_view subject,
+                                           std::string json_body,
+                                           std::chrono::milliseconds timeout);
 
     /**
      * @brief Like send_authenticated_request but with an explicit workspace id.
@@ -650,22 +697,21 @@ private:
      * Used by the per-workspace overload of process_authenticated_request so
      * per-window requests do not mutate the shared workspace_context_.
      */
-    std::string send_authenticated_request_with_workspace(
-        std::string_view subject,
-        std::string json_body,
-        const std::string& workspace_id,
-        std::chrono::milliseconds timeout);
+    std::string send_authenticated_request_with_workspace(std::string_view subject,
+                                                          std::string json_body,
+                                                          const std::string& workspace_id,
+                                                          std::chrono::milliseconds timeout);
 
     /**
      * @brief Like send_authenticated_request_with_workspace but also forwards
      * the workspace resolution chain as X-Workspace-Resolution.
      */
-    std::string send_authenticated_request_with_workspace_ctx(
-        std::string_view subject,
-        std::string json_body,
-        const std::string& workspace_id,
-        std::vector<std::string> resolution_chain,
-        std::chrono::milliseconds timeout);
+    std::string
+    send_authenticated_request_with_workspace_ctx(std::string_view subject,
+                                                  std::string json_body,
+                                                  const std::string& workspace_id,
+                                                  std::vector<std::string> resolution_chain,
+                                                  std::chrono::milliseconds timeout);
 
     // NATS session for connection and authentication
     ores::nats::service::nats_client session_;

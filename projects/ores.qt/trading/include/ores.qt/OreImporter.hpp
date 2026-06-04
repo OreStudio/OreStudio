@@ -20,13 +20,13 @@
 #ifndef ORES_QT_ORE_IMPORTER_HPP
 #define ORES_QT_ORE_IMPORTER_HPP
 
-#include <set>
-#include <string>
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/planner/import_choices.hpp"
 #include "ores.ore.core/planner/ore_import_result.hpp"
 #include "ores.ore.core/scanner/scan_result.hpp"
 #include "ores.qt/ClientManager.hpp"
+#include <set>
+#include <string>
 
 namespace ores::qt {
 
@@ -57,10 +57,9 @@ public:
      * @param existing_iso_codes ISO codes already present in the database.
      * @param choices           User-supplied options (target book, defaults, etc.).
      */
-    ore::planner::ore_import_result execute(
-        ore::scanner::scan_result scan_result,
-        std::set<std::string> existing_iso_codes,
-        ore::planner::import_choices choices);
+    ore::planner::ore_import_result execute(ore::scanner::scan_result scan_result,
+                                            std::set<std::string> existing_iso_codes,
+                                            ore::planner::import_choices choices);
 
 private:
     ClientManager* cm_;

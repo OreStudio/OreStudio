@@ -20,15 +20,15 @@
 #ifndef ORES_QT_CLIENT_REPORT_TYPE_MODEL_HPP
 #define ORES_QT_CLIENT_REPORT_TYPE_MODEL_HPP
 
-#include <vector>
-#include <QFutureWatcher>
-#include <QAbstractTableModel>
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/AbstractClientModel.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/RecencyPulseManager.hpp"
 #include "ores.qt/RecencyTracker.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.reporting.api/domain/report_type.hpp"
+#include <QAbstractTableModel>
+#include <QFutureWatcher>
+#include <vector>
 
 namespace ores::qt {
 
@@ -42,8 +42,7 @@ class ClientReportTypeModel final : public AbstractClientModel {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.client_report_type_model";
+    inline static std::string_view logger_name = "ores.qt.client_report_type_model";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -66,16 +65,15 @@ public:
         ColumnCount
     };
 
-    explicit ClientReportTypeModel(ClientManager* clientManager,
-                                       QObject* parent = nullptr);
+    explicit ClientReportTypeModel(ClientManager* clientManager, QObject* parent = nullptr);
     ~ClientReportTypeModel() override = default;
 
     // QAbstractTableModel interface
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-    QVariant headerData(int section, Qt::Orientation orientation,
-        int role = Qt::DisplayRole) const override;
+    QVariant
+    headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
     /**
      * @brief Refresh report type data from server asynchronously.
@@ -98,7 +96,9 @@ public:
     /**
      * @brief Get the page size used for pagination.
      */
-    std::uint32_t page_size() const { return page_size_; }
+    std::uint32_t page_size() const {
+        return page_size_;
+    }
 
     /**
      * @brief Set the page size for pagination.
@@ -108,7 +108,9 @@ public:
     /**
      * @brief Get the total number of records available on the server.
      */
-    std::uint32_t total_available_count() const { return total_available_count_; }
+    std::uint32_t total_available_count() const {
+        return total_available_count_;
+    }
 
 signals:
     /**
@@ -144,7 +146,7 @@ private:
     std::uint32_t total_available_count_{0};
     bool is_fetching_{false};
 
-    using ReportTypeKeyExtractor = std::string(*)(const reporting::domain::report_type&);
+    using ReportTypeKeyExtractor = std::string (*)(const reporting::domain::report_type&);
     RecencyTracker<reporting::domain::report_type, ReportTypeKeyExtractor> recencyTracker_;
     RecencyPulseManager* pulseManager_;
 };

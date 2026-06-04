@@ -20,13 +20,13 @@
 #ifndef ORES_QT_PRICING_MODEL_PRODUCT_PARAMETER_CONTROLLER_HPP
 #define ORES_QT_PRICING_MODEL_PRODUCT_PARAMETER_CONTROLLER_HPP
 
-#include <QMdiArea>
-#include <QMainWindow>
-#include "ores.qt/EntityController.hpp"
-#include "ores.qt/ClientManager.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.analytics.api/domain/pricing_model_product_parameter.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/EntityController.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
+#include <QMainWindow>
+#include <QMdiArea>
 
 namespace ores::qt {
 
@@ -53,12 +53,11 @@ private:
     }
 
 public:
-    PricingModelProductParameterController(
-        QMainWindow* mainWindow,
-        QMdiArea* mdiArea,
-        ClientManager* clientManager,
-        const QString& username,
-        QObject* parent = nullptr);
+    PricingModelProductParameterController(QMainWindow* mainWindow,
+                                           QMdiArea* mdiArea,
+                                           ClientManager* clientManager,
+                                           const QString& username,
+                                           QObject* parent = nullptr);
 
     void showListWindow() override;
     void closeAllWindows() override;

@@ -18,25 +18,24 @@
  *
  */
 #include "ores.qt/PricingModelConfigDetailDialog.hpp"
-
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include <QPlainTextEdit>
-#include <boost/uuid/random_generator.hpp>
-#include "ui_PricingModelConfigDetailDialog.h"
+#include "ores.analytics.api/messaging/pricing_model_config_protocol.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.analytics.api/messaging/pricing_model_config_protocol.hpp"
+#include "ui_PricingModelConfigDetailDialog.h"
+#include <QFutureWatcher>
+#include <QMessageBox>
+#include <QPlainTextEdit>
+#include <QtConcurrent>
+#include <boost/uuid/random_generator.hpp>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 PricingModelConfigDetailDialog::PricingModelConfigDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent),
-      ui_(new Ui::PricingModelConfigDetailDialog),
-      clientManager_(nullptr) {
+    : DetailDialogBase(parent)
+    , ui_(new Ui::PricingModelConfigDetailDialog)
+    , clientManager_(nullptr) {
 
     ui_->setupUi(this);
     setupUi();
@@ -72,18 +71,30 @@ void PricingModelConfigDetailDialog::setupUi() {
 }
 
 void PricingModelConfigDetailDialog::setupConnections() {
-    connect(ui_->saveButton, &QPushButton::clicked, this,
+    connect(ui_->saveButton,
+            &QPushButton::clicked,
+            this,
             &PricingModelConfigDetailDialog::onSaveClicked);
-    connect(ui_->deleteButton, &QPushButton::clicked, this,
+    connect(ui_->deleteButton,
+            &QPushButton::clicked,
+            this,
             &PricingModelConfigDetailDialog::onDeleteClicked);
-    connect(ui_->closeButton, &QPushButton::clicked, this,
+    connect(ui_->closeButton,
+            &QPushButton::clicked,
+            this,
             &PricingModelConfigDetailDialog::onCloseClicked);
 
-    connect(ui_->nameEdit, &QLineEdit::textChanged, this,
+    connect(ui_->nameEdit,
+            &QLineEdit::textChanged,
+            this,
             &PricingModelConfigDetailDialog::onCodeChanged);
-    connect(ui_->configVariantEdit, &QLineEdit::textChanged, this,
+    connect(ui_->configVariantEdit,
+            &QLineEdit::textChanged,
+            this,
             &PricingModelConfigDetailDialog::onFieldChanged);
-    connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this,
+    connect(ui_->descriptionEdit,
+            &QPlainTextEdit::textChanged,
+            this,
             &PricingModelConfigDetailDialog::onFieldChanged);
 }
 
@@ -124,9 +135,8 @@ void PricingModelConfigDetailDialog::setReadOnly(bool readOnly) {
 
 void PricingModelConfigDetailDialog::updateUiFromConfig() {
     ui_->nameEdit->setText(QString::fromStdString(config_.name));
-    ui_->configVariantEdit->setText(config_.config_variant
-        ? QString::fromStdString(*config_.config_variant)
-        : QString{});
+    ui_->configVariantEdit->setText(
+        config_.config_variant ? QString::fromStdString(*config_.config_variant) : QString{});
     ui_->descriptionEdit->setPlainText(QString::fromStdString(config_.description));
 
     populateProvenance(config_.version,
@@ -168,28 +178,26 @@ void PricingModelConfigDetailDialog::updateSaveButtonState() {
 bool PricingModelConfigDetailDialog::validateInput() {
     const QString name_val = ui_->nameEdit->text().trimmed();
 
-    return true
-        && !name_val.isEmpty()
-    ;
+    return true && !name_val.isEmpty();
 }
 
 void PricingModelConfigDetailDialog::onSaveClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
+        MessageBoxHelper::warning(
+            this,
+            "Disconnected",
             "Cannot save pricing model configuration while disconnected from server.");
         return;
     }
 
     if (!validateInput()) {
-        MessageBoxHelper::warning(this, "Invalid Input",
-            "Please fill in all required fields.");
+        MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
 
     updateConfigFromUi();
 
-    BOOST_LOG_SEV(lg(), info) << "Saving pricing model configuration: "
-        << config_.name;
+    BOOST_LOG_SEV(lg(), info) << "Saving pricing model configuration: " << config_.name;
 
     QPointer<PricingModelConfigDetailDialog> self = this;
 
@@ -205,8 +213,8 @@ void PricingModelConfigDetailDialog::onSaveClicked() {
 
         analytics::messaging::save_pricing_model_config_request request;
         request.data = config;
-        auto response_result = self->clientManager_->
-            process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -216,15 +224,13 @@ void PricingModelConfigDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Pricing Model Configuration saved successfully";
-            QString code = QString::fromStdString(
-                self->config_.name);
+            QString code = QString::fromStdString(self->config_.name);
             self->hasChanges_ = false;
             self->updateSaveButtonState();
             emit self->configSaved(code);
@@ -243,14 +249,17 @@ void PricingModelConfigDetailDialog::onSaveClicked() {
 
 void PricingModelConfigDetailDialog::onDeleteClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
+        MessageBoxHelper::warning(
+            this,
+            "Disconnected",
             "Cannot delete pricing model configuration while disconnected from server.");
         return;
     }
 
-    QString code = QString::fromStdString(
-        config_.name);
-    auto reply = MessageBoxHelper::question(this, "Delete Pricing Model Configuration",
+    QString code = QString::fromStdString(config_.name);
+    auto reply = MessageBoxHelper::question(
+        this,
+        "Delete Pricing Model Configuration",
         QString("Are you sure you want to delete pricing model configuration '%1'?").arg(code),
         QMessageBox::Yes | QMessageBox::No);
 
@@ -258,8 +267,7 @@ void PricingModelConfigDetailDialog::onDeleteClicked() {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Deleting pricing model configuration: "
-        << config_.name;
+    BOOST_LOG_SEV(lg(), info) << "Deleting pricing model configuration: " << config_.name;
 
     QPointer<PricingModelConfigDetailDialog> self = this;
 
@@ -275,8 +283,8 @@ void PricingModelConfigDetailDialog::onDeleteClicked() {
 
         analytics::messaging::delete_pricing_model_config_request request;
         request.ids = {id};
-        auto response_result = self->clientManager_->
-            process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -286,15 +294,13 @@ void PricingModelConfigDetailDialog::onDeleteClicked() {
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
-            self, [self, code, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, code, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Pricing Model Configuration deleted successfully";
-            emit self->statusMessage(
-                QString("Pricing Model Configuration '%1' deleted").arg(code));
+            emit self->statusMessage(QString("Pricing Model Configuration '%1' deleted").arg(code));
             emit self->configDeleted(code);
             self->requestClose();
         } else {

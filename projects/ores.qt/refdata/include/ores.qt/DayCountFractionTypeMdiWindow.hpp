@@ -20,15 +20,15 @@
 #ifndef ORES_QT_DAY_COUNT_FRACTION_TYPE_MDI_WINDOW_HPP
 #define ORES_QT_DAY_COUNT_FRACTION_TYPE_MDI_WINDOW_HPP
 
-#include <QToolBar>
-#include <QTableView>
-#include <QSortFilterProxyModel>
-#include "ores.qt/EntityListMdiWindow.hpp"
-#include "ores.qt/ClientManager.hpp"
-#include "ores.qt/ClientDayCountFractionTypeModel.hpp"
-#include "ores.qt/PaginationWidget.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientDayCountFractionTypeModel.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/EntityListMdiWindow.hpp"
+#include "ores.qt/PaginationWidget.hpp"
 #include "ores.trading.api/domain/day_count_fraction_type.hpp"
+#include <QSortFilterProxyModel>
+#include <QTableView>
+#include <QToolBar>
 
 namespace ores::qt {
 
@@ -42,8 +42,7 @@ class DayCountFractionTypeMdiWindow final : public EntityListMdiWindow {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.day_count_fraction_type_mdi_window";
+    inline static std::string_view logger_name = "ores.qt.day_count_fraction_type_mdi_window";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -52,10 +51,9 @@ private:
     }
 
 public:
-    explicit DayCountFractionTypeMdiWindow(
-        ClientManager* clientManager,
-        const QString& username,
-        QWidget* parent = nullptr);
+    explicit DayCountFractionTypeMdiWindow(ClientManager* clientManager,
+                                           const QString& username,
+                                           QWidget* parent = nullptr);
     ~DayCountFractionTypeMdiWindow() override = default;
 
 public slots:

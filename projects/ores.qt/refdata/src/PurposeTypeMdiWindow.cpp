@@ -18,39 +18,37 @@
  *
  */
 #include "ores.qt/PurposeTypeMdiWindow.hpp"
-
-#include <QVBoxLayout>
-#include <QHeaderView>
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/EntityItemDelegate.hpp"
-#include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/EntityItemDelegate.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata.api/messaging/purpose_type_protocol.hpp"
+#include <QFutureWatcher>
+#include <QHeaderView>
+#include <QMessageBox>
+#include <QVBoxLayout>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-PurposeTypeMdiWindow::PurposeTypeMdiWindow(
-    ClientManager* clientManager,
-    const QString& username,
-    QWidget* parent)
-    : EntityListMdiWindow(parent),
-      clientManager_(clientManager),
-      username_(username),
-      toolbar_(nullptr),
-      tableView_(nullptr),
-      model_(nullptr),
-      proxyModel_(nullptr),
-      reloadAction_(nullptr),
-      addAction_(nullptr),
-      editAction_(nullptr),
-      deleteAction_(nullptr),
-      historyAction_(nullptr) {
+PurposeTypeMdiWindow::PurposeTypeMdiWindow(ClientManager* clientManager,
+                                           const QString& username,
+                                           QWidget* parent)
+    : EntityListMdiWindow(parent)
+    , clientManager_(clientManager)
+    , username_(username)
+    , toolbar_(nullptr)
+    , tableView_(nullptr)
+    , model_(nullptr)
+    , proxyModel_(nullptr)
+    , reloadAction_(nullptr)
+    , addAction_(nullptr)
+    , editAction_(nullptr)
+    , deleteAction_(nullptr)
+    , historyAction_(nullptr) {
 
     setupUi();
     setupConnections();
@@ -78,50 +76,36 @@ void PurposeTypeMdiWindow::setupToolbar() {
     toolbar_->setIconSize(QSize(20, 20));
 
     reloadAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::ArrowClockwise, IconUtils::DefaultIconColor),
+        IconUtils::createRecoloredIcon(Icon::ArrowClockwise, IconUtils::DefaultIconColor),
         tr("Reload"));
-    connect(reloadAction_, &QAction::triggered, this,
-            &EntityListMdiWindow::reload);
+    connect(reloadAction_, &QAction::triggered, this, &EntityListMdiWindow::reload);
 
     initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowClockwise));
 
     toolbar_->addSeparator();
 
     addAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::Add, IconUtils::DefaultIconColor),
-        tr("Add"));
+        IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor), tr("Add"));
     addAction_->setToolTip(tr("Add new purpose type"));
-    connect(addAction_, &QAction::triggered, this,
-            &PurposeTypeMdiWindow::addNew);
+    connect(addAction_, &QAction::triggered, this, &PurposeTypeMdiWindow::addNew);
 
     editAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::Edit, IconUtils::DefaultIconColor),
-        tr("Edit"));
+        IconUtils::createRecoloredIcon(Icon::Edit, IconUtils::DefaultIconColor), tr("Edit"));
     editAction_->setToolTip(tr("Edit selected purpose type"));
     editAction_->setEnabled(false);
-    connect(editAction_, &QAction::triggered, this,
-            &PurposeTypeMdiWindow::editSelected);
+    connect(editAction_, &QAction::triggered, this, &PurposeTypeMdiWindow::editSelected);
 
     deleteAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::Delete, IconUtils::DefaultIconColor),
-        tr("Delete"));
+        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor), tr("Delete"));
     deleteAction_->setToolTip(tr("Delete selected purpose type"));
     deleteAction_->setEnabled(false);
-    connect(deleteAction_, &QAction::triggered, this,
-            &PurposeTypeMdiWindow::deleteSelected);
+    connect(deleteAction_, &QAction::triggered, this, &PurposeTypeMdiWindow::deleteSelected);
 
     historyAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::History, IconUtils::DefaultIconColor),
-        tr("History"));
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor), tr("History"));
     historyAction_->setToolTip(tr("View purpose type history"));
     historyAction_->setEnabled(false);
-    connect(historyAction_, &QAction::triggered, this,
-            &PurposeTypeMdiWindow::viewHistorySelected);
+    connect(historyAction_, &QAction::triggered, this, &PurposeTypeMdiWindow::viewHistorySelected);
 }
 
 void PurposeTypeMdiWindow::setupTable() {
@@ -135,28 +119,29 @@ void PurposeTypeMdiWindow::setupTable() {
     tableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
     tableView_->setSelectionMode(QAbstractItemView::SingleSelection);
     tableView_->setSortingEnabled(true);
-    tableView_->setItemDelegate(new EntityItemDelegate(
-        ClientPurposeTypeModel::columnStyles(), tableView_));
+    tableView_->setItemDelegate(
+        new EntityItemDelegate(ClientPurposeTypeModel::columnStyles(), tableView_));
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
 
-    initializeTableSettings(tableView_, model_,
-        ClientPurposeTypeModel::kSettingsGroup,
-        ClientPurposeTypeModel::defaultHiddenColumns(),
-        ClientPurposeTypeModel::kDefaultWindowSize, 1);
+    initializeTableSettings(tableView_,
+                            model_,
+                            ClientPurposeTypeModel::kSettingsGroup,
+                            ClientPurposeTypeModel::defaultHiddenColumns(),
+                            ClientPurposeTypeModel::kDefaultWindowSize,
+                            1);
 }
 
 void PurposeTypeMdiWindow::setupConnections() {
-    connect(model_, &ClientPurposeTypeModel::dataLoaded,
-            this, &PurposeTypeMdiWindow::onDataLoaded);
-    connect(model_, &ClientPurposeTypeModel::loadError,
-            this, &PurposeTypeMdiWindow::onLoadError);
+    connect(model_, &ClientPurposeTypeModel::dataLoaded, this, &PurposeTypeMdiWindow::onDataLoaded);
+    connect(model_, &ClientPurposeTypeModel::loadError, this, &PurposeTypeMdiWindow::onLoadError);
     connectModel(model_);
 
-    connect(tableView_->selectionModel(), &QItemSelectionModel::selectionChanged,
-            this, &PurposeTypeMdiWindow::onSelectionChanged);
-    connect(tableView_, &QTableView::doubleClicked,
-            this, &PurposeTypeMdiWindow::onDoubleClicked);
+    connect(tableView_->selectionModel(),
+            &QItemSelectionModel::selectionChanged,
+            this,
+            &PurposeTypeMdiWindow::onSelectionChanged);
+    connect(tableView_, &QTableView::doubleClicked, this, &PurposeTypeMdiWindow::onDoubleClicked);
 }
 
 void PurposeTypeMdiWindow::doReload() {
@@ -169,8 +154,7 @@ void PurposeTypeMdiWindow::onDataLoaded() {
     emit statusChanged(tr("Loaded %1 purpose types").arg(model_->rowCount()));
 }
 
-void PurposeTypeMdiWindow::onLoadError(const QString& error_message,
-                                       const QString& details) {
+void PurposeTypeMdiWindow::onLoadError(const QString& error_message, const QString& details) {
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);
@@ -224,8 +208,7 @@ void PurposeTypeMdiWindow::viewHistorySelected() {
 
     auto sourceIndex = proxyModel_->mapToSource(selected.first());
     if (auto* pt = model_->getType(sourceIndex.row())) {
-        BOOST_LOG_SEV(lg(), debug) << "Emitting showTypeHistory for code: "
-                                   << pt->code;
+        BOOST_LOG_SEV(lg(), debug) << "Emitting showTypeHistory for code: " << pt->code;
         emit showTypeHistory(*pt);
     }
 }
@@ -238,8 +221,8 @@ void PurposeTypeMdiWindow::deleteSelected() {
     }
 
     if (!clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot delete purpose type while disconnected.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot delete purpose type while disconnected.");
         return;
     }
 
@@ -256,20 +239,19 @@ void PurposeTypeMdiWindow::deleteSelected() {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Delete requested for " << codes.size()
-                               << " purpose types";
+    BOOST_LOG_SEV(lg(), debug) << "Delete requested for " << codes.size() << " purpose types";
 
     QString confirmMessage;
     if (codes.size() == 1) {
         confirmMessage = QString("Are you sure you want to delete purpose type '%1'?")
-            .arg(QString::fromStdString(codes.front()));
+                             .arg(QString::fromStdString(codes.front()));
     } else {
-        confirmMessage = QString("Are you sure you want to delete %1 purpose types?")
-            .arg(codes.size());
+        confirmMessage =
+            QString("Are you sure you want to delete %1 purpose types?").arg(codes.size());
     }
 
-    auto reply = MessageBoxHelper::question(this, "Delete Purpose Type",
-        confirmMessage, QMessageBox::Yes | QMessageBox::No);
+    auto reply = MessageBoxHelper::question(
+        this, "Delete Purpose Type", confirmMessage, QMessageBox::Yes | QMessageBox::No);
 
     if (reply != QMessageBox::Yes) {
         BOOST_LOG_SEV(lg(), debug) << "Delete cancelled by user";
@@ -281,15 +263,17 @@ void PurposeTypeMdiWindow::deleteSelected() {
 
     auto task = [self, codes]() -> DeleteResult {
         DeleteResult results;
-        if (!self) return {};
+        if (!self)
+            return {};
 
-        BOOST_LOG_SEV(lg(), debug) << "Making batch delete request for "
-                                   << codes.size() << " purpose types";
+        BOOST_LOG_SEV(lg(), debug)
+            << "Making batch delete request for " << codes.size() << " purpose types";
 
         for (const auto& code : codes) {
             refdata::messaging::delete_purpose_type_request request;
             request.type = code;
-            auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+            auto response_result =
+                self->clientManager_->process_authenticated_request(std::move(request));
 
             if (!response_result) {
                 BOOST_LOG_SEV(lg(), error) << "Failed to send delete request for " << code;
@@ -304,8 +288,7 @@ void PurposeTypeMdiWindow::deleteSelected() {
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, watcher]() {
         auto results = watcher->result();
         watcher->deleteLater();
 
@@ -319,8 +302,8 @@ void PurposeTypeMdiWindow::deleteSelected() {
                 success_count++;
                 emit self->typeDeleted(QString::fromStdString(code));
             } else {
-                BOOST_LOG_SEV(lg(), error) << "Purpose Type deletion failed: "
-                                           << code << " - " << result.second;
+                BOOST_LOG_SEV(lg(), error)
+                    << "Purpose Type deletion failed: " << code << " - " << result.second;
                 failure_count++;
                 if (first_error.isEmpty()) {
                     first_error = QString::fromStdString(result.second);
@@ -331,21 +314,20 @@ void PurposeTypeMdiWindow::deleteSelected() {
         self->model_->refresh();
 
         if (failure_count == 0) {
-            QString msg = success_count == 1
-                ? "Successfully deleted 1 purpose type"
-                : QString("Successfully deleted %1 purpose types").arg(success_count);
+            QString msg = success_count == 1 ?
+                              "Successfully deleted 1 purpose type" :
+                              QString("Successfully deleted %1 purpose types").arg(success_count);
             emit self->statusChanged(msg);
         } else if (success_count == 0) {
             QString msg = QString("Failed to delete %1 %2: %3")
-                .arg(failure_count)
-                .arg(failure_count == 1 ? "purpose type" : "purpose types")
-                .arg(first_error);
+                              .arg(failure_count)
+                              .arg(failure_count == 1 ? "purpose type" : "purpose types")
+                              .arg(first_error);
             emit self->errorOccurred(msg);
             MessageBoxHelper::critical(self, "Delete Failed", msg);
         } else {
-            QString msg = QString("Deleted %1, failed to delete %2")
-                .arg(success_count)
-                .arg(failure_count);
+            QString msg =
+                QString("Deleted %1, failed to delete %2").arg(success_count).arg(failure_count);
             emit self->statusChanged(msg);
             MessageBoxHelper::warning(self, "Partial Success", msg);
         }

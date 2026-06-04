@@ -19,11 +19,11 @@
 #ifndef ORES_QT_IPLUGIN_HPP
 #define ORES_QT_IPLUGIN_HPP
 
+#include "ores.qt/export.hpp"
+#include "ores.qt/plugin_context.hpp"
 #include <QList>
 #include <QString>
 #include <QtPlugin>
-#include "ores.qt/plugin_context.hpp"
-#include "ores.qt/export.hpp"
 
 class QMenu;
 class QAction;
@@ -82,7 +82,9 @@ public:
     /**
      * @brief Load order hint — lower values are initialised first (default 100).
      */
-    virtual int load_order() const { return 100; }
+    virtual int load_order() const {
+        return 100;
+    }
 
     /**
      * @brief Create controllers and subscribe to server events.
@@ -137,7 +139,9 @@ public:
      *
      * The default implementation returns an empty list (no toolbar contribution).
      */
-    virtual QList<QAction*> toolbar_actions() { return {}; }
+    virtual QList<QAction*> toolbar_actions() {
+        return {};
+    }
 };
 
 }

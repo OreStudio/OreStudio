@@ -19,14 +19,13 @@
 #ifndef ORES_QT_SPLASHSCREEN_HPP
 #define ORES_QT_SPLASHSCREEN_HPP
 
-#include <QThread>
-#include <QSplashScreen>
 #include <QApplication>
+#include <QSplashScreen>
+#include <QThread>
 
 namespace ores::qt {
 
-class SplashScreen : public QSplashScreen
-{
+class SplashScreen : public QSplashScreen {
     Q_OBJECT
 
 public:

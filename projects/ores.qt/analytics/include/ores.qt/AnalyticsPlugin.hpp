@@ -19,9 +19,9 @@
 #ifndef ORES_QT_ANALYTICS_PLUGIN_HPP
 #define ORES_QT_ANALYTICS_PLUGIN_HPP
 
-#include <memory>
-#include <QList>
 #include "ores.qt/PluginBase.hpp"
+#include <QList>
+#include <memory>
 
 namespace ores::qt {
 
@@ -47,8 +47,12 @@ public:
     explicit AnalyticsPlugin(QObject* parent = nullptr);
     ~AnalyticsPlugin() override;
 
-    QString name() const override { return QStringLiteral("ores.qt.analytics"); }
-    int load_order() const override { return 350; }
+    QString name() const override {
+        return QStringLiteral("ores.qt.analytics");
+    }
+    int load_order() const override {
+        return 350;
+    }
 
     void on_login(const plugin_context& ctx) override;
     void setup_menus(const shared_menus_context& ctx) override;
@@ -61,9 +65,9 @@ private:
     QMenu* analytics_menu_{nullptr};
     QMenu* analytics_codes_menu_{nullptr};
 
-    std::unique_ptr<PricingEngineTypeController>            pricingEngineTypeController_;
-    std::unique_ptr<PricingModelConfigController>           pricingModelConfigController_;
-    std::unique_ptr<PricingModelProductController>          pricingModelProductController_;
+    std::unique_ptr<PricingEngineTypeController> pricingEngineTypeController_;
+    std::unique_ptr<PricingModelConfigController> pricingModelConfigController_;
+    std::unique_ptr<PricingModelProductController> pricingModelProductController_;
     std::unique_ptr<PricingModelProductParameterController> pricingModelProductParameterController_;
 };
 

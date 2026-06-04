@@ -20,23 +20,23 @@
 #ifndef ORES_QT_PUBLISH_BUNDLE_WIZARD_HPP
 #define ORES_QT_PUBLISH_BUNDLE_WIZARD_HPP
 
-#include <vector>
-#include <QWizard>
-#include <QWizardPage>
-#include <QLabel>
-#include <QComboBox>
-#include <QCheckBox>
-#include <QProgressBar>
-#include <QTableView>
-#include <QStandardItemModel>
-#include <QSet>
-#include <QVBoxLayout>
-#include "ores.logging/make_logger.hpp"
-#include "ores.qt/ClientManager.hpp"
-#include "ores.qt/WorkflowStepsWidget.hpp"
 #include "ores.dq.api/domain/dataset_bundle_member.hpp"
 #include "ores.dq.api/domain/publication_mode.hpp"
 #include "ores.dq.api/messaging/publish_bundle_protocol.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/WorkflowStepsWidget.hpp"
+#include <QCheckBox>
+#include <QComboBox>
+#include <QLabel>
+#include <QProgressBar>
+#include <QSet>
+#include <QStandardItemModel>
+#include <QTableView>
+#include <QVBoxLayout>
+#include <QWizard>
+#include <QWizardPage>
+#include <vector>
 
 namespace ores::qt {
 
@@ -57,8 +57,7 @@ class PublishBundleWizard final : public QWizard {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.publish_bundle_wizard";
+    inline static std::string_view logger_name = "ores.qt.publish_bundle_wizard";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -76,34 +75,61 @@ public:
         Page_Results
     };
 
-    explicit PublishBundleWizard(
-        ClientManager* clientManager,
-        const QString& bundleCode,
-        const QString& bundleName,
-        QWidget* parent = nullptr);
+    explicit PublishBundleWizard(ClientManager* clientManager,
+                                 const QString& bundleCode,
+                                 const QString& bundleName,
+                                 QWidget* parent = nullptr);
 
     ~PublishBundleWizard() override = default;
 
-    ClientManager* clientManager() const { return clientManager_; }
-    QString bundleCode() const { return bundleCode_; }
-    QString bundleName() const { return bundleName_; }
+    ClientManager* clientManager() const {
+        return clientManager_;
+    }
+    QString bundleCode() const {
+        return bundleCode_;
+    }
+    QString bundleName() const {
+        return bundleName_;
+    }
 
-    bool needsLeiPartyConfig() const { return needsLeiPartyConfig_; }
-    void setNeedsLeiPartyConfig(bool needs) { needsLeiPartyConfig_ = needs; }
+    bool needsLeiPartyConfig() const {
+        return needsLeiPartyConfig_;
+    }
+    void setNeedsLeiPartyConfig(bool needs) {
+        needsLeiPartyConfig_ = needs;
+    }
 
-    QString rootLei() const { return rootLei_; }
-    void setRootLei(const QString& lei) { rootLei_ = lei; }
+    QString rootLei() const {
+        return rootLei_;
+    }
+    void setRootLei(const QString& lei) {
+        rootLei_ = lei;
+    }
 
-    QString rootLeiName() const { return rootLeiName_; }
-    void setRootLeiName(const QString& name) { rootLeiName_ = name; }
+    QString rootLeiName() const {
+        return rootLeiName_;
+    }
+    void setRootLeiName(const QString& name) {
+        rootLeiName_ = name;
+    }
 
-    QString leiDatasetSize() const { return leiDatasetSize_; }
-    void setLeiDatasetSize(const QString& size) { leiDatasetSize_ = size; }
+    QString leiDatasetSize() const {
+        return leiDatasetSize_;
+    }
+    void setLeiDatasetSize(const QString& size) {
+        leiDatasetSize_ = size;
+    }
 
-    bool hasOptionalDatasets() const { return hasOptionalDatasets_; }
-    void setHasOptionalDatasets(bool has) { hasOptionalDatasets_ = has; }
+    bool hasOptionalDatasets() const {
+        return hasOptionalDatasets_;
+    }
+    void setHasOptionalDatasets(bool has) {
+        hasOptionalDatasets_ = has;
+    }
 
-    const QSet<QString>& optedInDatasets() const { return optedInDatasets_; }
+    const QSet<QString>& optedInDatasets() const {
+        return optedInDatasets_;
+    }
     void setOptedInDatasets(const QSet<QString>& datasets) {
         optedInDatasets_ = datasets;
     }
@@ -125,7 +151,9 @@ public:
     /**
      * @brief Get the selected publication mode.
      */
-    dq::domain::publication_mode selectedMode() const { return selectedMode_; }
+    dq::domain::publication_mode selectedMode() const {
+        return selectedMode_;
+    }
     void setSelectedMode(dq::domain::publication_mode mode) {
         selectedMode_ = mode;
     }
@@ -133,8 +161,12 @@ public:
     /**
      * @brief Get the atomic publication flag.
      */
-    bool isAtomic() const { return atomic_; }
-    void setAtomic(bool atomic) { atomic_ = atomic; }
+    bool isAtomic() const {
+        return atomic_;
+    }
+    void setAtomic(bool atomic) {
+        atomic_ = atomic;
+    }
 
 signals:
     /**
@@ -157,8 +189,7 @@ private:
     QString rootLeiName_;
     QString leiDatasetSize_ = QStringLiteral("large");
     std::vector<dq::domain::dataset_bundle_member> members_;
-    dq::domain::publication_mode selectedMode_ =
-        dq::domain::publication_mode::upsert;
+    dq::domain::publication_mode selectedMode_ = dq::domain::publication_mode::upsert;
     bool atomic_ = true;
 };
 
@@ -180,8 +211,7 @@ class BundleSummaryPage final : public QWizardPage {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.bundle_summary_page";
+    inline static std::string_view logger_name = "ores.qt.bundle_summary_page";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -291,8 +321,7 @@ class PublishProgressPage final : public QWizardPage {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.publish_progress_page";
+    inline static std::string_view logger_name = "ores.qt.publish_progress_page";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;

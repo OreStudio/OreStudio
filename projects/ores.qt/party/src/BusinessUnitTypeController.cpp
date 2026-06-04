@@ -18,33 +18,30 @@
  *
  */
 #include "ores.qt/BusinessUnitTypeController.hpp"
+#include "ores.qt/BusinessUnitTypeDetailDialog.hpp"
+#include "ores.qt/BusinessUnitTypeHistoryDialog.hpp"
+#include "ores.qt/BusinessUnitTypeMdiWindow.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
-
+#include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/IconUtils.hpp"
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/BusinessUnitTypeMdiWindow.hpp"
-#include "ores.qt/BusinessUnitTypeDetailDialog.hpp"
-#include "ores.qt/BusinessUnitTypeHistoryDialog.hpp"
-#include "ores.qt/DetachableMdiSubWindow.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-BusinessUnitTypeController::BusinessUnitTypeController(
-    QMainWindow* mainWindow,
-    QMdiArea* mdiArea,
-    ClientManager* clientManager,
-    ChangeReasonCache* changeReasonCache,
-    const QString& username,
-    QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username,
-          std::string_view{}, parent),
-      changeReasonCache_(changeReasonCache),
-      listWindow_(nullptr),
-      listMdiSubWindow_(nullptr) {
+BusinessUnitTypeController::BusinessUnitTypeController(QMainWindow* mainWindow,
+                                                       QMdiArea* mdiArea,
+                                                       ClientManager* clientManager,
+                                                       ChangeReasonCache* changeReasonCache,
+                                                       const QString& username,
+                                                       QObject* parent)
+    : EntityController(mainWindow, mdiArea, clientManager, username, std::string_view{}, parent)
+    , changeReasonCache_(changeReasonCache)
+    , listWindow_(nullptr)
+    , listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "BusinessUnitTypeController created";
 }
@@ -62,23 +59,33 @@ void BusinessUnitTypeController::showListWindow() {
     listWindow_ = new BusinessUnitTypeMdiWindow(clientManager_, username_);
 
     // Connect signals
-    connect(listWindow_, &BusinessUnitTypeMdiWindow::statusChanged,
-            this, &BusinessUnitTypeController::statusMessage);
-    connect(listWindow_, &BusinessUnitTypeMdiWindow::errorOccurred,
-            this, &BusinessUnitTypeController::errorMessage);
-    connect(listWindow_, &BusinessUnitTypeMdiWindow::showTypeDetails,
-            this, &BusinessUnitTypeController::onShowDetails);
-    connect(listWindow_, &BusinessUnitTypeMdiWindow::addNewRequested,
-            this, &BusinessUnitTypeController::onAddNewRequested);
-    connect(listWindow_, &BusinessUnitTypeMdiWindow::showTypeHistory,
-            this, &BusinessUnitTypeController::onShowHistory);
+    connect(listWindow_,
+            &BusinessUnitTypeMdiWindow::statusChanged,
+            this,
+            &BusinessUnitTypeController::statusMessage);
+    connect(listWindow_,
+            &BusinessUnitTypeMdiWindow::errorOccurred,
+            this,
+            &BusinessUnitTypeController::errorMessage);
+    connect(listWindow_,
+            &BusinessUnitTypeMdiWindow::showTypeDetails,
+            this,
+            &BusinessUnitTypeController::onShowDetails);
+    connect(listWindow_,
+            &BusinessUnitTypeMdiWindow::addNewRequested,
+            this,
+            &BusinessUnitTypeController::onAddNewRequested);
+    connect(listWindow_,
+            &BusinessUnitTypeMdiWindow::showTypeHistory,
+            this,
+            &BusinessUnitTypeController::onShowHistory);
 
     // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Business Unit Types");
-    listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::PeopleTeam, IconUtils::DefaultIconColor));
+    listMdiSubWindow_->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::PeopleTeam, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -90,13 +97,16 @@ void BusinessUnitTypeController::showListWindow() {
     register_detachable_window(listMdiSubWindow_);
 
     // Cleanup when closed
-    connect(listMdiSubWindow_, &QObject::destroyed,
-            this, [self = QPointer<BusinessUnitTypeController>(this), key]() {
-        if (!self) return;
-        self->untrack_window(key);
-        self->listWindow_ = nullptr;
-        self->listMdiSubWindow_ = nullptr;
-    });
+    connect(listMdiSubWindow_,
+            &QObject::destroyed,
+            this,
+            [self = QPointer<BusinessUnitTypeController>(this), key]() {
+                if (!self)
+                    return;
+                self->untrack_window(key);
+                self->listWindow_ = nullptr;
+                self->listMdiSubWindow_ = nullptr;
+            });
 
     BOOST_LOG_SEV(lg(), debug) << "Business Unit Type list window created";
 }
@@ -123,8 +133,7 @@ void BusinessUnitTypeController::reloadListWindow() {
     }
 }
 
-void BusinessUnitTypeController::onShowDetails(
-    const refdata::domain::business_unit_type& type) {
+void BusinessUnitTypeController::onShowDetails(const refdata::domain::business_unit_type& type) {
     BOOST_LOG_SEV(lg(), debug) << "Show details for: " << type.code;
     showDetailWindow(type);
 }
@@ -134,8 +143,7 @@ void BusinessUnitTypeController::onAddNewRequested() {
     showAddWindow();
 }
 
-void BusinessUnitTypeController::onShowHistory(
-    const refdata::domain::business_unit_type& type) {
+void BusinessUnitTypeController::onShowHistory(const refdata::domain::business_unit_type& type) {
     BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << type.code;
     showHistoryWindow(type);
 }
@@ -150,23 +158,30 @@ void BusinessUnitTypeController::showAddWindow() {
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
 
-    connect(detailDialog, &BusinessUnitTypeDetailDialog::statusMessage,
-            this, &BusinessUnitTypeController::statusMessage);
-    connect(detailDialog, &BusinessUnitTypeDetailDialog::errorMessage,
-            this, &BusinessUnitTypeController::errorMessage);
-    connect(detailDialog, &BusinessUnitTypeDetailDialog::typeSaved,
-            this, [self = QPointer<BusinessUnitTypeController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Business Unit Type saved: " << code.toStdString();
-        self->handleEntitySaved();
-    });
+    connect(detailDialog,
+            &BusinessUnitTypeDetailDialog::statusMessage,
+            this,
+            &BusinessUnitTypeController::statusMessage);
+    connect(detailDialog,
+            &BusinessUnitTypeDetailDialog::errorMessage,
+            this,
+            &BusinessUnitTypeController::errorMessage);
+    connect(detailDialog,
+            &BusinessUnitTypeDetailDialog::typeSaved,
+            this,
+            [self = QPointer<BusinessUnitTypeController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Business Unit Type saved: " << code.toStdString();
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Business Unit Type");
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::PeopleTeam, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::PeopleTeam, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -174,8 +189,7 @@ void BusinessUnitTypeController::showAddWindow() {
     show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
-void BusinessUnitTypeController::showDetailWindow(
-    const refdata::domain::business_unit_type& type) {
+void BusinessUnitTypeController::showDetailWindow(const refdata::domain::business_unit_type& type) {
 
     const QString identifier = QString::fromStdString(type.code);
     const QString key = build_window_key("details", identifier);
@@ -195,37 +209,46 @@ void BusinessUnitTypeController::showDetailWindow(
     detailDialog->setCreateMode(false);
     detailDialog->setType(type);
 
-    connect(detailDialog, &BusinessUnitTypeDetailDialog::statusMessage,
-            this, &BusinessUnitTypeController::statusMessage);
-    connect(detailDialog, &BusinessUnitTypeDetailDialog::errorMessage,
-            this, &BusinessUnitTypeController::errorMessage);
-    connect(detailDialog, &BusinessUnitTypeDetailDialog::typeSaved,
-            this, [self = QPointer<BusinessUnitTypeController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Business Unit Type saved: " << code.toStdString();
-        self->handleEntitySaved();
-    });
-    connect(detailDialog, &BusinessUnitTypeDetailDialog::typeDeleted,
-            this, [self = QPointer<BusinessUnitTypeController>(this), key](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Business Unit Type deleted: " << code.toStdString();
-        self->handleEntityDeleted();
-    });
+    connect(detailDialog,
+            &BusinessUnitTypeDetailDialog::statusMessage,
+            this,
+            &BusinessUnitTypeController::statusMessage);
+    connect(detailDialog,
+            &BusinessUnitTypeDetailDialog::errorMessage,
+            this,
+            &BusinessUnitTypeController::errorMessage);
+    connect(detailDialog,
+            &BusinessUnitTypeDetailDialog::typeSaved,
+            this,
+            [self = QPointer<BusinessUnitTypeController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Business Unit Type saved: " << code.toStdString();
+                self->handleEntitySaved();
+            });
+    connect(detailDialog,
+            &BusinessUnitTypeDetailDialog::typeDeleted,
+            this,
+            [self = QPointer<BusinessUnitTypeController>(this), key](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Business Unit Type deleted: " << code.toStdString();
+                self->handleEntityDeleted();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Business Unit Type: %1").arg(identifier));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::PeopleTeam, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::PeopleTeam, IconUtils::DefaultIconColor));
 
     // Track window
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<BusinessUnitTypeController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, key]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, key]() {
         if (self) {
             self->untrack_window(key);
         }
@@ -238,37 +261,45 @@ void BusinessUnitTypeController::showDetailWindow(
 void BusinessUnitTypeController::showHistoryWindow(
     const refdata::domain::business_unit_type& type) {
     const QString code = QString::fromStdString(type.code);
-    BOOST_LOG_SEV(lg(), info) << "Opening history window for business unit type: "
-                              << type.code;
+    BOOST_LOG_SEV(lg(), info) << "Opening history window for business unit type: " << type.code;
 
     const QString windowKey = build_window_key("history", code);
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
-        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: "
-                                  << type.code;
+        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: " << type.code;
         return;
     }
 
     BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << type.code;
 
-    auto* historyDialog = new BusinessUnitTypeHistoryDialog(
-        type.id, code, clientManager_, mainWindow_);
+    auto* historyDialog =
+        new BusinessUnitTypeHistoryDialog(type.id, code, clientManager_, mainWindow_);
 
-    connect(historyDialog, &BusinessUnitTypeHistoryDialog::statusChanged,
-            this, [self = QPointer<BusinessUnitTypeController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(historyDialog, &BusinessUnitTypeHistoryDialog::errorOccurred,
-            this, [self = QPointer<BusinessUnitTypeController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
-    connect(historyDialog, &BusinessUnitTypeHistoryDialog::revertVersionRequested,
-            this, &BusinessUnitTypeController::onRevertVersion);
-    connect(historyDialog, &BusinessUnitTypeHistoryDialog::openVersionRequested,
-            this, &BusinessUnitTypeController::onOpenVersion);
+    connect(historyDialog,
+            &BusinessUnitTypeHistoryDialog::statusChanged,
+            this,
+            [self = QPointer<BusinessUnitTypeController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(historyDialog,
+            &BusinessUnitTypeHistoryDialog::errorOccurred,
+            this,
+            [self = QPointer<BusinessUnitTypeController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
+    connect(historyDialog,
+            &BusinessUnitTypeHistoryDialog::revertVersionRequested,
+            this,
+            &BusinessUnitTypeController::onRevertVersion);
+    connect(historyDialog,
+            &BusinessUnitTypeHistoryDialog::openVersionRequested,
+            this,
+            &BusinessUnitTypeController::onOpenVersion);
 
     // Load history data
     historyDialog->loadHistory();
@@ -276,18 +307,16 @@ void BusinessUnitTypeController::showHistoryWindow(
     auto* historyWindow = new DetachableMdiSubWindow(mainWindow_);
     historyWindow->setAttribute(Qt::WA_DeleteOnClose);
     historyWindow->setWidget(historyDialog);
-    historyWindow->setWindowTitle(
-        QString("Business Unit Type History: %1").arg(code));
-    historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    historyWindow->setWindowTitle(QString("Business Unit Type History: %1").arg(code));
+    historyWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     // Track this history window
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
 
     QPointer<BusinessUnitTypeController> self = this;
-    connect(historyWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -296,14 +325,14 @@ void BusinessUnitTypeController::showHistoryWindow(
     show_managed_window(historyWindow, listMdiSubWindow_);
 }
 
-void BusinessUnitTypeController::onOpenVersion(
-    const refdata::domain::business_unit_type& type, int versionNumber) {
+void BusinessUnitTypeController::onOpenVersion(const refdata::domain::business_unit_type& type,
+                                               int versionNumber) {
     BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
                               << " for business unit type: " << type.code;
 
     const QString code = QString::fromStdString(type.code);
-    const QString windowKey = build_window_key("version", QString("%1_v%2")
-        .arg(code).arg(versionNumber));
+    const QString windowKey =
+        build_window_key("version", QString("%1_v%2").arg(code).arg(versionNumber));
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
@@ -319,31 +348,36 @@ void BusinessUnitTypeController::onOpenVersion(
     detailDialog->setType(type);
     detailDialog->setReadOnly(true);
 
-    connect(detailDialog, &BusinessUnitTypeDetailDialog::statusMessage,
-            this, [self = QPointer<BusinessUnitTypeController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(detailDialog, &BusinessUnitTypeDetailDialog::errorMessage,
-            this, [self = QPointer<BusinessUnitTypeController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
+    connect(detailDialog,
+            &BusinessUnitTypeDetailDialog::statusMessage,
+            this,
+            [self = QPointer<BusinessUnitTypeController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(detailDialog,
+            &BusinessUnitTypeDetailDialog::errorMessage,
+            this,
+            [self = QPointer<BusinessUnitTypeController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Business Unit Type: %1 (Version %2)")
-        .arg(code).arg(versionNumber));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("Business Unit Type: %1 (Version %2)").arg(code).arg(versionNumber));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     track_window(windowKey, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<BusinessUnitTypeController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -353,10 +387,8 @@ void BusinessUnitTypeController::onOpenVersion(
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
-void BusinessUnitTypeController::onRevertVersion(
-    const refdata::domain::business_unit_type& type) {
-    BOOST_LOG_SEV(lg(), info) << "Reverting business unit type to version: "
-                              << type.version;
+void BusinessUnitTypeController::onRevertVersion(const refdata::domain::business_unit_type& type) {
+    BOOST_LOG_SEV(lg(), info) << "Reverting business unit type to version: " << type.version;
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new BusinessUnitTypeDetailDialog(mainWindow_);
@@ -367,26 +399,33 @@ void BusinessUnitTypeController::onRevertVersion(
     detailDialog->setType(type);
     detailDialog->setCreateMode(false);
 
-    connect(detailDialog, &BusinessUnitTypeDetailDialog::statusMessage,
-            this, &BusinessUnitTypeController::statusMessage);
-    connect(detailDialog, &BusinessUnitTypeDetailDialog::errorMessage,
-            this, &BusinessUnitTypeController::errorMessage);
-    connect(detailDialog, &BusinessUnitTypeDetailDialog::typeSaved,
-            this, [self = QPointer<BusinessUnitTypeController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Business Unit Type reverted: " << code.toStdString();
-        emit self->statusMessage(
-            QString("Business Unit Type '%1' reverted successfully").arg(code));
-        self->handleEntitySaved();
-    });
+    connect(detailDialog,
+            &BusinessUnitTypeDetailDialog::statusMessage,
+            this,
+            &BusinessUnitTypeController::statusMessage);
+    connect(detailDialog,
+            &BusinessUnitTypeDetailDialog::errorMessage,
+            this,
+            &BusinessUnitTypeController::errorMessage);
+    connect(detailDialog,
+            &BusinessUnitTypeDetailDialog::typeSaved,
+            this,
+            [self = QPointer<BusinessUnitTypeController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Business Unit Type reverted: " << code.toStdString();
+                emit self->statusMessage(
+                    QString("Business Unit Type '%1' reverted successfully").arg(code));
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Revert Business Unit Type: %1")
-        .arg(QString::fromStdString(type.code)));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("Revert Business Unit Type: %1").arg(QString::fromStdString(type.code)));
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
+                                                               IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 

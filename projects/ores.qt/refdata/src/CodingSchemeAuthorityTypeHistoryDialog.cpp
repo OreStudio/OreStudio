@@ -18,17 +18,16 @@
  *
  */
 #include "ores.qt/CodingSchemeAuthorityTypeHistoryDialog.hpp"
-
-#include <QVBoxLayout>
-#include <QHeaderView>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include "ui_CodingSchemeAuthorityTypeHistoryDialog.h"
-#include "ores.qt/IconUtils.hpp"
+#include "ores.dq.api/messaging/coding_scheme_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.dq.api/messaging/coding_scheme_protocol.hpp"
+#include "ui_CodingSchemeAuthorityTypeHistoryDialog.h"
+#include <QFutureWatcher>
+#include <QHeaderView>
+#include <QVBoxLayout>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
@@ -36,13 +35,13 @@ using namespace ores::logging;
 
 CodingSchemeAuthorityTypeHistoryDialog::CodingSchemeAuthorityTypeHistoryDialog(
     const QString& code, ClientManager* clientManager, QWidget* parent)
-    : QWidget(parent),
-      ui_(new Ui::CodingSchemeAuthorityTypeHistoryDialog),
-      code_(code),
-      clientManager_(clientManager),
-      toolbar_(nullptr),
-      openVersionAction_(nullptr),
-      revertAction_(nullptr) {
+    : QWidget(parent)
+    , ui_(new Ui::CodingSchemeAuthorityTypeHistoryDialog)
+    , code_(code)
+    , clientManager_(clientManager)
+    , toolbar_(nullptr)
+    , openVersionAction_(nullptr)
+    , revertAction_(nullptr) {
 
     ui_->setupUi(this);
     WidgetUtils::setupComboBoxes(this);
@@ -61,7 +60,8 @@ void CodingSchemeAuthorityTypeHistoryDialog::setupUi() {
 
     ui_->titleLabel->setText(QString("History for: %1").arg(code_));
     ui_->versionListWidget->setColumnCount(4);
-    ui_->versionListWidget->setHorizontalHeaderLabels({"Version", "Recorded At", "Modified By", "Commentary"});
+    ui_->versionListWidget->setHorizontalHeaderLabels(
+        {"Version", "Recorded At", "Modified By", "Commentary"});
     ui_->versionListWidget->horizontalHeader()->setStretchLastSection(true);
     ui_->versionListWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui_->versionListWidget->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -81,9 +81,10 @@ void CodingSchemeAuthorityTypeHistoryDialog::setupToolbar() {
     openVersionAction_->setToolTip(tr("Open this version (read-only)"));
     openVersionAction_->setEnabled(false);
 
-    revertAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor),
-        tr("Revert"));
+    revertAction_ =
+        toolbar_->addAction(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
+                                                           IconUtils::DefaultIconColor),
+                            tr("Revert"));
     revertAction_->setToolTip(tr("Revert to this version"));
     revertAction_->setEnabled(false);
 
@@ -93,11 +94,22 @@ void CodingSchemeAuthorityTypeHistoryDialog::setupToolbar() {
 }
 
 void CodingSchemeAuthorityTypeHistoryDialog::setupConnections() {
-    connect(ui_->versionListWidget, &QTableWidget::itemSelectionChanged, this, &CodingSchemeAuthorityTypeHistoryDialog::onVersionSelected);
-    connect(openVersionAction_, &QAction::triggered, this, &CodingSchemeAuthorityTypeHistoryDialog::onOpenVersionClicked);
-    connect(revertAction_, &QAction::triggered, this, &CodingSchemeAuthorityTypeHistoryDialog::onRevertClicked);
-    connect(ui_->closeButton, &QPushButton::clicked,
-            this, [this]() { if (window()) window()->close(); });
+    connect(ui_->versionListWidget,
+            &QTableWidget::itemSelectionChanged,
+            this,
+            &CodingSchemeAuthorityTypeHistoryDialog::onVersionSelected);
+    connect(openVersionAction_,
+            &QAction::triggered,
+            this,
+            &CodingSchemeAuthorityTypeHistoryDialog::onOpenVersionClicked);
+    connect(revertAction_,
+            &QAction::triggered,
+            this,
+            &CodingSchemeAuthorityTypeHistoryDialog::onRevertClicked);
+    connect(ui_->closeButton, &QPushButton::clicked, this, [this]() {
+        if (window())
+            window()->close();
+    });
 }
 
 void CodingSchemeAuthorityTypeHistoryDialog::loadHistory() {
@@ -109,17 +121,26 @@ void CodingSchemeAuthorityTypeHistoryDialog::loadHistory() {
     emit statusChanged(tr("Loading history..."));
 
     QPointer<CodingSchemeAuthorityTypeHistoryDialog> self = this;
-    struct HistoryResult { bool success; std::string message; std::vector<dq::domain::coding_scheme_authority_type> versions; };
+    struct HistoryResult {
+        bool success;
+        std::string message;
+        std::vector<dq::domain::coding_scheme_authority_type> versions;
+    };
 
     auto task = [self, code = code_.toStdString()]() -> HistoryResult {
-        if (!self || !self->clientManager_) return {false, "Dialog closed", {}};
+        if (!self || !self->clientManager_)
+            return {false, "Dialog closed", {}};
 
         dq::messaging::get_coding_scheme_authority_type_history_request request;
         request.type = code;
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
-        if (!response_result) return {false, "Failed to communicate with server", {}};
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
+        if (!response_result)
+            return {false, "Failed to communicate with server", {}};
 
-        return {response_result->success, response_result->message, std::move(response_result->history)};
+        return {response_result->success,
+                response_result->message,
+                std::move(response_result->history)};
     };
 
     auto* watcher = new QFutureWatcher<HistoryResult>(self);
@@ -149,17 +170,24 @@ void CodingSchemeAuthorityTypeHistoryDialog::updateVersionList() {
         auto* versionItem = new QTableWidgetItem(QString::number(version.version));
         versionItem->setTextAlignment(Qt::AlignCenter);
         ui_->versionListWidget->setItem(row, 0, versionItem);
-        ui_->versionListWidget->setItem(row, 1, new QTableWidgetItem(relative_time_helper::format(version.recorded_at)));
-        ui_->versionListWidget->setItem(row, 2, new QTableWidgetItem(QString::fromStdString(version.modified_by)));
-        ui_->versionListWidget->setItem(row, 3, new QTableWidgetItem(QString::fromStdString(version.change_commentary)));
+        ui_->versionListWidget->setItem(
+            row, 1, new QTableWidgetItem(relative_time_helper::format(version.recorded_at)));
+        ui_->versionListWidget->setItem(
+            row, 2, new QTableWidgetItem(QString::fromStdString(version.modified_by)));
+        ui_->versionListWidget->setItem(
+            row, 3, new QTableWidgetItem(QString::fromStdString(version.change_commentary)));
     }
 
-    if (!versions_.empty()) ui_->versionListWidget->selectRow(0);
+    if (!versions_.empty())
+        ui_->versionListWidget->selectRow(0);
 }
 
 void CodingSchemeAuthorityTypeHistoryDialog::onVersionSelected() {
     auto selected = ui_->versionListWidget->selectedItems();
-    if (selected.isEmpty()) { updateActionStates(); return; }
+    if (selected.isEmpty()) {
+        updateActionStates();
+        return;
+    }
 
     int row = selected.first()->row();
     updateChangesTable(row);
@@ -170,7 +198,8 @@ void CodingSchemeAuthorityTypeHistoryDialog::onVersionSelected() {
 void CodingSchemeAuthorityTypeHistoryDialog::updateChangesTable(int currentVersionIndex) {
     ui_->changesTableWidget->setRowCount(0);
 
-    if (currentVersionIndex < 0 || static_cast<size_t>(currentVersionIndex) >= versions_.size()) return;
+    if (currentVersionIndex < 0 || static_cast<size_t>(currentVersionIndex) >= versions_.size())
+        return;
 
     int previousVersionIndex = currentVersionIndex + 1;
     if (static_cast<size_t>(previousVersionIndex) >= versions_.size()) {
@@ -192,8 +221,13 @@ void CodingSchemeAuthorityTypeHistoryDialog::updateChangesTable(int currentVersi
         ui_->changesTableWidget->setItem(row, 2, new QTableWidgetItem(newVal));
     };
 
-    if (current.name != previous.name) addChange("Name", QString::fromStdString(previous.name), QString::fromStdString(current.name));
-    if (current.description != previous.description) addChange("Description", QString::fromStdString(previous.description), QString::fromStdString(current.description));
+    if (current.name != previous.name)
+        addChange(
+            "Name", QString::fromStdString(previous.name), QString::fromStdString(current.name));
+    if (current.description != previous.description)
+        addChange("Description",
+                  QString::fromStdString(previous.description),
+                  QString::fromStdString(current.description));
 
     if (ui_->changesTableWidget->rowCount() == 0) {
         ui_->changesTableWidget->insertRow(0);
@@ -204,7 +238,8 @@ void CodingSchemeAuthorityTypeHistoryDialog::updateChangesTable(int currentVersi
 }
 
 void CodingSchemeAuthorityTypeHistoryDialog::updateFullDetails(int versionIndex) {
-    if (versionIndex < 0 || static_cast<size_t>(versionIndex) >= versions_.size()) return;
+    if (versionIndex < 0 || static_cast<size_t>(versionIndex) >= versions_.size())
+        return;
 
     const auto& version = versions_[versionIndex];
     ui_->codeValue->setText(QString::fromStdString(version.code));
@@ -227,20 +262,24 @@ void CodingSchemeAuthorityTypeHistoryDialog::updateActionStates() {
 
 void CodingSchemeAuthorityTypeHistoryDialog::onOpenVersionClicked() {
     auto selected = ui_->versionListWidget->selectedItems();
-    if (selected.isEmpty()) return;
+    if (selected.isEmpty())
+        return;
 
     int row = selected.first()->row();
-    if (static_cast<size_t>(row) >= versions_.size()) return;
+    if (static_cast<size_t>(row) >= versions_.size())
+        return;
 
     emit openVersionRequested(versions_[row], versions_[row].version);
 }
 
 void CodingSchemeAuthorityTypeHistoryDialog::onRevertClicked() {
     auto selected = ui_->versionListWidget->selectedItems();
-    if (selected.isEmpty()) return;
+    if (selected.isEmpty())
+        return;
 
     int row = selected.first()->row();
-    if (static_cast<size_t>(row) >= versions_.size()) return;
+    if (static_cast<size_t>(row) >= versions_.size())
+        return;
 
     emit revertVersionRequested(versions_[row]);
 }

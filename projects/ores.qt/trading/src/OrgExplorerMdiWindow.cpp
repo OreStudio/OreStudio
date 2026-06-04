@@ -18,42 +18,40 @@
  *
  */
 #include "ores.qt/OrgExplorerMdiWindow.hpp"
-
-#include <QtConcurrent>
+#include "ores.qt/BookController.hpp"
+#include "ores.qt/ExceptionHelper.hpp"
+#include "ores.qt/IBusinessUnitBrowser.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/TradeController.hpp"
+#include "ores.qt/WidgetUtils.hpp"
+#include "ores.refdata.api/domain/counterparty.hpp"
+#include "ores.refdata.api/messaging/book_protocol.hpp"
+#include "ores.refdata.api/messaging/business_unit_protocol.hpp"
+#include "ores.refdata.api/messaging/counterparty_protocol.hpp"
+#include "ores.trading.api/messaging/trade_protocol.hpp"
 #include <QHBoxLayout>
 #include <QHeaderView>
 #include <QLabel>
 #include <QVBoxLayout>
+#include <QtConcurrent>
 #include <boost/uuid/uuid_io.hpp>
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/ExceptionHelper.hpp"
-#include "ores.qt/WidgetUtils.hpp"
-#include "ores.qt/IBusinessUnitBrowser.hpp"
-#include "ores.qt/BookController.hpp"
-#include "ores.qt/TradeController.hpp"
-#include "ores.refdata.api/messaging/business_unit_protocol.hpp"
-#include "ores.refdata.api/messaging/book_protocol.hpp"
-#include "ores.refdata.api/messaging/counterparty_protocol.hpp"
-#include "ores.refdata.api/domain/counterparty.hpp"
-#include "ores.trading.api/messaging/trade_protocol.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-OrgExplorerMdiWindow::OrgExplorerMdiWindow(
-    ClientManager* clientManager,
-    IBusinessUnitBrowser* businessUnitController,
-    BookController* bookController,
-    TradeController* tradeController,
-    const QString& username,
-    QWidget* parent)
-    : EntityListMdiWindow(parent),
-      clientManager_(clientManager),
-      username_(username),
-      businessUnitController_(businessUnitController),
-      bookController_(bookController),
-      tradeController_(tradeController) {
+OrgExplorerMdiWindow::OrgExplorerMdiWindow(ClientManager* clientManager,
+                                           IBusinessUnitBrowser* businessUnitController,
+                                           BookController* bookController,
+                                           TradeController* tradeController,
+                                           const QString& username,
+                                           QWidget* parent)
+    : EntityListMdiWindow(parent)
+    , clientManager_(clientManager)
+    , username_(username)
+    , businessUnitController_(businessUnitController)
+    , bookController_(bookController)
+    , tradeController_(tradeController) {
 
     setupUi();
     setupConnections();
@@ -87,33 +85,26 @@ void OrgExplorerMdiWindow::setupToolbar() {
     toolbar_->setIconSize(QSize(20, 20));
 
     reloadAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::ArrowClockwise, IconUtils::DefaultIconColor),
+        IconUtils::createRecoloredIcon(Icon::ArrowClockwise, IconUtils::DefaultIconColor),
         tr("Reload"));
     reloadAction_->setToolTip(tr("Refresh organisational tree"));
-    connect(reloadAction_, &QAction::triggered, this,
-            &EntityListMdiWindow::reload);
+    connect(reloadAction_, &QAction::triggered, this, &EntityListMdiWindow::reload);
 
-    initializeStaleIndicator(reloadAction_,
-        IconUtils::iconPath(Icon::ArrowClockwise));
+    initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowClockwise));
 
     toolbar_->addSeparator();
 
     editAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Edit, IconUtils::DefaultIconColor),
-        tr("Edit"));
+        IconUtils::createRecoloredIcon(Icon::Edit, IconUtils::DefaultIconColor), tr("Edit"));
     editAction_->setToolTip(tr("Edit selected item"));
     editAction_->setEnabled(false);
-    connect(editAction_, &QAction::triggered,
-            this, &OrgExplorerMdiWindow::onEditSelected);
+    connect(editAction_, &QAction::triggered, this, &OrgExplorerMdiWindow::onEditSelected);
 
     historyAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor),
-        tr("History"));
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor), tr("History"));
     historyAction_->setToolTip(tr("View history of selected item"));
     historyAction_->setEnabled(false);
-    connect(historyAction_, &QAction::triggered,
-            this, &OrgExplorerMdiWindow::onHistorySelected);
+    connect(historyAction_, &QAction::triggered, this, &OrgExplorerMdiWindow::onHistorySelected);
 }
 
 void OrgExplorerMdiWindow::setupTree() {
@@ -164,61 +155,71 @@ void OrgExplorerMdiWindow::setupTradePanel() {
     splitter_->setStretchFactor(0, 1);
     splitter_->setStretchFactor(1, 2);
 
-    initializeTableSettings(tradeTableView_, tradeModel_,
-        "OrgExplorer", {}, {1100, 600}, 1, splitter_);
+    initializeTableSettings(
+        tradeTableView_, tradeModel_, "OrgExplorer", {}, {1100, 600}, 1, splitter_);
 }
 
 void OrgExplorerMdiWindow::setupConnections() {
-    connect(treeView_->selectionModel(), &QItemSelectionModel::selectionChanged,
-            this, &OrgExplorerMdiWindow::onTreeSelectionChanged);
+    connect(treeView_->selectionModel(),
+            &QItemSelectionModel::selectionChanged,
+            this,
+            &OrgExplorerMdiWindow::onTreeSelectionChanged);
 
-    connect(tradeTableView_, &QTableView::doubleClicked,
-            this, &OrgExplorerMdiWindow::onTradeDoubleClicked);
+    connect(tradeTableView_,
+            &QTableView::doubleClicked,
+            this,
+            &OrgExplorerMdiWindow::onTradeDoubleClicked);
 
-    connect(tradeModel_, &OrgExplorerTradeModel::dataLoaded,
-            this, [this]() {
-        paginationWidget_->update_state(
-            static_cast<std::uint32_t>(tradeModel_->rowCount()),
-            tradeModel_->total_available_count());
+    connect(tradeModel_, &OrgExplorerTradeModel::dataLoaded, this, [this]() {
+        paginationWidget_->update_state(static_cast<std::uint32_t>(tradeModel_->rowCount()),
+                                        tradeModel_->total_available_count());
     });
 
-    connect(paginationWidget_, &PaginationWidget::page_requested,
-            this, [this](std::uint32_t offset, std::uint32_t limit) {
-        tradeModel_->load_page(offset, limit);
-    });
+    connect(paginationWidget_,
+            &PaginationWidget::page_requested,
+            this,
+            [this](std::uint32_t offset, std::uint32_t limit) {
+                tradeModel_->load_page(offset, limit);
+            });
 
-    connect(paginationWidget_, &PaginationWidget::page_size_changed,
-            this, [this](std::uint32_t /*size*/) {
-        tradeModel_->refresh();
-    });
+    connect(paginationWidget_,
+            &PaginationWidget::page_size_changed,
+            this,
+            [this](std::uint32_t /*size*/) { tradeModel_->refresh(); });
 
-    connect(paginationWidget_, &PaginationWidget::load_all_requested,
-            this, [this]() {
+    connect(paginationWidget_, &PaginationWidget::load_all_requested, this, [this]() {
         const auto total = tradeModel_->total_available_count();
         if (total > 0 && total <= 1000)
             tradeModel_->load_page(0, total);
     });
 
     unitWatcher_ = new QFutureWatcher<UnitFetchResult>(this);
-    connect(unitWatcher_, &QFutureWatcher<UnitFetchResult>::finished,
-            this, &OrgExplorerMdiWindow::onUnitsLoaded);
+    connect(unitWatcher_,
+            &QFutureWatcher<UnitFetchResult>::finished,
+            this,
+            &OrgExplorerMdiWindow::onUnitsLoaded);
 
     bookWatcher_ = new QFutureWatcher<BookFetchResult>(this);
-    connect(bookWatcher_, &QFutureWatcher<BookFetchResult>::finished,
-            this, &OrgExplorerMdiWindow::onBooksLoaded);
+    connect(bookWatcher_,
+            &QFutureWatcher<BookFetchResult>::finished,
+            this,
+            &OrgExplorerMdiWindow::onBooksLoaded);
 
     counterpartyWatcher_ = new QFutureWatcher<CounterpartyFetchResult>(this);
     connect(counterpartyWatcher_,
             &QFutureWatcher<CounterpartyFetchResult>::finished,
-            this, &OrgExplorerMdiWindow::onCounterpartiesLoaded);
+            this,
+            &OrgExplorerMdiWindow::onCounterpartiesLoaded);
 }
 
 void OrgExplorerMdiWindow::setupEventSubscriptions() {
     if (!clientManager_)
         return;
 
-    connect(clientManager_, &ClientManager::notificationReceived,
-            this, &OrgExplorerMdiWindow::onNotificationReceived);
+    connect(clientManager_,
+            &ClientManager::notificationReceived,
+            this,
+            &OrgExplorerMdiWindow::onNotificationReceived);
 
     auto subscribe_all = [this]() {
         clientManager_->subscribeToEvent(std::string{book_event});
@@ -226,11 +227,10 @@ void OrgExplorerMdiWindow::setupEventSubscriptions() {
         clientManager_->subscribeToEvent(std::string{trade_event});
     };
 
-    connect(clientManager_, &ClientManager::loggedIn,
-            this, [subscribe_all]() { subscribe_all(); });
+    connect(clientManager_, &ClientManager::loggedIn, this, [subscribe_all]() { subscribe_all(); });
 
-    connect(clientManager_, &ClientManager::reconnected,
-            this, [subscribe_all]() { subscribe_all(); });
+    connect(
+        clientManager_, &ClientManager::reconnected, this, [subscribe_all]() { subscribe_all(); });
 
     if (clientManager_->isConnected())
         subscribe_all();
@@ -250,108 +250,106 @@ void OrgExplorerMdiWindow::doReload() {
     QPointer<OrgExplorerMdiWindow> self = this;
 
     // Fetch business units
-    unitWatcher_->setFuture(
-        QtConcurrent::run([self]() -> UnitFetchResult {
-            return exception_helper::wrap_async_fetch<UnitFetchResult>(
-                [&]() -> UnitFetchResult {
-                    if (!self || !self->clientManager_)
-                        return {.success = false, .units = {},
-                                .error_message = "Model destroyed",
-                                .error_details = {}};
-
-                    refdata::messaging::get_business_units_request req;
-                    req.limit = 10'000;
-                    auto result = self->clientManager_->
-                        process_authenticated_request(std::move(req));
-                    if (!result)
-                        return {.success = false, .units = {},
-                                .error_message = QString::fromStdString(
-                                    "Failed to fetch business units: " +
-                                    result.error()),
-                                .error_details = {}};
-
-                    return {.success = true,
-                            .units = std::move(result->business_units),
-                            .error_message = {},
+    unitWatcher_->setFuture(QtConcurrent::run([self]() -> UnitFetchResult {
+        return exception_helper::wrap_async_fetch<UnitFetchResult>(
+            [&]() -> UnitFetchResult {
+                if (!self || !self->clientManager_)
+                    return {.success = false,
+                            .units = {},
+                            .error_message = "Model destroyed",
                             .error_details = {}};
-                }, "business units");
-        }));
+
+                refdata::messaging::get_business_units_request req;
+                req.limit = 10'000;
+                auto result = self->clientManager_->process_authenticated_request(std::move(req));
+                if (!result)
+                    return {.success = false,
+                            .units = {},
+                            .error_message = QString::fromStdString(
+                                "Failed to fetch business units: " + result.error()),
+                            .error_details = {}};
+
+                return {.success = true,
+                        .units = std::move(result->business_units),
+                        .error_message = {},
+                        .error_details = {}};
+            },
+            "business units");
+    }));
 
     // Fetch books
-    bookWatcher_->setFuture(
-        QtConcurrent::run([self]() -> BookFetchResult {
-            return exception_helper::wrap_async_fetch<BookFetchResult>(
-                [&]() -> BookFetchResult {
-                    if (!self || !self->clientManager_)
-                        return {.success = false, .books = {},
-                                .error_message = "Model destroyed",
-                                .error_details = {}};
-
-                    refdata::messaging::get_books_request req;
-                    auto result = self->clientManager_->
-                        process_authenticated_request(std::move(req));
-                    if (!result)
-                        return {.success = false, .books = {},
-                                .error_message = QString::fromStdString(
-                                    "Failed to fetch books: " +
-                                    result.error()),
-                                .error_details = {}};
-
-                    return {.success = true,
-                            .books = std::move(result->books),
-                            .error_message = {},
+    bookWatcher_->setFuture(QtConcurrent::run([self]() -> BookFetchResult {
+        return exception_helper::wrap_async_fetch<BookFetchResult>(
+            [&]() -> BookFetchResult {
+                if (!self || !self->clientManager_)
+                    return {.success = false,
+                            .books = {},
+                            .error_message = "Model destroyed",
                             .error_details = {}};
-                }, "books");
-        }));
+
+                refdata::messaging::get_books_request req;
+                auto result = self->clientManager_->process_authenticated_request(std::move(req));
+                if (!result)
+                    return {.success = false,
+                            .books = {},
+                            .error_message =
+                                QString::fromStdString("Failed to fetch books: " + result.error()),
+                            .error_details = {}};
+
+                return {.success = true,
+                        .books = std::move(result->books),
+                        .error_message = {},
+                        .error_details = {}};
+            },
+            "books");
+    }));
 
     // Fetch counterparties for display
-    counterpartyWatcher_->setFuture(
-        QtConcurrent::run([self]() -> CounterpartyFetchResult {
-            return exception_helper::wrap_async_fetch<CounterpartyFetchResult>(
-                [&]() -> CounterpartyFetchResult {
-                    if (!self || !self->clientManager_)
-                        return {.success = false, .cpty_map = {},
-                                .error_message = "Model destroyed",
-                                .error_details = {}};
-
-                    refdata::messaging::get_counterparties_request req;
-                    req.limit = 100'000;
-                    auto result = self->clientManager_->
-                        process_authenticated_request(std::move(req));
-                    if (!result)
-                        return {.success = false, .cpty_map = {},
-                                .error_message = QString::fromStdString(
-                                    "Failed to fetch counterparties: " +
-                                    result.error()),
-                                .error_details = {}};
-
-                    std::unordered_map<std::string, CounterpartyInfo> cpty_map;
-                    for (const auto& c : result->counterparties) {
-                        cpty_map[boost::uuids::to_string(c.id)] = {
-                            .short_code = c.short_code,
-                            .full_name = c.full_name};
-                    }
-                    return {.success = true,
-                            .cpty_map = std::move(cpty_map),
-                            .error_message = {},
+    counterpartyWatcher_->setFuture(QtConcurrent::run([self]() -> CounterpartyFetchResult {
+        return exception_helper::wrap_async_fetch<CounterpartyFetchResult>(
+            [&]() -> CounterpartyFetchResult {
+                if (!self || !self->clientManager_)
+                    return {.success = false,
+                            .cpty_map = {},
+                            .error_message = "Model destroyed",
                             .error_details = {}};
-                }, "counterparties");
-        }));
+
+                refdata::messaging::get_counterparties_request req;
+                req.limit = 100'000;
+                auto result = self->clientManager_->process_authenticated_request(std::move(req));
+                if (!result)
+                    return {.success = false,
+                            .cpty_map = {},
+                            .error_message = QString::fromStdString(
+                                "Failed to fetch counterparties: " + result.error()),
+                            .error_details = {}};
+
+                std::unordered_map<std::string, CounterpartyInfo> cpty_map;
+                for (const auto& c : result->counterparties) {
+                    cpty_map[boost::uuids::to_string(c.id)] = {.short_code = c.short_code,
+                                                               .full_name = c.full_name};
+                }
+                return {.success = true,
+                        .cpty_map = std::move(cpty_map),
+                        .error_message = {},
+                        .error_details = {}};
+            },
+            "counterparties");
+    }));
 }
 
 void OrgExplorerMdiWindow::onUnitsLoaded() {
     const auto result = unitWatcher_->result();
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to load business units: "
-                                   << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to load business units: " << result.error_message.toStdString();
         endLoading();
         return;
     }
 
     units_ = std::move(result.units);
     units_loaded_ = true;
-    BOOST_LOG_SEV(lg(), debug) << "Loaded " << units_.size()
-                               << " business units.";
+    BOOST_LOG_SEV(lg(), debug) << "Loaded " << units_.size() << " business units.";
 
     if (units_loaded_ && books_loaded_)
         rebuildTree();
@@ -360,8 +358,8 @@ void OrgExplorerMdiWindow::onUnitsLoaded() {
 void OrgExplorerMdiWindow::onBooksLoaded() {
     const auto result = bookWatcher_->result();
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to load books: "
-                                   << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to load books: " << result.error_message.toStdString();
         endLoading();
         return;
     }
@@ -377,21 +375,20 @@ void OrgExplorerMdiWindow::onBooksLoaded() {
 void OrgExplorerMdiWindow::onCounterpartiesLoaded() {
     const auto result = counterpartyWatcher_->result();
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to load counterparties: "
-                                   << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to load counterparties: " << result.error_message.toStdString();
         endLoading();
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Loaded " << result.cpty_map.size()
-                               << " counterparties.";
+    BOOST_LOG_SEV(lg(), debug) << "Loaded " << result.cpty_map.size() << " counterparties.";
     tradeModel_->set_counterparty_map(
         // NOLINTNEXTLINE(performance-move-const-arg)
         std::unordered_map<std::string, CounterpartyInfo>(result.cpty_map));
 }
 
-void OrgExplorerMdiWindow::collectBookUuids(
-    const QModelIndex& parent, QList<boost::uuids::uuid>& uuids) {
+void OrgExplorerMdiWindow::collectBookUuids(const QModelIndex& parent,
+                                            QList<boost::uuids::uuid>& uuids) {
     for (int r = 0; r < treeModel_->rowCount(parent); ++r) {
         auto idx = treeModel_->index(r, 0, parent);
         const auto* node = treeModel_->node_from_index(idx);
@@ -414,8 +411,7 @@ void OrgExplorerMdiWindow::rebuildTree() {
     }
     countWatchers_.clear();
 
-    const QString party_name = clientManager_
-        ? clientManager_->currentPartyName() : tr("Party");
+    const QString party_name = clientManager_ ? clientManager_->currentPartyName() : tr("Party");
     treeModel_->load(party_name, units_, books_);
     treeView_->expandAll();
     updateBreadcrumb(nullptr);
@@ -431,28 +427,29 @@ void OrgExplorerMdiWindow::rebuildTree() {
         auto* watcher = new QFutureWatcher<CountResult>(this);
         countWatchers_.append(watcher);
 
-        connect(watcher, &QFutureWatcher<CountResult>::finished, this,
-            [this, watcher]() {
-                countWatchers_.removeOne(watcher);
-                const auto result = watcher->result();
-                if (result.success)
-                    treeModel_->set_trade_count(result.book_id, result.count);
-                watcher->deleteLater();
-            });
+        connect(watcher, &QFutureWatcher<CountResult>::finished, this, [this, watcher]() {
+            countWatchers_.removeOne(watcher);
+            const auto result = watcher->result();
+            if (result.success)
+                treeModel_->set_trade_count(result.book_id, result.count);
+            watcher->deleteLater();
+        });
 
         const auto bid = book_id;
         watcher->setFuture(QtConcurrent::run([self, bid]() -> CountResult {
             return exception_helper::wrap_async_fetch<CountResult>(
                 [&]() -> CountResult {
                     if (!self || !self->clientManager_)
-                        return {.book_id = bid, .count = 0,
+                        return {.book_id = bid,
+                                .count = 0,
                                 .success = false,
                                 .error_message = "Destroyed",
                                 .error_details = {}};
 
                     auto result = self->clientManager_->listTrades(bid, 0, 0);
                     if (!result)
-                        return {.book_id = bid, .count = 0,
+                        return {.book_id = bid,
+                                .count = 0,
                                 .success = false,
                                 .error_message = "Failed to get count",
                                 .error_details = {}};
@@ -462,13 +459,14 @@ void OrgExplorerMdiWindow::rebuildTree() {
                             .success = true,
                             .error_message = {},
                             .error_details = {}};
-                }, "book trade count");
+                },
+                "book trade count");
         }));
     }
 }
 
-void OrgExplorerMdiWindow::onTreeSelectionChanged(
-    const QItemSelection& selected, const QItemSelection& /*deselected*/) {
+void OrgExplorerMdiWindow::onTreeSelectionChanged(const QItemSelection& selected,
+                                                  const QItemSelection& /*deselected*/) {
 
     if (selected.isEmpty()) {
         tradeModel_->set_filter(std::nullopt, std::nullopt);
@@ -517,8 +515,7 @@ void OrgExplorerMdiWindow::updateBreadcrumb(const OrgTreeNode* node) {
     };
 
     if (!node) {
-        add_button(tr("Trades"), true,
-            [this]() { treeView_->clearSelection(); });
+        add_button(tr("Trades"), true, [this]() { treeView_->clearSelection(); });
         bl->addStretch();
         return;
     }
@@ -541,8 +538,7 @@ void OrgExplorerMdiWindow::updateBreadcrumb(const OrgTreeNode* node) {
     }
 
     // "Trades" root — always clears selection
-    add_button(tr("Trades"), false,
-        [this]() { treeView_->clearSelection(); });
+    add_button(tr("Trades"), false, [this]() { treeView_->clearSelection(); });
 
     for (int i = 0; i < path.size(); ++i) {
         add_separator();
@@ -559,21 +555,18 @@ void OrgExplorerMdiWindow::updateBreadcrumb(const OrgTreeNode* node) {
             name = QString::fromStdString(n->book.name);
 
         const QModelIndex idx = indices[i];
-        add_button(name, is_last,
-            [this, idx]() { treeView_->setCurrentIndex(idx); });
+        add_button(name, is_last, [this, idx]() { treeView_->setCurrentIndex(idx); });
     }
 
     bl->addStretch();
 }
 
-void OrgExplorerMdiWindow::onNotificationReceived(
-    const QString& eventType,
-    const QDateTime& /*timestamp*/,
-    const QStringList& /*entityIds*/,
-    const QString& /*tenantId*/) {
+void OrgExplorerMdiWindow::onNotificationReceived(const QString& eventType,
+                                                  const QDateTime& /*timestamp*/,
+                                                  const QStringList& /*entityIds*/,
+                                                  const QString& /*tenantId*/) {
 
-    if (eventType == QLatin1String(book_event) ||
-        eventType == QLatin1String(business_unit_event) ||
+    if (eventType == QLatin1String(book_event) || eventType == QLatin1String(business_unit_event) ||
         eventType == QLatin1String(trade_event)) {
         markAsStale();
     }
@@ -581,9 +574,8 @@ void OrgExplorerMdiWindow::onNotificationReceived(
 
 void OrgExplorerMdiWindow::updateActionStates() {
     const auto* node = treeModel_->node_from_index(treeView_->currentIndex());
-    const bool has_editable = node &&
-        (node->kind == OrgTreeNode::Kind::BusinessUnit ||
-         node->kind == OrgTreeNode::Kind::Book);
+    const bool has_editable = node && (node->kind == OrgTreeNode::Kind::BusinessUnit ||
+                                       node->kind == OrgTreeNode::Kind::Book);
 
     editAction_->setEnabled(has_editable);
     historyAction_->setEnabled(has_editable);
@@ -591,7 +583,8 @@ void OrgExplorerMdiWindow::updateActionStates() {
 
 void OrgExplorerMdiWindow::onEditSelected() {
     const auto* node = treeModel_->node_from_index(treeView_->currentIndex());
-    if (!node) return;
+    if (!node)
+        return;
     if (node->kind == OrgTreeNode::Kind::BusinessUnit && businessUnitController_)
         businessUnitController_->openEdit(node->unit);
     else if (node->kind == OrgTreeNode::Kind::Book && bookController_)
@@ -600,7 +593,8 @@ void OrgExplorerMdiWindow::onEditSelected() {
 
 void OrgExplorerMdiWindow::onHistorySelected() {
     const auto* node = treeModel_->node_from_index(treeView_->currentIndex());
-    if (!node) return;
+    if (!node)
+        return;
     if (node->kind == OrgTreeNode::Kind::BusinessUnit && businessUnitController_)
         businessUnitController_->openHistory(node->unit);
     else if (node->kind == OrgTreeNode::Kind::Book && bookController_)

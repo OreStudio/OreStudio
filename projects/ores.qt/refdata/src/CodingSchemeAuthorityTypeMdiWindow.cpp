@@ -18,31 +18,31 @@
  *
  */
 #include "ores.qt/CodingSchemeAuthorityTypeMdiWindow.hpp"
-
-#include <QVBoxLayout>
-#include <QHeaderView>
-#include <QMessageBox>
-#include <QtConcurrent>
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/EntityItemDelegate.hpp"
+#include "ores.dq.api/messaging/coding_scheme_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/EntityItemDelegate.hpp"
+#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.dq.api/messaging/coding_scheme_protocol.hpp"
+#include <QHeaderView>
+#include <QMessageBox>
+#include <QVBoxLayout>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-CodingSchemeAuthorityTypeMdiWindow::CodingSchemeAuthorityTypeMdiWindow(
-    ClientManager* clientManager, const QString& username, QWidget* parent)
-    : EntityListMdiWindow(parent),
-      clientManager_(clientManager),
-      username_(username),
-      model_(new ClientCodingSchemeAuthorityTypeModel(clientManager, this)),
-      proxyModel_(new QSortFilterProxyModel(this)),
-      tableView_(new QTableView(this)),
-      toolbar_(nullptr) {
+CodingSchemeAuthorityTypeMdiWindow::CodingSchemeAuthorityTypeMdiWindow(ClientManager* clientManager,
+                                                                       const QString& username,
+                                                                       QWidget* parent)
+    : EntityListMdiWindow(parent)
+    , clientManager_(clientManager)
+    , username_(username)
+    , model_(new ClientCodingSchemeAuthorityTypeModel(clientManager, this))
+    , proxyModel_(new QSortFilterProxyModel(this))
+    , tableView_(new QTableView(this))
+    , toolbar_(nullptr) {
 
     proxyModel_->setSourceModel(model_);
     proxyModel_->setSortCaseSensitivity(Qt::CaseInsensitive);
@@ -61,8 +61,8 @@ void CodingSchemeAuthorityTypeMdiWindow::setupUi() {
 
     tableView_->setModel(proxyModel_);
     tableView_->setSortingEnabled(true);
-    tableView_->setItemDelegate(new EntityItemDelegate(
-        ClientCodingSchemeAuthorityTypeModel::columnStyles(), tableView_));
+    tableView_->setItemDelegate(
+        new EntityItemDelegate(ClientCodingSchemeAuthorityTypeModel::columnStyles(), tableView_));
     tableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
     tableView_->setSelectionMode(QAbstractItemView::ExtendedSelection);
     tableView_->setAlternatingRowColors(true);
@@ -70,10 +70,12 @@ void CodingSchemeAuthorityTypeMdiWindow::setupUi() {
     tableView_->verticalHeader()->setVisible(false);
     tableView_->sortByColumn(ClientCodingSchemeAuthorityTypeModel::Code, Qt::AscendingOrder);
 
-    initializeTableSettings(tableView_, model_,
-        ClientCodingSchemeAuthorityTypeModel::kSettingsGroup,
-        ClientCodingSchemeAuthorityTypeModel::defaultHiddenColumns(),
-        ClientCodingSchemeAuthorityTypeModel::kDefaultWindowSize, 1);
+    initializeTableSettings(tableView_,
+                            model_,
+                            ClientCodingSchemeAuthorityTypeModel::kSettingsGroup,
+                            ClientCodingSchemeAuthorityTypeModel::defaultHiddenColumns(),
+                            ClientCodingSchemeAuthorityTypeModel::kDefaultWindowSize,
+                            1);
 
     layout->addWidget(loadingBar());
     layout->addWidget(tableView_);
@@ -86,27 +88,23 @@ void CodingSchemeAuthorityTypeMdiWindow::setupToolbar() {
     toolbar_->setIconSize(QSize(20, 20));
 
     addAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor),
-        tr("Add"));
+        IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor), tr("Add"));
     addAction_->setToolTip(tr("Add new authority type"));
 
     editAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Edit, IconUtils::DefaultIconColor),
-        tr("Edit"));
+        IconUtils::createRecoloredIcon(Icon::Edit, IconUtils::DefaultIconColor), tr("Edit"));
     editAction_->setToolTip(tr("Edit selected authority type"));
     editAction_->setEnabled(false);
 
     deleteAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor),
-        tr("Delete"));
+        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor), tr("Delete"));
     deleteAction_->setToolTip(tr("Delete selected authority type(s)"));
     deleteAction_->setEnabled(false);
 
     toolbar_->addSeparator();
 
     historyAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor),
-        tr("History"));
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor), tr("History"));
     historyAction_->setToolTip(tr("View version history"));
     historyAction_->setEnabled(false);
 
@@ -124,21 +122,40 @@ void CodingSchemeAuthorityTypeMdiWindow::setupToolbar() {
 }
 
 void CodingSchemeAuthorityTypeMdiWindow::setupConnections() {
-    connect(model_, &ClientCodingSchemeAuthorityTypeModel::dataLoaded,
-            this, &CodingSchemeAuthorityTypeMdiWindow::onDataLoaded);
-    connect(model_, &ClientCodingSchemeAuthorityTypeModel::loadError,
-            this, &CodingSchemeAuthorityTypeMdiWindow::onLoadError);
+    connect(model_,
+            &ClientCodingSchemeAuthorityTypeModel::dataLoaded,
+            this,
+            &CodingSchemeAuthorityTypeMdiWindow::onDataLoaded);
+    connect(model_,
+            &ClientCodingSchemeAuthorityTypeModel::loadError,
+            this,
+            &CodingSchemeAuthorityTypeMdiWindow::onLoadError);
     connectModel(model_);
-    connect(tableView_, &QTableView::doubleClicked,
-            this, &CodingSchemeAuthorityTypeMdiWindow::onRowDoubleClicked);
-    connect(tableView_->selectionModel(), &QItemSelectionModel::selectionChanged,
-            this, &CodingSchemeAuthorityTypeMdiWindow::onSelectionChanged);
+    connect(tableView_,
+            &QTableView::doubleClicked,
+            this,
+            &CodingSchemeAuthorityTypeMdiWindow::onRowDoubleClicked);
+    connect(tableView_->selectionModel(),
+            &QItemSelectionModel::selectionChanged,
+            this,
+            &CodingSchemeAuthorityTypeMdiWindow::onSelectionChanged);
 
-    connect(addAction_, &QAction::triggered, this, &CodingSchemeAuthorityTypeMdiWindow::onAddClicked);
-    connect(editAction_, &QAction::triggered, this, &CodingSchemeAuthorityTypeMdiWindow::onEditClicked);
-    connect(deleteAction_, &QAction::triggered, this, &CodingSchemeAuthorityTypeMdiWindow::onDeleteClicked);
-    connect(refreshAction_, &QAction::triggered, this, &CodingSchemeAuthorityTypeMdiWindow::onRefreshClicked);
-    connect(historyAction_, &QAction::triggered, this, &CodingSchemeAuthorityTypeMdiWindow::onHistoryClicked);
+    connect(
+        addAction_, &QAction::triggered, this, &CodingSchemeAuthorityTypeMdiWindow::onAddClicked);
+    connect(
+        editAction_, &QAction::triggered, this, &CodingSchemeAuthorityTypeMdiWindow::onEditClicked);
+    connect(deleteAction_,
+            &QAction::triggered,
+            this,
+            &CodingSchemeAuthorityTypeMdiWindow::onDeleteClicked);
+    connect(refreshAction_,
+            &QAction::triggered,
+            this,
+            &CodingSchemeAuthorityTypeMdiWindow::onRefreshClicked);
+    connect(historyAction_,
+            &QAction::triggered,
+            this,
+            &CodingSchemeAuthorityTypeMdiWindow::onHistoryClicked);
 }
 
 void CodingSchemeAuthorityTypeMdiWindow::onDataLoaded() {
@@ -147,7 +164,7 @@ void CodingSchemeAuthorityTypeMdiWindow::onDataLoaded() {
 }
 
 void CodingSchemeAuthorityTypeMdiWindow::onLoadError(const QString& error_message,
-                                                      const QString& details) {
+                                                     const QString& details) {
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);
@@ -166,7 +183,8 @@ void CodingSchemeAuthorityTypeMdiWindow::onAddClicked() {
 
 void CodingSchemeAuthorityTypeMdiWindow::onEditClicked() {
     auto selected = tableView_->selectionModel()->selectedRows();
-    if (selected.isEmpty()) return;
+    if (selected.isEmpty())
+        return;
 
     auto sourceIndex = proxyModel_->mapToSource(selected.first());
     if (auto* at = model_->getAuthorityType(sourceIndex.row())) {
@@ -176,7 +194,8 @@ void CodingSchemeAuthorityTypeMdiWindow::onEditClicked() {
 
 void CodingSchemeAuthorityTypeMdiWindow::onDeleteClicked() {
     auto selected = tableView_->selectionModel()->selectedRows();
-    if (selected.isEmpty()) return;
+    if (selected.isEmpty())
+        return;
 
     std::vector<std::string> codes;
     for (const auto& index : selected) {
@@ -186,22 +205,26 @@ void CodingSchemeAuthorityTypeMdiWindow::onDeleteClicked() {
         }
     }
 
-    QString message = codes.size() == 1
-        ? tr("Delete authority type '%1'?").arg(QString::fromStdString(codes[0]))
-        : tr("Delete %1 authority types?").arg(codes.size());
+    QString message = codes.size() == 1 ?
+                          tr("Delete authority type '%1'?").arg(QString::fromStdString(codes[0])) :
+                          tr("Delete %1 authority types?").arg(codes.size());
 
-    auto reply = MessageBoxHelper::question(this, tr("Confirm Delete"), message,
-                                            QMessageBox::Yes | QMessageBox::No);
-    if (reply != QMessageBox::Yes) return;
+    auto reply = MessageBoxHelper::question(
+        this, tr("Confirm Delete"), message, QMessageBox::Yes | QMessageBox::No);
+    if (reply != QMessageBox::Yes)
+        return;
 
     QPointer<CodingSchemeAuthorityTypeMdiWindow> self = this;
     auto task = [self, codes = std::move(codes)]() -> bool {
-        if (!self || !self->clientManager_) return false;
+        if (!self || !self->clientManager_)
+            return false;
 
         dq::messaging::delete_coding_scheme_authority_type_request request;
         request.types = codes;
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
-        if (!response_result) return false;
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
+        if (!response_result)
+            return false;
 
         return response_result->success;
     };
@@ -235,7 +258,8 @@ void CodingSchemeAuthorityTypeMdiWindow::onSelectionChanged() {
 
 void CodingSchemeAuthorityTypeMdiWindow::onHistoryClicked() {
     auto selected = tableView_->selectionModel()->selectedRows();
-    if (selected.isEmpty()) return;
+    if (selected.isEmpty())
+        return;
 
     auto sourceIndex = proxyModel_->mapToSource(selected.first());
     if (auto* at = model_->getAuthorityType(sourceIndex.row())) {

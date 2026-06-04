@@ -20,10 +20,10 @@
 #ifndef ORES_QT_ABSTRACT_CLIENT_MODEL_HPP
 #define ORES_QT_ABSTRACT_CLIENT_MODEL_HPP
 
-#include <QString>
-#include <QAbstractTableModel>
 #include "ores.qt/WorkspaceContext.hpp"
 #include "ores.qt/export.hpp"
+#include <QAbstractTableModel>
+#include <QString>
 
 namespace ores::qt {
 
@@ -48,12 +48,16 @@ public:
      * will use this workspace id in X-Workspace-Id instead of the shared
      * ClientManager workspace context. Call before or instead of reload().
      */
-    void setWorkspaceContext(const WorkspaceContext& ctx) { workspace_ctx_ = ctx; }
+    void setWorkspaceContext(const WorkspaceContext& ctx) {
+        workspace_ctx_ = ctx;
+    }
 
     /**
      * @brief Get the current per-window workspace context.
      */
-    const WorkspaceContext& workspaceContext() const { return workspace_ctx_; }
+    const WorkspaceContext& workspaceContext() const {
+        return workspace_ctx_;
+    }
 
 signals:
     void dataLoaded();

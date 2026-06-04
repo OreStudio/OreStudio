@@ -20,8 +20,8 @@
 #ifndef ORES_QT_ACCOUNT_ITEM_DELEGATE_HPP
 #define ORES_QT_ACCOUNT_ITEM_DELEGATE_HPP
 
-#include <QStyledItemDelegate>
 #include <QFont>
+#include <QStyledItemDelegate>
 
 namespace ores::qt {
 
@@ -37,14 +37,13 @@ class AccountItemDelegate : public QStyledItemDelegate {
     Q_OBJECT
 
 public:
-    explicit AccountItemDelegate(BadgeCache* badgeCache,
-                                 QObject* parent = nullptr);
+    explicit AccountItemDelegate(BadgeCache* badgeCache, QObject* parent = nullptr);
 
-    void paint(QPainter* painter, const QStyleOptionViewItem& option,
+    void paint(QPainter* painter,
+               const QStyleOptionViewItem& option,
                const QModelIndex& index) const override;
 
-    QSize sizeHint(const QStyleOptionViewItem& option,
-                   const QModelIndex& index) const override;
+    QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
 private:
     BadgeCache* badgeCache_;

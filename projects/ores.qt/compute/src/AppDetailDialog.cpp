@@ -18,26 +18,25 @@
  *
  */
 #include "ores.qt/AppDetailDialog.hpp"
-
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include <QPlainTextEdit>
-#include <boost/uuid/random_generator.hpp>
-#include "ui_AppDetailDialog.h"
+#include "ores.compute.api/messaging/app_protocol.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/ChangeReasonDialog.hpp"
-#include "ores.compute.api/messaging/app_protocol.hpp"
+#include "ui_AppDetailDialog.h"
+#include <QFutureWatcher>
+#include <QMessageBox>
+#include <QPlainTextEdit>
+#include <QtConcurrent>
+#include <boost/uuid/random_generator.hpp>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 AppDetailDialog::AppDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent),
-      ui_(new Ui::AppDetailDialog),
-      clientManager_(nullptr) {
+    : DetailDialogBase(parent)
+    , ui_(new Ui::AppDetailDialog)
+    , clientManager_(nullptr) {
 
     ui_->setupUi(this);
     setupUi();
@@ -73,17 +72,13 @@ void AppDetailDialog::setupUi() {
 }
 
 void AppDetailDialog::setupConnections() {
-    connect(ui_->saveButton, &QPushButton::clicked, this,
-            &AppDetailDialog::onSaveClicked);
-    connect(ui_->deleteButton, &QPushButton::clicked, this,
-            &AppDetailDialog::onDeleteClicked);
-    connect(ui_->closeButton, &QPushButton::clicked, this,
-            &AppDetailDialog::onCloseClicked);
+    connect(ui_->saveButton, &QPushButton::clicked, this, &AppDetailDialog::onSaveClicked);
+    connect(ui_->deleteButton, &QPushButton::clicked, this, &AppDetailDialog::onDeleteClicked);
+    connect(ui_->closeButton, &QPushButton::clicked, this, &AppDetailDialog::onCloseClicked);
 
-    connect(ui_->nameEdit, &QLineEdit::textChanged, this,
-            &AppDetailDialog::onFieldChanged);
-    connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this,
-            &AppDetailDialog::onFieldChanged);
+    connect(ui_->nameEdit, &QLineEdit::textChanged, this, &AppDetailDialog::onFieldChanged);
+    connect(
+        ui_->descriptionEdit, &QPlainTextEdit::textChanged, this, &AppDetailDialog::onFieldChanged);
 }
 
 void AppDetailDialog::setClientManager(ClientManager* clientManager) {
@@ -94,8 +89,7 @@ void AppDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
 
-void AppDetailDialog::setApp(
-    const compute::domain::app& app) {
+void AppDetailDialog::setApp(const compute::domain::app& app) {
     app_ = app;
     updateUiFromApp();
 }
@@ -157,25 +151,23 @@ bool AppDetailDialog::validateInput() {
 
 void AppDetailDialog::onSaveClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot save compute app while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot save compute app while disconnected from server.");
         return;
     }
 
     if (!validateInput()) {
-        MessageBoxHelper::warning(this, "Invalid Input",
-            "Please fill in all required fields.");
+        MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
 
     updateAppFromUi();
 
-    const auto crOpType = createMode_
-        ? ChangeReasonDialog::OperationType::Create
-        : ChangeReasonDialog::OperationType::Amend;
-    const auto crSel = promptChangeReason(crOpType, hasChanges_,
-        createMode_ ? "system" : "common");
-    if (!crSel) return;
+    const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
+                                        ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
+    if (!crSel)
+        return;
     app_.change_reason_code = crSel->reason_code;
     app_.change_commentary = crSel->commentary;
 
@@ -185,25 +177,24 @@ void AppDetailDialog::onSaveClicked() {
     QPointer<AppDetailDialog> self = this;
     const compute::domain::app appToSave = app_;
 
-    QFuture<FutureResult> future =
-        QtConcurrent::run([self, appToSave]() -> FutureResult {
-            if (!self) return {false, ""};
+    QFuture<FutureResult> future = QtConcurrent::run([self, appToSave]() -> FutureResult {
+        if (!self)
+            return {false, ""};
 
-            compute::messaging::save_app_request request;
-            request.app = appToSave;
+        compute::messaging::save_app_request request;
+        request.app = appToSave;
 
-            auto result =
-                self->clientManager_->process_authenticated_request(
-                    std::move(request));
+        auto result = self->clientManager_->process_authenticated_request(std::move(request));
 
-            if (!result) return {false, "Failed to communicate with server"};
-            return {result->success, result->message};
-        });
+        if (!result)
+            return {false, "Failed to communicate with server"};
+        return {result->success, result->message};
+    });
 
     auto* watcher = new QFutureWatcher<FutureResult>(this);
-    connect(watcher, &QFutureWatcher<FutureResult>::finished, self,
-        [self, watcher, appToSave]() {
-        if (!self) return;
+    connect(watcher, &QFutureWatcher<FutureResult>::finished, self, [self, watcher, appToSave]() {
+        if (!self)
+            return;
         auto [success, message] = watcher->result();
         watcher->deleteLater();
 
@@ -217,8 +208,7 @@ void AppDetailDialog::onSaveClicked() {
             BOOST_LOG_SEV(lg(), error) << "App save failed: " << message;
             emit self->errorMessage(
                 QString("Failed to save app: %1").arg(QString::fromStdString(message)));
-            MessageBoxHelper::critical(self, "Save Failed",
-                QString::fromStdString(message));
+            MessageBoxHelper::critical(self, "Save Failed", QString::fromStdString(message));
         }
     });
     watcher->setFuture(future);
@@ -226,13 +216,15 @@ void AppDetailDialog::onSaveClicked() {
 
 void AppDetailDialog::onDeleteClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot delete compute app while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot delete compute app while disconnected from server.");
         return;
     }
 
     QString code = QString::fromStdString(app_.name);
-    auto reply = MessageBoxHelper::question(this, "Delete App",
+    auto reply = MessageBoxHelper::question(
+        this,
+        "Delete App",
         QString("Are you sure you want to delete compute app '%1'?").arg(code),
         QMessageBox::Yes | QMessageBox::No);
 
@@ -240,15 +232,16 @@ void AppDetailDialog::onDeleteClicked() {
         return;
     }
 
-    const auto crSel = promptChangeReason(
-        ChangeReasonDialog::OperationType::Delete, true, "common");
-    if (!crSel) return;
+    const auto crSel =
+        promptChangeReason(ChangeReasonDialog::OperationType::Delete, true, "common");
+    if (!crSel)
+        return;
 
     BOOST_LOG_SEV(lg(), info) << "Deleting compute app: " << app_.name;
 
     // Delete not yet implemented for compute entities
-    MessageBoxHelper::warning(this, "Not Implemented",
-        "Delete operation is not yet implemented for this entity.");
+    MessageBoxHelper::warning(
+        this, "Not Implemented", "Delete operation is not yet implemented for this entity.");
 }
 
 }

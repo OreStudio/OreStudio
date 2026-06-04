@@ -18,8 +18,9 @@
  *
  */
 #include "ores.qt/PublicationHistoryDialog.hpp"
+#include "ores.dq.api/domain/publication_mode.hpp"
+#include "ores.dq.api/messaging/publication_protocol.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-
 #include <QDateTime>
 #include <QDialogButtonBox>
 #include <QHeaderView>
@@ -27,8 +28,6 @@
 #include <QPushButton>
 #include <QtConcurrent>
 #include <boost/uuid/uuid_io.hpp>
-#include "ores.dq.api/domain/publication_mode.hpp"
-#include "ores.dq.api/messaging/publication_protocol.hpp"
 
 namespace ores::qt {
 
@@ -40,12 +39,14 @@ PublicationHistoryModel::PublicationHistoryModel(QObject* parent)
     : QAbstractTableModel(parent) {}
 
 int PublicationHistoryModel::rowCount(const QModelIndex& parent) const {
-    if (parent.isValid()) return 0;
+    if (parent.isValid())
+        return 0;
     return static_cast<int>(publications_.size());
 }
 
 int PublicationHistoryModel::columnCount(const QModelIndex& parent) const {
-    if (parent.isValid()) return 0;
+    if (parent.isValid())
+        return 0;
     return ColumnCount;
 }
 
@@ -57,60 +58,68 @@ QVariant PublicationHistoryModel::data(const QModelIndex& index, int role) const
 
     if (role == Qt::DisplayRole) {
         switch (static_cast<Column>(index.column())) {
-        case PublishedAt: {
-            auto qdt = QDateTime::fromSecsSinceEpoch(
-                std::chrono::system_clock::to_time_t(pub.published_at));
-            return qdt.toString("yyyy-MM-dd hh:mm:ss");
-        }
-        case DatasetCode:
-            return QString::fromStdString(pub.dataset_code);
-        case Mode:
-            return QString::fromStdString(
-                dq::domain::to_string(pub.mode));
-        case TargetTable:
-            return QString::fromStdString(pub.target_table);
-        case Inserted:
-            return QString::number(pub.records_inserted);
-        case Skipped:
-            return QString::number(pub.records_skipped);
-        case Deleted:
-            return QString::number(pub.records_deleted);
-        case PublishedBy:
-            return QString::fromStdString(pub.published_by);
-        default:
-            return QVariant();
+            case PublishedAt: {
+                auto qdt = QDateTime::fromSecsSinceEpoch(
+                    std::chrono::system_clock::to_time_t(pub.published_at));
+                return qdt.toString("yyyy-MM-dd hh:mm:ss");
+            }
+            case DatasetCode:
+                return QString::fromStdString(pub.dataset_code);
+            case Mode:
+                return QString::fromStdString(dq::domain::to_string(pub.mode));
+            case TargetTable:
+                return QString::fromStdString(pub.target_table);
+            case Inserted:
+                return QString::number(pub.records_inserted);
+            case Skipped:
+                return QString::number(pub.records_skipped);
+            case Deleted:
+                return QString::number(pub.records_deleted);
+            case PublishedBy:
+                return QString::fromStdString(pub.published_by);
+            default:
+                return QVariant();
         }
     }
 
     if (role == Qt::TextAlignmentRole) {
         switch (static_cast<Column>(index.column())) {
-        case Inserted:
-        case Skipped:
-        case Deleted:
-            return Qt::AlignRight;
-        default:
-            return QVariant();
+            case Inserted:
+            case Skipped:
+            case Deleted:
+                return Qt::AlignRight;
+            default:
+                return QVariant();
         }
     }
 
     return QVariant();
 }
 
-QVariant PublicationHistoryModel::headerData(int section, Qt::Orientation orientation,
-    int role) const {
+QVariant
+PublicationHistoryModel::headerData(int section, Qt::Orientation orientation, int role) const {
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return QVariant();
 
     switch (static_cast<Column>(section)) {
-    case PublishedAt:   return tr("Published At");
-    case DatasetCode:   return tr("Dataset");
-    case Mode:          return tr("Mode");
-    case TargetTable:   return tr("Target Table");
-    case Inserted:      return tr("Inserted");
-    case Skipped:       return tr("Skipped");
-    case Deleted:       return tr("Deleted");
-    case PublishedBy:   return tr("Published By");
-    default:            return QVariant();
+        case PublishedAt:
+            return tr("Published At");
+        case DatasetCode:
+            return tr("Dataset");
+        case Mode:
+            return tr("Mode");
+        case TargetTable:
+            return tr("Target Table");
+        case Inserted:
+            return tr("Inserted");
+        case Skipped:
+            return tr("Skipped");
+        case Deleted:
+            return tr("Deleted");
+        case PublishedBy:
+            return tr("Published By");
+        default:
+            return QVariant();
     }
 }
 
@@ -129,15 +138,16 @@ void PublicationHistoryModel::clear() {
 
 // PublicationHistoryDialog implementation
 
-PublicationHistoryDialog::PublicationHistoryDialog(ClientManager* clientManager,
-                                                   QWidget* parent)
-    : QDialog(parent),
-      clientManager_(clientManager),
-      watcher_(new QFutureWatcher<FetchResult>(this)) {
+PublicationHistoryDialog::PublicationHistoryDialog(ClientManager* clientManager, QWidget* parent)
+    : QDialog(parent)
+    , clientManager_(clientManager)
+    , watcher_(new QFutureWatcher<FetchResult>(this)) {
     setupUi();
 
-    connect(watcher_, &QFutureWatcher<FetchResult>::finished,
-            this, &PublicationHistoryDialog::onPublicationsLoaded);
+    connect(watcher_,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            &PublicationHistoryDialog::onPublicationsLoaded);
 }
 
 PublicationHistoryDialog::~PublicationHistoryDialog() = default;
@@ -163,8 +173,7 @@ void PublicationHistoryDialog::setupUi() {
 
     // Button box
     auto* buttonBox = new QDialogButtonBox(this);
-    auto* refreshButton = buttonBox->addButton(tr("Refresh"),
-        QDialogButtonBox::ActionRole);
+    auto* refreshButton = buttonBox->addButton(tr("Refresh"), QDialogButtonBox::ActionRole);
     buttonBox->addButton(QDialogButtonBox::Close);
 
     connect(refreshButton, &QPushButton::clicked, this, &PublicationHistoryDialog::refresh);
@@ -189,10 +198,8 @@ void PublicationHistoryDialog::refresh() {
 
             auto result = clientManager_->process_authenticated_request(std::move(request));
             if (result) {
-                return FetchResult{
-                    .success = true,
-                    .publications = std::move(result->publications)
-                };
+                return FetchResult{.success = true,
+                                   .publications = std::move(result->publications)};
             }
             return FetchResult{.success = false};
         } catch (const std::exception& e) {
@@ -215,8 +222,8 @@ void PublicationHistoryDialog::onPublicationsLoaded() {
             tableView_->resizeColumnToContents(i);
         }
 
-        BOOST_LOG_SEV(lg(), debug) << "Loaded " << result.publications.size()
-                                   << " publication records";
+        BOOST_LOG_SEV(lg(), debug)
+            << "Loaded " << result.publications.size() << " publication records";
         emit statusMessage(tr("Loaded %1 publication records").arg(result.publications.size()));
     } else {
         BOOST_LOG_SEV(lg(), warn) << "Failed to load publications";

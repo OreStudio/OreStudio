@@ -18,27 +18,26 @@
  *
  */
 #include "ores.qt/TreatmentDimensionDetailDialog.hpp"
-
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include "ui_TreatmentDimensionDetailDialog.h"
+#include "ores.dq.api/messaging/dimension_protocol.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.dq.api/messaging/dimension_protocol.hpp"
+#include "ui_TreatmentDimensionDetailDialog.h"
+#include <QFutureWatcher>
+#include <QMessageBox>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 TreatmentDimensionDetailDialog::TreatmentDimensionDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent),
-      ui_(new Ui::TreatmentDimensionDetailDialog),
-      clientManager_(nullptr),
-      isCreateMode_(true),
-      isReadOnly_(false) {
+    : DetailDialogBase(parent)
+    , ui_(new Ui::TreatmentDimensionDetailDialog)
+    , clientManager_(nullptr)
+    , isCreateMode_(true)
+    , isReadOnly_(false) {
 
     ui_->setupUi(this);
     WidgetUtils::setupComboBoxes(this);
@@ -49,18 +48,30 @@ TreatmentDimensionDetailDialog::~TreatmentDimensionDetailDialog() {
     delete ui_;
 }
 
-QTabWidget* TreatmentDimensionDetailDialog::tabWidget() const { return ui_->tabWidget; }
-QWidget* TreatmentDimensionDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
-ProvenanceWidget* TreatmentDimensionDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
+QTabWidget* TreatmentDimensionDetailDialog::tabWidget() const {
+    return ui_->tabWidget;
+}
+QWidget* TreatmentDimensionDetailDialog::provenanceTab() const {
+    return ui_->provenanceTab;
+}
+ProvenanceWidget* TreatmentDimensionDetailDialog::provenanceWidget() const {
+    return ui_->provenanceWidget;
+}
 
 void TreatmentDimensionDetailDialog::setupConnections() {
-    connect(ui_->saveButton, &QPushButton::clicked,
-            this, &TreatmentDimensionDetailDialog::onSaveClicked);
-    connect(ui_->deleteButton, &QPushButton::clicked,
-            this, &TreatmentDimensionDetailDialog::onDeleteClicked);
+    connect(ui_->saveButton,
+            &QPushButton::clicked,
+            this,
+            &TreatmentDimensionDetailDialog::onSaveClicked);
+    connect(ui_->deleteButton,
+            &QPushButton::clicked,
+            this,
+            &TreatmentDimensionDetailDialog::onDeleteClicked);
     ui_->closeButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
-    connect(ui_->closeButton, &QPushButton::clicked, this,
+    connect(ui_->closeButton,
+            &QPushButton::clicked,
+            this,
             &TreatmentDimensionDetailDialog::onCloseClicked);
 }
 
@@ -77,9 +88,12 @@ void TreatmentDimensionDetailDialog::setDimension(
     ui_->nameEdit->setText(QString::fromStdString(dimension.name));
     ui_->descriptionEdit->setPlainText(QString::fromStdString(dimension.description));
 
-    populateProvenance(dimension_.version, dimension_.modified_by,
-        dimension_.performed_by, dimension_.recorded_at,
-        "", dimension_.change_commentary);
+    populateProvenance(dimension_.version,
+                       dimension_.modified_by,
+                       dimension_.performed_by,
+                       dimension_.recorded_at,
+                       "",
+                       dimension_.change_commentary);
 
     updateUiState();
 }
@@ -105,14 +119,12 @@ void TreatmentDimensionDetailDialog::onSaveClicked() {
     QString description = ui_->descriptionEdit->toPlainText().trimmed();
 
     if (code.isEmpty()) {
-        MessageBoxHelper::warning(this, tr("Validation Error"),
-                                  tr("Code is required."));
+        MessageBoxHelper::warning(this, tr("Validation Error"), tr("Code is required."));
         return;
     }
 
     if (name.isEmpty()) {
-        MessageBoxHelper::warning(this, tr("Validation Error"),
-                                  tr("Name is required."));
+        MessageBoxHelper::warning(this, tr("Validation Error"), tr("Name is required."));
         return;
     }
 
@@ -124,26 +136,31 @@ void TreatmentDimensionDetailDialog::onSaveClicked() {
     dim.version = isCreateMode_ ? 0 : dimension_.version;
 
     {
-        const auto crOpType = isCreateMode_
-            ? ChangeReasonDialog::OperationType::Create
-            : ChangeReasonDialog::OperationType::Amend;
-        const auto crSel = promptChangeReason(crOpType, true,
-            isCreateMode_ ? "system" : "common");
-        if (!crSel) return;
+        const auto crOpType = isCreateMode_ ? ChangeReasonDialog::OperationType::Create :
+                                              ChangeReasonDialog::OperationType::Amend;
+        const auto crSel = promptChangeReason(crOpType, true, isCreateMode_ ? "system" : "common");
+        if (!crSel)
+            return;
         dim.change_commentary = crSel->commentary;
     }
 
     QPointer<TreatmentDimensionDetailDialog> self = this;
 
-    struct SaveResult { bool success; std::string message; };
+    struct SaveResult {
+        bool success;
+        std::string message;
+    };
 
     auto task = [self, dim]() -> SaveResult {
-        if (!self || !self->clientManager_) return {false, "Dialog closed"};
+        if (!self || !self->clientManager_)
+            return {false, "Dialog closed"};
 
         dq::messaging::save_treatment_dimension_request request;
         request.data = dim;
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
-        if (!response_result) return {false, "Failed to communicate with server"};
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
+        if (!response_result)
+            return {false, "Failed to communicate with server"};
 
         return {response_result->success, response_result->message};
     };
@@ -153,7 +170,8 @@ void TreatmentDimensionDetailDialog::onSaveClicked() {
         auto result = watcher->result();
         watcher->deleteLater();
 
-        if (!self) return;
+        if (!self)
+            return;
 
         if (result.success) {
             emit self->dimensionSaved(code);
@@ -168,28 +186,35 @@ void TreatmentDimensionDetailDialog::onSaveClicked() {
 }
 
 void TreatmentDimensionDetailDialog::onDeleteClicked() {
-    auto reply = MessageBoxHelper::question(this, tr("Confirm Delete"),
+    auto reply = MessageBoxHelper::question(
+        this,
+        tr("Confirm Delete"),
         tr("Delete treatment dimension '%1'?").arg(ui_->codeEdit->text()),
         QMessageBox::Yes | QMessageBox::No);
 
-    if (reply != QMessageBox::Yes) return;
+    if (reply != QMessageBox::Yes)
+        return;
 
     {
-        const auto crSel = promptChangeReason(
-            ChangeReasonDialog::OperationType::Delete, true, "common");
-        if (!crSel) return;
+        const auto crSel =
+            promptChangeReason(ChangeReasonDialog::OperationType::Delete, true, "common");
+        if (!crSel)
+            return;
     }
 
     QPointer<TreatmentDimensionDetailDialog> self = this;
     QString code = ui_->codeEdit->text();
 
     auto task = [self, code]() -> bool {
-        if (!self || !self->clientManager_) return false;
+        if (!self || !self->clientManager_)
+            return false;
 
         dq::messaging::delete_treatment_dimension_request request;
         request.codes.push_back({code.toStdString()});
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
-        if (!response_result) return false;
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
+        if (!response_result)
+            return false;
 
         return response_result->success;
     };
@@ -199,7 +224,8 @@ void TreatmentDimensionDetailDialog::onDeleteClicked() {
         bool success = watcher->result();
         watcher->deleteLater();
 
-        if (!self) return;
+        if (!self)
+            return;
 
         if (success) {
             emit self->statusMessage(tr("Treatment dimension deleted successfully"));

@@ -20,13 +20,13 @@
 #ifndef ORES_QT_METHODOLOGY_CONTROLLER_HPP
 #define ORES_QT_METHODOLOGY_CONTROLLER_HPP
 
-#include <string>
-#include <QMdiArea>
-#include <QMainWindow>
-#include "ores.qt/EntityController.hpp"
-#include "ores.qt/ClientManager.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.dq.api/domain/methodology.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/EntityController.hpp"
+#include <QMainWindow>
+#include <QMdiArea>
+#include <string>
 
 namespace ores::qt {
 
@@ -38,8 +38,7 @@ class MethodologyController final : public EntityController {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.methodology_controller";
+    inline static std::string_view logger_name = "ores.qt.methodology_controller";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -48,13 +47,12 @@ private:
     }
 
 public:
-    MethodologyController(
-        QMainWindow* mainWindow,
-        QMdiArea* mdiArea,
-        ClientManager* clientManager,
-        ChangeReasonCache* changeReasonCache,
-        const QString& username,
-        QObject* parent = nullptr);
+    MethodologyController(QMainWindow* mainWindow,
+                          QMdiArea* mdiArea,
+                          ClientManager* clientManager,
+                          ChangeReasonCache* changeReasonCache,
+                          const QString& username,
+                          QObject* parent = nullptr);
 
     void showListWindow() override;
     void closeAllWindows() override;

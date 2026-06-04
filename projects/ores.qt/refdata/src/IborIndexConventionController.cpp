@@ -18,30 +18,27 @@
  *
  */
 #include "ores.qt/IborIndexConventionController.hpp"
-
+#include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/IborIndexConventionDetailDialog.hpp"
+#include "ores.qt/IborIndexConventionHistoryDialog.hpp"
+#include "ores.qt/IborIndexConventionMdiWindow.hpp"
+#include "ores.qt/IconUtils.hpp"
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/IborIndexConventionMdiWindow.hpp"
-#include "ores.qt/IborIndexConventionDetailDialog.hpp"
-#include "ores.qt/IborIndexConventionHistoryDialog.hpp"
-#include "ores.qt/DetachableMdiSubWindow.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-IborIndexConventionController::IborIndexConventionController(
-    QMainWindow* mainWindow,
-    QMdiArea* mdiArea,
-    ClientManager* clientManager,
-    const QString& username,
-    QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username,
-          std::string_view{}, parent),
-      listWindow_(nullptr),
-      listMdiSubWindow_(nullptr) {
+IborIndexConventionController::IborIndexConventionController(QMainWindow* mainWindow,
+                                                             QMdiArea* mdiArea,
+                                                             ClientManager* clientManager,
+                                                             const QString& username,
+                                                             QObject* parent)
+    : EntityController(mainWindow, mdiArea, clientManager, username, std::string_view{}, parent)
+    , listWindow_(nullptr)
+    , listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "IborIndexConventionController created";
 }
@@ -59,23 +56,33 @@ void IborIndexConventionController::showListWindow() {
     listWindow_ = new IborIndexConventionMdiWindow(clientManager_, username_);
 
     // Connect signals
-    connect(listWindow_, &IborIndexConventionMdiWindow::statusChanged,
-            this, &IborIndexConventionController::statusMessage);
-    connect(listWindow_, &IborIndexConventionMdiWindow::errorOccurred,
-            this, &IborIndexConventionController::errorMessage);
-    connect(listWindow_, &IborIndexConventionMdiWindow::showConventionDetails,
-            this, &IborIndexConventionController::onShowDetails);
-    connect(listWindow_, &IborIndexConventionMdiWindow::addNewRequested,
-            this, &IborIndexConventionController::onAddNewRequested);
-    connect(listWindow_, &IborIndexConventionMdiWindow::showConventionHistory,
-            this, &IborIndexConventionController::onShowHistory);
+    connect(listWindow_,
+            &IborIndexConventionMdiWindow::statusChanged,
+            this,
+            &IborIndexConventionController::statusMessage);
+    connect(listWindow_,
+            &IborIndexConventionMdiWindow::errorOccurred,
+            this,
+            &IborIndexConventionController::errorMessage);
+    connect(listWindow_,
+            &IborIndexConventionMdiWindow::showConventionDetails,
+            this,
+            &IborIndexConventionController::onShowDetails);
+    connect(listWindow_,
+            &IborIndexConventionMdiWindow::addNewRequested,
+            this,
+            &IborIndexConventionController::onAddNewRequested);
+    connect(listWindow_,
+            &IborIndexConventionMdiWindow::showConventionHistory,
+            this,
+            &IborIndexConventionController::onShowHistory);
 
     // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("IBOR Index Conventions");
-    listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Chart, IconUtils::DefaultIconColor));
+    listMdiSubWindow_->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -87,12 +94,16 @@ void IborIndexConventionController::showListWindow() {
     register_detachable_window(listMdiSubWindow_);
 
     // Cleanup when closed
-    connect(listMdiSubWindow_, &QObject::destroyed, this, [self = QPointer<IborIndexConventionController>(this), key]() {
-        if (!self) return;
-        self->untrack_window(key);
-        self->listWindow_ = nullptr;
-        self->listMdiSubWindow_ = nullptr;
-    });
+    connect(listMdiSubWindow_,
+            &QObject::destroyed,
+            this,
+            [self = QPointer<IborIndexConventionController>(this), key]() {
+                if (!self)
+                    return;
+                self->untrack_window(key);
+                self->listWindow_ = nullptr;
+                self->listMdiSubWindow_ = nullptr;
+            });
 
     BOOST_LOG_SEV(lg(), debug) << "IBOR Index Convention list window created";
 }
@@ -144,23 +155,30 @@ void IborIndexConventionController::showAddWindow() {
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
 
-    connect(detailDialog, &IborIndexConventionDetailDialog::statusMessage,
-            this, &IborIndexConventionController::statusMessage);
-    connect(detailDialog, &IborIndexConventionDetailDialog::errorMessage,
-            this, &IborIndexConventionController::errorMessage);
-    connect(detailDialog, &IborIndexConventionDetailDialog::icSaved,
-            this, [self = QPointer<IborIndexConventionController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "IBOR Index Convention saved: " << code.toStdString();
-        self->handleEntitySaved();
-    });
+    connect(detailDialog,
+            &IborIndexConventionDetailDialog::statusMessage,
+            this,
+            &IborIndexConventionController::statusMessage);
+    connect(detailDialog,
+            &IborIndexConventionDetailDialog::errorMessage,
+            this,
+            &IborIndexConventionController::errorMessage);
+    connect(detailDialog,
+            &IborIndexConventionDetailDialog::icSaved,
+            this,
+            [self = QPointer<IborIndexConventionController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "IBOR Index Convention saved: " << code.toStdString();
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New IBOR Index Convention");
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Chart, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -187,37 +205,47 @@ void IborIndexConventionController::showDetailWindow(
     detailDialog->setCreateMode(false);
     detailDialog->setConvention(ic);
 
-    connect(detailDialog, &IborIndexConventionDetailDialog::statusMessage,
-            this, &IborIndexConventionController::statusMessage);
-    connect(detailDialog, &IborIndexConventionDetailDialog::errorMessage,
-            this, &IborIndexConventionController::errorMessage);
-    connect(detailDialog, &IborIndexConventionDetailDialog::icSaved,
-            this, [self = QPointer<IborIndexConventionController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "IBOR Index Convention saved: " << code.toStdString();
-        self->handleEntitySaved();
-    });
-    connect(detailDialog, &IborIndexConventionDetailDialog::icDeleted,
-            this, [self = QPointer<IborIndexConventionController>(this), key](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "IBOR Index Convention deleted: " << code.toStdString();
-        self->handleEntityDeleted();
-    });
+    connect(detailDialog,
+            &IborIndexConventionDetailDialog::statusMessage,
+            this,
+            &IborIndexConventionController::statusMessage);
+    connect(detailDialog,
+            &IborIndexConventionDetailDialog::errorMessage,
+            this,
+            &IborIndexConventionController::errorMessage);
+    connect(detailDialog,
+            &IborIndexConventionDetailDialog::icSaved,
+            this,
+            [self = QPointer<IborIndexConventionController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "IBOR Index Convention saved: " << code.toStdString();
+                self->handleEntitySaved();
+            });
+    connect(detailDialog,
+            &IborIndexConventionDetailDialog::icDeleted,
+            this,
+            [self = QPointer<IborIndexConventionController>(this), key](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info)
+                    << "IBOR Index Convention deleted: " << code.toStdString();
+                self->handleEntityDeleted();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("IBOR Index Convention: %1").arg(identifier));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Chart, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
 
     // Track window
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<IborIndexConventionController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, key]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, key]() {
         if (self) {
             self->untrack_window(key);
         }
@@ -235,30 +263,38 @@ void IborIndexConventionController::showHistoryWindow(const QString& code) {
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
-        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: "
-                                  << code.toStdString();
+        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: " << code.toStdString();
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
-                              << code.toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << code.toStdString();
 
     auto* historyDialog = new IborIndexConventionHistoryDialog(code, clientManager_, mainWindow_);
 
-    connect(historyDialog, &IborIndexConventionHistoryDialog::statusChanged,
-            this, [self = QPointer<IborIndexConventionController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(historyDialog, &IborIndexConventionHistoryDialog::errorOccurred,
-            this, [self = QPointer<IborIndexConventionController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
-    connect(historyDialog, &IborIndexConventionHistoryDialog::revertVersionRequested,
-            this, &IborIndexConventionController::onRevertVersion);
-    connect(historyDialog, &IborIndexConventionHistoryDialog::openVersionRequested,
-            this, &IborIndexConventionController::onOpenVersion);
+    connect(historyDialog,
+            &IborIndexConventionHistoryDialog::statusChanged,
+            this,
+            [self = QPointer<IborIndexConventionController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(historyDialog,
+            &IborIndexConventionHistoryDialog::errorOccurred,
+            this,
+            [self = QPointer<IborIndexConventionController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
+    connect(historyDialog,
+            &IborIndexConventionHistoryDialog::revertVersionRequested,
+            this,
+            &IborIndexConventionController::onRevertVersion);
+    connect(historyDialog,
+            &IborIndexConventionHistoryDialog::openVersionRequested,
+            this,
+            &IborIndexConventionController::onOpenVersion);
 
     // Load history data
     historyDialog->loadHistory();
@@ -267,16 +303,15 @@ void IborIndexConventionController::showHistoryWindow(const QString& code) {
     historyWindow->setAttribute(Qt::WA_DeleteOnClose);
     historyWindow->setWidget(historyDialog);
     historyWindow->setWindowTitle(QString("IBOR Index Convention History: %1").arg(code));
-    historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    historyWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     // Track this history window
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
 
     QPointer<IborIndexConventionController> self = this;
-    connect(historyWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -285,14 +320,14 @@ void IborIndexConventionController::showHistoryWindow(const QString& code) {
     show_managed_window(historyWindow, listMdiSubWindow_);
 }
 
-void IborIndexConventionController::onOpenVersion(
-    const refdata::domain::ibor_index_convention& ic, int versionNumber) {
+void IborIndexConventionController::onOpenVersion(const refdata::domain::ibor_index_convention& ic,
+                                                  int versionNumber) {
     BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
                               << " for IBOR index convention: " << ic.id;
 
     const QString code = QString::fromStdString(ic.id);
-    const QString windowKey = build_window_key("version", QString("%1_v%2")
-        .arg(code).arg(versionNumber));
+    const QString windowKey =
+        build_window_key("version", QString("%1_v%2").arg(code).arg(versionNumber));
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
@@ -306,31 +341,36 @@ void IborIndexConventionController::onOpenVersion(
     detailDialog->setConvention(ic);
     detailDialog->setReadOnly(true);
 
-    connect(detailDialog, &IborIndexConventionDetailDialog::statusMessage,
-            this, [self = QPointer<IborIndexConventionController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(detailDialog, &IborIndexConventionDetailDialog::errorMessage,
-            this, [self = QPointer<IborIndexConventionController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
+    connect(detailDialog,
+            &IborIndexConventionDetailDialog::statusMessage,
+            this,
+            [self = QPointer<IborIndexConventionController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(detailDialog,
+            &IborIndexConventionDetailDialog::errorMessage,
+            this,
+            [self = QPointer<IborIndexConventionController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("IBOR Index Convention: %1 (Version %2)")
-        .arg(code).arg(versionNumber));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("IBOR Index Convention: %1 (Version %2)").arg(code).arg(versionNumber));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     track_window(windowKey, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<IborIndexConventionController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -342,8 +382,7 @@ void IborIndexConventionController::onOpenVersion(
 
 void IborIndexConventionController::onRevertVersion(
     const refdata::domain::ibor_index_convention& ic) {
-    BOOST_LOG_SEV(lg(), info) << "Reverting IBOR index convention to version: "
-                              << ic.version;
+    BOOST_LOG_SEV(lg(), info) << "Reverting IBOR index convention to version: " << ic.version;
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new IborIndexConventionDetailDialog(mainWindow_);
@@ -352,25 +391,34 @@ void IborIndexConventionController::onRevertVersion(
     detailDialog->setConvention(ic);
     detailDialog->setCreateMode(false);
 
-    connect(detailDialog, &IborIndexConventionDetailDialog::statusMessage,
-            this, &IborIndexConventionController::statusMessage);
-    connect(detailDialog, &IborIndexConventionDetailDialog::errorMessage,
-            this, &IborIndexConventionController::errorMessage);
-    connect(detailDialog, &IborIndexConventionDetailDialog::icSaved,
-            this, [self = QPointer<IborIndexConventionController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "IBOR Index Convention reverted: " << code.toStdString();
-        emit self->statusMessage(QString("IBOR Index Convention '%1' reverted successfully").arg(code));
-        self->handleEntitySaved();
-    });
+    connect(detailDialog,
+            &IborIndexConventionDetailDialog::statusMessage,
+            this,
+            &IborIndexConventionController::statusMessage);
+    connect(detailDialog,
+            &IborIndexConventionDetailDialog::errorMessage,
+            this,
+            &IborIndexConventionController::errorMessage);
+    connect(detailDialog,
+            &IborIndexConventionDetailDialog::icSaved,
+            this,
+            [self = QPointer<IborIndexConventionController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info)
+                    << "IBOR Index Convention reverted: " << code.toStdString();
+                emit self->statusMessage(
+                    QString("IBOR Index Convention '%1' reverted successfully").arg(code));
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Revert IBOR Index Convention: %1")
-        .arg(QString::fromStdString(ic.id)));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("Revert IBOR Index Convention: %1").arg(QString::fromStdString(ic.id)));
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
+                                                               IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 

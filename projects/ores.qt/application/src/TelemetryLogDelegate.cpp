@@ -19,12 +19,11 @@
  */
 #include "ores.qt/TelemetryLogDelegate.hpp"
 #include "ores.qt/ClientTelemetryLogModel.hpp"
-#include "ores.qt/DelegatePaintUtils.hpp"
 #include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/DelegatePaintUtils.hpp"
 #include "ores.qt/FontUtils.hpp"
-
-#include <QPainter>
 #include <QApplication>
+#include <QPainter>
 #include <QStyleOptionViewItem>
 
 namespace ores::qt {
@@ -39,8 +38,8 @@ TelemetryLogDelegate::TelemetryLogDelegate(QObject* parent)
 }
 
 void TelemetryLogDelegate::paint(QPainter* painter,
-                                  const QStyleOptionViewItem& option,
-                                  const QModelIndex& index) const {
+                                 const QStyleOptionViewItem& option,
+                                 const QModelIndex& index) const {
     QStyleOptionViewItem opt = option;
     initStyleOption(&opt, index);
 
@@ -79,37 +78,37 @@ void TelemetryLogDelegate::paint(QPainter* painter,
             badgeText = level.toUpper();
         }
 
-        DelegatePaintUtils::draw_centered_badge(painter, opt.rect,
-            badgeText, bgColor, textColor, badgeFont_);
+        DelegatePaintUtils::draw_centered_badge(
+            painter, opt.rect, badgeText, bgColor, textColor, badgeFont_);
         return;
     }
 
     // Apply formatting based on column
     switch (index.column()) {
-    case ClientTelemetryLogModel::Timestamp:
-        opt.font = monospaceFont_;
-        opt.displayAlignment = Qt::AlignLeft | Qt::AlignVCenter;
-        break;
-    case ClientTelemetryLogModel::Source:
-        opt.font = monospaceFont_;
-        opt.displayAlignment = Qt::AlignLeft | Qt::AlignVCenter;
-        break;
-    case ClientTelemetryLogModel::Component:
-        opt.font = monospaceFont_;
-        opt.displayAlignment = Qt::AlignLeft | Qt::AlignVCenter;
-        break;
-    case ClientTelemetryLogModel::Message:
-        opt.displayAlignment = Qt::AlignLeft | Qt::AlignVCenter;
-        break;
-    default:
-        break;
+        case ClientTelemetryLogModel::Timestamp:
+            opt.font = monospaceFont_;
+            opt.displayAlignment = Qt::AlignLeft | Qt::AlignVCenter;
+            break;
+        case ClientTelemetryLogModel::Source:
+            opt.font = monospaceFont_;
+            opt.displayAlignment = Qt::AlignLeft | Qt::AlignVCenter;
+            break;
+        case ClientTelemetryLogModel::Component:
+            opt.font = monospaceFont_;
+            opt.displayAlignment = Qt::AlignLeft | Qt::AlignVCenter;
+            break;
+        case ClientTelemetryLogModel::Message:
+            opt.displayAlignment = Qt::AlignLeft | Qt::AlignVCenter;
+            break;
+        default:
+            break;
     }
 
     QApplication::style()->drawControl(QStyle::CE_ItemViewItem, &opt, painter);
 }
 
 QSize TelemetryLogDelegate::sizeHint(const QStyleOptionViewItem& option,
-                                      const QModelIndex& index) const {
+                                     const QModelIndex& index) const {
     QSize size = QStyledItemDelegate::sizeHint(option, index);
 
     if (index.column() == ClientTelemetryLogModel::Level) {

@@ -20,21 +20,21 @@
 #ifndef ORES_QT_MAIN_WINDOW_HPP
 #define ORES_QT_MAIN_WINDOW_HPP
 
-#include <QList>
-#include <QMenu>
-#include <QColor>
-#include <QLabel>
-#include <QTimer>
-#include <QPointer>
-#include <QMainWindow>
-#include <QSystemTrayIcon>
-#include <memory>
-#include <vector>
-#include <boost/uuid/uuid.hpp>
-#include "ores.qt/ClientManager.hpp"
-#include "ores.qt/MdiAreaWithBackground.hpp"
 #include "ores.eventing/service/event_bus.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/MdiAreaWithBackground.hpp"
+#include <QColor>
+#include <QLabel>
+#include <QList>
+#include <QMainWindow>
+#include <QMenu>
+#include <QPointer>
+#include <QSystemTrayIcon>
+#include <QTimer>
+#include <boost/uuid/uuid.hpp>
+#include <memory>
+#include <vector>
 
 namespace Ui {
 
@@ -89,7 +89,9 @@ public:
     /**
      * @brief Get the client manager.
      */
-    ClientManager* getClientManager() const { return clientManager_; }
+    ClientManager* getClientManager() const {
+        return clientManager_;
+    }
 
     /**
      * @brief Set instance identification info for multi-instance testing.
@@ -126,7 +128,7 @@ private slots:
     void onSetRecordingDirectoryTriggered();
     void onConnectionBrowserTriggered();
     void onConnectionConnectRequested(const boost::uuids::uuid& connectionId,
-                                       const QString& connectionName);
+                                      const QString& connectionName);
     void onEnvironmentConnectRequested(const boost::uuids::uuid& environmentId,
                                        const QString& environmentName);
     void onModernLoginTriggered();
@@ -134,8 +136,7 @@ private slots:
 
 private:
     void showSignUpDialog(const QString& host, int port);
-    void showSystemProvisionerWizard(
-        const QString& username = {}, const QString& password = {});
+    void showSystemProvisionerWizard(const QString& username = {}, const QString& password = {});
     void showTenantProvisioningWizard();
     void showPartyProvisioningWizard();
 
@@ -164,16 +165,16 @@ private:
     QLabel* connectionStatusIconLabel_;
 
     QWidget* userStatusWidget_;
-    QLabel*  userStatusNameLabel_;
+    QLabel* userStatusNameLabel_;
     QWidget* serverStatusWidget_;
-    QLabel*  serverStatusNameLabel_;
+    QLabel* serverStatusNameLabel_;
     QWidget* tenantStatusWidget_;
-    QLabel*  tenantStatusNameLabel_;
+    QLabel* tenantStatusNameLabel_;
     QWidget* partyStatusWidget_;
-    QLabel*  partyStatusNameLabel_;
+    QLabel* partyStatusNameLabel_;
 
     QWidget* envLabelWidget_;
-    QLabel*  envLabelNameLabel_;
+    QLabel* envLabelNameLabel_;
 
     QList<QPointer<DetachableMdiSubWindow>> allDetachableWindows_;
 

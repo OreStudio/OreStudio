@@ -20,11 +20,11 @@
 #ifndef ORES_QT_MESSAGE_BOX_HELPER_HPP
 #define ORES_QT_MESSAGE_BOX_HELPER_HPP
 
-#include <QMessageBox>
-#include <QWidget>
-#include <QString>
-#include <QIcon>
 #include "ores.qt/export.hpp"
+#include <QIcon>
+#include <QMessageBox>
+#include <QString>
+#include <QWidget>
 
 namespace ores::qt {
 
@@ -38,11 +38,11 @@ public:
      * @param buttons Buttons to show (default Yes | No)
      * @return The button that was clicked
      */
-    static QMessageBox::StandardButton question(
-        QWidget* parent,
-        const QString& title,
-        const QString& text,
-        QMessageBox::StandardButtons buttons = QMessageBox::Yes | QMessageBox::No);
+    static QMessageBox::StandardButton
+    question(QWidget* parent,
+             const QString& title,
+             const QString& text,
+             QMessageBox::StandardButtons buttons = QMessageBox::Yes | QMessageBox::No);
 
     /**
      * @brief Show a warning dialog with custom Fluent icon
@@ -50,10 +50,7 @@ public:
      * @param title Dialog title
      * @param text Dialog message
      */
-    static void warning(
-        QWidget* parent,
-        const QString& title,
-        const QString& text);
+    static void warning(QWidget* parent, const QString& title, const QString& text);
 
     /**
      * @brief Show a critical error dialog with custom Fluent icon
@@ -61,10 +58,7 @@ public:
      * @param title Dialog title
      * @param text Dialog message
      */
-    static void critical(
-        QWidget* parent,
-        const QString& title,
-        const QString& text);
+    static void critical(QWidget* parent, const QString& title, const QString& text);
 
     /**
      * @brief Show a critical error dialog with expandable technical details
@@ -73,11 +67,10 @@ public:
      * @param text Dialog message
      * @param detailedText Technical details shown in expandable section
      */
-    static void critical(
-        QWidget* parent,
-        const QString& title,
-        const QString& text,
-        const QString& detailedText);
+    static void critical(QWidget* parent,
+                         const QString& title,
+                         const QString& text,
+                         const QString& detailedText);
 
     /**
      * @brief Show an information dialog with custom Fluent icon
@@ -85,10 +78,7 @@ public:
      * @param title Dialog title
      * @param text Dialog message
      */
-    static void information(
-        QWidget* parent,
-        const QString& title,
-        const QString& text);
+    static void information(QWidget* parent, const QString& title, const QString& text);
 };
 
 } // namespace ores::qt

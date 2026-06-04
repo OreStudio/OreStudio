@@ -34,26 +34,25 @@ public:
     [[nodiscard]] std::string entity_type_name() const override;
     [[nodiscard]] bool has_party_category() const override;
 
-    [[nodiscard]] operation_result save_entity(
-        ClientManager* cm, const entity_data& data) const override;
-    [[nodiscard]] operation_result delete_entity(
-        ClientManager* cm, const boost::uuids::uuid& id) const override;
-    [[nodiscard]] load_all_entities_result load_all_entities(
-        ClientManager* cm) const override;
+    [[nodiscard]] operation_result save_entity(ClientManager* cm,
+                                               const entity_data& data) const override;
+    [[nodiscard]] operation_result delete_entity(ClientManager* cm,
+                                                 const boost::uuids::uuid& id) const override;
+    [[nodiscard]] load_all_entities_result load_all_entities(ClientManager* cm) const override;
 
-    [[nodiscard]] load_identifiers_result load_identifiers(
-        ClientManager* cm, const boost::uuids::uuid& entity_id) const override;
-    [[nodiscard]] operation_result save_identifier(
-        ClientManager* cm, const identifier_entry& entry) const override;
-    [[nodiscard]] operation_result delete_identifier(
-        ClientManager* cm, const boost::uuids::uuid& id) const override;
+    [[nodiscard]] load_identifiers_result
+    load_identifiers(ClientManager* cm, const boost::uuids::uuid& entity_id) const override;
+    [[nodiscard]] operation_result save_identifier(ClientManager* cm,
+                                                   const identifier_entry& entry) const override;
+    [[nodiscard]] operation_result delete_identifier(ClientManager* cm,
+                                                     const boost::uuids::uuid& id) const override;
 
-    [[nodiscard]] load_contacts_result load_contacts(
-        ClientManager* cm, const boost::uuids::uuid& entity_id) const override;
-    [[nodiscard]] operation_result save_contact(
-        ClientManager* cm, const contact_entry& entry) const override;
-    [[nodiscard]] operation_result delete_contact(
-        ClientManager* cm, const boost::uuids::uuid& id) const override;
+    [[nodiscard]] load_contacts_result
+    load_contacts(ClientManager* cm, const boost::uuids::uuid& entity_id) const override;
+    [[nodiscard]] operation_result save_contact(ClientManager* cm,
+                                                const contact_entry& entry) const override;
+    [[nodiscard]] operation_result delete_contact(ClientManager* cm,
+                                                  const boost::uuids::uuid& id) const override;
 };
 
 }

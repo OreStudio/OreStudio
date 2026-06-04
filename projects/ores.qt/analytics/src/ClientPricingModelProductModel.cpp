@@ -18,39 +18,44 @@
  *
  */
 #include "ores.qt/ClientPricingModelProductModel.hpp"
-
-#include <QtConcurrent>
-#include <boost/uuid/uuid_io.hpp>
 #include "ores.analytics.api/messaging/pricing_model_product_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
+#include <QtConcurrent>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    std::string pricing_model_product_key_extractor(const analytics::domain::pricing_model_product& e) {
-        return e.pricing_engine_type_code;
-    }
+std::string pricing_model_product_key_extractor(const analytics::domain::pricing_model_product& e) {
+    return e.pricing_engine_type_code;
+}
 }
 
-ClientPricingModelProductModel::ClientPricingModelProductModel(
-    ClientManager* clientManager, QObject* parent)
-    : AbstractClientModel(parent),
-      clientManager_(clientManager),
-      watcher_(new QFutureWatcher<FetchResult>(this)),
-      recencyTracker_(pricing_model_product_key_extractor),
-      pulseManager_(new RecencyPulseManager(this)) {
+ClientPricingModelProductModel::ClientPricingModelProductModel(ClientManager* clientManager,
+                                                               QObject* parent)
+    : AbstractClientModel(parent)
+    , clientManager_(clientManager)
+    , watcher_(new QFutureWatcher<FetchResult>(this))
+    , recencyTracker_(pricing_model_product_key_extractor)
+    , pulseManager_(new RecencyPulseManager(this)) {
 
-    connect(watcher_, &QFutureWatcher<FetchResult>::finished,
-            this, &ClientPricingModelProductModel::onProductsLoaded);
+    connect(watcher_,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            &ClientPricingModelProductModel::onProductsLoaded);
 
-    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
-            this, &ClientPricingModelProductModel::onPulseStateChanged);
-    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
-            this, &ClientPricingModelProductModel::onPulsingComplete);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulse_state_changed,
+            this,
+            &ClientPricingModelProductModel::onPulseStateChanged);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulsing_complete,
+            this,
+            &ClientPricingModelProductModel::onPulsingComplete);
 }
 
 int ClientPricingModelProductModel::rowCount(const QModelIndex& parent) const {
@@ -65,8 +70,7 @@ int ClientPricingModelProductModel::columnCount(const QModelIndex& parent) const
     return ColumnCount;
 }
 
-QVariant ClientPricingModelProductModel::data(
-    const QModelIndex& index, int role) const {
+QVariant ClientPricingModelProductModel::data(const QModelIndex& index, int role) const {
     if (!index.isValid())
         return {};
 
@@ -78,20 +82,20 @@ QVariant ClientPricingModelProductModel::data(
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-        case PricingEngineTypeCode:
-            return QString::fromStdString(product.pricing_engine_type_code);
-        case Model:
-            return QString::fromStdString(product.model);
-        case Engine:
-            return QString::fromStdString(product.engine);
-        case Version:
-            return static_cast<qlonglong>(product.version);
-        case ModifiedBy:
-            return QString::fromStdString(product.modified_by);
-        case RecordedAt:
-            return relative_time_helper::format(product.recorded_at);
-        default:
-            return {};
+            case PricingEngineTypeCode:
+                return QString::fromStdString(product.pricing_engine_type_code);
+            case Model:
+                return QString::fromStdString(product.model);
+            case Engine:
+                return QString::fromStdString(product.engine);
+            case Version:
+                return static_cast<qlonglong>(product.version);
+            case ModifiedBy:
+                return QString::fromStdString(product.modified_by);
+            case RecordedAt:
+                return relative_time_helper::format(product.recorded_at);
+            default:
+                return {};
         }
     }
 
@@ -102,26 +106,27 @@ QVariant ClientPricingModelProductModel::data(
     return {};
 }
 
-QVariant ClientPricingModelProductModel::headerData(
-    int section, Qt::Orientation orientation, int role) const {
+QVariant ClientPricingModelProductModel::headerData(int section,
+                                                    Qt::Orientation orientation,
+                                                    int role) const {
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return {};
 
     switch (section) {
-    case PricingEngineTypeCode:
-        return tr("Engine Type");
-    case Model:
-        return tr("Model");
-    case Engine:
-        return tr("Engine");
-    case Version:
-        return tr("Version");
-    case ModifiedBy:
-        return tr("Modified By");
-    case RecordedAt:
-        return tr("Recorded At");
-    default:
-        return {};
+        case PricingEngineTypeCode:
+            return tr("Engine Type");
+        case Model:
+            return tr("Model");
+        case Engine:
+            return tr("Engine");
+        case Version:
+            return tr("Version");
+        case ModifiedBy:
+            return tr("Modified By");
+        case RecordedAt:
+            return tr("Recorded At");
+        default:
+            return {};
     }
 }
 
@@ -151,8 +156,7 @@ void ClientPricingModelProductModel::refresh() {
     fetch_products(0, page_size_);
 }
 
-void ClientPricingModelProductModel::load_page(std::uint32_t offset,
-                                          std::uint32_t limit) {
+void ClientPricingModelProductModel::load_page(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "load_page: offset=" << offset << ", limit=" << limit;
 
     if (is_fetching_) {
@@ -176,18 +180,19 @@ void ClientPricingModelProductModel::load_page(std::uint32_t offset,
     fetch_products(offset, limit);
 }
 
-void ClientPricingModelProductModel::fetch_products(
-    std::uint32_t offset, std::uint32_t limit) {
+void ClientPricingModelProductModel::fetch_products(std::uint32_t offset, std::uint32_t limit) {
     is_fetching_ = true;
     QPointer<ClientPricingModelProductModel> self = this;
 
-    QFuture<FetchResult> future =
-        QtConcurrent::run([self, offset, limit]() -> FetchResult {
-            return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
-                BOOST_LOG_SEV(lg(), debug) << "Making pricing model products request with offset="
-                                           << offset << ", limit=" << limit;
+    QFuture<FetchResult> future = QtConcurrent::run([self, offset, limit]() -> FetchResult {
+        return exception_helper::wrap_async_fetch<FetchResult>(
+            [&]() -> FetchResult {
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Making pricing model products request with offset=" << offset
+                    << ", limit=" << limit;
                 if (!self || !self->clientManager_) {
-                    return {.success = false, .products = {},
+                    return {.success = false,
+                            .products = {},
                             .total_available_count = 0,
                             .error_message = "Model was destroyed",
                             .error_details = {}};
@@ -195,27 +200,29 @@ void ClientPricingModelProductModel::fetch_products(
 
                 analytics::messaging::get_pricing_model_products_request request;
 
-                auto result = self->clientManager_->
-                    process_authenticated_request(std::move(request));
+                auto result =
+                    self->clientManager_->process_authenticated_request(std::move(request));
 
                 if (!result) {
                     BOOST_LOG_SEV(lg(), error) << "Failed to send request: " << result.error();
-                    return {.success = false, .products = {},
+                    return {.success = false,
+                            .products = {},
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(result.error()),
                             .error_details = {}};
                 }
 
-                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->products.size()
-                                           << " pricing model products";
-                const std::uint32_t count =
-                    static_cast<std::uint32_t>(result->products.size());
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Fetched " << result->products.size() << " pricing model products";
+                const std::uint32_t count = static_cast<std::uint32_t>(result->products.size());
                 return {.success = true,
                         .products = std::move(result->products),
                         .total_available_count = count,
-                        .error_message = {}, .error_details = {}};
-            }, "pricing model products");
-        });
+                        .error_message = {},
+                        .error_details = {}};
+            },
+            "pricing model products");
+    });
 
     watcher_->setFuture(future);
 }
@@ -226,8 +233,8 @@ void ClientPricingModelProductModel::onProductsLoaded() {
     const auto result = watcher_->result();
 
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to fetch pricing model products: "
-                                   << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to fetch pricing model products: " << result.error_message.toStdString();
         emit loadError(result.error_message, result.error_details);
         return;
     }
@@ -274,8 +281,7 @@ ClientPricingModelProductModel::getProduct(int row) const {
     return &products_[idx];
 }
 
-QVariant ClientPricingModelProductModel::recency_foreground_color(
-    const std::string& code) const {
+QVariant ClientPricingModelProductModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {
         return color_constants::stale_indicator;
     }
@@ -284,8 +290,8 @@ QVariant ClientPricingModelProductModel::recency_foreground_color(
 
 void ClientPricingModelProductModel::onPulseStateChanged(bool /*isOn*/) {
     if (!products_.empty()) {
-        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
-            {Qt::ForegroundRole});
+        emit dataChanged(
+            index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::ForegroundRole});
     }
 }
 

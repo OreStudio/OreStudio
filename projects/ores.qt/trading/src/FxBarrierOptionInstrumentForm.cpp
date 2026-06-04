@@ -17,27 +17,26 @@
  *
  */
 #include "ores.qt/FxBarrierOptionInstrumentForm.hpp"
-
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/FlagIconHelper.hpp"
+#include "ores.qt/ImageCache.hpp"
+#include "ores.qt/InstrumentFormUtils.hpp"
+#include "ores.qt/LookupFetcher.hpp"
+#include "ores.trading.api/messaging/instrument_protocol.hpp"
+#include "ui_FxBarrierOptionInstrumentForm.h"
 #include <QComboBox>
+#include <QFutureWatcher>
 #include <QPointer>
 #include <QtConcurrent>
-#include <QFutureWatcher>
 #include <boost/uuid/uuid_io.hpp>
-#include "ui_FxBarrierOptionInstrumentForm.h"
-#include "ores.qt/ClientManager.hpp"
-#include "ores.qt/ImageCache.hpp"
-#include "ores.qt/FlagIconHelper.hpp"
-#include "ores.qt/LookupFetcher.hpp"
-#include "ores.qt/InstrumentFormUtils.hpp"
-#include "ores.trading.api/messaging/instrument_protocol.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 FxBarrierOptionInstrumentForm::FxBarrierOptionInstrumentForm(QWidget* parent)
-    : IInstrumentForm(parent),
-      ui_(new Ui::FxBarrierOptionInstrumentForm) {
+    : IInstrumentForm(parent)
+    , ui_(new Ui::FxBarrierOptionInstrumentForm) {
     ui_->setupUi(this);
     InstrumentFormUtils::populateOptionType(ui_->optionTypeCombo);
     InstrumentFormUtils::populateSettlement(ui_->settlementCombo);
@@ -48,32 +47,37 @@ FxBarrierOptionInstrumentForm::FxBarrierOptionInstrumentForm(QWidget* parent)
 FxBarrierOptionInstrumentForm::~FxBarrierOptionInstrumentForm() = default;
 
 void FxBarrierOptionInstrumentForm::setupConnections() {
-    auto markChanged = [this]() { onFieldChanged(); };
-    auto markChangedStr = [this](const QString&) { onFieldChanged(); };
-    auto markChangedDate = [this](const QDate&) { onFieldChanged(); };
-    connect(ui_->boughtCurrencyCombo, &QComboBox::currentTextChanged,
-            this, markChangedStr);
-    connect(ui_->soldCurrencyCombo, &QComboBox::currentTextChanged,
-            this, markChangedStr);
+    auto markChanged = [this]() {
+        onFieldChanged();
+    };
+    auto markChangedStr = [this](const QString&) {
+        onFieldChanged();
+    };
+    auto markChangedDate = [this](const QDate&) {
+        onFieldChanged();
+    };
+    connect(ui_->boughtCurrencyCombo, &QComboBox::currentTextChanged, this, markChangedStr);
+    connect(ui_->soldCurrencyCombo, &QComboBox::currentTextChanged, this, markChangedStr);
     connect(ui_->boughtAmountSpinBox,
             QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-            this, markChanged);
+            this,
+            markChanged);
     connect(ui_->soldAmountSpinBox,
             QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-            this, markChanged);
-    connect(ui_->optionTypeCombo, &QComboBox::currentTextChanged,
-            this, markChangedStr);
+            this,
+            markChanged);
+    connect(ui_->optionTypeCombo, &QComboBox::currentTextChanged, this, markChangedStr);
     connect(ui_->expiryDateEdit, &QDateEdit::dateChanged, this, markChangedDate);
-    connect(ui_->settlementCombo, &QComboBox::currentTextChanged,
-            this, markChangedStr);
-    connect(ui_->barrierTypeCombo, &QComboBox::currentTextChanged,
-            this, markChangedStr);
+    connect(ui_->settlementCombo, &QComboBox::currentTextChanged, this, markChangedStr);
+    connect(ui_->barrierTypeCombo, &QComboBox::currentTextChanged, this, markChangedStr);
     connect(ui_->lowerBarrierSpinBox,
             QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-            this, markChanged);
+            this,
+            markChanged);
     connect(ui_->upperBarrierSpinBox,
             QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-            this, markChanged);
+            this,
+            markChanged);
     connect(ui_->underlyingCodeEdit, &QLineEdit::textChanged, this, markChanged);
     connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this, markChanged);
 }
@@ -85,22 +89,21 @@ void FxBarrierOptionInstrumentForm::setClientManager(ClientManager* cm) {
 
 void FxBarrierOptionInstrumentForm::setImageCache(ImageCache* cache) {
     imageCache_ = cache;
-    setup_flag_combo(this, ui_->boughtCurrencyCombo, imageCache_,
-                     FlagSource::Currency);
-    setup_flag_combo(this, ui_->soldCurrencyCombo, imageCache_,
-                     FlagSource::Currency);
+    setup_flag_combo(this, ui_->boughtCurrencyCombo, imageCache_, FlagSource::Currency);
+    setup_flag_combo(this, ui_->soldCurrencyCombo, imageCache_, FlagSource::Currency);
 }
 
 void FxBarrierOptionInstrumentForm::populateCurrencies() {
-    if (!clientManager_) return;
+    if (!clientManager_)
+        return;
 
     QPointer<FxBarrierOptionInstrumentForm> self = this;
     auto* watcher = new QFutureWatcher<std::vector<std::string>>(self);
-    connect(watcher, &QFutureWatcher<std::vector<std::string>>::finished, self,
-        [self, watcher]() {
+    connect(watcher, &QFutureWatcher<std::vector<std::string>>::finished, self, [self, watcher]() {
         auto codes = watcher->result();
         watcher->deleteLater();
-        if (!self) return;
+        if (!self)
+            return;
 
         auto populate = [&codes](QComboBox* cb, const std::string& value) {
             cb->blockSignals(true);
@@ -116,17 +119,14 @@ void FxBarrierOptionInstrumentForm::populateCurrencies() {
         populate(self->ui_->soldCurrencyCombo, self->instrument_.sold_currency);
 
         if (self->imageCache_) {
-            apply_flag_icons(self->ui_->boughtCurrencyCombo,
-                             self->imageCache_, FlagSource::Currency);
-            apply_flag_icons(self->ui_->soldCurrencyCombo,
-                             self->imageCache_, FlagSource::Currency);
+            apply_flag_icons(
+                self->ui_->boughtCurrencyCombo, self->imageCache_, FlagSource::Currency);
+            apply_flag_icons(self->ui_->soldCurrencyCombo, self->imageCache_, FlagSource::Currency);
         }
     });
 
     auto* cm = clientManager_;
-    watcher->setFuture(QtConcurrent::run([cm]() {
-        return fetch_currency_codes(cm);
-    }));
+    watcher->setFuture(QtConcurrent::run([cm]() { return fetch_currency_codes(cm); }));
 }
 
 void FxBarrierOptionInstrumentForm::setUsername(const std::string& username) {
@@ -143,7 +143,8 @@ void FxBarrierOptionInstrumentForm::clear() {
 }
 
 void FxBarrierOptionInstrumentForm::setTradeType(const QString& code,
-    bool /*has_options*/, bool /*has_extension*/) {
+                                                 bool /*has_options*/,
+                                                 bool /*has_extension*/) {
     instrument_.trade_type_code = code.trimmed().toStdString();
     ui_->tradeTypeCodeEdit->setText(code.trimmed());
 }
@@ -163,39 +164,35 @@ void FxBarrierOptionInstrumentForm::setReadOnly(bool readOnly) {
     ui_->descriptionEdit->setReadOnly(readOnly);
 }
 
-bool FxBarrierOptionInstrumentForm::isDirty() const { return dirty_; }
-bool FxBarrierOptionInstrumentForm::isLoaded() const { return loaded_; }
+bool FxBarrierOptionInstrumentForm::isDirty() const {
+    return dirty_;
+}
+bool FxBarrierOptionInstrumentForm::isLoaded() const {
+    return loaded_;
+}
 
-void FxBarrierOptionInstrumentForm::setChangeReason(
-    const std::string& code, const std::string& commentary) {
+void FxBarrierOptionInstrumentForm::setChangeReason(const std::string& code,
+                                                    const std::string& commentary) {
     instrument_.change_reason_code = code;
     instrument_.change_commentary = commentary;
 }
 
 void FxBarrierOptionInstrumentForm::writeUiToInstrument() {
-    instrument_.bought_currency =
-        InstrumentFormUtils::getComboValue(ui_->boughtCurrencyCombo);
+    instrument_.bought_currency = InstrumentFormUtils::getComboValue(ui_->boughtCurrencyCombo);
     instrument_.bought_amount = ui_->boughtAmountSpinBox->value();
-    instrument_.sold_currency =
-        InstrumentFormUtils::getComboValue(ui_->soldCurrencyCombo);
+    instrument_.sold_currency = InstrumentFormUtils::getComboValue(ui_->soldCurrencyCombo);
     instrument_.sold_amount = ui_->soldAmountSpinBox->value();
-    instrument_.option_type =
-        InstrumentFormUtils::getComboValue(ui_->optionTypeCombo);
+    instrument_.option_type = InstrumentFormUtils::getComboValue(ui_->optionTypeCombo);
     instrument_.expiry_date = ui_->expiryDateEdit->isoDate();
-    instrument_.settlement =
-        InstrumentFormUtils::getComboValue(ui_->settlementCombo);
-    instrument_.barrier_type =
-        InstrumentFormUtils::getComboValue(ui_->barrierTypeCombo);
+    instrument_.settlement = InstrumentFormUtils::getComboValue(ui_->settlementCombo);
+    instrument_.barrier_type = InstrumentFormUtils::getComboValue(ui_->barrierTypeCombo);
     instrument_.lower_barrier = ui_->lowerBarrierSpinBox->value();
     {
         const double v = ui_->upperBarrierSpinBox->value();
-        instrument_.upper_barrier = (v > 0.0)
-            ? std::optional<double>(v) : std::nullopt;
+        instrument_.upper_barrier = (v > 0.0) ? std::optional<double>(v) : std::nullopt;
     }
-    instrument_.underlying_code =
-        ui_->underlyingCodeEdit->text().trimmed().toStdString();
-    instrument_.description =
-        ui_->descriptionEdit->toPlainText().trimmed().toStdString();
+    instrument_.underlying_code = ui_->underlyingCodeEdit->text().trimmed().toStdString();
+    instrument_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
     instrument_.modified_by = username_;
     instrument_.performed_by = username_;
 }
@@ -227,13 +224,10 @@ void FxBarrierOptionInstrumentForm::populateFromInstrument() {
     };
 
     block(true);
-    ui_->tradeTypeCodeEdit->setText(
-        QString::fromStdString(instrument_.trade_type_code));
-    InstrumentFormUtils::setComboValue(ui_->boughtCurrencyCombo,
-        instrument_.bought_currency);
+    ui_->tradeTypeCodeEdit->setText(QString::fromStdString(instrument_.trade_type_code));
+    InstrumentFormUtils::setComboValue(ui_->boughtCurrencyCombo, instrument_.bought_currency);
     ui_->boughtAmountSpinBox->setValue(instrument_.bought_amount);
-    InstrumentFormUtils::setComboValue(ui_->soldCurrencyCombo,
-        instrument_.sold_currency);
+    InstrumentFormUtils::setComboValue(ui_->soldCurrencyCombo, instrument_.sold_currency);
     ui_->soldAmountSpinBox->setValue(instrument_.sold_amount);
     InstrumentFormUtils::setComboValue(ui_->optionTypeCombo, instrument_.option_type);
     ui_->expiryDateEdit->setIsoDate(instrument_.expiry_date);
@@ -241,10 +235,8 @@ void FxBarrierOptionInstrumentForm::populateFromInstrument() {
     InstrumentFormUtils::setComboValue(ui_->barrierTypeCombo, instrument_.barrier_type);
     ui_->lowerBarrierSpinBox->setValue(instrument_.lower_barrier);
     ui_->upperBarrierSpinBox->setValue(instrument_.upper_barrier.value_or(0.0));
-    ui_->underlyingCodeEdit->setText(
-        QString::fromStdString(instrument_.underlying_code));
-    ui_->descriptionEdit->setPlainText(
-        QString::fromStdString(instrument_.description));
+    ui_->underlyingCodeEdit->setText(QString::fromStdString(instrument_.underlying_code));
+    ui_->descriptionEdit->setPlainText(QString::fromStdString(instrument_.description));
     block(false);
 }
 
@@ -260,7 +252,8 @@ void FxBarrierOptionInstrumentForm::emitProvenance() {
 }
 
 void FxBarrierOptionInstrumentForm::onFieldChanged() {
-    if (!loaded_) return;
+    if (!loaded_)
+        return;
     dirty_ = true;
     emit changed();
 }
@@ -274,41 +267,45 @@ void FxBarrierOptionInstrumentForm::saveInstrument(
         return;
     }
 
-    struct SaveResult { bool success; std::string message; };
+    struct SaveResult {
+        bool success;
+        std::string message;
+    };
 
     QPointer<FxBarrierOptionInstrumentForm> self = this;
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished, self,
-        [self, watcher,
-         on_success = std::move(on_success),
-         on_failure = std::move(on_failure)]() {
-        auto result = watcher->result();
-        watcher->deleteLater();
-        if (!self) return;
+    connect(
+        watcher,
+        &QFutureWatcher<SaveResult>::finished,
+        self,
+        [self, watcher, on_success = std::move(on_success), on_failure = std::move(on_failure)]() {
+            auto result = watcher->result();
+            watcher->deleteLater();
+            if (!self)
+                return;
 
-        if (!result.success) {
-            BOOST_LOG_SEV(lg(), error)
-                << "FX barrier option save failed: " << result.message;
-            on_failure(QString::fromStdString(result.message));
-            return;
-        }
+            if (!result.success) {
+                BOOST_LOG_SEV(lg(), error) << "FX barrier option save failed: " << result.message;
+                on_failure(QString::fromStdString(result.message));
+                return;
+            }
 
-        BOOST_LOG_SEV(lg(), info) << "FX barrier option instrument saved";
-        self->dirty_ = false;
-        self->emitProvenance();
-        on_success(boost::uuids::to_string(self->instrument_.instrument_id));
-    });
+            BOOST_LOG_SEV(lg(), info) << "FX barrier option instrument saved";
+            self->dirty_ = false;
+            self->emitProvenance();
+            on_success(boost::uuids::to_string(self->instrument_.instrument_id));
+        });
 
     auto* cm = clientManager_;
     auto instrument = instrument_;
-    watcher->setFuture(QtConcurrent::run(
-        [cm, instrument = std::move(instrument)]() -> SaveResult {
+    watcher->setFuture(QtConcurrent::run([cm, instrument = std::move(instrument)]() -> SaveResult {
         if (!cm)
             return {false, "Dialog closed"};
         trading::messaging::save_fx_barrier_option_instrument_request req;
         req.data = instrument;
         auto r = cm->process_authenticated_request(std::move(req));
-        if (!r) return {false, "Failed to communicate with server"};
+        if (!r)
+            return {false, "Failed to communicate with server"};
         return {r->success, r->message};
     }));
 }

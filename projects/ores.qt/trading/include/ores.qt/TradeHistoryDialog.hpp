@@ -20,13 +20,13 @@
 #ifndef ORES_QT_TRADE_HISTORY_DIALOG_HPP
 #define ORES_QT_TRADE_HISTORY_DIALOG_HPP
 
-#include <QWidget>
-#include <QToolBar>
-#include <QTableWidget>
-#include <boost/uuid/uuid.hpp>
-#include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
 #include "ores.trading.api/domain/trade.hpp"
+#include <QTableWidget>
+#include <QToolBar>
+#include <QWidget>
+#include <boost/uuid/uuid.hpp>
 
 namespace Ui {
 class TradeHistoryDialog;
@@ -44,8 +44,7 @@ class TradeHistoryDialog final : public QWidget {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.trade_history_dialog";
+    inline static std::string_view logger_name = "ores.qt.trade_history_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -54,11 +53,10 @@ private:
     }
 
 public:
-    explicit TradeHistoryDialog(
-        const boost::uuids::uuid& id,
-        const QString& code,
-        ClientManager* clientManager,
-        QWidget* parent = nullptr);
+    explicit TradeHistoryDialog(const boost::uuids::uuid& id,
+                                const QString& code,
+                                ClientManager* clientManager,
+                                QWidget* parent = nullptr);
     ~TradeHistoryDialog() override;
 
     void loadHistory();
@@ -66,8 +64,7 @@ public:
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
-    void openVersionRequested(const trading::domain::trade& trade,
-                              int versionNumber);
+    void openVersionRequested(const trading::domain::trade& trade, int versionNumber);
     void revertVersionRequested(const trading::domain::trade& trade);
 
 private slots:

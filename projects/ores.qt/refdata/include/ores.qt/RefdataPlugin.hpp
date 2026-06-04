@@ -19,9 +19,9 @@
 #ifndef ORES_QT_REFDATA_PLUGIN_HPP
 #define ORES_QT_REFDATA_PLUGIN_HPP
 
-#include <memory>
-#include <QList>
 #include "ores.qt/PluginBase.hpp"
+#include <QList>
+#include <memory>
 
 class QAction;
 
@@ -80,8 +80,12 @@ public:
     explicit RefdataPlugin(QObject* parent = nullptr);
     ~RefdataPlugin() override;
 
-    QString name() const override { return QStringLiteral("ores.qt.refdata"); }
-    int load_order() const override { return 100; }  // setup_menus only; no standalone menus
+    QString name() const override {
+        return QStringLiteral("ores.qt.refdata");
+    }
+    int load_order() const override {
+        return 100;
+    } // setup_menus only; no standalone menus
 
     void on_login(const plugin_context& ctx) override;
     void setup_menus(const shared_menus_context& ctx) override;
@@ -90,7 +94,6 @@ public:
     void on_logout() override;
 
 private:
-
     plugin_context ctx_;
 
     QMenu* reference_data_menu_{nullptr};
@@ -102,41 +105,41 @@ private:
     // Singleton MDI sub-window for Data Librarian (nullptr when not open)
     DetachableMdiSubWindow* data_librarian_window_{nullptr};
 
-    std::unique_ptr<CurrencyController>                    currencyController_;
-    std::unique_ptr<CountryController>                     countryController_;
-    std::unique_ptr<ChangeReasonCategoryController>        changeReasonCategoryController_;
-    std::unique_ptr<ChangeReasonController>                changeReasonController_;
-    std::unique_ptr<CodingSchemeAuthorityTypeController>   codingSchemeAuthorityTypeController_;
-    std::unique_ptr<CodeDomainController>                  codeDomainController_;
-    std::unique_ptr<CodingSchemeController>                codingSchemeController_;
-    std::unique_ptr<DatasetController>                     datasetController_;
-    std::unique_ptr<DayCountFractionTypeController>        dayCountFractionTypeController_;
-    std::unique_ptr<BusinessDayConventionTypeController>   businessDayConventionTypeController_;
-    std::unique_ptr<FloatingIndexTypeController>           floatingIndexTypeController_;
-    std::unique_ptr<PaymentFrequencyTypeController>        paymentFrequencyTypeController_;
-    std::unique_ptr<LegTypeController>                     legTypeController_;
-    std::unique_ptr<CurrencyMarketTierController>          currencyMarketTierController_;
-    std::unique_ptr<MonetaryNatureController>              monetaryNatureController_;
-    std::unique_ptr<RoundingTypeController>                roundingTypeController_;
-    std::unique_ptr<PurposeTypeController>                 purposeTypeController_;
-    std::unique_ptr<ZeroConventionController>              zeroConventionController_;
-    std::unique_ptr<DepositConventionController>           depositConventionController_;
-    std::unique_ptr<SwapConventionController>              swapConventionController_;
-    std::unique_ptr<OisConventionController>               oisConventionController_;
-    std::unique_ptr<FraConventionController>               fraConventionController_;
-    std::unique_ptr<IborIndexConventionController>         iborIndexConventionController_;
-    std::unique_ptr<OvernightIndexConventionController>    overnightIndexConventionController_;
-    std::unique_ptr<FxConventionController>                fxConventionController_;
-    std::unique_ptr<CdsConventionController>               cdsConventionController_;
+    std::unique_ptr<CurrencyController> currencyController_;
+    std::unique_ptr<CountryController> countryController_;
+    std::unique_ptr<ChangeReasonCategoryController> changeReasonCategoryController_;
+    std::unique_ptr<ChangeReasonController> changeReasonController_;
+    std::unique_ptr<CodingSchemeAuthorityTypeController> codingSchemeAuthorityTypeController_;
+    std::unique_ptr<CodeDomainController> codeDomainController_;
+    std::unique_ptr<CodingSchemeController> codingSchemeController_;
+    std::unique_ptr<DatasetController> datasetController_;
+    std::unique_ptr<DayCountFractionTypeController> dayCountFractionTypeController_;
+    std::unique_ptr<BusinessDayConventionTypeController> businessDayConventionTypeController_;
+    std::unique_ptr<FloatingIndexTypeController> floatingIndexTypeController_;
+    std::unique_ptr<PaymentFrequencyTypeController> paymentFrequencyTypeController_;
+    std::unique_ptr<LegTypeController> legTypeController_;
+    std::unique_ptr<CurrencyMarketTierController> currencyMarketTierController_;
+    std::unique_ptr<MonetaryNatureController> monetaryNatureController_;
+    std::unique_ptr<RoundingTypeController> roundingTypeController_;
+    std::unique_ptr<PurposeTypeController> purposeTypeController_;
+    std::unique_ptr<ZeroConventionController> zeroConventionController_;
+    std::unique_ptr<DepositConventionController> depositConventionController_;
+    std::unique_ptr<SwapConventionController> swapConventionController_;
+    std::unique_ptr<OisConventionController> oisConventionController_;
+    std::unique_ptr<FraConventionController> fraConventionController_;
+    std::unique_ptr<IborIndexConventionController> iborIndexConventionController_;
+    std::unique_ptr<OvernightIndexConventionController> overnightIndexConventionController_;
+    std::unique_ptr<FxConventionController> fxConventionController_;
+    std::unique_ptr<CdsConventionController> cdsConventionController_;
 
     // Data Catalogue controllers (owned here, contributed to data_management_menu)
-    std::unique_ptr<DataDomainController>         dataDomainController_;
-    std::unique_ptr<SubjectAreaController>        subjectAreaController_;
-    std::unique_ptr<CatalogController>            catalogController_;
-    std::unique_ptr<DatasetBundleController>      datasetBundleController_;
-    std::unique_ptr<MethodologyController>        methodologyController_;
-    std::unique_ptr<OriginDimensionController>    originDimensionController_;
-    std::unique_ptr<NatureDimensionController>    natureDimensionController_;
+    std::unique_ptr<DataDomainController> dataDomainController_;
+    std::unique_ptr<SubjectAreaController> subjectAreaController_;
+    std::unique_ptr<CatalogController> catalogController_;
+    std::unique_ptr<DatasetBundleController> datasetBundleController_;
+    std::unique_ptr<MethodologyController> methodologyController_;
+    std::unique_ptr<OriginDimensionController> originDimensionController_;
+    std::unique_ptr<NatureDimensionController> natureDimensionController_;
     std::unique_ptr<TreatmentDimensionController> treatmentDimensionController_;
 };
 

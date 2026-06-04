@@ -20,14 +20,14 @@
 #ifndef ORES_QT_TENANT_TYPE_MDI_WINDOW_HPP
 #define ORES_QT_TENANT_TYPE_MDI_WINDOW_HPP
 
-#include <QToolBar>
-#include <QTableView>
-#include <QSortFilterProxyModel>
-#include "ores.qt/EntityListMdiWindow.hpp"
+#include "ores.iam.api/domain/tenant_type.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ClientTenantTypeModel.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.iam.api/domain/tenant_type.hpp"
+#include "ores.qt/EntityListMdiWindow.hpp"
+#include <QSortFilterProxyModel>
+#include <QTableView>
+#include <QToolBar>
 
 namespace ores::qt {
 
@@ -41,8 +41,7 @@ class TenantTypeMdiWindow final : public EntityListMdiWindow {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.tenant_type_mdi_window";
+    inline static std::string_view logger_name = "ores.qt.tenant_type_mdi_window";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -51,10 +50,9 @@ private:
     }
 
 public:
-    explicit TenantTypeMdiWindow(
-        ClientManager* clientManager,
-        const QString& username,
-        QWidget* parent = nullptr);
+    explicit TenantTypeMdiWindow(ClientManager* clientManager,
+                                 const QString& username,
+                                 QWidget* parent = nullptr);
     ~TenantTypeMdiWindow() override = default;
 
 public slots:

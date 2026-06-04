@@ -18,31 +18,31 @@
  *
  */
 #include "ores.qt/DataDomainMdiWindow.hpp"
-
-#include <QVBoxLayout>
-#include <QHeaderView>
-#include <QMessageBox>
-#include <QtConcurrent>
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/EntityItemDelegate.hpp"
+#include "ores.dq.api/messaging/data_organization_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/EntityItemDelegate.hpp"
+#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.dq.api/messaging/data_organization_protocol.hpp"
+#include <QHeaderView>
+#include <QMessageBox>
+#include <QVBoxLayout>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-DataDomainMdiWindow::DataDomainMdiWindow(
-    ClientManager* clientManager, const QString& username, QWidget* parent)
-    : EntityListMdiWindow(parent),
-      clientManager_(clientManager),
-      username_(username),
-      model_(new ClientDataDomainModel(clientManager, this)),
-      proxyModel_(new QSortFilterProxyModel(this)),
-      tableView_(new QTableView(this)),
-      toolbar_(nullptr) {
+DataDomainMdiWindow::DataDomainMdiWindow(ClientManager* clientManager,
+                                         const QString& username,
+                                         QWidget* parent)
+    : EntityListMdiWindow(parent)
+    , clientManager_(clientManager)
+    , username_(username)
+    , model_(new ClientDataDomainModel(clientManager, this))
+    , proxyModel_(new QSortFilterProxyModel(this))
+    , tableView_(new QTableView(this))
+    , toolbar_(nullptr) {
 
     proxyModel_->setSourceModel(model_);
     proxyModel_->setSortCaseSensitivity(Qt::CaseInsensitive);
@@ -61,8 +61,8 @@ void DataDomainMdiWindow::setupUi() {
 
     tableView_->setModel(proxyModel_);
     tableView_->setSortingEnabled(true);
-    tableView_->setItemDelegate(new EntityItemDelegate(
-        ClientDataDomainModel::columnStyles(), tableView_));
+    tableView_->setItemDelegate(
+        new EntityItemDelegate(ClientDataDomainModel::columnStyles(), tableView_));
     tableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
     tableView_->setSelectionMode(QAbstractItemView::ExtendedSelection);
     tableView_->setAlternatingRowColors(true);
@@ -70,9 +70,12 @@ void DataDomainMdiWindow::setupUi() {
     tableView_->verticalHeader()->setVisible(false);
     tableView_->sortByColumn(ClientDataDomainModel::Name, Qt::AscendingOrder);
 
-    initializeTableSettings(tableView_, model_,
-        ClientDataDomainModel::kSettingsGroup,
-        ClientDataDomainModel::defaultHiddenColumns(), ClientDataDomainModel::kDefaultWindowSize, 1);
+    initializeTableSettings(tableView_,
+                            model_,
+                            ClientDataDomainModel::kSettingsGroup,
+                            ClientDataDomainModel::defaultHiddenColumns(),
+                            ClientDataDomainModel::kDefaultWindowSize,
+                            1);
 
     layout->addWidget(loadingBar());
     layout->addWidget(tableView_);
@@ -95,27 +98,23 @@ void DataDomainMdiWindow::setupToolbar() {
     toolbar_->addSeparator();
 
     addAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor),
-        tr("Add"));
+        IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor), tr("Add"));
     addAction_->setToolTip(tr("Add new data domain"));
 
     editAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Edit, IconUtils::DefaultIconColor),
-        tr("Edit"));
+        IconUtils::createRecoloredIcon(Icon::Edit, IconUtils::DefaultIconColor), tr("Edit"));
     editAction_->setToolTip(tr("Edit selected data domain"));
     editAction_->setEnabled(false);
 
     deleteAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor),
-        tr("Delete"));
+        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor), tr("Delete"));
     deleteAction_->setToolTip(tr("Delete selected data domain(s)"));
     deleteAction_->setEnabled(false);
 
     toolbar_->addSeparator();
 
     historyAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor),
-        tr("History"));
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor), tr("History"));
     historyAction_->setToolTip(tr("View version history"));
     historyAction_->setEnabled(false);
 
@@ -125,15 +124,14 @@ void DataDomainMdiWindow::setupToolbar() {
 }
 
 void DataDomainMdiWindow::setupConnections() {
-    connect(model_, &ClientDataDomainModel::dataLoaded,
-            this, &DataDomainMdiWindow::onDataLoaded);
-    connect(model_, &ClientDataDomainModel::loadError,
-            this, &DataDomainMdiWindow::onLoadError);
+    connect(model_, &ClientDataDomainModel::dataLoaded, this, &DataDomainMdiWindow::onDataLoaded);
+    connect(model_, &ClientDataDomainModel::loadError, this, &DataDomainMdiWindow::onLoadError);
     connectModel(model_);
-    connect(tableView_, &QTableView::doubleClicked,
-            this, &DataDomainMdiWindow::onRowDoubleClicked);
-    connect(tableView_->selectionModel(), &QItemSelectionModel::selectionChanged,
-            this, &DataDomainMdiWindow::onSelectionChanged);
+    connect(tableView_, &QTableView::doubleClicked, this, &DataDomainMdiWindow::onRowDoubleClicked);
+    connect(tableView_->selectionModel(),
+            &QItemSelectionModel::selectionChanged,
+            this,
+            &DataDomainMdiWindow::onSelectionChanged);
 
     connect(addAction_, &QAction::triggered, this, &DataDomainMdiWindow::onAddClicked);
     connect(editAction_, &QAction::triggered, this, &DataDomainMdiWindow::onEditClicked);
@@ -147,8 +145,7 @@ void DataDomainMdiWindow::onDataLoaded() {
     updateActionStates();
 }
 
-void DataDomainMdiWindow::onLoadError(const QString& error_message,
-                                       const QString& details) {
+void DataDomainMdiWindow::onLoadError(const QString& error_message, const QString& details) {
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);
@@ -167,7 +164,8 @@ void DataDomainMdiWindow::onAddClicked() {
 
 void DataDomainMdiWindow::onEditClicked() {
     auto selected = tableView_->selectionModel()->selectedRows();
-    if (selected.isEmpty()) return;
+    if (selected.isEmpty())
+        return;
 
     auto sourceIndex = proxyModel_->mapToSource(selected.first());
     if (auto* domain = model_->getDomain(sourceIndex.row())) {
@@ -177,7 +175,8 @@ void DataDomainMdiWindow::onEditClicked() {
 
 void DataDomainMdiWindow::onDeleteClicked() {
     auto selected = tableView_->selectionModel()->selectedRows();
-    if (selected.isEmpty()) return;
+    if (selected.isEmpty())
+        return;
 
     std::vector<std::string> names;
     for (const auto& index : selected) {
@@ -187,22 +186,26 @@ void DataDomainMdiWindow::onDeleteClicked() {
         }
     }
 
-    QString message = names.size() == 1
-        ? tr("Delete data domain '%1'?").arg(QString::fromStdString(names[0]))
-        : tr("Delete %1 data domains?").arg(names.size());
+    QString message = names.size() == 1 ?
+                          tr("Delete data domain '%1'?").arg(QString::fromStdString(names[0])) :
+                          tr("Delete %1 data domains?").arg(names.size());
 
-    auto reply = MessageBoxHelper::question(this, tr("Confirm Delete"), message,
-                                            QMessageBox::Yes | QMessageBox::No);
-    if (reply != QMessageBox::Yes) return;
+    auto reply = MessageBoxHelper::question(
+        this, tr("Confirm Delete"), message, QMessageBox::Yes | QMessageBox::No);
+    if (reply != QMessageBox::Yes)
+        return;
 
     QPointer<DataDomainMdiWindow> self = this;
     auto task = [self, names = std::move(names)]() -> bool {
-        if (!self || !self->clientManager_) return false;
+        if (!self || !self->clientManager_)
+            return false;
 
         dq::messaging::delete_data_domain_request request;
         request.names = names;
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
-        if (!response_result) return false;
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
+        if (!response_result)
+            return false;
 
         return response_result->success;
     };
@@ -236,7 +239,8 @@ void DataDomainMdiWindow::onSelectionChanged() {
 
 void DataDomainMdiWindow::onHistoryClicked() {
     auto selected = tableView_->selectionModel()->selectedRows();
-    if (selected.isEmpty()) return;
+    if (selected.isEmpty())
+        return;
 
     auto sourceIndex = proxyModel_->mapToSource(selected.first());
     if (auto* domain = model_->getDomain(sourceIndex.row())) {

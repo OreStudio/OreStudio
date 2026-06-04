@@ -18,12 +18,11 @@
  *
  */
 #include "ores.qt/UiPersistence.hpp"
-
-#include <QSettings>
-#include <QWidget>
-#include <QSplitter>
 #include <QHeaderView>
 #include <QMdiSubWindow>
+#include <QSettings>
+#include <QSplitter>
+#include <QWidget>
 
 namespace ores::qt {
 
@@ -65,8 +64,7 @@ void UiPersistence::restoreSplitter(const QString& group, QSplitter* spl) {
     s.endGroup();
 }
 
-void UiPersistence::saveHeader(const QString& group, const QHeaderView* h,
-                                int version) {
+void UiPersistence::saveHeader(const QString& group, const QHeaderView* h, int version) {
     auto s = openSettings();
     s.beginGroup(group);
     s.setValue("headerState", h->saveState());
@@ -74,8 +72,7 @@ void UiPersistence::saveHeader(const QString& group, const QHeaderView* h,
     s.endGroup();
 }
 
-bool UiPersistence::restoreHeader(const QString& group, QHeaderView* h,
-                                   int version) {
+bool UiPersistence::restoreHeader(const QString& group, QHeaderView* h, int version) {
     auto s = openSettings();
     s.beginGroup(group);
 
@@ -109,7 +106,8 @@ bool UiPersistence::restoreMdiGeometry(const QString& group, QMdiSubWindow* w) {
     }
     const QRect r = s.value("mdiGeometry").toRect();
     s.endGroup();
-    if (!r.isValid()) return false;
+    if (!r.isValid())
+        return false;
     w->setGeometry(r);
     return true;
 }

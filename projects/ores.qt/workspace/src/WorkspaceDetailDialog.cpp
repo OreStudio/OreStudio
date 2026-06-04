@@ -18,43 +18,46 @@
  *
  */
 #include "ores.qt/WorkspaceDetailDialog.hpp"
-
-#include <QColor>
-#include <QMessageBox>
-#include <QComboBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include <QPlainTextEdit>
-#include <boost/uuid/random_generator.hpp>
-#include <boost/uuid/string_generator.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include "ui_WorkspaceDetailDialog.h"
+#include "ores.iam.api/messaging/account_protocol.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MdiUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.iam.api/messaging/account_protocol.hpp"
 #include "ores.workspace.api/messaging/workspace_protocol.hpp"
+#include "ui_WorkspaceDetailDialog.h"
+#include <QColor>
+#include <QComboBox>
+#include <QFutureWatcher>
+#include <QMessageBox>
+#include <QPlainTextEdit>
+#include <QtConcurrent>
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/string_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 WorkspaceDetailDialog::WorkspaceDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent),
-      ui_(new Ui::WorkspaceDetailDialog),
-      clientManager_(nullptr),
-      parentWatcher_(new QFutureWatcher<WorkspaceListResult>(this)),
-      accountWatcher_(new QFutureWatcher<AccountListResult>(this)) {
+    : DetailDialogBase(parent)
+    , ui_(new Ui::WorkspaceDetailDialog)
+    , clientManager_(nullptr)
+    , parentWatcher_(new QFutureWatcher<WorkspaceListResult>(this))
+    , accountWatcher_(new QFutureWatcher<AccountListResult>(this)) {
 
     ui_->setupUi(this);
     setupUi();
     setupConnections();
 
-    connect(parentWatcher_, &QFutureWatcher<WorkspaceListResult>::finished,
-            this, &WorkspaceDetailDialog::onParentWorkspacesLoaded);
-    connect(accountWatcher_, &QFutureWatcher<AccountListResult>::finished,
-            this, &WorkspaceDetailDialog::onAccountsLoaded);
+    connect(parentWatcher_,
+            &QFutureWatcher<WorkspaceListResult>::finished,
+            this,
+            &WorkspaceDetailDialog::onParentWorkspacesLoaded);
+    connect(accountWatcher_,
+            &QFutureWatcher<AccountListResult>::finished,
+            this,
+            &WorkspaceDetailDialog::onAccountsLoaded);
 }
 
 WorkspaceDetailDialog::~WorkspaceDetailDialog() {
@@ -66,13 +69,12 @@ void WorkspaceDetailDialog::markAsStale() {
         return;
 
     isStale_ = true;
-    BOOST_LOG_SEV(lg(), info) << "Workspace detail data marked as stale for: "
-                              << workspace_.name;
+    BOOST_LOG_SEV(lg(), info) << "Workspace detail data marked as stale for: " << workspace_.name;
 
     MdiUtils::markParentWindowAsStale(this);
 
     emit statusMessage(QString("Workspace '%1' has been modified on the server")
-        .arg(QString::fromStdString(workspace_.name)));
+                           .arg(QString::fromStdString(workspace_.name)));
 }
 
 QTabWidget* WorkspaceDetailDialog::tabWidget() const {
@@ -100,25 +102,30 @@ void WorkspaceDetailDialog::setupUi() {
 }
 
 void WorkspaceDetailDialog::setupConnections() {
-    connect(ui_->saveButton, &QPushButton::clicked, this,
-            &WorkspaceDetailDialog::onSaveClicked);
-    connect(ui_->deleteButton, &QPushButton::clicked, this,
-            &WorkspaceDetailDialog::onDeleteClicked);
-    connect(ui_->closeButton, &QPushButton::clicked, this,
-            &WorkspaceDetailDialog::onCloseClicked);
+    connect(ui_->saveButton, &QPushButton::clicked, this, &WorkspaceDetailDialog::onSaveClicked);
+    connect(
+        ui_->deleteButton, &QPushButton::clicked, this, &WorkspaceDetailDialog::onDeleteClicked);
+    connect(ui_->closeButton, &QPushButton::clicked, this, &WorkspaceDetailDialog::onCloseClicked);
 
-    connect(ui_->nameEdit, &QLineEdit::textChanged, this,
-            &WorkspaceDetailDialog::onCodeChanged);
-    connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this,
+    connect(ui_->nameEdit, &QLineEdit::textChanged, this, &WorkspaceDetailDialog::onCodeChanged);
+    connect(ui_->descriptionEdit,
+            &QPlainTextEdit::textChanged,
+            this,
             &WorkspaceDetailDialog::onFieldChanged);
-    connect(ui_->sourcePathEdit, &QLineEdit::textChanged, this,
+    connect(
+        ui_->sourcePathEdit, &QLineEdit::textChanged, this, &WorkspaceDetailDialog::onFieldChanged);
+    connect(ui_->parentCombo,
+            QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this,
             &WorkspaceDetailDialog::onFieldChanged);
-    connect(ui_->parentCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
-            this, &WorkspaceDetailDialog::onFieldChanged);
-    connect(ui_->ownerCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
-            this, &WorkspaceDetailDialog::onFieldChanged);
-    connect(ui_->statusCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
-            this, &WorkspaceDetailDialog::onFieldChanged);
+    connect(ui_->ownerCombo,
+            QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this,
+            &WorkspaceDetailDialog::onFieldChanged);
+    connect(ui_->statusCombo,
+            QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this,
+            &WorkspaceDetailDialog::onFieldChanged);
 }
 
 void WorkspaceDetailDialog::setClientManager(ClientManager* clientManager) {
@@ -138,8 +145,7 @@ void WorkspaceDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
 
-void WorkspaceDetailDialog::setWorkspace(
-    const workspace::domain::workspace& workspace) {
+void WorkspaceDetailDialog::setWorkspace(const workspace::domain::workspace& workspace) {
     workspace_ = workspace;
     updateUiFromWorkspace();
 }
@@ -183,8 +189,7 @@ void WorkspaceDetailDialog::updateUiFromWorkspace() {
     selectCurrentParent();
     selectCurrentOwner();
     {
-        const int idx = ui_->statusCombo->findData(
-            QString::fromStdString(workspace_.status_code));
+        const int idx = ui_->statusCombo->findData(QString::fromStdString(workspace_.status_code));
         const bool blocked = ui_->statusCombo->blockSignals(true);
         ui_->statusCombo->setCurrentIndex(idx >= 0 ? idx : 0);
         ui_->statusCombo->blockSignals(blocked);
@@ -215,7 +220,8 @@ void WorkspaceDetailDialog::updateWorkspaceFromUi() {
         try {
             boost::uuids::string_generator gen;
             workspace_.owner_id = gen(ownerUuid.toStdString());
-        } catch (...) {}
+        } catch (...) {
+        }
     }
 
     const QString parentUuid = ui_->parentCombo->currentData().toString();
@@ -249,37 +255,32 @@ void WorkspaceDetailDialog::updateSaveButtonState() {
 bool WorkspaceDetailDialog::validateInput() {
     const QString name_val = ui_->nameEdit->text().trimmed();
 
-    return true
-        && !name_val.isEmpty()
-    ;
+    return true && !name_val.isEmpty();
 }
 
 void WorkspaceDetailDialog::onSaveClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot save workspace while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot save workspace while disconnected from server.");
         return;
     }
 
     if (!validateInput()) {
-        MessageBoxHelper::warning(this, "Invalid Input",
-            "Please fill in all required fields.");
+        MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
 
-    const auto crOpType = createMode_
-        ? ChangeReasonDialog::OperationType::Create
-        : ChangeReasonDialog::OperationType::Amend;
-    const auto crSel = promptChangeReason(crOpType, hasChanges_,
-        createMode_ ? "system" : "common");
-    if (!crSel) return;
+    const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
+                                        ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
+    if (!crSel)
+        return;
     workspace_.change_reason_code = crSel->reason_code;
-    workspace_.change_commentary  = crSel->commentary;
+    workspace_.change_commentary = crSel->commentary;
 
     updateWorkspaceFromUi();
 
-    BOOST_LOG_SEV(lg(), info) << "Saving workspace: "
-        << workspace_.name;
+    BOOST_LOG_SEV(lg(), info) << "Saving workspace: " << workspace_.name;
 
     QPointer<WorkspaceDetailDialog> self = this;
 
@@ -295,8 +296,8 @@ void WorkspaceDetailDialog::onSaveClicked() {
 
         workspace::messaging::create_workspace_request request;
         request.data = workspace;
-        auto response_result = self->clientManager_->
-            process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -306,15 +307,13 @@ void WorkspaceDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Workspace saved successfully";
-            QString code = QString::fromStdString(
-                self->workspace_.name);
+            QString code = QString::fromStdString(self->workspace_.name);
             self->hasChanges_ = false;
             self->updateSaveButtonState();
             emit self->workspaceSaved(code);
@@ -333,14 +332,15 @@ void WorkspaceDetailDialog::onSaveClicked() {
 
 void WorkspaceDetailDialog::onDeleteClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot delete workspace while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot delete workspace while disconnected from server.");
         return;
     }
 
-    QString code = QString::fromStdString(
-        workspace_.name);
-    auto reply = MessageBoxHelper::question(this, "Delete Workspace",
+    QString code = QString::fromStdString(workspace_.name);
+    auto reply = MessageBoxHelper::question(
+        this,
+        "Delete Workspace",
         QString("Are you sure you want to delete workspace '%1'?").arg(code),
         QMessageBox::Yes | QMessageBox::No);
 
@@ -348,12 +348,11 @@ void WorkspaceDetailDialog::onDeleteClicked() {
         return;
     }
 
-    const auto crSel = promptChangeReason(
-        ChangeReasonDialog::OperationType::Delete, false);
-    if (!crSel) return;
+    const auto crSel = promptChangeReason(ChangeReasonDialog::OperationType::Delete, false);
+    if (!crSel)
+        return;
 
-    BOOST_LOG_SEV(lg(), info) << "Deleting workspace: "
-        << workspace_.name;
+    BOOST_LOG_SEV(lg(), info) << "Deleting workspace: " << workspace_.name;
 
     QPointer<WorkspaceDetailDialog> self = this;
 
@@ -362,7 +361,8 @@ void WorkspaceDetailDialog::onDeleteClicked() {
         std::string message;
     };
 
-    auto task = [self, id_str = boost::uuids::to_string(workspace_.id),
+    auto task = [self,
+                 id_str = boost::uuids::to_string(workspace_.id),
                  reason_code = crSel->reason_code,
                  commentary = crSel->commentary]() -> DeleteResult {
         if (!self || !self->clientManager_) {
@@ -373,8 +373,8 @@ void WorkspaceDetailDialog::onDeleteClicked() {
         request.id = id_str;
         request.change_reason_code = reason_code;
         request.change_commentary = commentary;
-        auto response_result = self->clientManager_->
-            process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -384,15 +384,13 @@ void WorkspaceDetailDialog::onDeleteClicked() {
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
-            self, [self, code, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, code, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Workspace deleted successfully";
-            emit self->statusMessage(
-                QString("Workspace '%1' deleted").arg(code));
+            emit self->statusMessage(QString("Workspace '%1' deleted").arg(code));
             emit self->workspaceDeleted(code);
             self->requestClose();
         } else {
@@ -418,9 +416,8 @@ void WorkspaceDetailDialog::populateStatusCombo() {
 
     for (const auto& [code, def] : entries) {
         const QString qcode = QString::fromStdString(code);
-        const QString label = def
-            ? QString::fromStdString(def->name.empty() ? code : def->name)
-            : qcode;
+        const QString label =
+            def ? QString::fromStdString(def->name.empty() ? code : def->name) : qcode;
         ui_->statusCombo->addItem(label, qcode);
     }
 
@@ -436,20 +433,19 @@ void WorkspaceDetailDialog::loadAccounts() {
 
     QPointer<WorkspaceDetailDialog> self = this;
     auto* cm = clientManager_;
-    QFuture<AccountListResult> future =
-        QtConcurrent::run([self, cm]() -> AccountListResult {
-            if (!cm)
-                return {false, {}, "No client manager"};
+    QFuture<AccountListResult> future = QtConcurrent::run([self, cm]() -> AccountListResult {
+        if (!cm)
+            return {false, {}, "No client manager"};
 
-            iam::messaging::get_accounts_request_typed request;
-            request.limit = 500;
-            auto result = cm->process_authenticated_request(std::move(request));
+        iam::messaging::get_accounts_request_typed request;
+        request.limit = 500;
+        auto result = cm->process_authenticated_request(std::move(request));
 
-            if (!result)
-                return {false, {}, QString::fromStdString(result.error())};
+        if (!result)
+            return {false, {}, QString::fromStdString(result.error())};
 
-            return {true, std::move(result->accounts), {}};
-        });
+        return {true, std::move(result->accounts), {}};
+    });
 
     accountWatcher_->setFuture(future);
 }
@@ -460,19 +456,18 @@ void WorkspaceDetailDialog::loadParentWorkspaces() {
 
     QPointer<WorkspaceDetailDialog> self = this;
     auto* cm = clientManager_;
-    QFuture<WorkspaceListResult> future =
-        QtConcurrent::run([self, cm]() -> WorkspaceListResult {
-            if (!cm)
-                return {false, {}, "No client manager"};
+    QFuture<WorkspaceListResult> future = QtConcurrent::run([self, cm]() -> WorkspaceListResult {
+        if (!cm)
+            return {false, {}, "No client manager"};
 
-            workspace::messaging::list_workspaces_request request;
-            auto result = cm->process_authenticated_request(std::move(request));
+        workspace::messaging::list_workspaces_request request;
+        auto result = cm->process_authenticated_request(std::move(request));
 
-            if (!result)
-                return {false, {}, QString::fromStdString(result.error())};
+        if (!result)
+            return {false, {}, QString::fromStdString(result.error())};
 
-            return {true, std::move(result->workspaces), {}};
-        });
+        return {true, std::move(result->workspaces), {}};
+    });
 
     parentWatcher_->setFuture(future);
 }
@@ -483,8 +478,7 @@ void WorkspaceDetailDialog::onParentWorkspacesLoaded() {
     if (!result.success)
         return;
 
-    const QString selfUuid = QString::fromStdString(
-        boost::uuids::to_string(workspace_.id));
+    const QString selfUuid = QString::fromStdString(boost::uuids::to_string(workspace_.id));
 
     const bool hadSignals = ui_->parentCombo->blockSignals(true);
     ui_->parentCombo->clear();
@@ -494,9 +488,7 @@ void WorkspaceDetailDialog::onParentWorkspacesLoaded() {
         const QString uuid = QString::fromStdString(boost::uuids::to_string(ws.id));
         if (uuid == selfUuid)
             continue;
-        const QString label = QString("%1 [%2]")
-            .arg(QString::fromStdString(ws.name))
-            .arg(uuid);
+        const QString label = QString("%1 [%2]").arg(QString::fromStdString(ws.name)).arg(uuid);
         ui_->parentCombo->addItem(label, uuid);
     }
 
@@ -510,8 +502,8 @@ void WorkspaceDetailDialog::selectCurrentParent() {
         return;
     }
 
-    const QString targetUuid = QString::fromStdString(
-        boost::uuids::to_string(*workspace_.parent_workspace_id));
+    const QString targetUuid =
+        QString::fromStdString(boost::uuids::to_string(*workspace_.parent_workspace_id));
 
     for (int i = 0; i < ui_->parentCombo->count(); ++i) {
         if (ui_->parentCombo->itemData(i).toString() == targetUuid) {
@@ -532,9 +524,8 @@ void WorkspaceDetailDialog::onAccountsLoaded() {
 
     for (const auto& acct : result.accounts) {
         const QString uuid = QString::fromStdString(boost::uuids::to_string(acct.id));
-        const QString label = QString("%1 [%2]")
-            .arg(QString::fromStdString(acct.username))
-            .arg(uuid);
+        const QString label =
+            QString("%1 [%2]").arg(QString::fromStdString(acct.username)).arg(uuid);
         ui_->ownerCombo->addItem(label, uuid);
     }
 
@@ -561,8 +552,7 @@ void WorkspaceDetailDialog::selectCurrentOwner() {
     }
 
     // Edit mode: match current owner_id UUID
-    const QString targetUuid = QString::fromStdString(
-        boost::uuids::to_string(workspace_.owner_id));
+    const QString targetUuid = QString::fromStdString(boost::uuids::to_string(workspace_.owner_id));
     for (int i = 0; i < ui_->ownerCombo->count(); ++i) {
         if (ui_->ownerCombo->itemData(i).toString() == targetUuid) {
             ui_->ownerCombo->setCurrentIndex(i);

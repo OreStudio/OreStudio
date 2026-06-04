@@ -20,27 +20,27 @@
 #ifndef ORES_QT_COMPUTE_CONSOLE_WINDOW_HPP
 #define ORES_QT_COMPUTE_CONSOLE_WINDOW_HPP
 
-#include <memory>
-#include <string>
-#include <QTimer>
-#include <QWidget>
-#include <QAction>
-#include <QSplitter>
-#include <QTabWidget>
-#include <QTableView>
-#include <QToolBar>
-#include <QSortFilterProxyModel>
-#include <QFutureWatcher>
+#include "ores.compute.api/domain/host.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
-#include "ores.qt/ClientManager.hpp"
-#include "ores.qt/HostDisplayNameCache.hpp"
-#include "ores.qt/ComputeTaskViewModel.hpp"
-#include "ores.qt/ComputeTransferModel.hpp"
 #include "ores.qt/ClientAppModel.hpp"
 #include "ores.qt/ClientAppVersionModel.hpp"
 #include "ores.qt/ClientHostModel.hpp"
-#include "ores.compute.api/domain/host.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/ComputeTaskViewModel.hpp"
+#include "ores.qt/ComputeTransferModel.hpp"
+#include "ores.qt/HostDisplayNameCache.hpp"
+#include <QAction>
+#include <QFutureWatcher>
+#include <QSortFilterProxyModel>
+#include <QSplitter>
+#include <QTabWidget>
+#include <QTableView>
+#include <QTimer>
+#include <QToolBar>
+#include <QWidget>
+#include <memory>
+#include <string>
 
 namespace ores::qt {
 
@@ -66,8 +66,7 @@ class ComputeConsoleWindow : public QWidget {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.compute_console_window";
+    inline static std::string_view logger_name = "ores.qt.compute_console_window";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -85,11 +84,17 @@ public:
      * @brief Exposes the transfer model so external upload/download helpers
      *        can call add_transfer / update_progress / etc.
      */
-    ComputeTransferModel* transfer_model() const { return transfer_model_.get(); }
+    ComputeTransferModel* transfer_model() const {
+        return transfer_model_.get();
+    }
 
-    void setHttpBaseUrl(const std::string& url) { http_base_url_ = url; }
+    void setHttpBaseUrl(const std::string& url) {
+        http_base_url_ = url;
+    }
 
-    QSize sizeHint() const override { return {1200, 720}; }
+    QSize sizeHint() const override {
+        return {1200, 720};
+    }
 
 public slots:
     void refresh();
@@ -129,23 +134,23 @@ private:
     QToolBar* make_tab_toolbar(Qt::ToolButtonStyle style = Qt::ToolButtonTextBesideIcon);
 
     // Tab indices (App Versions is now embedded in the Apps tab, not a top tab)
-    static constexpr int kTasksTab     = 0;
-    static constexpr int kAppsTab      = 1;
-    static constexpr int kHostsTab     = 2;
+    static constexpr int kTasksTab = 0;
+    static constexpr int kAppsTab = 1;
+    static constexpr int kHostsTab = 2;
     static constexpr int kTransfersTab = 3;
 
-    ClientManager*     client_manager_;
+    ClientManager* client_manager_;
     ChangeReasonCache* change_reason_cache_;
     BadgeCache* badge_cache_;
-    std::string        http_base_url_;
+    std::string http_base_url_;
 
     // Models
-    HostDisplayNameCache*                  host_cache_{nullptr};  // owned by this
-    std::unique_ptr<ComputeTaskViewModel>  task_model_;
-    std::unique_ptr<ClientAppModel>        app_model_;
+    HostDisplayNameCache* host_cache_{nullptr}; // owned by this
+    std::unique_ptr<ComputeTaskViewModel> task_model_;
+    std::unique_ptr<ClientAppModel> app_model_;
     std::unique_ptr<ClientAppVersionModel> app_version_model_;
-    std::unique_ptr<ClientHostModel>       host_model_;
-    std::unique_ptr<ComputeTransferModel>  transfer_model_;
+    std::unique_ptr<ClientHostModel> host_model_;
+    std::unique_ptr<ComputeTransferModel> transfer_model_;
 
     // Host fetch watcher (also populates host_cache_)
     using HostList = std::vector<compute::domain::host>;
@@ -155,23 +160,23 @@ private:
     QTabWidget* main_tabs_{nullptr};
 
     // Tasks tab
-    QTableView*            task_view_{nullptr};
+    QTableView* task_view_{nullptr};
     QSortFilterProxyModel* task_proxy_{nullptr};
-    QAction*               logs_action_{nullptr};
-    QAction*               download_input_action_{nullptr};
-    QAction*               download_output_action_{nullptr};
-    QString                selected_result_id_;
-    const compute_task*    selected_task_{nullptr};
+    QAction* logs_action_{nullptr};
+    QAction* download_input_action_{nullptr};
+    QAction* download_output_action_{nullptr};
+    QString selected_result_id_;
+    const compute_task* selected_task_{nullptr};
 
     // Apps tab — master-detail split
-    QTableView*            app_view_{nullptr};
+    QTableView* app_view_{nullptr};
     QSortFilterProxyModel* app_proxy_{nullptr};
-    QTableView*            app_version_view_{nullptr};
+    QTableView* app_version_view_{nullptr};
     QSortFilterProxyModel* app_version_proxy_{nullptr};
-    QAction*               new_app_version_action_{nullptr};  // enabled when app selected
+    QAction* new_app_version_action_{nullptr}; // enabled when app selected
 
     // Hosts tab
-    QTableView*            host_view_{nullptr};
+    QTableView* host_view_{nullptr};
     QSortFilterProxyModel* host_proxy_{nullptr};
 
     // Transfers tab

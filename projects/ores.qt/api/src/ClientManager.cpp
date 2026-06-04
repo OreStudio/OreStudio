@@ -18,23 +18,22 @@
  *
  */
 #include "ores.qt/ClientManager.hpp"
-
-#include <QDateTime>
-#include <QTimeZone>
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/uuid/string_generator.hpp>
+#include "ores.eventing/domain/entity_change_event.hpp"
+#include "ores.http.api/messaging/http_info_protocol.hpp"
+#include "ores.iam.api/messaging/account_protocol.hpp"
+#include "ores.iam.api/messaging/bootstrap_protocol.hpp"
+#include "ores.iam.api/messaging/login_protocol.hpp"
+#include "ores.iam.api/messaging/session_protocol.hpp"
+#include "ores.iam.api/messaging/session_samples_protocol.hpp"
+#include "ores.iam.api/messaging/signup_protocol.hpp"
 #include "ores.nats/config/nats_options.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_connect_error.hpp"
-#include "ores.eventing/domain/entity_change_event.hpp"
 #include "ores.platform/environment/environment.hpp"
-#include "ores.iam.api/messaging/login_protocol.hpp"
-#include "ores.iam.api/messaging/signup_protocol.hpp"
-#include "ores.iam.api/messaging/bootstrap_protocol.hpp"
-#include "ores.iam.api/messaging/session_protocol.hpp"
-#include "ores.iam.api/messaging/session_samples_protocol.hpp"
-#include "ores.iam.api/messaging/account_protocol.hpp"
-#include "ores.http.api/messaging/http_info_protocol.hpp"
+#include <QDateTime>
+#include <QTimeZone>
+#include <boost/uuid/string_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
@@ -42,7 +41,8 @@ using namespace ores::logging;
 
 ClientManager::ClientManager(std::shared_ptr<eventing::service::event_bus> event_bus,
                              QObject* parent)
-    : QObject(parent), event_bus_(std::move(event_bus)) {
+    : QObject(parent)
+    , event_bus_(std::move(event_bus)) {
     BOOST_LOG_SEV(lg(), debug) << "ClientManager created";
     refresh_timer_ = new QTimer(this);
     refresh_timer_->setSingleShot(true);
@@ -61,10 +61,8 @@ ClientManager::~ClientManager() {
 }
 
 LoginResult ClientManager::connect(const std::string& host, std::uint16_t port) {
-    BOOST_LOG_SEV(lg(), info) << "Connecting to " << host << ":" << port
-                              << " (namespace: '"
-                              << (subject_prefix_.empty() ? "(none)" : subject_prefix_)
-                              << "')";
+    BOOST_LOG_SEV(lg(), info) << "Connecting to " << host << ":" << port << " (namespace: '"
+                              << (subject_prefix_.empty() ? "(none)" : subject_prefix_) << "')";
 
     // If already connected, disconnect first
     if (session_.is_connected()) {
@@ -76,9 +74,12 @@ LoginResult ClientManager::connect(const std::string& host, std::uint16_t port) 
         opts.url = "nats://" + host + ":" + std::to_string(port);
         opts.subject_prefix = subject_prefix_;
         using ores::platform::environment::environment;
-        if (auto v = environment::get_value("ORES_NATS_TLS_CA"))   opts.tls_ca_cert     = *v;
-        if (auto v = environment::get_value("ORES_NATS_TLS_CERT")) opts.tls_client_cert = *v;
-        if (auto v = environment::get_value("ORES_NATS_TLS_KEY"))  opts.tls_client_key  = *v;
+        if (auto v = environment::get_value("ORES_NATS_TLS_CA"))
+            opts.tls_ca_cert = *v;
+        if (auto v = environment::get_value("ORES_NATS_TLS_CERT"))
+            opts.tls_client_cert = *v;
+        if (auto v = environment::get_value("ORES_NATS_TLS_KEY"))
+            opts.tls_client_key = *v;
 
         // Phase 1: TCP + TLS connection to NATS.
         // Throws nats_connect_error with server_unreachable, tls_error, or
@@ -91,19 +92,15 @@ LoginResult ClientManager::connect(const std::string& host, std::uint16_t port) 
         // if NATS is up but no application service is subscribed.
         // Returns std::unexpected on timeout or other soft errors.
         BOOST_LOG_SEV(lg(), debug) << "Checking bootstrap status...";
-        auto bootstrap_result = process_request(
-            iam::messaging::bootstrap_status_request{});
+        auto bootstrap_result = process_request(iam::messaging::bootstrap_status_request{});
 
         if (!bootstrap_result) {
             // Bootstrap request failed: services are not responding.
-            BOOST_LOG_SEV(lg(), error) << "Bootstrap check failed: "
-                                       << bootstrap_result.error();
-            return {
-                .success = false,
-                .error_message =
-                    "NATS is running but application services are not responding.\n\n"
-                    "Please ensure all services have been started."
-            };
+            BOOST_LOG_SEV(lg(), error) << "Bootstrap check failed: " << bootstrap_result.error();
+            return {.success = false,
+                    .error_message =
+                        "NATS is running but application services are not responding.\n\n"
+                        "Please ensure all services have been started."};
         }
 
         if (bootstrap_result->is_in_bootstrap_mode) {
@@ -111,11 +108,9 @@ LoginResult ClientManager::connect(const std::string& host, std::uint16_t port) 
             connected_host_ = host;
             connected_port_ = port;
             QMetaObject::invokeMethod(this, "connected", Qt::QueuedConnection);
-            return {
-                .success = false,
-                .error_message = QString::fromStdString(bootstrap_result->message),
-                .bootstrap_mode = true
-            };
+            return {.success = false,
+                    .error_message = QString::fromStdString(bootstrap_result->message),
+                    .bootstrap_mode = true};
         }
 
         connected_host_ = host;
@@ -125,50 +120,39 @@ LoginResult ClientManager::connect(const std::string& host, std::uint16_t port) 
 
     } catch (const nats::service::nats_connect_error& e) {
         using nats::service::nats_error_kind;
-        BOOST_LOG_SEV(lg(), error) << "Connection failed (" << static_cast<int>(e.kind())
-                                   << "): " << e.what();
+        BOOST_LOG_SEV(lg(), error)
+            << "Connection failed (" << static_cast<int>(e.kind()) << "): " << e.what();
         switch (e.kind()) {
             case nats_error_kind::server_unreachable:
-                return {
-                    .success = false,
-                    .error_message = QString(
-                        "Cannot connect to NATS server at %1:%2.\n\n"
-                        "The server may not be running, or the host/port is incorrect.")
-                        .arg(QString::fromStdString(host))
-                        .arg(port)
-                };
+                return {.success = false,
+                        .error_message =
+                            QString("Cannot connect to NATS server at %1:%2.\n\n"
+                                    "The server may not be running, or the host/port is incorrect.")
+                                .arg(QString::fromStdString(host))
+                                .arg(port)};
             case nats_error_kind::tls_error:
-                return {
-                    .success = false,
-                    .error_message =
-                        "TLS/SSL error connecting to the server.\n\n"
-                        "Possible causes:\n"
-                        "  \u2022 Client certificates are missing or have expired\n"
-                        "  \u2022 The CA certificate does not match the server\n"
-                        "  \u2022 A stale TLS session — try restarting the application"
-                };
+                return {.success = false,
+                        .error_message =
+                            "TLS/SSL error connecting to the server.\n\n"
+                            "Possible causes:\n"
+                            "  \u2022 Client certificates are missing or have expired\n"
+                            "  \u2022 The CA certificate does not match the server\n"
+                            "  \u2022 A stale TLS session — try restarting the application"};
             case nats_error_kind::connection_timeout:
-                return {
-                    .success = false,
-                    .error_message = QString(
-                        "Connection to %1:%2 timed out.\n\n"
-                        "The server may be unreachable or overloaded.")
-                        .arg(QString::fromStdString(host))
-                        .arg(port)
-                };
+                return {.success = false,
+                        .error_message = QString("Connection to %1:%2 timed out.\n\n"
+                                                 "The server may be unreachable or overloaded.")
+                                             .arg(QString::fromStdString(host))
+                                             .arg(port)};
             case nats_error_kind::services_unavailable:
-                return {
-                    .success = false,
-                    .error_message =
-                        "NATS is running but no application services are responding.\n\n"
-                        "Please ensure all services have been started."
-                };
+                return {.success = false,
+                        .error_message =
+                            "NATS is running but no application services are responding.\n\n"
+                            "Please ensure all services have been started."};
             default:
-                return {
-                    .success = false,
-                    .error_message = QString::fromStdString(
-                        "NATS error: " + std::string(e.what()))
-                };
+                return {.success = false,
+                        .error_message =
+                            QString::fromStdString("NATS error: " + std::string(e.what()))};
         }
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Connection failed: " << e.what();
@@ -176,8 +160,7 @@ LoginResult ClientManager::connect(const std::string& host, std::uint16_t port) 
     }
 }
 
-LoginResult ClientManager::login(const std::string& username,
-                                 const std::string& password) {
+LoginResult ClientManager::login(const std::string& username, const std::string& password) {
     BOOST_LOG_SEV(lg(), info) << "Logging in as " << username;
 
     if (!session_.is_connected()) {
@@ -185,22 +168,18 @@ LoginResult ClientManager::login(const std::string& username,
     }
 
     try {
-        iam::messaging::login_request request{
-            .principal = username,
-            .password = password
-        };
+        iam::messaging::login_request request{.principal = username, .password = password};
 
         auto result = process_request(std::move(request));
         if (!result) {
             BOOST_LOG_SEV(lg(), error) << "LOGIN FAILURE: " << result.error();
-            return {.success = false,
-                    .error_message = QString::fromStdString(result.error())};
+            return {.success = false, .error_message = QString::fromStdString(result.error())};
         }
 
         const auto& response = *result;
         if (!response.success) {
-            BOOST_LOG_SEV(lg(), warn) << "LOGIN FAILURE: Server rejected login for '"
-                                      << username << "': " << response.error_message;
+            BOOST_LOG_SEV(lg(), warn) << "LOGIN FAILURE: Server rejected login for '" << username
+                                      << "': " << response.error_message;
             return {.success = false,
                     .error_message = QString::fromStdString(response.error_message)};
         }
@@ -210,19 +189,17 @@ LoginResult ClientManager::login(const std::string& username,
             BOOST_LOG_SEV(lg(), error) << "LOGIN FAILURE: IAM service returned "
                                        << "empty JWT token - signing key not configured";
             return {.success = false,
-                    .error_message =
-                        "IAM service is not configured for JWT signing.\n\n"
-                        "Run generate_keys.sh in publish/bin/ to generate "
-                        "the private key, then restart the IAM service."};
+                    .error_message = "IAM service is not configured for JWT signing.\n\n"
+                                     "Run generate_keys.sh in publish/bin/ to generate "
+                                     "the private key, then restart the IAM service."};
         }
 
         // Store auth in session
-        session_.set_auth(ores::nats::service::nats_client::login_info{
-            .jwt = response.token,
-            .username = response.username,
-            .tenant_id = response.tenant_id,
-            .tenant_name = response.tenant_name
-        });
+        session_.set_auth(
+            ores::nats::service::nats_client::login_info{.jwt = response.token,
+                                                         .username = response.username,
+                                                         .tenant_id = response.tenant_id,
+                                                         .tenant_name = response.tenant_name});
 
         // Use the IAM session UUID returned by the server. This matches the
         // record in ores_iam_sessions_tbl and is forwarded as Nats-Session-Id
@@ -260,18 +237,17 @@ LoginResult ClientManager::login(const std::string& username,
         if (!selected_party_id.is_nil()) {
             current_party_id_ = selected_party_id;
             const auto selected_str = boost::uuids::to_string(selected_party_id);
-            const auto it = std::find_if(
-                response.available_parties.begin(),
-                response.available_parties.end(),
-                [&](const auto& p) { return p.id == selected_str; });
+            const auto it = std::find_if(response.available_parties.begin(),
+                                         response.available_parties.end(),
+                                         [&](const auto& p) { return p.id == selected_str; });
             if (it != response.available_parties.end()) {
                 current_party_name_ = QString::fromStdString(it->name);
                 current_party_category_ = QString::fromStdString(it->party_category);
             } else if (!response.available_parties.empty()) {
-                current_party_name_ = QString::fromStdString(
-                    response.available_parties.front().name);
-                current_party_category_ = QString::fromStdString(
-                    response.available_parties.front().party_category);
+                current_party_name_ =
+                    QString::fromStdString(response.available_parties.front().name);
+                current_party_category_ =
+                    QString::fromStdString(response.available_parties.front().party_category);
             }
         } else {
             current_party_id_ = {};
@@ -291,14 +267,14 @@ LoginResult ClientManager::login(const std::string& username,
                 try {
                     boost::uuids::string_generator gen;
                     party_uuid = gen(ps.id);
-                } catch (const std::exception&) {}
+                } catch (const std::exception&) {
+                }
             }
-            available_parties.push_back(PartyInfo{
-                .id = party_uuid,
-                .name = QString::fromStdString(ps.name),
-                .party_category = QString::fromStdString(ps.party_category),
-                .business_center_code = QString::fromStdString(ps.business_center_code)
-            });
+            available_parties.push_back(
+                PartyInfo{.id = party_uuid,
+                          .name = QString::fromStdString(ps.name),
+                          .party_category = QString::fromStdString(ps.party_category),
+                          .business_center_code = QString::fromStdString(ps.business_center_code)});
         }
 
         arm_refresh_timer(response.access_lifetime_s);
@@ -308,37 +284,30 @@ LoginResult ClientManager::login(const std::string& username,
         // to unauthenticated callers. Failure here fails the login so the user
         // is not left in a half-configured state where HTTP-dependent features
         // silently break (e.g. compute package upload, report downloads).
-        auto http_info = process_authenticated_request(
-            http::messaging::get_http_info_request{});
+        auto http_info = process_authenticated_request(http::messaging::get_http_info_request{});
         if (!http_info || http_info->base_url.empty()) {
-            const std::string err = http_info
-                ? std::string("empty base URL")
-                : http_info.error();
-            BOOST_LOG_SEV(lg(), error)
-                << "HTTP service discovery failed: " << err;
+            const std::string err = http_info ? std::string("empty base URL") : http_info.error();
+            BOOST_LOG_SEV(lg(), error) << "HTTP service discovery failed: " << err;
             logout();
             return {.success = false,
-                    .error_message = QString(
-                        "Authenticated with IAM but the HTTP server did not "
-                        "respond to service discovery.\n\n"
-                        "Please ensure ores.http.server is running "
-                        "(details: %1).").arg(QString::fromStdString(err))};
+                    .error_message = QString("Authenticated with IAM but the HTTP server did not "
+                                             "respond to service discovery.\n\n"
+                                             "Please ensure ores.http.server is running "
+                                             "(details: %1).")
+                                         .arg(QString::fromStdString(err))};
         }
         http_base_url_ = http_info->base_url;
-        BOOST_LOG_SEV(lg(), info) << "Discovered HTTP base URL: "
-                                  << http_base_url_;
+        BOOST_LOG_SEV(lg(), info) << "Discovered HTTP base URL: " << http_base_url_;
 
         emit loggedIn();
 
-        return {
-            .success = true,
-            .error_message = {},
-            .password_reset_required = response.password_reset_required,
-            .tenant_bootstrap_mode = response.tenant_bootstrap_mode,
-            .party_setup_required = response.party_setup_required,
-            .selected_party_id = selected_party_id,
-            .available_parties = std::move(available_parties)
-        };
+        return {.success = true,
+                .error_message = {},
+                .password_reset_required = response.password_reset_required,
+                .tenant_bootstrap_mode = response.tenant_bootstrap_mode,
+                .party_setup_required = response.party_setup_required,
+                .selected_party_id = selected_party_id,
+                .available_parties = std::move(available_parties)};
 
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Login failed: " << e.what();
@@ -346,14 +315,12 @@ LoginResult ClientManager::login(const std::string& username,
     }
 }
 
-LoginResult ClientManager::connectAndLogin(
-    const std::string& host,
-    std::uint16_t port,
-    const std::string& username,
-    const std::string& password) {
+LoginResult ClientManager::connectAndLogin(const std::string& host,
+                                           std::uint16_t port,
+                                           const std::string& username,
+                                           const std::string& password) {
 
-    BOOST_LOG_SEV(lg(), debug) << "connectAndLogin: host=" << host
-                               << " port=" << port
+    BOOST_LOG_SEV(lg(), debug) << "connectAndLogin: host=" << host << " port=" << port
                                << " user=" << username;
 
     auto connect_result = connect(host, port);
@@ -405,8 +372,7 @@ bool ClientManager::logout(std::chrono::milliseconds timeout) {
     }
 
     try {
-        auto result = process_authenticated_request(
-            iam::messaging::logout_request{}, timeout);
+        auto result = process_authenticated_request(iam::messaging::logout_request{}, timeout);
         session_.clear_auth();
         http_base_url_.clear();
         return result && result->success;
@@ -422,13 +388,11 @@ bool ClientManager::isConnected() const {
     return session_.is_connected();
 }
 
-bool ClientManager::selectParty(const boost::uuids::uuid& party_id,
-    const QString& party_name) {
+bool ClientManager::selectParty(const boost::uuids::uuid& party_id, const QString& party_name) {
     BOOST_LOG_SEV(lg(), info) << "Selecting party: " << party_name.toStdString();
 
     try {
-        iam::messaging::select_party_request request{
-            .party_id = boost::uuids::to_string(party_id)};
+        iam::messaging::select_party_request request{.party_id = boost::uuids::to_string(party_id)};
         auto result = process_authenticated_request(std::move(request));
 
         if (!result || !result->success) {
@@ -451,7 +415,7 @@ bool ClientManager::selectParty(const boost::uuids::uuid& party_id,
         last_party_setup_required_ = result->party_setup_required;
         arm_refresh_timer(result->access_lifetime_s);
         BOOST_LOG_SEV(lg(), info) << "Party selected: " << party_name.toStdString()
-            << (result->party_setup_required ? " (setup required)" : "");
+                                  << (result->party_setup_required ? " (setup required)" : "");
         return true;
 
     } catch (const std::exception& e) {
@@ -460,17 +424,15 @@ bool ClientManager::selectParty(const boost::uuids::uuid& party_id,
     }
 }
 
-std::optional<SessionListResult> ClientManager::listSessions(
-    const boost::uuids::uuid& accountId,
-    std::uint32_t limit,
-    std::uint32_t offset) {
+std::optional<SessionListResult> ClientManager::listSessions(const boost::uuids::uuid& accountId,
+                                                             std::uint32_t limit,
+                                                             std::uint32_t offset) {
 
     try {
-        iam::messaging::list_sessions_request request{
-            .account_id = boost::uuids::to_string(accountId),
-            .limit = static_cast<int>(limit),
-            .offset = static_cast<int>(offset)
-        };
+        iam::messaging::list_sessions_request request{.account_id =
+                                                          boost::uuids::to_string(accountId),
+                                                      .limit = static_cast<int>(limit),
+                                                      .offset = static_cast<int>(offset)};
 
         auto result = process_authenticated_request(std::move(request));
         if (!result) {
@@ -478,49 +440,40 @@ std::optional<SessionListResult> ClientManager::listSessions(
             return std::nullopt;
         }
 
-        return SessionListResult{
-            .sessions = std::move(result->sessions),
-            .total_count = static_cast<std::uint32_t>(result->total_count)
-        };
+        return SessionListResult{.sessions = std::move(result->sessions),
+                                 .total_count = static_cast<std::uint32_t>(result->total_count)};
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "listSessions failed: " << e.what();
         return std::nullopt;
     }
 }
 
-std::string ClientManager::send_authenticated_request(
-    std::string_view subject,
-    std::string json_body,
-    std::chrono::milliseconds timeout) {
+std::string ClientManager::send_authenticated_request(std::string_view subject,
+                                                      std::string json_body,
+                                                      std::chrono::milliseconds timeout) {
     if (!session_.is_logged_in())
         throw std::runtime_error("Not logged in");
     const auto cid = boost::uuids::to_string(boost::uuids::random_generator()());
-    auto scoped = session_
-        .with_correlation_id(cid)
-        .with_session_id(session_id_)
-        .with_workspace_id(workspace_context_.id.toStdString());
+    auto scoped = session_.with_correlation_id(cid)
+                      .with_session_id(session_id_)
+                      .with_workspace_id(workspace_context_.id.toStdString());
     auto msg = scoped.authenticated_request(subject, json_body, timeout);
-    return std::string(
-        reinterpret_cast<const char*>(msg.data.data()),
-        msg.data.size());
+    return std::string(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
 }
 
-std::string ClientManager::send_authenticated_request_with_workspace(
-    std::string_view subject,
-    std::string json_body,
-    const std::string& workspace_id,
-    std::chrono::milliseconds timeout) {
+std::string
+ClientManager::send_authenticated_request_with_workspace(std::string_view subject,
+                                                         std::string json_body,
+                                                         const std::string& workspace_id,
+                                                         std::chrono::milliseconds timeout) {
     if (!session_.is_logged_in())
         throw std::runtime_error("Not logged in");
     const auto cid = boost::uuids::to_string(boost::uuids::random_generator()());
-    auto scoped = session_
-        .with_correlation_id(cid)
-        .with_session_id(session_id_)
-        .with_workspace_id(workspace_id);
+    auto scoped = session_.with_correlation_id(cid)
+                      .with_session_id(session_id_)
+                      .with_workspace_id(workspace_id);
     auto msg = scoped.authenticated_request(subject, json_body, timeout);
-    return std::string(
-        reinterpret_cast<const char*>(msg.data.data()),
-        msg.data.size());
+    return std::string(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
 }
 
 std::string ClientManager::send_authenticated_request_with_workspace_ctx(
@@ -532,19 +485,15 @@ std::string ClientManager::send_authenticated_request_with_workspace_ctx(
     if (!session_.is_logged_in())
         throw std::runtime_error("Not logged in");
     const auto cid = boost::uuids::to_string(boost::uuids::random_generator()());
-    auto scoped = session_
-        .with_correlation_id(cid)
-        .with_session_id(session_id_)
-        .with_workspace_id(workspace_id)
-        .with_workspace_resolution(std::move(resolution_chain));
+    auto scoped = session_.with_correlation_id(cid)
+                      .with_session_id(session_id_)
+                      .with_workspace_id(workspace_id)
+                      .with_workspace_resolution(std::move(resolution_chain));
     auto msg = scoped.authenticated_request(subject, json_body, timeout);
-    return std::string(
-        reinterpret_cast<const char*>(msg.data.data()),
-        msg.data.size());
+    return std::string(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
 }
 
-std::optional<std::vector<iam::domain::session>>
-ClientManager::getActiveSessions() {
+std::optional<std::vector<iam::domain::session>> ClientManager::getActiveSessions() {
     try {
         iam::messaging::get_active_sessions_request request;
         auto result = process_authenticated_request(std::move(request));
@@ -569,9 +518,8 @@ nats::service::jetstream_admin ClientManager::admin() {
 std::optional<std::vector<iam::messaging::session_sample_dto>>
 ClientManager::getSessionSamples(const boost::uuids::uuid& sessionId) {
     try {
-        iam::messaging::get_session_samples_request request{
-            .session_id = boost::uuids::to_string(sessionId)
-        };
+        iam::messaging::get_session_samples_request request{.session_id =
+                                                                boost::uuids::to_string(sessionId)};
         auto result = process_authenticated_request(std::move(request));
         if (!result) {
             BOOST_LOG_SEV(lg(), error) << "getSessionSamples failed: " << result.error();
@@ -585,17 +533,22 @@ ClientManager::getSessionSamples(const boost::uuids::uuid& sessionId) {
 }
 
 void ClientManager::arm_refresh_timer(int lifetime_s) {
-    if (!refresh_timer_) return;
+    if (!refresh_timer_)
+        return;
     const int fire_ms = static_cast<int>(lifetime_s * refresh_lifetime_ratio * 1000);
     BOOST_LOG_SEV(lg(), debug) << "Refresh timer armed for " << (fire_ms / 1000) << "s";
-    QMetaObject::invokeMethod(refresh_timer_, [this, fire_ms]() {
-        refresh_timer_->stop();
-        refresh_timer_->start(fire_ms);
-    }, Qt::QueuedConnection);
+    QMetaObject::invokeMethod(
+        refresh_timer_,
+        [this, fire_ms]() {
+            refresh_timer_->stop();
+            refresh_timer_->start(fire_ms);
+        },
+        Qt::QueuedConnection);
 }
 
 void ClientManager::onRefreshTimer() {
-    if (!session_.is_logged_in()) return;
+    if (!session_.is_logged_in())
+        return;
     BOOST_LOG_SEV(lg(), info) << "Proactive JWT refresh triggered";
     try {
         auto result = process_authenticated_request(iam::messaging::refresh_request{});
@@ -617,11 +570,10 @@ void ClientManager::onRefreshTimer() {
     }
 }
 
-LoginResult ClientManager::testConnection(
-    const std::string& host,
-    std::uint16_t port,
-    const std::string& username,
-    const std::string& password) {
+LoginResult ClientManager::testConnection(const std::string& host,
+                                          std::uint16_t port,
+                                          const std::string& username,
+                                          const std::string& password) {
 
     BOOST_LOG_SEV(lg(), info) << "Testing connection to " << host << ":" << port;
 
@@ -633,17 +585,13 @@ LoginResult ClientManager::testConnection(
         temp_session.connect(std::move(opts));
 
         // Attempt login
-        iam::messaging::login_request request{
-            .principal = username,
-            .password = password
-        };
+        iam::messaging::login_request request{.principal = username, .password = password};
         const auto json_body = rfl::json::write(request);
-        auto msg = temp_session.request(
-            iam::messaging::login_request::nats_subject, json_body);
+        auto msg = temp_session.request(iam::messaging::login_request::nats_subject, json_body);
         temp_session.disconnect();
 
-        const std::string_view data(
-            reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
+        const std::string_view data(reinterpret_cast<const char*>(msg.data.data()),
+                                    msg.data.size());
         auto resp = rfl::json::read<iam::messaging::login_response>(data);
         if (!resp || !resp->success) {
             const std::string err = resp ? resp->error_message : "Invalid response";
@@ -657,12 +605,11 @@ LoginResult ClientManager::testConnection(
     }
 }
 
-SignupResult ClientManager::signup(
-    const std::string& host,
-    std::uint16_t port,
-    const std::string& username,
-    const std::string& email,
-    const std::string& password) {
+SignupResult ClientManager::signup(const std::string& host,
+                                   std::uint16_t port,
+                                   const std::string& username,
+                                   const std::string& email,
+                                   const std::string& password) {
 
     BOOST_LOG_SEV(lg(), info) << "Attempting signup to " << host << ":" << port;
 
@@ -674,31 +621,23 @@ SignupResult ClientManager::signup(
         temp_session.connect(std::move(opts));
 
         iam::messaging::signup_request request{
-            .principal = username,
-            .password = password,
-            .email = email
-        };
+            .principal = username, .password = password, .email = email};
         const auto json_body = rfl::json::write(request);
-        auto msg = temp_session.request(
-            iam::messaging::signup_request::nats_subject, json_body);
+        auto msg = temp_session.request(iam::messaging::signup_request::nats_subject, json_body);
         temp_session.disconnect();
 
-        const std::string_view data(
-            reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
+        const std::string_view data(reinterpret_cast<const char*>(msg.data.data()),
+                                    msg.data.size());
         auto resp = rfl::json::read<iam::messaging::signup_response>(data);
         if (!resp || !resp->success) {
             const std::string err = resp ? resp->message : "Invalid response";
-            return {.success = false,
-                    .error_message = QString::fromStdString(err)};
+            return {.success = false, .error_message = QString::fromStdString(err)};
         }
-        return {.success = true,
-                .error_message = {},
-                .username = QString::fromStdString(username)};
+        return {.success = true, .error_message = {}, .username = QString::fromStdString(username)};
 
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Signup failed: " << e.what();
-        return {.success = false,
-                .error_message = QString::fromStdString(e.what())};
+        return {.success = false, .error_message = QString::fromStdString(e.what())};
     }
 }
 
@@ -708,52 +647,48 @@ void ClientManager::subscribeToEvent(const std::string& subject) {
 
     auto cl = session_.get_client();
     if (!cl) {
-        BOOST_LOG_SEV(lg(), warn) << "subscribeToEvent: not connected, skipping '"
-                                  << subject << "'";
+        BOOST_LOG_SEV(lg(), warn) << "subscribeToEvent: not connected, skipping '" << subject
+                                  << "'";
         return;
     }
 
     BOOST_LOG_SEV(lg(), debug) << "Subscribing to NATS event: " << subject;
     try {
-        auto sub = cl->subscribe(subject,
-            [this, subject](nats::message msg) {
-                try {
-                    const std::string_view json(
-                        reinterpret_cast<const char*>(msg.data.data()),
-                        msg.data.size());
-                    auto result =
-                        rfl::json::read<eventing::domain::entity_change_event>(json);
-                    if (!result) {
-                        BOOST_LOG_SEV(lg(), warn)
-                            << "Failed to parse event on '" << subject << "': "
-                            << result.error().what();
-                        return;
-                    }
-                    const auto& ev = *result;
-                    const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
-                        ev.timestamp.time_since_epoch()).count();
-                    QDateTime ts = QDateTime::fromMSecsSinceEpoch(ms, QTimeZone::UTC);
-                    QStringList ids;
-                    ids.reserve(static_cast<int>(ev.entity_ids.size()));
-                    for (const auto& id : ev.entity_ids)
-                        ids.append(QString::fromStdString(id));
-                    QString eventType = QString::fromStdString(subject);
-                    QString tenantId  = QString::fromStdString(ev.tenant_id);
-                    QMetaObject::invokeMethod(this,
-                        [this, eventType, ts, ids, tenantId]() {
-                            emit notificationReceived(
-                                eventType, ts, ids, tenantId, 0, {});
-                        }, Qt::QueuedConnection);
-                } catch (const std::exception& e) {
-                    BOOST_LOG_SEV(lg(), error)
-                        << "Exception in event handler for '" << subject
-                        << "': " << e.what();
+        auto sub = cl->subscribe(subject, [this, subject](nats::message msg) {
+            try {
+                const std::string_view json(reinterpret_cast<const char*>(msg.data.data()),
+                                            msg.data.size());
+                auto result = rfl::json::read<eventing::domain::entity_change_event>(json);
+                if (!result) {
+                    BOOST_LOG_SEV(lg(), warn) << "Failed to parse event on '" << subject
+                                              << "': " << result.error().what();
+                    return;
                 }
-            });
+                const auto& ev = *result;
+                const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+                                    ev.timestamp.time_since_epoch())
+                                    .count();
+                QDateTime ts = QDateTime::fromMSecsSinceEpoch(ms, QTimeZone::UTC);
+                QStringList ids;
+                ids.reserve(static_cast<int>(ev.entity_ids.size()));
+                for (const auto& id : ev.entity_ids)
+                    ids.append(QString::fromStdString(id));
+                QString eventType = QString::fromStdString(subject);
+                QString tenantId = QString::fromStdString(ev.tenant_id);
+                QMetaObject::invokeMethod(
+                    this,
+                    [this, eventType, ts, ids, tenantId]() {
+                        emit notificationReceived(eventType, ts, ids, tenantId, 0, {});
+                    },
+                    Qt::QueuedConnection);
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(lg(), error)
+                    << "Exception in event handler for '" << subject << "': " << e.what();
+            }
+        });
         nats_subscriptions_.emplace(subject, std::move(sub));
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to subscribe to '" << subject
-                                   << "': " << e.what();
+        BOOST_LOG_SEV(lg(), error) << "Failed to subscribe to '" << subject << "': " << e.what();
     }
 }
 

@@ -17,13 +17,11 @@
  *
  */
 #include "ores.qt/WorkspacePlugin.hpp"
-
-#include <QMenu>
-#include <QAction>
-
-#include "ores.qt/IconUtils.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/WorkspaceController.hpp"
+#include <QAction>
+#include <QMenu>
 
 namespace ores::qt {
 
@@ -36,7 +34,8 @@ auto& lg() {
 }
 }
 
-WorkspacePlugin::WorkspacePlugin(QObject* parent) : PluginBase(parent) {
+WorkspacePlugin::WorkspacePlugin(QObject* parent)
+    : PluginBase(parent) {
     BOOST_LOG_SEV(lg(), debug) << "Plugin initialised.";
 }
 
@@ -46,19 +45,26 @@ void WorkspacePlugin::on_login(const plugin_context& ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Login event received.";
     ctx_ = ctx;
 
-    workspaceController_ = std::make_unique<WorkspaceController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username,
-        ctx_.badge_cache, this);
+    workspaceController_ = std::make_unique<WorkspaceController>(ctx_.main_window,
+                                                                 ctx_.mdi_area,
+                                                                 ctx_.client_manager,
+                                                                 ctx_.username,
+                                                                 ctx_.badge_cache,
+                                                                 this);
 
-    connect(workspaceController_.get(), &WorkspaceController::statusMessage,
-            this, &WorkspacePlugin::statusMessage);
-    connect(workspaceController_.get(), &WorkspaceController::errorMessage,
-            this, &WorkspacePlugin::statusMessage);
+    connect(workspaceController_.get(),
+            &WorkspaceController::statusMessage,
+            this,
+            &WorkspacePlugin::statusMessage);
+    connect(workspaceController_.get(),
+            &WorkspaceController::errorMessage,
+            this,
+            &WorkspacePlugin::statusMessage);
 }
 
 void WorkspacePlugin::setup_menus(const shared_menus_context& smc) {
     BOOST_LOG_SEV(lg(), debug) << "Registering entries in shared menus."
-        << " data_management=" << (smc.data_management_menu ? "ok" : "null");
+                               << " data_management=" << (smc.data_management_menu ? "ok" : "null");
     if (!smc.data_management_menu)
         return;
 

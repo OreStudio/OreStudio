@@ -20,12 +20,12 @@
 #ifndef ORES_QT_DATA_DOMAIN_HISTORY_DIALOG_HPP
 #define ORES_QT_DATA_DOMAIN_HISTORY_DIALOG_HPP
 
-#include <QWidget>
-#include <QToolBar>
-#include <QTableWidget>
-#include "ores.qt/ClientManager.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.dq.api/domain/data_domain.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include <QTableWidget>
+#include <QToolBar>
+#include <QWidget>
 
 namespace Ui {
 class DataDomainHistoryDialog;
@@ -37,8 +37,7 @@ class DataDomainHistoryDialog final : public QWidget {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.data_domain_history_dialog";
+    inline static std::string_view logger_name = "ores.qt.data_domain_history_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -47,10 +46,9 @@ private:
     }
 
 public:
-    explicit DataDomainHistoryDialog(
-        const QString& name,
-        ClientManager* clientManager,
-        QWidget* parent = nullptr);
+    explicit DataDomainHistoryDialog(const QString& name,
+                                     ClientManager* clientManager,
+                                     QWidget* parent = nullptr);
     ~DataDomainHistoryDialog() override;
 
     void loadHistory();

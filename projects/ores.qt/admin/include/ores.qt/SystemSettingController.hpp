@@ -20,10 +20,10 @@
 #ifndef ORES_QT_SYSTEM_SETTING_CONTROLLER_HPP
 #define ORES_QT_SYSTEM_SETTING_CONTROLLER_HPP
 
-#include <QDateTime>
-#include "ores.qt/EntityController.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/EntityController.hpp"
 #include "ores.variability.api/domain/system_setting.hpp"
+#include <QDateTime>
 
 namespace ores::qt {
 
@@ -41,8 +41,7 @@ class SystemSettingController final : public EntityController {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.system_setting_controller";
+    inline static std::string_view logger_name = "ores.qt.system_setting_controller";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -51,13 +50,12 @@ private:
     }
 
 public:
-    SystemSettingController(
-        QMainWindow* mainWindow,
-        QMdiArea* mdiArea,
-        ClientManager* clientManager,
-        ChangeReasonCache* changeReasonCache,
-        const QString& username,
-        QObject* parent = nullptr);
+    SystemSettingController(QMainWindow* mainWindow,
+                            QMdiArea* mdiArea,
+                            ClientManager* clientManager,
+                            ChangeReasonCache* changeReasonCache,
+                            const QString& username,
+                            QObject* parent = nullptr);
 
     ~SystemSettingController() override;
 
@@ -71,15 +69,16 @@ private slots:
     void onShowHistory(const QString& name);
     void onSystemSettingSaved(const QString& name);
     void onSystemSettingDeleted(const QString& name);
-    void onNotificationReceived(const QString& eventType, const QDateTime& timestamp,
-                                const QStringList& entityIds, const QString& tenantId);
+    void onNotificationReceived(const QString& eventType,
+                                const QDateTime& timestamp,
+                                const QStringList& entityIds,
+                                const QString& tenantId);
     void onOpenSystemSettingVersion(const variability::domain::system_setting& flag,
-                                  int versionNumber);
+                                    int versionNumber);
     void onRevertSystemSetting(const variability::domain::system_setting& flag);
 
 private:
-    void showDetailWindow(const variability::domain::system_setting& flag,
-                          bool createMode = false);
+    void showDetailWindow(const variability::domain::system_setting& flag, bool createMode = false);
     void showHistoryWindow(const QString& name);
     void refreshListWindow();
 

@@ -18,25 +18,24 @@
  *
  */
 #include "ores.qt/ReportTypeDetailDialog.hpp"
-
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include <QPlainTextEdit>
-#include "ui_ReportTypeDetailDialog.h"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.reporting.api/messaging/report_type_protocol.hpp"
+#include "ui_ReportTypeDetailDialog.h"
+#include <QFutureWatcher>
+#include <QMessageBox>
+#include <QPlainTextEdit>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 ReportTypeDetailDialog::ReportTypeDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent),
-      ui_(new Ui::ReportTypeDetailDialog),
-      clientManager_(nullptr) {
+    : DetailDialogBase(parent)
+    , ui_(new Ui::ReportTypeDetailDialog)
+    , clientManager_(nullptr) {
 
     ui_->setupUi(this);
     setupUi();
@@ -72,18 +71,16 @@ void ReportTypeDetailDialog::setupUi() {
 }
 
 void ReportTypeDetailDialog::setupConnections() {
-    connect(ui_->saveButton, &QPushButton::clicked, this,
-            &ReportTypeDetailDialog::onSaveClicked);
-    connect(ui_->deleteButton, &QPushButton::clicked, this,
-            &ReportTypeDetailDialog::onDeleteClicked);
-    connect(ui_->closeButton, &QPushButton::clicked, this,
-            &ReportTypeDetailDialog::onCloseClicked);
+    connect(ui_->saveButton, &QPushButton::clicked, this, &ReportTypeDetailDialog::onSaveClicked);
+    connect(
+        ui_->deleteButton, &QPushButton::clicked, this, &ReportTypeDetailDialog::onDeleteClicked);
+    connect(ui_->closeButton, &QPushButton::clicked, this, &ReportTypeDetailDialog::onCloseClicked);
 
-    connect(ui_->codeEdit, &QLineEdit::textChanged, this,
-            &ReportTypeDetailDialog::onCodeChanged);
-    connect(ui_->nameEdit, &QLineEdit::textChanged, this,
-            &ReportTypeDetailDialog::onFieldChanged);
-    connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this,
+    connect(ui_->codeEdit, &QLineEdit::textChanged, this, &ReportTypeDetailDialog::onCodeChanged);
+    connect(ui_->nameEdit, &QLineEdit::textChanged, this, &ReportTypeDetailDialog::onFieldChanged);
+    connect(ui_->descriptionEdit,
+            &QPlainTextEdit::textChanged,
+            this,
             &ReportTypeDetailDialog::onFieldChanged);
 }
 
@@ -95,8 +92,7 @@ void ReportTypeDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
 
-void ReportTypeDetailDialog::setType(
-    const reporting::domain::report_type& type) {
+void ReportTypeDetailDialog::setType(const reporting::domain::report_type& type) {
     type_ = type;
     updateUiFromType();
 }
@@ -169,25 +165,23 @@ bool ReportTypeDetailDialog::validateInput() {
 
 void ReportTypeDetailDialog::onSaveClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot save report type while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot save report type while disconnected from server.");
         return;
     }
 
     if (!validateInput()) {
-        MessageBoxHelper::warning(this, "Invalid Input",
-            "Please fill in all required fields.");
+        MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
 
     updateTypeFromUi();
 
-    const auto crOpType = createMode_
-        ? ChangeReasonDialog::OperationType::Create
-        : ChangeReasonDialog::OperationType::Amend;
-    const auto crSel = promptChangeReason(crOpType, hasChanges_,
-        createMode_ ? "system" : "common");
-    if (!crSel) return;
+    const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
+                                        ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
+    if (!crSel)
+        return;
     type_.change_reason_code = crSel->reason_code;
     type_.change_commentary = crSel->commentary;
 
@@ -207,7 +201,8 @@ void ReportTypeDetailDialog::onSaveClicked() {
 
         reporting::messaging::save_report_type_request request;
         request.type = type;
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -218,8 +213,7 @@ void ReportTypeDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
@@ -244,13 +238,15 @@ void ReportTypeDetailDialog::onSaveClicked() {
 
 void ReportTypeDetailDialog::onDeleteClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot delete report type while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot delete report type while disconnected from server.");
         return;
     }
 
     QString code = QString::fromStdString(type_.code);
-    auto reply = MessageBoxHelper::question(this, "Delete Report Type",
+    auto reply = MessageBoxHelper::question(
+        this,
+        "Delete Report Type",
         QString("Are you sure you want to delete report type '%1'?").arg(code),
         QMessageBox::Yes | QMessageBox::No);
 
@@ -258,9 +254,10 @@ void ReportTypeDetailDialog::onDeleteClicked() {
         return;
     }
 
-    const auto crSel = promptChangeReason(
-        ChangeReasonDialog::OperationType::Delete, true, "common");
-    if (!crSel) return;
+    const auto crSel =
+        promptChangeReason(ChangeReasonDialog::OperationType::Delete, true, "common");
+    if (!crSel)
+        return;
 
     BOOST_LOG_SEV(lg(), info) << "Deleting report type: " << type_.code;
 
@@ -278,7 +275,8 @@ void ReportTypeDetailDialog::onDeleteClicked() {
 
         reporting::messaging::delete_report_type_request request;
         request.codes.push_back(code);
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -288,8 +286,7 @@ void ReportTypeDetailDialog::onDeleteClicked() {
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
-            self, [self, code, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, code, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 

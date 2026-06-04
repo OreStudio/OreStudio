@@ -18,30 +18,29 @@
  *
  */
 #include "ores.qt/ReportDefinitionDetailDialog.hpp"
-
-#include <QMessageBox>
-#include <QComboBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include <QPlainTextEdit>
-#include <boost/uuid/random_generator.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include "ui_ReportDefinitionDetailDialog.h"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/ChangeReasonDialog.hpp"
+#include "ores.reporting.api/messaging/concurrency_policy_protocol.hpp"
 #include "ores.reporting.api/messaging/report_definition_protocol.hpp"
 #include "ores.reporting.api/messaging/report_type_protocol.hpp"
-#include "ores.reporting.api/messaging/concurrency_policy_protocol.hpp"
+#include "ui_ReportDefinitionDetailDialog.h"
+#include <QComboBox>
+#include <QFutureWatcher>
+#include <QMessageBox>
+#include <QPlainTextEdit>
+#include <QtConcurrent>
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 ReportDefinitionDetailDialog::ReportDefinitionDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent),
-      ui_(new Ui::ReportDefinitionDetailDialog),
-      clientManager_(nullptr) {
+    : DetailDialogBase(parent)
+    , ui_(new Ui::ReportDefinitionDetailDialog)
+    , clientManager_(nullptr) {
 
     ui_->setupUi(this);
     setupUi();
@@ -77,22 +76,34 @@ void ReportDefinitionDetailDialog::setupUi() {
 }
 
 void ReportDefinitionDetailDialog::setupConnections() {
-    connect(ui_->saveButton, &QPushButton::clicked, this,
-            &ReportDefinitionDetailDialog::onSaveClicked);
-    connect(ui_->deleteButton, &QPushButton::clicked, this,
+    connect(
+        ui_->saveButton, &QPushButton::clicked, this, &ReportDefinitionDetailDialog::onSaveClicked);
+    connect(ui_->deleteButton,
+            &QPushButton::clicked,
+            this,
             &ReportDefinitionDetailDialog::onDeleteClicked);
-    connect(ui_->closeButton, &QPushButton::clicked, this,
+    connect(ui_->closeButton,
+            &QPushButton::clicked,
+            this,
             &ReportDefinitionDetailDialog::onCloseClicked);
 
-    connect(ui_->nameEdit, &QLineEdit::textChanged, this,
-            &ReportDefinitionDetailDialog::onCodeChanged);
-    connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this,
+    connect(
+        ui_->nameEdit, &QLineEdit::textChanged, this, &ReportDefinitionDetailDialog::onCodeChanged);
+    connect(ui_->descriptionEdit,
+            &QPlainTextEdit::textChanged,
+            this,
             &ReportDefinitionDetailDialog::onFieldChanged);
-    connect(ui_->reportTypeCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+    connect(ui_->reportTypeCombo,
+            QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this,
             &ReportDefinitionDetailDialog::onFieldChanged);
-    connect(ui_->cronWidget, &CronExpressionWidget::cronChanged, this,
+    connect(ui_->cronWidget,
+            &CronExpressionWidget::cronChanged,
+            this,
             &ReportDefinitionDetailDialog::onFieldChanged);
-    connect(ui_->concurrencyPolicyCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+    connect(ui_->concurrencyPolicyCombo,
+            QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this,
             &ReportDefinitionDetailDialog::onFieldChanged);
 }
 
@@ -152,8 +163,7 @@ void ReportDefinitionDetailDialog::loadReportTypes() {
             return {false, {}, "Dialog closed"};
 
         reporting::messaging::get_report_types_request request;
-        auto result = self->clientManager_->process_authenticated_request(
-            std::move(request));
+        auto result = self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!result)
             return {false, {}, "Failed to fetch report types"};
@@ -162,8 +172,7 @@ void ReportDefinitionDetailDialog::loadReportTypes() {
     };
 
     auto* watcher = new QFutureWatcher<FetchResult>(self);
-    connect(watcher, &QFutureWatcher<FetchResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<FetchResult>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
         if (self && result.success) {
@@ -190,8 +199,7 @@ void ReportDefinitionDetailDialog::loadConcurrencyPolicies() {
             return {false, {}, "Dialog closed"};
 
         reporting::messaging::get_concurrency_policies_request request;
-        auto result = self->clientManager_->process_authenticated_request(
-            std::move(request));
+        auto result = self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!result)
             return {false, {}, "Failed to fetch concurrency policies"};
@@ -200,8 +208,7 @@ void ReportDefinitionDetailDialog::loadConcurrencyPolicies() {
     };
 
     auto* watcher = new QFutureWatcher<FetchResult>(self);
-    connect(watcher, &QFutureWatcher<FetchResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<FetchResult>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
         if (self && result.success) {
@@ -217,9 +224,8 @@ void ReportDefinitionDetailDialog::populateReportTypeCombo(
     ui_->reportTypeCombo->blockSignals(true);
     ui_->reportTypeCombo->clear();
     for (const auto& t : types) {
-        ui_->reportTypeCombo->addItem(
-            QString::fromStdString(t.name),
-            QString::fromStdString(t.code));
+        ui_->reportTypeCombo->addItem(QString::fromStdString(t.name),
+                                      QString::fromStdString(t.code));
     }
     // Re-apply current definition value while signals are still blocked
     if (!definition_.report_type.empty()) {
@@ -240,9 +246,8 @@ void ReportDefinitionDetailDialog::populateConcurrencyPolicyCombo(
     ui_->concurrencyPolicyCombo->blockSignals(true);
     ui_->concurrencyPolicyCombo->clear();
     for (const auto& p : policies) {
-        ui_->concurrencyPolicyCombo->addItem(
-            QString::fromStdString(p.name),
-            QString::fromStdString(p.code));
+        ui_->concurrencyPolicyCombo->addItem(QString::fromStdString(p.name),
+                                             QString::fromStdString(p.code));
     }
     // Re-apply current definition value while signals are still blocked
     if (!definition_.concurrency_policy.empty()) {
@@ -273,8 +278,7 @@ void ReportDefinitionDetailDialog::updateUiFromDefinition() {
     }
 
     // Cron widget
-    ui_->cronWidget->setCronExpression(
-        QString::fromStdString(definition_.schedule_expression));
+    ui_->cronWidget->setCronExpression(QString::fromStdString(definition_.schedule_expression));
 
     // Concurrency policy combo
     if (!definition_.concurrency_policy.empty()) {
@@ -305,7 +309,8 @@ void ReportDefinitionDetailDialog::updateDefinitionFromUi() {
     definition_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
     definition_.report_type = ui_->reportTypeCombo->currentData().toString().toStdString();
     definition_.schedule_expression = ui_->cronWidget->cronExpression().trimmed().toStdString();
-    definition_.concurrency_policy = ui_->concurrencyPolicyCombo->currentData().toString().toStdString();
+    definition_.concurrency_policy =
+        ui_->concurrencyPolicyCombo->currentData().toString().toStdString();
     definition_.modified_by = username_;
     definition_.performed_by = username_;
 }
@@ -340,25 +345,23 @@ bool ReportDefinitionDetailDialog::validateInput() {
 
 void ReportDefinitionDetailDialog::onSaveClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot save report definition while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot save report definition while disconnected from server.");
         return;
     }
 
     if (!validateInput()) {
-        MessageBoxHelper::warning(this, "Invalid Input",
-            "Please fill in all required fields.");
+        MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
 
     updateDefinitionFromUi();
 
-    const auto crOpType = createMode_
-        ? ChangeReasonDialog::OperationType::Create
-        : ChangeReasonDialog::OperationType::Amend;
-    const auto crSel = promptChangeReason(crOpType, hasChanges_,
-        createMode_ ? "system" : "common");
-    if (!crSel) return;
+    const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
+                                        ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
+    if (!crSel)
+        return;
     definition_.change_reason_code = crSel->reason_code;
     definition_.change_commentary = crSel->commentary;
 
@@ -378,7 +381,8 @@ void ReportDefinitionDetailDialog::onSaveClicked() {
 
         reporting::messaging::save_report_definition_request request;
         request.definition = definition;
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -389,8 +393,7 @@ void ReportDefinitionDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
@@ -415,13 +418,17 @@ void ReportDefinitionDetailDialog::onSaveClicked() {
 
 void ReportDefinitionDetailDialog::onDeleteClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
+        MessageBoxHelper::warning(
+            this,
+            "Disconnected",
             "Cannot delete report definition while disconnected from server.");
         return;
     }
 
     QString code = QString::fromStdString(definition_.name);
-    auto reply = MessageBoxHelper::question(this, "Delete Report Definition",
+    auto reply = MessageBoxHelper::question(
+        this,
+        "Delete Report Definition",
         QString("Are you sure you want to delete report definition '%1'?").arg(code),
         QMessageBox::Yes | QMessageBox::No);
 
@@ -445,7 +452,8 @@ void ReportDefinitionDetailDialog::onDeleteClicked() {
 
         reporting::messaging::delete_report_definition_request request;
         request.ids.push_back(boost::uuids::to_string(id));
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -455,8 +463,7 @@ void ReportDefinitionDetailDialog::onDeleteClicked() {
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
-            self, [self, code, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, code, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 

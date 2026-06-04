@@ -18,38 +18,43 @@
  *
  */
 #include "ores.qt/ClientPricingEngineTypeModel.hpp"
-
-#include <QtConcurrent>
 #include "ores.analytics.api/messaging/pricing_engine_type_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    std::string pricing_engine_type_key_extractor(const analytics::domain::pricing_engine_type& e) {
-        return e.code;
-    }
+std::string pricing_engine_type_key_extractor(const analytics::domain::pricing_engine_type& e) {
+    return e.code;
+}
 }
 
-ClientPricingEngineTypeModel::ClientPricingEngineTypeModel(
-    ClientManager* clientManager, QObject* parent)
-    : AbstractClientModel(parent),
-      clientManager_(clientManager),
-      watcher_(new QFutureWatcher<FetchResult>(this)),
-      recencyTracker_(pricing_engine_type_key_extractor),
-      pulseManager_(new RecencyPulseManager(this)) {
+ClientPricingEngineTypeModel::ClientPricingEngineTypeModel(ClientManager* clientManager,
+                                                           QObject* parent)
+    : AbstractClientModel(parent)
+    , clientManager_(clientManager)
+    , watcher_(new QFutureWatcher<FetchResult>(this))
+    , recencyTracker_(pricing_engine_type_key_extractor)
+    , pulseManager_(new RecencyPulseManager(this)) {
 
-    connect(watcher_, &QFutureWatcher<FetchResult>::finished,
-            this, &ClientPricingEngineTypeModel::onTypesLoaded);
+    connect(watcher_,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            &ClientPricingEngineTypeModel::onTypesLoaded);
 
-    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
-            this, &ClientPricingEngineTypeModel::onPulseStateChanged);
-    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
-            this, &ClientPricingEngineTypeModel::onPulsingComplete);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulse_state_changed,
+            this,
+            &ClientPricingEngineTypeModel::onPulseStateChanged);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulsing_complete,
+            this,
+            &ClientPricingEngineTypeModel::onPulsingComplete);
 }
 
 int ClientPricingEngineTypeModel::rowCount(const QModelIndex& parent) const {
@@ -64,8 +69,7 @@ int ClientPricingEngineTypeModel::columnCount(const QModelIndex& parent) const {
     return ColumnCount;
 }
 
-QVariant ClientPricingEngineTypeModel::data(
-    const QModelIndex& index, int role) const {
+QVariant ClientPricingEngineTypeModel::data(const QModelIndex& index, int role) const {
     if (!index.isValid())
         return {};
 
@@ -77,20 +81,20 @@ QVariant ClientPricingEngineTypeModel::data(
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-        case Code:
-            return QString::fromStdString(type.code);
-        case Description:
-            return QString::fromStdString(type.description);
-        case InstrumentTypeCode:
-            return QString::fromStdString(type.instrument_type_code);
-        case Version:
-            return static_cast<qlonglong>(type.version);
-        case ModifiedBy:
-            return QString::fromStdString(type.modified_by);
-        case RecordedAt:
-            return relative_time_helper::format(type.recorded_at);
-        default:
-            return {};
+            case Code:
+                return QString::fromStdString(type.code);
+            case Description:
+                return QString::fromStdString(type.description);
+            case InstrumentTypeCode:
+                return QString::fromStdString(type.instrument_type_code);
+            case Version:
+                return static_cast<qlonglong>(type.version);
+            case ModifiedBy:
+                return QString::fromStdString(type.modified_by);
+            case RecordedAt:
+                return relative_time_helper::format(type.recorded_at);
+            default:
+                return {};
         }
     }
 
@@ -101,26 +105,26 @@ QVariant ClientPricingEngineTypeModel::data(
     return {};
 }
 
-QVariant ClientPricingEngineTypeModel::headerData(
-    int section, Qt::Orientation orientation, int role) const {
+QVariant
+ClientPricingEngineTypeModel::headerData(int section, Qt::Orientation orientation, int role) const {
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return {};
 
     switch (section) {
-    case Code:
-        return tr("Code");
-    case Description:
-        return tr("Description");
-    case InstrumentTypeCode:
-        return tr("Instrument Type");
-    case Version:
-        return tr("Version");
-    case ModifiedBy:
-        return tr("Modified By");
-    case RecordedAt:
-        return tr("Recorded At");
-    default:
-        return {};
+        case Code:
+            return tr("Code");
+        case Description:
+            return tr("Description");
+        case InstrumentTypeCode:
+            return tr("Instrument Type");
+        case Version:
+            return tr("Version");
+        case ModifiedBy:
+            return tr("Modified By");
+        case RecordedAt:
+            return tr("Recorded At");
+        default:
+            return {};
     }
 }
 
@@ -150,8 +154,7 @@ void ClientPricingEngineTypeModel::refresh() {
     fetch_types(0, page_size_);
 }
 
-void ClientPricingEngineTypeModel::load_page(std::uint32_t offset,
-                                          std::uint32_t limit) {
+void ClientPricingEngineTypeModel::load_page(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "load_page: offset=" << offset << ", limit=" << limit;
 
     if (is_fetching_) {
@@ -175,18 +178,19 @@ void ClientPricingEngineTypeModel::load_page(std::uint32_t offset,
     fetch_types(offset, limit);
 }
 
-void ClientPricingEngineTypeModel::fetch_types(
-    std::uint32_t offset, std::uint32_t limit) {
+void ClientPricingEngineTypeModel::fetch_types(std::uint32_t offset, std::uint32_t limit) {
     is_fetching_ = true;
     QPointer<ClientPricingEngineTypeModel> self = this;
 
-    QFuture<FetchResult> future =
-        QtConcurrent::run([self, offset, limit]() -> FetchResult {
-            return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
-                BOOST_LOG_SEV(lg(), debug) << "Making pricing engine types request with offset="
-                                           << offset << ", limit=" << limit;
+    QFuture<FetchResult> future = QtConcurrent::run([self, offset, limit]() -> FetchResult {
+        return exception_helper::wrap_async_fetch<FetchResult>(
+            [&]() -> FetchResult {
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Making pricing engine types request with offset=" << offset
+                    << ", limit=" << limit;
                 if (!self || !self->clientManager_) {
-                    return {.success = false, .types = {},
+                    return {.success = false,
+                            .types = {},
                             .total_available_count = 0,
                             .error_message = "Model was destroyed",
                             .error_details = {}};
@@ -194,27 +198,29 @@ void ClientPricingEngineTypeModel::fetch_types(
 
                 analytics::messaging::get_pricing_engine_types_request request;
 
-                auto result = self->clientManager_->
-                    process_authenticated_request(std::move(request));
+                auto result =
+                    self->clientManager_->process_authenticated_request(std::move(request));
 
                 if (!result) {
                     BOOST_LOG_SEV(lg(), error) << "Failed to send request: " << result.error();
-                    return {.success = false, .types = {},
+                    return {.success = false,
+                            .types = {},
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(result.error()),
                             .error_details = {}};
                 }
 
-                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->types.size()
-                                           << " pricing engine types";
-                const std::uint32_t count =
-                    static_cast<std::uint32_t>(result->types.size());
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Fetched " << result->types.size() << " pricing engine types";
+                const std::uint32_t count = static_cast<std::uint32_t>(result->types.size());
                 return {.success = true,
                         .types = std::move(result->types),
                         .total_available_count = count,
-                        .error_message = {}, .error_details = {}};
-            }, "pricing engine types");
-        });
+                        .error_message = {},
+                        .error_details = {}};
+            },
+            "pricing engine types");
+    });
 
     watcher_->setFuture(future);
 }
@@ -225,8 +231,8 @@ void ClientPricingEngineTypeModel::onTypesLoaded() {
     const auto result = watcher_->result();
 
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to fetch pricing engine types: "
-                                   << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to fetch pricing engine types: " << result.error_message.toStdString();
         emit loadError(result.error_message, result.error_details);
         return;
     }
@@ -265,16 +271,14 @@ void ClientPricingEngineTypeModel::set_page_size(std::uint32_t size) {
     }
 }
 
-const analytics::domain::pricing_engine_type*
-ClientPricingEngineTypeModel::getType(int row) const {
+const analytics::domain::pricing_engine_type* ClientPricingEngineTypeModel::getType(int row) const {
     const auto idx = static_cast<std::size_t>(row);
     if (idx >= types_.size())
         return nullptr;
     return &types_[idx];
 }
 
-QVariant ClientPricingEngineTypeModel::recency_foreground_color(
-    const std::string& code) const {
+QVariant ClientPricingEngineTypeModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {
         return color_constants::stale_indicator;
     }
@@ -283,8 +287,8 @@ QVariant ClientPricingEngineTypeModel::recency_foreground_color(
 
 void ClientPricingEngineTypeModel::onPulseStateChanged(bool /*isOn*/) {
     if (!types_.empty()) {
-        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
-            {Qt::ForegroundRole});
+        emit dataChanged(
+            index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::ForegroundRole});
     }
 }
 

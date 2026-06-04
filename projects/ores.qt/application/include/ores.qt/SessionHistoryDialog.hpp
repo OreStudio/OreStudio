@@ -20,22 +20,22 @@
 #ifndef ORES_QT_SESSION_HISTORY_DIALOG_HPP
 #define ORES_QT_SESSION_HISTORY_DIALOG_HPP
 
-#include <QIcon>
-#include <QTimer>
-#include <QWidget>
-#include <QTableView>
-#include <QVBoxLayout>
-#include <QSplitter>
-#include <QAbstractTableModel>
-#include <QFutureWatcher>
-#include <QItemSelection>
-#include <QtCharts/QChartView>
-#include <memory>
-#include <boost/uuid/uuid.hpp>
-#include "ores.qt/ClientManager.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.iam.api/domain/session.hpp"
 #include "ores.iam.api/messaging/session_samples_protocol.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include <QAbstractTableModel>
+#include <QFutureWatcher>
+#include <QIcon>
+#include <QItemSelection>
+#include <QSplitter>
+#include <QTableView>
+#include <QTimer>
+#include <QVBoxLayout>
+#include <QWidget>
+#include <QtCharts/QChartView>
+#include <boost/uuid/uuid.hpp>
+#include <memory>
 
 namespace ores::qt {
 
@@ -51,8 +51,8 @@ public:
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-    QVariant headerData(int section, Qt::Orientation orientation,
-        int role = Qt::DisplayRole) const override;
+    QVariant
+    headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
     void setSessions(const std::vector<iam::domain::session>& sessions);
     void clear();
@@ -64,10 +64,11 @@ public:
      * Received columns stay current for the ongoing session without a full
      * model reset (which would clear the table selection).
      */
-    void updateActiveBytesFromClient(std::uint64_t bytes_sent,
-                                     std::uint64_t bytes_received);
+    void updateActiveBytesFromClient(std::uint64_t bytes_sent, std::uint64_t bytes_received);
 
-    const std::vector<iam::domain::session>& sessions() const { return sessions_; }
+    const std::vector<iam::domain::session>& sessions() const {
+        return sessions_;
+    }
 
 private:
     enum Column {
@@ -97,8 +98,7 @@ class SessionHistoryDialog : public QWidget {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.session_history_dialog";
+    inline static std::string_view logger_name = "ores.qt.session_history_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -107,8 +107,7 @@ private:
     }
 
 public:
-    explicit SessionHistoryDialog(ClientManager* clientManager,
-                                  QWidget* parent = nullptr);
+    explicit SessionHistoryDialog(ClientManager* clientManager, QWidget* parent = nullptr);
     ~SessionHistoryDialog() override;
 
     /**
@@ -117,8 +116,7 @@ public:
      * @param accountId The account UUID
      * @param username The account username (for display)
      */
-    void setAccount(const boost::uuids::uuid& accountId,
-                    const QString& username);
+    void setAccount(const boost::uuids::uuid& accountId, const QString& username);
 
     /**
      * @brief Refresh the session list from the server.
@@ -155,7 +153,7 @@ private:
 
     struct FetchSamplesResult {
         bool success;
-        bool is_active = false;  // true if the session is still running
+        bool is_active = false; // true if the session is still running
         boost::uuids::uuid session_id;
         QString session_label;
         std::vector<iam::messaging::session_sample_dto> samples;

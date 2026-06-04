@@ -17,27 +17,26 @@
  *
  */
 #include "ores.qt/FxAsianForwardInstrumentForm.hpp"
-
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/FlagIconHelper.hpp"
+#include "ores.qt/ImageCache.hpp"
+#include "ores.qt/InstrumentFormUtils.hpp"
+#include "ores.qt/LookupFetcher.hpp"
+#include "ores.trading.api/messaging/instrument_protocol.hpp"
+#include "ui_FxAsianForwardInstrumentForm.h"
 #include <QComboBox>
+#include <QFutureWatcher>
 #include <QPointer>
 #include <QtConcurrent>
-#include <QFutureWatcher>
 #include <boost/uuid/uuid_io.hpp>
-#include "ui_FxAsianForwardInstrumentForm.h"
-#include "ores.qt/ClientManager.hpp"
-#include "ores.qt/ImageCache.hpp"
-#include "ores.qt/FlagIconHelper.hpp"
-#include "ores.qt/LookupFetcher.hpp"
-#include "ores.qt/InstrumentFormUtils.hpp"
-#include "ores.trading.api/messaging/instrument_protocol.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 FxAsianForwardInstrumentForm::FxAsianForwardInstrumentForm(QWidget* parent)
-    : IInstrumentForm(parent),
-      ui_(new Ui::FxAsianForwardInstrumentForm) {
+    : IInstrumentForm(parent)
+    , ui_(new Ui::FxAsianForwardInstrumentForm) {
     ui_->setupUi(this);
     InstrumentFormUtils::populateLongShort(ui_->longShortCombo);
     setupConnections();
@@ -46,34 +45,41 @@ FxAsianForwardInstrumentForm::FxAsianForwardInstrumentForm(QWidget* parent)
 FxAsianForwardInstrumentForm::~FxAsianForwardInstrumentForm() = default;
 
 void FxAsianForwardInstrumentForm::setupConnections() {
-    auto markChanged = [this]() { onFieldChanged(); };
-    auto markChangedStr = [this](const QString&) { onFieldChanged(); };
-    auto markChangedDate = [this](const QDate&) { onFieldChanged(); };
+    auto markChanged = [this]() {
+        onFieldChanged();
+    };
+    auto markChangedStr = [this](const QString&) {
+        onFieldChanged();
+    };
+    auto markChangedDate = [this](const QDate&) {
+        onFieldChanged();
+    };
     connect(ui_->fxIndexEdit, &QLineEdit::textChanged, this, markChanged);
-    connect(ui_->referenceCurrencyCombo, &QComboBox::currentTextChanged,
-            this, markChangedStr);
+    connect(ui_->referenceCurrencyCombo, &QComboBox::currentTextChanged, this, markChangedStr);
     connect(ui_->referenceNotionalSpinBox,
             QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-            this, markChanged);
-    connect(ui_->settlementCurrencyCombo, &QComboBox::currentTextChanged,
-            this, markChangedStr);
+            this,
+            markChanged);
+    connect(ui_->settlementCurrencyCombo, &QComboBox::currentTextChanged, this, markChangedStr);
     connect(ui_->settlementNotionalSpinBox,
             QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-            this, markChanged);
+            this,
+            markChanged);
     connect(ui_->paymentDateEdit, &QDateEdit::dateChanged, this, markChangedDate);
-    connect(ui_->longShortCombo, &QComboBox::currentTextChanged,
-            this, markChangedStr);
-    connect(ui_->currencyCombo, &QComboBox::currentTextChanged,
-            this, markChangedStr);
+    connect(ui_->longShortCombo, &QComboBox::currentTextChanged, this, markChangedStr);
+    connect(ui_->currencyCombo, &QComboBox::currentTextChanged, this, markChangedStr);
     connect(ui_->fixingAmountSpinBox,
             QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-            this, markChanged);
+            this,
+            markChanged);
     connect(ui_->targetAmountSpinBox,
             QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-            this, markChanged);
+            this,
+            markChanged);
     connect(ui_->strikeSpinBox,
             QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-            this, markChanged);
+            this,
+            markChanged);
     connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this, markChanged);
 }
 
@@ -84,24 +90,22 @@ void FxAsianForwardInstrumentForm::setClientManager(ClientManager* cm) {
 
 void FxAsianForwardInstrumentForm::setImageCache(ImageCache* cache) {
     imageCache_ = cache;
-    setup_flag_combo(this, ui_->referenceCurrencyCombo, imageCache_,
-                     FlagSource::Currency);
-    setup_flag_combo(this, ui_->settlementCurrencyCombo, imageCache_,
-                     FlagSource::Currency);
-    setup_flag_combo(this, ui_->currencyCombo, imageCache_,
-                     FlagSource::Currency);
+    setup_flag_combo(this, ui_->referenceCurrencyCombo, imageCache_, FlagSource::Currency);
+    setup_flag_combo(this, ui_->settlementCurrencyCombo, imageCache_, FlagSource::Currency);
+    setup_flag_combo(this, ui_->currencyCombo, imageCache_, FlagSource::Currency);
 }
 
 void FxAsianForwardInstrumentForm::populateCurrencies() {
-    if (!clientManager_) return;
+    if (!clientManager_)
+        return;
 
     QPointer<FxAsianForwardInstrumentForm> self = this;
     auto* watcher = new QFutureWatcher<std::vector<std::string>>(self);
-    connect(watcher, &QFutureWatcher<std::vector<std::string>>::finished, self,
-        [self, watcher]() {
+    connect(watcher, &QFutureWatcher<std::vector<std::string>>::finished, self, [self, watcher]() {
         auto codes = watcher->result();
         watcher->deleteLater();
-        if (!self) return;
+        if (!self)
+            return;
 
         auto populate = [&codes](QComboBox* cb, const std::string& value) {
             cb->blockSignals(true);
@@ -113,26 +117,21 @@ void FxAsianForwardInstrumentForm::populateCurrencies() {
             cb->blockSignals(false);
         };
 
-        populate(self->ui_->referenceCurrencyCombo,
-                 self->instrument_.reference_currency);
-        populate(self->ui_->settlementCurrencyCombo,
-                 self->instrument_.settlement_currency);
+        populate(self->ui_->referenceCurrencyCombo, self->instrument_.reference_currency);
+        populate(self->ui_->settlementCurrencyCombo, self->instrument_.settlement_currency);
         populate(self->ui_->currencyCombo, self->instrument_.currency);
 
         if (self->imageCache_) {
-            apply_flag_icons(self->ui_->referenceCurrencyCombo,
-                             self->imageCache_, FlagSource::Currency);
-            apply_flag_icons(self->ui_->settlementCurrencyCombo,
-                             self->imageCache_, FlagSource::Currency);
-            apply_flag_icons(self->ui_->currencyCombo,
-                             self->imageCache_, FlagSource::Currency);
+            apply_flag_icons(
+                self->ui_->referenceCurrencyCombo, self->imageCache_, FlagSource::Currency);
+            apply_flag_icons(
+                self->ui_->settlementCurrencyCombo, self->imageCache_, FlagSource::Currency);
+            apply_flag_icons(self->ui_->currencyCombo, self->imageCache_, FlagSource::Currency);
         }
     });
 
     auto* cm = clientManager_;
-    watcher->setFuture(QtConcurrent::run([cm]() {
-        return fetch_currency_codes(cm);
-    }));
+    watcher->setFuture(QtConcurrent::run([cm]() { return fetch_currency_codes(cm); }));
 }
 
 void FxAsianForwardInstrumentForm::setUsername(const std::string& username) {
@@ -149,7 +148,8 @@ void FxAsianForwardInstrumentForm::clear() {
 }
 
 void FxAsianForwardInstrumentForm::setTradeType(const QString& code,
-    bool /*has_options*/, bool /*has_extension*/) {
+                                                bool /*has_options*/,
+                                                bool /*has_extension*/) {
     instrument_.trade_type_code = code.trimmed().toStdString();
     ui_->tradeTypeCodeEdit->setText(code.trimmed());
 }
@@ -169,53 +169,49 @@ void FxAsianForwardInstrumentForm::setReadOnly(bool readOnly) {
     ui_->descriptionEdit->setReadOnly(readOnly);
 }
 
-bool FxAsianForwardInstrumentForm::isDirty() const { return dirty_; }
-bool FxAsianForwardInstrumentForm::isLoaded() const { return loaded_; }
+bool FxAsianForwardInstrumentForm::isDirty() const {
+    return dirty_;
+}
+bool FxAsianForwardInstrumentForm::isLoaded() const {
+    return loaded_;
+}
 
-void FxAsianForwardInstrumentForm::setChangeReason(
-    const std::string& code, const std::string& commentary) {
+void FxAsianForwardInstrumentForm::setChangeReason(const std::string& code,
+                                                   const std::string& commentary) {
     instrument_.change_reason_code = code;
     instrument_.change_commentary = commentary;
 }
 
 void FxAsianForwardInstrumentForm::writeUiToInstrument() {
-    instrument_.fx_index =
-        ui_->fxIndexEdit->text().trimmed().toStdString();
+    instrument_.fx_index = ui_->fxIndexEdit->text().trimmed().toStdString();
     instrument_.reference_currency =
         InstrumentFormUtils::getComboValue(ui_->referenceCurrencyCombo);
     {
         const double v = ui_->referenceNotionalSpinBox->value();
-        instrument_.reference_notional = (v > 0.0)
-            ? std::optional<double>(v) : std::nullopt;
+        instrument_.reference_notional = (v > 0.0) ? std::optional<double>(v) : std::nullopt;
     }
     instrument_.settlement_currency =
         InstrumentFormUtils::getComboValue(ui_->settlementCurrencyCombo);
     {
         const double v = ui_->settlementNotionalSpinBox->value();
-        instrument_.settlement_notional = (v > 0.0)
-            ? std::optional<double>(v) : std::nullopt;
+        instrument_.settlement_notional = (v > 0.0) ? std::optional<double>(v) : std::nullopt;
     }
     instrument_.payment_date = ui_->paymentDateEdit->isoDate();
-    instrument_.long_short =
-        InstrumentFormUtils::getComboValue(ui_->longShortCombo);
-    instrument_.currency =
-        InstrumentFormUtils::getComboValue(ui_->currencyCombo);
+    instrument_.long_short = InstrumentFormUtils::getComboValue(ui_->longShortCombo);
+    instrument_.currency = InstrumentFormUtils::getComboValue(ui_->currencyCombo);
     {
         const double v = ui_->fixingAmountSpinBox->value();
-        instrument_.fixing_amount = (v > 0.0)
-            ? std::optional<double>(v) : std::nullopt;
+        instrument_.fixing_amount = (v > 0.0) ? std::optional<double>(v) : std::nullopt;
     }
     {
         const double v = ui_->targetAmountSpinBox->value();
-        instrument_.target_amount = (v > 0.0)
-            ? std::optional<double>(v) : std::nullopt;
+        instrument_.target_amount = (v > 0.0) ? std::optional<double>(v) : std::nullopt;
     }
     {
         const double v = ui_->strikeSpinBox->value();
         instrument_.strike = (v > 0.0) ? std::optional<double>(v) : std::nullopt;
     }
-    instrument_.description =
-        ui_->descriptionEdit->toPlainText().trimmed().toStdString();
+    instrument_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
     instrument_.modified_by = username_;
     instrument_.performed_by = username_;
 }
@@ -247,25 +243,20 @@ void FxAsianForwardInstrumentForm::populateFromInstrument() {
     };
 
     block(true);
-    ui_->tradeTypeCodeEdit->setText(
-        QString::fromStdString(instrument_.trade_type_code));
+    ui_->tradeTypeCodeEdit->setText(QString::fromStdString(instrument_.trade_type_code));
     ui_->fxIndexEdit->setText(QString::fromStdString(instrument_.fx_index));
-    InstrumentFormUtils::setComboValue(ui_->referenceCurrencyCombo,
-        instrument_.reference_currency);
-    ui_->referenceNotionalSpinBox->setValue(
-        instrument_.reference_notional.value_or(0.0));
+    InstrumentFormUtils::setComboValue(ui_->referenceCurrencyCombo, instrument_.reference_currency);
+    ui_->referenceNotionalSpinBox->setValue(instrument_.reference_notional.value_or(0.0));
     InstrumentFormUtils::setComboValue(ui_->settlementCurrencyCombo,
-        instrument_.settlement_currency);
-    ui_->settlementNotionalSpinBox->setValue(
-        instrument_.settlement_notional.value_or(0.0));
+                                       instrument_.settlement_currency);
+    ui_->settlementNotionalSpinBox->setValue(instrument_.settlement_notional.value_or(0.0));
     ui_->paymentDateEdit->setIsoDate(instrument_.payment_date);
     InstrumentFormUtils::setComboValue(ui_->longShortCombo, instrument_.long_short);
     InstrumentFormUtils::setComboValue(ui_->currencyCombo, instrument_.currency);
     ui_->fixingAmountSpinBox->setValue(instrument_.fixing_amount.value_or(0.0));
     ui_->targetAmountSpinBox->setValue(instrument_.target_amount.value_or(0.0));
     ui_->strikeSpinBox->setValue(instrument_.strike.value_or(0.0));
-    ui_->descriptionEdit->setPlainText(
-        QString::fromStdString(instrument_.description));
+    ui_->descriptionEdit->setPlainText(QString::fromStdString(instrument_.description));
     block(false);
 }
 
@@ -281,7 +272,8 @@ void FxAsianForwardInstrumentForm::emitProvenance() {
 }
 
 void FxAsianForwardInstrumentForm::onFieldChanged() {
-    if (!loaded_) return;
+    if (!loaded_)
+        return;
     dirty_ = true;
     emit changed();
 }
@@ -295,41 +287,45 @@ void FxAsianForwardInstrumentForm::saveInstrument(
         return;
     }
 
-    struct SaveResult { bool success; std::string message; };
+    struct SaveResult {
+        bool success;
+        std::string message;
+    };
 
     QPointer<FxAsianForwardInstrumentForm> self = this;
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished, self,
-        [self, watcher,
-         on_success = std::move(on_success),
-         on_failure = std::move(on_failure)]() {
-        auto result = watcher->result();
-        watcher->deleteLater();
-        if (!self) return;
+    connect(
+        watcher,
+        &QFutureWatcher<SaveResult>::finished,
+        self,
+        [self, watcher, on_success = std::move(on_success), on_failure = std::move(on_failure)]() {
+            auto result = watcher->result();
+            watcher->deleteLater();
+            if (!self)
+                return;
 
-        if (!result.success) {
-            BOOST_LOG_SEV(lg(), error)
-                << "FX asian forward save failed: " << result.message;
-            on_failure(QString::fromStdString(result.message));
-            return;
-        }
+            if (!result.success) {
+                BOOST_LOG_SEV(lg(), error) << "FX asian forward save failed: " << result.message;
+                on_failure(QString::fromStdString(result.message));
+                return;
+            }
 
-        BOOST_LOG_SEV(lg(), info) << "FX asian forward instrument saved";
-        self->dirty_ = false;
-        self->emitProvenance();
-        on_success(boost::uuids::to_string(self->instrument_.instrument_id));
-    });
+            BOOST_LOG_SEV(lg(), info) << "FX asian forward instrument saved";
+            self->dirty_ = false;
+            self->emitProvenance();
+            on_success(boost::uuids::to_string(self->instrument_.instrument_id));
+        });
 
     auto* cm = clientManager_;
     auto instrument = instrument_;
-    watcher->setFuture(QtConcurrent::run(
-        [cm, instrument = std::move(instrument)]() -> SaveResult {
+    watcher->setFuture(QtConcurrent::run([cm, instrument = std::move(instrument)]() -> SaveResult {
         if (!cm)
             return {false, "Dialog closed"};
         trading::messaging::save_fx_asian_forward_instrument_request req;
         req.data = instrument;
         auto r = cm->process_authenticated_request(std::move(req));
-        if (!r) return {false, "Failed to communicate with server"};
+        if (!r)
+            return {false, "Failed to communicate with server"};
         return {r->success, r->message};
     }));
 }

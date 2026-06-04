@@ -18,42 +18,40 @@
  *
  */
 #include "ores.qt/ChangePasswordDialog.hpp"
-#include "ores.qt/PasswordMatchIndicator.hpp"
-
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QFormLayout>
-#include <QtConcurrent>
-#include <QFutureWatcher>
+#include "ores.iam.api/messaging/account_protocol.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.iam.api/messaging/account_protocol.hpp"
+#include "ores.qt/PasswordMatchIndicator.hpp"
+#include <QFormLayout>
+#include <QFutureWatcher>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 ChangePasswordDialog::ChangePasswordDialog(ClientManager* clientManager, QWidget* parent)
-    : QDialog(parent),
-      new_password_edit_(new QLineEdit(this)),
-      confirm_password_edit_(new QLineEdit(this)),
-      change_button_(new QPushButton("Change Password", this)),
-      cancel_button_(new QPushButton("Cancel", this)),
-      status_label_(new QLabel(this)),
-      info_label_(new QLabel(this)),
-      clientManager_(clientManager) {
+    : QDialog(parent)
+    , new_password_edit_(new QLineEdit(this))
+    , confirm_password_edit_(new QLineEdit(this))
+    , change_button_(new QPushButton("Change Password", this))
+    , cancel_button_(new QPushButton("Cancel", this))
+    , status_label_(new QLabel(this))
+    , info_label_(new QLabel(this))
+    , clientManager_(clientManager) {
 
     setupUI();
 
     // Connect signals
     connect(change_button_, &QPushButton::clicked, this, &ChangePasswordDialog::onChangeClicked);
     connect(cancel_button_, &QPushButton::clicked, this, &QDialog::reject);
-    connect(this, &ChangePasswordDialog::changeCompleted,
-            this, &ChangePasswordDialog::onChangeResult);
+    connect(
+        this, &ChangePasswordDialog::changeCompleted, this, &ChangePasswordDialog::onChangeResult);
 }
 
-ChangePasswordDialog::~ChangePasswordDialog() {
-}
+ChangePasswordDialog::~ChangePasswordDialog() {}
 
 void ChangePasswordDialog::setupUI() {
     BOOST_LOG_SEV(lg(), debug) << "Setting up UI.";
@@ -89,8 +87,10 @@ void ChangePasswordDialog::setupUI() {
     status_label_->setStyleSheet("QLabel { color: #666; font-style: italic; }");
 
     // Set icons on buttons
-    change_button_->setIcon(IconUtils::createRecoloredIcon(Icon::Checkmark, IconUtils::DefaultIconColor));
-    cancel_button_->setIcon(IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
+    change_button_->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Checkmark, IconUtils::DefaultIconColor));
+    cancel_button_->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 
     // Button layout
     auto* button_layout = new QHBoxLayout();
@@ -113,8 +113,7 @@ void ChangePasswordDialog::setupUI() {
     new_password_edit_->setFocus();
 
     // Connect password fields for match indicator
-    PasswordMatchIndicator::connectFields(
-        new_password_edit_, confirm_password_edit_);
+    PasswordMatchIndicator::connectFields(new_password_edit_, confirm_password_edit_);
 }
 
 void ChangePasswordDialog::enableForm(bool enabled) {
@@ -142,7 +141,8 @@ bool ChangePasswordDialog::validateInput() {
     }
 
     if (new_password != confirm_password) {
-        MessageBoxHelper::warning(this, "Password Mismatch", "The passwords do not match. Please try again.");
+        MessageBoxHelper::warning(
+            this, "Password Mismatch", "The passwords do not match. Please try again.");
         confirm_password_edit_->clear();
         confirm_password_edit_->setFocus();
         return false;
@@ -150,8 +150,8 @@ bool ChangePasswordDialog::validateInput() {
 
     // Basic password strength check
     if (new_password.length() < 8) {
-        MessageBoxHelper::warning(this, "Weak Password",
-            "Password must be at least 8 characters long.");
+        MessageBoxHelper::warning(
+            this, "Weak Password", "Password must be at least 8 characters long.");
         new_password_edit_->setFocus();
         return false;
     }
@@ -166,13 +166,12 @@ void ChangePasswordDialog::onChangeClicked() {
     }
 
     const auto& username = clientManager_->currentUsername();
-    BOOST_LOG_SEV(lg(), info)
-        << "Change password: user '" << username
-        << "' initiating forced password change (admin-required reset)";
+    BOOST_LOG_SEV(lg(), info) << "Change password: user '" << username
+                              << "' initiating forced password change (admin-required reset)";
 
     if (!validateInput()) {
-        BOOST_LOG_SEV(lg(), debug) << "Change password: validation failed for user '"
-                                   << username << "'";
+        BOOST_LOG_SEV(lg(), debug)
+            << "Change password: validation failed for user '" << username << "'";
         return;
     }
 
@@ -185,22 +184,19 @@ void ChangePasswordDialog::onChangeClicked() {
 
     // Perform password change asynchronously
     auto* watcher = new QFutureWatcher<std::pair<bool, QString>>(this);
-    connect(watcher, &QFutureWatcher<std::pair<bool, QString>>::finished,
-            [this, watcher]() {
+    connect(watcher, &QFutureWatcher<std::pair<bool, QString>>::finished, [this, watcher]() {
         const auto [success, error_msg] = watcher->result();
         watcher->deleteLater();
         emit changeCompleted(success, error_msg);
     });
 
-    QFuture<std::pair<bool, QString>> future = QtConcurrent::run(
-        [this, new_password]() -> std::pair<bool, QString> {
+    QFuture<std::pair<bool, QString>> future =
+        QtConcurrent::run([this, new_password]() -> std::pair<bool, QString> {
             try {
                 iam::messaging::change_password_request_typed request{
-                    .new_password = new_password.toStdString()
-                };
+                    .new_password = new_password.toStdString()};
 
-                auto result = clientManager_->process_authenticated_request(
-                    std::move(request));
+                auto result = clientManager_->process_authenticated_request(std::move(request));
 
                 if (!result) {
                     return {false, QString::fromStdString(result.error())};
@@ -214,8 +210,7 @@ void ChangePasswordDialog::onChangeClicked() {
             } catch (const std::exception& e) {
                 return {false, QString::fromStdString(e.what())};
             }
-        }
-    );
+        });
 
     watcher->setFuture(future);
 }
@@ -224,22 +219,22 @@ void ChangePasswordDialog::onChangeResult(bool success, const QString& error_mes
     const auto& username = clientManager_ ? clientManager_->currentUsername() : "<unknown>";
 
     if (success) {
-        BOOST_LOG_SEV(lg(), info)
-            << "Change password: user '" << username
-            << "' completed forced password change";
+        BOOST_LOG_SEV(lg(), info) << "Change password: user '" << username
+                                  << "' completed forced password change";
         status_label_->setText("Password changed successfully!");
         status_label_->setStyleSheet("QLabel { color: #0a0; }");
-        accept();  // Close dialog with success
+        accept(); // Close dialog with success
     } else {
-        BOOST_LOG_SEV(lg(), warn)
-            << "Change password failed: user '" << username
-            << "' forced password change failed - " << error_message.toStdString();
+        BOOST_LOG_SEV(lg(), warn) << "Change password failed: user '" << username
+                                  << "' forced password change failed - "
+                                  << error_message.toStdString();
 
         enableForm(true);
         status_label_->setText("");
 
-        MessageBoxHelper::critical(this, "Password Change Failed",
-            QString("Failed to change password: %1").arg(error_message));
+        MessageBoxHelper::critical(this,
+                                   "Password Change Failed",
+                                   QString("Failed to change password: %1").arg(error_message));
     }
 }
 

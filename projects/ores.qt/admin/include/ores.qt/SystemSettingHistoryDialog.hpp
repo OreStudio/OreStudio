@@ -20,17 +20,17 @@
 #ifndef ORES_QT_SYSTEM_SETTING_HISTORY_DIALOG_HPP
 #define ORES_QT_SYSTEM_SETTING_HISTORY_DIALOG_HPP
 
-#include <memory>
-#include <QPair>
-#include <QWidget>
-#include <QString>
-#include <QVector>
-#include <QToolBar>
-#include <QAction>
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.variability.api/domain/system_setting.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ui_SystemSettingHistoryDialog.h"
+#include <QAction>
+#include <QPair>
+#include <QString>
+#include <QToolBar>
+#include <QVector>
+#include <QWidget>
+#include <memory>
 
 namespace Ui {
 class SystemSettingHistoryDialog;
@@ -45,8 +45,7 @@ class SystemSettingHistoryDialog : public QWidget {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.system_setting_history_dialog";
+    inline static std::string_view logger_name = "ores.qt.system_setting_history_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -58,8 +57,8 @@ private:
 
 public:
     explicit SystemSettingHistoryDialog(QString name,
-        ClientManager* clientManager,
-        QWidget* parent = nullptr);
+                                        ClientManager* clientManager,
+                                        QWidget* parent = nullptr);
     ~SystemSettingHistoryDialog() override;
 
     void loadHistory();
@@ -77,7 +76,9 @@ public:
     /**
      * @brief Returns the name of the system setting.
      */
-    [[nodiscard]] QString flagName() const { return flagName_; }
+    [[nodiscard]] QString flagName() const {
+        return flagName_;
+    }
 
     /**
      * @brief Returns the loaded history vector for version navigation.
@@ -121,9 +122,8 @@ private:
      * @return Vector of (field_name, (old_value, new_value)) pairs.
      */
     using DiffResult = QVector<QPair<QString, QPair<QString, QString>>>;
-    DiffResult calculateDiff(
-        const variability::domain::system_setting& current,
-        const variability::domain::system_setting& previous);
+    DiffResult calculateDiff(const variability::domain::system_setting& current,
+                             const variability::domain::system_setting& previous);
 
     void setupToolbar();
     void updateButtonStates();

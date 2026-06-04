@@ -18,28 +18,27 @@
  *
  */
 #include "ores.qt/CodingSchemeAuthorityTypeDetailDialog.hpp"
-
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include "ui_CodingSchemeAuthorityTypeDetailDialog.h"
-#include "ores.qt/IconUtils.hpp"
+#include "ores.dq.api/messaging/coding_scheme_protocol.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
+#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ProvenanceWidget.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.dq.api/messaging/coding_scheme_protocol.hpp"
+#include "ui_CodingSchemeAuthorityTypeDetailDialog.h"
+#include <QFutureWatcher>
+#include <QMessageBox>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 CodingSchemeAuthorityTypeDetailDialog::CodingSchemeAuthorityTypeDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent),
-      ui_(new Ui::CodingSchemeAuthorityTypeDetailDialog),
-      clientManager_(nullptr),
-      isCreateMode_(true),
-      isReadOnly_(false) {
+    : DetailDialogBase(parent)
+    , ui_(new Ui::CodingSchemeAuthorityTypeDetailDialog)
+    , clientManager_(nullptr)
+    , isCreateMode_(true)
+    , isReadOnly_(false) {
 
     ui_->setupUi(this);
     WidgetUtils::setupComboBoxes(this);
@@ -50,18 +49,30 @@ CodingSchemeAuthorityTypeDetailDialog::~CodingSchemeAuthorityTypeDetailDialog() 
     delete ui_;
 }
 
-QTabWidget* CodingSchemeAuthorityTypeDetailDialog::tabWidget() const { return ui_->tabWidget; }
-QWidget* CodingSchemeAuthorityTypeDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
-ProvenanceWidget* CodingSchemeAuthorityTypeDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
+QTabWidget* CodingSchemeAuthorityTypeDetailDialog::tabWidget() const {
+    return ui_->tabWidget;
+}
+QWidget* CodingSchemeAuthorityTypeDetailDialog::provenanceTab() const {
+    return ui_->provenanceTab;
+}
+ProvenanceWidget* CodingSchemeAuthorityTypeDetailDialog::provenanceWidget() const {
+    return ui_->provenanceWidget;
+}
 
 void CodingSchemeAuthorityTypeDetailDialog::setupConnections() {
-    connect(ui_->saveButton, &QPushButton::clicked,
-            this, &CodingSchemeAuthorityTypeDetailDialog::onSaveClicked);
-    connect(ui_->deleteButton, &QPushButton::clicked,
-            this, &CodingSchemeAuthorityTypeDetailDialog::onDeleteClicked);
+    connect(ui_->saveButton,
+            &QPushButton::clicked,
+            this,
+            &CodingSchemeAuthorityTypeDetailDialog::onSaveClicked);
+    connect(ui_->deleteButton,
+            &QPushButton::clicked,
+            this,
+            &CodingSchemeAuthorityTypeDetailDialog::onDeleteClicked);
     ui_->closeButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
-    connect(ui_->closeButton, &QPushButton::clicked, this,
+    connect(ui_->closeButton,
+            &QPushButton::clicked,
+            this,
             &CodingSchemeAuthorityTypeDetailDialog::onCloseClicked);
 }
 
@@ -79,9 +90,12 @@ void CodingSchemeAuthorityTypeDetailDialog::setAuthorityType(
     ui_->nameEdit->setText(QString::fromStdString(authorityType.name));
     ui_->descriptionEdit->setPlainText(QString::fromStdString(authorityType.description));
 
-    populateProvenance(authorityType_.version, authorityType_.modified_by,
-                       authorityType_.performed_by, authorityType_.recorded_at,
-                       "", authorityType_.change_commentary);
+    populateProvenance(authorityType_.version,
+                       authorityType_.modified_by,
+                       authorityType_.performed_by,
+                       authorityType_.recorded_at,
+                       "",
+                       authorityType_.change_commentary);
 
     updateUiState();
 }
@@ -106,14 +120,12 @@ void CodingSchemeAuthorityTypeDetailDialog::onSaveClicked() {
     QString description = ui_->descriptionEdit->toPlainText().trimmed();
 
     if (code.isEmpty()) {
-        MessageBoxHelper::warning(this, tr("Validation Error"),
-                                  tr("Code is required."));
+        MessageBoxHelper::warning(this, tr("Validation Error"), tr("Code is required."));
         return;
     }
 
     if (name.isEmpty()) {
-        MessageBoxHelper::warning(this, tr("Validation Error"),
-                                  tr("Name is required."));
+        MessageBoxHelper::warning(this, tr("Validation Error"), tr("Name is required."));
         return;
     }
 
@@ -125,26 +137,31 @@ void CodingSchemeAuthorityTypeDetailDialog::onSaveClicked() {
     at.version = isCreateMode_ ? 0 : authorityType_.version;
 
     {
-        const auto crOpType = isCreateMode_
-            ? ChangeReasonDialog::OperationType::Create
-            : ChangeReasonDialog::OperationType::Amend;
-        const auto crSel = promptChangeReason(crOpType, true,
-            isCreateMode_ ? "system" : "common");
-        if (!crSel) return;
+        const auto crOpType = isCreateMode_ ? ChangeReasonDialog::OperationType::Create :
+                                              ChangeReasonDialog::OperationType::Amend;
+        const auto crSel = promptChangeReason(crOpType, true, isCreateMode_ ? "system" : "common");
+        if (!crSel)
+            return;
         at.change_commentary = crSel->commentary;
     }
 
     QPointer<CodingSchemeAuthorityTypeDetailDialog> self = this;
 
-    struct SaveResult { bool success; std::string message; };
+    struct SaveResult {
+        bool success;
+        std::string message;
+    };
 
     auto task = [self, at]() -> SaveResult {
-        if (!self || !self->clientManager_) return {false, "Dialog closed"};
+        if (!self || !self->clientManager_)
+            return {false, "Dialog closed"};
 
         dq::messaging::save_coding_scheme_authority_type_request request;
         request.data = at;
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
-        if (!response_result) return {false, "Failed to communicate with server"};
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
+        if (!response_result)
+            return {false, "Failed to communicate with server"};
 
         return {response_result->success, response_result->message};
     };
@@ -154,7 +171,8 @@ void CodingSchemeAuthorityTypeDetailDialog::onSaveClicked() {
         auto result = watcher->result();
         watcher->deleteLater();
 
-        if (!self) return;
+        if (!self)
+            return;
 
         if (result.success) {
             emit self->authorityTypeSaved(code);
@@ -169,28 +187,35 @@ void CodingSchemeAuthorityTypeDetailDialog::onSaveClicked() {
 }
 
 void CodingSchemeAuthorityTypeDetailDialog::onDeleteClicked() {
-    auto reply = MessageBoxHelper::question(this, tr("Confirm Delete"),
-        tr("Delete authority type '%1'?").arg(ui_->codeEdit->text()),
-        QMessageBox::Yes | QMessageBox::No);
+    auto reply =
+        MessageBoxHelper::question(this,
+                                   tr("Confirm Delete"),
+                                   tr("Delete authority type '%1'?").arg(ui_->codeEdit->text()),
+                                   QMessageBox::Yes | QMessageBox::No);
 
-    if (reply != QMessageBox::Yes) return;
+    if (reply != QMessageBox::Yes)
+        return;
 
     {
-        const auto crSel = promptChangeReason(
-            ChangeReasonDialog::OperationType::Delete, true, "common");
-        if (!crSel) return;
+        const auto crSel =
+            promptChangeReason(ChangeReasonDialog::OperationType::Delete, true, "common");
+        if (!crSel)
+            return;
     }
 
     QPointer<CodingSchemeAuthorityTypeDetailDialog> self = this;
     QString code = ui_->codeEdit->text();
 
     auto task = [self, code]() -> bool {
-        if (!self || !self->clientManager_) return false;
+        if (!self || !self->clientManager_)
+            return false;
 
         dq::messaging::delete_coding_scheme_authority_type_request request;
         request.types.push_back(code.toStdString());
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
-        if (!response_result) return false;
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
+        if (!response_result)
+            return false;
 
         return response_result->success;
     };
@@ -200,7 +225,8 @@ void CodingSchemeAuthorityTypeDetailDialog::onDeleteClicked() {
         bool success = watcher->result();
         watcher->deleteLater();
 
-        if (!self) return;
+        if (!self)
+            return;
 
         if (success) {
             emit self->statusMessage(tr("Authority type deleted successfully"));

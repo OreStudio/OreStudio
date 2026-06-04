@@ -20,16 +20,16 @@
 #ifndef ORES_QT_CLIENT_DATASET_BUNDLE_MODEL_HPP
 #define ORES_QT_CLIENT_DATASET_BUNDLE_MODEL_HPP
 
-#include <vector>
-#include <QFutureWatcher>
-#include <QAbstractTableModel>
+#include "ores.dq.api/domain/dataset_bundle.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/AbstractClientModel.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/RecencyPulseManager.hpp"
 #include "ores.qt/RecencyTracker.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.dq.api/domain/dataset_bundle.hpp"
 #include "ores.qt/export.hpp"
+#include <QAbstractTableModel>
+#include <QFutureWatcher>
+#include <vector>
 
 namespace ores::qt {
 
@@ -43,8 +43,7 @@ class ORES_QT_API ClientDatasetBundleModel final : public AbstractClientModel {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.client_dataset_bundle_model";
+    inline static std::string_view logger_name = "ores.qt.client_dataset_bundle_model";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -56,26 +55,17 @@ public:
     /**
      * @brief Enumeration of table columns for type-safe column access.
      */
-    enum Column {
-        Code,
-        Name,
-        Description,
-        Version,
-        ModifiedBy,
-        RecordedAt,
-        ColumnCount
-    };
+    enum Column { Code, Name, Description, Version, ModifiedBy, RecordedAt, ColumnCount };
 
-    explicit ClientDatasetBundleModel(ClientManager* clientManager,
-                                       QObject* parent = nullptr);
+    explicit ClientDatasetBundleModel(ClientManager* clientManager, QObject* parent = nullptr);
     ~ClientDatasetBundleModel() override = default;
 
     // QAbstractTableModel interface
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-    QVariant headerData(int section, Qt::Orientation orientation,
-        int role = Qt::DisplayRole) const override;
+    QVariant
+    headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
     /**
      * @brief Refresh dataset bundle data from server asynchronously.
@@ -98,7 +88,9 @@ public:
     /**
      * @brief Get the page size used for pagination.
      */
-    std::uint32_t page_size() const { return page_size_; }
+    std::uint32_t page_size() const {
+        return page_size_;
+    }
 
     /**
      * @brief Set the page size for pagination.
@@ -108,7 +100,9 @@ public:
     /**
      * @brief Get the total number of records available on the server.
      */
-    std::uint32_t total_available_count() const { return total_available_count_; }
+    std::uint32_t total_available_count() const {
+        return total_available_count_;
+    }
 
 signals:
     /**
@@ -144,7 +138,7 @@ private:
     std::uint32_t total_available_count_{0};
     bool is_fetching_{false};
 
-    using DatasetBundleKeyExtractor = std::string(*)(const dq::domain::dataset_bundle&);
+    using DatasetBundleKeyExtractor = std::string (*)(const dq::domain::dataset_bundle&);
     RecencyTracker<dq::domain::dataset_bundle, DatasetBundleKeyExtractor> recencyTracker_;
     RecencyPulseManager* pulseManager_;
 };

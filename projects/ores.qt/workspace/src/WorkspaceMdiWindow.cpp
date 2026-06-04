@@ -18,43 +18,41 @@
  *
  */
 #include "ores.qt/WorkspaceMdiWindow.hpp"
-
-#include <QVBoxLayout>
-#include <QHeaderView>
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include <boost/uuid/uuid_io.hpp>
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/BadgeCache.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/EntityItemDelegate.hpp"
-#include "ores.qt/BadgeCache.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.workspace.api/messaging/workspace_protocol.hpp"
+#include <QFutureWatcher>
+#include <QHeaderView>
+#include <QMessageBox>
+#include <QVBoxLayout>
+#include <QtConcurrent>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-WorkspaceMdiWindow::WorkspaceMdiWindow(
-    ClientManager* clientManager,
-    const QString& username,
-    BadgeCache* badgeCache,
-    QWidget* parent)
-    : EntityListMdiWindow(parent),
-      clientManager_(clientManager),
-      username_(username),
-      badgeCache_(badgeCache),
-      toolbar_(nullptr),
-      tableView_(nullptr),
-      model_(nullptr),
-      proxyModel_(nullptr),
-      paginationWidget_(nullptr),
-      reloadAction_(nullptr),
-      addAction_(nullptr),
-      editAction_(nullptr),
-      deleteAction_(nullptr),
-      historyAction_(nullptr) {
+WorkspaceMdiWindow::WorkspaceMdiWindow(ClientManager* clientManager,
+                                       const QString& username,
+                                       BadgeCache* badgeCache,
+                                       QWidget* parent)
+    : EntityListMdiWindow(parent)
+    , clientManager_(clientManager)
+    , username_(username)
+    , badgeCache_(badgeCache)
+    , toolbar_(nullptr)
+    , tableView_(nullptr)
+    , model_(nullptr)
+    , proxyModel_(nullptr)
+    , paginationWidget_(nullptr)
+    , reloadAction_(nullptr)
+    , addAction_(nullptr)
+    , editAction_(nullptr)
+    , deleteAction_(nullptr)
+    , historyAction_(nullptr) {
 
     setupUi();
     setupConnections();
@@ -82,50 +80,36 @@ void WorkspaceMdiWindow::setupToolbar() {
     toolbar_->setIconSize(QSize(20, 20));
 
     reloadAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::ArrowClockwise, IconUtils::DefaultIconColor),
+        IconUtils::createRecoloredIcon(Icon::ArrowClockwise, IconUtils::DefaultIconColor),
         tr("Reload"));
-    connect(reloadAction_, &QAction::triggered, this,
-            &EntityListMdiWindow::reload);
+    connect(reloadAction_, &QAction::triggered, this, &EntityListMdiWindow::reload);
 
     initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowClockwise));
 
     toolbar_->addSeparator();
 
     addAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::Add, IconUtils::DefaultIconColor),
-        tr("Add"));
+        IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor), tr("Add"));
     addAction_->setToolTip(tr("Add new workspace"));
-    connect(addAction_, &QAction::triggered, this,
-            &WorkspaceMdiWindow::addNew);
+    connect(addAction_, &QAction::triggered, this, &WorkspaceMdiWindow::addNew);
 
     editAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::Edit, IconUtils::DefaultIconColor),
-        tr("Edit"));
+        IconUtils::createRecoloredIcon(Icon::Edit, IconUtils::DefaultIconColor), tr("Edit"));
     editAction_->setToolTip(tr("Edit selected workspace"));
     editAction_->setEnabled(false);
-    connect(editAction_, &QAction::triggered, this,
-            &WorkspaceMdiWindow::editSelected);
+    connect(editAction_, &QAction::triggered, this, &WorkspaceMdiWindow::editSelected);
 
     deleteAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::Delete, IconUtils::DefaultIconColor),
-        tr("Delete"));
+        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor), tr("Delete"));
     deleteAction_->setToolTip(tr("Delete selected workspace"));
     deleteAction_->setEnabled(false);
-    connect(deleteAction_, &QAction::triggered, this,
-            &WorkspaceMdiWindow::deleteSelected);
+    connect(deleteAction_, &QAction::triggered, this, &WorkspaceMdiWindow::deleteSelected);
 
     historyAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::History, IconUtils::DefaultIconColor),
-        tr("History"));
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor), tr("History"));
     historyAction_->setToolTip(tr("View workspace history"));
     historyAction_->setEnabled(false);
-    connect(historyAction_, &QAction::triggered, this,
-            &WorkspaceMdiWindow::viewHistorySelected);
+    connect(historyAction_, &QAction::triggered, this, &WorkspaceMdiWindow::viewHistorySelected);
 }
 
 void WorkspaceMdiWindow::setupTable() {
@@ -143,50 +127,55 @@ void WorkspaceMdiWindow::setupTable() {
     tableView_->verticalHeader()->setVisible(false);
 
     using cs = column_style;
-    auto* delegate = new EntityItemDelegate({
-        cs::text_left,
-        cs::text_left,
-        cs::badge_centered,
-        cs::text_left,
-        cs::mono_center,
-        cs::text_left,
-    }, tableView_);
-    delegate->set_badge_color_resolver(2, [cache = badgeCache_](const QString& value) -> badge_color_pair {
-        static const badge_color_pair fallback{color_constants::badge_fallback,
-            color_constants::badge_fallback_text};
-        if (!cache) return fallback;
-        auto* def = cache->resolve("workspace_status", value.toStdString());
-        if (!def) return fallback;
-        return {QColor(QString::fromStdString(def->background_colour)),
-                QColor(QString::fromStdString(def->text_colour))};
-    });
+    auto* delegate = new EntityItemDelegate(
+        {
+            cs::text_left,
+            cs::text_left,
+            cs::badge_centered,
+            cs::text_left,
+            cs::mono_center,
+            cs::text_left,
+        },
+        tableView_);
+    delegate->set_badge_color_resolver(
+        2, [cache = badgeCache_](const QString& value) -> badge_color_pair {
+            static const badge_color_pair fallback{color_constants::badge_fallback,
+                                                   color_constants::badge_fallback_text};
+            if (!cache)
+                return fallback;
+            auto* def = cache->resolve("workspace_status", value.toStdString());
+            if (!def)
+                return fallback;
+            return {QColor(QString::fromStdString(def->background_colour)),
+                    QColor(QString::fromStdString(def->text_colour))};
+        });
     tableView_->setItemDelegate(delegate);
 
-    initializeTableSettings(tableView_, model_,
-        "WorkspaceListWindow",
-        {ClientWorkspaceModel::Description},
-        {900, 400}, 2);
+    initializeTableSettings(tableView_,
+                            model_,
+                            "WorkspaceListWindow",
+                            {ClientWorkspaceModel::Description},
+                            {900, 400},
+                            2);
 }
 
 void WorkspaceMdiWindow::setupConnections() {
-    connect(model_, &ClientWorkspaceModel::dataLoaded,
-            this, &WorkspaceMdiWindow::onDataLoaded);
-    connect(model_, &ClientWorkspaceModel::loadError,
-            this, &WorkspaceMdiWindow::onLoadError);
+    connect(model_, &ClientWorkspaceModel::dataLoaded, this, &WorkspaceMdiWindow::onDataLoaded);
+    connect(model_, &ClientWorkspaceModel::loadError, this, &WorkspaceMdiWindow::onLoadError);
 
-    connect(tableView_->selectionModel(), &QItemSelectionModel::selectionChanged,
-            this, &WorkspaceMdiWindow::onSelectionChanged);
-    connect(tableView_, &QTableView::doubleClicked,
-            this, &WorkspaceMdiWindow::onDoubleClicked);
+    connect(tableView_->selectionModel(),
+            &QItemSelectionModel::selectionChanged,
+            this,
+            &WorkspaceMdiWindow::onSelectionChanged);
+    connect(tableView_, &QTableView::doubleClicked, this, &WorkspaceMdiWindow::onDoubleClicked);
 
-    connect(paginationWidget_, &PaginationWidget::page_size_changed,
-            this, [this](std::uint32_t size) {
-        model_->set_page_size(size);
-        model_->refresh();
-    });
+    connect(
+        paginationWidget_, &PaginationWidget::page_size_changed, this, [this](std::uint32_t size) {
+            model_->set_page_size(size);
+            model_->refresh();
+        });
 
-    connect(paginationWidget_, &PaginationWidget::load_all_requested,
-            this, [this]() {
+    connect(paginationWidget_, &PaginationWidget::load_all_requested, this, [this]() {
         const auto total = model_->total_available_count();
         if (total > 0 && total <= 1000) {
             model_->set_page_size(total);
@@ -194,10 +183,11 @@ void WorkspaceMdiWindow::setupConnections() {
         }
     });
 
-    connect(paginationWidget_, &PaginationWidget::page_requested,
-            this, [this](std::uint32_t offset, std::uint32_t limit) {
-        model_->load_page(offset, limit);
-    });
+    connect(
+        paginationWidget_,
+        &PaginationWidget::page_requested,
+        this,
+        [this](std::uint32_t offset, std::uint32_t limit) { model_->load_page(offset, limit); });
 
     connectModel(model_);
 }
@@ -215,12 +205,11 @@ void WorkspaceMdiWindow::onDataLoaded() {
     emit statusChanged(tr("Loaded %1 of %2 workspaces").arg(loaded).arg(total));
 
     paginationWidget_->update_state(loaded, total);
-    paginationWidget_->set_load_all_enabled(
-        loaded < static_cast<int>(total) && total > 0 && total <= 1000);
+    paginationWidget_->set_load_all_enabled(loaded < static_cast<int>(total) && total > 0 &&
+                                            total <= 1000);
 }
 
-void WorkspaceMdiWindow::onLoadError(const QString& error_message,
-                                          const QString& details) {
+void WorkspaceMdiWindow::onLoadError(const QString& error_message, const QString& details) {
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);
@@ -274,8 +263,7 @@ void WorkspaceMdiWindow::viewHistorySelected() {
 
     auto sourceIndex = proxyModel_->mapToSource(selected.first());
     if (auto* workspace = model_->getWorkspace(sourceIndex.row())) {
-        BOOST_LOG_SEV(lg(), debug) << "Emitting showWorkspaceHistory for code: "
-                                   << workspace->name;
+        BOOST_LOG_SEV(lg(), debug) << "Emitting showWorkspaceHistory for code: " << workspace->name;
         emit showWorkspaceHistory(*workspace);
     }
 }
@@ -288,13 +276,13 @@ void WorkspaceMdiWindow::deleteSelected() {
     }
 
     if (!clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot delete workspace while disconnected.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot delete workspace while disconnected.");
         return;
     }
 
     std::vector<boost::uuids::uuid> ids;
-    std::vector<std::string> codes;  // For display purposes
+    std::vector<std::string> codes; // For display purposes
     for (const auto& index : selected) {
         auto sourceIndex = proxyModel_->mapToSource(index);
         if (auto* workspace = model_->getWorkspace(sourceIndex.row())) {
@@ -308,20 +296,18 @@ void WorkspaceMdiWindow::deleteSelected() {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Delete requested for " << ids.size()
-                               << " workspaces";
+    BOOST_LOG_SEV(lg(), debug) << "Delete requested for " << ids.size() << " workspaces";
 
     QString confirmMessage;
     if (ids.size() == 1) {
         confirmMessage = QString("Are you sure you want to delete workspace '%1'?")
-            .arg(QString::fromStdString(codes.front()));
+                             .arg(QString::fromStdString(codes.front()));
     } else {
-        confirmMessage = QString("Are you sure you want to delete %1 workspaces?")
-            .arg(ids.size());
+        confirmMessage = QString("Are you sure you want to delete %1 workspaces?").arg(ids.size());
     }
 
-    auto reply = MessageBoxHelper::question(this, "Delete Workspace",
-        confirmMessage, QMessageBox::Yes | QMessageBox::No);
+    auto reply = MessageBoxHelper::question(
+        this, "Delete Workspace", confirmMessage, QMessageBox::Yes | QMessageBox::No);
 
     if (reply != QMessageBox::Yes) {
         BOOST_LOG_SEV(lg(), debug) << "Delete cancelled by user";
@@ -331,25 +317,26 @@ void WorkspaceMdiWindow::deleteSelected() {
     QPointer<WorkspaceMdiWindow> self = this;
     auto* cm = clientManager_;
     const std::string username = username_.toStdString();
-    using DeleteResult = std::vector<std::tuple<boost::uuids::uuid, std::string, bool, std::string>>;
+    using DeleteResult =
+        std::vector<std::tuple<boost::uuids::uuid, std::string, bool, std::string>>;
 
     auto task = [self, cm, username, ids, codes]() -> DeleteResult {
         DeleteResult results;
-        if (!cm) return {};
+        if (!cm)
+            return {};
 
-        BOOST_LOG_SEV(lg(), debug) << "Making delete request for "
-                                   << ids.size() << " workspaces";
+        BOOST_LOG_SEV(lg(), debug) << "Making delete request for " << ids.size() << " workspaces";
 
         for (std::size_t i = 0; i < ids.size(); ++i) {
             workspace::messaging::archive_workspace_request request;
             request.id = boost::uuids::to_string(ids[i]);
             request.modified_by = username;
-            auto response_result = cm->process_authenticated_request(
-                std::move(request));
+            auto response_result = cm->process_authenticated_request(std::move(request));
             if (!response_result) {
                 results.push_back({ids[i], codes[i], false, "Failed to communicate with server"});
             } else {
-                results.push_back({ids[i], codes[i], response_result->success, response_result->message});
+                results.push_back(
+                    {ids[i], codes[i], response_result->success, response_result->message});
             }
         }
 
@@ -357,8 +344,7 @@ void WorkspaceMdiWindow::deleteSelected() {
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, watcher]() {
         auto results = watcher->result();
         watcher->deleteLater();
 
@@ -372,8 +358,8 @@ void WorkspaceMdiWindow::deleteSelected() {
                 success_count++;
                 emit self->workspaceDeleted(QString::fromStdString(code));
             } else {
-                BOOST_LOG_SEV(lg(), error) << "Workspace deletion failed: "
-                                           << code << " - " << message;
+                BOOST_LOG_SEV(lg(), error)
+                    << "Workspace deletion failed: " << code << " - " << message;
                 failure_count++;
                 if (first_error.isEmpty()) {
                     first_error = QString::fromStdString(message);
@@ -384,21 +370,20 @@ void WorkspaceMdiWindow::deleteSelected() {
         self->model_->refresh();
 
         if (failure_count == 0) {
-            QString msg = success_count == 1
-                ? "Successfully deleted 1 workspace"
-                : QString("Successfully deleted %1 workspaces").arg(success_count);
+            QString msg = success_count == 1 ?
+                              "Successfully deleted 1 workspace" :
+                              QString("Successfully deleted %1 workspaces").arg(success_count);
             emit self->statusChanged(msg);
         } else if (success_count == 0) {
             QString msg = QString("Failed to delete %1 %2: %3")
-                .arg(failure_count)
-                .arg(failure_count == 1 ? "workspace" : "workspaces")
-                .arg(first_error);
+                              .arg(failure_count)
+                              .arg(failure_count == 1 ? "workspace" : "workspaces")
+                              .arg(first_error);
             emit self->errorOccurred(msg);
             MessageBoxHelper::critical(self, "Delete Failed", msg);
         } else {
-            QString msg = QString("Deleted %1, failed to delete %2")
-                .arg(success_count)
-                .arg(failure_count);
+            QString msg =
+                QString("Deleted %1, failed to delete %2").arg(success_count).arg(failure_count);
             emit self->statusChanged(msg);
             MessageBoxHelper::warning(self, "Partial Success", msg);
         }

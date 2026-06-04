@@ -20,18 +20,18 @@
 #ifndef ORES_QT_COUNTRY_HISTORY_DIALOG_HPP
 #define ORES_QT_COUNTRY_HISTORY_DIALOG_HPP
 
-#include <memory>
-#include <QPair>
-#include <QWidget>
-#include <QString>
-#include <QVector>
-#include <QToolBar>
-#include <QAction>
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ImageCache.hpp"
 #include "ores.refdata.api/domain/country.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ui_CountryHistoryDialog.h"
+#include <QAction>
+#include <QPair>
+#include <QString>
+#include <QToolBar>
+#include <QVector>
+#include <QWidget>
+#include <memory>
 
 namespace Ui {
 class CountryHistoryDialog;
@@ -46,8 +46,7 @@ class CountryHistoryDialog : public QWidget {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.country_history_dialog";
+    inline static std::string_view logger_name = "ores.qt.country_history_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -59,8 +58,8 @@ private:
 
 public:
     explicit CountryHistoryDialog(QString alpha2_code,
-        ClientManager* clientManager,
-        QWidget* parent = nullptr);
+                                  ClientManager* clientManager,
+                                  QWidget* parent = nullptr);
     ~CountryHistoryDialog() override;
 
     void loadHistory();
@@ -83,7 +82,9 @@ public:
     /**
      * @brief Returns the alpha-2 code of the country.
      */
-    [[nodiscard]] QString alpha2Code() const { return alpha2Code_; }
+    [[nodiscard]] QString alpha2Code() const {
+        return alpha2Code_;
+    }
 
     /**
      * @brief Returns the loaded history vector for version navigation.
@@ -127,9 +128,8 @@ private:
      * @return Vector of (field_name, (old_value, new_value)) pairs.
      */
     using DiffResult = QVector<QPair<QString, QPair<QString, QString>>>;
-    DiffResult calculateDiff(
-        const refdata::domain::country& current,
-        const refdata::domain::country& previous);
+    DiffResult calculateDiff(const refdata::domain::country& current,
+                             const refdata::domain::country& previous);
 
     void setupToolbar();
     void updateButtonStates();

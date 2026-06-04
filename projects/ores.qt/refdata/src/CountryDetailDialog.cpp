@@ -18,25 +18,24 @@
  *
  */
 #include "ores.qt/CountryDetailDialog.hpp"
-
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QToolBar>
-#include <QMdiSubWindow>
-#include <QMetaObject>
-#include <boost/uuid/string_generator.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include "ui_CountryDetailDialog.h"
-#include "ores.qt/FlagIconHelper.hpp"
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/MdiUtils.hpp"
-#include "ores.qt/FlagSelectorDialog.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
+#include "ores.qt/FlagIconHelper.hpp"
+#include "ores.qt/FlagSelectorDialog.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/MdiUtils.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata.api/messaging/protocol.hpp"
+#include "ui_CountryDetailDialog.h"
+#include <QFutureWatcher>
+#include <QHBoxLayout>
+#include <QMdiSubWindow>
+#include <QMetaObject>
+#include <QToolBar>
+#include <QVBoxLayout>
+#include <QtConcurrent>
+#include <boost/uuid/string_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
@@ -44,13 +43,22 @@ using namespace ores::logging;
 using FutureResult = std::pair<bool, std::string>;
 
 CountryDetailDialog::CountryDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent), ui_(new Ui::CountryDetailDialog), isDirty_(false),
-      isAddMode_(false), isReadOnly_(false), isStale_(false), flagChanged_(false),
-      historicalVersion_(0), flagButton_(nullptr),
-      clientManager_(nullptr), imageCache_(nullptr),
-      currentHistoryIndex_(0),
-      firstVersionAction_(nullptr), prevVersionAction_(nullptr),
-      nextVersionAction_(nullptr), lastVersionAction_(nullptr) {
+    : DetailDialogBase(parent)
+    , ui_(new Ui::CountryDetailDialog)
+    , isDirty_(false)
+    , isAddMode_(false)
+    , isReadOnly_(false)
+    , isStale_(false)
+    , flagChanged_(false)
+    , historicalVersion_(0)
+    , flagButton_(nullptr)
+    , clientManager_(nullptr)
+    , imageCache_(nullptr)
+    , currentHistoryIndex_(0)
+    , firstVersionAction_(nullptr)
+    , prevVersionAction_(nullptr)
+    , nextVersionAction_(nullptr)
+    , lastVersionAction_(nullptr) {
 
     ui_->setupUi(this);
     WidgetUtils::setupComboBoxes(this);
@@ -62,49 +70,50 @@ CountryDetailDialog::CountryDetailDialog(QWidget* parent)
 
     // Create Revert action
     revertAction_ = new QAction("Revert", this);
-    revertAction_->setIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
+    revertAction_->setIcon(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
+                                                          IconUtils::DefaultIconColor));
     revertAction_->setToolTip("Revert country to this historical version");
-    connect(revertAction_, &QAction::triggered, this,
-        &CountryDetailDialog::onRevertClicked);
+    connect(revertAction_, &QAction::triggered, this, &CountryDetailDialog::onRevertClicked);
     toolBar_->addAction(revertAction_);
 
     // Version navigation actions (initially hidden)
     toolBar_->addSeparator();
 
     firstVersionAction_ = new QAction("First", this);
-    firstVersionAction_->setIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowPrevious, IconUtils::DefaultIconColor));
+    firstVersionAction_->setIcon(
+        IconUtils::createRecoloredIcon(Icon::ArrowPrevious, IconUtils::DefaultIconColor));
     firstVersionAction_->setToolTip(tr("First version"));
-    connect(firstVersionAction_, &QAction::triggered, this,
-        &CountryDetailDialog::onFirstVersionClicked);
+    connect(firstVersionAction_,
+            &QAction::triggered,
+            this,
+            &CountryDetailDialog::onFirstVersionClicked);
     toolBar_->addAction(firstVersionAction_);
     firstVersionAction_->setVisible(false);
 
     prevVersionAction_ = new QAction("Previous", this);
-    prevVersionAction_->setIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowLeft, IconUtils::DefaultIconColor));
+    prevVersionAction_->setIcon(
+        IconUtils::createRecoloredIcon(Icon::ArrowLeft, IconUtils::DefaultIconColor));
     prevVersionAction_->setToolTip(tr("Previous version"));
-    connect(prevVersionAction_, &QAction::triggered, this,
-        &CountryDetailDialog::onPrevVersionClicked);
+    connect(
+        prevVersionAction_, &QAction::triggered, this, &CountryDetailDialog::onPrevVersionClicked);
     toolBar_->addAction(prevVersionAction_);
     prevVersionAction_->setVisible(false);
 
     nextVersionAction_ = new QAction("Next", this);
-    nextVersionAction_->setIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowRight, IconUtils::DefaultIconColor));
+    nextVersionAction_->setIcon(
+        IconUtils::createRecoloredIcon(Icon::ArrowRight, IconUtils::DefaultIconColor));
     nextVersionAction_->setToolTip(tr("Next version"));
-    connect(nextVersionAction_, &QAction::triggered, this,
-        &CountryDetailDialog::onNextVersionClicked);
+    connect(
+        nextVersionAction_, &QAction::triggered, this, &CountryDetailDialog::onNextVersionClicked);
     toolBar_->addAction(nextVersionAction_);
     nextVersionAction_->setVisible(false);
 
     lastVersionAction_ = new QAction("Last", this);
-    lastVersionAction_->setIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowNext, IconUtils::DefaultIconColor));
+    lastVersionAction_->setIcon(
+        IconUtils::createRecoloredIcon(Icon::ArrowNext, IconUtils::DefaultIconColor));
     lastVersionAction_->setToolTip(tr("Last version"));
-    connect(lastVersionAction_, &QAction::triggered, this,
-        &CountryDetailDialog::onLastVersionClicked);
+    connect(
+        lastVersionAction_, &QAction::triggered, this, &CountryDetailDialog::onLastVersionClicked);
     toolBar_->addAction(lastVersionAction_);
     lastVersionAction_->setVisible(false);
 
@@ -130,8 +139,8 @@ CountryDetailDialog::CountryDetailDialog(QWidget* parent)
             "QPushButton:hover { background: rgba(255, 255, 255, 15); }");
         flagButton_->setCursor(Qt::PointingHandCursor);
         flagButton_->setToolTip(tr("Click to select flag"));
-        connect(flagButton_, &QPushButton::clicked, this,
-            &CountryDetailDialog::onSelectFlagClicked);
+        connect(
+            flagButton_, &QPushButton::clicked, this, &CountryDetailDialog::onSelectFlagClicked);
         flagLayout->addStretch();
         flagLayout->addWidget(flagButton_);
         flagLayout->addStretch();
@@ -147,24 +156,20 @@ CountryDetailDialog::CountryDetailDialog(QWidget* parent)
         IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor));
     ui_->closeButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
-    connect(ui_->saveButton, &QPushButton::clicked, this,
-        &CountryDetailDialog::onSaveClicked);
-    connect(ui_->deleteButton, &QPushButton::clicked, this,
-        &CountryDetailDialog::onDeleteClicked);
-    connect(ui_->closeButton, &QPushButton::clicked, this,
-        &CountryDetailDialog::onCloseClicked);
+    connect(ui_->saveButton, &QPushButton::clicked, this, &CountryDetailDialog::onSaveClicked);
+    connect(ui_->deleteButton, &QPushButton::clicked, this, &CountryDetailDialog::onDeleteClicked);
+    connect(ui_->closeButton, &QPushButton::clicked, this, &CountryDetailDialog::onCloseClicked);
 
     // Connect signals for editable fields to detect changes
-    connect(ui_->alpha2CodeEdit, &QLineEdit::textChanged, this,
-        &CountryDetailDialog::onFieldChanged);
-    connect(ui_->alpha3CodeEdit, &QLineEdit::textChanged, this,
-        &CountryDetailDialog::onFieldChanged);
-    connect(ui_->numericCodeEdit, &QLineEdit::textChanged, this,
-        &CountryDetailDialog::onFieldChanged);
-    connect(ui_->nameEdit, &QLineEdit::textChanged, this,
-        &CountryDetailDialog::onFieldChanged);
-    connect(ui_->officialNameEdit, &QLineEdit::textChanged, this,
-        &CountryDetailDialog::onFieldChanged);
+    connect(
+        ui_->alpha2CodeEdit, &QLineEdit::textChanged, this, &CountryDetailDialog::onFieldChanged);
+    connect(
+        ui_->alpha3CodeEdit, &QLineEdit::textChanged, this, &CountryDetailDialog::onFieldChanged);
+    connect(
+        ui_->numericCodeEdit, &QLineEdit::textChanged, this, &CountryDetailDialog::onFieldChanged);
+    connect(ui_->nameEdit, &QLineEdit::textChanged, this, &CountryDetailDialog::onFieldChanged);
+    connect(
+        ui_->officialNameEdit, &QLineEdit::textChanged, this, &CountryDetailDialog::onFieldChanged);
 
     // Initially disable save/reset buttons
     updateSaveResetButtonState();
@@ -181,12 +186,13 @@ void CountryDetailDialog::setUsername(const std::string& username) {
 void CountryDetailDialog::setImageCache(ImageCache* imageCache) {
     imageCache_ = imageCache;
     if (imageCache_) {
-        connect(imageCache_, &ImageCache::countryImageSet,
-            this, &CountryDetailDialog::onCountryImageSet);
-        connect(imageCache_, &ImageCache::imagesLoaded,
-            this, &CountryDetailDialog::updateFlagDisplay);
-        connect(imageCache_, &ImageCache::allLoaded,
-            this, &CountryDetailDialog::updateFlagDisplay);
+        connect(imageCache_,
+                &ImageCache::countryImageSet,
+                this,
+                &CountryDetailDialog::onCountryImageSet);
+        connect(
+            imageCache_, &ImageCache::imagesLoaded, this, &CountryDetailDialog::updateFlagDisplay);
+        connect(imageCache_, &ImageCache::allLoaded, this, &CountryDetailDialog::updateFlagDisplay);
     }
 }
 
@@ -199,17 +205,22 @@ CountryDetailDialog::~CountryDetailDialog() {
     }
 }
 
-QTabWidget* CountryDetailDialog::tabWidget() const { return ui_->tabWidget; }
-QWidget* CountryDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
-ProvenanceWidget* CountryDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
+QTabWidget* CountryDetailDialog::tabWidget() const {
+    return ui_->tabWidget;
+}
+QWidget* CountryDetailDialog::provenanceTab() const {
+    return ui_->provenanceTab;
+}
+ProvenanceWidget* CountryDetailDialog::provenanceWidget() const {
+    return ui_->provenanceWidget;
+}
 
 void CountryDetailDialog::setCountry(const refdata::domain::country& country) {
     currentCountry_ = country;
     isAddMode_ = country.alpha2_code.empty();
 
     if (country.image_id) {
-        pendingImageId_ = QString::fromStdString(
-            boost::uuids::to_string(*country.image_id));
+        pendingImageId_ = QString::fromStdString(boost::uuids::to_string(*country.image_id));
     } else if (imageCache_) {
         std::string noFlagId = imageCache_->getNoFlagImageId();
         if (!noFlagId.empty()) {
@@ -227,8 +238,12 @@ void CountryDetailDialog::setCountry(const refdata::domain::country& country) {
     ui_->numericCodeEdit->setText(QString::fromStdString(country.numeric_code));
     ui_->nameEdit->setText(QString::fromStdString(country.name));
     ui_->officialNameEdit->setText(QString::fromStdString(country.official_name));
-    populateProvenance(country.version, country.modified_by, country.performed_by,
-        country.recorded_at, country.change_reason_code, country.change_commentary);
+    populateProvenance(country.version,
+                       country.modified_by,
+                       country.performed_by,
+                       country.recorded_at,
+                       country.change_reason_code,
+                       country.change_commentary);
 
     isDirty_ = false;
     flagChanged_ = false;
@@ -280,44 +295,39 @@ void CountryDetailDialog::onSaveClicked() {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Save clicked for country: "
-                               << currentCountry_.alpha2_code;
+    BOOST_LOG_SEV(lg(), debug) << "Save clicked for country: " << currentCountry_.alpha2_code;
 
     refdata::domain::country country = getCountry();
 
-    const auto crOpType = isAddMode_
-        ? ChangeReasonDialog::OperationType::Create
-        : ChangeReasonDialog::OperationType::Amend;
-    const auto crSel = promptChangeReason(crOpType, isDirty_,
-        isAddMode_ ? "system" : "common");
-    if (!crSel) return;
+    const auto crOpType = isAddMode_ ? ChangeReasonDialog::OperationType::Create :
+                                       ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, isDirty_, isAddMode_ ? "system" : "common");
+    if (!crSel)
+        return;
     country.change_reason_code = crSel->reason_code;
     country.change_commentary = crSel->commentary;
 
     QPointer<CountryDetailDialog> self = this;
-    QFuture<FutureResult> future =
-        QtConcurrent::run([self, country]() -> FutureResult {
-            if (!self) return {false, ""};
+    QFuture<FutureResult> future = QtConcurrent::run([self, country]() -> FutureResult {
+        if (!self)
+            return {false, ""};
 
-            BOOST_LOG_SEV(lg(), debug) << "Sending save country request for: "
-                                       << country.alpha2_code;
+        BOOST_LOG_SEV(lg(), debug) << "Sending save country request for: " << country.alpha2_code;
 
-            auto request = refdata::messaging::save_country_request::from(country);
-            auto response_result =
-self->clientManager_->process_authenticated_request(std::move(request));
+        auto request = refdata::messaging::save_country_request::from(country);
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
-            if (!response_result)
-                return {false, "Failed to communicate with server"};
+        if (!response_result)
+            return {false, "Failed to communicate with server"};
 
-            BOOST_LOG_SEV(lg(), debug) << "Received save country response.";
+        BOOST_LOG_SEV(lg(), debug) << "Received save country response.";
 
-            return {response_result->success, response_result->message};
-        });
+        return {response_result->success, response_result->message};
+    });
 
     auto* watcher = new QFutureWatcher<FutureResult>(self);
-    connect(watcher, &QFutureWatcher<FutureResult>::finished, self,
-        [self, watcher, country]() {
-
+    connect(watcher, &QFutureWatcher<FutureResult>::finished, self, [self, watcher, country]() {
         if (!self)
             return;
 
@@ -344,10 +354,9 @@ self->clientManager_->process_authenticated_request(std::move(request));
             self->notifySaveSuccess(tr("Country '%1' saved").arg(code));
         } else {
             BOOST_LOG_SEV(lg(), error) << "Country save failed: " << message;
-            emit self->errorMessage(QString("Failed to save country: %1")
-                .arg(QString::fromStdString(message)));
-            MessageBoxHelper::critical(self, "Save Failed",
-                QString::fromStdString(message));
+            emit self->errorMessage(
+                QString("Failed to save country: %1").arg(QString::fromStdString(message)));
+            MessageBoxHelper::critical(self, "Save Failed", QString::fromStdString(message));
         }
     });
 
@@ -355,8 +364,7 @@ self->clientManager_->process_authenticated_request(std::move(request));
 }
 
 void CountryDetailDialog::onResetClicked() {
-    BOOST_LOG_SEV(lg(), debug) << "Reset clicked for country: "
-                               << currentCountry_.alpha2_code;
+    BOOST_LOG_SEV(lg(), debug) << "Reset clicked for country: " << currentCountry_.alpha2_code;
     setCountry(currentCountry_);
 }
 
@@ -367,15 +375,15 @@ void CountryDetailDialog::onDeleteClicked() {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Delete request for country: "
-                               << currentCountry_.alpha2_code;
+    BOOST_LOG_SEV(lg(), debug) << "Delete request for country: " << currentCountry_.alpha2_code;
 
     auto reply =
-        MessageBoxHelper::question(this, "Delete Country",
-        QString("Are you sure you want to delete country '%1' (%2)?")
-        .arg(QString::fromStdString(currentCountry_.name))
-        .arg(QString::fromStdString(currentCountry_.alpha2_code)),
-        QMessageBox::Yes | QMessageBox::No);
+        MessageBoxHelper::question(this,
+                                   "Delete Country",
+                                   QString("Are you sure you want to delete country '%1' (%2)?")
+                                       .arg(QString::fromStdString(currentCountry_.name))
+                                       .arg(QString::fromStdString(currentCountry_.alpha2_code)),
+                                   QMessageBox::Yes | QMessageBox::No);
 
     if (reply != QMessageBox::Yes) {
         BOOST_LOG_SEV(lg(), debug) << "Delete cancelled by user";
@@ -384,48 +392,45 @@ void CountryDetailDialog::onDeleteClicked() {
 
     QPointer<CountryDetailDialog> self = this;
     const std::string alpha2_code = currentCountry_.alpha2_code;
-    QFuture<FutureResult> future =
-        QtConcurrent::run([self, alpha2_code]() -> FutureResult {
-            if (!self) return {false, {}};
+    QFuture<FutureResult> future = QtConcurrent::run([self, alpha2_code]() -> FutureResult {
+        if (!self)
+            return {false, {}};
 
-            BOOST_LOG_SEV(lg(), debug) << "Sending delete country request for: "
-                                       << alpha2_code;
+        BOOST_LOG_SEV(lg(), debug) << "Sending delete country request for: " << alpha2_code;
 
-            refdata::messaging::delete_country_request request{{alpha2_code}};
-            auto response_result =
-self->clientManager_->process_authenticated_request(std::move(request));
+        refdata::messaging::delete_country_request request{{alpha2_code}};
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
-            if (!response_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to communicate with server.";
-                return {false, "Failed to communicate with server."};
-            }
+        if (!response_result) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to communicate with server.";
+            return {false, "Failed to communicate with server."};
+        }
 
-            BOOST_LOG_SEV(lg(), debug) << "Received delete country response.";
+        BOOST_LOG_SEV(lg(), debug) << "Received delete country response.";
 
-            return {response_result->success, response_result->message};
-        });
+        return {response_result->success, response_result->message};
+    });
 
     auto* watcher = new QFutureWatcher<FutureResult>(self);
-    connect(watcher, &QFutureWatcher<FutureResult>::finished, self,
-        [self, watcher, alpha2_code]() {
-
+    connect(watcher, &QFutureWatcher<FutureResult>::finished, self, [self, watcher, alpha2_code]() {
         BOOST_LOG_SEV(lg(), debug) << "Received country delete result.";
-        if (!self) return;
+        if (!self)
+            return;
         auto [success, message] = watcher->result();
         watcher->deleteLater();
 
         if (success) {
             BOOST_LOG_SEV(lg(), debug) << "Country deleted successfully.";
             emit self->statusMessage(QString("Successfully deleted country: %1")
-                .arg(QString::fromStdString(alpha2_code)));
+                                         .arg(QString::fromStdString(alpha2_code)));
             emit self->countryDeleted(QString::fromStdString(alpha2_code));
             self->clearDialog();
         } else {
             BOOST_LOG_SEV(lg(), error) << "Country deletion failed: " << message;
-            emit self->errorMessage(QString("Failed to delete country: %1")
-                .arg(QString::fromStdString(message)));
-            MessageBoxHelper::critical(self, "Delete Failed",
-                QString::fromStdString(message));
+            emit self->errorMessage(
+                QString("Failed to delete country: %1").arg(QString::fromStdString(message)));
+            MessageBoxHelper::critical(self, "Delete Failed", QString::fromStdString(message));
         }
     });
 
@@ -442,10 +447,11 @@ void CountryDetailDialog::onFieldChanged() {
 }
 
 void CountryDetailDialog::onRevertClicked() {
-    BOOST_LOG_SEV(lg(), info) << "Revert clicked for historical version "
-                              << historicalVersion_;
+    BOOST_LOG_SEV(lg(), info) << "Revert clicked for historical version " << historicalVersion_;
 
-    auto reply = MessageBoxHelper::question(this, "Revert Country",
+    auto reply = MessageBoxHelper::question(
+        this,
+        "Revert Country",
         QString("Are you sure you want to revert '%1' to version %2?\n\n"
                 "This will create a new version with the data from version %2.")
             .arg(QString::fromStdString(currentCountry_.alpha2_code))
@@ -513,7 +519,7 @@ void CountryDetailDialog::markAsStale() {
     MdiUtils::markParentWindowAsStale(this);
 
     emit statusMessage(QString("Country %1 has been modified on the server")
-        .arg(QString::fromStdString(currentCountry_.alpha2_code)));
+                           .arg(QString::fromStdString(currentCountry_.alpha2_code)));
 }
 
 QString CountryDetailDialog::alpha2Code() const {
@@ -527,21 +533,20 @@ void CountryDetailDialog::onSelectFlagClicked() {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Opening flag selector for: "
-                               << currentCountry_.alpha2_code;
+    BOOST_LOG_SEV(lg(), debug) << "Opening flag selector for: " << currentCountry_.alpha2_code;
 
     // Get current image ID - use pending if set, otherwise from the country
-    QString currentImageId = pendingImageId_.isEmpty()
-        ? (currentCountry_.image_id
-            ? QString::fromStdString(boost::uuids::to_string(*currentCountry_.image_id))
-            : QString())
-        : pendingImageId_;
+    QString currentImageId =
+        pendingImageId_.isEmpty() ?
+            (currentCountry_.image_id ?
+                 QString::fromStdString(boost::uuids::to_string(*currentCountry_.image_id)) :
+                 QString()) :
+            pendingImageId_;
 
     FlagSelectorDialog dialog(imageCache_, currentImageId, this);
     if (dialog.exec() == QDialog::Accepted) {
         QString selectedImageId = dialog.selectedImageId();
-        BOOST_LOG_SEV(lg(), debug) << "Selected flag image: "
-                                   << selectedImageId.toStdString();
+        BOOST_LOG_SEV(lg(), debug) << "Selected flag image: " << selectedImageId.toStdString();
 
         pendingImageId_ = selectedImageId;
         flagChanged_ = true;
@@ -559,7 +564,8 @@ void CountryDetailDialog::onSelectFlagClicked() {
 }
 
 void CountryDetailDialog::onCountryImageSet(const QString& alpha2_code,
-    bool success, const QString& message) {
+                                            bool success,
+                                            const QString& message) {
 
     if (alpha2_code.toStdString() != currentCountry_.alpha2_code) {
         return;
@@ -568,13 +574,12 @@ void CountryDetailDialog::onCountryImageSet(const QString& alpha2_code,
     if (success) {
         BOOST_LOG_SEV(lg(), info) << "Flag updated successfully for: "
                                   << currentCountry_.alpha2_code;
-        emit statusMessage(tr("Flag updated for %1")
-            .arg(QString::fromStdString(currentCountry_.alpha2_code)));
+        emit statusMessage(
+            tr("Flag updated for %1").arg(QString::fromStdString(currentCountry_.alpha2_code)));
         updateFlagDisplay();
     } else {
-        BOOST_LOG_SEV(lg(), error) << "Failed to update flag for "
-                                   << currentCountry_.alpha2_code << ": "
-                                   << message.toStdString();
+        BOOST_LOG_SEV(lg(), error) << "Failed to update flag for " << currentCountry_.alpha2_code
+                                   << ": " << message.toStdString();
         emit errorMessage(tr("Failed to update flag: %1").arg(message));
         MessageBoxHelper::critical(this, "Flag Update Failed", message);
     }
@@ -608,8 +613,7 @@ void CountryDetailDialog::updateFlagDisplay() {
         imageIdToShow = pendingImageId_;
     } else if (currentCountry_.image_id) {
         // Get image_id from the country domain object
-        imageIdToShow = QString::fromStdString(
-            boost::uuids::to_string(*currentCountry_.image_id));
+        imageIdToShow = QString::fromStdString(boost::uuids::to_string(*currentCountry_.image_id));
     }
 
     if (!imageIdToShow.isEmpty()) {
@@ -642,8 +646,8 @@ void CountryDetailDialog::showVersionNavActions(bool visible) {
         lastVersionAction_->setVisible(visible);
 }
 
-void CountryDetailDialog::setHistory(
-    const std::vector<refdata::domain::country>& history, int versionNumber) {
+void CountryDetailDialog::setHistory(const std::vector<refdata::domain::country>& history,
+                                     int versionNumber) {
     BOOST_LOG_SEV(lg(), debug) << "Setting history with " << history.size()
                                << " versions, displaying version " << versionNumber;
 
@@ -688,8 +692,8 @@ void CountryDetailDialog::displayCurrentVersion() {
     while (parent) {
         if (auto* mdiSubWindow = qobject_cast<QMdiSubWindow*>(parent)) {
             mdiSubWindow->setWindowTitle(QString("Country: %1 v%2")
-                .arg(QString::fromStdString(country.alpha2_code))
-                .arg(country.version));
+                                             .arg(QString::fromStdString(country.alpha2_code))
+                                             .arg(country.version));
             break;
         }
         parent = parent->parentWidget();
@@ -698,24 +702,33 @@ void CountryDetailDialog::displayCurrentVersion() {
 
 void CountryDetailDialog::updateVersionNavButtonStates() {
     if (history_.empty()) {
-        if (firstVersionAction_) firstVersionAction_->setEnabled(false);
-        if (prevVersionAction_) prevVersionAction_->setEnabled(false);
-        if (nextVersionAction_) nextVersionAction_->setEnabled(false);
-        if (lastVersionAction_) lastVersionAction_->setEnabled(false);
+        if (firstVersionAction_)
+            firstVersionAction_->setEnabled(false);
+        if (prevVersionAction_)
+            prevVersionAction_->setEnabled(false);
+        if (nextVersionAction_)
+            nextVersionAction_->setEnabled(false);
+        if (lastVersionAction_)
+            lastVersionAction_->setEnabled(false);
         return;
     }
 
     bool atOldest = (currentHistoryIndex_ == static_cast<int>(history_.size()) - 1);
     bool atNewest = (currentHistoryIndex_ == 0);
 
-    if (firstVersionAction_) firstVersionAction_->setEnabled(!atOldest);  // Go to oldest
-    if (prevVersionAction_) prevVersionAction_->setEnabled(!atOldest);   // Go to older
-    if (nextVersionAction_) nextVersionAction_->setEnabled(!atNewest);   // Go to newer
-    if (lastVersionAction_) lastVersionAction_->setEnabled(!atNewest);   // Go to latest
+    if (firstVersionAction_)
+        firstVersionAction_->setEnabled(!atOldest); // Go to oldest
+    if (prevVersionAction_)
+        prevVersionAction_->setEnabled(!atOldest); // Go to older
+    if (nextVersionAction_)
+        nextVersionAction_->setEnabled(!atNewest); // Go to newer
+    if (lastVersionAction_)
+        lastVersionAction_->setEnabled(!atNewest); // Go to latest
 }
 
 void CountryDetailDialog::onFirstVersionClicked() {
-    if (history_.empty()) return;
+    if (history_.empty())
+        return;
 
     BOOST_LOG_SEV(lg(), debug) << "Navigating to first (oldest) version";
     currentHistoryIndex_ = static_cast<int>(history_.size()) - 1;
@@ -723,7 +736,8 @@ void CountryDetailDialog::onFirstVersionClicked() {
 }
 
 void CountryDetailDialog::onPrevVersionClicked() {
-    if (history_.empty()) return;
+    if (history_.empty())
+        return;
 
     if (currentHistoryIndex_ < static_cast<int>(history_.size()) - 1) {
         BOOST_LOG_SEV(lg(), debug) << "Navigating to previous (older) version";
@@ -733,7 +747,8 @@ void CountryDetailDialog::onPrevVersionClicked() {
 }
 
 void CountryDetailDialog::onNextVersionClicked() {
-    if (history_.empty()) return;
+    if (history_.empty())
+        return;
 
     if (currentHistoryIndex_ > 0) {
         BOOST_LOG_SEV(lg(), debug) << "Navigating to next (newer) version";
@@ -743,7 +758,8 @@ void CountryDetailDialog::onNextVersionClicked() {
 }
 
 void CountryDetailDialog::onLastVersionClicked() {
-    if (history_.empty()) return;
+    if (history_.empty())
+        return;
 
     BOOST_LOG_SEV(lg(), debug) << "Navigating to last (latest) version";
     currentHistoryIndex_ = 0;

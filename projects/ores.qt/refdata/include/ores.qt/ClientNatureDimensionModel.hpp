@@ -20,17 +20,17 @@
 #ifndef ORES_QT_CLIENT_NATURE_DIMENSION_MODEL_HPP
 #define ORES_QT_CLIENT_NATURE_DIMENSION_MODEL_HPP
 
-#include <vector>
-#include <QSize>
-#include <QFutureWatcher>
-#include <QAbstractTableModel>
+#include "ores.dq.api/domain/nature_dimension.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/AbstractClientModel.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ColumnMetadata.hpp"
 #include "ores.qt/RecencyPulseManager.hpp"
 #include "ores.qt/RecencyTracker.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.dq.api/domain/nature_dimension.hpp"
+#include <QAbstractTableModel>
+#include <QFutureWatcher>
+#include <QSize>
+#include <vector>
 
 namespace ores::qt {
 
@@ -38,8 +38,7 @@ class ClientNatureDimensionModel final : public AbstractClientModel {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.client_nature_dimension_model";
+    inline static std::string_view logger_name = "ores.qt.client_nature_dimension_model";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -48,15 +47,7 @@ private:
     }
 
 public:
-    enum Column {
-        Code,
-        Name,
-        Description,
-        Version,
-        ModifiedBy,
-        RecordedAt,
-        ColumnCount
-    };
+    enum Column { Code, Name, Description, Version, ModifiedBy, RecordedAt, ColumnCount };
 
     /**
      * @brief Column metadata: header text, style, visibility, and width.
@@ -64,50 +55,37 @@ public:
      * Order must match the Column enum.
      */
     static constexpr std::size_t kColumnCount = std::size_t(ColumnCount);
-    static constexpr std::array<ColumnMetadata, kColumnCount> kColumns = {{
-        {
-            .column = Code,
-            .header = std::string_view("Code"),
-            .style = column_style::text_left,
-            .hidden_by_default = false,
-            .default_width = kColumnWidthAuto
-        },
-        {
-            .column = Name,
-            .header = std::string_view("Name"),
-            .style = column_style::text_left,
-            .hidden_by_default = false,
-            .default_width = kColumnWidthAuto
-        },
-        {
-            .column = Description,
-            .header = std::string_view("Description"),
-            .style = column_style::text_left,
-            .hidden_by_default = false,
-            .default_width = kColumnWidthAuto
-        },
-        {
-            .column = Version,
-            .header = std::string_view("Version"),
-            .style = column_style::mono_center,
-            .hidden_by_default = false,
-            .default_width = 70
-        },
-        {
-            .column = ModifiedBy,
-            .header = std::string_view("Modified By"),
-            .style = column_style::text_left,
-            .hidden_by_default = false,
-            .default_width = kColumnWidthAuto
-        },
-        {
-            .column = RecordedAt,
-            .header = std::string_view("Recorded At"),
-            .style = column_style::mono_left,
-            .hidden_by_default = false,
-            .default_width = kColumnWidthAuto
-        }
-    }};
+    static constexpr std::array<ColumnMetadata, kColumnCount> kColumns = {
+        {{.column = Code,
+          .header = std::string_view("Code"),
+          .style = column_style::text_left,
+          .hidden_by_default = false,
+          .default_width = kColumnWidthAuto},
+         {.column = Name,
+          .header = std::string_view("Name"),
+          .style = column_style::text_left,
+          .hidden_by_default = false,
+          .default_width = kColumnWidthAuto},
+         {.column = Description,
+          .header = std::string_view("Description"),
+          .style = column_style::text_left,
+          .hidden_by_default = false,
+          .default_width = kColumnWidthAuto},
+         {.column = Version,
+          .header = std::string_view("Version"),
+          .style = column_style::mono_center,
+          .hidden_by_default = false,
+          .default_width = 70},
+         {.column = ModifiedBy,
+          .header = std::string_view("Modified By"),
+          .style = column_style::text_left,
+          .hidden_by_default = false,
+          .default_width = kColumnWidthAuto},
+         {.column = RecordedAt,
+          .header = std::string_view("Recorded At"),
+          .style = column_style::mono_left,
+          .hidden_by_default = false,
+          .default_width = kColumnWidthAuto}}};
 
     /**
      * @brief Default window size for the nature dimension list window.
@@ -136,20 +114,18 @@ public:
      * @brief Returns a static QVector of hidden column indices (built once per process).
      */
     static QVector<int> defaultHiddenColumns() {
-        static QVector<int> const result =
-            ::ores::qt::defaultHiddenColumns<kColumnCount>(kColumns);
+        static QVector<int> const result = ::ores::qt::defaultHiddenColumns<kColumnCount>(kColumns);
         return result;
     }
 
-    explicit ClientNatureDimensionModel(ClientManager* clientManager,
-                                         QObject* parent = nullptr);
+    explicit ClientNatureDimensionModel(ClientManager* clientManager, QObject* parent = nullptr);
     ~ClientNatureDimensionModel() override = default;
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-    QVariant headerData(int section, Qt::Orientation orientation,
-        int role = Qt::DisplayRole) const override;
+    QVariant
+    headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
     void refresh();
     const dq::domain::nature_dimension* getDimension(int row) const;
@@ -176,7 +152,7 @@ private:
     QFutureWatcher<FetchResult>* watcher_;
     bool is_fetching_{false};
 
-    using NatureDimensionKeyExtractor = std::string(*)(const dq::domain::nature_dimension&);
+    using NatureDimensionKeyExtractor = std::string (*)(const dq::domain::nature_dimension&);
     RecencyTracker<dq::domain::nature_dimension, NatureDimensionKeyExtractor> recencyTracker_;
     RecencyPulseManager* pulseManager_;
 };

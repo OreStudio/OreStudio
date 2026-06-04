@@ -18,38 +18,43 @@
  *
  */
 #include "ores.qt/ClientDepositConventionModel.hpp"
-
-#include <QtConcurrent>
-#include "ores.refdata.api/messaging/deposit_convention_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
+#include "ores.refdata.api/messaging/deposit_convention_protocol.hpp"
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    std::string deposit_convention_key_extractor(const refdata::domain::deposit_convention& e) {
-        return e.id;
-    }
+std::string deposit_convention_key_extractor(const refdata::domain::deposit_convention& e) {
+    return e.id;
+}
 }
 
-ClientDepositConventionModel::ClientDepositConventionModel(
-    ClientManager* clientManager, QObject* parent)
-    : AbstractClientModel(parent),
-      clientManager_(clientManager),
-      watcher_(new QFutureWatcher<FetchResult>(this)),
-      recencyTracker_(deposit_convention_key_extractor),
-      pulseManager_(new RecencyPulseManager(this)) {
+ClientDepositConventionModel::ClientDepositConventionModel(ClientManager* clientManager,
+                                                           QObject* parent)
+    : AbstractClientModel(parent)
+    , clientManager_(clientManager)
+    , watcher_(new QFutureWatcher<FetchResult>(this))
+    , recencyTracker_(deposit_convention_key_extractor)
+    , pulseManager_(new RecencyPulseManager(this)) {
 
-    connect(watcher_, &QFutureWatcher<FetchResult>::finished,
-            this, &ClientDepositConventionModel::onConventionsLoaded);
+    connect(watcher_,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            &ClientDepositConventionModel::onConventionsLoaded);
 
-    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
-            this, &ClientDepositConventionModel::onPulseStateChanged);
-    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
-            this, &ClientDepositConventionModel::onPulsingComplete);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulse_state_changed,
+            this,
+            &ClientDepositConventionModel::onPulseStateChanged);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulsing_complete,
+            this,
+            &ClientDepositConventionModel::onPulsingComplete);
 }
 
 int ClientDepositConventionModel::rowCount(const QModelIndex& parent) const {
@@ -64,8 +69,7 @@ int ClientDepositConventionModel::columnCount(const QModelIndex& parent) const {
     return ColumnCount;
 }
 
-QVariant ClientDepositConventionModel::data(
-    const QModelIndex& index, int role) const {
+QVariant ClientDepositConventionModel::data(const QModelIndex& index, int role) const {
     if (!index.isValid())
         return {};
 
@@ -77,30 +81,25 @@ QVariant ClientDepositConventionModel::data(
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-        case Id:
-            return QString::fromStdString(dc.id);
-        case IndexBased:
-            return dc.index_based ? tr("true") : tr("false");
-        case Index:
-            return dc.index
-                ? QString::fromStdString(*dc.index)
-                : QString{};
-        case Calendar:
-            return dc.calendar
-                ? QString::fromStdString(*dc.calendar)
-                : QString{};
-        case DayCountFraction:
-            return dc.day_count_fraction
-                ? QString::fromStdString(*dc.day_count_fraction)
-                : QString{};
-        case Version:
-            return static_cast<qlonglong>(dc.version);
-        case ModifiedBy:
-            return QString::fromStdString(dc.modified_by);
-        case RecordedAt:
-            return relative_time_helper::format(dc.recorded_at);
-        default:
-            return {};
+            case Id:
+                return QString::fromStdString(dc.id);
+            case IndexBased:
+                return dc.index_based ? tr("true") : tr("false");
+            case Index:
+                return dc.index ? QString::fromStdString(*dc.index) : QString{};
+            case Calendar:
+                return dc.calendar ? QString::fromStdString(*dc.calendar) : QString{};
+            case DayCountFraction:
+                return dc.day_count_fraction ? QString::fromStdString(*dc.day_count_fraction) :
+                                               QString{};
+            case Version:
+                return static_cast<qlonglong>(dc.version);
+            case ModifiedBy:
+                return QString::fromStdString(dc.modified_by);
+            case RecordedAt:
+                return relative_time_helper::format(dc.recorded_at);
+            default:
+                return {};
         }
     }
 
@@ -111,30 +110,30 @@ QVariant ClientDepositConventionModel::data(
     return {};
 }
 
-QVariant ClientDepositConventionModel::headerData(
-    int section, Qt::Orientation orientation, int role) const {
+QVariant
+ClientDepositConventionModel::headerData(int section, Qt::Orientation orientation, int role) const {
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return {};
 
     switch (section) {
-    case Id:
-        return tr("Id");
-    case IndexBased:
-        return tr("Index Based");
-    case Index:
-        return tr("Index");
-    case Calendar:
-        return tr("Calendar");
-    case DayCountFraction:
-        return tr("DCF");
-    case Version:
-        return tr("Version");
-    case ModifiedBy:
-        return tr("Modified By");
-    case RecordedAt:
-        return tr("Recorded At");
-    default:
-        return {};
+        case Id:
+            return tr("Id");
+        case IndexBased:
+            return tr("Index Based");
+        case Index:
+            return tr("Index");
+        case Calendar:
+            return tr("Calendar");
+        case DayCountFraction:
+            return tr("DCF");
+        case Version:
+            return tr("Version");
+        case ModifiedBy:
+            return tr("Modified By");
+        case RecordedAt:
+            return tr("Recorded At");
+        default:
+            return {};
     }
 }
 
@@ -164,8 +163,7 @@ void ClientDepositConventionModel::refresh() {
     fetch_deposit_conventions(0, page_size_);
 }
 
-void ClientDepositConventionModel::load_page(std::uint32_t offset,
-                                          std::uint32_t limit) {
+void ClientDepositConventionModel::load_page(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "load_page: offset=" << offset << ", limit=" << limit;
 
     if (is_fetching_) {
@@ -189,18 +187,20 @@ void ClientDepositConventionModel::load_page(std::uint32_t offset,
     fetch_deposit_conventions(offset, limit);
 }
 
-void ClientDepositConventionModel::fetch_deposit_conventions(
-    std::uint32_t offset, std::uint32_t limit) {
+void ClientDepositConventionModel::fetch_deposit_conventions(std::uint32_t offset,
+                                                             std::uint32_t limit) {
     is_fetching_ = true;
     QPointer<ClientDepositConventionModel> self = this;
 
-    QFuture<FetchResult> future =
-        QtConcurrent::run([self, offset, limit]() -> FetchResult {
-            return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
-                BOOST_LOG_SEV(lg(), debug) << "Making deposit conventions request with offset="
-                                           << offset << ", limit=" << limit;
+    QFuture<FetchResult> future = QtConcurrent::run([self, offset, limit]() -> FetchResult {
+        return exception_helper::wrap_async_fetch<FetchResult>(
+            [&]() -> FetchResult {
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Making deposit conventions request with offset=" << offset
+                    << ", limit=" << limit;
                 if (!self || !self->clientManager_) {
-                    return {.success = false, .deposit_conventions = {},
+                    return {.success = false,
+                            .deposit_conventions = {},
                             .total_available_count = 0,
                             .error_message = "Model was destroyed",
                             .error_details = {}};
@@ -208,27 +208,30 @@ void ClientDepositConventionModel::fetch_deposit_conventions(
 
                 refdata::messaging::get_deposit_conventions_request request;
 
-                auto result = self->clientManager_->
-                    process_authenticated_request(std::move(request));
+                auto result =
+                    self->clientManager_->process_authenticated_request(std::move(request));
 
                 if (!result) {
                     BOOST_LOG_SEV(lg(), error) << "Failed to send request: " << result.error();
-                    return {.success = false, .deposit_conventions = {},
+                    return {.success = false,
+                            .deposit_conventions = {},
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(result.error()),
                             .error_details = {}};
                 }
 
-                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->deposit_conventions.size()
-                                           << " deposit conventions";
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Fetched " << result->deposit_conventions.size() << " deposit conventions";
                 const std::uint32_t count =
                     static_cast<std::uint32_t>(result->deposit_conventions.size());
                 return {.success = true,
                         .deposit_conventions = std::move(result->deposit_conventions),
                         .total_available_count = count,
-                        .error_message = {}, .error_details = {}};
-            }, "deposit conventions");
-        });
+                        .error_message = {},
+                        .error_details = {}};
+            },
+            "deposit conventions");
+    });
 
     watcher_->setFuture(future);
 }
@@ -239,8 +242,8 @@ void ClientDepositConventionModel::onConventionsLoaded() {
     const auto result = watcher_->result();
 
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to fetch deposit conventions: "
-                                   << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to fetch deposit conventions: " << result.error_message.toStdString();
         emit loadError(result.error_message, result.error_details);
         return;
     }
@@ -287,8 +290,7 @@ ClientDepositConventionModel::getConvention(int row) const {
     return &deposit_conventions_[idx];
 }
 
-QVariant ClientDepositConventionModel::recency_foreground_color(
-    const std::string& code) const {
+QVariant ClientDepositConventionModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {
         return color_constants::stale_indicator;
     }
@@ -297,8 +299,8 @@ QVariant ClientDepositConventionModel::recency_foreground_color(
 
 void ClientDepositConventionModel::onPulseStateChanged(bool /*isOn*/) {
     if (!deposit_conventions_.empty()) {
-        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
-            {Qt::ForegroundRole});
+        emit dataChanged(
+            index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::ForegroundRole});
     }
 }
 

@@ -20,10 +20,10 @@
 #ifndef ORES_QT_TEXT_UTILS_HPP
 #define ORES_QT_TEXT_UTILS_HPP
 
+#include <QString>
 #include <algorithm>
 #include <optional>
 #include <string>
-#include <QString>
 
 namespace ores::qt {
 
@@ -51,12 +51,11 @@ struct TextUtils {
      * available, returns "name (transliteration)" with the transliteration
      * truncated to max_transliterated_length characters.
      */
-    static QString display_name_with_transliteration(
-        const std::string& name,
-        const std::optional<std::string>& transliterated_name) {
+    static QString
+    display_name_with_transliteration(const std::string& name,
+                                      const std::optional<std::string>& transliterated_name) {
         auto qname = QString::fromStdString(name);
-        if (transliterated_name.has_value() &&
-            !transliterated_name->empty() &&
+        if (transliterated_name.has_value() && !transliterated_name->empty() &&
             contains_non_latin(qname)) {
             auto tl = QString::fromStdString(*transliterated_name);
             if (tl.size() > max_transliterated_length)

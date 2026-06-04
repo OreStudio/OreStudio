@@ -20,15 +20,15 @@
 #ifndef ORES_QT_SYSTEM_SETTING_MDI_WINDOW_HPP
 #define ORES_QT_SYSTEM_SETTING_MDI_WINDOW_HPP
 
-#include <QTableView>
-#include <QVBoxLayout>
-#include <QToolBar>
-#include <QSortFilterProxyModel>
-#include <memory>
-#include "ores.qt/EntityListMdiWindow.hpp"
-#include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ClientSystemSettingModel.hpp"
+#include "ores.qt/EntityListMdiWindow.hpp"
+#include <QSortFilterProxyModel>
+#include <QTableView>
+#include <QToolBar>
+#include <QVBoxLayout>
+#include <memory>
 
 namespace ores::qt {
 
@@ -42,8 +42,7 @@ class SystemSettingMdiWindow : public EntityListMdiWindow {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.system_setting_mdi_window";
+    inline static std::string_view logger_name = "ores.qt.system_setting_mdi_window";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -53,11 +52,13 @@ private:
 
 public:
     explicit SystemSettingMdiWindow(ClientManager* clientManager,
-                                  const QString& username,
-                                  QWidget* parent = nullptr);
+                                    const QString& username,
+                                    QWidget* parent = nullptr);
     ~SystemSettingMdiWindow() override;
 
-    ClientSystemSettingModel* systemSettingModel() const { return systemSettingModel_.get(); }
+    ClientSystemSettingModel* systemSettingModel() const {
+        return systemSettingModel_.get();
+    }
 
 signals:
     void statusChanged(const QString& message);

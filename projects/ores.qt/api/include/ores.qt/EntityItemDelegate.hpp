@@ -20,14 +20,14 @@
 #ifndef ORES_QT_ENTITY_ITEM_DELEGATE_HPP
 #define ORES_QT_ENTITY_ITEM_DELEGATE_HPP
 
-#include <functional>
-#include <unordered_map>
-#include <vector>
+#include "ores.qt/ColumnMetadata.hpp"
+#include "ores.qt/export.hpp"
 #include <QColor>
 #include <QFont>
 #include <QStyledItemDelegate>
-#include "ores.qt/ColumnMetadata.hpp"
-#include "ores.qt/export.hpp"
+#include <functional>
+#include <unordered_map>
+#include <vector>
 
 namespace ores::qt {
 
@@ -51,11 +51,11 @@ class ORES_QT_API EntityItemDelegate : public QStyledItemDelegate {
     Q_OBJECT
 
 public:
-    explicit EntityItemDelegate(std::vector<column_style> styles,
-        QObject* parent = nullptr);
+    explicit EntityItemDelegate(std::vector<column_style> styles, QObject* parent = nullptr);
 
-    void paint(QPainter* painter, const QStyleOptionViewItem& option,
-        const QModelIndex& index) const override;
+    void paint(QPainter* painter,
+               const QStyleOptionViewItem& option,
+               const QModelIndex& index) const override;
 
     void set_badge_color_resolver(std::size_t column, badge_color_resolver resolver);
 

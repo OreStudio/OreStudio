@@ -21,10 +21,10 @@
 #ifndef ORES_QT_ABOUT_DIALOG_HPP
 #define ORES_QT_ABOUT_DIALOG_HPP
 
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/LogoLabel.hpp"
 #include <QWidget>
 #include <memory>
-#include "ores.qt/LogoLabel.hpp"
-#include "ores.logging/make_logger.hpp"
 
 namespace Ui {
 
@@ -58,8 +58,7 @@ private:
     }
 
 public:
-    explicit AboutDialog(ClientManager* clientManager = nullptr,
-                         QWidget* parent = nullptr);
+    explicit AboutDialog(ClientManager* clientManager = nullptr, QWidget* parent = nullptr);
     ~AboutDialog() override;
 
 protected:

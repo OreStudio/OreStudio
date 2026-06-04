@@ -18,28 +18,27 @@
  *
  */
 #include "ores.qt/DataDomainDetailDialog.hpp"
-
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include "ui_DataDomainDetailDialog.h"
-#include "ores.qt/IconUtils.hpp"
+#include "ores.dq.api/messaging/data_organization_protocol.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
+#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ProvenanceWidget.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.dq.api/messaging/data_organization_protocol.hpp"
+#include "ui_DataDomainDetailDialog.h"
+#include <QFutureWatcher>
+#include <QMessageBox>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 DataDomainDetailDialog::DataDomainDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent),
-      ui_(new Ui::DataDomainDetailDialog),
-      clientManager_(nullptr),
-      isCreateMode_(true),
-      isReadOnly_(false) {
+    : DetailDialogBase(parent)
+    , ui_(new Ui::DataDomainDetailDialog)
+    , clientManager_(nullptr)
+    , isCreateMode_(true)
+    , isReadOnly_(false) {
 
     ui_->setupUi(this);
     WidgetUtils::setupComboBoxes(this);
@@ -50,19 +49,23 @@ DataDomainDetailDialog::~DataDomainDetailDialog() {
     delete ui_;
 }
 
-QTabWidget* DataDomainDetailDialog::tabWidget() const { return ui_->tabWidget; }
-QWidget* DataDomainDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
-ProvenanceWidget* DataDomainDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
+QTabWidget* DataDomainDetailDialog::tabWidget() const {
+    return ui_->tabWidget;
+}
+QWidget* DataDomainDetailDialog::provenanceTab() const {
+    return ui_->provenanceTab;
+}
+ProvenanceWidget* DataDomainDetailDialog::provenanceWidget() const {
+    return ui_->provenanceWidget;
+}
 
 void DataDomainDetailDialog::setupConnections() {
-    connect(ui_->saveButton, &QPushButton::clicked,
-            this, &DataDomainDetailDialog::onSaveClicked);
-    connect(ui_->deleteButton, &QPushButton::clicked,
-            this, &DataDomainDetailDialog::onDeleteClicked);
+    connect(ui_->saveButton, &QPushButton::clicked, this, &DataDomainDetailDialog::onSaveClicked);
+    connect(
+        ui_->deleteButton, &QPushButton::clicked, this, &DataDomainDetailDialog::onDeleteClicked);
     ui_->closeButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
-    connect(ui_->closeButton, &QPushButton::clicked, this,
-            &DataDomainDetailDialog::onCloseClicked);
+    connect(ui_->closeButton, &QPushButton::clicked, this, &DataDomainDetailDialog::onCloseClicked);
 }
 
 void DataDomainDetailDialog::setCreateMode(bool create) {
@@ -71,15 +74,18 @@ void DataDomainDetailDialog::setCreateMode(bool create) {
     updateUiState();
 }
 
-void DataDomainDetailDialog::setDomain(
-    const dq::domain::data_domain& domain) {
+void DataDomainDetailDialog::setDomain(const dq::domain::data_domain& domain) {
     domain_ = domain;
 
     ui_->nameEdit->setText(QString::fromStdString(domain.name));
     ui_->descriptionEdit->setPlainText(QString::fromStdString(domain.description));
 
-    populateProvenance(domain_.version, domain_.modified_by, domain_.performed_by,
-                       domain_.recorded_at, "", domain_.change_commentary);
+    populateProvenance(domain_.version,
+                       domain_.modified_by,
+                       domain_.performed_by,
+                       domain_.recorded_at,
+                       "",
+                       domain_.change_commentary);
 
     updateUiState();
 }
@@ -102,8 +108,7 @@ void DataDomainDetailDialog::onSaveClicked() {
     QString description = ui_->descriptionEdit->toPlainText().trimmed();
 
     if (name.isEmpty()) {
-        MessageBoxHelper::warning(this, tr("Validation Error"),
-                                  tr("Name is required."));
+        MessageBoxHelper::warning(this, tr("Validation Error"), tr("Name is required."));
         return;
     }
 
@@ -114,26 +119,31 @@ void DataDomainDetailDialog::onSaveClicked() {
     domain.version = isCreateMode_ ? 0 : domain_.version;
 
     {
-        const auto crOpType = isCreateMode_
-            ? ChangeReasonDialog::OperationType::Create
-            : ChangeReasonDialog::OperationType::Amend;
-        const auto crSel = promptChangeReason(crOpType, true,
-            isCreateMode_ ? "system" : "common");
-        if (!crSel) return;
+        const auto crOpType = isCreateMode_ ? ChangeReasonDialog::OperationType::Create :
+                                              ChangeReasonDialog::OperationType::Amend;
+        const auto crSel = promptChangeReason(crOpType, true, isCreateMode_ ? "system" : "common");
+        if (!crSel)
+            return;
         domain.change_commentary = crSel->commentary;
     }
 
     QPointer<DataDomainDetailDialog> self = this;
 
-    struct SaveResult { bool success; std::string message; };
+    struct SaveResult {
+        bool success;
+        std::string message;
+    };
 
     auto task = [self, domain]() -> SaveResult {
-        if (!self || !self->clientManager_) return {false, "Dialog closed"};
+        if (!self || !self->clientManager_)
+            return {false, "Dialog closed"};
 
         dq::messaging::save_data_domain_request request;
         request.data = domain;
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
-        if (!response_result) return {false, "Failed to communicate with server"};
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
+        if (!response_result)
+            return {false, "Failed to communicate with server"};
 
         return {response_result->success, response_result->message};
     };
@@ -143,7 +153,8 @@ void DataDomainDetailDialog::onSaveClicked() {
         auto result = watcher->result();
         watcher->deleteLater();
 
-        if (!self) return;
+        if (!self)
+            return;
 
         if (result.success) {
             emit self->domainSaved(name);
@@ -158,28 +169,35 @@ void DataDomainDetailDialog::onSaveClicked() {
 }
 
 void DataDomainDetailDialog::onDeleteClicked() {
-    auto reply = MessageBoxHelper::question(this, tr("Confirm Delete"),
-        tr("Delete data domain '%1'?").arg(ui_->nameEdit->text()),
-        QMessageBox::Yes | QMessageBox::No);
+    auto reply =
+        MessageBoxHelper::question(this,
+                                   tr("Confirm Delete"),
+                                   tr("Delete data domain '%1'?").arg(ui_->nameEdit->text()),
+                                   QMessageBox::Yes | QMessageBox::No);
 
-    if (reply != QMessageBox::Yes) return;
+    if (reply != QMessageBox::Yes)
+        return;
 
     {
-        const auto crSel = promptChangeReason(
-            ChangeReasonDialog::OperationType::Delete, true, "common");
-        if (!crSel) return;
+        const auto crSel =
+            promptChangeReason(ChangeReasonDialog::OperationType::Delete, true, "common");
+        if (!crSel)
+            return;
     }
 
     QPointer<DataDomainDetailDialog> self = this;
     QString name = ui_->nameEdit->text();
 
     auto task = [self, name]() -> bool {
-        if (!self || !self->clientManager_) return false;
+        if (!self || !self->clientManager_)
+            return false;
 
         dq::messaging::delete_data_domain_request request;
         request.names.push_back(name.toStdString());
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
-        if (!response_result) return false;
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
+        if (!response_result)
+            return false;
 
         return response_result->success;
     };
@@ -189,7 +207,8 @@ void DataDomainDetailDialog::onDeleteClicked() {
         bool success = watcher->result();
         watcher->deleteLater();
 
-        if (!self) return;
+        if (!self)
+            return;
 
         if (success) {
             emit self->statusMessage(tr("Data domain deleted successfully"));

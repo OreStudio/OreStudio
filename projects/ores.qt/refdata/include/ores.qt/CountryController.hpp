@@ -20,11 +20,11 @@
 #ifndef ORES_QT_COUNTRY_CONTROLLER_HPP
 #define ORES_QT_COUNTRY_CONTROLLER_HPP
 
-#include <QPointer>
-#include <QDateTime>
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/EntityController.hpp"
 #include "ores.refdata.api/domain/country.hpp"
-#include "ores.logging/make_logger.hpp"
+#include <QDateTime>
+#include <QPointer>
 
 namespace ores::qt {
 
@@ -39,8 +39,7 @@ class CountryController : public EntityController {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.country_controller";
+    inline static std::string_view logger_name = "ores.qt.country_controller";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -49,14 +48,13 @@ private:
     }
 
 public:
-    explicit CountryController(
-        QMainWindow* mainWindow,
-        QMdiArea* mdiArea,
-        ClientManager* clientManager,
-        ImageCache* imageCache,
-        ChangeReasonCache* changeReasonCache,
-        const QString& username,
-        QObject* parent = nullptr);
+    explicit CountryController(QMainWindow* mainWindow,
+                               QMdiArea* mdiArea,
+                               ClientManager* clientManager,
+                               ImageCache* imageCache,
+                               ChangeReasonCache* changeReasonCache,
+                               const QString& username,
+                               QObject* parent = nullptr);
 
     ~CountryController() override;
 
@@ -70,8 +68,10 @@ private slots:
     void onShowCountryHistory(const QString& alpha2Code);
     void onOpenCountryVersion(const refdata::domain::country& country, int versionNumber);
     void onRevertCountry(const refdata::domain::country& country);
-    void onNotificationReceived(const QString& eventType, const QDateTime& timestamp,
-                                const QStringList& entityIds, const QString& tenantId);
+    void onNotificationReceived(const QString& eventType,
+                                const QDateTime& timestamp,
+                                const QStringList& entityIds,
+                                const QString& tenantId);
 
 private:
     ImageCache* imageCache_;

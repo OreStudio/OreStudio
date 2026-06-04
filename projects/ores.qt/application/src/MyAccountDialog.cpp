@@ -18,59 +18,61 @@
  *
  */
 #include "ores.qt/MyAccountDialog.hpp"
-#include "ores.qt/PasswordMatchIndicator.hpp"
-
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QFormLayout>
-#include <QGroupBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
+#include "ores.iam.api/domain/session.hpp"
+#include "ores.iam.api/messaging/account_protocol.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.iam.api/messaging/account_protocol.hpp"
-#include "ores.iam.api/domain/session.hpp"
+#include "ores.qt/PasswordMatchIndicator.hpp"
+#include <QFormLayout>
+#include <QFutureWatcher>
+#include <QGroupBox>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 MyAccountDialog::MyAccountDialog(ClientManager* clientManager, QWidget* parent)
-    : QWidget(parent),
-      toolbar_(new QToolBar(this)),
-      tabWidget_(new QTabWidget(this)),
-      username_edit_(new QLineEdit(this)),
-      email_edit_(new QLineEdit(this)),
-      save_email_button_(new QPushButton("Save", this)),
-      email_status_label_(new QLabel(this)),
-      active_sessions_label_(new QLabel(this)),
-      current_session_label_(new QLabel(this)),
-      view_sessions_button_(new QPushButton("View Session History", this)),
-      new_password_edit_(new QLineEdit(this)),
-      confirm_password_edit_(new QLineEdit(this)),
-      change_password_button_(new QPushButton("Change Password", this)),
-      password_status_label_(new QLabel(this)),
-      clientManager_(clientManager) {
+    : QWidget(parent)
+    , toolbar_(new QToolBar(this))
+    , tabWidget_(new QTabWidget(this))
+    , username_edit_(new QLineEdit(this))
+    , email_edit_(new QLineEdit(this))
+    , save_email_button_(new QPushButton("Save", this))
+    , email_status_label_(new QLabel(this))
+    , active_sessions_label_(new QLabel(this))
+    , current_session_label_(new QLabel(this))
+    , view_sessions_button_(new QPushButton("View Session History", this))
+    , new_password_edit_(new QLineEdit(this))
+    , confirm_password_edit_(new QLineEdit(this))
+    , change_password_button_(new QPushButton("Change Password", this))
+    , password_status_label_(new QLabel(this))
+    , clientManager_(clientManager) {
 
     setupUI();
     loadAccountInfo();
     loadSessionInfo();
 
     // Connect signals
-    connect(change_password_button_, &QPushButton::clicked,
-            this, &MyAccountDialog::onChangePasswordClicked);
-    connect(save_email_button_, &QPushButton::clicked,
-            this, &MyAccountDialog::onSaveEmailClicked);
-    connect(view_sessions_button_, &QPushButton::clicked,
-            this, &MyAccountDialog::onViewSessionsClicked);
-    connect(this, &MyAccountDialog::changePasswordCompleted,
-            this, &MyAccountDialog::onChangePasswordResult);
-    connect(this, &MyAccountDialog::saveEmailCompleted,
-            this, &MyAccountDialog::onSaveEmailResult);
+    connect(change_password_button_,
+            &QPushButton::clicked,
+            this,
+            &MyAccountDialog::onChangePasswordClicked);
+    connect(save_email_button_, &QPushButton::clicked, this, &MyAccountDialog::onSaveEmailClicked);
+    connect(view_sessions_button_,
+            &QPushButton::clicked,
+            this,
+            &MyAccountDialog::onViewSessionsClicked);
+    connect(this,
+            &MyAccountDialog::changePasswordCompleted,
+            this,
+            &MyAccountDialog::onChangePasswordResult);
+    connect(this, &MyAccountDialog::saveEmailCompleted, this, &MyAccountDialog::onSaveEmailResult);
 }
 
-MyAccountDialog::~MyAccountDialog() {
-}
+MyAccountDialog::~MyAccountDialog() {}
 
 void MyAccountDialog::setupUI() {
     BOOST_LOG_SEV(lg(), debug) << "Setting up UI.";
@@ -83,8 +85,7 @@ void MyAccountDialog::setupUI() {
     toolbar_->setIconSize(QSize(16, 16));
 
     auto* saveAction = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Save, IconUtils::DefaultIconColor),
-        tr("Save Email"));
+        IconUtils::createRecoloredIcon(Icon::Save, IconUtils::DefaultIconColor), tr("Save Email"));
     connect(saveAction, &QAction::triggered, this, &MyAccountDialog::onSaveEmailClicked);
 
     // --- General tab ---
@@ -188,8 +189,7 @@ void MyAccountDialog::setupUI() {
     main_layout->addWidget(tabWidget_);
 
     // Connect password fields for match indicator
-    PasswordMatchIndicator::connectFields(
-        new_password_edit_, confirm_password_edit_);
+    PasswordMatchIndicator::connectFields(new_password_edit_, confirm_password_edit_);
 }
 
 void MyAccountDialog::loadAccountInfo() {
@@ -234,16 +234,16 @@ bool MyAccountDialog::validatePasswordInput() {
     }
 
     if (new_password != confirm_password) {
-        MessageBoxHelper::warning(this, "Password Mismatch",
-            "The passwords do not match. Please try again.");
+        MessageBoxHelper::warning(
+            this, "Password Mismatch", "The passwords do not match. Please try again.");
         confirm_password_edit_->clear();
         confirm_password_edit_->setFocus();
         return false;
     }
 
     if (new_password.length() < 8) {
-        MessageBoxHelper::warning(this, "Weak Password",
-            "Password must be at least 8 characters long.");
+        MessageBoxHelper::warning(
+            this, "Weak Password", "Password must be at least 8 characters long.");
         new_password_edit_->setFocus();
         return false;
     }
@@ -258,9 +258,8 @@ void MyAccountDialog::onChangePasswordClicked() {
     }
 
     const auto& username = clientManager_->currentUsername();
-    BOOST_LOG_SEV(lg(), info)
-        << "Change password: user '" << username
-        << "' initiating voluntary password change via My Account";
+    BOOST_LOG_SEV(lg(), info) << "Change password: user '" << username
+                              << "' initiating voluntary password change via My Account";
 
     if (!validatePasswordInput()) {
         BOOST_LOG_SEV(lg(), debug)
@@ -275,22 +274,19 @@ void MyAccountDialog::onChangePasswordClicked() {
     password_status_label_->setStyleSheet("QLabel { color: #666; font-style: italic; }");
 
     auto* watcher = new QFutureWatcher<std::pair<bool, QString>>(this);
-    connect(watcher, &QFutureWatcher<std::pair<bool, QString>>::finished,
-            [this, watcher]() {
+    connect(watcher, &QFutureWatcher<std::pair<bool, QString>>::finished, [this, watcher]() {
         const auto [success, error_msg] = watcher->result();
         watcher->deleteLater();
         emit changePasswordCompleted(success, error_msg);
     });
 
-    QFuture<std::pair<bool, QString>> future = QtConcurrent::run(
-        [this, new_password]() -> std::pair<bool, QString> {
+    QFuture<std::pair<bool, QString>> future =
+        QtConcurrent::run([this, new_password]() -> std::pair<bool, QString> {
             try {
                 iam::messaging::change_password_request_typed request{
-                    .new_password = new_password.toStdString()
-                };
+                    .new_password = new_password.toStdString()};
 
-                auto result = clientManager_->process_authenticated_request(
-                    std::move(request));
+                auto result = clientManager_->process_authenticated_request(std::move(request));
 
                 if (!result) {
                     return {false, QString::fromStdString(result.error())};
@@ -304,8 +300,7 @@ void MyAccountDialog::onChangePasswordClicked() {
             } catch (const std::exception& e) {
                 return {false, QString::fromStdString(e.what())};
             }
-        }
-    );
+        });
 
     watcher->setFuture(future);
 }
@@ -316,26 +311,26 @@ void MyAccountDialog::onChangePasswordResult(bool success, const QString& error_
     enablePasswordForm(true);
 
     if (success) {
-        BOOST_LOG_SEV(lg(), info)
-            << "Change password: user '" << username
-            << "' completed voluntary password change via My Account";
+        BOOST_LOG_SEV(lg(), info) << "Change password: user '" << username
+                                  << "' completed voluntary password change via My Account";
         password_status_label_->setText("Password changed successfully!");
         password_status_label_->setStyleSheet("QLabel { color: #0a0; }");
 
         new_password_edit_->clear();
         confirm_password_edit_->clear();
 
-        MessageBoxHelper::information(this, "Success",
-            "Your password has been changed successfully.");
+        MessageBoxHelper::information(
+            this, "Success", "Your password has been changed successfully.");
     } else {
-        BOOST_LOG_SEV(lg(), warn)
-            << "Change password failed: user '" << username
-            << "' voluntary password change failed - " << error_message.toStdString();
+        BOOST_LOG_SEV(lg(), warn) << "Change password failed: user '" << username
+                                  << "' voluntary password change failed - "
+                                  << error_message.toStdString();
 
         password_status_label_->setText("");
 
-        MessageBoxHelper::critical(this, "Password Change Failed",
-            QString("Failed to change password: %1").arg(error_message));
+        MessageBoxHelper::critical(this,
+                                   "Password Change Failed",
+                                   QString("Failed to change password: %1").arg(error_message));
     }
 }
 
@@ -348,9 +343,8 @@ void MyAccountDialog::onSaveEmailClicked() {
     const auto& username = clientManager_->currentUsername();
     const auto new_email = email_edit_->text().trimmed();
 
-    BOOST_LOG_SEV(lg(), info)
-        << "Update email: user '" << username
-        << "' initiating email update via My Account";
+    BOOST_LOG_SEV(lg(), info) << "Update email: user '" << username
+                              << "' initiating email update via My Account";
 
     if (new_email.isEmpty()) {
         MessageBoxHelper::warning(this, "Invalid Input", "Please enter an email address.");
@@ -370,22 +364,18 @@ void MyAccountDialog::onSaveEmailClicked() {
     email_status_label_->setStyleSheet("QLabel { color: #666; font-style: italic; }");
 
     auto* watcher = new QFutureWatcher<std::pair<bool, QString>>(this);
-    connect(watcher, &QFutureWatcher<std::pair<bool, QString>>::finished,
-            [this, watcher]() {
+    connect(watcher, &QFutureWatcher<std::pair<bool, QString>>::finished, [this, watcher]() {
         const auto [success, error_msg] = watcher->result();
         watcher->deleteLater();
         emit saveEmailCompleted(success, error_msg);
     });
 
-    QFuture<std::pair<bool, QString>> future = QtConcurrent::run(
-        [this, new_email]() -> std::pair<bool, QString> {
+    QFuture<std::pair<bool, QString>> future =
+        QtConcurrent::run([this, new_email]() -> std::pair<bool, QString> {
             try {
-                iam::messaging::update_my_email_request request{
-                    .email = new_email.toStdString()
-                };
+                iam::messaging::update_my_email_request request{.email = new_email.toStdString()};
 
-                auto result = clientManager_->process_authenticated_request(
-                    std::move(request));
+                auto result = clientManager_->process_authenticated_request(std::move(request));
 
                 if (!result) {
                     return {false, QString::fromStdString(result.error())};
@@ -401,8 +391,7 @@ void MyAccountDialog::onSaveEmailClicked() {
             } catch (const std::exception& e) {
                 return {false, QString::fromStdString(e.what())};
             }
-        }
-    );
+        });
 
     watcher->setFuture(future);
 }
@@ -414,20 +403,18 @@ void MyAccountDialog::onSaveEmailResult(bool success, const QString& error_messa
     save_email_button_->setEnabled(true);
 
     if (success) {
-        BOOST_LOG_SEV(lg(), info)
-            << "Update email: user '" << username
-            << "' successfully updated their email via My Account";
+        BOOST_LOG_SEV(lg(), info) << "Update email: user '" << username
+                                  << "' successfully updated their email via My Account";
         email_status_label_->setText("Email saved successfully!");
         email_status_label_->setStyleSheet("QLabel { color: #0a0; }");
     } else {
-        BOOST_LOG_SEV(lg(), warn)
-            << "Update email failed: user '" << username
-            << "' email update failed - " << error_message.toStdString();
+        BOOST_LOG_SEV(lg(), warn) << "Update email failed: user '" << username
+                                  << "' email update failed - " << error_message.toStdString();
 
         email_status_label_->setText("");
 
-        MessageBoxHelper::critical(this, "Email Update Failed",
-            QString("Failed to update email: %1").arg(error_message));
+        MessageBoxHelper::critical(
+            this, "Email Update Failed", QString("Failed to update email: %1").arg(error_message));
     }
 }
 
@@ -441,34 +428,37 @@ void MyAccountDialog::loadSessionInfo() {
     }
 
     auto* watcher = new QFutureWatcher<std::optional<std::vector<iam::domain::session>>>(this);
-    connect(watcher, &QFutureWatcher<std::optional<std::vector<iam::domain::session>>>::finished,
+    connect(watcher,
+            &QFutureWatcher<std::optional<std::vector<iam::domain::session>>>::finished,
             [this, watcher]() {
-        auto result = watcher->result();
-        watcher->deleteLater();
+                auto result = watcher->result();
+                watcher->deleteLater();
 
-        if (result) {
-            const auto& sessions = *result;
-            active_sessions_label_->setText(QString::number(sessions.size()));
+                if (result) {
+                    const auto& sessions = *result;
+                    active_sessions_label_->setText(QString::number(sessions.size()));
 
-            if (!sessions.empty()) {
-                const auto& current = sessions.front();
-                QString info = QString("Current: %1 (%2)")
-                    .arg(QString::fromStdString(current.client_identifier.empty()
-                        ? "Unknown Client" : current.client_identifier))
-                    .arg(QString::fromStdString(current.client_ip.to_string()));
-                current_session_label_->setText(info);
-            }
-        } else {
-            active_sessions_label_->setText("Error loading");
-            active_sessions_label_->setStyleSheet("QLabel { color: #f00; font-weight: bold; }");
-        }
-    });
+                    if (!sessions.empty()) {
+                        const auto& current = sessions.front();
+                        QString info =
+                            QString("Current: %1 (%2)")
+                                .arg(QString::fromStdString(current.client_identifier.empty() ?
+                                                                "Unknown Client" :
+                                                                current.client_identifier))
+                                .arg(QString::fromStdString(current.client_ip.to_string()));
+                        current_session_label_->setText(info);
+                    }
+                } else {
+                    active_sessions_label_->setText("Error loading");
+                    active_sessions_label_->setStyleSheet(
+                        "QLabel { color: #f00; font-weight: bold; }");
+                }
+            });
 
-    QFuture<std::optional<std::vector<iam::domain::session>>> future = QtConcurrent::run(
-        [this]() -> std::optional<std::vector<iam::domain::session>> {
+    QFuture<std::optional<std::vector<iam::domain::session>>> future =
+        QtConcurrent::run([this]() -> std::optional<std::vector<iam::domain::session>> {
             return clientManager_->getActiveSessions();
-        }
-    );
+        });
 
     watcher->setFuture(future);
 }

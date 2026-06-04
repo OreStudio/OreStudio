@@ -21,18 +21,17 @@
 #include "ores.qt/ClientSystemSettingModel.hpp"
 #include "ores.qt/DelegatePaintUtils.hpp"
 #include "ores.qt/FontUtils.hpp"
-
-#include <QPainter>
 #include <QApplication>
+#include <QPainter>
 #include <QStyleOptionViewItem>
 
 namespace ores::qt {
 
 namespace {
 
-const QColor enabled_badge_bg(34, 197, 94);       // Green
+const QColor enabled_badge_bg(34, 197, 94); // Green
 const QColor enabled_badge_text(255, 255, 255);
-const QColor disabled_badge_bg(107, 114, 128);    // Gray
+const QColor disabled_badge_bg(107, 114, 128); // Gray
 const QColor disabled_badge_text(255, 255, 255);
 
 }
@@ -46,8 +45,9 @@ SystemSettingItemDelegate::SystemSettingItemDelegate(QObject* parent)
     badgeFont_.setBold(true);
 }
 
-void SystemSettingItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option,
-                                    const QModelIndex& index) const {
+void SystemSettingItemDelegate::paint(QPainter* painter,
+                                      const QStyleOptionViewItem& option,
+                                      const QModelIndex& index) const {
     QStyleOptionViewItem opt = option;
     initStyleOption(&opt, index);
 
@@ -70,8 +70,8 @@ void SystemSettingItemDelegate::paint(QPainter* painter, const QStyleOptionViewI
             badgeText = tr("No");
         }
 
-        DelegatePaintUtils::draw_centered_badge(painter, opt.rect,
-            badgeText, bgColor, textColor, badgeFont_);
+        DelegatePaintUtils::draw_centered_badge(
+            painter, opt.rect, badgeText, bgColor, textColor, badgeFont_);
         return;
     }
 
@@ -97,7 +97,7 @@ void SystemSettingItemDelegate::paint(QPainter* painter, const QStyleOptionViewI
 }
 
 QSize SystemSettingItemDelegate::sizeHint(const QStyleOptionViewItem& option,
-                                        const QModelIndex& index) const {
+                                          const QModelIndex& index) const {
     QSize size = QStyledItemDelegate::sizeHint(option, index);
 
     if (index.column() == ClientSystemSettingModel::Enabled) {

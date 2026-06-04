@@ -18,51 +18,49 @@
  *
  */
 #include "ores.qt/EntityDetailDialog.hpp"
-
-#include <algorithm>
-#include <unordered_set>
+#include "ores.qt/ChangeReasonDialog.hpp"
+#include "ores.qt/FlagIconHelper.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/LookupFetcher.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/WidgetUtils.hpp"
+#include "ores.refdata.api/messaging/country_protocol.hpp"
+#include "ores.refdata.api/messaging/party_id_scheme_protocol.hpp"
+#include "ui_EntityDetailDialog.h"
 #include <QAction>
 #include <QComboBox>
 #include <QDialog>
 #include <QDialogButtonBox>
 #include <QFormLayout>
+#include <QFutureWatcher>
 #include <QHeaderView>
 #include <QLabel>
 #include <QLineEdit>
 #include <QMessageBox>
 #include <QVBoxLayout>
 #include <QtConcurrent>
-#include <QFutureWatcher>
-#include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
-#include "ui_EntityDetailDialog.h"
-#include "ores.qt/FlagIconHelper.hpp"
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.refdata.api/messaging/party_id_scheme_protocol.hpp"
-#include "ores.refdata.api/messaging/country_protocol.hpp"
-#include "ores.qt/LookupFetcher.hpp"
-#include "ores.qt/ChangeReasonDialog.hpp"
-#include "ores.qt/WidgetUtils.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
+#include <unordered_set>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-EntityDetailDialog::EntityDetailDialog(
-    std::shared_ptr<entity_detail_operations> ops,
-    QWidget* parent)
-    : DetailDialogBase(parent),
-      ops_(std::move(ops)),
-      ui_(new Ui::EntityDetailDialog),
-      clientManager_(nullptr),
-      imageCache_(nullptr),
-      identifierTable_(nullptr),
-      identifierToolbar_(nullptr),
-      contactTable_(nullptr),
-      contactToolbar_(nullptr),
-      hierarchyTree_(nullptr) {
+EntityDetailDialog::EntityDetailDialog(std::shared_ptr<entity_detail_operations> ops,
+                                       QWidget* parent)
+    : DetailDialogBase(parent)
+    , ops_(std::move(ops))
+    , ui_(new Ui::EntityDetailDialog)
+    , clientManager_(nullptr)
+    , imageCache_(nullptr)
+    , identifierTable_(nullptr)
+    , identifierToolbar_(nullptr)
+    , contactTable_(nullptr)
+    , contactToolbar_(nullptr)
+    , hierarchyTree_(nullptr) {
 
     ui_->setupUi(this);
     WidgetUtils::setupComboBoxes(this);
@@ -77,9 +75,15 @@ EntityDetailDialog::~EntityDetailDialog() {
     delete ui_;
 }
 
-QTabWidget* EntityDetailDialog::tabWidget() const { return ui_->tabWidget; }
-QWidget* EntityDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
-ProvenanceWidget* EntityDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
+QTabWidget* EntityDetailDialog::tabWidget() const {
+    return ui_->tabWidget;
+}
+QWidget* EntityDetailDialog::provenanceTab() const {
+    return ui_->provenanceTab;
+}
+ProvenanceWidget* EntityDetailDialog::provenanceWidget() const {
+    return ui_->provenanceWidget;
+}
 
 void EntityDetailDialog::setupUi() {
     ui_->saveButton->setIcon(
@@ -94,12 +98,9 @@ void EntityDetailDialog::setupUi() {
 
     // Show/hide party_category based on entity type
     if (ops_->has_party_category()) {
-        ui_->partyCategoryCombo->addItem(
-            QString::fromUtf8(party_categories::operational));
-        ui_->partyCategoryCombo->addItem(
-            QString::fromUtf8(party_categories::system));
-        ui_->partyCategoryCombo->addItem(
-            QString::fromUtf8(party_categories::internal));
+        ui_->partyCategoryCombo->addItem(QString::fromUtf8(party_categories::operational));
+        ui_->partyCategoryCombo->addItem(QString::fromUtf8(party_categories::system));
+        ui_->partyCategoryCombo->addItem(QString::fromUtf8(party_categories::internal));
     } else {
         ui_->label_partyCategoryEdit->setVisible(false);
         ui_->partyCategoryCombo->setVisible(false);
@@ -117,16 +118,13 @@ void EntityDetailDialog::setupIdentifierTable() {
     identifierToolbar_->setIconSize(QSize(16, 16));
 
     auto* addAction = identifierToolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor),
-        "Add Identifier");
+        IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor), "Add Identifier");
     auto* deleteAction = identifierToolbar_->addAction(
         IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor),
         "Delete Identifier");
 
-    connect(addAction, &QAction::triggered, this,
-            &EntityDetailDialog::onAddIdentifier);
-    connect(deleteAction, &QAction::triggered, this,
-            &EntityDetailDialog::onDeleteIdentifier);
+    connect(addAction, &QAction::triggered, this, &EntityDetailDialog::onAddIdentifier);
+    connect(deleteAction, &QAction::triggered, this, &EntityDetailDialog::onDeleteIdentifier);
 
     identifierTable_ = new QTableWidget(this);
     identifierTable_->setColumnCount(3);
@@ -146,21 +144,17 @@ void EntityDetailDialog::setupContactTable() {
     contactToolbar_->setIconSize(QSize(16, 16));
 
     auto* addAction = contactToolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor),
-        "Add Contact");
+        IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor), "Add Contact");
     auto* deleteAction = contactToolbar_->addAction(
         IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor),
         "Delete Contact");
 
-    connect(addAction, &QAction::triggered, this,
-            &EntityDetailDialog::onAddContact);
-    connect(deleteAction, &QAction::triggered, this,
-            &EntityDetailDialog::onDeleteContact);
+    connect(addAction, &QAction::triggered, this, &EntityDetailDialog::onAddContact);
+    connect(deleteAction, &QAction::triggered, this, &EntityDetailDialog::onDeleteContact);
 
     contactTable_ = new QTableWidget(this);
     contactTable_->setColumnCount(6);
-    contactTable_->setHorizontalHeaderLabels(
-        {"", "Country", "Type", "Street", "City", "Phone"});
+    contactTable_->setHorizontalHeaderLabels({"", "Country", "Type", "Street", "City", "Phone"});
     contactTable_->setColumnWidth(0, 28);
     contactTable_->horizontalHeader()->setStretchLastSection(true);
     contactTable_->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -171,7 +165,9 @@ void EntityDetailDialog::setupContactTable() {
     ui_->contactsLayout->addWidget(contactToolbar_);
     ui_->contactsLayout->addWidget(contactTable_);
 
-    connect(contactTable_, &QTableWidget::cellDoubleClicked, this,
+    connect(contactTable_,
+            &QTableWidget::cellDoubleClicked,
+            this,
             &EntityDetailDialog::onContactDoubleClicked);
 }
 
@@ -185,30 +181,37 @@ void EntityDetailDialog::setupHierarchyTree() {
 }
 
 void EntityDetailDialog::setupConnections() {
-    connect(ui_->saveButton, &QPushButton::clicked, this,
-            &EntityDetailDialog::onSaveClicked);
-    connect(ui_->deleteButton, &QPushButton::clicked, this,
-            &EntityDetailDialog::onDeleteClicked);
-    connect(ui_->closeButton, &QPushButton::clicked, this,
-            &EntityDetailDialog::onCloseClicked);
+    connect(ui_->saveButton, &QPushButton::clicked, this, &EntityDetailDialog::onSaveClicked);
+    connect(ui_->deleteButton, &QPushButton::clicked, this, &EntityDetailDialog::onDeleteClicked);
+    connect(ui_->closeButton, &QPushButton::clicked, this, &EntityDetailDialog::onCloseClicked);
 
-    connect(ui_->codeEdit, &QLineEdit::textChanged, this,
-            &EntityDetailDialog::onCodeChanged);
-    connect(ui_->nameEdit, &QLineEdit::textChanged, this,
+    connect(ui_->codeEdit, &QLineEdit::textChanged, this, &EntityDetailDialog::onCodeChanged);
+    connect(ui_->nameEdit, &QLineEdit::textChanged, this, &EntityDetailDialog::onFieldChanged);
+    connect(ui_->transliteratedNameEdit,
+            &QLineEdit::textChanged,
+            this,
             &EntityDetailDialog::onFieldChanged);
-    connect(ui_->transliteratedNameEdit, &QLineEdit::textChanged, this,
+    connect(ui_->partyTypeCombo,
+            &QComboBox::currentTextChanged,
+            this,
             &EntityDetailDialog::onFieldChanged);
-    connect(ui_->partyTypeCombo, &QComboBox::currentTextChanged, this,
+    connect(ui_->parentEntityCombo,
+            &QComboBox::currentTextChanged,
+            this,
             &EntityDetailDialog::onFieldChanged);
-    connect(ui_->parentEntityCombo, &QComboBox::currentTextChanged, this,
+    connect(ui_->statusCombo,
+            &QComboBox::currentTextChanged,
+            this,
             &EntityDetailDialog::onFieldChanged);
-    connect(ui_->statusCombo, &QComboBox::currentTextChanged, this,
-            &EntityDetailDialog::onFieldChanged);
-    connect(ui_->businessCenterCombo, &QComboBox::currentTextChanged, this,
+    connect(ui_->businessCenterCombo,
+            &QComboBox::currentTextChanged,
+            this,
             &EntityDetailDialog::onFieldChanged);
 
     if (ops_->has_party_category()) {
-        connect(ui_->partyCategoryCombo, &QComboBox::currentTextChanged, this,
+        connect(ui_->partyCategoryCombo,
+                &QComboBox::currentTextChanged,
+                this,
                 &EntityDetailDialog::onFieldChanged);
     }
 }
@@ -220,8 +223,7 @@ void EntityDetailDialog::setClientManager(ClientManager* clientManager) {
 
 void EntityDetailDialog::setImageCache(ImageCache* imageCache) {
     imageCache_ = imageCache;
-    setup_flag_combo(this, ui_->businessCenterCombo, imageCache_,
-                     FlagSource::BusinessCentre);
+    setup_flag_combo(this, ui_->businessCenterCombo, imageCache_, FlagSource::BusinessCentre);
 }
 
 void EntityDetailDialog::setUsername(const std::string& username) {
@@ -241,33 +243,30 @@ void EntityDetailDialog::populateLookups() {
     };
 
     auto* watcher = new QFutureWatcher<lookup_result>(self);
-    connect(watcher, &QFutureWatcher<lookup_result>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<lookup_result>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
-        if (!self) return;
+        if (!self)
+            return;
 
         self->ui_->partyTypeCombo->clear();
         for (const auto& code : result.type_codes) {
-            self->ui_->partyTypeCombo->addItem(
-                QString::fromStdString(code));
+            self->ui_->partyTypeCombo->addItem(QString::fromStdString(code));
         }
 
         self->ui_->statusCombo->clear();
         for (const auto& code : result.status_codes) {
-            self->ui_->statusCombo->addItem(
-                QString::fromStdString(code));
+            self->ui_->statusCombo->addItem(QString::fromStdString(code));
         }
 
         self->ui_->businessCenterCombo->clear();
         for (const auto& code : result.business_centre_codes) {
-            self->ui_->businessCenterCombo->addItem(
-                QString::fromStdString(code));
+            self->ui_->businessCenterCombo->addItem(QString::fromStdString(code));
         }
 
-        apply_flag_icons(self->ui_->businessCenterCombo, self->imageCache_,
-                         FlagSource::BusinessCentre);
+        apply_flag_icons(
+            self->ui_->businessCenterCombo, self->imageCache_, FlagSource::BusinessCentre);
 
         self->updateUiFromEntity();
 
@@ -295,12 +294,12 @@ void EntityDetailDialog::loadAllEntities() {
     };
 
     auto* watcher = new QFutureWatcher<load_all_entities_result>(self);
-    connect(watcher, &QFutureWatcher<load_all_entities_result>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<load_all_entities_result>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
-        if (!self || !result.success) return;
+        if (!self || !result.success)
+            return;
 
         self->allEntities_ = std::move(result.entities);
         self->populateParentCombo();
@@ -312,7 +311,8 @@ void EntityDetailDialog::loadAllEntities() {
 }
 
 void EntityDetailDialog::loadIdSchemes() {
-    if (!clientManager_ || !clientManager_->isConnected()) return;
+    if (!clientManager_ || !clientManager_->isConnected())
+        return;
 
     QPointer<EntityDetailDialog> self = this;
     auto* cm = clientManager_;
@@ -325,25 +325,25 @@ void EntityDetailDialog::loadIdSchemes() {
     auto task = [cm]() -> SchemesResult {
         refdata::messaging::get_party_id_schemes_request request;
         auto response = cm->process_authenticated_request(std::move(request));
-        if (!response) return {{}, false};
+        if (!response)
+            return {{}, false};
         return {std::move(response->party_id_schemes), true};
     };
 
     auto* watcher = new QFutureWatcher<SchemesResult>(self);
-    connect(watcher, &QFutureWatcher<SchemesResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<SchemesResult>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
-        if (!self || !result.success) return;
+        if (!self || !result.success)
+            return;
 
         self->idSchemes_ = std::move(result.schemes);
 
         // Sort by display_order
-        std::sort(self->idSchemes_.begin(), self->idSchemes_.end(),
-            [](const auto& a, const auto& b) {
-                return a.display_order < b.display_order;
-            });
+        std::sort(self->idSchemes_.begin(),
+                  self->idSchemes_.end(),
+                  [](const auto& a, const auto& b) { return a.display_order < b.display_order; });
     });
 
     QFuture<SchemesResult> future = QtConcurrent::run(task);
@@ -351,7 +351,8 @@ void EntityDetailDialog::loadIdSchemes() {
 }
 
 void EntityDetailDialog::loadCountryImageMap() {
-    if (!clientManager_ || !clientManager_->isConnected()) return;
+    if (!clientManager_ || !clientManager_->isConnected())
+        return;
 
     QPointer<EntityDetailDialog> self = this;
     auto* cm = clientManager_;
@@ -362,25 +363,25 @@ void EntityDetailDialog::loadCountryImageMap() {
         refdata::messaging::get_countries_request request;
         request.limit = 1000;
         auto response = cm->process_authenticated_request(std::move(request));
-        if (!response) return {};
+        if (!response)
+            return {};
 
         MapType mapping;
         for (const auto& country : response->countries) {
             if (country.image_id) {
-                mapping.emplace(country.alpha2_code,
-                    boost::uuids::to_string(*country.image_id));
+                mapping.emplace(country.alpha2_code, boost::uuids::to_string(*country.image_id));
             }
         }
         return mapping;
     };
 
     auto* watcher = new QFutureWatcher<MapType>(self);
-    connect(watcher, &QFutureWatcher<MapType>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<MapType>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
-        if (!self) return;
+        if (!self)
+            return;
 
         self->countryImageMap_ = std::move(result);
         // Re-populate contacts table if already loaded
@@ -399,12 +400,13 @@ void EntityDetailDialog::populateParentCombo() {
 
     for (const auto& entry : allEntities_) {
         // Don't allow setting self as parent
-        if (entry.id == entity_.id) continue;
+        if (entry.id == entity_.id)
+            continue;
 
         QString label = QString::fromStdString(entry.short_code) + " - " +
                         QString::fromStdString(entry.full_name);
-        ui_->parentEntityCombo->addItem(
-            label, QString::fromStdString(boost::uuids::to_string(entry.id)));
+        ui_->parentEntityCombo->addItem(label,
+                                        QString::fromStdString(boost::uuids::to_string(entry.id)));
     }
 
     // Set current value
@@ -427,7 +429,8 @@ void EntityDetailDialog::populateParentCombo() {
 void EntityDetailDialog::buildHierarchyTree() {
     hierarchyTree_->clear();
 
-    if (allEntities_.empty()) return;
+    if (allEntities_.empty())
+        return;
 
     // Build a map of id -> entry
     std::unordered_map<std::string, const parent_entity_entry*> byId;
@@ -492,8 +495,7 @@ void EntityDetailDialog::buildHierarchyTree() {
             const auto parent_id_str = boost::uuids::to_string(*entry->parent_id);
             if (!visited.insert(parent_id_str).second) {
                 BOOST_LOG_SEV(lg(), error)
-                    << "Cycle detected in hierarchy for entity "
-                    << current_id_str;
+                    << "Cycle detected in hierarchy for entity " << current_id_str;
                 break;
             }
             auto parentIt = byId.find(parent_id_str);
@@ -535,8 +537,10 @@ void EntityDetailDialog::setCreateMode(bool createMode) {
         setProvenanceEnabled(false);
 
         // Disable sub-entity toolbars until entity is saved
-        if (identifierToolbar_) identifierToolbar_->setEnabled(false);
-        if (contactToolbar_) contactToolbar_->setEnabled(false);
+        if (identifierToolbar_)
+            identifierToolbar_->setEnabled(false);
+        if (contactToolbar_)
+            contactToolbar_->setEnabled(false);
     }
 
     hasChanges_ = false;
@@ -559,15 +563,16 @@ void EntityDetailDialog::setReadOnly(bool readOnly) {
         ui_->partyCategoryCombo->setEnabled(!readOnly);
     }
 
-    if (identifierToolbar_) identifierToolbar_->setVisible(!readOnly);
-    if (contactToolbar_) contactToolbar_->setVisible(!readOnly);
+    if (identifierToolbar_)
+        identifierToolbar_->setVisible(!readOnly);
+    if (contactToolbar_)
+        contactToolbar_->setVisible(!readOnly);
 }
 
 void EntityDetailDialog::updateUiFromEntity() {
     ui_->codeEdit->setText(QString::fromStdString(entity_.short_code));
     if (ops_->has_party_category()) {
-        ui_->codenameEdit->setText(
-            QString::fromStdString(entity_.codename.value_or("")));
+        ui_->codenameEdit->setText(QString::fromStdString(entity_.codename.value_or("")));
     }
     ui_->nameEdit->setText(QString::fromStdString(entity_.full_name));
     ui_->transliteratedNameEdit->setText(
@@ -577,12 +582,14 @@ void EntityDetailDialog::updateUiFromEntity() {
     ui_->businessCenterCombo->setCurrentText(QString::fromStdString(entity_.business_center_code));
 
     if (ops_->has_party_category() && entity_.party_category) {
-        ui_->partyCategoryCombo->setCurrentText(
-            QString::fromStdString(*entity_.party_category));
+        ui_->partyCategoryCombo->setCurrentText(QString::fromStdString(*entity_.party_category));
     }
 
-    populateProvenance(entity_.version, entity_.modified_by, entity_.performed_by,
-                       entity_.recorded_at, entity_.change_reason_code,
+    populateProvenance(entity_.version,
+                       entity_.modified_by,
+                       entity_.performed_by,
+                       entity_.recorded_at,
+                       entity_.change_reason_code,
                        entity_.change_commentary);
     hasChanges_ = false;
     updateSaveButtonState();
@@ -645,8 +652,10 @@ bool EntityDetailDialog::validateInput() {
 // ============================================================================
 
 void EntityDetailDialog::loadIdentifiers() {
-    if (!clientManager_ || !clientManager_->isConnected()) return;
-    if (entity_.id.is_nil()) return;
+    if (!clientManager_ || !clientManager_->isConnected())
+        return;
+    if (entity_.id.is_nil())
+        return;
 
     QPointer<EntityDetailDialog> self = this;
     auto* cm = clientManager_;
@@ -658,12 +667,12 @@ void EntityDetailDialog::loadIdentifiers() {
     };
 
     auto* watcher = new QFutureWatcher<load_identifiers_result>(self);
-    connect(watcher, &QFutureWatcher<load_identifiers_result>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<load_identifiers_result>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
-        if (!self || !result.success) return;
+        if (!self || !result.success)
+            return;
 
         self->identifiers_ = std::move(result.identifiers);
         self->populateIdentifierTable();
@@ -679,16 +688,20 @@ void EntityDetailDialog::populateIdentifierTable() {
 
     for (int i = 0; i < static_cast<int>(identifiers_.size()); ++i) {
         const auto& ident = identifiers_[static_cast<std::size_t>(i)];
-        identifierTable_->setItem(i, 0, new QTableWidgetItem(QString::fromStdString(ident.id_scheme)));
-        identifierTable_->setItem(i, 1, new QTableWidgetItem(QString::fromStdString(ident.id_value)));
-        identifierTable_->setItem(i, 2, new QTableWidgetItem(QString::fromStdString(ident.description)));
+        identifierTable_->setItem(
+            i, 0, new QTableWidgetItem(QString::fromStdString(ident.id_scheme)));
+        identifierTable_->setItem(
+            i, 1, new QTableWidgetItem(QString::fromStdString(ident.id_value)));
+        identifierTable_->setItem(
+            i, 2, new QTableWidgetItem(QString::fromStdString(ident.description)));
     }
 
     identifierTable_->resizeColumnsToContents();
 }
 
 void EntityDetailDialog::onAddIdentifier() {
-    if (!clientManager_ || !clientManager_->isConnected() || readOnly_) return;
+    if (!clientManager_ || !clientManager_->isConnected() || readOnly_)
+        return;
 
     QDialog dialog(this);
     dialog.setWindowTitle("Add Identifier");
@@ -698,8 +711,8 @@ void EntityDetailDialog::onAddIdentifier() {
 
     auto* schemeCombo = new QComboBox(&dialog);
     for (const auto& scheme : idSchemes_) {
-        QString label = QString::fromStdString(scheme.code) + " - " +
-                        QString::fromStdString(scheme.name);
+        QString label =
+            QString::fromStdString(scheme.code) + " - " + QString::fromStdString(scheme.name);
         schemeCombo->addItem(label, QString::fromStdString(scheme.code));
     }
     layout->addRow("Scheme:", schemeCombo);
@@ -712,18 +725,18 @@ void EntityDetailDialog::onAddIdentifier() {
     descEdit->setPlaceholderText("Optional description");
     layout->addRow("Description:", descEdit);
 
-    auto* buttonBox = new QDialogButtonBox(
-        QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
+    auto* buttonBox =
+        new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
     layout->addRow(buttonBox);
 
     connect(buttonBox, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
     connect(buttonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
 
-    if (dialog.exec() != QDialog::Accepted) return;
+    if (dialog.exec() != QDialog::Accepted)
+        return;
 
     if (schemeCombo->currentIndex() < 0 || valueEdit->text().trimmed().isEmpty()) {
-        MessageBoxHelper::warning(this, "Invalid Input",
-            "Scheme and Value are required.");
+        MessageBoxHelper::warning(this, "Invalid Input", "Scheme and Value are required.");
         return;
     }
 
@@ -746,18 +759,17 @@ void EntityDetailDialog::onAddIdentifier() {
     };
 
     auto* watcher = new QFutureWatcher<operation_result>(self);
-    connect(watcher, &QFutureWatcher<operation_result>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<operation_result>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
-        if (!self) return;
+        if (!self)
+            return;
 
         if (result.success) {
             self->loadIdentifiers();
         } else {
-            MessageBoxHelper::critical(self, "Save Failed",
-                QString::fromStdString(result.message));
+            MessageBoxHelper::critical(self, "Save Failed", QString::fromStdString(result.message));
         }
     });
 
@@ -766,23 +778,25 @@ void EntityDetailDialog::onAddIdentifier() {
 }
 
 void EntityDetailDialog::onDeleteIdentifier() {
-    if (!clientManager_ || !clientManager_->isConnected() || readOnly_) return;
+    if (!clientManager_ || !clientManager_->isConnected() || readOnly_)
+        return;
 
     int row = identifierTable_->currentRow();
     if (row < 0 || row >= static_cast<int>(identifiers_.size())) {
-        MessageBoxHelper::warning(this, "No Selection",
-            "Please select an identifier to delete.");
+        MessageBoxHelper::warning(this, "No Selection", "Please select an identifier to delete.");
         return;
     }
 
     const auto& ident = identifiers_[static_cast<std::size_t>(row)];
-    auto reply = MessageBoxHelper::question(this, "Delete Identifier",
-        QString("Delete identifier '%1: %2'?")
-            .arg(QString::fromStdString(ident.id_scheme))
-            .arg(QString::fromStdString(ident.id_value)),
-        QMessageBox::Yes | QMessageBox::No);
+    auto reply = MessageBoxHelper::question(this,
+                                            "Delete Identifier",
+                                            QString("Delete identifier '%1: %2'?")
+                                                .arg(QString::fromStdString(ident.id_scheme))
+                                                .arg(QString::fromStdString(ident.id_value)),
+                                            QMessageBox::Yes | QMessageBox::No);
 
-    if (reply != QMessageBox::Yes) return;
+    if (reply != QMessageBox::Yes)
+        return;
 
     QPointer<EntityDetailDialog> self = this;
     auto* cm = clientManager_;
@@ -794,18 +808,18 @@ void EntityDetailDialog::onDeleteIdentifier() {
     };
 
     auto* watcher = new QFutureWatcher<operation_result>(self);
-    connect(watcher, &QFutureWatcher<operation_result>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<operation_result>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
-        if (!self) return;
+        if (!self)
+            return;
 
         if (result.success) {
             self->loadIdentifiers();
         } else {
-            MessageBoxHelper::critical(self, "Delete Failed",
-                QString::fromStdString(result.message));
+            MessageBoxHelper::critical(
+                self, "Delete Failed", QString::fromStdString(result.message));
         }
     });
 
@@ -818,8 +832,10 @@ void EntityDetailDialog::onDeleteIdentifier() {
 // ============================================================================
 
 void EntityDetailDialog::loadContacts() {
-    if (!clientManager_ || !clientManager_->isConnected()) return;
-    if (entity_.id.is_nil()) return;
+    if (!clientManager_ || !clientManager_->isConnected())
+        return;
+    if (entity_.id.is_nil())
+        return;
 
     QPointer<EntityDetailDialog> self = this;
     auto* cm = clientManager_;
@@ -831,12 +847,12 @@ void EntityDetailDialog::loadContacts() {
     };
 
     auto* watcher = new QFutureWatcher<load_contacts_result>(self);
-    connect(watcher, &QFutureWatcher<load_contacts_result>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<load_contacts_result>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
-        if (!self || !result.success) return;
+        if (!self || !result.success)
+            return;
 
         self->contacts_ = std::move(result.contacts);
         self->populateContactTable();
@@ -865,9 +881,12 @@ void EntityDetailDialog::populateContactTable() {
         }
         contactTable_->setItem(i, 0, flagItem);
 
-        contactTable_->setItem(i, 1, new QTableWidgetItem(QString::fromStdString(contact.country_code)));
-        contactTable_->setItem(i, 2, new QTableWidgetItem(QString::fromStdString(contact.contact_type)));
-        contactTable_->setItem(i, 3, new QTableWidgetItem(QString::fromStdString(contact.street_line_1)));
+        contactTable_->setItem(
+            i, 1, new QTableWidgetItem(QString::fromStdString(contact.country_code)));
+        contactTable_->setItem(
+            i, 2, new QTableWidgetItem(QString::fromStdString(contact.contact_type)));
+        contactTable_->setItem(
+            i, 3, new QTableWidgetItem(QString::fromStdString(contact.street_line_1)));
         contactTable_->setItem(i, 4, new QTableWidgetItem(QString::fromStdString(contact.city)));
         contactTable_->setItem(i, 5, new QTableWidgetItem(QString::fromStdString(contact.phone)));
     }
@@ -876,7 +895,8 @@ void EntityDetailDialog::populateContactTable() {
 }
 
 void EntityDetailDialog::onAddContact() {
-    if (!clientManager_ || !clientManager_->isConnected() || readOnly_) return;
+    if (!clientManager_ || !clientManager_->isConnected() || readOnly_)
+        return;
 
     QDialog dialog(this);
     dialog.setWindowTitle("Add Contact Information");
@@ -916,18 +936,18 @@ void EntityDetailDialog::onAddContact() {
     auto* webEdit = new QLineEdit(&dialog);
     layout->addRow("Web Page:", webEdit);
 
-    auto* buttonBox = new QDialogButtonBox(
-        QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
+    auto* buttonBox =
+        new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
     layout->addRow(buttonBox);
 
     connect(buttonBox, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
     connect(buttonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
 
-    if (dialog.exec() != QDialog::Accepted) return;
+    if (dialog.exec() != QDialog::Accepted)
+        return;
 
     if (typeEdit->text().trimmed().isEmpty()) {
-        MessageBoxHelper::warning(this, "Invalid Input",
-            "Contact Type is required.");
+        MessageBoxHelper::warning(this, "Invalid Input", "Contact Type is required.");
         return;
     }
 
@@ -957,18 +977,17 @@ void EntityDetailDialog::onAddContact() {
     };
 
     auto* watcher = new QFutureWatcher<operation_result>(self);
-    connect(watcher, &QFutureWatcher<operation_result>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<operation_result>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
-        if (!self) return;
+        if (!self)
+            return;
 
         if (result.success) {
             self->loadContacts();
         } else {
-            MessageBoxHelper::critical(self, "Save Failed",
-                QString::fromStdString(result.message));
+            MessageBoxHelper::critical(self, "Save Failed", QString::fromStdString(result.message));
         }
     });
 
@@ -977,22 +996,24 @@ void EntityDetailDialog::onAddContact() {
 }
 
 void EntityDetailDialog::onDeleteContact() {
-    if (!clientManager_ || !clientManager_->isConnected() || readOnly_) return;
+    if (!clientManager_ || !clientManager_->isConnected() || readOnly_)
+        return;
 
     int row = contactTable_->currentRow();
     if (row < 0 || row >= static_cast<int>(contacts_.size())) {
-        MessageBoxHelper::warning(this, "No Selection",
-            "Please select a contact to delete.");
+        MessageBoxHelper::warning(this, "No Selection", "Please select a contact to delete.");
         return;
     }
 
     const auto& contact = contacts_[static_cast<std::size_t>(row)];
-    auto reply = MessageBoxHelper::question(this, "Delete Contact",
-        QString("Delete contact '%1'?")
-            .arg(QString::fromStdString(contact.contact_type)),
+    auto reply = MessageBoxHelper::question(
+        this,
+        "Delete Contact",
+        QString("Delete contact '%1'?").arg(QString::fromStdString(contact.contact_type)),
         QMessageBox::Yes | QMessageBox::No);
 
-    if (reply != QMessageBox::Yes) return;
+    if (reply != QMessageBox::Yes)
+        return;
 
     QPointer<EntityDetailDialog> self = this;
     auto* cm = clientManager_;
@@ -1004,18 +1025,18 @@ void EntityDetailDialog::onDeleteContact() {
     };
 
     auto* watcher = new QFutureWatcher<operation_result>(self);
-    connect(watcher, &QFutureWatcher<operation_result>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<operation_result>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
-        if (!self) return;
+        if (!self)
+            return;
 
         if (result.success) {
             self->loadContacts();
         } else {
-            MessageBoxHelper::critical(self, "Delete Failed",
-                QString::fromStdString(result.message));
+            MessageBoxHelper::critical(
+                self, "Delete Failed", QString::fromStdString(result.message));
         }
     });
 
@@ -1024,7 +1045,8 @@ void EntityDetailDialog::onDeleteContact() {
 }
 
 void EntityDetailDialog::onContactDoubleClicked(int row, int /* column */) {
-    if (row < 0 || row >= static_cast<int>(contacts_.size())) return;
+    if (row < 0 || row >= static_cast<int>(contacts_.size()))
+        return;
 
     const auto& contact = contacts_[static_cast<std::size_t>(row)];
     const bool editable = !readOnly_;
@@ -1075,9 +1097,8 @@ void EntityDetailDialog::onContactDoubleClicked(int row, int /* column */) {
     webEdit->setReadOnly(!editable);
     layout->addRow("Web Page:", webEdit);
 
-    auto buttons = editable
-        ? QDialogButtonBox::Save | QDialogButtonBox::Cancel
-        : QDialogButtonBox::Close;
+    auto buttons =
+        editable ? QDialogButtonBox::Save | QDialogButtonBox::Cancel : QDialogButtonBox::Close;
     auto* buttonBox = new QDialogButtonBox(buttons, &dialog);
     layout->addRow(buttonBox);
 
@@ -1088,7 +1109,8 @@ void EntityDetailDialog::onContactDoubleClicked(int row, int /* column */) {
         connect(buttonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
     }
 
-    if (dialog.exec() != QDialog::Accepted || !editable) return;
+    if (dialog.exec() != QDialog::Accepted || !editable)
+        return;
 
     // Save updated contact
     contact_entry updated = contact;
@@ -1114,18 +1136,17 @@ void EntityDetailDialog::onContactDoubleClicked(int row, int /* column */) {
     };
 
     auto* watcher = new QFutureWatcher<operation_result>(self);
-    connect(watcher, &QFutureWatcher<operation_result>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<operation_result>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
-        if (!self) return;
+        if (!self)
+            return;
 
         if (result.success) {
             self->loadContacts();
         } else {
-            MessageBoxHelper::critical(self, "Save Failed",
-                QString::fromStdString(result.message));
+            MessageBoxHelper::critical(self, "Save Failed", QString::fromStdString(result.message));
         }
     });
 
@@ -1142,25 +1163,25 @@ void EntityDetailDialog::onSaveClicked() {
     const auto qTypeName = QString::fromStdString(typeName);
 
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
+        MessageBoxHelper::warning(
+            this,
+            "Disconnected",
             QString("Cannot save %1 while disconnected from server.").arg(qTypeName.toLower()));
         return;
     }
 
     if (!validateInput()) {
-        MessageBoxHelper::warning(this, "Invalid Input",
-            "Please fill in all required fields.");
+        MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
 
     updateEntityFromUi();
 
-    const auto crOpType = createMode_
-        ? ChangeReasonDialog::OperationType::Create
-        : ChangeReasonDialog::OperationType::Amend;
-    const auto crSel = promptChangeReason(crOpType, hasChanges_,
-        createMode_ ? "system" : "common");
-    if (!crSel) return;
+    const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
+                                        ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
+    if (!crSel)
+        return;
     entity_.change_reason_code = crSel->reason_code;
     entity_.change_commentary = crSel->commentary;
 
@@ -1177,26 +1198,25 @@ void EntityDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<operation_result>(self);
-    connect(watcher, &QFutureWatcher<operation_result>::finished,
-            self, [self, watcher, qTypeName]() {
-        auto result = watcher->result();
-        watcher->deleteLater();
+    connect(
+        watcher, &QFutureWatcher<operation_result>::finished, self, [self, watcher, qTypeName]() {
+            auto result = watcher->result();
+            watcher->deleteLater();
 
-        if (result.success) {
-            BOOST_LOG_SEV(lg(), info) << qTypeName.toStdString() << " saved successfully";
-            QString code = QString::fromStdString(self->entity_.short_code);
-            self->hasChanges_ = false;
-            self->updateSaveButtonState();
-            emit self->entitySaved(code);
-            self->notifySaveSuccess(
-                tr("%1 '%2' saved").arg(qTypeName).arg(code));
-        } else {
-            BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
-            QString errorMsg = QString::fromStdString(result.message);
-            emit self->errorMessage(errorMsg);
-            MessageBoxHelper::critical(self, "Save Failed", errorMsg);
-        }
-    });
+            if (result.success) {
+                BOOST_LOG_SEV(lg(), info) << qTypeName.toStdString() << " saved successfully";
+                QString code = QString::fromStdString(self->entity_.short_code);
+                self->hasChanges_ = false;
+                self->updateSaveButtonState();
+                emit self->entitySaved(code);
+                self->notifySaveSuccess(tr("%1 '%2' saved").arg(qTypeName).arg(code));
+            } else {
+                BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
+                QString errorMsg = QString::fromStdString(result.message);
+                emit self->errorMessage(errorMsg);
+                MessageBoxHelper::critical(self, "Save Failed", errorMsg);
+            }
+        });
 
     QFuture<operation_result> future = QtConcurrent::run(task);
     watcher->setFuture(future);
@@ -1207,13 +1227,16 @@ void EntityDetailDialog::onDeleteClicked() {
     const auto qTypeName = QString::fromStdString(typeName);
 
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
+        MessageBoxHelper::warning(
+            this,
+            "Disconnected",
             QString("Cannot delete %1 while disconnected from server.").arg(qTypeName.toLower()));
         return;
     }
 
     QString code = QString::fromStdString(entity_.short_code);
-    auto reply = MessageBoxHelper::question(this,
+    auto reply = MessageBoxHelper::question(
+        this,
         QString("Delete %1").arg(qTypeName),
         QString("Are you sure you want to delete %1 '%2'?").arg(qTypeName.toLower()).arg(code),
         QMessageBox::Yes | QMessageBox::No);
@@ -1235,24 +1258,25 @@ void EntityDetailDialog::onDeleteClicked() {
     };
 
     auto* watcher = new QFutureWatcher<operation_result>(self);
-    connect(watcher, &QFutureWatcher<operation_result>::finished,
-            self, [self, code, watcher, qTypeName]() {
-        auto result = watcher->result();
-        watcher->deleteLater();
+    connect(watcher,
+            &QFutureWatcher<operation_result>::finished,
+            self,
+            [self, code, watcher, qTypeName]() {
+                auto result = watcher->result();
+                watcher->deleteLater();
 
-        if (result.success) {
-            BOOST_LOG_SEV(lg(), info) << qTypeName.toStdString() << " deleted successfully";
-            emit self->statusMessage(
-                QString("%1 '%2' deleted").arg(qTypeName).arg(code));
-            emit self->entityDeleted(code);
-            self->requestClose();
-        } else {
-            BOOST_LOG_SEV(lg(), error) << "Delete failed: " << result.message;
-            QString errorMsg = QString::fromStdString(result.message);
-            emit self->errorMessage(errorMsg);
-            MessageBoxHelper::critical(self, "Delete Failed", errorMsg);
-        }
-    });
+                if (result.success) {
+                    BOOST_LOG_SEV(lg(), info) << qTypeName.toStdString() << " deleted successfully";
+                    emit self->statusMessage(QString("%1 '%2' deleted").arg(qTypeName).arg(code));
+                    emit self->entityDeleted(code);
+                    self->requestClose();
+                } else {
+                    BOOST_LOG_SEV(lg(), error) << "Delete failed: " << result.message;
+                    QString errorMsg = QString::fromStdString(result.message);
+                    emit self->errorMessage(errorMsg);
+                    MessageBoxHelper::critical(self, "Delete Failed", errorMsg);
+                }
+            });
 
     QFuture<operation_result> future = QtConcurrent::run(task);
     watcher->setFuture(future);

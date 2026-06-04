@@ -20,14 +20,14 @@
 #ifndef ORES_QT_SYSTEM_SETTING_DETAIL_DIALOG_HPP
 #define ORES_QT_SYSTEM_SETTING_DETAIL_DIALOG_HPP
 
-#include <vector>
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/DetailDialogBase.hpp"
+#include "ores.variability.api/domain/system_setting.hpp"
 #include <QAction>
 #include <QIntValidator>
 #include <QToolBar>
-#include "ores.qt/ClientManager.hpp"
-#include "ores.qt/DetailDialogBase.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.variability.api/domain/system_setting.hpp"
+#include <vector>
 
 namespace Ui {
 class SystemSettingDetailDialog;
@@ -45,8 +45,7 @@ class SystemSettingDetailDialog : public DetailDialogBase {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.system_setting_detail_dialog";
+    inline static std::string_view logger_name = "ores.qt.system_setting_detail_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -71,8 +70,12 @@ public:
     void save();
 
     QString systemSettingName() const;
-    bool isDirty() const { return isDirty_; }
-    bool isReadOnly() const { return isReadOnly_; }
+    bool isDirty() const {
+        return isDirty_;
+    }
+    bool isReadOnly() const {
+        return isReadOnly_;
+    }
 
 signals:
     void isDirtyChanged(bool dirty);
@@ -83,7 +86,9 @@ protected:
     QTabWidget* tabWidget() const override;
     QWidget* provenanceTab() const override;
     ProvenanceWidget* provenanceWidget() const override;
-    bool hasUnsavedChanges() const override { return isDirty_; }
+    bool hasUnsavedChanges() const override {
+        return isDirty_;
+    }
 
 private slots:
     void onSaveClicked();

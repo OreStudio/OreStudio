@@ -18,32 +18,34 @@
  *
  */
 #include "ores.qt/OreLogViewerWidget.hpp"
-
-#include <chrono>
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QHeaderView>
-#include <QToolBar>
-#include <QAction>
-#include "ores.qt/TelemetryLogDelegate.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/TelemetryLogDelegate.hpp"
+#include <QAction>
+#include <QHBoxLayout>
+#include <QHeaderView>
+#include <QToolBar>
+#include <QVBoxLayout>
+#include <chrono>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-OreLogViewerWidget::OreLogViewerWidget(ClientManager* clientManager,
-                                       QWidget* parent)
-    : QWidget(parent),
-      client_manager_(clientManager),
-      model_(std::make_unique<ClientTelemetryLogModel>(clientManager)) {
+OreLogViewerWidget::OreLogViewerWidget(ClientManager* clientManager, QWidget* parent)
+    : QWidget(parent)
+    , client_manager_(clientManager)
+    , model_(std::make_unique<ClientTelemetryLogModel>(clientManager)) {
 
-    connect(model_.get(), &ClientTelemetryLogModel::dataLoaded,
-            this, &OreLogViewerWidget::on_data_loaded);
-    connect(model_.get(), &ClientTelemetryLogModel::loadError,
-            this, &OreLogViewerWidget::on_load_error);
+    connect(model_.get(),
+            &ClientTelemetryLogModel::dataLoaded,
+            this,
+            &OreLogViewerWidget::on_data_loaded);
+    connect(model_.get(),
+            &ClientTelemetryLogModel::loadError,
+            this,
+            &OreLogViewerWidget::on_load_error);
 
     setup_ui();
 }
@@ -58,11 +60,10 @@ void OreLogViewerWidget::setup_ui() {
     toolbar->setToolButtonStyle(Qt::ToolButtonIconOnly);
 
     auto* reload_action = new QAction(
-        IconUtils::createRecoloredIcon(Icon::ArrowClockwise,
-            color_constants::icon_color),
-        tr("Refresh"), this);
-    connect(reload_action, &QAction::triggered,
-            this, &OreLogViewerWidget::refresh);
+        IconUtils::createRecoloredIcon(Icon::ArrowClockwise, color_constants::icon_color),
+        tr("Refresh"),
+        this);
+    connect(reload_action, &QAction::triggered, this, &OreLogViewerWidget::refresh);
     toolbar->addAction(reload_action);
 
     status_label_ = new QLabel(tr("No result selected"), this);
@@ -88,16 +89,15 @@ void OreLogViewerWidget::setup_ui() {
 
     // Tabs
     tabs_ = new QTabWidget(this);
-    ore_view_  = make_table_view(ore_proxy_);
+    ore_view_ = make_table_view(ore_proxy_);
     wrap_view_ = make_table_view(wrap_proxy_);
-    all_view_  = make_table_view(all_proxy_);
+    all_view_ = make_table_view(all_proxy_);
 
-    tabs_->addTab(ore_view_,  tr("ORE Engine"));
+    tabs_->addTab(ore_view_, tr("ORE Engine"));
     tabs_->addTab(wrap_view_, tr("Wrapper"));
-    tabs_->addTab(all_view_,  tr("All"));
+    tabs_->addTab(all_view_, tr("All"));
 
-    connect(tabs_, &QTabWidget::currentChanged,
-            this, &OreLogViewerWidget::on_tab_changed);
+    connect(tabs_, &QTabWidget::currentChanged, this, &OreLogViewerWidget::on_tab_changed);
 
     // Detail pane
     detail_pane_ = new QTextEdit(this);
@@ -129,19 +129,20 @@ QTableView* OreLogViewerWidget::make_table_view(QSortFilterProxyModel* proxy) {
     view->setAlternatingRowColors(true);
     view->setSortingEnabled(true);
     view->horizontalHeader()->setStretchLastSection(true);
-    view->horizontalHeader()->setSectionResizeMode(
-        ClientTelemetryLogModel::Message, QHeaderView::Stretch);
+    view->horizontalHeader()->setSectionResizeMode(ClientTelemetryLogModel::Message,
+                                                   QHeaderView::Stretch);
     view->verticalHeader()->setVisible(false);
 
-    connect(view->selectionModel(), &QItemSelectionModel::selectionChanged,
-            this, &OreLogViewerWidget::on_selection_changed);
+    connect(view->selectionModel(),
+            &QItemSelectionModel::selectionChanged,
+            this,
+            &OreLogViewerWidget::on_selection_changed);
 
     return view;
 }
 
 void OreLogViewerWidget::load_result(const QString& result_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Loading logs for result: "
-                               << result_id.toStdString();
+    BOOST_LOG_SEV(lg(), debug) << "Loading logs for result: " << result_id.toStdString();
     current_result_id_ = result_id;
     model_->set_tag_filter(result_id.toStdString());
     status_label_->setText(tr("Loading…"));
@@ -159,26 +160,24 @@ void OreLogViewerWidget::clear() {
 }
 
 void OreLogViewerWidget::refresh() {
-    if (current_result_id_.isEmpty()) return;
+    if (current_result_id_.isEmpty())
+        return;
     load_result(current_result_id_);
 }
 
 void OreLogViewerWidget::on_data_loaded() {
     update_tab_counts();
-    status_label_->setText(
-        tr("%1 entries").arg(model_->rowCount()));
+    status_label_->setText(tr("%1 entries").arg(model_->rowCount()));
 }
 
-void OreLogViewerWidget::on_load_error(const QString& message,
-                                        const QString& details) {
-    BOOST_LOG_SEV(lg(), error) << "Failed to load ORE logs: "
-                               << message.toStdString();
+void OreLogViewerWidget::on_load_error(const QString& message, const QString& details) {
+    BOOST_LOG_SEV(lg(), error) << "Failed to load ORE logs: " << message.toStdString();
     status_label_->setText(tr("Error: %1").arg(message));
     MessageBoxHelper::critical(this, tr("Log Load Error"), message, details);
 }
 
-void OreLogViewerWidget::on_selection_changed(
-    const QItemSelection& selected, const QItemSelection&) {
+void OreLogViewerWidget::on_selection_changed(const QItemSelection& selected,
+                                              const QItemSelection&) {
     if (selected.indexes().isEmpty()) {
         detail_pane_->clear();
         return;
@@ -186,13 +185,14 @@ void OreLogViewerWidget::on_selection_changed(
 
     // Identify which view triggered the signal and retrieve the source row.
     const QModelIndex proxy_idx = selected.indexes().first();
-    const auto* proxy = qobject_cast<const QSortFilterProxyModel*>(
-        proxy_idx.model());
-    if (!proxy) return;
+    const auto* proxy = qobject_cast<const QSortFilterProxyModel*>(proxy_idx.model());
+    if (!proxy)
+        return;
 
     const QModelIndex src_idx = proxy->mapToSource(proxy_idx);
     const auto* entry = model_->get_entry(src_idx.row());
-    if (!entry) return;
+    if (!entry)
+        return;
 
     detail_pane_->setText(QString::fromStdString(entry->message));
 }

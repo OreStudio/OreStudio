@@ -19,8 +19,8 @@
 #ifndef ORES_QT_ORE_DATE_EDIT_HPP
 #define ORES_QT_ORE_DATE_EDIT_HPP
 
-#include <string>
 #include <QDateEdit>
+#include <string>
 
 class OreDateEdit : public QDateEdit {
 public:

@@ -21,15 +21,13 @@
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/UiPersistence.hpp"
-
-#include <iomanip>
-#include <sstream>
-
-#include <QMessageBox>
-#include <QMouseEvent>
+#include <QCloseEvent>
 #include <QContextMenuEvent>
 #include <QMenu>
-#include <QCloseEvent>
+#include <QMessageBox>
+#include <QMouseEvent>
+#include <iomanip>
+#include <sstream>
 
 namespace {
 
@@ -50,8 +48,9 @@ namespace ores::qt {
 using namespace ores::logging;
 
 DetachableMdiSubWindow::DetachableMdiSubWindow(QWidget* parent)
-    : QMdiSubWindow(parent), isDetached_(false),
-      savedMdiArea_(qobject_cast<QMdiArea*>(parent)) {
+    : QMdiSubWindow(parent)
+    , isDetached_(false)
+    , savedMdiArea_(qobject_cast<QMdiArea*>(parent)) {
     // If parent is not QMdiArea, it will be set when QMdiArea::addSubWindow()
     // is called.
 }
@@ -70,8 +69,7 @@ void DetachableMdiSubWindow::detach() {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Detaching window: "
-                              << windowTitle().toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Detaching window: " << windowTitle().toStdString();
 
     // Save current state relative to MDI area
     savedMdiPosition_ = pos();
@@ -83,16 +81,12 @@ void DetachableMdiSubWindow::detach() {
     // Properly remove from MDI area first
     savedMdiArea_->removeSubWindow(this);
 
-    BOOST_LOG_SEV(lg(), debug) << "Detaching: Flags before reset: "
-                               << flagsToHex(windowFlags());
+    BOOST_LOG_SEV(lg(), debug) << "Detaching: Flags before reset: " << flagsToHex(windowFlags());
 
     // Now set window flags for standalone window
-    const Qt::WindowFlags detachableFlags =
-        Qt::Window |
-        Qt::WindowTitleHint |
-        Qt::WindowSystemMenuHint |
-        Qt::WindowMinMaxButtonsHint |
-        Qt::WindowCloseButtonHint;
+    const Qt::WindowFlags detachableFlags = Qt::Window | Qt::WindowTitleHint |
+                                            Qt::WindowSystemMenuHint | Qt::WindowMinMaxButtonsHint |
+                                            Qt::WindowCloseButtonHint;
     setWindowFlags(detachableFlags);
 
     BOOST_LOG_SEV(lg(), debug) << "Detaching: Flags after setting them: "
@@ -121,11 +115,10 @@ void DetachableMdiSubWindow::contextMenuEvent(QContextMenuEvent* event) {
         if (isDetached_) {
             // When detached, show informational message instead of reattach option
             QAction* infoAction = menu.addAction("Close window to reopen as MDI");
-            infoAction->setEnabled(false);  // Disabled, just informational
+            infoAction->setEnabled(false); // Disabled, just informational
         } else {
             QAction* detachAction = menu.addAction("Detach");
-            connect(detachAction, &QAction::triggered, this,
-                &DetachableMdiSubWindow::detach);
+            connect(detachAction, &QAction::triggered, this, &DetachableMdiSubWindow::detach);
         }
 
         menu.exec(event->globalPos());
@@ -138,14 +131,14 @@ void DetachableMdiSubWindow::contextMenuEvent(QContextMenuEvent* event) {
 
 void DetachableMdiSubWindow::closeEvent(QCloseEvent* event) {
     BOOST_LOG_SEV(lg(), info) << "Closing window: " << windowTitle().toStdString()
-                             << " (detached=" << isDetached_ << ")";
+                              << " (detached=" << isDetached_ << ")";
 
     if (auto* dialog = qobject_cast<DetailDialogBase*>(widget())) {
         if (dialog->hasUnsavedChanges() && !dialog->isCloseConfirmed()) {
-            auto reply = MessageBoxHelper::question(
-                this, tr("Unsaved Changes"),
-                tr("You have unsaved changes. Close anyway?"),
-                QMessageBox::Yes | QMessageBox::No);
+            auto reply = MessageBoxHelper::question(this,
+                                                    tr("Unsaved Changes"),
+                                                    tr("You have unsaved changes. Close anyway?"),
+                                                    QMessageBox::Yes | QMessageBox::No);
             if (reply != QMessageBox::Yes) {
                 event->ignore();
                 return;

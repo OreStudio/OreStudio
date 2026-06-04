@@ -18,23 +18,22 @@
  *
  */
 #include "ores.qt/ReportDefinitionController.hpp"
-
+#include "ores.eventing/domain/event_traits.hpp"
+#include "ores.qt/BadgeCache.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
+#include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/ReportDefinitionDetailDialog.hpp"
+#include "ores.qt/ReportDefinitionHistoryDialog.hpp"
+#include "ores.qt/ReportDefinitionMdiWindow.hpp"
+#include "ores.reporting.api/eventing/report_definition_changed_event.hpp"
+#include "ores.reporting.api/messaging/report_definition_protocol.hpp"
+#include <QFutureWatcher>
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
 #include <QtConcurrent>
-#include <QFutureWatcher>
 #include <boost/uuid/uuid_io.hpp>
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/ChangeReasonCache.hpp"
-#include "ores.qt/BadgeCache.hpp"
-#include "ores.qt/ReportDefinitionMdiWindow.hpp"
-#include "ores.qt/ReportDefinitionDetailDialog.hpp"
-#include "ores.qt/ReportDefinitionHistoryDialog.hpp"
-#include "ores.qt/DetachableMdiSubWindow.hpp"
-#include "ores.reporting.api/messaging/report_definition_protocol.hpp"
-#include "ores.reporting.api/eventing/report_definition_changed_event.hpp"
-#include "ores.eventing/domain/event_traits.hpp"
 
 namespace ores::qt {
 
@@ -43,34 +42,34 @@ using namespace ores::logging;
 namespace {
 
 constexpr std::string_view report_definition_event_name =
-    eventing::domain::event_traits<
-        reporting::eventing::report_definition_changed_event>::name;
+    eventing::domain::event_traits<reporting::eventing::report_definition_changed_event>::name;
 
 } // namespace
 
-ReportDefinitionController::ReportDefinitionController(
-    QMainWindow* mainWindow,
-    QMdiArea* mdiArea,
-    ClientManager* clientManager,
-    ChangeReasonCache* changeReasonCache,
-    BadgeCache* badgeCache,
-    const QString& username,
-    QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username,
-          std::string_view{}, parent),
-      changeReasonCache_(changeReasonCache),
-      badgeCache_(badgeCache),
-      listWindow_(nullptr),
-      listMdiSubWindow_(nullptr) {
+ReportDefinitionController::ReportDefinitionController(QMainWindow* mainWindow,
+                                                       QMdiArea* mdiArea,
+                                                       ClientManager* clientManager,
+                                                       ChangeReasonCache* changeReasonCache,
+                                                       BadgeCache* badgeCache,
+                                                       const QString& username,
+                                                       QObject* parent)
+    : EntityController(mainWindow, mdiArea, clientManager, username, std::string_view{}, parent)
+    , changeReasonCache_(changeReasonCache)
+    , badgeCache_(badgeCache)
+    , listWindow_(nullptr)
+    , listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "ReportDefinitionController created";
 
     if (clientManager_) {
-        connect(clientManager_, &ClientManager::notificationReceived,
-                this, &ReportDefinitionController::onNotificationReceived);
+        connect(clientManager_,
+                &ClientManager::notificationReceived,
+                this,
+                &ReportDefinitionController::onNotificationReceived);
 
         auto subscribeAll = [self = QPointer<ReportDefinitionController>(this)]() {
-            if (!self) return;
+            if (!self)
+                return;
             BOOST_LOG_SEV(lg(), info) << "Subscribing to report definition change events";
             self->clientManager_->subscribeToEvent(std::string{report_definition_event_name});
         };
@@ -102,27 +101,41 @@ void ReportDefinitionController::showListWindow() {
     listWindow_ = new ReportDefinitionMdiWindow(clientManager_, username_, badgeCache_);
 
     // Connect signals
-    connect(listWindow_, &ReportDefinitionMdiWindow::statusChanged,
-            this, &ReportDefinitionController::statusMessage);
-    connect(listWindow_, &ReportDefinitionMdiWindow::errorOccurred,
-            this, &ReportDefinitionController::errorMessage);
-    connect(listWindow_, &ReportDefinitionMdiWindow::showDefinitionDetails,
-            this, &ReportDefinitionController::onShowDetails);
-    connect(listWindow_, &ReportDefinitionMdiWindow::addNewRequested,
-            this, &ReportDefinitionController::onAddNewRequested);
-    connect(listWindow_, &ReportDefinitionMdiWindow::showDefinitionHistory,
-            this, &ReportDefinitionController::onShowHistory);
-    connect(listWindow_, &ReportDefinitionMdiWindow::scheduleRequested,
-            this, &ReportDefinitionController::onScheduleRequested);
-    connect(listWindow_, &ReportDefinitionMdiWindow::unscheduleRequested,
-            this, &ReportDefinitionController::onUnscheduleRequested);
+    connect(listWindow_,
+            &ReportDefinitionMdiWindow::statusChanged,
+            this,
+            &ReportDefinitionController::statusMessage);
+    connect(listWindow_,
+            &ReportDefinitionMdiWindow::errorOccurred,
+            this,
+            &ReportDefinitionController::errorMessage);
+    connect(listWindow_,
+            &ReportDefinitionMdiWindow::showDefinitionDetails,
+            this,
+            &ReportDefinitionController::onShowDetails);
+    connect(listWindow_,
+            &ReportDefinitionMdiWindow::addNewRequested,
+            this,
+            &ReportDefinitionController::onAddNewRequested);
+    connect(listWindow_,
+            &ReportDefinitionMdiWindow::showDefinitionHistory,
+            this,
+            &ReportDefinitionController::onShowHistory);
+    connect(listWindow_,
+            &ReportDefinitionMdiWindow::scheduleRequested,
+            this,
+            &ReportDefinitionController::onScheduleRequested);
+    connect(listWindow_,
+            &ReportDefinitionMdiWindow::unscheduleRequested,
+            this,
+            &ReportDefinitionController::onUnscheduleRequested);
 
     // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Report Definitions");
-    listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::DocumentTable, IconUtils::DefaultIconColor));
+    listMdiSubWindow_->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::DocumentTable, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -134,12 +147,16 @@ void ReportDefinitionController::showListWindow() {
     register_detachable_window(listMdiSubWindow_);
 
     // Cleanup when closed
-    connect(listMdiSubWindow_, &QObject::destroyed, this, [self = QPointer<ReportDefinitionController>(this), key]() {
-        if (!self) return;
-        self->untrack_window(key);
-        self->listWindow_ = nullptr;
-        self->listMdiSubWindow_ = nullptr;
-    });
+    connect(listMdiSubWindow_,
+            &QObject::destroyed,
+            this,
+            [self = QPointer<ReportDefinitionController>(this), key]() {
+                if (!self)
+                    return;
+                self->untrack_window(key);
+                self->listWindow_ = nullptr;
+                self->listMdiSubWindow_ = nullptr;
+            });
 
     BOOST_LOG_SEV(lg(), debug) << "Report Definition list window created";
 }
@@ -192,23 +209,30 @@ void ReportDefinitionController::showAddWindow() {
     detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setCreateMode(true);
 
-    connect(detailDialog, &ReportDefinitionDetailDialog::statusMessage,
-            this, &ReportDefinitionController::statusMessage);
-    connect(detailDialog, &ReportDefinitionDetailDialog::errorMessage,
-            this, &ReportDefinitionController::errorMessage);
-    connect(detailDialog, &ReportDefinitionDetailDialog::definitionSaved,
-            this, [self = QPointer<ReportDefinitionController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Report Definition saved: " << code.toStdString();
-        self->handleEntitySaved();
-    });
+    connect(detailDialog,
+            &ReportDefinitionDetailDialog::statusMessage,
+            this,
+            &ReportDefinitionController::statusMessage);
+    connect(detailDialog,
+            &ReportDefinitionDetailDialog::errorMessage,
+            this,
+            &ReportDefinitionController::errorMessage);
+    connect(detailDialog,
+            &ReportDefinitionDetailDialog::definitionSaved,
+            this,
+            [self = QPointer<ReportDefinitionController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Report Definition saved: " << code.toStdString();
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Report Definition");
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::DocumentTable, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::DocumentTable, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -236,37 +260,46 @@ void ReportDefinitionController::showDetailWindow(
     detailDialog->setCreateMode(false);
     detailDialog->setDefinition(definition);
 
-    connect(detailDialog, &ReportDefinitionDetailDialog::statusMessage,
-            this, &ReportDefinitionController::statusMessage);
-    connect(detailDialog, &ReportDefinitionDetailDialog::errorMessage,
-            this, &ReportDefinitionController::errorMessage);
-    connect(detailDialog, &ReportDefinitionDetailDialog::definitionSaved,
-            this, [self = QPointer<ReportDefinitionController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Report Definition saved: " << code.toStdString();
-        self->handleEntitySaved();
-    });
-    connect(detailDialog, &ReportDefinitionDetailDialog::definitionDeleted,
-            this, [self = QPointer<ReportDefinitionController>(this), key](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Report Definition deleted: " << code.toStdString();
-        self->handleEntityDeleted();
-    });
+    connect(detailDialog,
+            &ReportDefinitionDetailDialog::statusMessage,
+            this,
+            &ReportDefinitionController::statusMessage);
+    connect(detailDialog,
+            &ReportDefinitionDetailDialog::errorMessage,
+            this,
+            &ReportDefinitionController::errorMessage);
+    connect(detailDialog,
+            &ReportDefinitionDetailDialog::definitionSaved,
+            this,
+            [self = QPointer<ReportDefinitionController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Report Definition saved: " << code.toStdString();
+                self->handleEntitySaved();
+            });
+    connect(detailDialog,
+            &ReportDefinitionDetailDialog::definitionDeleted,
+            this,
+            [self = QPointer<ReportDefinitionController>(this), key](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Report Definition deleted: " << code.toStdString();
+                self->handleEntityDeleted();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Report Definition: %1").arg(identifier));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::DocumentTable, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::DocumentTable, IconUtils::DefaultIconColor));
 
     // Track window
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<ReportDefinitionController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, key]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, key]() {
         if (self) {
             self->untrack_window(key);
         }
@@ -286,31 +319,39 @@ void ReportDefinitionController::showHistoryWindow(
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
-        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: "
-                                  << definition.name;
+        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: " << definition.name;
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
-                              << definition.name;
+    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << definition.name;
 
-    auto* historyDialog = new ReportDefinitionHistoryDialog(
-        definition.id, code, clientManager_, mainWindow_);
+    auto* historyDialog =
+        new ReportDefinitionHistoryDialog(definition.id, code, clientManager_, mainWindow_);
 
-    connect(historyDialog, &ReportDefinitionHistoryDialog::statusChanged,
-            this, [self = QPointer<ReportDefinitionController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(historyDialog, &ReportDefinitionHistoryDialog::errorOccurred,
-            this, [self = QPointer<ReportDefinitionController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
-    connect(historyDialog, &ReportDefinitionHistoryDialog::revertVersionRequested,
-            this, &ReportDefinitionController::onRevertVersion);
-    connect(historyDialog, &ReportDefinitionHistoryDialog::openVersionRequested,
-            this, &ReportDefinitionController::onOpenVersion);
+    connect(historyDialog,
+            &ReportDefinitionHistoryDialog::statusChanged,
+            this,
+            [self = QPointer<ReportDefinitionController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(historyDialog,
+            &ReportDefinitionHistoryDialog::errorOccurred,
+            this,
+            [self = QPointer<ReportDefinitionController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
+    connect(historyDialog,
+            &ReportDefinitionHistoryDialog::revertVersionRequested,
+            this,
+            &ReportDefinitionController::onRevertVersion);
+    connect(historyDialog,
+            &ReportDefinitionHistoryDialog::openVersionRequested,
+            this,
+            &ReportDefinitionController::onOpenVersion);
 
     // Load history data
     historyDialog->loadHistory();
@@ -319,16 +360,15 @@ void ReportDefinitionController::showHistoryWindow(
     historyWindow->setAttribute(Qt::WA_DeleteOnClose);
     historyWindow->setWidget(historyDialog);
     historyWindow->setWindowTitle(QString("Report Definition History: %1").arg(code));
-    historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    historyWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     // Track this history window
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
 
     QPointer<ReportDefinitionController> self = this;
-    connect(historyWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -343,8 +383,8 @@ void ReportDefinitionController::onOpenVersion(
                               << " for report definition: " << definition.name;
 
     const QString code = QString::fromStdString(definition.name);
-    const QString windowKey = build_window_key("version", QString("%1_v%2")
-        .arg(code).arg(versionNumber));
+    const QString windowKey =
+        build_window_key("version", QString("%1_v%2").arg(code).arg(versionNumber));
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
@@ -358,31 +398,36 @@ void ReportDefinitionController::onOpenVersion(
     detailDialog->setDefinition(definition);
     detailDialog->setReadOnly(true);
 
-    connect(detailDialog, &ReportDefinitionDetailDialog::statusMessage,
-            this, [self = QPointer<ReportDefinitionController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(detailDialog, &ReportDefinitionDetailDialog::errorMessage,
-            this, [self = QPointer<ReportDefinitionController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
+    connect(detailDialog,
+            &ReportDefinitionDetailDialog::statusMessage,
+            this,
+            [self = QPointer<ReportDefinitionController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(detailDialog,
+            &ReportDefinitionDetailDialog::errorMessage,
+            this,
+            [self = QPointer<ReportDefinitionController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Report Definition: %1 (Version %2)")
-        .arg(code).arg(versionNumber));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("Report Definition: %1 (Version %2)").arg(code).arg(versionNumber));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     track_window(windowKey, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<ReportDefinitionController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -394,8 +439,7 @@ void ReportDefinitionController::onOpenVersion(
 
 void ReportDefinitionController::onRevertVersion(
     const reporting::domain::report_definition& definition) {
-    BOOST_LOG_SEV(lg(), info) << "Reverting report definition to version: "
-                              << definition.version;
+    BOOST_LOG_SEV(lg(), info) << "Reverting report definition to version: " << definition.version;
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new ReportDefinitionDetailDialog(mainWindow_);
@@ -404,25 +448,33 @@ void ReportDefinitionController::onRevertVersion(
     detailDialog->setDefinition(definition);
     detailDialog->setCreateMode(false);
 
-    connect(detailDialog, &ReportDefinitionDetailDialog::statusMessage,
-            this, &ReportDefinitionController::statusMessage);
-    connect(detailDialog, &ReportDefinitionDetailDialog::errorMessage,
-            this, &ReportDefinitionController::errorMessage);
-    connect(detailDialog, &ReportDefinitionDetailDialog::definitionSaved,
-            this, [self = QPointer<ReportDefinitionController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Report Definition reverted: " << code.toStdString();
-        emit self->statusMessage(QString("Report Definition '%1' reverted successfully").arg(code));
-        self->handleEntitySaved();
-    });
+    connect(detailDialog,
+            &ReportDefinitionDetailDialog::statusMessage,
+            this,
+            &ReportDefinitionController::statusMessage);
+    connect(detailDialog,
+            &ReportDefinitionDetailDialog::errorMessage,
+            this,
+            &ReportDefinitionController::errorMessage);
+    connect(detailDialog,
+            &ReportDefinitionDetailDialog::definitionSaved,
+            this,
+            [self = QPointer<ReportDefinitionController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Report Definition reverted: " << code.toStdString();
+                emit self->statusMessage(
+                    QString("Report Definition '%1' reverted successfully").arg(code));
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Revert Report Definition: %1")
-        .arg(QString::fromStdString(definition.name)));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("Revert Report Definition: %1").arg(QString::fromStdString(definition.name)));
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
+                                                               IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -434,23 +486,23 @@ EntityListMdiWindow* ReportDefinitionController::listWindow() const {
     return listWindow_;
 }
 
-void ReportDefinitionController::onNotificationReceived(
-    const QString& eventType, const QDateTime& timestamp,
-    const QStringList& entityIds, const QString& /*tenantId*/) {
+void ReportDefinitionController::onNotificationReceived(const QString& eventType,
+                                                        const QDateTime& timestamp,
+                                                        const QStringList& entityIds,
+                                                        const QString& /*tenantId*/) {
 
     if (eventType.toStdString() != report_definition_event_name)
         return;
 
     BOOST_LOG_SEV(lg(), info) << "Received report_definition_changed notification at "
-                              << timestamp.toString(Qt::ISODate).toStdString()
-                              << " with " << entityIds.size() << " id(s)";
+                              << timestamp.toString(Qt::ISODate).toStdString() << " with "
+                              << entityIds.size() << " id(s)";
 
     if (listWindow_)
         listWindow_->markAsStale();
 }
 
-void ReportDefinitionController::onScheduleRequested(
-    const std::vector<boost::uuids::uuid>& ids) {
+void ReportDefinitionController::onScheduleRequested(const std::vector<boost::uuids::uuid>& ids) {
 
     if (!clientManager_ || !clientManager_->isConnected()) {
         emit errorMessage(tr("Cannot schedule: not connected to server."));
@@ -476,25 +528,27 @@ void ReportDefinitionController::onScheduleRequested(
         for (const auto& id : ids) {
             request.ids.push_back(boost::uuids::to_string(id));
         }
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
         if (!response_result)
             return {false, "Failed to communicate with server", 0, static_cast<int>(ids.size())};
 
-        return {response_result->success, response_result->message,
-            response_result->scheduled_count,
-            static_cast<int>(response_result->failed_ids.size())};
+        return {response_result->success,
+                response_result->message,
+                response_result->scheduled_count,
+                static_cast<int>(response_result->failed_ids.size())};
     };
 
     auto* watcher = new QFutureWatcher<ScheduleResult>(this);
-    connect(watcher, &QFutureWatcher<ScheduleResult>::finished,
-            this, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<ScheduleResult>::finished, this, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
-        if (!self) return;
+        if (!self)
+            return;
 
         if (result.success) {
-            BOOST_LOG_SEV(lg(), info) << "Scheduled " << result.scheduled_count
-                                     << " report definitions";
+            BOOST_LOG_SEV(lg(), info)
+                << "Scheduled " << result.scheduled_count << " report definitions";
             emit self->statusMessage(
                 tr("Scheduled %1 report definition(s).").arg(result.scheduled_count));
             if (self->listWindow_)
@@ -504,8 +558,8 @@ void ReportDefinitionController::onScheduleRequested(
             QMessageBox msgBox(self->mainWindow_);
             msgBox.setIcon(QMessageBox::Critical);
             msgBox.setWindowTitle(tr("Scheduling Failed"));
-            msgBox.setText(tr("%1 report definition(s) could not be scheduled.")
-                .arg(result.failed_count));
+            msgBox.setText(
+                tr("%1 report definition(s) could not be scheduled.").arg(result.failed_count));
             msgBox.setDetailedText(QString::fromStdString(result.message));
             msgBox.setStandardButtons(QMessageBox::Ok);
             msgBox.exec();
@@ -514,8 +568,7 @@ void ReportDefinitionController::onScheduleRequested(
     watcher->setFuture(QtConcurrent::run(task));
 }
 
-void ReportDefinitionController::onUnscheduleRequested(
-    const std::vector<boost::uuids::uuid>& ids) {
+void ReportDefinitionController::onUnscheduleRequested(const std::vector<boost::uuids::uuid>& ids) {
 
     if (!clientManager_ || !clientManager_->isConnected()) {
         emit errorMessage(tr("Cannot unschedule: not connected to server."));
@@ -541,25 +594,27 @@ void ReportDefinitionController::onUnscheduleRequested(
         for (const auto& id : ids) {
             request.ids.push_back(boost::uuids::to_string(id));
         }
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
         if (!response_result)
             return {false, "Failed to communicate with server", 0, static_cast<int>(ids.size())};
 
-        return {response_result->success, response_result->message,
-            response_result->unscheduled_count,
-            static_cast<int>(response_result->failed_ids.size())};
+        return {response_result->success,
+                response_result->message,
+                response_result->unscheduled_count,
+                static_cast<int>(response_result->failed_ids.size())};
     };
 
     auto* watcher = new QFutureWatcher<UnscheduleResult>(this);
-    connect(watcher, &QFutureWatcher<UnscheduleResult>::finished,
-            this, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<UnscheduleResult>::finished, this, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
-        if (!self) return;
+        if (!self)
+            return;
 
         if (result.success) {
-            BOOST_LOG_SEV(lg(), info) << "Unscheduled " << result.unscheduled_count
-                                     << " report definitions";
+            BOOST_LOG_SEV(lg(), info)
+                << "Unscheduled " << result.unscheduled_count << " report definitions";
             emit self->statusMessage(
                 tr("Unscheduled %1 report definition(s).").arg(result.unscheduled_count));
             if (self->listWindow_)
@@ -569,8 +624,8 @@ void ReportDefinitionController::onUnscheduleRequested(
             QMessageBox msgBox(self->mainWindow_);
             msgBox.setIcon(QMessageBox::Critical);
             msgBox.setWindowTitle(tr("Unscheduling Failed"));
-            msgBox.setText(tr("%1 report definition(s) could not be unscheduled.")
-                .arg(result.failed_count));
+            msgBox.setText(
+                tr("%1 report definition(s) could not be unscheduled.").arg(result.failed_count));
             msgBox.setDetailedText(QString::fromStdString(result.message));
             msgBox.setStandardButtons(QMessageBox::Ok);
             msgBox.exec();

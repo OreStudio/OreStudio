@@ -18,46 +18,42 @@
  *
  */
 #include "ores.qt/RoleMdiWindow.hpp"
-
-#include <vector>
-#include <QtCore/QVariant>
-#include <QtCore/QTimer>
-#include <QtConcurrent>
+#include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/EntityItemDelegate.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
+#include <QAction>
 #include <QFutureWatcher>
-#include <QtWidgets/QWidget>
+#include <QMessageBox>
+#include <QSortFilterProxyModel>
+#include <QToolBar>
+#include <QtConcurrent>
+#include <QtCore/QTimer>
+#include <QtCore/QVariant>
+#include <QtWidgets/QApplication>
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QHeaderView>
-#include <QtWidgets/QTableView>
 #include <QtWidgets/QScrollBar>
-#include <QtWidgets/QApplication>
-#include <QMessageBox>
-#include <QToolBar>
-#include <QAction>
-#include <QSortFilterProxyModel>
+#include <QtWidgets/QTableView>
+#include <QtWidgets/QWidget>
 #include <boost/uuid/uuid_io.hpp>
-#include "ores.qt/ColorConstants.hpp"
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/EntityItemDelegate.hpp"
-#include "ores.qt/MessageBoxHelper.hpp"
+#include <vector>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-RoleMdiWindow::
-RoleMdiWindow(ClientManager* clientManager,
-              const QString& username,
-              QWidget* parent)
-    : EntityListMdiWindow(parent),
-      verticalLayout_(new QVBoxLayout(this)),
-      roleTableView_(new QTableView(this)),
-      toolBar_(new QToolBar(this)),
-      reloadAction_(new QAction("Reload", this)),
-      viewAction_(new QAction("View", this)),
-      roleModel_(std::make_unique<ClientRoleModel>(clientManager)),
-      proxyModel_(new QSortFilterProxyModel(this)),
-      clientManager_(clientManager),
-      username_(username) {
+RoleMdiWindow::RoleMdiWindow(ClientManager* clientManager, const QString& username, QWidget* parent)
+    : EntityListMdiWindow(parent)
+    , verticalLayout_(new QVBoxLayout(this))
+    , roleTableView_(new QTableView(this))
+    , toolBar_(new QToolBar(this))
+    , reloadAction_(new QAction("Reload", this))
+    , viewAction_(new QAction("View", this))
+    , roleModel_(std::make_unique<ClientRoleModel>(clientManager))
+    , proxyModel_(new QSortFilterProxyModel(this))
+    , clientManager_(clientManager)
+    , username_(username) {
 
     BOOST_LOG_SEV(lg(), debug) << "Creating role MDI window";
 
@@ -71,11 +67,9 @@ RoleMdiWindow(ClientManager* clientManager,
 
     toolBar_->addSeparator();
 
-    viewAction_->setIcon(IconUtils::createRecoloredIcon(
-            Icon::Edit, IconUtils::DefaultIconColor));
+    viewAction_->setIcon(IconUtils::createRecoloredIcon(Icon::Edit, IconUtils::DefaultIconColor));
     viewAction_->setToolTip("View role details");
-    connect(viewAction_, &QAction::triggered, this,
-        &RoleMdiWindow::viewSelected);
+    connect(viewAction_, &QAction::triggered, this, &RoleMdiWindow::viewSelected);
     toolBar_->addAction(viewAction_);
 
     verticalLayout_->addWidget(toolBar_);
@@ -91,35 +85,39 @@ RoleMdiWindow(ClientManager* clientManager,
     proxyModel_->setSourceModel(roleModel_.get());
     roleTableView_->setModel(proxyModel_);
     roleTableView_->setSortingEnabled(true);
-    roleTableView_->setItemDelegate(new EntityItemDelegate(
-        ClientRoleModel::columnStyles(), roleTableView_));
+    roleTableView_->setItemDelegate(
+        new EntityItemDelegate(ClientRoleModel::columnStyles(), roleTableView_));
     roleTableView_->sortByColumn(0, Qt::AscendingOrder);
 
     roleTableView_->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
 
-    initializeTableSettings(roleTableView_, roleModel_.get(),
-        ClientRoleModel::kSettingsGroup,
-        ClientRoleModel::defaultHiddenColumns(),
-        ClientRoleModel::kDefaultWindowSize, 1);
+    initializeTableSettings(roleTableView_,
+                            roleModel_.get(),
+                            ClientRoleModel::kSettingsGroup,
+                            ClientRoleModel::defaultHiddenColumns(),
+                            ClientRoleModel::kDefaultWindowSize,
+                            1);
 
     // Connect signals
-    connect(roleModel_.get(), &ClientRoleModel::dataLoaded,
-            this, &RoleMdiWindow::onDataLoaded);
-    connect(roleModel_.get(), &ClientRoleModel::loadError,
-            this, &RoleMdiWindow::onLoadError);
+    connect(roleModel_.get(), &ClientRoleModel::dataLoaded, this, &RoleMdiWindow::onDataLoaded);
+    connect(roleModel_.get(), &ClientRoleModel::loadError, this, &RoleMdiWindow::onLoadError);
     connectModel(roleModel_.get());
-    connect(roleTableView_, &QTableView::doubleClicked,
-            this, &RoleMdiWindow::onRowDoubleClicked);
+    connect(roleTableView_, &QTableView::doubleClicked, this, &RoleMdiWindow::onRowDoubleClicked);
     connect(roleTableView_->selectionModel(),
-        &QItemSelectionModel::selectionChanged,
-            this, &RoleMdiWindow::onSelectionChanged);
+            &QItemSelectionModel::selectionChanged,
+            this,
+            &RoleMdiWindow::onSelectionChanged);
 
     // Connect connection state signals
     if (clientManager_) {
-        connect(clientManager_, &ClientManager::connected,
-            this, &RoleMdiWindow::onConnectionStateChanged);
-        connect(clientManager_, &ClientManager::disconnected,
-            this, &RoleMdiWindow::onConnectionStateChanged);
+        connect(clientManager_,
+                &ClientManager::connected,
+                this,
+                &RoleMdiWindow::onConnectionStateChanged);
+        connect(clientManager_,
+                &ClientManager::disconnected,
+                this,
+                &RoleMdiWindow::onConnectionStateChanged);
     }
 
     updateActionStates();
@@ -172,21 +170,17 @@ void RoleMdiWindow::onDataLoaded() {
 
     const QString message = QString("Loaded %1 roles").arg(loaded);
     emit statusChanged(message);
-    BOOST_LOG_SEV(lg(), debug) << "Role data loaded successfully: "
-                             << loaded << " roles";
+    BOOST_LOG_SEV(lg(), debug) << "Role data loaded successfully: " << loaded << " roles";
 
-    if (roleModel_->rowCount() > 0 &&
-        roleTableView_->selectionModel()->selectedRows().isEmpty()) {
+    if (roleModel_->rowCount() > 0 && roleTableView_->selectionModel()->selectedRows().isEmpty()) {
         roleTableView_->selectRow(0);
         BOOST_LOG_SEV(lg(), debug) << "Auto-selected first row";
     }
 }
 
-void RoleMdiWindow::onLoadError(const QString& error_message,
-                                 const QString& details) {
+void RoleMdiWindow::onLoadError(const QString& error_message, const QString& details) {
     emit errorOccurred(error_message);
-    BOOST_LOG_SEV(lg(), error) << "Error loading roles: "
-                              << error_message.toStdString();
+    BOOST_LOG_SEV(lg(), error) << "Error loading roles: " << error_message.toStdString();
 
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);
 }
@@ -200,13 +194,11 @@ void RoleMdiWindow::onRowDoubleClicked(const QModelIndex& index) {
     const QModelIndex sourceIndex = proxyModel_->mapToSource(index);
     const auto* role = roleModel_->getRole(sourceIndex.row());
     if (!role) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to get role for row: "
-                                 << sourceIndex.row();
+        BOOST_LOG_SEV(lg(), warn) << "Failed to get role for row: " << sourceIndex.row();
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Emitting showRoleDetails for role: "
-                             << role->name;
+    BOOST_LOG_SEV(lg(), debug) << "Emitting showRoleDetails for role: " << role->name;
     emit showRoleDetails(*role);
 }
 
@@ -227,16 +219,15 @@ void RoleMdiWindow::viewSelected() {
 }
 
 void RoleMdiWindow::updateActionStates() {
-    const int selection_count = roleTableView_
-        ->selectionModel()->selectedRows().count();
+    const int selection_count = roleTableView_->selectionModel()->selectedRows().count();
     const bool hasSingleSelection = selection_count == 1;
 
     viewAction_->setEnabled(hasSingleSelection);
 }
 
 void RoleMdiWindow::setupReloadAction() {
-    reloadAction_->setIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowSync, IconUtils::DefaultIconColor));
+    reloadAction_->setIcon(
+        IconUtils::createRecoloredIcon(Icon::ArrowSync, IconUtils::DefaultIconColor));
     connect(reloadAction_, &QAction::triggered, this, &EntityListMdiWindow::reload);
 
     initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowSync));

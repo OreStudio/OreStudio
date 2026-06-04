@@ -18,39 +18,36 @@
  *
  */
 #include "ores.qt/BookController.hpp"
-
+#include "ores.qt/BadgeCache.hpp"
+#include "ores.qt/BookDetailDialog.hpp"
+#include "ores.qt/BookHistoryDialog.hpp"
+#include "ores.qt/BookMdiWindow.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
+#include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/IconUtils.hpp"
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
 #include <boost/uuid/uuid.hpp>
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/BadgeCache.hpp"
-#include "ores.qt/BookMdiWindow.hpp"
-#include "ores.qt/BookDetailDialog.hpp"
-#include "ores.qt/BookHistoryDialog.hpp"
-#include "ores.qt/ChangeReasonCache.hpp"
-#include "ores.qt/DetachableMdiSubWindow.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-BookController::BookController(
-    QMainWindow* mainWindow,
-    QMdiArea* mdiArea,
-    ClientManager* clientManager,
-    ImageCache* imageCache,
-    ChangeReasonCache* changeReasonCache,
-    BadgeCache* badgeCache,
-    const QString& username,
-    QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username,
-          std::string_view{}, parent),
-      imageCache_(imageCache),
-      changeReasonCache_(changeReasonCache),
-      badgeCache_(badgeCache),
-      listWindow_(nullptr),
-      listMdiSubWindow_(nullptr) {
+BookController::BookController(QMainWindow* mainWindow,
+                               QMdiArea* mdiArea,
+                               ClientManager* clientManager,
+                               ImageCache* imageCache,
+                               ChangeReasonCache* changeReasonCache,
+                               BadgeCache* badgeCache,
+                               const QString& username,
+                               QObject* parent)
+    : EntityController(mainWindow, mdiArea, clientManager, username, std::string_view{}, parent)
+    , imageCache_(imageCache)
+    , changeReasonCache_(changeReasonCache)
+    , badgeCache_(badgeCache)
+    , listWindow_(nullptr)
+    , listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "BookController created";
 }
@@ -68,23 +65,18 @@ void BookController::showListWindow() {
     listWindow_ = new BookMdiWindow(clientManager_, imageCache_, username_, badgeCache_);
 
     // Connect signals
-    connect(listWindow_, &BookMdiWindow::statusChanged,
-            this, &BookController::statusMessage);
-    connect(listWindow_, &BookMdiWindow::errorOccurred,
-            this, &BookController::errorMessage);
-    connect(listWindow_, &BookMdiWindow::showBookDetails,
-            this, &BookController::onShowDetails);
-    connect(listWindow_, &BookMdiWindow::addNewRequested,
-            this, &BookController::onAddNewRequested);
-    connect(listWindow_, &BookMdiWindow::showBookHistory,
-            this, &BookController::onShowHistory);
+    connect(listWindow_, &BookMdiWindow::statusChanged, this, &BookController::statusMessage);
+    connect(listWindow_, &BookMdiWindow::errorOccurred, this, &BookController::errorMessage);
+    connect(listWindow_, &BookMdiWindow::showBookDetails, this, &BookController::onShowDetails);
+    connect(listWindow_, &BookMdiWindow::addNewRequested, this, &BookController::onAddNewRequested);
+    connect(listWindow_, &BookMdiWindow::showBookHistory, this, &BookController::onShowHistory);
 
     // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Books");
-    listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::BookOpen, IconUtils::DefaultIconColor));
+    listMdiSubWindow_->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::BookOpen, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -96,12 +88,16 @@ void BookController::showListWindow() {
     register_detachable_window(listMdiSubWindow_);
 
     // Cleanup when closed
-    connect(listMdiSubWindow_, &QObject::destroyed, this, [self = QPointer<BookController>(this), key]() {
-        if (!self) return;
-        self->untrack_window(key);
-        self->listWindow_ = nullptr;
-        self->listMdiSubWindow_ = nullptr;
-    });
+    connect(listMdiSubWindow_,
+            &QObject::destroyed,
+            this,
+            [self = QPointer<BookController>(this), key]() {
+                if (!self)
+                    return;
+                self->untrack_window(key);
+                self->listWindow_ = nullptr;
+                self->listMdiSubWindow_ = nullptr;
+            });
 
     BOOST_LOG_SEV(lg(), debug) << "Book list window created";
 }
@@ -128,13 +124,20 @@ void BookController::reloadListWindow() {
     }
 }
 
-void BookController::openAdd()                                         { showAddWindow(); }
-void BookController::openAddWithParent(boost::uuids::uuid parent_id)   { showAddWindow(parent_id); }
-void BookController::openEdit(const refdata::domain::book& b)          { showDetailWindow(b); }
-void BookController::openHistory(const refdata::domain::book& b)       { showHistoryWindow(b); }
+void BookController::openAdd() {
+    showAddWindow();
+}
+void BookController::openAddWithParent(boost::uuids::uuid parent_id) {
+    showAddWindow(parent_id);
+}
+void BookController::openEdit(const refdata::domain::book& b) {
+    showDetailWindow(b);
+}
+void BookController::openHistory(const refdata::domain::book& b) {
+    showHistoryWindow(b);
+}
 
-void BookController::onShowDetails(
-    const refdata::domain::book& book) {
+void BookController::onShowDetails(const refdata::domain::book& book) {
     BOOST_LOG_SEV(lg(), debug) << "Show details for: " << book.name;
     showDetailWindow(book);
 }
@@ -144,8 +147,7 @@ void BookController::onAddNewRequested() {
     showAddWindow();
 }
 
-void BookController::onShowHistory(
-    const refdata::domain::book& book) {
+void BookController::onShowHistory(const refdata::domain::book& book) {
     BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << book.name;
     showHistoryWindow(book);
 }
@@ -167,23 +169,24 @@ void BookController::showAddWindow(boost::uuids::uuid parentPortfolioId) {
 
     detailDialog->setCreateMode(true);
 
-    connect(detailDialog, &BookDetailDialog::statusMessage,
-            this, &BookController::statusMessage);
-    connect(detailDialog, &BookDetailDialog::errorMessage,
-            this, &BookController::errorMessage);
-    connect(detailDialog, &BookDetailDialog::bookSaved,
-            this, [self = QPointer<BookController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Book saved: " << code.toStdString();
-        self->handleEntitySaved();
-    });
+    connect(detailDialog, &BookDetailDialog::statusMessage, this, &BookController::statusMessage);
+    connect(detailDialog, &BookDetailDialog::errorMessage, this, &BookController::errorMessage);
+    connect(detailDialog,
+            &BookDetailDialog::bookSaved,
+            this,
+            [self = QPointer<BookController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Book saved: " << code.toStdString();
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Book");
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::BookOpen, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::BookOpen, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -191,8 +194,7 @@ void BookController::showAddWindow(boost::uuids::uuid parentPortfolioId) {
     show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
-void BookController::showDetailWindow(
-    const refdata::domain::book& book) {
+void BookController::showDetailWindow(const refdata::domain::book& book) {
 
     const QString identifier = QString::fromStdString(book.name);
     const QString key = build_window_key("details", identifier);
@@ -212,37 +214,40 @@ void BookController::showDetailWindow(
     detailDialog->setCreateMode(false);
     detailDialog->setBook(book);
 
-    connect(detailDialog, &BookDetailDialog::statusMessage,
-            this, &BookController::statusMessage);
-    connect(detailDialog, &BookDetailDialog::errorMessage,
-            this, &BookController::errorMessage);
-    connect(detailDialog, &BookDetailDialog::bookSaved,
-            this, [self = QPointer<BookController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Book saved: " << code.toStdString();
-        self->handleEntitySaved();
-    });
-    connect(detailDialog, &BookDetailDialog::bookDeleted,
-            this, [self = QPointer<BookController>(this), key](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Book deleted: " << code.toStdString();
-        self->handleEntityDeleted();
-    });
+    connect(detailDialog, &BookDetailDialog::statusMessage, this, &BookController::statusMessage);
+    connect(detailDialog, &BookDetailDialog::errorMessage, this, &BookController::errorMessage);
+    connect(detailDialog,
+            &BookDetailDialog::bookSaved,
+            this,
+            [self = QPointer<BookController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Book saved: " << code.toStdString();
+                self->handleEntitySaved();
+            });
+    connect(detailDialog,
+            &BookDetailDialog::bookDeleted,
+            this,
+            [self = QPointer<BookController>(this), key](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Book deleted: " << code.toStdString();
+                self->handleEntityDeleted();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Book: %1").arg(identifier));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::BookOpen, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::BookOpen, IconUtils::DefaultIconColor));
 
     // Track window
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<BookController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, key]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, key]() {
         if (self) {
             self->untrack_window(key);
         }
@@ -252,41 +257,46 @@ void BookController::showDetailWindow(
     show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
-void BookController::showHistoryWindow(
-    const refdata::domain::book& book) {
+void BookController::showHistoryWindow(const refdata::domain::book& book) {
     const QString code = QString::fromStdString(book.name);
-    BOOST_LOG_SEV(lg(), info) << "Opening history window for book: "
-                              << book.name;
+    BOOST_LOG_SEV(lg(), info) << "Opening history window for book: " << book.name;
 
     const QString windowKey = build_window_key("history", code);
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
-        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: "
-                                  << book.name;
+        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: " << book.name;
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
-                              << book.name;
+    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << book.name;
 
-    auto* historyDialog = new BookHistoryDialog(
-        book.id, code, clientManager_, mainWindow_);
+    auto* historyDialog = new BookHistoryDialog(book.id, code, clientManager_, mainWindow_);
 
-    connect(historyDialog, &BookHistoryDialog::statusChanged,
-            this, [self = QPointer<BookController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(historyDialog, &BookHistoryDialog::errorOccurred,
-            this, [self = QPointer<BookController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
-    connect(historyDialog, &BookHistoryDialog::revertVersionRequested,
-            this, &BookController::onRevertVersion);
-    connect(historyDialog, &BookHistoryDialog::openVersionRequested,
-            this, &BookController::onOpenVersion);
+    connect(historyDialog,
+            &BookHistoryDialog::statusChanged,
+            this,
+            [self = QPointer<BookController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(historyDialog,
+            &BookHistoryDialog::errorOccurred,
+            this,
+            [self = QPointer<BookController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
+    connect(historyDialog,
+            &BookHistoryDialog::revertVersionRequested,
+            this,
+            &BookController::onRevertVersion);
+    connect(historyDialog,
+            &BookHistoryDialog::openVersionRequested,
+            this,
+            &BookController::onOpenVersion);
 
     // Load history data
     historyDialog->loadHistory();
@@ -295,16 +305,15 @@ void BookController::showHistoryWindow(
     historyWindow->setAttribute(Qt::WA_DeleteOnClose);
     historyWindow->setWidget(historyDialog);
     historyWindow->setWindowTitle(QString("Book History: %1").arg(code));
-    historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    historyWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     // Track this history window
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
 
     QPointer<BookController> self = this;
-    connect(historyWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -313,14 +322,13 @@ void BookController::showHistoryWindow(
     show_managed_window(historyWindow, listMdiSubWindow_);
 }
 
-void BookController::onOpenVersion(
-    const refdata::domain::book& book, int versionNumber) {
+void BookController::onOpenVersion(const refdata::domain::book& book, int versionNumber) {
     BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
                               << " for book: " << book.name;
 
     const QString code = QString::fromStdString(book.name);
-    const QString windowKey = build_window_key("version", QString("%1_v%2")
-        .arg(code).arg(versionNumber));
+    const QString windowKey =
+        build_window_key("version", QString("%1_v%2").arg(code).arg(versionNumber));
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
@@ -336,31 +344,35 @@ void BookController::onOpenVersion(
     detailDialog->setBook(book);
     detailDialog->setReadOnly(true);
 
-    connect(detailDialog, &BookDetailDialog::statusMessage,
-            this, [self = QPointer<BookController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(detailDialog, &BookDetailDialog::errorMessage,
-            this, [self = QPointer<BookController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
+    connect(detailDialog,
+            &BookDetailDialog::statusMessage,
+            this,
+            [self = QPointer<BookController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(detailDialog,
+            &BookDetailDialog::errorMessage,
+            this,
+            [self = QPointer<BookController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Book: %1 (Version %2)")
-        .arg(code).arg(versionNumber));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(QString("Book: %1 (Version %2)").arg(code).arg(versionNumber));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     track_window(windowKey, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<BookController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -370,10 +382,8 @@ void BookController::onOpenVersion(
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
-void BookController::onRevertVersion(
-    const refdata::domain::book& book) {
-    BOOST_LOG_SEV(lg(), info) << "Reverting book to version: "
-                              << book.version;
+void BookController::onRevertVersion(const refdata::domain::book& book) {
+    BOOST_LOG_SEV(lg(), info) << "Reverting book to version: " << book.version;
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new BookDetailDialog(mainWindow_);
@@ -384,25 +394,25 @@ void BookController::onRevertVersion(
     detailDialog->setBook(book);
     detailDialog->setCreateMode(false);
 
-    connect(detailDialog, &BookDetailDialog::statusMessage,
-            this, &BookController::statusMessage);
-    connect(detailDialog, &BookDetailDialog::errorMessage,
-            this, &BookController::errorMessage);
-    connect(detailDialog, &BookDetailDialog::bookSaved,
-            this, [self = QPointer<BookController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Book reverted: " << code.toStdString();
-        emit self->statusMessage(QString("Book '%1' reverted successfully").arg(code));
-        self->handleEntitySaved();
-    });
+    connect(detailDialog, &BookDetailDialog::statusMessage, this, &BookController::statusMessage);
+    connect(detailDialog, &BookDetailDialog::errorMessage, this, &BookController::errorMessage);
+    connect(detailDialog,
+            &BookDetailDialog::bookSaved,
+            this,
+            [self = QPointer<BookController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Book reverted: " << code.toStdString();
+                emit self->statusMessage(QString("Book '%1' reverted successfully").arg(code));
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Revert Book: %1")
-        .arg(QString::fromStdString(book.name)));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(QString("Revert Book: %1").arg(QString::fromStdString(book.name)));
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
+                                                               IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 

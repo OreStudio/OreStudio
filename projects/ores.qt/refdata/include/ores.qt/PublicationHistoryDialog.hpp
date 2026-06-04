@@ -20,16 +20,16 @@
 #ifndef ORES_QT_PUBLICATION_HISTORY_DIALOG_HPP
 #define ORES_QT_PUBLICATION_HISTORY_DIALOG_HPP
 
+#include "ores.dq.api/domain/publication.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include <QAbstractTableModel>
 #include <QDialog>
+#include <QFutureWatcher>
 #include <QTableView>
 #include <QVBoxLayout>
-#include <QAbstractTableModel>
-#include <QFutureWatcher>
-#include <memory>
 #include <boost/uuid/uuid.hpp>
-#include "ores.qt/ClientManager.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.dq.api/domain/publication.hpp"
+#include <memory>
 
 namespace ores::qt {
 
@@ -45,8 +45,8 @@ public:
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-    QVariant headerData(int section, Qt::Orientation orientation,
-        int role = Qt::DisplayRole) const override;
+    QVariant
+    headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
     void setPublications(const std::vector<dq::domain::publication>& publications);
     void clear();
@@ -77,8 +77,7 @@ class PublicationHistoryDialog : public QDialog {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.publication_history_dialog";
+    inline static std::string_view logger_name = "ores.qt.publication_history_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -87,8 +86,7 @@ private:
     }
 
 public:
-    explicit PublicationHistoryDialog(ClientManager* clientManager,
-                                      QWidget* parent = nullptr);
+    explicit PublicationHistoryDialog(ClientManager* clientManager, QWidget* parent = nullptr);
     ~PublicationHistoryDialog() override;
 
     /**

@@ -18,40 +18,38 @@
  *
  */
 #include "ores.qt/MarketSeriesMdiWindow.hpp"
-
-#include <QtConcurrent>
+#include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/EntityItemDelegate.hpp"
+#include "ores.qt/ExceptionHelper.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.refdata.api/messaging/asset_class_protocol.hpp"
 #include <QHeaderView>
 #include <QLabel>
 #include <QPointer>
 #include <QWidgetAction>
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/ColorConstants.hpp"
-#include "ores.qt/EntityItemDelegate.hpp"
-#include "ores.qt/ExceptionHelper.hpp"
-#include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.refdata.api/messaging/asset_class_protocol.hpp"
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-MarketSeriesMdiWindow::MarketSeriesMdiWindow(
-    ClientManager* clientManager,
-    const QString& username,
-    QWidget* parent)
-    : EntityListMdiWindow(parent),
-      verticalLayout_(new QVBoxLayout(this)),
-      tableView_(new QTableView(this)),
-      toolBar_(new QToolBar(this)),
-      paginationWidget_(new PaginationWidget(this)),
-      reloadAction_(new QAction("Reload", this)),
-      viewObsAction_(new QAction("View Observations", this)),
-      assetClassCombo_(new QComboBox(this)),
-      model_(std::make_unique<ClientMarketSeriesModel>(clientManager)),
-      proxyModel_(new QSortFilterProxyModel(this)),
-      assetClassWatcher_(new QFutureWatcher<AssetClassFetchResult>(this)),
-      clientManager_(clientManager),
-      username_(username) {
+MarketSeriesMdiWindow::MarketSeriesMdiWindow(ClientManager* clientManager,
+                                             const QString& username,
+                                             QWidget* parent)
+    : EntityListMdiWindow(parent)
+    , verticalLayout_(new QVBoxLayout(this))
+    , tableView_(new QTableView(this))
+    , toolBar_(new QToolBar(this))
+    , paginationWidget_(new PaginationWidget(this))
+    , reloadAction_(new QAction("Reload", this))
+    , viewObsAction_(new QAction("View Observations", this))
+    , assetClassCombo_(new QComboBox(this))
+    , model_(std::make_unique<ClientMarketSeriesModel>(clientManager))
+    , proxyModel_(new QSortFilterProxyModel(this))
+    , assetClassWatcher_(new QFutureWatcher<AssetClassFetchResult>(this))
+    , clientManager_(clientManager)
+    , username_(username) {
 
     BOOST_LOG_SEV(lg(), debug) << "Creating market series MDI window";
     setupUi();
@@ -76,35 +74,39 @@ void MarketSeriesMdiWindow::setupUi() {
     tableView_->verticalHeader()->setVisible(false);
     tableView_->setItemDelegate(new EntityItemDelegate({}, tableView_));
 
-    initializeTableSettings(tableView_, model_.get(),
-        "MarketSeriesListWindow", {}, {1100, 600}, 1);
+    initializeTableSettings(tableView_, model_.get(), "MarketSeriesListWindow", {}, {1100, 600}, 1);
 
     verticalLayout_->addWidget(tableView_);
     verticalLayout_->addWidget(createBottomBar(paginationWidget_, clientManager_));
 
     // Connections
-    connect(model_.get(), &ClientMarketSeriesModel::dataLoaded,
-            this, &MarketSeriesMdiWindow::onDataLoaded);
-    connect(model_.get(), &ClientMarketSeriesModel::loadError,
-            this, &MarketSeriesMdiWindow::onLoadError);
+    connect(model_.get(),
+            &ClientMarketSeriesModel::dataLoaded,
+            this,
+            &MarketSeriesMdiWindow::onDataLoaded);
+    connect(model_.get(),
+            &ClientMarketSeriesModel::loadError,
+            this,
+            &MarketSeriesMdiWindow::onLoadError);
     connectModel(model_.get());
-    connect(tableView_, &QTableView::doubleClicked,
-            this, &MarketSeriesMdiWindow::onRowDoubleClicked);
+    connect(
+        tableView_, &QTableView::doubleClicked, this, &MarketSeriesMdiWindow::onRowDoubleClicked);
     connect(tableView_->selectionModel(),
             &QItemSelectionModel::selectionChanged,
-            this, &MarketSeriesMdiWindow::onSelectionChanged);
+            this,
+            &MarketSeriesMdiWindow::onSelectionChanged);
 
-    connect(paginationWidget_, &PaginationWidget::page_size_changed,
-            this, [this](std::uint32_t size) {
-        model_->set_page_size(size);
-        model_->refresh();
-    });
-    connect(paginationWidget_, &PaginationWidget::page_requested,
-            this, [this](std::uint32_t offset, std::uint32_t limit) {
-        model_->load_page(offset, limit);
-    });
-    connect(paginationWidget_, &PaginationWidget::load_all_requested,
-            this, [this]() {
+    connect(
+        paginationWidget_, &PaginationWidget::page_size_changed, this, [this](std::uint32_t size) {
+            model_->set_page_size(size);
+            model_->refresh();
+        });
+    connect(
+        paginationWidget_,
+        &PaginationWidget::page_requested,
+        this,
+        [this](std::uint32_t offset, std::uint32_t limit) { model_->load_page(offset, limit); });
+    connect(paginationWidget_, &PaginationWidget::load_all_requested, this, [this]() {
         const auto total = model_->total_available_count();
         if (total > 0 && total <= 5000) {
             model_->set_page_size(total);
@@ -112,14 +114,20 @@ void MarketSeriesMdiWindow::setupUi() {
         }
     });
 
-    connect(assetClassWatcher_, &QFutureWatcher<AssetClassFetchResult>::finished,
-            this, &MarketSeriesMdiWindow::onAssetClassesLoaded);
+    connect(assetClassWatcher_,
+            &QFutureWatcher<AssetClassFetchResult>::finished,
+            this,
+            &MarketSeriesMdiWindow::onAssetClassesLoaded);
 
     if (clientManager_) {
-        connect(clientManager_, &ClientManager::connected,
-                this, &MarketSeriesMdiWindow::onConnectionStateChanged);
-        connect(clientManager_, &ClientManager::reconnected,
-                this, &MarketSeriesMdiWindow::onConnectionStateChanged);
+        connect(clientManager_,
+                &ClientManager::connected,
+                this,
+                &MarketSeriesMdiWindow::onConnectionStateChanged);
+        connect(clientManager_,
+                &ClientManager::reconnected,
+                this,
+                &MarketSeriesMdiWindow::onConnectionStateChanged);
         if (clientManager_->isConnected()) {
             model_->refresh();
             loadAssetClasses();
@@ -135,22 +143,18 @@ void MarketSeriesMdiWindow::setupToolbar() {
 
     const QColor iconColor = color_constants::icon_color;
 
-    reloadAction_->setIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowSync, iconColor));
+    reloadAction_->setIcon(IconUtils::createRecoloredIcon(Icon::ArrowSync, iconColor));
     reloadAction_->setToolTip(tr("Refresh market series"));
-    connect(reloadAction_, &QAction::triggered,
-            this, &EntityListMdiWindow::reload);
+    connect(reloadAction_, &QAction::triggered, this, &EntityListMdiWindow::reload);
     toolBar_->addAction(reloadAction_);
     initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowSync));
 
     toolBar_->addSeparator();
 
-    viewObsAction_->setIcon(IconUtils::createRecoloredIcon(
-        Icon::Chart, iconColor));
+    viewObsAction_->setIcon(IconUtils::createRecoloredIcon(Icon::Chart, iconColor));
     viewObsAction_->setToolTip(tr("View time-series observations for selected series"));
     viewObsAction_->setEnabled(false);
-    connect(viewObsAction_, &QAction::triggered,
-            this, &MarketSeriesMdiWindow::viewObservations);
+    connect(viewObsAction_, &QAction::triggered, this, &MarketSeriesMdiWindow::viewObservations);
     toolBar_->addAction(viewObsAction_);
 
     toolBar_->addSeparator();
@@ -164,14 +168,14 @@ void MarketSeriesMdiWindow::setupToolbar() {
     assetClassCombo_->addItem(tr("All"), QString{});
     connect(assetClassCombo_,
             QOverload<int>::of(&QComboBox::currentIndexChanged),
-            this, &MarketSeriesMdiWindow::onAssetClassFilterChanged);
+            this,
+            &MarketSeriesMdiWindow::onAssetClassFilterChanged);
     toolBar_->addWidget(assetClassCombo_);
 }
 
 void MarketSeriesMdiWindow::updateActionStates() {
     const bool hasSelection =
-        tableView_->selectionModel() &&
-        tableView_->selectionModel()->hasSelection();
+        tableView_->selectionModel() && tableView_->selectionModel()->hasSelection();
     viewObsAction_->setEnabled(hasSelection);
 }
 
@@ -188,16 +192,13 @@ void MarketSeriesMdiWindow::onWindowWorkspaceChanged(const WorkspaceContext& ctx
 
 void MarketSeriesMdiWindow::onDataLoaded() {
     const auto loaded = model_->rowCount();
-    const auto total  = static_cast<int>(model_->total_available_count());
+    const auto total = static_cast<int>(model_->total_available_count());
     paginationWidget_->update_state(loaded, total);
-    paginationWidget_->set_load_all_enabled(
-        loaded < total && total > 0 && total <= 5000);
-    emit statusChanged(tr("Loaded %1 of %2 market series")
-        .arg(loaded).arg(total));
+    paginationWidget_->set_load_all_enabled(loaded < total && total > 0 && total <= 5000);
+    emit statusChanged(tr("Loaded %1 of %2 market series").arg(loaded).arg(total));
 }
 
-void MarketSeriesMdiWindow::onLoadError(
-    const QString& error_message, const QString& /*details*/) {
+void MarketSeriesMdiWindow::onLoadError(const QString& error_message, const QString& /*details*/) {
     emit errorOccurred(error_message);
 }
 
@@ -209,7 +210,8 @@ void MarketSeriesMdiWindow::onRowDoubleClicked(const QModelIndex& index) {
 
 void MarketSeriesMdiWindow::viewObservations() {
     const auto selection = tableView_->selectionModel()->selectedRows();
-    if (selection.isEmpty()) return;
+    if (selection.isEmpty())
+        return;
     auto sourceIndex = proxyModel_->mapToSource(selection.first());
     if (auto* s = model_->getSeries(sourceIndex.row()))
         emit showMarketObservations(*s);
@@ -227,26 +229,26 @@ void MarketSeriesMdiWindow::onConnectionStateChanged() {
 }
 
 void MarketSeriesMdiWindow::loadAssetClasses() {
-    if (!clientManager_ || !clientManager_->isConnected()) return;
+    if (!clientManager_ || !clientManager_->isConnected())
+        return;
 
     QPointer<MarketSeriesMdiWindow> self = this;
-    QFuture<AssetClassFetchResult> future =
-        QtConcurrent::run([self]() -> AssetClassFetchResult {
-            return exception_helper::wrap_async_fetch<AssetClassFetchResult>(
-                [&]() -> AssetClassFetchResult {
-                    if (!self || !self->clientManager_)
-                        return {};
-                    refdata::messaging::get_asset_classes_request req;
-                    req.coding_scheme_code = "ORE_ASSET_CLASS";
-                    auto result =
-                        self->clientManager_->process_authenticated_request(
-                            std::move(req));
-                    if (!result) return {};
-                    AssetClassFetchResult r;
-                    r.asset_classes = std::move(result->asset_classes);
-                    return r;
-                }, "asset classes");
-        });
+    QFuture<AssetClassFetchResult> future = QtConcurrent::run([self]() -> AssetClassFetchResult {
+        return exception_helper::wrap_async_fetch<AssetClassFetchResult>(
+            [&]() -> AssetClassFetchResult {
+                if (!self || !self->clientManager_)
+                    return {};
+                refdata::messaging::get_asset_classes_request req;
+                req.coding_scheme_code = "ORE_ASSET_CLASS";
+                auto result = self->clientManager_->process_authenticated_request(std::move(req));
+                if (!result)
+                    return {};
+                AssetClassFetchResult r;
+                r.asset_classes = std::move(result->asset_classes);
+                return r;
+            },
+            "asset classes");
+    });
     assetClassWatcher_->setFuture(future);
 }
 

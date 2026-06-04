@@ -20,13 +20,13 @@
 #ifndef ORES_QT_TENANT_CONTROLLER_HPP
 #define ORES_QT_TENANT_CONTROLLER_HPP
 
-#include <QMdiArea>
-#include <QMainWindow>
-#include "ores.qt/EntityController.hpp"
-#include "ores.qt/ClientManager.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.iam.api/domain/tenant.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/EntityController.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
+#include <QMainWindow>
+#include <QMdiArea>
 
 namespace ores::qt {
 
@@ -45,8 +45,7 @@ class TenantController final : public EntityController {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.tenant_controller";
+    inline static std::string_view logger_name = "ores.qt.tenant_controller";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -55,14 +54,13 @@ private:
     }
 
 public:
-    TenantController(
-        QMainWindow* mainWindow,
-        QMdiArea* mdiArea,
-        ClientManager* clientManager,
-        ChangeReasonCache* changeReasonCache,
-        const QString& username,
-        BadgeCache* badgeCache = nullptr,
-        QObject* parent = nullptr);
+    TenantController(QMainWindow* mainWindow,
+                     QMdiArea* mdiArea,
+                     ClientManager* clientManager,
+                     ChangeReasonCache* changeReasonCache,
+                     const QString& username,
+                     BadgeCache* badgeCache = nullptr,
+                     QObject* parent = nullptr);
 
     void showListWindow() override;
     void closeAllWindows() override;
@@ -82,8 +80,7 @@ private slots:
     void onTenantReset(const QString& code);
     void onShowHistory(const iam::domain::tenant& tenant);
     void onRevertVersion(const iam::domain::tenant& tenant);
-    void onOpenVersion(const iam::domain::tenant& tenant,
-                       int versionNumber);
+    void onOpenVersion(const iam::domain::tenant& tenant, int versionNumber);
 
 private:
     void showAddWindow();

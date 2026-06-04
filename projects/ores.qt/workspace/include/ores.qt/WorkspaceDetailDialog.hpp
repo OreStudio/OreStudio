@@ -20,14 +20,14 @@
 #ifndef ORES_QT_WORKSPACE_DETAIL_DIALOG_HPP
 #define ORES_QT_WORKSPACE_DETAIL_DIALOG_HPP
 
-#include <vector>
-#include <QFutureWatcher>
+#include "ores.iam.api/domain/account.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/BadgeCache.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.iam.api/domain/account.hpp"
 #include "ores.workspace.api/domain/workspace.hpp"
+#include <QFutureWatcher>
+#include <vector>
 
 
 namespace Ui {
@@ -47,8 +47,7 @@ class WorkspaceDetailDialog final : public DetailDialogBase {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.workspace_detail_dialog";
+    inline static std::string_view logger_name = "ores.qt.workspace_detail_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -85,7 +84,9 @@ protected:
     QTabWidget* tabWidget() const override;
     QWidget* provenanceTab() const override;
     ProvenanceWidget* provenanceWidget() const override;
-    bool hasUnsavedChanges() const override { return hasChanges_; }
+    bool hasUnsavedChanges() const override {
+        return hasChanges_;
+    }
 
 private:
     void setupUi();
@@ -123,7 +124,6 @@ private:
     bool isStale_{false};
     QFutureWatcher<WorkspaceListResult>* parentWatcher_;
     QFutureWatcher<AccountListResult>* accountWatcher_;
-
 };
 
 }

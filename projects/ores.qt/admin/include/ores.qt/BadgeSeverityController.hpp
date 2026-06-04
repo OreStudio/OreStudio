@@ -20,13 +20,13 @@
 #ifndef ORES_QT_BADGE_SEVERITY_CONTROLLER_HPP
 #define ORES_QT_BADGE_SEVERITY_CONTROLLER_HPP
 
-#include <QMdiArea>
-#include <QMainWindow>
-#include "ores.qt/EntityController.hpp"
-#include "ores.qt/ClientManager.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.dq.api/domain/badge_severity.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/EntityController.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
+#include <QMainWindow>
+#include <QMdiArea>
 
 namespace ores::qt {
 
@@ -43,8 +43,7 @@ class BadgeSeverityController final : public EntityController {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.badge_severity_controller";
+    inline static std::string_view logger_name = "ores.qt.badge_severity_controller";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -53,12 +52,11 @@ private:
     }
 
 public:
-    BadgeSeverityController(
-        QMainWindow* mainWindow,
-        QMdiArea* mdiArea,
-        ClientManager* clientManager,
-        const QString& username,
-        QObject* parent = nullptr);
+    BadgeSeverityController(QMainWindow* mainWindow,
+                            QMdiArea* mdiArea,
+                            ClientManager* clientManager,
+                            const QString& username,
+                            QObject* parent = nullptr);
 
     void showListWindow() override;
     void closeAllWindows() override;
@@ -76,8 +74,7 @@ private slots:
     void onAddNewRequested();
     void onShowHistory(const dq::domain::badge_severity& severity);
     void onRevertVersion(const dq::domain::badge_severity& severity);
-    void onOpenVersion(const dq::domain::badge_severity& severity,
-                       int versionNumber);
+    void onOpenVersion(const dq::domain::badge_severity& severity, int versionNumber);
 
 private:
     void showAddWindow();

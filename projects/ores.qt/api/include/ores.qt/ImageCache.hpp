@@ -20,17 +20,17 @@
 #ifndef ORES_QT_IMAGE_CACHE_HPP
 #define ORES_QT_IMAGE_CACHE_HPP
 
+#include "ores.assets.api/domain/image.hpp"
+#include "ores.assets.api/messaging/assets_protocol.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/export.hpp"
+#include <QFutureWatcher>
+#include <QIcon>
+#include <QObject>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
-#include <QObject>
-#include <QIcon>
-#include <QFutureWatcher>
-#include "ores.qt/ClientManager.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.assets.api/domain/image.hpp"
-#include "ores.assets.api/messaging/assets_protocol.hpp"
-#include "ores.qt/export.hpp"
 
 namespace ores::qt {
 
@@ -107,12 +107,16 @@ public:
     /**
      * @brief Get the number of cached images.
      */
-    std::size_t cachedIconCount() const { return image_icons_.size(); }
+    std::size_t cachedIconCount() const {
+        return image_icons_.size();
+    }
 
     /**
      * @brief Check if images are currently being loaded.
      */
-    bool isLoading() const { return is_loading_images_; }
+    bool isLoading() const {
+        return is_loading_images_;
+    }
 
     /**
      * @brief Clear all caches and reset load state.
@@ -144,7 +148,9 @@ public:
     /**
      * @brief Check if image list has been loaded.
      */
-    bool hasImageList() const { return !available_images_.empty(); }
+    bool hasImageList() const {
+        return !available_images_.empty();
+    }
 
     /**
      * @brief Load all available images from the image list.
@@ -161,8 +167,9 @@ public:
      * @param image_id The image ID to assign (empty to remove)
      * @param assigned_by Username performing the assignment
      */
-    void setCurrencyImage(const std::string& iso_code, const std::string& image_id,
-        const std::string& assigned_by);
+    void setCurrencyImage(const std::string& iso_code,
+                          const std::string& image_id,
+                          const std::string& assigned_by);
 
     /**
      * @brief Set or remove a country's image association.
@@ -171,8 +178,9 @@ public:
      * @param image_id The image ID to assign (empty to remove)
      * @param assigned_by Username performing the assignment
      */
-    void setCountryImage(const std::string& alpha2_code, const std::string& image_id,
-        const std::string& assigned_by);
+    void setCountryImage(const std::string& alpha2_code,
+                         const std::string& image_id,
+                         const std::string& assigned_by);
 
     /**
      * @brief Get the image ID for the "no-flag" placeholder.
@@ -325,7 +333,7 @@ private:
     struct ImagesResult {
         bool success;
         std::vector<assets::domain::image> images;
-        int failed_batches{0};  ///< Number of batches that failed (e.g., due to CRC errors)
+        int failed_batches{0}; ///< Number of batches that failed (e.g., due to CRC errors)
     };
 
     /**
@@ -335,9 +343,8 @@ private:
      * @param image_ids The list of image IDs to fetch
      * @return ImagesResult containing fetched images
      */
-    static ImagesResult fetchImagesInBatches(
-        ClientManager* clientManager,
-        const std::vector<std::string>& image_ids);
+    static ImagesResult fetchImagesInBatches(ClientManager* clientManager,
+                                             const std::vector<std::string>& image_ids);
 
     struct ImageListResult {
         bool success;

@@ -18,37 +18,42 @@
  *
  */
 #include "ores.qt/CountryHistoryDialog.hpp"
-
-#include <QIcon>
-#include <QLabel>
-#include <QDateTime>
-#include <QScrollBar>
-#include <QVBoxLayout>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata.api/messaging/protocol.hpp"
+#include <QDateTime>
+#include <QFutureWatcher>
+#include <QIcon>
+#include <QLabel>
+#include <QScrollBar>
+#include <QVBoxLayout>
+#include <QtConcurrent>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 const QIcon& CountryHistoryDialog::getHistoryIcon() const {
-    static const QIcon historyIcon = IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor);
+    static const QIcon historyIcon =
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor);
     return historyIcon;
 }
 
 CountryHistoryDialog::CountryHistoryDialog(QString alpha2_code,
-    ClientManager* clientManager, QWidget* parent)
-    : QWidget(parent), ui_(new Ui::CountryHistoryDialog),
-      clientManager_(clientManager), imageCache_(nullptr),
-      alpha2Code_(std::move(alpha2_code)),
-      toolBar_(nullptr), reloadAction_(nullptr),
-      openAction_(nullptr), revertAction_(nullptr) {
+                                           ClientManager* clientManager,
+                                           QWidget* parent)
+    : QWidget(parent)
+    , ui_(new Ui::CountryHistoryDialog)
+    , clientManager_(clientManager)
+    , imageCache_(nullptr)
+    , alpha2Code_(std::move(alpha2_code))
+    , toolBar_(nullptr)
+    , reloadAction_(nullptr)
+    , openAction_(nullptr)
+    , revertAction_(nullptr) {
 
     BOOST_LOG_SEV(lg(), info) << "Creating country history widget for: "
                               << alpha2Code_.toStdString();
@@ -58,14 +63,13 @@ CountryHistoryDialog::CountryHistoryDialog(QString alpha2_code,
 
     setupToolbar();
 
-    connect(ui_->versionListWidget, &QTableWidget::currentCellChanged,
-            this, [this](int currentRow, int, int, int) {
-        onVersionSelected(currentRow);
-    });
+    connect(ui_->versionListWidget,
+            &QTableWidget::currentCellChanged,
+            this,
+            [this](int currentRow, int, int, int) { onVersionSelected(currentRow); });
 
     // Double-click opens the version in read-only mode
-    connect(ui_->versionListWidget, &QTableWidget::cellDoubleClicked,
-            this, [this](int, int) {
+    connect(ui_->versionListWidget, &QTableWidget::cellDoubleClicked, this, [this](int, int) {
         onOpenClicked();
     });
 
@@ -85,8 +89,10 @@ CountryHistoryDialog::CountryHistoryDialog(QString alpha2_code,
 
     ui_->closeButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
-    connect(ui_->closeButton, &QPushButton::clicked,
-            this, [this]() { if (window()) window()->close(); });
+    connect(ui_->closeButton, &QPushButton::clicked, this, [this]() {
+        if (window())
+            window()->close();
+    });
 
     updateButtonStates();
 }
@@ -104,15 +110,14 @@ CountryHistoryDialog::~CountryHistoryDialog() {
 }
 
 void CountryHistoryDialog::loadHistory() {
-    BOOST_LOG_SEV(lg(), info) << "Loading country history for: "
-                              << alpha2Code_.toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Loading country history for: " << alpha2Code_.toStdString();
 
-    using HistoryResult = std::expected<refdata::messaging::get_country_history_response, std::string>;
+    using HistoryResult =
+        std::expected<refdata::messaging::get_country_history_response, std::string>;
     QPointer<CountryHistoryDialog> self = this;
     const auto alpha2_code = alpha2Code_.toStdString();
 
-    QFuture<HistoryResult> future =
-        QtConcurrent::run([self, alpha2_code]() -> HistoryResult {
+    QFuture<HistoryResult> future = QtConcurrent::run([self, alpha2_code]() -> HistoryResult {
         if (!self->clientManager_ || !self->clientManager_->isConnected()) {
             return std::unexpected("Disconnected from server");
         }
@@ -127,10 +132,9 @@ void CountryHistoryDialog::loadHistory() {
 
     // Use watcher to handle results
     auto* watcher = new QFutureWatcher<HistoryResult>(self);
-    connect(watcher, &QFutureWatcher<HistoryResult>::finished, self,
-        [self, watcher]() {
-
-        if (!self) return;
+    connect(watcher, &QFutureWatcher<HistoryResult>::finished, self, [self, watcher]() {
+        if (!self)
+            return;
         auto result = watcher->result();
         watcher->deleteLater();
 
@@ -153,8 +157,7 @@ void CountryHistoryDialog::loadHistory() {
 }
 
 void CountryHistoryDialog::onHistoryLoaded() {
-    BOOST_LOG_SEV(lg(), info) << "History loaded successfully: "
-                              << history_.size() << " versions";
+    BOOST_LOG_SEV(lg(), info) << "History loaded successfully: " << history_.size() << " versions";
 
     const QIcon& cachedIcon = getHistoryIcon();
     ui_->versionListWidget->setRowCount(0);
@@ -163,16 +166,14 @@ void CountryHistoryDialog::onHistoryLoaded() {
     for (int i = 0; i < static_cast<int>(history_.size()); ++i) {
         const auto& country = history_[i];
 
-        BOOST_LOG_SEV(lg(), trace) << "Displaying version [" << i << "]: "
-                                   << "version=" << country.version
-                                   << ", modified_by=" << country.modified_by;
+        BOOST_LOG_SEV(lg(), trace)
+            << "Displaying version [" << i << "]: "
+            << "version=" << country.version << ", modified_by=" << country.modified_by;
 
-        auto* versionItem =
-            new QTableWidgetItem(QString::number(country.version));
+        auto* versionItem = new QTableWidgetItem(QString::number(country.version));
         auto* recordedAtItem =
             new QTableWidgetItem(relative_time_helper::format(country.recorded_at));
-        auto* modifiedByItem =
-            new QTableWidgetItem(QString::fromStdString(country.modified_by));
+        auto* modifiedByItem = new QTableWidgetItem(QString::fromStdString(country.modified_by));
         auto* changeReasonItem =
             new QTableWidgetItem(QString::fromStdString(country.change_reason_code));
         auto* commentaryItem =
@@ -193,25 +194,21 @@ void CountryHistoryDialog::onHistoryLoaded() {
     if (!history_.empty()) {
         const auto& latest = history_[0];
         ui_->titleLabel->setText(QString("Country History: %1 - %2")
-            .arg(alpha2Code_)
-            .arg(QString::fromStdString(latest.name)));
+                                     .arg(alpha2Code_)
+                                     .arg(QString::fromStdString(latest.name)));
     }
 
     updateButtonStates();
 
-    emit statusChanged(QString("Loaded %1 versions")
-        .arg(history_.size()));
+    emit statusChanged(QString("Loaded %1 versions").arg(history_.size()));
 }
 
 void CountryHistoryDialog::onHistoryLoadError(const QString& error_msg) {
-    BOOST_LOG_SEV(lg(), error) << "Error loading history: "
-                               << error_msg.toStdString();
+    BOOST_LOG_SEV(lg(), error) << "Error loading history: " << error_msg.toStdString();
 
-    emit errorOccurred(QString("Failed to load country history: %1")
-        .arg(error_msg));
-    MessageBoxHelper::critical(this, "History Load Error",
-        QString("Failed to load country history:\n%1")
-        .arg(error_msg));
+    emit errorOccurred(QString("Failed to load country history: %1").arg(error_msg));
+    MessageBoxHelper::critical(
+        this, "History Load Error", QString("Failed to load country history:\n%1").arg(error_msg));
 }
 
 void CountryHistoryDialog::onVersionSelected(int index) {
@@ -242,8 +239,8 @@ void CountryHistoryDialog::displayChangesTab(int version_index) {
     // Calculate diff with previous version
     const auto& previous = history_[version_index + 1];
 
-    BOOST_LOG_SEV(lg(), trace) << "Calculating diff between version "
-                               << current.version << " and " << previous.version;
+    BOOST_LOG_SEV(lg(), trace) << "Calculating diff between version " << current.version << " and "
+                               << previous.version;
     BOOST_LOG_SEV(lg(), trace) << "Current name: " << current.name
                                << ", Previous name: " << previous.name;
 
@@ -315,18 +312,20 @@ void CountryHistoryDialog::displayFullDetailsTab(int version_index) {
     ui_->recordedAtValue->setText(relative_time_helper::format(country.recorded_at));
 }
 
-CountryHistoryDialog::DiffResult CountryHistoryDialog::
-calculateDiff(const refdata::domain::country& current,
-    const refdata::domain::country& previous) {
+CountryHistoryDialog::DiffResult
+CountryHistoryDialog::calculateDiff(const refdata::domain::country& current,
+                                    const refdata::domain::country& previous) {
 
     DiffResult diffs;
 
     // Helper to check string field differences
     auto checkDiffString = [&diffs](const QString& fieldName,
-        const std::string& currentVal, const std::string& previousVal) {
+                                    const std::string& currentVal,
+                                    const std::string& previousVal) {
         if (currentVal != previousVal) {
-            diffs.append({fieldName, {QString::fromStdString(previousVal),
-                                      QString::fromStdString(currentVal)}});
+            diffs.append(
+                {fieldName,
+                 {QString::fromStdString(previousVal), QString::fromStdString(currentVal)}});
         }
     };
 
@@ -349,8 +348,7 @@ calculateDiff(const refdata::domain::country& current,
             }
             return QString::fromStdString(boost::uuids::to_string(*id));
         };
-        diffs.append({"Flag", {formatImageId(previous.image_id),
-                               formatImageId(current.image_id)}});
+        diffs.append({"Flag", {formatImageId(previous.image_id), formatImageId(current.image_id)}});
     }
 
     return diffs;
@@ -363,31 +361,27 @@ void CountryHistoryDialog::setupToolbar() {
 
     // Create Reload action
     reloadAction_ = new QAction("Reload", this);
-    reloadAction_->setIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowClockwise, IconUtils::DefaultIconColor));
+    reloadAction_->setIcon(
+        IconUtils::createRecoloredIcon(Icon::ArrowClockwise, IconUtils::DefaultIconColor));
     reloadAction_->setToolTip("Reload history from server");
-    connect(reloadAction_, &QAction::triggered, this,
-        &CountryHistoryDialog::onReloadClicked);
+    connect(reloadAction_, &QAction::triggered, this, &CountryHistoryDialog::onReloadClicked);
     toolBar_->addAction(reloadAction_);
 
     toolBar_->addSeparator();
 
     // Create Open action
     openAction_ = new QAction("Open", this);
-    openAction_->setIcon(IconUtils::createRecoloredIcon(
-        Icon::Edit, IconUtils::DefaultIconColor));
+    openAction_->setIcon(IconUtils::createRecoloredIcon(Icon::Edit, IconUtils::DefaultIconColor));
     openAction_->setToolTip("Open this version in read-only mode");
-    connect(openAction_, &QAction::triggered, this,
-        &CountryHistoryDialog::onOpenClicked);
+    connect(openAction_, &QAction::triggered, this, &CountryHistoryDialog::onOpenClicked);
     toolBar_->addAction(openAction_);
 
     // Create Revert action
     revertAction_ = new QAction("Revert", this);
-    revertAction_->setIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
+    revertAction_->setIcon(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
+                                                          IconUtils::DefaultIconColor));
     revertAction_->setToolTip("Revert country to this version");
-    connect(revertAction_, &QAction::triggered, this,
-        &CountryHistoryDialog::onRevertClicked);
+    connect(revertAction_, &QAction::triggered, this, &CountryHistoryDialog::onRevertClicked);
     toolBar_->addAction(revertAction_);
 
     // Add toolbar to layout
@@ -398,8 +392,7 @@ void CountryHistoryDialog::setupToolbar() {
 
 void CountryHistoryDialog::updateButtonStates() {
     const int index = selectedVersionIndex();
-    const bool hasSelection = index >= 0 &&
-        index < static_cast<int>(history_.size());
+    const bool hasSelection = index >= 0 && index < static_cast<int>(history_.size());
 
     if (openAction_)
         openAction_->setEnabled(hasSelection);
@@ -418,8 +411,8 @@ void CountryHistoryDialog::onOpenClicked() {
         return;
 
     const auto& country = history_[index];
-    BOOST_LOG_SEV(lg(), info) << "Opening country version "
-                              << country.version << " in read-only mode";
+    BOOST_LOG_SEV(lg(), info) << "Opening country version " << country.version
+                              << " in read-only mode";
 
     emit openVersionRequested(country, country.version);
 }
@@ -435,7 +428,9 @@ void CountryHistoryDialog::onRevertClicked() {
     // If this is the oldest version, there's no previous version to revert to
     if (index == static_cast<int>(history_.size()) - 1) {
         BOOST_LOG_SEV(lg(), warn) << "Cannot revert oldest version - no previous version exists";
-        MessageBoxHelper::information(this, "Cannot Revert",
+        MessageBoxHelper::information(
+            this,
+            "Cannot Revert",
             "This is the oldest version. There is no previous version to revert to.");
         return;
     }
@@ -443,12 +438,13 @@ void CountryHistoryDialog::onRevertClicked() {
     // The "previous" version is the one we want to revert TO (the "old" side in the diff)
     const auto& previous = history_[index + 1];
 
-    BOOST_LOG_SEV(lg(), info) << "Requesting revert from version "
-                              << current.version << " to version "
-                              << previous.version;
+    BOOST_LOG_SEV(lg(), info) << "Requesting revert from version " << current.version
+                              << " to version " << previous.version;
 
     // Confirm with user
-    auto reply = MessageBoxHelper::question(this, "Revert Country",
+    auto reply = MessageBoxHelper::question(
+        this,
+        "Revert Country",
         QString("Are you sure you want to revert '%1' from version %2 back to version %3?\n\n"
                 "This will create a new version with the data from version %3.")
             .arg(alpha2Code_)
@@ -480,16 +476,14 @@ QSize CountryHistoryDialog::sizeHint() const {
     const int minimumWidth = 900;
     const int minimumHeight = 600;
 
-    return { qMax(baseSize.width(), minimumWidth),
-             qMax(baseSize.height(), minimumHeight) };
+    return {qMax(baseSize.width(), minimumWidth), qMax(baseSize.height(), minimumHeight)};
 }
 
 void CountryHistoryDialog::markAsStale() {
     BOOST_LOG_SEV(lg(), info) << "Country history marked as stale for: "
                               << alpha2Code_.toStdString() << ", reloading...";
 
-    emit statusChanged(QString("Country %1 was modified - reloading history...")
-        .arg(alpha2Code_));
+    emit statusChanged(QString("Country %1 was modified - reloading history...").arg(alpha2Code_));
 
     // Reload history data
     loadHistory();

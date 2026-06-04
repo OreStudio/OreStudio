@@ -18,25 +18,25 @@
  *
  */
 #include "ores.qt/OrgExplorerTradeModel.hpp"
-
-#include <QtConcurrent>
-#include <boost/uuid/uuid_io.hpp>
-#include "ores.trading.api/messaging/trade_protocol.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
+#include "ores.trading.api/messaging/trade_protocol.hpp"
+#include <QtConcurrent>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-OrgExplorerTradeModel::OrgExplorerTradeModel(
-    ClientManager* clientManager, QObject* parent)
-    : QAbstractTableModel(parent),
-      clientManager_(clientManager),
-      watcher_(new QFutureWatcher<FetchResult>(this)) {
+OrgExplorerTradeModel::OrgExplorerTradeModel(ClientManager* clientManager, QObject* parent)
+    : QAbstractTableModel(parent)
+    , clientManager_(clientManager)
+    , watcher_(new QFutureWatcher<FetchResult>(this)) {
 
-    connect(watcher_, &QFutureWatcher<FetchResult>::finished,
-            this, &OrgExplorerTradeModel::onTradesLoaded);
+    connect(watcher_,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            &OrgExplorerTradeModel::onTradesLoaded);
 }
 
 int OrgExplorerTradeModel::rowCount(const QModelIndex& parent) const {
@@ -51,8 +51,7 @@ int OrgExplorerTradeModel::columnCount(const QModelIndex& parent) const {
     return ColumnCount;
 }
 
-QVariant OrgExplorerTradeModel::data(
-    const QModelIndex& index, int role) const {
+QVariant OrgExplorerTradeModel::data(const QModelIndex& index, int role) const {
     if (!index.isValid())
         return {};
 
@@ -64,74 +63,85 @@ QVariant OrgExplorerTradeModel::data(
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-        case ExternalId:
-            return QString::fromStdString(trade.identity.external_id);
-        case TradeType:
-            return QString::fromStdString(trade.classification.trade_type);
-        case CounterpartyShortCode: {
-            if (!trade.parties.counterparty_id.has_value())
+            case ExternalId:
+                return QString::fromStdString(trade.identity.external_id);
+            case TradeType:
+                return QString::fromStdString(trade.classification.trade_type);
+            case CounterpartyShortCode: {
+                if (!trade.parties.counterparty_id.has_value())
+                    return {};
+                const auto key = boost::uuids::to_string(*trade.parties.counterparty_id);
+                const auto it = cpty_map_.find(key);
+                if (it == cpty_map_.end())
+                    return {};
+                return QString::fromStdString(it->second.short_code);
+            }
+            case CounterpartyName: {
+                if (!trade.parties.counterparty_id.has_value())
+                    return {};
+                const auto key = boost::uuids::to_string(*trade.parties.counterparty_id);
+                const auto it = cpty_map_.find(key);
+                if (it == cpty_map_.end())
+                    return {};
+                return QString::fromStdString(it->second.full_name);
+            }
+            case LifecycleEvent:
+                return QString::fromStdString(trade.classification.activity_type_code);
+            case TradeDate:
+                return QString::fromStdString(trade.lifecycle.trade_date.value_or(""));
+            case EffectiveDate:
+                return QString::fromStdString(trade.lifecycle.effective_date.value_or(""));
+            case TerminationDate:
+                return QString::fromStdString(trade.lifecycle.termination_date.value_or(""));
+            case Version:
+                return trade.identity.version;
+            case ModifiedBy:
+                return QString::fromStdString(trade.audit.modified_by);
+            case RecordedAt:
+                return relative_time_helper::format(trade.audit.recorded_at);
+            default:
                 return {};
-            const auto key = boost::uuids::to_string(*trade.parties.counterparty_id);
-            const auto it = cpty_map_.find(key);
-            if (it == cpty_map_.end())
-                return {};
-            return QString::fromStdString(it->second.short_code);
-        }
-        case CounterpartyName: {
-            if (!trade.parties.counterparty_id.has_value())
-                return {};
-            const auto key = boost::uuids::to_string(*trade.parties.counterparty_id);
-            const auto it = cpty_map_.find(key);
-            if (it == cpty_map_.end())
-                return {};
-            return QString::fromStdString(it->second.full_name);
-        }
-        case LifecycleEvent:
-            return QString::fromStdString(trade.classification.activity_type_code);
-        case TradeDate:
-            return QString::fromStdString(trade.lifecycle.trade_date.value_or(""));
-        case EffectiveDate:
-            return QString::fromStdString(trade.lifecycle.effective_date.value_or(""));
-        case TerminationDate:
-            return QString::fromStdString(trade.lifecycle.termination_date.value_or(""));
-        case Version:
-            return trade.identity.version;
-        case ModifiedBy:
-            return QString::fromStdString(trade.audit.modified_by);
-        case RecordedAt:
-            return relative_time_helper::format(trade.audit.recorded_at);
-        default:
-            return {};
         }
     }
 
     return {};
 }
 
-QVariant OrgExplorerTradeModel::headerData(
-    int section, Qt::Orientation orientation, int role) const {
+QVariant
+OrgExplorerTradeModel::headerData(int section, Qt::Orientation orientation, int role) const {
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return {};
 
     switch (section) {
-    case ExternalId:            return tr("External ID");
-    case TradeType:             return tr("Type");
-    case CounterpartyShortCode: return tr("Cpty Code");
-    case CounterpartyName:      return tr("Counterparty");
-    case LifecycleEvent:        return tr("Event");
-    case TradeDate:             return tr("Trade Date");
-    case EffectiveDate:         return tr("Effective");
-    case TerminationDate:       return tr("Termination");
-    case Version:               return tr("Version");
-    case ModifiedBy:            return tr("Modified By");
-    case RecordedAt:            return tr("Recorded At");
-    default:                    return {};
+        case ExternalId:
+            return tr("External ID");
+        case TradeType:
+            return tr("Type");
+        case CounterpartyShortCode:
+            return tr("Cpty Code");
+        case CounterpartyName:
+            return tr("Counterparty");
+        case LifecycleEvent:
+            return tr("Event");
+        case TradeDate:
+            return tr("Trade Date");
+        case EffectiveDate:
+            return tr("Effective");
+        case TerminationDate:
+            return tr("Termination");
+        case Version:
+            return tr("Version");
+        case ModifiedBy:
+            return tr("Modified By");
+        case RecordedAt:
+            return tr("Recorded At");
+        default:
+            return {};
     }
 }
 
-void OrgExplorerTradeModel::set_filter(
-    std::optional<boost::uuids::uuid> book_id,
-    std::optional<boost::uuids::uuid> business_unit_id) {
+void OrgExplorerTradeModel::set_filter(std::optional<boost::uuids::uuid> book_id,
+                                       std::optional<boost::uuids::uuid> business_unit_id) {
     filter_book_id_ = book_id;
     filter_business_unit_id_ = business_unit_id;
 }
@@ -168,8 +178,7 @@ void OrgExplorerTradeModel::refresh() {
     fetch_trades(0, 100);
 }
 
-void OrgExplorerTradeModel::load_page(
-    std::uint32_t offset, std::uint32_t limit) {
+void OrgExplorerTradeModel::load_page(std::uint32_t offset, std::uint32_t limit) {
     if (is_fetching_) {
         BOOST_LOG_SEV(lg(), warn) << "Fetch in progress, ignoring load_page.";
         return;
@@ -189,38 +198,40 @@ void OrgExplorerTradeModel::load_page(
     fetch_trades(offset, limit);
 }
 
-void OrgExplorerTradeModel::fetch_trades(
-    std::uint32_t offset, std::uint32_t limit) {
+void OrgExplorerTradeModel::fetch_trades(std::uint32_t offset, std::uint32_t limit) {
     is_fetching_ = true;
     QPointer<OrgExplorerTradeModel> self = this;
 
-    const auto node_id = filter_book_id_.has_value()
-        ? filter_book_id_ : filter_business_unit_id_;
+    const auto node_id = filter_book_id_.has_value() ? filter_book_id_ : filter_business_unit_id_;
 
     QFuture<FetchResult> future =
         QtConcurrent::run([self, offset, limit, node_id]() -> FetchResult {
-            return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
-                if (!self || !self->clientManager_) {
-                    return {.success = false, .trades = {},
-                            .total_available_count = 0,
-                            .error_message = "Model was destroyed",
-                            .error_details = {}};
-                }
+            return exception_helper::wrap_async_fetch<FetchResult>(
+                [&]() -> FetchResult {
+                    if (!self || !self->clientManager_) {
+                        return {.success = false,
+                                .trades = {},
+                                .total_available_count = 0,
+                                .error_message = "Model was destroyed",
+                                .error_details = {}};
+                    }
 
-                auto result = self->clientManager_->listTrades(
-                    node_id, offset, limit);
-                if (!result) {
-                    return {.success = false, .trades = {},
-                            .total_available_count = 0,
-                            .error_message = "Failed to fetch trades",
-                            .error_details = {}};
-                }
+                    auto result = self->clientManager_->listTrades(node_id, offset, limit);
+                    if (!result) {
+                        return {.success = false,
+                                .trades = {},
+                                .total_available_count = 0,
+                                .error_message = "Failed to fetch trades",
+                                .error_details = {}};
+                    }
 
-                return {.success = true,
-                        .trades = std::move(result->trades),
-                        .total_available_count = result->total_count,
-                        .error_message = {}, .error_details = {}};
-            }, "org trades");
+                    return {.success = true,
+                            .trades = std::move(result->trades),
+                            .total_available_count = result->total_count,
+                            .error_message = {},
+                            .error_details = {}};
+                },
+                "org trades");
         });
 
     watcher_->setFuture(future);
@@ -231,8 +242,8 @@ void OrgExplorerTradeModel::onTradesLoaded() {
 
     const auto result = watcher_->result();
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to fetch trades: "
-                                   << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to fetch trades: " << result.error_message.toStdString();
         emit loadError(result.error_message, result.error_details);
         return;
     }
@@ -244,13 +255,11 @@ void OrgExplorerTradeModel::onTradesLoaded() {
     endResetModel();
 
     BOOST_LOG_SEV(lg(), info) << "Loaded " << items_.size()
-                              << " trades, total available: "
-                              << total_available_count_;
+                              << " trades, total available: " << total_available_count_;
     emit dataLoaded();
 }
 
-const trading::domain::trade*
-OrgExplorerTradeModel::get_trade(int row) const {
+const trading::domain::trade* OrgExplorerTradeModel::get_trade(int row) const {
     const auto idx = static_cast<std::size_t>(row);
     if (idx >= items_.size())
         return nullptr;

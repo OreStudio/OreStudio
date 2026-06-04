@@ -19,15 +19,15 @@
  */
 #include "ores.qt/SignUpDialog.hpp"
 #include "ores.qt/DialogStyles.hpp"
-#include "ores.qt/PasswordMatchIndicator.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/PasswordMatchIndicator.hpp"
 #include "ores.utility/version/version.hpp"
+#include <QFutureWatcher>
 #include <QHBoxLayout>
-#include <QVBoxLayout>
 #include <QKeyEvent>
 #include <QRegularExpression>
+#include <QVBoxLayout>
 #include <QtConcurrent>
-#include <QFutureWatcher>
 
 namespace ores::qt {
 
@@ -128,8 +128,7 @@ bool SignUpDialog::validateInput() {
 
     const QRegularExpression emailRegex(R"(.+@.+\..+)");
     if (!emailRegex.match(email).hasMatch()) {
-        MessageBoxHelper::warning(this, "Invalid Input",
-            "Please enter a valid email address.");
+        MessageBoxHelper::warning(this, "Invalid Input", "Please enter a valid email address.");
         emailEdit_->setFocus();
         return false;
     }
@@ -141,16 +140,17 @@ bool SignUpDialog::validateInput() {
     }
 
     if (password.length() < min_password_length) {
-        MessageBoxHelper::warning(this, "Invalid Input",
-            QString("Password must be at least %1 characters long.")
-                .arg(min_password_length));
+        MessageBoxHelper::warning(
+            this,
+            "Invalid Input",
+            QString("Password must be at least %1 characters long.").arg(min_password_length));
         passwordEdit_->setFocus();
         return false;
     }
 
     if (password != confirmPassword) {
-        MessageBoxHelper::warning(this, "Invalid Input",
-            "Passwords do not match. Please try again.");
+        MessageBoxHelper::warning(
+            this, "Invalid Input", "Passwords do not match. Please try again.");
         confirmPasswordEdit_->setFocus();
         confirmPasswordEdit_->selectAll();
         return false;
@@ -265,8 +265,7 @@ void SignUpDialog::setupPanel(QWidget* parent) {
     layout->addSpacing(8);
     showPasswordCheck_ = new QCheckBox("Show passwords", parent);
     showPasswordCheck_->setStyleSheet(dialog_styles::checkbox);
-    connect(showPasswordCheck_, &QCheckBox::toggled,
-            this, &SignUpDialog::onShowPasswordToggled);
+    connect(showPasswordCheck_, &QCheckBox::toggled, this, &SignUpDialog::onShowPasswordToggled);
     layout->addWidget(showPasswordCheck_);
 
     layout->addSpacing(10);
@@ -313,8 +312,7 @@ void SignUpDialog::setupPanel(QWidget* parent) {
     signUpButton_->setStyleSheet(dialog_styles::primary_button);
     signUpButton_->setFixedHeight(40);
     signUpButton_->setCursor(Qt::PointingHandCursor);
-    connect(signUpButton_, &QPushButton::clicked,
-            this, &SignUpDialog::onSignUpClicked);
+    connect(signUpButton_, &QPushButton::clicked, this, &SignUpDialog::onSignUpClicked);
     layout->addWidget(signUpButton_);
 
     layout->addSpacing(12);
@@ -323,13 +321,13 @@ void SignUpDialog::setupPanel(QWidget* parent) {
     auto* loginRow = new QHBoxLayout();
     loginRow->setAlignment(Qt::AlignCenter);
     loginLabel_ = new QLabel("Already have an account?", parent);
-    loginLabel_->setStyleSheet("QLabel { background: transparent; color: #707070; font-size: 12px; }");
+    loginLabel_->setStyleSheet(
+        "QLabel { background: transparent; color: #707070; font-size: 12px; }");
 
     loginButton_ = new QPushButton("Log in", parent);
     loginButton_->setStyleSheet(dialog_styles::link_button);
     loginButton_->setCursor(Qt::PointingHandCursor);
-    connect(loginButton_, &QPushButton::clicked,
-            this, &SignUpDialog::onLoginClicked);
+    connect(loginButton_, &QPushButton::clicked, this, &SignUpDialog::onLoginClicked);
 
     loginRow->addWidget(loginLabel_);
     loginRow->addWidget(loginButton_);
@@ -339,8 +337,8 @@ void SignUpDialog::setupPanel(QWidget* parent) {
 
     // Version info at bottom
     QString versionText = QString("v%1  %2")
-        .arg(ORES_VERSION)
-        .arg(QString::fromStdString(ores::utility::version::build_info()));
+                              .arg(ORES_VERSION)
+                              .arg(QString::fromStdString(ores::utility::version::build_info()));
     auto* versionLabel = new QLabel(versionText, parent);
     versionLabel->setStyleSheet(dialog_styles::version);
     layout->addWidget(versionLabel, 0, Qt::AlignCenter);
@@ -379,20 +377,20 @@ void SignUpDialog::onSignUpClicked() {
 
     // Perform signup asynchronously via ClientManager
     auto* watcher = new QFutureWatcher<SignupResult>(this);
-    connect(watcher, &QFutureWatcher<SignupResult>::finished,
-            [this, watcher]() {
+    connect(watcher, &QFutureWatcher<SignupResult>::finished, [this, watcher]() {
         const auto result = watcher->result();
         watcher->deleteLater();
         onSignUpResult(result);
     });
 
-    QFuture<SignupResult> future = QtConcurrent::run(
-        [this, host, port, username, email, password]() -> SignupResult {
-            return clientManager_->signup(
-                host.toStdString(), port, username.toStdString(),
-                email.toStdString(), password.toStdString());
-        }
-    );
+    QFuture<SignupResult> future =
+        QtConcurrent::run([this, host, port, username, email, password]() -> SignupResult {
+            return clientManager_->signup(host.toStdString(),
+                                          port,
+                                          username.toStdString(),
+                                          email.toStdString(),
+                                          password.toStdString());
+        });
 
     watcher->setFuture(future);
 }
@@ -409,7 +407,8 @@ void SignUpDialog::onSignUpResult(const SignupResult& result) {
 
         // Auto-login with the credentials we just used
         statusLabel_->setText("Account created! Logging in...");
-        statusLabel_->setStyleSheet("QLabel { background: transparent; color: #4CAF50; font-size: 11px; }");
+        statusLabel_->setStyleSheet(
+            "QLabel { background: transparent; color: #4CAF50; font-size: 11px; }");
 
         const auto username = usernameEdit_->text().trimmed();
         const auto password = passwordEdit_->text();
@@ -417,30 +416,29 @@ void SignUpDialog::onSignUpResult(const SignupResult& result) {
         const auto port = static_cast<std::uint16_t>(portSpinBox_->value());
 
         auto* watcher = new QFutureWatcher<LoginResult>(this);
-        connect(watcher, &QFutureWatcher<LoginResult>::finished,
-                [this, watcher]() {
+        connect(watcher, &QFutureWatcher<LoginResult>::finished, [this, watcher]() {
             const auto loginResult = watcher->result();
             watcher->deleteLater();
             onLoginResult(loginResult);
         });
 
-        QFuture<LoginResult> future = QtConcurrent::run(
-            [this, host, port, username, password]() -> LoginResult {
+        QFuture<LoginResult> future =
+            QtConcurrent::run([this, host, port, username, password]() -> LoginResult {
                 return clientManager_->connectAndLogin(
                     host.toStdString(), port, username.toStdString(), password.toStdString());
-            }
-        );
+            });
 
         watcher->setFuture(future);
     } else {
-        BOOST_LOG_SEV(lg(), warn) << "Signup failed: "
-                                  << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), warn) << "Signup failed: " << result.error_message.toStdString();
 
         enableForm(true);
         statusLabel_->setText("");
 
         emit signupFailed(result.error_message);
-        MessageBoxHelper::critical(this, "Sign Up Failed",
+        MessageBoxHelper::critical(
+            this,
+            "Sign Up Failed",
             QString("Account creation failed: %1").arg(result.error_message));
     }
 }
@@ -456,14 +454,15 @@ void SignUpDialog::onLoginResult(const LoginResult& result) {
         emit loginSucceeded(registeredUsername_);
         emit closeRequested();
     } else {
-        BOOST_LOG_SEV(lg(), warn) << "Auto-login failed: "
-                                  << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), warn) << "Auto-login failed: " << result.error_message.toStdString();
 
         // Auto-login failed, but signup succeeded - let user know they can login manually
         enableForm(true);
         statusLabel_->setText("");
 
-        MessageBoxHelper::warning(this, "Auto-Login Failed",
+        MessageBoxHelper::warning(
+            this,
+            "Auto-Login Failed",
             QString("Your account was created successfully, but automatic login failed: %1\n\n"
                     "Please close this dialog and log in manually.")
                 .arg(result.error_message));

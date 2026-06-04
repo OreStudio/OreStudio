@@ -20,9 +20,9 @@
 #ifndef ORES_QT_RECENCY_PULSE_MANAGER_HPP
 #define ORES_QT_RECENCY_PULSE_MANAGER_HPP
 
-#include <QTimer>
-#include <QObject>
 #include "ores.qt/export.hpp"
+#include <QObject>
+#include <QTimer>
 
 namespace ores::qt {
 
@@ -52,8 +52,8 @@ public:
      * @param max_pulse_cycles Number of complete on/off cycles (default 6)
      */
     explicit RecencyPulseManager(QObject* parent = nullptr,
-                                  int pulse_interval_ms = 500,
-                                  int max_pulse_cycles = 6);
+                                 int pulse_interval_ms = 500,
+                                 int max_pulse_cycles = 6);
 
     /**
      * @brief Start or restart the pulsing animation.
@@ -71,7 +71,9 @@ public:
      *
      * @return true if items should be highlighted, false otherwise
      */
-    [[nodiscard]] bool is_pulse_on() const { return pulse_state_; }
+    [[nodiscard]] bool is_pulse_on() const {
+        return pulse_state_;
+    }
 
     /**
      * @brief Check if the manager is currently pulsing.

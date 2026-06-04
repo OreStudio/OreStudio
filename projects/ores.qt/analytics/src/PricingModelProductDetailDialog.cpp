@@ -18,25 +18,24 @@
  *
  */
 #include "ores.qt/PricingModelProductDetailDialog.hpp"
-
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include <QComboBox>
-#include <boost/uuid/random_generator.hpp>
-#include "ui_PricingModelProductDetailDialog.h"
+#include "ores.analytics.api/messaging/pricing_model_product_protocol.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.analytics.api/messaging/pricing_model_product_protocol.hpp"
+#include "ui_PricingModelProductDetailDialog.h"
+#include <QComboBox>
+#include <QFutureWatcher>
+#include <QMessageBox>
+#include <QtConcurrent>
+#include <boost/uuid/random_generator.hpp>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 PricingModelProductDetailDialog::PricingModelProductDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent),
-      ui_(new Ui::PricingModelProductDetailDialog),
-      clientManager_(nullptr) {
+    : DetailDialogBase(parent)
+    , ui_(new Ui::PricingModelProductDetailDialog)
+    , clientManager_(nullptr) {
 
     ui_->setupUi(this);
     setupUi();
@@ -72,20 +71,29 @@ void PricingModelProductDetailDialog::setupUi() {
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 }
 
-void PricingModelProductDetailDialog::setupCombos() {
-}
+void PricingModelProductDetailDialog::setupCombos() {}
 
 void PricingModelProductDetailDialog::setupConnections() {
-    connect(ui_->saveButton, &QPushButton::clicked, this,
+    connect(ui_->saveButton,
+            &QPushButton::clicked,
+            this,
             &PricingModelProductDetailDialog::onSaveClicked);
-    connect(ui_->deleteButton, &QPushButton::clicked, this,
+    connect(ui_->deleteButton,
+            &QPushButton::clicked,
+            this,
             &PricingModelProductDetailDialog::onDeleteClicked);
-    connect(ui_->closeButton, &QPushButton::clicked, this,
+    connect(ui_->closeButton,
+            &QPushButton::clicked,
+            this,
             &PricingModelProductDetailDialog::onCloseClicked);
 
-    connect(ui_->modelEdit, &QLineEdit::textChanged, this,
+    connect(ui_->modelEdit,
+            &QLineEdit::textChanged,
+            this,
             &PricingModelProductDetailDialog::onFieldChanged);
-    connect(ui_->engineEdit, &QLineEdit::textChanged, this,
+    connect(ui_->engineEdit,
+            &QLineEdit::textChanged,
+            this,
             &PricingModelProductDetailDialog::onFieldChanged);
 }
 
@@ -134,13 +142,13 @@ void PricingModelProductDetailDialog::populatePricingEngineTypes() {
     const auto current = ui_->pricingEngineTypeCodeCombo->currentData();
     ui_->pricingEngineTypeCodeCombo->clear();
     for (const auto& item : pricingEngineTypes_) {
-        ui_->pricingEngineTypeCodeCombo->addItem(
-            QString::fromStdString(item.code),
-            QString::fromStdString(item.code));
+        ui_->pricingEngineTypeCodeCombo->addItem(QString::fromStdString(item.code),
+                                                 QString::fromStdString(item.code));
     }
     if (current.isValid()) {
         const int idx = ui_->pricingEngineTypeCodeCombo->findData(current);
-        if (idx >= 0) ui_->pricingEngineTypeCodeCombo->setCurrentIndex(idx);
+        if (idx >= 0)
+            ui_->pricingEngineTypeCodeCombo->setCurrentIndex(idx);
     }
 }
 
@@ -148,7 +156,8 @@ void PricingModelProductDetailDialog::updateUiFromProduct() {
     {
         const auto val = QString::fromStdString(product_.pricing_engine_type_code);
         const int idx = ui_->pricingEngineTypeCodeCombo->findData(val);
-        if (idx >= 0) ui_->pricingEngineTypeCodeCombo->setCurrentIndex(idx);
+        if (idx >= 0)
+            ui_->pricingEngineTypeCodeCombo->setCurrentIndex(idx);
     }
     ui_->modelEdit->setText(QString::fromStdString(product_.model));
     ui_->engineEdit->setText(QString::fromStdString(product_.engine));
@@ -192,32 +201,31 @@ void PricingModelProductDetailDialog::updateSaveButtonState() {
 bool PricingModelProductDetailDialog::validateInput() {
     const QString model_val = ui_->modelEdit->text().trimmed();
     const QString engine_val = ui_->engineEdit->text().trimmed();
-    const bool pricing_engine_type_code_selected = ui_->pricingEngineTypeCodeCombo->currentIndex() >= 0;
+    const bool pricing_engine_type_code_selected =
+        ui_->pricingEngineTypeCodeCombo->currentIndex() >= 0;
 
-    return true
-        && !model_val.isEmpty()
-        && !engine_val.isEmpty()
-        && pricing_engine_type_code_selected
-    ;
+    return true && !model_val.isEmpty() && !engine_val.isEmpty() &&
+           pricing_engine_type_code_selected;
 }
 
 void PricingModelProductDetailDialog::onSaveClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
+        MessageBoxHelper::warning(
+            this,
+            "Disconnected",
             "Cannot save pricing model product while disconnected from server.");
         return;
     }
 
     if (!validateInput()) {
-        MessageBoxHelper::warning(this, "Invalid Input",
-            "Please fill in all required fields.");
+        MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
 
     updateProductFromUi();
 
     BOOST_LOG_SEV(lg(), info) << "Saving pricing model product: "
-        << product_.pricing_engine_type_code;
+                              << product_.pricing_engine_type_code;
 
     QPointer<PricingModelProductDetailDialog> self = this;
 
@@ -233,8 +241,8 @@ void PricingModelProductDetailDialog::onSaveClicked() {
 
         analytics::messaging::save_pricing_model_product_request request;
         request.data = product;
-        auto response_result = self->clientManager_->
-            process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -244,15 +252,13 @@ void PricingModelProductDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Pricing Model Product saved successfully";
-            QString code = QString::fromStdString(
-                self->product_.pricing_engine_type_code);
+            QString code = QString::fromStdString(self->product_.pricing_engine_type_code);
             self->hasChanges_ = false;
             self->updateSaveButtonState();
             emit self->productSaved(code);
@@ -271,14 +277,17 @@ void PricingModelProductDetailDialog::onSaveClicked() {
 
 void PricingModelProductDetailDialog::onDeleteClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
+        MessageBoxHelper::warning(
+            this,
+            "Disconnected",
             "Cannot delete pricing model product while disconnected from server.");
         return;
     }
 
-    QString code = QString::fromStdString(
-        product_.pricing_engine_type_code);
-    auto reply = MessageBoxHelper::question(this, "Delete Pricing Model Product",
+    QString code = QString::fromStdString(product_.pricing_engine_type_code);
+    auto reply = MessageBoxHelper::question(
+        this,
+        "Delete Pricing Model Product",
         QString("Are you sure you want to delete pricing model product '%1'?").arg(code),
         QMessageBox::Yes | QMessageBox::No);
 
@@ -287,7 +296,7 @@ void PricingModelProductDetailDialog::onDeleteClicked() {
     }
 
     BOOST_LOG_SEV(lg(), info) << "Deleting pricing model product: "
-        << product_.pricing_engine_type_code;
+                              << product_.pricing_engine_type_code;
 
     QPointer<PricingModelProductDetailDialog> self = this;
 
@@ -303,8 +312,8 @@ void PricingModelProductDetailDialog::onDeleteClicked() {
 
         analytics::messaging::delete_pricing_model_product_request request;
         request.ids = {id};
-        auto response_result = self->clientManager_->
-            process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -314,15 +323,13 @@ void PricingModelProductDetailDialog::onDeleteClicked() {
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
-            self, [self, code, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, code, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Pricing Model Product deleted successfully";
-            emit self->statusMessage(
-                QString("Pricing Model Product '%1' deleted").arg(code));
+            emit self->statusMessage(QString("Pricing Model Product '%1' deleted").arg(code));
             emit self->productDeleted(code);
             self->requestClose();
         } else {

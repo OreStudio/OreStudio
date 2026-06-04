@@ -20,18 +20,18 @@
 #ifndef ORES_QT_CURRENCY_HISTORY_DIALOG_HPP
 #define ORES_QT_CURRENCY_HISTORY_DIALOG_HPP
 
-#include <memory>
-#include <QPair>
-#include <QWidget>
-#include <QString>
-#include <QVector>
-#include <QToolBar>
-#include <QAction>
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ImageCache.hpp"
 #include "ores.refdata.api/domain/currency_version.hpp"
 #include "ores.refdata.api/messaging/currency_history_protocol.hpp"
-#include "ores.logging/make_logger.hpp"
+#include <QAction>
+#include <QPair>
+#include <QString>
+#include <QToolBar>
+#include <QVector>
+#include <QWidget>
+#include <memory>
 
 class QCloseEvent;
 #include "ui_CurrencyHistoryDialog.h"
@@ -49,8 +49,7 @@ class CurrencyHistoryDialog : public QWidget {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.currency_history_dialog";
+    inline static std::string_view logger_name = "ores.qt.currency_history_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -62,8 +61,8 @@ private:
 
 public:
     explicit CurrencyHistoryDialog(QString iso_code,
-        ClientManager* clientManager,
-        QWidget* parent = nullptr);
+                                   ClientManager* clientManager,
+                                   QWidget* parent = nullptr);
     ~CurrencyHistoryDialog() override;
 
     void loadHistory();
@@ -86,7 +85,9 @@ public:
     /**
      * @brief Returns the ISO code of the currency.
      */
-    [[nodiscard]] QString isoCode() const { return isoCode_; }
+    [[nodiscard]] QString isoCode() const {
+        return isoCode_;
+    }
 
     /**
      * @brief Returns the loaded history for version navigation.
@@ -133,9 +134,8 @@ private:
      * @return Vector of (field_name, (old_value, new_value)) pairs.
      */
     using DiffResult = QVector<QPair<QString, QPair<QString, QString>>>;
-    DiffResult calculateDiff(
-        const refdata::domain::currency_version& current,
-        const refdata::domain::currency_version& previous);
+    DiffResult calculateDiff(const refdata::domain::currency_version& current,
+                             const refdata::domain::currency_version& previous);
 
     void setupToolbar();
     void updateButtonStates();

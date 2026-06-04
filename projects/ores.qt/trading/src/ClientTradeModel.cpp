@@ -18,42 +18,43 @@
  *
  */
 #include "ores.qt/ClientTradeModel.hpp"
-
-#include <QtConcurrent>
-#include "ores.trading.api/messaging/trade_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
+#include "ores.trading.api/messaging/trade_protocol.hpp"
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    std::string trade_key_extractor(const trading::domain::trade& t) {
-        return t.identity.external_id;
-    }
-    std::chrono::system_clock::time_point trade_timestamp_extractor(
-        const trading::domain::trade& t) {
-        return t.audit.recorded_at;
-    }
+std::string trade_key_extractor(const trading::domain::trade& t) {
+    return t.identity.external_id;
+}
+std::chrono::system_clock::time_point trade_timestamp_extractor(const trading::domain::trade& t) {
+    return t.audit.recorded_at;
+}
 }
 
-ClientTradeModel::ClientTradeModel(
-    ClientManager* clientManager, QObject* parent)
-    : AbstractClientModel(parent),
-      clientManager_(clientManager),
-      watcher_(new QFutureWatcher<FetchResult>(this)),
-      recencyTracker_(trade_key_extractor, trade_timestamp_extractor),
-      pulseManager_(new RecencyPulseManager(this)) {
+ClientTradeModel::ClientTradeModel(ClientManager* clientManager, QObject* parent)
+    : AbstractClientModel(parent)
+    , clientManager_(clientManager)
+    , watcher_(new QFutureWatcher<FetchResult>(this))
+    , recencyTracker_(trade_key_extractor, trade_timestamp_extractor)
+    , pulseManager_(new RecencyPulseManager(this)) {
 
-    connect(watcher_, &QFutureWatcher<FetchResult>::finished,
-            this, &ClientTradeModel::onTradesLoaded);
+    connect(
+        watcher_, &QFutureWatcher<FetchResult>::finished, this, &ClientTradeModel::onTradesLoaded);
 
-    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
-            this, &ClientTradeModel::onPulseStateChanged);
-    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
-            this, &ClientTradeModel::onPulsingComplete);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulse_state_changed,
+            this,
+            &ClientTradeModel::onPulseStateChanged);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulsing_complete,
+            this,
+            &ClientTradeModel::onPulsingComplete);
 }
 
 int ClientTradeModel::rowCount(const QModelIndex& parent) const {
@@ -68,8 +69,7 @@ int ClientTradeModel::columnCount(const QModelIndex& parent) const {
     return ColumnCount;
 }
 
-QVariant ClientTradeModel::data(
-    const QModelIndex& index, int role) const {
+QVariant ClientTradeModel::data(const QModelIndex& index, int role) const {
     if (!index.isValid())
         return {};
 
@@ -81,28 +81,28 @@ QVariant ClientTradeModel::data(
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-        case ExternalId:
-            return QString::fromStdString(trade.identity.external_id);
-        case TradeType:
-            return QString::fromStdString(trade.classification.trade_type);
-        case LifecycleEvent:
-            return QString::fromStdString(trade.classification.activity_type_code);
-        case TradeDate:
-            return QString::fromStdString(trade.lifecycle.trade_date.value_or(""));
-        case EffectiveDate:
-            return QString::fromStdString(trade.lifecycle.effective_date.value_or(""));
-        case TerminationDate:
-            return QString::fromStdString(trade.lifecycle.termination_date.value_or(""));
-        case NettingSetId:
-            return QString::fromStdString(trade.classification.netting_set_id);
-        case Version:
-            return trade.identity.version;
-        case ModifiedBy:
-            return QString::fromStdString(trade.audit.modified_by);
-        case RecordedAt:
-            return relative_time_helper::format(trade.audit.recorded_at);
-        default:
-            return {};
+            case ExternalId:
+                return QString::fromStdString(trade.identity.external_id);
+            case TradeType:
+                return QString::fromStdString(trade.classification.trade_type);
+            case LifecycleEvent:
+                return QString::fromStdString(trade.classification.activity_type_code);
+            case TradeDate:
+                return QString::fromStdString(trade.lifecycle.trade_date.value_or(""));
+            case EffectiveDate:
+                return QString::fromStdString(trade.lifecycle.effective_date.value_or(""));
+            case TerminationDate:
+                return QString::fromStdString(trade.lifecycle.termination_date.value_or(""));
+            case NettingSetId:
+                return QString::fromStdString(trade.classification.netting_set_id);
+            case Version:
+                return trade.identity.version;
+            case ModifiedBy:
+                return QString::fromStdString(trade.audit.modified_by);
+            case RecordedAt:
+                return relative_time_helper::format(trade.audit.recorded_at);
+            default:
+                return {};
         }
     }
 
@@ -113,34 +113,33 @@ QVariant ClientTradeModel::data(
     return {};
 }
 
-QVariant ClientTradeModel::headerData(
-    int section, Qt::Orientation orientation, int role) const {
+QVariant ClientTradeModel::headerData(int section, Qt::Orientation orientation, int role) const {
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return {};
 
     switch (section) {
-    case ExternalId:
-        return tr("External ID");
-    case TradeType:
-        return tr("Type");
-    case LifecycleEvent:
-        return tr("Event");
-    case TradeDate:
-        return tr("Trade Date");
-    case EffectiveDate:
-        return tr("Effective");
-    case TerminationDate:
-        return tr("Termination");
-    case NettingSetId:
-        return tr("Netting Set");
-    case Version:
-        return tr("Version");
-    case ModifiedBy:
-        return tr("Modified By");
-    case RecordedAt:
-        return tr("Recorded At");
-    default:
-        return {};
+        case ExternalId:
+            return tr("External ID");
+        case TradeType:
+            return tr("Type");
+        case LifecycleEvent:
+            return tr("Event");
+        case TradeDate:
+            return tr("Trade Date");
+        case EffectiveDate:
+            return tr("Effective");
+        case TerminationDate:
+            return tr("Termination");
+        case NettingSetId:
+            return tr("Netting Set");
+        case Version:
+            return tr("Version");
+        case ModifiedBy:
+            return tr("Modified By");
+        case RecordedAt:
+            return tr("Recorded At");
+        default:
+            return {};
     }
 }
 
@@ -170,8 +169,7 @@ void ClientTradeModel::refresh() {
     fetch_trades(0, page_size_);
 }
 
-void ClientTradeModel::load_page(std::uint32_t offset,
-                                          std::uint32_t limit) {
+void ClientTradeModel::load_page(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "load_page: offset=" << offset << ", limit=" << limit;
 
     if (is_fetching_) {
@@ -195,42 +193,43 @@ void ClientTradeModel::load_page(std::uint32_t offset,
     fetch_trades(offset, limit);
 }
 
-void ClientTradeModel::fetch_trades(
-    std::uint32_t offset, std::uint32_t limit) {
+void ClientTradeModel::fetch_trades(std::uint32_t offset, std::uint32_t limit) {
     is_fetching_ = true;
     QPointer<ClientTradeModel> self = this;
 
-    QFuture<FetchResult> future =
-        QtConcurrent::run([self, offset, limit]() -> FetchResult {
-            return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
-                BOOST_LOG_SEV(lg(), debug) << "Making trades request with offset="
-                                           << offset << ", limit=" << limit;
+    QFuture<FetchResult> future = QtConcurrent::run([self, offset, limit]() -> FetchResult {
+        return exception_helper::wrap_async_fetch<FetchResult>(
+            [&]() -> FetchResult {
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Making trades request with offset=" << offset << ", limit=" << limit;
                 if (!self || !self->clientManager_) {
-                    return {.success = false, .trades = {},
+                    return {.success = false,
+                            .trades = {},
                             .total_available_count = 0,
                             .error_message = "Model was destroyed",
                             .error_details = {}};
                 }
 
-                auto result = self->clientManager_->listTrades(
-                    std::nullopt, offset, limit);
+                auto result = self->clientManager_->listTrades(std::nullopt, offset, limit);
                 if (!result) {
                     BOOST_LOG_SEV(lg(), error) << "Failed to fetch trades";
-                    return {.success = false, .trades = {},
+                    return {.success = false,
+                            .trades = {},
                             .total_available_count = 0,
                             .error_message = "Failed to fetch trades",
                             .error_details = {}};
                 }
 
                 BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->trades.size()
-                                           << " trades, total available: "
-                                           << result->total_count;
+                                           << " trades, total available: " << result->total_count;
                 return {.success = true,
                         .trades = std::move(result->trades),
                         .total_available_count = result->total_count,
-                        .error_message = {}, .error_details = {}};
-            }, "trades");
-        });
+                        .error_message = {},
+                        .error_details = {}};
+            },
+            "trades");
+    });
 
     watcher_->setFuture(future);
 }
@@ -241,8 +240,8 @@ void ClientTradeModel::onTradesLoaded() {
     const auto result = watcher_->result();
 
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to fetch trades: "
-                                   << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to fetch trades: " << result.error_message.toStdString();
         emit loadError(result.error_message, result.error_details);
         return;
     }
@@ -259,8 +258,8 @@ void ClientTradeModel::onTradesLoaded() {
         const bool has_recent = recencyTracker_.update(items_);
         if (has_recent && !pulseManager_->is_pulsing()) {
             pulseManager_->start_pulsing();
-            BOOST_LOG_SEV(lg(), debug) << "Found " << recencyTracker_.recent_count()
-                                       << " trades newer than last reload";
+            BOOST_LOG_SEV(lg(), debug)
+                << "Found " << recencyTracker_.recent_count() << " trades newer than last reload";
         }
     }
 
@@ -281,16 +280,14 @@ void ClientTradeModel::set_page_size(std::uint32_t size) {
     }
 }
 
-const trading::domain::trade*
-ClientTradeModel::getTrade(int row) const {
+const trading::domain::trade* ClientTradeModel::getTrade(int row) const {
     const auto idx = static_cast<std::size_t>(row);
     if (idx >= items_.size())
         return nullptr;
     return &items_[idx];
 }
 
-QVariant ClientTradeModel::recency_foreground_color(
-    const std::string& code) const {
+QVariant ClientTradeModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {
         return color_constants::stale_indicator;
     }
@@ -299,8 +296,8 @@ QVariant ClientTradeModel::recency_foreground_color(
 
 void ClientTradeModel::onPulseStateChanged(bool /*isOn*/) {
     if (!items_.empty()) {
-        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
-            {Qt::ForegroundRole});
+        emit dataChanged(
+            index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::ForegroundRole});
     }
 }
 

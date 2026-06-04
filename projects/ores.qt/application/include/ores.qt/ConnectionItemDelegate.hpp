@@ -20,8 +20,8 @@
 #ifndef ORES_QT_CONNECTION_ITEM_DELEGATE_HPP
 #define ORES_QT_CONNECTION_ITEM_DELEGATE_HPP
 
-#include <QStyledItemDelegate>
 #include <QFont>
+#include <QStyledItemDelegate>
 
 namespace ores::qt {
 
@@ -37,15 +37,17 @@ class ConnectionItemDelegate : public QStyledItemDelegate {
 public:
     explicit ConnectionItemDelegate(QObject* parent = nullptr);
 
-    void paint(QPainter* painter, const QStyleOptionViewItem& option,
+    void paint(QPainter* painter,
+               const QStyleOptionViewItem& option,
                const QModelIndex& index) const override;
 
-    QSize sizeHint(const QStyleOptionViewItem& option,
-                   const QModelIndex& index) const override;
+    QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
 private:
-    void drawTagBadge(QPainter* painter, const QRect& rect,
-                      const QString& text, const QColor& backgroundColor,
+    void drawTagBadge(QPainter* painter,
+                      const QRect& rect,
+                      const QString& text,
+                      const QColor& backgroundColor,
                       const QFont& badgeFont) const;
 };
 

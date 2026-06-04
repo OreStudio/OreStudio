@@ -18,47 +18,53 @@
  *
  */
 #include "ores.qt/ClientCodingSchemeModel.hpp"
-
-#include <QtConcurrent>
+#include "ores.dq.api/messaging/coding_scheme_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.dq.api/messaging/coding_scheme_protocol.hpp"
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    std::string coding_scheme_key_extractor(const dq::domain::coding_scheme& e) {
-        return e.code;
-    }
+std::string coding_scheme_key_extractor(const dq::domain::coding_scheme& e) {
+    return e.code;
+}
 }
 
-ClientCodingSchemeModel::ClientCodingSchemeModel(
-    ClientManager* clientManager, QObject* parent)
-    : AbstractClientModel(parent),
-      clientManager_(clientManager),
-      watcher_(new QFutureWatcher<FetchResult>(this)),
-      recencyTracker_(coding_scheme_key_extractor),
-      pulseManager_(new RecencyPulseManager(this)) {
+ClientCodingSchemeModel::ClientCodingSchemeModel(ClientManager* clientManager, QObject* parent)
+    : AbstractClientModel(parent)
+    , clientManager_(clientManager)
+    , watcher_(new QFutureWatcher<FetchResult>(this))
+    , recencyTracker_(coding_scheme_key_extractor)
+    , pulseManager_(new RecencyPulseManager(this)) {
 
-    connect(watcher_, &QFutureWatcher<FetchResult>::finished,
-            this, &ClientCodingSchemeModel::onSchemesLoaded);
+    connect(watcher_,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            &ClientCodingSchemeModel::onSchemesLoaded);
 
-    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
-        this, &ClientCodingSchemeModel::onPulseStateChanged);
-    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
-        this, &ClientCodingSchemeModel::onPulsingComplete);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulse_state_changed,
+            this,
+            &ClientCodingSchemeModel::onPulseStateChanged);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulsing_complete,
+            this,
+            &ClientCodingSchemeModel::onPulsingComplete);
 }
 
 int ClientCodingSchemeModel::rowCount(const QModelIndex& parent) const {
-    if (parent.isValid()) return 0;
+    if (parent.isValid())
+        return 0;
     return static_cast<int>(schemes_.size());
 }
 
 int ClientCodingSchemeModel::columnCount(const QModelIndex& parent) const {
-    if (parent.isValid()) return 0;
+    if (parent.isValid())
+        return 0;
     return ColumnCount;
 }
 
@@ -70,16 +76,26 @@ QVariant ClientCodingSchemeModel::data(const QModelIndex& index, int role) const
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-        case Code: return QString::fromStdString(scheme.code);
-        case Name: return QString::fromStdString(scheme.name);
-        case AuthorityType: return QString::fromStdString(scheme.authority_type);
-        case SubjectArea: return QString::fromStdString(scheme.subject_area_name);
-        case Domain: return QString::fromStdString(scheme.domain_name);
-        case Description: return QString::fromStdString(scheme.description);
-        case Version: return scheme.version;
-        case ModifiedBy: return QString::fromStdString(scheme.modified_by);
-        case RecordedAt: return relative_time_helper::format(scheme.recorded_at);
-        default: return {};
+            case Code:
+                return QString::fromStdString(scheme.code);
+            case Name:
+                return QString::fromStdString(scheme.name);
+            case AuthorityType:
+                return QString::fromStdString(scheme.authority_type);
+            case SubjectArea:
+                return QString::fromStdString(scheme.subject_area_name);
+            case Domain:
+                return QString::fromStdString(scheme.domain_name);
+            case Description:
+                return QString::fromStdString(scheme.description);
+            case Version:
+                return scheme.version;
+            case ModifiedBy:
+                return QString::fromStdString(scheme.modified_by);
+            case RecordedAt:
+                return relative_time_helper::format(scheme.recorded_at);
+            default:
+                return {};
         }
     }
 
@@ -90,22 +106,32 @@ QVariant ClientCodingSchemeModel::data(const QModelIndex& index, int role) const
     return {};
 }
 
-QVariant ClientCodingSchemeModel::headerData(int section,
-    Qt::Orientation orientation, int role) const {
+QVariant
+ClientCodingSchemeModel::headerData(int section, Qt::Orientation orientation, int role) const {
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return {};
 
     switch (section) {
-    case Code: return tr("Code");
-    case Name: return tr("Name");
-    case AuthorityType: return tr("Authority Type");
-    case SubjectArea: return tr("Subject Area");
-    case Domain: return tr("Domain");
-    case Description: return tr("Description");
-    case Version: return tr("Version");
-    case ModifiedBy: return tr("Modified By");
-    case RecordedAt: return tr("Recorded At");
-    default: return {};
+        case Code:
+            return tr("Code");
+        case Name:
+            return tr("Name");
+        case AuthorityType:
+            return tr("Authority Type");
+        case SubjectArea:
+            return tr("Subject Area");
+        case Domain:
+            return tr("Domain");
+        case Description:
+            return tr("Description");
+        case Version:
+            return tr("Version");
+        case ModifiedBy:
+            return tr("Modified By");
+        case RecordedAt:
+            return tr("Recorded At");
+        default:
+            return {};
     }
 }
 
@@ -119,27 +145,34 @@ void ClientCodingSchemeModel::refresh() {
     QPointer<ClientCodingSchemeModel> self = this;
 
     QFuture<FetchResult> future = QtConcurrent::run([self]() -> FetchResult {
-        return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
-            if (!self || !self->clientManager_) {
-                return {.success = false, .schemes = {},
-                        .error_message = "Model was destroyed",
-                        .error_details = {}};
-            }
+        return exception_helper::wrap_async_fetch<FetchResult>(
+            [&]() -> FetchResult {
+                if (!self || !self->clientManager_) {
+                    return {.success = false,
+                            .schemes = {},
+                            .error_message = "Model was destroyed",
+                            .error_details = {}};
+                }
 
-            dq::messaging::get_coding_schemes_request request;
-            auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
-            if (!response_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to send request";
-                return {.success = false, .schemes = {},
-                        .error_message = "Failed to send request",
-                        .error_details = {}};
-            }
+                dq::messaging::get_coding_schemes_request request;
+                auto response_result =
+                    self->clientManager_->process_authenticated_request(std::move(request));
+                if (!response_result) {
+                    BOOST_LOG_SEV(lg(), error) << "Failed to send request";
+                    return {.success = false,
+                            .schemes = {},
+                            .error_message = "Failed to send request",
+                            .error_details = {}};
+                }
 
-            BOOST_LOG_SEV(lg(), debug) << "Fetched " << response_result->coding_schemes.size()
-                                       << " coding schemes";
-            return {.success = true, .schemes = std::move(response_result->coding_schemes),
-                    .error_message = {}, .error_details = {}};
-        }, "coding schemes");
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Fetched " << response_result->coding_schemes.size() << " coding schemes";
+                return {.success = true,
+                        .schemes = std::move(response_result->coding_schemes),
+                        .error_message = {},
+                        .error_details = {}};
+            },
+            "coding schemes");
     });
 
     watcher_->setFuture(future);
@@ -151,8 +184,8 @@ void ClientCodingSchemeModel::onSchemesLoaded() {
     const auto result = watcher_->result();
 
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to fetch coding schemes: "
-                                   << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to fetch coding schemes: " << result.error_message.toStdString();
         emit loadError(result.error_message, result.error_details);
         return;
     }
@@ -162,18 +195,16 @@ void ClientCodingSchemeModel::onSchemesLoaded() {
     const bool has_recent = recencyTracker_.update(schemes_);
     if (has_recent && !pulseManager_->is_pulsing()) {
         pulseManager_->start_pulsing();
-        BOOST_LOG_SEV(lg(), debug) << "Found " << recencyTracker_.recent_count()
-                                   << " schemes newer than last reload";
+        BOOST_LOG_SEV(lg(), debug)
+            << "Found " << recencyTracker_.recent_count() << " schemes newer than last reload";
     }
     endResetModel();
 
-    BOOST_LOG_SEV(lg(), debug) << "Loaded " << schemes_.size()
-                               << " coding schemes";
+    BOOST_LOG_SEV(lg(), debug) << "Loaded " << schemes_.size() << " coding schemes";
     emit dataLoaded();
 }
 
-const dq::domain::coding_scheme* ClientCodingSchemeModel::getScheme(
-    int row) const {
+const dq::domain::coding_scheme* ClientCodingSchemeModel::getScheme(int row) const {
     if (row < 0 || row >= static_cast<int>(schemes_.size()))
         return nullptr;
     return &schemes_[row];
@@ -181,8 +212,8 @@ const dq::domain::coding_scheme* ClientCodingSchemeModel::getScheme(
 
 void ClientCodingSchemeModel::onPulseStateChanged(bool /*isOn*/) {
     if (!schemes_.empty()) {
-        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
-            {Qt::ForegroundRole});
+        emit dataChanged(
+            index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::ForegroundRole});
     }
 }
 
@@ -191,8 +222,7 @@ void ClientCodingSchemeModel::onPulsingComplete() {
     recencyTracker_.clear();
 }
 
-QVariant ClientCodingSchemeModel::recency_foreground_color(
-    const std::string& code) const {
+QVariant ClientCodingSchemeModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {
         return color_constants::stale_indicator;
     }

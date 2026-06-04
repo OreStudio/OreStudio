@@ -18,30 +18,27 @@
  *
  */
 #include "ores.qt/PaymentFrequencyTypeController.hpp"
-
+#include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/PaymentFrequencyTypeDetailDialog.hpp"
+#include "ores.qt/PaymentFrequencyTypeHistoryDialog.hpp"
+#include "ores.qt/PaymentFrequencyTypeMdiWindow.hpp"
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/PaymentFrequencyTypeMdiWindow.hpp"
-#include "ores.qt/PaymentFrequencyTypeDetailDialog.hpp"
-#include "ores.qt/PaymentFrequencyTypeHistoryDialog.hpp"
-#include "ores.qt/DetachableMdiSubWindow.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-PaymentFrequencyTypeController::PaymentFrequencyTypeController(
-    QMainWindow* mainWindow,
-    QMdiArea* mdiArea,
-    ClientManager* clientManager,
-    const QString& username,
-    QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username,
-          std::string_view{}, parent),
-      listWindow_(nullptr),
-      listMdiSubWindow_(nullptr) {
+PaymentFrequencyTypeController::PaymentFrequencyTypeController(QMainWindow* mainWindow,
+                                                               QMdiArea* mdiArea,
+                                                               ClientManager* clientManager,
+                                                               const QString& username,
+                                                               QObject* parent)
+    : EntityController(mainWindow, mdiArea, clientManager, username, std::string_view{}, parent)
+    , listWindow_(nullptr)
+    , listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "PaymentFrequencyTypeController created";
 }
@@ -59,23 +56,33 @@ void PaymentFrequencyTypeController::showListWindow() {
     listWindow_ = new PaymentFrequencyTypeMdiWindow(clientManager_, username_);
 
     // Connect signals
-    connect(listWindow_, &PaymentFrequencyTypeMdiWindow::statusChanged,
-            this, &PaymentFrequencyTypeController::statusMessage);
-    connect(listWindow_, &PaymentFrequencyTypeMdiWindow::errorOccurred,
-            this, &PaymentFrequencyTypeController::errorMessage);
-    connect(listWindow_, &PaymentFrequencyTypeMdiWindow::showTypeDetails,
-            this, &PaymentFrequencyTypeController::onShowDetails);
-    connect(listWindow_, &PaymentFrequencyTypeMdiWindow::addNewRequested,
-            this, &PaymentFrequencyTypeController::onAddNewRequested);
-    connect(listWindow_, &PaymentFrequencyTypeMdiWindow::showTypeHistory,
-            this, &PaymentFrequencyTypeController::onShowHistory);
+    connect(listWindow_,
+            &PaymentFrequencyTypeMdiWindow::statusChanged,
+            this,
+            &PaymentFrequencyTypeController::statusMessage);
+    connect(listWindow_,
+            &PaymentFrequencyTypeMdiWindow::errorOccurred,
+            this,
+            &PaymentFrequencyTypeController::errorMessage);
+    connect(listWindow_,
+            &PaymentFrequencyTypeMdiWindow::showTypeDetails,
+            this,
+            &PaymentFrequencyTypeController::onShowDetails);
+    connect(listWindow_,
+            &PaymentFrequencyTypeMdiWindow::addNewRequested,
+            this,
+            &PaymentFrequencyTypeController::onAddNewRequested);
+    connect(listWindow_,
+            &PaymentFrequencyTypeMdiWindow::showTypeHistory,
+            this,
+            &PaymentFrequencyTypeController::onShowHistory);
 
     // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Payment Frequency Types");
-    listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Clock, IconUtils::DefaultIconColor));
+    listMdiSubWindow_->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Clock, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -87,12 +94,16 @@ void PaymentFrequencyTypeController::showListWindow() {
     register_detachable_window(listMdiSubWindow_);
 
     // Cleanup when closed
-    connect(listMdiSubWindow_, &QObject::destroyed, this, [self = QPointer<PaymentFrequencyTypeController>(this), key]() {
-        if (!self) return;
-        self->untrack_window(key);
-        self->listWindow_ = nullptr;
-        self->listMdiSubWindow_ = nullptr;
-    });
+    connect(listMdiSubWindow_,
+            &QObject::destroyed,
+            this,
+            [self = QPointer<PaymentFrequencyTypeController>(this), key]() {
+                if (!self)
+                    return;
+                self->untrack_window(key);
+                self->listWindow_ = nullptr;
+                self->listMdiSubWindow_ = nullptr;
+            });
 
     BOOST_LOG_SEV(lg(), debug) << "Payment Frequency Type list window created";
 }
@@ -144,23 +155,30 @@ void PaymentFrequencyTypeController::showAddWindow() {
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
 
-    connect(detailDialog, &PaymentFrequencyTypeDetailDialog::statusMessage,
-            this, &PaymentFrequencyTypeController::statusMessage);
-    connect(detailDialog, &PaymentFrequencyTypeDetailDialog::errorMessage,
-            this, &PaymentFrequencyTypeController::errorMessage);
-    connect(detailDialog, &PaymentFrequencyTypeDetailDialog::typeSaved,
-            this, [self = QPointer<PaymentFrequencyTypeController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Payment Frequency Type saved: " << code.toStdString();
-        self->handleEntitySaved();
-    });
+    connect(detailDialog,
+            &PaymentFrequencyTypeDetailDialog::statusMessage,
+            this,
+            &PaymentFrequencyTypeController::statusMessage);
+    connect(detailDialog,
+            &PaymentFrequencyTypeDetailDialog::errorMessage,
+            this,
+            &PaymentFrequencyTypeController::errorMessage);
+    connect(detailDialog,
+            &PaymentFrequencyTypeDetailDialog::typeSaved,
+            this,
+            [self = QPointer<PaymentFrequencyTypeController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Payment Frequency Type saved: " << code.toStdString();
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Payment Frequency Type");
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Clock, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Clock, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -187,37 +205,47 @@ void PaymentFrequencyTypeController::showDetailWindow(
     detailDialog->setCreateMode(false);
     detailDialog->setType(type);
 
-    connect(detailDialog, &PaymentFrequencyTypeDetailDialog::statusMessage,
-            this, &PaymentFrequencyTypeController::statusMessage);
-    connect(detailDialog, &PaymentFrequencyTypeDetailDialog::errorMessage,
-            this, &PaymentFrequencyTypeController::errorMessage);
-    connect(detailDialog, &PaymentFrequencyTypeDetailDialog::typeSaved,
-            this, [self = QPointer<PaymentFrequencyTypeController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Payment Frequency Type saved: " << code.toStdString();
-        self->handleEntitySaved();
-    });
-    connect(detailDialog, &PaymentFrequencyTypeDetailDialog::typeDeleted,
-            this, [self = QPointer<PaymentFrequencyTypeController>(this), key](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Payment Frequency Type deleted: " << code.toStdString();
-        self->handleEntityDeleted();
-    });
+    connect(detailDialog,
+            &PaymentFrequencyTypeDetailDialog::statusMessage,
+            this,
+            &PaymentFrequencyTypeController::statusMessage);
+    connect(detailDialog,
+            &PaymentFrequencyTypeDetailDialog::errorMessage,
+            this,
+            &PaymentFrequencyTypeController::errorMessage);
+    connect(detailDialog,
+            &PaymentFrequencyTypeDetailDialog::typeSaved,
+            this,
+            [self = QPointer<PaymentFrequencyTypeController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Payment Frequency Type saved: " << code.toStdString();
+                self->handleEntitySaved();
+            });
+    connect(detailDialog,
+            &PaymentFrequencyTypeDetailDialog::typeDeleted,
+            this,
+            [self = QPointer<PaymentFrequencyTypeController>(this), key](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info)
+                    << "Payment Frequency Type deleted: " << code.toStdString();
+                self->handleEntityDeleted();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Payment Frequency Type: %1").arg(identifier));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Clock, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Clock, IconUtils::DefaultIconColor));
 
     // Track window
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<PaymentFrequencyTypeController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, key]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, key]() {
         if (self) {
             self->untrack_window(key);
         }
@@ -235,30 +263,38 @@ void PaymentFrequencyTypeController::showHistoryWindow(const QString& code) {
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
-        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: "
-                                  << code.toStdString();
+        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: " << code.toStdString();
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
-                              << code.toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << code.toStdString();
 
     auto* historyDialog = new PaymentFrequencyTypeHistoryDialog(code, clientManager_, mainWindow_);
 
-    connect(historyDialog, &PaymentFrequencyTypeHistoryDialog::statusChanged,
-            this, [self = QPointer<PaymentFrequencyTypeController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(historyDialog, &PaymentFrequencyTypeHistoryDialog::errorOccurred,
-            this, [self = QPointer<PaymentFrequencyTypeController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
-    connect(historyDialog, &PaymentFrequencyTypeHistoryDialog::revertVersionRequested,
-            this, &PaymentFrequencyTypeController::onRevertVersion);
-    connect(historyDialog, &PaymentFrequencyTypeHistoryDialog::openVersionRequested,
-            this, &PaymentFrequencyTypeController::onOpenVersion);
+    connect(historyDialog,
+            &PaymentFrequencyTypeHistoryDialog::statusChanged,
+            this,
+            [self = QPointer<PaymentFrequencyTypeController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(historyDialog,
+            &PaymentFrequencyTypeHistoryDialog::errorOccurred,
+            this,
+            [self = QPointer<PaymentFrequencyTypeController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
+    connect(historyDialog,
+            &PaymentFrequencyTypeHistoryDialog::revertVersionRequested,
+            this,
+            &PaymentFrequencyTypeController::onRevertVersion);
+    connect(historyDialog,
+            &PaymentFrequencyTypeHistoryDialog::openVersionRequested,
+            this,
+            &PaymentFrequencyTypeController::onOpenVersion);
 
     // Load history data
     historyDialog->loadHistory();
@@ -267,16 +303,15 @@ void PaymentFrequencyTypeController::showHistoryWindow(const QString& code) {
     historyWindow->setAttribute(Qt::WA_DeleteOnClose);
     historyWindow->setWidget(historyDialog);
     historyWindow->setWindowTitle(QString("Payment Frequency Type History: %1").arg(code));
-    historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    historyWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     // Track this history window
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
 
     QPointer<PaymentFrequencyTypeController> self = this;
-    connect(historyWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -291,8 +326,8 @@ void PaymentFrequencyTypeController::onOpenVersion(
                               << " for payment frequency type: " << type.code;
 
     const QString code = QString::fromStdString(type.code);
-    const QString windowKey = build_window_key("version", QString("%1_v%2")
-        .arg(code).arg(versionNumber));
+    const QString windowKey =
+        build_window_key("version", QString("%1_v%2").arg(code).arg(versionNumber));
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
@@ -306,31 +341,36 @@ void PaymentFrequencyTypeController::onOpenVersion(
     detailDialog->setType(type);
     detailDialog->setReadOnly(true);
 
-    connect(detailDialog, &PaymentFrequencyTypeDetailDialog::statusMessage,
-            this, [self = QPointer<PaymentFrequencyTypeController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(detailDialog, &PaymentFrequencyTypeDetailDialog::errorMessage,
-            this, [self = QPointer<PaymentFrequencyTypeController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
+    connect(detailDialog,
+            &PaymentFrequencyTypeDetailDialog::statusMessage,
+            this,
+            [self = QPointer<PaymentFrequencyTypeController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(detailDialog,
+            &PaymentFrequencyTypeDetailDialog::errorMessage,
+            this,
+            [self = QPointer<PaymentFrequencyTypeController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Payment Frequency Type: %1 (Version %2)")
-        .arg(code).arg(versionNumber));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("Payment Frequency Type: %1 (Version %2)").arg(code).arg(versionNumber));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     track_window(windowKey, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<PaymentFrequencyTypeController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -342,8 +382,7 @@ void PaymentFrequencyTypeController::onOpenVersion(
 
 void PaymentFrequencyTypeController::onRevertVersion(
     const trading::domain::payment_frequency_type& type) {
-    BOOST_LOG_SEV(lg(), info) << "Reverting payment frequency type to version: "
-                              << type.version;
+    BOOST_LOG_SEV(lg(), info) << "Reverting payment frequency type to version: " << type.version;
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new PaymentFrequencyTypeDetailDialog(mainWindow_);
@@ -352,25 +391,34 @@ void PaymentFrequencyTypeController::onRevertVersion(
     detailDialog->setType(type);
     detailDialog->setCreateMode(false);
 
-    connect(detailDialog, &PaymentFrequencyTypeDetailDialog::statusMessage,
-            this, &PaymentFrequencyTypeController::statusMessage);
-    connect(detailDialog, &PaymentFrequencyTypeDetailDialog::errorMessage,
-            this, &PaymentFrequencyTypeController::errorMessage);
-    connect(detailDialog, &PaymentFrequencyTypeDetailDialog::typeSaved,
-            this, [self = QPointer<PaymentFrequencyTypeController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Payment Frequency Type reverted: " << code.toStdString();
-        emit self->statusMessage(QString("Payment Frequency Type '%1' reverted successfully").arg(code));
-        self->handleEntitySaved();
-    });
+    connect(detailDialog,
+            &PaymentFrequencyTypeDetailDialog::statusMessage,
+            this,
+            &PaymentFrequencyTypeController::statusMessage);
+    connect(detailDialog,
+            &PaymentFrequencyTypeDetailDialog::errorMessage,
+            this,
+            &PaymentFrequencyTypeController::errorMessage);
+    connect(detailDialog,
+            &PaymentFrequencyTypeDetailDialog::typeSaved,
+            this,
+            [self = QPointer<PaymentFrequencyTypeController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info)
+                    << "Payment Frequency Type reverted: " << code.toStdString();
+                emit self->statusMessage(
+                    QString("Payment Frequency Type '%1' reverted successfully").arg(code));
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Revert Payment Frequency Type: %1")
-        .arg(QString::fromStdString(type.code)));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("Revert Payment Frequency Type: %1").arg(QString::fromStdString(type.code)));
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
+                                                               IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 

@@ -18,39 +18,38 @@
  *
  */
 #include "ores.qt/OreImportWizard.hpp"
-
-#include <set>
-#include <QDate>
-#include <QGuiApplication>
-#include <QClipboard>
-#include <QPalette>
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QFormLayout>
-#include <QGroupBox>
-#include <QFileDialog>
-#include <QFutureWatcher>
-#include <QSizePolicy>
-#include <QtConcurrent>
-#include "ores.ore.core/scanner/ore_directory_scanner.hpp"
-#include "ores.ore.core/planner/ore_import_planner.hpp"
+#include "ores.ore.api/messaging/ore_import_protocol.hpp"
+#include "ores.ore.api/net/ore_storage.hpp"
 #include "ores.ore.core/hierarchy/ore_hierarchy_builder.hpp"
+#include "ores.ore.core/planner/ore_import_planner.hpp"
+#include "ores.ore.core/scanner/ore_directory_scanner.hpp"
+#include "ores.qt/FontUtils.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/WidgetUtils.hpp"
+#include "ores.refdata.api/messaging/book_protocol.hpp"
+#include "ores.refdata.api/messaging/counterparty_protocol.hpp"
+#include "ores.refdata.api/messaging/currency_protocol.hpp"
+#include "ores.storage/net/storage_transfer.hpp"
+#include "ores.trading.api/messaging/trade_protocol.hpp"
+#include "ores.utility/rfl/reflectors.hpp"
+#include <QClipboard>
+#include <QDate>
+#include <QFileDialog>
+#include <QFormLayout>
+#include <QFutureWatcher>
+#include <QGroupBox>
+#include <QGuiApplication>
+#include <QHBoxLayout>
+#include <QPalette>
+#include <QSizePolicy>
+#include <QVBoxLayout>
+#include <QtConcurrent>
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <rfl/json.hpp>
-#include "ores.utility/rfl/reflectors.hpp"
-#include "ores.refdata.api/messaging/currency_protocol.hpp"
-#include "ores.refdata.api/messaging/counterparty_protocol.hpp"
-#include "ores.refdata.api/messaging/book_protocol.hpp"
-#include "ores.trading.api/messaging/trade_protocol.hpp"
-#include "ores.ore.api/net/ore_storage.hpp"
-#include "ores.ore.api/messaging/ore_import_protocol.hpp"
-#include "ores.storage/net/storage_transfer.hpp"
-#include "ores.qt/FontUtils.hpp"
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/WidgetUtils.hpp"
+#include <set>
 
 namespace ores::qt {
 
@@ -64,13 +63,13 @@ OreImportWizard::OreImportWizard(ClientManager* clientManager,
                                  std::optional<boost::uuids::uuid> targetBookId,
                                  const std::string& targetBookName,
                                  QWidget* parent)
-    : QWizard(parent),
-      clientManager_(clientManager),
-      targetBookName_(targetBookName) {
+    : QWizard(parent)
+    , clientManager_(clientManager)
+    , targetBookName_(targetBookName) {
 
     setWindowTitle(tr("Import ORE Data"));
-    setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::BriefcaseFilled, IconUtils::DefaultIconColor));
+    setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::BriefcaseFilled, IconUtils::DefaultIconColor));
     setMinimumSize(800, 600);
     resize(800, 600);
 
@@ -80,8 +79,8 @@ OreImportWizard::OreImportWizard(ClientManager* clientManager,
     setOption(QWizard::NoCancelButtonOnLastPage, true);
 
     // Default choices
-    choices_.scan_exclusions  = {};          // scan all directories by default
-    choices_.hierarchy_strip  = {"Input"};   // strip "Input" from hierarchy paths
+    choices_.scan_exclusions = {};        // scan all directories by default
+    choices_.hierarchy_strip = {"Input"}; // strip "Input" from hierarchy paths
     choices_.create_parent_portfolio = false;
     choices_.currency_mode = ore::planner::currency_import_mode::missing_only;
     choices_.party_id = clientManager_->currentPartyId();
@@ -95,13 +94,13 @@ OreImportWizard::OreImportWizard(ClientManager* clientManager,
 
 void OreImportWizard::setupPages() {
     WidgetUtils::setupComboBoxes(this);
-    setPage(Page_Welcome,     new OreWelcomePage(this));
-    setPage(Page_Directory,   new OreDirectoryPage(this));
+    setPage(Page_Welcome, new OreWelcomePage(this));
+    setPage(Page_Directory, new OreDirectoryPage(this));
     setPage(Page_ScanSummary, new OreScanSummaryPage(this));
-    setPage(Page_Currency,    new OreCurrencyPage(this));
-    setPage(Page_Portfolio,   new OrePortfolioPage(this));
+    setPage(Page_Currency, new OreCurrencyPage(this));
+    setPage(Page_Portfolio, new OrePortfolioPage(this));
     setPage(Page_TradeImport, new OreTradeImportPage(this));
-    setPage(Page_Done,        new OreDonePage(this));
+    setPage(Page_Done, new OreDonePage(this));
     setStartId(Page_Welcome);
 }
 
@@ -110,7 +109,8 @@ void OreImportWizard::setupPages() {
 // ============================================================================
 
 OreWelcomePage::OreWelcomePage(OreImportWizard* wizard)
-    : QWizardPage(wizard), wizard_(wizard) {
+    : QWizardPage(wizard)
+    , wizard_(wizard) {
 
     setTitle(tr("Welcome to the ORE Import Wizard"));
     setSubTitle(tr("This wizard imports currencies, portfolios, books, and "
@@ -140,7 +140,8 @@ OreWelcomePage::OreWelcomePage(OreImportWizard* wizard)
 // ============================================================================
 
 OreDirectoryPage::OreDirectoryPage(OreImportWizard* wizard)
-    : QWizardPage(wizard), wizard_(wizard) {
+    : QWizardPage(wizard)
+    , wizard_(wizard) {
 
     setTitle(tr("Select ORE Directory"));
     setSubTitle(tr("Choose the root directory containing the ORE data files to import."));
@@ -160,7 +161,7 @@ OreDirectoryPage::OreDirectoryPage(OreImportWizard* wizard)
     layout->addWidget(statusLabel_);
 
     progressBar_ = new QProgressBar(this);
-    progressBar_->setRange(0, 0);  // indeterminate
+    progressBar_->setRange(0, 0); // indeterminate
     progressBar_->hide();
     layout->addWidget(progressBar_);
 
@@ -176,16 +177,18 @@ OreDirectoryPage::OreDirectoryPage(OreImportWizard* wizard)
 
 bool OreDirectoryPage::isComplete() const {
     // While scanning: keep Next disabled so the user can't re-trigger
-    if (scanning_) return false;
+    if (scanning_)
+        return false;
     // After a successful scan: allow advancing
-    if (scanComplete_) return true;
+    if (scanComplete_)
+        return true;
     // Path entered but not yet scanned: enable Next so the user can click it to start the scan
     return !dirEdit_->text().trimmed().isEmpty();
 }
 
 void OreDirectoryPage::onBrowseClicked() {
-    const auto dir = QFileDialog::getExistingDirectory(
-        this, tr("Select ORE Directory"), dirEdit_->text());
+    const auto dir =
+        QFileDialog::getExistingDirectory(this, tr("Select ORE Directory"), dirEdit_->text());
     if (!dir.isEmpty())
         dirEdit_->setText(dir);
 }
@@ -195,7 +198,7 @@ bool OreDirectoryPage::validatePage() {
         return true;
     if (!scanning_)
         startScan();
-    return false;  // stay on page; completeChanged() re-enables Next when done
+    return false; // stay on page; completeChanged() re-enables Next when done
 }
 
 void OreDirectoryPage::startScan() {
@@ -206,7 +209,7 @@ void OreDirectoryPage::startScan() {
     }
 
     scanning_ = true;
-    emit completeChanged();  // disable Next while scan runs
+    emit completeChanged(); // disable Next while scan runs
 
     statusLabel_->setText(tr("Scanning…"));
     progressBar_->show();
@@ -217,12 +220,13 @@ void OreDirectoryPage::startScan() {
     wizard_->setOreDir(root);
 
     const auto& excl_vec = wizard_->choices().scan_exclusions;
-    const std::unordered_set<std::string> scan_exclusions(excl_vec.begin(),
-                                                           excl_vec.end());
+    const std::unordered_set<std::string> scan_exclusions(excl_vec.begin(), excl_vec.end());
 
     auto* watcher = new QFutureWatcher<ore::scanner::scan_result>(this);
-    connect(watcher, &QFutureWatcher<ore::scanner::scan_result>::finished,
-            this, &OreDirectoryPage::onScanFinished);
+    connect(watcher,
+            &QFutureWatcher<ore::scanner::scan_result>::finished,
+            this,
+            &OreDirectoryPage::onScanFinished);
 
     watcher->setFuture(QtConcurrent::run([root, scan_exclusions]() {
         ore::scanner::ore_directory_scanner scanner(root, scan_exclusions);
@@ -231,9 +235,9 @@ void OreDirectoryPage::startScan() {
 }
 
 void OreDirectoryPage::onScanFinished() {
-    auto* watcher =
-        static_cast<QFutureWatcher<ore::scanner::scan_result>*>(sender());
-    if (!watcher) return;
+    auto* watcher = static_cast<QFutureWatcher<ore::scanner::scan_result>*>(sender());
+    if (!watcher)
+        return;
 
     const auto result = watcher->result();
     watcher->deleteLater();
@@ -248,12 +252,12 @@ void OreDirectoryPage::onScanFinished() {
     const int currencies = static_cast<int>(result.currency_files.size());
     const int portfolios = static_cast<int>(result.portfolio_files.size());
 
-    statusLabel_->setText(
-        tr("Scan complete: %1 currency file(s), %2 portfolio file(s).")
-        .arg(currencies).arg(portfolios));
+    statusLabel_->setText(tr("Scan complete: %1 currency file(s), %2 portfolio file(s).")
+                              .arg(currencies)
+                              .arg(portfolios));
 
-    BOOST_LOG_SEV(lg(), info) << "Scan complete: " << currencies
-                              << " currency, " << portfolios << " portfolio files";
+    BOOST_LOG_SEV(lg(), info) << "Scan complete: " << currencies << " currency, " << portfolios
+                              << " portfolio files";
 
     scanComplete_ = true;
     emit completeChanged();
@@ -264,7 +268,8 @@ void OreDirectoryPage::onScanFinished() {
 // ============================================================================
 
 OreScanSummaryPage::OreScanSummaryPage(OreImportWizard* wizard)
-    : QWizardPage(wizard), wizard_(wizard) {
+    : QWizardPage(wizard)
+    , wizard_(wizard) {
 
     setTitle(tr("Scan Summary"));
     setSubTitle(tr("Review the detected files and configure directory exclusions."));
@@ -284,7 +289,7 @@ OreScanSummaryPage::OreScanSummaryPage(OreImportWizard* wizard)
     auto* addRow = new QHBoxLayout;
     exclusionEdit_ = new QLineEdit(this);
     exclusionEdit_->setPlaceholderText(tr("Directory name to exclude…"));
-    addBtn_    = new QPushButton(tr("Add"),    this);
+    addBtn_ = new QPushButton(tr("Add"), this);
     removeBtn_ = new QPushButton(tr("Remove"), this);
     addRow->addWidget(exclusionEdit_);
     addRow->addWidget(addBtn_);
@@ -296,7 +301,7 @@ OreScanSummaryPage::OreScanSummaryPage(OreImportWizard* wizard)
     hierarchyLabel_->setWordWrap(true);
     layout->addWidget(hierarchyLabel_);
 
-    connect(addBtn_,    &QPushButton::clicked, this, &OreScanSummaryPage::onExclusionAdded);
+    connect(addBtn_, &QPushButton::clicked, this, &OreScanSummaryPage::onExclusionAdded);
     connect(removeBtn_, &QPushButton::clicked, this, &OreScanSummaryPage::onExclusionRemoved);
 }
 
@@ -311,7 +316,8 @@ void OreScanSummaryPage::initializePage() {
 
 void OreScanSummaryPage::onExclusionAdded() {
     const auto text = exclusionEdit_->text().trimmed();
-    if (text.isEmpty()) return;
+    if (text.isEmpty())
+        return;
 
     auto& excl = wizard_->choices().scan_exclusions;
     const auto s = text.toStdString();
@@ -325,7 +331,8 @@ void OreScanSummaryPage::onExclusionAdded() {
 
 void OreScanSummaryPage::onExclusionRemoved() {
     const auto* item = exclusionList_->currentItem();
-    if (!item) return;
+    if (!item)
+        return;
     const auto s = item->text().toStdString();
     auto& excl = wizard_->choices().scan_exclusions;
     excl.erase(std::remove(excl.begin(), excl.end(), s), excl.end());
@@ -335,29 +342,28 @@ void OreScanSummaryPage::onExclusionRemoved() {
 
 void OreScanSummaryPage::refreshSummary() {
     const auto& sr = wizard_->scanResult();
-    summaryLabel_->setText(
-        tr("Found <b>%1</b> currency file(s) and <b>%2</b> portfolio file(s) "
-           "(%3 file(s) ignored).")
-        .arg(sr.currency_files.size())
-        .arg(sr.portfolio_files.size())
-        .arg(sr.ignored_files.size()));
+    summaryLabel_->setText(tr("Found <b>%1</b> currency file(s) and <b>%2</b> portfolio file(s) "
+                              "(%3 file(s) ignored).")
+                               .arg(sr.currency_files.size())
+                               .arg(sr.portfolio_files.size())
+                               .arg(sr.ignored_files.size()));
 
     // Rebuild hierarchy to show portfolio/book node count
     ore::hierarchy::ore_hierarchy_builder builder(
-        sr.portfolio_files, sr.root,
+        sr.portfolio_files,
+        sr.root,
         std::unordered_set<std::string>(wizard_->choices().hierarchy_strip.begin(),
                                         wizard_->choices().hierarchy_strip.end()));
     const auto nodes = builder.build();
 
-    long portfolios = std::count_if(nodes.begin(), nodes.end(),
-        [](const auto& n) {
-            return n.type == ore::hierarchy::import_node::node_type::portfolio;
-        });
+    long portfolios = std::count_if(nodes.begin(), nodes.end(), [](const auto& n) {
+        return n.type == ore::hierarchy::import_node::node_type::portfolio;
+    });
     long books = static_cast<long>(nodes.size()) - portfolios;
 
-    hierarchyLabel_->setText(
-        tr("Hierarchy preview: <b>%1</b> portfolio(s), <b>%2</b> book(s).")
-        .arg(portfolios).arg(books));
+    hierarchyLabel_->setText(tr("Hierarchy preview: <b>%1</b> portfolio(s), <b>%2</b> book(s).")
+                                 .arg(portfolios)
+                                 .arg(books));
 }
 
 // ============================================================================
@@ -365,17 +371,17 @@ void OreScanSummaryPage::refreshSummary() {
 // ============================================================================
 
 OreCurrencyPage::OreCurrencyPage(OreImportWizard* wizard)
-    : QWizardPage(wizard), wizard_(wizard) {
+    : QWizardPage(wizard)
+    , wizard_(wizard) {
 
     setTitle(tr("Currency Import"));
     setSubTitle(tr("Choose which currencies to import."));
 
     auto* layout = new QVBoxLayout(this);
 
-    allRadio_ = new QRadioButton(
-        tr("Import all currencies from the ORE file"), this);
-    missingRadio_ = new QRadioButton(
-        tr("Import only currencies not already present in OreStudio"), this);
+    allRadio_ = new QRadioButton(tr("Import all currencies from the ORE file"), this);
+    missingRadio_ =
+        new QRadioButton(tr("Import only currencies not already present in OreStudio"), this);
     missingRadio_->setChecked(true);
 
     layout->addWidget(allRadio_);
@@ -390,7 +396,7 @@ OreCurrencyPage::OreCurrencyPage(OreImportWizard* wizard)
 
     layout->addStretch();
 
-    connect(allRadio_,     &QRadioButton::toggled, this, &OreCurrencyPage::onModeChanged);
+    connect(allRadio_, &QRadioButton::toggled, this, &OreCurrencyPage::onModeChanged);
     connect(missingRadio_, &QRadioButton::toggled, this, &OreCurrencyPage::onModeChanged);
 }
 
@@ -404,12 +410,11 @@ void OreCurrencyPage::initializePage() {
     // Fetch all existing ISO codes asynchronously
     using Result = std::set<std::string>;
     auto* watcher = new QFutureWatcher<Result>(this);
-    connect(watcher, &QFutureWatcher<Result>::finished,
-            this, &OreCurrencyPage::onFetchFinished);
+    connect(watcher, &QFutureWatcher<Result>::finished, this, &OreCurrencyPage::onFetchFinished);
 
     watcher->setFuture(QtConcurrent::run([cm]() -> Result {
         refdata::messaging::get_currencies_request req;
-        req.limit = 1000;  // server enforces max 1000 per request
+        req.limit = 1000; // server enforces max 1000 per request
         const auto resp = cm->process_authenticated_request(std::move(req));
         Result codes;
         if (resp) {
@@ -422,7 +427,8 @@ void OreCurrencyPage::initializePage() {
 
 void OreCurrencyPage::onFetchFinished() {
     auto* watcher = static_cast<QFutureWatcher<std::set<std::string>>*>(sender());
-    if (!watcher) return;
+    if (!watcher)
+        return;
 
     wizard_->setExistingIsoCodes(watcher->result());
     watcher->deleteLater();
@@ -436,10 +442,10 @@ void OreCurrencyPage::onFetchFinished() {
 
 void OreCurrencyPage::onModeChanged() {
     using mode = ore::planner::currency_import_mode;
-    wizard_->choices().currency_mode =
-        missingRadio_->isChecked() ? mode::missing_only : mode::all;
+    wizard_->choices().currency_mode = missingRadio_->isChecked() ? mode::missing_only : mode::all;
 
-    if (!fetchDone_) return;
+    if (!fetchDone_)
+        return;
 
     // Compute how many will be imported with current mode
     const auto& sr = wizard_->scanResult();
@@ -449,9 +455,7 @@ void OreCurrencyPage::onModeChanged() {
     ore::planner::ore_import_planner planner(sr, existing, choices);
     const auto plan = planner.plan();
 
-    countLabel_->setText(
-        tr("This will import %1 currency record(s).")
-        .arg(plan.currencies.size()));
+    countLabel_->setText(tr("This will import %1 currency record(s).").arg(plan.currencies.size()));
 }
 
 // ============================================================================
@@ -459,7 +463,8 @@ void OreCurrencyPage::onModeChanged() {
 // ============================================================================
 
 OrePortfolioPage::OrePortfolioPage(OreImportWizard* wizard)
-    : QWizardPage(wizard), wizard_(wizard) {
+    : QWizardPage(wizard)
+    , wizard_(wizard) {
 
     setTitle(tr("Import Target"));
     setSubTitle(tr("Select the book that trades will be imported into."));
@@ -480,8 +485,10 @@ OrePortfolioPage::OrePortfolioPage(OreImportWizard* wizard)
 
     layout->addStretch();
 
-    connect(parentCombo_, &QComboBox::currentTextChanged,
-            this, &OrePortfolioPage::onBookSelectionChanged);
+    connect(parentCombo_,
+            &QComboBox::currentTextChanged,
+            this,
+            &OrePortfolioPage::onBookSelectionChanged);
 }
 
 void OrePortfolioPage::initializePage() {
@@ -494,8 +501,8 @@ void OrePortfolioPage::initializePage() {
     auto* cm = wizard_->clientManager();
     using Result = std::vector<refdata::domain::book>;
     auto* watcher = new QFutureWatcher<Result>(this);
-    connect(watcher, &QFutureWatcher<Result>::finished,
-            this, &OrePortfolioPage::onBooksFetchFinished);
+    connect(
+        watcher, &QFutureWatcher<Result>::finished, this, &OrePortfolioPage::onBooksFetchFinished);
 
     watcher->setFuture(QtConcurrent::run([cm]() -> Result {
         refdata::messaging::get_books_request req;
@@ -503,8 +510,9 @@ void OrePortfolioPage::initializePage() {
         Result books;
         if (resp) {
             books = resp->books;
-            std::sort(books.begin(), books.end(),
-                      [](const auto& a, const auto& b) { return a.name < b.name; });
+            std::sort(books.begin(), books.end(), [](const auto& a, const auto& b) {
+                return a.name < b.name;
+            });
         }
         return books;
     }));
@@ -522,14 +530,15 @@ bool OrePortfolioPage::validatePage() {
     const auto it = booksByName_.find(name);
     if (it == booksByName_.end())
         return false;
-    wizard_->choices().existing_target_book_id      = it->second.id;
+    wizard_->choices().existing_target_book_id = it->second.id;
     wizard_->choices().existing_parent_portfolio_id = it->second.parent_portfolio_id;
     return true;
 }
 
 void OrePortfolioPage::onBooksFetchFinished() {
     auto* watcher = static_cast<QFutureWatcher<std::vector<refdata::domain::book>>*>(sender());
-    if (!watcher) return;
+    if (!watcher)
+        return;
 
     const auto books = watcher->result();
     watcher->deleteLater();
@@ -567,18 +576,18 @@ void OrePortfolioPage::onBookSelectionChanged() {
     const auto& sr = wizard_->scanResult();
     const auto& choices = wizard_->choices();
     ore::hierarchy::ore_hierarchy_builder builder(
-        sr.portfolio_files, sr.root,
+        sr.portfolio_files,
+        sr.root,
         std::unordered_set<std::string>(choices.hierarchy_strip.begin(),
                                         choices.hierarchy_strip.end()));
     const auto nodes = builder.build();
-    long total_files = std::count_if(nodes.begin(), nodes.end(),
-        [](const auto& n) {
-            return n.type == ore::hierarchy::import_node::node_type::book;
-        });
+    long total_files = std::count_if(nodes.begin(), nodes.end(), [](const auto& n) {
+        return n.type == ore::hierarchy::import_node::node_type::book;
+    });
     hierarchyPreviewLabel_->setText(
         tr("Trades from %1 portfolio file(s) will be imported into book \"%2\".")
-        .arg(total_files)
-        .arg(QString::fromStdString(book.name)));
+            .arg(total_files)
+            .arg(QString::fromStdString(book.name)));
     emit completeChanged();
 }
 
@@ -587,7 +596,8 @@ void OrePortfolioPage::onBookSelectionChanged() {
 // ============================================================================
 
 OreTradeImportPage::OreTradeImportPage(OreImportWizard* wizard)
-    : QWizardPage(wizard), wizard_(wizard) {
+    : QWizardPage(wizard)
+    , wizard_(wizard) {
 
     setTitle(tr("Trade Import"));
     setSubTitle(tr("Set trade defaults and execute the import."));
@@ -634,13 +644,15 @@ OreTradeImportPage::OreTradeImportPage(OreImportWizard* wizard)
 }
 
 bool OreTradeImportPage::isComplete() const {
-    if (importDone_)    return true;   // allow advancing after import
-    if (importStarted_) return false;  // disable Next while running
-    return true;                       // enable Next to trigger import
+    if (importDone_)
+        return true; // allow advancing after import
+    if (importStarted_)
+        return false; // disable Next while running
+    return true;      // enable Next to trigger import
 }
 
 void OreTradeImportPage::initializePage() {
-    importDone_    = false;
+    importDone_ = false;
     importStarted_ = false;
     statusLabel_->setText(tr("Click Next to start the import."));
     progressBar_->hide();
@@ -657,12 +669,15 @@ void OreTradeImportPage::initializePage() {
     lifecycleEventCombo_->setEnabled(false);
     using ActivityTypeList = std::vector<trading::domain::activity_type>;
     auto* atWatcher = new QFutureWatcher<ActivityTypeList>(this);
-    connect(atWatcher, &QFutureWatcher<ActivityTypeList>::finished,
-            this, &OreTradeImportPage::onActivityTypesFetchFinished);
+    connect(atWatcher,
+            &QFutureWatcher<ActivityTypeList>::finished,
+            this,
+            &OreTradeImportPage::onActivityTypesFetchFinished);
     atWatcher->setFuture(QtConcurrent::run([cm]() -> ActivityTypeList {
         trading::messaging::get_activity_types_request req;
         const auto resp = cm->process_authenticated_request(std::move(req));
-        if (!resp) return {};
+        if (!resp)
+            return {};
         return resp->activity_types;
     }));
 
@@ -672,14 +687,17 @@ void OreTradeImportPage::initializePage() {
 
     using CounterpartyList = std::vector<refdata::domain::counterparty>;
     auto* cpWatcher = new QFutureWatcher<CounterpartyList>(this);
-    connect(cpWatcher, &QFutureWatcher<CounterpartyList>::finished,
-            this, &OreTradeImportPage::onCounterpartiesFetchFinished);
+    connect(cpWatcher,
+            &QFutureWatcher<CounterpartyList>::finished,
+            this,
+            &OreTradeImportPage::onCounterpartiesFetchFinished);
 
     cpWatcher->setFuture(QtConcurrent::run([cm]() -> CounterpartyList {
         refdata::messaging::get_counterparties_request req;
         req.limit = 1000;
         const auto resp = cm->process_authenticated_request(std::move(req));
-        if (!resp) return {};
+        if (!resp)
+            return {};
         return resp->counterparties;
     }));
 }
@@ -687,7 +705,8 @@ void OreTradeImportPage::initializePage() {
 void OreTradeImportPage::onActivityTypesFetchFinished() {
     using ActivityTypeList = std::vector<trading::domain::activity_type>;
     auto* watcher = static_cast<QFutureWatcher<ActivityTypeList>*>(sender());
-    if (!watcher) return;
+    if (!watcher)
+        return;
 
     const auto types = watcher->result();
     watcher->deleteLater();
@@ -701,9 +720,10 @@ void OreTradeImportPage::onActivityTypesFetchFinished() {
 
     for (const auto& t : types) {
         const QString code = QString::fromStdString(t.code);
-        const QString label = t.description.empty()
-            ? code
-            : QString("%1 (%2)").arg(QString::fromStdString(t.description), code);
+        const QString label =
+            t.description.empty() ?
+                code :
+                QString("%1 (%2)").arg(QString::fromStdString(t.description), code);
         lifecycleEventCombo_->addItem(label, code);
     }
 
@@ -733,7 +753,8 @@ void OreTradeImportPage::onActivityTypesFetchFinished() {
 void OreTradeImportPage::onCounterpartiesFetchFinished() {
     using CounterpartyList = std::vector<refdata::domain::counterparty>;
     auto* watcher = static_cast<QFutureWatcher<CounterpartyList>*>(sender());
-    if (!watcher) return;
+    if (!watcher)
+        return;
 
     const auto counterparties = watcher->result();
     watcher->deleteLater();
@@ -747,9 +768,8 @@ void OreTradeImportPage::onCounterpartiesFetchFinished() {
     defaultCounterpartyCombo_->addItem(tr("-- None (use ORE value) --"), QString());
 
     for (const auto& cp : counterparties) {
-        defaultCounterpartyCombo_->addItem(
-            QString::fromStdString(cp.full_name),
-            QString::fromStdString(boost::uuids::to_string(cp.id)));
+        defaultCounterpartyCombo_->addItem(QString::fromStdString(cp.full_name),
+                                           QString::fromStdString(boost::uuids::to_string(cp.id)));
     }
 
     if (!prevData.isEmpty()) {
@@ -771,8 +791,10 @@ void OreTradeImportPage::onCounterpartiesFetchFinished() {
 }
 
 bool OreTradeImportPage::validatePage() {
-    if (importDone_) return true;
-    if (!importStarted_) startImport();
+    if (importDone_)
+        return true;
+    if (!importStarted_)
+        startImport();
     return false;
 }
 
@@ -783,7 +805,7 @@ void OreTradeImportPage::appendLog(const QString& msg) {
 
 void OreTradeImportPage::startImport() {
     importStarted_ = true;
-    emit completeChanged();  // disable Next while import runs
+    emit completeChanged(); // disable Next while import runs
 
     // Capture defaults from form into choices
     auto& defs = wizard_->choices().defaults;
@@ -817,22 +839,21 @@ void OreTradeImportPage::startImport() {
 
     using Response = ores::ore::messaging::ore_import_response;
     auto* watcher = new QFutureWatcher<Response>(this);
-    connect(watcher, &QFutureWatcher<Response>::finished,
-            this, &OreTradeImportPage::onImportFinished);
+    connect(
+        watcher, &QFutureWatcher<Response>::finished, this, &OreTradeImportPage::onImportFinished);
 
-    watcher->setFuture(QtConcurrent::run(
-        [ore_dir, http_base_url, choices, request_id, cm]() -> Response {
+    watcher->setFuture(
+        QtConcurrent::run([ore_dir, http_base_url, choices, request_id, cm]() -> Response {
             // Step 1: pack and upload the ORE directory to storage
             try {
                 ores::storage::net::storage_transfer transfer(http_base_url);
                 transfer.pack_and_upload(ore_dir,
-                    std::string(ores::ore::net::ore_storage::bucket),
-                    ores::ore::net::ore_storage::import_key(request_id));
+                                         std::string(ores::ore::net::ore_storage::bucket),
+                                         ores::ore::net::ore_storage::import_key(request_id));
             } catch (const std::exception& e) {
-                return Response{
-                    .success = false,
-                    .message = std::string("Upload failed: ") + e.what(),
-                    .correlation_id = request_id};
+                return Response{.success = false,
+                                .message = std::string("Upload failed: ") + e.what(),
+                                .correlation_id = request_id};
             }
 
             // Step 2: send NATS request to the import service
@@ -842,13 +863,10 @@ void OreTradeImportPage::startImport() {
             req.correlation_id = request_id;
 
             // Allow up to 10 minutes for large datasets
-            const auto result = cm->process_authenticated_request(
-                req, std::chrono::minutes(10));
+            const auto result = cm->process_authenticated_request(req, std::chrono::minutes(10));
             if (!result) {
                 return Response{
-                    .success = false,
-                    .message = result.error(),
-                    .correlation_id = request_id};
+                    .success = false, .message = result.error(), .correlation_id = request_id};
             }
             return *result;
         }));
@@ -857,7 +875,8 @@ void OreTradeImportPage::startImport() {
 void OreTradeImportPage::onImportFinished() {
     using Response = ores::ore::messaging::ore_import_response;
     auto* fw = static_cast<QFutureWatcher<Response>*>(sender());
-    if (!fw) return;
+    if (!fw)
+        return;
 
     const auto resp = fw->result();
     fw->deleteLater();
@@ -872,8 +891,9 @@ void OreTradeImportPage::onImportFinished() {
             // Asynchronous path: import is processing in the workflow engine.
             statusLabel_->setText(
                 tr("Import submitted. Click Next to track step-by-step progress."));
-            BOOST_LOG_SEV(lg(), info) << "ORE import submitted async: instance="
-                << resp.workflow_instance_id << " corr=" << resp.correlation_id;
+            BOOST_LOG_SEV(lg(), info)
+                << "ORE import submitted async: instance=" << resp.workflow_instance_id
+                << " corr=" << resp.correlation_id;
         } else {
             // Synchronous path (legacy / direct): check item_errors.
             const int n_errors = static_cast<int>(resp.item_errors.size());
@@ -882,27 +902,24 @@ void OreTradeImportPage::onImportFinished() {
                 statusLabel_->setText(tr("Import completed successfully."));
             } else {
                 appendLog(tr("%1 trade(s) could not be saved — see Done page for details.")
-                    .arg(n_errors));
-                statusLabel_->setText(
-                    tr("Import completed with %1 trade error(s).").arg(n_errors));
+                              .arg(n_errors));
+                statusLabel_->setText(tr("Import completed with %1 trade error(s).").arg(n_errors));
             }
-            BOOST_LOG_SEV(lg(), info) << "ORE import service complete: "
-                << n_errors << " trade errors, corr=" << resp.correlation_id;
+            BOOST_LOG_SEV(lg(), info) << "ORE import service complete: " << n_errors
+                                      << " trade errors, corr=" << resp.correlation_id;
         }
 
         if (!resp.correlation_id.empty())
-            appendLog(tr("Correlation ID: %1").arg(
-                QString::fromStdString(resp.correlation_id)));
+            appendLog(tr("Correlation ID: %1").arg(QString::fromStdString(resp.correlation_id)));
 
         importDone_ = true;
         emit completeChanged();
     } else {
         appendLog(tr("Error: %1").arg(QString::fromStdString(resp.message)));
         if (!resp.correlation_id.empty())
-            appendLog(tr("Correlation ID: %1").arg(
-                QString::fromStdString(resp.correlation_id)));
+            appendLog(tr("Correlation ID: %1").arg(QString::fromStdString(resp.correlation_id)));
         statusLabel_->setText(tr("Import failed. See the error log below. "
-                                  "Click Cancel to abort the wizard."));
+                                 "Click Cancel to abort the wizard."));
         BOOST_LOG_SEV(lg(), error) << "ORE import failed: " << resp.message;
 
         QPalette pal = progressBar_->palette();
@@ -916,8 +933,10 @@ void OreTradeImportPage::onImportFinished() {
 // OreDonePage
 // ============================================================================
 
-static QWidget* makeIdRow(const QString& labelText, QLineEdit*& editOut,
-                          QPushButton*& copyBtnOut, QWidget* parent) {
+static QWidget* makeIdRow(const QString& labelText,
+                          QLineEdit*& editOut,
+                          QPushButton*& copyBtnOut,
+                          QWidget* parent) {
     auto* row = new QWidget(parent);
     auto* hbox = new QHBoxLayout(row);
     hbox->setContentsMargins(0, 0, 0, 0);
@@ -939,7 +958,8 @@ static QWidget* makeIdRow(const QString& labelText, QLineEdit*& editOut,
 }
 
 OreDonePage::OreDonePage(OreImportWizard* wizard)
-    : QWizardPage(wizard), wizard_(wizard) {
+    : QWizardPage(wizard)
+    , wizard_(wizard) {
 
     setTitle(tr("Import Complete"));
     setSubTitle(tr("The ORE import has finished."));
@@ -972,8 +992,7 @@ OreDonePage::OreDonePage(OreImportWizard* wizard)
     // Error banner (shown when a workflow step fails)
     errorBanner_ = new QLabel(this);
     errorBanner_->setWordWrap(true);
-    errorBanner_->setStyleSheet(
-        QStringLiteral("color: #cc3333; font-weight: bold; padding: 4px;"));
+    errorBanner_->setStyleSheet(QStringLiteral("color: #cc3333; font-weight: bold; padding: 4px;"));
     errorBanner_->hide();
     layout->addWidget(errorBanner_);
 
@@ -981,16 +1000,16 @@ OreDonePage::OreDonePage(OreImportWizard* wizard)
     stepsWidget_ = new WorkflowStepsWidget(wizard_->clientManager(), this);
     stepsWidget_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     stepsWidget_->hide();
-    connect(stepsWidget_, &WorkflowStepsWidget::stepFailed,
-            this, &OreDonePage::onStepFailed);
-    connect(stepsWidget_, &WorkflowStepsWidget::instanceReachedTerminalState,
-            this, &OreDonePage::onWorkflowCompleted);
+    connect(stepsWidget_, &WorkflowStepsWidget::stepFailed, this, &OreDonePage::onStepFailed);
+    connect(stepsWidget_,
+            &WorkflowStepsWidget::instanceReachedTerminalState,
+            this,
+            &OreDonePage::onWorkflowCompleted);
     layout->addWidget(stepsWidget_);
 
     // Per-item import log — populated and shown after workflow completes with warnings.
     importLogWidget_ = new WorkflowStepLogWidget(this);
-    importLogWidget_->setSizePolicy(
-        QSizePolicy::Expanding, QSizePolicy::Preferred);
+    importLogWidget_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     importLogWidget_->hide();
     layout->addWidget(importLogWidget_);
 
@@ -1019,8 +1038,7 @@ void OreDonePage::initializePage() {
             html += tr("<p>Step progress is shown below. "
                        "You can also open <b>Workflows &rarr; Execution List</b> "
                        "to monitor all active workflows.</p>");
-            const QString wfId =
-                QString::fromStdString(resp.workflow_instance_id);
+            const QString wfId = QString::fromStdString(resp.workflow_instance_id);
             workflowIdEdit_->setText(wfId);
             workflowIdRow_->show();
 
@@ -1037,8 +1055,7 @@ void OreDonePage::initializePage() {
             if (n_errors == 0) {
                 html += tr("<p><b>Import succeeded.</b></p>");
             } else {
-                html += tr("<p><b>Import completed with %1 trade error(s).</b></p>")
-                    .arg(n_errors);
+                html += tr("<p><b>Import completed with %1 trade error(s).</b></p>").arg(n_errors);
             }
             html += tr("<p>The data is now available in the Portfolio Explorer.</p>");
 
@@ -1063,16 +1080,14 @@ void OreDonePage::initializePage() {
     } else {
         setTitle(tr("Import Complete"));
         setSubTitle(tr("The ORE import has finished."));
-        summaryLabel_->setText(
-            tr("<p><b>Import failed.</b></p><p>%1</p>")
-            .arg(wizard_->importError().isEmpty()
-                 ? tr("Unknown error") : wizard_->importError()));
+        summaryLabel_->setText(tr("<p><b>Import failed.</b></p><p>%1</p>")
+                                   .arg(wizard_->importError().isEmpty() ? tr("Unknown error") :
+                                                                           wizard_->importError()));
     }
 }
 
 void OreDonePage::onStepFailed(int stepIndex, const QString& errorMessage) {
-    errorBanner_->setText(
-        tr("Step %1 failed: %2").arg(stepIndex + 1).arg(errorMessage));
+    errorBanner_->setText(tr("Step %1 failed: %2").arg(stepIndex + 1).arg(errorMessage));
     errorBanner_->show();
 }
 
@@ -1103,21 +1118,21 @@ void OreDonePage::onWorkflowCompleted(bool success) {
 
     QString html;
     if (success && M == 0) {
-        html = tr("<p><b>Imported %1 trade(s) successfully.</b></p>")
-            .arg(saved_count);
+        html = tr("<p><b>Imported %1 trade(s) successfully.</b></p>").arg(saved_count);
         html += tr("<p>The data is now available in the Portfolio Explorer.</p>");
     } else if (success) {
-        html = tr("<p><b>Imported %1 trade(s) with %2 warning(s).</b></p>")
-            .arg(saved_count).arg(M);
+        html = tr("<p><b>Imported %1 trade(s) with %2 warning(s).</b></p>").arg(saved_count).arg(M);
         html += tr("<p>See the import log below for details.</p>");
     } else {
         if (saved_count > 0) {
             html = tr("<p><b>Import partially failed — "
                       "%1 trade(s) saved, %2 failed.</b></p>")
-                .arg(saved_count).arg(M);
+                       .arg(saved_count)
+                       .arg(M);
         } else {
             html = tr("<p><b>Import failed — "
-                      "%1 trade save(s) failed.</b></p>").arg(M);
+                      "%1 trade save(s) failed.</b></p>")
+                       .arg(M);
         }
         html += tr("<p>See the import log below for details.</p>");
     }

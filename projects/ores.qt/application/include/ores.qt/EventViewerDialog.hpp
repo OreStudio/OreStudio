@@ -21,14 +21,14 @@
 #ifndef ORES_QT_EVENT_VIEWER_WINDOW_HPP
 #define ORES_QT_EVENT_VIEWER_WINDOW_HPP
 
-#include <deque>
-#include <vector>
-#include <memory>
-#include <QWidget>
-#include <QDateTime>
-#include <QAbstractTableModel>
 #include "ores.eventing/service/event_bus.hpp"
 #include "ores.logging/make_logger.hpp"
+#include <QAbstractTableModel>
+#include <QDateTime>
+#include <QWidget>
+#include <deque>
+#include <memory>
+#include <vector>
 
 class QTableView;
 class QVBoxLayout;
@@ -45,7 +45,7 @@ class ClientManager;
 struct EventRecord {
     QDateTime timestamp;
     QString eventType;
-    QString source;      // "local" or "remote"
+    QString source; // "local" or "remote"
     QString summary;
     QString jsonPayload;
 };
@@ -57,13 +57,7 @@ class EventTableModel final : public QAbstractTableModel {
     Q_OBJECT
 
 public:
-    enum Column {
-        Timestamp = 0,
-        EventType,
-        Source,
-        Summary,
-        ColumnCount
-    };
+    enum Column { Timestamp = 0, EventType, Source, Summary, ColumnCount };
 
     explicit EventTableModel(QObject* parent = nullptr);
 
@@ -71,13 +65,15 @@ public:
     [[nodiscard]] int columnCount(const QModelIndex& parent = QModelIndex()) const override;
     [[nodiscard]] QVariant data(const QModelIndex& index,
                                 int role = Qt::DisplayRole) const override;
-    [[nodiscard]] QVariant headerData(int section, Qt::Orientation orientation,
-                                       int role = Qt::DisplayRole) const override;
+    [[nodiscard]] QVariant
+    headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
     void addEvent(EventRecord event);
     void clear();
     [[nodiscard]] const EventRecord& eventAt(int row) const;
-    [[nodiscard]] int eventCount() const { return static_cast<int>(events_.size()); }
+    [[nodiscard]] int eventCount() const {
+        return static_cast<int>(events_.size());
+    }
 
 private:
     std::deque<EventRecord> events_;
@@ -117,10 +113,9 @@ public:
      * @param clientManager Pointer to the client manager for remote events
      * @param parent Parent widget
      */
-    explicit EventViewerWindow(
-        std::shared_ptr<eventing::service::event_bus> eventBus,
-        ClientManager* clientManager,
-        QWidget* parent = nullptr);
+    explicit EventViewerWindow(std::shared_ptr<eventing::service::event_bus> eventBus,
+                               ClientManager* clientManager,
+                               QWidget* parent = nullptr);
 
     ~EventViewerWindow() override;
 

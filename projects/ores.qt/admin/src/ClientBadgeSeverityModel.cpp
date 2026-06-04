@@ -18,38 +18,42 @@
  *
  */
 #include "ores.qt/ClientBadgeSeverityModel.hpp"
-
-#include <QtConcurrent>
 #include "ores.dq.api/messaging/badge_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    std::string badge_severity_key_extractor(const dq::domain::badge_severity& e) {
-        return e.code;
-    }
+std::string badge_severity_key_extractor(const dq::domain::badge_severity& e) {
+    return e.code;
+}
 }
 
-ClientBadgeSeverityModel::ClientBadgeSeverityModel(
-    ClientManager* clientManager, QObject* parent)
-    : AbstractClientModel(parent),
-      clientManager_(clientManager),
-      watcher_(new QFutureWatcher<FetchResult>(this)),
-      recencyTracker_(badge_severity_key_extractor),
-      pulseManager_(new RecencyPulseManager(this)) {
+ClientBadgeSeverityModel::ClientBadgeSeverityModel(ClientManager* clientManager, QObject* parent)
+    : AbstractClientModel(parent)
+    , clientManager_(clientManager)
+    , watcher_(new QFutureWatcher<FetchResult>(this))
+    , recencyTracker_(badge_severity_key_extractor)
+    , pulseManager_(new RecencyPulseManager(this)) {
 
-    connect(watcher_, &QFutureWatcher<FetchResult>::finished,
-            this, &ClientBadgeSeverityModel::onSeveritysLoaded);
+    connect(watcher_,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            &ClientBadgeSeverityModel::onSeveritysLoaded);
 
-    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
-            this, &ClientBadgeSeverityModel::onPulseStateChanged);
-    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
-            this, &ClientBadgeSeverityModel::onPulsingComplete);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulse_state_changed,
+            this,
+            &ClientBadgeSeverityModel::onPulseStateChanged);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulsing_complete,
+            this,
+            &ClientBadgeSeverityModel::onPulsingComplete);
 }
 
 int ClientBadgeSeverityModel::rowCount(const QModelIndex& parent) const {
@@ -64,8 +68,7 @@ int ClientBadgeSeverityModel::columnCount(const QModelIndex& parent) const {
     return ColumnCount;
 }
 
-QVariant ClientBadgeSeverityModel::data(
-    const QModelIndex& index, int role) const {
+QVariant ClientBadgeSeverityModel::data(const QModelIndex& index, int role) const {
     if (!index.isValid())
         return {};
 
@@ -77,22 +80,22 @@ QVariant ClientBadgeSeverityModel::data(
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-        case Code:
-            return QString::fromStdString(severity.code);
-        case Name:
-            return QString::fromStdString(severity.name);
-        case Description:
-            return QString::fromStdString(severity.description);
-        case DisplayOrder:
-            return static_cast<qlonglong>(severity.display_order);
-        case Version:
-            return static_cast<qlonglong>(severity.version);
-        case ModifiedBy:
-            return QString::fromStdString(severity.modified_by);
-        case RecordedAt:
-            return relative_time_helper::format(severity.recorded_at);
-        default:
-            return {};
+            case Code:
+                return QString::fromStdString(severity.code);
+            case Name:
+                return QString::fromStdString(severity.name);
+            case Description:
+                return QString::fromStdString(severity.description);
+            case DisplayOrder:
+                return static_cast<qlonglong>(severity.display_order);
+            case Version:
+                return static_cast<qlonglong>(severity.version);
+            case ModifiedBy:
+                return QString::fromStdString(severity.modified_by);
+            case RecordedAt:
+                return relative_time_helper::format(severity.recorded_at);
+            default:
+                return {};
         }
     }
 
@@ -103,28 +106,28 @@ QVariant ClientBadgeSeverityModel::data(
     return {};
 }
 
-QVariant ClientBadgeSeverityModel::headerData(
-    int section, Qt::Orientation orientation, int role) const {
+QVariant
+ClientBadgeSeverityModel::headerData(int section, Qt::Orientation orientation, int role) const {
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return {};
 
     switch (section) {
-    case Code:
-        return tr("Code");
-    case Name:
-        return tr("Name");
-    case Description:
-        return tr("Description");
-    case DisplayOrder:
-        return tr("Order");
-    case Version:
-        return tr("Version");
-    case ModifiedBy:
-        return tr("Modified By");
-    case RecordedAt:
-        return tr("Recorded At");
-    default:
-        return {};
+        case Code:
+            return tr("Code");
+        case Name:
+            return tr("Name");
+        case Description:
+            return tr("Description");
+        case DisplayOrder:
+            return tr("Order");
+        case Version:
+            return tr("Version");
+        case ModifiedBy:
+            return tr("Modified By");
+        case RecordedAt:
+            return tr("Recorded At");
+        default:
+            return {};
     }
 }
 
@@ -154,8 +157,7 @@ void ClientBadgeSeverityModel::refresh() {
     fetch_severities(0, page_size_);
 }
 
-void ClientBadgeSeverityModel::load_page(std::uint32_t offset,
-                                          std::uint32_t limit) {
+void ClientBadgeSeverityModel::load_page(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "load_page: offset=" << offset << ", limit=" << limit;
 
     if (is_fetching_) {
@@ -179,18 +181,19 @@ void ClientBadgeSeverityModel::load_page(std::uint32_t offset,
     fetch_severities(offset, limit);
 }
 
-void ClientBadgeSeverityModel::fetch_severities(
-    std::uint32_t offset, std::uint32_t limit) {
+void ClientBadgeSeverityModel::fetch_severities(std::uint32_t offset, std::uint32_t limit) {
     is_fetching_ = true;
     QPointer<ClientBadgeSeverityModel> self = this;
 
-    QFuture<FetchResult> future =
-        QtConcurrent::run([self, offset, limit]() -> FetchResult {
-            return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
-                BOOST_LOG_SEV(lg(), debug) << "Making badge severities request with offset="
-                                           << offset << ", limit=" << limit;
+    QFuture<FetchResult> future = QtConcurrent::run([self, offset, limit]() -> FetchResult {
+        return exception_helper::wrap_async_fetch<FetchResult>(
+            [&]() -> FetchResult {
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Making badge severities request with offset=" << offset
+                    << ", limit=" << limit;
                 if (!self || !self->clientManager_) {
-                    return {.success = false, .severities = {},
+                    return {.success = false,
+                            .severities = {},
                             .total_available_count = 0,
                             .error_message = "Model was destroyed",
                             .error_details = {}};
@@ -198,29 +201,32 @@ void ClientBadgeSeverityModel::fetch_severities(
 
                 dq::messaging::get_badge_severities_request request;
 
-                auto result = self->clientManager_->
-                    process_authenticated_request(std::move(request));
+                auto result =
+                    self->clientManager_->process_authenticated_request(std::move(request));
 
                 if (!result) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to fetch badge severities: "
-                                               << result.error();
-                    return {.success = false, .severities = {},
+                    BOOST_LOG_SEV(lg(), error)
+                        << "Failed to fetch badge severities: " << result.error();
+                    return {.success = false,
+                            .severities = {},
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(
                                 "Failed to fetch badge severities: " + result.error()),
                             .error_details = {}};
                 }
 
-                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->badge_severities.size()
-                                           << " badge severities";
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Fetched " << result->badge_severities.size() << " badge severities";
                 const std::uint32_t count =
                     static_cast<std::uint32_t>(result->badge_severities.size());
                 return {.success = true,
                         .severities = std::move(result->badge_severities),
                         .total_available_count = count,
-                        .error_message = {}, .error_details = {}};
-            }, "badge severities");
-        });
+                        .error_message = {},
+                        .error_details = {}};
+            },
+            "badge severities");
+    });
 
     watcher_->setFuture(future);
 }
@@ -231,8 +237,8 @@ void ClientBadgeSeverityModel::onSeveritysLoaded() {
     const auto result = watcher_->result();
 
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to fetch badge severities: "
-                                   << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to fetch badge severities: " << result.error_message.toStdString();
         emit loadError(result.error_message, result.error_details);
         return;
     }
@@ -271,16 +277,14 @@ void ClientBadgeSeverityModel::set_page_size(std::uint32_t size) {
     }
 }
 
-const dq::domain::badge_severity*
-ClientBadgeSeverityModel::getSeverity(int row) const {
+const dq::domain::badge_severity* ClientBadgeSeverityModel::getSeverity(int row) const {
     const auto idx = static_cast<std::size_t>(row);
     if (idx >= severities_.size())
         return nullptr;
     return &severities_[idx];
 }
 
-QVariant ClientBadgeSeverityModel::recency_foreground_color(
-    const std::string& code) const {
+QVariant ClientBadgeSeverityModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {
         return color_constants::stale_indicator;
     }
@@ -289,8 +293,8 @@ QVariant ClientBadgeSeverityModel::recency_foreground_color(
 
 void ClientBadgeSeverityModel::onPulseStateChanged(bool /*isOn*/) {
     if (!severities_.empty()) {
-        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
-            {Qt::ForegroundRole});
+        emit dataChanged(
+            index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::ForegroundRole});
     }
 }
 

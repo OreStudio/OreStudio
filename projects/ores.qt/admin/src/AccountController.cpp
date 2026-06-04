@@ -18,69 +18,76 @@
  *
  */
 #include "ores.qt/AccountController.hpp"
-#include "ores.qt/BadgeCache.hpp"
-
-#include <QPointer>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include "ores.qt/AccountMdiWindow.hpp"
-#include "ores.qt/AccountDetailDialog.hpp"
-#include "ores.qt/ChangeReasonCache.hpp"
-#include "ores.qt/AccountHistoryDialog.hpp"
-#include "ores.qt/SessionHistoryDialog.hpp"
-#include "ores.qt/DetachableMdiSubWindow.hpp"
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
 #include "ores.iam.api/eventing/account_changed_event.hpp"
 #include "ores.iam.api/messaging/account_protocol.hpp"
+#include "ores.qt/AccountDetailDialog.hpp"
+#include "ores.qt/AccountHistoryDialog.hpp"
+#include "ores.qt/AccountMdiWindow.hpp"
+#include "ores.qt/BadgeCache.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
+#include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/SessionHistoryDialog.hpp"
+#include <QFutureWatcher>
+#include <QPointer>
+#include <QtConcurrent>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    // Event type name for account changes
-    constexpr std::string_view account_event_name =
-        eventing::domain::event_traits<iam::eventing::account_changed_event>::name;
+// Event type name for account changes
+constexpr std::string_view account_event_name =
+    eventing::domain::event_traits<iam::eventing::account_changed_event>::name;
 }
 
-AccountController::AccountController(
-    QMainWindow* mainWindow,
-    QMdiArea* mdiArea,
-    ClientManager* clientManager,
-    const QString& username,
-    ChangeReasonCache* changeReasonCache,
-    BadgeCache* badgeCache,
-    QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username, {}, parent),
-      accountListWindow_(nullptr),
-      changeReasonCache_(changeReasonCache),
-      badgeCache_(badgeCache) {
+AccountController::AccountController(QMainWindow* mainWindow,
+                                     QMdiArea* mdiArea,
+                                     ClientManager* clientManager,
+                                     const QString& username,
+                                     ChangeReasonCache* changeReasonCache,
+                                     BadgeCache* badgeCache,
+                                     QObject* parent)
+    : EntityController(mainWindow, mdiArea, clientManager, username, {}, parent)
+    , accountListWindow_(nullptr)
+    , changeReasonCache_(changeReasonCache)
+    , badgeCache_(badgeCache) {
     BOOST_LOG_SEV(lg(), debug) << "Account controller created";
 
     // Connect to notification signal from ClientManager
     if (clientManager_) {
-        connect(clientManager_, &ClientManager::notificationReceived,
-                this, &AccountController::onNotificationReceived);
+        connect(clientManager_,
+                &ClientManager::notificationReceived,
+                this,
+                &AccountController::onNotificationReceived);
 
         // Subscribe to events when logged in (event adapter only available after login)
-        connect(clientManager_, &ClientManager::loggedIn,
-                this, [self = QPointer<AccountController>(this)]() {
-            if (!self) return;
-            BOOST_LOG_SEV(lg(), info) << "Subscribing to account change events";
-            self->clientManager_->subscribeToEvent(std::string{account_event_name});
-        });
+        connect(clientManager_,
+                &ClientManager::loggedIn,
+                this,
+                [self = QPointer<AccountController>(this)]() {
+                    if (!self)
+                        return;
+                    BOOST_LOG_SEV(lg(), info) << "Subscribing to account change events";
+                    self->clientManager_->subscribeToEvent(std::string{account_event_name});
+                });
 
         // Re-subscribe after reconnection
-        connect(clientManager_, &ClientManager::reconnected,
-                this, [self = QPointer<AccountController>(this)]() {
-            if (!self) return;
-            BOOST_LOG_SEV(lg(), info) << "Re-subscribing to account change events after reconnect";
-            self->clientManager_->subscribeToEvent(std::string{account_event_name});
-        });
+        connect(clientManager_,
+                &ClientManager::reconnected,
+                this,
+                [self = QPointer<AccountController>(this)]() {
+                    if (!self)
+                        return;
+                    BOOST_LOG_SEV(lg(), info)
+                        << "Re-subscribing to account change events after reconnect";
+                    self->clientManager_->subscribeToEvent(std::string{account_event_name});
+                });
 
         // If already connected, subscribe now
         if (clientManager_->isConnected()) {
@@ -125,40 +132,53 @@ void AccountController::showListWindow() {
     auto* accountWidget = new AccountMdiWindow(clientManager_, username_, badgeCache_, mainWindow_);
 
     // Connect status signals
-    connect(accountWidget, &AccountMdiWindow::statusChanged,
-            this, [self = QPointer<AccountController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(accountWidget, &AccountMdiWindow::errorOccurred,
-            this, [self = QPointer<AccountController>(this)](const QString& err_msg) {
-        if (!self) return;
-        emit self->errorMessage("Error: " + err_msg);
-    });
+    connect(accountWidget,
+            &AccountMdiWindow::statusChanged,
+            this,
+            [self = QPointer<AccountController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(accountWidget,
+            &AccountMdiWindow::errorOccurred,
+            this,
+            [self = QPointer<AccountController>(this)](const QString& err_msg) {
+                if (!self)
+                    return;
+                emit self->errorMessage("Error: " + err_msg);
+            });
 
     // Connect account operations
-    connect(accountWidget, &AccountMdiWindow::addNewRequested,
-            this, &AccountController::onAddNewRequested);
-    connect(accountWidget, &AccountMdiWindow::showAccountDetails,
-            this, &AccountController::onShowAccountDetails);
-    connect(accountWidget, &AccountMdiWindow::showAccountHistory,
-            this, &AccountController::onShowAccountHistory);
-    connect(accountWidget, &AccountMdiWindow::showSessionHistory,
-            this, &AccountController::onShowSessionHistory);
+    connect(accountWidget,
+            &AccountMdiWindow::addNewRequested,
+            this,
+            &AccountController::onAddNewRequested);
+    connect(accountWidget,
+            &AccountMdiWindow::showAccountDetails,
+            this,
+            &AccountController::onShowAccountDetails);
+    connect(accountWidget,
+            &AccountMdiWindow::showAccountHistory,
+            this,
+            &AccountController::onShowAccountHistory);
+    connect(accountWidget,
+            &AccountMdiWindow::showSessionHistory,
+            this,
+            &AccountController::onShowSessionHistory);
 
     accountListWindow_ = new DetachableMdiSubWindow();
     accountListWindow_->setAttribute(Qt::WA_DeleteOnClose);
     accountListWindow_->setWidget(accountWidget);
     accountListWindow_->setWindowTitle("Accounts");
-    accountListWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::PersonAccounts, IconUtils::DefaultIconColor));
+    accountListWindow_->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::PersonAccounts, IconUtils::DefaultIconColor));
 
     // Track window for detach/reattach operations
     register_detachable_window(accountListWindow_);
     QPointer<AccountController> self = this;
     QPointer<DetachableMdiSubWindow> windowBeingDestroyed = accountListWindow_;
-    connect(accountListWindow_, &QObject::destroyed, this,
-        [self, windowBeingDestroyed]() {
+    connect(accountListWindow_, &QObject::destroyed, this, [self, windowBeingDestroyed]() {
         if (!self)
             return;
 
@@ -185,22 +205,22 @@ void AccountController::reloadListWindow() {
     }
 }
 
-void AccountController::onNotificationReceived(
-    const QString& eventType, const QDateTime& timestamp,
-    const QStringList& entityIds, const QString& /*tenantId*/) {
+void AccountController::onNotificationReceived(const QString& eventType,
+                                               const QDateTime& timestamp,
+                                               const QStringList& entityIds,
+                                               const QString& /*tenantId*/) {
     // Check if this is an account change event
     if (eventType != QString::fromStdString(std::string{account_event_name})) {
         return;
     }
 
     BOOST_LOG_SEV(lg(), info) << "Received account change notification at "
-                              << timestamp.toString(Qt::ISODate).toStdString()
-                              << " with " << entityIds.size() << " account IDs";
+                              << timestamp.toString(Qt::ISODate).toStdString() << " with "
+                              << entityIds.size() << " account IDs";
 
     // If the account list window is open, mark it as stale
     if (accountListWindow_) {
-        auto* accountWidget = qobject_cast<AccountMdiWindow*>(
-            accountListWindow_->widget());
+        auto* accountWidget = qobject_cast<AccountMdiWindow*>(accountListWindow_->widget());
         if (accountWidget) {
             accountWidget->markAsStale();
             BOOST_LOG_SEV(lg(), debug) << "Marked account window as stale";
@@ -242,44 +262,52 @@ void AccountController::onAddNewRequested() {
     showDetailWindow(std::nullopt);
 }
 
-void AccountController::onShowAccountDetails(
-    const AccountWithLoginInfo& accountWithLoginInfo) {
+void AccountController::onShowAccountDetails(const AccountWithLoginInfo& accountWithLoginInfo) {
     BOOST_LOG_SEV(lg(), info) << "Showing account details for: "
-                             << accountWithLoginInfo.account.username;
+                              << accountWithLoginInfo.account.username;
     showDetailWindow(accountWithLoginInfo);
 }
 
 void AccountController::onShowAccountHistory(const QString& username) {
-    BOOST_LOG_SEV(lg(), info) << "Showing account history for: "
-                             << username.toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Showing account history for: " << username.toStdString();
 
     auto* historyDialog = new AccountHistoryDialog(username, clientManager_, mainWindow_);
 
     // Connect status signals
-    connect(historyDialog, &AccountHistoryDialog::statusChanged,
-            this, [self = QPointer<AccountController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(historyDialog, &AccountHistoryDialog::errorOccurred,
-            this, [self = QPointer<AccountController>(this)](const QString& err_msg) {
-        if (!self) return;
-        emit self->errorMessage(err_msg);
-    });
+    connect(historyDialog,
+            &AccountHistoryDialog::statusChanged,
+            this,
+            [self = QPointer<AccountController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(historyDialog,
+            &AccountHistoryDialog::errorOccurred,
+            this,
+            [self = QPointer<AccountController>(this)](const QString& err_msg) {
+                if (!self)
+                    return;
+                emit self->errorMessage(err_msg);
+            });
 
     // Connect open and revert signals
-    connect(historyDialog, &AccountHistoryDialog::openVersionRequested,
-            this, &AccountController::onOpenAccountVersion);
-    connect(historyDialog, &AccountHistoryDialog::revertVersionRequested,
-            this, &AccountController::onRevertAccount);
+    connect(historyDialog,
+            &AccountHistoryDialog::openVersionRequested,
+            this,
+            &AccountController::onOpenAccountVersion);
+    connect(historyDialog,
+            &AccountHistoryDialog::revertVersionRequested,
+            this,
+            &AccountController::onRevertAccount);
 
     // Create and configure window
     auto* historyWindow = new DetachableMdiSubWindow();
     historyWindow->setAttribute(Qt::WA_DeleteOnClose);
     historyWindow->setWidget(historyDialog);
     historyWindow->setWindowTitle(QString("Account History: %1").arg(username));
-    historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    historyWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     // Track window for cleanup
     register_detachable_window(historyWindow);
@@ -291,31 +319,36 @@ void AccountController::onShowAccountHistory(const QString& username) {
 }
 
 void AccountController::onShowSessionHistory(const boost::uuids::uuid& accountId,
-                                              const QString& username) {
-    BOOST_LOG_SEV(lg(), info) << "Showing session history for: "
-                             << username.toStdString();
+                                             const QString& username) {
+    BOOST_LOG_SEV(lg(), info) << "Showing session history for: " << username.toStdString();
 
     auto* sessionDialog = new SessionHistoryDialog(clientManager_, mainWindow_);
 
     // Connect status signals
-    connect(sessionDialog, &SessionHistoryDialog::statusMessage,
-            this, [self = QPointer<AccountController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(sessionDialog, &SessionHistoryDialog::errorMessage,
-            this, [self = QPointer<AccountController>(this)](const QString& err_msg) {
-        if (!self) return;
-        emit self->errorMessage(err_msg);
-    });
+    connect(sessionDialog,
+            &SessionHistoryDialog::statusMessage,
+            this,
+            [self = QPointer<AccountController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(sessionDialog,
+            &SessionHistoryDialog::errorMessage,
+            this,
+            [self = QPointer<AccountController>(this)](const QString& err_msg) {
+                if (!self)
+                    return;
+                emit self->errorMessage(err_msg);
+            });
 
     // Create and configure window
     auto* sessionWindow = new DetachableMdiSubWindow();
     sessionWindow->setAttribute(Qt::WA_DeleteOnClose);
     sessionWindow->setWidget(sessionDialog);
     sessionWindow->setWindowTitle(QString("Session History: %1").arg(username));
-    sessionWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    sessionWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     // Track window for cleanup
     register_detachable_window(sessionWindow);
@@ -328,8 +361,7 @@ void AccountController::onShowSessionHistory(const boost::uuids::uuid& accountId
 
 void AccountController::markAccountListAsStale() {
     if (accountListWindow_) {
-        auto* accountWidget = qobject_cast<AccountMdiWindow*>(
-            accountListWindow_->widget());
+        auto* accountWidget = qobject_cast<AccountMdiWindow*>(accountListWindow_->widget());
         if (accountWidget) {
             accountWidget->markAsStale();
         }
@@ -356,33 +388,48 @@ void AccountController::showDetailWindow(
     }
 
     // Connect common signals
-    connect(detailDialog, &AccountDetailDialog::statusMessage,
-            this, [self = QPointer<AccountController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(detailDialog, &AccountDetailDialog::errorMessage,
-            this, [self = QPointer<AccountController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
+    connect(detailDialog,
+            &AccountDetailDialog::statusMessage,
+            this,
+            [self = QPointer<AccountController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(detailDialog,
+            &AccountDetailDialog::errorMessage,
+            this,
+            [self = QPointer<AccountController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
 
     // Connect account change signals - all mark the list as stale
-    connect(detailDialog, &AccountDetailDialog::accountCreated,
-            this, [self = QPointer<AccountController>(this)](const boost::uuids::uuid&) {
-        if (!self) return;
-        self->markAccountListAsStale();
-    });
-    connect(detailDialog, &AccountDetailDialog::accountUpdated,
-            this, [self = QPointer<AccountController>(this)](const boost::uuids::uuid&) {
-        if (!self) return;
-        self->markAccountListAsStale();
-    });
-    connect(detailDialog, &AccountDetailDialog::accountDeleted,
-            this, [self = QPointer<AccountController>(this)](const boost::uuids::uuid&) {
-        if (!self) return;
-        self->markAccountListAsStale();
-    });
+    connect(detailDialog,
+            &AccountDetailDialog::accountCreated,
+            this,
+            [self = QPointer<AccountController>(this)](const boost::uuids::uuid&) {
+                if (!self)
+                    return;
+                self->markAccountListAsStale();
+            });
+    connect(detailDialog,
+            &AccountDetailDialog::accountUpdated,
+            this,
+            [self = QPointer<AccountController>(this)](const boost::uuids::uuid&) {
+                if (!self)
+                    return;
+                self->markAccountListAsStale();
+            });
+    connect(detailDialog,
+            &AccountDetailDialog::accountDeleted,
+            this,
+            [self = QPointer<AccountController>(this)](const boost::uuids::uuid&) {
+                if (!self)
+                    return;
+                self->markAccountListAsStale();
+            });
 
     // Create and configure window
     auto* detailWindow = new DetachableMdiSubWindow();
@@ -392,12 +439,13 @@ void AccountController::showDetailWindow(
     if (isCreateMode) {
         detailWindow->setWindowTitle("New Account");
     } else {
-        detailWindow->setWindowTitle(QString("Account: %1")
-            .arg(QString::fromStdString(accountWithLoginInfo->account.username)));
+        detailWindow->setWindowTitle(
+            QString("Account: %1")
+                .arg(QString::fromStdString(accountWithLoginInfo->account.username)));
     }
 
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::PersonAccounts, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::PersonAccounts, IconUtils::DefaultIconColor));
 
     // Track window for cleanup
     register_detachable_window(detailWindow);
@@ -406,8 +454,8 @@ void AccountController::showDetailWindow(
     show_managed_window(detailWindow, accountListWindow_);
 }
 
-void AccountController::onOpenAccountVersion(
-    const iam::domain::account& account, int versionNumber) {
+void AccountController::onOpenAccountVersion(const iam::domain::account& account,
+                                             int versionNumber) {
     BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
                               << " for account: " << account.username;
 
@@ -419,32 +467,40 @@ void AccountController::onOpenAccountVersion(
     detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setBadgeCache(badgeCache_);
 
-    connect(detailDialog, &AccountDetailDialog::statusMessage,
-            this, [self = QPointer<AccountController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(detailDialog, &AccountDetailDialog::errorMessage,
-            this, [self = QPointer<AccountController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
+    connect(detailDialog,
+            &AccountDetailDialog::statusMessage,
+            this,
+            [self = QPointer<AccountController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(detailDialog,
+            &AccountDetailDialog::errorMessage,
+            this,
+            [self = QPointer<AccountController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
 
     // Connect revert signal
-    connect(detailDialog, &AccountDetailDialog::revertRequested,
-            this, &AccountController::onRevertAccount);
+    connect(detailDialog,
+            &AccountDetailDialog::revertRequested,
+            this,
+            &AccountController::onRevertAccount);
 
     detailDialog->setAccount(account);
-    detailDialog->setLoginInfo(std::nullopt);  // No login info for historical versions
+    detailDialog->setLoginInfo(std::nullopt); // No login info for historical versions
     detailDialog->setReadOnly(true, versionNumber);
 
     auto* detailWindow = new DetachableMdiSubWindow();
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Account: %1 (Version %2 - Read Only)")
-        .arg(username).arg(versionNumber));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::PersonAccounts, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("Account: %1 (Version %2 - Read Only)").arg(username).arg(versionNumber));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::PersonAccounts, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -468,9 +524,9 @@ void AccountController::onRevertAccount(const iam::domain::account& account) {
     const std::string email = account.email;
 
     QFuture<std::pair<bool, std::string>> future =
-        QtConcurrent::run([self, account_id, email]()
-            -> std::pair<bool, std::string> {
-            if (!self) return {false, ""};
+        QtConcurrent::run([self, account_id, email]() -> std::pair<bool, std::string> {
+            if (!self)
+                return {false, ""};
 
             BOOST_LOG_SEV(lg(), debug) << "Sending update account request for revert: "
                                        << boost::uuids::to_string(account_id);
@@ -489,27 +545,30 @@ void AccountController::onRevertAccount(const iam::domain::account& account) {
         });
 
     auto* watcher = new QFutureWatcher<std::pair<bool, std::string>>(self);
-    connect(watcher, &QFutureWatcher<std::pair<bool, std::string>>::finished, self,
+    connect(
+        watcher,
+        &QFutureWatcher<std::pair<bool, std::string>>::finished,
+        self,
         [self, watcher, username]() {
+            if (!self)
+                return;
 
-        if (!self) return;
+            auto [success, message] = watcher->result();
+            watcher->deleteLater();
 
-        auto [success, message] = watcher->result();
-        watcher->deleteLater();
-
-        if (success) {
-            BOOST_LOG_SEV(lg(), debug) << "Account reverted successfully.";
-            emit self->statusMessage(QString("Successfully reverted account: %1")
-                .arg(QString::fromStdString(username)));
-            self->markAccountListAsStale();
-        } else {
-            BOOST_LOG_SEV(lg(), error) << "Account revert failed: " << message;
-            emit self->errorMessage(QString("Failed to revert account: %1")
-                .arg(QString::fromStdString(message)));
-            MessageBoxHelper::critical(self->mainWindow_, "Revert Failed",
-                QString::fromStdString(message));
-        }
-    });
+            if (success) {
+                BOOST_LOG_SEV(lg(), debug) << "Account reverted successfully.";
+                emit self->statusMessage(QString("Successfully reverted account: %1")
+                                             .arg(QString::fromStdString(username)));
+                self->markAccountListAsStale();
+            } else {
+                BOOST_LOG_SEV(lg(), error) << "Account revert failed: " << message;
+                emit self->errorMessage(
+                    QString("Failed to revert account: %1").arg(QString::fromStdString(message)));
+                MessageBoxHelper::critical(
+                    self->mainWindow_, "Revert Failed", QString::fromStdString(message));
+            }
+        });
 
     watcher->setFuture(future);
 }

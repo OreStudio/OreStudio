@@ -20,19 +20,19 @@
 #ifndef ORES_QT_IMPORT_CURRENCY_DIALOG_HPP
 #define ORES_QT_IMPORT_CURRENCY_DIALOG_HPP
 
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.refdata.api/domain/currency.hpp"
+#include <QCheckBox>
+#include <QDialog>
+#include <QFutureWatcher>
+#include <QLabel>
+#include <QProgressBar>
+#include <QPushButton>
+#include <QString>
+#include <QTableWidget>
 #include <atomic>
 #include <vector>
-#include <QString>
-#include <QDialog>
-#include <QLabel>
-#include <QCheckBox>
-#include <QPushButton>
-#include <QTableWidget>
-#include <QProgressBar>
-#include <QFutureWatcher>
-#include "ores.refdata.api/domain/currency.hpp"
-#include "ores.qt/ClientManager.hpp"
-#include "ores.logging/make_logger.hpp"
 
 namespace ores::qt {
 
@@ -50,8 +50,7 @@ class ImportCurrencyDialog final : public QDialog {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.import_currency_dialog";
+    inline static std::string_view logger_name = "ores.qt.import_currency_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -67,12 +66,11 @@ public:
      * @param clientManager Client manager for sending currencies to server
      * @param parent Parent widget
      */
-    explicit ImportCurrencyDialog(
-        const std::vector<refdata::domain::currency>& currencies,
-        const QString& filename,
-        ClientManager* clientManager,
-        const QString& username,
-        QWidget* parent = nullptr);
+    explicit ImportCurrencyDialog(const std::vector<refdata::domain::currency>& currencies,
+                                  const QString& filename,
+                                  ClientManager* clientManager,
+                                  const QString& username,
+                                  QWidget* parent = nullptr);
 
     ~ImportCurrencyDialog() override;
 
@@ -80,8 +78,7 @@ public:
      * @brief Get the currencies selected for import.
      * @return Vector of selected currencies
      */
-    [[nodiscard]] std::vector<refdata::domain::currency>
-    getSelectedCurrencies() const;
+    [[nodiscard]] std::vector<refdata::domain::currency> getSelectedCurrencies() const;
 
 signals:
     /**

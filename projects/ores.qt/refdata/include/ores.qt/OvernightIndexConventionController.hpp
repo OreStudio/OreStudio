@@ -20,13 +20,13 @@
 #ifndef ORES_QT_OVERNIGHT_INDEX_CONVENTION_CONTROLLER_HPP
 #define ORES_QT_OVERNIGHT_INDEX_CONVENTION_CONTROLLER_HPP
 
-#include <QMdiArea>
-#include <QMainWindow>
-#include "ores.qt/EntityController.hpp"
-#include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata.api/domain/overnight_index_convention.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/EntityController.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
+#include "ores.refdata.api/domain/overnight_index_convention.hpp"
+#include <QMainWindow>
+#include <QMdiArea>
 
 namespace ores::qt {
 
@@ -43,8 +43,7 @@ class OvernightIndexConventionController final : public EntityController {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.overnight_index_convention_controller";
+    inline static std::string_view logger_name = "ores.qt.overnight_index_convention_controller";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -53,12 +52,11 @@ private:
     }
 
 public:
-    OvernightIndexConventionController(
-        QMainWindow* mainWindow,
-        QMdiArea* mdiArea,
-        ClientManager* clientManager,
-        const QString& username,
-        QObject* parent = nullptr);
+    OvernightIndexConventionController(QMainWindow* mainWindow,
+                                       QMdiArea* mdiArea,
+                                       ClientManager* clientManager,
+                                       const QString& username,
+                                       QObject* parent = nullptr);
 
     void showListWindow() override;
     void closeAllWindows() override;
@@ -76,8 +74,7 @@ private slots:
     void onAddNewRequested();
     void onShowHistory(const refdata::domain::overnight_index_convention& ni);
     void onRevertVersion(const refdata::domain::overnight_index_convention& ni);
-    void onOpenVersion(const refdata::domain::overnight_index_convention& ni,
-                       int versionNumber);
+    void onOpenVersion(const refdata::domain::overnight_index_convention& ni, int versionNumber);
 
 private:
     void showAddWindow();

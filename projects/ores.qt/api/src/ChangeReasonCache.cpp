@@ -18,48 +18,52 @@
  *
  */
 #include "ores.qt/ChangeReasonCache.hpp"
-
-#include <algorithm>
-#include <QtConcurrent>
+#include "ores.dq.api/eventing/change_reason_category_changed_event.hpp"
+#include "ores.dq.api/eventing/change_reason_changed_event.hpp"
 #include "ores.dq.api/messaging/change_management_protocol.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
-#include "ores.dq.api/eventing/change_reason_changed_event.hpp"
-#include "ores.dq.api/eventing/change_reason_category_changed_event.hpp"
+#include <QtConcurrent>
+#include <algorithm>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    constexpr std::string_view reason_event_name =
-        eventing::domain::event_traits<
-            dq::eventing::change_reason_changed_event>::name;
-    constexpr std::string_view category_event_name =
-        eventing::domain::event_traits<
-            dq::eventing::change_reason_category_changed_event>::name;
+constexpr std::string_view reason_event_name =
+    eventing::domain::event_traits<dq::eventing::change_reason_changed_event>::name;
+constexpr std::string_view category_event_name =
+    eventing::domain::event_traits<dq::eventing::change_reason_category_changed_event>::name;
 }
 
-ChangeReasonCache::ChangeReasonCache(ClientManager* clientManager,
-    QObject* parent)
-    : QObject(parent),
-      clientManager_(clientManager),
-      reasons_watcher_(new QFutureWatcher<ReasonsResult>(this)),
-      categories_watcher_(new QFutureWatcher<CategoriesResult>(this)) {
+ChangeReasonCache::ChangeReasonCache(ClientManager* clientManager, QObject* parent)
+    : QObject(parent)
+    , clientManager_(clientManager)
+    , reasons_watcher_(new QFutureWatcher<ReasonsResult>(this))
+    , categories_watcher_(new QFutureWatcher<CategoriesResult>(this)) {
 
-    connect(reasons_watcher_, &QFutureWatcher<ReasonsResult>::finished,
-            this, &ChangeReasonCache::onReasonsLoaded);
-    connect(categories_watcher_, &QFutureWatcher<CategoriesResult>::finished,
-            this, &ChangeReasonCache::onCategoriesLoaded);
+    connect(reasons_watcher_,
+            &QFutureWatcher<ReasonsResult>::finished,
+            this,
+            &ChangeReasonCache::onReasonsLoaded);
+    connect(categories_watcher_,
+            &QFutureWatcher<CategoriesResult>::finished,
+            this,
+            &ChangeReasonCache::onCategoriesLoaded);
 
     // Subscribe to change events
     if (clientManager_) {
-        connect(clientManager_, &ClientManager::notificationReceived,
-                this, &ChangeReasonCache::onNotificationReceived);
+        connect(clientManager_,
+                &ClientManager::notificationReceived,
+                this,
+                &ChangeReasonCache::onNotificationReceived);
 
-        connect(clientManager_, &ClientManager::loggedIn,
-                this, &ChangeReasonCache::subscribeToEvents);
-        connect(clientManager_, &ClientManager::reconnected,
-                this, &ChangeReasonCache::subscribeToEvents);
+        connect(
+            clientManager_, &ClientManager::loggedIn, this, &ChangeReasonCache::subscribeToEvents);
+        connect(clientManager_,
+                &ClientManager::reconnected,
+                this,
+                &ChangeReasonCache::subscribeToEvents);
 
         // Also subscribe if already logged in
         if (clientManager_->isLoggedIn()) {
@@ -110,13 +114,11 @@ void ChangeReasonCache::loadReasons() {
         auto result = self->clientManager_->process_authenticated_request(
             dq::messaging::get_change_reasons_request{});
         if (!result) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to fetch change reasons: "
-                                       << result.error();
+            BOOST_LOG_SEV(lg(), error) << "Failed to fetch change reasons: " << result.error();
             return {false, {}};
         }
 
-        BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->reasons.size()
-                                   << " change reasons";
+        BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->reasons.size() << " change reasons";
         return {true, std::move(result->reasons)};
     });
 
@@ -134,13 +136,13 @@ void ChangeReasonCache::loadCategories() {
         auto result = self->clientManager_->process_authenticated_request(
             dq::messaging::get_change_reason_categories_request{});
         if (!result) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to fetch change reason categories: "
-                                       << result.error();
+            BOOST_LOG_SEV(lg(), error)
+                << "Failed to fetch change reason categories: " << result.error();
             return {false, {}};
         }
 
-        BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->categories.size()
-                                   << " change reason categories";
+        BOOST_LOG_SEV(lg(), debug)
+            << "Fetched " << result->categories.size() << " change reason categories";
         return {true, std::move(result->categories)};
     });
 
@@ -171,8 +173,7 @@ void ChangeReasonCache::onReasonsLoaded() {
         reason_index_[reasons_[i].code] = i;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Cached " << reasons_.size()
-                              << " change reasons";
+    BOOST_LOG_SEV(lg(), info) << "Cached " << reasons_.size() << " change reasons";
 
     reasons_loaded_ = true;
     if (categories_loaded_) {
@@ -199,8 +200,7 @@ void ChangeReasonCache::onCategoriesLoaded() {
     }
 
     categories_ = std::move(result.categories);
-    BOOST_LOG_SEV(lg(), info) << "Cached " << categories_.size()
-                              << " change reason categories";
+    BOOST_LOG_SEV(lg(), info) << "Cached " << categories_.size() << " change reason categories";
 
     categories_loaded_ = true;
     if (reasons_loaded_) {
@@ -211,8 +211,9 @@ void ChangeReasonCache::onCategoriesLoaded() {
 }
 
 void ChangeReasonCache::onNotificationReceived(const QString& eventType,
-    const QDateTime& timestamp, const QStringList& entityIds,
-    const QString& /*tenantId*/) {
+                                               const QDateTime& timestamp,
+                                               const QStringList& entityIds,
+                                               const QString& /*tenantId*/) {
 
     const auto reason_event = QString::fromStdString(std::string{reason_event_name});
     const auto category_event = QString::fromStdString(std::string{category_event_name});
@@ -225,14 +226,17 @@ void ChangeReasonCache::onNotificationReceived(const QString& eventType,
         loadAll();
 
         // Emit refreshed after load completes
-        connect(this, &ChangeReasonCache::loaded, this, [this]() {
-            emit refreshed();
-        }, Qt::SingleShotConnection);
+        connect(
+            this,
+            &ChangeReasonCache::loaded,
+            this,
+            [this]() { emit refreshed(); },
+            Qt::SingleShotConnection);
     }
 }
 
-std::vector<dq::domain::change_reason> ChangeReasonCache::getReasonsForNew(
-    const std::string& category_code) const {
+std::vector<dq::domain::change_reason>
+ChangeReasonCache::getReasonsForNew(const std::string& category_code) const {
 
     std::vector<dq::domain::change_reason> result;
     for (const auto& reason : reasons_) {
@@ -241,16 +245,15 @@ std::vector<dq::domain::change_reason> ChangeReasonCache::getReasonsForNew(
         }
     }
 
-    std::sort(result.begin(), result.end(),
-        [](const auto& a, const auto& b) {
-            return a.display_order < b.display_order;
-        });
+    std::sort(result.begin(), result.end(), [](const auto& a, const auto& b) {
+        return a.display_order < b.display_order;
+    });
 
     return result;
 }
 
-std::vector<dq::domain::change_reason> ChangeReasonCache::getReasonsForAmend(
-    const std::string& category_code) const {
+std::vector<dq::domain::change_reason>
+ChangeReasonCache::getReasonsForAmend(const std::string& category_code) const {
 
     std::vector<dq::domain::change_reason> result;
     for (const auto& reason : reasons_) {
@@ -260,16 +263,15 @@ std::vector<dq::domain::change_reason> ChangeReasonCache::getReasonsForAmend(
     }
 
     // Sort by display_order
-    std::sort(result.begin(), result.end(),
-        [](const auto& a, const auto& b) {
-            return a.display_order < b.display_order;
-        });
+    std::sort(result.begin(), result.end(), [](const auto& a, const auto& b) {
+        return a.display_order < b.display_order;
+    });
 
     return result;
 }
 
-std::vector<dq::domain::change_reason> ChangeReasonCache::getReasonsForDelete(
-    const std::string& category_code) const {
+std::vector<dq::domain::change_reason>
+ChangeReasonCache::getReasonsForDelete(const std::string& category_code) const {
 
     std::vector<dq::domain::change_reason> result;
     for (const auto& reason : reasons_) {
@@ -279,16 +281,14 @@ std::vector<dq::domain::change_reason> ChangeReasonCache::getReasonsForDelete(
     }
 
     // Sort by display_order
-    std::sort(result.begin(), result.end(),
-        [](const auto& a, const auto& b) {
-            return a.display_order < b.display_order;
-        });
+    std::sort(result.begin(), result.end(), [](const auto& a, const auto& b) {
+        return a.display_order < b.display_order;
+    });
 
     return result;
 }
 
-const dq::domain::change_reason* ChangeReasonCache::getReasonByCode(
-    const std::string& code) const {
+const dq::domain::change_reason* ChangeReasonCache::getReasonByCode(const std::string& code) const {
 
     auto it = reason_index_.find(code);
     if (it == reason_index_.end()) {

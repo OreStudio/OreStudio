@@ -20,9 +20,9 @@
 #ifndef ORES_QT_CLIENT_RESULT_ITEM_DELEGATE_HPP
 #define ORES_QT_CLIENT_RESULT_ITEM_DELEGATE_HPP
 
+#include "ores.qt/export.hpp"
 #include <QFont>
 #include <QStyledItemDelegate>
-#include "ores.qt/export.hpp"
 
 namespace ores::qt {
 
@@ -38,11 +38,11 @@ class ORES_QT_API ClientResultItemDelegate : public QStyledItemDelegate {
 public:
     explicit ClientResultItemDelegate(QObject* parent = nullptr);
 
-    void paint(QPainter* painter, const QStyleOptionViewItem& option,
+    void paint(QPainter* painter,
+               const QStyleOptionViewItem& option,
                const QModelIndex& index) const override;
 
-    QSize sizeHint(const QStyleOptionViewItem& option,
-                   const QModelIndex& index) const override;
+    QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
 private:
     QFont monospaceFont_;

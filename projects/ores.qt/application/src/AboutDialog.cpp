@@ -19,22 +19,21 @@
  *
  */
 #include "ores.qt/AboutDialog.hpp"
-
+#include "ores.qt/ClientManager.hpp"
+#include "ores.utility/version/version.hpp"
+#include "ui_AboutDialog.h"
+#include <QHeaderView>
 #include <QPixmap>
 #include <QTreeWidget>
-#include <QHeaderView>
-#include "ui_AboutDialog.h"
-#include "ores.utility/version/version.hpp"
-#include "ores.qt/ClientManager.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 AboutDialog::AboutDialog(ClientManager* clientManager, QWidget* parent)
-    : QWidget(parent),
-      ui_(std::make_unique<Ui::AboutDialog>()),
-      clientManager_(clientManager) {
+    : QWidget(parent)
+    , ui_(std::make_unique<Ui::AboutDialog>())
+    , clientManager_(clientManager) {
 
     BOOST_LOG_SEV(lg(), debug) << "Creating about dialog.";
     ui_->setupUi(this);
@@ -66,8 +65,7 @@ void AboutDialog::showEvent(QShowEvent* e) {
     QWidget::showEvent(e);
 
     const char* image(":/images/splash-screen.png");
-    BOOST_LOG_SEV(lg(), debug) << "Scaling logo to fit the dialog. Image: "
-                               << image;
+    BOOST_LOG_SEV(lg(), debug) << "Scaling logo to fit the dialog. Image: " << image;
     QPixmap logo(image);
     if (!logo.isNull()) {
         int targetWidth = width();
@@ -77,9 +75,8 @@ void AboutDialog::showEvent(QShowEvent* e) {
 
         logoLabel_->setPixmap(std::move(scaledLogo));
 
-        const QString text = QString("v%1 %2")
-                                 .arg(ORES_VERSION)
-                                 .arg(ores::utility::version::build_info());
+        const QString text =
+            QString("v%1 %2").arg(ORES_VERSION).arg(ores::utility::version::build_info());
         logoLabel_->setTextOverlay(text);
 
         BOOST_LOG_SEV(lg(), debug) << "Scaled successfully.";
@@ -104,18 +101,18 @@ void AboutDialog::populateSystemInfo() {
     {
         auto* item = new QTreeWidgetItem(ui_->systemInfoTree);
         item->setText(0, "Server");
-        item->setText(1, clientManager_ && clientManager_->isConnected()
-            ? QString::fromStdString(clientManager_->serverAddress())
-            : "(not connected)");
+        item->setText(1,
+                      clientManager_ && clientManager_->isConnected() ?
+                          QString::fromStdString(clientManager_->serverAddress()) :
+                          "(not connected)");
     }
 
     // Client row — always available (compile-time constants)
     {
         auto* item = new QTreeWidgetItem(ui_->systemInfoTree);
         item->setText(0, "Client");
-        item->setText(1, QString("v%1 (%2)")
-            .arg(ORES_VERSION)
-            .arg(ores::utility::version::build_info()));
+        item->setText(
+            1, QString("v%1 (%2)").arg(ORES_VERSION).arg(ores::utility::version::build_info()));
     }
 
     // Shrink the Component column to its content; Version gets the rest

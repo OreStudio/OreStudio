@@ -18,26 +18,23 @@
  *
  */
 #include "ores.qt/JobInstanceController.hpp"
-
-#include <QPointer>
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/JobInstanceMdiWindow.hpp"
-#include "ores.qt/JobInstanceDetailDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/JobInstanceDetailDialog.hpp"
+#include "ores.qt/JobInstanceMdiWindow.hpp"
+#include <QPointer>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-JobInstanceController::JobInstanceController(
-    QMainWindow* mainWindow,
-    QMdiArea* mdiArea,
-    ClientManager* clientManager,
-    QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, {},
-          event_subject, parent),
-      listWindow_(nullptr),
-      listMdiSubWindow_(nullptr) {
+JobInstanceController::JobInstanceController(QMainWindow* mainWindow,
+                                             QMdiArea* mdiArea,
+                                             ClientManager* clientManager,
+                                             QObject* parent)
+    : EntityController(mainWindow, mdiArea, clientManager, {}, event_subject, parent)
+    , listWindow_(nullptr)
+    , listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "JobInstanceController created";
 }
@@ -46,22 +43,29 @@ void JobInstanceController::showListWindow() {
     BOOST_LOG_SEV(lg(), debug) << "showListWindow";
 
     const QString key = build_window_key("list", "job_instances");
-    if (try_reuse_window(key)) return;
+    if (try_reuse_window(key))
+        return;
 
     listWindow_ = new JobInstanceMdiWindow(clientManager_);
 
-    connect(listWindow_, &JobInstanceMdiWindow::statusChanged,
-            this, &JobInstanceController::statusMessage);
-    connect(listWindow_, &JobInstanceMdiWindow::errorOccurred,
-            this, &JobInstanceController::errorMessage);
-    connect(listWindow_, &JobInstanceMdiWindow::showInstanceDetails,
-            this, &JobInstanceController::onShowDetails);
+    connect(listWindow_,
+            &JobInstanceMdiWindow::statusChanged,
+            this,
+            &JobInstanceController::statusMessage);
+    connect(listWindow_,
+            &JobInstanceMdiWindow::errorOccurred,
+            this,
+            &JobInstanceController::errorMessage);
+    connect(listWindow_,
+            &JobInstanceMdiWindow::showInstanceDetails,
+            this,
+            &JobInstanceController::onShowDetails);
 
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Job Instances");
-    listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::TasksApp, IconUtils::DefaultIconColor));
+    listMdiSubWindow_->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::TasksApp, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -71,26 +75,31 @@ void JobInstanceController::showListWindow() {
     track_window(key, listMdiSubWindow_);
     register_detachable_window(listMdiSubWindow_);
 
-    connect(listMdiSubWindow_, &QObject::destroyed,
-            this, [self = QPointer<JobInstanceController>(this), key]() {
-        if (!self) return;
-        self->untrack_window(key);
-        self->listWindow_ = nullptr;
-        self->listMdiSubWindow_ = nullptr;
-    });
+    connect(listMdiSubWindow_,
+            &QObject::destroyed,
+            this,
+            [self = QPointer<JobInstanceController>(this), key]() {
+                if (!self)
+                    return;
+                self->untrack_window(key);
+                self->listWindow_ = nullptr;
+                self->listMdiSubWindow_ = nullptr;
+            });
 }
 
 void JobInstanceController::closeAllWindows() {
     QList<QString> keys = managed_windows_.keys();
     for (const QString& k : keys)
-        if (auto* w = managed_windows_.value(k)) w->close();
+        if (auto* w = managed_windows_.value(k))
+            w->close();
     managed_windows_.clear();
     listWindow_ = nullptr;
     listMdiSubWindow_ = nullptr;
 }
 
 void JobInstanceController::reloadListWindow() {
-    if (listWindow_) listWindow_->reload();
+    if (listWindow_)
+        listWindow_->reload();
 }
 
 EntityListMdiWindow* JobInstanceController::listWindow() const {

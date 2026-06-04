@@ -18,30 +18,27 @@
  *
  */
 #include "ores.qt/BadgeDefinitionController.hpp"
-
+#include "ores.qt/BadgeDefinitionDetailDialog.hpp"
+#include "ores.qt/BadgeDefinitionHistoryDialog.hpp"
+#include "ores.qt/BadgeDefinitionMdiWindow.hpp"
+#include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/IconUtils.hpp"
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/BadgeDefinitionMdiWindow.hpp"
-#include "ores.qt/BadgeDefinitionDetailDialog.hpp"
-#include "ores.qt/BadgeDefinitionHistoryDialog.hpp"
-#include "ores.qt/DetachableMdiSubWindow.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-BadgeDefinitionController::BadgeDefinitionController(
-    QMainWindow* mainWindow,
-    QMdiArea* mdiArea,
-    ClientManager* clientManager,
-    const QString& username,
-    QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username,
-          std::string_view{}, parent),
-      listWindow_(nullptr),
-      listMdiSubWindow_(nullptr) {
+BadgeDefinitionController::BadgeDefinitionController(QMainWindow* mainWindow,
+                                                     QMdiArea* mdiArea,
+                                                     ClientManager* clientManager,
+                                                     const QString& username,
+                                                     QObject* parent)
+    : EntityController(mainWindow, mdiArea, clientManager, username, std::string_view{}, parent)
+    , listWindow_(nullptr)
+    , listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "BadgeDefinitionController created";
 }
@@ -59,23 +56,33 @@ void BadgeDefinitionController::showListWindow() {
     listWindow_ = new BadgeDefinitionMdiWindow(clientManager_, username_);
 
     // Connect signals
-    connect(listWindow_, &BadgeDefinitionMdiWindow::statusChanged,
-            this, &BadgeDefinitionController::statusMessage);
-    connect(listWindow_, &BadgeDefinitionMdiWindow::errorOccurred,
-            this, &BadgeDefinitionController::errorMessage);
-    connect(listWindow_, &BadgeDefinitionMdiWindow::showDefinitionDetails,
-            this, &BadgeDefinitionController::onShowDetails);
-    connect(listWindow_, &BadgeDefinitionMdiWindow::addNewRequested,
-            this, &BadgeDefinitionController::onAddNewRequested);
-    connect(listWindow_, &BadgeDefinitionMdiWindow::showDefinitionHistory,
-            this, &BadgeDefinitionController::onShowHistory);
+    connect(listWindow_,
+            &BadgeDefinitionMdiWindow::statusChanged,
+            this,
+            &BadgeDefinitionController::statusMessage);
+    connect(listWindow_,
+            &BadgeDefinitionMdiWindow::errorOccurred,
+            this,
+            &BadgeDefinitionController::errorMessage);
+    connect(listWindow_,
+            &BadgeDefinitionMdiWindow::showDefinitionDetails,
+            this,
+            &BadgeDefinitionController::onShowDetails);
+    connect(listWindow_,
+            &BadgeDefinitionMdiWindow::addNewRequested,
+            this,
+            &BadgeDefinitionController::onAddNewRequested);
+    connect(listWindow_,
+            &BadgeDefinitionMdiWindow::showDefinitionHistory,
+            this,
+            &BadgeDefinitionController::onShowHistory);
 
     // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Badge Definitions");
-    listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Tag, IconUtils::DefaultIconColor));
+    listMdiSubWindow_->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -87,12 +94,16 @@ void BadgeDefinitionController::showListWindow() {
     register_detachable_window(listMdiSubWindow_);
 
     // Cleanup when closed
-    connect(listMdiSubWindow_, &QObject::destroyed, this, [self = QPointer<BadgeDefinitionController>(this), key]() {
-        if (!self) return;
-        self->untrack_window(key);
-        self->listWindow_ = nullptr;
-        self->listMdiSubWindow_ = nullptr;
-    });
+    connect(listMdiSubWindow_,
+            &QObject::destroyed,
+            this,
+            [self = QPointer<BadgeDefinitionController>(this), key]() {
+                if (!self)
+                    return;
+                self->untrack_window(key);
+                self->listWindow_ = nullptr;
+                self->listMdiSubWindow_ = nullptr;
+            });
 
     BOOST_LOG_SEV(lg(), debug) << "Badge Definition list window created";
 }
@@ -119,8 +130,7 @@ void BadgeDefinitionController::reloadListWindow() {
     }
 }
 
-void BadgeDefinitionController::onShowDetails(
-    const dq::domain::badge_definition& definition) {
+void BadgeDefinitionController::onShowDetails(const dq::domain::badge_definition& definition) {
     BOOST_LOG_SEV(lg(), debug) << "Show details for: " << definition.code;
     showDetailWindow(definition);
 }
@@ -130,8 +140,7 @@ void BadgeDefinitionController::onAddNewRequested() {
     showAddWindow();
 }
 
-void BadgeDefinitionController::onShowHistory(
-    const dq::domain::badge_definition& definition) {
+void BadgeDefinitionController::onShowHistory(const dq::domain::badge_definition& definition) {
     BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << definition.code;
     showHistoryWindow(QString::fromStdString(definition.code));
 }
@@ -144,23 +153,30 @@ void BadgeDefinitionController::showAddWindow() {
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
 
-    connect(detailDialog, &BadgeDefinitionDetailDialog::statusMessage,
-            this, &BadgeDefinitionController::statusMessage);
-    connect(detailDialog, &BadgeDefinitionDetailDialog::errorMessage,
-            this, &BadgeDefinitionController::errorMessage);
-    connect(detailDialog, &BadgeDefinitionDetailDialog::definitionSaved,
-            this, [self = QPointer<BadgeDefinitionController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Badge Definition saved: " << code.toStdString();
-        self->handleEntitySaved();
-    });
+    connect(detailDialog,
+            &BadgeDefinitionDetailDialog::statusMessage,
+            this,
+            &BadgeDefinitionController::statusMessage);
+    connect(detailDialog,
+            &BadgeDefinitionDetailDialog::errorMessage,
+            this,
+            &BadgeDefinitionController::errorMessage);
+    connect(detailDialog,
+            &BadgeDefinitionDetailDialog::definitionSaved,
+            this,
+            [self = QPointer<BadgeDefinitionController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Badge Definition saved: " << code.toStdString();
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Badge Definition");
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Tag, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -168,8 +184,7 @@ void BadgeDefinitionController::showAddWindow() {
     show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
-void BadgeDefinitionController::showDetailWindow(
-    const dq::domain::badge_definition& definition) {
+void BadgeDefinitionController::showDetailWindow(const dq::domain::badge_definition& definition) {
 
     const QString identifier = QString::fromStdString(definition.code);
     const QString key = build_window_key("details", identifier);
@@ -187,37 +202,46 @@ void BadgeDefinitionController::showDetailWindow(
     detailDialog->setCreateMode(false);
     detailDialog->setDefinition(definition);
 
-    connect(detailDialog, &BadgeDefinitionDetailDialog::statusMessage,
-            this, &BadgeDefinitionController::statusMessage);
-    connect(detailDialog, &BadgeDefinitionDetailDialog::errorMessage,
-            this, &BadgeDefinitionController::errorMessage);
-    connect(detailDialog, &BadgeDefinitionDetailDialog::definitionSaved,
-            this, [self = QPointer<BadgeDefinitionController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Badge Definition saved: " << code.toStdString();
-        self->handleEntitySaved();
-    });
-    connect(detailDialog, &BadgeDefinitionDetailDialog::definitionDeleted,
-            this, [self = QPointer<BadgeDefinitionController>(this), key](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Badge Definition deleted: " << code.toStdString();
-        self->handleEntityDeleted();
-    });
+    connect(detailDialog,
+            &BadgeDefinitionDetailDialog::statusMessage,
+            this,
+            &BadgeDefinitionController::statusMessage);
+    connect(detailDialog,
+            &BadgeDefinitionDetailDialog::errorMessage,
+            this,
+            &BadgeDefinitionController::errorMessage);
+    connect(detailDialog,
+            &BadgeDefinitionDetailDialog::definitionSaved,
+            this,
+            [self = QPointer<BadgeDefinitionController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Badge Definition saved: " << code.toStdString();
+                self->handleEntitySaved();
+            });
+    connect(detailDialog,
+            &BadgeDefinitionDetailDialog::definitionDeleted,
+            this,
+            [self = QPointer<BadgeDefinitionController>(this), key](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Badge Definition deleted: " << code.toStdString();
+                self->handleEntityDeleted();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Badge Definition: %1").arg(identifier));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Tag, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor));
 
     // Track window
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<BadgeDefinitionController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, key]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, key]() {
         if (self) {
             self->untrack_window(key);
         }
@@ -235,30 +259,38 @@ void BadgeDefinitionController::showHistoryWindow(const QString& code) {
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
-        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: "
-                                  << code.toStdString();
+        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: " << code.toStdString();
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
-                              << code.toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << code.toStdString();
 
     auto* historyDialog = new BadgeDefinitionHistoryDialog(code, clientManager_, mainWindow_);
 
-    connect(historyDialog, &BadgeDefinitionHistoryDialog::statusChanged,
-            this, [self = QPointer<BadgeDefinitionController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(historyDialog, &BadgeDefinitionHistoryDialog::errorOccurred,
-            this, [self = QPointer<BadgeDefinitionController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
-    connect(historyDialog, &BadgeDefinitionHistoryDialog::revertVersionRequested,
-            this, &BadgeDefinitionController::onRevertVersion);
-    connect(historyDialog, &BadgeDefinitionHistoryDialog::openVersionRequested,
-            this, &BadgeDefinitionController::onOpenVersion);
+    connect(historyDialog,
+            &BadgeDefinitionHistoryDialog::statusChanged,
+            this,
+            [self = QPointer<BadgeDefinitionController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(historyDialog,
+            &BadgeDefinitionHistoryDialog::errorOccurred,
+            this,
+            [self = QPointer<BadgeDefinitionController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
+    connect(historyDialog,
+            &BadgeDefinitionHistoryDialog::revertVersionRequested,
+            this,
+            &BadgeDefinitionController::onRevertVersion);
+    connect(historyDialog,
+            &BadgeDefinitionHistoryDialog::openVersionRequested,
+            this,
+            &BadgeDefinitionController::onOpenVersion);
 
     // Load history data
     historyDialog->loadHistory();
@@ -267,16 +299,15 @@ void BadgeDefinitionController::showHistoryWindow(const QString& code) {
     historyWindow->setAttribute(Qt::WA_DeleteOnClose);
     historyWindow->setWidget(historyDialog);
     historyWindow->setWindowTitle(QString("Badge Definition History: %1").arg(code));
-    historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    historyWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     // Track this history window
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
 
     QPointer<BadgeDefinitionController> self = this;
-    connect(historyWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -285,14 +316,14 @@ void BadgeDefinitionController::showHistoryWindow(const QString& code) {
     show_managed_window(historyWindow, listMdiSubWindow_);
 }
 
-void BadgeDefinitionController::onOpenVersion(
-    const dq::domain::badge_definition& definition, int versionNumber) {
+void BadgeDefinitionController::onOpenVersion(const dq::domain::badge_definition& definition,
+                                              int versionNumber) {
     BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
                               << " for badge definition: " << definition.code;
 
     const QString code = QString::fromStdString(definition.code);
-    const QString windowKey = build_window_key("version", QString("%1_v%2")
-        .arg(code).arg(versionNumber));
+    const QString windowKey =
+        build_window_key("version", QString("%1_v%2").arg(code).arg(versionNumber));
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
@@ -306,31 +337,36 @@ void BadgeDefinitionController::onOpenVersion(
     detailDialog->setDefinition(definition);
     detailDialog->setReadOnly(true);
 
-    connect(detailDialog, &BadgeDefinitionDetailDialog::statusMessage,
-            this, [self = QPointer<BadgeDefinitionController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(detailDialog, &BadgeDefinitionDetailDialog::errorMessage,
-            this, [self = QPointer<BadgeDefinitionController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
+    connect(detailDialog,
+            &BadgeDefinitionDetailDialog::statusMessage,
+            this,
+            [self = QPointer<BadgeDefinitionController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(detailDialog,
+            &BadgeDefinitionDetailDialog::errorMessage,
+            this,
+            [self = QPointer<BadgeDefinitionController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Badge Definition: %1 (Version %2)")
-        .arg(code).arg(versionNumber));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("Badge Definition: %1 (Version %2)").arg(code).arg(versionNumber));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     track_window(windowKey, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<BadgeDefinitionController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -340,10 +376,8 @@ void BadgeDefinitionController::onOpenVersion(
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
-void BadgeDefinitionController::onRevertVersion(
-    const dq::domain::badge_definition& definition) {
-    BOOST_LOG_SEV(lg(), info) << "Reverting badge definition to version: "
-                              << definition.version;
+void BadgeDefinitionController::onRevertVersion(const dq::domain::badge_definition& definition) {
+    BOOST_LOG_SEV(lg(), info) << "Reverting badge definition to version: " << definition.version;
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new BadgeDefinitionDetailDialog(mainWindow_);
@@ -352,25 +386,33 @@ void BadgeDefinitionController::onRevertVersion(
     detailDialog->setDefinition(definition);
     detailDialog->setCreateMode(false);
 
-    connect(detailDialog, &BadgeDefinitionDetailDialog::statusMessage,
-            this, &BadgeDefinitionController::statusMessage);
-    connect(detailDialog, &BadgeDefinitionDetailDialog::errorMessage,
-            this, &BadgeDefinitionController::errorMessage);
-    connect(detailDialog, &BadgeDefinitionDetailDialog::definitionSaved,
-            this, [self = QPointer<BadgeDefinitionController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Badge Definition reverted: " << code.toStdString();
-        emit self->statusMessage(QString("Badge Definition '%1' reverted successfully").arg(code));
-        self->handleEntitySaved();
-    });
+    connect(detailDialog,
+            &BadgeDefinitionDetailDialog::statusMessage,
+            this,
+            &BadgeDefinitionController::statusMessage);
+    connect(detailDialog,
+            &BadgeDefinitionDetailDialog::errorMessage,
+            this,
+            &BadgeDefinitionController::errorMessage);
+    connect(detailDialog,
+            &BadgeDefinitionDetailDialog::definitionSaved,
+            this,
+            [self = QPointer<BadgeDefinitionController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Badge Definition reverted: " << code.toStdString();
+                emit self->statusMessage(
+                    QString("Badge Definition '%1' reverted successfully").arg(code));
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Revert Badge Definition: %1")
-        .arg(QString::fromStdString(definition.code)));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("Revert Badge Definition: %1").arg(QString::fromStdString(definition.code)));
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
+                                                               IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 

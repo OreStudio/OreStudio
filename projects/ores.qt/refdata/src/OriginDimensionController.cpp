@@ -18,41 +18,38 @@
  *
  */
 #include "ores.qt/OriginDimensionController.hpp"
+#include "ores.dq.api/eventing/origin_dimension_changed_event.hpp"
+#include "ores.eventing/domain/event_traits.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
-
+#include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/OriginDimensionDetailDialog.hpp"
+#include "ores.qt/OriginDimensionHistoryDialog.hpp"
+#include "ores.qt/OriginDimensionMdiWindow.hpp"
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/OriginDimensionMdiWindow.hpp"
-#include "ores.qt/OriginDimensionDetailDialog.hpp"
-#include "ores.qt/OriginDimensionHistoryDialog.hpp"
-#include "ores.qt/DetachableMdiSubWindow.hpp"
-#include "ores.eventing/domain/event_traits.hpp"
-#include "ores.dq.api/eventing/origin_dimension_changed_event.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    constexpr std::string_view origin_dimension_event_name =
-        eventing::domain::event_traits<
-            dq::eventing::origin_dimension_changed_event>::name;
+constexpr std::string_view origin_dimension_event_name =
+    eventing::domain::event_traits<dq::eventing::origin_dimension_changed_event>::name;
 }
 
-OriginDimensionController::OriginDimensionController(
-    QMainWindow* mainWindow,
-    QMdiArea* mdiArea,
-    ClientManager* clientManager,
-    ChangeReasonCache* changeReasonCache,
-    const QString& username,
-    QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username,
-          origin_dimension_event_name, parent),
-      changeReasonCache_(changeReasonCache),
-      listWindow_(nullptr),
-      listMdiSubWindow_(nullptr) {
+OriginDimensionController::OriginDimensionController(QMainWindow* mainWindow,
+                                                     QMdiArea* mdiArea,
+                                                     ClientManager* clientManager,
+                                                     ChangeReasonCache* changeReasonCache,
+                                                     const QString& username,
+                                                     QObject* parent)
+    : EntityController(
+          mainWindow, mdiArea, clientManager, username, origin_dimension_event_name, parent)
+    , changeReasonCache_(changeReasonCache)
+    , listWindow_(nullptr)
+    , listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "OriginDimensionController created";
 }
@@ -70,23 +67,33 @@ void OriginDimensionController::showListWindow() {
     listWindow_ = new OriginDimensionMdiWindow(clientManager_, username_);
 
     // Connect signals
-    connect(listWindow_, &OriginDimensionMdiWindow::statusChanged,
-            this, &OriginDimensionController::statusMessage);
-    connect(listWindow_, &OriginDimensionMdiWindow::errorOccurred,
-            this, &OriginDimensionController::errorMessage);
-    connect(listWindow_, &OriginDimensionMdiWindow::showDimensionDetails,
-            this, &OriginDimensionController::onShowDetails);
-    connect(listWindow_, &OriginDimensionMdiWindow::addNewRequested,
-            this, &OriginDimensionController::onAddNewRequested);
-    connect(listWindow_, &OriginDimensionMdiWindow::showDimensionHistory,
-            this, &OriginDimensionController::onShowHistory);
+    connect(listWindow_,
+            &OriginDimensionMdiWindow::statusChanged,
+            this,
+            &OriginDimensionController::statusMessage);
+    connect(listWindow_,
+            &OriginDimensionMdiWindow::errorOccurred,
+            this,
+            &OriginDimensionController::errorMessage);
+    connect(listWindow_,
+            &OriginDimensionMdiWindow::showDimensionDetails,
+            this,
+            &OriginDimensionController::onShowDetails);
+    connect(listWindow_,
+            &OriginDimensionMdiWindow::addNewRequested,
+            this,
+            &OriginDimensionController::onAddNewRequested);
+    connect(listWindow_,
+            &OriginDimensionMdiWindow::showDimensionHistory,
+            this,
+            &OriginDimensionController::onShowHistory);
 
     // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Origin Dimensions");
-    listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Database, IconUtils::DefaultIconColor));
+    listMdiSubWindow_->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Database, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -98,12 +105,16 @@ void OriginDimensionController::showListWindow() {
     register_detachable_window(listMdiSubWindow_);
 
     // Cleanup when closed
-    connect(listMdiSubWindow_, &QObject::destroyed, this, [self = QPointer<OriginDimensionController>(this), key]() {
-        if (!self) return;
-        self->untrack_window(key);
-        self->listWindow_ = nullptr;
-        self->listMdiSubWindow_ = nullptr;
-    });
+    connect(listMdiSubWindow_,
+            &QObject::destroyed,
+            this,
+            [self = QPointer<OriginDimensionController>(this), key]() {
+                if (!self)
+                    return;
+                self->untrack_window(key);
+                self->listWindow_ = nullptr;
+                self->listMdiSubWindow_ = nullptr;
+            });
 
     BOOST_LOG_SEV(lg(), debug) << "Origin dimension list window created";
 }
@@ -130,8 +141,7 @@ void OriginDimensionController::reloadListWindow() {
     }
 }
 
-void OriginDimensionController::onShowDetails(
-    const dq::domain::origin_dimension& dimension) {
+void OriginDimensionController::onShowDetails(const dq::domain::origin_dimension& dimension) {
     BOOST_LOG_SEV(lg(), debug) << "Show details for: " << dimension.code;
     showDetailWindow(dimension);
 }
@@ -156,23 +166,30 @@ void OriginDimensionController::showAddWindow() {
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
 
-    connect(detailDialog, &OriginDimensionDetailDialog::statusMessage,
-            this, &OriginDimensionController::statusMessage);
-    connect(detailDialog, &OriginDimensionDetailDialog::errorMessage,
-            this, &OriginDimensionController::errorMessage);
-    connect(detailDialog, &OriginDimensionDetailDialog::dimensionSaved,
-            this, [self = QPointer<OriginDimensionController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Origin dimension saved: " << code.toStdString();
-        self->handleEntitySaved();
-    });
+    connect(detailDialog,
+            &OriginDimensionDetailDialog::statusMessage,
+            this,
+            &OriginDimensionController::statusMessage);
+    connect(detailDialog,
+            &OriginDimensionDetailDialog::errorMessage,
+            this,
+            &OriginDimensionController::errorMessage);
+    connect(detailDialog,
+            &OriginDimensionDetailDialog::dimensionSaved,
+            this,
+            [self = QPointer<OriginDimensionController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Origin dimension saved: " << code.toStdString();
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Origin Dimension");
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Database, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Database, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -180,8 +197,7 @@ void OriginDimensionController::showAddWindow() {
     show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
-void OriginDimensionController::showDetailWindow(
-    const dq::domain::origin_dimension& dimension) {
+void OriginDimensionController::showDetailWindow(const dq::domain::origin_dimension& dimension) {
 
     const QString identifier = QString::fromStdString(dimension.code);
     const QString key = build_window_key("details", identifier);
@@ -201,37 +217,46 @@ void OriginDimensionController::showDetailWindow(
     detailDialog->setCreateMode(false);
     detailDialog->setDimension(dimension);
 
-    connect(detailDialog, &OriginDimensionDetailDialog::statusMessage,
-            this, &OriginDimensionController::statusMessage);
-    connect(detailDialog, &OriginDimensionDetailDialog::errorMessage,
-            this, &OriginDimensionController::errorMessage);
-    connect(detailDialog, &OriginDimensionDetailDialog::dimensionSaved,
-            this, [self = QPointer<OriginDimensionController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Origin dimension saved: " << code.toStdString();
-        self->handleEntitySaved();
-    });
-    connect(detailDialog, &OriginDimensionDetailDialog::dimensionDeleted,
-            this, [self = QPointer<OriginDimensionController>(this), key](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Origin dimension deleted: " << code.toStdString();
-        self->handleEntityDeleted();
-    });
+    connect(detailDialog,
+            &OriginDimensionDetailDialog::statusMessage,
+            this,
+            &OriginDimensionController::statusMessage);
+    connect(detailDialog,
+            &OriginDimensionDetailDialog::errorMessage,
+            this,
+            &OriginDimensionController::errorMessage);
+    connect(detailDialog,
+            &OriginDimensionDetailDialog::dimensionSaved,
+            this,
+            [self = QPointer<OriginDimensionController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Origin dimension saved: " << code.toStdString();
+                self->handleEntitySaved();
+            });
+    connect(detailDialog,
+            &OriginDimensionDetailDialog::dimensionDeleted,
+            this,
+            [self = QPointer<OriginDimensionController>(this), key](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Origin dimension deleted: " << code.toStdString();
+                self->handleEntityDeleted();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Origin Dimension: %1").arg(identifier));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Database, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Database, IconUtils::DefaultIconColor));
 
     // Track window
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<OriginDimensionController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, key]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, key]() {
         if (self) {
             self->untrack_window(key);
         }
@@ -249,30 +274,38 @@ void OriginDimensionController::showHistoryWindow(const QString& code) {
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
-        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: "
-                                  << code.toStdString();
+        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: " << code.toStdString();
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
-                              << code.toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << code.toStdString();
 
     auto* historyDialog = new OriginDimensionHistoryDialog(code, clientManager_, mainWindow_);
 
-    connect(historyDialog, &OriginDimensionHistoryDialog::statusChanged,
-            this, [self = QPointer<OriginDimensionController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(historyDialog, &OriginDimensionHistoryDialog::errorOccurred,
-            this, [self = QPointer<OriginDimensionController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
-    connect(historyDialog, &OriginDimensionHistoryDialog::revertVersionRequested,
-            this, &OriginDimensionController::onRevertVersion);
-    connect(historyDialog, &OriginDimensionHistoryDialog::openVersionRequested,
-            this, &OriginDimensionController::onOpenVersion);
+    connect(historyDialog,
+            &OriginDimensionHistoryDialog::statusChanged,
+            this,
+            [self = QPointer<OriginDimensionController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(historyDialog,
+            &OriginDimensionHistoryDialog::errorOccurred,
+            this,
+            [self = QPointer<OriginDimensionController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
+    connect(historyDialog,
+            &OriginDimensionHistoryDialog::revertVersionRequested,
+            this,
+            &OriginDimensionController::onRevertVersion);
+    connect(historyDialog,
+            &OriginDimensionHistoryDialog::openVersionRequested,
+            this,
+            &OriginDimensionController::onOpenVersion);
 
     // Load history data
     historyDialog->loadHistory();
@@ -281,16 +314,15 @@ void OriginDimensionController::showHistoryWindow(const QString& code) {
     historyWindow->setAttribute(Qt::WA_DeleteOnClose);
     historyWindow->setWidget(historyDialog);
     historyWindow->setWindowTitle(QString("Origin Dimension History: %1").arg(code));
-    historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    historyWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     // Track this history window
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
 
     QPointer<OriginDimensionController> self = this;
-    connect(historyWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -299,14 +331,14 @@ void OriginDimensionController::showHistoryWindow(const QString& code) {
     show_managed_window(historyWindow, listMdiSubWindow_);
 }
 
-void OriginDimensionController::onOpenVersion(
-    const dq::domain::origin_dimension& dimension, int versionNumber) {
+void OriginDimensionController::onOpenVersion(const dq::domain::origin_dimension& dimension,
+                                              int versionNumber) {
     BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
                               << " for origin dimension: " << dimension.code;
 
     const QString code = QString::fromStdString(dimension.code);
-    const QString windowKey = build_window_key("version", QString("%1_v%2")
-        .arg(code).arg(versionNumber));
+    const QString windowKey =
+        build_window_key("version", QString("%1_v%2").arg(code).arg(versionNumber));
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
@@ -322,31 +354,36 @@ void OriginDimensionController::onOpenVersion(
     detailDialog->setDimension(dimension);
     detailDialog->setReadOnly(true);
 
-    connect(detailDialog, &OriginDimensionDetailDialog::statusMessage,
-            this, [self = QPointer<OriginDimensionController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(detailDialog, &OriginDimensionDetailDialog::errorMessage,
-            this, [self = QPointer<OriginDimensionController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
+    connect(detailDialog,
+            &OriginDimensionDetailDialog::statusMessage,
+            this,
+            [self = QPointer<OriginDimensionController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(detailDialog,
+            &OriginDimensionDetailDialog::errorMessage,
+            this,
+            [self = QPointer<OriginDimensionController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Origin Dimension: %1 (Version %2)")
-        .arg(code).arg(versionNumber));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("Origin Dimension: %1 (Version %2)").arg(code).arg(versionNumber));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     track_window(windowKey, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<OriginDimensionController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -356,10 +393,8 @@ void OriginDimensionController::onOpenVersion(
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
-void OriginDimensionController::onRevertVersion(
-    const dq::domain::origin_dimension& dimension) {
-    BOOST_LOG_SEV(lg(), info) << "Reverting origin dimension to version: "
-                              << dimension.version;
+void OriginDimensionController::onRevertVersion(const dq::domain::origin_dimension& dimension) {
+    BOOST_LOG_SEV(lg(), info) << "Reverting origin dimension to version: " << dimension.version;
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new OriginDimensionDetailDialog(mainWindow_);
@@ -370,25 +405,33 @@ void OriginDimensionController::onRevertVersion(
     detailDialog->setDimension(dimension);
     detailDialog->setCreateMode(false);
 
-    connect(detailDialog, &OriginDimensionDetailDialog::statusMessage,
-            this, &OriginDimensionController::statusMessage);
-    connect(detailDialog, &OriginDimensionDetailDialog::errorMessage,
-            this, &OriginDimensionController::errorMessage);
-    connect(detailDialog, &OriginDimensionDetailDialog::dimensionSaved,
-            this, [self = QPointer<OriginDimensionController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Origin dimension reverted: " << code.toStdString();
-        emit self->statusMessage(QString("Origin dimension '%1' reverted successfully").arg(code));
-        self->handleEntitySaved();
-    });
+    connect(detailDialog,
+            &OriginDimensionDetailDialog::statusMessage,
+            this,
+            &OriginDimensionController::statusMessage);
+    connect(detailDialog,
+            &OriginDimensionDetailDialog::errorMessage,
+            this,
+            &OriginDimensionController::errorMessage);
+    connect(detailDialog,
+            &OriginDimensionDetailDialog::dimensionSaved,
+            this,
+            [self = QPointer<OriginDimensionController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Origin dimension reverted: " << code.toStdString();
+                emit self->statusMessage(
+                    QString("Origin dimension '%1' reverted successfully").arg(code));
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Revert Origin Dimension: %1")
-        .arg(QString::fromStdString(dimension.code)));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("Revert Origin Dimension: %1").arg(QString::fromStdString(dimension.code)));
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
+                                                               IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 

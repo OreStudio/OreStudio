@@ -20,33 +20,31 @@
 #include "ores.qt/CronExpressionWidget.hpp"
 #include "ores.qt/CronEditorDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
-
+#include "ores.scheduler.api/domain/cron_expression.hpp"
 #include <QHBoxLayout>
 #include <QPushButton>
-#include "ores.scheduler.api/domain/cron_expression.hpp"
 
 namespace ores::qt {
 
 CronExpressionWidget::CronExpressionWidget(QWidget* parent)
-    : QWidget(parent),
-      expressionEdit_(new QLineEdit(this)),
-      builderButton_(new QPushButton(this)) {
+    : QWidget(parent)
+    , expressionEdit_(new QLineEdit(this))
+    , builderButton_(new QPushButton(this)) {
 
     auto* layout = new QHBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(4);
 
     expressionEdit_->setPlaceholderText("0 * * * *");
-    connect(expressionEdit_, &QLineEdit::textChanged,
-            this, &CronExpressionWidget::onExpressionEdited);
+    connect(
+        expressionEdit_, &QLineEdit::textChanged, this, &CronExpressionWidget::onExpressionEdited);
 
     builderButton_->setFixedWidth(32);
     builderButton_->setFixedHeight(32);
-    builderButton_->setIcon(IconUtils::createRecoloredIcon(
-        Icon::Clock, IconUtils::DefaultIconColor));
+    builderButton_->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Clock, IconUtils::DefaultIconColor));
     builderButton_->setToolTip(tr("Open cron expression builder"));
-    connect(builderButton_, &QPushButton::clicked,
-            this, &CronExpressionWidget::onBuilderClicked);
+    connect(builderButton_, &QPushButton::clicked, this, &CronExpressionWidget::onBuilderClicked);
 
     layout->addWidget(expressionEdit_);
     layout->addWidget(builderButton_);

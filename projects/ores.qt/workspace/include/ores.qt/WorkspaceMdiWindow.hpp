@@ -20,15 +20,15 @@
 #ifndef ORES_QT_WORKSPACE_MDI_WINDOW_HPP
 #define ORES_QT_WORKSPACE_MDI_WINDOW_HPP
 
-#include <QToolBar>
-#include <QTableView>
-#include <QSortFilterProxyModel>
-#include "ores.qt/EntityListMdiWindow.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ClientWorkspaceModel.hpp"
+#include "ores.qt/EntityListMdiWindow.hpp"
 #include "ores.qt/PaginationWidget.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.workspace.api/domain/workspace.hpp"
+#include <QSortFilterProxyModel>
+#include <QTableView>
+#include <QToolBar>
 
 namespace ores::qt {
 
@@ -44,8 +44,7 @@ class WorkspaceMdiWindow final : public EntityListMdiWindow {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.workspace_mdi_window";
+    inline static std::string_view logger_name = "ores.qt.workspace_mdi_window";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -54,11 +53,10 @@ private:
     }
 
 public:
-    explicit WorkspaceMdiWindow(
-        ClientManager* clientManager,
-        const QString& username,
-        BadgeCache* badgeCache,
-        QWidget* parent = nullptr);
+    explicit WorkspaceMdiWindow(ClientManager* clientManager,
+                                const QString& username,
+                                BadgeCache* badgeCache,
+                                QWidget* parent = nullptr);
     ~WorkspaceMdiWindow() override = default;
 
 signals:

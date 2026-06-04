@@ -18,39 +18,37 @@
  *
  */
 #include "ores.qt/OriginDimensionMdiWindow.hpp"
-
-#include <QVBoxLayout>
+#include "ores.dq.api/messaging/dimension_protocol.hpp"
+#include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/EntityItemDelegate.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/WidgetUtils.hpp"
+#include <QFutureWatcher>
 #include <QHeaderView>
 #include <QMessageBox>
+#include <QVBoxLayout>
 #include <QtConcurrent>
-#include <QFutureWatcher>
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/EntityItemDelegate.hpp"
-#include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/ColorConstants.hpp"
-#include "ores.qt/WidgetUtils.hpp"
-#include "ores.dq.api/messaging/dimension_protocol.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-OriginDimensionMdiWindow::OriginDimensionMdiWindow(
-    ClientManager* clientManager,
-    const QString& username,
-    QWidget* parent)
-    : EntityListMdiWindow(parent),
-      clientManager_(clientManager),
-      username_(username),
-      toolbar_(nullptr),
-      tableView_(nullptr),
-      model_(nullptr),
-      proxyModel_(nullptr),
-      reloadAction_(nullptr),
-      addAction_(nullptr),
-      editAction_(nullptr),
-      deleteAction_(nullptr),
-      historyAction_(nullptr) {
+OriginDimensionMdiWindow::OriginDimensionMdiWindow(ClientManager* clientManager,
+                                                   const QString& username,
+                                                   QWidget* parent)
+    : EntityListMdiWindow(parent)
+    , clientManager_(clientManager)
+    , username_(username)
+    , toolbar_(nullptr)
+    , tableView_(nullptr)
+    , model_(nullptr)
+    , proxyModel_(nullptr)
+    , reloadAction_(nullptr)
+    , addAction_(nullptr)
+    , editAction_(nullptr)
+    , deleteAction_(nullptr)
+    , historyAction_(nullptr) {
 
     setupUi();
     setupConnections();
@@ -78,50 +76,37 @@ void OriginDimensionMdiWindow::setupToolbar() {
     toolbar_->setIconSize(QSize(20, 20));
 
     reloadAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::ArrowClockwise, IconUtils::DefaultIconColor),
+        IconUtils::createRecoloredIcon(Icon::ArrowClockwise, IconUtils::DefaultIconColor),
         tr("Reload"));
-    connect(reloadAction_, &QAction::triggered, this,
-            &EntityListMdiWindow::reload);
+    connect(reloadAction_, &QAction::triggered, this, &EntityListMdiWindow::reload);
 
     initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowClockwise));
 
     toolbar_->addSeparator();
 
     addAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::Add, IconUtils::DefaultIconColor),
-        tr("Add"));
+        IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor), tr("Add"));
     addAction_->setToolTip(tr("Add new origin dimension"));
-    connect(addAction_, &QAction::triggered, this,
-            &OriginDimensionMdiWindow::addNew);
+    connect(addAction_, &QAction::triggered, this, &OriginDimensionMdiWindow::addNew);
 
     editAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::Edit, IconUtils::DefaultIconColor),
-        tr("Edit"));
+        IconUtils::createRecoloredIcon(Icon::Edit, IconUtils::DefaultIconColor), tr("Edit"));
     editAction_->setToolTip(tr("Edit selected origin dimension"));
     editAction_->setEnabled(false);
-    connect(editAction_, &QAction::triggered, this,
-            &OriginDimensionMdiWindow::editSelected);
+    connect(editAction_, &QAction::triggered, this, &OriginDimensionMdiWindow::editSelected);
 
     deleteAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::Delete, IconUtils::DefaultIconColor),
-        tr("Delete"));
+        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor), tr("Delete"));
     deleteAction_->setToolTip(tr("Delete selected origin dimension"));
     deleteAction_->setEnabled(false);
-    connect(deleteAction_, &QAction::triggered, this,
-            &OriginDimensionMdiWindow::deleteSelected);
+    connect(deleteAction_, &QAction::triggered, this, &OriginDimensionMdiWindow::deleteSelected);
 
     historyAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::History, IconUtils::DefaultIconColor),
-        tr("History"));
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor), tr("History"));
     historyAction_->setToolTip(tr("View origin dimension history"));
     historyAction_->setEnabled(false);
-    connect(historyAction_, &QAction::triggered, this,
-            &OriginDimensionMdiWindow::viewHistorySelected);
+    connect(
+        historyAction_, &QAction::triggered, this, &OriginDimensionMdiWindow::viewHistorySelected);
 }
 
 void OriginDimensionMdiWindow::setupTable() {
@@ -135,28 +120,36 @@ void OriginDimensionMdiWindow::setupTable() {
     tableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
     tableView_->setSelectionMode(QAbstractItemView::SingleSelection);
     tableView_->setSortingEnabled(true);
-    tableView_->setItemDelegate(new EntityItemDelegate(
-        ClientOriginDimensionModel::columnStyles(), tableView_));
+    tableView_->setItemDelegate(
+        new EntityItemDelegate(ClientOriginDimensionModel::columnStyles(), tableView_));
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
 
-    initializeTableSettings(tableView_, model_,
-        ClientOriginDimensionModel::kSettingsGroup,
-        ClientOriginDimensionModel::defaultHiddenColumns(),
-        ClientOriginDimensionModel::kDefaultWindowSize, 1);
+    initializeTableSettings(tableView_,
+                            model_,
+                            ClientOriginDimensionModel::kSettingsGroup,
+                            ClientOriginDimensionModel::defaultHiddenColumns(),
+                            ClientOriginDimensionModel::kDefaultWindowSize,
+                            1);
 }
 
 void OriginDimensionMdiWindow::setupConnections() {
-    connect(model_, &ClientOriginDimensionModel::dataLoaded,
-            this, &OriginDimensionMdiWindow::onDataLoaded);
-    connect(model_, &ClientOriginDimensionModel::loadError,
-            this, &OriginDimensionMdiWindow::onLoadError);
+    connect(model_,
+            &ClientOriginDimensionModel::dataLoaded,
+            this,
+            &OriginDimensionMdiWindow::onDataLoaded);
+    connect(model_,
+            &ClientOriginDimensionModel::loadError,
+            this,
+            &OriginDimensionMdiWindow::onLoadError);
     connectModel(model_);
 
-    connect(tableView_->selectionModel(), &QItemSelectionModel::selectionChanged,
-            this, &OriginDimensionMdiWindow::onSelectionChanged);
-    connect(tableView_, &QTableView::doubleClicked,
-            this, &OriginDimensionMdiWindow::onDoubleClicked);
+    connect(tableView_->selectionModel(),
+            &QItemSelectionModel::selectionChanged,
+            this,
+            &OriginDimensionMdiWindow::onSelectionChanged);
+    connect(
+        tableView_, &QTableView::doubleClicked, this, &OriginDimensionMdiWindow::onDoubleClicked);
 }
 
 void OriginDimensionMdiWindow::doReload() {
@@ -169,8 +162,7 @@ void OriginDimensionMdiWindow::onDataLoaded() {
     emit statusChanged(tr("Loaded %1 origin dimensions").arg(model_->rowCount()));
 }
 
-void OriginDimensionMdiWindow::onLoadError(const QString& error_message,
-                                            const QString& details) {
+void OriginDimensionMdiWindow::onLoadError(const QString& error_message, const QString& details) {
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);
@@ -224,8 +216,7 @@ void OriginDimensionMdiWindow::viewHistorySelected() {
 
     auto sourceIndex = proxyModel_->mapToSource(selected.first());
     if (auto* dimension = model_->getDimension(sourceIndex.row())) {
-        BOOST_LOG_SEV(lg(), debug) << "Emitting showDimensionHistory for code: "
-                                   << dimension->code;
+        BOOST_LOG_SEV(lg(), debug) << "Emitting showDimensionHistory for code: " << dimension->code;
         emit showDimensionHistory(QString::fromStdString(dimension->code));
     }
 }
@@ -238,8 +229,8 @@ void OriginDimensionMdiWindow::deleteSelected() {
     }
 
     if (!clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot delete origin dimension while disconnected.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot delete origin dimension while disconnected.");
         return;
     }
 
@@ -256,20 +247,19 @@ void OriginDimensionMdiWindow::deleteSelected() {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Delete requested for " << codes.size()
-                               << " origin dimensions";
+    BOOST_LOG_SEV(lg(), debug) << "Delete requested for " << codes.size() << " origin dimensions";
 
     QString confirmMessage;
     if (codes.size() == 1) {
         confirmMessage = QString("Are you sure you want to delete origin dimension '%1'?")
-            .arg(QString::fromStdString(codes.front()));
+                             .arg(QString::fromStdString(codes.front()));
     } else {
-        confirmMessage = QString("Are you sure you want to delete %1 origin dimensions?")
-            .arg(codes.size());
+        confirmMessage =
+            QString("Are you sure you want to delete %1 origin dimensions?").arg(codes.size());
     }
 
-    auto reply = MessageBoxHelper::question(this, "Delete Origin Dimension",
-        confirmMessage, QMessageBox::Yes | QMessageBox::No);
+    auto reply = MessageBoxHelper::question(
+        this, "Delete Origin Dimension", confirmMessage, QMessageBox::Yes | QMessageBox::No);
 
     if (reply != QMessageBox::Yes) {
         BOOST_LOG_SEV(lg(), debug) << "Delete cancelled by user";
@@ -281,14 +271,16 @@ void OriginDimensionMdiWindow::deleteSelected() {
 
     auto task = [self, codes]() -> DeleteResult {
         DeleteResult results;
-        if (!self) return {};
+        if (!self)
+            return {};
 
-        BOOST_LOG_SEV(lg(), debug) << "Making batch delete request for "
-                                   << codes.size() << " origin dimensions";
+        BOOST_LOG_SEV(lg(), debug)
+            << "Making batch delete request for " << codes.size() << " origin dimensions";
 
         dq::messaging::delete_origin_dimension_request request;
         request.codes = codes;
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             BOOST_LOG_SEV(lg(), error) << "Failed to send batch delete request";
@@ -307,8 +299,7 @@ void OriginDimensionMdiWindow::deleteSelected() {
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, watcher]() {
         auto results = watcher->result();
         watcher->deleteLater();
 
@@ -324,8 +315,8 @@ void OriginDimensionMdiWindow::deleteSelected() {
                 success_count++;
                 emit self->dimensionDeleted(QString::fromStdString(code));
             } else {
-                BOOST_LOG_SEV(lg(), error) << "Origin dimension deletion failed: "
-                                           << code << " - " << message;
+                BOOST_LOG_SEV(lg(), error)
+                    << "Origin dimension deletion failed: " << code << " - " << message;
                 failure_count++;
                 if (first_error.isEmpty()) {
                     first_error = QString::fromStdString(message);
@@ -336,21 +327,21 @@ void OriginDimensionMdiWindow::deleteSelected() {
         self->model_->refresh();
 
         if (failure_count == 0) {
-            QString msg = success_count == 1
-                ? "Successfully deleted 1 origin dimension"
-                : QString("Successfully deleted %1 origin dimensions").arg(success_count);
+            QString msg =
+                success_count == 1 ?
+                    "Successfully deleted 1 origin dimension" :
+                    QString("Successfully deleted %1 origin dimensions").arg(success_count);
             emit self->statusChanged(msg);
         } else if (success_count == 0) {
             QString msg = QString("Failed to delete %1 %2: %3")
-                .arg(failure_count)
-                .arg(failure_count == 1 ? "origin dimension" : "origin dimensions")
-                .arg(first_error);
+                              .arg(failure_count)
+                              .arg(failure_count == 1 ? "origin dimension" : "origin dimensions")
+                              .arg(first_error);
             emit self->errorOccurred(msg);
             MessageBoxHelper::critical(self, "Delete Failed", msg);
         } else {
-            QString msg = QString("Deleted %1, failed to delete %2")
-                .arg(success_count)
-                .arg(failure_count);
+            QString msg =
+                QString("Deleted %1, failed to delete %2").arg(success_count).arg(failure_count);
             emit self->statusChanged(msg);
             MessageBoxHelper::warning(self, "Partial Success", msg);
         }

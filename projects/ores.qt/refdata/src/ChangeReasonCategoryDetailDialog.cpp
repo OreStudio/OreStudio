@@ -18,21 +18,20 @@
  *
  */
 #include "ores.qt/ChangeReasonCategoryDetailDialog.hpp"
-
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include <QVBoxLayout>
-#include <QToolBar>
-#include <QIcon>
-#include <QMdiSubWindow>
-#include <QMetaObject>
-#include "ui_ChangeReasonCategoryDetailDialog.h"
-#include "ores.qt/IconUtils.hpp"
+#include "ores.dq.api/messaging/change_management_protocol.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
+#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ProvenanceWidget.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.dq.api/messaging/change_management_protocol.hpp"
+#include "ui_ChangeReasonCategoryDetailDialog.h"
+#include <QFutureWatcher>
+#include <QIcon>
+#include <QMdiSubWindow>
+#include <QMetaObject>
+#include <QToolBar>
+#include <QVBoxLayout>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
@@ -40,11 +39,17 @@ using namespace ores::logging;
 using FutureResult = std::pair<bool, std::string>;
 
 ChangeReasonCategoryDetailDialog::ChangeReasonCategoryDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent), ui_(new Ui::ChangeReasonCategoryDetailDialog), isDirty_(false),
-      isAddMode_(false), isReadOnly_(false), clientManager_(nullptr),
-      currentHistoryIndex_(0),
-      firstVersionAction_(nullptr), prevVersionAction_(nullptr),
-      nextVersionAction_(nullptr), lastVersionAction_(nullptr) {
+    : DetailDialogBase(parent)
+    , ui_(new Ui::ChangeReasonCategoryDetailDialog)
+    , isDirty_(false)
+    , isAddMode_(false)
+    , isReadOnly_(false)
+    , clientManager_(nullptr)
+    , currentHistoryIndex_(0)
+    , firstVersionAction_(nullptr)
+    , prevVersionAction_(nullptr)
+    , nextVersionAction_(nullptr)
+    , lastVersionAction_(nullptr) {
 
     ui_->setupUi(this);
     WidgetUtils::setupComboBoxes(this);
@@ -56,8 +61,8 @@ ChangeReasonCategoryDetailDialog::ChangeReasonCategoryDetailDialog(QWidget* pare
 
     // Create Revert action
     revertAction_ = new QAction("Revert", this);
-    revertAction_->setIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
+    revertAction_->setIcon(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
+                                                          IconUtils::DefaultIconColor));
     revertAction_->setToolTip("Revert category to this historical version");
     toolBar_->addAction(revertAction_);
     revertAction_->setVisible(false);
@@ -66,38 +71,46 @@ ChangeReasonCategoryDetailDialog::ChangeReasonCategoryDetailDialog(QWidget* pare
     toolBar_->addSeparator();
 
     firstVersionAction_ = new QAction("First", this);
-    firstVersionAction_->setIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowPrevious, IconUtils::DefaultIconColor));
+    firstVersionAction_->setIcon(
+        IconUtils::createRecoloredIcon(Icon::ArrowPrevious, IconUtils::DefaultIconColor));
     firstVersionAction_->setToolTip(tr("First version"));
-    connect(firstVersionAction_, &QAction::triggered, this,
-        &ChangeReasonCategoryDetailDialog::onFirstVersionClicked);
+    connect(firstVersionAction_,
+            &QAction::triggered,
+            this,
+            &ChangeReasonCategoryDetailDialog::onFirstVersionClicked);
     toolBar_->addAction(firstVersionAction_);
     firstVersionAction_->setVisible(false);
 
     prevVersionAction_ = new QAction("Previous", this);
-    prevVersionAction_->setIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowLeft, IconUtils::DefaultIconColor));
+    prevVersionAction_->setIcon(
+        IconUtils::createRecoloredIcon(Icon::ArrowLeft, IconUtils::DefaultIconColor));
     prevVersionAction_->setToolTip(tr("Previous version"));
-    connect(prevVersionAction_, &QAction::triggered, this,
-        &ChangeReasonCategoryDetailDialog::onPrevVersionClicked);
+    connect(prevVersionAction_,
+            &QAction::triggered,
+            this,
+            &ChangeReasonCategoryDetailDialog::onPrevVersionClicked);
     toolBar_->addAction(prevVersionAction_);
     prevVersionAction_->setVisible(false);
 
     nextVersionAction_ = new QAction("Next", this);
-    nextVersionAction_->setIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowRight, IconUtils::DefaultIconColor));
+    nextVersionAction_->setIcon(
+        IconUtils::createRecoloredIcon(Icon::ArrowRight, IconUtils::DefaultIconColor));
     nextVersionAction_->setToolTip(tr("Next version"));
-    connect(nextVersionAction_, &QAction::triggered, this,
-        &ChangeReasonCategoryDetailDialog::onNextVersionClicked);
+    connect(nextVersionAction_,
+            &QAction::triggered,
+            this,
+            &ChangeReasonCategoryDetailDialog::onNextVersionClicked);
     toolBar_->addAction(nextVersionAction_);
     nextVersionAction_->setVisible(false);
 
     lastVersionAction_ = new QAction("Last", this);
-    lastVersionAction_->setIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowNext, IconUtils::DefaultIconColor));
+    lastVersionAction_->setIcon(
+        IconUtils::createRecoloredIcon(Icon::ArrowNext, IconUtils::DefaultIconColor));
     lastVersionAction_->setToolTip(tr("Last version"));
-    connect(lastVersionAction_, &QAction::triggered, this,
-        &ChangeReasonCategoryDetailDialog::onLastVersionClicked);
+    connect(lastVersionAction_,
+            &QAction::triggered,
+            this,
+            &ChangeReasonCategoryDetailDialog::onLastVersionClicked);
     toolBar_->addAction(lastVersionAction_);
     lastVersionAction_->setVisible(false);
 
@@ -116,18 +129,28 @@ ChangeReasonCategoryDetailDialog::ChangeReasonCategoryDetailDialog(QWidget* pare
         IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor));
     ui_->closeButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
-    connect(ui_->saveButton, &QPushButton::clicked, this,
-        &ChangeReasonCategoryDetailDialog::onSaveClicked);
-    connect(ui_->deleteButton, &QPushButton::clicked, this,
-        &ChangeReasonCategoryDetailDialog::onDeleteClicked);
-    connect(ui_->closeButton, &QPushButton::clicked, this,
-        &ChangeReasonCategoryDetailDialog::onCloseClicked);
+    connect(ui_->saveButton,
+            &QPushButton::clicked,
+            this,
+            &ChangeReasonCategoryDetailDialog::onSaveClicked);
+    connect(ui_->deleteButton,
+            &QPushButton::clicked,
+            this,
+            &ChangeReasonCategoryDetailDialog::onDeleteClicked);
+    connect(ui_->closeButton,
+            &QPushButton::clicked,
+            this,
+            &ChangeReasonCategoryDetailDialog::onCloseClicked);
 
     // Connect signals for editable fields to detect changes
-    connect(ui_->codeEdit, &QLineEdit::textChanged, this,
-        &ChangeReasonCategoryDetailDialog::onFieldChanged);
-    connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this,
-        &ChangeReasonCategoryDetailDialog::onFieldChanged);
+    connect(ui_->codeEdit,
+            &QLineEdit::textChanged,
+            this,
+            &ChangeReasonCategoryDetailDialog::onFieldChanged);
+    connect(ui_->descriptionEdit,
+            &QPlainTextEdit::textChanged,
+            this,
+            &ChangeReasonCategoryDetailDialog::onFieldChanged);
 
     // Initially disable save button
     updateSaveButtonState();
@@ -137,9 +160,15 @@ ChangeReasonCategoryDetailDialog::~ChangeReasonCategoryDetailDialog() {
     delete ui_;
 }
 
-QTabWidget* ChangeReasonCategoryDetailDialog::tabWidget() const { return ui_->tabWidget; }
-QWidget* ChangeReasonCategoryDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
-ProvenanceWidget* ChangeReasonCategoryDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
+QTabWidget* ChangeReasonCategoryDetailDialog::tabWidget() const {
+    return ui_->tabWidget;
+}
+QWidget* ChangeReasonCategoryDetailDialog::provenanceTab() const {
+    return ui_->provenanceTab;
+}
+ProvenanceWidget* ChangeReasonCategoryDetailDialog::provenanceWidget() const {
+    return ui_->provenanceWidget;
+}
 
 void ChangeReasonCategoryDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
@@ -156,8 +185,12 @@ void ChangeReasonCategoryDetailDialog::setCategory(
     ui_->codeEdit->setText(QString::fromStdString(category.code));
     ui_->descriptionEdit->setPlainText(QString::fromStdString(category.description));
 
-    populateProvenance(category.version, category.modified_by, category.performed_by,
-                       category.recorded_at, "", category.change_commentary);
+    populateProvenance(category.version,
+                       category.modified_by,
+                       category.performed_by,
+                       category.recorded_at,
+                       "",
+                       category.change_commentary);
 
     isDirty_ = false;
     emit isDirtyChanged(false);
@@ -259,13 +292,12 @@ void ChangeReasonCategoryDetailDialog::updateSaveButtonState() {
 }
 
 void ChangeReasonCategoryDetailDialog::displayCurrentVersion() {
-    if (currentHistoryIndex_ >= 0 &&
-        currentHistoryIndex_ < static_cast<int>(history_.size())) {
+    if (currentHistoryIndex_ >= 0 && currentHistoryIndex_ < static_cast<int>(history_.size())) {
         const auto& version = history_[currentHistoryIndex_];
         setCategory(version);
         setWindowTitle(tr("Category Details - Version %1 of %2")
-            .arg(version.version)
-            .arg(history_.front().version));
+                           .arg(version.version)
+                           .arg(history_.front().version));
     }
 }
 
@@ -329,72 +361,68 @@ void ChangeReasonCategoryDetailDialog::onSaveClicked() {
     // Validate code
     if (ui_->codeEdit->text().trimmed().isEmpty()) {
         BOOST_LOG_SEV(lg(), warn) << "Validation failed: code is empty";
-        MessageBoxHelper::warning(this, "Validation Error",
-            "Category code is required.");
+        MessageBoxHelper::warning(this, "Validation Error", "Category code is required.");
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Save clicked for category: "
-                               << currentCategory_.code;
+    BOOST_LOG_SEV(lg(), debug) << "Save clicked for category: " << currentCategory_.code;
 
-    const auto crOpType = isAddMode_
-        ? ChangeReasonDialog::OperationType::Create
-        : ChangeReasonDialog::OperationType::Amend;
-    const auto crSel = promptChangeReason(crOpType, isDirty_,
-        isAddMode_ ? "system" : "common");
-    if (!crSel) return;
+    const auto crOpType = isAddMode_ ? ChangeReasonDialog::OperationType::Create :
+                                       ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, isDirty_, isAddMode_ ? "system" : "common");
+    if (!crSel)
+        return;
 
     QPointer<ChangeReasonCategoryDetailDialog> self = this;
     dq::domain::change_reason_category categoryToSave = getCategory();
     categoryToSave.change_commentary = crSel->commentary;
 
-    QFuture<FutureResult> future =
-        QtConcurrent::run([self, categoryToSave]() -> FutureResult {
-            if (!self) return {false, ""};
+    QFuture<FutureResult> future = QtConcurrent::run([self, categoryToSave]() -> FutureResult {
+        if (!self)
+            return {false, ""};
 
-            BOOST_LOG_SEV(lg(), debug) << "Sending save category request for: "
-                                       << categoryToSave.code;
+        BOOST_LOG_SEV(lg(), debug) << "Sending save category request for: " << categoryToSave.code;
 
-            dq::messaging::save_change_reason_category_request request;
-            request.data = categoryToSave;
+        dq::messaging::save_change_reason_category_request request;
+        request.data = categoryToSave;
 
-            auto response_result =
-                self->clientManager_->process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
-            if (!response_result) {
-                return {false, "Failed to communicate with server"};
-            }
+        if (!response_result) {
+            return {false, "Failed to communicate with server"};
+        }
 
 
-            return {response_result->success, response_result->message};
-        });
+        return {response_result->success, response_result->message};
+    });
 
     auto* watcher = new QFutureWatcher<FutureResult>(self);
-    connect(watcher, &QFutureWatcher<FutureResult>::finished, self,
-        [self, watcher, categoryToSave]() {
-        if (!self) return;
+    connect(
+        watcher, &QFutureWatcher<FutureResult>::finished, self, [self, watcher, categoryToSave]() {
+            if (!self)
+                return;
 
-        auto [success, message] = watcher->result();
-        watcher->deleteLater();
+            auto [success, message] = watcher->result();
+            watcher->deleteLater();
 
-        if (success) {
-            BOOST_LOG_SEV(lg(), debug) << "Category saved successfully";
+            if (success) {
+                BOOST_LOG_SEV(lg(), debug) << "Category saved successfully";
 
-            self->isDirty_ = false;
-            emit self->isDirtyChanged(false);
-            self->updateSaveButtonState();
+                self->isDirty_ = false;
+                emit self->isDirtyChanged(false);
+                self->updateSaveButtonState();
 
-            emit self->categorySaved(QString::fromStdString(categoryToSave.code));
-            self->notifySaveSuccess(tr("Category '%1' saved")
-                .arg(QString::fromStdString(categoryToSave.code)));
-        } else {
-            BOOST_LOG_SEV(lg(), error) << "Category save failed: " << message;
-            emit self->errorMessage(QString("Failed to save category: %1")
-                .arg(QString::fromStdString(message)));
-            MessageBoxHelper::critical(self, "Save Failed",
-                QString::fromStdString(message));
-        }
-    });
+                emit self->categorySaved(QString::fromStdString(categoryToSave.code));
+                self->notifySaveSuccess(
+                    tr("Category '%1' saved").arg(QString::fromStdString(categoryToSave.code)));
+            } else {
+                BOOST_LOG_SEV(lg(), error) << "Category save failed: " << message;
+                emit self->errorMessage(
+                    QString("Failed to save category: %1").arg(QString::fromStdString(message)));
+                MessageBoxHelper::critical(self, "Save Failed", QString::fromStdString(message));
+            }
+        });
 
     watcher->setFuture(future);
 }
@@ -411,13 +439,14 @@ void ChangeReasonCategoryDetailDialog::onDeleteClicked() {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Delete request for category: "
-                               << currentCategory_.code;
+    BOOST_LOG_SEV(lg(), debug) << "Delete request for category: " << currentCategory_.code;
 
-    auto reply = MessageBoxHelper::question(this, "Delete Category",
-        QString("Are you sure you want to delete category '%1'?")
-            .arg(QString::fromStdString(currentCategory_.code)),
-        QMessageBox::Yes | QMessageBox::No);
+    auto reply =
+        MessageBoxHelper::question(this,
+                                   "Delete Category",
+                                   QString("Are you sure you want to delete category '%1'?")
+                                       .arg(QString::fromStdString(currentCategory_.code)),
+                                   QMessageBox::Yes | QMessageBox::No);
 
     if (reply != QMessageBox::Yes) {
         BOOST_LOG_SEV(lg(), debug) << "Delete cancelled by user";
@@ -425,39 +454,39 @@ void ChangeReasonCategoryDetailDialog::onDeleteClicked() {
     }
 
     {
-        const auto crSel = promptChangeReason(
-            ChangeReasonDialog::OperationType::Delete, true, "common");
-        if (!crSel) return;
+        const auto crSel =
+            promptChangeReason(ChangeReasonDialog::OperationType::Delete, true, "common");
+        if (!crSel)
+            return;
     }
 
     QPointer<ChangeReasonCategoryDetailDialog> self = this;
     const std::string code = currentCategory_.code;
 
-    QFuture<FutureResult> future =
-        QtConcurrent::run([self, code]() -> FutureResult {
-            if (!self) return {false, ""};
+    QFuture<FutureResult> future = QtConcurrent::run([self, code]() -> FutureResult {
+        if (!self)
+            return {false, ""};
 
-            BOOST_LOG_SEV(lg(), debug) << "Sending delete category request for: "
-                                       << code;
+        BOOST_LOG_SEV(lg(), debug) << "Sending delete category request for: " << code;
 
-            dq::messaging::delete_change_reason_category_request request;
-            request.codes.push_back({code});
+        dq::messaging::delete_change_reason_category_request request;
+        request.codes.push_back({code});
 
-            auto response_result =
-                self->clientManager_->process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
-            if (!response_result) {
-                return {false, "Failed to communicate with server"};
-            }
+        if (!response_result) {
+            return {false, "Failed to communicate with server"};
+        }
 
 
-            return {response_result->success, response_result->message};
-        });
+        return {response_result->success, response_result->message};
+    });
 
     auto* watcher = new QFutureWatcher<FutureResult>(self);
-    connect(watcher, &QFutureWatcher<FutureResult>::finished, self,
-        [self, watcher, code]() {
-        if (!self) return;
+    connect(watcher, &QFutureWatcher<FutureResult>::finished, self, [self, watcher, code]() {
+        if (!self)
+            return;
 
         auto [success, message] = watcher->result();
         watcher->deleteLater();
@@ -465,17 +494,16 @@ void ChangeReasonCategoryDetailDialog::onDeleteClicked() {
         if (success) {
             BOOST_LOG_SEV(lg(), debug) << "Category deleted successfully";
 
-            emit self->statusMessage(QString("Successfully deleted category: %1")
-                .arg(QString::fromStdString(code)));
+            emit self->statusMessage(
+                QString("Successfully deleted category: %1").arg(QString::fromStdString(code)));
 
             emit self->categoryDeleted(QString::fromStdString(code));
             self->requestClose();
         } else {
             BOOST_LOG_SEV(lg(), error) << "Category delete failed: " << message;
-            emit self->errorMessage(QString("Failed to delete category: %1")
-                .arg(QString::fromStdString(message)));
-            MessageBoxHelper::critical(self, "Delete Failed",
-                QString::fromStdString(message));
+            emit self->errorMessage(
+                QString("Failed to delete category: %1").arg(QString::fromStdString(message)));
+            MessageBoxHelper::critical(self, "Delete Failed", QString::fromStdString(message));
         }
     });
 

@@ -20,16 +20,16 @@
 #ifndef ORES_QT_COMPUTE_TASK_VIEW_MODEL_HPP
 #define ORES_QT_COMPUTE_TASK_VIEW_MODEL_HPP
 
-#include <vector>
-#include <QFutureWatcher>
-#include <QAbstractTableModel>
+#include "ores.compute.api/domain/batch.hpp"
+#include "ores.compute.api/domain/result.hpp"
+#include "ores.compute.api/domain/workunit.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/AbstractClientModel.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/HostDisplayNameCache.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.compute.api/domain/batch.hpp"
-#include "ores.compute.api/domain/workunit.hpp"
-#include "ores.compute.api/domain/result.hpp"
+#include <QAbstractTableModel>
+#include <QFutureWatcher>
+#include <vector>
 
 namespace ores::qt {
 
@@ -37,11 +37,11 @@ namespace ores::qt {
  * @brief A joined view row: one result with its workunit and batch context.
  */
 struct compute_task {
-    compute::domain::result   result;
+    compute::domain::result result;
     compute::domain::workunit workunit;
-    compute::domain::batch    batch;
+    compute::domain::batch batch;
     int batch_ordinal = 0; ///< 1-based position in the loaded batch list
-    int task_ordinal  = 0; ///< 1-based position within its batch
+    int task_ordinal = 0;  ///< 1-based position within its batch
 };
 
 /**
@@ -55,8 +55,7 @@ class ComputeTaskViewModel final : public AbstractClientModel {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.compute_task_view_model";
+    inline static std::string_view logger_name = "ores.qt.compute_task_view_model";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -65,19 +64,9 @@ private:
     }
 
 public:
-    enum Column {
-        Label,
-        State,
-        Outcome,
-        Host,
-        Duration,
-        Batch,
-        Received,
-        ColumnCount
-    };
+    enum Column { Label, State, Outcome, Host, Duration, Batch, Received, ColumnCount };
 
-    explicit ComputeTaskViewModel(ClientManager* clientManager,
-        QObject* parent = nullptr);
+    explicit ComputeTaskViewModel(ClientManager* clientManager, QObject* parent = nullptr);
     ~ComputeTaskViewModel() override = default;
 
     static QString format_state(int server_state);
@@ -86,10 +75,9 @@ public:
     // QAbstractTableModel interface
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
-    QVariant data(const QModelIndex& index,
-        int role = Qt::DisplayRole) const override;
-    QVariant headerData(int section, Qt::Orientation orientation,
-        int role = Qt::DisplayRole) const override;
+    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+    QVariant
+    headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
     /**
      * @brief Fetch and join all batches, workunits, and results.

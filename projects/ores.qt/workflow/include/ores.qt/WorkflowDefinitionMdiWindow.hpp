@@ -19,17 +19,17 @@
 #ifndef ORES_QT_WORKFLOW_DEFINITION_MDI_WINDOW_HPP
 #define ORES_QT_WORKFLOW_DEFINITION_MDI_WINDOW_HPP
 
-#include <vector>
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/EntityListMdiWindow.hpp"
+#include "ores.workflow.api/messaging/workflow_query_protocol.hpp"
 #include <QAction>
+#include <QFutureWatcher>
 #include <QGroupBox>
 #include <QSplitter>
 #include <QTableWidget>
 #include <QToolBar>
-#include <QFutureWatcher>
-#include "ores.qt/ClientManager.hpp"
-#include "ores.qt/EntityListMdiWindow.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.workflow.api/messaging/workflow_query_protocol.hpp"
+#include <vector>
 
 namespace ores::qt {
 
@@ -44,8 +44,7 @@ class WorkflowDefinitionMdiWindow final : public EntityListMdiWindow {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.workflow_definition_mdi_window";
+    inline static std::string_view logger_name = "ores.qt.workflow_definition_mdi_window";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -56,13 +55,11 @@ private:
     struct FetchResult {
         bool success = false;
         QString error;
-        std::vector<ores::workflow::messaging::workflow_definition_summary>
-            definitions;
+        std::vector<ores::workflow::messaging::workflow_definition_summary> definitions;
     };
 
 public:
-    explicit WorkflowDefinitionMdiWindow(ClientManager* clientManager,
-                                         QWidget* parent = nullptr);
+    explicit WorkflowDefinitionMdiWindow(ClientManager* clientManager, QWidget* parent = nullptr);
     ~WorkflowDefinitionMdiWindow() override = default;
 
 signals:
@@ -84,11 +81,9 @@ private:
     void setupUi();
     void setupToolbar();
     void populateDefinitions(
-        const std::vector<ores::workflow::messaging::workflow_definition_summary>&
-            definitions);
+        const std::vector<ores::workflow::messaging::workflow_definition_summary>& definitions);
     void populateSteps(
-        const std::vector<ores::workflow::messaging::workflow_step_definition_summary>&
-            steps);
+        const std::vector<ores::workflow::messaging::workflow_step_definition_summary>& steps);
 
     ClientManager* clientManager_;
 
@@ -101,8 +96,7 @@ private:
     QTableWidget* stepsTable_;
 
     QFutureWatcher<FetchResult>* watcher_;
-    std::vector<ores::workflow::messaging::workflow_definition_summary>
-        currentDefinitions_;
+    std::vector<ores::workflow::messaging::workflow_definition_summary> currentDefinitions_;
 };
 
 }

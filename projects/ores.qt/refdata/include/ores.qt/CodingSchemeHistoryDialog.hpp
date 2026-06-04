@@ -20,12 +20,12 @@
 #ifndef ORES_QT_CODING_SCHEME_HISTORY_DIALOG_HPP
 #define ORES_QT_CODING_SCHEME_HISTORY_DIALOG_HPP
 
-#include <QWidget>
-#include <QToolBar>
-#include <QTableWidget>
-#include "ores.qt/ClientManager.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.dq.api/domain/coding_scheme.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include <QTableWidget>
+#include <QToolBar>
+#include <QWidget>
 
 namespace Ui {
 class CodingSchemeHistoryDialog;
@@ -37,8 +37,7 @@ class CodingSchemeHistoryDialog final : public QWidget {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.coding_scheme_history_dialog";
+    inline static std::string_view logger_name = "ores.qt.coding_scheme_history_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -47,10 +46,9 @@ private:
     }
 
 public:
-    explicit CodingSchemeHistoryDialog(
-        const QString& code,
-        ClientManager* clientManager,
-        QWidget* parent = nullptr);
+    explicit CodingSchemeHistoryDialog(const QString& code,
+                                       ClientManager* clientManager,
+                                       QWidget* parent = nullptr);
     ~CodingSchemeHistoryDialog() override;
 
     void loadHistory();

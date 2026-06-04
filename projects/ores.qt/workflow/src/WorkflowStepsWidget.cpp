@@ -17,17 +17,16 @@
  *
  */
 #include "ores.qt/WorkflowStepsWidget.hpp"
-
-#include <algorithm>
-#include <QPainter>
-#include <QVBoxLayout>
-#include <QHeaderView>
-#include <QApplication>
-#include <QStyledItemDelegate>
-#include <QStyleOptionViewItem>
-#include <QtConcurrent>
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/DelegatePaintUtils.hpp"
+#include <QApplication>
+#include <QHeaderView>
+#include <QPainter>
+#include <QStyleOptionViewItem>
+#include <QStyledItemDelegate>
+#include <QVBoxLayout>
+#include <QtConcurrent>
+#include <algorithm>
 
 namespace ores::qt {
 
@@ -37,27 +36,19 @@ namespace wf = ores::workflow::messaging;
 namespace {
 
 enum ItemRole {
-    BadgeTagRole   = Qt::UserRole,
+    BadgeTagRole = Qt::UserRole,
     BadgeColorRole = Qt::UserRole + 1,
 };
 
-enum class Col {
-    Index = 0,
-    Name,
-    Status,
-    Warnings,
-    StartedAt,
-    CompletedAt,
-    Error,
-    Count
-};
+enum class Col { Index = 0, Name, Status, Warnings, StartedAt, CompletedAt, Error, Count };
 
 class BadgeDelegate final : public QStyledItemDelegate {
 public:
     explicit BadgeDelegate(QObject* parent = nullptr)
         : QStyledItemDelegate(parent) {}
 
-    void paint(QPainter* painter, const QStyleOptionViewItem& option,
+    void paint(QPainter* painter,
+               const QStyleOptionViewItem& option,
                const QModelIndex& index) const override {
         if (index.data(BadgeTagRole).toString() != QStringLiteral("badge")) {
             QStyledItemDelegate::paint(painter, option, index);
@@ -65,22 +56,19 @@ public:
         }
         QStyleOptionViewItem opt = option;
         initStyleOption(&opt, index);
-        QApplication::style()->drawPrimitive(
-            QStyle::PE_PanelItemViewItem, &opt, painter);
+        QApplication::style()->drawPrimitive(QStyle::PE_PanelItemViewItem, &opt, painter);
 
         const QString text = index.data(Qt::DisplayRole).toString();
-        const QColor  bg   = index.data(BadgeColorRole).value<QColor>();
-        const QColor  fg   = color_constants::level_text;
+        const QColor bg = index.data(BadgeColorRole).value<QColor>();
+        const QColor fg = color_constants::level_text;
 
         QFont badgeFont = opt.font;
         badgeFont.setPointSize(qRound(badgeFont.pointSize() * 0.8));
         badgeFont.setBold(true);
-        DelegatePaintUtils::draw_centered_badge(
-            painter, opt.rect, text, bg, fg, badgeFont);
+        DelegatePaintUtils::draw_centered_badge(painter, opt.rect, text, bg, fg, badgeFont);
     }
 
-    QSize sizeHint(const QStyleOptionViewItem& option,
-                   const QModelIndex& index) const override {
+    QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override {
         QSize s = QStyledItemDelegate::sizeHint(option, index);
         if (index.data(BadgeTagRole).toString() == QStringLiteral("badge"))
             s = QSize(qMax(s.width(), 90), qMax(s.height(), 24));
@@ -90,7 +78,7 @@ public:
 
 QTableWidgetItem* make_badge_item(const QString& text, const QColor& bg) {
     auto* item = new QTableWidgetItem(text);
-    item->setData(BadgeTagRole,   QStringLiteral("badge"));
+    item->setData(BadgeTagRole, QStringLiteral("badge"));
     item->setData(BadgeColorRole, bg);
     item->setFlags(item->flags() & ~Qt::ItemIsEditable);
     return item;
@@ -110,8 +98,7 @@ QColor status_color(const QString& status) {
         return color_constants::level_warn;
     if (status == QStringLiteral("failed"))
         return color_constants::level_error;
-    if (status == QStringLiteral("in_progress") ||
-        status == QStringLiteral("compensating"))
+    if (status == QStringLiteral("in_progress") || status == QStringLiteral("compensating"))
         return color_constants::level_warn;
     if (status == QStringLiteral("compensated"))
         return color_constants::level_debug;
@@ -120,19 +107,16 @@ QColor status_color(const QString& status) {
 
 int count_issues(const std::vector<wf::workflow_step_summary>& steps, int row) {
     const auto& log = steps[static_cast<std::size_t>(row)].log;
-    return static_cast<int>(std::count_if(log.begin(), log.end(),
-        [](const wf::step_log_entry& e) {
-            return e.level == wf::step_log_level::warn ||
-                   e.level == wf::step_log_level::error;
-        }));
+    return static_cast<int>(std::count_if(log.begin(), log.end(), [](const wf::step_log_entry& e) {
+        return e.level == wf::step_log_level::warn || e.level == wf::step_log_level::error;
+    }));
 }
 
 constexpr int kRefreshIntervalMs = 3000;
 
-}  // namespace
+} // namespace
 
-WorkflowStepsWidget::WorkflowStepsWidget(ClientManager* clientManager,
-    QWidget* parent)
+WorkflowStepsWidget::WorkflowStepsWidget(ClientManager* clientManager, QWidget* parent)
     : QWidget(parent)
     , clientManager_(clientManager)
     , headerLabel_(nullptr)
@@ -143,11 +127,12 @@ WorkflowStepsWidget::WorkflowStepsWidget(ClientManager* clientManager,
     setupUi();
 
     refreshTimer_->setInterval(kRefreshIntervalMs);
-    connect(refreshTimer_, &QTimer::timeout,
-            this, &WorkflowStepsWidget::refresh);
+    connect(refreshTimer_, &QTimer::timeout, this, &WorkflowStepsWidget::refresh);
 
-    connect(watcher_, &QFutureWatcher<FetchResult>::finished,
-            this, &WorkflowStepsWidget::onFetchFinished);
+    connect(watcher_,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            &WorkflowStepsWidget::onFetchFinished);
 }
 
 void WorkflowStepsWidget::setupUi() {
@@ -158,11 +143,14 @@ void WorkflowStepsWidget::setupUi() {
     layout->addWidget(headerLabel_);
 
     stepsTable_ = new QTableWidget(0, static_cast<int>(Col::Count), this);
-    stepsTable_->setHorizontalHeaderLabels(
-        {tr("#"), tr("Name"), tr("Status"), tr("Warnings"),
-         tr("Started At"), tr("Completed At"), tr("Error")});
-    stepsTable_->horizontalHeader()->setSectionResizeMode(
-        QHeaderView::ResizeToContents);
+    stepsTable_->setHorizontalHeaderLabels({tr("#"),
+                                            tr("Name"),
+                                            tr("Status"),
+                                            tr("Warnings"),
+                                            tr("Started At"),
+                                            tr("Completed At"),
+                                            tr("Error")});
+    stepsTable_->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     stepsTable_->horizontalHeader()->setStretchLastSection(true);
     stepsTable_->setSelectionBehavior(QAbstractItemView::SelectRows);
     stepsTable_->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -172,12 +160,11 @@ void WorkflowStepsWidget::setupUi() {
 
     connect(stepsTable_->selectionModel(),
             &QItemSelectionModel::currentRowChanged,
-            this, [this](const QModelIndex& current, const QModelIndex&) {
+            this,
+            [this](const QModelIndex& current, const QModelIndex&) {
                 const int row = current.row();
-                if (row >= 0 &&
-                    row < static_cast<int>(currentSteps_.size()))
-                    emit stepSelected(currentSteps_[
-                        static_cast<std::size_t>(row)]);
+                if (row >= 0 && row < static_cast<int>(currentSteps_.size()))
+                    emit stepSelected(currentSteps_[static_cast<std::size_t>(row)]);
             });
 }
 
@@ -199,9 +186,12 @@ void WorkflowStepsWidget::setInstance(const QUuid& instanceId) {
 }
 
 void WorkflowStepsWidget::refresh() {
-    if (instanceId_.isNull() || terminalReached_) return;
-    if (!clientManager_ || !clientManager_->isConnected()) return;
-    if (watcher_->isRunning()) return;  // previous fetch still in flight
+    if (instanceId_.isNull() || terminalReached_)
+        return;
+    if (!clientManager_ || !clientManager_->isConnected())
+        return;
+    if (watcher_->isRunning())
+        return; // previous fetch still in flight
 
     QPointer<WorkflowStepsWidget> self = this;
     const std::string id = instanceId_.toString(QUuid::WithoutBraces).toStdString();
@@ -231,25 +221,22 @@ void WorkflowStepsWidget::setMaxVisibleSteps(int n) {
 }
 
 void WorkflowStepsWidget::preSeed(int count) {
-    if (count <= 0) return;
+    if (count <= 0)
+        return;
     preSeedCount_ = count;
     stepsTable_->setRowCount(count);
     for (int row = 0; row < count; ++row) {
-        stepsTable_->setItem(row, static_cast<int>(Col::Index),
-            make_item(QString::number(row)));
-        stepsTable_->setItem(row, static_cast<int>(Col::Name),
-            make_item(QStringLiteral("—")));
-        stepsTable_->setItem(row, static_cast<int>(Col::Status),
-            make_badge_item(QStringLiteral("pending"),
-                color_constants::level_trace));
-        stepsTable_->setItem(row, static_cast<int>(Col::Warnings),
-            make_item(QStringLiteral("—")));
-        stepsTable_->setItem(row, static_cast<int>(Col::StartedAt),
-            make_item(QStringLiteral("—")));
-        stepsTable_->setItem(row, static_cast<int>(Col::CompletedAt),
-            make_item(QStringLiteral("—")));
-        stepsTable_->setItem(row, static_cast<int>(Col::Error),
-            make_item(QString{}));
+        stepsTable_->setItem(row, static_cast<int>(Col::Index), make_item(QString::number(row)));
+        stepsTable_->setItem(row, static_cast<int>(Col::Name), make_item(QStringLiteral("—")));
+        stepsTable_->setItem(
+            row,
+            static_cast<int>(Col::Status),
+            make_badge_item(QStringLiteral("pending"), color_constants::level_trace));
+        stepsTable_->setItem(row, static_cast<int>(Col::Warnings), make_item(QStringLiteral("—")));
+        stepsTable_->setItem(row, static_cast<int>(Col::StartedAt), make_item(QStringLiteral("—")));
+        stepsTable_->setItem(
+            row, static_cast<int>(Col::CompletedAt), make_item(QStringLiteral("—")));
+        stepsTable_->setItem(row, static_cast<int>(Col::Error), make_item(QString{}));
     }
     headerLabel_->setText(tr("%1 step(s) queued").arg(count));
 }
@@ -258,28 +245,23 @@ void WorkflowStepsWidget::onFetchFinished() {
     const auto result = watcher_->result();
 
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), warn)
-            << "Step fetch failed: " << result.error.toStdString();
-        headerLabel_->setText(
-            tr("Error loading steps: %1").arg(result.error));
+        BOOST_LOG_SEV(lg(), warn) << "Step fetch failed: " << result.error.toStdString();
+        headerLabel_->setText(tr("Error loading steps: %1").arg(result.error));
         return;
     }
 
     populateSteps(result.steps);
 }
 
-void WorkflowStepsWidget::populateSteps(
-    const std::vector<wf::workflow_step_summary>& steps) {
+void WorkflowStepsWidget::populateSteps(const std::vector<wf::workflow_step_summary>& steps) {
 
     auto visible = steps;
 
     // Apply maxVisibleSteps limit (take the last N steps).
-    if (maxVisibleSteps_ > 0 &&
-        static_cast<int>(visible.size()) > maxVisibleSteps_) {
+    if (maxVisibleSteps_ > 0 && static_cast<int>(visible.size()) > maxVisibleSteps_) {
         visible.erase(visible.begin(),
-            visible.begin() +
-                static_cast<std::ptrdiff_t>(
-                    visible.size()) - maxVisibleSteps_);
+                      visible.begin() + static_cast<std::ptrdiff_t>(visible.size()) -
+                          maxVisibleSteps_);
     }
 
     currentSteps_ = visible;
@@ -294,45 +276,45 @@ void WorkflowStepsWidget::populateSteps(
     for (int i = 0; i < static_cast<int>(visible.size()); ++i) {
         const auto& step = visible[static_cast<std::size_t>(i)];
         const int row = inPlace ? step.step_index : i;
-        if (row < 0 || row >= stepsTable_->rowCount()) continue;
+        if (row < 0 || row >= stepsTable_->rowCount())
+            continue;
 
-        stepsTable_->setItem(row, static_cast<int>(Col::Index),
-            make_item(QString::number(step.step_index)));
-        stepsTable_->setItem(row, static_cast<int>(Col::Name),
-            make_item(QString::fromStdString(step.name)));
+        stepsTable_->setItem(
+            row, static_cast<int>(Col::Index), make_item(QString::number(step.step_index)));
+        stepsTable_->setItem(
+            row, static_cast<int>(Col::Name), make_item(QString::fromStdString(step.name)));
 
         const QString status = QString::fromStdString(step.status);
-        stepsTable_->setItem(row, static_cast<int>(Col::Status),
-            make_badge_item(status, status_color(status)));
+        stepsTable_->setItem(
+            row, static_cast<int>(Col::Status), make_badge_item(status, status_color(status)));
 
         const int issues = count_issues(visible, i);
         if (issues > 0) {
-            const bool has_errors = std::any_of(
-                step.log.begin(), step.log.end(),
-                [](const wf::step_log_entry& e) {
+            const bool has_errors =
+                std::any_of(step.log.begin(), step.log.end(), [](const wf::step_log_entry& e) {
                     return e.level == wf::step_log_level::error;
                 });
-            const QColor badge_col = has_errors
-                ? color_constants::level_error
-                : color_constants::level_warn;
+            const QColor badge_col =
+                has_errors ? color_constants::level_error : color_constants::level_warn;
             const QString badge_text = tr("%1 issue(s)").arg(issues);
-            stepsTable_->setItem(row, static_cast<int>(Col::Warnings),
-                make_badge_item(badge_text, badge_col));
+            stepsTable_->setItem(
+                row, static_cast<int>(Col::Warnings), make_badge_item(badge_text, badge_col));
         } else {
-            stepsTable_->setItem(row, static_cast<int>(Col::Warnings),
-                make_item(QStringLiteral("—")));
+            stepsTable_->setItem(
+                row, static_cast<int>(Col::Warnings), make_item(QStringLiteral("—")));
         }
 
-        stepsTable_->setItem(row, static_cast<int>(Col::StartedAt),
-            make_item(step.started_at
-                ? QString::fromStdString(*step.started_at)
-                : QStringLiteral("—")));
-        stepsTable_->setItem(row, static_cast<int>(Col::CompletedAt),
-            make_item(step.completed_at
-                ? QString::fromStdString(*step.completed_at)
-                : QStringLiteral("—")));
-        stepsTable_->setItem(row, static_cast<int>(Col::Error),
-            make_item(QString::fromStdString(step.error)));
+        stepsTable_->setItem(row,
+                             static_cast<int>(Col::StartedAt),
+                             make_item(step.started_at ? QString::fromStdString(*step.started_at) :
+                                                         QStringLiteral("—")));
+        stepsTable_->setItem(row,
+                             static_cast<int>(Col::CompletedAt),
+                             make_item(step.completed_at ?
+                                           QString::fromStdString(*step.completed_at) :
+                                           QStringLiteral("—")));
+        stepsTable_->setItem(
+            row, static_cast<int>(Col::Error), make_item(QString::fromStdString(step.error)));
     }
 
     stepsTable_->resizeColumnsToContents();
@@ -340,19 +322,18 @@ void WorkflowStepsWidget::populateSteps(
 
     // Update header label: show running step or terminal state.
     const int total = static_cast<int>(steps.size());
-    int runningIdx   = -1;
-    int failedIdx    = -1;
+    int runningIdx = -1;
+    int failedIdx = -1;
     int completedCount = 0;
-    int warnedCount    = 0;
+    int warnedCount = 0;
     QString failedError;
 
     for (const auto& s : steps) {
         const auto st = QString::fromStdString(s.status);
-        if (st == QStringLiteral("in_progress") ||
-            st == QStringLiteral("compensating"))
+        if (st == QStringLiteral("in_progress") || st == QStringLiteral("compensating"))
             runningIdx = s.step_index;
         else if (st == QStringLiteral("failed")) {
-            failedIdx  = s.step_index;
+            failedIdx = s.step_index;
             failedError = QString::fromStdString(s.error);
         } else if (st == QStringLiteral("completed_with_warnings")) {
             ++completedCount;
@@ -363,8 +344,7 @@ void WorkflowStepsWidget::populateSteps(
     }
 
     if (failedIdx >= 0) {
-        headerLabel_->setText(
-            tr("Failed at step %1 of %2").arg(failedIdx + 1).arg(total));
+        headerLabel_->setText(tr("Failed at step %1 of %2").arg(failedIdx + 1).arg(total));
         if (!terminalReached_) {
             terminalReached_ = true;
             refreshTimer_->stop();
@@ -374,11 +354,9 @@ void WorkflowStepsWidget::populateSteps(
     } else if (total > 0 && completedCount == total) {
         if (warnedCount > 0) {
             headerLabel_->setText(
-                tr("All %1 step(s) completed (%2 with warnings)")
-                .arg(total).arg(warnedCount));
+                tr("All %1 step(s) completed (%2 with warnings)").arg(total).arg(warnedCount));
         } else {
-            headerLabel_->setText(
-                tr("All %1 step(s) completed").arg(total));
+            headerLabel_->setText(tr("All %1 step(s) completed").arg(total));
         }
         if (!terminalReached_) {
             terminalReached_ = true;
@@ -386,8 +364,7 @@ void WorkflowStepsWidget::populateSteps(
             emit instanceReachedTerminalState(true);
         }
     } else if (runningIdx >= 0) {
-        headerLabel_->setText(
-            tr("Step %1 of %2 in progress…").arg(runningIdx + 1).arg(total));
+        headerLabel_->setText(tr("Step %1 of %2 in progress…").arg(runningIdx + 1).arg(total));
     } else if (total > 0) {
         headerLabel_->setText(tr("%1 step(s) pending").arg(total));
     } else {
@@ -395,4 +372,4 @@ void WorkflowStepsWidget::populateSteps(
     }
 }
 
-}  // namespace ores::qt
+} // namespace ores::qt

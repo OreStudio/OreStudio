@@ -18,28 +18,27 @@
  *
  */
 #include "ores.qt/TradeDetailDialog.hpp"
-
-#include <algorithm>
-#include <QComboBox>
-#include <QScreen>
-#include <QShowEvent>
-#include <QMessageBox>
-#include <QPlainTextEdit>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include <boost/uuid/random_generator.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/uuid/string_generator.hpp>
-#include "ui_TradeDetailDialog.h"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.trading.api/messaging/trade_protocol.hpp"
-#include "ores.trading.api/messaging/trade_type_protocol.hpp"
-#include "ores.trading.api/messaging/instrument_protocol.hpp"
 #include "ores.refdata.api/messaging/book_protocol.hpp"
 #include "ores.refdata.api/messaging/counterparty_protocol.hpp"
+#include "ores.trading.api/messaging/instrument_protocol.hpp"
+#include "ores.trading.api/messaging/trade_protocol.hpp"
+#include "ores.trading.api/messaging/trade_type_protocol.hpp"
+#include "ui_TradeDetailDialog.h"
+#include <QComboBox>
+#include <QFutureWatcher>
+#include <QMessageBox>
+#include <QPlainTextEdit>
+#include <QScreen>
+#include <QShowEvent>
+#include <QtConcurrent>
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/string_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 
 namespace ores::qt {
 
@@ -58,9 +57,9 @@ using PT = ores::trading::domain::product_type;
 // ---------------------------------------------------------------------------
 
 TradeDetailDialog::TradeDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent),
-      ui_(new Ui::TradeDetailDialog),
-      clientManager_(nullptr) {
+    : DetailDialogBase(parent)
+    , ui_(new Ui::TradeDetailDialog)
+    , clientManager_(nullptr) {
 
     ui_->setupUi(this);
     WidgetUtils::setupComboBoxes(this);
@@ -76,23 +75,19 @@ TradeDetailDialog::TradeDetailDialog(QWidget* parent)
     createTypeTimer_ = new QTimer(this);
     createTypeTimer_->setSingleShot(true);
     createTypeTimer_->setInterval(0);
-    connect(createTypeTimer_, &QTimer::timeout, this, [this]() {
-        applyCreateTradeType();
-    });
+    connect(createTypeTimer_, &QTimer::timeout, this, [this]() { applyCreateTradeType(); });
 
     // Build a stack page per registered IInstrumentForm. formMap_ and
     // typeFormMap_ are populated here so setTradeBundle() reaches any form O(1).
     register_default_forms(instrumentFormRegistry_);
     for (const auto pt : instrumentFormRegistry_.registeredTypes()) {
-        IInstrumentForm* form =
-            instrumentFormRegistry_.createForm(pt, ui_->instrumentStack);
+        IInstrumentForm* form = instrumentFormRegistry_.createForm(pt, ui_->instrumentStack);
         ui_->instrumentStack->addWidget(form);
         formMap_[pt] = form;
         connectFormSignals(form);
     }
     for (const auto& code : instrumentFormRegistry_.registeredTypeCodes()) {
-        IInstrumentForm* form =
-            instrumentFormRegistry_.createTypeForm(code, ui_->instrumentStack);
+        IInstrumentForm* form = instrumentFormRegistry_.createTypeForm(code, ui_->instrumentStack);
         ui_->instrumentStack->addWidget(form);
         typeFormMap_[code.toStdString()] = form;
         connectFormSignals(form);
@@ -107,9 +102,15 @@ void TradeDetailDialog::showEvent(QShowEvent* event) {
     DetailDialogBase::showEvent(event);
 }
 
-QTabWidget*       TradeDetailDialog::tabWidget()        const { return ui_->tabWidget; }
-QWidget*          TradeDetailDialog::provenanceTab()    const { return ui_->provenanceTab; }
-ProvenanceWidget* TradeDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
+QTabWidget* TradeDetailDialog::tabWidget() const {
+    return ui_->tabWidget;
+}
+QWidget* TradeDetailDialog::provenanceTab() const {
+    return ui_->provenanceTab;
+}
+ProvenanceWidget* TradeDetailDialog::provenanceWidget() const {
+    return ui_->provenanceWidget;
+}
 
 // ---------------------------------------------------------------------------
 // Setup
@@ -126,41 +127,44 @@ void TradeDetailDialog::setupUi() {
 
     // Hide all instrument tabs and instrument provenance section until an
     // instrument loads.
-    ui_->tabWidget->setTabVisible(
-        ui_->tabWidget->indexOf(ui_->instrumentTab), false);
+    ui_->tabWidget->setTabVisible(ui_->tabWidget->indexOf(ui_->instrumentTab), false);
     ui_->instrumentProvenanceGroup->setVisible(false);
 }
 
 void TradeDetailDialog::setupConnections() {
-    connect(ui_->saveButton, &QPushButton::clicked, this,
-            &TradeDetailDialog::onSaveClicked);
-    connect(ui_->deleteButton, &QPushButton::clicked, this,
-            &TradeDetailDialog::onDeleteClicked);
-    connect(ui_->closeButton, &QPushButton::clicked, this,
-            &TradeDetailDialog::onCloseClicked);
+    connect(ui_->saveButton, &QPushButton::clicked, this, &TradeDetailDialog::onSaveClicked);
+    connect(ui_->deleteButton, &QPushButton::clicked, this, &TradeDetailDialog::onDeleteClicked);
+    connect(ui_->closeButton, &QPushButton::clicked, this, &TradeDetailDialog::onCloseClicked);
 
     // Trade fields
-    connect(ui_->bookCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
-            this, &TradeDetailDialog::onFieldChanged);
-    connect(ui_->counterpartyCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
-            this, &TradeDetailDialog::onFieldChanged);
-    connect(ui_->externalIdEdit, &QLineEdit::textChanged, this,
-            &TradeDetailDialog::onCodeChanged);
-    connect(ui_->tradeTypeEdit, &QLineEdit::textChanged, this,
+    connect(ui_->bookCombo,
+            QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this,
             &TradeDetailDialog::onFieldChanged);
-    connect(ui_->tradeTypeEdit, &QLineEdit::textChanged, this,
+    connect(ui_->counterpartyCombo,
+            QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this,
+            &TradeDetailDialog::onFieldChanged);
+    connect(ui_->externalIdEdit, &QLineEdit::textChanged, this, &TradeDetailDialog::onCodeChanged);
+    connect(ui_->tradeTypeEdit, &QLineEdit::textChanged, this, &TradeDetailDialog::onFieldChanged);
+    connect(ui_->tradeTypeEdit,
+            &QLineEdit::textChanged,
+            this,
             &TradeDetailDialog::onCreateTradeTypeChanged);
-    connect(ui_->lifecycleEventEdit, &QLineEdit::textChanged, this,
+    connect(
+        ui_->lifecycleEventEdit, &QLineEdit::textChanged, this, &TradeDetailDialog::onFieldChanged);
+    connect(
+        ui_->nettingSetIdEdit, &QLineEdit::textChanged, this, &TradeDetailDialog::onFieldChanged);
+    connect(ui_->tradeDateEdit, &QLineEdit::textChanged, this, &TradeDetailDialog::onFieldChanged);
+    connect(
+        ui_->effectiveDateEdit, &QLineEdit::textChanged, this, &TradeDetailDialog::onFieldChanged);
+    connect(ui_->terminationDateEdit,
+            &QLineEdit::textChanged,
+            this,
             &TradeDetailDialog::onFieldChanged);
-    connect(ui_->nettingSetIdEdit, &QLineEdit::textChanged, this,
-            &TradeDetailDialog::onFieldChanged);
-    connect(ui_->tradeDateEdit, &QLineEdit::textChanged, this,
-            &TradeDetailDialog::onFieldChanged);
-    connect(ui_->effectiveDateEdit, &QLineEdit::textChanged, this,
-            &TradeDetailDialog::onFieldChanged);
-    connect(ui_->terminationDateEdit, &QLineEdit::textChanged, this,
-            &TradeDetailDialog::onFieldChanged);
-    connect(ui_->executionTimestampEdit, &QLineEdit::textChanged, this,
+    connect(ui_->executionTimestampEdit,
+            &QLineEdit::textChanged,
+            this,
             &TradeDetailDialog::onFieldChanged);
 
 
@@ -180,7 +184,8 @@ void TradeDetailDialog::setClientManager(ClientManager* clientManager) {
 }
 
 void TradeDetailDialog::loadBooks() {
-    if (!clientManager_ || !clientManager_->isConnected()) return;
+    if (!clientManager_ || !clientManager_->isConnected())
+        return;
 
     struct BooksResult {
         bool success;
@@ -189,11 +194,11 @@ void TradeDetailDialog::loadBooks() {
 
     QPointer<TradeDetailDialog> self = this;
     auto* watcher = new QFutureWatcher<BooksResult>(self);
-    connect(watcher, &QFutureWatcher<BooksResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<BooksResult>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
-        if (!self || !result.success) return;
+        if (!self || !result.success)
+            return;
 
         self->books_ = std::move(result.books);
         self->ui_->bookCombo->blockSignals(true);
@@ -208,18 +213,20 @@ void TradeDetailDialog::loadBooks() {
     });
 
     watcher->setFuture(QtConcurrent::run([self]() -> BooksResult {
-        if (!self || !self->clientManager_) return {false, {}};
+        if (!self || !self->clientManager_)
+            return {false, {}};
         refdata::messaging::get_books_request req;
         auto r = self->clientManager_->process_authenticated_request(std::move(req));
-        if (!r) return {false, {}};
+        if (!r)
+            return {false, {}};
         return {true, std::move(r->books)};
     }));
 }
 
 void TradeDetailDialog::selectCurrentBook() {
-    if (trade_.parties.book_id.is_nil()) return;
-    const QString target =
-        QString::fromStdString(boost::uuids::to_string(trade_.parties.book_id));
+    if (trade_.parties.book_id.is_nil())
+        return;
+    const QString target = QString::fromStdString(boost::uuids::to_string(trade_.parties.book_id));
     for (int i = 0; i < ui_->bookCombo->count(); ++i) {
         if (ui_->bookCombo->itemData(i).toString() == target) {
             ui_->bookCombo->blockSignals(true);
@@ -231,7 +238,8 @@ void TradeDetailDialog::selectCurrentBook() {
 }
 
 void TradeDetailDialog::loadCounterparties() {
-    if (!clientManager_ || !clientManager_->isConnected()) return;
+    if (!clientManager_ || !clientManager_->isConnected())
+        return;
 
     struct CpResult {
         bool success;
@@ -240,11 +248,11 @@ void TradeDetailDialog::loadCounterparties() {
 
     QPointer<TradeDetailDialog> self = this;
     auto* watcher = new QFutureWatcher<CpResult>(self);
-    connect(watcher, &QFutureWatcher<CpResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<CpResult>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
-        if (!self || !result.success) return;
+        if (!self || !result.success)
+            return;
 
         self->counterparties_ = std::move(result.counterparties);
         self->ui_->counterpartyCombo->blockSignals(true);
@@ -260,12 +268,14 @@ void TradeDetailDialog::loadCounterparties() {
     });
 
     watcher->setFuture(QtConcurrent::run([self]() -> CpResult {
-        if (!self || !self->clientManager_) return {false, {}};
+        if (!self || !self->clientManager_)
+            return {false, {}};
         refdata::messaging::get_counterparties_request req;
         req.offset = 0;
         req.limit = 1000;
         auto r = self->clientManager_->process_authenticated_request(std::move(req));
-        if (!r) return {false, {}};
+        if (!r)
+            return {false, {}};
         return {true, std::move(r->counterparties)};
     }));
 }
@@ -290,7 +300,8 @@ void TradeDetailDialog::selectCurrentCounterparty() {
 }
 
 void TradeDetailDialog::loadTradeTypes() {
-    if (!clientManager_ || !clientManager_->isConnected()) return;
+    if (!clientManager_ || !clientManager_->isConnected())
+        return;
 
     struct Result {
         bool success;
@@ -301,11 +312,11 @@ void TradeDetailDialog::loadTradeTypes() {
 
     QPointer<TradeDetailDialog> self = this;
     auto* watcher = new QFutureWatcher<Result>(self);
-    connect(watcher, &QFutureWatcher<Result>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<Result>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
-        if (!self) return;
+        if (!self)
+            return;
 
         if (!result.success) {
             BOOST_LOG_SEV(lg(), warn) << "Failed to load trade types";
@@ -319,11 +330,13 @@ void TradeDetailDialog::loadTradeTypes() {
 
     auto* cm = clientManager_;
     watcher->setFuture(QtConcurrent::run([cm]() -> Result {
-        if (!cm) return {false, {}};
+        if (!cm)
+            return {false, {}};
         trading::messaging::get_trade_types_request req;
         req.limit = kTradeTypeFetchLimit;
         auto r = cm->process_authenticated_request(std::move(req));
-        if (!r) return {false, {}};
+        if (!r)
+            return {false, {}};
         return {true, std::move(r->types)};
     }));
 }
@@ -341,47 +354,46 @@ void TradeDetailDialog::setImageCache(ImageCache* cache) {
 }
 
 void TradeDetailDialog::connectFormSignals(IInstrumentForm* form) {
-    connect(form, &IInstrumentForm::changed, this,
-            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(form, &IInstrumentForm::changed, this, &TradeDetailDialog::onInstrumentFieldChanged);
     connect(form, &IInstrumentForm::instrumentLoaded, this, [this]() {
         instrumentLoaded_ = true;
         ui_->instrumentProvenanceGroup->setVisible(true);
         updateSaveButtonState();
     });
-    connect(form, &IInstrumentForm::loadFailed, this,
-            [this](const QString& err) {
-        BOOST_LOG_SEV(lg(), error)
-            << "Instrument load failed: " << err.toStdString();
+    connect(form, &IInstrumentForm::loadFailed, this, [this](const QString& err) {
+        BOOST_LOG_SEV(lg(), error) << "Instrument load failed: " << err.toStdString();
         MessageBoxHelper::warning(this, tr("Instrument Load Failed"), err);
         emit errorMessage(err);
     });
-    connect(form, &IInstrumentForm::provenanceChanged, this,
-            [this](const InstrumentProvenance& p) {
-        ui_->instrumentProvenanceWidget->populate(
-            p.version, p.modified_by, p.performed_by,
-            p.recorded_at, p.change_reason_code, p.change_commentary);
+    connect(form, &IInstrumentForm::provenanceChanged, this, [this](const InstrumentProvenance& p) {
+        ui_->instrumentProvenanceWidget->populate(p.version,
+                                                  p.modified_by,
+                                                  p.performed_by,
+                                                  p.recorded_at,
+                                                  p.change_reason_code,
+                                                  p.change_commentary);
         ui_->instrumentProvenanceGroup->setVisible(true);
     });
 }
 
-IInstrumentForm* TradeDetailDialog::findForm(
-    trading::domain::product_type pt, const std::string& trade_type_code) {
+IInstrumentForm* TradeDetailDialog::findForm(trading::domain::product_type pt,
+                                             const std::string& trade_type_code) {
     auto ttIt = typeFormMap_.find(trade_type_code);
-    if (ttIt != typeFormMap_.end()) return ttIt->second;
+    if (ttIt != typeFormMap_.end())
+        return ttIt->second;
     auto ptIt = formMap_.find(pt);
-    if (ptIt != formMap_.end()) return ptIt->second;
+    if (ptIt != formMap_.end())
+        return ptIt->second;
     return nullptr;
 }
 
 // Selects @p form on the stack, sets client manager, username, and trade
 // type flags from the cache.  Does not trigger load or clear — caller does
 // that immediately after.
-void TradeDetailDialog::activateForm(IInstrumentForm* form,
-                                     const std::string& tradeTypeCode) {
+void TradeDetailDialog::activateForm(IInstrumentForm* form, const std::string& tradeTypeCode) {
     activeForm_ = form;
     ui_->instrumentStack->setCurrentWidget(form);
-    ui_->tabWidget->setTabVisible(
-        ui_->tabWidget->indexOf(ui_->instrumentTab), true);
+    ui_->tabWidget->setTabVisible(ui_->tabWidget->indexOf(ui_->instrumentTab), true);
 
     form->setClientManager(clientManager_);
     form->setUsername(username_);
@@ -391,26 +403,26 @@ void TradeDetailDialog::activateForm(IInstrumentForm* form,
     bool has_options = false, has_extension = false;
     auto it = tradeTypeCache_.find(tradeTypeCode);
     if (it != tradeTypeCache_.end()) {
-        has_options   = it->second.has_options;
+        has_options = it->second.has_options;
         has_extension = it->second.has_extension;
     }
-    form->setTradeType(QString::fromStdString(tradeTypeCode),
-                       has_options, has_extension);
+    form->setTradeType(QString::fromStdString(tradeTypeCode), has_options, has_extension);
 }
 
-void TradeDetailDialog::setTradeBundle(
-    const trading::messaging::trade_export_item& bundle) {
+void TradeDetailDialog::setTradeBundle(const trading::messaging::trade_export_item& bundle) {
     trade_ = bundle.trade;
 
-    const std::string instrument_id_str = bundle.trade.classification.instrument_id
-        ? boost::uuids::to_string(*bundle.trade.classification.instrument_id) : "<none>";
+    const std::string instrument_id_str =
+        bundle.trade.classification.instrument_id ?
+            boost::uuids::to_string(*bundle.trade.classification.instrument_id) :
+            "<none>";
 
-    BOOST_LOG_SEV(lg(), debug)
-        << "setTradeBundle: trade=" << bundle.trade.identity.external_id
-        << " product_type=" << std::string(
-            ores::trading::domain::to_string(bundle.trade.classification.product_type))
-        << " trade_type=" << bundle.trade.classification.trade_type
-        << " instrument_id=" << instrument_id_str;
+    BOOST_LOG_SEV(lg(), debug) << "setTradeBundle: trade=" << bundle.trade.identity.external_id
+                               << " product_type="
+                               << std::string(ores::trading::domain::to_string(
+                                      bundle.trade.classification.product_type))
+                               << " trade_type=" << bundle.trade.classification.trade_type
+                               << " instrument_id=" << instrument_id_str;
 
     updateUiFromTrade();
     selectCurrentBook();
@@ -418,15 +430,15 @@ void TradeDetailDialog::setTradeBundle(
 
     auto* form = findForm(trade_.classification.product_type, trade_.classification.trade_type);
     if (!form) {
-        const QString msg = tr("No instrument form registered for trade '%1' "
-            "(product_type=%2, trade_type=%3). "
-            "Check that the instrument form plugin is loaded.")
-            .arg(QString::fromStdString(bundle.trade.identity.external_id))
-            .arg(QString::fromStdString(std::string(
-                ores::trading::domain::to_string(bundle.trade.classification.product_type))))
-            .arg(QString::fromStdString(bundle.trade.classification.trade_type));
-        BOOST_LOG_SEV(lg(), warn)
-            << "setTradeBundle: " << msg.toStdString();
+        const QString msg =
+            tr("No instrument form registered for trade '%1' "
+               "(product_type=%2, trade_type=%3). "
+               "Check that the instrument form plugin is loaded.")
+                .arg(QString::fromStdString(bundle.trade.identity.external_id))
+                .arg(QString::fromStdString(std::string(
+                    ores::trading::domain::to_string(bundle.trade.classification.product_type))))
+                .arg(QString::fromStdString(bundle.trade.classification.trade_type));
+        BOOST_LOG_SEV(lg(), warn) << "setTradeBundle: " << msg.toStdString();
         MessageBoxHelper::warning(this, tr("Instrument Form Missing"), msg);
         emit errorMessage(msg);
         return;
@@ -436,17 +448,15 @@ void TradeDetailDialog::setTradeBundle(
     if (trade_.classification.instrument_id) {
         const auto trade_id = boost::uuids::to_string(trade_.identity.id);
         BOOST_LOG_SEV(lg(), debug)
-            << "setTradeBundle: fetching instrument for trade="
-            << trade_.identity.external_id
+            << "setTradeBundle: fetching instrument for trade=" << trade_.identity.external_id
             << " instrument_id=" << instrument_id_str;
         if (!clientManager_->getTradeInstrument(trade_id, *activeForm_)) {
-            BOOST_LOG_SEV(lg(), error)
-                << "setTradeBundle: instrument fetch failed for trade="
-                << trade_.identity.external_id;
+            BOOST_LOG_SEV(lg(), error) << "setTradeBundle: instrument fetch failed for trade="
+                                       << trade_.identity.external_id;
             const QString msg = tr("Could not load instrument data for trade '%1' "
-                "(instrument_id=%2). Check the trading service log for details.")
-                .arg(QString::fromStdString(trade_.identity.external_id))
-                .arg(QString::fromStdString(instrument_id_str));
+                                   "(instrument_id=%2). Check the trading service log for details.")
+                                    .arg(QString::fromStdString(trade_.identity.external_id))
+                                    .arg(QString::fromStdString(instrument_id_str));
             MessageBoxHelper::warning(this, tr("Instrument Load Failed"), msg);
             emit errorMessage(msg);
             activeForm_->clear();
@@ -471,8 +481,7 @@ void TradeDetailDialog::setCreateMode(bool createMode) {
 
     // Instrument tab starts hidden; onCreateTradeTypeChanged reveals it
     // once the user enters a known trade type code.
-    ui_->tabWidget->setTabVisible(
-        ui_->tabWidget->indexOf(ui_->instrumentTab), false);
+    ui_->tabWidget->setTabVisible(ui_->tabWidget->indexOf(ui_->instrumentTab), false);
     ui_->instrumentProvenanceGroup->setVisible(false);
     activeForm_ = nullptr;
     instrumentLoaded_ = false;
@@ -500,7 +509,8 @@ void TradeDetailDialog::setReadOnly(bool readOnly) {
     ui_->executionTimestampEdit->setReadOnly(readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
-    if (activeForm_) activeForm_->setReadOnly(readOnly);
+    if (activeForm_)
+        activeForm_->setReadOnly(readOnly);
 }
 
 // ---------------------------------------------------------------------------
@@ -512,8 +522,7 @@ void TradeDetailDialog::updateUiFromTrade() {
     ui_->tradeTypeEdit->setText(QString::fromStdString(trade_.classification.trade_type));
     ui_->lifecycleEventEdit->setText(
         QString::fromStdString(trade_.classification.activity_type_code));
-    ui_->nettingSetIdEdit->setText(
-        QString::fromStdString(trade_.classification.netting_set_id));
+    ui_->nettingSetIdEdit->setText(QString::fromStdString(trade_.classification.netting_set_id));
     ui_->tradeDateEdit->setText(QString::fromStdString(trade_.lifecycle.trade_date.value_or("")));
     ui_->effectiveDateEdit->setText(
         QString::fromStdString(trade_.lifecycle.effective_date.value_or("")));
@@ -522,9 +531,11 @@ void TradeDetailDialog::updateUiFromTrade() {
     ui_->executionTimestampEdit->setText(
         QString::fromStdString(trade_.lifecycle.execution_timestamp.value_or("")));
 
-    populateProvenance(trade_.identity.version, trade_.audit.modified_by,
+    populateProvenance(trade_.identity.version,
+                       trade_.audit.modified_by,
                        trade_.audit.performed_by,
-                       trade_.audit.recorded_at, trade_.audit.change_reason_code,
+                       trade_.audit.recorded_at,
+                       trade_.audit.change_reason_code,
                        trade_.audit.change_commentary);
     hasChanges_ = false;
     updateSaveButtonState();
@@ -546,8 +557,7 @@ void TradeDetailDialog::updateTradeFromUi() {
     }
     if (createMode_)
         trade_.identity.external_id = ui_->externalIdEdit->text().trimmed().toStdString();
-    trade_.classification.trade_type =
-        ui_->tradeTypeEdit->text().trimmed().toStdString();
+    trade_.classification.trade_type = ui_->tradeTypeEdit->text().trimmed().toStdString();
     if (createMode_) {
         auto it = tradeTypeCache_.find(trade_.classification.trade_type);
         if (it != tradeTypeCache_.end())
@@ -555,14 +565,10 @@ void TradeDetailDialog::updateTradeFromUi() {
     }
     trade_.classification.activity_type_code =
         ui_->lifecycleEventEdit->text().trimmed().toStdString();
-    trade_.classification.netting_set_id =
-        ui_->nettingSetIdEdit->text().trimmed().toStdString();
-    trade_.lifecycle.trade_date =
-        ui_->tradeDateEdit->text().trimmed().toStdString();
-    trade_.lifecycle.effective_date =
-        ui_->effectiveDateEdit->text().trimmed().toStdString();
-    trade_.lifecycle.termination_date =
-        ui_->terminationDateEdit->text().trimmed().toStdString();
+    trade_.classification.netting_set_id = ui_->nettingSetIdEdit->text().trimmed().toStdString();
+    trade_.lifecycle.trade_date = ui_->tradeDateEdit->text().trimmed().toStdString();
+    trade_.lifecycle.effective_date = ui_->effectiveDateEdit->text().trimmed().toStdString();
+    trade_.lifecycle.termination_date = ui_->terminationDateEdit->text().trimmed().toStdString();
     trade_.lifecycle.execution_timestamp =
         ui_->executionTimestampEdit->text().trimmed().toStdString();
     trade_.audit.modified_by = username_;
@@ -584,13 +590,15 @@ void TradeDetailDialog::onFieldChanged() {
 }
 
 void TradeDetailDialog::onInstrumentFieldChanged() {
-    if (!instrumentLoaded_) return;
+    if (!instrumentLoaded_)
+        return;
     instrumentHasChanges_ = true;
     updateSaveButtonState();
 }
 
 void TradeDetailDialog::onCreateTradeTypeChanged(const QString&) {
-    if (!createMode_) return;
+    if (!createMode_)
+        return;
     // Coalesce rapid keystrokes; applyCreateTradeType() fires once per cycle.
     createTypeTimer_->start();
 }
@@ -599,16 +607,14 @@ void TradeDetailDialog::applyCreateTradeType() {
     const auto code = ui_->tradeTypeEdit->text().trimmed().toStdString();
     auto ttIt = tradeTypeCache_.find(code);
     if (ttIt == tradeTypeCache_.end()) {
-        ui_->tabWidget->setTabVisible(
-            ui_->tabWidget->indexOf(ui_->instrumentTab), false);
+        ui_->tabWidget->setTabVisible(ui_->tabWidget->indexOf(ui_->instrumentTab), false);
         activeForm_ = nullptr;
         return;
     }
 
     auto* form = findForm(ttIt->second.product_type, code);
     if (!form) {
-        ui_->tabWidget->setTabVisible(
-            ui_->tabWidget->indexOf(ui_->instrumentTab), false);
+        ui_->tabWidget->setTabVisible(ui_->tabWidget->indexOf(ui_->instrumentTab), false);
         activeForm_ = nullptr;
         return;
     }
@@ -621,13 +627,13 @@ void TradeDetailDialog::applyCreateTradeType() {
 }
 
 void TradeDetailDialog::updateSaveButtonState() {
-    const bool canSave =
-        (hasChanges_ || instrumentHasChanges_) && validateInput() && !readOnly_;
+    const bool canSave = (hasChanges_ || instrumentHasChanges_) && validateInput() && !readOnly_;
     ui_->saveButton->setEnabled(canSave);
 }
 
 bool TradeDetailDialog::validateInput() {
-    if (ui_->bookCombo->currentIndex() < 0) return false;
+    if (ui_->bookCombo->currentIndex() < 0)
+        return false;
     return !ui_->tradeTypeEdit->text().trimmed().isEmpty() &&
            !ui_->lifecycleEventEdit->text().trimmed().isEmpty() &&
            !ui_->tradeDateEdit->text().trimmed().isEmpty() &&
@@ -641,13 +647,12 @@ bool TradeDetailDialog::validateInput() {
 
 void TradeDetailDialog::onSaveClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot save while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot save while disconnected from server.");
         return;
     }
     if (!validateInput()) {
-        MessageBoxHelper::warning(this, "Invalid Input",
-            "Please fill in all required fields.");
+        MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
 
@@ -655,27 +660,26 @@ void TradeDetailDialog::onSaveClicked() {
     if (activeForm_ && (createMode_ || instrumentLoaded_))
         activeForm_->writeUiToInstrument();
 
-    const auto crOpType = createMode_
-        ? ChangeReasonDialog::OperationType::Create
-        : ChangeReasonDialog::OperationType::Amend;
-    const auto crSel = promptChangeReason(crOpType,
-        hasChanges_ || instrumentHasChanges_,
-        createMode_ ? "system" : "common");
-    if (!crSel) return;
+    const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
+                                        ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(
+        crOpType, hasChanges_ || instrumentHasChanges_, createMode_ ? "system" : "common");
+    if (!crSel)
+        return;
 
     trade_.audit.change_reason_code = crSel->reason_code;
-    trade_.audit.change_commentary  = crSel->commentary;
+    trade_.audit.change_commentary = crSel->commentary;
 
     if (activeForm_)
         activeForm_->setChangeReason(crSel->reason_code, crSel->commentary);
 
     // Save the instrument first when it is new (create mode) or dirty.
-    const bool needsInstrumentSave = activeForm_ &&
-        (createMode_ || (instrumentHasChanges_ && instrumentLoaded_));
+    const bool needsInstrumentSave =
+        activeForm_ && (createMode_ || (instrumentHasChanges_ && instrumentLoaded_));
 
     if (needsInstrumentSave) {
-        BOOST_LOG_SEV(lg(), info)
-            << "Saving instrument then trade: " << trade_.identity.external_id;
+        BOOST_LOG_SEV(lg(), info) << "Saving instrument then trade: "
+                                  << trade_.identity.external_id;
         const auto saved_trade = trade_;
         activeForm_->saveInstrument(
             [this, saved_trade](const std::string& id) {
@@ -686,11 +690,10 @@ void TradeDetailDialog::onSaveClicked() {
                 saveTrade(t);
             },
             [this](const QString& err) {
-                BOOST_LOG_SEV(lg(), error)
-                    << "Instrument save failed: " << err.toStdString();
+                BOOST_LOG_SEV(lg(), error) << "Instrument save failed: " << err.toStdString();
                 emit errorMessage(err);
-                MessageBoxHelper::critical(this, "Save Failed",
-                    tr("Failed to save instrument:\n%1").arg(err));
+                MessageBoxHelper::critical(
+                    this, "Save Failed", tr("Failed to save instrument:\n%1").arg(err));
             });
     } else {
         BOOST_LOG_SEV(lg(), info) << "Saving trade only: " << trade_.identity.external_id;
@@ -699,15 +702,18 @@ void TradeDetailDialog::onSaveClicked() {
 }
 
 void TradeDetailDialog::saveTrade(const trading::domain::trade& trade) {
-    struct TradeResult { bool success; std::string message; };
+    struct TradeResult {
+        bool success;
+        std::string message;
+    };
 
     QPointer<TradeDetailDialog> self = this;
     auto* watcher = new QFutureWatcher<TradeResult>(self);
-    connect(watcher, &QFutureWatcher<TradeResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<TradeResult>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
-        if (!self) return;
+        if (!self)
+            return;
 
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Trade saved successfully";
@@ -729,9 +735,9 @@ void TradeDetailDialog::saveTrade(const trading::domain::trade& trade) {
             return {false, "Dialog closed"};
         trading::messaging::save_trade_request req;
         req.trades.push_back(trade);
-        auto r = self->clientManager_->process_authenticated_request(
-            std::move(req));
-        if (!r) return {false, "Failed to communicate with server"};
+        auto r = self->clientManager_->process_authenticated_request(std::move(req));
+        if (!r)
+            return {false, "Failed to communicate with server"};
         return {r->success, r->message};
     }));
 }
@@ -742,32 +748,39 @@ void TradeDetailDialog::saveTrade(const trading::domain::trade& trade) {
 
 void TradeDetailDialog::onDeleteClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot delete trade while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot delete trade while disconnected from server.");
         return;
     }
 
     QString code = QString::fromStdString(trade_.identity.external_id);
-    auto reply = MessageBoxHelper::question(this, "Delete Trade",
-        QString("Are you sure you want to delete trade '%1'?").arg(code),
-        QMessageBox::Yes | QMessageBox::No);
-    if (reply != QMessageBox::Yes) return;
+    auto reply =
+        MessageBoxHelper::question(this,
+                                   "Delete Trade",
+                                   QString("Are you sure you want to delete trade '%1'?").arg(code),
+                                   QMessageBox::Yes | QMessageBox::No);
+    if (reply != QMessageBox::Yes)
+        return;
 
-    const auto crSel = promptChangeReason(
-        ChangeReasonDialog::OperationType::Delete, true, "common");
-    if (!crSel) return;
+    const auto crSel =
+        promptChangeReason(ChangeReasonDialog::OperationType::Delete, true, "common");
+    if (!crSel)
+        return;
 
     BOOST_LOG_SEV(lg(), info) << "Deleting trade: " << trade_.identity.external_id;
 
-    struct DeleteResult { bool success; std::string message; };
+    struct DeleteResult {
+        bool success;
+        std::string message;
+    };
 
     QPointer<TradeDetailDialog> self = this;
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
-            self, [self, code, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, code, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
-        if (!self) return;
+        if (!self)
+            return;
 
         if (result.success) {
             emit self->statusMessage(tr("Trade '%1' deleted").arg(code));
@@ -785,9 +798,9 @@ void TradeDetailDialog::onDeleteClicked() {
             return {false, "Dialog closed"};
         trading::messaging::delete_trade_request req;
         req.ids.push_back(boost::uuids::to_string(id));
-        auto r = self->clientManager_->process_authenticated_request(
-            std::move(req));
-        if (!r) return {false, "Failed to communicate with server"};
+        auto r = self->clientManager_->process_authenticated_request(std::move(req));
+        if (!r)
+            return {false, "Failed to communicate with server"};
         return {r->success, r->message};
     }));
 }

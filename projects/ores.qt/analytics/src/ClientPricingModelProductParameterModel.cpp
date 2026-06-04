@@ -18,39 +18,45 @@
  *
  */
 #include "ores.qt/ClientPricingModelProductParameterModel.hpp"
-
-#include <QtConcurrent>
-#include <boost/uuid/uuid_io.hpp>
 #include "ores.analytics.api/messaging/pricing_model_product_parameter_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
+#include <QtConcurrent>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    std::string pricing_model_product_parameter_key_extractor(const analytics::domain::pricing_model_product_parameter& e) {
-        return e.parameter_name;
-    }
+std::string pricing_model_product_parameter_key_extractor(
+    const analytics::domain::pricing_model_product_parameter& e) {
+    return e.parameter_name;
+}
 }
 
 ClientPricingModelProductParameterModel::ClientPricingModelProductParameterModel(
     ClientManager* clientManager, QObject* parent)
-    : AbstractClientModel(parent),
-      clientManager_(clientManager),
-      watcher_(new QFutureWatcher<FetchResult>(this)),
-      recencyTracker_(pricing_model_product_parameter_key_extractor),
-      pulseManager_(new RecencyPulseManager(this)) {
+    : AbstractClientModel(parent)
+    , clientManager_(clientManager)
+    , watcher_(new QFutureWatcher<FetchResult>(this))
+    , recencyTracker_(pricing_model_product_parameter_key_extractor)
+    , pulseManager_(new RecencyPulseManager(this)) {
 
-    connect(watcher_, &QFutureWatcher<FetchResult>::finished,
-            this, &ClientPricingModelProductParameterModel::onParametersLoaded);
+    connect(watcher_,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            &ClientPricingModelProductParameterModel::onParametersLoaded);
 
-    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
-            this, &ClientPricingModelProductParameterModel::onPulseStateChanged);
-    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
-            this, &ClientPricingModelProductParameterModel::onPulsingComplete);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulse_state_changed,
+            this,
+            &ClientPricingModelProductParameterModel::onPulseStateChanged);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulsing_complete,
+            this,
+            &ClientPricingModelProductParameterModel::onPulsingComplete);
 }
 
 int ClientPricingModelProductParameterModel::rowCount(const QModelIndex& parent) const {
@@ -65,8 +71,7 @@ int ClientPricingModelProductParameterModel::columnCount(const QModelIndex& pare
     return ColumnCount;
 }
 
-QVariant ClientPricingModelProductParameterModel::data(
-    const QModelIndex& index, int role) const {
+QVariant ClientPricingModelProductParameterModel::data(const QModelIndex& index, int role) const {
     if (!index.isValid())
         return {};
 
@@ -78,20 +83,20 @@ QVariant ClientPricingModelProductParameterModel::data(
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-        case ParameterScope:
-            return QString::fromStdString(parameter.parameter_scope);
-        case ParameterName:
-            return QString::fromStdString(parameter.parameter_name);
-        case ParameterValue:
-            return QString::fromStdString(parameter.parameter_value);
-        case Version:
-            return static_cast<qlonglong>(parameter.version);
-        case ModifiedBy:
-            return QString::fromStdString(parameter.modified_by);
-        case RecordedAt:
-            return relative_time_helper::format(parameter.recorded_at);
-        default:
-            return {};
+            case ParameterScope:
+                return QString::fromStdString(parameter.parameter_scope);
+            case ParameterName:
+                return QString::fromStdString(parameter.parameter_name);
+            case ParameterValue:
+                return QString::fromStdString(parameter.parameter_value);
+            case Version:
+                return static_cast<qlonglong>(parameter.version);
+            case ModifiedBy:
+                return QString::fromStdString(parameter.modified_by);
+            case RecordedAt:
+                return relative_time_helper::format(parameter.recorded_at);
+            default:
+                return {};
         }
     }
 
@@ -102,26 +107,27 @@ QVariant ClientPricingModelProductParameterModel::data(
     return {};
 }
 
-QVariant ClientPricingModelProductParameterModel::headerData(
-    int section, Qt::Orientation orientation, int role) const {
+QVariant ClientPricingModelProductParameterModel::headerData(int section,
+                                                             Qt::Orientation orientation,
+                                                             int role) const {
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return {};
 
     switch (section) {
-    case ParameterScope:
-        return tr("Scope");
-    case ParameterName:
-        return tr("Name");
-    case ParameterValue:
-        return tr("Value");
-    case Version:
-        return tr("Version");
-    case ModifiedBy:
-        return tr("Modified By");
-    case RecordedAt:
-        return tr("Recorded At");
-    default:
-        return {};
+        case ParameterScope:
+            return tr("Scope");
+        case ParameterName:
+            return tr("Name");
+        case ParameterValue:
+            return tr("Value");
+        case Version:
+            return tr("Version");
+        case ModifiedBy:
+            return tr("Modified By");
+        case RecordedAt:
+            return tr("Recorded At");
+        default:
+            return {};
     }
 }
 
@@ -134,7 +140,8 @@ void ClientPricingModelProductParameterModel::refresh() {
     }
 
     if (!clientManager_ || !clientManager_->isConnected()) {
-        BOOST_LOG_SEV(lg(), warn) << "Cannot refresh pricing model product parameter model: disconnected.";
+        BOOST_LOG_SEV(lg(), warn)
+            << "Cannot refresh pricing model product parameter model: disconnected.";
         emit loadError("Not connected to server");
         return;
     }
@@ -151,8 +158,7 @@ void ClientPricingModelProductParameterModel::refresh() {
     fetch_parameters(0, page_size_);
 }
 
-void ClientPricingModelProductParameterModel::load_page(std::uint32_t offset,
-                                          std::uint32_t limit) {
+void ClientPricingModelProductParameterModel::load_page(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "load_page: offset=" << offset << ", limit=" << limit;
 
     if (is_fetching_) {
@@ -176,18 +182,20 @@ void ClientPricingModelProductParameterModel::load_page(std::uint32_t offset,
     fetch_parameters(offset, limit);
 }
 
-void ClientPricingModelProductParameterModel::fetch_parameters(
-    std::uint32_t offset, std::uint32_t limit) {
+void ClientPricingModelProductParameterModel::fetch_parameters(std::uint32_t offset,
+                                                               std::uint32_t limit) {
     is_fetching_ = true;
     QPointer<ClientPricingModelProductParameterModel> self = this;
 
-    QFuture<FetchResult> future =
-        QtConcurrent::run([self, offset, limit]() -> FetchResult {
-            return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
-                BOOST_LOG_SEV(lg(), debug) << "Making pricing model product parameters request with offset="
-                                           << offset << ", limit=" << limit;
+    QFuture<FetchResult> future = QtConcurrent::run([self, offset, limit]() -> FetchResult {
+        return exception_helper::wrap_async_fetch<FetchResult>(
+            [&]() -> FetchResult {
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Making pricing model product parameters request with offset=" << offset
+                    << ", limit=" << limit;
                 if (!self || !self->clientManager_) {
-                    return {.success = false, .parameters = {},
+                    return {.success = false,
+                            .parameters = {},
                             .total_available_count = 0,
                             .error_message = "Model was destroyed",
                             .error_details = {}};
@@ -195,12 +203,13 @@ void ClientPricingModelProductParameterModel::fetch_parameters(
 
                 analytics::messaging::get_pricing_model_product_parameters_request request;
 
-                auto result = self->clientManager_->
-                    process_authenticated_request(std::move(request));
+                auto result =
+                    self->clientManager_->process_authenticated_request(std::move(request));
 
                 if (!result) {
                     BOOST_LOG_SEV(lg(), error) << "Failed to send request: " << result.error();
-                    return {.success = false, .parameters = {},
+                    return {.success = false,
+                            .parameters = {},
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(result.error()),
                             .error_details = {}};
@@ -208,14 +217,15 @@ void ClientPricingModelProductParameterModel::fetch_parameters(
 
                 BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->parameters.size()
                                            << " pricing model product parameters";
-                const std::uint32_t count =
-                    static_cast<std::uint32_t>(result->parameters.size());
+                const std::uint32_t count = static_cast<std::uint32_t>(result->parameters.size());
                 return {.success = true,
                         .parameters = std::move(result->parameters),
                         .total_available_count = count,
-                        .error_message = {}, .error_details = {}};
-            }, "pricing model product parameters");
-        });
+                        .error_message = {},
+                        .error_details = {}};
+            },
+            "pricing model product parameters");
+    });
 
     watcher_->setFuture(future);
 }
@@ -244,8 +254,9 @@ void ClientPricingModelProductParameterModel::onParametersLoaded() {
         const bool has_recent = recencyTracker_.update(parameters_);
         if (has_recent && !pulseManager_->is_pulsing()) {
             pulseManager_->start_pulsing();
-            BOOST_LOG_SEV(lg(), debug) << "Found " << recencyTracker_.recent_count()
-                                       << " pricing model product parameters newer than last reload";
+            BOOST_LOG_SEV(lg(), debug)
+                << "Found " << recencyTracker_.recent_count()
+                << " pricing model product parameters newer than last reload";
         }
     }
 
@@ -274,8 +285,8 @@ ClientPricingModelProductParameterModel::getParameter(int row) const {
     return &parameters_[idx];
 }
 
-QVariant ClientPricingModelProductParameterModel::recency_foreground_color(
-    const std::string& code) const {
+QVariant
+ClientPricingModelProductParameterModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {
         return color_constants::stale_indicator;
     }
@@ -284,8 +295,8 @@ QVariant ClientPricingModelProductParameterModel::recency_foreground_color(
 
 void ClientPricingModelProductParameterModel::onPulseStateChanged(bool /*isOn*/) {
     if (!parameters_.empty()) {
-        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
-            {Qt::ForegroundRole});
+        emit dataChanged(
+            index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::ForegroundRole});
     }
 }
 

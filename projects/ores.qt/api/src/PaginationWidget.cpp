@@ -26,16 +26,16 @@ namespace ores::qt {
 using namespace ores::logging;
 
 PaginationWidget::PaginationWidget(QWidget* parent)
-    : QWidget(parent),
-      info_label_(new QLabel(this)),
-      page_size_combo_(new QComboBox(this)),
-      first_action_(nullptr),
-      prev_action_(nullptr),
-      next_action_(nullptr),
-      last_action_(nullptr),
-      load_all_action_(nullptr),
-      nav_toolbar_(new QToolBar(this)),
-      layout_(new QHBoxLayout(this)) {
+    : QWidget(parent)
+    , info_label_(new QLabel(this))
+    , page_size_combo_(new QComboBox(this))
+    , first_action_(nullptr)
+    , prev_action_(nullptr)
+    , next_action_(nullptr)
+    , last_action_(nullptr)
+    , load_all_action_(nullptr)
+    , nav_toolbar_(new QToolBar(this))
+    , layout_(new QHBoxLayout(this)) {
 
     // Configure info label
     info_label_->setText("No records");
@@ -54,29 +54,25 @@ PaginationWidget::PaginationWidget(QWidget* parent)
 
     // Configure navigation actions - use addAction() so toolbar style applies
     auto* firstAction = nav_toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::ArrowPrevious, IconUtils::DefaultIconColor),
-        "First");
+        IconUtils::createRecoloredIcon(Icon::ArrowPrevious, IconUtils::DefaultIconColor), "First");
     firstAction->setToolTip("First page");
     firstAction->setEnabled(false);
     connect(firstAction, &QAction::triggered, this, &PaginationWidget::on_first_clicked);
 
     auto* prevAction = nav_toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::ArrowLeft, IconUtils::DefaultIconColor),
-        "Previous");
+        IconUtils::createRecoloredIcon(Icon::ArrowLeft, IconUtils::DefaultIconColor), "Previous");
     prevAction->setToolTip("Previous page");
     prevAction->setEnabled(false);
     connect(prevAction, &QAction::triggered, this, &PaginationWidget::on_prev_clicked);
 
     auto* nextAction = nav_toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::ArrowRight, IconUtils::DefaultIconColor),
-        "Next");
+        IconUtils::createRecoloredIcon(Icon::ArrowRight, IconUtils::DefaultIconColor), "Next");
     nextAction->setToolTip("Next page");
     nextAction->setEnabled(false);
     connect(nextAction, &QAction::triggered, this, &PaginationWidget::on_next_clicked);
 
     auto* lastAction = nav_toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::ArrowNext, IconUtils::DefaultIconColor),
-        "Last");
+        IconUtils::createRecoloredIcon(Icon::ArrowNext, IconUtils::DefaultIconColor), "Last");
     lastAction->setToolTip("Last page");
     lastAction->setEnabled(false);
     connect(lastAction, &QAction::triggered, this, &PaginationWidget::on_last_clicked);
@@ -110,13 +106,14 @@ PaginationWidget::PaginationWidget(QWidget* parent)
     setLayout(layout_);
 
     // Connect page size combo signal
-    connect(page_size_combo_, QOverload<int>::of(&QComboBox::currentIndexChanged),
-            this, &PaginationWidget::on_page_size_changed);
+    connect(page_size_combo_,
+            QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this,
+            &PaginationWidget::on_page_size_changed);
     WidgetUtils::setupComboBoxes(this);
 }
 
-void PaginationWidget::update_state(std::uint32_t loaded_count,
-                                     std::uint32_t total_count) {
+void PaginationWidget::update_state(std::uint32_t loaded_count, std::uint32_t total_count) {
     loaded_count_ = loaded_count;
     total_count_ = total_count;
 
@@ -131,17 +128,17 @@ void PaginationWidget::update_state(std::uint32_t loaded_count,
         info_text = QString("Showing all records (%1)").arg(total_count);
     } else {
         info_text = QString("Showing page %1 of %2 (%3 records)")
-            .arg(current + 1)
-            .arg(pages)
-            .arg(total_count);
+                        .arg(current + 1)
+                        .arg(pages)
+                        .arg(total_count);
     }
     info_label_->setText(info_text);
 
     update_button_states();
 
     BOOST_LOG_SEV(lg(), debug) << "update_state: loaded=" << loaded_count
-                               << ", total=" << total_count
-                               << ", page=" << (current + 1) << "/" << pages;
+                               << ", total=" << total_count << ", page=" << (current + 1) << "/"
+                               << pages;
 }
 
 std::uint32_t PaginationWidget::page_size() const {
@@ -175,7 +172,7 @@ std::uint32_t PaginationWidget::total_pages() const {
         return 0;
     }
     const auto size = page_size();
-    return (total_count_ + size - 1) / size;  // Ceiling division
+    return (total_count_ + size - 1) / size; // Ceiling division
 }
 
 std::uint32_t PaginationWidget::current_offset() const {
@@ -207,8 +204,8 @@ void PaginationWidget::on_prev_clicked() {
     if (current_page_ == 0) {
         return;
     }
-    BOOST_LOG_SEV(lg(), debug) << "Previous page clicked, page " << current_page_
-                               << " -> " << (current_page_ - 1);
+    BOOST_LOG_SEV(lg(), debug) << "Previous page clicked, page " << current_page_ << " -> "
+                               << (current_page_ - 1);
     current_page_--;
     emit page_requested(current_offset(), page_size());
 }
@@ -218,8 +215,8 @@ void PaginationWidget::on_next_clicked() {
     if (current_page_ >= pages - 1) {
         return;
     }
-    BOOST_LOG_SEV(lg(), debug) << "Next page clicked, page " << current_page_
-                               << " -> " << (current_page_ + 1);
+    BOOST_LOG_SEV(lg(), debug) << "Next page clicked, page " << current_page_ << " -> "
+                               << (current_page_ + 1);
     current_page_++;
     emit page_requested(current_offset(), page_size());
 }

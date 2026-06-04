@@ -18,31 +18,31 @@
  *
  */
 #include "ores.qt/SubjectAreaMdiWindow.hpp"
-
-#include <QVBoxLayout>
-#include <QHeaderView>
-#include <QMessageBox>
-#include <QtConcurrent>
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/EntityItemDelegate.hpp"
+#include "ores.dq.api/messaging/data_organization_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/EntityItemDelegate.hpp"
+#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.dq.api/messaging/data_organization_protocol.hpp"
+#include <QHeaderView>
+#include <QMessageBox>
+#include <QVBoxLayout>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-SubjectAreaMdiWindow::SubjectAreaMdiWindow(
-    ClientManager* clientManager, const QString& username, QWidget* parent)
-    : EntityListMdiWindow(parent),
-      clientManager_(clientManager),
-      username_(username),
-      model_(new ClientSubjectAreaModel(clientManager, this)),
-      proxyModel_(new QSortFilterProxyModel(this)),
-      tableView_(new QTableView(this)),
-      toolbar_(nullptr) {
+SubjectAreaMdiWindow::SubjectAreaMdiWindow(ClientManager* clientManager,
+                                           const QString& username,
+                                           QWidget* parent)
+    : EntityListMdiWindow(parent)
+    , clientManager_(clientManager)
+    , username_(username)
+    , model_(new ClientSubjectAreaModel(clientManager, this))
+    , proxyModel_(new QSortFilterProxyModel(this))
+    , tableView_(new QTableView(this))
+    , toolbar_(nullptr) {
 
     proxyModel_->setSourceModel(model_);
     proxyModel_->setSortCaseSensitivity(Qt::CaseInsensitive);
@@ -61,8 +61,8 @@ void SubjectAreaMdiWindow::setupUi() {
 
     tableView_->setModel(proxyModel_);
     tableView_->setSortingEnabled(true);
-    tableView_->setItemDelegate(new EntityItemDelegate(
-        ClientSubjectAreaModel::columnStyles(), tableView_));
+    tableView_->setItemDelegate(
+        new EntityItemDelegate(ClientSubjectAreaModel::columnStyles(), tableView_));
     tableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
     tableView_->setSelectionMode(QAbstractItemView::ExtendedSelection);
     tableView_->setAlternatingRowColors(true);
@@ -70,9 +70,12 @@ void SubjectAreaMdiWindow::setupUi() {
     tableView_->verticalHeader()->setVisible(false);
     tableView_->sortByColumn(ClientSubjectAreaModel::Name, Qt::AscendingOrder);
 
-    initializeTableSettings(tableView_, model_,
-        ClientSubjectAreaModel::kSettingsGroup,
-        ClientSubjectAreaModel::defaultHiddenColumns(), ClientSubjectAreaModel::kDefaultWindowSize, 1);
+    initializeTableSettings(tableView_,
+                            model_,
+                            ClientSubjectAreaModel::kSettingsGroup,
+                            ClientSubjectAreaModel::defaultHiddenColumns(),
+                            ClientSubjectAreaModel::kDefaultWindowSize,
+                            1);
 
     layout->addWidget(loadingBar());
     layout->addWidget(tableView_);
@@ -85,27 +88,23 @@ void SubjectAreaMdiWindow::setupToolbar() {
     toolbar_->setIconSize(QSize(20, 20));
 
     addAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor),
-        tr("Add"));
+        IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor), tr("Add"));
     addAction_->setToolTip(tr("Add new subject area"));
 
     editAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Edit, IconUtils::DefaultIconColor),
-        tr("Edit"));
+        IconUtils::createRecoloredIcon(Icon::Edit, IconUtils::DefaultIconColor), tr("Edit"));
     editAction_->setToolTip(tr("Edit selected subject area"));
     editAction_->setEnabled(false);
 
     deleteAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor),
-        tr("Delete"));
+        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor), tr("Delete"));
     deleteAction_->setToolTip(tr("Delete selected subject area(s)"));
     deleteAction_->setEnabled(false);
 
     toolbar_->addSeparator();
 
     historyAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor),
-        tr("History"));
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor), tr("History"));
     historyAction_->setToolTip(tr("View version history"));
     historyAction_->setEnabled(false);
 
@@ -123,15 +122,15 @@ void SubjectAreaMdiWindow::setupToolbar() {
 }
 
 void SubjectAreaMdiWindow::setupConnections() {
-    connect(model_, &ClientSubjectAreaModel::dataLoaded,
-            this, &SubjectAreaMdiWindow::onDataLoaded);
-    connect(model_, &ClientSubjectAreaModel::loadError,
-            this, &SubjectAreaMdiWindow::onLoadError);
+    connect(model_, &ClientSubjectAreaModel::dataLoaded, this, &SubjectAreaMdiWindow::onDataLoaded);
+    connect(model_, &ClientSubjectAreaModel::loadError, this, &SubjectAreaMdiWindow::onLoadError);
     connectModel(model_);
-    connect(tableView_, &QTableView::doubleClicked,
-            this, &SubjectAreaMdiWindow::onRowDoubleClicked);
-    connect(tableView_->selectionModel(), &QItemSelectionModel::selectionChanged,
-            this, &SubjectAreaMdiWindow::onSelectionChanged);
+    connect(
+        tableView_, &QTableView::doubleClicked, this, &SubjectAreaMdiWindow::onRowDoubleClicked);
+    connect(tableView_->selectionModel(),
+            &QItemSelectionModel::selectionChanged,
+            this,
+            &SubjectAreaMdiWindow::onSelectionChanged);
 
     connect(addAction_, &QAction::triggered, this, &SubjectAreaMdiWindow::onAddClicked);
     connect(editAction_, &QAction::triggered, this, &SubjectAreaMdiWindow::onEditClicked);
@@ -145,8 +144,7 @@ void SubjectAreaMdiWindow::onDataLoaded() {
     updateActionStates();
 }
 
-void SubjectAreaMdiWindow::onLoadError(const QString& error_message,
-                                        const QString& details) {
+void SubjectAreaMdiWindow::onLoadError(const QString& error_message, const QString& details) {
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);
@@ -165,7 +163,8 @@ void SubjectAreaMdiWindow::onAddClicked() {
 
 void SubjectAreaMdiWindow::onEditClicked() {
     auto selected = tableView_->selectionModel()->selectedRows();
-    if (selected.isEmpty()) return;
+    if (selected.isEmpty())
+        return;
 
     auto sourceIndex = proxyModel_->mapToSource(selected.first());
     if (auto* subject_area = model_->getSubjectArea(sourceIndex.row())) {
@@ -175,7 +174,8 @@ void SubjectAreaMdiWindow::onEditClicked() {
 
 void SubjectAreaMdiWindow::onDeleteClicked() {
     auto selected = tableView_->selectionModel()->selectedRows();
-    if (selected.isEmpty()) return;
+    if (selected.isEmpty())
+        return;
 
     std::vector<dq::messaging::subject_area_key> keys;
     for (const auto& index : selected) {
@@ -188,22 +188,27 @@ void SubjectAreaMdiWindow::onDeleteClicked() {
         }
     }
 
-    QString message = keys.size() == 1
-        ? tr("Delete subject area '%1'?").arg(QString::fromStdString(keys[0].name))
-        : tr("Delete %1 subject areas?").arg(keys.size());
+    QString message =
+        keys.size() == 1 ?
+            tr("Delete subject area '%1'?").arg(QString::fromStdString(keys[0].name)) :
+            tr("Delete %1 subject areas?").arg(keys.size());
 
-    auto reply = MessageBoxHelper::question(this, tr("Confirm Delete"), message,
-                                            QMessageBox::Yes | QMessageBox::No);
-    if (reply != QMessageBox::Yes) return;
+    auto reply = MessageBoxHelper::question(
+        this, tr("Confirm Delete"), message, QMessageBox::Yes | QMessageBox::No);
+    if (reply != QMessageBox::Yes)
+        return;
 
     QPointer<SubjectAreaMdiWindow> self = this;
     auto task = [self, keys = std::move(keys)]() -> bool {
-        if (!self || !self->clientManager_) return false;
+        if (!self || !self->clientManager_)
+            return false;
 
         dq::messaging::delete_subject_area_request request;
         request.keys = keys;
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
-        if (!response_result) return false;
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
+        if (!response_result)
+            return false;
 
         return response_result->success;
     };
@@ -237,7 +242,8 @@ void SubjectAreaMdiWindow::onSelectionChanged() {
 
 void SubjectAreaMdiWindow::onHistoryClicked() {
     auto selected = tableView_->selectionModel()->selectedRows();
-    if (selected.isEmpty()) return;
+    if (selected.isEmpty())
+        return;
 
     auto sourceIndex = proxyModel_->mapToSource(selected.first());
     if (auto* subject_area = model_->getSubjectArea(sourceIndex.row())) {

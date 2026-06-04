@@ -20,15 +20,15 @@
 #ifndef ORES_QT_CLIENT_MARKET_OBSERVATION_MODEL_HPP
 #define ORES_QT_CLIENT_MARKET_OBSERVATION_MODEL_HPP
 
-#include <vector>
-#include <string>
-#include <boost/uuid/uuid.hpp>
-#include <QSize>
-#include <QFutureWatcher>
-#include "ores.qt/AbstractClientModel.hpp"
-#include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/market_observation.hpp"
+#include "ores.qt/AbstractClientModel.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include <QFutureWatcher>
+#include <QSize>
+#include <boost/uuid/uuid.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::qt {
 
@@ -39,8 +39,7 @@ class ClientMarketObservationModel final : public AbstractClientModel {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.client_market_observation_model";
+    inline static std::string_view logger_name = "ores.qt.client_market_observation_model";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -49,14 +48,7 @@ private:
     }
 
 public:
-    enum Column {
-        ObservationDate,
-        PointId,
-        Value,
-        Source,
-        RecordedAt,
-        ColumnCount
-    };
+    enum Column { ObservationDate, PointId, Value, Source, RecordedAt, ColumnCount };
 
     inline static const QSize kDefaultWindowSize = {800, 500};
 
@@ -68,11 +60,13 @@ public:
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-    QVariant headerData(int section, Qt::Orientation orientation,
-        int role = Qt::DisplayRole) const override;
+    QVariant
+    headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
     void refresh();
-    std::uint32_t total_available_count() const { return total_available_count_; }
+    std::uint32_t total_available_count() const {
+        return total_available_count_;
+    }
 
 private slots:
     void onDataLoaded();

@@ -20,17 +20,17 @@
 #ifndef ORES_QT_CURRENCY_DETAIL_DIALOG_HPP
 #define ORES_QT_CURRENCY_DETAIL_DIALOG_HPP
 
-#include <QToolBar>
-#include <QAction>
-#include <QPushButton>
-#include <memory>
-#include <vector>
-#include "ores.refdata.api/domain/currency.hpp"
-#include "ores.refdata.api/messaging/currency_history_protocol.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.qt/ImageCache.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.refdata.api/domain/currency.hpp"
+#include "ores.refdata.api/messaging/currency_history_protocol.hpp"
+#include <QAction>
+#include <QPushButton>
+#include <QToolBar>
+#include <memory>
+#include <vector>
 
 namespace Ui {
 
@@ -44,8 +44,7 @@ class CurrencyDetailDialog final : public DetailDialogBase {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.currency_detail_dialog";
+    inline static std::string_view logger_name = "ores.qt.currency_detail_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -91,8 +90,7 @@ public:
      * @param history All versions ordered newest-first (index 0 is latest)
      * @param versionNumber The version number to initially display
      */
-    void setHistory(const refdata::messaging::currency_version_history& history,
-        int versionNumber);
+    void setHistory(const refdata::messaging::currency_version_history& history, int versionNumber);
 
     /**
      * @brief Mark the dialog data as stale.
@@ -112,7 +110,9 @@ protected:
     QTabWidget* tabWidget() const override;
     QWidget* provenanceTab() const override;
     ProvenanceWidget* provenanceWidget() const override;
-    bool hasUnsavedChanges() const override { return isDirty_; }
+    bool hasUnsavedChanges() const override {
+        return isDirty_;
+    }
 
 signals:
     void currencyUpdated(const QString& iso_code);
@@ -142,8 +142,9 @@ private slots:
     void onNextVersionClicked();
     void onLastVersionClicked();
 
-    void onSystemSettingNotification(const QString& eventType, const QDateTime& timestamp,
-        const QStringList& entityIds);
+    void onSystemSettingNotification(const QString& eventType,
+                                     const QDateTime& timestamp,
+                                     const QStringList& entityIds);
     void onConnectionEstablished();
 
 private:

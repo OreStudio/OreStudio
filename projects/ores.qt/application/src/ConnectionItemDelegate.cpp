@@ -20,9 +20,8 @@
 #include "ores.qt/ConnectionItemDelegate.hpp"
 #include "ores.qt/ConnectionTreeModel.hpp"
 #include "ores.qt/ConnectionTypes.hpp"
-
-#include <QPainter>
 #include <QApplication>
+#include <QPainter>
 #include <QStyleOptionViewItem>
 
 namespace ores::qt {
@@ -38,11 +37,11 @@ constexpr int text_badge_gap = 8;
 }
 
 ConnectionItemDelegate::ConnectionItemDelegate(QObject* parent)
-    : QStyledItemDelegate(parent) {
-}
+    : QStyledItemDelegate(parent) {}
 
-void ConnectionItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option,
-                                    const QModelIndex& index) const {
+void ConnectionItemDelegate::paint(QPainter* painter,
+                                   const QStyleOptionViewItem& option,
+                                   const QModelIndex& index) const {
     QStyleOptionViewItem opt = option;
     initStyleOption(&opt, index);
 
@@ -128,7 +127,7 @@ void ConnectionItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem
 }
 
 QSize ConnectionItemDelegate::sizeHint(const QStyleOptionViewItem& option,
-                                        const QModelIndex& index) const {
+                                       const QModelIndex& index) const {
     QSize size = QStyledItemDelegate::sizeHint(option, index);
 
     // Ensure minimum height for rows with tags
@@ -142,9 +141,11 @@ QSize ConnectionItemDelegate::sizeHint(const QStyleOptionViewItem& option,
     return size;
 }
 
-void ConnectionItemDelegate::drawTagBadge(QPainter* painter, const QRect& rect,
-                                           const QString& text, const QColor& backgroundColor,
-                                           const QFont& badgeFont) const {
+void ConnectionItemDelegate::drawTagBadge(QPainter* painter,
+                                          const QRect& rect,
+                                          const QString& text,
+                                          const QColor& backgroundColor,
+                                          const QFont& badgeFont) const {
     painter->save();
     painter->setRenderHint(QPainter::Antialiasing, true);
 

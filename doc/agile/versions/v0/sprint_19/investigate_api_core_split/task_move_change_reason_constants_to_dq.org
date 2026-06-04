@@ -1,0 +1,68 @@
+:PROPERTIES:
+:ID: 9409F936-C45C-4BF8-9507-D796907D1E45
+:END:
+#+title: Task: Move change reason constants from ores.database to ores.dq.api
+#+description: The constants are DQ-domain (the change_reason entity lives in dq.api) and ores.database has zero internal uses — they only live there from the historical dq/iam cycle-break. Now that dq.api is light (eventing/platform/utility only), moving them back is cycle-safe: iam.core -> dq.api cannot loop. Move the header, update all consumers (http, qt, iam, ore), delete the ores.database copy.
+#+type: task
+#+level: s1
+#+filetags: :architecture:components:cpp:dq:investigate_api_core_split:sprint_19:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-04
+#+updated: 2026-06-04
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BD519FC9-6B29-4055-877F-861E46043A06][Investigate the API/core split in components]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Return the change reason constants to their semantic home. They are
+DQ-domain — the =change_reason= entity lives in =ores.dq.api/domain= —
+but the constants sit in =ores.database=, where they were parked to
+break a historical dq↔iam circular dependency. =ores.database= has
+zero internal uses of them; it is purely a host.
+
+Now that =ores.dq.api= is light (eventing/platform/utility only,
+after the [[id:681BBF6B-4DD8-411A-9B19-76AA5E14C1FC][inventory task]] cleanup), the move back is cycle-safe:
+=iam.core → dq.api= cannot loop because =dq.api= depends on nothing
+iam-ish. Per project direction, no compatibility aliases: move the
+header, fix every consumer, delete the =ores.database= copy.
+
+Deliberately deferred from the inventory task as a post-cleanup
+change — the precondition (light dq.api) had to land and be verified
+first.
+
+* Acceptance
+
+- =change_reason_constants.hpp= lives in
+  =ores.dq.api/include/ores.dq.api/domain/= under
+  =ores::dq::domain=; the =ores.database= copy is deleted.
+- All consumers (http core, qt trading/application, iam core, ore
+  core planner) include the dq.api header and namespace directly; no
+  alias or shim anywhere.
+- Link dependencies updated accordingly; full build green.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

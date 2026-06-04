@@ -1,0 +1,33 @@
+:PROPERTIES:
+:ID: E6D88535-E249-4730-8F6C-D50B182AD2B1
+:END:
+#+title: Stuck vcpkg lock: sccache daemon holds it
+#+description: If cmake configure hangs on 'waiting to take filesystem lock on vcpkg/.vcpkg-root', the sccache daemon inherited the lock fd; run sccache --stop-server to free it, and pre-start the server to prevent it.
+#+type: memory
+#+memory_subtype: reference
+#+level: cross
+#+filetags: :build:vcpkg:sccache:memory:reference:
+#+created: 2026-06-04
+#+updated: 2026-06-04
+
+When a =cmake= configure hangs printing "waiting to take filesystem
+lock on .../vcpkg/.vcpkg-root", the holder is almost certainly the
+=sccache= daemon. =vcpkg install= takes an exclusive =flock()= on
+=.vcpkg-root= and compiles ports through sccache; if no server is
+running, the first call auto-spawns the daemon, which inherits the
+non-CLOEXEC lock fd. =flock= follows the open-file-description, so
+the daemon keeps the lock alive long after vcpkg exits — and it never
+idles out while other worktrees keep it busy.
+
+*Why:* Hit on 2026-06-04: builds in OreStudio.local3 spawned the
+daemon while vcpkg held the lock; hours later a configure in the same
+worktree deadlocked while the daemon served compiles for
+OreStudio.local4. =fuser=/=lsof= showed nothing; only a =/proc/*/fd=
+scan found the holder.
+
+*How to apply:* To unblock: =sccache --stop-server= (it restarts on
+the next compile; in-flight compiles in other worktrees may error
+once — re-run their make). To prevent: pre-start the server outside
+any build, e.g. =sccache --start-server= at login, so no build ever
+spawns it while holding the vcpkg lock. To diagnose a held flock that
+=lsof= misses, scan =/proc/[0-9]*/fd= for links to the lock file.

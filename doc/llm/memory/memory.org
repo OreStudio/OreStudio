@@ -104,6 +104,9 @@ of these exclusions, push back: the right home is somewhere else.
 ** Reference
 
 - [[id:28F78E07-834D-4755-BB03-89BD7C17B01E][Compass basic command syntax]] — =search=, =list=, =show=, =where=, =story new=, =task new=, =add= with required flags.
+- [[id:E6D88535-E249-4730-8F6C-D50B182AD2B1][Stuck vcpkg lock: sccache daemon holds it]] — =sccache --stop-server=
+  frees it; pre-start the server to prevent; scan =/proc/*/fd= when
+  =lsof= shows nothing.
 
 * See also
 

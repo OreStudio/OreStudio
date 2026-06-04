@@ -18,7 +18,6 @@
  *
  */
 #include "ores.refdata.api/domain/counterparty_contact_information_table.hpp"
-
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
 
@@ -28,10 +27,12 @@ std::string convert_to_table(const std::vector<counterparty_contact_information>
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Counterparty" << "Type" << "City" << "Country" << "Phone" << "Email" << "Modified By" << "Version" << fort::endr;
+    table << fort::header << "Counterparty" << "Type" << "City" << "Country" << "Phone" << "Email"
+          << "Modified By" << "Version" << fort::endr;
 
     for (const auto& cci : v) {
-        table << cci.counterparty_id << cci.contact_type << cci.city << cci.country_code << cci.phone << cci.email << cci.modified_by << cci.version << fort::endr;
+        table << cci.counterparty_id << cci.contact_type << cci.city << cci.country_code
+              << cci.phone << cci.email << cci.modified_by << cci.version << fort::endr;
     }
     return table.to_string();
 }

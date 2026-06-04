@@ -20,9 +20,9 @@
 #ifndef ORES_REFDATA_API_MESSAGING_ASSET_CLASS_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_ASSET_CLASS_PROTOCOL_HPP
 
+#include "ores.refdata.api/domain/asset_class_info.hpp"
 #include <string>
 #include <vector>
-#include "ores.refdata.api/domain/asset_class_info.hpp"
 
 namespace ores::refdata::messaging {
 

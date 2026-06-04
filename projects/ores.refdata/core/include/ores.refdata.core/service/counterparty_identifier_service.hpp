@@ -20,14 +20,14 @@
 #ifndef ORES_REFDATA_CORE_SERVICE_COUNTERPARTY_IDENTIFIER_SERVICE_HPP
 #define ORES_REFDATA_CORE_SERVICE_COUNTERPARTY_IDENTIFIER_SERVICE_HPP
 
-#include <string>
-#include <vector>
-#include <optional>
-#include <boost/uuid/uuid.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/counterparty_identifier.hpp"
 #include "ores.refdata.core/repository/counterparty_identifier_repository.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <optional>
+#include <string>
+#include <vector>
 
 namespace ores::refdata::service {
 
@@ -86,14 +86,16 @@ public:
      *
      * @param counterparty_identifier The counterparty identifier to save
      */
-    void save_counterparty_identifier(const domain::counterparty_identifier& counterparty_identifier);
+    void
+    save_counterparty_identifier(const domain::counterparty_identifier& counterparty_identifier);
 
     /**
      * @brief Saves multiple counterparty identifiers (creates or updates).
      *
      * @param counterparty_identifiers The counterparty identifiers to save
      */
-    void save_counterparty_identifiers(const std::vector<domain::counterparty_identifier>& counterparty_identifiers);
+    void save_counterparty_identifiers(
+        const std::vector<domain::counterparty_identifier>& counterparty_identifiers);
 
     /**
      * @brief Removes a counterparty identifier.

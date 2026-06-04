@@ -18,11 +18,10 @@
  *
  */
 #include "ores.refdata.core/repository/business_centre_mapper.hpp"
-
-#include <boost/lexical_cast.hpp>
-#include <boost/uuid/uuid_io.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.refdata.api/domain/business_centre_json_io.hpp" // IWYU pragma: keep.
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::refdata::repository {
 
@@ -92,19 +91,13 @@ business_centre_entity business_centre_mapper::map(const domain::business_centre
 std::vector<domain::business_centre>
 business_centre_mapper::map(const std::vector<business_centre_entity>& v) {
     return map_vector<business_centre_entity, domain::business_centre>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<business_centre_entity>
 business_centre_mapper::map(const std::vector<domain::business_centre>& v) {
     return map_vector<domain::business_centre, business_centre_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

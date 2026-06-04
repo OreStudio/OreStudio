@@ -18,19 +18,17 @@
  *
  */
 #include "ores.refdata.core/repository/zero_convention_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.refdata.api/domain/zero_convention_json_io.hpp" // IWYU pragma: keep.
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::refdata::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::zero_convention
-zero_convention_mapper::map(const zero_convention_entity& v) {
+domain::zero_convention zero_convention_mapper::map(const zero_convention_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::zero_convention r;
@@ -57,8 +55,7 @@ zero_convention_mapper::map(const zero_convention_entity& v) {
     return r;
 }
 
-zero_convention_entity
-zero_convention_mapper::map(const domain::zero_convention& v) {
+zero_convention_entity zero_convention_mapper::map(const domain::zero_convention& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     zero_convention_entity r;
@@ -87,19 +84,13 @@ zero_convention_mapper::map(const domain::zero_convention& v) {
 std::vector<domain::zero_convention>
 zero_convention_mapper::map(const std::vector<zero_convention_entity>& v) {
     return map_vector<zero_convention_entity, domain::zero_convention>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<zero_convention_entity>
 zero_convention_mapper::map(const std::vector<domain::zero_convention>& v) {
     return map_vector<domain::zero_convention, zero_convention_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

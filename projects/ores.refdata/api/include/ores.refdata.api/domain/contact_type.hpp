@@ -20,9 +20,9 @@
 #ifndef ORES_REFDATA_API_DOMAIN_CONTACT_TYPE_HPP
 #define ORES_REFDATA_API_DOMAIN_CONTACT_TYPE_HPP
 
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <chrono>
 #include <string>
-#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::refdata::domain {
 
@@ -31,7 +31,7 @@ namespace ores::refdata::domain {
  *
  * Reference data table defining valid contact type classifications.
  * Examples: 'Legal', 'Operations', 'Settlement', 'Billing'.
- * 
+ *
  * Contact types are managed by the system tenant and are used to
  * categorise contact information records for parties and counterparties.
  */

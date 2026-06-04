@@ -18,9 +18,8 @@
  *
  */
 #include "ores.refdata.api/domain/monetary_nature_table_io.hpp"
-
-#include <ostream>
 #include "ores.refdata.api/domain/monetary_nature_table.hpp"
+#include <ostream>
 
 namespace ores::refdata::domain {
 

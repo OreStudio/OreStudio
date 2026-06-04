@@ -20,10 +20,10 @@
 #ifndef ORES_REFDATA_CORE_GENERATORS_COUNTRY_GENERATOR_HPP
 #define ORES_REFDATA_CORE_GENERATORS_COUNTRY_GENERATOR_HPP
 
-#include <vector>
 #include "ores.refdata.api/domain/country.hpp"
 #include "ores.refdata.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include <vector>
 
 namespace ores::refdata::generators {
 
@@ -37,8 +37,8 @@ namespace ores::refdata::generators {
  * @param n Number of countries to generate. If n is 0 or greater than the
  *          available set (50), returns all available fictional countries.
  */
-ORES_REFDATA_API_EXPORT std::vector<domain::country> generate_fictional_countries(std::size_t n,
-    utility::generation::generation_context& ctx);
+ORES_REFDATA_API_EXPORT std::vector<domain::country>
+generate_fictional_countries(std::size_t n, utility::generation::generation_context& ctx);
 
 }
 

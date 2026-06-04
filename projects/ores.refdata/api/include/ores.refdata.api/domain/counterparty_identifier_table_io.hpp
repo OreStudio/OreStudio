@@ -20,17 +20,18 @@
 #ifndef ORES_REFDATA_API_DOMAIN_COUNTERPARTY_IDENTIFIER_TABLE_IO_HPP
 #define ORES_REFDATA_API_DOMAIN_COUNTERPARTY_IDENTIFIER_TABLE_IO_HPP
 
-#include <iosfwd>
-#include <vector>
 #include "ores.refdata.api/domain/counterparty_identifier.hpp"
 #include "ores.refdata.api/export.hpp"
+#include <iosfwd>
+#include <vector>
 
 namespace ores::refdata::domain {
 
 /**
  * @brief Dumps the counterparty_identifier objects to a stream in table format.
  */
-ORES_REFDATA_API_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<counterparty_identifier>& v);
+ORES_REFDATA_API_EXPORT std::ostream& operator<<(std::ostream& s,
+                                                 const std::vector<counterparty_identifier>& v);
 
 }
 

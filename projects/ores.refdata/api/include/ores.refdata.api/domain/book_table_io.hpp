@@ -20,10 +20,10 @@
 #ifndef ORES_REFDATA_DOMAIN_BOOK_TABLE_IO_HPP
 #define ORES_REFDATA_DOMAIN_BOOK_TABLE_IO_HPP
 
-#include <iosfwd>
-#include <vector>
 #include "ores.refdata.api/domain/book.hpp"
 #include "ores.refdata.api/export.hpp"
+#include <iosfwd>
+#include <vector>
 
 namespace ores::refdata::domain {
 

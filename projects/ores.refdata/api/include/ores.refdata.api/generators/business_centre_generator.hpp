@@ -20,10 +20,10 @@
 #ifndef ORES_REFDATA_CORE_GENERATORS_BUSINESS_CENTRE_GENERATOR_HPP
 #define ORES_REFDATA_CORE_GENERATORS_BUSINESS_CENTRE_GENERATOR_HPP
 
-#include <vector>
 #include "ores.refdata.api/domain/business_centre.hpp"
 #include "ores.refdata.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include <vector>
 
 namespace ores::refdata::generators {
 
@@ -38,8 +38,7 @@ namespace ores::refdata::generators {
  *          the available set (20), returns all available fictional centres.
  */
 ORES_REFDATA_API_EXPORT std::vector<domain::business_centre>
-generate_fictional_business_centres(std::size_t n,
-    utility::generation::generation_context& ctx);
+generate_fictional_business_centres(std::size_t n, utility::generation::generation_context& ctx);
 
 }
 

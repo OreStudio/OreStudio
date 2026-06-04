@@ -20,10 +20,10 @@
 #ifndef ORES_REFDATA_REPOSITORY_PORTFOLIO_MAPPER_HPP
 #define ORES_REFDATA_REPOSITORY_PORTFOLIO_MAPPER_HPP
 
-#include "ores.refdata.api/domain/portfolio.hpp"
-#include "ores.refdata.core/repository/portfolio_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.refdata.api/domain/portfolio.hpp"
 #include "ores.refdata.core/export.hpp"
+#include "ores.refdata.core/repository/portfolio_entity.hpp"
 
 namespace ores::refdata::repository {
 
@@ -32,22 +32,20 @@ namespace ores::refdata::repository {
  */
 class ORES_REFDATA_CORE_EXPORT portfolio_mapper {
 private:
-    inline static std::string_view logger_name =
-        "ores.refdata.repository.portfolio_mapper";
+    inline static std::string_view logger_name = "ores.refdata.repository.portfolio_mapper";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }
+
 public:
     static domain::portfolio map(const portfolio_entity& v);
     static portfolio_entity map(const domain::portfolio& v);
 
-    static std::vector<domain::portfolio>
-    map(const std::vector<portfolio_entity>& v);
-    static std::vector<portfolio_entity>
-    map(const std::vector<domain::portfolio>& v);
+    static std::vector<domain::portfolio> map(const std::vector<portfolio_entity>& v);
+    static std::vector<portfolio_entity> map(const std::vector<domain::portfolio>& v);
 };
 
 }

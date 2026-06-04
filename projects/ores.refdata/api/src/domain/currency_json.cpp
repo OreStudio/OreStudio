@@ -18,10 +18,9 @@
  *
  */
 #include "ores.refdata.api/domain/currency_json.hpp"
-
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <rfl.hpp>
 #include <rfl/json.hpp>
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 
 namespace ores::refdata::domain {
 

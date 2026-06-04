@@ -18,7 +18,6 @@
  *
  */
 #include "ores.refdata.api/domain/country_table.hpp"
-
 #include <fort.hpp>
 
 namespace ores::refdata::domain {
@@ -35,9 +34,9 @@ fort::char_table make_country_table() {
 }
 
 void add_country_row(fort::char_table& table, const country& c) {
-    table << c.alpha2_code << c.alpha3_code << c.numeric_code << c.version
-          << c.name << c.official_name << c.change_reason_code << c.modified_by
-          << c.recorded_at << fort::endr;
+    table << c.alpha2_code << c.alpha3_code << c.numeric_code << c.version << c.name
+          << c.official_name << c.change_reason_code << c.modified_by << c.recorded_at
+          << fort::endr;
 }
 
 std::string format_table(fort::char_table& table) {

@@ -17,17 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.refdata.core/repository/party_status_repository.hpp"
-
-#include <catch2/catch_test_macros.hpp>
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
-#include "ores.testing/scoped_database_helper.hpp"
-#include "ores.testing/make_generation_context.hpp"
-#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
-#include "ores.refdata.api/domain/party_status.hpp" // IWYU pragma: keep.
+#include "ores.refdata.api/domain/party_status.hpp"         // IWYU pragma: keep.
 #include "ores.refdata.api/domain/party_status_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/generators/party_status_generator.hpp"
+#include "ores.refdata.core/repository/party_status_repository.hpp"
+#include "ores.testing/make_generation_context.hpp"
+#include "ores.testing/scoped_database_helper.hpp"
+#include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
+#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 
@@ -79,15 +78,13 @@ TEST_CASE("read_latest_party_statuses", tags) {
     for (auto& ps : written_party_statuses) {
         ps.change_reason_code = "system.test";
     }
-    BOOST_LOG_SEV(lg, debug) << "Written party statuses: "
-                             << written_party_statuses;
+    BOOST_LOG_SEV(lg, debug) << "Written party statuses: " << written_party_statuses;
 
     party_status_repository repo;
     repo.write(h.context(), written_party_statuses);
 
     auto read_party_statuses = repo.read_latest(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read party statuses: "
-                             << read_party_statuses;
+    BOOST_LOG_SEV(lg, debug) << "Read party statuses: " << read_party_statuses;
 
     CHECK(read_party_statuses.size() >= written_party_statuses.size());
 }
@@ -109,8 +106,7 @@ TEST_CASE("read_latest_party_status_by_code", tags) {
     repo.write(h.context(), ps);
 
     auto read_party_statuses = repo.read_latest(h.context(), ps.code);
-    BOOST_LOG_SEV(lg, debug) << "Read party statuses: "
-                             << read_party_statuses;
+    BOOST_LOG_SEV(lg, debug) << "Read party statuses: " << read_party_statuses;
 
     REQUIRE(read_party_statuses.size() == 1);
     CHECK(read_party_statuses[0].code == ps.code);
@@ -127,8 +123,7 @@ TEST_CASE("read_nonexistent_party_status_code", tags) {
     BOOST_LOG_SEV(lg, debug) << "Non-existent code: " << nonexistent_code;
 
     auto read_party_statuses = repo.read_latest(h.context(), nonexistent_code);
-    BOOST_LOG_SEV(lg, debug) << "Read party statuses: "
-                             << read_party_statuses;
+    BOOST_LOG_SEV(lg, debug) << "Read party statuses: " << read_party_statuses;
 
     CHECK(read_party_statuses.size() == 0);
 }

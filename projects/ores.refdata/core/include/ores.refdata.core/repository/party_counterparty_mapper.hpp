@@ -20,10 +20,10 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_PARTY_COUNTERPARTY_MAPPER_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_PARTY_COUNTERPARTY_MAPPER_HPP
 
-#include "ores.refdata.api/domain/party_counterparty.hpp"
-#include "ores.refdata.core/repository/party_counterparty_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.refdata.api/domain/party_counterparty.hpp"
 #include "ores.refdata.core/export.hpp"
+#include "ores.refdata.core/repository/party_counterparty_entity.hpp"
 
 namespace ores::refdata::repository {
 
@@ -37,6 +37,7 @@ private:
         static auto instance = make_logger(logger_name);
         return instance;
     }
+
 public:
     static domain::party_counterparty map(const party_counterparty_entity& v);
     static party_counterparty_entity map(const domain::party_counterparty& v);

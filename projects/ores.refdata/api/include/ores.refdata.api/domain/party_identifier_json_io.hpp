@@ -20,9 +20,9 @@
 #ifndef ORES_REFDATA_API_DOMAIN_PARTY_IDENTIFIER_JSON_IO_HPP
 #define ORES_REFDATA_API_DOMAIN_PARTY_IDENTIFIER_JSON_IO_HPP
 
-#include <iosfwd>
 #include "ores.refdata.api/domain/party_identifier.hpp"
 #include "ores.refdata.api/export.hpp"
+#include <iosfwd>
 
 namespace ores::refdata::domain {
 

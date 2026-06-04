@@ -18,19 +18,17 @@
  *
  */
 #include "ores.refdata.core/repository/portfolio_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.refdata.api/domain/portfolio_json_io.hpp" // IWYU pragma: keep.
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::refdata::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::portfolio
-portfolio_mapper::map(const portfolio_entity& v) {
+domain::portfolio portfolio_mapper::map(const portfolio_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::portfolio r;
@@ -41,8 +39,13 @@ portfolio_mapper::map(const portfolio_entity& v) {
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.name = v.name;
     r.description = v.description.value_or("");
-    r.parent_portfolio_id = v.parent_portfolio_id.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.parent_portfolio_id)) : std::nullopt;
-    r.owner_unit_id = v.owner_unit_id.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.owner_unit_id)) : std::nullopt;
+    r.parent_portfolio_id =
+        v.parent_portfolio_id.has_value() ?
+            std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.parent_portfolio_id)) :
+            std::nullopt;
+    r.owner_unit_id = v.owner_unit_id.has_value() ?
+                          std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.owner_unit_id)) :
+                          std::nullopt;
     r.purpose_type = v.purpose_type;
     r.aggregation_ccy = v.aggregation_ccy.value_or("");
     r.is_virtual = v.is_virtual;
@@ -57,8 +60,7 @@ portfolio_mapper::map(const portfolio_entity& v) {
     return r;
 }
 
-portfolio_entity
-portfolio_mapper::map(const domain::portfolio& v) {
+portfolio_entity portfolio_mapper::map(const domain::portfolio& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     portfolio_entity r;
@@ -69,8 +71,12 @@ portfolio_mapper::map(const domain::portfolio& v) {
     r.party_id = boost::uuids::to_string(v.party_id);
     r.name = v.name;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
-    r.parent_portfolio_id = v.parent_portfolio_id.has_value() ? std::optional(boost::uuids::to_string(*v.parent_portfolio_id)) : std::nullopt;
-    r.owner_unit_id = v.owner_unit_id.has_value() ? std::optional(boost::uuids::to_string(*v.owner_unit_id)) : std::nullopt;
+    r.parent_portfolio_id = v.parent_portfolio_id.has_value() ?
+                                std::optional(boost::uuids::to_string(*v.parent_portfolio_id)) :
+                                std::nullopt;
+    r.owner_unit_id = v.owner_unit_id.has_value() ?
+                          std::optional(boost::uuids::to_string(*v.owner_unit_id)) :
+                          std::nullopt;
     r.purpose_type = v.purpose_type;
     r.aggregation_ccy = v.aggregation_ccy.empty() ? std::nullopt : std::optional(v.aggregation_ccy);
     r.is_virtual = v.is_virtual;
@@ -84,22 +90,14 @@ portfolio_mapper::map(const domain::portfolio& v) {
     return r;
 }
 
-std::vector<domain::portfolio>
-portfolio_mapper::map(const std::vector<portfolio_entity>& v) {
+std::vector<domain::portfolio> portfolio_mapper::map(const std::vector<portfolio_entity>& v) {
     return map_vector<portfolio_entity, domain::portfolio>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
-std::vector<portfolio_entity>
-portfolio_mapper::map(const std::vector<domain::portfolio>& v) {
+std::vector<portfolio_entity> portfolio_mapper::map(const std::vector<domain::portfolio>& v) {
     return map_vector<domain::portfolio, portfolio_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

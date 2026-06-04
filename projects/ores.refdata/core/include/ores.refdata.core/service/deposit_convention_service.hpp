@@ -20,13 +20,13 @@
 #ifndef ORES_REFDATA_SERVICE_DEPOSIT_CONVENTION_SERVICE_HPP
 #define ORES_REFDATA_SERVICE_DEPOSIT_CONVENTION_SERVICE_HPP
 
-#include <string>
-#include <vector>
-#include <optional>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/deposit_convention.hpp"
 #include "ores.refdata.core/repository/deposit_convention_repository.hpp"
+#include <optional>
+#include <string>
+#include <vector>
 
 namespace ores::refdata::service {
 
@@ -35,8 +35,7 @@ namespace ores::refdata::service {
  */
 class deposit_convention_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.refdata.service.deposit_convention_service";
+    inline static std::string_view logger_name = "ores.refdata.service.deposit_convention_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -51,15 +50,13 @@ public:
 
     std::vector<domain::deposit_convention> list_deposit_conventions();
 
-    std::optional<domain::deposit_convention>
-    get_deposit_convention(const std::string& id);
+    std::optional<domain::deposit_convention> get_deposit_convention(const std::string& id);
 
     void save_deposit_convention(const domain::deposit_convention& v);
 
     void remove_deposit_convention(const std::string& id);
 
-    std::vector<domain::deposit_convention>
-    get_deposit_convention_history(const std::string& id);
+    std::vector<domain::deposit_convention> get_deposit_convention_history(const std::string& id);
 
 private:
     context ctx_;

@@ -20,13 +20,13 @@
 #ifndef ORES_REFDATA_CORE_SERVICE_MONETARY_NATURE_SERVICE_HPP
 #define ORES_REFDATA_CORE_SERVICE_MONETARY_NATURE_SERVICE_HPP
 
-#include <string>
-#include <vector>
-#include <optional>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/monetary_nature.hpp"
 #include "ores.refdata.core/repository/monetary_nature_repository.hpp"
+#include <optional>
+#include <string>
+#include <vector>
 
 namespace ores::refdata::service {
 
@@ -35,8 +35,7 @@ namespace ores::refdata::service {
  */
 class monetary_nature_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.refdata.service.monetary_nature_service";
+    inline static std::string_view logger_name = "ores.refdata.service.monetary_nature_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -51,8 +50,7 @@ public:
 
     std::vector<domain::monetary_nature> list_types();
 
-    std::optional<domain::monetary_nature>
-    find_type(const std::string& code);
+    std::optional<domain::monetary_nature> find_type(const std::string& code);
 
     void save_type(const domain::monetary_nature& v);
 
@@ -62,8 +60,7 @@ public:
 
     void remove_types(const std::vector<std::string>& codes);
 
-    std::vector<domain::monetary_nature>
-    get_type_history(const std::string& code);
+    std::vector<domain::monetary_nature> get_type_history(const std::string& code);
 
 private:
     context ctx_;

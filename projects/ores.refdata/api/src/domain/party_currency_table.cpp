@@ -18,7 +18,6 @@
  *
  */
 #include "ores.refdata.api/domain/party_currency_table.hpp"
-
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
 
@@ -31,8 +30,8 @@ std::string convert_to_table(const std::vector<party_currency>& v) {
     table << fort::header << "Party" << "Currency" << "Modified By" << "Version" << fort::endr;
 
     for (const auto& pc : v) {
-        table << boost::uuids::to_string(pc.party_id) << pc.currency_iso_code
-              << pc.modified_by << pc.version << fort::endr;
+        table << boost::uuids::to_string(pc.party_id) << pc.currency_iso_code << pc.modified_by
+              << pc.version << fort::endr;
     }
     return table.to_string();
 }

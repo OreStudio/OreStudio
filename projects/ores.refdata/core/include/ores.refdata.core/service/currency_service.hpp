@@ -20,18 +20,18 @@
 #ifndef ORES_REFDATA_CORE_SERVICE_CURRENCY_SERVICE_HPP
 #define ORES_REFDATA_CORE_SERVICE_CURRENCY_SERVICE_HPP
 
-#include <string>
-#include <vector>
-#include <cstdint>
-#include <optional>
-#include <boost/uuid/uuid.hpp>
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/currency.hpp"
 #include "ores.refdata.api/domain/currency_version_history.hpp"
+#include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/repository/currency_repository.hpp"
 #include "ores.refdata.core/repository/party_currency_repository.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.refdata.core/export.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <cstdint>
+#include <optional>
+#include <string>
+#include <vector>
 
 namespace ores::refdata::service {
 
@@ -43,8 +43,7 @@ namespace ores::refdata::service {
  */
 class ORES_REFDATA_CORE_EXPORT currency_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.refdata.service.currency_service";
+    inline static std::string_view logger_name = "ores.refdata.service.currency_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -69,8 +68,7 @@ public:
      * @param limit Maximum number of records to return.
      * @return Vector of currencies for the requested page.
      */
-    std::vector<domain::currency> list_currencies(std::uint32_t offset,
-                                                   std::uint32_t limit);
+    std::vector<domain::currency> list_currencies(std::uint32_t offset, std::uint32_t limit);
 
     /**
      * @brief Gets the total count of active currencies.
@@ -148,9 +146,9 @@ public:
      * @param limit Maximum number of records to return.
      * @return Vector of visible currencies for the requested page.
      */
-    std::vector<domain::currency> list_currencies_for_party(
-        const boost::uuids::uuid& party_id,
-        std::uint32_t offset, std::uint32_t limit);
+    std::vector<domain::currency> list_currencies_for_party(const boost::uuids::uuid& party_id,
+                                                            std::uint32_t offset,
+                                                            std::uint32_t limit);
 
     /**
      * @brief Gets the total count of currencies visible to a specific party.

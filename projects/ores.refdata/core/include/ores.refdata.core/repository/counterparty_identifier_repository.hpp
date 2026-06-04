@@ -20,14 +20,14 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_COUNTERPARTY_IDENTIFIER_REPOSITORY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_COUNTERPARTY_IDENTIFIER_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include <sqlgen/postgres.hpp>
-#include <boost/uuid/uuid.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/counterparty_identifier.hpp"
 #include "ores.refdata.core/export.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::refdata::repository {
 
@@ -58,7 +58,8 @@ public:
     std::vector<domain::counterparty_identifier> read_latest();
     std::vector<domain::counterparty_identifier> read_latest(const boost::uuids::uuid& id);
     std::vector<domain::counterparty_identifier> read_latest_by_code(const std::string& code);
-    std::vector<domain::counterparty_identifier> read_latest_by_counterparty_id(const boost::uuids::uuid& counterparty_id);
+    std::vector<domain::counterparty_identifier>
+    read_latest_by_counterparty_id(const boost::uuids::uuid& counterparty_id);
 
     std::vector<domain::counterparty_identifier> read_all(const boost::uuids::uuid& id);
     void remove(const boost::uuids::uuid& id);

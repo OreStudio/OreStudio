@@ -17,14 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <set>
-#include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
-#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
-#include "ores.utility/generation/generation_context.hpp"
-#include "ores.refdata.api/domain/country.hpp" // IWYU pragma: keep.
+#include "ores.refdata.api/domain/country.hpp"         // IWYU pragma: keep.
 #include "ores.refdata.api/domain/country_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/generators/country_generator.hpp"
+#include "ores.utility/generation/generation_context.hpp"
+#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <catch2/catch_test_macros.hpp>
+#include <set>
 
 namespace {
 
@@ -104,8 +104,8 @@ TEST_CASE("generate_fictional_countries_contains_known_countries", tags) {
     for (const auto& c : countries)
         codes.insert(c.alpha2_code);
 
-    CHECK(codes.count("AL") == 1);  // Aerilon
-    CHECK(codes.count("ZE") == 1);  // Zephyria
-    CHECK(codes.count("ER") == 1);  // Eriador
-    CHECK(codes.count("KR") == 1);  // Krynn
+    CHECK(codes.count("AL") == 1); // Aerilon
+    CHECK(codes.count("ZE") == 1); // Zephyria
+    CHECK(codes.count("ER") == 1); // Eriador
+    CHECK(codes.count("KR") == 1); // Krynn
 }

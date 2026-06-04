@@ -20,10 +20,10 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_BUSINESS_UNIT_TYPE_MAPPER_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_BUSINESS_UNIT_TYPE_MAPPER_HPP
 
-#include "ores.refdata.api/domain/business_unit_type.hpp"
-#include "ores.refdata.core/repository/business_unit_type_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.refdata.api/domain/business_unit_type.hpp"
 #include "ores.refdata.core/export.hpp"
+#include "ores.refdata.core/repository/business_unit_type_entity.hpp"
 
 namespace ores::refdata::repository {
 
@@ -40,6 +40,7 @@ private:
         static auto instance = make_logger(logger_name);
         return instance;
     }
+
 public:
     static domain::business_unit_type map(const business_unit_type_entity& v);
     static business_unit_type_entity map(const domain::business_unit_type& v);

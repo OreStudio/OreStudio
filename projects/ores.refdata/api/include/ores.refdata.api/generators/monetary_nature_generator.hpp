@@ -20,25 +20,24 @@
 #ifndef ORES_REFDATA_CORE_GENERATORS_MONETARY_NATURE_GENERATOR_HPP
 #define ORES_REFDATA_CORE_GENERATORS_MONETARY_NATURE_GENERATOR_HPP
 
-#include <vector>
 #include "ores.refdata.api/domain/monetary_nature.hpp"
 #include "ores.refdata.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include <vector>
 
 namespace ores::refdata::generators {
 
 /**
  * @brief Generates a synthetic monetary_nature.
  */
-ORES_REFDATA_API_EXPORT domain::monetary_nature generate_synthetic_monetary_nature(
-    utility::generation::generation_context& ctx);
+ORES_REFDATA_API_EXPORT domain::monetary_nature
+generate_synthetic_monetary_nature(utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic monetary_natures.
  */
 ORES_REFDATA_API_EXPORT std::vector<domain::monetary_nature>
-generate_synthetic_monetary_natures(std::size_t n,
-    utility::generation::generation_context& ctx);
+generate_synthetic_monetary_natures(std::size_t n, utility::generation::generation_context& ctx);
 
 }
 

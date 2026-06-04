@@ -20,14 +20,14 @@
 #ifndef ORES_REFDATA_CORE_SERVICE_PORTFOLIO_SERVICE_HPP
 #define ORES_REFDATA_CORE_SERVICE_PORTFOLIO_SERVICE_HPP
 
-#include <string>
-#include <vector>
-#include <optional>
-#include <boost/uuid/uuid.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/portfolio.hpp"
 #include "ores.refdata.core/repository/portfolio_repository.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <optional>
+#include <string>
+#include <vector>
 
 namespace ores::refdata::service {
 
@@ -39,8 +39,7 @@ namespace ores::refdata::service {
  */
 class portfolio_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.refdata.service.portfolio_service";
+    inline static std::string_view logger_name = "ores.refdata.service.portfolio_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -66,8 +65,7 @@ public:
     /**
      * @brief Finds a portfolio by its ID.
      */
-    std::optional<domain::portfolio>
-    find_portfolio(const boost::uuids::uuid& id);
+    std::optional<domain::portfolio> find_portfolio(const boost::uuids::uuid& id);
 
     /**
      * @brief Saves a portfolio (creates or updates).
@@ -96,8 +94,7 @@ public:
      * @param id The portfolio ID
      * @return Vector of all versions, newest first
      */
-    std::vector<domain::portfolio>
-    get_portfolio_history(const std::string& id);
+    std::vector<domain::portfolio> get_portfolio_history(const std::string& id);
 
 private:
     context ctx_;

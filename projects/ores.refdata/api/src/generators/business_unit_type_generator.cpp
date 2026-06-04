@@ -18,28 +18,25 @@
  *
  */
 #include "ores.refdata.api/generators/business_unit_type_generator.hpp"
-
+#include "ores.utility/generation/generation_keys.hpp"
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::refdata::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::business_unit_type generate_synthetic_business_unit_type(
-    utility::generation::generation_context& ctx) {
+domain::business_unit_type
+generate_synthetic_business_unit_type(utility::generation::generation_context& ctx) {
     static std::atomic<int> counter{0};
     const auto idx = ++counter;
-    const auto modified_by = ctx.env().get_or(
-        generation_keys::modified_by, "system");
-    const auto tenant_id = ctx.env().get_or(
-        generation_keys::tenant_id, "system");
+    const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
+    const auto tenant_id = ctx.env().get_or(generation_keys::tenant_id, "system");
 
     domain::business_unit_type r;
     r.version = 1;
-    r.tenant_id = utility::uuid::tenant_id::from_string(tenant_id)
-        .value_or(utility::uuid::tenant_id::system());
+    r.tenant_id = utility::uuid::tenant_id::from_string(tenant_id).value_or(
+        utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
     r.coding_scheme_code = "ORES-ORG";
     r.code = std::string(faker::word::noun()) + "_type_" + std::to_string(idx);
@@ -56,7 +53,7 @@ domain::business_unit_type generate_synthetic_business_unit_type(
 
 std::vector<domain::business_unit_type>
 generate_synthetic_business_unit_types(std::size_t n,
-    utility::generation::generation_context& ctx) {
+                                       utility::generation::generation_context& ctx) {
     std::vector<domain::business_unit_type> r;
     r.reserve(n);
     while (r.size() < n)

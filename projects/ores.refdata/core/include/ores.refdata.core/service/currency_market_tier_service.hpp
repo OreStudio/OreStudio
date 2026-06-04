@@ -20,13 +20,13 @@
 #ifndef ORES_REFDATA_CORE_SERVICE_CURRENCY_MARKET_TIER_SERVICE_HPP
 #define ORES_REFDATA_CORE_SERVICE_CURRENCY_MARKET_TIER_SERVICE_HPP
 
-#include <string>
-#include <vector>
-#include <optional>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/currency_market_tier.hpp"
 #include "ores.refdata.core/repository/currency_market_tier_repository.hpp"
+#include <optional>
+#include <string>
+#include <vector>
 
 namespace ores::refdata::service {
 
@@ -51,8 +51,7 @@ public:
 
     std::vector<domain::currency_market_tier> list_types();
 
-    std::optional<domain::currency_market_tier>
-    find_type(const std::string& code);
+    std::optional<domain::currency_market_tier> find_type(const std::string& code);
 
     void save_type(const domain::currency_market_tier& v);
 
@@ -62,8 +61,7 @@ public:
 
     void remove_types(const std::vector<std::string>& codes);
 
-    std::vector<domain::currency_market_tier>
-    get_type_history(const std::string& code);
+    std::vector<domain::currency_market_tier> get_type_history(const std::string& code);
 
 private:
     context ctx_;

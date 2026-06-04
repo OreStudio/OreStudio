@@ -20,9 +20,9 @@
 #ifndef ORES_REFDATA_API_DOMAIN_PARTY_ID_SCHEME_HPP
 #define ORES_REFDATA_API_DOMAIN_PARTY_ID_SCHEME_HPP
 
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <chrono>
 #include <string>
-#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::refdata::domain {
 
@@ -31,7 +31,7 @@ namespace ores::refdata::domain {
  *
  * Reference data table defining valid party identifier scheme types.
  * Examples: 'LEI', 'BIC', 'MIC', 'DUNS'.
- * 
+ *
  * Party ID schemes are managed by the system tenant. The optional
  * coding_scheme_code field cross-references the DQ coding scheme table.
  */

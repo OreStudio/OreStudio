@@ -20,10 +20,10 @@
 #ifndef ORES_REFDATA_REPOSITORY_OVERNIGHT_INDEX_CONVENTION_MAPPER_HPP
 #define ORES_REFDATA_REPOSITORY_OVERNIGHT_INDEX_CONVENTION_MAPPER_HPP
 
-#include "ores.refdata.api/domain/overnight_index_convention.hpp"
-#include "ores.refdata.core/repository/overnight_index_convention_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.refdata.api/domain/overnight_index_convention.hpp"
 #include "ores.refdata.core/export.hpp"
+#include "ores.refdata.core/repository/overnight_index_convention_entity.hpp"
 
 namespace ores::refdata::repository {
 
@@ -40,6 +40,7 @@ private:
         static auto instance = make_logger(logger_name);
         return instance;
     }
+
 public:
     static domain::overnight_index_convention map(const overnight_index_convention_entity& v);
     static overnight_index_convention_entity map(const domain::overnight_index_convention& v);

@@ -20,25 +20,25 @@
 #ifndef ORES_REFDATA_CORE_GENERATORS_CURRENCY_MARKET_TIER_GENERATOR_HPP
 #define ORES_REFDATA_CORE_GENERATORS_CURRENCY_MARKET_TIER_GENERATOR_HPP
 
-#include <vector>
 #include "ores.refdata.api/domain/currency_market_tier.hpp"
 #include "ores.refdata.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include <vector>
 
 namespace ores::refdata::generators {
 
 /**
  * @brief Generates a synthetic currency_market_tier.
  */
-ORES_REFDATA_API_EXPORT domain::currency_market_tier generate_synthetic_currency_market_tier(
-    utility::generation::generation_context& ctx);
+ORES_REFDATA_API_EXPORT domain::currency_market_tier
+generate_synthetic_currency_market_tier(utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic currency_market_tiers.
  */
 ORES_REFDATA_API_EXPORT std::vector<domain::currency_market_tier>
 generate_synthetic_currency_market_tiers(std::size_t n,
-    utility::generation::generation_context& ctx);
+                                         utility::generation::generation_context& ctx);
 
 }
 

@@ -20,15 +20,15 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_PARTY_REPOSITORY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_PARTY_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include <cstdint>
-#include <sqlgen/postgres.hpp>
-#include <boost/uuid/uuid.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/party.hpp"
 #include "ores.refdata.core/export.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <cstdint>
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::refdata::repository {
 
@@ -37,8 +37,7 @@ namespace ores::refdata::repository {
  */
 class ORES_REFDATA_CORE_EXPORT party_repository {
 private:
-    inline static std::string_view logger_name =
-        "ores.refdata.repository.party_repository";
+    inline static std::string_view logger_name = "ores.refdata.repository.party_repository";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -69,8 +68,7 @@ public:
      * @param tenant_id The tenant identifier
      * @return Vector containing the system party, or empty if not found
      */
-    std::vector<domain::party>
-    read_system_party(const std::string& tenant_id);
+    std::vector<domain::party> read_system_party(const std::string& tenant_id);
 
     /**
      * @brief Reads latest parties with pagination support.
@@ -78,8 +76,7 @@ public:
      * @param limit Maximum number of records to return
      * @return Vector of parties within the specified range
      */
-    std::vector<domain::party> read_latest(std::uint32_t offset,
-                                            std::uint32_t limit);
+    std::vector<domain::party> read_latest(std::uint32_t offset, std::uint32_t limit);
 
     /**
      * @brief Gets the total count of active parties.
@@ -96,8 +93,7 @@ public:
      * @param root_id The party to start from (included in result)
      * @return UUIDs of root and all descendant parties
      */
-    std::vector<boost::uuids::uuid>
-    read_descendants(const boost::uuids::uuid& root_id);
+    std::vector<boost::uuids::uuid> read_descendants(const boost::uuids::uuid& root_id);
 
     std::vector<domain::party> read_all(const boost::uuids::uuid& id);
     void remove(const boost::uuids::uuid& id);

@@ -18,14 +18,13 @@
  *
  */
 #include "ores.refdata.core/repository/party_contact_information_repository.hpp"
-
-#include <sqlgen/postgres.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
 #include "ores.refdata.api/domain/party_contact_information_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/party_contact_information_entity.hpp"
 #include "ores.refdata.core/repository/party_contact_information_mapper.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <sqlgen/postgres.hpp>
 
 namespace ores::refdata::repository {
 
@@ -41,32 +40,37 @@ std::string party_contact_information_repository::sql() {
 party_contact_information_repository::party_contact_information_repository(context ctx)
     : ctx_(std::move(ctx)) {}
 
-void party_contact_information_repository::write(const domain::party_contact_information& party_contact_information) {
+void party_contact_information_repository::write(
+    const domain::party_contact_information& party_contact_information) {
     BOOST_LOG_SEV(lg(), debug) << "Writing party contact information to database: "
                                << party_contact_information.id;
-    execute_write_query(ctx_, party_contact_information_mapper::map(party_contact_information),
-        lg(), "writing party contact information to database");
+    execute_write_query(ctx_,
+                        party_contact_information_mapper::map(party_contact_information),
+                        lg(),
+                        "writing party contact information to database");
 }
 
 void party_contact_information_repository::write(
     const std::vector<domain::party_contact_information>& party_contact_informations) {
     BOOST_LOG_SEV(lg(), debug) << "Writing party contact informations to database. Count: "
                                << party_contact_informations.size();
-    execute_write_query(ctx_, party_contact_information_mapper::map(party_contact_informations),
-        lg(), "writing party contact informations to database");
+    execute_write_query(ctx_,
+                        party_contact_information_mapper::map(party_contact_informations),
+                        lg(),
+                        "writing party contact informations to database");
 }
 
-std::vector<domain::party_contact_information>
-party_contact_information_repository::read_latest() {
+std::vector<domain::party_contact_information> party_contact_information_repository::read_latest() {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<party_contact_information_entity>> |
-        where("valid_to"_c == max.value()) |
-        order_by("contact_type"_c);
+                       where("valid_to"_c == max.value()) | order_by("contact_type"_c);
 
     return execute_read_query<party_contact_information_entity, domain::party_contact_information>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return party_contact_information_mapper::map(entities); },
-        lg(), "Reading latest party contact informations");
+        lg(),
+        "Reading latest party contact informations");
 }
 
 std::vector<domain::party_contact_information>
@@ -76,12 +80,14 @@ party_contact_information_repository::read_latest(const boost::uuids::uuid& id) 
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto id_str = boost::uuids::to_string(id);
     const auto query = sqlgen::read<std::vector<party_contact_information_entity>> |
-        where("id"_c == id_str && "valid_to"_c == max.value());
+                       where("id"_c == id_str && "valid_to"_c == max.value());
 
     return execute_read_query<party_contact_information_entity, domain::party_contact_information>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return party_contact_information_mapper::map(entities); },
-        lg(), "Reading latest party contact information by id.");
+        lg(),
+        "Reading latest party contact information by id.");
 }
 
 std::vector<domain::party_contact_information>
@@ -90,30 +96,33 @@ party_contact_information_repository::read_latest_by_code(const std::string& cod
 
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<party_contact_information_entity>> |
-        where("contact_type"_c == code && "valid_to"_c == max.value());
+                       where("contact_type"_c == code && "valid_to"_c == max.value());
 
     return execute_read_query<party_contact_information_entity, domain::party_contact_information>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return party_contact_information_mapper::map(entities); },
-        lg(), "Reading latest party contact information by code.");
+        lg(),
+        "Reading latest party contact information by code.");
 }
 
 std::vector<domain::party_contact_information>
-party_contact_information_repository::read_latest_by_party_id(
-    const boost::uuids::uuid& party_id) {
+party_contact_information_repository::read_latest_by_party_id(const boost::uuids::uuid& party_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party contact informations. Party ID: "
                                << party_id;
 
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto party_id_str = boost::uuids::to_string(party_id);
     const auto query = sqlgen::read<std::vector<party_contact_information_entity>> |
-        where("party_id"_c == party_id_str && "valid_to"_c == max.value()) |
-        order_by("contact_type"_c);
+                       where("party_id"_c == party_id_str && "valid_to"_c == max.value()) |
+                       order_by("contact_type"_c);
 
     return execute_read_query<party_contact_information_entity, domain::party_contact_information>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return party_contact_information_mapper::map(entities); },
-        lg(), "Reading latest party contact informations by party id.");
+        lg(),
+        "Reading latest party contact informations by party id.");
 }
 
 std::vector<domain::party_contact_information>
@@ -122,21 +131,22 @@ party_contact_information_repository::read_all(const boost::uuids::uuid& id) {
 
     const auto id_str = boost::uuids::to_string(id);
     const auto query = sqlgen::read<std::vector<party_contact_information_entity>> |
-        where("id"_c == id_str) |
-        order_by("version"_c.desc());
+                       where("id"_c == id_str) | order_by("version"_c.desc());
 
     return execute_read_query<party_contact_information_entity, domain::party_contact_information>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return party_contact_information_mapper::map(entities); },
-        lg(), "Reading all party contact information versions by id.");
+        lg(),
+        "Reading all party contact information versions by id.");
 }
 
 void party_contact_information_repository::remove(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing party contact information from database: " << id;
 
     const auto id_str = boost::uuids::to_string(id);
-    const auto query = sqlgen::delete_from<party_contact_information_entity> |
-        where("id"_c == id_str);
+    const auto query =
+        sqlgen::delete_from<party_contact_information_entity> | where("id"_c == id_str);
 
     execute_delete_query(ctx_, query, lg(), "removing party contact information from database");
 }

@@ -18,7 +18,6 @@
  *
  */
 #include "ores.refdata.core/service/zero_convention_service.hpp"
-
 #include <stdexcept>
 
 namespace ores::refdata::service {
@@ -37,7 +36,8 @@ std::optional<domain::zero_convention>
 zero_convention_service::get_zero_convention(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting zero convention: " << id;
     auto results = repo_.read_latest(ctx_, id);
-    if (results.empty()) return std::nullopt;
+    if (results.empty())
+        return std::nullopt;
     return results.front();
 }
 

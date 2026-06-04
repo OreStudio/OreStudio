@@ -20,9 +20,9 @@
 #ifndef ORES_REFDATA_API_MESSAGING_BUSINESS_UNIT_TYPE_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_BUSINESS_UNIT_TYPE_PROTOCOL_HPP
 
+#include "ores.refdata.api/domain/business_unit_type.hpp"
 #include <string>
 #include <vector>
-#include "ores.refdata.api/domain/business_unit_type.hpp"
 
 namespace ores::refdata::messaging {
 

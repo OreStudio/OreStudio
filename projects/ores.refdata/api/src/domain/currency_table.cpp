@@ -18,9 +18,8 @@
  *
  */
 #include "ores.refdata.api/domain/currency_table.hpp"
-
-#include <sstream>
 #include <fort.hpp>
+#include <sstream>
 
 namespace ores::refdata::domain {
 
@@ -32,9 +31,9 @@ std::string convert_to_table(const currency& c) {
           << "Asset Class" << "Market Tier" << "Fractions/Unit" << "Precision"
           << "Change Reason" << "Modified By" << "Recorded At" << fort::endr;
 
-    table << c.iso_code << c.version << c.name << c.symbol << c.monetary_nature
-          << c.market_tier << c.fractions_per_unit << c.rounding_precision
-          << c.change_reason_code << c.modified_by << c.recorded_at << fort::endr;
+    table << c.iso_code << c.version << c.name << c.symbol << c.monetary_nature << c.market_tier
+          << c.fractions_per_unit << c.rounding_precision << c.change_reason_code << c.modified_by
+          << c.recorded_at << fort::endr;
 
     std::ostringstream ss;
     ss << std::endl << table.to_string() << std::endl;
@@ -50,9 +49,9 @@ std::string convert_to_table(const std::vector<currency>& v) {
           << "Change Reason" << "Modified By" << "Recorded At" << fort::endr;
 
     for (const auto& c : v) {
-        table << c.iso_code << c.version << c.name << c.symbol << c.monetary_nature
-              << c.market_tier << c.fractions_per_unit << c.rounding_precision
-              << c.change_reason_code << c.modified_by << c.recorded_at << fort::endr;
+        table << c.iso_code << c.version << c.name << c.symbol << c.monetary_nature << c.market_tier
+              << c.fractions_per_unit << c.rounding_precision << c.change_reason_code
+              << c.modified_by << c.recorded_at << fort::endr;
     }
 
     std::ostringstream ss;

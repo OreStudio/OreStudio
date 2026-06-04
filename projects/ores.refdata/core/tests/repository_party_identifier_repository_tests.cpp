@@ -17,20 +17,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.refdata.core/repository/party_identifier_repository.hpp"
-
-#include <catch2/catch_test_macros.hpp>
-#include <boost/uuid/random_generator.hpp>
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
-#include "ores.testing/scoped_database_helper.hpp"
-#include "ores.testing/make_generation_context.hpp"
-#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
-#include "ores.refdata.api/domain/party_identifier.hpp" // IWYU pragma: keep.
+#include "ores.refdata.api/domain/party_identifier.hpp"         // IWYU pragma: keep.
 #include "ores.refdata.api/domain/party_identifier_json_io.hpp" // IWYU pragma: keep.
-#include "ores.refdata.api/generators/party_identifier_generator.hpp"
 #include "ores.refdata.api/generators/party_generator.hpp"
+#include "ores.refdata.api/generators/party_identifier_generator.hpp"
+#include "ores.refdata.core/repository/party_identifier_repository.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
+#include "ores.testing/make_generation_context.hpp"
+#include "ores.testing/scoped_database_helper.hpp"
+#include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
+#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <boost/uuid/random_generator.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 
@@ -56,7 +55,10 @@ TEST_CASE("write_single_party_identifier", tags) {
     party.change_reason_code = "system.test";
     auto existing = party_repo.read_latest();
     for (const auto& e : existing) {
-        if (e.tenant_id == party.tenant_id) { party.parent_party_id = e.id; break; }
+        if (e.tenant_id == party.tenant_id) {
+            party.parent_party_id = e.id;
+            break;
+        }
     }
     party_repo.write(party);
 
@@ -79,7 +81,10 @@ TEST_CASE("write_multiple_party_identifiers", tags) {
     party.change_reason_code = "system.test";
     auto existing = party_repo.read_latest();
     for (const auto& e : existing) {
-        if (e.tenant_id == party.tenant_id) { party.parent_party_id = e.id; break; }
+        if (e.tenant_id == party.tenant_id) {
+            party.parent_party_id = e.id;
+            break;
+        }
     }
     party_repo.write(party);
 
@@ -104,7 +109,10 @@ TEST_CASE("read_latest_party_identifiers", tags) {
     party.change_reason_code = "system.test";
     auto existing = party_repo.read_latest();
     for (const auto& e : existing) {
-        if (e.tenant_id == party.tenant_id) { party.parent_party_id = e.id; break; }
+        if (e.tenant_id == party.tenant_id) {
+            party.parent_party_id = e.id;
+            break;
+        }
     }
     party_repo.write(party);
     h.set_party(party.id);
@@ -114,15 +122,13 @@ TEST_CASE("read_latest_party_identifiers", tags) {
         pi.change_reason_code = "system.test";
         pi.party_id = party.id;
     }
-    BOOST_LOG_SEV(lg, debug) << "Written party identifiers: "
-                             << written_party_identifiers;
+    BOOST_LOG_SEV(lg, debug) << "Written party identifiers: " << written_party_identifiers;
 
     party_identifier_repository repo(h.context());
     repo.write(written_party_identifiers);
 
     auto read_party_identifiers = repo.read_latest();
-    BOOST_LOG_SEV(lg, debug) << "Read party identifiers: "
-                             << read_party_identifiers;
+    BOOST_LOG_SEV(lg, debug) << "Read party identifiers: " << read_party_identifiers;
 
     CHECK(read_party_identifiers.size() >= written_party_identifiers.size());
 }
@@ -137,7 +143,10 @@ TEST_CASE("read_latest_party_identifier_by_id", tags) {
     party.change_reason_code = "system.test";
     auto existing = party_repo.read_latest();
     for (const auto& e : existing) {
-        if (e.tenant_id == party.tenant_id) { party.parent_party_id = e.id; break; }
+        if (e.tenant_id == party.tenant_id) {
+            party.parent_party_id = e.id;
+            break;
+        }
     }
     party_repo.write(party);
     h.set_party(party.id);
@@ -155,8 +164,7 @@ TEST_CASE("read_latest_party_identifier_by_id", tags) {
     repo.write(pi);
 
     auto read_party_identifiers = repo.read_latest(pi.id);
-    BOOST_LOG_SEV(lg, debug) << "Read party identifiers: "
-                             << read_party_identifiers;
+    BOOST_LOG_SEV(lg, debug) << "Read party identifiers: " << read_party_identifiers;
 
     REQUIRE(read_party_identifiers.size() == 1);
     CHECK(read_party_identifiers[0].id == pi.id);
@@ -173,8 +181,7 @@ TEST_CASE("read_nonexistent_party_identifier_id", tags) {
     BOOST_LOG_SEV(lg, debug) << "Non-existent ID: " << nonexistent_id;
 
     auto read_party_identifiers = repo.read_latest(nonexistent_id);
-    BOOST_LOG_SEV(lg, debug) << "Read party identifiers: "
-                             << read_party_identifiers;
+    BOOST_LOG_SEV(lg, debug) << "Read party identifiers: " << read_party_identifiers;
 
     CHECK(read_party_identifiers.size() == 0);
 }

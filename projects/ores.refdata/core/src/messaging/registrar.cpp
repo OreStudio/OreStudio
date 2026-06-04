@@ -18,78 +18,77 @@
  *
  */
 #include "ores.refdata.core/messaging/registrar.hpp"
-
-#include <array>
-#include <memory>
-#include <optional>
 #include "ores.nats/service/client.hpp"
-#include "ores.security/jwt/jwt_authenticator.hpp"
+#include "ores.refdata.api/messaging/asset_class_protocol.hpp"
+#include "ores.refdata.api/messaging/book_protocol.hpp"
+#include "ores.refdata.api/messaging/book_status_protocol.hpp"
+#include "ores.refdata.api/messaging/business_centre_protocol.hpp"
+#include "ores.refdata.api/messaging/business_unit_protocol.hpp"
+#include "ores.refdata.api/messaging/business_unit_type_protocol.hpp"
+#include "ores.refdata.api/messaging/cds_convention_protocol.hpp"
+#include "ores.refdata.api/messaging/contact_type_protocol.hpp"
+#include "ores.refdata.api/messaging/counterparty_contact_information_protocol.hpp"
+#include "ores.refdata.api/messaging/counterparty_identifier_protocol.hpp"
+#include "ores.refdata.api/messaging/counterparty_protocol.hpp"
+#include "ores.refdata.api/messaging/country_protocol.hpp"
+#include "ores.refdata.api/messaging/currency_history_protocol.hpp"
+#include "ores.refdata.api/messaging/currency_market_tier_protocol.hpp"
+#include "ores.refdata.api/messaging/currency_protocol.hpp"
+#include "ores.refdata.api/messaging/deposit_convention_protocol.hpp"
+#include "ores.refdata.api/messaging/fra_convention_protocol.hpp"
+#include "ores.refdata.api/messaging/fx_convention_protocol.hpp"
+#include "ores.refdata.api/messaging/ibor_index_convention_protocol.hpp"
+#include "ores.refdata.api/messaging/monetary_nature_protocol.hpp"
+#include "ores.refdata.api/messaging/ois_convention_protocol.hpp"
+#include "ores.refdata.api/messaging/overnight_index_convention_protocol.hpp"
+#include "ores.refdata.api/messaging/party_contact_information_protocol.hpp"
+#include "ores.refdata.api/messaging/party_id_scheme_protocol.hpp"
+#include "ores.refdata.api/messaging/party_identifier_protocol.hpp"
+#include "ores.refdata.api/messaging/party_protocol.hpp"
+#include "ores.refdata.api/messaging/party_status_protocol.hpp"
+#include "ores.refdata.api/messaging/party_type_protocol.hpp"
+#include "ores.refdata.api/messaging/portfolio_protocol.hpp"
+#include "ores.refdata.api/messaging/purpose_type_protocol.hpp"
+#include "ores.refdata.api/messaging/rounding_type_protocol.hpp"
+#include "ores.refdata.api/messaging/swap_convention_protocol.hpp"
+#include "ores.refdata.api/messaging/zero_convention_protocol.hpp"
+#include "ores.refdata.core/messaging/asset_class_handler.hpp"
+#include "ores.refdata.core/messaging/book_handler.hpp"
+#include "ores.refdata.core/messaging/book_status_handler.hpp"
+#include "ores.refdata.core/messaging/business_centre_handler.hpp"
+#include "ores.refdata.core/messaging/business_unit_handler.hpp"
+#include "ores.refdata.core/messaging/business_unit_type_handler.hpp"
+#include "ores.refdata.core/messaging/cds_convention_handler.hpp"
+#include "ores.refdata.core/messaging/contact_type_handler.hpp"
+#include "ores.refdata.core/messaging/counterparty_contact_handler.hpp"
+#include "ores.refdata.core/messaging/counterparty_handler.hpp"
+#include "ores.refdata.core/messaging/counterparty_identifier_handler.hpp"
 #include "ores.refdata.core/messaging/country_handler.hpp"
 #include "ores.refdata.core/messaging/currency_handler.hpp"
 #include "ores.refdata.core/messaging/currency_market_tier_handler.hpp"
-#include "ores.refdata.core/messaging/party_handler.hpp"
-#include "ores.refdata.core/messaging/party_type_handler.hpp"
-#include "ores.refdata.core/messaging/party_status_handler.hpp"
-#include "ores.refdata.core/messaging/party_identifier_handler.hpp"
-#include "ores.refdata.core/messaging/party_id_scheme_handler.hpp"
-#include "ores.refdata.core/messaging/party_contact_handler.hpp"
-#include "ores.refdata.core/messaging/counterparty_handler.hpp"
-#include "ores.refdata.core/messaging/counterparty_identifier_handler.hpp"
-#include "ores.refdata.core/messaging/counterparty_contact_handler.hpp"
-#include "ores.refdata.core/messaging/book_handler.hpp"
-#include "ores.refdata.core/messaging/book_status_handler.hpp"
-#include "ores.refdata.core/messaging/portfolio_handler.hpp"
-#include "ores.refdata.core/messaging/business_unit_handler.hpp"
-#include "ores.refdata.core/messaging/business_unit_type_handler.hpp"
-#include "ores.refdata.core/messaging/business_centre_handler.hpp"
-#include "ores.refdata.core/messaging/contact_type_handler.hpp"
-#include "ores.refdata.core/messaging/monetary_nature_handler.hpp"
-#include "ores.refdata.core/messaging/rounding_type_handler.hpp"
-#include "ores.refdata.core/messaging/purpose_type_handler.hpp"
-#include "ores.refdata.core/messaging/asset_class_handler.hpp"
-#include "ores.refdata.core/messaging/zero_convention_handler.hpp"
 #include "ores.refdata.core/messaging/deposit_convention_handler.hpp"
-#include "ores.refdata.core/messaging/swap_convention_handler.hpp"
-#include "ores.refdata.core/messaging/ois_convention_handler.hpp"
 #include "ores.refdata.core/messaging/fra_convention_handler.hpp"
-#include "ores.refdata.core/messaging/ibor_index_convention_handler.hpp"
-#include "ores.refdata.core/messaging/overnight_index_convention_handler.hpp"
 #include "ores.refdata.core/messaging/fx_convention_handler.hpp"
-#include "ores.refdata.core/messaging/cds_convention_handler.hpp"
+#include "ores.refdata.core/messaging/ibor_index_convention_handler.hpp"
+#include "ores.refdata.core/messaging/monetary_nature_handler.hpp"
+#include "ores.refdata.core/messaging/ois_convention_handler.hpp"
+#include "ores.refdata.core/messaging/overnight_index_convention_handler.hpp"
+#include "ores.refdata.core/messaging/party_contact_handler.hpp"
+#include "ores.refdata.core/messaging/party_handler.hpp"
+#include "ores.refdata.core/messaging/party_id_scheme_handler.hpp"
+#include "ores.refdata.core/messaging/party_identifier_handler.hpp"
+#include "ores.refdata.core/messaging/party_status_handler.hpp"
+#include "ores.refdata.core/messaging/party_type_handler.hpp"
+#include "ores.refdata.core/messaging/portfolio_handler.hpp"
 #include "ores.refdata.core/messaging/publish_from_dq_handler.hpp"
-#include "ores.refdata.api/messaging/country_protocol.hpp"
-#include "ores.refdata.api/messaging/currency_protocol.hpp"
-#include "ores.refdata.api/messaging/currency_history_protocol.hpp"
-#include "ores.refdata.api/messaging/currency_market_tier_protocol.hpp"
-#include "ores.refdata.api/messaging/party_protocol.hpp"
-#include "ores.refdata.api/messaging/party_type_protocol.hpp"
-#include "ores.refdata.api/messaging/party_status_protocol.hpp"
-#include "ores.refdata.api/messaging/party_identifier_protocol.hpp"
-#include "ores.refdata.api/messaging/party_id_scheme_protocol.hpp"
-#include "ores.refdata.api/messaging/party_contact_information_protocol.hpp"
-#include "ores.refdata.api/messaging/counterparty_protocol.hpp"
-#include "ores.refdata.api/messaging/counterparty_identifier_protocol.hpp"
-#include "ores.refdata.api/messaging/counterparty_contact_information_protocol.hpp"
-#include "ores.refdata.api/messaging/book_protocol.hpp"
-#include "ores.refdata.api/messaging/book_status_protocol.hpp"
-#include "ores.refdata.api/messaging/portfolio_protocol.hpp"
-#include "ores.refdata.api/messaging/business_unit_protocol.hpp"
-#include "ores.refdata.api/messaging/business_unit_type_protocol.hpp"
-#include "ores.refdata.api/messaging/business_centre_protocol.hpp"
-#include "ores.refdata.api/messaging/contact_type_protocol.hpp"
-#include "ores.refdata.api/messaging/monetary_nature_protocol.hpp"
-#include "ores.refdata.api/messaging/rounding_type_protocol.hpp"
-#include "ores.refdata.api/messaging/purpose_type_protocol.hpp"
-#include "ores.refdata.api/messaging/asset_class_protocol.hpp"
-#include "ores.refdata.api/messaging/zero_convention_protocol.hpp"
-#include "ores.refdata.api/messaging/deposit_convention_protocol.hpp"
-#include "ores.refdata.api/messaging/swap_convention_protocol.hpp"
-#include "ores.refdata.api/messaging/ois_convention_protocol.hpp"
-#include "ores.refdata.api/messaging/fra_convention_protocol.hpp"
-#include "ores.refdata.api/messaging/ibor_index_convention_protocol.hpp"
-#include "ores.refdata.api/messaging/overnight_index_convention_protocol.hpp"
-#include "ores.refdata.api/messaging/fx_convention_protocol.hpp"
-#include "ores.refdata.api/messaging/cds_convention_protocol.hpp"
+#include "ores.refdata.core/messaging/purpose_type_handler.hpp"
+#include "ores.refdata.core/messaging/rounding_type_handler.hpp"
+#include "ores.refdata.core/messaging/swap_convention_handler.hpp"
+#include "ores.refdata.core/messaging/zero_convention_handler.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include <array>
+#include <memory>
+#include <optional>
 
 namespace ores::refdata::messaging {
 
@@ -99,8 +98,8 @@ static constexpr std::string_view queue_group = "ores.refdata.service";
 
 std::vector<ores::nats::service::subscription>
 registrar::register_handlers(ores::nats::service::client& nats,
-    ores::database::context ctx,
-    std::optional<ores::security::jwt::jwt_authenticator> verifier) {
+                             ores::database::context ctx,
+                             std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
 
     // ----------------------------------------------------------------
@@ -109,17 +108,21 @@ registrar::register_handlers(ores::nats::service::client& nats,
     {
         auto h = std::make_shared<country_handler>(nats, ctx, verifier);
         subs.push_back(nats.queue_subscribe(
-            get_countries_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->list(std::move(msg)); }));
+            get_countries_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->list(std::move(msg));
+            }));
         subs.push_back(nats.queue_subscribe(
-            save_country_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+            save_country_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->save(std::move(msg));
+            }));
         subs.push_back(nats.queue_subscribe(
-            delete_country_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
+            delete_country_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->remove(std::move(msg));
+            }));
         subs.push_back(nats.queue_subscribe(
-            get_country_history_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+            get_country_history_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->history(std::move(msg));
+            }));
     }
 
     // ----------------------------------------------------------------
@@ -128,217 +131,251 @@ registrar::register_handlers(ores::nats::service::client& nats,
     {
         auto h = std::make_shared<currency_handler>(nats, ctx, verifier);
         subs.push_back(nats.queue_subscribe(
-            get_currencies_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->list(std::move(msg)); }));
+            get_currencies_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->list(std::move(msg));
+            }));
         subs.push_back(nats.queue_subscribe(
-            save_currency_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+            save_currency_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->save(std::move(msg));
+            }));
         subs.push_back(nats.queue_subscribe(
-            delete_currency_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
+            delete_currency_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->remove(std::move(msg));
+            }));
         subs.push_back(nats.queue_subscribe(
-            get_currency_history_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+            get_currency_history_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->history(std::move(msg));
+            }));
     }
 
     // ----------------------------------------------------------------
     // Currency market tiers
     // ----------------------------------------------------------------
     {
-        auto h = std::make_shared<currency_market_tier_handler>(
-            nats, ctx, verifier);
-        subs.push_back(nats.queue_subscribe(
-            get_currency_market_tiers_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->list(std::move(msg)); }));
-        subs.push_back(nats.queue_subscribe(
-            save_currency_market_tier_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->save(std::move(msg)); }));
-        subs.push_back(nats.queue_subscribe(
-            delete_currency_market_tier_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
-        subs.push_back(nats.queue_subscribe(
-            get_currency_market_tier_history_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+        auto h = std::make_shared<currency_market_tier_handler>(nats, ctx, verifier);
+        subs.push_back(
+            nats.queue_subscribe(get_currency_market_tiers_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->list(std::move(msg)); }));
+        subs.push_back(
+            nats.queue_subscribe(save_currency_market_tier_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+        subs.push_back(
+            nats.queue_subscribe(delete_currency_market_tier_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
+        subs.push_back(
+            nats.queue_subscribe(get_currency_market_tier_history_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->history(std::move(msg)); }));
     }
 
     // ----------------------------------------------------------------
     // Zero conventions
     // ----------------------------------------------------------------
     {
-        auto h = std::make_shared<zero_convention_handler>(
-            nats, ctx, verifier);
+        auto h = std::make_shared<zero_convention_handler>(nats, ctx, verifier);
         subs.push_back(nats.queue_subscribe(
-            get_zero_conventions_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->list(std::move(msg)); }));
+            get_zero_conventions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->list(std::move(msg));
+            }));
         subs.push_back(nats.queue_subscribe(
-            save_zero_convention_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->save(std::move(msg)); }));
-        subs.push_back(nats.queue_subscribe(
-            delete_zero_convention_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
-        subs.push_back(nats.queue_subscribe(
-            get_zero_convention_history_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+            save_zero_convention_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->save(std::move(msg));
+            }));
+        subs.push_back(
+            nats.queue_subscribe(delete_zero_convention_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
+        subs.push_back(
+            nats.queue_subscribe(get_zero_convention_history_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->history(std::move(msg)); }));
     }
 
     // ----------------------------------------------------------------
     // Deposit conventions
     // ----------------------------------------------------------------
     {
-        auto h = std::make_shared<deposit_convention_handler>(
-            nats, ctx, verifier);
-        subs.push_back(nats.queue_subscribe(
-            get_deposit_conventions_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->list(std::move(msg)); }));
-        subs.push_back(nats.queue_subscribe(
-            save_deposit_convention_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->save(std::move(msg)); }));
-        subs.push_back(nats.queue_subscribe(
-            delete_deposit_convention_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
-        subs.push_back(nats.queue_subscribe(
-            get_deposit_convention_history_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+        auto h = std::make_shared<deposit_convention_handler>(nats, ctx, verifier);
+        subs.push_back(
+            nats.queue_subscribe(get_deposit_conventions_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->list(std::move(msg)); }));
+        subs.push_back(
+            nats.queue_subscribe(save_deposit_convention_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+        subs.push_back(
+            nats.queue_subscribe(delete_deposit_convention_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
+        subs.push_back(
+            nats.queue_subscribe(get_deposit_convention_history_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->history(std::move(msg)); }));
     }
 
     // ----------------------------------------------------------------
     // Swap conventions
     // ----------------------------------------------------------------
     {
-        auto h = std::make_shared<swap_convention_handler>(
-            nats, ctx, verifier);
+        auto h = std::make_shared<swap_convention_handler>(nats, ctx, verifier);
         subs.push_back(nats.queue_subscribe(
-            get_swap_conventions_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->list(std::move(msg)); }));
+            get_swap_conventions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->list(std::move(msg));
+            }));
         subs.push_back(nats.queue_subscribe(
-            save_swap_convention_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->save(std::move(msg)); }));
-        subs.push_back(nats.queue_subscribe(
-            delete_swap_convention_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
-        subs.push_back(nats.queue_subscribe(
-            get_swap_convention_history_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+            save_swap_convention_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->save(std::move(msg));
+            }));
+        subs.push_back(
+            nats.queue_subscribe(delete_swap_convention_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
+        subs.push_back(
+            nats.queue_subscribe(get_swap_convention_history_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->history(std::move(msg)); }));
     }
 
     // ----------------------------------------------------------------
     // OIS conventions
     // ----------------------------------------------------------------
     {
-        auto h = std::make_shared<ois_convention_handler>(
-            nats, ctx, verifier);
+        auto h = std::make_shared<ois_convention_handler>(nats, ctx, verifier);
         subs.push_back(nats.queue_subscribe(
-            get_ois_conventions_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->list(std::move(msg)); }));
+            get_ois_conventions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->list(std::move(msg));
+            }));
         subs.push_back(nats.queue_subscribe(
-            save_ois_convention_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+            save_ois_convention_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->save(std::move(msg));
+            }));
         subs.push_back(nats.queue_subscribe(
-            delete_ois_convention_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
-        subs.push_back(nats.queue_subscribe(
-            get_ois_convention_history_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+            delete_ois_convention_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->remove(std::move(msg));
+            }));
+        subs.push_back(
+            nats.queue_subscribe(get_ois_convention_history_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->history(std::move(msg)); }));
     }
 
     // ----------------------------------------------------------------
     // FRA conventions
     // ----------------------------------------------------------------
     {
-        auto h = std::make_shared<fra_convention_handler>(
-            nats, ctx, verifier);
+        auto h = std::make_shared<fra_convention_handler>(nats, ctx, verifier);
         subs.push_back(nats.queue_subscribe(
-            get_fra_conventions_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->list(std::move(msg)); }));
+            get_fra_conventions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->list(std::move(msg));
+            }));
         subs.push_back(nats.queue_subscribe(
-            save_fra_convention_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+            save_fra_convention_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->save(std::move(msg));
+            }));
         subs.push_back(nats.queue_subscribe(
-            delete_fra_convention_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
-        subs.push_back(nats.queue_subscribe(
-            get_fra_convention_history_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+            delete_fra_convention_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->remove(std::move(msg));
+            }));
+        subs.push_back(
+            nats.queue_subscribe(get_fra_convention_history_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->history(std::move(msg)); }));
     }
 
     // ----------------------------------------------------------------
     // IBOR index conventions
     // ----------------------------------------------------------------
     {
-        auto h = std::make_shared<ibor_index_convention_handler>(
-            nats, ctx, verifier);
-        subs.push_back(nats.queue_subscribe(
-            get_ibor_index_conventions_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->list(std::move(msg)); }));
-        subs.push_back(nats.queue_subscribe(
-            save_ibor_index_convention_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->save(std::move(msg)); }));
-        subs.push_back(nats.queue_subscribe(
-            delete_ibor_index_convention_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
-        subs.push_back(nats.queue_subscribe(
-            get_ibor_index_convention_history_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+        auto h = std::make_shared<ibor_index_convention_handler>(nats, ctx, verifier);
+        subs.push_back(
+            nats.queue_subscribe(get_ibor_index_conventions_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->list(std::move(msg)); }));
+        subs.push_back(
+            nats.queue_subscribe(save_ibor_index_convention_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+        subs.push_back(
+            nats.queue_subscribe(delete_ibor_index_convention_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
+        subs.push_back(
+            nats.queue_subscribe(get_ibor_index_convention_history_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->history(std::move(msg)); }));
     }
 
     // ----------------------------------------------------------------
     // Overnight index conventions
     // ----------------------------------------------------------------
     {
-        auto h = std::make_shared<overnight_index_convention_handler>(
-            nats, ctx, verifier);
-        subs.push_back(nats.queue_subscribe(
-            get_overnight_index_conventions_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->list(std::move(msg)); }));
-        subs.push_back(nats.queue_subscribe(
-            save_overnight_index_convention_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->save(std::move(msg)); }));
-        subs.push_back(nats.queue_subscribe(
-            delete_overnight_index_convention_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
-        subs.push_back(nats.queue_subscribe(
-            get_overnight_index_convention_history_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+        auto h = std::make_shared<overnight_index_convention_handler>(nats, ctx, verifier);
+        subs.push_back(
+            nats.queue_subscribe(get_overnight_index_conventions_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->list(std::move(msg)); }));
+        subs.push_back(
+            nats.queue_subscribe(save_overnight_index_convention_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+        subs.push_back(
+            nats.queue_subscribe(delete_overnight_index_convention_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
+        subs.push_back(
+            nats.queue_subscribe(get_overnight_index_convention_history_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->history(std::move(msg)); }));
     }
 
     // ----------------------------------------------------------------
     // FX conventions
     // ----------------------------------------------------------------
     {
-        auto h = std::make_shared<fx_convention_handler>(
-            nats, ctx, verifier);
+        auto h = std::make_shared<fx_convention_handler>(nats, ctx, verifier);
         subs.push_back(nats.queue_subscribe(
-            get_fx_conventions_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->list(std::move(msg)); }));
+            get_fx_conventions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->list(std::move(msg));
+            }));
         subs.push_back(nats.queue_subscribe(
-            save_fx_convention_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+            save_fx_convention_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->save(std::move(msg));
+            }));
         subs.push_back(nats.queue_subscribe(
-            delete_fx_convention_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
-        subs.push_back(nats.queue_subscribe(
-            get_fx_convention_history_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+            delete_fx_convention_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->remove(std::move(msg));
+            }));
+        subs.push_back(
+            nats.queue_subscribe(get_fx_convention_history_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->history(std::move(msg)); }));
     }
 
     // ----------------------------------------------------------------
     // CDS conventions
     // ----------------------------------------------------------------
     {
-        auto h = std::make_shared<cds_convention_handler>(
-            nats, ctx, verifier);
+        auto h = std::make_shared<cds_convention_handler>(nats, ctx, verifier);
         subs.push_back(nats.queue_subscribe(
-            get_cds_conventions_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->list(std::move(msg)); }));
+            get_cds_conventions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->list(std::move(msg));
+            }));
         subs.push_back(nats.queue_subscribe(
-            save_cds_convention_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+            save_cds_convention_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->save(std::move(msg));
+            }));
         subs.push_back(nats.queue_subscribe(
-            delete_cds_convention_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
-        subs.push_back(nats.queue_subscribe(
-            get_cds_convention_history_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+            delete_cds_convention_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->remove(std::move(msg));
+            }));
+        subs.push_back(
+            nats.queue_subscribe(get_cds_convention_history_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->history(std::move(msg)); }));
     }
 
     // ----------------------------------------------------------------
@@ -347,19 +384,24 @@ registrar::register_handlers(ores::nats::service::client& nats,
     {
         auto h = std::make_shared<party_handler>(nats, ctx, verifier);
         subs.push_back(nats.queue_subscribe(
-            get_parties_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->list(std::move(msg)); }));
+            get_parties_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->list(std::move(msg));
+            }));
         subs.push_back(nats.queue_subscribe(
-            save_party_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+            save_party_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->save(std::move(msg));
+            }));
         subs.push_back(nats.queue_subscribe(
-            delete_party_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
+            delete_party_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->remove(std::move(msg));
+            }));
         subs.push_back(nats.queue_subscribe(
-            get_party_history_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+            get_party_history_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->history(std::move(msg));
+            }));
         subs.push_back(nats.queue_subscribe(
-            read_parties_for_cache_request::nats_subject, queue_group,
+            read_parties_for_cache_request::nats_subject,
+            queue_group,
             [h](ores::nats::message msg) { h->read_for_cache(std::move(msg)); }));
     }
 
@@ -369,17 +411,21 @@ registrar::register_handlers(ores::nats::service::client& nats,
     {
         auto h = std::make_shared<party_type_handler>(nats, ctx, verifier);
         subs.push_back(nats.queue_subscribe(
-            get_party_types_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->list(std::move(msg)); }));
+            get_party_types_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->list(std::move(msg));
+            }));
         subs.push_back(nats.queue_subscribe(
-            save_party_type_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+            save_party_type_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->save(std::move(msg));
+            }));
         subs.push_back(nats.queue_subscribe(
-            delete_party_type_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
-        subs.push_back(nats.queue_subscribe(
-            get_party_type_history_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+            delete_party_type_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->remove(std::move(msg));
+            }));
+        subs.push_back(
+            nats.queue_subscribe(get_party_type_history_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->history(std::move(msg)); }));
     }
 
     // ----------------------------------------------------------------
@@ -388,54 +434,63 @@ registrar::register_handlers(ores::nats::service::client& nats,
     {
         auto h = std::make_shared<party_status_handler>(nats, ctx, verifier);
         subs.push_back(nats.queue_subscribe(
-            get_party_statuses_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->list(std::move(msg)); }));
+            get_party_statuses_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->list(std::move(msg));
+            }));
         subs.push_back(nats.queue_subscribe(
-            save_party_status_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+            save_party_status_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->save(std::move(msg));
+            }));
         subs.push_back(nats.queue_subscribe(
-            delete_party_status_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
-        subs.push_back(nats.queue_subscribe(
-            get_party_status_history_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+            delete_party_status_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->remove(std::move(msg));
+            }));
+        subs.push_back(
+            nats.queue_subscribe(get_party_status_history_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->history(std::move(msg)); }));
     }
 
     // ----------------------------------------------------------------
     // Party identifiers
     // ----------------------------------------------------------------
     {
-        auto h = std::make_shared<party_identifier_handler>(
-            nats, ctx, verifier);
+        auto h = std::make_shared<party_identifier_handler>(nats, ctx, verifier);
         subs.push_back(nats.queue_subscribe(
-            get_party_identifiers_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->list(std::move(msg)); }));
+            get_party_identifiers_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->list(std::move(msg));
+            }));
         subs.push_back(nats.queue_subscribe(
-            save_party_identifier_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->save(std::move(msg)); }));
-        subs.push_back(nats.queue_subscribe(
-            delete_party_identifier_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
+            save_party_identifier_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->save(std::move(msg));
+            }));
+        subs.push_back(
+            nats.queue_subscribe(delete_party_identifier_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
     }
 
     // ----------------------------------------------------------------
     // Party ID schemes
     // ----------------------------------------------------------------
     {
-        auto h = std::make_shared<party_id_scheme_handler>(
-            nats, ctx, verifier);
+        auto h = std::make_shared<party_id_scheme_handler>(nats, ctx, verifier);
         subs.push_back(nats.queue_subscribe(
-            get_party_id_schemes_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->list(std::move(msg)); }));
+            get_party_id_schemes_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->list(std::move(msg));
+            }));
         subs.push_back(nats.queue_subscribe(
-            save_party_id_scheme_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->save(std::move(msg)); }));
-        subs.push_back(nats.queue_subscribe(
-            delete_party_id_scheme_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
-        subs.push_back(nats.queue_subscribe(
-            get_party_id_scheme_history_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+            save_party_id_scheme_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->save(std::move(msg));
+            }));
+        subs.push_back(
+            nats.queue_subscribe(delete_party_id_scheme_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
+        subs.push_back(
+            nats.queue_subscribe(get_party_id_scheme_history_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->history(std::move(msg)); }));
     }
 
     // ----------------------------------------------------------------
@@ -443,15 +498,18 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // ----------------------------------------------------------------
     {
         auto h = std::make_shared<party_contact_handler>(nats, ctx, verifier);
-        subs.push_back(nats.queue_subscribe(
-            get_party_contact_informations_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->list(std::move(msg)); }));
-        subs.push_back(nats.queue_subscribe(
-            save_party_contact_information_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->save(std::move(msg)); }));
-        subs.push_back(nats.queue_subscribe(
-            delete_party_contact_information_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
+        subs.push_back(
+            nats.queue_subscribe(get_party_contact_informations_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->list(std::move(msg)); }));
+        subs.push_back(
+            nats.queue_subscribe(save_party_contact_information_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+        subs.push_back(
+            nats.queue_subscribe(delete_party_contact_information_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
     }
 
     // ----------------------------------------------------------------
@@ -460,54 +518,59 @@ registrar::register_handlers(ores::nats::service::client& nats,
     {
         auto h = std::make_shared<counterparty_handler>(nats, ctx, verifier);
         subs.push_back(nats.queue_subscribe(
-            get_counterparties_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->list(std::move(msg)); }));
+            get_counterparties_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->list(std::move(msg));
+            }));
         subs.push_back(nats.queue_subscribe(
-            save_counterparty_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+            save_counterparty_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->save(std::move(msg));
+            }));
         subs.push_back(nats.queue_subscribe(
-            delete_counterparty_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
-        subs.push_back(nats.queue_subscribe(
-            get_counterparty_history_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+            delete_counterparty_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->remove(std::move(msg));
+            }));
+        subs.push_back(
+            nats.queue_subscribe(get_counterparty_history_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->history(std::move(msg)); }));
     }
 
     // ----------------------------------------------------------------
     // Counterparty identifiers
     // ----------------------------------------------------------------
     {
-        auto h = std::make_shared<counterparty_identifier_handler>(
-            nats, ctx, verifier);
-        subs.push_back(nats.queue_subscribe(
-            get_counterparty_identifiers_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->list(std::move(msg)); }));
-        subs.push_back(nats.queue_subscribe(
-            save_counterparty_identifier_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->save(std::move(msg)); }));
-        subs.push_back(nats.queue_subscribe(
-            delete_counterparty_identifier_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
+        auto h = std::make_shared<counterparty_identifier_handler>(nats, ctx, verifier);
+        subs.push_back(
+            nats.queue_subscribe(get_counterparty_identifiers_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->list(std::move(msg)); }));
+        subs.push_back(
+            nats.queue_subscribe(save_counterparty_identifier_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+        subs.push_back(
+            nats.queue_subscribe(delete_counterparty_identifier_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
     }
 
     // ----------------------------------------------------------------
     // Counterparty contacts
     // ----------------------------------------------------------------
     {
-        auto h = std::make_shared<counterparty_contact_handler>(
-            nats, ctx, verifier);
-        subs.push_back(nats.queue_subscribe(
-            get_counterparty_contact_informations_request::nats_subject,
-            queue_group,
-            [h](ores::nats::message msg) { h->list(std::move(msg)); }));
-        subs.push_back(nats.queue_subscribe(
-            save_counterparty_contact_information_request::nats_subject,
-            queue_group,
-            [h](ores::nats::message msg) { h->save(std::move(msg)); }));
-        subs.push_back(nats.queue_subscribe(
-            delete_counterparty_contact_information_request::nats_subject,
-            queue_group,
-            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
+        auto h = std::make_shared<counterparty_contact_handler>(nats, ctx, verifier);
+        subs.push_back(
+            nats.queue_subscribe(get_counterparty_contact_informations_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->list(std::move(msg)); }));
+        subs.push_back(
+            nats.queue_subscribe(save_counterparty_contact_information_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+        subs.push_back(
+            nats.queue_subscribe(delete_counterparty_contact_information_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
     }
 
     // ----------------------------------------------------------------
@@ -516,17 +579,21 @@ registrar::register_handlers(ores::nats::service::client& nats,
     {
         auto h = std::make_shared<book_handler>(nats, ctx, verifier);
         subs.push_back(nats.queue_subscribe(
-            get_books_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->list(std::move(msg)); }));
+            get_books_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->list(std::move(msg));
+            }));
         subs.push_back(nats.queue_subscribe(
-            save_book_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+            save_book_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->save(std::move(msg));
+            }));
         subs.push_back(nats.queue_subscribe(
-            delete_book_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
+            delete_book_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->remove(std::move(msg));
+            }));
         subs.push_back(nats.queue_subscribe(
-            get_book_history_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+            get_book_history_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->history(std::move(msg));
+            }));
     }
 
     // ----------------------------------------------------------------
@@ -535,17 +602,21 @@ registrar::register_handlers(ores::nats::service::client& nats,
     {
         auto h = std::make_shared<book_status_handler>(nats, ctx, verifier);
         subs.push_back(nats.queue_subscribe(
-            get_book_statuses_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->list(std::move(msg)); }));
+            get_book_statuses_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->list(std::move(msg));
+            }));
         subs.push_back(nats.queue_subscribe(
-            save_book_status_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+            save_book_status_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->save(std::move(msg));
+            }));
         subs.push_back(nats.queue_subscribe(
-            delete_book_status_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
-        subs.push_back(nats.queue_subscribe(
-            get_book_status_history_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+            delete_book_status_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->remove(std::move(msg));
+            }));
+        subs.push_back(
+            nats.queue_subscribe(get_book_status_history_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->history(std::move(msg)); }));
     }
 
     // ----------------------------------------------------------------
@@ -554,17 +625,21 @@ registrar::register_handlers(ores::nats::service::client& nats,
     {
         auto h = std::make_shared<portfolio_handler>(nats, ctx, verifier);
         subs.push_back(nats.queue_subscribe(
-            get_portfolios_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->list(std::move(msg)); }));
+            get_portfolios_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->list(std::move(msg));
+            }));
         subs.push_back(nats.queue_subscribe(
-            save_portfolio_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+            save_portfolio_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->save(std::move(msg));
+            }));
         subs.push_back(nats.queue_subscribe(
-            delete_portfolio_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
+            delete_portfolio_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->remove(std::move(msg));
+            }));
         subs.push_back(nats.queue_subscribe(
-            get_portfolio_history_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+            get_portfolio_history_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->history(std::move(msg));
+            }));
     }
 
     // ----------------------------------------------------------------
@@ -573,57 +648,67 @@ registrar::register_handlers(ores::nats::service::client& nats,
     {
         auto h = std::make_shared<business_unit_handler>(nats, ctx, verifier);
         subs.push_back(nats.queue_subscribe(
-            get_business_units_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->list(std::move(msg)); }));
+            get_business_units_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->list(std::move(msg));
+            }));
         subs.push_back(nats.queue_subscribe(
-            save_business_unit_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+            save_business_unit_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->save(std::move(msg));
+            }));
         subs.push_back(nats.queue_subscribe(
-            delete_business_unit_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
-        subs.push_back(nats.queue_subscribe(
-            get_business_unit_history_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+            delete_business_unit_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->remove(std::move(msg));
+            }));
+        subs.push_back(
+            nats.queue_subscribe(get_business_unit_history_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->history(std::move(msg)); }));
     }
 
     // ----------------------------------------------------------------
     // Business unit types
     // ----------------------------------------------------------------
     {
-        auto h = std::make_shared<business_unit_type_handler>(
-            nats, ctx, verifier);
-        subs.push_back(nats.queue_subscribe(
-            get_business_unit_types_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->list(std::move(msg)); }));
-        subs.push_back(nats.queue_subscribe(
-            save_business_unit_type_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->save(std::move(msg)); }));
-        subs.push_back(nats.queue_subscribe(
-            delete_business_unit_type_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
-        subs.push_back(nats.queue_subscribe(
-            get_business_unit_type_history_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+        auto h = std::make_shared<business_unit_type_handler>(nats, ctx, verifier);
+        subs.push_back(
+            nats.queue_subscribe(get_business_unit_types_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->list(std::move(msg)); }));
+        subs.push_back(
+            nats.queue_subscribe(save_business_unit_type_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+        subs.push_back(
+            nats.queue_subscribe(delete_business_unit_type_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
+        subs.push_back(
+            nats.queue_subscribe(get_business_unit_type_history_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->history(std::move(msg)); }));
     }
 
     // ----------------------------------------------------------------
     // Business centres
     // ----------------------------------------------------------------
     {
-        auto h = std::make_shared<business_centre_handler>(
-            nats, ctx, verifier);
+        auto h = std::make_shared<business_centre_handler>(nats, ctx, verifier);
         subs.push_back(nats.queue_subscribe(
-            get_business_centres_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->list(std::move(msg)); }));
+            get_business_centres_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->list(std::move(msg));
+            }));
         subs.push_back(nats.queue_subscribe(
-            save_business_centre_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->save(std::move(msg)); }));
-        subs.push_back(nats.queue_subscribe(
-            delete_business_centre_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
-        subs.push_back(nats.queue_subscribe(
-            get_business_centre_history_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+            save_business_centre_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->save(std::move(msg));
+            }));
+        subs.push_back(
+            nats.queue_subscribe(delete_business_centre_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
+        subs.push_back(
+            nats.queue_subscribe(get_business_centre_history_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->history(std::move(msg)); }));
     }
 
     // ----------------------------------------------------------------
@@ -632,37 +717,44 @@ registrar::register_handlers(ores::nats::service::client& nats,
     {
         auto h = std::make_shared<contact_type_handler>(nats, ctx, verifier);
         subs.push_back(nats.queue_subscribe(
-            get_contact_types_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->list(std::move(msg)); }));
+            get_contact_types_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->list(std::move(msg));
+            }));
         subs.push_back(nats.queue_subscribe(
-            save_contact_type_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+            save_contact_type_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->save(std::move(msg));
+            }));
         subs.push_back(nats.queue_subscribe(
-            delete_contact_type_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
-        subs.push_back(nats.queue_subscribe(
-            get_contact_type_history_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+            delete_contact_type_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->remove(std::move(msg));
+            }));
+        subs.push_back(
+            nats.queue_subscribe(get_contact_type_history_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->history(std::move(msg)); }));
     }
 
     // ----------------------------------------------------------------
     // Monetary natures
     // ----------------------------------------------------------------
     {
-        auto h = std::make_shared<monetary_nature_handler>(
-            nats, ctx, verifier);
+        auto h = std::make_shared<monetary_nature_handler>(nats, ctx, verifier);
         subs.push_back(nats.queue_subscribe(
-            get_monetary_natures_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->list(std::move(msg)); }));
+            get_monetary_natures_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->list(std::move(msg));
+            }));
         subs.push_back(nats.queue_subscribe(
-            save_monetary_nature_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->save(std::move(msg)); }));
-        subs.push_back(nats.queue_subscribe(
-            delete_monetary_nature_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
-        subs.push_back(nats.queue_subscribe(
-            get_monetary_nature_history_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+            save_monetary_nature_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->save(std::move(msg));
+            }));
+        subs.push_back(
+            nats.queue_subscribe(delete_monetary_nature_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
+        subs.push_back(
+            nats.queue_subscribe(get_monetary_nature_history_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->history(std::move(msg)); }));
     }
 
     // ----------------------------------------------------------------
@@ -671,17 +763,21 @@ registrar::register_handlers(ores::nats::service::client& nats,
     {
         auto h = std::make_shared<rounding_type_handler>(nats, ctx, verifier);
         subs.push_back(nats.queue_subscribe(
-            get_rounding_types_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->list(std::move(msg)); }));
+            get_rounding_types_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->list(std::move(msg));
+            }));
         subs.push_back(nats.queue_subscribe(
-            save_rounding_type_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+            save_rounding_type_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->save(std::move(msg));
+            }));
         subs.push_back(nats.queue_subscribe(
-            delete_rounding_type_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
-        subs.push_back(nats.queue_subscribe(
-            get_rounding_type_history_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+            delete_rounding_type_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->remove(std::move(msg));
+            }));
+        subs.push_back(
+            nats.queue_subscribe(get_rounding_type_history_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->history(std::move(msg)); }));
     }
 
     // ----------------------------------------------------------------
@@ -690,17 +786,21 @@ registrar::register_handlers(ores::nats::service::client& nats,
     {
         auto h = std::make_shared<purpose_type_handler>(nats, ctx, verifier);
         subs.push_back(nats.queue_subscribe(
-            get_purpose_types_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->list(std::move(msg)); }));
+            get_purpose_types_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->list(std::move(msg));
+            }));
         subs.push_back(nats.queue_subscribe(
-            save_purpose_type_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+            save_purpose_type_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->save(std::move(msg));
+            }));
         subs.push_back(nats.queue_subscribe(
-            delete_purpose_type_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
-        subs.push_back(nats.queue_subscribe(
-            get_purpose_type_history_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+            delete_purpose_type_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->remove(std::move(msg));
+            }));
+        subs.push_back(
+            nats.queue_subscribe(get_purpose_type_history_request::nats_subject,
+                                 queue_group,
+                                 [h](ores::nats::message msg) { h->history(std::move(msg)); }));
     }
 
     // ----------------------------------------------------------------
@@ -709,8 +809,9 @@ registrar::register_handlers(ores::nats::service::client& nats,
     {
         auto h = std::make_shared<asset_class_handler>(nats, ctx, verifier);
         subs.push_back(nats.queue_subscribe(
-            get_asset_classes_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->list(std::move(msg)); }));
+            get_asset_classes_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->list(std::move(msg));
+            }));
     }
 
     // ----------------------------------------------------------------
@@ -744,8 +845,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         };
         for (const auto subject : publish_subjects) {
             subs.push_back(nats.queue_subscribe(
-                subject, queue_group,
-                [h](ores::nats::message msg) { h->handle(std::move(msg)); }));
+                subject, queue_group, [h](ores::nats::message msg) { h->handle(std::move(msg)); }));
         }
     }
 

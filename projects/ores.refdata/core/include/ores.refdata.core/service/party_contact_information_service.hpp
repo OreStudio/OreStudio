@@ -20,14 +20,14 @@
 #ifndef ORES_REFDATA_CORE_SERVICE_PARTY_CONTACT_INFORMATION_SERVICE_HPP
 #define ORES_REFDATA_CORE_SERVICE_PARTY_CONTACT_INFORMATION_SERVICE_HPP
 
-#include <string>
-#include <vector>
-#include <optional>
-#include <boost/uuid/uuid.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/party_contact_information.hpp"
 #include "ores.refdata.core/repository/party_contact_information_repository.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <optional>
+#include <string>
+#include <vector>
 
 namespace ores::refdata::service {
 
@@ -86,14 +86,16 @@ public:
      *
      * @param party_contact_information The party contact information to save
      */
-    void save_party_contact_information(const domain::party_contact_information& party_contact_information);
+    void save_party_contact_information(
+        const domain::party_contact_information& party_contact_information);
 
     /**
      * @brief Saves multiple party contact informations (creates or updates).
      *
      * @param party_contact_informations The party contact informations to save
      */
-    void save_party_contact_informations(const std::vector<domain::party_contact_information>& party_contact_informations);
+    void save_party_contact_informations(
+        const std::vector<domain::party_contact_information>& party_contact_informations);
 
     /**
      * @brief Removes a party contact information.

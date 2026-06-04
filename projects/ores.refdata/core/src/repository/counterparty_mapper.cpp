@@ -18,19 +18,17 @@
  *
  */
 #include "ores.refdata.core/repository/counterparty_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.refdata.api/domain/counterparty_json_io.hpp" // IWYU pragma: keep.
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::refdata::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::counterparty
-counterparty_mapper::map(const counterparty_entity& v) {
+domain::counterparty counterparty_mapper::map(const counterparty_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::counterparty r;
@@ -42,7 +40,8 @@ counterparty_mapper::map(const counterparty_entity& v) {
     r.transliterated_name = v.transliterated_name;
     r.party_type = v.party_type;
     if (v.parent_counterparty_id.has_value() && !v.parent_counterparty_id->empty())
-        r.parent_counterparty_id = boost::lexical_cast<boost::uuids::uuid>(*v.parent_counterparty_id);
+        r.parent_counterparty_id =
+            boost::lexical_cast<boost::uuids::uuid>(*v.parent_counterparty_id);
     r.business_center_code = v.business_center_code;
     r.status = v.status;
     r.modified_by = v.modified_by;
@@ -55,8 +54,7 @@ counterparty_mapper::map(const counterparty_entity& v) {
     return r;
 }
 
-counterparty_entity
-counterparty_mapper::map(const domain::counterparty& v) {
+counterparty_entity counterparty_mapper::map(const domain::counterparty& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     counterparty_entity r;
@@ -83,19 +81,13 @@ counterparty_mapper::map(const domain::counterparty& v) {
 std::vector<domain::counterparty>
 counterparty_mapper::map(const std::vector<counterparty_entity>& v) {
     return map_vector<counterparty_entity, domain::counterparty>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<counterparty_entity>
 counterparty_mapper::map(const std::vector<domain::counterparty>& v) {
     return map_vector<domain::counterparty, counterparty_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

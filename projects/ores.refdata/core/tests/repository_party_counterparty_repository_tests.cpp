@@ -17,23 +17,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.refdata.core/repository/party_counterparty_repository.hpp"
-
-#include <catch2/catch_test_macros.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/uuid/random_generator.hpp>
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
-#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/domain/party_counterparty.hpp"
 #include "ores.refdata.api/domain/party_counterparty_json_io.hpp" // IWYU pragma: keep.
-#include "ores.refdata.core/repository/party_repository.hpp"
-#include "ores.refdata.core/repository/counterparty_repository.hpp"
-#include "ores.refdata.api/generators/party_generator.hpp"
 #include "ores.refdata.api/generators/counterparty_generator.hpp"
-#include "ores.testing/scoped_database_helper.hpp"
+#include "ores.refdata.api/generators/party_generator.hpp"
+#include "ores.refdata.core/repository/counterparty_repository.hpp"
+#include "ores.refdata.core/repository/party_counterparty_repository.hpp"
+#include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
+#include "ores.testing/scoped_database_helper.hpp"
+#include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
+#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 using namespace ores::logging;
 using namespace ores::refdata::generators;
@@ -49,8 +48,8 @@ namespace {
 const std::string_view test_suite("ores.refdata.tests");
 const std::string tags("[repository][party_counterparty]");
 
-boost::uuids::uuid find_system_party_id(
-    party_repository& repo, const ores::utility::uuid::tenant_id& tid) {
+boost::uuids::uuid find_system_party_id(party_repository& repo,
+                                        const ores::utility::uuid::tenant_id& tid) {
     auto parties = repo.read_latest();
     for (const auto& p : parties)
         if (p.tenant_id == tid && p.party_category == "System")
@@ -59,8 +58,8 @@ boost::uuids::uuid find_system_party_id(
 }
 
 party_counterparty make_party_counterparty(scoped_database_helper& h,
-    const boost::uuids::uuid& party_id,
-    const boost::uuids::uuid& counterparty_id) {
+                                           const boost::uuids::uuid& party_id,
+                                           const boost::uuids::uuid& counterparty_id) {
     party_counterparty pc;
     pc.tenant_id = h.tenant_id();
     pc.party_id = party_id;
@@ -84,8 +83,7 @@ TEST_CASE("write_single_party_counterparty", tags) {
     counterparty_repository cp_repo(h.context());
     party_counterparty_repository repo(h.context());
 
-    const auto party_id = find_system_party_id(
-        party_repo, h.tenant_id());
+    const auto party_id = find_system_party_id(party_repo, h.tenant_id());
 
     auto cp = generate_synthetic_counterparty(ctx);
     cp.change_reason_code = "system.test";
@@ -106,8 +104,7 @@ TEST_CASE("write_multiple_party_counterparties", tags) {
     counterparty_repository cp_repo(h.context());
     party_counterparty_repository repo(h.context());
 
-    const auto system_party_id = find_system_party_id(
-        party_repo, h.tenant_id());
+    const auto system_party_id = find_system_party_id(party_repo, h.tenant_id());
 
     std::vector<party_counterparty> pcs;
     for (int i = 0; i < 3; ++i) {
@@ -132,8 +129,7 @@ TEST_CASE("read_latest_party_counterparties_by_party", tags) {
     counterparty_repository cp_repo(h.context());
     party_counterparty_repository repo(h.context());
 
-    const auto system_party_id = find_system_party_id(
-        party_repo, h.tenant_id());
+    const auto system_party_id = find_system_party_id(party_repo, h.tenant_id());
 
     auto cp = generate_synthetic_counterparty(ctx);
     cp.change_reason_code = "system.test";
@@ -166,8 +162,7 @@ TEST_CASE("read_latest_party_counterparties_by_counterparty", tags) {
     counterparty_repository cp_repo(h.context());
     party_counterparty_repository repo(h.context());
 
-    const auto system_party_id = find_system_party_id(
-        party_repo, h.tenant_id());
+    const auto system_party_id = find_system_party_id(party_repo, h.tenant_id());
 
     auto cp = generate_synthetic_counterparty(ctx);
     cp.change_reason_code = "system.test";
@@ -193,8 +188,7 @@ TEST_CASE("remove_party_counterparty", tags) {
     counterparty_repository cp_repo(h.context());
     party_counterparty_repository repo(h.context());
 
-    const auto system_party_id = find_system_party_id(
-        party_repo, h.tenant_id());
+    const auto system_party_id = find_system_party_id(party_repo, h.tenant_id());
 
     auto cp = generate_synthetic_counterparty(ctx);
     cp.change_reason_code = "system.test";

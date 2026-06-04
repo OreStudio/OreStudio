@@ -20,10 +20,10 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_BUSINESS_UNIT_TYPE_ENTITY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_BUSINESS_UNIT_TYPE_ENTITY_HPP
 
-#include <string>
-#include <iosfwd>
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
+#include <iosfwd>
+#include <string>
 
 namespace ores::refdata::repository {
 

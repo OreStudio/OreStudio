@@ -17,20 +17,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.refdata.core/repository/party_contact_information_repository.hpp"
-
-#include <catch2/catch_test_macros.hpp>
-#include <boost/uuid/random_generator.hpp>
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
-#include "ores.testing/scoped_database_helper.hpp"
-#include "ores.testing/make_generation_context.hpp"
-#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
-#include "ores.refdata.api/domain/party_contact_information.hpp" // IWYU pragma: keep.
+#include "ores.refdata.api/domain/party_contact_information.hpp"         // IWYU pragma: keep.
 #include "ores.refdata.api/domain/party_contact_information_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/generators/party_contact_information_generator.hpp"
 #include "ores.refdata.api/generators/party_generator.hpp"
+#include "ores.refdata.core/repository/party_contact_information_repository.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
+#include "ores.testing/make_generation_context.hpp"
+#include "ores.testing/scoped_database_helper.hpp"
+#include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
+#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <boost/uuid/random_generator.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 
@@ -56,7 +55,10 @@ TEST_CASE("write_single_party_contact_information", tags) {
     party.change_reason_code = "system.test";
     auto existing = party_repo.read_latest();
     for (const auto& e : existing) {
-        if (e.tenant_id == party.tenant_id) { party.parent_party_id = e.id; break; }
+        if (e.tenant_id == party.tenant_id) {
+            party.parent_party_id = e.id;
+            break;
+        }
     }
     party_repo.write(party);
 
@@ -79,18 +81,19 @@ TEST_CASE("write_multiple_party_contact_informations", tags) {
     party.change_reason_code = "system.test";
     auto existing = party_repo.read_latest();
     for (const auto& e : existing) {
-        if (e.tenant_id == party.tenant_id) { party.parent_party_id = e.id; break; }
+        if (e.tenant_id == party.tenant_id) {
+            party.parent_party_id = e.id;
+            break;
+        }
     }
     party_repo.write(party);
 
-    auto party_contact_informations =
-        generate_synthetic_party_contact_informations(3, ctx);
+    auto party_contact_informations = generate_synthetic_party_contact_informations(3, ctx);
     for (auto& pci : party_contact_informations) {
         pci.change_reason_code = "system.test";
         pci.party_id = party.id;
     }
-    BOOST_LOG_SEV(lg, debug) << "Party contact informations: "
-                             << party_contact_informations;
+    BOOST_LOG_SEV(lg, debug) << "Party contact informations: " << party_contact_informations;
 
     party_contact_information_repository repo(h.context());
     CHECK_NOTHROW(repo.write(party_contact_informations));
@@ -106,13 +109,15 @@ TEST_CASE("read_latest_party_contact_informations", tags) {
     party.change_reason_code = "system.test";
     auto existing = party_repo.read_latest();
     for (const auto& e : existing) {
-        if (e.tenant_id == party.tenant_id) { party.parent_party_id = e.id; break; }
+        if (e.tenant_id == party.tenant_id) {
+            party.parent_party_id = e.id;
+            break;
+        }
     }
     party_repo.write(party);
     h.set_party(party.id);
 
-    auto written_party_contact_informations =
-        generate_synthetic_party_contact_informations(3, ctx);
+    auto written_party_contact_informations = generate_synthetic_party_contact_informations(3, ctx);
     for (auto& pci : written_party_contact_informations) {
         pci.change_reason_code = "system.test";
         pci.party_id = party.id;
@@ -127,8 +132,7 @@ TEST_CASE("read_latest_party_contact_informations", tags) {
     BOOST_LOG_SEV(lg, debug) << "Read party contact informations: "
                              << read_party_contact_informations;
 
-    CHECK(read_party_contact_informations.size() >=
-        written_party_contact_informations.size());
+    CHECK(read_party_contact_informations.size() >= written_party_contact_informations.size());
 }
 
 TEST_CASE("read_latest_party_contact_information_by_id", tags) {
@@ -141,7 +145,10 @@ TEST_CASE("read_latest_party_contact_information_by_id", tags) {
     party.change_reason_code = "system.test";
     auto existing = party_repo.read_latest();
     for (const auto& e : existing) {
-        if (e.tenant_id == party.tenant_id) { party.parent_party_id = e.id; break; }
+        if (e.tenant_id == party.tenant_id) {
+            party.parent_party_id = e.id;
+            break;
+        }
     }
     party_repo.write(party);
     h.set_party(party.id);

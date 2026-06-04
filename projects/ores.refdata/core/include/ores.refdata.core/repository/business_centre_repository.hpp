@@ -20,13 +20,13 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_BUSINESS_CENTRE_REPOSITORY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_BUSINESS_CENTRE_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/business_centre.hpp"
 #include "ores.refdata.core/export.hpp"
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::refdata::repository {
 
@@ -65,16 +65,14 @@ public:
      */
     /**@{*/
     std::vector<domain::business_centre> read_latest(context ctx);
-    std::vector<domain::business_centre>
-    read_latest(context ctx, const std::string& code);
+    std::vector<domain::business_centre> read_latest(context ctx, const std::string& code);
     /**@}*/
 
     /**
      * @brief Reads latest business centres with pagination support.
      */
-    std::vector<domain::business_centre> read_latest(context ctx,
-                                                      std::uint32_t offset,
-                                                      std::uint32_t limit);
+    std::vector<domain::business_centre>
+    read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
 
     /**
      * @brief Gets the total count of active business centres.
@@ -86,11 +84,9 @@ public:
      * filtered by code.
      */
     /**@{*/
+    std::vector<domain::business_centre> read_at_timepoint(context ctx, const std::string& as_of);
     std::vector<domain::business_centre>
-    read_at_timepoint(context ctx, const std::string& as_of);
-    std::vector<domain::business_centre>
-    read_at_timepoint(context ctx, const std::string& as_of,
-        const std::string& code);
+    read_at_timepoint(context ctx, const std::string& as_of, const std::string& code);
     /**@}*/
 
     /**
@@ -98,8 +94,7 @@ public:
      */
     /**@{*/
     std::vector<domain::business_centre> read_all(context ctx);
-    std::vector<domain::business_centre>
-    read_all(context ctx, const std::string& code);
+    std::vector<domain::business_centre> read_all(context ctx, const std::string& code);
     /**@}*/
 
     /**

@@ -18,7 +18,6 @@
  *
  */
 #include "ores.refdata.core/repository/party_id_scheme_mapper.hpp"
-
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.refdata.api/domain/party_id_scheme_json_io.hpp" // IWYU pragma: keep.
 
@@ -27,8 +26,7 @@ namespace ores::refdata::repository {
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::party_id_scheme
-party_id_scheme_mapper::map(const party_id_scheme_entity& v) {
+domain::party_id_scheme party_id_scheme_mapper::map(const party_id_scheme_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::party_id_scheme r;
@@ -49,8 +47,7 @@ party_id_scheme_mapper::map(const party_id_scheme_entity& v) {
     return r;
 }
 
-party_id_scheme_entity
-party_id_scheme_mapper::map(const domain::party_id_scheme& v) {
+party_id_scheme_entity party_id_scheme_mapper::map(const domain::party_id_scheme& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     party_id_scheme_entity r;
@@ -73,19 +70,13 @@ party_id_scheme_mapper::map(const domain::party_id_scheme& v) {
 std::vector<domain::party_id_scheme>
 party_id_scheme_mapper::map(const std::vector<party_id_scheme_entity>& v) {
     return map_vector<party_id_scheme_entity, domain::party_id_scheme>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<party_id_scheme_entity>
 party_id_scheme_mapper::map(const std::vector<domain::party_id_scheme>& v) {
     return map_vector<domain::party_id_scheme, party_id_scheme_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

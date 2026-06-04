@@ -20,13 +20,13 @@
 #ifndef ORES_REFDATA_REPOSITORY_FX_CONVENTION_REPOSITORY_HPP
 #define ORES_REFDATA_REPOSITORY_FX_CONVENTION_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/fx_convention.hpp"
 #include "ores.refdata.core/export.hpp"
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::refdata::repository {
 
@@ -35,8 +35,7 @@ namespace ores::refdata::repository {
  */
 class ORES_REFDATA_CORE_EXPORT fx_convention_repository {
 private:
-    inline static std::string_view logger_name =
-        "ores.refdata.repository.fx_convention_repository";
+    inline static std::string_view logger_name = "ores.refdata.repository.fx_convention_repository";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -53,10 +52,8 @@ public:
     void write(context ctx, const std::vector<domain::fx_convention>& v);
 
     std::vector<domain::fx_convention> read_latest(context ctx);
-    std::vector<domain::fx_convention>
-    read_latest(context ctx, const std::string& id);
-    std::vector<domain::fx_convention>
-    read_all(context ctx, const std::string& id);
+    std::vector<domain::fx_convention> read_latest(context ctx, const std::string& id);
+    std::vector<domain::fx_convention> read_all(context ctx, const std::string& id);
 
     void remove(context ctx, const std::string& id);
 };

@@ -20,31 +20,29 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_PARTY_COUNTRY_MAPPER_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_PARTY_COUNTRY_MAPPER_HPP
 
-#include "ores.refdata.api/domain/party_country.hpp"
-#include "ores.refdata.core/repository/party_country_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.refdata.api/domain/party_country.hpp"
 #include "ores.refdata.core/export.hpp"
+#include "ores.refdata.core/repository/party_country_entity.hpp"
 
 namespace ores::refdata::repository {
 
 class ORES_REFDATA_CORE_EXPORT party_country_mapper {
 private:
-    inline static std::string_view logger_name =
-        "ores.refdata.repository.party_country_mapper";
+    inline static std::string_view logger_name = "ores.refdata.repository.party_country_mapper";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }
+
 public:
     static domain::party_country map(const party_country_entity& v);
     static party_country_entity map(const domain::party_country& v);
 
-    static std::vector<domain::party_country>
-    map(const std::vector<party_country_entity>& v);
-    static std::vector<party_country_entity>
-    map(const std::vector<domain::party_country>& v);
+    static std::vector<domain::party_country> map(const std::vector<party_country_entity>& v);
+    static std::vector<party_country_entity> map(const std::vector<domain::party_country>& v);
 };
 
 }

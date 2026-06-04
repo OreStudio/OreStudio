@@ -20,25 +20,24 @@
 #ifndef ORES_REFDATA_GENERATORS_ZERO_CONVENTION_GENERATOR_HPP
 #define ORES_REFDATA_GENERATORS_ZERO_CONVENTION_GENERATOR_HPP
 
-#include <vector>
-#include "ores.refdata.api/export.hpp"
 #include "ores.refdata.api/domain/zero_convention.hpp"
+#include "ores.refdata.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include <vector>
 
 namespace ores::refdata::generators {
 
 /**
  * @brief Generates a synthetic zero_convention.
  */
-ORES_REFDATA_API_EXPORT domain::zero_convention generate_synthetic_zero_convention(
-    utility::generation::generation_context& ctx);
+ORES_REFDATA_API_EXPORT domain::zero_convention
+generate_synthetic_zero_convention(utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic zero_conventions.
  */
 ORES_REFDATA_API_EXPORT std::vector<domain::zero_convention>
-generate_synthetic_zero_conventions(std::size_t n,
-    utility::generation::generation_context& ctx);
+generate_synthetic_zero_conventions(std::size_t n, utility::generation::generation_context& ctx);
 
 }
 

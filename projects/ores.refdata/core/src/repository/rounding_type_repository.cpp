@@ -18,13 +18,12 @@
  *
  */
 #include "ores.refdata.core/repository/rounding_type_repository.hpp"
-
-#include <sqlgen/postgres.hpp>
-#include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
 #include "ores.refdata.api/domain/rounding_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/rounding_type_entity.hpp"
 #include "ores.refdata.core/repository/rounding_type_mapper.hpp"
+#include <sqlgen/postgres.hpp>
 
 namespace ores::refdata::repository {
 
@@ -41,80 +40,81 @@ void rounding_type_repository::write(context ctx, const domain::rounding_type& v
     BOOST_LOG_SEV(lg(), debug) << "Writing rounding type: " << v.code;
     auto e = rounding_type_mapper::map(v);
     e.tenant_id = ctx.tenant_id().to_string();
-    execute_write_query(ctx, e,
-        lg(), "Writing rounding type to database.");
+    execute_write_query(ctx, e, lg(), "Writing rounding type to database.");
 }
 
-void rounding_type_repository::write(
-    context ctx, const std::vector<domain::rounding_type>& v) {
+void rounding_type_repository::write(context ctx, const std::vector<domain::rounding_type>& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing rounding types. Count: " << v.size();
     auto entities = rounding_type_mapper::map(v);
     const auto tid = ctx.tenant_id().to_string();
     for (auto& e : entities)
         e.tenant_id = tid;
-    execute_write_query(ctx, entities,
-        lg(), "Writing rounding types to database.");
+    execute_write_query(ctx, entities, lg(), "Writing rounding types to database.");
 }
 
-std::vector<domain::rounding_type>
-rounding_type_repository::read_latest(context ctx) {
+std::vector<domain::rounding_type> rounding_type_repository::read_latest(context ctx) {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<rounding_type_entity>> |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-        order_by("code"_c);
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("code"_c);
 
     return execute_read_query<rounding_type_entity, domain::rounding_type>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return rounding_type_mapper::map(entities); },
-        lg(), "Reading latest rounding types");
+        lg(),
+        "Reading latest rounding types");
 }
 
-std::vector<domain::rounding_type>
-rounding_type_repository::read_latest(context ctx, const std::string& code) {
+std::vector<domain::rounding_type> rounding_type_repository::read_latest(context ctx,
+                                                                         const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest rounding type. code: " << code;
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<rounding_type_entity>> |
-        where("tenant_id"_c == tid && "code"_c == code &&
-            "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::read<std::vector<rounding_type_entity>> |
+        where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max.value());
 
     return execute_read_query<rounding_type_entity, domain::rounding_type>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return rounding_type_mapper::map(entities); },
-        lg(), "Reading latest rounding type by code.");
+        lg(),
+        "Reading latest rounding type by code.");
 }
 
-std::vector<domain::rounding_type>
-rounding_type_repository::read_all(context ctx, const std::string& code) {
+std::vector<domain::rounding_type> rounding_type_repository::read_all(context ctx,
+                                                                      const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all rounding type versions. code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<rounding_type_entity>> |
-        where("tenant_id"_c == tid && "code"_c == code) |
-        order_by("version"_c.desc());
+                       where("tenant_id"_c == tid && "code"_c == code) |
+                       order_by("version"_c.desc());
 
     return execute_read_query<rounding_type_entity, domain::rounding_type>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return rounding_type_mapper::map(entities); },
-        lg(), "Reading all rounding type versions by code.");
+        lg(),
+        "Reading all rounding type versions by code.");
 }
 
 void rounding_type_repository::remove(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing rounding type: " << code;
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<rounding_type_entity> |
-        where("tenant_id"_c == tid && "code"_c == code &&
-            "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::delete_from<rounding_type_entity> |
+        where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max.value());
 
     execute_delete_query(ctx, query, lg(), "Removing rounding type from database.");
 }
 
-void rounding_type_repository::remove(context ctx,
-    const std::vector<std::string>& codes) {
+void rounding_type_repository::remove(context ctx, const std::vector<std::string>& codes) {
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<rounding_type_entity> |
-        where("tenant_id"_c == tid && "code"_c.in(codes));
+                       where("tenant_id"_c == tid && "code"_c.in(codes));
     execute_delete_query(ctx, query, lg(), "batch removing rounding_types");
 }
 

@@ -18,19 +18,17 @@
  *
  */
 #include "ores.refdata.core/repository/party_counterparty_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.refdata.api/domain/party_counterparty_json_io.hpp" // IWYU pragma: keep.
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::refdata::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::party_counterparty
-party_counterparty_mapper::map(const party_counterparty_entity& v) {
+domain::party_counterparty party_counterparty_mapper::map(const party_counterparty_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::party_counterparty r;
@@ -48,8 +46,7 @@ party_counterparty_mapper::map(const party_counterparty_entity& v) {
     return r;
 }
 
-party_counterparty_entity
-party_counterparty_mapper::map(const domain::party_counterparty& v) {
+party_counterparty_entity party_counterparty_mapper::map(const domain::party_counterparty& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     party_counterparty_entity r;
@@ -69,19 +66,13 @@ party_counterparty_mapper::map(const domain::party_counterparty& v) {
 std::vector<domain::party_counterparty>
 party_counterparty_mapper::map(const std::vector<party_counterparty_entity>& v) {
     return map_vector<party_counterparty_entity, domain::party_counterparty>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<party_counterparty_entity>
 party_counterparty_mapper::map(const std::vector<domain::party_counterparty>& v) {
     return map_vector<domain::party_counterparty, party_counterparty_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

@@ -18,10 +18,9 @@
  *
  */
 #include "ores.refdata.core/service/counterparty_service.hpp"
-
-#include <stdexcept>
-#include <boost/uuid/uuid_io.hpp>
 #include "ores.service/messaging/handler_helpers.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <stdexcept>
 
 using ores::service::messaging::stamp;
 
@@ -30,12 +29,13 @@ namespace ores::refdata::service {
 using namespace ores::logging;
 
 counterparty_service::counterparty_service(context ctx)
-    : ctx_(ctx), repo_(ctx) {}
+    : ctx_(ctx)
+    , repo_(ctx) {}
 
-std::vector<domain::counterparty> counterparty_service::list_counterparties(
-    std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing counterparties with offset: "
-                               << offset << ", limit: " << limit;
+std::vector<domain::counterparty> counterparty_service::list_counterparties(std::uint32_t offset,
+                                                                            std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing counterparties with offset: " << offset
+                               << ", limit: " << limit;
     return repo_.read_latest(offset, limit);
 }
 

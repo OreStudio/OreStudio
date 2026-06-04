@@ -18,31 +18,27 @@
  *
  */
 #include "ores.refdata.api/generators/counterparty_contact_information_generator.hpp"
-
+#include "ores.utility/generation/generation_keys.hpp"
 #include <array>
 #include <atomic>
-#include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::refdata::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::counterparty_contact_information generate_synthetic_counterparty_contact_information(
-    utility::generation::generation_context& ctx) {
+domain::counterparty_contact_information
+generate_synthetic_counterparty_contact_information(utility::generation::generation_context& ctx) {
     static constexpr std::array<const char*, 4> contact_types = {
-        "Legal", "Operations", "Settlement", "Billing"
-    };
+        "Legal", "Operations", "Settlement", "Billing"};
     static std::atomic<int> counter{0};
     const auto idx = counter++;
-    const auto modified_by = ctx.env().get_or(
-        generation_keys::modified_by, "system");
-    const auto tenant_id = ctx.env().get_or(
-        generation_keys::tenant_id, "system");
+    const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
+    const auto tenant_id = ctx.env().get_or(generation_keys::tenant_id, "system");
 
     domain::counterparty_contact_information r;
     r.version = 1;
-    r.tenant_id = utility::uuid::tenant_id::from_string(tenant_id)
-        .value_or(utility::uuid::tenant_id::system());
+    r.tenant_id = utility::uuid::tenant_id::from_string(tenant_id).value_or(
+        utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
     r.counterparty_id = ctx.generate_uuid();
     r.contact_type = std::string(contact_types[idx % contact_types.size()]);
@@ -65,7 +61,7 @@ domain::counterparty_contact_information generate_synthetic_counterparty_contact
 
 std::vector<domain::counterparty_contact_information>
 generate_synthetic_counterparty_contact_informations(std::size_t n,
-    utility::generation::generation_context& ctx) {
+                                                     utility::generation::generation_context& ctx) {
     std::vector<domain::counterparty_contact_information> r;
     r.reserve(n);
     while (r.size() < n)

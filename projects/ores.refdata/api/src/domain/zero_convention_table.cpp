@@ -18,17 +18,17 @@
  *
  */
 #include "ores.refdata.api/domain/zero_convention_table.hpp"
-
-#include <sstream>
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
+#include <sstream>
 
 namespace ores::refdata::domain {
 
 namespace {
 template <typename T>
 std::string opt_str(const std::optional<T>& o) {
-    if (!o) return {};
+    if (!o)
+        return {};
     std::ostringstream s;
     if constexpr (std::is_same_v<T, bool>)
         s << std::boolalpha;
@@ -41,10 +41,12 @@ std::string convert_to_table(const std::vector<zero_convention>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Id" << "Tenor Based" << "DCF" << "Compounding" << "Tenor Calendar" << "Modified By" << "Version" << fort::endr;
+    table << fort::header << "Id" << "Tenor Based" << "DCF" << "Compounding" << "Tenor Calendar"
+          << "Modified By" << "Version" << fort::endr;
 
     for (const auto& zc : v) {
-        table << zc.id << zc.tenor_based << zc.day_count_fraction << opt_str(zc.compounding) << opt_str(zc.tenor_calendar) << zc.modified_by << zc.version << fort::endr;
+        table << zc.id << zc.tenor_based << zc.day_count_fraction << opt_str(zc.compounding)
+              << opt_str(zc.tenor_calendar) << zc.modified_by << zc.version << fort::endr;
     }
     return table.to_string();
 }

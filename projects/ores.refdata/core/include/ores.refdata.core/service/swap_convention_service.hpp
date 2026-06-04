@@ -20,13 +20,13 @@
 #ifndef ORES_REFDATA_SERVICE_SWAP_CONVENTION_SERVICE_HPP
 #define ORES_REFDATA_SERVICE_SWAP_CONVENTION_SERVICE_HPP
 
-#include <string>
-#include <vector>
-#include <optional>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/swap_convention.hpp"
 #include "ores.refdata.core/repository/swap_convention_repository.hpp"
+#include <optional>
+#include <string>
+#include <vector>
 
 namespace ores::refdata::service {
 
@@ -35,8 +35,7 @@ namespace ores::refdata::service {
  */
 class swap_convention_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.refdata.service.swap_convention_service";
+    inline static std::string_view logger_name = "ores.refdata.service.swap_convention_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -51,15 +50,13 @@ public:
 
     std::vector<domain::swap_convention> list_swap_conventions();
 
-    std::optional<domain::swap_convention>
-    get_swap_convention(const std::string& id);
+    std::optional<domain::swap_convention> get_swap_convention(const std::string& id);
 
     void save_swap_convention(const domain::swap_convention& v);
 
     void remove_swap_convention(const std::string& id);
 
-    std::vector<domain::swap_convention>
-    get_swap_convention_history(const std::string& id);
+    std::vector<domain::swap_convention> get_swap_convention_history(const std::string& id);
 
 private:
     context ctx_;

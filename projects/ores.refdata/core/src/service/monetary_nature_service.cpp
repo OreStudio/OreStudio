@@ -18,9 +18,8 @@
  *
  */
 #include "ores.refdata.core/service/monetary_nature_service.hpp"
-
-#include <stdexcept>
 #include "ores.service/messaging/handler_helpers.hpp"
+#include <stdexcept>
 
 using ores::service::messaging::stamp;
 
@@ -36,11 +35,11 @@ std::vector<domain::monetary_nature> monetary_nature_service::list_types() {
     return repo_.read_latest(ctx_);
 }
 
-std::optional<domain::monetary_nature>
-monetary_nature_service::find_type(const std::string& code) {
+std::optional<domain::monetary_nature> monetary_nature_service::find_type(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Finding currency asset class: " << code;
     auto results = repo_.read_latest(ctx_, code);
-    if (results.empty()) return std::nullopt;
+    if (results.empty())
+        return std::nullopt;
     return results.front();
 }
 
@@ -54,8 +53,7 @@ void monetary_nature_service::save_type(const domain::monetary_nature& v) {
     BOOST_LOG_SEV(lg(), info) << "Saved currency asset class: " << v.code;
 }
 
-void monetary_nature_service::save_types(
-    const std::vector<domain::monetary_nature>& types) {
+void monetary_nature_service::save_types(const std::vector<domain::monetary_nature>& types) {
     for (const auto& t : types) {
         if (t.code.empty())
             throw std::invalid_argument("Currency Asset Class code cannot be empty.");
@@ -73,8 +71,7 @@ void monetary_nature_service::remove_type(const std::string& code) {
     BOOST_LOG_SEV(lg(), info) << "Removed currency asset class: " << code;
 }
 
-void monetary_nature_service::remove_types(
-    const std::vector<std::string>& codes) {
+void monetary_nature_service::remove_types(const std::vector<std::string>& codes) {
     repo_.remove(ctx_, codes);
 }
 

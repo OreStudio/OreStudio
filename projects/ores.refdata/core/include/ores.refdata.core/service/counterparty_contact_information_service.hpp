@@ -20,14 +20,14 @@
 #ifndef ORES_REFDATA_CORE_SERVICE_COUNTERPARTY_CONTACT_INFORMATION_SERVICE_HPP
 #define ORES_REFDATA_CORE_SERVICE_COUNTERPARTY_CONTACT_INFORMATION_SERVICE_HPP
 
-#include <string>
-#include <vector>
-#include <optional>
-#include <boost/uuid/uuid.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/counterparty_contact_information.hpp"
 #include "ores.refdata.core/repository/counterparty_contact_information_repository.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <optional>
+#include <string>
+#include <vector>
 
 namespace ores::refdata::service {
 
@@ -67,7 +67,8 @@ public:
      * @brief Lists counterparty contact informations for a specific counterparty.
      */
     std::vector<domain::counterparty_contact_information>
-    list_counterparty_contact_informations_by_counterparty(const boost::uuids::uuid& counterparty_id);
+    list_counterparty_contact_informations_by_counterparty(
+        const boost::uuids::uuid& counterparty_id);
 
     /**
      * @brief Finds a counterparty contact information by its ID.
@@ -86,14 +87,17 @@ public:
      *
      * @param counterparty_contact_information The counterparty contact information to save
      */
-    void save_counterparty_contact_information(const domain::counterparty_contact_information& counterparty_contact_information);
+    void save_counterparty_contact_information(
+        const domain::counterparty_contact_information& counterparty_contact_information);
 
     /**
      * @brief Saves multiple counterparty contact informations (creates or updates).
      *
      * @param counterparty_contact_informations The counterparty contact informations to save
      */
-    void save_counterparty_contact_informations(const std::vector<domain::counterparty_contact_information>& counterparty_contact_informations);
+    void save_counterparty_contact_informations(
+        const std::vector<domain::counterparty_contact_information>&
+            counterparty_contact_informations);
 
     /**
      * @brief Removes a counterparty contact information.

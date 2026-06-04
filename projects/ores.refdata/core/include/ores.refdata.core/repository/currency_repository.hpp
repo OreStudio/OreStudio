@@ -20,13 +20,13 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_CURRENCY_REPOSITORY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_CURRENCY_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/currency.hpp"
 #include "ores.refdata.core/export.hpp"
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::refdata::repository {
 
@@ -35,8 +35,7 @@ namespace ores::refdata::repository {
  */
 class ORES_REFDATA_CORE_EXPORT currency_repository {
 private:
-    inline static std::string_view logger_name =
-        "ores.refdata.repository.currency_repository";
+    inline static std::string_view logger_name = "ores.refdata.repository.currency_repository";
 
     static auto& lg() {
         using namespace ores::logging;
@@ -66,8 +65,7 @@ public:
      */
     /**@{*/
     std::vector<domain::currency> read_latest(context ctx);
-    std::vector<domain::currency>
-    read_latest(context ctx, const std::string& iso_code);
+    std::vector<domain::currency> read_latest(context ctx, const std::string& iso_code);
     /**@}*/
 
     /**
@@ -77,9 +75,8 @@ public:
      * @param limit Maximum number of records to return
      * @return Vector of currencies within the specified range
      */
-    std::vector<domain::currency> read_latest(context ctx,
-                                               std::uint32_t offset,
-                                               std::uint32_t limit);
+    std::vector<domain::currency>
+    read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
 
     /**
      * @brief Gets the total count of active currencies.
@@ -93,11 +90,9 @@ public:
      * ISO code.
      */
     /**@{*/
+    std::vector<domain::currency> read_at_timepoint(context ctx, const std::string& as_of);
     std::vector<domain::currency>
-    read_at_timepoint(context ctx, const std::string& as_of);
-    std::vector<domain::currency>
-    read_at_timepoint(context ctx, const std::string& as_of,
-        const std::string& iso_code);
+    read_at_timepoint(context ctx, const std::string& as_of, const std::string& iso_code);
     /**@}*/
 
     /**
@@ -105,8 +100,7 @@ public:
      */
     /**@{*/
     std::vector<domain::currency> read_all(context ctx);
-    std::vector<domain::currency>
-    read_all(context ctx, const std::string& iso_code);
+    std::vector<domain::currency> read_all(context ctx, const std::string& iso_code);
     /**@}*/
 
     /**

@@ -20,23 +20,23 @@
 #ifndef ORES_REFDATA_MESSAGING_IBOR_INDEX_CONVENTION_HANDLER_HPP
 #define ORES_REFDATA_MESSAGING_IBOR_INDEX_CONVENTION_HANDLER_HPP
 
-#include <optional>
+#include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.database/domain/context.hpp"
+#include "ores.refdata.api/messaging/ibor_index_convention_protocol.hpp"
+#include "ores.refdata.core/service/ibor_index_convention_service.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include "ores.refdata.api/messaging/ibor_index_convention_protocol.hpp"
-#include "ores.refdata.core/service/ibor_index_convention_service.hpp"
+#include <optional>
 
 namespace ores::refdata::messaging {
 
 namespace {
 inline auto& ibor_index_convention_handler_lg() {
-    static auto instance = ores::logging::make_logger(
-        "ores.refdata.messaging.ibor_index_convention_handler");
+    static auto instance =
+        ores::logging::make_logger("ores.refdata.messaging.ibor_index_convention_handler");
     return instance;
 }
 } // namespace
@@ -53,15 +53,15 @@ using namespace ores::logging;
 class ibor_index_convention_handler {
 public:
     ibor_index_convention_handler(ores::nats::service::client& nats,
-        ores::database::context ctx,
-        std::optional<ores::security::jwt::jwt_authenticator> verifier)
-        : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier)) {}
+                                  ores::database::context ctx,
+                                  std::optional<ores::security::jwt::jwt_authenticator> verifier)
+        : nats_(nats)
+        , ctx_(std::move(ctx))
+        , verifier_(std::move(verifier)) {}
 
     void list(ores::nats::message msg) {
-        BOOST_LOG_SEV(ibor_index_convention_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        BOOST_LOG_SEV(ibor_index_convention_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
             return;
@@ -71,24 +71,20 @@ public:
         get_ibor_index_conventions_response resp;
         try {
             resp.ibor_index_conventions = svc.list_ibor_index_conventions();
-            resp.total_available_count =
-                static_cast<int>(resp.ibor_index_conventions.size());
+            resp.total_available_count = static_cast<int>(resp.ibor_index_conventions.size());
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(ibor_index_convention_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             resp.success = false;
             resp.message = e.what();
         }
-        BOOST_LOG_SEV(ibor_index_convention_handler_lg(), debug)
-            << "Completed " << msg.subject;
+        BOOST_LOG_SEV(ibor_index_convention_handler_lg(), debug) << "Completed " << msg.subject;
         reply(nats_, msg, resp);
     }
 
     void save(ores::nats::message msg) {
-        BOOST_LOG_SEV(ibor_index_convention_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        BOOST_LOG_SEV(ibor_index_convention_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
             return;
@@ -104,13 +100,13 @@ public:
                 svc.save_ibor_index_convention(req->data);
                 BOOST_LOG_SEV(ibor_index_convention_handler_lg(), debug)
                     << "Completed " << msg.subject;
-                reply(nats_, msg,
-                    save_ibor_index_convention_response{.success = true});
+                reply(nats_, msg, save_ibor_index_convention_response{.success = true});
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(ibor_index_convention_handler_lg(), error)
                     << msg.subject << " failed: " << e.what();
-                reply(nats_, msg, save_ibor_index_convention_response{
-                    .success = false, .message = e.what()});
+                reply(nats_,
+                      msg,
+                      save_ibor_index_convention_response{.success = false, .message = e.what()});
             }
         } else {
             BOOST_LOG_SEV(ibor_index_convention_handler_lg(), warn)
@@ -120,10 +116,8 @@ public:
     }
 
     void history(ores::nats::message msg) {
-        BOOST_LOG_SEV(ibor_index_convention_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        BOOST_LOG_SEV(ibor_index_convention_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
             return;
@@ -135,13 +129,17 @@ public:
                 auto hist = svc.get_ibor_index_convention_history(req->id);
                 BOOST_LOG_SEV(ibor_index_convention_handler_lg(), debug)
                     << "Completed " << msg.subject;
-                reply(nats_, msg, get_ibor_index_convention_history_response{
-                    .ibor_index_conventions = std::move(hist), .success = true});
+                reply(nats_,
+                      msg,
+                      get_ibor_index_convention_history_response{
+                          .ibor_index_conventions = std::move(hist), .success = true});
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(ibor_index_convention_handler_lg(), error)
                     << msg.subject << " failed: " << e.what();
-                reply(nats_, msg, get_ibor_index_convention_history_response{
-                    .success = false, .message = e.what()});
+                reply(nats_,
+                      msg,
+                      get_ibor_index_convention_history_response{.success = false,
+                                                                 .message = e.what()});
             }
         } else {
             BOOST_LOG_SEV(ibor_index_convention_handler_lg(), warn)
@@ -151,10 +149,8 @@ public:
     }
 
     void remove(ores::nats::message msg) {
-        BOOST_LOG_SEV(ibor_index_convention_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        BOOST_LOG_SEV(ibor_index_convention_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
             return;
@@ -171,13 +167,13 @@ public:
                     svc.remove_ibor_index_convention(code);
                 BOOST_LOG_SEV(ibor_index_convention_handler_lg(), debug)
                     << "Completed " << msg.subject;
-                reply(nats_, msg,
-                    delete_ibor_index_convention_response{.success = true});
+                reply(nats_, msg, delete_ibor_index_convention_response{.success = true});
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(ibor_index_convention_handler_lg(), error)
                     << msg.subject << " failed: " << e.what();
-                reply(nats_, msg, delete_ibor_index_convention_response{
-                    .success = false, .message = e.what()});
+                reply(nats_,
+                      msg,
+                      delete_ibor_index_convention_response{.success = false, .message = e.what()});
             }
         } else {
             BOOST_LOG_SEV(ibor_index_convention_handler_lg(), warn)

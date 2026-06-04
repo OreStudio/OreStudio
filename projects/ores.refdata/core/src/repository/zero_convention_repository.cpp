@@ -18,13 +18,12 @@
  *
  */
 #include "ores.refdata.core/repository/zero_convention_repository.hpp"
-
-#include <sqlgen/postgres.hpp>
-#include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
 #include "ores.refdata.api/domain/zero_convention_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/zero_convention_entity.hpp"
 #include "ores.refdata.core/repository/zero_convention_mapper.hpp"
+#include <sqlgen/postgres.hpp>
 
 namespace ores::refdata::repository {
 
@@ -39,30 +38,31 @@ std::string zero_convention_repository::sql() {
 
 void zero_convention_repository::write(context ctx, const domain::zero_convention& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing zero convention: " << v.id;
-    execute_write_query(ctx, zero_convention_mapper::map(v),
-        lg(), "Writing zero convention to database.");
+    execute_write_query(
+        ctx, zero_convention_mapper::map(v), lg(), "Writing zero convention to database.");
 }
 
-void zero_convention_repository::write(
-    context ctx, const std::vector<domain::zero_convention>& v) {
+void zero_convention_repository::write(context ctx, const std::vector<domain::zero_convention>& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing zero conventions. Count: " << v.size();
-    execute_write_query(ctx, zero_convention_mapper::map(v),
-        lg(), "Writing zero conventions to database.");
+    execute_write_query(
+        ctx, zero_convention_mapper::map(v), lg(), "Writing zero conventions to database.");
 }
 
-std::vector<domain::zero_convention>
-zero_convention_repository::read_latest(context ctx) {
+std::vector<domain::zero_convention> zero_convention_repository::read_latest(context ctx) {
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
-    const auto query = sqlgen::read<std::vector<zero_convention_entity>> |
+    const auto query =
+        sqlgen::read<std::vector<zero_convention_entity>> |
         where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
         order_by("id"_c);
 
     return execute_read_query<zero_convention_entity, domain::zero_convention>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return zero_convention_mapper::map(entities); },
-        lg(), "Reading latest zero conventions");
+        lg(),
+        "Reading latest zero conventions");
 }
 
 std::vector<domain::zero_convention>
@@ -72,27 +72,32 @@ zero_convention_repository::read_latest(context ctx, const std::string& id) {
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<zero_convention_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id &&
+                             "valid_to"_c == max.value());
 
     return execute_read_query<zero_convention_entity, domain::zero_convention>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return zero_convention_mapper::map(entities); },
-        lg(), "Reading latest zero convention by id.");
+        lg(),
+        "Reading latest zero convention by id.");
 }
 
-std::vector<domain::zero_convention>
-zero_convention_repository::read_all(context ctx, const std::string& id) {
+std::vector<domain::zero_convention> zero_convention_repository::read_all(context ctx,
+                                                                          const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all zero convention versions. id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<zero_convention_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id) |
-        order_by("version"_c.desc());
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id) |
+                       order_by("version"_c.desc());
 
     return execute_read_query<zero_convention_entity, domain::zero_convention>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return zero_convention_mapper::map(entities); },
-        lg(), "Reading all zero convention versions by id.");
+        lg(),
+        "Reading all zero convention versions by id.");
 }
 
 void zero_convention_repository::remove(context ctx, const std::string& id) {
@@ -101,7 +106,8 @@ void zero_convention_repository::remove(context ctx, const std::string& id) {
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::delete_from<zero_convention_entity> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id &&
+                             "valid_to"_c == max.value());
 
     execute_delete_query(ctx, query, lg(), "Removing zero convention from database.");
 }

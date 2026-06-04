@@ -20,17 +20,18 @@
 #ifndef ORES_REFDATA_API_DOMAIN_BUSINESS_UNIT_TYPE_TABLE_IO_HPP
 #define ORES_REFDATA_API_DOMAIN_BUSINESS_UNIT_TYPE_TABLE_IO_HPP
 
-#include <iosfwd>
-#include <vector>
 #include "ores.refdata.api/domain/business_unit_type.hpp"
 #include "ores.refdata.api/export.hpp"
+#include <iosfwd>
+#include <vector>
 
 namespace ores::refdata::domain {
 
 /**
  * @brief Dumps the business_unit_type objects to a stream in table format.
  */
-ORES_REFDATA_API_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<business_unit_type>& v);
+ORES_REFDATA_API_EXPORT std::ostream& operator<<(std::ostream& s,
+                                                 const std::vector<business_unit_type>& v);
 
 }
 

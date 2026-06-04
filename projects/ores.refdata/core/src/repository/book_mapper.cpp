@@ -18,32 +18,32 @@
  *
  */
 #include "ores.refdata.core/repository/book_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.refdata.api/domain/book_json_io.hpp" // IWYU pragma: keep.
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::refdata::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::book
-book_mapper::map(const book_entity& v) {
+domain::book book_mapper::map(const book_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::book r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id)
-        .value_or(utility::uuid::tenant_id::system());
+                      .value_or(utility::uuid::tenant_id::system());
     r.workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.name = v.name;
     r.description = v.description.value_or("");
     r.parent_portfolio_id = boost::lexical_cast<boost::uuids::uuid>(v.parent_portfolio_id);
-    r.owner_unit_id = v.owner_unit_id.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.owner_unit_id)) : std::nullopt;
+    r.owner_unit_id = v.owner_unit_id.has_value() ?
+                          std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.owner_unit_id)) :
+                          std::nullopt;
     r.ledger_ccy = v.ledger_ccy;
     r.gl_account_ref = v.gl_account_ref.value_or("");
     r.cost_center = v.cost_center.value_or("");
@@ -59,8 +59,7 @@ book_mapper::map(const book_entity& v) {
     return r;
 }
 
-book_entity
-book_mapper::map(const domain::book& v) {
+book_entity book_mapper::map(const domain::book& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     book_entity r;
@@ -72,7 +71,9 @@ book_mapper::map(const domain::book& v) {
     r.name = v.name;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.parent_portfolio_id = boost::uuids::to_string(v.parent_portfolio_id);
-    r.owner_unit_id = v.owner_unit_id.has_value() ? std::optional(boost::uuids::to_string(*v.owner_unit_id)) : std::nullopt;
+    r.owner_unit_id = v.owner_unit_id.has_value() ?
+                          std::optional(boost::uuids::to_string(*v.owner_unit_id)) :
+                          std::nullopt;
     r.ledger_ccy = v.ledger_ccy;
     r.gl_account_ref = v.gl_account_ref.empty() ? std::nullopt : std::optional(v.gl_account_ref);
     r.cost_center = v.cost_center.empty() ? std::nullopt : std::optional(v.cost_center);
@@ -87,22 +88,14 @@ book_mapper::map(const domain::book& v) {
     return r;
 }
 
-std::vector<domain::book>
-book_mapper::map(const std::vector<book_entity>& v) {
+std::vector<domain::book> book_mapper::map(const std::vector<book_entity>& v) {
     return map_vector<book_entity, domain::book>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
-std::vector<book_entity>
-book_mapper::map(const std::vector<domain::book>& v) {
+std::vector<book_entity> book_mapper::map(const std::vector<domain::book>& v) {
     return map_vector<domain::book, book_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

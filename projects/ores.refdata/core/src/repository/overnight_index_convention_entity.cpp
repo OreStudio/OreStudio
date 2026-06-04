@@ -18,7 +18,6 @@
  *
  */
 #include "ores.refdata.core/repository/overnight_index_convention_entity.hpp"
-
 #include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>

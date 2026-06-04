@@ -20,10 +20,10 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_PURPOSE_TYPE_MAPPER_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_PURPOSE_TYPE_MAPPER_HPP
 
-#include "ores.refdata.api/domain/purpose_type.hpp"
-#include "ores.refdata.core/repository/purpose_type_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.refdata.api/domain/purpose_type.hpp"
 #include "ores.refdata.core/export.hpp"
+#include "ores.refdata.core/repository/purpose_type_entity.hpp"
 
 namespace ores::refdata::repository {
 
@@ -32,22 +32,20 @@ namespace ores::refdata::repository {
  */
 class ORES_REFDATA_CORE_EXPORT purpose_type_mapper {
 private:
-    inline static std::string_view logger_name =
-        "ores.refdata.repository.purpose_type_mapper";
+    inline static std::string_view logger_name = "ores.refdata.repository.purpose_type_mapper";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }
+
 public:
     static domain::purpose_type map(const purpose_type_entity& v);
     static purpose_type_entity map(const domain::purpose_type& v);
 
-    static std::vector<domain::purpose_type>
-    map(const std::vector<purpose_type_entity>& v);
-    static std::vector<purpose_type_entity>
-    map(const std::vector<domain::purpose_type>& v);
+    static std::vector<domain::purpose_type> map(const std::vector<purpose_type_entity>& v);
+    static std::vector<purpose_type_entity> map(const std::vector<domain::purpose_type>& v);
 };
 
 }

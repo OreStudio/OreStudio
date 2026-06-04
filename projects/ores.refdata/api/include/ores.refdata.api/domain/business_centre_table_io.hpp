@@ -20,22 +20,24 @@
 #ifndef ORES_REFDATA_API_DOMAIN_BUSINESS_CENTRE_TABLE_IO_HPP
 #define ORES_REFDATA_API_DOMAIN_BUSINESS_CENTRE_TABLE_IO_HPP
 
-#include <iosfwd>
-#include <vector>
 #include "ores.refdata.api/domain/business_centre.hpp"
 #include "ores.refdata.api/export.hpp"
+#include <iosfwd>
+#include <vector>
 
 namespace ores::refdata::domain {
 
 /**
  * @brief Prints business centres to a stream in table format.
  */
-ORES_REFDATA_API_EXPORT void print_business_centre_table(std::ostream& s, const std::vector<business_centre>& v);
+ORES_REFDATA_API_EXPORT void print_business_centre_table(std::ostream& s,
+                                                         const std::vector<business_centre>& v);
 
 /**
  * @brief Dumps the business centre objects to a stream in table format.
  */
-ORES_REFDATA_API_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<business_centre>& v);
+ORES_REFDATA_API_EXPORT std::ostream& operator<<(std::ostream& s,
+                                                 const std::vector<business_centre>& v);
 
 }
 

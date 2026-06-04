@@ -20,9 +20,9 @@
 #ifndef ORES_REFDATA_API_MESSAGING_PORTFOLIO_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_PORTFOLIO_PROTOCOL_HPP
 
+#include "ores.refdata.api/domain/portfolio.hpp"
 #include <string>
 #include <vector>
-#include "ores.refdata.api/domain/portfolio.hpp"
 
 namespace ores::refdata::messaging {
 

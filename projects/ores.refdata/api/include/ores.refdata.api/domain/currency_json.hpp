@@ -20,10 +20,10 @@
 #ifndef ORES_REFDATA_API_DOMAIN_CURRENCY_JSON_HPP
 #define ORES_REFDATA_API_DOMAIN_CURRENCY_JSON_HPP
 
-#include <string>
-#include <vector>
 #include "ores.refdata.api/domain/currency.hpp"
 #include "ores.refdata.api/export.hpp"
+#include <string>
+#include <vector>
 
 namespace ores::refdata::domain {
 

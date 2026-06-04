@@ -18,7 +18,6 @@
  *
  */
 #include "ores.refdata.core/service/deposit_convention_service.hpp"
-
 #include <stdexcept>
 
 namespace ores::refdata::service {
@@ -37,7 +36,8 @@ std::optional<domain::deposit_convention>
 deposit_convention_service::get_deposit_convention(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting deposit convention: " << id;
     auto results = repo_.read_latest(ctx_, id);
-    if (results.empty()) return std::nullopt;
+    if (results.empty())
+        return std::nullopt;
     return results.front();
 }
 

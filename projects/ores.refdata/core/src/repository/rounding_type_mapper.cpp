@@ -18,7 +18,6 @@
  *
  */
 #include "ores.refdata.core/repository/rounding_type_mapper.hpp"
-
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.refdata.api/domain/rounding_type_json_io.hpp" // IWYU pragma: keep.
 
@@ -27,8 +26,7 @@ namespace ores::refdata::repository {
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::rounding_type
-rounding_type_mapper::map(const rounding_type_entity& v) {
+domain::rounding_type rounding_type_mapper::map(const rounding_type_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::rounding_type r;
@@ -47,8 +45,7 @@ rounding_type_mapper::map(const rounding_type_entity& v) {
     return r;
 }
 
-rounding_type_entity
-rounding_type_mapper::map(const domain::rounding_type& v) {
+rounding_type_entity rounding_type_mapper::map(const domain::rounding_type& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     rounding_type_entity r;
@@ -69,19 +66,13 @@ rounding_type_mapper::map(const domain::rounding_type& v) {
 std::vector<domain::rounding_type>
 rounding_type_mapper::map(const std::vector<rounding_type_entity>& v) {
     return map_vector<rounding_type_entity, domain::rounding_type>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<rounding_type_entity>
 rounding_type_mapper::map(const std::vector<domain::rounding_type>& v) {
     return map_vector<domain::rounding_type, rounding_type_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

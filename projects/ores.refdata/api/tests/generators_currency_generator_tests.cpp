@@ -17,14 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <set>
-#include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
-#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
-#include "ores.utility/generation/generation_context.hpp"
-#include "ores.refdata.api/domain/currency.hpp" // IWYU pragma: keep.
+#include "ores.refdata.api/domain/currency.hpp"         // IWYU pragma: keep.
 #include "ores.refdata.api/domain/currency_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/generators/currency_generator.hpp"
+#include "ores.utility/generation/generation_context.hpp"
+#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <catch2/catch_test_macros.hpp>
+#include <set>
 
 namespace {
 
@@ -92,11 +92,11 @@ TEST_CASE("generate_unicode_currencies", tags) {
     for (const auto& c : currencies)
         symbols.insert(c.symbol);
 
-    CHECK(symbols.count("$") == 1);   // USD-like
-    CHECK(symbols.count("€") == 1);   // EUR-like
-    CHECK(symbols.count("£") == 1);   // GBP-like
-    CHECK(symbols.count("¥") == 1);   // JPY-like
-    CHECK(symbols.count("₿") == 1);   // BTC-like
+    CHECK(symbols.count("$") == 1); // USD-like
+    CHECK(symbols.count("€") == 1); // EUR-like
+    CHECK(symbols.count("£") == 1); // GBP-like
+    CHECK(symbols.count("¥") == 1); // JPY-like
+    CHECK(symbols.count("₿") == 1); // BTC-like
 }
 
 TEST_CASE("generate_fictional_currencies_returns_all_when_no_count", tags) {
@@ -179,9 +179,8 @@ TEST_CASE("generate_fictional_currencies_contains_known_currencies", tags) {
     for (const auto& c : currencies)
         codes.insert(c.iso_code);
 
-    CHECK(codes.count("XAE") == 1);  // Aerilonian Dollar
-    CHECK(codes.count("XZE") == 1);  // Zephyrian Zephyr
-    CHECK(codes.count("XER") == 1);  // Eriadoran Euro
-    CHECK(codes.count("XKR") == 1);  // Krynnish Krynn
+    CHECK(codes.count("XAE") == 1); // Aerilonian Dollar
+    CHECK(codes.count("XZE") == 1); // Zephyrian Zephyr
+    CHECK(codes.count("XER") == 1); // Eriadoran Euro
+    CHECK(codes.count("XKR") == 1); // Krynnish Krynn
 }
-

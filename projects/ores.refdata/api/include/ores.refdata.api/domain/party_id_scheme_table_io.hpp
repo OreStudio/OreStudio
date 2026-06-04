@@ -20,17 +20,18 @@
 #ifndef ORES_REFDATA_API_DOMAIN_PARTY_ID_SCHEME_TABLE_IO_HPP
 #define ORES_REFDATA_API_DOMAIN_PARTY_ID_SCHEME_TABLE_IO_HPP
 
-#include <iosfwd>
-#include <vector>
 #include "ores.refdata.api/domain/party_id_scheme.hpp"
 #include "ores.refdata.api/export.hpp"
+#include <iosfwd>
+#include <vector>
 
 namespace ores::refdata::domain {
 
 /**
  * @brief Dumps the party_id_scheme objects to a stream in table format.
  */
-ORES_REFDATA_API_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<party_id_scheme>& v);
+ORES_REFDATA_API_EXPORT std::ostream& operator<<(std::ostream& s,
+                                                 const std::vector<party_id_scheme>& v);
 
 }
 

@@ -20,10 +20,10 @@
 #ifndef ORES_REFDATA_DOMAIN_CDS_CONVENTION_HPP
 #define ORES_REFDATA_DOMAIN_CDS_CONVENTION_HPP
 
-#include <chrono>
-#include <string>
-#include <optional>
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <chrono>
+#include <optional>
+#include <string>
 
 namespace ores::refdata::domain {
 
@@ -105,7 +105,8 @@ struct cds_convention final {
     std::optional<int> upfront_settlement_days;
 
     /**
-     * @brief Day count fraction for the last coupon period (canonical FpML). When absent the same fraction as day_count_fraction is used.
+     * @brief Day count fraction for the last coupon period (canonical FpML). When absent the same
+     * fraction as day_count_fraction is used.
      */
     std::optional<std::string> last_period_day_count_fraction;
 

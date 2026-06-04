@@ -20,13 +20,13 @@
 #ifndef ORES_REFDATA_SERVICE_BOOK_SERVICE_HPP
 #define ORES_REFDATA_SERVICE_BOOK_SERVICE_HPP
 
-#include <string>
-#include <vector>
-#include <optional>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/book.hpp"
 #include "ores.refdata.core/repository/book_repository.hpp"
+#include <optional>
+#include <string>
+#include <vector>
 
 namespace ores::refdata::service {
 
@@ -35,8 +35,7 @@ namespace ores::refdata::service {
  */
 class book_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.refdata.service.book_service";
+    inline static std::string_view logger_name = "ores.refdata.service.book_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -51,15 +50,13 @@ public:
 
     std::vector<domain::book> list_books();
 
-    std::optional<domain::book>
-    get_book(const std::string& id);
+    std::optional<domain::book> get_book(const std::string& id);
 
     void save_book(const domain::book& v);
 
     void remove_book(const std::string& id);
 
-    std::vector<domain::book>
-    get_book_history(const std::string& id);
+    std::vector<domain::book> get_book_history(const std::string& id);
 
 private:
     context ctx_;

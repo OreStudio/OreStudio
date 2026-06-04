@@ -18,13 +18,12 @@
  *
  */
 #include "ores.refdata.api/csv/exporter.hpp"
-
+#include "ores.platform/time/datetime.hpp"
+#include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
+#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <sstream>
 #include <string>
 #include <vector>
-#include <sstream>
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
-#include "ores.platform/time/datetime.hpp"
 
 namespace ores::refdata::csv {
 
@@ -34,8 +33,7 @@ using ores::platform::time::datetime;
 
 std::string exporter::escape_csv_field(const std::string& field) {
     // Check if field contains special characters that need escaping
-    bool needs_quoting = field.empty() ||
-                         field.find(',') != std::string::npos ||
+    bool needs_quoting = field.empty() || field.find(',') != std::string::npos ||
                          field.find('"') != std::string::npos ||
                          field.find('\n') != std::string::npos ||
                          field.find('\r') != std::string::npos;
@@ -46,7 +44,7 @@ std::string exporter::escape_csv_field(const std::string& field) {
     size_t pos = 0;
     while ((pos = result.find('"', pos)) != std::string::npos) {
         result.replace(pos, 1, "\"\"");
-        pos += 2;  // Move past the replacement
+        pos += 2; // Move past the replacement
     }
 
     // Add quotes if needed (RFC 4180 section 2)
@@ -57,8 +55,7 @@ std::string exporter::escape_csv_field(const std::string& field) {
     return result;
 }
 
-std::string
-exporter::export_currency_config(const std::vector<currency>& v) {
+std::string exporter::export_currency_config(const std::vector<currency>& v) {
     BOOST_LOG_SEV(lg(), debug) << "Started CSV export. Total: " << v.size();
     BOOST_LOG_SEV(lg(), trace) << "Currencies: " << v;
 
@@ -71,28 +68,20 @@ exporter::export_currency_config(const std::vector<currency>& v) {
 
     // Add data rows
     for (const auto& curr : v) {
-        oss << escape_csv_field(curr.iso_code) << ","
-            << escape_csv_field(curr.name) << ","
-            << escape_csv_field(curr.numeric_code) << ","
-            << escape_csv_field(curr.symbol) << ","
-            << escape_csv_field(curr.fraction_symbol) << ","
-            << curr.fractions_per_unit << ","
-            << escape_csv_field(curr.rounding_type) << ","
-            << curr.rounding_precision << ","
-            << escape_csv_field(curr.format) << ","
-            << escape_csv_field(curr.monetary_nature) << ","
-            << escape_csv_field(curr.market_tier) << ","
-            << escape_csv_field(curr.modified_by) << ","
-            << escape_csv_field(datetime::to_iso8601_utc(curr.recorded_at)) << "\n";
+        oss << escape_csv_field(curr.iso_code) << "," << escape_csv_field(curr.name) << ","
+            << escape_csv_field(curr.numeric_code) << "," << escape_csv_field(curr.symbol) << ","
+            << escape_csv_field(curr.fraction_symbol) << "," << curr.fractions_per_unit << ","
+            << escape_csv_field(curr.rounding_type) << "," << curr.rounding_precision << ","
+            << escape_csv_field(curr.format) << "," << escape_csv_field(curr.monetary_nature) << ","
+            << escape_csv_field(curr.market_tier) << "," << escape_csv_field(curr.modified_by)
+            << "," << escape_csv_field(datetime::to_iso8601_utc(curr.recorded_at)) << "\n";
     }
 
     std::string result = oss.str();
     auto max_bytes(std::min<std::size_t>(result.size(), 200));
-    BOOST_LOG_SEV(lg(), trace) << "CSV: " << result.substr(0, max_bytes)
-                               << "...";
+    BOOST_LOG_SEV(lg(), trace) << "CSV: " << result.substr(0, max_bytes) << "...";
 
-    BOOST_LOG_SEV(lg(), debug) << "Finished CSV export. Result length: "
-                               << result.length();
+    BOOST_LOG_SEV(lg(), debug) << "Finished CSV export. Result length: " << result.length();
     return result;
 }
 

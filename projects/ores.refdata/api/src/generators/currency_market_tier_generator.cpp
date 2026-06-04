@@ -18,24 +18,21 @@
  *
  */
 #include "ores.refdata.api/generators/currency_market_tier_generator.hpp"
-
+#include "ores.utility/generation/generation_keys.hpp"
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::refdata::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::currency_market_tier generate_synthetic_currency_market_tier(
-    utility::generation::generation_context& ctx) {
+domain::currency_market_tier
+generate_synthetic_currency_market_tier(utility::generation::generation_context& ctx) {
     static std::atomic<int> counter{0};
-    const auto modified_by = ctx.env().get_or(
-        std::string(generation_keys::modified_by), "system");
+    const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
 
     static const std::vector<std::string> codes = {
-        "g10", "emerging", "exotic", "frontier", "historical"
-    };
+        "g10", "emerging", "exotic", "frontier", "historical"};
     const auto idx = counter++ % codes.size();
 
     domain::currency_market_tier r;
@@ -54,7 +51,7 @@ domain::currency_market_tier generate_synthetic_currency_market_tier(
 
 std::vector<domain::currency_market_tier>
 generate_synthetic_currency_market_tiers(std::size_t n,
-    utility::generation::generation_context& ctx) {
+                                         utility::generation::generation_context& ctx) {
     std::vector<domain::currency_market_tier> r;
     r.reserve(n);
     while (r.size() < n)

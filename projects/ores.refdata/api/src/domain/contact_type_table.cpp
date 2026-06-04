@@ -18,7 +18,6 @@
  *
  */
 #include "ores.refdata.api/domain/contact_type_table.hpp"
-
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
 
@@ -28,10 +27,12 @@ std::string convert_to_table(const std::vector<contact_type>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Code" << "Name" << "Description" << "Order" << "Modified By" << "Version" << fort::endr;
+    table << fort::header << "Code" << "Name" << "Description" << "Order" << "Modified By"
+          << "Version" << fort::endr;
 
     for (const auto& ct : v) {
-        table << ct.code << ct.name << ct.description << ct.display_order << ct.modified_by << ct.version << fort::endr;
+        table << ct.code << ct.name << ct.description << ct.display_order << ct.modified_by
+              << ct.version << fort::endr;
     }
     return table.to_string();
 }

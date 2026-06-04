@@ -18,14 +18,13 @@
  *
  */
 #include "ores.refdata.core/repository/party_country_repository.hpp"
-
-#include <sqlgen/postgres.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
 #include "ores.refdata.api/domain/party_country_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/party_country_entity.hpp"
 #include "ores.refdata.core/repository/party_country_mapper.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <sqlgen/postgres.hpp>
 
 namespace ores::refdata::repository {
 
@@ -41,104 +40,99 @@ std::string party_country_repository::sql() {
 party_country_repository::party_country_repository(context ctx)
     : ctx_(std::move(ctx)) {}
 
-void party_country_repository::write(
-    const domain::party_country& party_country) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing party country to database: "
-                               << party_country.party_id << "/"
-                               << party_country.country_alpha2_code;
-    execute_write_query(ctx_, party_country_mapper::map(party_country),
-        lg(), "writing party country to database");
+void party_country_repository::write(const domain::party_country& party_country) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing party country to database: " << party_country.party_id
+                               << "/" << party_country.country_alpha2_code;
+    execute_write_query(
+        ctx_, party_country_mapper::map(party_country), lg(), "writing party country to database");
 }
 
-void party_country_repository::write(
-    const std::vector<domain::party_country>& party_countries) {
+void party_country_repository::write(const std::vector<domain::party_country>& party_countries) {
     BOOST_LOG_SEV(lg(), debug) << "Writing party countries to database. Count: "
                                << party_countries.size();
-    execute_write_query(ctx_, party_country_mapper::map(party_countries),
-        lg(), "writing party countries to database");
+    execute_write_query(ctx_,
+                        party_country_mapper::map(party_countries),
+                        lg(),
+                        "writing party countries to database");
 }
 
-std::vector<domain::party_country>
-party_country_repository::read_latest() {
+std::vector<domain::party_country> party_country_repository::read_latest() {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<party_country_entity>> |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-        order_by("party_id"_c, "country_alpha2_code"_c);
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("party_id"_c, "country_alpha2_code"_c);
 
     return execute_read_query<party_country_entity, domain::party_country>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return party_country_mapper::map(entities); },
-        lg(), "Reading latest party countries");
+        lg(),
+        "Reading latest party countries");
 }
 
 std::vector<domain::party_country>
-party_country_repository::read_latest_by_party(
-    const boost::uuids::uuid& party_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest party countries. Party: "
-                               << party_id;
+party_country_repository::read_latest_by_party(const boost::uuids::uuid& party_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest party countries. Party: " << party_id;
 
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
     const auto party_id_str = boost::uuids::to_string(party_id);
-    const auto query = sqlgen::read<std::vector<party_country_entity>> |
-        where("tenant_id"_c == tid && "party_id"_c == party_id_str &&
-              "valid_to"_c == max.value()) |
+    const auto query =
+        sqlgen::read<std::vector<party_country_entity>> |
+        where("tenant_id"_c == tid && "party_id"_c == party_id_str && "valid_to"_c == max.value()) |
         order_by("country_alpha2_code"_c);
 
     return execute_read_query<party_country_entity, domain::party_country>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return party_country_mapper::map(entities); },
-        lg(), "Reading latest party countries by party.");
+        lg(),
+        "Reading latest party countries by party.");
 }
 
 std::vector<domain::party_country>
-party_country_repository::read_latest_by_country(
-    const std::string& alpha2_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest party countries. Country: "
-                               << alpha2_code;
+party_country_repository::read_latest_by_country(const std::string& alpha2_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest party countries. Country: " << alpha2_code;
 
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<party_country_entity>> |
-        where("tenant_id"_c == tid && "country_alpha2_code"_c == alpha2_code &&
-              "valid_to"_c == max.value()) |
-        order_by("party_id"_c);
+                       where("tenant_id"_c == tid && "country_alpha2_code"_c == alpha2_code &&
+                             "valid_to"_c == max.value()) |
+                       order_by("party_id"_c);
 
     return execute_read_query<party_country_entity, domain::party_country>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return party_country_mapper::map(entities); },
-        lg(), "Reading latest party countries by country.");
+        lg(),
+        "Reading latest party countries by country.");
 }
 
-void party_country_repository::remove(
-    const boost::uuids::uuid& party_id,
-    const std::string& alpha2_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing party country from database: "
-                               << party_id << "/" << alpha2_code;
+void party_country_repository::remove(const boost::uuids::uuid& party_id,
+                                      const std::string& alpha2_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing party country from database: " << party_id << "/"
+                               << alpha2_code;
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto party_id_str = boost::uuids::to_string(party_id);
     const auto query = sqlgen::delete_from<party_country_entity> |
-        where("tenant_id"_c == tid && "party_id"_c == party_id_str &&
-              "country_alpha2_code"_c == alpha2_code);
+                       where("tenant_id"_c == tid && "party_id"_c == party_id_str &&
+                             "country_alpha2_code"_c == alpha2_code);
 
-    execute_delete_query(ctx_, query, lg(),
-        "removing party country from database");
+    execute_delete_query(ctx_, query, lg(), "removing party country from database");
 }
 
-void party_country_repository::remove_by_party(
-    const boost::uuids::uuid& party_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing all party countries from database: "
-                               << party_id;
+void party_country_repository::remove_by_party(const boost::uuids::uuid& party_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing all party countries from database: " << party_id;
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto party_id_str = boost::uuids::to_string(party_id);
     const auto query = sqlgen::delete_from<party_country_entity> |
-        where("tenant_id"_c == tid && "party_id"_c == party_id_str);
+                       where("tenant_id"_c == tid && "party_id"_c == party_id_str);
 
-    execute_delete_query(ctx_, query, lg(),
-        "removing all party countries from database");
+    execute_delete_query(ctx_, query, lg(), "removing all party countries from database");
 }
 
 }

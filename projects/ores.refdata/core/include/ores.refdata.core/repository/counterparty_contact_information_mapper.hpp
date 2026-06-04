@@ -20,15 +20,16 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_COUNTERPARTY_CONTACT_INFORMATION_MAPPER_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_COUNTERPARTY_CONTACT_INFORMATION_MAPPER_HPP
 
-#include "ores.refdata.api/domain/counterparty_contact_information.hpp"
-#include "ores.refdata.core/repository/counterparty_contact_information_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.refdata.api/domain/counterparty_contact_information.hpp"
 #include "ores.refdata.core/export.hpp"
+#include "ores.refdata.core/repository/counterparty_contact_information_entity.hpp"
 
 namespace ores::refdata::repository {
 
 /**
- * @brief Maps counterparty_contact_information domain entities to data storage layer and vice-versa.
+ * @brief Maps counterparty_contact_information domain entities to data storage layer and
+ * vice-versa.
  */
 class ORES_REFDATA_CORE_EXPORT counterparty_contact_information_mapper {
 private:
@@ -40,9 +41,12 @@ private:
         static auto instance = make_logger(logger_name);
         return instance;
     }
+
 public:
-    static domain::counterparty_contact_information map(const counterparty_contact_information_entity& v);
-    static counterparty_contact_information_entity map(const domain::counterparty_contact_information& v);
+    static domain::counterparty_contact_information
+    map(const counterparty_contact_information_entity& v);
+    static counterparty_contact_information_entity
+    map(const domain::counterparty_contact_information& v);
 
     static std::vector<domain::counterparty_contact_information>
     map(const std::vector<counterparty_contact_information_entity>& v);

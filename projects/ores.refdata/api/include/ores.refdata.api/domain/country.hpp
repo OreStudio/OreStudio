@@ -20,11 +20,11 @@
 #ifndef ORES_REFDATA_API_DOMAIN_COUNTRY_HPP
 #define ORES_REFDATA_API_DOMAIN_COUNTRY_HPP
 
-#include <chrono>
-#include <string>
-#include <optional>
-#include <boost/uuid/uuid.hpp>
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <optional>
+#include <string>
 
 namespace ores::refdata::domain {
 

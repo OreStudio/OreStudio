@@ -18,7 +18,6 @@
  *
  */
 #include "ores.refdata.api/domain/currency_version_history_table.hpp"
-
 #include <fort.hpp>
 
 namespace ores::refdata::domain {

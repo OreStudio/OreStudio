@@ -20,13 +20,13 @@
 #ifndef ORES_REFDATA_SERVICE_OVERNIGHT_INDEX_CONVENTION_SERVICE_HPP
 #define ORES_REFDATA_SERVICE_OVERNIGHT_INDEX_CONVENTION_SERVICE_HPP
 
-#include <string>
-#include <vector>
-#include <optional>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/overnight_index_convention.hpp"
 #include "ores.refdata.core/repository/overnight_index_convention_repository.hpp"
+#include <optional>
+#include <string>
+#include <vector>
 
 namespace ores::refdata::service {
 

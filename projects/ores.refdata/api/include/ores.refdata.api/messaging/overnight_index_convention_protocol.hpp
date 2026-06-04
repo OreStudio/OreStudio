@@ -20,16 +20,15 @@
 #ifndef ORES_REFDATA_MESSAGING_OVERNIGHT_INDEX_CONVENTION_PROTOCOL_HPP
 #define ORES_REFDATA_MESSAGING_OVERNIGHT_INDEX_CONVENTION_PROTOCOL_HPP
 
+#include "ores.refdata.api/domain/overnight_index_convention.hpp"
 #include <string>
 #include <vector>
-#include "ores.refdata.api/domain/overnight_index_convention.hpp"
 
 namespace ores::refdata::messaging {
 
 struct get_overnight_index_conventions_request {
     using response_type = struct get_overnight_index_conventions_response;
-    static constexpr std::string_view nats_subject =
-        "refdata.v1.overnight_index_conventions.list";
+    static constexpr std::string_view nats_subject = "refdata.v1.overnight_index_conventions.list";
 };
 
 struct get_overnight_index_conventions_response {
@@ -41,8 +40,7 @@ struct get_overnight_index_conventions_response {
 
 struct save_overnight_index_convention_request {
     using response_type = struct save_overnight_index_convention_response;
-    static constexpr std::string_view nats_subject =
-        "refdata.v1.overnight_index_conventions.save";
+    static constexpr std::string_view nats_subject = "refdata.v1.overnight_index_conventions.save";
     ores::refdata::domain::overnight_index_convention data;
 };
 

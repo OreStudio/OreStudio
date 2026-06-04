@@ -17,20 +17,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.refdata.core/repository/counterparty_identifier_repository.hpp"
-
-#include <catch2/catch_test_macros.hpp>
-#include <boost/uuid/random_generator.hpp>
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
-#include "ores.testing/scoped_database_helper.hpp"
-#include "ores.testing/make_generation_context.hpp"
-#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
-#include "ores.refdata.api/domain/counterparty_identifier.hpp" // IWYU pragma: keep.
+#include "ores.refdata.api/domain/counterparty_identifier.hpp"         // IWYU pragma: keep.
 #include "ores.refdata.api/domain/counterparty_identifier_json_io.hpp" // IWYU pragma: keep.
-#include "ores.refdata.api/generators/counterparty_identifier_generator.hpp"
 #include "ores.refdata.api/generators/counterparty_generator.hpp"
+#include "ores.refdata.api/generators/counterparty_identifier_generator.hpp"
+#include "ores.refdata.core/repository/counterparty_identifier_repository.hpp"
 #include "ores.refdata.core/repository/counterparty_repository.hpp"
+#include "ores.testing/make_generation_context.hpp"
+#include "ores.testing/scoped_database_helper.hpp"
+#include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
+#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <boost/uuid/random_generator.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 
@@ -75,14 +74,12 @@ TEST_CASE("write_multiple_counterparty_identifiers", tags) {
     counterparty_repository cp_repo(h.context());
     cp_repo.write(cp);
 
-    auto counterparty_identifiers =
-        generate_synthetic_counterparty_identifiers(3, ctx);
+    auto counterparty_identifiers = generate_synthetic_counterparty_identifiers(3, ctx);
     for (auto& ci : counterparty_identifiers) {
         ci.change_reason_code = "system.test";
         ci.counterparty_id = cp.id;
     }
-    BOOST_LOG_SEV(lg, debug) << "Counterparty identifiers: "
-                             << counterparty_identifiers;
+    BOOST_LOG_SEV(lg, debug) << "Counterparty identifiers: " << counterparty_identifiers;
 
     counterparty_identifier_repository repo(h.context());
     CHECK_NOTHROW(repo.write(counterparty_identifiers));
@@ -98,8 +95,7 @@ TEST_CASE("read_latest_counterparty_identifiers", tags) {
     counterparty_repository cp_repo(h.context());
     cp_repo.write(cp);
 
-    auto written_counterparty_identifiers =
-        generate_synthetic_counterparty_identifiers(3, ctx);
+    auto written_counterparty_identifiers = generate_synthetic_counterparty_identifiers(3, ctx);
     for (auto& ci : written_counterparty_identifiers) {
         ci.change_reason_code = "system.test";
         ci.counterparty_id = cp.id;
@@ -111,11 +107,9 @@ TEST_CASE("read_latest_counterparty_identifiers", tags) {
     repo.write(written_counterparty_identifiers);
 
     auto read_counterparty_identifiers = repo.read_latest();
-    BOOST_LOG_SEV(lg, debug) << "Read counterparty identifiers: "
-                             << read_counterparty_identifiers;
+    BOOST_LOG_SEV(lg, debug) << "Read counterparty identifiers: " << read_counterparty_identifiers;
 
-    CHECK(read_counterparty_identifiers.size() >=
-        written_counterparty_identifiers.size());
+    CHECK(read_counterparty_identifiers.size() >= written_counterparty_identifiers.size());
 }
 
 TEST_CASE("read_latest_counterparty_identifier_by_id", tags) {
@@ -141,13 +135,11 @@ TEST_CASE("read_latest_counterparty_identifier_by_id", tags) {
     repo.write(ci);
 
     auto read_counterparty_identifiers = repo.read_latest(ci.id);
-    BOOST_LOG_SEV(lg, debug) << "Read counterparty identifiers: "
-                             << read_counterparty_identifiers;
+    BOOST_LOG_SEV(lg, debug) << "Read counterparty identifiers: " << read_counterparty_identifiers;
 
     REQUIRE(read_counterparty_identifiers.size() == 1);
     CHECK(read_counterparty_identifiers[0].id == ci.id);
-    CHECK(read_counterparty_identifiers[0].id_value ==
-        original_id_value + "_v2");
+    CHECK(read_counterparty_identifiers[0].id_value == original_id_value + "_v2");
 }
 
 TEST_CASE("read_nonexistent_counterparty_identifier_id", tags) {
@@ -160,8 +152,7 @@ TEST_CASE("read_nonexistent_counterparty_identifier_id", tags) {
     BOOST_LOG_SEV(lg, debug) << "Non-existent ID: " << nonexistent_id;
 
     auto read_counterparty_identifiers = repo.read_latest(nonexistent_id);
-    BOOST_LOG_SEV(lg, debug) << "Read counterparty identifiers: "
-                             << read_counterparty_identifiers;
+    BOOST_LOG_SEV(lg, debug) << "Read counterparty identifiers: " << read_counterparty_identifiers;
 
     CHECK(read_counterparty_identifiers.size() == 0);
 }

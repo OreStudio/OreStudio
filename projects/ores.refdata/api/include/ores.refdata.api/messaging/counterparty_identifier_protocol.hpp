@@ -20,9 +20,9 @@
 #ifndef ORES_REFDATA_API_MESSAGING_COUNTERPARTY_IDENTIFIER_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_COUNTERPARTY_IDENTIFIER_PROTOCOL_HPP
 
+#include "ores.refdata.api/domain/counterparty_identifier.hpp"
 #include <string>
 #include <vector>
-#include "ores.refdata.api/domain/counterparty_identifier.hpp"
 
 namespace ores::refdata::messaging {
 

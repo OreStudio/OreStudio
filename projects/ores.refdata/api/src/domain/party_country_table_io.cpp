@@ -18,16 +18,14 @@
  *
  */
 #include "ores.refdata.api/domain/party_country_table_io.hpp"
-
-#include <ostream>
 #include "ores.refdata.api/domain/party_country_table.hpp"
+#include <ostream>
 
 namespace ores::refdata::domain {
 
 namespace {
 
-void print_party_country_table(std::ostream& s,
-    const std::vector<party_country>& v) {
+void print_party_country_table(std::ostream& s, const std::vector<party_country>& v) {
     s << std::endl << convert_to_table(v) << std::endl;
 }
 

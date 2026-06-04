@@ -18,7 +18,6 @@
  *
  */
 #include "ores.refdata.core/repository/monetary_nature_mapper.hpp"
-
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.refdata.api/domain/monetary_nature_json_io.hpp" // IWYU pragma: keep.
 
@@ -27,8 +26,7 @@ namespace ores::refdata::repository {
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::monetary_nature
-monetary_nature_mapper::map(const monetary_nature_entity& v) {
+domain::monetary_nature monetary_nature_mapper::map(const monetary_nature_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::monetary_nature r;
@@ -47,8 +45,7 @@ monetary_nature_mapper::map(const monetary_nature_entity& v) {
     return r;
 }
 
-monetary_nature_entity
-monetary_nature_mapper::map(const domain::monetary_nature& v) {
+monetary_nature_entity monetary_nature_mapper::map(const domain::monetary_nature& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     monetary_nature_entity r;
@@ -69,19 +66,13 @@ monetary_nature_mapper::map(const domain::monetary_nature& v) {
 std::vector<domain::monetary_nature>
 monetary_nature_mapper::map(const std::vector<monetary_nature_entity>& v) {
     return map_vector<monetary_nature_entity, domain::monetary_nature>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<monetary_nature_entity>
 monetary_nature_mapper::map(const std::vector<domain::monetary_nature>& v) {
     return map_vector<domain::monetary_nature, monetary_nature_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

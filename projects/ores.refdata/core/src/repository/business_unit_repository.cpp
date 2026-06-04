@@ -18,14 +18,13 @@
  *
  */
 #include "ores.refdata.core/repository/business_unit_repository.hpp"
-
-#include <sqlgen/postgres.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
 #include "ores.refdata.api/domain/business_unit_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/business_unit_entity.hpp"
 #include "ores.refdata.core/repository/business_unit_mapper.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <sqlgen/postgres.hpp>
 
 namespace ores::refdata::repository {
 
@@ -42,31 +41,31 @@ business_unit_repository::business_unit_repository(context ctx)
     : ctx_(std::move(ctx)) {}
 
 void business_unit_repository::write(const domain::business_unit& business_unit) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing business unit to database: "
-                               << business_unit.id;
-    execute_write_query(ctx_, business_unit_mapper::map(business_unit),
-        lg(), "writing business unit to database");
+    BOOST_LOG_SEV(lg(), debug) << "Writing business unit to database: " << business_unit.id;
+    execute_write_query(
+        ctx_, business_unit_mapper::map(business_unit), lg(), "writing business unit to database");
 }
 
-void business_unit_repository::write(
-    const std::vector<domain::business_unit>& business_units) {
+void business_unit_repository::write(const std::vector<domain::business_unit>& business_units) {
     BOOST_LOG_SEV(lg(), debug) << "Writing business units to database. Count: "
                                << business_units.size();
-    execute_write_query(ctx_, business_unit_mapper::map(business_units),
-        lg(), "writing business units to database");
+    execute_write_query(ctx_,
+                        business_unit_mapper::map(business_units),
+                        lg(),
+                        "writing business units to database");
 }
 
-std::vector<domain::business_unit>
-business_unit_repository::read_latest() {
+std::vector<domain::business_unit> business_unit_repository::read_latest() {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<business_unit_entity>> |
-        where("valid_to"_c == max.value()) |
-        order_by("unit_name"_c);
+                       where("valid_to"_c == max.value()) | order_by("unit_name"_c);
 
     return execute_read_query<business_unit_entity, domain::business_unit>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return business_unit_mapper::map(entities); },
-        lg(), "Reading latest business units");
+        lg(),
+        "Reading latest business units");
 }
 
 std::vector<domain::business_unit>
@@ -76,12 +75,14 @@ business_unit_repository::read_latest(const boost::uuids::uuid& id) {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto id_str = boost::uuids::to_string(id);
     const auto query = sqlgen::read<std::vector<business_unit_entity>> |
-        where("id"_c == id_str && "valid_to"_c == max.value());
+                       where("id"_c == id_str && "valid_to"_c == max.value());
 
     return execute_read_query<business_unit_entity, domain::business_unit>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return business_unit_mapper::map(entities); },
-        lg(), "Reading latest business unit by id.");
+        lg(),
+        "Reading latest business unit by id.");
 }
 
 std::vector<domain::business_unit>
@@ -90,12 +91,14 @@ business_unit_repository::read_latest_by_code(const std::string& code) {
 
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<business_unit_entity>> |
-        where("unit_code"_c == code && "valid_to"_c == max.value());
+                       where("unit_code"_c == code && "valid_to"_c == max.value());
 
     return execute_read_query<business_unit_entity, domain::business_unit>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return business_unit_mapper::map(entities); },
-        lg(), "Reading latest business unit by code.");
+        lg(),
+        "Reading latest business unit by code.");
 }
 
 std::vector<domain::business_unit>
@@ -103,22 +106,22 @@ business_unit_repository::read_all(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all business unit versions. Id: " << id;
 
     const auto id_str = boost::uuids::to_string(id);
-    const auto query = sqlgen::read<std::vector<business_unit_entity>> |
-        where("id"_c == id_str) |
-        order_by("version"_c.desc());
+    const auto query = sqlgen::read<std::vector<business_unit_entity>> | where("id"_c == id_str) |
+                       order_by("version"_c.desc());
 
     return execute_read_query<business_unit_entity, domain::business_unit>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return business_unit_mapper::map(entities); },
-        lg(), "Reading all business unit versions by id.");
+        lg(),
+        "Reading all business unit versions by id.");
 }
 
 void business_unit_repository::remove(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing business unit from database: " << id;
 
     const auto id_str = boost::uuids::to_string(id);
-    const auto query = sqlgen::delete_from<business_unit_entity> |
-        where("id"_c == id_str);
+    const auto query = sqlgen::delete_from<business_unit_entity> | where("id"_c == id_str);
 
     execute_delete_query(ctx_, query, lg(), "removing business unit from database");
 }

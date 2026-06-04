@@ -18,15 +18,15 @@
  *
  */
 #include "ores.refdata.api/domain/ibor_index_convention_table_io.hpp"
-
-#include <ostream>
 #include "ores.refdata.api/domain/ibor_index_convention_table.hpp"
+#include <ostream>
 
 namespace ores::refdata::domain {
 
 namespace {
 
-void print_ibor_index_convention_table(std::ostream& s, const std::vector<ibor_index_convention>& v) {
+void print_ibor_index_convention_table(std::ostream& s,
+                                       const std::vector<ibor_index_convention>& v) {
     s << std::endl << convert_to_table(v) << std::endl;
 }
 

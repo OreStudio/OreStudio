@@ -20,25 +20,24 @@
 #ifndef ORES_REFDATA_CORE_GENERATORS_PARTY_ID_SCHEME_GENERATOR_HPP
 #define ORES_REFDATA_CORE_GENERATORS_PARTY_ID_SCHEME_GENERATOR_HPP
 
-#include <vector>
 #include "ores.refdata.api/domain/party_id_scheme.hpp"
 #include "ores.refdata.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include <vector>
 
 namespace ores::refdata::generators {
 
 /**
  * @brief Generates a synthetic party_id_scheme.
  */
-ORES_REFDATA_API_EXPORT domain::party_id_scheme generate_synthetic_party_id_scheme(
-    utility::generation::generation_context& ctx);
+ORES_REFDATA_API_EXPORT domain::party_id_scheme
+generate_synthetic_party_id_scheme(utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic party_id_schemes.
  */
 ORES_REFDATA_API_EXPORT std::vector<domain::party_id_scheme>
-generate_synthetic_party_id_schemes(std::size_t n,
-    utility::generation::generation_context& ctx);
+generate_synthetic_party_id_schemes(std::size_t n, utility::generation::generation_context& ctx);
 
 }
 

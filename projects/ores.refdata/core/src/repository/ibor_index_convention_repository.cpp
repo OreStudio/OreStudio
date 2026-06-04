@@ -18,13 +18,12 @@
  *
  */
 #include "ores.refdata.core/repository/ibor_index_convention_repository.hpp"
-
-#include <sqlgen/postgres.hpp>
-#include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
 #include "ores.refdata.api/domain/ibor_index_convention_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/ibor_index_convention_entity.hpp"
 #include "ores.refdata.core/repository/ibor_index_convention_mapper.hpp"
+#include <sqlgen/postgres.hpp>
 
 namespace ores::refdata::repository {
 
@@ -39,15 +38,19 @@ std::string ibor_index_convention_repository::sql() {
 
 void ibor_index_convention_repository::write(context ctx, const domain::ibor_index_convention& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing IBOR index convention: " << v.id;
-    execute_write_query(ctx, ibor_index_convention_mapper::map(v),
-        lg(), "Writing IBOR index convention to database.");
+    execute_write_query(ctx,
+                        ibor_index_convention_mapper::map(v),
+                        lg(),
+                        "Writing IBOR index convention to database.");
 }
 
-void ibor_index_convention_repository::write(
-    context ctx, const std::vector<domain::ibor_index_convention>& v) {
+void ibor_index_convention_repository::write(context ctx,
+                                             const std::vector<domain::ibor_index_convention>& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing IBOR index conventions. Count: " << v.size();
-    execute_write_query(ctx, ibor_index_convention_mapper::map(v),
-        lg(), "Writing IBOR index conventions to database.");
+    execute_write_query(ctx,
+                        ibor_index_convention_mapper::map(v),
+                        lg(),
+                        "Writing IBOR index conventions to database.");
 }
 
 std::vector<domain::ibor_index_convention>
@@ -55,14 +58,17 @@ ibor_index_convention_repository::read_latest(context ctx) {
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
-    const auto query = sqlgen::read<std::vector<ibor_index_convention_entity>> |
+    const auto query =
+        sqlgen::read<std::vector<ibor_index_convention_entity>> |
         where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
         order_by("id"_c);
 
     return execute_read_query<ibor_index_convention_entity, domain::ibor_index_convention>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return ibor_index_convention_mapper::map(entities); },
-        lg(), "Reading latest IBOR index conventions");
+        lg(),
+        "Reading latest IBOR index conventions");
 }
 
 std::vector<domain::ibor_index_convention>
@@ -72,12 +78,15 @@ ibor_index_convention_repository::read_latest(context ctx, const std::string& id
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<ibor_index_convention_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id &&
+                             "valid_to"_c == max.value());
 
     return execute_read_query<ibor_index_convention_entity, domain::ibor_index_convention>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return ibor_index_convention_mapper::map(entities); },
-        lg(), "Reading latest IBOR index convention by id.");
+        lg(),
+        "Reading latest IBOR index convention by id.");
 }
 
 std::vector<domain::ibor_index_convention>
@@ -86,13 +95,15 @@ ibor_index_convention_repository::read_all(context ctx, const std::string& id) {
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<ibor_index_convention_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id) |
-        order_by("version"_c.desc());
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id) |
+                       order_by("version"_c.desc());
 
     return execute_read_query<ibor_index_convention_entity, domain::ibor_index_convention>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return ibor_index_convention_mapper::map(entities); },
-        lg(), "Reading all IBOR index convention versions by id.");
+        lg(),
+        "Reading all IBOR index convention versions by id.");
 }
 
 void ibor_index_convention_repository::remove(context ctx, const std::string& id) {
@@ -101,7 +112,8 @@ void ibor_index_convention_repository::remove(context ctx, const std::string& id
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::delete_from<ibor_index_convention_entity> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id &&
+                             "valid_to"_c == max.value());
 
     execute_delete_query(ctx, query, lg(), "Removing IBOR index convention from database.");
 }

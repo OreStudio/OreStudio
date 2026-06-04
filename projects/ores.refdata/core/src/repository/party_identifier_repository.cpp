@@ -18,14 +18,13 @@
  *
  */
 #include "ores.refdata.core/repository/party_identifier_repository.hpp"
-
-#include <sqlgen/postgres.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
 #include "ores.refdata.api/domain/party_identifier_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/party_identifier_entity.hpp"
 #include "ores.refdata.core/repository/party_identifier_mapper.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <sqlgen/postgres.hpp>
 
 namespace ores::refdata::repository {
 
@@ -42,31 +41,34 @@ party_identifier_repository::party_identifier_repository(context ctx)
     : ctx_(std::move(ctx)) {}
 
 void party_identifier_repository::write(const domain::party_identifier& party_identifier) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing party identifier to database: "
-                               << party_identifier.id;
-    execute_write_query(ctx_, party_identifier_mapper::map(party_identifier),
-        lg(), "writing party identifier to database");
+    BOOST_LOG_SEV(lg(), debug) << "Writing party identifier to database: " << party_identifier.id;
+    execute_write_query(ctx_,
+                        party_identifier_mapper::map(party_identifier),
+                        lg(),
+                        "writing party identifier to database");
 }
 
 void party_identifier_repository::write(
     const std::vector<domain::party_identifier>& party_identifiers) {
     BOOST_LOG_SEV(lg(), debug) << "Writing party identifiers to database. Count: "
                                << party_identifiers.size();
-    execute_write_query(ctx_, party_identifier_mapper::map(party_identifiers),
-        lg(), "writing party identifiers to database");
+    execute_write_query(ctx_,
+                        party_identifier_mapper::map(party_identifiers),
+                        lg(),
+                        "writing party identifiers to database");
 }
 
-std::vector<domain::party_identifier>
-party_identifier_repository::read_latest() {
+std::vector<domain::party_identifier> party_identifier_repository::read_latest() {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<party_identifier_entity>> |
-        where("valid_to"_c == max.value()) |
-        order_by("id_scheme"_c);
+                       where("valid_to"_c == max.value()) | order_by("id_scheme"_c);
 
     return execute_read_query<party_identifier_entity, domain::party_identifier>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return party_identifier_mapper::map(entities); },
-        lg(), "Reading latest party identifiers");
+        lg(),
+        "Reading latest party identifiers");
 }
 
 std::vector<domain::party_identifier>
@@ -76,12 +78,14 @@ party_identifier_repository::read_latest(const boost::uuids::uuid& id) {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto id_str = boost::uuids::to_string(id);
     const auto query = sqlgen::read<std::vector<party_identifier_entity>> |
-        where("id"_c == id_str && "valid_to"_c == max.value());
+                       where("id"_c == id_str && "valid_to"_c == max.value());
 
     return execute_read_query<party_identifier_entity, domain::party_identifier>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return party_identifier_mapper::map(entities); },
-        lg(), "Reading latest party identifier by id.");
+        lg(),
+        "Reading latest party identifier by id.");
 }
 
 std::vector<domain::party_identifier>
@@ -90,30 +94,32 @@ party_identifier_repository::read_latest_by_code(const std::string& code) {
 
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<party_identifier_entity>> |
-        where("id_scheme"_c == code && "valid_to"_c == max.value());
+                       where("id_scheme"_c == code && "valid_to"_c == max.value());
 
     return execute_read_query<party_identifier_entity, domain::party_identifier>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return party_identifier_mapper::map(entities); },
-        lg(), "Reading latest party identifier by code.");
+        lg(),
+        "Reading latest party identifier by code.");
 }
 
 std::vector<domain::party_identifier>
-party_identifier_repository::read_latest_by_party_id(
-    const boost::uuids::uuid& party_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest party identifiers. Party ID: "
-                               << party_id;
+party_identifier_repository::read_latest_by_party_id(const boost::uuids::uuid& party_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest party identifiers. Party ID: " << party_id;
 
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto party_id_str = boost::uuids::to_string(party_id);
     const auto query = sqlgen::read<std::vector<party_identifier_entity>> |
-        where("party_id"_c == party_id_str && "valid_to"_c == max.value()) |
-        order_by("id_scheme"_c);
+                       where("party_id"_c == party_id_str && "valid_to"_c == max.value()) |
+                       order_by("id_scheme"_c);
 
     return execute_read_query<party_identifier_entity, domain::party_identifier>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return party_identifier_mapper::map(entities); },
-        lg(), "Reading latest party identifiers by party id.");
+        lg(),
+        "Reading latest party identifiers by party id.");
 }
 
 std::vector<domain::party_identifier>
@@ -122,21 +128,21 @@ party_identifier_repository::read_all(const boost::uuids::uuid& id) {
 
     const auto id_str = boost::uuids::to_string(id);
     const auto query = sqlgen::read<std::vector<party_identifier_entity>> |
-        where("id"_c == id_str) |
-        order_by("version"_c.desc());
+                       where("id"_c == id_str) | order_by("version"_c.desc());
 
     return execute_read_query<party_identifier_entity, domain::party_identifier>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return party_identifier_mapper::map(entities); },
-        lg(), "Reading all party identifier versions by id.");
+        lg(),
+        "Reading all party identifier versions by id.");
 }
 
 void party_identifier_repository::remove(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing party identifier from database: " << id;
 
     const auto id_str = boost::uuids::to_string(id);
-    const auto query = sqlgen::delete_from<party_identifier_entity> |
-        where("id"_c == id_str);
+    const auto query = sqlgen::delete_from<party_identifier_entity> | where("id"_c == id_str);
 
     execute_delete_query(ctx_, query, lg(), "removing party identifier from database");
 }

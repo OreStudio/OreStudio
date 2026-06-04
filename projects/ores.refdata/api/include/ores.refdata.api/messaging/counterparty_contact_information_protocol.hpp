@@ -20,9 +20,9 @@
 #ifndef ORES_REFDATA_API_MESSAGING_COUNTERPARTY_CONTACT_INFORMATION_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_COUNTERPARTY_CONTACT_INFORMATION_PROTOCOL_HPP
 
+#include "ores.refdata.api/domain/counterparty_contact_information.hpp"
 #include <string>
 #include <vector>
-#include "ores.refdata.api/domain/counterparty_contact_information.hpp"
 
 namespace ores::refdata::messaging {
 

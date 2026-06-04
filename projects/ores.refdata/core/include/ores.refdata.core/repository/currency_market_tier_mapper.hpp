@@ -20,10 +20,10 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_CURRENCY_MARKET_TIER_MAPPER_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_CURRENCY_MARKET_TIER_MAPPER_HPP
 
-#include "ores.refdata.api/domain/currency_market_tier.hpp"
-#include "ores.refdata.core/repository/currency_market_tier_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.refdata.api/domain/currency_market_tier.hpp"
 #include "ores.refdata.core/export.hpp"
+#include "ores.refdata.core/repository/currency_market_tier_entity.hpp"
 
 namespace ores::refdata::repository {
 
@@ -40,6 +40,7 @@ private:
         static auto instance = make_logger(logger_name);
         return instance;
     }
+
 public:
     static domain::currency_market_tier map(const currency_market_tier_entity& v);
     static currency_market_tier_entity map(const domain::currency_market_tier& v);

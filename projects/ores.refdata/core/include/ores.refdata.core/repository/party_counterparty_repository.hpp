@@ -20,14 +20,14 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_PARTY_COUNTERPARTY_REPOSITORY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_PARTY_COUNTERPARTY_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include <sqlgen/postgres.hpp>
-#include <boost/uuid/uuid.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/party_counterparty.hpp"
 #include "ores.refdata.core/export.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::refdata::repository {
 
@@ -58,8 +58,7 @@ public:
     std::vector<domain::party_counterparty>
     read_latest_by_counterparty(const boost::uuids::uuid& counterparty_id);
 
-    void remove(const boost::uuids::uuid& party_id,
-                const boost::uuids::uuid& counterparty_id);
+    void remove(const boost::uuids::uuid& party_id, const boost::uuids::uuid& counterparty_id);
     void remove_by_party(const boost::uuids::uuid& party_id);
 
 private:

@@ -17,20 +17,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.refdata.core/repository/counterparty_contact_information_repository.hpp"
-
-#include <catch2/catch_test_macros.hpp>
-#include <boost/uuid/random_generator.hpp>
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
-#include "ores.testing/scoped_database_helper.hpp"
-#include "ores.testing/make_generation_context.hpp"
-#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/domain/counterparty_contact_information.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/domain/counterparty_contact_information_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/generators/counterparty_contact_information_generator.hpp"
 #include "ores.refdata.api/generators/counterparty_generator.hpp"
+#include "ores.refdata.core/repository/counterparty_contact_information_repository.hpp"
 #include "ores.refdata.core/repository/counterparty_repository.hpp"
+#include "ores.testing/make_generation_context.hpp"
+#include "ores.testing/scoped_database_helper.hpp"
+#include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
+#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <boost/uuid/random_generator.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 
@@ -115,7 +114,7 @@ TEST_CASE("read_latest_counterparty_contact_informations", tags) {
                              << read_counterparty_contact_informations;
 
     CHECK(read_counterparty_contact_informations.size() >=
-        written_counterparty_contact_informations.size());
+          written_counterparty_contact_informations.size());
 }
 
 TEST_CASE("read_latest_counterparty_contact_information_by_id", tags) {
@@ -146,8 +145,7 @@ TEST_CASE("read_latest_counterparty_contact_information_by_id", tags) {
 
     REQUIRE(read_counterparty_contact_informations.size() == 1);
     CHECK(read_counterparty_contact_informations[0].id == cci.id);
-    CHECK(read_counterparty_contact_informations[0].city ==
-        original_city + " v2");
+    CHECK(read_counterparty_contact_informations[0].city == original_city + " v2");
 }
 
 TEST_CASE("read_nonexistent_counterparty_contact_information_id", tags) {
@@ -159,8 +157,7 @@ TEST_CASE("read_nonexistent_counterparty_contact_information_id", tags) {
     const auto nonexistent_id = boost::uuids::random_generator()();
     BOOST_LOG_SEV(lg, debug) << "Non-existent ID: " << nonexistent_id;
 
-    auto read_counterparty_contact_informations =
-        repo.read_latest(nonexistent_id);
+    auto read_counterparty_contact_informations = repo.read_latest(nonexistent_id);
     BOOST_LOG_SEV(lg, debug) << "Read counterparty contact informations: "
                              << read_counterparty_contact_informations;
 

@@ -20,9 +20,9 @@
 #ifndef ORES_REFDATA_API_MESSAGING_COUNTRY_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_COUNTRY_PROTOCOL_HPP
 
+#include "ores.refdata.api/domain/country.hpp"
 #include <string>
 #include <vector>
-#include "ores.refdata.api/domain/country.hpp"
 
 namespace ores::refdata::messaging {
 
@@ -44,7 +44,7 @@ struct save_country_request {
     ores::refdata::domain::country data;
 
     static save_country_request from(ores::refdata::domain::country c) {
-        return { .data = std::move(c) };
+        return {.data = std::move(c)};
     }
 };
 

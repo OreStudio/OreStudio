@@ -20,13 +20,13 @@
 #ifndef ORES_REFDATA_SERVICE_FRA_CONVENTION_SERVICE_HPP
 #define ORES_REFDATA_SERVICE_FRA_CONVENTION_SERVICE_HPP
 
-#include <string>
-#include <vector>
-#include <optional>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/fra_convention.hpp"
 #include "ores.refdata.core/repository/fra_convention_repository.hpp"
+#include <optional>
+#include <string>
+#include <vector>
 
 namespace ores::refdata::service {
 
@@ -35,8 +35,7 @@ namespace ores::refdata::service {
  */
 class fra_convention_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.refdata.service.fra_convention_service";
+    inline static std::string_view logger_name = "ores.refdata.service.fra_convention_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -51,15 +50,13 @@ public:
 
     std::vector<domain::fra_convention> list_fra_conventions();
 
-    std::optional<domain::fra_convention>
-    get_fra_convention(const std::string& id);
+    std::optional<domain::fra_convention> get_fra_convention(const std::string& id);
 
     void save_fra_convention(const domain::fra_convention& v);
 
     void remove_fra_convention(const std::string& id);
 
-    std::vector<domain::fra_convention>
-    get_fra_convention_history(const std::string& id);
+    std::vector<domain::fra_convention> get_fra_convention_history(const std::string& id);
 
 private:
     context ctx_;

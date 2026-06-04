@@ -18,9 +18,8 @@
  *
  */
 #include "ores.refdata.core/service/purpose_type_service.hpp"
-
-#include <stdexcept>
 #include "ores.service/messaging/handler_helpers.hpp"
+#include <stdexcept>
 
 using ores::service::messaging::stamp;
 
@@ -36,8 +35,7 @@ std::vector<domain::purpose_type> purpose_type_service::list_types() {
     return repo_.read_latest(ctx_);
 }
 
-std::optional<domain::purpose_type>
-purpose_type_service::find_type(const std::string& code) {
+std::optional<domain::purpose_type> purpose_type_service::find_type(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Finding purpose type: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty()) {
@@ -57,8 +55,7 @@ void purpose_type_service::save_type(const domain::purpose_type& pt) {
     BOOST_LOG_SEV(lg(), info) << "Saved purpose type: " << pt.code;
 }
 
-void purpose_type_service::save_types(
-    const std::vector<domain::purpose_type>& types) {
+void purpose_type_service::save_types(const std::vector<domain::purpose_type>& types) {
     for (const auto& t : types) {
         if (t.code.empty())
             throw std::invalid_argument("Purpose type code cannot be empty.");
@@ -80,8 +77,7 @@ void purpose_type_service::remove_types(const std::vector<std::string>& codes) {
     repo_.remove(ctx_, codes);
 }
 
-std::vector<domain::purpose_type>
-purpose_type_service::get_type_history(const std::string& code) {
+std::vector<domain::purpose_type> purpose_type_service::get_type_history(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for purpose type: " << code;
     return repo_.read_all(ctx_, code);
 }

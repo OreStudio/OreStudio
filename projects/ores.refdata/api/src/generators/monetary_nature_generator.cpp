@@ -18,24 +18,21 @@
  *
  */
 #include "ores.refdata.api/generators/monetary_nature_generator.hpp"
-
+#include "ores.utility/generation/generation_keys.hpp"
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::refdata::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::monetary_nature generate_synthetic_monetary_nature(
-    utility::generation::generation_context& ctx) {
+domain::monetary_nature
+generate_synthetic_monetary_nature(utility::generation::generation_context& ctx) {
     static std::atomic<int> counter{0};
-    const auto modified_by = ctx.env().get_or(
-        std::string(generation_keys::modified_by), "system");
+    const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
 
     static const std::vector<std::string> codes = {
-        "fiat", "commodity", "synthetic", "supranational"
-    };
+        "fiat", "commodity", "synthetic", "supranational"};
     const auto idx = counter++ % codes.size();
 
     domain::monetary_nature r;
@@ -53,8 +50,7 @@ domain::monetary_nature generate_synthetic_monetary_nature(
 }
 
 std::vector<domain::monetary_nature>
-generate_synthetic_monetary_natures(std::size_t n,
-    utility::generation::generation_context& ctx) {
+generate_synthetic_monetary_natures(std::size_t n, utility::generation::generation_context& ctx) {
     std::vector<domain::monetary_nature> r;
     r.reserve(n);
     while (r.size() < n)

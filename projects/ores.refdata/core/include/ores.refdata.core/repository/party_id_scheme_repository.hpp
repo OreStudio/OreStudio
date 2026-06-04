@@ -20,13 +20,13 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_PARTY_ID_SCHEME_REPOSITORY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_PARTY_ID_SCHEME_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/party_id_scheme.hpp"
 #include "ores.refdata.core/export.hpp"
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::refdata::repository {
 
@@ -50,15 +50,12 @@ public:
     std::string sql();
 
     void write(context ctx, const domain::party_id_scheme& scheme);
-    void write(context ctx,
-        const std::vector<domain::party_id_scheme>& schemes);
+    void write(context ctx, const std::vector<domain::party_id_scheme>& schemes);
 
     std::vector<domain::party_id_scheme> read_latest(context ctx);
-    std::vector<domain::party_id_scheme>
-    read_latest(context ctx, const std::string& code);
+    std::vector<domain::party_id_scheme> read_latest(context ctx, const std::string& code);
 
-    std::vector<domain::party_id_scheme>
-    read_all(context ctx, const std::string& code);
+    std::vector<domain::party_id_scheme> read_all(context ctx, const std::string& code);
 
     void remove(context ctx, const std::string& code);
 

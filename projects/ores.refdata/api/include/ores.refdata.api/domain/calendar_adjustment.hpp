@@ -20,11 +20,11 @@
 #ifndef ORES_REFDATA_API_DOMAIN_CALENDAR_ADJUSTMENT_HPP
 #define ORES_REFDATA_API_DOMAIN_CALENDAR_ADJUSTMENT_HPP
 
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <chrono>
+#include <optional>
 #include <string>
 #include <vector>
-#include <optional>
-#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::refdata::domain {
 

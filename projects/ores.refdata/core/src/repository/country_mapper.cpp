@@ -18,11 +18,10 @@
  *
  */
 #include "ores.refdata.core/repository/country_mapper.hpp"
-
-#include <boost/lexical_cast.hpp>
-#include <boost/uuid/uuid_io.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.refdata.api/domain/country_json_io.hpp" // IWYU pragma: keep.
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::refdata::repository {
 
@@ -79,22 +78,14 @@ country_entity country_mapper::map(const domain::country& v) {
     return r;
 }
 
-std::vector<domain::country>
-country_mapper::map(const std::vector<country_entity>& v) {
+std::vector<domain::country> country_mapper::map(const std::vector<country_entity>& v) {
     return map_vector<country_entity, domain::country>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
-std::vector<country_entity>
-country_mapper::map(const std::vector<domain::country>& v) {
+std::vector<country_entity> country_mapper::map(const std::vector<domain::country>& v) {
     return map_vector<domain::country, country_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

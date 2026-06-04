@@ -18,7 +18,6 @@
  *
  */
 #include "ores.refdata.core/repository/purpose_type_mapper.hpp"
-
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.refdata.api/domain/purpose_type_json_io.hpp" // IWYU pragma: keep.
 
@@ -27,8 +26,7 @@ namespace ores::refdata::repository {
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::purpose_type
-purpose_type_mapper::map(const purpose_type_entity& v) {
+domain::purpose_type purpose_type_mapper::map(const purpose_type_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::purpose_type r;
@@ -48,8 +46,7 @@ purpose_type_mapper::map(const purpose_type_entity& v) {
     return r;
 }
 
-purpose_type_entity
-purpose_type_mapper::map(const domain::purpose_type& v) {
+purpose_type_entity purpose_type_mapper::map(const domain::purpose_type& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     purpose_type_entity r;
@@ -71,19 +68,13 @@ purpose_type_mapper::map(const domain::purpose_type& v) {
 std::vector<domain::purpose_type>
 purpose_type_mapper::map(const std::vector<purpose_type_entity>& v) {
     return map_vector<purpose_type_entity, domain::purpose_type>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<purpose_type_entity>
 purpose_type_mapper::map(const std::vector<domain::purpose_type>& v) {
     return map_vector<domain::purpose_type, purpose_type_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

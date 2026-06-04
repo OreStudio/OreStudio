@@ -20,17 +20,18 @@
 #ifndef ORES_REFDATA_API_DOMAIN_COUNTERPARTY_CONTACT_INFORMATION_TABLE_HPP
 #define ORES_REFDATA_API_DOMAIN_COUNTERPARTY_CONTACT_INFORMATION_TABLE_HPP
 
-#include <string>
-#include <vector>
 #include "ores.refdata.api/domain/counterparty_contact_information.hpp"
 #include "ores.refdata.api/export.hpp"
+#include <string>
+#include <vector>
 
 namespace ores::refdata::domain {
 
 /**
  * @brief Converts counterparty_contact_informations to the table format.
  */
-ORES_REFDATA_API_EXPORT std::string convert_to_table(const std::vector<counterparty_contact_information>& v);
+ORES_REFDATA_API_EXPORT std::string
+convert_to_table(const std::vector<counterparty_contact_information>& v);
 
 }
 

@@ -20,16 +20,17 @@
 #ifndef ORES_REFDATA_API_DOMAIN_COUNTERPARTY_CONTACT_INFORMATION_JSON_IO_HPP
 #define ORES_REFDATA_API_DOMAIN_COUNTERPARTY_CONTACT_INFORMATION_JSON_IO_HPP
 
-#include <iosfwd>
 #include "ores.refdata.api/domain/counterparty_contact_information.hpp"
 #include "ores.refdata.api/export.hpp"
+#include <iosfwd>
 
 namespace ores::refdata::domain {
 
 /**
  * @brief Dumps the counterparty_contact_information to a stream in JSON format.
  */
-ORES_REFDATA_API_EXPORT std::ostream& operator<<(std::ostream& s, const counterparty_contact_information& v);
+ORES_REFDATA_API_EXPORT std::ostream& operator<<(std::ostream& s,
+                                                 const counterparty_contact_information& v);
 
 }
 

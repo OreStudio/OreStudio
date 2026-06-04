@@ -18,20 +18,17 @@
  *
  */
 #include "ores.refdata.api/generators/contact_type_generator.hpp"
-
+#include "ores.utility/generation/generation_keys.hpp"
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::refdata::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::contact_type generate_synthetic_contact_type(
-    utility::generation::generation_context& ctx) {
+domain::contact_type generate_synthetic_contact_type(utility::generation::generation_context& ctx) {
     static std::atomic<int> counter{0};
-    const auto modified_by = ctx.env().get_or(
-        generation_keys::modified_by, "system");
+    const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
 
     domain::contact_type r;
     r.version = 1;
@@ -48,8 +45,7 @@ domain::contact_type generate_synthetic_contact_type(
 }
 
 std::vector<domain::contact_type>
-generate_synthetic_contact_types(std::size_t n,
-    utility::generation::generation_context& ctx) {
+generate_synthetic_contact_types(std::size_t n, utility::generation::generation_context& ctx) {
     std::vector<domain::contact_type> r;
     r.reserve(n);
     while (r.size() < n)

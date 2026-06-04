@@ -20,14 +20,14 @@
 #ifndef ORES_REFDATA_CORE_SERVICE_PARTY_IDENTIFIER_SERVICE_HPP
 #define ORES_REFDATA_CORE_SERVICE_PARTY_IDENTIFIER_SERVICE_HPP
 
-#include <string>
-#include <vector>
-#include <optional>
-#include <boost/uuid/uuid.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/party_identifier.hpp"
 #include "ores.refdata.core/repository/party_identifier_repository.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <optional>
+#include <string>
+#include <vector>
 
 namespace ores::refdata::service {
 
@@ -39,8 +39,7 @@ namespace ores::refdata::service {
  */
 class party_identifier_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.refdata.service.party_identifier_service";
+    inline static std::string_view logger_name = "ores.refdata.service.party_identifier_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -72,14 +71,12 @@ public:
     /**
      * @brief Finds a party identifier by its ID.
      */
-    std::optional<domain::party_identifier>
-    find_party_identifier(const boost::uuids::uuid& id);
+    std::optional<domain::party_identifier> find_party_identifier(const boost::uuids::uuid& id);
 
     /**
      * @brief Finds a party identifier by its code.
      */
-    std::optional<domain::party_identifier>
-    find_party_identifier_by_code(const std::string& code);
+    std::optional<domain::party_identifier> find_party_identifier_by_code(const std::string& code);
 
     /**
      * @brief Saves a party identifier (creates or updates).

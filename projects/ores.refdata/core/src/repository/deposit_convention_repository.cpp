@@ -18,13 +18,12 @@
  *
  */
 #include "ores.refdata.core/repository/deposit_convention_repository.hpp"
-
-#include <sqlgen/postgres.hpp>
-#include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
 #include "ores.refdata.api/domain/deposit_convention_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/deposit_convention_entity.hpp"
 #include "ores.refdata.core/repository/deposit_convention_mapper.hpp"
+#include <sqlgen/postgres.hpp>
 
 namespace ores::refdata::repository {
 
@@ -39,30 +38,32 @@ std::string deposit_convention_repository::sql() {
 
 void deposit_convention_repository::write(context ctx, const domain::deposit_convention& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing deposit convention: " << v.id;
-    execute_write_query(ctx, deposit_convention_mapper::map(v),
-        lg(), "Writing deposit convention to database.");
+    execute_write_query(
+        ctx, deposit_convention_mapper::map(v), lg(), "Writing deposit convention to database.");
 }
 
-void deposit_convention_repository::write(
-    context ctx, const std::vector<domain::deposit_convention>& v) {
+void deposit_convention_repository::write(context ctx,
+                                          const std::vector<domain::deposit_convention>& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing deposit conventions. Count: " << v.size();
-    execute_write_query(ctx, deposit_convention_mapper::map(v),
-        lg(), "Writing deposit conventions to database.");
+    execute_write_query(
+        ctx, deposit_convention_mapper::map(v), lg(), "Writing deposit conventions to database.");
 }
 
-std::vector<domain::deposit_convention>
-deposit_convention_repository::read_latest(context ctx) {
+std::vector<domain::deposit_convention> deposit_convention_repository::read_latest(context ctx) {
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
-    const auto query = sqlgen::read<std::vector<deposit_convention_entity>> |
+    const auto query =
+        sqlgen::read<std::vector<deposit_convention_entity>> |
         where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
         order_by("id"_c);
 
     return execute_read_query<deposit_convention_entity, domain::deposit_convention>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return deposit_convention_mapper::map(entities); },
-        lg(), "Reading latest deposit conventions");
+        lg(),
+        "Reading latest deposit conventions");
 }
 
 std::vector<domain::deposit_convention>
@@ -72,12 +73,15 @@ deposit_convention_repository::read_latest(context ctx, const std::string& id) {
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<deposit_convention_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id &&
+                             "valid_to"_c == max.value());
 
     return execute_read_query<deposit_convention_entity, domain::deposit_convention>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return deposit_convention_mapper::map(entities); },
-        lg(), "Reading latest deposit convention by id.");
+        lg(),
+        "Reading latest deposit convention by id.");
 }
 
 std::vector<domain::deposit_convention>
@@ -86,13 +90,15 @@ deposit_convention_repository::read_all(context ctx, const std::string& id) {
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<deposit_convention_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id) |
-        order_by("version"_c.desc());
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id) |
+                       order_by("version"_c.desc());
 
     return execute_read_query<deposit_convention_entity, domain::deposit_convention>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return deposit_convention_mapper::map(entities); },
-        lg(), "Reading all deposit convention versions by id.");
+        lg(),
+        "Reading all deposit convention versions by id.");
 }
 
 void deposit_convention_repository::remove(context ctx, const std::string& id) {
@@ -101,7 +107,8 @@ void deposit_convention_repository::remove(context ctx, const std::string& id) {
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::delete_from<deposit_convention_entity> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id &&
+                             "valid_to"_c == max.value());
 
     execute_delete_query(ctx, query, lg(), "Removing deposit convention from database.");
 }

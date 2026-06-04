@@ -20,9 +20,9 @@
 #ifndef ORES_REFDATA_API_DOMAIN_BOOK_STATUS_HPP
 #define ORES_REFDATA_API_DOMAIN_BOOK_STATUS_HPP
 
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <chrono>
 #include <string>
-#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::refdata::domain {
 
@@ -31,7 +31,7 @@ namespace ores::refdata::domain {
  *
  * Reference data table defining valid book status values.
  * Examples: 'Active', 'Closed', 'Frozen'.
- * 
+ *
  * Book statuses are managed by the system tenant and are used to
  * track the lifecycle of book records.
  */

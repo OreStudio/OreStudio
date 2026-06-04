@@ -17,15 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/currency_version.hpp"
 #include "ores.refdata.api/domain/currency_version_history.hpp"
-
+#include "ores.refdata.api/domain/currency_version_history_json_io.hpp" // IWYU pragma: keep.
+#include "ores.refdata.api/domain/currency_version_json_io.hpp"         // IWYU pragma: keep.
+#include "ores.utility/faker/datetime.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.logging/make_logger.hpp"
-#include "ores.utility/faker/datetime.hpp"
-#include "ores.refdata.api/domain/currency_version_json_io.hpp" // IWYU pragma: keep.
-#include "ores.refdata.api/domain/currency_version_history_json_io.hpp" // IWYU pragma: keep.
 
 namespace {
 
@@ -258,8 +257,7 @@ TEST_CASE("currency_version_history_json_with_faker_data", tags) {
     os << cvh;
     const std::string json_output = os.str();
 
-    BOOST_LOG_SEV(lg, info) << "Faker JSON history (truncated): "
-                            << json_output.substr(0, 300);
+    BOOST_LOG_SEV(lg, info) << "Faker JSON history (truncated): " << json_output.substr(0, 300);
 
     CHECK(!json_output.empty());
     CHECK(json_output.find(cvh.iso_code) != std::string::npos);
@@ -294,8 +292,7 @@ TEST_CASE("multiple_currency_versions_json_output", tags) {
         os << cv;
         const std::string json_output = os.str();
 
-        BOOST_LOG_SEV(lg, info) << "Currency version " << i << ": "
-                                << json_output.substr(0, 100);
+        BOOST_LOG_SEV(lg, info) << "Currency version " << i << ": " << json_output.substr(0, 100);
 
         CHECK(!json_output.empty());
         CHECK(json_output.find(cv.data.iso_code) != std::string::npos);

@@ -20,9 +20,9 @@
 #ifndef ORES_REFDATA_API_MESSAGING_CURRENCY_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_CURRENCY_PROTOCOL_HPP
 
+#include "ores.refdata.api/domain/currency.hpp"
 #include <string>
 #include <vector>
-#include "ores.refdata.api/domain/currency.hpp"
 
 namespace ores::refdata::messaging {
 
@@ -44,7 +44,7 @@ struct save_currency_request {
     ores::refdata::domain::currency data;
 
     static save_currency_request from(ores::refdata::domain::currency c) {
-        return { .data = std::move(c) };
+        return {.data = std::move(c)};
     }
 };
 

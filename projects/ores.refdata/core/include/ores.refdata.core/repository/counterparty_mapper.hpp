@@ -20,10 +20,10 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_COUNTERPARTY_MAPPER_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_COUNTERPARTY_MAPPER_HPP
 
-#include "ores.refdata.api/domain/counterparty.hpp"
-#include "ores.refdata.core/repository/counterparty_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.refdata.api/domain/counterparty.hpp"
 #include "ores.refdata.core/export.hpp"
+#include "ores.refdata.core/repository/counterparty_entity.hpp"
 
 namespace ores::refdata::repository {
 
@@ -32,22 +32,20 @@ namespace ores::refdata::repository {
  */
 class ORES_REFDATA_CORE_EXPORT counterparty_mapper {
 private:
-    inline static std::string_view logger_name =
-        "ores.refdata.repository.counterparty_mapper";
+    inline static std::string_view logger_name = "ores.refdata.repository.counterparty_mapper";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }
+
 public:
     static domain::counterparty map(const counterparty_entity& v);
     static counterparty_entity map(const domain::counterparty& v);
 
-    static std::vector<domain::counterparty>
-    map(const std::vector<counterparty_entity>& v);
-    static std::vector<counterparty_entity>
-    map(const std::vector<domain::counterparty>& v);
+    static std::vector<domain::counterparty> map(const std::vector<counterparty_entity>& v);
+    static std::vector<counterparty_entity> map(const std::vector<domain::counterparty>& v);
 };
 
 }

@@ -18,34 +18,31 @@
  *
  */
 #include "ores.refdata.api/generators/book_generator.hpp"
-
-#include <atomic>
-#include <string>
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <atomic>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <string>
 
 namespace ores::refdata::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::book generate_synthetic_book(
-    utility::generation::generation_context& ctx) {
+domain::book generate_synthetic_book(utility::generation::generation_context& ctx) {
     static std::atomic<int> counter{0};
-    const auto modified_by = ctx.env().get_or(
-        std::string(generation_keys::modified_by), "system");
-    const auto tid_str = ctx.env().get_or(
-        std::string(generation_keys::tenant_id), std::string("system"));
+    const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
+    const auto tid_str =
+        ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::book r;
     r.version = 1;
-    r.tenant_id = utility::uuid::tenant_id::from_string(tid_str)
-        .value_or(utility::uuid::tenant_id::system());
+    r.tenant_id =
+        utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.workspace_id = utility::uuid::live_workspace_id();
     r.id = ctx.generate_uuid();
     r.party_id = ctx.generate_uuid();
-    r.name = std::string("BOOK_") + std::to_string(faker::number::integer(1, 999)) + "-"
-        + std::to_string(counter.fetch_add(1, std::memory_order_relaxed));
+    r.name = std::string("BOOK_") + std::to_string(faker::number::integer(1, 999)) + "-" +
+             std::to_string(counter.fetch_add(1, std::memory_order_relaxed));
     r.description = std::string(faker::lorem::sentence());
     r.parent_portfolio_id = ctx.generate_uuid();
     r.owner_unit_id = std::nullopt;
@@ -62,9 +59,8 @@ domain::book generate_synthetic_book(
     return r;
 }
 
-std::vector<domain::book>
-generate_synthetic_books(std::size_t n,
-    utility::generation::generation_context& ctx) {
+std::vector<domain::book> generate_synthetic_books(std::size_t n,
+                                                   utility::generation::generation_context& ctx) {
     std::vector<domain::book> r;
     r.reserve(n);
     while (r.size() < n)

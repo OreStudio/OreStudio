@@ -17,18 +17,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.refdata.core/repository/counterparty_repository.hpp"
-
-#include <catch2/catch_test_macros.hpp>
-#include <boost/uuid/random_generator.hpp>
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
-#include "ores.testing/scoped_database_helper.hpp"
-#include "ores.testing/make_generation_context.hpp"
-#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
-#include "ores.refdata.api/domain/counterparty.hpp" // IWYU pragma: keep.
+#include "ores.refdata.api/domain/counterparty.hpp"         // IWYU pragma: keep.
 #include "ores.refdata.api/domain/counterparty_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/generators/counterparty_generator.hpp"
+#include "ores.refdata.core/repository/counterparty_repository.hpp"
+#include "ores.testing/make_generation_context.hpp"
+#include "ores.testing/scoped_database_helper.hpp"
+#include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
+#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <boost/uuid/random_generator.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 
@@ -80,15 +79,13 @@ TEST_CASE("read_latest_counterparties", tags) {
     for (auto& cp : written_counterparties) {
         cp.change_reason_code = "system.test";
     }
-    BOOST_LOG_SEV(lg, debug) << "Written counterparties: "
-                             << written_counterparties;
+    BOOST_LOG_SEV(lg, debug) << "Written counterparties: " << written_counterparties;
 
     counterparty_repository repo(h.context());
     repo.write(written_counterparties);
 
     auto read_counterparties = repo.read_latest();
-    BOOST_LOG_SEV(lg, debug) << "Read counterparties: "
-                             << read_counterparties;
+    BOOST_LOG_SEV(lg, debug) << "Read counterparties: " << read_counterparties;
 
     CHECK(read_counterparties.size() >= written_counterparties.size());
 }
@@ -110,8 +107,7 @@ TEST_CASE("read_latest_counterparty_by_id", tags) {
     repo.write(cp);
 
     auto read_counterparties = repo.read_latest(cp.id);
-    BOOST_LOG_SEV(lg, debug) << "Read counterparties: "
-                             << read_counterparties;
+    BOOST_LOG_SEV(lg, debug) << "Read counterparties: " << read_counterparties;
 
     REQUIRE(read_counterparties.size() == 1);
     CHECK(read_counterparties[0].id == cp.id);
@@ -128,8 +124,7 @@ TEST_CASE("read_nonexistent_counterparty_id", tags) {
     BOOST_LOG_SEV(lg, debug) << "Non-existent ID: " << nonexistent_id;
 
     auto read_counterparties = repo.read_latest(nonexistent_id);
-    BOOST_LOG_SEV(lg, debug) << "Read counterparties: "
-                             << read_counterparties;
+    BOOST_LOG_SEV(lg, debug) << "Read counterparties: " << read_counterparties;
 
     CHECK(read_counterparties.size() == 0);
 }

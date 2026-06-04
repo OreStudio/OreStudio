@@ -20,13 +20,13 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_CURRENCY_MARKET_TIER_REPOSITORY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_CURRENCY_MARKET_TIER_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/currency_market_tier.hpp"
 #include "ores.refdata.core/export.hpp"
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::refdata::repository {
 
@@ -53,10 +53,8 @@ public:
     void write(context ctx, const std::vector<domain::currency_market_tier>& v);
 
     std::vector<domain::currency_market_tier> read_latest(context ctx);
-    std::vector<domain::currency_market_tier>
-    read_latest(context ctx, const std::string& code);
-    std::vector<domain::currency_market_tier>
-    read_all(context ctx, const std::string& code);
+    std::vector<domain::currency_market_tier> read_latest(context ctx, const std::string& code);
+    std::vector<domain::currency_market_tier> read_all(context ctx, const std::string& code);
 
     void remove(context ctx, const std::string& code);
 

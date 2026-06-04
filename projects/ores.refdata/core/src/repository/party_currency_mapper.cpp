@@ -18,19 +18,17 @@
  *
  */
 #include "ores.refdata.core/repository/party_currency_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.refdata.api/domain/party_currency_json_io.hpp" // IWYU pragma: keep.
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::refdata::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::party_currency
-party_currency_mapper::map(const party_currency_entity& v) {
+domain::party_currency party_currency_mapper::map(const party_currency_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::party_currency r;
@@ -48,8 +46,7 @@ party_currency_mapper::map(const party_currency_entity& v) {
     return r;
 }
 
-party_currency_entity
-party_currency_mapper::map(const domain::party_currency& v) {
+party_currency_entity party_currency_mapper::map(const domain::party_currency& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     party_currency_entity r;
@@ -69,19 +66,13 @@ party_currency_mapper::map(const domain::party_currency& v) {
 std::vector<domain::party_currency>
 party_currency_mapper::map(const std::vector<party_currency_entity>& v) {
     return map_vector<party_currency_entity, domain::party_currency>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<party_currency_entity>
 party_currency_mapper::map(const std::vector<domain::party_currency>& v) {
     return map_vector<domain::party_currency, party_currency_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

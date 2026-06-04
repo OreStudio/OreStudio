@@ -18,19 +18,17 @@
  *
  */
 #include "ores.refdata.core/repository/business_unit_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.refdata.api/domain/business_unit_json_io.hpp" // IWYU pragma: keep.
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::refdata::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::business_unit
-business_unit_mapper::map(const business_unit_entity& v) {
+domain::business_unit business_unit_mapper::map(const business_unit_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::business_unit r;
@@ -40,7 +38,8 @@ business_unit_mapper::map(const business_unit_entity& v) {
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.unit_name = v.unit_name;
     if (v.parent_business_unit_id.has_value() && !v.parent_business_unit_id->empty())
-        r.parent_business_unit_id = boost::lexical_cast<boost::uuids::uuid>(*v.parent_business_unit_id);
+        r.parent_business_unit_id =
+            boost::lexical_cast<boost::uuids::uuid>(*v.parent_business_unit_id);
     if (v.unit_type_id.has_value() && !v.unit_type_id->empty())
         r.unit_type_id = boost::lexical_cast<boost::uuids::uuid>(*v.unit_type_id);
     r.unit_code = v.unit_code;
@@ -56,8 +55,7 @@ business_unit_mapper::map(const business_unit_entity& v) {
     return r;
 }
 
-business_unit_entity
-business_unit_mapper::map(const domain::business_unit& v) {
+business_unit_entity business_unit_mapper::map(const domain::business_unit& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     business_unit_entity r;
@@ -85,19 +83,13 @@ business_unit_mapper::map(const domain::business_unit& v) {
 std::vector<domain::business_unit>
 business_unit_mapper::map(const std::vector<business_unit_entity>& v) {
     return map_vector<business_unit_entity, domain::business_unit>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<business_unit_entity>
 business_unit_mapper::map(const std::vector<domain::business_unit>& v) {
     return map_vector<domain::business_unit, business_unit_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

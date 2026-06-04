@@ -20,23 +20,22 @@
 #ifndef ORES_REFDATA_CORE_MESSAGING_PORTFOLIO_HANDLER_HPP
 #define ORES_REFDATA_CORE_MESSAGING_PORTFOLIO_HANDLER_HPP
 
-#include <optional>
+#include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.database/domain/context.hpp"
+#include "ores.refdata.api/messaging/portfolio_protocol.hpp"
+#include "ores.refdata.core/service/portfolio_service.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include "ores.refdata.api/messaging/portfolio_protocol.hpp"
-#include "ores.refdata.core/service/portfolio_service.hpp"
+#include <optional>
 
 namespace ores::refdata::messaging {
 
 namespace {
 inline auto& portfolio_handler_lg() {
-    static auto instance = ores::logging::make_logger(
-        "ores.refdata.messaging.portfolio_handler");
+    static auto instance = ores::logging::make_logger("ores.refdata.messaging.portfolio_handler");
     return instance;
 }
 } // namespace
@@ -51,15 +50,15 @@ using namespace ores::logging;
 class portfolio_handler {
 public:
     portfolio_handler(ores::nats::service::client& nats,
-        ores::database::context ctx,
-        std::optional<ores::security::jwt::jwt_authenticator> verifier)
-        : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier)) {}
+                      ores::database::context ctx,
+                      std::optional<ores::security::jwt::jwt_authenticator> verifier)
+        : nats_(nats)
+        , ctx_(std::move(ctx))
+        , verifier_(std::move(verifier)) {}
 
     void list(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(portfolio_handler_lg(), msg);
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(portfolio_handler_lg(), msg);
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -72,23 +71,19 @@ public:
         get_portfolios_response resp;
         try {
             resp.portfolios = svc.list_portfolios();
-            resp.total_available_count =
-                static_cast<int>(resp.portfolios.size());
+            resp.total_available_count = static_cast<int>(resp.portfolios.size());
             BOOST_LOG_SEV(portfolio_handler_lg(), debug)
-                << "Completed " << msg.subject
-                << ": returned " << resp.total_available_count << " portfolios";
+                << "Completed " << msg.subject << ": returned " << resp.total_available_count
+                << " portfolios";
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(portfolio_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
+            BOOST_LOG_SEV(portfolio_handler_lg(), error) << msg.subject << " failed: " << e.what();
         }
         reply(nats_, msg, resp);
     }
 
     void save(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(portfolio_handler_lg(), msg);
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(portfolio_handler_lg(), msg);
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -101,28 +96,22 @@ public:
         service::portfolio_service svc(ctx);
         auto req = decode<save_portfolio_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(portfolio_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(portfolio_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         try {
             svc.save_portfolio(req->data);
-            BOOST_LOG_SEV(portfolio_handler_lg(), debug)
-                << "Completed " << msg.subject;
+            BOOST_LOG_SEV(portfolio_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, save_portfolio_response{.success = true});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(portfolio_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, save_portfolio_response{
-                .success = false, .message = e.what()});
+            BOOST_LOG_SEV(portfolio_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, save_portfolio_response{.success = false, .message = e.what()});
         }
     }
 
     void remove(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(portfolio_handler_lg(), msg);
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(portfolio_handler_lg(), msg);
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -135,29 +124,23 @@ public:
         service::portfolio_service svc(ctx);
         auto req = decode<delete_portfolio_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(portfolio_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(portfolio_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         try {
             for (const auto& id_str : req->ids)
                 svc.remove_portfolio(id_str);
-            BOOST_LOG_SEV(portfolio_handler_lg(), debug)
-                << "Completed " << msg.subject;
+            BOOST_LOG_SEV(portfolio_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, delete_portfolio_response{.success = true});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(portfolio_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, delete_portfolio_response{
-                .success = false, .message = e.what()});
+            BOOST_LOG_SEV(portfolio_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, delete_portfolio_response{.success = false, .message = e.what()});
         }
     }
 
     void history(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(portfolio_handler_lg(), msg);
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(portfolio_handler_lg(), msg);
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -166,21 +149,19 @@ public:
         service::portfolio_service svc(ctx);
         auto req = decode<get_portfolio_history_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(portfolio_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(portfolio_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         try {
             auto h = svc.get_portfolio_history(req->id);
-            BOOST_LOG_SEV(portfolio_handler_lg(), debug)
-                << "Completed " << msg.subject;
-            reply(nats_, msg, get_portfolio_history_response{
-                .success = true, .history = std::move(h)});
+            BOOST_LOG_SEV(portfolio_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_,
+                  msg,
+                  get_portfolio_history_response{.success = true, .history = std::move(h)});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(portfolio_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, get_portfolio_history_response{
-                .success = false, .message = e.what()});
+            BOOST_LOG_SEV(portfolio_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            reply(
+                nats_, msg, get_portfolio_history_response{.success = false, .message = e.what()});
         }
     }
 

@@ -18,11 +18,10 @@
  *
  */
 #include "ores.refdata.core/repository/counterparty_contact_information_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.refdata.api/domain/counterparty_contact_information_json_io.hpp" // IWYU pragma: keep.
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::refdata::repository {
 
@@ -86,22 +85,18 @@ counterparty_contact_information_mapper::map(const domain::counterparty_contact_
     return r;
 }
 
-std::vector<domain::counterparty_contact_information>
-counterparty_contact_information_mapper::map(const std::vector<counterparty_contact_information_entity>& v) {
-    return map_vector<counterparty_contact_information_entity, domain::counterparty_contact_information>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+std::vector<domain::counterparty_contact_information> counterparty_contact_information_mapper::map(
+    const std::vector<counterparty_contact_information_entity>& v) {
+    return map_vector<counterparty_contact_information_entity,
+                      domain::counterparty_contact_information>(
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
-std::vector<counterparty_contact_information_entity>
-counterparty_contact_information_mapper::map(const std::vector<domain::counterparty_contact_information>& v) {
-    return map_vector<domain::counterparty_contact_information, counterparty_contact_information_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+std::vector<counterparty_contact_information_entity> counterparty_contact_information_mapper::map(
+    const std::vector<domain::counterparty_contact_information>& v) {
+    return map_vector<domain::counterparty_contact_information,
+                      counterparty_contact_information_entity>(
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

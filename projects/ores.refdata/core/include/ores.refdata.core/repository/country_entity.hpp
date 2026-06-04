@@ -20,10 +20,10 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_COUNTRY_ENTITY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_COUNTRY_ENTITY_HPP
 
-#include <string>
-#include <optional>
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
+#include <optional>
+#include <string>
 
 namespace ores::refdata::repository {
 
@@ -43,7 +43,7 @@ struct country_entity {
     std::string numeric_code;
     std::string name;
     std::string official_name;
-    std::optional<std::string> image_id;  // UUID stored as string, converted in mapper
+    std::optional<std::string> image_id; // UUID stored as string, converted in mapper
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

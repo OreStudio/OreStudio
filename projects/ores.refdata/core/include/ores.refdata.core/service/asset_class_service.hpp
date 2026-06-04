@@ -20,19 +20,18 @@
 #ifndef ORES_REFDATA_CORE_SERVICE_ASSET_CLASS_SERVICE_HPP
 #define ORES_REFDATA_CORE_SERVICE_ASSET_CLASS_SERVICE_HPP
 
-#include <string>
-#include <vector>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/asset_class_info.hpp"
 #include "ores.refdata.core/repository/asset_class_repository.hpp"
+#include <string>
+#include <vector>
 
 namespace ores::refdata::service {
 
 class asset_class_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.refdata.service.asset_class_service";
+    inline static std::string_view logger_name = "ores.refdata.service.asset_class_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -43,15 +42,14 @@ private:
     using context = ores::database::context;
 
 public:
-    explicit asset_class_service(context ctx) : ctx_(std::move(ctx)) {}
+    explicit asset_class_service(context ctx)
+        : ctx_(std::move(ctx)) {}
 
-    std::vector<domain::asset_class_info> list_asset_classes(
-        const std::string& coding_scheme = {},
-        std::uint32_t offset = 0,
-        std::uint32_t limit = 200);
+    std::vector<domain::asset_class_info> list_asset_classes(const std::string& coding_scheme = {},
+                                                             std::uint32_t offset = 0,
+                                                             std::uint32_t limit = 200);
 
-    std::uint32_t count_asset_classes(
-        const std::string& coding_scheme = {});
+    std::uint32_t count_asset_classes(const std::string& coding_scheme = {});
 
 private:
     context ctx_;

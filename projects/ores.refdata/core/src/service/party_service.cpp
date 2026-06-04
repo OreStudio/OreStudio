@@ -18,10 +18,9 @@
  *
  */
 #include "ores.refdata.core/service/party_service.hpp"
-
-#include <stdexcept>
-#include <boost/uuid/uuid_io.hpp>
 #include "ores.service/messaging/handler_helpers.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <stdexcept>
 
 using ores::service::messaging::stamp;
 
@@ -30,17 +29,16 @@ namespace ores::refdata::service {
 using namespace ores::logging;
 
 party_service::party_service(context ctx)
-    : ctx_(ctx), repo_(ctx) {}
+    : ctx_(ctx)
+    , repo_(ctx) {}
 
 std::vector<domain::party> party_service::list_parties() {
     BOOST_LOG_SEV(lg(), debug) << "Listing all parties";
     return repo_.read_latest();
 }
 
-std::vector<domain::party> party_service::list_parties(
-    std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing parties with offset=" << offset
-                               << " limit=" << limit;
+std::vector<domain::party> party_service::list_parties(std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing parties with offset=" << offset << " limit=" << limit;
     return repo_.read_latest(offset, limit);
 }
 
@@ -49,8 +47,7 @@ std::uint32_t party_service::count_parties() {
     return repo_.get_total_party_count();
 }
 
-std::optional<domain::party>
-party_service::find_party(const boost::uuids::uuid& id) {
+std::optional<domain::party> party_service::find_party(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Finding party: " << id;
     auto results = repo_.read_latest(id);
     if (results.empty()) {
@@ -59,8 +56,7 @@ party_service::find_party(const boost::uuids::uuid& id) {
     return results.front();
 }
 
-std::optional<domain::party>
-party_service::find_party_by_code(const std::string& code) {
+std::optional<domain::party> party_service::find_party_by_code(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Finding party by code: " << code;
     auto results = repo_.read_latest_by_code(code);
     if (results.empty()) {
@@ -98,8 +94,7 @@ void party_service::remove_party(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), info) << "Removed party: " << id;
 }
 
-std::vector<domain::party>
-party_service::get_party_history(const boost::uuids::uuid& id) {
+std::vector<domain::party> party_service::get_party_history(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for party: " << id;
     return repo_.read_all(id);
 }

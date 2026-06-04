@@ -20,13 +20,13 @@
 #ifndef ORES_REFDATA_SERVICE_OIS_CONVENTION_SERVICE_HPP
 #define ORES_REFDATA_SERVICE_OIS_CONVENTION_SERVICE_HPP
 
-#include <string>
-#include <vector>
-#include <optional>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/ois_convention.hpp"
 #include "ores.refdata.core/repository/ois_convention_repository.hpp"
+#include <optional>
+#include <string>
+#include <vector>
 
 namespace ores::refdata::service {
 
@@ -35,8 +35,7 @@ namespace ores::refdata::service {
  */
 class ois_convention_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.refdata.service.ois_convention_service";
+    inline static std::string_view logger_name = "ores.refdata.service.ois_convention_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -51,15 +50,13 @@ public:
 
     std::vector<domain::ois_convention> list_ois_conventions();
 
-    std::optional<domain::ois_convention>
-    get_ois_convention(const std::string& id);
+    std::optional<domain::ois_convention> get_ois_convention(const std::string& id);
 
     void save_ois_convention(const domain::ois_convention& v);
 
     void remove_ois_convention(const std::string& id);
 
-    std::vector<domain::ois_convention>
-    get_ois_convention_history(const std::string& id);
+    std::vector<domain::ois_convention> get_ois_convention_history(const std::string& id);
 
 private:
     context ctx_;

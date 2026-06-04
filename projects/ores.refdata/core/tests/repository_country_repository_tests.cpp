@@ -17,17 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.refdata.core/repository/country_repository.hpp"
-
-#include <catch2/catch_test_macros.hpp>
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
-#include "ores.testing/scoped_database_helper.hpp"
-#include "ores.testing/make_generation_context.hpp"
-#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
-#include "ores.refdata.api/domain/country.hpp" // IWYU pragma: keep.
+#include "ores.refdata.api/domain/country.hpp"         // IWYU pragma: keep.
 #include "ores.refdata.api/domain/country_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/generators/country_generator.hpp"
+#include "ores.refdata.core/repository/country_repository.hpp"
+#include "ores.testing/make_generation_context.hpp"
+#include "ores.testing/scoped_database_helper.hpp"
+#include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
+#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 
@@ -117,8 +116,7 @@ TEST_CASE("read_nonexistent_alpha2_code", tags) {
     country_repository repo;
 
     const std::string nonexistent_code = "NONEXISTENT_CODE_12345";
-    BOOST_LOG_SEV(lg, debug) << "Non-existent alpha2 code: "
-                             << nonexistent_code;
+    BOOST_LOG_SEV(lg, debug) << "Non-existent alpha2 code: " << nonexistent_code;
 
     auto read_countries = repo.read_latest(h.context(), nonexistent_code);
     BOOST_LOG_SEV(lg, debug) << "Read countries: " << read_countries;

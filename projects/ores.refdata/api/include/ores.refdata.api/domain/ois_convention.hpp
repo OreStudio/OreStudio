@@ -20,10 +20,10 @@
 #ifndef ORES_REFDATA_DOMAIN_OIS_CONVENTION_HPP
 #define ORES_REFDATA_DOMAIN_OIS_CONVENTION_HPP
 
-#include <chrono>
-#include <string>
-#include <optional>
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <chrono>
+#include <optional>
+#include <string>
 
 namespace ores::refdata::domain {
 

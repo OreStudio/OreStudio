@@ -18,11 +18,10 @@
  *
  */
 #include "ores.refdata.core/service/currency_service.hpp"
-
+#include "ores.service/messaging/handler_helpers.hpp"
+#include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <unordered_set>
-#include <boost/uuid/uuid_io.hpp>
-#include "ores.service/messaging/handler_helpers.hpp"
 
 using ores::service::messaging::stamp;
 
@@ -33,13 +32,11 @@ using namespace ores::logging;
 currency_service::currency_service(context ctx)
     : ctx_(std::move(ctx))
     , repo_{}
-    , junction_repo_(ctx_) {
-}
+    , junction_repo_(ctx_) {}
 
-std::vector<domain::currency> currency_service::list_currencies(
-    std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing currencies with offset=" << offset
-                               << " limit=" << limit;
+std::vector<domain::currency> currency_service::list_currencies(std::uint32_t offset,
+                                                                std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing currencies with offset=" << offset << " limit=" << limit;
     return repo_.read_latest(ctx_, offset, limit);
 }
 
@@ -58,8 +55,7 @@ void currency_service::save_currency(const domain::currency& currency) {
     repo_.write(ctx_, c);
 }
 
-void currency_service::save_currencies(
-    const std::vector<domain::currency>& currencies) {
+void currency_service::save_currencies(const std::vector<domain::currency>& currencies) {
     for (const auto& c : currencies) {
         if (c.iso_code.empty())
             throw std::invalid_argument("Currency ISO code cannot be empty.");
@@ -76,13 +72,11 @@ void currency_service::delete_currency(const std::string& iso_code) {
     repo_.remove(ctx_, iso_code);
 }
 
-void currency_service::delete_currencies(
-    const std::vector<std::string>& iso_codes) {
+void currency_service::delete_currencies(const std::vector<std::string>& iso_codes) {
     repo_.remove(ctx_, iso_codes);
 }
 
-std::optional<domain::currency> currency_service::get_currency(
-    const std::string& iso_code) {
+std::optional<domain::currency> currency_service::get_currency(const std::string& iso_code) {
     BOOST_LOG_SEV(lg(), debug) << "Getting currency: " << iso_code;
     auto results = repo_.read_latest(ctx_, iso_code);
     if (results.empty()) {
@@ -91,8 +85,7 @@ std::optional<domain::currency> currency_service::get_currency(
     return results.front();
 }
 
-std::vector<domain::currency> currency_service::get_currency_history(
-    const std::string& iso_code) {
+std::vector<domain::currency> currency_service::get_currency_history(const std::string& iso_code) {
     BOOST_LOG_SEV(lg(), debug) << "Getting currency history for: " << iso_code;
     return repo_.read_all(ctx_, iso_code);
 }
@@ -111,10 +104,9 @@ currency_service::get_currency_version_history(const std::string& iso_code) {
     history.iso_code = iso_code;
 
     // Sort by version descending (newest first)
-    std::sort(currencies.begin(), currencies.end(),
-        [](const auto& a, const auto& b) {
-            return a.version > b.version;
-        });
+    std::sort(currencies.begin(), currencies.end(), [](const auto& a, const auto& b) {
+        return a.version > b.version;
+    });
 
     for (const auto& currency : currencies) {
         domain::currency_version version;
@@ -137,8 +129,7 @@ currency_service::get_currency_version_history(const std::string& iso_code) {
 }
 
 std::vector<domain::currency> currency_service::list_currencies_for_party(
-    const boost::uuids::uuid& party_id,
-    std::uint32_t offset, std::uint32_t limit) {
+    const boost::uuids::uuid& party_id, std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Listing currencies for party: " << party_id
                                << " offset=" << offset << " limit=" << limit;
 
@@ -162,12 +153,10 @@ std::vector<domain::currency> currency_service::list_currencies_for_party(
     if (offset >= filtered.size())
         return {};
     const auto end = std::min<std::size_t>(offset + limit, filtered.size());
-    return std::vector<domain::currency>(
-        filtered.begin() + offset, filtered.begin() + end);
+    return std::vector<domain::currency>(filtered.begin() + offset, filtered.begin() + end);
 }
 
-std::uint32_t currency_service::count_currencies_for_party(
-    const boost::uuids::uuid& party_id) {
+std::uint32_t currency_service::count_currencies_for_party(const boost::uuids::uuid& party_id) {
     BOOST_LOG_SEV(lg(), debug) << "Counting currencies for party: " << party_id;
     const auto junctions = junction_repo_.read_latest_by_party(party_id);
     return static_cast<std::uint32_t>(junctions.size());

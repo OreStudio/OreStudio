@@ -20,19 +20,18 @@
 #ifndef ORES_REFDATA_CORE_GENERATORS_PARTY_CURRENCY_GENERATOR_HPP
 #define ORES_REFDATA_CORE_GENERATORS_PARTY_CURRENCY_GENERATOR_HPP
 
-#include <vector>
 #include "ores.refdata.api/domain/party_currency.hpp"
 #include "ores.refdata.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include <vector>
 
 namespace ores::refdata::generators {
 
-ORES_REFDATA_API_EXPORT domain::party_currency generate_synthetic_party_currency(
-    utility::generation::generation_context& ctx);
+ORES_REFDATA_API_EXPORT domain::party_currency
+generate_synthetic_party_currency(utility::generation::generation_context& ctx);
 
 ORES_REFDATA_API_EXPORT std::vector<domain::party_currency>
-generate_synthetic_party_currencies(std::size_t n,
-    utility::generation::generation_context& ctx);
+generate_synthetic_party_currencies(std::size_t n, utility::generation::generation_context& ctx);
 
 }
 

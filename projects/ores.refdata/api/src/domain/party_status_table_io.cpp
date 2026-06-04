@@ -18,9 +18,8 @@
  *
  */
 #include "ores.refdata.api/domain/party_status_table_io.hpp"
-
-#include <ostream>
 #include "ores.refdata.api/domain/party_status_table.hpp"
+#include <ostream>
 
 namespace ores::refdata::domain {
 

@@ -18,9 +18,8 @@
  *
  */
 #include "ores.refdata.api/domain/business_centre_table_io.hpp"
-
-#include <ostream>
 #include "ores.refdata.api/domain/business_centre_table.hpp"
+#include <ostream>
 
 namespace ores::refdata::domain {
 

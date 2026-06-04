@@ -18,7 +18,6 @@
  *
  */
 #include "ores.refdata.core/service/ibor_index_convention_service.hpp"
-
 #include <stdexcept>
 
 namespace ores::refdata::service {
@@ -28,7 +27,8 @@ using namespace ores::logging;
 ibor_index_convention_service::ibor_index_convention_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
-std::vector<domain::ibor_index_convention> ibor_index_convention_service::list_ibor_index_conventions() {
+std::vector<domain::ibor_index_convention>
+ibor_index_convention_service::list_ibor_index_conventions() {
     BOOST_LOG_SEV(lg(), debug) << "Listing all IBOR index conventions";
     return repo_.read_latest(ctx_);
 }
@@ -37,11 +37,13 @@ std::optional<domain::ibor_index_convention>
 ibor_index_convention_service::get_ibor_index_convention(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting IBOR index convention: " << id;
     auto results = repo_.read_latest(ctx_, id);
-    if (results.empty()) return std::nullopt;
+    if (results.empty())
+        return std::nullopt;
     return results.front();
 }
 
-void ibor_index_convention_service::save_ibor_index_convention(const domain::ibor_index_convention& v) {
+void ibor_index_convention_service::save_ibor_index_convention(
+    const domain::ibor_index_convention& v) {
     if (v.id.empty())
         throw std::invalid_argument("IBOR Index Convention id cannot be empty.");
     BOOST_LOG_SEV(lg(), debug) << "Saving IBOR index convention: " << v.id;

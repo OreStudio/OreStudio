@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 7026F0C0-313B-4290-AD3E-9AED71FA46E6
+:END:
+#+title: Add compass task finish to clock off a task
+#+description: compass task start clocks on (branch, STARTED, journal) but there is no symmetric task finish: flip the task to DONE, stamp the End date in the story Tasks table, update Status rows, and append the clock-off to the journal. Closing a task is currently manual and error-prone.
+#+type: capture
+#+level: cross
+#+filetags: :compass:agile:journal:
+#+created: 2026-06-04
+#+updated: 2026-06-04
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

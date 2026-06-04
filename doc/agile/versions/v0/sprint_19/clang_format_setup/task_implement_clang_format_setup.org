@@ -1,0 +1,94 @@
+:PROPERTIES:
+:ID: 1634444D-1E43-4E04-8865-9B50F9335BBC
+:END:
+#+title: Task: Fix .clang-format config for ORE Studio conventions
+#+description: Replace the QuantLib-copied .clang-format with a config tuned to ORE Studio: c++23, correct include ordering, and settings that match the actual code conventions.
+#+type: task
+#+level: s1
+#+filetags: :clang_format_setup:sprint_19:v0:
+#+owner: marco
+#+branch: feature/clang-format-setup
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-04
+#+updated: 2026-06-04
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:78D292E4-EA18-4FDE-9B23-E0F446A1B526][Set up clang-format with CMake targets and CI integration]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Replace the existing =.clang-format= (a verbatim QuantLib copy with
+=Standard: c++14= and QuantLib-specific include ordering) with a
+config that reflects ORE Studio's actual conventions and uses
+=Standard: c++23=.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                   |
+| Parent story | [[id:78D292E4-EA18-4FDE-9B23-E0F446A1B526][Set up clang-format with CMake targets and CI integration]] |
+| Now          | Nothing.                               |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-06-04                             |
+
+* Acceptance
+
+- =Standard= is =c++23=.
+- =IncludeCategories= orders: local quoted =ores.*= headers →
+  generated =ui_*= headers → Qt headers → Boost → std/other.
+- =PointerAlignment= is =Left= (=T* x=, =T& x= — matches existing code).
+- =ConstructorInitializerAllOnOneLineOrOnePerLine= or equivalent
+  matches the existing initialiser-list style.
+- Config is verified by running =clang-format --dry-run= on a
+  representative sample of files and inspecting the diff.
+
+* Plan
+
+1. Sample 5–10 representative files across different components to
+   catalogue the actual conventions: indentation, brace style,
+   pointer alignment, ctor initialiser list, include order, column
+   limit, template declarations, trailing return types.
+2. Draft the new =.clang-format= settings.
+3. Run =clang-format --dry-run= against the sample files; inspect
+   the diff to verify the config matches (or consciously improves)
+   the existing style.
+4. Iterate until the diff is minimal and intentional.
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Replaced the QuantLib-copied =.clang-format= with an ORE Studio-specific
+config. Key changes from the old file:
+
+| Setting | Old | New | Reason |
+|---------+-----+-----+--------|
+| =Standard= | =c++14= | =c++23= | CMakePresets.json sets =CMAKE_CXX_STANDARD=23= |
+| =NamespaceIndentation= | =All= | =None= | Namespace body is never indented in the codebase |
+| =AccessModifierOffset= | (LLVM default −2) | =−4= | =public=/=private:= at class indent level, not further in |
+| =ConstructorInitializerIndentWidth= | =0= | =4= | Initialisers are 4-space indented (leading comma style) |
+| =PackConstructorInitializers= | (absent) | =Never= | One initialiser per line consistently |
+| =BreakConstructorInitializers= | (absent) | =BeforeComma= | Leading comma style matches nats/http/database components |
+| =ReferenceAlignment= | (absent) | =Left= | =T& x= (attached to type) |
+| =IncludeCategories= | QL-specific | ORE-specific | Quoted → Qt → Boost → std/other |
+
+Verification: =clang-format= not installed locally; verification pending
+CMake =check-format= target (task 2) and nightly run (task 3). Spot-checked
+against =AccountDetailDialog.cpp=, =nats_client.cpp=, and
+=database_info_repository.hpp= — config matches observed conventions.

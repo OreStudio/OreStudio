@@ -1,0 +1,66 @@
+# Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+#
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 3 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+# Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+# yamllint disable rule:line-length
+---
+name: Nightly Format
+
+on:  # yamllint disable-line rule:truthy
+  schedule:
+    - cron: '0 2 * * *'  # 02:00 UTC every night
+  workflow_dispatch:      # allow manual trigger
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  format:
+    name: clang-format
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: main
+
+      - name: Install clang-format
+        run: sudo apt-get install -y clang-format-18
+
+      - name: Run clang-format in-place
+        run: |
+          find projects -type f \( -name "*.cpp" -o -name "*.hpp" -o -name "*.h" \) \
+            | xargs clang-format-18 -i
+
+      - name: Create pull request if files changed
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: bot/nightly-format
+          commit-message: '[format] Nightly clang-format run'
+          title: '[format] Nightly clang-format run'
+          body: |
+            Automated nightly clang-format pass.
+
+            This PR was raised by the `nightly-format` workflow because one or
+            more C++ source files differed from the canonical `.clang-format`
+            style. Review and merge to keep the tree clean.
+
+            To reproduce locally:
+            ```sh
+            cmake --build --preset <preset> --target format
+            ```
+          labels: formatting,automated
+          delete-branch: true

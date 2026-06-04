@@ -1,49 +1,97 @@
 # -*- mode: yaml; yaml-tab-width: 4; indent-tabs-mode: nil -*-
 ---
 Language: Cpp
-Standard: c++14
+Standard: c++23
 
-# The following is close to the style we've been using all these years without
-# formalizing it. Formatting won't be enforced, but this file can help if you
-# want to use the general feel of the library.
+# ORE Studio clang-format configuration.
+# Tuned to match the project's actual code conventions.
+# Run `cmake --build --preset <preset> --target format` to reformat in-place.
+# Run `cmake --build --preset <preset> --target check-format` to check for drift.
 
-# General appearance:
 BasedOnStyle: LLVM
 
+# ── Indentation ───────────────────────────────────────────────────────────────
+
 IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+
+# Namespace body is NOT indented (content starts at column 0).
+NamespaceIndentation: None
+
+# public:/private:/protected: at class indent level, not indented further.
+AccessModifierOffset: -4
+
+IndentCaseLabels: true
+IndentPPDirectives: AfterHash
+
+# ── Line length ───────────────────────────────────────────────────────────────
+
 ColumnLimit: 100
-NamespaceIndentation: All
-MaxEmptyLinesToKeep: 2
-FixNamespaceComments: false
 
-# Function declarations:
+# ── Pointer / reference alignment ────────────────────────────────────────────
+# T* x and T& x (attached to type, not variable).
 
-BinPackParameters: false
-AllowShortFunctionsOnASingleLine: Inline
-AlwaysBreakTemplateDeclarations: true
-
-# T& x, not T &x:
 DerivePointerAlignment: false
 PointerAlignment: Left
+ReferenceAlignment: Left
 
-# QuantLib headers first, then Boost, then std
-SortIncludes: true
-IncludeBlocks: Merge
+# ── Constructor initialiser lists ─────────────────────────────────────────────
+# One initialiser per line, leading comma:
+#
+#   Foo::Foo(int a, int b)
+#       : a_(a)
+#       , b_(b) {}
+#
+
+BreakConstructorInitializers: BeforeComma
+ConstructorInitializerIndentWidth: 4
+PackConstructorInitializers: Never
+
+# ── Function parameters / arguments ──────────────────────────────────────────
+
+BinPackParameters: false
+BinPackArguments: false
+
+# ── Templates ─────────────────────────────────────────────────────────────────
+# Template declaration always on its own line.
+
+AlwaysBreakTemplateDeclarations: Yes
+
+# ── Short constructs ──────────────────────────────────────────────────────────
+
+# Empty function bodies on one line: Foo::Foo() {}
+AllowShortFunctionsOnASingleLine: Empty
+
+# Short lambdas inline: [this](auto x) { return f(x); }
+AllowShortLambdasOnASingleLine: Inline
+
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+
+# ── Includes ──────────────────────────────────────────────────────────────────
+# Group order (separated by blank lines):
+#   1. Local project headers ("ores.*", "ui_*", other quoted)
+#   2. Qt headers (<Q...>)
+#   3. Boost headers (<boost/...>)
+#   4. All other angle-bracket headers (std, rfl, openssl, ...)
+
+SortIncludes: CaseSensitive
+IncludeBlocks: Regroup
 IncludeCategories:
   - Regex: '^"'
     Priority: 1
-  - Regex: '^<ql/'
+  - Regex: '^<Q[A-Z]'
     Priority: 2
   - Regex: '^<boost/'
     Priority: 3
   - Regex: '^<'
     Priority: 4
 
-# Other:
+# ── Misc ──────────────────────────────────────────────────────────────────────
 
+MaxEmptyLinesToKeep: 2
+FixNamespaceComments: false
+SortUsingDeclarations: false
 AlignEscapedNewlines: Left
 BreakBeforeTernaryOperators: false
-ConstructorInitializerIndentWidth: 0
-SortUsingDeclarations: false
-IndentCaseLabels: true
-IndentPPDirectives: AfterHash

@@ -18,7 +18,6 @@
  *
  */
 #include "ores.dq.core/repository/dataset_bundle_member_mapper.hpp"
-
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.dq.api/domain/dataset_bundle_member_json_io.hpp" // IWYU pragma: keep.
 
@@ -38,7 +37,7 @@ dataset_bundle_member_mapper::map(const dataset_bundle_member_entity& v) {
     r.dataset_code = v.dataset_code;
     r.display_order = v.display_order;
     r.optional = v.optional;
-r.modified_by = v.modified_by;
+    r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
@@ -59,7 +58,7 @@ dataset_bundle_member_mapper::map(const domain::dataset_bundle_member& v) {
     r.version = v.version;
     r.display_order = v.display_order;
     r.optional = v.optional;
-r.modified_by = v.modified_by;
+    r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
@@ -71,19 +70,13 @@ r.modified_by = v.modified_by;
 std::vector<domain::dataset_bundle_member>
 dataset_bundle_member_mapper::map(const std::vector<dataset_bundle_member_entity>& v) {
     return map_vector<dataset_bundle_member_entity, domain::dataset_bundle_member>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<dataset_bundle_member_entity>
 dataset_bundle_member_mapper::map(const std::vector<domain::dataset_bundle_member>& v) {
     return map_vector<domain::dataset_bundle_member, dataset_bundle_member_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

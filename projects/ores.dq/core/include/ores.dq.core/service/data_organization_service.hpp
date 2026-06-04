@@ -20,20 +20,20 @@
 #ifndef ORES_DQ_CORE_SERVICE_DATA_ORGANIZATION_SERVICE_HPP
 #define ORES_DQ_CORE_SERVICE_DATA_ORGANIZATION_SERVICE_HPP
 
-#include <string>
-#include <vector>
-#include <optional>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/domain/catalog.hpp"
-#include "ores.dq.api/domain/dataset_dependency.hpp"
 #include "ores.dq.api/domain/data_domain.hpp"
+#include "ores.dq.api/domain/dataset_dependency.hpp"
 #include "ores.dq.api/domain/subject_area.hpp"
-#include "ores.dq.core/repository/catalog_repository.hpp"
 #include "ores.dq.core/export.hpp"
-#include "ores.dq.core/repository/dataset_dependency_repository.hpp"
+#include "ores.dq.core/repository/catalog_repository.hpp"
 #include "ores.dq.core/repository/data_domain_repository.hpp"
+#include "ores.dq.core/repository/dataset_dependency_repository.hpp"
 #include "ores.dq.core/repository/subject_area_repository.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <optional>
+#include <string>
+#include <vector>
 
 namespace ores::dq::service {
 
@@ -46,8 +46,7 @@ namespace ores::dq::service {
  */
 class ORES_DQ_CORE_EXPORT data_organization_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.dq.service.data_organization_service";
+    inline static std::string_view logger_name = "ores.dq.service.data_organization_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -77,8 +76,7 @@ public:
     /**
      * @brief Lists catalogs with pagination.
      */
-    std::vector<domain::catalog>
-    list_catalogs(std::uint32_t offset, std::uint32_t limit);
+    std::vector<domain::catalog> list_catalogs(std::uint32_t offset, std::uint32_t limit);
 
     /**
      * @brief Gets the total count of active catalogs.
@@ -190,14 +188,12 @@ public:
     /**
      * @brief Lists subject areas with pagination.
      */
-    std::vector<domain::subject_area>
-    list_subject_areas(std::uint32_t offset, std::uint32_t limit);
+    std::vector<domain::subject_area> list_subject_areas(std::uint32_t offset, std::uint32_t limit);
 
     /**
      * @brief Lists subject areas for a specific domain.
      */
-    std::vector<domain::subject_area>
-    list_subject_areas_by_domain(const std::string& domain_name);
+    std::vector<domain::subject_area> list_subject_areas_by_domain(const std::string& domain_name);
 
     /**
      * @brief Gets the total count of active subject areas.
@@ -207,8 +203,8 @@ public:
     /**
      * @brief Finds a subject area by its composite key.
      */
-    std::optional<domain::subject_area>
-    find_subject_area(const std::string& name, const std::string& domain_name);
+    std::optional<domain::subject_area> find_subject_area(const std::string& name,
+                                                          const std::string& domain_name);
 
     /**
      * @brief Saves a subject area (creates or updates).
@@ -230,8 +226,7 @@ public:
      * @param name The name of the subject area to remove
      * @param domain_name The domain name of the subject area
      */
-    void remove_subject_area(const std::string& name,
-                             const std::string& domain_name);
+    void remove_subject_area(const std::string& name, const std::string& domain_name);
 
     /**
      * @brief Gets the version history for a subject area.
@@ -240,9 +235,8 @@ public:
      * @param domain_name The domain name
      * @return Vector of all versions, newest first
      */
-    std::vector<domain::subject_area>
-    get_subject_area_history(const std::string& name,
-                             const std::string& domain_name);
+    std::vector<domain::subject_area> get_subject_area_history(const std::string& name,
+                                                               const std::string& domain_name);
 
 private:
     repository::catalog_repository catalog_repo_;

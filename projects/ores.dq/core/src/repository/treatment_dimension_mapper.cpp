@@ -18,7 +18,6 @@
  *
  */
 #include "ores.dq.core/repository/treatment_dimension_mapper.hpp"
-
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.dq.api/domain/treatment_dimension_json_io.hpp" // IWYU pragma: keep.
 
@@ -27,8 +26,7 @@ namespace ores::dq::repository {
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::treatment_dimension
-treatment_dimension_mapper::map(const treatment_dimension_entity& v) {
+domain::treatment_dimension treatment_dimension_mapper::map(const treatment_dimension_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::treatment_dimension r;
@@ -37,7 +35,7 @@ treatment_dimension_mapper::map(const treatment_dimension_entity& v) {
     r.code = v.code.value();
     r.name = v.name;
     r.description = v.description;
-r.modified_by = v.modified_by;
+    r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_commentary = v.change_commentary;
     r.recorded_at = timestamp_to_timepoint(v.valid_from);
@@ -46,8 +44,7 @@ r.modified_by = v.modified_by;
     return r;
 }
 
-treatment_dimension_entity
-treatment_dimension_mapper::map(const domain::treatment_dimension& v) {
+treatment_dimension_entity treatment_dimension_mapper::map(const domain::treatment_dimension& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     treatment_dimension_entity r;
@@ -56,7 +53,7 @@ treatment_dimension_mapper::map(const domain::treatment_dimension& v) {
     r.version = v.version;
     r.name = v.name;
     r.description = v.description;
-r.modified_by = v.modified_by;
+    r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_commentary = v.change_commentary;
 
@@ -67,19 +64,13 @@ r.modified_by = v.modified_by;
 std::vector<domain::treatment_dimension>
 treatment_dimension_mapper::map(const std::vector<treatment_dimension_entity>& v) {
     return map_vector<treatment_dimension_entity, domain::treatment_dimension>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<treatment_dimension_entity>
 treatment_dimension_mapper::map(const std::vector<domain::treatment_dimension>& v) {
     return map_vector<domain::treatment_dimension, treatment_dimension_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

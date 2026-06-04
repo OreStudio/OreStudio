@@ -20,17 +20,17 @@
 #ifndef ORES_DQ_CORE_SERVICE_DATASET_SERVICE_HPP
 #define ORES_DQ_CORE_SERVICE_DATASET_SERVICE_HPP
 
-#include <string>
-#include <vector>
-#include <optional>
-#include <boost/uuid/uuid.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/domain/dataset.hpp"
 #include "ores.dq.api/domain/methodology.hpp"
-#include "ores.dq.core/repository/dataset_repository.hpp"
 #include "ores.dq.core/export.hpp"
+#include "ores.dq.core/repository/dataset_repository.hpp"
 #include "ores.dq.core/repository/methodology_repository.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <optional>
+#include <string>
+#include <vector>
 
 namespace ores::dq::service {
 
@@ -43,8 +43,7 @@ namespace ores::dq::service {
  */
 class ORES_DQ_CORE_EXPORT dataset_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.dq.service.dataset_service";
+    inline static std::string_view logger_name = "ores.dq.service.dataset_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -74,8 +73,7 @@ public:
     /**
      * @brief Lists datasets with pagination.
      */
-    std::vector<domain::dataset>
-    list_datasets(std::uint32_t offset, std::uint32_t limit);
+    std::vector<domain::dataset> list_datasets(std::uint32_t offset, std::uint32_t limit);
 
     /**
      * @brief Gets the total count of active datasets.
@@ -114,8 +112,7 @@ public:
      * @param id The dataset ID
      * @return Vector of all versions, newest first
      */
-    std::vector<domain::dataset>
-    get_dataset_history(const boost::uuids::uuid& id);
+    std::vector<domain::dataset> get_dataset_history(const boost::uuids::uuid& id);
 
     // ========================================================================
     // Methodology Management
@@ -129,8 +126,7 @@ public:
     /**
      * @brief Lists methodologies with pagination.
      */
-    std::vector<domain::methodology>
-    list_methodologies(std::uint32_t offset, std::uint32_t limit);
+    std::vector<domain::methodology> list_methodologies(std::uint32_t offset, std::uint32_t limit);
 
     /**
      * @brief Gets the total count of active methodologies.
@@ -140,8 +136,7 @@ public:
     /**
      * @brief Finds a methodology by its ID.
      */
-    std::optional<domain::methodology>
-    find_methodology(const boost::uuids::uuid& id);
+    std::optional<domain::methodology> find_methodology(const boost::uuids::uuid& id);
 
     /**
      * @brief Saves a methodology (creates or updates).
@@ -170,8 +165,7 @@ public:
      * @param id The methodology ID
      * @return Vector of all versions, newest first
      */
-    std::vector<domain::methodology>
-    get_methodology_history(const boost::uuids::uuid& id);
+    std::vector<domain::methodology> get_methodology_history(const boost::uuids::uuid& id);
 
 private:
     repository::dataset_repository dataset_repo_;

@@ -20,25 +20,24 @@
 #ifndef ORES_DQ_API_GENERATORS_BADGE_DEFINITION_GENERATOR_HPP
 #define ORES_DQ_API_GENERATORS_BADGE_DEFINITION_GENERATOR_HPP
 
-#include <vector>
 #include "ores.dq.api/domain/badge_definition.hpp"
-#include "ores.utility/generation/generation_context.hpp"
 #include "ores.dq.api/export.hpp"
+#include "ores.utility/generation/generation_context.hpp"
+#include <vector>
 
 namespace ores::dq::generators {
 
 /**
  * @brief Generates a synthetic badge_definition.
  */
-ORES_DQ_API_EXPORT domain::badge_definition generate_synthetic_badge_definition(
-    utility::generation::generation_context& ctx);
+ORES_DQ_API_EXPORT domain::badge_definition
+generate_synthetic_badge_definition(utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic badge_definitions.
  */
 ORES_DQ_API_EXPORT std::vector<domain::badge_definition>
-generate_synthetic_badge_definitions(std::size_t n,
-    utility::generation::generation_context& ctx);
+generate_synthetic_badge_definitions(std::size_t n, utility::generation::generation_context& ctx);
 
 }
 

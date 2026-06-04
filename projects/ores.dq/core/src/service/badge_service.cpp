@@ -18,18 +18,17 @@
  *
  */
 #include "ores.dq.core/service/badge_service.hpp"
-
-#include "ores.dq.api/domain/badge_severity_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.api/domain/badge_definition_json_io.hpp" // IWYU pragma: keep.
-#include "ores.dq.api/domain/code_domain_json_io.hpp" // IWYU pragma: keep.
+#include "ores.dq.api/domain/badge_severity_json_io.hpp"   // IWYU pragma: keep.
+#include "ores.dq.api/domain/code_domain_json_io.hpp"      // IWYU pragma: keep.
 
 namespace ores::dq::service {
 
 using namespace ores::logging;
 
 badge_service::badge_service(context ctx)
-    : ctx_(ctx),
-      map_repo_(ctx) {
+    : ctx_(ctx)
+    , map_repo_(ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Badge service initialised.";
 }
 
@@ -53,8 +52,7 @@ void badge_service::remove_severities(const std::vector<std::string>& codes) {
         sev_repo_.remove(ctx_, code);
 }
 
-std::vector<domain::badge_severity>
-badge_service::get_severity_history(const std::string& code) {
+std::vector<domain::badge_severity> badge_service::get_severity_history(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Getting badge severity history for: " << code;
     return sev_repo_.read_all(ctx_, code);
 }
@@ -79,8 +77,7 @@ void badge_service::remove_code_domains(const std::vector<std::string>& codes) {
         dom_repo_.remove(ctx_, code);
 }
 
-std::vector<domain::code_domain>
-badge_service::get_code_domain_history(const std::string& code) {
+std::vector<domain::code_domain> badge_service::get_code_domain_history(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Getting code domain history for: " << code;
     return dom_repo_.read_all(ctx_, code);
 }

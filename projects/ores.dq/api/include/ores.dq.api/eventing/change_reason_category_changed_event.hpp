@@ -20,10 +20,10 @@
 #ifndef ORES_DQ_API_EVENTING_CHANGE_REASON_CATEGORY_CHANGED_EVENT_HPP
 #define ORES_DQ_API_EVENTING_CHANGE_REASON_CATEGORY_CHANGED_EVENT_HPP
 
-#include <chrono>
-#include <vector>
-#include <string>
 #include "ores.eventing/domain/event_traits.hpp"
+#include <chrono>
+#include <string>
+#include <vector>
 
 namespace ores::dq::eventing {
 
@@ -64,10 +64,9 @@ namespace ores::eventing::domain {
 /**
  * @brief Event traits specialization for change_reason_category_changed_event.
  */
-template<>
+template <>
 struct event_traits<ores::dq::eventing::change_reason_category_changed_event> {
-    static constexpr std::string_view name =
-        "ores.dq.change_reason_category_changed";
+    static constexpr std::string_view name = "ores.dq.change_reason_category_changed";
 };
 
 }

@@ -18,12 +18,11 @@
  *
  */
 #include "ores.dq.api/domain/badge_definition.hpp"
-
-#include <vector>
-#include <catch2/catch_test_macros.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.dq.api/domain/badge_definition_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.api/domain/badge_definition_table.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <catch2/catch_test_macros.hpp>
+#include <vector>
 
 namespace {
 

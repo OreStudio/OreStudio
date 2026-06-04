@@ -18,7 +18,6 @@
  *
  */
 #include "ores.dq.api/domain/artefact_type_json_io.hpp"
-
 #include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>

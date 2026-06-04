@@ -20,9 +20,9 @@
 #ifndef ORES_DQ_API_DOMAIN_METHODOLOGY_JSON_IO_HPP
 #define ORES_DQ_API_DOMAIN_METHODOLOGY_JSON_IO_HPP
 
-#include <iosfwd>
 #include "ores.dq.api/domain/methodology.hpp"
 #include "ores.dq.api/export.hpp"
+#include <iosfwd>
 
 namespace ores::dq::domain {
 

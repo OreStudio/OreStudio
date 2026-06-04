@@ -20,11 +20,11 @@
 #ifndef ORES_DQ_API_MESSAGING_FSM_PROTOCOL_HPP
 #define ORES_DQ_API_MESSAGING_FSM_PROTOCOL_HPP
 
+#include "ores.dq.api/domain/fsm_state.hpp"
+#include "ores.dq.api/domain/fsm_transition.hpp"
 #include <string>
 #include <string_view>
 #include <vector>
-#include "ores.dq.api/domain/fsm_state.hpp"
-#include "ores.dq.api/domain/fsm_transition.hpp"
 
 namespace ores::dq::messaging {
 

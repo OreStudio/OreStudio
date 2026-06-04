@@ -18,7 +18,6 @@
  *
  */
 #include "ores.dq.core/repository/badge_definition_mapper.hpp"
-
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.dq.api/domain/badge_definition_json_io.hpp" // IWYU pragma: keep.
 
@@ -27,8 +26,7 @@ namespace ores::dq::repository {
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::badge_definition
-badge_definition_mapper::map(const badge_definition_entity& v) {
+domain::badge_definition badge_definition_mapper::map(const badge_definition_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::badge_definition r;
@@ -52,8 +50,7 @@ badge_definition_mapper::map(const badge_definition_entity& v) {
     return r;
 }
 
-badge_definition_entity
-badge_definition_mapper::map(const domain::badge_definition& v) {
+badge_definition_entity badge_definition_mapper::map(const domain::badge_definition& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     badge_definition_entity r;
@@ -79,19 +76,13 @@ badge_definition_mapper::map(const domain::badge_definition& v) {
 std::vector<domain::badge_definition>
 badge_definition_mapper::map(const std::vector<badge_definition_entity>& v) {
     return map_vector<badge_definition_entity, domain::badge_definition>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<badge_definition_entity>
 badge_definition_mapper::map(const std::vector<domain::badge_definition>& v) {
     return map_vector<domain::badge_definition, badge_definition_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

@@ -18,7 +18,6 @@
  *
  */
 #include "ores.dq.api/domain/subject_area_table.hpp"
-
 #include <fort.hpp>
 
 namespace ores::dq::domain {
@@ -31,8 +30,8 @@ std::string convert_to_table(const std::vector<subject_area>& v) {
           << "Modified By" << "Version" << fort::endr;
 
     for (const auto& s : v) {
-        table << s.name << s.domain_name << s.description
-              << s.modified_by << s.version << fort::endr;
+        table << s.name << s.domain_name << s.description << s.modified_by << s.version
+              << fort::endr;
     }
     return table.to_string();
 }

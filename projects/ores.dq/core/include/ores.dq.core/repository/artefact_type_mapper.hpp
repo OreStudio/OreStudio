@@ -20,10 +20,10 @@
 #ifndef ORES_DQ_CORE_REPOSITORY_ARTEFACT_TYPE_MAPPER_HPP
 #define ORES_DQ_CORE_REPOSITORY_ARTEFACT_TYPE_MAPPER_HPP
 
-#include <vector>
-#include "ores.logging/make_logger.hpp"
 #include "ores.dq.api/domain/artefact_type.hpp"
 #include "ores.dq.core/repository/artefact_type_entity.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <vector>
 
 namespace ores::dq::repository {
 
@@ -32,8 +32,7 @@ namespace ores::dq::repository {
  */
 class artefact_type_mapper {
 private:
-    inline static std::string_view logger_name =
-        "ores.dq.repository.artefact_type_mapper";
+    inline static std::string_view logger_name = "ores.dq.repository.artefact_type_mapper";
 
     static auto& lg() {
         using namespace ores::logging;
@@ -45,10 +44,8 @@ public:
     static domain::artefact_type map(const artefact_type_entity& v);
     static artefact_type_entity map(const domain::artefact_type& v);
 
-    static std::vector<domain::artefact_type>
-    map(const std::vector<artefact_type_entity>& v);
-    static std::vector<artefact_type_entity>
-    map(const std::vector<domain::artefact_type>& v);
+    static std::vector<domain::artefact_type> map(const std::vector<artefact_type_entity>& v);
+    static std::vector<artefact_type_entity> map(const std::vector<domain::artefact_type>& v);
 };
 
 }

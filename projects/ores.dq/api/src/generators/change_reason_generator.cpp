@@ -18,18 +18,16 @@
  *
  */
 #include "ores.dq.api/generators/change_reason_generator.hpp"
-
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/generation/generation_keys.hpp"
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
 
 namespace ores::dq::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::change_reason generate_synthetic_change_reason(
-    utility::generation::generation_context& ctx) {
-    const auto modified_by = ctx.env().get_or(
-        generation_keys::modified_by, "system");
+domain::change_reason
+generate_synthetic_change_reason(utility::generation::generation_context& ctx) {
+    const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
 
     domain::change_reason r;
     r.version = 1;
@@ -49,8 +47,7 @@ domain::change_reason generate_synthetic_change_reason(
 }
 
 std::vector<domain::change_reason>
-generate_synthetic_change_reasons(std::size_t n,
-    utility::generation::generation_context& ctx) {
+generate_synthetic_change_reasons(std::size_t n, utility::generation::generation_context& ctx) {
     std::vector<domain::change_reason> r;
     r.reserve(n);
     while (r.size() < n)

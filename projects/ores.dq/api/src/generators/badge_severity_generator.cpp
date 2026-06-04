@@ -18,20 +18,18 @@
  *
  */
 #include "ores.dq.api/generators/badge_severity_generator.hpp"
-
+#include "ores.utility/generation/generation_keys.hpp"
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::dq::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::badge_severity generate_synthetic_badge_severity(
-    utility::generation::generation_context& ctx) {
+domain::badge_severity
+generate_synthetic_badge_severity(utility::generation::generation_context& ctx) {
     static std::atomic<int> counter{0};
-    const auto modified_by = ctx.env().get_or(
-        std::string(generation_keys::modified_by), "system");
+    const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
 
     const auto idx = ++counter;
     domain::badge_severity r;
@@ -49,8 +47,7 @@ domain::badge_severity generate_synthetic_badge_severity(
 }
 
 std::vector<domain::badge_severity>
-generate_synthetic_badge_severities(std::size_t n,
-    utility::generation::generation_context& ctx) {
+generate_synthetic_badge_severities(std::size_t n, utility::generation::generation_context& ctx) {
     std::vector<domain::badge_severity> r;
     r.reserve(n);
     while (r.size() < n)

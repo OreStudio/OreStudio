@@ -18,13 +18,12 @@
  *
  */
 #include "ores.dq.core/repository/catalog_repository.hpp"
-
-#include <sqlgen/postgres.hpp>
-#include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
 #include "ores.dq.api/domain/catalog_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.core/repository/catalog_entity.hpp"
 #include "ores.dq.core/repository/catalog_mapper.hpp"
+#include <sqlgen/postgres.hpp>
 
 namespace ores::dq::repository {
 
@@ -41,65 +40,61 @@ catalog_repository::catalog_repository(context ctx)
     : ctx_(std::move(ctx)) {}
 
 void catalog_repository::write(const domain::catalog& catalog) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing catalog to database: "
-                               << catalog.name;
+    BOOST_LOG_SEV(lg(), debug) << "Writing catalog to database: " << catalog.name;
 
-    execute_write_query(ctx_, catalog_mapper::map(catalog),
-        lg(), "writing catalog to database");
+    execute_write_query(ctx_, catalog_mapper::map(catalog), lg(), "writing catalog to database");
 }
 
-void catalog_repository::write(
-    const std::vector<domain::catalog>& catalogs) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing catalogs to database. Count: "
-                               << catalogs.size();
+void catalog_repository::write(const std::vector<domain::catalog>& catalogs) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing catalogs to database. Count: " << catalogs.size();
 
-    execute_write_query(ctx_, catalog_mapper::map(catalogs),
-        lg(), "writing catalogs to database");
+    execute_write_query(ctx_, catalog_mapper::map(catalogs), lg(), "writing catalogs to database");
 }
 
-std::vector<domain::catalog>
-catalog_repository::read_latest() {
+std::vector<domain::catalog> catalog_repository::read_latest() {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<catalog_entity>> |
-        where("valid_to"_c == max.value()) |
-        order_by("name"_c);
+                       where("valid_to"_c == max.value()) | order_by("name"_c);
 
     return execute_read_query<catalog_entity, domain::catalog>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return catalog_mapper::map(entities); },
-        lg(), "Reading latest catalogs");
+        lg(),
+        "Reading latest catalogs");
 }
 
-std::vector<domain::catalog>
-catalog_repository::read_latest(const std::string& name) {
+std::vector<domain::catalog> catalog_repository::read_latest(const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest catalog. Name: " << name;
 
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<catalog_entity>> |
-        where("name"_c == name && "valid_to"_c == max.value());
+                       where("name"_c == name && "valid_to"_c == max.value());
 
     return execute_read_query<catalog_entity, domain::catalog>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return catalog_mapper::map(entities); },
-        lg(), "Reading latest catalog by name.");
+        lg(),
+        "Reading latest catalog by name.");
 }
 
-std::vector<domain::catalog>
-catalog_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest catalogs with offset: "
-                               << offset << " and limit: " << limit;
+std::vector<domain::catalog> catalog_repository::read_latest(std::uint32_t offset,
+                                                             std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest catalogs with offset: " << offset
+                               << " and limit: " << limit;
 
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<catalog_entity>> |
-        where("valid_to"_c == max.value()) |
-        order_by("name"_c) |
-        sqlgen::offset(offset) |
-        sqlgen::limit(limit);
+                       where("valid_to"_c == max.value()) | order_by("name"_c) |
+                       sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_read_query<catalog_entity, domain::catalog>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return catalog_mapper::map(entities); },
-        lg(), "Reading latest catalogs with pagination.");
+        lg(),
+        "Reading latest catalogs with pagination.");
 }
 
 std::uint32_t catalog_repository::get_total_count() {
@@ -111,10 +106,8 @@ std::uint32_t catalog_repository::get_total_count() {
         long long count;
     };
 
-    const auto query = sqlgen::select_from<catalog_entity>(
-        sqlgen::count().as<"count">()) |
-        where("valid_to"_c == max.value()) |
-        sqlgen::to<count_result>;
+    const auto query = sqlgen::select_from<catalog_entity>(sqlgen::count().as<"count">()) |
+                       where("valid_to"_c == max.value()) | sqlgen::to<count_result>;
 
     const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
     ensure_success(r, lg());
@@ -124,26 +117,24 @@ std::uint32_t catalog_repository::get_total_count() {
     return count;
 }
 
-std::vector<domain::catalog>
-catalog_repository::read_all(const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all catalog versions. Name: "
-                               << name;
+std::vector<domain::catalog> catalog_repository::read_all(const std::string& name) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading all catalog versions. Name: " << name;
 
-    const auto query = sqlgen::read<std::vector<catalog_entity>> |
-        where("name"_c == name) |
-        order_by("version"_c.desc());
+    const auto query = sqlgen::read<std::vector<catalog_entity>> | where("name"_c == name) |
+                       order_by("version"_c.desc());
 
     return execute_read_query<catalog_entity, domain::catalog>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return catalog_mapper::map(entities); },
-        lg(), "Reading all catalog versions by name.");
+        lg(),
+        "Reading all catalog versions by name.");
 }
 
 void catalog_repository::remove(const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Removing catalog from database: " << name;
 
-    const auto query = sqlgen::delete_from<catalog_entity> |
-        where("name"_c == name);
+    const auto query = sqlgen::delete_from<catalog_entity> | where("name"_c == name);
 
     execute_delete_query(ctx_, query, lg(), "removing catalog from database");
 }

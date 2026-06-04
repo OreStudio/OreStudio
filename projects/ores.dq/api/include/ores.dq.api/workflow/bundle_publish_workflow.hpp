@@ -20,13 +20,13 @@
 #ifndef ORES_DQ_API_WORKFLOW_BUNDLE_PUBLISH_WORKFLOW_HPP
 #define ORES_DQ_API_WORKFLOW_BUNDLE_PUBLISH_WORKFLOW_HPP
 
+#include "ores.dq.api/messaging/publish_from_dq_protocol.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.workflow.api/service/workflow_definition.hpp"
+#include "ores.workflow.api/service/workflow_registry.hpp"
 #include <rfl/json.hpp>
 #include <string>
 #include <vector>
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.dq.api/messaging/publish_from_dq_protocol.hpp"
-#include "ores.workflow.api/service/workflow_definition.hpp"
-#include "ores.workflow.api/service/workflow_registry.hpp"
 
 namespace ores::dq::workflow {
 
@@ -64,23 +64,22 @@ struct bundle_publish_workflow_request {
  * publish_from_dq_command to the dataset's target_subject. Steps have no
  * compensation action — publish functions are idempotent upserts.
  */
-inline void register_bundle_publish_workflow(
-    ores::workflow::service::workflow_registry& registry) {
+inline void register_bundle_publish_workflow(ores::workflow::service::workflow_registry& registry) {
 
     using namespace ores::workflow::service;
 
     workflow_definition def;
-    def.type_name  = "bundle_publish_workflow";
+    def.type_name = "bundle_publish_workflow";
     def.description = "Publishes all datasets in a DQ bundle to their target "
-        "production tables. One workflow step per dataset; steps are dispatched "
-        "in display_order. No compensation — publish functions are idempotent.";
+                      "production tables. One workflow step per dataset; steps are dispatched "
+                      "in display_order. No compensation — publish functions are idempotent.";
 
     def.build_steps = [](const std::string& request_json,
-        const std::string& /*tenant_id*/,
-        const std::string& /*correlation_id*/) -> std::vector<workflow_step_def> {
-
+                         const std::string& /*tenant_id*/,
+                         const std::string& /*correlation_id*/) -> std::vector<workflow_step_def> {
         auto parsed = rfl::json::read<bundle_publish_workflow_request>(request_json);
-        if (!parsed) return {};
+        if (!parsed)
+            return {};
 
         const auto& req = *parsed;
         std::vector<workflow_step_def> steps;
@@ -93,25 +92,25 @@ inline void register_bundle_publish_workflow(
             s.command_subject = ds.target_subject;
             s.compensation_subject = "";
 
-            const std::string dataset_id   = ds.dataset_id;
-            const std::string tenant_id_v  = req.tenant_id;
-            const std::string mode         = ds.mode;
-            const std::string params       = ds.params_json;
+            const std::string dataset_id = ds.dataset_id;
+            const std::string tenant_id_v = req.tenant_id;
+            const std::string mode = ds.mode;
+            const std::string params = ds.params_json;
 
             s.build_command = [dataset_id, tenant_id_v, mode, params](
-                const std::string& /*request_json*/,
-                const std::vector<std::string>& /*step_results*/) -> std::string {
-
+                                  const std::string& /*request_json*/,
+                                  const std::vector<std::string>& /*step_results*/) -> std::string {
                 ores::dq::messaging::publish_from_dq_command cmd;
-                cmd.dataset_id  = dataset_id;
-                cmd.tenant_id   = tenant_id_v;
-                cmd.mode        = mode;
+                cmd.dataset_id = dataset_id;
+                cmd.tenant_id = tenant_id_v;
+                cmd.mode = mode;
                 cmd.params_json = params;
                 return rfl::json::write(cmd);
             };
 
-            s.build_compensation = [](const std::string&,
-                const std::string&) -> std::string { return "{}"; };
+            s.build_compensation = [](const std::string&, const std::string&) -> std::string {
+                return "{}";
+            };
 
             steps.push_back(std::move(s));
         }

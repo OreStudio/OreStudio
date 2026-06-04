@@ -18,16 +18,16 @@
  *
  */
 #include "ores.dq.core/service/dataset_service.hpp"
-
-#include <stdexcept>
 #include <boost/uuid/uuid_io.hpp>
+#include <stdexcept>
 
 namespace ores::dq::service {
 
 using namespace ores::logging;
 
 dataset_service::dataset_service(context ctx)
-    : dataset_repo_(ctx), methodology_repo_(ctx) {}
+    : dataset_repo_(ctx)
+    , methodology_repo_(ctx) {}
 
 // ============================================================================
 // Dataset Management
@@ -38,10 +38,10 @@ std::vector<domain::dataset> dataset_service::list_datasets() {
     return dataset_repo_.read_latest();
 }
 
-std::vector<domain::dataset>
-dataset_service::list_datasets(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing datasets with pagination: offset="
-                               << offset << ", limit=" << limit;
+std::vector<domain::dataset> dataset_service::list_datasets(std::uint32_t offset,
+                                                            std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing datasets with pagination: offset=" << offset
+                               << ", limit=" << limit;
     return dataset_repo_.read_latest(offset, limit);
 }
 
@@ -49,8 +49,7 @@ std::uint32_t dataset_service::get_dataset_count() {
     return dataset_repo_.get_total_count();
 }
 
-std::optional<domain::dataset>
-dataset_service::find_dataset(const boost::uuids::uuid& id) {
+std::optional<domain::dataset> dataset_service::find_dataset(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Finding dataset: " << id;
     auto datasets = dataset_repo_.read_latest(id);
     if (datasets.empty()) {
@@ -84,8 +83,7 @@ void dataset_service::remove_dataset(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), info) << "Removed dataset: " << id;
 }
 
-std::vector<domain::dataset>
-dataset_service::get_dataset_history(const boost::uuids::uuid& id) {
+std::vector<domain::dataset> dataset_service::get_dataset_history(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for dataset: " << id;
     return dataset_repo_.read_all(id);
 }
@@ -99,10 +97,10 @@ std::vector<domain::methodology> dataset_service::list_methodologies() {
     return methodology_repo_.read_latest();
 }
 
-std::vector<domain::methodology>
-dataset_service::list_methodologies(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing methodologies with pagination: offset="
-                               << offset << ", limit=" << limit;
+std::vector<domain::methodology> dataset_service::list_methodologies(std::uint32_t offset,
+                                                                     std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing methodologies with pagination: offset=" << offset
+                               << ", limit=" << limit;
     return methodology_repo_.read_latest(offset, limit);
 }
 
@@ -110,8 +108,7 @@ std::uint32_t dataset_service::get_methodology_count() {
     return methodology_repo_.get_total_count();
 }
 
-std::optional<domain::methodology>
-dataset_service::find_methodology(const boost::uuids::uuid& id) {
+std::optional<domain::methodology> dataset_service::find_methodology(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Finding methodology: " << id;
     auto methodologies = methodology_repo_.read_latest(id);
     if (methodologies.empty()) {
@@ -129,8 +126,7 @@ void dataset_service::save_methodology(const domain::methodology& methodology) {
     BOOST_LOG_SEV(lg(), info) << "Saved methodology: " << methodology.id;
 }
 
-void dataset_service::save_methodologies(
-    const std::vector<domain::methodology>& methodologies) {
+void dataset_service::save_methodologies(const std::vector<domain::methodology>& methodologies) {
     for (const auto& m : methodologies) {
         if (m.id.is_nil()) {
             throw std::invalid_argument("Methodology ID cannot be nil.");

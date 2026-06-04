@@ -18,7 +18,6 @@
  *
  */
 #include "ores.dq.core/repository/coding_scheme_authority_type_entity.hpp"
-
 #include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>

@@ -18,13 +18,12 @@
  *
  */
 #include "ores.dq.core/repository/badge_severity_repository.hpp"
-
-#include <sqlgen/postgres.hpp>
-#include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
 #include "ores.dq.api/domain/badge_severity_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.core/repository/badge_severity_entity.hpp"
 #include "ores.dq.core/repository/badge_severity_mapper.hpp"
+#include <sqlgen/postgres.hpp>
 
 namespace ores::dq::repository {
 
@@ -39,28 +38,27 @@ std::string badge_severity_repository::sql() {
 
 void badge_severity_repository::write(context ctx, const domain::badge_severity& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing badge severity: " << v.code;
-    execute_write_query(ctx, badge_severity_mapper::map(v),
-        lg(), "Writing badge severity to database.");
+    execute_write_query(
+        ctx, badge_severity_mapper::map(v), lg(), "Writing badge severity to database.");
 }
 
-void badge_severity_repository::write(
-    context ctx, const std::vector<domain::badge_severity>& v) {
+void badge_severity_repository::write(context ctx, const std::vector<domain::badge_severity>& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing badge severities. Count: " << v.size();
-    execute_write_query(ctx, badge_severity_mapper::map(v),
-        lg(), "Writing badge severities to database.");
+    execute_write_query(
+        ctx, badge_severity_mapper::map(v), lg(), "Writing badge severities to database.");
 }
 
-std::vector<domain::badge_severity>
-badge_severity_repository::read_latest(context ctx) {
+std::vector<domain::badge_severity> badge_severity_repository::read_latest(context ctx) {
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<badge_severity_entity>> |
-        where("valid_to"_c == max.value()) |
-        order_by("code"_c);
+                       where("valid_to"_c == max.value()) | order_by("code"_c);
 
     return execute_read_query<badge_severity_entity, domain::badge_severity>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return badge_severity_mapper::map(entities); },
-        lg(), "Reading latest badge severities");
+        lg(),
+        "Reading latest badge severities");
 }
 
 std::vector<domain::badge_severity>
@@ -68,32 +66,36 @@ badge_severity_repository::read_latest(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest badge severity. code: " << code;
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<badge_severity_entity>> |
-        where("code"_c == code && "valid_to"_c == max.value());
+                       where("code"_c == code && "valid_to"_c == max.value());
 
     return execute_read_query<badge_severity_entity, domain::badge_severity>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return badge_severity_mapper::map(entities); },
-        lg(), "Reading latest badge severity by code.");
+        lg(),
+        "Reading latest badge severity by code.");
 }
 
-std::vector<domain::badge_severity>
-badge_severity_repository::read_all(context ctx, const std::string& code) {
+std::vector<domain::badge_severity> badge_severity_repository::read_all(context ctx,
+                                                                        const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all badge severity versions. code: " << code;
-    const auto query = sqlgen::read<std::vector<badge_severity_entity>> |
-        where("code"_c == code) |
-        order_by("version"_c.desc());
+    const auto query = sqlgen::read<std::vector<badge_severity_entity>> | where("code"_c == code) |
+                       order_by("version"_c.desc());
 
     return execute_read_query<badge_severity_entity, domain::badge_severity>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return badge_severity_mapper::map(entities); },
-        lg(), "Reading all badge severity versions by code.");
+        lg(),
+        "Reading all badge severity versions by code.");
 }
 
 void badge_severity_repository::remove(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing badge severity: " << code;
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<badge_severity_entity> |
+    const auto query =
+        sqlgen::delete_from<badge_severity_entity> |
         where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max.value());
 
     execute_delete_query(ctx, query, lg(), "Removing badge severity from database.");

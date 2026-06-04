@@ -18,14 +18,13 @@
  *
  */
 #include "ores.dq.core/repository/dataset_bundle_repository.hpp"
-
-#include <sqlgen/postgres.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
 #include "ores.dq.api/domain/dataset_bundle_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.core/repository/dataset_bundle_entity.hpp"
 #include "ores.dq.core/repository/dataset_bundle_mapper.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <sqlgen/postgres.hpp>
 
 namespace ores::dq::repository {
 
@@ -42,31 +41,28 @@ dataset_bundle_repository::dataset_bundle_repository(context ctx)
     : ctx_(std::move(ctx)) {}
 
 void dataset_bundle_repository::write(const domain::dataset_bundle& bundle) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing dataset bundle to database: "
-                               << bundle.id;
-    execute_write_query(ctx_, dataset_bundle_mapper::map(bundle),
-        lg(), "writing dataset bundle to database");
+    BOOST_LOG_SEV(lg(), debug) << "Writing dataset bundle to database: " << bundle.id;
+    execute_write_query(
+        ctx_, dataset_bundle_mapper::map(bundle), lg(), "writing dataset bundle to database");
 }
 
-void dataset_bundle_repository::write(
-    const std::vector<domain::dataset_bundle>& bundles) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing dataset bundles to database. Count: "
-                               << bundles.size();
-    execute_write_query(ctx_, dataset_bundle_mapper::map(bundles),
-        lg(), "writing dataset bundles to database");
+void dataset_bundle_repository::write(const std::vector<domain::dataset_bundle>& bundles) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing dataset bundles to database. Count: " << bundles.size();
+    execute_write_query(
+        ctx_, dataset_bundle_mapper::map(bundles), lg(), "writing dataset bundles to database");
 }
 
-std::vector<domain::dataset_bundle>
-dataset_bundle_repository::read_latest() {
+std::vector<domain::dataset_bundle> dataset_bundle_repository::read_latest() {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<dataset_bundle_entity>> |
-        where("valid_to"_c == max.value()) |
-        order_by("name"_c);
+                       where("valid_to"_c == max.value()) | order_by("name"_c);
 
     return execute_read_query<dataset_bundle_entity, domain::dataset_bundle>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return dataset_bundle_mapper::map(entities); },
-        lg(), "Reading latest dataset bundles");
+        lg(),
+        "Reading latest dataset bundles");
 }
 
 std::vector<domain::dataset_bundle>
@@ -76,12 +72,14 @@ dataset_bundle_repository::read_latest(const boost::uuids::uuid& id) {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto id_str = boost::uuids::to_string(id);
     const auto query = sqlgen::read<std::vector<dataset_bundle_entity>> |
-        where("id"_c == id_str && "valid_to"_c == max.value());
+                       where("id"_c == id_str && "valid_to"_c == max.value());
 
     return execute_read_query<dataset_bundle_entity, domain::dataset_bundle>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return dataset_bundle_mapper::map(entities); },
-        lg(), "Reading latest dataset bundle by id.");
+        lg(),
+        "Reading latest dataset bundle by id.");
 }
 
 std::vector<domain::dataset_bundle>
@@ -90,12 +88,14 @@ dataset_bundle_repository::read_latest_by_code(const std::string& code) {
 
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<dataset_bundle_entity>> |
-        where("code"_c == code && "valid_to"_c == max.value());
+                       where("code"_c == code && "valid_to"_c == max.value());
 
     return execute_read_query<dataset_bundle_entity, domain::dataset_bundle>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return dataset_bundle_mapper::map(entities); },
-        lg(), "Reading latest dataset bundle by code.");
+        lg(),
+        "Reading latest dataset bundle by code.");
 }
 
 std::vector<domain::dataset_bundle>
@@ -103,22 +103,22 @@ dataset_bundle_repository::read_all(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all dataset bundle versions. Id: " << id;
 
     const auto id_str = boost::uuids::to_string(id);
-    const auto query = sqlgen::read<std::vector<dataset_bundle_entity>> |
-        where("id"_c == id_str) |
-        order_by("version"_c.desc());
+    const auto query = sqlgen::read<std::vector<dataset_bundle_entity>> | where("id"_c == id_str) |
+                       order_by("version"_c.desc());
 
     return execute_read_query<dataset_bundle_entity, domain::dataset_bundle>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return dataset_bundle_mapper::map(entities); },
-        lg(), "Reading all dataset bundle versions by id.");
+        lg(),
+        "Reading all dataset bundle versions by id.");
 }
 
 void dataset_bundle_repository::remove(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing dataset bundle from database: " << id;
 
     const auto id_str = boost::uuids::to_string(id);
-    const auto query = sqlgen::delete_from<dataset_bundle_entity> |
-        where("id"_c == id_str);
+    const auto query = sqlgen::delete_from<dataset_bundle_entity> | where("id"_c == id_str);
 
     execute_delete_query(ctx_, query, lg(), "removing dataset bundle from database");
 }

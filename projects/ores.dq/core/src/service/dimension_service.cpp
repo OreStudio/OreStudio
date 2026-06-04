@@ -18,7 +18,6 @@
  *
  */
 #include "ores.dq.core/service/dimension_service.hpp"
-
 #include <stdexcept>
 
 namespace ores::dq::service {
@@ -26,7 +25,9 @@ namespace ores::dq::service {
 using namespace ores::logging;
 
 dimension_service::dimension_service(context ctx)
-    : nature_repo_(ctx), origin_repo_(ctx), treatment_repo_(ctx) {}
+    : nature_repo_(ctx)
+    , origin_repo_(ctx)
+    , treatment_repo_(ctx) {}
 
 // ============================================================================
 // Nature Dimension Management

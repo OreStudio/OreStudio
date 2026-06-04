@@ -18,9 +18,8 @@
  *
  */
 #include "ores.dq.core/service/dataset_bundle_service.hpp"
-
-#include <stdexcept>
 #include <boost/uuid/uuid_io.hpp>
+#include <stdexcept>
 
 namespace ores::dq::service {
 
@@ -63,8 +62,7 @@ void dataset_bundle_service::save_bundle(const domain::dataset_bundle& bundle) {
     BOOST_LOG_SEV(lg(), info) << "Saved dataset bundle: " << bundle.id;
 }
 
-void dataset_bundle_service::save_bundles(
-    const std::vector<domain::dataset_bundle>& bundles) {
+void dataset_bundle_service::save_bundles(const std::vector<domain::dataset_bundle>& bundles) {
     for (const auto& b : bundles) {
         if (b.id.is_nil()) {
             throw std::invalid_argument("Dataset Bundle ID cannot be nil.");

@@ -20,10 +20,10 @@
 #ifndef ORES_DQ_API_EVENTING_CODING_SCHEME_AUTHORITY_TYPE_CHANGED_EVENT_HPP
 #define ORES_DQ_API_EVENTING_CODING_SCHEME_AUTHORITY_TYPE_CHANGED_EVENT_HPP
 
-#include <chrono>
-#include <vector>
-#include <string>
 #include "ores.eventing/domain/event_traits.hpp"
+#include <chrono>
+#include <string>
+#include <vector>
 
 namespace ores::dq::eventing {
 
@@ -64,7 +64,7 @@ namespace ores::eventing::domain {
 /**
  * @brief Event traits specialization for coding_scheme_authority_type_changed_event.
  */
-template<>
+template <>
 struct event_traits<ores::dq::eventing::coding_scheme_authority_type_changed_event> {
     static constexpr std::string_view name = "ores.dq.coding_scheme_authority_type_changed";
 };

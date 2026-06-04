@@ -18,7 +18,6 @@
  *
  */
 #include "ores.dq.core/repository/origin_dimension_entity.hpp"
-
 #include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>

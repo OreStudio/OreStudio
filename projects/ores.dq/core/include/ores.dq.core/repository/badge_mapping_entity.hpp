@@ -20,10 +20,10 @@
 #ifndef ORES_DQ_CORE_REPOSITORY_BADGE_MAPPING_ENTITY_HPP
 #define ORES_DQ_CORE_REPOSITORY_BADGE_MAPPING_ENTITY_HPP
 
-#include <string>
+#include "ores.database/repository/db_types.hpp"
 #include <optional>
 #include <ostream>
-#include "ores.database/repository/db_types.hpp"
+#include <string>
 
 namespace ores::dq::repository {
 

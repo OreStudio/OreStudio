@@ -18,7 +18,6 @@
  *
  */
 #include "ores.dq.core/repository/data_domain_mapper.hpp"
-
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.dq.api/domain/data_domain_json_io.hpp" // IWYU pragma: keep.
 
@@ -27,8 +26,7 @@ namespace ores::dq::repository {
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::data_domain
-data_domain_mapper::map(const data_domain_entity& v) {
+domain::data_domain data_domain_mapper::map(const data_domain_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::data_domain r;
@@ -36,7 +34,7 @@ data_domain_mapper::map(const data_domain_entity& v) {
     r.tenant_id = v.tenant_id;
     r.name = v.name.value();
     r.description = v.description;
-r.modified_by = v.modified_by;
+    r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_commentary = v.change_commentary;
     r.recorded_at = timestamp_to_timepoint(v.valid_from);
@@ -45,8 +43,7 @@ r.modified_by = v.modified_by;
     return r;
 }
 
-data_domain_entity
-data_domain_mapper::map(const domain::data_domain& v) {
+data_domain_entity data_domain_mapper::map(const domain::data_domain& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     data_domain_entity r;
@@ -54,7 +51,7 @@ data_domain_mapper::map(const domain::data_domain& v) {
     r.tenant_id = v.tenant_id;
     r.version = v.version;
     r.description = v.description;
-r.modified_by = v.modified_by;
+    r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_commentary = v.change_commentary;
 
@@ -62,22 +59,14 @@ r.modified_by = v.modified_by;
     return r;
 }
 
-std::vector<domain::data_domain>
-data_domain_mapper::map(const std::vector<data_domain_entity>& v) {
+std::vector<domain::data_domain> data_domain_mapper::map(const std::vector<data_domain_entity>& v) {
     return map_vector<data_domain_entity, domain::data_domain>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
-std::vector<data_domain_entity>
-data_domain_mapper::map(const std::vector<domain::data_domain>& v) {
+std::vector<data_domain_entity> data_domain_mapper::map(const std::vector<domain::data_domain>& v) {
     return map_vector<domain::data_domain, data_domain_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

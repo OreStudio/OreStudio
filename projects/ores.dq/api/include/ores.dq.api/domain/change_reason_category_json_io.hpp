@@ -20,9 +20,9 @@
 #ifndef ORES_DQ_API_DOMAIN_CHANGE_REASON_CATEGORY_JSON_IO_HPP
 #define ORES_DQ_API_DOMAIN_CHANGE_REASON_CATEGORY_JSON_IO_HPP
 
-#include <iosfwd>
 #include "ores.dq.api/domain/change_reason_category.hpp"
 #include "ores.dq.api/export.hpp"
+#include <iosfwd>
 
 namespace ores::dq::domain {
 

@@ -20,13 +20,13 @@
 #ifndef ORES_DQ_CORE_REPOSITORY_DATA_DOMAIN_REPOSITORY_HPP
 #define ORES_DQ_CORE_REPOSITORY_DATA_DOMAIN_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/domain/data_domain.hpp"
 #include "ores.dq.core/export.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::dq::repository {
 
@@ -35,8 +35,7 @@ namespace ores::dq::repository {
  */
 class ORES_DQ_CORE_EXPORT data_domain_repository {
 private:
-    inline static std::string_view logger_name =
-        "ores.dq.repository.data_domain_repository";
+    inline static std::string_view logger_name = "ores.dq.repository.data_domain_repository";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -73,8 +72,7 @@ public:
     /**
      * @brief Reads latest data_domains with pagination support.
      */
-    std::vector<domain::data_domain>
-    read_latest(std::uint32_t offset, std::uint32_t limit);
+    std::vector<domain::data_domain> read_latest(std::uint32_t offset, std::uint32_t limit);
 
     /**
      * @brief Gets the total count of active data_domains.

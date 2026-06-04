@@ -18,32 +18,29 @@
  *
  */
 #include "ores.dq.api/generators/coding_scheme_generator.hpp"
-
+#include "ores.utility/generation/generation_keys.hpp"
 #include <array>
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::dq::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::coding_scheme generate_synthetic_coding_scheme(
-    utility::generation::generation_context& ctx) {
+domain::coding_scheme
+generate_synthetic_coding_scheme(utility::generation::generation_context& ctx) {
     static constexpr std::array<const char*, 3> authority_types = {
-        "official", "industry", "internal"
-    };
+        "official", "industry", "internal"};
     static std::atomic<int> counter{0};
     const auto idx = counter++;
-    const auto modified_by = ctx.env().get_or(
-        generation_keys::modified_by, "system");
+    const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
 
     domain::coding_scheme r;
     r.version = 1;
-    r.code = std::string(faker::word::noun()) + "_" + std::string(faker::word::noun())
-        + "_" + std::to_string(idx + 1);
-    r.name = std::string(faker::word::adjective()) + " " + std::string(faker::word::noun())
-        + " " + std::to_string(idx + 1);
+    r.code = std::string(faker::word::noun()) + "_" + std::string(faker::word::noun()) + "_" +
+             std::to_string(idx + 1);
+    r.name = std::string(faker::word::adjective()) + " " + std::string(faker::word::noun()) + " " +
+             std::to_string(idx + 1);
     r.authority_type = std::string(authority_types[idx % authority_types.size()]);
     r.subject_area_name = std::string("General");
     r.domain_name = std::string("Reference Data");
@@ -58,8 +55,7 @@ domain::coding_scheme generate_synthetic_coding_scheme(
 }
 
 std::vector<domain::coding_scheme>
-generate_synthetic_coding_schemes(std::size_t n,
-    utility::generation::generation_context& ctx) {
+generate_synthetic_coding_schemes(std::size_t n, utility::generation::generation_context& ctx) {
     std::vector<domain::coding_scheme> r;
     r.reserve(n);
     while (r.size() < n)

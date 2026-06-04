@@ -20,16 +20,16 @@
 #ifndef ORES_DQ_CORE_SERVICE_CHANGE_MANAGEMENT_SERVICE_HPP
 #define ORES_DQ_CORE_SERVICE_CHANGE_MANAGEMENT_SERVICE_HPP
 
+#include "ores.database/domain/context.hpp"
+#include "ores.dq.api/domain/change_reason.hpp"
+#include "ores.dq.api/domain/change_reason_category.hpp"
+#include "ores.dq.core/export.hpp"
+#include "ores.dq.core/repository/change_reason_category_repository.hpp"
+#include "ores.dq.core/repository/change_reason_repository.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <optional>
 #include <string>
 #include <vector>
-#include <optional>
-#include "ores.logging/make_logger.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.dq.api/domain/change_reason_category.hpp"
-#include "ores.dq.api/domain/change_reason.hpp"
-#include "ores.dq.core/repository/change_reason_category_repository.hpp"
-#include "ores.dq.core/export.hpp"
-#include "ores.dq.core/repository/change_reason_repository.hpp"
 
 namespace ores::dq::service {
 
@@ -43,8 +43,7 @@ namespace ores::dq::service {
  */
 class ORES_DQ_CORE_EXPORT change_management_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.iam.service.change_management_service";
+    inline static std::string_view logger_name = "ores.iam.service.change_management_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -74,8 +73,8 @@ public:
     /**
      * @brief Lists change reason categories with pagination.
      */
-    std::vector<domain::change_reason_category>
-    list_categories(std::uint32_t offset, std::uint32_t limit);
+    std::vector<domain::change_reason_category> list_categories(std::uint32_t offset,
+                                                                std::uint32_t limit);
 
     /**
      * @brief Gets the total count of active categories.
@@ -85,8 +84,7 @@ public:
     /**
      * @brief Finds a category by its code.
      */
-    std::optional<domain::change_reason_category>
-    find_category(const std::string& code);
+    std::optional<domain::change_reason_category> find_category(const std::string& code);
 
     /**
      * @brief Saves a change reason category (creates or updates).
@@ -120,8 +118,7 @@ public:
      * @param code The category code
      * @return Vector of all versions, newest first
      */
-    std::vector<domain::change_reason_category>
-    get_category_history(const std::string& code);
+    std::vector<domain::change_reason_category> get_category_history(const std::string& code);
 
     // ========================================================================
     // Reason Management
@@ -135,14 +132,12 @@ public:
     /**
      * @brief Lists change reasons with pagination.
      */
-    std::vector<domain::change_reason>
-    list_reasons(std::uint32_t offset, std::uint32_t limit);
+    std::vector<domain::change_reason> list_reasons(std::uint32_t offset, std::uint32_t limit);
 
     /**
      * @brief Lists change reasons for a specific category.
      */
-    std::vector<domain::change_reason>
-    list_reasons_by_category(const std::string& category_code);
+    std::vector<domain::change_reason> list_reasons_by_category(const std::string& category_code);
 
     /**
      * @brief Gets the total count of active reasons.

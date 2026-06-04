@@ -20,10 +20,10 @@
 #ifndef ORES_DQ_API_DOMAIN_METHODOLOGY_TABLE_IO_HPP
 #define ORES_DQ_API_DOMAIN_METHODOLOGY_TABLE_IO_HPP
 
-#include <iosfwd>
-#include <vector>
 #include "ores.dq.api/domain/methodology.hpp"
 #include "ores.dq.api/export.hpp"
+#include <iosfwd>
+#include <vector>
 
 namespace ores::dq::domain {
 

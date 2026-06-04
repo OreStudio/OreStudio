@@ -31,22 +31,20 @@ namespace ores::dq::repository {
  */
 class fsm_state_mapper {
 private:
-    inline static std::string_view logger_name =
-        "ores.dq.repository.fsm_state_mapper";
+    inline static std::string_view logger_name = "ores.dq.repository.fsm_state_mapper";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }
+
 public:
     static domain::fsm_state map(const fsm_state_entity& v);
     static fsm_state_entity map(const domain::fsm_state& v);
 
-    static std::vector<domain::fsm_state>
-    map(const std::vector<fsm_state_entity>& v);
-    static std::vector<fsm_state_entity>
-    map(const std::vector<domain::fsm_state>& v);
+    static std::vector<domain::fsm_state> map(const std::vector<fsm_state_entity>& v);
+    static std::vector<fsm_state_entity> map(const std::vector<domain::fsm_state>& v);
 };
 
 }

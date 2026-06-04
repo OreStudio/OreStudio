@@ -20,9 +20,9 @@
 #ifndef ORES_DQ_API_DOMAIN_BADGE_SEVERITY_HPP
 #define ORES_DQ_API_DOMAIN_BADGE_SEVERITY_HPP
 
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <chrono>
 #include <string>
-#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::dq::domain {
 
@@ -32,7 +32,7 @@ namespace ores::dq::domain {
  * Reference data defining severity levels used to classify badges.
  * Codes align with Bootstrap 5 contextual classes so Wt rendering
  * requires no translation layer.
- * 
+ *
  * Values: secondary, info, success, warning, danger, primary.
  */
 struct badge_severity final {

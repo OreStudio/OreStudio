@@ -39,6 +39,7 @@ private:
         static auto instance = make_logger(logger_name);
         return instance;
     }
+
 public:
     static domain::change_reason_category map(const change_reason_category_entity& v);
     static change_reason_category_entity map(const domain::change_reason_category& v);

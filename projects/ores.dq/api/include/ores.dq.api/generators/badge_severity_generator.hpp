@@ -20,25 +20,24 @@
 #ifndef ORES_DQ_API_GENERATORS_BADGE_SEVERITY_GENERATOR_HPP
 #define ORES_DQ_API_GENERATORS_BADGE_SEVERITY_GENERATOR_HPP
 
-#include <vector>
 #include "ores.dq.api/domain/badge_severity.hpp"
-#include "ores.utility/generation/generation_context.hpp"
 #include "ores.dq.api/export.hpp"
+#include "ores.utility/generation/generation_context.hpp"
+#include <vector>
 
 namespace ores::dq::generators {
 
 /**
  * @brief Generates a synthetic badge_severity.
  */
-ORES_DQ_API_EXPORT domain::badge_severity generate_synthetic_badge_severity(
-    utility::generation::generation_context& ctx);
+ORES_DQ_API_EXPORT domain::badge_severity
+generate_synthetic_badge_severity(utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic badge_severities.
  */
 ORES_DQ_API_EXPORT std::vector<domain::badge_severity>
-generate_synthetic_badge_severities(std::size_t n,
-    utility::generation::generation_context& ctx);
+generate_synthetic_badge_severities(std::size_t n, utility::generation::generation_context& ctx);
 
 }
 

@@ -31,22 +31,20 @@ namespace ores::dq::repository {
  */
 class subject_area_mapper {
 private:
-    inline static std::string_view logger_name =
-        "ores.dq.repository.subject_area_mapper";
+    inline static std::string_view logger_name = "ores.dq.repository.subject_area_mapper";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }
+
 public:
     static domain::subject_area map(const subject_area_entity& v);
     static subject_area_entity map(const domain::subject_area& v);
 
-    static std::vector<domain::subject_area>
-    map(const std::vector<subject_area_entity>& v);
-    static std::vector<subject_area_entity>
-    map(const std::vector<domain::subject_area>& v);
+    static std::vector<domain::subject_area> map(const std::vector<subject_area_entity>& v);
+    static std::vector<subject_area_entity> map(const std::vector<domain::subject_area>& v);
 };
 
 }

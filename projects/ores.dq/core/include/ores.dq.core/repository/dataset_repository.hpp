@@ -20,14 +20,14 @@
 #ifndef ORES_DQ_CORE_REPOSITORY_DATASET_REPOSITORY_HPP
 #define ORES_DQ_CORE_REPOSITORY_DATASET_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include <sqlgen/postgres.hpp>
-#include <boost/uuid/uuid.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/domain/dataset.hpp"
 #include "ores.dq.core/export.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::dq::repository {
 
@@ -36,8 +36,7 @@ namespace ores::dq::repository {
  */
 class ORES_DQ_CORE_EXPORT dataset_repository {
 private:
-    inline static std::string_view logger_name =
-        "ores.dq.repository.dataset_repository";
+    inline static std::string_view logger_name = "ores.dq.repository.dataset_repository";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -57,27 +56,23 @@ public:
 
     std::vector<domain::dataset> read_latest();
     std::vector<domain::dataset> read_latest(const boost::uuids::uuid& id);
-    std::vector<domain::dataset>
-    read_latest(std::uint32_t offset, std::uint32_t limit);
+    std::vector<domain::dataset> read_latest(std::uint32_t offset, std::uint32_t limit);
 
     /**
      * @brief Reads latest datasets by catalog.
      */
-    std::vector<domain::dataset>
-    read_latest_by_catalog(const std::string& catalog_name);
+    std::vector<domain::dataset> read_latest_by_catalog(const std::string& catalog_name);
 
     /**
      * @brief Reads latest datasets by subject area.
      */
-    std::vector<domain::dataset>
-    read_latest_by_subject_area(const std::string& subject_area_name,
-                                const std::string& domain_name);
+    std::vector<domain::dataset> read_latest_by_subject_area(const std::string& subject_area_name,
+                                                             const std::string& domain_name);
 
     /**
      * @brief Reads latest datasets by origin.
      */
-    std::vector<domain::dataset>
-    read_latest_by_origin(const std::string& origin_code);
+    std::vector<domain::dataset> read_latest_by_origin(const std::string& origin_code);
 
     std::uint32_t get_total_count();
     std::vector<domain::dataset> read_all(const boost::uuids::uuid& id);

@@ -20,25 +20,25 @@
 #ifndef ORES_DQ_API_GENERATORS_DATASET_BUNDLE_MEMBER_GENERATOR_HPP
 #define ORES_DQ_API_GENERATORS_DATASET_BUNDLE_MEMBER_GENERATOR_HPP
 
-#include <vector>
 #include "ores.dq.api/domain/dataset_bundle_member.hpp"
-#include "ores.utility/generation/generation_context.hpp"
 #include "ores.dq.api/export.hpp"
+#include "ores.utility/generation/generation_context.hpp"
+#include <vector>
 
 namespace ores::dq::generators {
 
 /**
  * @brief Generates a synthetic dataset_bundle_member.
  */
-ORES_DQ_API_EXPORT domain::dataset_bundle_member generate_synthetic_dataset_bundle_member(
-    utility::generation::generation_context& ctx);
+ORES_DQ_API_EXPORT domain::dataset_bundle_member
+generate_synthetic_dataset_bundle_member(utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic dataset_bundle_members.
  */
 ORES_DQ_API_EXPORT std::vector<domain::dataset_bundle_member>
 generate_synthetic_dataset_bundle_members(std::size_t n,
-    utility::generation::generation_context& ctx);
+                                          utility::generation::generation_context& ctx);
 
 }
 

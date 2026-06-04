@@ -18,7 +18,6 @@
  *
  */
 #include "ores.dq.api/domain/change_reason_category_table.hpp"
-
 #include <fort.hpp>
 
 namespace ores::dq::domain {
@@ -31,8 +30,7 @@ std::string convert_to_table(const std::vector<change_reason_category>& v) {
           << "Version" << fort::endr;
 
     for (const auto& c : v) {
-        table << c.code << c.description << c.modified_by
-              << c.version << fort::endr;
+        table << c.code << c.description << c.modified_by << c.version << fort::endr;
     }
     return table.to_string();
 }

@@ -18,9 +18,8 @@
  *
  */
 #include "ores.dq.api/domain/change_reason_table_io.hpp"
-
-#include <ostream>
 #include "ores.dq.api/domain/change_reason_table.hpp"
+#include <ostream>
 
 namespace ores::dq::domain {
 

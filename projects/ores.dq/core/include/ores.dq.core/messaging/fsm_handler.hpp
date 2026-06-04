@@ -20,18 +20,18 @@
 #ifndef ORES_DQ_CORE_MESSAGING_FSM_HANDLER_HPP
 #define ORES_DQ_CORE_MESSAGING_FSM_HANDLER_HPP
 
-#include <optional>
-#include <stdexcept>
+#include "ores.database/domain/context.hpp"
+#include "ores.dq.api/messaging/fsm_protocol.hpp"
+#include "ores.dq.core/service/fsm_service.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.database/domain/context.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include "ores.utility/rfl/reflectors.hpp"
-#include "ores.dq.api/messaging/fsm_protocol.hpp"
-#include "ores.dq.core/service/fsm_service.hpp"
+#include <optional>
+#include <stdexcept>
 
 namespace ores::dq::messaging {
 
@@ -42,8 +42,7 @@ using namespace ores::logging;
 
 namespace {
 inline auto& fsm_handler_lg() {
-    static auto instance = ores::logging::make_logger(
-        "ores.dq.messaging.fsm_handler");
+    static auto instance = ores::logging::make_logger("ores.dq.messaging.fsm_handler");
     return instance;
 }
 } // namespace
@@ -51,22 +50,23 @@ inline auto& fsm_handler_lg() {
 class fsm_handler {
 public:
     fsm_handler(ores::nats::service::client& nats,
-        ores::database::context ctx,
-        std::optional<ores::security::jwt::jwt_authenticator> verifier)
-        : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier)) {}
+                ores::database::context ctx,
+                std::optional<ores::security::jwt::jwt_authenticator> verifier)
+        : nats_(nats)
+        , ctx_(std::move(ctx))
+        , verifier_(std::move(verifier)) {}
 
     void list(ores::nats::message msg) {
         BOOST_LOG_SEV(fsm_handler_lg(), debug) << "Handling " << msg.subject;
         auto req = decode<get_fsm_states_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(fsm_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
-            reply(nats_, msg, get_fsm_states_response{
-                .success = false, .message = "Failed to decode request"});
+            BOOST_LOG_SEV(fsm_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            reply(nats_,
+                  msg,
+                  get_fsm_states_response{.success = false, .message = "Failed to decode request"});
             return;
         }
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -81,10 +81,8 @@ public:
             resp.success = true;
             reply(nats_, msg, resp);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(fsm_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, get_fsm_states_response{
-                .success = false, .message = e.what()});
+            BOOST_LOG_SEV(fsm_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, get_fsm_states_response{.success = false, .message = e.what()});
         }
         BOOST_LOG_SEV(fsm_handler_lg(), debug) << "Completed " << msg.subject;
     }
@@ -93,14 +91,14 @@ public:
         BOOST_LOG_SEV(fsm_handler_lg(), debug) << "Handling " << msg.subject;
         auto req = decode<get_fsm_transitions_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(fsm_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
-            reply(nats_, msg, get_fsm_transitions_response{
-                .success = false, .message = "Failed to decode request"});
+            BOOST_LOG_SEV(fsm_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            reply(nats_,
+                  msg,
+                  get_fsm_transitions_response{.success = false,
+                                               .message = "Failed to decode request"});
             return;
         }
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -115,10 +113,8 @@ public:
             resp.success = true;
             reply(nats_, msg, resp);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(fsm_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, get_fsm_transitions_response{
-                .success = false, .message = e.what()});
+            BOOST_LOG_SEV(fsm_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, get_fsm_transitions_response{.success = false, .message = e.what()});
         }
         BOOST_LOG_SEV(fsm_handler_lg(), debug) << "Completed " << msg.subject;
     }

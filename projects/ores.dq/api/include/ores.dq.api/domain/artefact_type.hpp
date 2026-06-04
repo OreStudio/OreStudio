@@ -20,8 +20,8 @@
 #ifndef ORES_DQ_API_DOMAIN_ARTEFACT_TYPE_HPP
 #define ORES_DQ_API_DOMAIN_ARTEFACT_TYPE_HPP
 
-#include <string>
 #include <optional>
+#include <string>
 
 namespace ores::dq::domain {
 

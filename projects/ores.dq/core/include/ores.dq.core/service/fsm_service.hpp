@@ -20,13 +20,13 @@
 #ifndef ORES_DQ_CORE_SERVICE_FSM_SERVICE_HPP
 #define ORES_DQ_CORE_SERVICE_FSM_SERVICE_HPP
 
-#include <string>
-#include <vector>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/domain/fsm_state.hpp"
 #include "ores.dq.api/domain/fsm_transition.hpp"
 #include "ores.dq.core/export.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <string>
+#include <vector>
 
 namespace ores::dq::service {
 
@@ -57,8 +57,7 @@ public:
      * @param machine_name The machine name (e.g. "report_definition_lifecycle").
      * @return States ordered by name. Empty if the machine is not found.
      */
-    std::vector<domain::fsm_state>
-    list_states_for_machine(const std::string& machine_name);
+    std::vector<domain::fsm_state> list_states_for_machine(const std::string& machine_name);
 
     /**
      * @brief Lists all current FSM states across all machines.

@@ -20,25 +20,24 @@
 #ifndef ORES_DQ_API_GENERATORS_METHODOLOGY_GENERATOR_HPP
 #define ORES_DQ_API_GENERATORS_METHODOLOGY_GENERATOR_HPP
 
-#include <vector>
 #include "ores.dq.api/domain/methodology.hpp"
-#include "ores.utility/generation/generation_context.hpp"
 #include "ores.dq.api/export.hpp"
+#include "ores.utility/generation/generation_context.hpp"
+#include <vector>
 
 namespace ores::dq::generators {
 
 /**
  * @brief Generates a synthetic methodology.
  */
-ORES_DQ_API_EXPORT domain::methodology generate_synthetic_methodology(
-    utility::generation::generation_context& ctx);
+ORES_DQ_API_EXPORT domain::methodology
+generate_synthetic_methodology(utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic methodologies.
  */
 ORES_DQ_API_EXPORT std::vector<domain::methodology>
-generate_synthetic_methodologies(std::size_t n,
-    utility::generation::generation_context& ctx);
+generate_synthetic_methodologies(std::size_t n, utility::generation::generation_context& ctx);
 
 }
 

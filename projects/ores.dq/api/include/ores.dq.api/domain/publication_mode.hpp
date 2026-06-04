@@ -20,10 +20,10 @@
 #ifndef ORES_DQ_API_DOMAIN_PUBLICATION_MODE_HPP
 #define ORES_DQ_API_DOMAIN_PUBLICATION_MODE_HPP
 
-#include <string>
+#include "ores.dq.api/export.hpp"
 #include <optional>
 #include <ostream>
-#include "ores.dq.api/export.hpp"
+#include <string>
 
 namespace ores::dq::domain {
 
@@ -72,7 +72,8 @@ ORES_DQ_API_EXPORT std::string to_string(publication_mode mode);
  * @param s The string to parse.
  * @return The parsed mode, or std::nullopt if the string is invalid.
  */
-ORES_DQ_API_EXPORT std::optional<publication_mode> publication_mode_from_string(const std::string& s);
+ORES_DQ_API_EXPORT std::optional<publication_mode>
+publication_mode_from_string(const std::string& s);
 
 /**
  * @brief Stream output operator for publication_mode.

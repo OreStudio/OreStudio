@@ -18,7 +18,6 @@
  *
  */
 #include "ores.dq.core/repository/subject_area_mapper.hpp"
-
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.dq.api/domain/subject_area_json_io.hpp" // IWYU pragma: keep.
 
@@ -27,8 +26,7 @@ namespace ores::dq::repository {
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::subject_area
-subject_area_mapper::map(const subject_area_entity& v) {
+domain::subject_area subject_area_mapper::map(const subject_area_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::subject_area r;
@@ -37,7 +35,7 @@ subject_area_mapper::map(const subject_area_entity& v) {
     r.name = v.name.value();
     r.domain_name = v.domain_name.value();
     r.description = v.description;
-r.modified_by = v.modified_by;
+    r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_commentary = v.change_commentary;
     r.recorded_at = timestamp_to_timepoint(v.valid_from);
@@ -46,8 +44,7 @@ r.modified_by = v.modified_by;
     return r;
 }
 
-subject_area_entity
-subject_area_mapper::map(const domain::subject_area& v) {
+subject_area_entity subject_area_mapper::map(const domain::subject_area& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     subject_area_entity r;
@@ -56,7 +53,7 @@ subject_area_mapper::map(const domain::subject_area& v) {
     r.tenant_id = v.tenant_id;
     r.version = v.version;
     r.description = v.description;
-r.modified_by = v.modified_by;
+    r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_commentary = v.change_commentary;
 
@@ -67,19 +64,13 @@ r.modified_by = v.modified_by;
 std::vector<domain::subject_area>
 subject_area_mapper::map(const std::vector<subject_area_entity>& v) {
     return map_vector<subject_area_entity, domain::subject_area>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<subject_area_entity>
 subject_area_mapper::map(const std::vector<domain::subject_area>& v) {
     return map_vector<domain::subject_area, subject_area_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

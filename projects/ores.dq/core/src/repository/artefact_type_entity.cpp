@@ -18,7 +18,6 @@
  *
  */
 #include "ores.dq.core/repository/artefact_type_entity.hpp"
-
 #include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>

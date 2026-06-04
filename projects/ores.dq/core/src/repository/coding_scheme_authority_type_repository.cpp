@@ -18,13 +18,12 @@
  *
  */
 #include "ores.dq.core/repository/coding_scheme_authority_type_repository.hpp"
-
-#include <sqlgen/postgres.hpp>
-#include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
 #include "ores.dq.api/domain/coding_scheme_authority_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.core/repository/coding_scheme_authority_type_entity.hpp"
 #include "ores.dq.core/repository/coding_scheme_authority_type_mapper.hpp"
+#include <sqlgen/postgres.hpp>
 
 namespace ores::dq::repository {
 
@@ -45,8 +44,10 @@ void coding_scheme_authority_type_repository::write(
     BOOST_LOG_SEV(lg(), debug) << "Writing coding_scheme_authority_type to database: "
                                << authority_type.code;
 
-    execute_write_query(ctx_, coding_scheme_authority_type_mapper::map(authority_type),
-        lg(), "writing coding_scheme_authority_type to database");
+    execute_write_query(ctx_,
+                        coding_scheme_authority_type_mapper::map(authority_type),
+                        lg(),
+                        "writing coding_scheme_authority_type to database");
 }
 
 void coding_scheme_authority_type_repository::write(
@@ -54,22 +55,25 @@ void coding_scheme_authority_type_repository::write(
     BOOST_LOG_SEV(lg(), debug) << "Writing coding_scheme_authority_types to database. Count: "
                                << authority_types.size();
 
-    execute_write_query(ctx_, coding_scheme_authority_type_mapper::map(authority_types),
-        lg(), "writing coding_scheme_authority_types to database");
+    execute_write_query(ctx_,
+                        coding_scheme_authority_type_mapper::map(authority_types),
+                        lg(),
+                        "writing coding_scheme_authority_types to database");
 }
 
 std::vector<domain::coding_scheme_authority_type>
 coding_scheme_authority_type_repository::read_latest() {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<coding_scheme_authority_type_entity>> |
-        where("valid_to"_c == max.value()) |
-        order_by("code"_c);
+                       where("valid_to"_c == max.value()) | order_by("code"_c);
 
     return execute_read_query<coding_scheme_authority_type_entity,
                               domain::coding_scheme_authority_type>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return coding_scheme_authority_type_mapper::map(entities); },
-        lg(), "Reading latest coding_scheme_authority_types");
+        lg(),
+        "Reading latest coding_scheme_authority_types");
 }
 
 std::vector<domain::coding_scheme_authority_type>
@@ -78,13 +82,15 @@ coding_scheme_authority_type_repository::read_latest(const std::string& code) {
 
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<coding_scheme_authority_type_entity>> |
-        where("code"_c == code && "valid_to"_c == max.value());
+                       where("code"_c == code && "valid_to"_c == max.value());
 
     return execute_read_query<coding_scheme_authority_type_entity,
                               domain::coding_scheme_authority_type>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return coding_scheme_authority_type_mapper::map(entities); },
-        lg(), "Reading latest coding_scheme_authority_type by code.");
+        lg(),
+        "Reading latest coding_scheme_authority_type by code.");
 }
 
 std::vector<domain::coding_scheme_authority_type>
@@ -94,16 +100,16 @@ coding_scheme_authority_type_repository::read_latest(std::uint32_t offset, std::
 
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<coding_scheme_authority_type_entity>> |
-        where("valid_to"_c == max.value()) |
-        order_by("code"_c) |
-        sqlgen::offset(offset) |
-        sqlgen::limit(limit);
+                       where("valid_to"_c == max.value()) | order_by("code"_c) |
+                       sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_read_query<coding_scheme_authority_type_entity,
                               domain::coding_scheme_authority_type>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return coding_scheme_authority_type_mapper::map(entities); },
-        lg(), "Reading latest coding_scheme_authority_types with pagination.");
+        lg(),
+        "Reading latest coding_scheme_authority_types with pagination.");
 }
 
 std::uint32_t coding_scheme_authority_type_repository::get_total_count() {
@@ -115,10 +121,9 @@ std::uint32_t coding_scheme_authority_type_repository::get_total_count() {
         long long count;
     };
 
-    const auto query = sqlgen::select_from<coding_scheme_authority_type_entity>(
-        sqlgen::count().as<"count">()) |
-        where("valid_to"_c == max.value()) |
-        sqlgen::to<count_result>;
+    const auto query =
+        sqlgen::select_from<coding_scheme_authority_type_entity>(sqlgen::count().as<"count">()) |
+        where("valid_to"_c == max.value()) | sqlgen::to<count_result>;
 
     const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
     ensure_success(r, lg());
@@ -134,28 +139,29 @@ coding_scheme_authority_type_repository::read_all(const std::string& code) {
                                << code;
 
     const auto query = sqlgen::read<std::vector<coding_scheme_authority_type_entity>> |
-        where("code"_c == code) |
-        order_by("version"_c.desc());
+                       where("code"_c == code) | order_by("version"_c.desc());
 
     return execute_read_query<coding_scheme_authority_type_entity,
                               domain::coding_scheme_authority_type>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return coding_scheme_authority_type_mapper::map(entities); },
-        lg(), "Reading all coding_scheme_authority_type versions by code.");
+        lg(),
+        "Reading all coding_scheme_authority_type versions by code.");
 }
 
 void coding_scheme_authority_type_repository::remove(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing coding_scheme_authority_type from database: " << code;
 
-    const auto query = sqlgen::delete_from<coding_scheme_authority_type_entity> |
-        where("code"_c == code);
+    const auto query =
+        sqlgen::delete_from<coding_scheme_authority_type_entity> | where("code"_c == code);
 
     execute_delete_query(ctx_, query, lg(), "removing coding_scheme_authority_type from database");
 }
 
 void coding_scheme_authority_type_repository::remove(const std::vector<std::string>& codes) {
-    const auto query = sqlgen::delete_from<coding_scheme_authority_type_entity> |
-        where("code"_c.in(codes));
+    const auto query =
+        sqlgen::delete_from<coding_scheme_authority_type_entity> | where("code"_c.in(codes));
     execute_delete_query(ctx_, query, lg(), "batch removing coding_scheme_authority_types");
 }
 

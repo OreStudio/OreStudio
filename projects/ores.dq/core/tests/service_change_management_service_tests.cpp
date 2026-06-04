@@ -17,19 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.dq.core/service/change_management_service.hpp"
-
-#include <catch2/catch_test_macros.hpp>
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.logging/make_logger.hpp"
-#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.dq.api/domain/change_reason_category_json_io.hpp" // IWYU pragma: keep.
-#include "ores.dq.api/domain/change_reason_json_io.hpp" // IWYU pragma: keep.
+#include "ores.dq.api/domain/change_reason_json_io.hpp"          // IWYU pragma: keep.
 #include "ores.dq.api/generators/change_reason_category_generator.hpp"
 #include "ores.dq.api/generators/change_reason_generator.hpp"
+#include "ores.dq.core/service/change_management_service.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
+#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <catch2/catch_test_macros.hpp>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
 
 namespace {
 
@@ -39,19 +38,17 @@ const std::string tags("[service][change_management]");
 using ores::dq::domain::change_reason_category;
 using ores::dq::domain::change_reason;
 
-change_reason_category make_unique_category(
-    ores::utility::generation::generation_context& ctx,
-    ores::testing::database_helper& h) {
+change_reason_category make_unique_category(ores::utility::generation::generation_context& ctx,
+                                            ores::testing::database_helper& h) {
     auto cat = ores::dq::generators::generate_synthetic_change_reason_category(ctx);
     cat.tenant_id = h.tenant_id().to_string();
     cat.code = cat.code + "_" + std::string(faker::string::alphanumeric(8));
     return cat;
 }
 
-change_reason make_unique_reason(
-    ores::utility::generation::generation_context& ctx,
-    ores::testing::database_helper& h,
-    const std::string& category_code) {
+change_reason make_unique_reason(ores::utility::generation::generation_context& ctx,
+                                 ores::testing::database_helper& h,
+                                 const std::string& category_code) {
     auto reason = ores::dq::generators::generate_synthetic_change_reason(ctx);
     reason.tenant_id = h.tenant_id().to_string();
     reason.code = reason.code + "_" + std::string(faker::string::alphanumeric(8));
@@ -165,8 +162,7 @@ TEST_CASE("service_remove_category_throws_when_reasons_exist", tags) {
     auto reason = make_unique_reason(ctx, h, cat_code);
     svc.save_reason(reason);
 
-    BOOST_LOG_SEV(lg, debug) << "Attempting to remove category with reasons: "
-                             << cat_code;
+    BOOST_LOG_SEV(lg, debug) << "Attempting to remove category with reasons: " << cat_code;
     CHECK_THROWS_AS(svc.remove_category(cat_code), std::runtime_error);
 }
 
@@ -302,8 +298,7 @@ TEST_CASE("service_list_reasons_by_category", tags) {
     svc.save_reason(r2);
 
     auto reasons = svc.list_reasons_by_category(cat.code);
-    BOOST_LOG_SEV(lg, debug) << "Reasons for category " << cat.code
-                             << ": " << reasons;
+    BOOST_LOG_SEV(lg, debug) << "Reasons for category " << cat.code << ": " << reasons;
 
     CHECK(reasons.size() == 2);
     for (const auto& r : reasons) {

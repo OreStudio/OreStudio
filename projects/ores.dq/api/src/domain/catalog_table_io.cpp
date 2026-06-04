@@ -18,9 +18,8 @@
  *
  */
 #include "ores.dq.api/domain/catalog_table_io.hpp"
-
-#include <ostream>
 #include "ores.dq.api/domain/catalog_table.hpp"
+#include <ostream>
 
 namespace ores::dq::domain {
 

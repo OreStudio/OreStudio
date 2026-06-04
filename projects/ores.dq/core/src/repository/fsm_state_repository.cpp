@@ -18,13 +18,12 @@
  *
  */
 #include "ores.dq.core/repository/fsm_state_repository.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <sqlgen/postgres.hpp>
-#include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
 #include "ores.dq.core/repository/fsm_state_entity.hpp"
 #include "ores.dq.core/repository/fsm_state_mapper.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <sqlgen/postgres.hpp>
 
 namespace ores::dq::repository {
 
@@ -39,84 +38,85 @@ std::string fsm_state_repository::sql() {
 
 void fsm_state_repository::write(context ctx, const domain::fsm_state& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing FSM state: " << v.name;
-    execute_write_query(ctx, fsm_state_mapper::map(v),
-        lg(), "Writing FSM state to database.");
+    execute_write_query(ctx, fsm_state_mapper::map(v), lg(), "Writing FSM state to database.");
 }
 
-void fsm_state_repository::write(
-    context ctx, const std::vector<domain::fsm_state>& v) {
+void fsm_state_repository::write(context ctx, const std::vector<domain::fsm_state>& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing FSM states. Count: " << v.size();
-    execute_write_query(ctx, fsm_state_mapper::map(v),
-        lg(), "Writing FSM states to database.");
+    execute_write_query(ctx, fsm_state_mapper::map(v), lg(), "Writing FSM states to database.");
 }
 
-std::vector<domain::fsm_state>
-fsm_state_repository::read_latest(context ctx) {
+std::vector<domain::fsm_state> fsm_state_repository::read_latest(context ctx) {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<fsm_state_entity>> |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-        order_by("name"_c);
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("name"_c);
 
     return execute_read_query<fsm_state_entity, domain::fsm_state>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return fsm_state_mapper::map(entities); },
-        lg(), "Reading latest FSM states.");
+        lg(),
+        "Reading latest FSM states.");
 }
 
 std::vector<domain::fsm_state>
-fsm_state_repository::read_latest_by_machine(
-    context ctx, const boost::uuids::uuid& machine_id) {
+fsm_state_repository::read_latest_by_machine(context ctx, const boost::uuids::uuid& machine_id) {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto mid = boost::uuids::to_string(machine_id);
-    const auto query = sqlgen::read<std::vector<fsm_state_entity>> |
-        where("tenant_id"_c == tid && "machine_id"_c == mid &&
-              "valid_to"_c == max.value()) |
+    const auto query =
+        sqlgen::read<std::vector<fsm_state_entity>> |
+        where("tenant_id"_c == tid && "machine_id"_c == mid && "valid_to"_c == max.value()) |
         order_by("name"_c);
 
     return execute_read_query<fsm_state_entity, domain::fsm_state>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return fsm_state_mapper::map(entities); },
-        lg(), "Reading latest FSM states by machine.");
+        lg(),
+        "Reading latest FSM states by machine.");
 }
 
-std::optional<domain::fsm_state>
-fsm_state_repository::find_by_name(
-    context ctx, const boost::uuids::uuid& machine_id,
-    const std::string& name) {
+std::optional<domain::fsm_state> fsm_state_repository::find_by_name(
+    context ctx, const boost::uuids::uuid& machine_id, const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Finding FSM state by name: " << name;
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto mid = boost::uuids::to_string(machine_id);
     const auto query = sqlgen::read<std::vector<fsm_state_entity>> |
-        where("tenant_id"_c == tid && "machine_id"_c == mid &&
-              "name"_c == name && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "machine_id"_c == mid && "name"_c == name &&
+                             "valid_to"_c == max.value());
 
     auto results = execute_read_query<fsm_state_entity, domain::fsm_state>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return fsm_state_mapper::map(entities); },
-        lg(), "Finding FSM state by name.");
-    if (results.empty()) return std::nullopt;
+        lg(),
+        "Finding FSM state by name.");
+    if (results.empty())
+        return std::nullopt;
     return results.front();
 }
 
-std::optional<domain::fsm_state>
-fsm_state_repository::find_by_id(
-    context ctx, const boost::uuids::uuid& id) {
+std::optional<domain::fsm_state> fsm_state_repository::find_by_id(context ctx,
+                                                                  const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Finding FSM state by id.";
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto sid = boost::uuids::to_string(id);
     const auto query = sqlgen::read<std::vector<fsm_state_entity>> |
-        where("tenant_id"_c == tid && "id"_c == sid &&
-              "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "id"_c == sid && "valid_to"_c == max.value());
 
     auto results = execute_read_query<fsm_state_entity, domain::fsm_state>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return fsm_state_mapper::map(entities); },
-        lg(), "Finding FSM state by id.");
-    if (results.empty()) return std::nullopt;
+        lg(),
+        "Finding FSM state by id.");
+    if (results.empty())
+        return std::nullopt;
     return results.front();
 }
 
@@ -126,8 +126,7 @@ void fsm_state_repository::remove(context ctx, const boost::uuids::uuid& id) {
     const auto tid = ctx.tenant_id().to_string();
     const auto sid = boost::uuids::to_string(id);
     const auto query = sqlgen::delete_from<fsm_state_entity> |
-        where("tenant_id"_c == tid && "id"_c == sid &&
-              "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "id"_c == sid && "valid_to"_c == max.value());
 
     execute_delete_query(ctx, query, lg(), "Removing FSM state from database.");
 }

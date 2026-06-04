@@ -20,15 +20,15 @@
 #ifndef ORES_DQ_CORE_REPOSITORY_PUBLICATION_REPOSITORY_HPP
 #define ORES_DQ_CORE_REPOSITORY_PUBLICATION_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include <cstdint>
-#include <sqlgen/postgres.hpp>
-#include <boost/uuid/uuid.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/domain/publication.hpp"
 #include "ores.dq.core/export.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <cstdint>
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::dq::repository {
 
@@ -37,8 +37,7 @@ namespace ores::dq::repository {
  */
 class ORES_DQ_CORE_EXPORT publication_repository {
 private:
-    inline static std::string_view logger_name =
-        "ores.dq.repository.publication_repository";
+    inline static std::string_view logger_name = "ores.dq.repository.publication_repository";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -56,16 +55,14 @@ public:
      * @param dataset_id ID of the dataset.
      * @return Publication records, newest first.
      */
-    std::vector<domain::publication>
-    read_by_dataset(const boost::uuids::uuid& dataset_id);
+    std::vector<domain::publication> read_by_dataset(const boost::uuids::uuid& dataset_id);
 
     /**
      * @brief Reads recent publication records across all datasets.
      * @param limit Maximum number of records to return.
      * @return Publication records, newest first.
      */
-    std::vector<domain::publication>
-    read_recent(std::uint32_t limit = 100);
+    std::vector<domain::publication> read_recent(std::uint32_t limit = 100);
 
     /**
      * @brief Inserts a new publication record.

@@ -18,16 +18,14 @@
  *
  */
 #include "ores.dq.api/domain/subject_area_table_io.hpp"
-
-#include <ostream>
 #include "ores.dq.api/domain/subject_area_table.hpp"
+#include <ostream>
 
 namespace ores::dq::domain {
 
 namespace {
 
-void print_subject_area_table(std::ostream& s,
-    const std::vector<subject_area>& v) {
+void print_subject_area_table(std::ostream& s, const std::vector<subject_area>& v) {
     s << std::endl << convert_to_table(v) << std::endl;
 }
 

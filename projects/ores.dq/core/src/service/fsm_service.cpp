@@ -18,35 +18,42 @@
  *
  */
 #include "ores.dq.core/service/fsm_service.hpp"
-
-#include <boost/lexical_cast.hpp>
-#include <boost/uuid/uuid_io.hpp>
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/service/tenant_context.hpp"
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::dq::service {
 
 using namespace ores::logging;
 using ores::database::repository::execute_parameterized_multi_column_query;
 
-fsm_service::fsm_service(context ctx) : ctx_(std::move(ctx)) {}
+fsm_service::fsm_service(context ctx)
+    : ctx_(std::move(ctx)) {}
 
 namespace {
 
 // Columns: 0=id, 1=machine_id, 2=name, 3=is_initial, 4=is_terminal,
 //          5=tenant_id, 6=version, 7=modified_by
-domain::fsm_state row_to_state(
-    const std::vector<std::optional<std::string>>& row) {
+domain::fsm_state row_to_state(const std::vector<std::optional<std::string>>& row) {
     domain::fsm_state s;
-    if (row.size() > 0 && row[0]) s.id = boost::lexical_cast<boost::uuids::uuid>(*row[0]);
-    if (row.size() > 1 && row[1]) s.machine_id = boost::lexical_cast<boost::uuids::uuid>(*row[1]);
-    if (row.size() > 2 && row[2]) s.name = *row[2];
-    if (row.size() > 3 && row[3]) s.is_initial = (*row[3] == "1" || *row[3] == "t" || *row[3] == "true");
-    if (row.size() > 4 && row[4]) s.is_terminal = (*row[4] == "1" || *row[4] == "t" || *row[4] == "true");
-    if (row.size() > 5 && row[5]) s.tenant_id = ores::utility::uuid::tenant_id::from_string(*row[5]).value_or(
-        ores::utility::uuid::tenant_id::system());
-    if (row.size() > 6 && row[6]) s.version = std::stoi(*row[6]);
-    if (row.size() > 7 && row[7]) s.modified_by = *row[7];
+    if (row.size() > 0 && row[0])
+        s.id = boost::lexical_cast<boost::uuids::uuid>(*row[0]);
+    if (row.size() > 1 && row[1])
+        s.machine_id = boost::lexical_cast<boost::uuids::uuid>(*row[1]);
+    if (row.size() > 2 && row[2])
+        s.name = *row[2];
+    if (row.size() > 3 && row[3])
+        s.is_initial = (*row[3] == "1" || *row[3] == "t" || *row[3] == "true");
+    if (row.size() > 4 && row[4])
+        s.is_terminal = (*row[4] == "1" || *row[4] == "t" || *row[4] == "true");
+    if (row.size() > 5 && row[5])
+        s.tenant_id = ores::utility::uuid::tenant_id::from_string(*row[5]).value_or(
+            ores::utility::uuid::tenant_id::system());
+    if (row.size() > 6 && row[6])
+        s.version = std::stoi(*row[6]);
+    if (row.size() > 7 && row[7])
+        s.modified_by = *row[7];
     return s;
 }
 
@@ -55,8 +62,7 @@ domain::fsm_state row_to_state(
 std::vector<domain::fsm_state>
 fsm_service::list_states_for_machine(const std::string& machine_name) {
     BOOST_LOG_SEV(lg(), debug) << "Listing FSM states for machine: " << machine_name;
-    const auto sys_ctx =
-        ores::database::service::tenant_context::with_system_tenant(ctx_);
+    const auto sys_ctx = ores::database::service::tenant_context::with_system_tenant(ctx_);
     const auto rows = execute_parameterized_multi_column_query(
         sys_ctx,
         "SELECT s.id::text, s.machine_id::text, s.name,"
@@ -71,19 +77,19 @@ fsm_service::list_states_for_machine(const std::string& machine_name) {
         "   AND s.tenant_id = ores_utility_system_tenant_id_fn()"
         " ORDER BY s.name",
         {machine_name},
-        lg(), "Listing FSM states for machine: " + machine_name);
+        lg(),
+        "Listing FSM states for machine: " + machine_name);
     std::vector<domain::fsm_state> result;
     result.reserve(rows.size());
     for (const auto& row : rows) {
         try {
             result.push_back(row_to_state(row));
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), error)
-                << "Failed to parse FSM state row: " << e.what();
+            BOOST_LOG_SEV(lg(), error) << "Failed to parse FSM state row: " << e.what();
         }
     }
     BOOST_LOG_SEV(lg(), debug) << "Found " << result.size()
-        << " states for machine: " << machine_name;
+                               << " states for machine: " << machine_name;
     return result;
 }
 
@@ -91,19 +97,27 @@ namespace {
 
 // Columns: 0=id, 1=machine_id, 2=from_state_id (nullable), 3=to_state_id,
 //          4=name, 5=guard_function, 6=tenant_id, 7=version, 8=modified_by
-domain::fsm_transition row_to_transition(
-    const std::vector<std::optional<std::string>>& row) {
+domain::fsm_transition row_to_transition(const std::vector<std::optional<std::string>>& row) {
     domain::fsm_transition t;
-    if (row.size() > 0 && row[0]) t.id = boost::lexical_cast<boost::uuids::uuid>(*row[0]);
-    if (row.size() > 1 && row[1]) t.machine_id = boost::lexical_cast<boost::uuids::uuid>(*row[1]);
-    if (row.size() > 2 && row[2]) t.from_state_id = boost::lexical_cast<boost::uuids::uuid>(*row[2]);
-    if (row.size() > 3 && row[3]) t.to_state_id = boost::lexical_cast<boost::uuids::uuid>(*row[3]);
-    if (row.size() > 4 && row[4]) t.name = *row[4];
-    if (row.size() > 5 && row[5]) t.guard_function = *row[5];
-    if (row.size() > 6 && row[6]) t.tenant_id = ores::utility::uuid::tenant_id::from_string(*row[6]).value_or(
-        ores::utility::uuid::tenant_id::system());
-    if (row.size() > 7 && row[7]) t.version = std::stoi(*row[7]);
-    if (row.size() > 8 && row[8]) t.modified_by = *row[8];
+    if (row.size() > 0 && row[0])
+        t.id = boost::lexical_cast<boost::uuids::uuid>(*row[0]);
+    if (row.size() > 1 && row[1])
+        t.machine_id = boost::lexical_cast<boost::uuids::uuid>(*row[1]);
+    if (row.size() > 2 && row[2])
+        t.from_state_id = boost::lexical_cast<boost::uuids::uuid>(*row[2]);
+    if (row.size() > 3 && row[3])
+        t.to_state_id = boost::lexical_cast<boost::uuids::uuid>(*row[3]);
+    if (row.size() > 4 && row[4])
+        t.name = *row[4];
+    if (row.size() > 5 && row[5])
+        t.guard_function = *row[5];
+    if (row.size() > 6 && row[6])
+        t.tenant_id = ores::utility::uuid::tenant_id::from_string(*row[6]).value_or(
+            ores::utility::uuid::tenant_id::system());
+    if (row.size() > 7 && row[7])
+        t.version = std::stoi(*row[7]);
+    if (row.size() > 8 && row[8])
+        t.modified_by = *row[8];
     return t;
 }
 
@@ -112,8 +126,7 @@ domain::fsm_transition row_to_transition(
 std::vector<domain::fsm_transition>
 fsm_service::list_transitions_for_machine(const std::string& machine_name) {
     BOOST_LOG_SEV(lg(), debug) << "Listing FSM transitions for machine: " << machine_name;
-    const auto sys_ctx =
-        ores::database::service::tenant_context::with_system_tenant(ctx_);
+    const auto sys_ctx = ores::database::service::tenant_context::with_system_tenant(ctx_);
     const auto rows = execute_parameterized_multi_column_query(
         sys_ctx,
         "SELECT t.id::text, t.machine_id::text, t.from_state_id::text, t.to_state_id::text,"
@@ -128,26 +141,25 @@ fsm_service::list_transitions_for_machine(const std::string& machine_name) {
         "   AND t.tenant_id = ores_utility_system_tenant_id_fn()"
         " ORDER BY t.name",
         {machine_name},
-        lg(), "Listing FSM transitions for machine: " + machine_name);
+        lg(),
+        "Listing FSM transitions for machine: " + machine_name);
     std::vector<domain::fsm_transition> result;
     result.reserve(rows.size());
     for (const auto& row : rows) {
         try {
             result.push_back(row_to_transition(row));
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), error)
-                << "Failed to parse FSM transition row: " << e.what();
+            BOOST_LOG_SEV(lg(), error) << "Failed to parse FSM transition row: " << e.what();
         }
     }
     BOOST_LOG_SEV(lg(), debug) << "Found " << result.size()
-        << " transitions for machine: " << machine_name;
+                               << " transitions for machine: " << machine_name;
     return result;
 }
 
 std::vector<domain::fsm_transition> fsm_service::list_all_transitions() {
     BOOST_LOG_SEV(lg(), debug) << "Listing all FSM transitions";
-    const auto sys_ctx =
-        ores::database::service::tenant_context::with_system_tenant(ctx_);
+    const auto sys_ctx = ores::database::service::tenant_context::with_system_tenant(ctx_);
     const auto rows = execute_parameterized_multi_column_query(
         sys_ctx,
         "SELECT t.id::text, t.machine_id::text, t.from_state_id::text, t.to_state_id::text,"
@@ -158,15 +170,15 @@ std::vector<domain::fsm_transition> fsm_service::list_all_transitions() {
         "   AND t.tenant_id = ores_utility_system_tenant_id_fn()"
         " ORDER BY t.name",
         {},
-        lg(), "Listing all FSM transitions");
+        lg(),
+        "Listing all FSM transitions");
     std::vector<domain::fsm_transition> result;
     result.reserve(rows.size());
     for (const auto& row : rows) {
         try {
             result.push_back(row_to_transition(row));
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), error)
-                << "Failed to parse FSM transition row: " << e.what();
+            BOOST_LOG_SEV(lg(), error) << "Failed to parse FSM transition row: " << e.what();
         }
     }
     BOOST_LOG_SEV(lg(), debug) << "Found " << result.size() << " FSM transitions";
@@ -175,8 +187,7 @@ std::vector<domain::fsm_transition> fsm_service::list_all_transitions() {
 
 std::vector<domain::fsm_state> fsm_service::list_all_states() {
     BOOST_LOG_SEV(lg(), debug) << "Listing all FSM states";
-    const auto sys_ctx =
-        ores::database::service::tenant_context::with_system_tenant(ctx_);
+    const auto sys_ctx = ores::database::service::tenant_context::with_system_tenant(ctx_);
     const auto rows = execute_parameterized_multi_column_query(
         sys_ctx,
         "SELECT s.id::text, s.machine_id::text, s.name,"
@@ -187,15 +198,15 @@ std::vector<domain::fsm_state> fsm_service::list_all_states() {
         "   AND s.tenant_id = ores_utility_system_tenant_id_fn()"
         " ORDER BY s.name",
         {},
-        lg(), "Listing all FSM states");
+        lg(),
+        "Listing all FSM states");
     std::vector<domain::fsm_state> result;
     result.reserve(rows.size());
     for (const auto& row : rows) {
         try {
             result.push_back(row_to_state(row));
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), error)
-                << "Failed to parse FSM state row: " << e.what();
+            BOOST_LOG_SEV(lg(), error) << "Failed to parse FSM state row: " << e.what();
         }
     }
     BOOST_LOG_SEV(lg(), debug) << "Found " << result.size() << " FSM states";

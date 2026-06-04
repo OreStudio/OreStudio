@@ -20,9 +20,9 @@
 #ifndef ORES_DQ_CORE_REPOSITORY_CODING_SCHEME_AUTHORITY_TYPE_ENTITY_HPP
 #define ORES_DQ_CORE_REPOSITORY_CODING_SCHEME_AUTHORITY_TYPE_ENTITY_HPP
 
-#include <string>
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
+#include <string>
 
 namespace ores::dq::repository {
 

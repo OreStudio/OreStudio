@@ -20,19 +20,19 @@
 #ifndef ORES_DQ_CORE_SERVICE_BADGE_SERVICE_HPP
 #define ORES_DQ_CORE_SERVICE_BADGE_SERVICE_HPP
 
-#include <string>
-#include <vector>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.dq.api/domain/badge_severity.hpp"
 #include "ores.dq.api/domain/badge_definition.hpp"
+#include "ores.dq.api/domain/badge_severity.hpp"
 #include "ores.dq.api/domain/code_domain.hpp"
-#include "ores.dq.core/repository/badge_severity_repository.hpp"
+#include "ores.dq.api/messaging/badge_protocol.hpp"
 #include "ores.dq.core/export.hpp"
 #include "ores.dq.core/repository/badge_definition_repository.hpp"
-#include "ores.dq.core/repository/code_domain_repository.hpp"
-#include "ores.dq.api/messaging/badge_protocol.hpp"
 #include "ores.dq.core/repository/badge_mapping_repository.hpp"
+#include "ores.dq.core/repository/badge_severity_repository.hpp"
+#include "ores.dq.core/repository/code_domain_repository.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <string>
+#include <vector>
 
 namespace ores::dq::service {
 
@@ -42,8 +42,7 @@ namespace ores::dq::service {
  */
 class ORES_DQ_CORE_EXPORT badge_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.dq.service.badge_service";
+    inline static std::string_view logger_name = "ores.dq.service.badge_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;

@@ -20,10 +20,10 @@
 #ifndef ORES_DQ_API_DOMAIN_DATASET_BUNDLE_HPP
 #define ORES_DQ_API_DOMAIN_DATASET_BUNDLE_HPP
 
+#include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <optional>
 #include <string>
-#include <boost/uuid/uuid.hpp>
 
 namespace ores::dq::domain {
 

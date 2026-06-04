@@ -18,18 +18,15 @@
  *
  */
 #include "ores.dq.api/generators/subject_area_generator.hpp"
-
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/generation/generation_keys.hpp"
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
 
 namespace ores::dq::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::subject_area generate_synthetic_subject_area(
-    utility::generation::generation_context& ctx) {
-    const auto modified_by = ctx.env().get_or(
-        generation_keys::modified_by, "system");
+domain::subject_area generate_synthetic_subject_area(utility::generation::generation_context& ctx) {
+    const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
 
     domain::subject_area r;
     r.version = 1;
@@ -42,17 +39,15 @@ domain::subject_area generate_synthetic_subject_area(
     return r;
 }
 
-domain::subject_area generate_synthetic_subject_area(
-    const std::string& domain_name,
-    utility::generation::generation_context& ctx) {
+domain::subject_area generate_synthetic_subject_area(const std::string& domain_name,
+                                                     utility::generation::generation_context& ctx) {
     auto r = generate_synthetic_subject_area(ctx);
     r.domain_name = domain_name;
     return r;
 }
 
 std::vector<domain::subject_area>
-generate_synthetic_subject_areas(std::size_t n,
-    utility::generation::generation_context& ctx) {
+generate_synthetic_subject_areas(std::size_t n, utility::generation::generation_context& ctx) {
     std::vector<domain::subject_area> r;
     r.reserve(n);
     while (r.size() < n)

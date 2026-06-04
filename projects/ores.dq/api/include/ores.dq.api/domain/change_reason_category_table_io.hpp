@@ -20,17 +20,18 @@
 #ifndef ORES_DQ_API_DOMAIN_CHANGE_REASON_CATEGORY_TABLE_IO_HPP
 #define ORES_DQ_API_DOMAIN_CHANGE_REASON_CATEGORY_TABLE_IO_HPP
 
-#include <iosfwd>
-#include <vector>
 #include "ores.dq.api/domain/change_reason_category.hpp"
 #include "ores.dq.api/export.hpp"
+#include <iosfwd>
+#include <vector>
 
 namespace ores::dq::domain {
 
 /**
  * @brief Dumps the change_reason_category objects to a stream in table format.
  */
-ORES_DQ_API_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<change_reason_category>& v);
+ORES_DQ_API_EXPORT std::ostream& operator<<(std::ostream& s,
+                                            const std::vector<change_reason_category>& v);
 
 }
 

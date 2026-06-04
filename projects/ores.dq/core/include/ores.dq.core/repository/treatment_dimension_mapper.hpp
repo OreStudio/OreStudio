@@ -31,14 +31,14 @@ namespace ores::dq::repository {
  */
 class treatment_dimension_mapper {
 private:
-    inline static std::string_view logger_name =
-        "ores.dq.repository.treatment_dimension_mapper";
+    inline static std::string_view logger_name = "ores.dq.repository.treatment_dimension_mapper";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }
+
 public:
     static domain::treatment_dimension map(const treatment_dimension_entity& v);
     static treatment_dimension_entity map(const domain::treatment_dimension& v);

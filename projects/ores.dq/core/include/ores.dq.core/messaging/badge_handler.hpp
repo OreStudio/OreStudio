@@ -20,17 +20,17 @@
 #ifndef ORES_DQ_CORE_MESSAGING_BADGE_HANDLER_HPP
 #define ORES_DQ_CORE_MESSAGING_BADGE_HANDLER_HPP
 
-#include <optional>
-#include <stdexcept>
-#include "ores.nats/domain/message.hpp"
-#include "ores.nats/service/client.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.security/jwt/jwt_authenticator.hpp"
-#include "ores.service/messaging/handler_helpers.hpp"
-#include "ores.service/service/request_context.hpp"
 #include "ores.dq.api/messaging/badge_protocol.hpp"
 #include "ores.dq.core/service/badge_service.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/message.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.service/service/request_context.hpp"
+#include <optional>
+#include <stdexcept>
 
 namespace ores::dq::messaging {
 
@@ -50,11 +50,12 @@ inline auto& badge_handler_lg() {
 
 class badge_handler {
 public:
-    badge_handler(
-        ores::nats::service::client& nats,
-        ores::database::context ctx,
-        std::optional<ores::security::jwt::jwt_authenticator> verifier)
-        : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier)) {}
+    badge_handler(ores::nats::service::client& nats,
+                  ores::database::context ctx,
+                  std::optional<ores::security::jwt::jwt_authenticator> verifier)
+        : nats_(nats)
+        , ctx_(std::move(ctx))
+        , verifier_(std::move(verifier)) {}
 
     // =========================================================================
     // Badge Severity
@@ -68,7 +69,10 @@ public:
             return;
         }
         auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) { error_reply(nats_, msg, ctx_expected.error()); return; }
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
         service::badge_service svc(*ctx_expected);
         try {
             const auto items = svc.list_severities();
@@ -91,7 +95,10 @@ public:
             return;
         }
         auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) { error_reply(nats_, msg, ctx_expected.error()); return; }
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
         if (!has_permission(*ctx_expected, "dq::badges:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -116,7 +123,10 @@ public:
             return;
         }
         auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) { error_reply(nats_, msg, ctx_expected.error()); return; }
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
         if (!has_permission(*ctx_expected, "dq::badges:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -140,7 +150,10 @@ public:
             return;
         }
         auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) { error_reply(nats_, msg, ctx_expected.error()); return; }
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
         service::badge_service svc(*ctx_expected);
         try {
             const auto history = svc.get_severity_history(req->code);
@@ -170,7 +183,10 @@ public:
             return;
         }
         auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) { error_reply(nats_, msg, ctx_expected.error()); return; }
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
         service::badge_service svc(*ctx_expected);
         try {
             const auto items = svc.list_code_domains();
@@ -193,7 +209,10 @@ public:
             return;
         }
         auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) { error_reply(nats_, msg, ctx_expected.error()); return; }
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
         if (!has_permission(*ctx_expected, "dq::badges:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -218,7 +237,10 @@ public:
             return;
         }
         auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) { error_reply(nats_, msg, ctx_expected.error()); return; }
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
         if (!has_permission(*ctx_expected, "dq::badges:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -242,7 +264,10 @@ public:
             return;
         }
         auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) { error_reply(nats_, msg, ctx_expected.error()); return; }
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
         service::badge_service svc(*ctx_expected);
         try {
             const auto history = svc.get_code_domain_history(req->code);
@@ -272,7 +297,10 @@ public:
             return;
         }
         auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) { error_reply(nats_, msg, ctx_expected.error()); return; }
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
         service::badge_service svc(*ctx_expected);
         try {
             const auto items = svc.list_definitions();
@@ -295,7 +323,10 @@ public:
             return;
         }
         auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) { error_reply(nats_, msg, ctx_expected.error()); return; }
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
         if (!has_permission(*ctx_expected, "dq::badges:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -320,7 +351,10 @@ public:
             return;
         }
         auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) { error_reply(nats_, msg, ctx_expected.error()); return; }
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
         if (!has_permission(*ctx_expected, "dq::badges:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -344,7 +378,10 @@ public:
             return;
         }
         auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) { error_reply(nats_, msg, ctx_expected.error()); return; }
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
         service::badge_service svc(*ctx_expected);
         try {
             const auto history = svc.get_definition_history(req->code);
@@ -374,7 +411,10 @@ public:
             return;
         }
         auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) { error_reply(nats_, msg, ctx_expected.error()); return; }
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
         service::badge_service svc(*ctx_expected);
         try {
             const auto items = svc.list_mappings();

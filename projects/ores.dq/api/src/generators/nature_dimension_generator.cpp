@@ -18,18 +18,16 @@
  *
  */
 #include "ores.dq.api/generators/nature_dimension_generator.hpp"
-
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/generation/generation_keys.hpp"
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
 
 namespace ores::dq::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::nature_dimension generate_synthetic_nature_dimension(
-    utility::generation::generation_context& ctx) {
-    const auto modified_by = ctx.env().get_or(
-        generation_keys::modified_by, "system");
+domain::nature_dimension
+generate_synthetic_nature_dimension(utility::generation::generation_context& ctx) {
+    const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
 
     domain::nature_dimension r;
     r.version = 1;
@@ -43,8 +41,7 @@ domain::nature_dimension generate_synthetic_nature_dimension(
 }
 
 std::vector<domain::nature_dimension>
-generate_synthetic_nature_dimensions(std::size_t n,
-    utility::generation::generation_context& ctx) {
+generate_synthetic_nature_dimensions(std::size_t n, utility::generation::generation_context& ctx) {
     std::vector<domain::nature_dimension> r;
     r.reserve(n);
     while (r.size() < n)

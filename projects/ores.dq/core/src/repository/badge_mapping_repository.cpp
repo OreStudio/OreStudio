@@ -18,11 +18,10 @@
  *
  */
 #include "ores.dq.core/repository/badge_mapping_repository.hpp"
-
-#include <sqlgen/postgres.hpp>
-#include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
 #include "ores.dq.core/repository/badge_mapping_entity.hpp"
+#include <sqlgen/postgres.hpp>
 
 namespace ores::dq::repository {
 
@@ -38,11 +37,12 @@ std::vector<messaging::badge_mapping> badge_mapping_repository::read_all() {
     BOOST_LOG_SEV(lg(), debug) << "Reading all active badge mappings";
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<badge_mapping_entity>> |
-        where("valid_to"_c == max.value()) |
-        order_by("code_domain_code"_c, "entity_code"_c);
+                       where("valid_to"_c == max.value()) |
+                       order_by("code_domain_code"_c, "entity_code"_c);
 
     return execute_read_query<badge_mapping_entity, messaging::badge_mapping>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) {
             std::vector<messaging::badge_mapping> result;
             result.reserve(entities.size());
@@ -55,7 +55,8 @@ std::vector<messaging::badge_mapping> badge_mapping_repository::read_all() {
             }
             return result;
         },
-        lg(), "Reading active badge mappings");
+        lg(),
+        "Reading active badge mappings");
 }
 
 }

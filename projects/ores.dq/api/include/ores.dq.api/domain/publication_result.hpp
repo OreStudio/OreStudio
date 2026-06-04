@@ -20,9 +20,9 @@
 #ifndef ORES_DQ_API_DOMAIN_PUBLICATION_RESULT_HPP
 #define ORES_DQ_API_DOMAIN_PUBLICATION_RESULT_HPP
 
+#include <boost/uuid/uuid.hpp>
 #include <cstdint>
 #include <string>
-#include <boost/uuid/uuid.hpp>
 
 namespace ores::dq::domain {
 

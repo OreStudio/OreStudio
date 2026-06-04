@@ -20,18 +20,18 @@
 #ifndef ORES_DQ_API_GENERATORS_CHANGE_REASON_GENERATOR_HPP
 #define ORES_DQ_API_GENERATORS_CHANGE_REASON_GENERATOR_HPP
 
-#include <vector>
 #include "ores.dq.api/domain/change_reason.hpp"
-#include "ores.utility/generation/generation_context.hpp"
 #include "ores.dq.api/export.hpp"
+#include "ores.utility/generation/generation_context.hpp"
+#include <vector>
 
 namespace ores::dq::generators {
 
 /**
  * @brief Generates a synthetic change_reason.
  */
-ORES_DQ_API_EXPORT domain::change_reason generate_synthetic_change_reason(
-    utility::generation::generation_context& ctx);
+ORES_DQ_API_EXPORT domain::change_reason
+generate_synthetic_change_reason(utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic change_reasons.
@@ -39,8 +39,7 @@ ORES_DQ_API_EXPORT domain::change_reason generate_synthetic_change_reason(
  * @note c++ 23 generators are not supported on all compilers.
  */
 ORES_DQ_API_EXPORT std::vector<domain::change_reason>
-generate_synthetic_change_reasons(std::size_t n,
-    utility::generation::generation_context& ctx);
+generate_synthetic_change_reasons(std::size_t n, utility::generation::generation_context& ctx);
 
 }
 

@@ -31,22 +31,20 @@ namespace ores::dq::repository {
  */
 class nature_dimension_mapper {
 private:
-    inline static std::string_view logger_name =
-        "ores.dq.repository.nature_dimension_mapper";
+    inline static std::string_view logger_name = "ores.dq.repository.nature_dimension_mapper";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }
+
 public:
     static domain::nature_dimension map(const nature_dimension_entity& v);
     static nature_dimension_entity map(const domain::nature_dimension& v);
 
-    static std::vector<domain::nature_dimension>
-    map(const std::vector<nature_dimension_entity>& v);
-    static std::vector<nature_dimension_entity>
-    map(const std::vector<domain::nature_dimension>& v);
+    static std::vector<domain::nature_dimension> map(const std::vector<nature_dimension_entity>& v);
+    static std::vector<nature_dimension_entity> map(const std::vector<domain::nature_dimension>& v);
 };
 
 }

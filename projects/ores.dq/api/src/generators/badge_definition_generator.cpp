@@ -18,20 +18,18 @@
  *
  */
 #include "ores.dq.api/generators/badge_definition_generator.hpp"
-
+#include "ores.utility/generation/generation_keys.hpp"
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::dq::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::badge_definition generate_synthetic_badge_definition(
-    utility::generation::generation_context& ctx) {
+domain::badge_definition
+generate_synthetic_badge_definition(utility::generation::generation_context& ctx) {
     static std::atomic<int> counter{0};
-    const auto modified_by = ctx.env().get_or(
-        std::string(generation_keys::modified_by), "system");
+    const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
 
     const auto idx = ++counter;
     domain::badge_definition r;
@@ -39,7 +37,9 @@ domain::badge_definition generate_synthetic_badge_definition(
     r.code = "badge_" + ctx.alphanumeric(6) + "_" + std::to_string(idx);
     r.name = std::string(faker::word::adjective());
     r.description = std::string(faker::lorem::sentence());
-    r.background_colour = std::string("#") + faker::number::hexadecimal(6, faker::HexCasing::Lower, faker::HexPrefix::None);
+    r.background_colour =
+        std::string("#") +
+        faker::number::hexadecimal(6, faker::HexCasing::Lower, faker::HexPrefix::None);
     r.text_colour = std::string("#ffffff");
     r.severity_code = std::string("secondary");
     r.css_class = std::string{};
@@ -53,8 +53,7 @@ domain::badge_definition generate_synthetic_badge_definition(
 }
 
 std::vector<domain::badge_definition>
-generate_synthetic_badge_definitions(std::size_t n,
-    utility::generation::generation_context& ctx) {
+generate_synthetic_badge_definitions(std::size_t n, utility::generation::generation_context& ctx) {
     std::vector<domain::badge_definition> r;
     r.reserve(n);
     while (r.size() < n)

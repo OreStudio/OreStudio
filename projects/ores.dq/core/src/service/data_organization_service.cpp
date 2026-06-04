@@ -18,7 +18,6 @@
  *
  */
 #include "ores.dq.core/service/data_organization_service.hpp"
-
 #include <stdexcept>
 
 namespace ores::dq::service {
@@ -26,8 +25,10 @@ namespace ores::dq::service {
 using namespace ores::logging;
 
 data_organization_service::data_organization_service(context ctx)
-    : catalog_repo_(ctx), dataset_dependency_repo_(ctx),
-      data_domain_repo_(ctx), subject_area_repo_(ctx) {}
+    : catalog_repo_(ctx)
+    , dataset_dependency_repo_(ctx)
+    , data_domain_repo_(ctx)
+    , subject_area_repo_(ctx) {}
 
 // ============================================================================
 // Catalog Management
@@ -38,11 +39,10 @@ std::vector<domain::catalog> data_organization_service::list_catalogs() {
     return catalog_repo_.read_latest();
 }
 
-std::vector<domain::catalog>
-data_organization_service::list_catalogs(std::uint32_t offset,
-                                          std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing catalogs with pagination: offset="
-                               << offset << ", limit=" << limit;
+std::vector<domain::catalog> data_organization_service::list_catalogs(std::uint32_t offset,
+                                                                      std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing catalogs with pagination: offset=" << offset
+                               << ", limit=" << limit;
     return catalog_repo_.read_latest(offset, limit);
 }
 
@@ -50,8 +50,7 @@ std::uint32_t data_organization_service::get_catalog_count() {
     return catalog_repo_.get_total_count();
 }
 
-std::optional<domain::catalog>
-data_organization_service::find_catalog(const std::string& name) {
+std::optional<domain::catalog> data_organization_service::find_catalog(const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Finding catalog: " << name;
     auto catalogs = catalog_repo_.read_latest(name);
     if (catalogs.empty()) {
@@ -69,8 +68,7 @@ void data_organization_service::save_catalog(const domain::catalog& catalog) {
     BOOST_LOG_SEV(lg(), info) << "Saved catalog: " << catalog.name;
 }
 
-void data_organization_service::save_catalogs(
-    const std::vector<domain::catalog>& catalogs) {
+void data_organization_service::save_catalogs(const std::vector<domain::catalog>& catalogs) {
     for (const auto& c : catalogs) {
         if (c.name.empty()) {
             throw std::invalid_argument("Catalog name cannot be empty.");
@@ -96,17 +94,14 @@ data_organization_service::get_catalog_history(const std::string& name) {
 // Dataset Dependency Management
 // ============================================================================
 
-std::vector<domain::dataset_dependency>
-data_organization_service::list_dataset_dependencies() {
+std::vector<domain::dataset_dependency> data_organization_service::list_dataset_dependencies() {
     BOOST_LOG_SEV(lg(), debug) << "Listing all dataset dependencies";
     return dataset_dependency_repo_.read_latest();
 }
 
 std::vector<domain::dataset_dependency>
-data_organization_service::list_dataset_dependencies_by_dataset(
-    const std::string& dataset_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing dependencies for dataset: "
-                               << dataset_code;
+data_organization_service::list_dataset_dependencies_by_dataset(const std::string& dataset_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing dependencies for dataset: " << dataset_code;
     return dataset_dependency_repo_.read_latest_by_dataset(dataset_code);
 }
 
@@ -129,8 +124,7 @@ data_organization_service::find_data_domain(const std::string& name) {
     return domains.front();
 }
 
-void data_organization_service::save_data_domain(
-    const domain::data_domain& data_domain) {
+void data_organization_service::save_data_domain(const domain::data_domain& data_domain) {
     if (data_domain.name.empty()) {
         throw std::invalid_argument("Data domain name cannot be empty.");
     }
@@ -166,25 +160,21 @@ data_organization_service::get_data_domain_history(const std::string& name) {
 // Subject Area Management
 // ============================================================================
 
-std::vector<domain::subject_area>
-data_organization_service::list_subject_areas() {
+std::vector<domain::subject_area> data_organization_service::list_subject_areas() {
     BOOST_LOG_SEV(lg(), debug) << "Listing all subject areas";
     return subject_area_repo_.read_latest();
 }
 
 std::vector<domain::subject_area>
-data_organization_service::list_subject_areas(std::uint32_t offset,
-                                               std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing subject areas with pagination: offset="
-                               << offset << ", limit=" << limit;
+data_organization_service::list_subject_areas(std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing subject areas with pagination: offset=" << offset
+                               << ", limit=" << limit;
     return subject_area_repo_.read_latest(offset, limit);
 }
 
 std::vector<domain::subject_area>
-data_organization_service::list_subject_areas_by_domain(
-    const std::string& domain_name) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing subject areas for domain: "
-                               << domain_name;
+data_organization_service::list_subject_areas_by_domain(const std::string& domain_name) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing subject areas for domain: " << domain_name;
     return subject_area_repo_.read_latest_by_domain(domain_name);
 }
 
@@ -194,9 +184,8 @@ std::uint32_t data_organization_service::get_subject_area_count() {
 
 std::optional<domain::subject_area>
 data_organization_service::find_subject_area(const std::string& name,
-                                              const std::string& domain_name) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding subject area: " << name
-                               << " in domain: " << domain_name;
+                                             const std::string& domain_name) {
+    BOOST_LOG_SEV(lg(), debug) << "Finding subject area: " << name << " in domain: " << domain_name;
     auto subject_areas = subject_area_repo_.read_latest(name, domain_name);
     if (subject_areas.empty()) {
         return std::nullopt;
@@ -204,8 +193,7 @@ data_organization_service::find_subject_area(const std::string& name,
     return subject_areas.front();
 }
 
-void data_organization_service::save_subject_area(
-    const domain::subject_area& subject_area) {
+void data_organization_service::save_subject_area(const domain::subject_area& subject_area) {
     if (subject_area.name.empty()) {
         throw std::invalid_argument("Subject area name cannot be empty.");
     }
@@ -232,8 +220,8 @@ void data_organization_service::save_subject_areas(
     subject_area_repo_.write(subject_areas);
 }
 
-void data_organization_service::remove_subject_area(
-    const std::string& name, const std::string& domain_name) {
+void data_organization_service::remove_subject_area(const std::string& name,
+                                                    const std::string& domain_name) {
     BOOST_LOG_SEV(lg(), debug) << "Removing subject area: " << name
                                << " from domain: " << domain_name;
     subject_area_repo_.remove(name, domain_name);
@@ -241,8 +229,8 @@ void data_organization_service::remove_subject_area(
 }
 
 std::vector<domain::subject_area>
-data_organization_service::get_subject_area_history(
-    const std::string& name, const std::string& domain_name) {
+data_organization_service::get_subject_area_history(const std::string& name,
+                                                    const std::string& domain_name) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for subject area: " << name
                                << " in domain: " << domain_name;
     return subject_area_repo_.read_all(name, domain_name);

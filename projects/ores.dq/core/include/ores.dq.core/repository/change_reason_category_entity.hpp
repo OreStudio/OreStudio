@@ -20,9 +20,9 @@
 #ifndef ORES_DQ_CORE_REPOSITORY_CHANGE_REASON_CATEGORY_ENTITY_HPP
 #define ORES_DQ_CORE_REPOSITORY_CHANGE_REASON_CATEGORY_ENTITY_HPP
 
-#include <string>
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
+#include <string>
 
 namespace ores::dq::repository {
 

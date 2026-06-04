@@ -18,20 +18,17 @@
  *
  */
 #include "ores.dq.api/generators/code_domain_generator.hpp"
-
+#include "ores.utility/generation/generation_keys.hpp"
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::dq::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::code_domain generate_synthetic_code_domain(
-    utility::generation::generation_context& ctx) {
+domain::code_domain generate_synthetic_code_domain(utility::generation::generation_context& ctx) {
     static std::atomic<int> counter{0};
-    const auto modified_by = ctx.env().get_or(
-        std::string(generation_keys::modified_by), "system");
+    const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
 
     const auto idx = ++counter;
     domain::code_domain r;
@@ -49,8 +46,7 @@ domain::code_domain generate_synthetic_code_domain(
 }
 
 std::vector<domain::code_domain>
-generate_synthetic_code_domains(std::size_t n,
-    utility::generation::generation_context& ctx) {
+generate_synthetic_code_domains(std::size_t n, utility::generation::generation_context& ctx) {
     std::vector<domain::code_domain> r;
     r.reserve(n);
     while (r.size() < n)

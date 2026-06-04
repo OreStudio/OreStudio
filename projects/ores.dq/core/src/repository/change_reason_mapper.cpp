@@ -18,7 +18,6 @@
  *
  */
 #include "ores.dq.core/repository/change_reason_mapper.hpp"
-
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.dq.api/domain/change_reason_json_io.hpp" // IWYU pragma: keep.
 
@@ -27,8 +26,7 @@ namespace ores::dq::repository {
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::change_reason
-change_reason_mapper::map(const change_reason_entity& v) {
+domain::change_reason change_reason_mapper::map(const change_reason_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::change_reason r;
@@ -51,8 +49,7 @@ change_reason_mapper::map(const change_reason_entity& v) {
     return r;
 }
 
-change_reason_entity
-change_reason_mapper::map(const domain::change_reason& v) {
+change_reason_entity change_reason_mapper::map(const domain::change_reason& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     change_reason_entity r;
@@ -77,19 +74,13 @@ change_reason_mapper::map(const domain::change_reason& v) {
 std::vector<domain::change_reason>
 change_reason_mapper::map(const std::vector<change_reason_entity>& v) {
     return map_vector<change_reason_entity, domain::change_reason>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<change_reason_entity>
 change_reason_mapper::map(const std::vector<domain::change_reason>& v) {
     return map_vector<domain::change_reason, change_reason_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

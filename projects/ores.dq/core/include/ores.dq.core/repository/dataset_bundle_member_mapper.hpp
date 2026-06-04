@@ -31,14 +31,14 @@ namespace ores::dq::repository {
  */
 class dataset_bundle_member_mapper {
 private:
-    inline static std::string_view logger_name =
-        "ores.dq.repository.dataset_bundle_member_mapper";
+    inline static std::string_view logger_name = "ores.dq.repository.dataset_bundle_member_mapper";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }
+
 public:
     static domain::dataset_bundle_member map(const dataset_bundle_member_entity& v);
     static dataset_bundle_member_entity map(const domain::dataset_bundle_member& v);

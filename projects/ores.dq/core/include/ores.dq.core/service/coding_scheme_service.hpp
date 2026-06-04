@@ -20,16 +20,16 @@
 #ifndef ORES_DQ_CORE_SERVICE_CODING_SCHEME_SERVICE_HPP
 #define ORES_DQ_CORE_SERVICE_CODING_SCHEME_SERVICE_HPP
 
-#include <string>
-#include <vector>
-#include <optional>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/domain/coding_scheme.hpp"
 #include "ores.dq.api/domain/coding_scheme_authority_type.hpp"
-#include "ores.dq.core/repository/coding_scheme_repository.hpp"
 #include "ores.dq.core/export.hpp"
 #include "ores.dq.core/repository/coding_scheme_authority_type_repository.hpp"
+#include "ores.dq.core/repository/coding_scheme_repository.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <optional>
+#include <string>
+#include <vector>
 
 namespace ores::dq::service {
 
@@ -42,8 +42,7 @@ namespace ores::dq::service {
  */
 class ORES_DQ_CORE_EXPORT coding_scheme_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.dq.service.coding_scheme_service";
+    inline static std::string_view logger_name = "ores.dq.service.coding_scheme_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -73,8 +72,8 @@ public:
     /**
      * @brief Lists coding schemes with pagination.
      */
-    std::vector<domain::coding_scheme>
-    list_coding_schemes(std::uint32_t offset, std::uint32_t limit);
+    std::vector<domain::coding_scheme> list_coding_schemes(std::uint32_t offset,
+                                                           std::uint32_t limit);
 
     /**
      * @brief Lists coding schemes for a specific authority type.
@@ -90,8 +89,7 @@ public:
     /**
      * @brief Finds a coding scheme by its code.
      */
-    std::optional<domain::coding_scheme>
-    find_coding_scheme(const std::string& code);
+    std::optional<domain::coding_scheme> find_coding_scheme(const std::string& code);
 
     /**
      * @brief Saves a coding scheme (creates or updates).
@@ -125,8 +123,7 @@ public:
      * @param code The coding scheme code
      * @return Vector of all versions, newest first
      */
-    std::vector<domain::coding_scheme>
-    get_coding_scheme_history(const std::string& code);
+    std::vector<domain::coding_scheme> get_coding_scheme_history(const std::string& code);
 
     // ========================================================================
     // Coding Scheme Authority Type Management
@@ -148,16 +145,15 @@ public:
      *
      * @param authority_type The authority type to save
      */
-    void save_authority_type(
-        const domain::coding_scheme_authority_type& authority_type);
+    void save_authority_type(const domain::coding_scheme_authority_type& authority_type);
 
     /**
      * @brief Saves multiple coding scheme authority types (creates or updates).
      *
      * @param authority_types The authority types to save
      */
-    void save_authority_types(
-        const std::vector<domain::coding_scheme_authority_type>& authority_types);
+    void
+    save_authority_types(const std::vector<domain::coding_scheme_authority_type>& authority_types);
 
     /**
      * @brief Removes a coding scheme authority type.

@@ -23,9 +23,9 @@
 #include <boost/config.hpp>
 
 #ifdef ORES_DQ_CORE_LIBRARY
-#  define ORES_DQ_CORE_EXPORT BOOST_SYMBOL_EXPORT
+#    define ORES_DQ_CORE_EXPORT BOOST_SYMBOL_EXPORT
 #else
-#  define ORES_DQ_CORE_EXPORT BOOST_SYMBOL_IMPORT
+#    define ORES_DQ_CORE_EXPORT BOOST_SYMBOL_IMPORT
 #endif
 
 #endif

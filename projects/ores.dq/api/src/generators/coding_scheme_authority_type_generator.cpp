@@ -18,18 +18,16 @@
  *
  */
 #include "ores.dq.api/generators/coding_scheme_authority_type_generator.hpp"
-
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/generation/generation_keys.hpp"
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
 
 namespace ores::dq::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::coding_scheme_authority_type generate_synthetic_coding_scheme_authority_type(
-    utility::generation::generation_context& ctx) {
-    const auto modified_by = ctx.env().get_or(
-        generation_keys::modified_by, "system");
+domain::coding_scheme_authority_type
+generate_synthetic_coding_scheme_authority_type(utility::generation::generation_context& ctx) {
+    const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
 
     domain::coding_scheme_authority_type r;
     r.version = 1;
@@ -44,7 +42,7 @@ domain::coding_scheme_authority_type generate_synthetic_coding_scheme_authority_
 
 std::vector<domain::coding_scheme_authority_type>
 generate_synthetic_coding_scheme_authority_types(std::size_t n,
-    utility::generation::generation_context& ctx) {
+                                                 utility::generation::generation_context& ctx) {
     std::vector<domain::coding_scheme_authority_type> r;
     r.reserve(n);
     while (r.size() < n)

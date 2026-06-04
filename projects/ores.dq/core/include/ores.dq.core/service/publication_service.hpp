@@ -20,22 +20,22 @@
 #ifndef ORES_DQ_CORE_SERVICE_PUBLICATION_SERVICE_HPP
 #define ORES_DQ_CORE_SERVICE_PUBLICATION_SERVICE_HPP
 
-#include <map>
-#include <string>
-#include <vector>
-#include <boost/uuid/uuid.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/domain/artefact_type.hpp"
 #include "ores.dq.api/domain/dataset.hpp"
 #include "ores.dq.api/domain/publication.hpp"
 #include "ores.dq.api/domain/publication_mode.hpp"
 #include "ores.dq.api/domain/publication_result.hpp"
-#include "ores.dq.core/repository/dataset_repository.hpp"
 #include "ores.dq.core/export.hpp"
-#include "ores.dq.core/repository/dataset_dependency_repository.hpp"
-#include "ores.dq.core/repository/publication_repository.hpp"
 #include "ores.dq.core/repository/artefact_type_repository.hpp"
+#include "ores.dq.core/repository/dataset_dependency_repository.hpp"
+#include "ores.dq.core/repository/dataset_repository.hpp"
+#include "ores.dq.core/repository/publication_repository.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <map>
+#include <string>
+#include <vector>
 
 namespace ores::dq::service {
 
@@ -59,8 +59,7 @@ struct bundle_publishable_dataset {
  */
 class ORES_DQ_CORE_EXPORT publication_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.dq.service.publication_service";
+    inline static std::string_view logger_name = "ores.dq.service.publication_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -93,11 +92,11 @@ public:
      * @param resolve_dependencies If true, automatically include dependencies.
      * @return Results for each dataset published.
      */
-    std::vector<domain::publication_result> publish(
-        const std::vector<boost::uuids::uuid>& dataset_ids,
-        domain::publication_mode mode,
-        const std::string& published_by,
-        bool resolve_dependencies = true);
+    std::vector<domain::publication_result>
+    publish(const std::vector<boost::uuids::uuid>& dataset_ids,
+            domain::publication_mode mode,
+            const std::string& published_by,
+            bool resolve_dependencies = true);
 
     /**
      * @brief Lists publishable datasets in a bundle for workflow dispatch.
@@ -109,8 +108,8 @@ public:
      * @param bundle_code The bundle to query (e.g., 'base', 'solvaris').
      * @return Ordered list of publishable dataset entries.
      */
-    std::vector<bundle_publishable_dataset> list_bundle_publishable_datasets(
-        const std::string& bundle_code);
+    std::vector<bundle_publishable_dataset>
+    list_bundle_publishable_datasets(const std::string& bundle_code);
 
     /**
      * @brief Resolves a list of dataset IDs into ordered, publishable entries.
@@ -123,9 +122,9 @@ public:
      * @param resolve_dependencies If true, transitive dependencies are included.
      * @return Ordered entries ready for workflow dispatch.
      */
-    std::vector<bundle_publishable_dataset> list_publishable_datasets(
-        const std::vector<boost::uuids::uuid>& dataset_ids,
-        bool resolve_dependencies);
+    std::vector<bundle_publishable_dataset>
+    list_publishable_datasets(const std::vector<boost::uuids::uuid>& dataset_ids,
+                              bool resolve_dependencies);
 
     /**
      * @brief Resolves the publication order for datasets.
@@ -137,8 +136,8 @@ public:
      * @param dataset_ids The IDs of the datasets to order.
      * @return Ordered list of datasets (dependencies first).
      */
-    std::vector<domain::dataset> resolve_publication_order(
-        const std::vector<boost::uuids::uuid>& dataset_ids);
+    std::vector<domain::dataset>
+    resolve_publication_order(const std::vector<boost::uuids::uuid>& dataset_ids);
 
     /**
      * @brief Gets the publication history for a dataset.
@@ -146,8 +145,7 @@ public:
      * @param dataset_id The ID of the dataset.
      * @return All publication records for this dataset, newest first.
      */
-    std::vector<domain::publication> get_publication_history(
-        const boost::uuids::uuid& dataset_id);
+    std::vector<domain::publication> get_publication_history(const boost::uuids::uuid& dataset_id);
 
     /**
      * @brief Gets recent publication history across all datasets.
@@ -155,8 +153,7 @@ public:
      * @param limit Maximum number of records to return.
      * @return Recent publication records, newest first.
      */
-    std::vector<domain::publication> get_recent_publications(
-        std::uint32_t limit = 100);
+    std::vector<domain::publication> get_recent_publications(std::uint32_t limit = 100);
 
 private:
     /**
@@ -165,8 +162,8 @@ private:
      * @param datasets The datasets to build cache for.
      * @return Map from artefact type code to artefact type.
      */
-    std::map<std::string, domain::artefact_type> build_artefact_type_cache(
-        const std::vector<domain::dataset>& datasets);
+    std::map<std::string, domain::artefact_type>
+    build_artefact_type_cache(const std::vector<domain::dataset>& datasets);
 
     /**
      * @brief Publishes a single dataset.
@@ -179,11 +176,11 @@ private:
      * @param artefact_type_cache Cache of artefact types to avoid DB queries.
      * @return Publication result with counts.
      */
-    domain::publication_result publish_dataset(
-        const domain::dataset& dataset,
-        domain::publication_mode mode,
-        const std::string& published_by,
-        const std::map<std::string, domain::artefact_type>& artefact_type_cache);
+    domain::publication_result
+    publish_dataset(const domain::dataset& dataset,
+                    domain::publication_mode mode,
+                    const std::string& published_by,
+                    const std::map<std::string, domain::artefact_type>& artefact_type_cache);
 
     /**
      * @brief Records a publication in the audit table.
@@ -192,21 +189,19 @@ private:
      * @param mode The publication mode used.
      * @param published_by The username of the publisher.
      */
-    void record_publication(
-        const domain::publication_result& result,
-        domain::publication_mode mode,
-        const std::string& published_by);
+    void record_publication(const domain::publication_result& result,
+                            domain::publication_mode mode,
+                            const std::string& published_by);
 
     /**
      * @brief Calls the artefact type's NATS target subject via SQL (single dataset).
      *
      * Used by the `publish` path (individual dataset publication).
      */
-    domain::publication_result call_populate_function(
-        const domain::dataset& dataset,
-        const domain::artefact_type& artefact_type,
-        domain::publication_mode mode,
-        const std::string& published_by);
+    domain::publication_result call_populate_function(const domain::dataset& dataset,
+                                                      const domain::artefact_type& artefact_type,
+                                                      domain::publication_mode mode,
+                                                      const std::string& published_by);
 
     context ctx_;
     repository::dataset_repository dataset_repo_;

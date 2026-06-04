@@ -18,16 +18,14 @@
  *
  */
 #include "ores.dq.api/domain/data_domain_table_io.hpp"
-
-#include <ostream>
 #include "ores.dq.api/domain/data_domain_table.hpp"
+#include <ostream>
 
 namespace ores::dq::domain {
 
 namespace {
 
-void print_data_domain_table(std::ostream& s,
-    const std::vector<data_domain>& v) {
+void print_data_domain_table(std::ostream& s, const std::vector<data_domain>& v) {
     s << std::endl << convert_to_table(v) << std::endl;
 }
 

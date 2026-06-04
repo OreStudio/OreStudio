@@ -20,15 +20,15 @@
 #ifndef ORES_DQ_CORE_SERVICE_DATASET_BUNDLE_SERVICE_HPP
 #define ORES_DQ_CORE_SERVICE_DATASET_BUNDLE_SERVICE_HPP
 
-#include <string>
-#include <vector>
-#include <optional>
-#include <boost/uuid/uuid.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/domain/dataset_bundle.hpp"
-#include "ores.dq.core/repository/dataset_bundle_repository.hpp"
 #include "ores.dq.core/export.hpp"
+#include "ores.dq.core/repository/dataset_bundle_repository.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <optional>
+#include <string>
+#include <vector>
 
 namespace ores::dq::service {
 
@@ -40,8 +40,7 @@ namespace ores::dq::service {
  */
 class ORES_DQ_CORE_EXPORT dataset_bundle_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.dq.service.dataset_bundle_service";
+    inline static std::string_view logger_name = "ores.dq.service.dataset_bundle_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -67,14 +66,12 @@ public:
     /**
      * @brief Finds a dataset bundle by its ID.
      */
-    std::optional<domain::dataset_bundle>
-    find_bundle(const boost::uuids::uuid& id);
+    std::optional<domain::dataset_bundle> find_bundle(const boost::uuids::uuid& id);
 
     /**
      * @brief Finds a dataset bundle by its code.
      */
-    std::optional<domain::dataset_bundle>
-    find_bundle_by_code(const std::string& code);
+    std::optional<domain::dataset_bundle> find_bundle_by_code(const std::string& code);
 
     /**
      * @brief Saves a dataset bundle (creates or updates).
@@ -103,8 +100,7 @@ public:
      * @param id The dataset bundle ID
      * @return Vector of all versions, newest first
      */
-    std::vector<domain::dataset_bundle>
-    get_bundle_history(const boost::uuids::uuid& id);
+    std::vector<domain::dataset_bundle> get_bundle_history(const boost::uuids::uuid& id);
 
 private:
     repository::dataset_bundle_repository repo_;

@@ -17,34 +17,34 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <memory>
 #include "ores.dq.core/messaging/registrar.hpp"
-#include "ores.dq.api/messaging/fsm_protocol.hpp"
 #include "ores.dq.api/messaging/change_management_protocol.hpp"
+#include "ores.dq.api/messaging/coding_scheme_protocol.hpp"
 #include "ores.dq.api/messaging/data_organization_protocol.hpp"
-#include "ores.dq.api/messaging/dataset_protocol.hpp"
-#include "ores.dq.api/messaging/dataset_bundle_protocol.hpp"
 #include "ores.dq.api/messaging/dataset_bundle_member_protocol.hpp"
+#include "ores.dq.api/messaging/dataset_bundle_protocol.hpp"
 #include "ores.dq.api/messaging/dataset_dependency_protocol.hpp"
+#include "ores.dq.api/messaging/dataset_protocol.hpp"
+#include "ores.dq.api/messaging/fsm_protocol.hpp"
+#include "ores.dq.api/messaging/lei_entity_summary_protocol.hpp"
 #include "ores.dq.api/messaging/publication_protocol.hpp"
 #include "ores.dq.api/messaging/publish_bundle_protocol.hpp"
-#include "ores.dq.api/messaging/coding_scheme_protocol.hpp"
-#include "ores.dq.api/messaging/lei_entity_summary_protocol.hpp"
 #include "ores.dq.api/messaging/report_definition_template_protocol.hpp"
-#include "ores.dq.core/messaging/fsm_handler.hpp"
+#include "ores.dq.core/messaging/badge_handler.hpp"
 #include "ores.dq.core/messaging/change_management_handler.hpp"
+#include "ores.dq.core/messaging/coding_scheme_handler.hpp"
 #include "ores.dq.core/messaging/data_organization_handler.hpp"
-#include "ores.dq.core/messaging/dimension_handler.hpp"
-#include "ores.dq.core/messaging/dataset_handler.hpp"
 #include "ores.dq.core/messaging/dataset_bundle_handler.hpp"
 #include "ores.dq.core/messaging/dataset_bundle_member_handler.hpp"
 #include "ores.dq.core/messaging/dataset_dependency_handler.hpp"
-#include "ores.dq.core/messaging/publication_handler.hpp"
-#include "ores.dq.core/messaging/coding_scheme_handler.hpp"
+#include "ores.dq.core/messaging/dataset_handler.hpp"
+#include "ores.dq.core/messaging/dimension_handler.hpp"
+#include "ores.dq.core/messaging/fsm_handler.hpp"
 #include "ores.dq.core/messaging/lei_entity_handler.hpp"
-#include "ores.dq.core/messaging/badge_handler.hpp"
+#include "ores.dq.core/messaging/publication_handler.hpp"
 #include "ores.dq.core/messaging/publish_from_dq_handler.hpp"
 #include "ores.dq.core/messaging/report_definition_template_handler.hpp"
+#include <memory>
 
 namespace ores::dq::messaging {
 
@@ -56,8 +56,8 @@ constexpr std::string_view queue_group = "ores.dq.service";
 
 std::vector<ores::nats::service::subscription>
 registrar::register_handlers(ores::nats::service::client& nats,
-    ores::database::context ctx,
-    std::optional<ores::security::jwt::jwt_authenticator> verifier) {
+                             ores::database::context ctx,
+                             std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
 
     // =========================================================================
@@ -67,12 +67,14 @@ registrar::register_handlers(ores::nats::service::client& nats,
     auto fsm = std::make_shared<fsm_handler>(nats, ctx, verifier);
 
     subs.push_back(nats.queue_subscribe(
-        get_fsm_states_request::nats_subject, queue_group,
-        [fsm](ores::nats::message msg) { fsm->list(std::move(msg)); }));
+        get_fsm_states_request::nats_subject, queue_group, [fsm](ores::nats::message msg) {
+            fsm->list(std::move(msg));
+        }));
 
     subs.push_back(nats.queue_subscribe(
-        get_fsm_transitions_request::nats_subject, queue_group,
-        [fsm](ores::nats::message msg) { fsm->list_transitions(std::move(msg)); }));
+        get_fsm_transitions_request::nats_subject, queue_group, [fsm](ores::nats::message msg) {
+            fsm->list_transitions(std::move(msg));
+        }));
 
     // =========================================================================
     // Change Management
@@ -81,131 +83,130 @@ registrar::register_handlers(ores::nats::service::client& nats,
     auto cm = std::make_shared<change_management_handler>(nats, ctx, verifier);
 
     subs.push_back(nats.queue_subscribe(
-        get_change_reason_categories_request::nats_subject, queue_group,
-        [cm](ores::nats::message msg) {
-            cm->list_categories(std::move(msg)); }));
+        get_change_reason_categories_request::nats_subject,
+        queue_group,
+        [cm](ores::nats::message msg) { cm->list_categories(std::move(msg)); }));
+
+    subs.push_back(
+        nats.queue_subscribe(save_change_reason_category_request::nats_subject,
+                             queue_group,
+                             [cm](ores::nats::message msg) { cm->save_category(std::move(msg)); }));
 
     subs.push_back(nats.queue_subscribe(
-        save_change_reason_category_request::nats_subject, queue_group,
-        [cm](ores::nats::message msg) {
-            cm->save_category(std::move(msg)); }));
+        delete_change_reason_category_request::nats_subject,
+        queue_group,
+        [cm](ores::nats::message msg) { cm->delete_categories(std::move(msg)); }));
 
     subs.push_back(nats.queue_subscribe(
-        delete_change_reason_category_request::nats_subject, queue_group,
-        [cm](ores::nats::message msg) {
-            cm->delete_categories(std::move(msg)); }));
+        get_change_reason_category_history_request::nats_subject,
+        queue_group,
+        [cm](ores::nats::message msg) { cm->category_history(std::move(msg)); }));
 
     subs.push_back(nats.queue_subscribe(
-        get_change_reason_category_history_request::nats_subject, queue_group,
-        [cm](ores::nats::message msg) {
-            cm->category_history(std::move(msg)); }));
+        get_change_reasons_request::nats_subject, queue_group, [cm](ores::nats::message msg) {
+            cm->list_reasons(std::move(msg));
+        }));
 
     subs.push_back(nats.queue_subscribe(
-        get_change_reasons_request::nats_subject, queue_group,
-        [cm](ores::nats::message msg) {
-            cm->list_reasons(std::move(msg)); }));
+        save_change_reason_request::nats_subject, queue_group, [cm](ores::nats::message msg) {
+            cm->save_reason(std::move(msg));
+        }));
 
     subs.push_back(nats.queue_subscribe(
-        save_change_reason_request::nats_subject, queue_group,
-        [cm](ores::nats::message msg) {
-            cm->save_reason(std::move(msg)); }));
+        delete_change_reason_request::nats_subject, queue_group, [cm](ores::nats::message msg) {
+            cm->delete_reasons(std::move(msg));
+        }));
 
     subs.push_back(nats.queue_subscribe(
-        delete_change_reason_request::nats_subject, queue_group,
-        [cm](ores::nats::message msg) {
-            cm->delete_reasons(std::move(msg)); }));
-
-    subs.push_back(nats.queue_subscribe(
-        get_change_reason_history_request::nats_subject, queue_group,
-        [cm](ores::nats::message msg) {
-            cm->reason_history(std::move(msg)); }));
+        get_change_reason_history_request::nats_subject,
+        queue_group,
+        [cm](ores::nats::message msg) { cm->reason_history(std::move(msg)); }));
 
     // =========================================================================
     // Data Organization (catalogs, data-domains, methodologies, subject-areas)
     // =========================================================================
 
-    auto do_ = std::make_shared<data_organization_handler>(
-        nats, ctx, verifier);
+    auto do_ = std::make_shared<data_organization_handler>(nats, ctx, verifier);
 
     subs.push_back(nats.queue_subscribe(
-        get_catalogs_request::nats_subject, queue_group,
-        [do_](ores::nats::message msg) {
-            do_->list_catalogs(std::move(msg)); }));
+        get_catalogs_request::nats_subject, queue_group, [do_](ores::nats::message msg) {
+            do_->list_catalogs(std::move(msg));
+        }));
 
     subs.push_back(nats.queue_subscribe(
-        save_catalog_request::nats_subject, queue_group,
-        [do_](ores::nats::message msg) {
-            do_->save_catalog(std::move(msg)); }));
+        save_catalog_request::nats_subject, queue_group, [do_](ores::nats::message msg) {
+            do_->save_catalog(std::move(msg));
+        }));
 
     subs.push_back(nats.queue_subscribe(
-        delete_catalog_request::nats_subject, queue_group,
-        [do_](ores::nats::message msg) {
-            do_->delete_catalogs(std::move(msg)); }));
+        delete_catalog_request::nats_subject, queue_group, [do_](ores::nats::message msg) {
+            do_->delete_catalogs(std::move(msg));
+        }));
 
     subs.push_back(nats.queue_subscribe(
-        get_catalog_history_request::nats_subject, queue_group,
-        [do_](ores::nats::message msg) {
-            do_->catalog_history(std::move(msg)); }));
+        get_catalog_history_request::nats_subject, queue_group, [do_](ores::nats::message msg) {
+            do_->catalog_history(std::move(msg));
+        }));
 
     subs.push_back(nats.queue_subscribe(
-        get_data_domains_request::nats_subject, queue_group,
-        [do_](ores::nats::message msg) {
-            do_->list_data_domains(std::move(msg)); }));
+        get_data_domains_request::nats_subject, queue_group, [do_](ores::nats::message msg) {
+            do_->list_data_domains(std::move(msg));
+        }));
 
     subs.push_back(nats.queue_subscribe(
-        save_data_domain_request::nats_subject, queue_group,
-        [do_](ores::nats::message msg) {
-            do_->save_data_domain(std::move(msg)); }));
+        save_data_domain_request::nats_subject, queue_group, [do_](ores::nats::message msg) {
+            do_->save_data_domain(std::move(msg));
+        }));
 
     subs.push_back(nats.queue_subscribe(
-        delete_data_domain_request::nats_subject, queue_group,
-        [do_](ores::nats::message msg) {
-            do_->delete_data_domains(std::move(msg)); }));
+        delete_data_domain_request::nats_subject, queue_group, [do_](ores::nats::message msg) {
+            do_->delete_data_domains(std::move(msg));
+        }));
 
     subs.push_back(nats.queue_subscribe(
-        get_data_domain_history_request::nats_subject, queue_group,
-        [do_](ores::nats::message msg) {
-            do_->data_domain_history(std::move(msg)); }));
+        get_data_domain_history_request::nats_subject, queue_group, [do_](ores::nats::message msg) {
+            do_->data_domain_history(std::move(msg));
+        }));
 
     subs.push_back(nats.queue_subscribe(
-        get_methodologies_request::nats_subject, queue_group,
-        [do_](ores::nats::message msg) {
-            do_->list_methodologies(std::move(msg)); }));
+        get_methodologies_request::nats_subject, queue_group, [do_](ores::nats::message msg) {
+            do_->list_methodologies(std::move(msg));
+        }));
 
     subs.push_back(nats.queue_subscribe(
-        save_methodology_request::nats_subject, queue_group,
-        [do_](ores::nats::message msg) {
-            do_->save_methodology(std::move(msg)); }));
+        save_methodology_request::nats_subject, queue_group, [do_](ores::nats::message msg) {
+            do_->save_methodology(std::move(msg));
+        }));
 
     subs.push_back(nats.queue_subscribe(
-        delete_methodology_request::nats_subject, queue_group,
-        [do_](ores::nats::message msg) {
-            do_->delete_methodologies(std::move(msg)); }));
+        delete_methodology_request::nats_subject, queue_group, [do_](ores::nats::message msg) {
+            do_->delete_methodologies(std::move(msg));
+        }));
 
     subs.push_back(nats.queue_subscribe(
-        get_methodology_history_request::nats_subject, queue_group,
-        [do_](ores::nats::message msg) {
-            do_->methodology_history(std::move(msg)); }));
+        get_methodology_history_request::nats_subject, queue_group, [do_](ores::nats::message msg) {
+            do_->methodology_history(std::move(msg));
+        }));
 
     subs.push_back(nats.queue_subscribe(
-        get_subject_areas_request::nats_subject, queue_group,
-        [do_](ores::nats::message msg) {
-            do_->list_subject_areas(std::move(msg)); }));
+        get_subject_areas_request::nats_subject, queue_group, [do_](ores::nats::message msg) {
+            do_->list_subject_areas(std::move(msg));
+        }));
 
     subs.push_back(nats.queue_subscribe(
-        save_subject_area_request::nats_subject, queue_group,
-        [do_](ores::nats::message msg) {
-            do_->save_subject_area(std::move(msg)); }));
+        save_subject_area_request::nats_subject, queue_group, [do_](ores::nats::message msg) {
+            do_->save_subject_area(std::move(msg));
+        }));
 
     subs.push_back(nats.queue_subscribe(
-        delete_subject_area_request::nats_subject, queue_group,
-        [do_](ores::nats::message msg) {
-            do_->delete_subject_areas(std::move(msg)); }));
+        delete_subject_area_request::nats_subject, queue_group, [do_](ores::nats::message msg) {
+            do_->delete_subject_areas(std::move(msg));
+        }));
 
     subs.push_back(nats.queue_subscribe(
-        get_subject_area_history_request::nats_subject, queue_group,
-        [do_](ores::nats::message msg) {
-            do_->subject_area_history(std::move(msg)); }));
+        get_subject_area_history_request::nats_subject,
+        queue_group,
+        [do_](ores::nats::message msg) { do_->subject_area_history(std::move(msg)); }));
 
     // =========================================================================
     // Dimensions (nature, origin, treatment)
@@ -214,64 +215,64 @@ registrar::register_handlers(ores::nats::service::client& nats,
     auto dim = std::make_shared<dimension_handler>(nats, ctx, verifier);
 
     subs.push_back(nats.queue_subscribe(
-        get_nature_dimensions_request::nats_subject, queue_group,
-        [dim](ores::nats::message msg) {
-            dim->list_nature_dimensions(std::move(msg)); }));
+        get_nature_dimensions_request::nats_subject, queue_group, [dim](ores::nats::message msg) {
+            dim->list_nature_dimensions(std::move(msg));
+        }));
 
     subs.push_back(nats.queue_subscribe(
-        save_nature_dimension_request::nats_subject, queue_group,
-        [dim](ores::nats::message msg) {
-            dim->save_nature_dimension(std::move(msg)); }));
+        save_nature_dimension_request::nats_subject, queue_group, [dim](ores::nats::message msg) {
+            dim->save_nature_dimension(std::move(msg));
+        }));
 
     subs.push_back(nats.queue_subscribe(
-        delete_nature_dimension_request::nats_subject, queue_group,
-        [dim](ores::nats::message msg) {
-            dim->delete_nature_dimensions(std::move(msg)); }));
+        delete_nature_dimension_request::nats_subject, queue_group, [dim](ores::nats::message msg) {
+            dim->delete_nature_dimensions(std::move(msg));
+        }));
 
     subs.push_back(nats.queue_subscribe(
-        get_nature_dimension_history_request::nats_subject, queue_group,
-        [dim](ores::nats::message msg) {
-            dim->nature_dimension_history(std::move(msg)); }));
+        get_nature_dimension_history_request::nats_subject,
+        queue_group,
+        [dim](ores::nats::message msg) { dim->nature_dimension_history(std::move(msg)); }));
 
     subs.push_back(nats.queue_subscribe(
-        get_origin_dimensions_request::nats_subject, queue_group,
-        [dim](ores::nats::message msg) {
-            dim->list_origin_dimensions(std::move(msg)); }));
+        get_origin_dimensions_request::nats_subject, queue_group, [dim](ores::nats::message msg) {
+            dim->list_origin_dimensions(std::move(msg));
+        }));
 
     subs.push_back(nats.queue_subscribe(
-        save_origin_dimension_request::nats_subject, queue_group,
-        [dim](ores::nats::message msg) {
-            dim->save_origin_dimension(std::move(msg)); }));
+        save_origin_dimension_request::nats_subject, queue_group, [dim](ores::nats::message msg) {
+            dim->save_origin_dimension(std::move(msg));
+        }));
 
     subs.push_back(nats.queue_subscribe(
-        delete_origin_dimension_request::nats_subject, queue_group,
-        [dim](ores::nats::message msg) {
-            dim->delete_origin_dimensions(std::move(msg)); }));
+        delete_origin_dimension_request::nats_subject, queue_group, [dim](ores::nats::message msg) {
+            dim->delete_origin_dimensions(std::move(msg));
+        }));
 
     subs.push_back(nats.queue_subscribe(
-        get_origin_dimension_history_request::nats_subject, queue_group,
-        [dim](ores::nats::message msg) {
-            dim->origin_dimension_history(std::move(msg)); }));
+        get_origin_dimension_history_request::nats_subject,
+        queue_group,
+        [dim](ores::nats::message msg) { dim->origin_dimension_history(std::move(msg)); }));
 
     subs.push_back(nats.queue_subscribe(
-        get_treatment_dimensions_request::nats_subject, queue_group,
-        [dim](ores::nats::message msg) {
-            dim->list_treatment_dimensions(std::move(msg)); }));
+        get_treatment_dimensions_request::nats_subject,
+        queue_group,
+        [dim](ores::nats::message msg) { dim->list_treatment_dimensions(std::move(msg)); }));
 
     subs.push_back(nats.queue_subscribe(
-        save_treatment_dimension_request::nats_subject, queue_group,
-        [dim](ores::nats::message msg) {
-            dim->save_treatment_dimension(std::move(msg)); }));
+        save_treatment_dimension_request::nats_subject,
+        queue_group,
+        [dim](ores::nats::message msg) { dim->save_treatment_dimension(std::move(msg)); }));
 
     subs.push_back(nats.queue_subscribe(
-        delete_treatment_dimension_request::nats_subject, queue_group,
-        [dim](ores::nats::message msg) {
-            dim->delete_treatment_dimensions(std::move(msg)); }));
+        delete_treatment_dimension_request::nats_subject,
+        queue_group,
+        [dim](ores::nats::message msg) { dim->delete_treatment_dimensions(std::move(msg)); }));
 
     subs.push_back(nats.queue_subscribe(
-        get_treatment_dimension_history_request::nats_subject, queue_group,
-        [dim](ores::nats::message msg) {
-            dim->treatment_dimension_history(std::move(msg)); }));
+        get_treatment_dimension_history_request::nats_subject,
+        queue_group,
+        [dim](ores::nats::message msg) { dim->treatment_dimension_history(std::move(msg)); }));
 
     // =========================================================================
     // Datasets
@@ -280,24 +281,29 @@ registrar::register_handlers(ores::nats::service::client& nats,
     auto ds = std::make_shared<dataset_handler>(nats, ctx, verifier);
 
     subs.push_back(nats.queue_subscribe(
-        get_datasets_request::nats_subject, queue_group,
-        [ds](ores::nats::message msg) { ds->list(std::move(msg)); }));
+        get_datasets_request::nats_subject, queue_group, [ds](ores::nats::message msg) {
+            ds->list(std::move(msg));
+        }));
 
     subs.push_back(nats.queue_subscribe(
-        save_dataset_request::nats_subject, queue_group,
-        [ds](ores::nats::message msg) { ds->save(std::move(msg)); }));
+        save_dataset_request::nats_subject, queue_group, [ds](ores::nats::message msg) {
+            ds->save(std::move(msg));
+        }));
 
     subs.push_back(nats.queue_subscribe(
-        delete_dataset_request::nats_subject, queue_group,
-        [ds](ores::nats::message msg) { ds->remove(std::move(msg)); }));
+        delete_dataset_request::nats_subject, queue_group, [ds](ores::nats::message msg) {
+            ds->remove(std::move(msg));
+        }));
 
     subs.push_back(nats.queue_subscribe(
-        get_dataset_history_request::nats_subject, queue_group,
-        [ds](ores::nats::message msg) { ds->history(std::move(msg)); }));
+        get_dataset_history_request::nats_subject, queue_group, [ds](ores::nats::message msg) {
+            ds->history(std::move(msg));
+        }));
 
     subs.push_back(nats.queue_subscribe(
-        publish_datasets_request::nats_subject, queue_group,
-        [ds](ores::nats::message msg) { ds->publish(std::move(msg)); }));
+        publish_datasets_request::nats_subject, queue_group, [ds](ores::nats::message msg) {
+            ds->publish(std::move(msg));
+        }));
 
     // =========================================================================
     // Dataset Bundles
@@ -306,56 +312,61 @@ registrar::register_handlers(ores::nats::service::client& nats,
     auto db = std::make_shared<dataset_bundle_handler>(nats, ctx, verifier);
 
     subs.push_back(nats.queue_subscribe(
-        get_dataset_bundles_request::nats_subject, queue_group,
-        [db](ores::nats::message msg) { db->list(std::move(msg)); }));
+        get_dataset_bundles_request::nats_subject, queue_group, [db](ores::nats::message msg) {
+            db->list(std::move(msg));
+        }));
 
     subs.push_back(nats.queue_subscribe(
-        save_dataset_bundle_request::nats_subject, queue_group,
-        [db](ores::nats::message msg) { db->save(std::move(msg)); }));
+        save_dataset_bundle_request::nats_subject, queue_group, [db](ores::nats::message msg) {
+            db->save(std::move(msg));
+        }));
 
     subs.push_back(nats.queue_subscribe(
-        delete_dataset_bundle_request::nats_subject, queue_group,
-        [db](ores::nats::message msg) { db->remove(std::move(msg)); }));
+        delete_dataset_bundle_request::nats_subject, queue_group, [db](ores::nats::message msg) {
+            db->remove(std::move(msg));
+        }));
 
-    subs.push_back(nats.queue_subscribe(
-        get_dataset_bundle_history_request::nats_subject, queue_group,
-        [db](ores::nats::message msg) { db->history(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(get_dataset_bundle_history_request::nats_subject,
+                             queue_group,
+                             [db](ores::nats::message msg) { db->history(std::move(msg)); }));
 
     // =========================================================================
     // Dataset Bundle Members
     // =========================================================================
 
-    auto dbm = std::make_shared<dataset_bundle_member_handler>(
-        nats, ctx, verifier);
+    auto dbm = std::make_shared<dataset_bundle_member_handler>(nats, ctx, verifier);
 
-    subs.push_back(nats.queue_subscribe(
-        get_dataset_bundle_members_request::nats_subject, queue_group,
-        [dbm](ores::nats::message msg) { dbm->list(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(get_dataset_bundle_members_request::nats_subject,
+                             queue_group,
+                             [dbm](ores::nats::message msg) { dbm->list(std::move(msg)); }));
 
-    subs.push_back(nats.queue_subscribe(
-        get_dataset_bundle_members_by_bundle_request::nats_subject, queue_group,
-        [dbm](ores::nats::message msg) {
-            dbm->by_bundle(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(get_dataset_bundle_members_by_bundle_request::nats_subject,
+                             queue_group,
+                             [dbm](ores::nats::message msg) { dbm->by_bundle(std::move(msg)); }));
 
     // =========================================================================
     // Dataset Dependencies
     // =========================================================================
 
-    auto dep = std::make_shared<dataset_dependency_handler>(
-        nats, ctx, verifier);
+    auto dep = std::make_shared<dataset_dependency_handler>(nats, ctx, verifier);
+
+    subs.push_back(
+        nats.queue_subscribe(get_dataset_dependencies_request::nats_subject,
+                             queue_group,
+                             [dep](ores::nats::message msg) { dep->list(std::move(msg)); }));
+
+    subs.push_back(
+        nats.queue_subscribe(get_dataset_dependencies_by_dataset_request::nats_subject,
+                             queue_group,
+                             [dep](ores::nats::message msg) { dep->by_dataset(std::move(msg)); }));
 
     subs.push_back(nats.queue_subscribe(
-        get_dataset_dependencies_request::nats_subject, queue_group,
-        [dep](ores::nats::message msg) { dep->list(std::move(msg)); }));
-
-    subs.push_back(nats.queue_subscribe(
-        get_dataset_dependencies_by_dataset_request::nats_subject, queue_group,
-        [dep](ores::nats::message msg) {
-            dep->by_dataset(std::move(msg)); }));
-
-    subs.push_back(nats.queue_subscribe(
-        resolve_dependencies_request::nats_subject, queue_group,
-        [dep](ores::nats::message msg) { dep->resolve(std::move(msg)); }));
+        resolve_dependencies_request::nats_subject, queue_group, [dep](ores::nats::message msg) {
+            dep->resolve(std::move(msg));
+        }));
 
     // =========================================================================
     // Publications
@@ -364,14 +375,14 @@ registrar::register_handlers(ores::nats::service::client& nats,
     auto pub = std::make_shared<publication_handler>(nats, ctx, verifier);
 
     subs.push_back(nats.queue_subscribe(
-        get_publications_request::nats_subject, queue_group,
-        [pub](ores::nats::message msg) {
-            pub->list_publications(std::move(msg)); }));
+        get_publications_request::nats_subject, queue_group, [pub](ores::nats::message msg) {
+            pub->list_publications(std::move(msg));
+        }));
 
     subs.push_back(nats.queue_subscribe(
-        publish_bundle_request::nats_subject, queue_group,
-        [pub](ores::nats::message msg) {
-            pub->publish_bundle(std::move(msg)); }));
+        publish_bundle_request::nats_subject, queue_group, [pub](ores::nats::message msg) {
+            pub->publish_bundle(std::move(msg));
+        }));
 
     // =========================================================================
     // Coding Schemes
@@ -380,41 +391,44 @@ registrar::register_handlers(ores::nats::service::client& nats,
     auto cs = std::make_shared<coding_scheme_handler>(nats, ctx, verifier);
 
     subs.push_back(nats.queue_subscribe(
-        get_coding_scheme_authority_types_request::nats_subject, queue_group,
-        [cs](ores::nats::message msg) {
-            cs->list_authority_types(std::move(msg)); }));
+        get_coding_scheme_authority_types_request::nats_subject,
+        queue_group,
+        [cs](ores::nats::message msg) { cs->list_authority_types(std::move(msg)); }));
 
     subs.push_back(nats.queue_subscribe(
-        save_coding_scheme_authority_type_request::nats_subject, queue_group,
-        [cs](ores::nats::message msg) {
-            cs->save_authority_type(std::move(msg)); }));
+        save_coding_scheme_authority_type_request::nats_subject,
+        queue_group,
+        [cs](ores::nats::message msg) { cs->save_authority_type(std::move(msg)); }));
 
     subs.push_back(nats.queue_subscribe(
-        delete_coding_scheme_authority_type_request::nats_subject, queue_group,
-        [cs](ores::nats::message msg) {
-            cs->delete_authority_types(std::move(msg)); }));
+        delete_coding_scheme_authority_type_request::nats_subject,
+        queue_group,
+        [cs](ores::nats::message msg) { cs->delete_authority_types(std::move(msg)); }));
 
     subs.push_back(nats.queue_subscribe(
         get_coding_scheme_authority_type_history_request::nats_subject,
         queue_group,
-        [cs](ores::nats::message msg) {
-            cs->authority_type_history(std::move(msg)); }));
+        [cs](ores::nats::message msg) { cs->authority_type_history(std::move(msg)); }));
 
     subs.push_back(nats.queue_subscribe(
-        get_coding_schemes_request::nats_subject, queue_group,
-        [cs](ores::nats::message msg) { cs->list(std::move(msg)); }));
+        get_coding_schemes_request::nats_subject, queue_group, [cs](ores::nats::message msg) {
+            cs->list(std::move(msg));
+        }));
 
     subs.push_back(nats.queue_subscribe(
-        save_coding_scheme_request::nats_subject, queue_group,
-        [cs](ores::nats::message msg) { cs->save(std::move(msg)); }));
+        save_coding_scheme_request::nats_subject, queue_group, [cs](ores::nats::message msg) {
+            cs->save(std::move(msg));
+        }));
 
     subs.push_back(nats.queue_subscribe(
-        delete_coding_scheme_request::nats_subject, queue_group,
-        [cs](ores::nats::message msg) { cs->remove(std::move(msg)); }));
+        delete_coding_scheme_request::nats_subject, queue_group, [cs](ores::nats::message msg) {
+            cs->remove(std::move(msg));
+        }));
 
-    subs.push_back(nats.queue_subscribe(
-        get_coding_scheme_history_request::nats_subject, queue_group,
-        [cs](ores::nats::message msg) { cs->history(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(get_coding_scheme_history_request::nats_subject,
+                             queue_group,
+                             [cs](ores::nats::message msg) { cs->history(std::move(msg)); }));
 
     // =========================================================================
     // LEI Entities
@@ -422,20 +436,21 @@ registrar::register_handlers(ores::nats::service::client& nats,
 
     auto lei = std::make_shared<lei_entity_handler>(nats, ctx, verifier);
 
-    subs.push_back(nats.queue_subscribe(
-        get_lei_entities_summary_request::nats_subject, queue_group,
-        [lei](ores::nats::message msg) { lei->summary(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(get_lei_entities_summary_request::nats_subject,
+                             queue_group,
+                             [lei](ores::nats::message msg) { lei->summary(std::move(msg)); }));
 
     // =========================================================================
     // Report Definition Templates (served from DQ artefact tables)
     // =========================================================================
 
     {
-        auto rdt = std::make_shared<report_definition_template_handler>(
-            nats, ctx, verifier);
-        subs.push_back(nats.queue_subscribe(
-            list_dq_report_definition_templates_request::nats_subject, queue_group,
-            [rdt](ores::nats::message msg) { rdt->list(std::move(msg)); }));
+        auto rdt = std::make_shared<report_definition_template_handler>(nats, ctx, verifier);
+        subs.push_back(
+            nats.queue_subscribe(list_dq_report_definition_templates_request::nats_subject,
+                                 queue_group,
+                                 [rdt](ores::nats::message msg) { rdt->list(std::move(msg)); }));
     }
 
     // =========================================================================
@@ -445,56 +460,69 @@ registrar::register_handlers(ores::nats::service::client& nats,
     auto badge = std::make_shared<badge_handler>(nats, ctx, verifier);
 
     subs.push_back(nats.queue_subscribe(
-        get_badge_severities_request::nats_subject, queue_group,
-        [badge](ores::nats::message msg) { badge->list_severities(std::move(msg)); }));
+        get_badge_severities_request::nats_subject, queue_group, [badge](ores::nats::message msg) {
+            badge->list_severities(std::move(msg));
+        }));
 
     subs.push_back(nats.queue_subscribe(
-        save_badge_severity_request::nats_subject, queue_group,
-        [badge](ores::nats::message msg) { badge->save_severity(std::move(msg)); }));
+        save_badge_severity_request::nats_subject, queue_group, [badge](ores::nats::message msg) {
+            badge->save_severity(std::move(msg));
+        }));
 
     subs.push_back(nats.queue_subscribe(
-        delete_badge_severity_request::nats_subject, queue_group,
-        [badge](ores::nats::message msg) { badge->delete_severities(std::move(msg)); }));
+        delete_badge_severity_request::nats_subject, queue_group, [badge](ores::nats::message msg) {
+            badge->delete_severities(std::move(msg));
+        }));
 
     subs.push_back(nats.queue_subscribe(
-        get_badge_severity_history_request::nats_subject, queue_group,
+        get_badge_severity_history_request::nats_subject,
+        queue_group,
         [badge](ores::nats::message msg) { badge->severity_history(std::move(msg)); }));
 
     subs.push_back(nats.queue_subscribe(
-        get_code_domains_request::nats_subject, queue_group,
-        [badge](ores::nats::message msg) { badge->list_code_domains(std::move(msg)); }));
+        get_code_domains_request::nats_subject, queue_group, [badge](ores::nats::message msg) {
+            badge->list_code_domains(std::move(msg));
+        }));
 
     subs.push_back(nats.queue_subscribe(
-        save_code_domain_request::nats_subject, queue_group,
-        [badge](ores::nats::message msg) { badge->save_code_domain(std::move(msg)); }));
+        save_code_domain_request::nats_subject, queue_group, [badge](ores::nats::message msg) {
+            badge->save_code_domain(std::move(msg));
+        }));
 
     subs.push_back(nats.queue_subscribe(
-        delete_code_domain_request::nats_subject, queue_group,
-        [badge](ores::nats::message msg) { badge->delete_code_domains(std::move(msg)); }));
+        delete_code_domain_request::nats_subject, queue_group, [badge](ores::nats::message msg) {
+            badge->delete_code_domains(std::move(msg));
+        }));
 
     subs.push_back(nats.queue_subscribe(
-        get_code_domain_history_request::nats_subject, queue_group,
+        get_code_domain_history_request::nats_subject,
+        queue_group,
         [badge](ores::nats::message msg) { badge->code_domain_history(std::move(msg)); }));
 
     subs.push_back(nats.queue_subscribe(
-        get_badge_definitions_request::nats_subject, queue_group,
-        [badge](ores::nats::message msg) { badge->list_definitions(std::move(msg)); }));
+        get_badge_definitions_request::nats_subject, queue_group, [badge](ores::nats::message msg) {
+            badge->list_definitions(std::move(msg));
+        }));
 
     subs.push_back(nats.queue_subscribe(
-        save_badge_definition_request::nats_subject, queue_group,
-        [badge](ores::nats::message msg) { badge->save_definition(std::move(msg)); }));
+        save_badge_definition_request::nats_subject, queue_group, [badge](ores::nats::message msg) {
+            badge->save_definition(std::move(msg));
+        }));
 
     subs.push_back(nats.queue_subscribe(
-        delete_badge_definition_request::nats_subject, queue_group,
+        delete_badge_definition_request::nats_subject,
+        queue_group,
         [badge](ores::nats::message msg) { badge->delete_definitions(std::move(msg)); }));
 
     subs.push_back(nats.queue_subscribe(
-        get_badge_definition_history_request::nats_subject, queue_group,
+        get_badge_definition_history_request::nats_subject,
+        queue_group,
         [badge](ores::nats::message msg) { badge->definition_history(std::move(msg)); }));
 
     subs.push_back(nats.queue_subscribe(
-        get_badge_mappings_request::nats_subject, queue_group,
-        [badge](ores::nats::message msg) { badge->list_mappings(std::move(msg)); }));
+        get_badge_mappings_request::nats_subject, queue_group, [badge](ores::nats::message msg) {
+            badge->list_mappings(std::move(msg));
+        }));
 
     // =========================================================================
     // DQ-internal Publish-from-DQ workflow step handlers
@@ -503,11 +531,13 @@ registrar::register_handlers(ores::nats::service::client& nats,
     {
         auto pdq = std::make_shared<publish_from_dq_handler>(nats, ctx);
         subs.push_back(nats.queue_subscribe(
-            "dq.v1.ip2country.publish-from-dq", queue_group,
-            [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); }));
+            "dq.v1.ip2country.publish-from-dq", queue_group, [pdq](ores::nats::message msg) {
+                pdq->handle(std::move(msg));
+            }));
         subs.push_back(nats.queue_subscribe(
-            "dq.v1.coding-schemes.publish-from-dq", queue_group,
-            [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); }));
+            "dq.v1.coding-schemes.publish-from-dq", queue_group, [pdq](ores::nats::message msg) {
+                pdq->handle(std::move(msg));
+            }));
     }
 
     return subs;

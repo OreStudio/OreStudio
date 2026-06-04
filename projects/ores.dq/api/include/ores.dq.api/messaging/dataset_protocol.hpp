@@ -20,11 +20,11 @@
 #ifndef ORES_DQ_API_MESSAGING_DATASET_PROTOCOL_HPP
 #define ORES_DQ_API_MESSAGING_DATASET_PROTOCOL_HPP
 
+#include "ores.dq.api/domain/dataset.hpp"
+#include "ores.dq.api/domain/publication_mode.hpp"
 #include <string>
 #include <string_view>
 #include <vector>
-#include "ores.dq.api/domain/dataset.hpp"
-#include "ores.dq.api/domain/publication_mode.hpp"
 
 namespace ores::dq::messaging {
 
@@ -78,8 +78,7 @@ struct publish_datasets_request {
     using response_type = struct publish_datasets_response;
     static constexpr std::string_view nats_subject = "dq.v1.datasets.publish";
     std::vector<std::string> dataset_ids;
-    ores::dq::domain::publication_mode mode =
-        ores::dq::domain::publication_mode::upsert;
+    ores::dq::domain::publication_mode mode = ores::dq::domain::publication_mode::upsert;
     std::string published_by;
     bool resolve_dependencies = true;
 };

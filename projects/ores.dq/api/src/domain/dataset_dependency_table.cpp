@@ -18,7 +18,6 @@
  *
  */
 #include "ores.dq.api/domain/dataset_dependency_table.hpp"
-
 #include <fort.hpp>
 
 namespace ores::dq::domain {
@@ -31,8 +30,7 @@ std::string convert_to_table(const std::vector<dataset_dependency>& v) {
           << "Modified By" << fort::endr;
 
     for (const auto& d : v) {
-        table << d.dataset_code << d.dependency_code << d.role << d.modified_by
-              << fort::endr;
+        table << d.dataset_code << d.dependency_code << d.role << d.modified_by << fort::endr;
     }
     return table.to_string();
 }

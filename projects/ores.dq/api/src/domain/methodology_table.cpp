@@ -18,7 +18,6 @@
  *
  */
 #include "ores.dq.api/domain/methodology_table.hpp"
-
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
 
@@ -32,8 +31,8 @@ std::string convert_to_table(const std::vector<methodology>& v) {
           << "Modified By" << "Version" << fort::endr;
 
     for (const auto& m : v) {
-        table << boost::uuids::to_string(m.id) << m.name << m.description
-              << m.modified_by << m.version << fort::endr;
+        table << boost::uuids::to_string(m.id) << m.name << m.description << m.modified_by
+              << m.version << fort::endr;
     }
     return table.to_string();
 }

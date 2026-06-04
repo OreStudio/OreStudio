@@ -20,10 +20,10 @@
 #ifndef ORES_DQ_CORE_REPOSITORY_PUBLICATION_ENTITY_HPP
 #define ORES_DQ_CORE_REPOSITORY_PUBLICATION_ENTITY_HPP
 
-#include <string>
-#include <cstdint>
-#include "sqlgen/PrimaryKey.hpp"
 #include "ores.database/repository/db_types.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#include <cstdint>
+#include <string>
 
 namespace ores::dq::repository {
 

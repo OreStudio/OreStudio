@@ -20,12 +20,12 @@
 #ifndef ORES_DQ_CORE_REPOSITORY_BADGE_MAPPING_REPOSITORY_HPP
 #define ORES_DQ_CORE_REPOSITORY_BADGE_MAPPING_REPOSITORY_HPP
 
-#include <vector>
-#include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/messaging/badge_protocol.hpp"
 #include "ores.dq.core/export.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <sqlgen/postgres.hpp>
+#include <vector>
 
 namespace ores::dq::repository {
 
@@ -37,8 +37,7 @@ namespace ores::dq::repository {
  */
 class ORES_DQ_CORE_EXPORT badge_mapping_repository {
 private:
-    inline static std::string_view logger_name =
-        "ores.dq.repository.badge_mapping_repository";
+    inline static std::string_view logger_name = "ores.dq.repository.badge_mapping_repository";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;

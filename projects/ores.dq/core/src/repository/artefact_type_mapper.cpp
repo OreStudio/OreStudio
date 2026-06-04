@@ -18,7 +18,6 @@
  *
  */
 #include "ores.dq.core/repository/artefact_type_mapper.hpp"
-
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.dq.api/domain/artefact_type_json_io.hpp" // IWYU pragma: keep.
 
@@ -27,8 +26,7 @@ namespace ores::dq::repository {
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::artefact_type
-artefact_type_mapper::map(const artefact_type_entity& v) {
+domain::artefact_type artefact_type_mapper::map(const artefact_type_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::artefact_type r;
@@ -45,8 +43,7 @@ artefact_type_mapper::map(const artefact_type_entity& v) {
     return r;
 }
 
-artefact_type_entity
-artefact_type_mapper::map(const domain::artefact_type& v) {
+artefact_type_entity artefact_type_mapper::map(const domain::artefact_type& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     artefact_type_entity r;
@@ -66,19 +63,13 @@ artefact_type_mapper::map(const domain::artefact_type& v) {
 std::vector<domain::artefact_type>
 artefact_type_mapper::map(const std::vector<artefact_type_entity>& v) {
     return map_vector<artefact_type_entity, domain::artefact_type>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<artefact_type_entity>
 artefact_type_mapper::map(const std::vector<domain::artefact_type>& v) {
     return map_vector<domain::artefact_type, artefact_type_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

@@ -20,13 +20,13 @@
 #ifndef ORES_DQ_CORE_REPOSITORY_TREATMENT_DIMENSION_REPOSITORY_HPP
 #define ORES_DQ_CORE_REPOSITORY_TREATMENT_DIMENSION_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/domain/treatment_dimension.hpp"
 #include "ores.dq.core/export.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::dq::repository {
 
@@ -56,8 +56,7 @@ public:
 
     std::vector<domain::treatment_dimension> read_latest();
     std::vector<domain::treatment_dimension> read_latest(const std::string& code);
-    std::vector<domain::treatment_dimension>
-    read_latest(std::uint32_t offset, std::uint32_t limit);
+    std::vector<domain::treatment_dimension> read_latest(std::uint32_t offset, std::uint32_t limit);
 
     std::uint32_t get_total_count();
     std::vector<domain::treatment_dimension> read_all(const std::string& code);

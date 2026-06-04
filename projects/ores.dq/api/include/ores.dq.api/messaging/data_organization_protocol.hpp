@@ -20,16 +20,16 @@
 #ifndef ORES_DQ_API_MESSAGING_DATA_ORGANIZATION_PROTOCOL_HPP
 #define ORES_DQ_API_MESSAGING_DATA_ORGANIZATION_PROTOCOL_HPP
 
-#include <string>
-#include <string_view>
-#include <vector>
 #include "ores.dq.api/domain/catalog.hpp"
 #include "ores.dq.api/domain/data_domain.hpp"
 #include "ores.dq.api/domain/methodology.hpp"
-#include "ores.dq.api/domain/subject_area.hpp"
 #include "ores.dq.api/domain/nature_dimension.hpp"
 #include "ores.dq.api/domain/origin_dimension.hpp"
+#include "ores.dq.api/domain/subject_area.hpp"
 #include "ores.dq.api/domain/treatment_dimension.hpp"
+#include <string>
+#include <string_view>
+#include <vector>
 
 namespace ores::dq::messaging {
 

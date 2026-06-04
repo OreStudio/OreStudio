@@ -20,10 +20,10 @@
 #ifndef ORES_DQ_CORE_REPOSITORY_PUBLICATION_MAPPER_HPP
 #define ORES_DQ_CORE_REPOSITORY_PUBLICATION_MAPPER_HPP
 
-#include <vector>
-#include "ores.logging/make_logger.hpp"
 #include "ores.dq.api/domain/publication.hpp"
 #include "ores.dq.core/repository/publication_entity.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <vector>
 
 namespace ores::dq::repository {
 
@@ -32,8 +32,7 @@ namespace ores::dq::repository {
  */
 class publication_mapper {
 private:
-    inline static std::string_view logger_name =
-        "ores.dq.repository.publication_mapper";
+    inline static std::string_view logger_name = "ores.dq.repository.publication_mapper";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -50,8 +49,7 @@ public:
     /**
      * @brief Maps multiple entities to domain objects.
      */
-    static std::vector<domain::publication>
-    map(const std::vector<publication_entity>& entities);
+    static std::vector<domain::publication> map(const std::vector<publication_entity>& entities);
 
     /**
      * @brief Maps a domain object to entity for persistence.

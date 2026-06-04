@@ -20,14 +20,14 @@
 #ifndef ORES_DQ_CORE_REPOSITORY_ARTEFACT_TYPE_REPOSITORY_HPP
 #define ORES_DQ_CORE_REPOSITORY_ARTEFACT_TYPE_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include <optional>
-#include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/domain/artefact_type.hpp"
 #include "ores.dq.core/export.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <optional>
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::dq::repository {
 
@@ -39,8 +39,7 @@ namespace ores::dq::repository {
  */
 class ORES_DQ_CORE_EXPORT artefact_type_repository {
 private:
-    inline static std::string_view logger_name =
-        "ores.dq.repository.artefact_type_repository";
+    inline static std::string_view logger_name = "ores.dq.repository.artefact_type_repository";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;

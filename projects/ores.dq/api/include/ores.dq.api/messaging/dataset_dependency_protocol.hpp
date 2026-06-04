@@ -20,18 +20,17 @@
 #ifndef ORES_DQ_API_MESSAGING_DATASET_DEPENDENCY_PROTOCOL_HPP
 #define ORES_DQ_API_MESSAGING_DATASET_DEPENDENCY_PROTOCOL_HPP
 
+#include "ores.dq.api/domain/dataset.hpp"
+#include "ores.dq.api/domain/dataset_dependency.hpp"
 #include <string>
 #include <string_view>
 #include <vector>
-#include "ores.dq.api/domain/dataset_dependency.hpp"
-#include "ores.dq.api/domain/dataset.hpp"
 
 namespace ores::dq::messaging {
 
 struct get_dataset_dependencies_request {
     using response_type = struct get_dataset_dependencies_response;
-    static constexpr std::string_view nats_subject =
-        "dq.v1.dataset-dependencies.list";
+    static constexpr std::string_view nats_subject = "dq.v1.dataset-dependencies.list";
     int offset = 0;
     int limit = 100;
 };
@@ -43,8 +42,7 @@ struct get_dataset_dependencies_response {
 
 struct get_dataset_dependencies_by_dataset_request {
     using response_type = struct get_dataset_dependencies_by_dataset_response;
-    static constexpr std::string_view nats_subject =
-        "dq.v1.dataset-dependencies.by-dataset";
+    static constexpr std::string_view nats_subject = "dq.v1.dataset-dependencies.by-dataset";
     std::string dataset_code;
 };
 
@@ -56,8 +54,7 @@ struct get_dataset_dependencies_by_dataset_response {
 
 struct resolve_dependencies_request {
     using response_type = struct resolve_dependencies_response;
-    static constexpr std::string_view nats_subject =
-        "dq.v1.dataset-dependencies.resolve";
+    static constexpr std::string_view nats_subject = "dq.v1.dataset-dependencies.resolve";
     std::vector<std::string> dataset_ids;
 };
 

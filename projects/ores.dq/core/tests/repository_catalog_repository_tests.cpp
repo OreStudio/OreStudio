@@ -17,19 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.dq.core/repository/catalog_repository.hpp"
-
-#include <catch2/catch_test_macros.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.logging/make_logger.hpp"
-#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.dq.api/domain/catalog_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.api/generators/catalog_generator.hpp"
+#include "ores.dq.core/repository/catalog_repository.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
+#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
 
 namespace {
 

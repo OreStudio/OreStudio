@@ -18,13 +18,12 @@
  *
  */
 #include "ores.dq.core/repository/badge_definition_repository.hpp"
-
-#include <sqlgen/postgres.hpp>
-#include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
 #include "ores.dq.api/domain/badge_definition_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.core/repository/badge_definition_entity.hpp"
 #include "ores.dq.core/repository/badge_definition_mapper.hpp"
+#include <sqlgen/postgres.hpp>
 
 namespace ores::dq::repository {
 
@@ -39,28 +38,28 @@ std::string badge_definition_repository::sql() {
 
 void badge_definition_repository::write(context ctx, const domain::badge_definition& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing badge definition: " << v.code;
-    execute_write_query(ctx, badge_definition_mapper::map(v),
-        lg(), "Writing badge definition to database.");
+    execute_write_query(
+        ctx, badge_definition_mapper::map(v), lg(), "Writing badge definition to database.");
 }
 
-void badge_definition_repository::write(
-    context ctx, const std::vector<domain::badge_definition>& v) {
+void badge_definition_repository::write(context ctx,
+                                        const std::vector<domain::badge_definition>& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing badge definitions. Count: " << v.size();
-    execute_write_query(ctx, badge_definition_mapper::map(v),
-        lg(), "Writing badge definitions to database.");
+    execute_write_query(
+        ctx, badge_definition_mapper::map(v), lg(), "Writing badge definitions to database.");
 }
 
-std::vector<domain::badge_definition>
-badge_definition_repository::read_latest(context ctx) {
+std::vector<domain::badge_definition> badge_definition_repository::read_latest(context ctx) {
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<badge_definition_entity>> |
-        where("valid_to"_c == max.value()) |
-        order_by("code"_c);
+                       where("valid_to"_c == max.value()) | order_by("code"_c);
 
     return execute_read_query<badge_definition_entity, domain::badge_definition>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return badge_definition_mapper::map(entities); },
-        lg(), "Reading latest badge definitions");
+        lg(),
+        "Reading latest badge definitions");
 }
 
 std::vector<domain::badge_definition>
@@ -68,32 +67,36 @@ badge_definition_repository::read_latest(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest badge definition. code: " << code;
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<badge_definition_entity>> |
-        where("code"_c == code && "valid_to"_c == max.value());
+                       where("code"_c == code && "valid_to"_c == max.value());
 
     return execute_read_query<badge_definition_entity, domain::badge_definition>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return badge_definition_mapper::map(entities); },
-        lg(), "Reading latest badge definition by code.");
+        lg(),
+        "Reading latest badge definition by code.");
 }
 
 std::vector<domain::badge_definition>
 badge_definition_repository::read_all(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all badge definition versions. code: " << code;
     const auto query = sqlgen::read<std::vector<badge_definition_entity>> |
-        where("code"_c == code) |
-        order_by("version"_c.desc());
+                       where("code"_c == code) | order_by("version"_c.desc());
 
     return execute_read_query<badge_definition_entity, domain::badge_definition>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return badge_definition_mapper::map(entities); },
-        lg(), "Reading all badge definition versions by code.");
+        lg(),
+        "Reading all badge definition versions by code.");
 }
 
 void badge_definition_repository::remove(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing badge definition: " << code;
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<badge_definition_entity> |
+    const auto query =
+        sqlgen::delete_from<badge_definition_entity> |
         where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max.value());
 
     execute_delete_query(ctx, query, lg(), "Removing badge definition from database.");

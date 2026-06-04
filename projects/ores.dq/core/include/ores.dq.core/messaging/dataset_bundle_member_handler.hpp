@@ -20,17 +20,17 @@
 #ifndef ORES_DQ_CORE_MESSAGING_DATASET_BUNDLE_MEMBER_HANDLER_HPP
 #define ORES_DQ_CORE_MESSAGING_DATASET_BUNDLE_MEMBER_HANDLER_HPP
 
-#include <optional>
-#include <stdexcept>
-#include "ores.nats/domain/message.hpp"
-#include "ores.nats/service/client.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.security/jwt/jwt_authenticator.hpp"
-#include "ores.service/messaging/handler_helpers.hpp"
-#include "ores.service/service/request_context.hpp"
 #include "ores.dq.api/messaging/dataset_bundle_member_protocol.hpp"
 #include "ores.dq.core/service/dataset_bundle_member_service.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/message.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.service/service/request_context.hpp"
+#include <optional>
+#include <stdexcept>
 
 namespace ores::dq::messaging {
 
@@ -41,28 +41,30 @@ using namespace ores::logging;
 
 namespace {
 inline auto& dataset_bundle_member_handler_lg() {
-    static auto instance = ores::logging::make_logger("ores.dq.messaging.dataset_bundle_member_handler");
+    static auto instance =
+        ores::logging::make_logger("ores.dq.messaging.dataset_bundle_member_handler");
     return instance;
 }
 } // namespace
 
 class dataset_bundle_member_handler {
 public:
-    dataset_bundle_member_handler(
-        ores::nats::service::client& nats,
-        ores::database::context ctx,
-        std::optional<ores::security::jwt::jwt_authenticator> verifier)
-        : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier)) {}
+    dataset_bundle_member_handler(ores::nats::service::client& nats,
+                                  ores::database::context ctx,
+                                  std::optional<ores::security::jwt::jwt_authenticator> verifier)
+        : nats_(nats)
+        , ctx_(std::move(ctx))
+        , verifier_(std::move(verifier)) {}
 
     void list(ores::nats::message msg) {
         BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), debug) << "Handling " << msg.subject;
         auto req = decode<get_dataset_bundle_members_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
             return;
         }
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -77,7 +79,8 @@ public:
             BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, resp);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
             get_dataset_bundle_members_response resp;
             resp.total_available_count = 0;
             reply(nats_, msg, resp);
@@ -86,14 +89,13 @@ public:
 
     void by_bundle(ores::nats::message msg) {
         BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), debug) << "Handling " << msg.subject;
-        auto req =
-            decode<get_dataset_bundle_members_by_bundle_request>(msg);
+        auto req = decode<get_dataset_bundle_members_by_bundle_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
             return;
         }
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -101,15 +103,15 @@ public:
         const auto& ctx = *ctx_expected;
         service::dataset_bundle_member_service svc(ctx);
         try {
-            const auto members =
-                svc.list_members_by_bundle(req->bundle_code);
+            const auto members = svc.list_members_by_bundle(req->bundle_code);
             get_dataset_bundle_members_by_bundle_response resp;
             resp.success = true;
             resp.members = members;
             BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, resp);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            BOOST_LOG_SEV(dataset_bundle_member_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
             get_dataset_bundle_members_by_bundle_response resp;
             resp.success = false;
             resp.message = e.what();
@@ -118,7 +120,6 @@ public:
     }
 
 private:
-
     ores::nats::service::client& nats_;
     ores::database::context ctx_;
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;

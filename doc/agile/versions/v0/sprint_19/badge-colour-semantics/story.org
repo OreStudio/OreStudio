@@ -29,11 +29,11 @@ records these rules alongside icons and entity window anatomy.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                 |
 | Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] |
-| Now           | Implementation DONE and merged via PR #1044. |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
-| Next          | UX language documentation task.        |
+| Next          | Nothing — story closed.                |
 | Last touched  | 2026-06-04                               |
 
 * Acceptance
@@ -57,7 +57,7 @@ records these rules alongside icons and entity window anatomy.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:2209A56A-3CBB-43E2-AD4A-188E8098AB81][Fix gray badge misuses; orange fallback; detail dialog badges]] | DONE | 2026-06-04 | 2026-06-04 | Recolour service/unlocked/done; orange fallback in all badge resolvers; BadgeLabelUtils; account detail dialog badges. PR #1044. |
-| [[id:81566322-DDC7-46D5-8A36-DEE1557DBF6D][Start the UX language documentation: colours, icons, entity window anatomy]] | BACKLOG | | | doc/knowledge/ui/ux_language.org: colour semantics, badge catalogue, icon link, entity window anatomy, links incl. Developer Links. |
+| [[id:81566322-DDC7-46D5-8A36-DEE1557DBF6D][Start the UX language documentation: colours, icons, entity window anatomy]] | DONE | 2026-06-04 | 2026-06-04 | doc/knowledge/ui/ux_language.org: colour semantics, badge catalogue, icon link, entity window anatomy, links incl. Developer Links. |
 
 * Decisions
 

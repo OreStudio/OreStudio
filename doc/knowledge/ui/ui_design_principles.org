@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:ui:design:
 #+created: 2026-05-21
-#+updated: 2026-05-21
+#+updated: 2026-06-04
 
 The design system the ORE Studio UI is built against — Jony
 Ive-level precision with intentional personality. Use this to set
@@ -319,6 +319,8 @@ context-driven execution.
 * See also
 
 - [[id:89935F29-7C6C-1E84-EAD3-EC4BD20421F5][design-principles skill]] — the task-shaped entry point.
+- [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]] — the visual-language semantics: colour meanings,
+  badge catalogue, entity window anatomy.
 - [[id:6EF42145-CEE7-4035-806A-A4200A3E003A][Icon guidelines]] — the icon vocabulary.
 - [[id:E81C7FEA-33E4-400A-839A-9D1618BED211][Qt plugin architecture]] — where these principles meet the
   Qt-side technical contract.

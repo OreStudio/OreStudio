@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:ui:icons:design:
 #+created: 2026-05-21
-#+updated: 2026-05-21
+#+updated: 2026-06-04
 
 ORE Studio's icon catalogue lives here as a single visual-language
 reference. Pick an icon by its semantic category, then match the
@@ -908,3 +908,5 @@ Update this skill document:
 
 - [[id:2A167638-8B5A-4691-90CB-4A6B55785108][icon-guidelines skill]] — the task-shaped entry point.
 - [[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][UI design principles]] — broader design language.
+- [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]] — the umbrella visual-language reference linking
+  icons, colour semantics and entity window anatomy.

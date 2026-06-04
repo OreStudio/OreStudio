@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :developer:
 #+created: 2026-05-25
-#+updated: 2026-05-25
+#+updated: 2026-06-04
 
 Quick-reference index of the external services and dashboards used in the ORE
 Studio developer workflow. Covers source hosting, API documentation, community
@@ -47,6 +47,14 @@ share onboarding links with a new contributor or LLM agent.
 |----------+------|
 | C++ clang-format config | [[id:2BE1DCB1-6F10-4568-9945-E1AFA079FC7B][C++ code style: clang-format configuration]] — literate source, all settings documented. |
 | Format recipe | [[id:4CEC17FA-CB28-4B21-B139-AD8F30E02C43][How do I format C++ sources with clang-format?]] |
+
+** Design and UX
+
+| Resource | Link |
+|----------+------|
+| UX Language | [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]] — colour semantics, badge catalogue, entity window anatomy. |
+| UI design principles | [[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][UI design principles]] — typography, colour, spacing, motion. |
+| Icon guidelines | [[id:6EF42145-CEE7-4035-806A-A4200A3E003A][Icon guidelines]] — icon inventory and semantic usage. |
 
 ** Releases
 

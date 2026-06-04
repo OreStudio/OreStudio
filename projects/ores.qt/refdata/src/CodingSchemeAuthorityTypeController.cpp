@@ -19,7 +19,7 @@
  */
 #include "ores.qt/CodingSchemeAuthorityTypeController.hpp"
 #include "ores.dq.api/eventing/coding_scheme_authority_type_changed_event.hpp"
-#include "ores.eventing/domain/event_traits.hpp"
+#include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/CodingSchemeAuthorityTypeDetailDialog.hpp"
 #include "ores.qt/CodingSchemeAuthorityTypeHistoryDialog.hpp"

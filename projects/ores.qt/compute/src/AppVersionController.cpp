@@ -19,7 +19,7 @@
  */
 #include "ores.qt/AppVersionController.hpp"
 #include "ores.compute.api/eventing/app_version_changed_event.hpp"
-#include "ores.eventing/domain/event_traits.hpp"
+#include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.qt/AppVersionDetailDialog.hpp"
 #include "ores.qt/AppVersionHistoryDialog.hpp"
 #include "ores.qt/AppVersionMdiWindow.hpp"

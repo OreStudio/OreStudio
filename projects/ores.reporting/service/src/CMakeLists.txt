@@ -43,7 +43,7 @@ target_link_libraries(${lib_target_name}
         ores.service.lib
         ores.security.lib
         ores.reporting.core.lib
-        ores.eventing.lib
+        ores.eventing.core.lib
         ores.nats.lib
         ores.iam.client.lib
         ores.database.lib

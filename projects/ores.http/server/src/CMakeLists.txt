@@ -41,6 +41,7 @@ target_link_libraries(${lib_target_name}
     PUBLIC
         ores.http.api.lib
         ores.http.core.lib
+        ores.eventing.core.lib
         ores.nats.lib
         ores.service.lib
         ores.telemetry.core.lib

@@ -19,9 +19,9 @@
  */
 #include "ores.reporting.service/app/application.hpp"
 #include "ores.database/service/context_factory.hpp"
-#include "ores.eventing/service/event_bus.hpp"
-#include "ores.eventing/service/postgres_event_source.hpp"
-#include "ores.eventing/service/registrar.hpp"
+#include "ores.eventing.api/service/event_bus.hpp"
+#include "ores.eventing.core/service/postgres_event_source.hpp"
+#include "ores.eventing.core/service/registrar.hpp"
 #include "ores.iam.client/client/service_token_provider.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"

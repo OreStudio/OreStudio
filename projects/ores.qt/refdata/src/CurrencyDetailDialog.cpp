@@ -18,7 +18,7 @@
  *
  */
 #include "ores.qt/CurrencyDetailDialog.hpp"
-#include "ores.eventing/domain/event_traits.hpp"
+#include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/FlagSelectorDialog.hpp"

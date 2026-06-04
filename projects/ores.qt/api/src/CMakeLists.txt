@@ -58,7 +58,7 @@ target_include_directories(${lib_target_name} PRIVATE
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.nats.lib
-        ores.eventing.lib
+        ores.eventing.api.lib
         ores.iam.api.lib
         ores.refdata.api.lib
         ores.compute.api.lib

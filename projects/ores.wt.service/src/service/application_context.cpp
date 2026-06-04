@@ -20,7 +20,7 @@
 #include "ores.wt.service/service/application_context.hpp"
 #include "ores.database/service/context_factory.hpp"
 #include "ores.database/service/tenant_context.hpp"
-#include "ores.eventing/service/registrar.hpp"
+#include "ores.eventing.core/service/registrar.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
 #include "ores.iam.core/service/bootstrap_mode_service.hpp"
 #include "ores.logging/make_logger.hpp"

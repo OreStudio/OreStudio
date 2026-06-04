@@ -19,7 +19,7 @@
  */
 #include "ores.qt/DataDomainController.hpp"
 #include "ores.dq.api/eventing/data_domain_changed_event.hpp"
-#include "ores.eventing/domain/event_traits.hpp"
+#include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DataDomainDetailDialog.hpp"
 #include "ores.qt/DataDomainHistoryDialog.hpp"

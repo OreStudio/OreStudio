@@ -19,7 +19,7 @@
  */
 #include "ores.qt/CatalogController.hpp"
 #include "ores.dq.api/eventing/catalog_changed_event.hpp"
-#include "ores.eventing/domain/event_traits.hpp"
+#include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.qt/CatalogDetailDialog.hpp"
 #include "ores.qt/CatalogHistoryDialog.hpp"
 #include "ores.qt/CatalogMdiWindow.hpp"

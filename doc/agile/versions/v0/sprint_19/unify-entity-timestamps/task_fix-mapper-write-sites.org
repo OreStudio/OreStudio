@@ -30,7 +30,7 @@ timestamp.
 |--------------+----------------------------------------|
 | State        | DONE                                 |
 | Parent story | [[id:71116F94-09A7-43FD-BD56-4B5B25BEAC80][Unify entity timestamp fields: replace optional<db_timestamp> with std::string]] |
-| Now          | Complete. Call sites migrated in PR #1033; function deleted in mop-up. |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing — task closed.                 |
 | Last touched | 2026-06-04                               |

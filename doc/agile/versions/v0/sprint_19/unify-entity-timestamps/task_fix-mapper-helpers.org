@@ -33,7 +33,7 @@ Nullable columns (=completed_at=, =last_event_at=, etc.) must stay as
 |--------------+--------------------------------------------------------------|
 | State        | DONE                                                         |
 | Parent story | [[id:71116F94-09A7-43FD-BD56-4B5B25BEAC80][Unify entity timestamp handling]] |
-| Now          | Complete. Bulk landed in PR #1033; stragglers mopped up on follow-up branch. |
+| Now          | Nothing.                                                     |
 | Waiting on   | Nothing.                                                     |
 | Next         | Nothing — task closed.                                       |
 | Last touched | 2026-06-04                                                   |

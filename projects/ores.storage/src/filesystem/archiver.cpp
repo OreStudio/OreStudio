@@ -51,6 +51,14 @@ using archive_read_ptr = std::unique_ptr<archive, archive_read_deleter>;
 using archive_write_ptr = std::unique_ptr<archive, archive_write_deleter>;
 using archive_entry_ptr = std::unique_ptr<archive_entry, archive_entry_deleter>;
 
+// archive_error_string() returns nullptr when no error message is available.
+// Appending nullptr to std::string is undefined behaviour; use this wrapper
+// at every call site.
+const char* safe_error_string(archive* a) noexcept {
+    const char* err = archive_error_string(a);
+    return err ? err : "unknown error";
+}
+
 }
 
 namespace ores::storage::filesystem {
@@ -67,7 +75,7 @@ void archiver::pack(const fs::path& src_dir, const fs::path& dest_archive) {
 #endif
     if (open_rc != ARCHIVE_OK)
         throw std::runtime_error(std::string("archiver: failed to create archive: ") +
-                                 dest_archive.string() + " — " + archive_error_string(a.get()));
+                                 dest_archive.string() + " — " + safe_error_string(a.get()));
 
     for (const auto& e : fs::recursive_directory_iterator(src_dir)) {
         if (!e.is_regular_file())
@@ -84,7 +92,7 @@ void archiver::pack(const fs::path& src_dir, const fs::path& dest_archive) {
         archive_entry_set_perm(entry.get(), 0644);
         if (archive_write_header(a.get(), entry.get()) < ARCHIVE_OK)
             throw std::runtime_error(std::string("archiver: write header error: ") +
-                                     archive_error_string(a.get()));
+                                     safe_error_string(a.get()));
         std::ifstream in(e.path(), std::ios::binary);
         if (!in)
             throw std::runtime_error("archiver: failed to open file for reading: " +
@@ -94,7 +102,7 @@ void archiver::pack(const fs::path& src_dir, const fs::path& dest_archive) {
             if (archive_write_data(a.get(), buf.data(), static_cast<std::size_t>(in.gcount())) <
                 ARCHIVE_OK)
                 throw std::runtime_error(std::string("archiver: write data error: ") +
-                                         archive_error_string(a.get()));
+                                         safe_error_string(a.get()));
         }
     }
 }
@@ -117,7 +125,7 @@ void archiver::extract(const fs::path& archive, const fs::path& dest_dir) {
 #endif
     if (open_rc != ARCHIVE_OK)
         throw std::runtime_error(std::string("archiver: failed to open archive: ") +
-                                 archive.string() + " — " + archive_error_string(a.get()));
+                                 archive.string() + " — " + safe_error_string(a.get()));
 
     archive_entry* entry = nullptr;
     while (true) {
@@ -126,7 +134,7 @@ void archiver::extract(const fs::path& archive, const fs::path& dest_dir) {
             break;
         if (r < ARCHIVE_OK)
             throw std::runtime_error(std::string("archiver: read error: ") +
-                                     archive_error_string(a.get()));
+                                     safe_error_string(a.get()));
 
         const char* raw = archive_entry_pathname(entry);
         if (!raw)
@@ -141,7 +149,7 @@ void archiver::extract(const fs::path& archive, const fs::path& dest_dir) {
 
         if (archive_write_header(out.get(), entry) < ARCHIVE_OK)
             throw std::runtime_error(std::string("archiver: write header error: ") +
-                                     archive_error_string(out.get()));
+                                     safe_error_string(out.get()));
 
         if (archive_entry_size(entry) > 0) {
             const void* buff = nullptr;
@@ -153,10 +161,10 @@ void archiver::extract(const fs::path& archive, const fs::path& dest_dir) {
                     break;
                 if (rd < ARCHIVE_OK)
                     throw std::runtime_error(std::string("archiver: data read error: ") +
-                                             archive_error_string(a.get()));
+                                             safe_error_string(a.get()));
                 if (archive_write_data_block(out.get(), buff, size, offset) < ARCHIVE_OK)
                     throw std::runtime_error(std::string("archiver: data write error: ") +
-                                             archive_error_string(out.get()));
+                                             safe_error_string(out.get()));
             }
         }
         archive_write_finish_entry(out.get());

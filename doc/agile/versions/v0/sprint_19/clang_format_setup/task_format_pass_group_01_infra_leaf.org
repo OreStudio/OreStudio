@@ -48,7 +48,7 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1050][#1050]] | [format,compass,agile] Initial clang-format pass: group 1 + --branch flag |
 
 * Review
 

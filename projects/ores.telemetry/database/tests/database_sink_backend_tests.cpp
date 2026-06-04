@@ -17,14 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.telemetry.core/log/database_sink_backend.hpp"
-#include "ores.telemetry.core/log/database_sink_utils.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.telemetry.core/domain/resource.hpp"
 #include "ores.telemetry.core/domain/telemetry_log_entry.hpp"
-#include "ores.logging/make_logger.hpp"
-
-#include <catch2/catch_test_macros.hpp>
+#include "ores.telemetry.core/log/database_sink_backend.hpp"
+#include "ores.telemetry.core/log/database_sink_utils.hpp"
 #include <boost/uuid/random_generator.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <vector>
 
 namespace {

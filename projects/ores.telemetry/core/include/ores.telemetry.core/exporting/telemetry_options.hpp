@@ -20,12 +20,12 @@
 #ifndef ORES_TELEMETRY_CORE_EXPORTING_TELEMETRY_OPTIONS_HPP
 #define ORES_TELEMETRY_CORE_EXPORTING_TELEMETRY_OPTIONS_HPP
 
+#include "ores.telemetry.core/export.hpp"
 #include <chrono>
 #include <cstdint>
+#include <filesystem>
 #include <iosfwd>
 #include <string>
-#include <filesystem>
-#include "ores.telemetry.core/export.hpp"
 
 namespace ores::telemetry::exporting {
 

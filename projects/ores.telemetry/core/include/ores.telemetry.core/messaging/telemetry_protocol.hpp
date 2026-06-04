@@ -20,19 +20,18 @@
 #ifndef ORES_TELEMETRY_CORE_MESSAGING_TELEMETRY_PROTOCOL_HPP
 #define ORES_TELEMETRY_CORE_MESSAGING_TELEMETRY_PROTOCOL_HPP
 
+#include "ores.telemetry.core/domain/telemetry_log_entry.hpp"
+#include "ores.telemetry.core/domain/telemetry_query.hpp"
 #include <cstdint>
 #include <string>
 #include <string_view>
 #include <vector>
-#include "ores.telemetry.core/domain/telemetry_log_entry.hpp"
-#include "ores.telemetry.core/domain/telemetry_query.hpp"
 
 namespace ores::telemetry::messaging {
 
 struct get_telemetry_logs_request {
     using response_type = struct get_telemetry_logs_response;
-    static constexpr std::string_view nats_subject =
-        "telemetry.v1.logs.list";
+    static constexpr std::string_view nats_subject = "telemetry.v1.logs.list";
     domain::telemetry_query query;
 };
 

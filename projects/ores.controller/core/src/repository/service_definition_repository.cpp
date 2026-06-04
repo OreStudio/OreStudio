@@ -18,12 +18,11 @@
  *
  */
 #include "ores.controller.core/repository/service_definition_repository.hpp"
-
-#include <sqlgen/postgres.hpp>
-#include "ores.database/repository/helpers.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.controller.core/repository/service_definition_entity.hpp"
 #include "ores.controller.core/repository/service_definition_mapper.hpp"
+#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
+#include <sqlgen/postgres.hpp>
 
 namespace ores::controller::repository {
 
@@ -37,23 +36,19 @@ service_definition_repository::read_latest(context ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest service definitions.";
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<service_definition_entity>> |
-        where("valid_to"_c == max.value()) |
-        order_by("service_name"_c);
+                       where("valid_to"_c == max.value()) | order_by("service_name"_c);
 
-    return execute_read_query<service_definition_entity,
-        api::domain::service_definition>(
-        ctx, query,
-        [](const auto& entities) {
-            return service_definition_mapper::map(entities);
-        },
-        lg(), "Reading latest service definitions.");
+    return execute_read_query<service_definition_entity, api::domain::service_definition>(
+        ctx,
+        query,
+        [](const auto& entities) { return service_definition_mapper::map(entities); },
+        lg(),
+        "Reading latest service definitions.");
 }
 
-void service_definition_repository::save(context ctx,
-    const api::domain::service_definition& v) {
+void service_definition_repository::save(context ctx, const api::domain::service_definition& v) {
     BOOST_LOG_SEV(lg(), debug) << "Saving service definition: " << v.service_name;
-    execute_write_query(ctx, service_definition_mapper::map(v), lg(),
-        "Saving service definition.");
+    execute_write_query(ctx, service_definition_mapper::map(v), lg(), "Saving service definition.");
 }
 
 }

@@ -17,16 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.marketdata.core/repository/market_series_repository.hpp"
-
-#include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
-#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.api/domain/market_series_json_io.hpp" // IWYU pragma: keep.
 #include "ores.marketdata.api/generators/market_series_generator.hpp"
+#include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
+#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 
@@ -114,8 +113,7 @@ TEST_CASE("read_latest_market_series_by_type", tags) {
     auto s = generate_synthetic_market_series(ctx);
     repo.write(h.context(), s);
 
-    auto read = repo.read_latest_by_type(h.context(),
-        s.series_type, s.metric, s.qualifier);
+    auto read = repo.read_latest_by_type(h.context(), s.series_type, s.metric, s.qualifier);
     BOOST_LOG_SEV(lg, debug) << "Read by type: " << read;
 
     REQUIRE(read.size() == 1);

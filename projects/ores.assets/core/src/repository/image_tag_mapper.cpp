@@ -18,10 +18,9 @@
  *
  */
 #include "ores.assets.core/repository/image_tag_mapper.hpp"
-
+#include "ores.database/repository/mapper_helpers.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include "ores.database/repository/mapper_helpers.hpp"
 
 namespace ores::assets::repository {
 
@@ -56,22 +55,14 @@ image_tag_entity image_tag_mapper::map(const domain::image_tag& v) {
     return r;
 }
 
-std::vector<domain::image_tag>
-image_tag_mapper::map(const std::vector<image_tag_entity>& v) {
+std::vector<domain::image_tag> image_tag_mapper::map(const std::vector<image_tag_entity>& v) {
     return map_vector<image_tag_entity, domain::image_tag>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
-std::vector<image_tag_entity>
-image_tag_mapper::map(const std::vector<domain::image_tag>& v) {
+std::vector<image_tag_entity> image_tag_mapper::map(const std::vector<domain::image_tag>& v) {
     return map_vector<domain::image_tag, image_tag_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

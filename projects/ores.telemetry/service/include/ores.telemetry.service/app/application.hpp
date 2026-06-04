@@ -20,11 +20,11 @@
 #ifndef ORES_TELEMETRY_SERVICE_APP_APPLICATION_HPP
 #define ORES_TELEMETRY_SERVICE_APP_APPLICATION_HPP
 
-#include <boost/asio/awaitable.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/database_options.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.telemetry.service/config/options.hpp"
+#include <boost/asio/awaitable.hpp>
 
 namespace ores::telemetry::service::app {
 
@@ -47,12 +47,11 @@ public:
     application& operator=(const application&) = delete;
 
 private:
-    static ores::database::context
-    make_context(const ores::database::database_options& db_opts);
+    static ores::database::context make_context(const ores::database::database_options& db_opts);
 
 public:
     boost::asio::awaitable<void> run(boost::asio::io_context& io_ctx,
-        const config::options& cfg) const;
+                                     const config::options& cfg) const;
 };
 
 }

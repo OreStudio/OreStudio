@@ -20,11 +20,11 @@
 #ifndef ORES_TELEMETRY_REPOSITORY_TELEMETRY_ENTITY_HPP
 #define ORES_TELEMETRY_REPOSITORY_TELEMETRY_ENTITY_HPP
 
-#include <string>
-#include <cstdint>
-#include <iosfwd>
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
+#include <cstdint>
+#include <iosfwd>
+#include <string>
 
 namespace ores::telemetry::database::repository {
 

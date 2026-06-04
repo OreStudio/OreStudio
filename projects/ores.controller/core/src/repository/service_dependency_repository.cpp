@@ -18,11 +18,10 @@
  *
  */
 #include "ores.controller.core/repository/service_dependency_repository.hpp"
-
-#include <sqlgen/postgres.hpp>
-#include "ores.database/repository/helpers.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.controller.core/repository/service_dependency_entity.hpp"
+#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
+#include <sqlgen/postgres.hpp>
 
 namespace ores::controller::repository {
 
@@ -35,11 +34,8 @@ service_dependency_repository::read_all(context ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Reading service dependencies.";
 
     const auto query = sqlgen::read<std::vector<service_dependency_entity>>;
-    const auto entities = execute_read_query<service_dependency_entity,
-        service_dependency_entity>(
-        ctx, query,
-        [](const auto& v) { return v; },
-        lg(), "Reading service dependencies.");
+    const auto entities = execute_read_query<service_dependency_entity, service_dependency_entity>(
+        ctx, query, [](const auto& v) { return v; }, lg(), "Reading service dependencies.");
 
     std::vector<std::pair<std::string, std::string>> result;
     result.reserve(entities.size());

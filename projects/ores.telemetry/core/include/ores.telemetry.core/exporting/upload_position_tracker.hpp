@@ -20,10 +20,10 @@
 #ifndef ORES_TELEMETRY_CORE_EXPORTING_UPLOAD_POSITION_TRACKER_HPP
 #define ORES_TELEMETRY_CORE_EXPORTING_UPLOAD_POSITION_TRACKER_HPP
 
+#include "ores.telemetry.core/export.hpp"
 #include <cstdint>
 #include <filesystem>
 #include <mutex>
-#include "ores.telemetry.core/export.hpp"
 
 namespace ores::telemetry::exporting {
 

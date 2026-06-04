@@ -18,15 +18,14 @@
  *
  */
 #include "ores.telemetry.database/repository/telemetry_mapper.hpp"
-
-#include <format>
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
-#include "sqlgen/Timestamp.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.telemetry.core/log/skip_telemetry_guard.hpp"
+#include "sqlgen/Timestamp.hpp"
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <format>
 
 namespace ores::telemetry::database::repository {
 
@@ -36,8 +35,7 @@ using ores::platform::time::datetime;
 
 namespace {
 
-inline static std::string_view logger_name =
-    "ores.telemetry.repository.telemetry_mapper";
+inline static std::string_view logger_name = "ores.telemetry.repository.telemetry_mapper";
 
 [[nodiscard]] auto& lg() {
     static auto instance = make_logger(logger_name);
@@ -47,8 +45,7 @@ inline static std::string_view logger_name =
 /**
  * @brief Parses a timestamp string into a time_point.
  */
-std::optional<std::chrono::system_clock::time_point>
-parse_timestamp(const std::string& str) {
+std::optional<std::chrono::system_clock::time_point> parse_timestamp(const std::string& str) {
     if (str.empty())
         return std::nullopt;
     return ores::platform::time::datetime::from_iso8601_utc(str);
@@ -56,9 +53,8 @@ parse_timestamp(const std::string& str) {
 
 }
 
-telemetry_entity telemetry_mapper::to_entity(
-    const domain::telemetry_log_entry& entry,
-    const std::string& tenant_id) {
+telemetry_entity telemetry_mapper::to_entity(const domain::telemetry_log_entry& entry,
+                                             const std::string& tenant_id) {
     ores::telemetry::log::skip_telemetry_guard guard;
     telemetry_entity r;
 
@@ -67,12 +63,14 @@ telemetry_entity telemetry_mapper::to_entity(
     r.timestamp = datetime::to_db_string(entry.timestamp);
     r.source = std::string(domain::to_string(entry.source));
     r.source_name = entry.source_name;
-    r.session_id = entry.session_id
-        ? std::optional<std::string>(boost::lexical_cast<std::string>(*entry.session_id))
-        : std::nullopt;
-    r.account_id = entry.account_id
-        ? std::optional<std::string>(boost::lexical_cast<std::string>(*entry.account_id))
-        : std::nullopt;
+    r.session_id =
+        entry.session_id ?
+            std::optional<std::string>(boost::lexical_cast<std::string>(*entry.session_id)) :
+            std::nullopt;
+    r.account_id =
+        entry.account_id ?
+            std::optional<std::string>(boost::lexical_cast<std::string>(*entry.account_id)) :
+            std::nullopt;
     r.level = entry.level;
     r.component = entry.component;
     r.message = entry.message;
@@ -82,8 +80,7 @@ telemetry_entity telemetry_mapper::to_entity(
     return r;
 }
 
-domain::telemetry_log_entry telemetry_mapper::to_domain(
-    const telemetry_entity& entity) {
+domain::telemetry_log_entry telemetry_mapper::to_domain(const telemetry_entity& entity) {
     ores::telemetry::log::skip_telemetry_guard guard;
     domain::telemetry_log_entry r;
     using boost::uuids::uuid;
@@ -92,12 +89,12 @@ domain::telemetry_log_entry telemetry_mapper::to_domain(
     r.timestamp = timestamp_to_timepoint(entity.timestamp.value());
     r.source = domain::telemetry_source_from_string(entity.source);
     r.source_name = entity.source_name;
-    r.session_id = entity.session_id.has_value()
-        ? std::optional<uuid>(boost::lexical_cast<uuid>(*entity.session_id))
-        : std::nullopt;
-    r.account_id = entity.account_id.has_value()
-        ? std::optional<uuid>(boost::lexical_cast<uuid>(*entity.account_id))
-        : std::nullopt;
+    r.session_id = entity.session_id.has_value() ?
+                       std::optional<uuid>(boost::lexical_cast<uuid>(*entity.session_id)) :
+                       std::nullopt;
+    r.account_id = entity.account_id.has_value() ?
+                       std::optional<uuid>(boost::lexical_cast<uuid>(*entity.account_id)) :
+                       std::nullopt;
     r.level = entity.level;
     r.component = entity.component;
     r.message = entity.message;
@@ -107,8 +104,7 @@ domain::telemetry_log_entry telemetry_mapper::to_domain(
     return r;
 }
 
-domain::telemetry_stats telemetry_mapper::to_domain(
-    const telemetry_stats_hourly_entity& entity) {
+domain::telemetry_stats telemetry_mapper::to_domain(const telemetry_stats_hourly_entity& entity) {
     ores::telemetry::log::skip_telemetry_guard guard;
     domain::telemetry_stats r;
 
@@ -127,8 +123,7 @@ domain::telemetry_stats telemetry_mapper::to_domain(
     return r;
 }
 
-domain::telemetry_stats telemetry_mapper::to_domain(
-    const telemetry_stats_daily_entity& entity) {
+domain::telemetry_stats telemetry_mapper::to_domain(const telemetry_stats_daily_entity& entity) {
     ores::telemetry::log::skip_telemetry_guard guard;
     domain::telemetry_stats r;
 
@@ -148,9 +143,8 @@ domain::telemetry_stats telemetry_mapper::to_domain(
     return r;
 }
 
-nats_server_sample_entity telemetry_mapper::to_entity(
-    const domain::nats_server_sample& sample,
-    const std::string& tenant_id) {
+nats_server_sample_entity telemetry_mapper::to_entity(const domain::nats_server_sample& sample,
+                                                      const std::string& tenant_id) {
     nats_server_sample_entity r;
     r.sampled_at = datetime::to_db_string(sample.sampled_at);
     r.tenant_id = tenant_id;
@@ -164,8 +158,7 @@ nats_server_sample_entity telemetry_mapper::to_entity(
     return r;
 }
 
-domain::nats_server_sample telemetry_mapper::to_domain(
-    const nats_server_sample_entity& entity) {
+domain::nats_server_sample telemetry_mapper::to_domain(const nats_server_sample_entity& entity) {
     domain::nats_server_sample r;
     r.sampled_at = timestamp_to_timepoint(entity.sampled_at.value());
     r.in_msgs = static_cast<std::uint64_t>(entity.in_msgs);
@@ -178,9 +171,8 @@ domain::nats_server_sample telemetry_mapper::to_domain(
     return r;
 }
 
-nats_stream_sample_entity telemetry_mapper::to_entity(
-    const domain::nats_stream_sample& sample,
-    const std::string& tenant_id) {
+nats_stream_sample_entity telemetry_mapper::to_entity(const domain::nats_stream_sample& sample,
+                                                      const std::string& tenant_id) {
     nats_stream_sample_entity r;
     r.sampled_at = datetime::to_db_string(sample.sampled_at);
     r.tenant_id = tenant_id;
@@ -191,8 +183,7 @@ nats_stream_sample_entity telemetry_mapper::to_entity(
     return r;
 }
 
-domain::nats_stream_sample telemetry_mapper::to_domain(
-    const nats_stream_sample_entity& entity) {
+domain::nats_stream_sample telemetry_mapper::to_domain(const nats_stream_sample_entity& entity) {
     domain::nats_stream_sample r;
     r.sampled_at = timestamp_to_timepoint(entity.sampled_at.value());
     r.stream_name = entity.stream_name.value();
@@ -202,8 +193,7 @@ domain::nats_stream_sample telemetry_mapper::to_domain(
     return r;
 }
 
-service_sample_entity telemetry_mapper::to_entity(
-    const domain::service_sample& sample) {
+service_sample_entity telemetry_mapper::to_entity(const domain::service_sample& sample) {
     service_sample_entity r;
     r.sampled_at = datetime::to_db_string(sample.sampled_at);
     r.service_name = sample.service_name;
@@ -212,8 +202,7 @@ service_sample_entity telemetry_mapper::to_entity(
     return r;
 }
 
-domain::service_sample telemetry_mapper::to_domain(
-    const service_sample_entity& entity) {
+domain::service_sample telemetry_mapper::to_domain(const service_sample_entity& entity) {
     domain::service_sample r;
     r.sampled_at = timestamp_to_timepoint(entity.sampled_at.value());
     r.service_name = entity.service_name.value();

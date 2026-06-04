@@ -18,15 +18,14 @@
  *
  */
 #include "ores.marketdata.api/generators/market_observation_generator.hpp"
-
 #include <atomic>
 #include <format>
 
 namespace ores::marketdata::generator {
 
-domain::market_observation generate_synthetic_market_observation(
-    const boost::uuids::uuid& series_id,
-    utility::generation::generation_context& ctx) {
+domain::market_observation
+generate_synthetic_market_observation(const boost::uuids::uuid& series_id,
+                                      utility::generation::generation_context& ctx) {
     static std::atomic<int> counter{0};
     const int n = ++counter;
 
@@ -46,8 +45,8 @@ domain::market_observation generate_synthetic_market_observation(
 
 std::vector<domain::market_observation>
 generate_synthetic_market_observations(std::size_t n,
-    const boost::uuids::uuid& series_id,
-    utility::generation::generation_context& ctx) {
+                                       const boost::uuids::uuid& series_id,
+                                       utility::generation::generation_context& ctx) {
     std::vector<domain::market_observation> r;
     r.reserve(n);
     while (r.size() < n)

@@ -20,16 +20,15 @@
 #ifndef ORES_CONTROLLER_SERVICE_CONFIG_PARSER_EXCEPTION_HPP
 #define ORES_CONTROLLER_SERVICE_CONFIG_PARSER_EXCEPTION_HPP
 
-#include <string>
 #include <boost/exception/info.hpp>
+#include <string>
 
 namespace ores::controller::service::config {
 
 /**
  * @brief A command-line parsing error has occurred.
  */
-class parser_exception : public virtual std::exception,
-                         public virtual boost::exception {
+class parser_exception : public virtual std::exception, public virtual boost::exception {
 public:
     explicit parser_exception(std::string_view message = "")
         : message_(message) {}

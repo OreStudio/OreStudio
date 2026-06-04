@@ -20,22 +20,22 @@
 #ifndef ORES_TELEMETRY_REPOSITORY_TELEMETRY_REPOSITORY_HPP
 #define ORES_TELEMETRY_REPOSITORY_TELEMETRY_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include <optional>
-#include <boost/uuid/uuid.hpp>
-#include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.telemetry.core/domain/nats_samples_query.hpp"
+#include "ores.telemetry.core/domain/nats_server_sample.hpp"
+#include "ores.telemetry.core/domain/nats_stream_sample.hpp"
+#include "ores.telemetry.core/domain/service_sample.hpp"
+#include "ores.telemetry.core/domain/telemetry_batch.hpp"
 #include "ores.telemetry.core/domain/telemetry_log_entry.hpp"
 #include "ores.telemetry.core/domain/telemetry_query.hpp"
 #include "ores.telemetry.core/domain/telemetry_stats.hpp"
-#include "ores.telemetry.core/domain/telemetry_batch.hpp"
-#include "ores.telemetry.core/domain/nats_server_sample.hpp"
-#include "ores.telemetry.core/domain/nats_stream_sample.hpp"
-#include "ores.telemetry.core/domain/nats_samples_query.hpp"
-#include "ores.telemetry.core/domain/service_sample.hpp"
 #include "ores.telemetry.database/export.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <optional>
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::telemetry::database::repository {
 
@@ -47,8 +47,7 @@ namespace ores::telemetry::database::repository {
  */
 class ORES_TELEMETRY_DATABASE_EXPORT telemetry_repository {
 private:
-    inline static std::string_view logger_name =
-        "ores.telemetry.repository.telemetry_repository";
+    inline static std::string_view logger_name = "ores.telemetry.repository.telemetry_repository";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -81,8 +80,7 @@ public:
     /**
      * @brief Queries log entries with filters.
      */
-    std::vector<domain::telemetry_log_entry> query(context ctx,
-        const domain::telemetry_query& q);
+    std::vector<domain::telemetry_log_entry> query(context ctx, const domain::telemetry_query& q);
 
     /**
      * @brief Counts log entries matching a query.
@@ -99,9 +97,8 @@ public:
      * @param limit Maximum number of logs to return
      * @return Logs ordered by timestamp descending (newest first)
      */
-    std::vector<domain::telemetry_log_entry> read_by_session(context ctx,
-        const boost::uuids::uuid& session_id,
-        std::uint32_t limit = 1000);
+    std::vector<domain::telemetry_log_entry>
+    read_by_session(context ctx, const boost::uuids::uuid& session_id, std::uint32_t limit = 1000);
 
     /**
      * @brief Reads logs for a specific account.
@@ -112,23 +109,24 @@ public:
      * @param end End of time range
      * @param limit Maximum number of logs to return
      */
-    std::vector<domain::telemetry_log_entry> read_by_account(context ctx,
-        const boost::uuids::uuid& account_id,
-        const std::chrono::system_clock::time_point& start,
-        const std::chrono::system_clock::time_point& end,
-        std::uint32_t limit = 1000);
+    std::vector<domain::telemetry_log_entry>
+    read_by_account(context ctx,
+                    const boost::uuids::uuid& account_id,
+                    const std::chrono::system_clock::time_point& start,
+                    const std::chrono::system_clock::time_point& end,
+                    std::uint32_t limit = 1000);
 
     /**
      * @brief Reads hourly statistics.
      */
     std::vector<domain::telemetry_stats> read_hourly_stats(context ctx,
-        const domain::telemetry_stats_query& q);
+                                                           const domain::telemetry_stats_query& q);
 
     /**
      * @brief Reads daily statistics.
      */
     std::vector<domain::telemetry_stats> read_daily_stats(context ctx,
-        const domain::telemetry_stats_query& q);
+                                                          const domain::telemetry_stats_query& q);
 
     /**
      * @brief Gets a summary of telemetry activity.
@@ -145,8 +143,8 @@ public:
      *
      * @param ctx The database context
      */
-    std::uint64_t count_errors(context ctx, const std::string& source_name,
-        std::uint32_t hours = 1);
+    std::uint64_t
+    count_errors(context ctx, const std::string& source_name, std::uint32_t hours = 1);
 
     /**
      * @brief Deletes logs older than the specified retention period.
@@ -160,31 +158,29 @@ public:
      * @return Number of logs deleted
      */
     std::uint64_t delete_old_logs(context ctx,
-        const std::chrono::system_clock::time_point& older_than);
+                                  const std::chrono::system_clock::time_point& older_than);
 
     /**
      * @brief Inserts a single NATS server-level metrics sample.
      */
-    void insert_server_sample(context ctx,
-        const domain::nats_server_sample& sample);
+    void insert_server_sample(context ctx, const domain::nats_server_sample& sample);
 
     /**
      * @brief Inserts a batch of NATS per-stream metrics samples.
      */
-    void insert_stream_samples(context ctx,
-        const std::vector<domain::nats_stream_sample>& samples);
+    void insert_stream_samples(context ctx, const std::vector<domain::nats_stream_sample>& samples);
 
     /**
      * @brief Queries NATS server samples within a time range.
      */
-    std::vector<domain::nats_server_sample> query_server_samples(context ctx,
-        const domain::nats_server_samples_query& q);
+    std::vector<domain::nats_server_sample>
+    query_server_samples(context ctx, const domain::nats_server_samples_query& q);
 
     /**
      * @brief Queries NATS stream samples within a time range.
      */
-    std::vector<domain::nats_stream_sample> query_stream_samples(context ctx,
-        const domain::nats_stream_samples_query& q);
+    std::vector<domain::nats_stream_sample>
+    query_stream_samples(context ctx, const domain::nats_stream_samples_query& q);
 
     /**
      * @brief Inserts a single service heartbeat sample.
@@ -192,8 +188,7 @@ public:
      * Called by the telemetry service each time it receives a heartbeat
      * publish from a domain service.
      */
-    void insert_service_sample(context ctx,
-        const domain::service_sample& sample);
+    void insert_service_sample(context ctx, const domain::service_sample& sample);
 
     /**
      * @brief Returns the latest heartbeat per (service_name, instance_id).

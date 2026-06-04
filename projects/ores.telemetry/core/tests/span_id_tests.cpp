@@ -17,14 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.logging/make_logger.hpp"
 #include "ores.telemetry.core/domain/span_id.hpp"
 #include "ores.telemetry.core/generators/span_id_generator.hpp"
-
 #include <catch2/catch_test_macros.hpp>
 #include <set>
 #include <thread>
 #include <vector>
-#include "ores.logging/make_logger.hpp"
 
 namespace {
 

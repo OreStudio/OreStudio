@@ -30,12 +30,12 @@ std::uint16_t trace_id_generator::derive_machine_id() {
 }
 
 trace_id_generator::trace_id_generator()
-    : machine_id_(derive_machine_id()),
-      random_engine_(std::random_device{}()) {}
+    : machine_id_(derive_machine_id())
+    , random_engine_(std::random_device{}()) {}
 
 trace_id_generator::trace_id_generator(std::uint16_t machine_id)
-    : machine_id_(machine_id),
-      random_engine_(std::random_device{}()) {}
+    : machine_id_(machine_id)
+    , random_engine_(std::random_device{}()) {}
 
 domain::trace_id trace_id_generator::operator()() {
     std::lock_guard<std::mutex> lock(mutex_);
@@ -44,8 +44,8 @@ domain::trace_id trace_id_generator::operator()() {
 
     // Get current timestamp in milliseconds
     const auto now = std::chrono::system_clock::now();
-    const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
-        now.time_since_epoch()).count();
+    const auto ms =
+        std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
 
     // Bytes 0-5: 48-bit timestamp (big-endian for sortability)
     result.bytes[0] = static_cast<std::byte>((ms >> 40) & 0xFF);

@@ -20,16 +20,16 @@
 #ifndef ORES_TELEMETRY_CORE_DOMAIN_SPAN_HPP
 #define ORES_TELEMETRY_CORE_DOMAIN_SPAN_HPP
 
+#include "ores.telemetry.core/domain/attribute_value.hpp"
+#include "ores.telemetry.core/domain/span_context.hpp"
+#include "ores.telemetry.core/domain/span_kind.hpp"
+#include "ores.telemetry.core/domain/span_link.hpp"
+#include "ores.telemetry.core/domain/span_status.hpp"
+#include "ores.telemetry.core/export.hpp"
 #include <chrono>
 #include <optional>
 #include <string>
 #include <vector>
-#include "ores.telemetry.core/domain/span_context.hpp"
-#include "ores.telemetry.core/domain/span_kind.hpp"
-#include "ores.telemetry.core/domain/span_status.hpp"
-#include "ores.telemetry.core/domain/span_link.hpp"
-#include "ores.telemetry.core/domain/attribute_value.hpp"
-#include "ores.telemetry.core/export.hpp"
 
 namespace ores::telemetry::domain {
 

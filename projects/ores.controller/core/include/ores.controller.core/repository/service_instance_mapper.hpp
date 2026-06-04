@@ -20,11 +20,11 @@
 #ifndef ORES_CONTROLLER_CORE_REPOSITORY_SERVICE_INSTANCE_MAPPER_HPP
 #define ORES_CONTROLLER_CORE_REPOSITORY_SERVICE_INSTANCE_MAPPER_HPP
 
-#include <vector>
-#include "ores.logging/make_logger.hpp"
 #include "ores.controller.api/domain/service_instance.hpp"
-#include "ores.controller.core/repository/service_instance_entity.hpp"
 #include "ores.controller.core/export.hpp"
+#include "ores.controller.core/repository/service_instance_entity.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <vector>
 
 namespace ores::controller::repository {
 

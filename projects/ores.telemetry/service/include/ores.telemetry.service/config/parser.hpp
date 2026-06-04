@@ -20,12 +20,12 @@
 #ifndef ORES_TELEMETRY_SERVICE_CONFIG_PARSER_HPP
 #define ORES_TELEMETRY_SERVICE_CONFIG_PARSER_HPP
 
-#include <iosfwd>
-#include <vector>
-#include <string>
-#include <optional>
-#include "ores.telemetry.service/export.hpp"
 #include "ores.telemetry.service/config/options.hpp"
+#include "ores.telemetry.service/export.hpp"
+#include <iosfwd>
+#include <optional>
+#include <string>
+#include <vector>
 
 namespace ores::telemetry::service::config {
 
@@ -38,8 +38,7 @@ namespace ores::telemetry::service::config {
 class ORES_TELEMETRY_SERVICE_EXPORT parser final {
 public:
     std::optional<options>
-    parse(const std::vector<std::string>& arguments, std::ostream& info,
-        std::ostream& error) const;
+    parse(const std::vector<std::string>& arguments, std::ostream& info, std::ostream& error) const;
 };
 
 }

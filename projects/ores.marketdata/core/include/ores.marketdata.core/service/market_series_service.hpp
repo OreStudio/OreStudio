@@ -20,14 +20,14 @@
 #ifndef ORES_MARKETDATA_CORE_SERVICE_MARKET_SERIES_SERVICE_HPP
 #define ORES_MARKETDATA_CORE_SERVICE_MARKET_SERIES_SERVICE_HPP
 
-#include <vector>
-#include <optional>
-#include <boost/uuid/uuid.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
-#include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.core/export.hpp"
+#include "ores.marketdata.core/repository/market_series_repository.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <optional>
+#include <vector>
 
 namespace ores::marketdata::service {
 
@@ -36,8 +36,7 @@ namespace ores::marketdata::service {
  */
 class ORES_MARKETDATA_CORE_EXPORT market_series_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.marketdata.service.market_series_service";
+    inline static std::string_view logger_name = "ores.marketdata.service.market_series_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -51,9 +50,9 @@ public:
     explicit market_series_service(context ctx);
 
     std::vector<domain::market_series> list();
-    std::vector<domain::market_series>
-    find_by_type(const std::string& series_type, const std::string& metric,
-        const std::string& qualifier);
+    std::vector<domain::market_series> find_by_type(const std::string& series_type,
+                                                    const std::string& metric,
+                                                    const std::string& qualifier);
 
     void save(const domain::market_series& v);
     void save(const std::vector<domain::market_series>& v);

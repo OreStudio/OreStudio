@@ -18,7 +18,6 @@
  *
  */
 #include "ores.assets.api/domain/tag_json_io.hpp"
-
 #include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>

@@ -18,7 +18,6 @@
  *
  */
 #include "ores.marketdata.core/repository/market_fixing_entity.hpp"
-
 #include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>

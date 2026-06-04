@@ -19,8 +19,8 @@
  */
 #include "ores.telemetry.core/domain/telemetry_context.hpp"
 #include "ores.telemetry.core/domain/semantic_conventions.hpp"
-#include "ores.telemetry.core/generators/trace_id_generator.hpp"
 #include "ores.telemetry.core/generators/span_id_generator.hpp"
+#include "ores.telemetry.core/generators/trace_id_generator.hpp"
 
 namespace ores::telemetry::domain {
 
@@ -32,9 +32,9 @@ generators::span_id_generator g_span_gen;
 
 }
 
-telemetry_context::telemetry_context(span_context ctx,
-                                     std::shared_ptr<resource> res)
-    : ctx_(std::move(ctx)), resource_(std::move(res)) {}
+telemetry_context::telemetry_context(span_context ctx, std::shared_ptr<resource> res)
+    : ctx_(std::move(ctx))
+    , resource_(std::move(res)) {}
 
 telemetry_context telemetry_context::create_root(std::shared_ptr<resource> res) {
     span_context ctx;
@@ -65,9 +65,8 @@ std::shared_ptr<resource> telemetry_context::resource_ptr() const {
     return resource_;
 }
 
-std::pair<telemetry_context, span> telemetry_context::start_span(
-    std::string_view name,
-    span_kind kind) const {
+std::pair<telemetry_context, span> telemetry_context::start_span(std::string_view name,
+                                                                 span_kind kind) const {
 
     const auto new_span_id = g_span_gen();
 
@@ -88,9 +87,8 @@ std::pair<telemetry_context, span> telemetry_context::start_span(
     return {telemetry_context(new_ctx, resource_), std::move(new_span)};
 }
 
-std::pair<telemetry_context, span> telemetry_context::start_linked_trace(
-    std::string_view name,
-    span_kind kind) const {
+std::pair<telemetry_context, span> telemetry_context::start_linked_trace(std::string_view name,
+                                                                         span_kind kind) const {
 
     const auto new_trace_id = g_trace_gen();
     const auto new_span_id = g_span_gen();
@@ -112,8 +110,7 @@ std::pair<telemetry_context, span> telemetry_context::start_linked_trace(
     // Add a link to the originating span
     span_link link;
     link.context = ctx_;
-    link.attrs[std::string(semconv::link::relationship)] =
-        std::string(semconv::link::triggered_by);
+    link.attrs[std::string(semconv::link::relationship)] = std::string(semconv::link::triggered_by);
     new_span.links.push_back(std::move(link));
 
     return {telemetry_context(new_ctx, resource_), std::move(new_span)};

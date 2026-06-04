@@ -20,14 +20,14 @@
 #ifndef ORES_CONTROLLER_CORE_REPOSITORY_SERVICE_INSTANCE_REPOSITORY_HPP
 #define ORES_CONTROLLER_CORE_REPOSITORY_SERVICE_INSTANCE_REPOSITORY_HPP
 
-#include <string>
-#include <optional>
-#include <vector>
-#include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
-#include "ores.database/domain/context.hpp"
 #include "ores.controller.api/domain/service_instance.hpp"
 #include "ores.controller.core/export.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <optional>
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::controller::repository {
 

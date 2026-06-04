@@ -18,16 +18,15 @@
  *
  */
 #include "ores.telemetry.core/log/database_sink_backend.hpp"
-
-#include <boost/log/attributes/value_extraction.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/uuid/random_generator.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.logging/boost_severity.hpp"
-#include "ores.telemetry.core/log/skip_telemetry_guard.hpp"
-#include "ores.telemetry.core/domain/trace_id.hpp"
 #include "ores.telemetry.core/domain/span_id.hpp"
+#include "ores.telemetry.core/domain/trace_id.hpp"
+#include "ores.telemetry.core/log/skip_telemetry_guard.hpp"
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/log/attributes/value_extraction.hpp>
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::telemetry::log {
 
@@ -36,41 +35,43 @@ namespace {
 /**
  * @brief Converts boost::posix_time::ptime to std::chrono::system_clock::time_point.
  */
-std::chrono::system_clock::time_point to_system_clock(
-    const boost::posix_time::ptime& pt) {
+std::chrono::system_clock::time_point to_system_clock(const boost::posix_time::ptime& pt) {
     if (pt.is_not_a_date_time()) {
         return std::chrono::system_clock::now();
     }
 
-    static const boost::posix_time::ptime epoch(
-        boost::gregorian::date(1970, 1, 1));
+    static const boost::posix_time::ptime epoch(boost::gregorian::date(1970, 1, 1));
     const auto duration = pt - epoch;
     const auto microseconds = duration.total_microseconds();
-    return std::chrono::system_clock::time_point(
-        std::chrono::microseconds(microseconds));
+    return std::chrono::system_clock::time_point(std::chrono::microseconds(microseconds));
 }
 
 /**
  * @brief Converts boost severity to string representation.
  */
 std::string severity_to_string(ores::logging::boost_severity sev) {
-    switch(sev) {
-        case ores::logging::boost_severity::trace: return "trace";
-        case ores::logging::boost_severity::debug: return "debug";
-        case ores::logging::boost_severity::info: return "info";
-        case ores::logging::boost_severity::warn: return "warn";
-        case ores::logging::boost_severity::error: return "error";
-        default: return "info";
+    switch (sev) {
+        case ores::logging::boost_severity::trace:
+            return "trace";
+        case ores::logging::boost_severity::debug:
+            return "debug";
+        case ores::logging::boost_severity::info:
+            return "info";
+        case ores::logging::boost_severity::warn:
+            return "warn";
+        case ores::logging::boost_severity::error:
+            return "error";
+        default:
+            return "info";
     }
 }
 
 } // anonymous namespace
 
-database_sink_backend::database_sink_backend(
-    std::shared_ptr<domain::resource> resource,
-    database_log_handler handler,
-    const std::string& source_type,
-    const std::string& source_name)
+database_sink_backend::database_sink_backend(std::shared_ptr<domain::resource> resource,
+                                             database_log_handler handler,
+                                             const std::string& source_type,
+                                             const std::string& source_name)
     : resource_(std::move(resource))
     , handler_(std::move(handler))
     , source_type_(source_type)
@@ -94,8 +95,7 @@ void database_sink_backend::consume(const boost::log::record_view& rec) {
     entry.id = uuid_gen();
 
     // Extract timestamp
-    auto timestamp_val = boost::log::extract<boost::posix_time::ptime>(
-        "TimeStamp", rec);
+    auto timestamp_val = boost::log::extract<boost::posix_time::ptime>("TimeStamp", rec);
     if (timestamp_val) {
         entry.timestamp = to_system_clock(timestamp_val.get());
     } else {

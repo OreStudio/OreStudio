@@ -18,13 +18,12 @@
  *
  */
 #include "ores.assets.core/repository/tag_repository.hpp"
-
+#include "ores.assets.core/repository/tag_entity.hpp"
+#include "ores.assets.core/repository/tag_mapper.hpp"
+#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
 #include <rfl.hpp>
 #include <rfl/json.hpp>
-#include "ores.database/repository/helpers.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
-#include "ores.assets.core/repository/tag_mapper.hpp"
-#include "ores.assets.core/repository/tag_entity.hpp"
 
 namespace ores::assets::repository {
 
@@ -40,73 +39,76 @@ std::string tag_repository::sql() {
 void tag_repository::write(context ctx, const domain::tag& tag) {
     BOOST_LOG_SEV(lg(), debug) << "Writing tag to database. Name: " << tag.name;
 
-    execute_write_query(ctx, tag_mapper::map(tag),
-        lg(), "Writing tag to database.");
+    execute_write_query(ctx, tag_mapper::map(tag), lg(), "Writing tag to database.");
 }
 
 void tag_repository::write(context ctx, const std::vector<domain::tag>& tags) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing tags to database. Count: "
-                               << tags.size();
+    BOOST_LOG_SEV(lg(), debug) << "Writing tags to database. Count: " << tags.size();
 
-    execute_write_query(ctx, tag_mapper::map(tags),
-        lg(), "Writing tags to database.");
+    execute_write_query(ctx, tag_mapper::map(tags), lg(), "Writing tags to database.");
 }
 
 std::vector<domain::tag> tag_repository::read_latest(context ctx) {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<tag_entity>> |
-        where("valid_to"_c == max.value()) |
-        order_by("valid_from"_c.desc());
+    const auto query = sqlgen::read<std::vector<tag_entity>> | where("valid_to"_c == max.value()) |
+                       order_by("valid_from"_c.desc());
 
-    return execute_read_query<tag_entity, domain::tag>(ctx, query,
+    return execute_read_query<tag_entity, domain::tag>(
+        ctx,
+        query,
         [](const auto& entities) { return tag_mapper::map(entities); },
-        lg(), "Reading latest tags");
+        lg(),
+        "Reading latest tags");
 }
 
-std::vector<domain::tag>
-tag_repository::read_latest_by_id(context ctx, const std::string& tag_id) {
+std::vector<domain::tag> tag_repository::read_latest_by_id(context ctx, const std::string& tag_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest tags by ID: " << tag_id;
 
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<tag_entity>> |
-        where("tag_id"_c == tag_id && "valid_to"_c == max.value()) |
-        order_by("valid_from"_c.desc());
+                       where("tag_id"_c == tag_id && "valid_to"_c == max.value()) |
+                       order_by("valid_from"_c.desc());
 
-    return execute_read_query<tag_entity, domain::tag>(ctx, query,
+    return execute_read_query<tag_entity, domain::tag>(
+        ctx,
+        query,
         [](const auto& entities) { return tag_mapper::map(entities); },
-        lg(), "Reading latest tags by ID.");
+        lg(),
+        "Reading latest tags by ID.");
 }
 
-std::vector<domain::tag>
-tag_repository::read_latest_by_name(context ctx, const std::string& name) {
+std::vector<domain::tag> tag_repository::read_latest_by_name(context ctx, const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest tags by name: " << name;
 
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<tag_entity>> |
-        where("name"_c == name && "valid_to"_c == max.value()) |
-        order_by("valid_from"_c.desc());
+                       where("name"_c == name && "valid_to"_c == max.value()) |
+                       order_by("valid_from"_c.desc());
 
-    return execute_read_query<tag_entity, domain::tag>(ctx, query,
+    return execute_read_query<tag_entity, domain::tag>(
+        ctx,
+        query,
         [](const auto& entities) { return tag_mapper::map(entities); },
-        lg(), "Reading latest tags by name.");
+        lg(),
+        "Reading latest tags by name.");
 }
 
 std::vector<domain::tag>
-tag_repository::read_latest(context ctx, std::uint32_t offset,
-                            std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest tags with offset: "
-                               << offset << " and limit: " << limit;
+tag_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest tags with offset: " << offset
+                               << " and limit: " << limit;
 
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<tag_entity>> |
-        where("valid_to"_c == max.value()) |
-        order_by("valid_from"_c.desc()) |
-        sqlgen::offset(offset) |
-        sqlgen::limit(limit);
+    const auto query = sqlgen::read<std::vector<tag_entity>> | where("valid_to"_c == max.value()) |
+                       order_by("valid_from"_c.desc()) | sqlgen::offset(offset) |
+                       sqlgen::limit(limit);
 
-    return execute_read_query<tag_entity, domain::tag>(ctx, query,
+    return execute_read_query<tag_entity, domain::tag>(
+        ctx,
+        query,
         [](const auto& entities) { return tag_mapper::map(entities); },
-        lg(), "Reading latest tags with pagination.");
+        lg(),
+        "Reading latest tags with pagination.");
 }
 
 std::uint32_t tag_repository::get_total_tag_count(context ctx) {
@@ -118,10 +120,8 @@ std::uint32_t tag_repository::get_total_tag_count(context ctx) {
         long long count;
     };
 
-    const auto query = sqlgen::select_from<tag_entity>(
-        sqlgen::count().as<"count">()) |
-        where("valid_to"_c == max.value()) |
-        sqlgen::to<count_result>;
+    const auto query = sqlgen::select_from<tag_entity>(sqlgen::count().as<"count">()) |
+                       where("valid_to"_c == max.value()) | sqlgen::to<count_result>;
 
     const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
     ensure_success(r, lg());
@@ -132,19 +132,20 @@ std::uint32_t tag_repository::get_total_tag_count(context ctx) {
 }
 
 std::vector<domain::tag> tag_repository::read_all(context ctx) {
-    const auto query = sqlgen::read<std::vector<tag_entity>> |
-        order_by("valid_from"_c.desc());
+    const auto query = sqlgen::read<std::vector<tag_entity>> | order_by("valid_from"_c.desc());
 
-    return execute_read_query<tag_entity, domain::tag>(ctx, query,
+    return execute_read_query<tag_entity, domain::tag>(
+        ctx,
+        query,
         [](const auto& entities) { return tag_mapper::map(entities); },
-        lg(), "Reading all tags.");
+        lg(),
+        "Reading all tags.");
 }
 
 void tag_repository::remove(context ctx, const std::string& tag_id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing tag from database: " << tag_id;
 
-    const auto query = sqlgen::delete_from<tag_entity> |
-        where("tag_id"_c == tag_id);
+    const auto query = sqlgen::delete_from<tag_entity> | where("tag_id"_c == tag_id);
 
     execute_delete_query(ctx, query, lg(), "Removing tag from database.");
 }

@@ -51,19 +51,23 @@ enum class telemetry_source {
  */
 [[nodiscard]] constexpr std::string_view to_string(telemetry_source s) {
     switch (s) {
-        case telemetry_source::client: return "client";
-        case telemetry_source::server: return "server";
-        default: return "unknown";
+        case telemetry_source::client:
+            return "client";
+        case telemetry_source::server:
+            return "server";
+        default:
+            return "unknown";
     }
 }
 
 /**
  * @brief Converts a string to telemetry_source.
  */
-[[nodiscard]] constexpr telemetry_source
-telemetry_source_from_string(std::string_view s) {
-    if (s == "client") return telemetry_source::client;
-    if (s == "server") return telemetry_source::server;
+[[nodiscard]] constexpr telemetry_source telemetry_source_from_string(std::string_view s) {
+    if (s == "client")
+        return telemetry_source::client;
+    if (s == "server")
+        return telemetry_source::server;
     return telemetry_source::client; // Default fallback
 }
 

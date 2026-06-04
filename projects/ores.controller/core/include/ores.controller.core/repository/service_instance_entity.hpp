@@ -20,11 +20,11 @@
 #ifndef ORES_CONTROLLER_CORE_REPOSITORY_SERVICE_INSTANCE_ENTITY_HPP
 #define ORES_CONTROLLER_CORE_REPOSITORY_SERVICE_INSTANCE_ENTITY_HPP
 
-#include <string>
-#include <optional>
-#include <ostream>
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
+#include <optional>
+#include <ostream>
+#include <string>
 
 namespace ores::controller::repository {
 
@@ -37,8 +37,7 @@ using db_timestamp = ores::database::repository::db_timestamp;
  */
 struct service_instance_entity {
     constexpr static const char* schema = "public";
-    constexpr static const char* tablename =
-        "ores_controller_service_instances_tbl";
+    constexpr static const char* tablename = "ores_controller_service_instances_tbl";
 
     sqlgen::PrimaryKey<std::string> id;
     std::string service_name;

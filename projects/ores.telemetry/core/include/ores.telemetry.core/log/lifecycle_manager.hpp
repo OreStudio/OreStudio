@@ -20,16 +20,16 @@
 #ifndef ORES_TELEMETRY_CORE_LOG_LIFECYCLE_MANAGER_HPP
 #define ORES_TELEMETRY_CORE_LOG_LIFECYCLE_MANAGER_HPP
 
-#include <memory>
-#include <optional>
-#include <boost/shared_ptr.hpp>
-#include <boost/log/sinks.hpp>
 #include "ores.logging/lifecycle_manager.hpp"
 #include "ores.logging/logging_options.hpp"
-#include "ores.telemetry.core/log/telemetry_sink_backend.hpp"
-#include "ores.telemetry.core/log/database_sink_backend.hpp"
 #include "ores.telemetry.core/domain/resource.hpp"
 #include "ores.telemetry.core/export.hpp"
+#include "ores.telemetry.core/log/database_sink_backend.hpp"
+#include "ores.telemetry.core/log/telemetry_sink_backend.hpp"
+#include <boost/log/sinks.hpp>
+#include <boost/shared_ptr.hpp>
+#include <memory>
+#include <optional>
 
 namespace ores::telemetry::log {
 
@@ -48,8 +48,7 @@ using ores::logging::logging_options;
  */
 class ORES_TELEMETRY_CORE_EXPORT lifecycle_manager final : public ores::logging::lifecycle_manager {
 private:
-    using telemetry_sink_type = boost::log::sinks::asynchronous_sink<
-        telemetry_sink_backend>;
+    using telemetry_sink_type = boost::log::sinks::asynchronous_sink<telemetry_sink_backend>;
 
 public:
     lifecycle_manager() = delete;
@@ -95,9 +94,8 @@ public:
      * });
      * @endcode
      */
-    void add_telemetry_sink(
-        std::shared_ptr<domain::resource> resource,
-        telemetry_sink_backend::log_record_handler handler);
+    void add_telemetry_sink(std::shared_ptr<domain::resource> resource,
+                            telemetry_sink_backend::log_record_handler handler);
 
     /**
      * @brief Adds a database sink for direct database logging.
@@ -122,16 +120,14 @@ public:
      * }, "test", "unit-test-suite");
      * @endcode
      */
-    void add_database_sink(
-        std::shared_ptr<domain::resource> resource,
-        database_log_handler handler,
-        const std::string& source_type = "test",
-        const std::string& source_name = "unit-test");
+    void add_database_sink(std::shared_ptr<domain::resource> resource,
+                           database_log_handler handler,
+                           const std::string& source_type = "test",
+                           const std::string& source_name = "unit-test");
 
 private:
     boost::shared_ptr<telemetry_sink_type> telemetry_sink_;
-    using database_sink_type = boost::log::sinks::asynchronous_sink<
-        database_sink_backend>;
+    using database_sink_type = boost::log::sinks::asynchronous_sink<database_sink_backend>;
     boost::shared_ptr<database_sink_type> database_sink_; // Added for database sink
 };
 

@@ -20,9 +20,9 @@
 #ifndef ORES_CONTROLLER_API_DOMAIN_SERVICE_EVENT_JSON_IO_HPP
 #define ORES_CONTROLLER_API_DOMAIN_SERVICE_EVENT_JSON_IO_HPP
 
-#include <iosfwd>
 #include "ores.controller.api/domain/service_event.hpp"
 #include "ores.controller.api/export.hpp"
+#include <iosfwd>
 
 namespace ores::controller::api::domain {
 

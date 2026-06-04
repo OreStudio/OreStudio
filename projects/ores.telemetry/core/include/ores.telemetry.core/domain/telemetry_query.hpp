@@ -20,12 +20,12 @@
 #ifndef ORES_TELEMETRY_CORE_DOMAIN_TELEMETRY_QUERY_HPP
 #define ORES_TELEMETRY_CORE_DOMAIN_TELEMETRY_QUERY_HPP
 
+#include "ores.telemetry.core/domain/telemetry_source.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <chrono>
-#include <string>
 #include <cstdint>
 #include <optional>
-#include <boost/uuid/uuid.hpp>
-#include "ores.telemetry.core/domain/telemetry_source.hpp"
+#include <string>
 
 namespace ores::telemetry::domain {
 

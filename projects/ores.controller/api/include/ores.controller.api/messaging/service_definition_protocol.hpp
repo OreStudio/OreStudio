@@ -20,10 +20,10 @@
 #ifndef ORES_CONTROLLER_API_MESSAGING_SERVICE_DEFINITION_PROTOCOL_HPP
 #define ORES_CONTROLLER_API_MESSAGING_SERVICE_DEFINITION_PROTOCOL_HPP
 
+#include "ores.controller.api/domain/service_definition.hpp"
 #include <string>
 #include <string_view>
 #include <vector>
-#include "ores.controller.api/domain/service_definition.hpp"
 
 namespace ores::controller::api::messaging {
 
@@ -33,8 +33,7 @@ namespace ores::controller::api::messaging {
 
 struct list_service_definitions_request {
     using response_type = struct list_service_definitions_response;
-    static constexpr std::string_view nats_subject =
-        "controller.v1.service_definitions.list";
+    static constexpr std::string_view nats_subject = "controller.v1.service_definitions.list";
 };
 
 struct list_service_definitions_response {
@@ -49,8 +48,7 @@ struct list_service_definitions_response {
 
 struct save_service_definition_request {
     using response_type = struct save_service_definition_response;
-    static constexpr std::string_view nats_subject =
-        "controller.v1.service_definitions.save";
+    static constexpr std::string_view nats_subject = "controller.v1.service_definitions.save";
     domain::service_definition service_definition;
     std::string change_reason_code;
     std::string change_commentary;

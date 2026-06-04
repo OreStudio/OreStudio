@@ -20,13 +20,13 @@
 #ifndef ORES_ASSETS_SERVICE_ASSETS_SERVICE_HPP
 #define ORES_ASSETS_SERVICE_ASSETS_SERVICE_HPP
 
+#include "ores.assets.api/domain/image.hpp"
+#include "ores.assets.core/export.hpp"
+#include "ores.assets.core/repository/image_repository.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include <string>
 #include <vector>
-#include "ores.database/domain/context.hpp"
-#include "ores.assets.api/domain/image.hpp"
-#include "ores.assets.core/repository/image_repository.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.assets.core/export.hpp"
 
 namespace ores::assets::service {
 
@@ -38,8 +38,7 @@ namespace ores::assets::service {
  */
 class ORES_ASSETS_CORE_EXPORT assets_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.assets.service.assets_service";
+    inline static std::string_view logger_name = "ores.assets.service.assets_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;

@@ -18,14 +18,13 @@
  *
  */
 #include "ores.assets.core/repository/image_tag_repository.hpp"
-
+#include "ores.assets.core/repository/image_tag_entity.hpp"
+#include "ores.assets.core/repository/image_tag_mapper.hpp"
+#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
+#include <boost/uuid/uuid_io.hpp>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include "ores.database/repository/helpers.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
-#include "ores.assets.core/repository/image_tag_mapper.hpp"
-#include "ores.assets.core/repository/image_tag_entity.hpp"
 
 namespace ores::assets::repository {
 
@@ -39,30 +38,31 @@ std::string image_tag_repository::sql() {
 }
 
 void image_tag_repository::write(context ctx, const domain::image_tag& image_tag) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing image-tag to database. Image: "
-                               << image_tag.image_id << " Tag: " << image_tag.tag_id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing image-tag to database. Image: " << image_tag.image_id
+                               << " Tag: " << image_tag.tag_id;
 
-    execute_write_query(ctx, image_tag_mapper::map(image_tag),
-        lg(), "Writing image-tag to database.");
+    execute_write_query(
+        ctx, image_tag_mapper::map(image_tag), lg(), "Writing image-tag to database.");
 }
 
 void image_tag_repository::write(context ctx, const std::vector<domain::image_tag>& image_tags) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing image-tags to database. Count: "
-                               << image_tags.size();
+    BOOST_LOG_SEV(lg(), debug) << "Writing image-tags to database. Count: " << image_tags.size();
 
-    execute_write_query(ctx, image_tag_mapper::map(image_tags),
-        lg(), "Writing image-tags to database.");
+    execute_write_query(
+        ctx, image_tag_mapper::map(image_tags), lg(), "Writing image-tags to database.");
 }
 
 std::vector<domain::image_tag> image_tag_repository::read_latest(context ctx) {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<image_tag_entity>> |
-        where("valid_to"_c == max.value()) |
-        order_by("assigned_at"_c.desc());
+                       where("valid_to"_c == max.value()) | order_by("assigned_at"_c.desc());
 
-    return execute_read_query<image_tag_entity, domain::image_tag>(ctx, query,
+    return execute_read_query<image_tag_entity, domain::image_tag>(
+        ctx,
+        query,
         [](const auto& entities) { return image_tag_mapper::map(entities); },
-        lg(), "Reading latest image-tags");
+        lg(),
+        "Reading latest image-tags");
 }
 
 std::vector<domain::image_tag>
@@ -71,35 +71,42 @@ image_tag_repository::read_latest_by_image(context ctx, const std::string& image
 
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<image_tag_entity>> |
-        where("image_id"_c == image_id && "valid_to"_c == max.value()) |
-        order_by("assigned_at"_c.desc());
+                       where("image_id"_c == image_id && "valid_to"_c == max.value()) |
+                       order_by("assigned_at"_c.desc());
 
-    return execute_read_query<image_tag_entity, domain::image_tag>(ctx, query,
+    return execute_read_query<image_tag_entity, domain::image_tag>(
+        ctx,
+        query,
         [](const auto& entities) { return image_tag_mapper::map(entities); },
-        lg(), "Reading latest image-tags by image.");
+        lg(),
+        "Reading latest image-tags by image.");
 }
 
-std::vector<domain::image_tag>
-image_tag_repository::read_latest_by_tag(context ctx, const std::string& tag_id) {
+std::vector<domain::image_tag> image_tag_repository::read_latest_by_tag(context ctx,
+                                                                        const std::string& tag_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest image-tags by tag: " << tag_id;
 
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<image_tag_entity>> |
-        where("tag_id"_c == tag_id && "valid_to"_c == max.value()) |
-        order_by("assigned_at"_c.desc());
+                       where("tag_id"_c == tag_id && "valid_to"_c == max.value()) |
+                       order_by("assigned_at"_c.desc());
 
-    return execute_read_query<image_tag_entity, domain::image_tag>(ctx, query,
+    return execute_read_query<image_tag_entity, domain::image_tag>(
+        ctx,
+        query,
         [](const auto& entities) { return image_tag_mapper::map(entities); },
-        lg(), "Reading latest image-tags by tag.");
+        lg(),
+        "Reading latest image-tags by tag.");
 }
 
-void image_tag_repository::remove(context ctx, const std::string& image_id,
-                                   const std::string& tag_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing image-tag from database. Image: "
-                               << image_id << " Tag: " << tag_id;
+void image_tag_repository::remove(context ctx,
+                                  const std::string& image_id,
+                                  const std::string& tag_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing image-tag from database. Image: " << image_id
+                               << " Tag: " << tag_id;
 
     const auto query = sqlgen::delete_from<image_tag_entity> |
-        where("image_id"_c == image_id && "tag_id"_c == tag_id);
+                       where("image_id"_c == image_id && "tag_id"_c == tag_id);
 
     execute_delete_query(ctx, query, lg(), "Removing image-tag from database.");
 }

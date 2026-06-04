@@ -20,8 +20,8 @@
 #ifndef ORES_TELEMETRY_CORE_DOMAIN_SPAN_LINK_HPP
 #define ORES_TELEMETRY_CORE_DOMAIN_SPAN_LINK_HPP
 
-#include "ores.telemetry.core/domain/span_context.hpp"
 #include "ores.telemetry.core/domain/attribute_value.hpp"
+#include "ores.telemetry.core/domain/span_context.hpp"
 
 namespace ores::telemetry::domain {
 

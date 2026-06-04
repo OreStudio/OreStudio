@@ -20,10 +20,10 @@
 #ifndef ORES_CONTROLLER_API_DOMAIN_SERVICE_EVENT_HPP
 #define ORES_CONTROLLER_API_DOMAIN_SERVICE_EVENT_HPP
 
-#include <string>
+#include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <optional>
-#include <boost/uuid/uuid.hpp>
+#include <string>
 
 namespace ores::controller::api::domain {
 

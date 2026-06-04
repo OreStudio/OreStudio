@@ -18,15 +18,14 @@
  *
  */
 #include "ores.marketdata.api/generators/market_fixing_generator.hpp"
-
 #include <atomic>
 #include <format>
 
 namespace ores::marketdata::generator {
 
-domain::market_fixing generate_synthetic_market_fixing(
-    const boost::uuids::uuid& series_id,
-    utility::generation::generation_context& ctx) {
+domain::market_fixing
+generate_synthetic_market_fixing(const boost::uuids::uuid& series_id,
+                                 utility::generation::generation_context& ctx) {
     static std::atomic<int> counter{0};
     const int n = ++counter;
 
@@ -50,8 +49,8 @@ domain::market_fixing generate_synthetic_market_fixing(
 
 std::vector<domain::market_fixing>
 generate_synthetic_market_fixings(std::size_t n,
-    const boost::uuids::uuid& series_id,
-    utility::generation::generation_context& ctx) {
+                                  const boost::uuids::uuid& series_id,
+                                  utility::generation::generation_context& ctx) {
     std::vector<domain::market_fixing> r;
     r.reserve(n);
     while (r.size() < n)

@@ -20,10 +20,10 @@
 #ifndef ORES_TELEMETRY_CORE_DOMAIN_TELEMETRY_STATS_HPP
 #define ORES_TELEMETRY_CORE_DOMAIN_TELEMETRY_STATS_HPP
 
-#include <chrono>
-#include <string>
-#include <cstdint>
 #include "ores.telemetry.core/domain/telemetry_source.hpp"
+#include <chrono>
+#include <cstdint>
+#include <string>
 
 namespace ores::telemetry::domain {
 

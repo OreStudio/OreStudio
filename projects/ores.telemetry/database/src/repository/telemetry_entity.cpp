@@ -18,49 +18,34 @@
  *
  */
 #include "ores.telemetry.database/repository/telemetry_entity.hpp"
-
 #include <ostream>
 
 namespace ores::telemetry::database::repository {
 
 std::ostream& operator<<(std::ostream& s, const telemetry_entity& v) {
     s << "telemetry_entity["
-      << "id=" << v.id.value()
-      << ", timestamp=" << v.timestamp.value().str()
-      << ", source=" << v.source
-      << ", source_name=" << v.source_name
-      << ", level=" << v.level
+      << "id=" << v.id.value() << ", timestamp=" << v.timestamp.value().str()
+      << ", source=" << v.source << ", source_name=" << v.source_name << ", level=" << v.level
       << ", component=" << v.component
-      << ", message=" << (v.message.size() > 50
-            ? v.message.substr(0, 50) + "..."
-            : v.message)
+      << ", message=" << (v.message.size() > 50 ? v.message.substr(0, 50) + "..." : v.message)
       << "]";
     return s;
 }
 
 std::ostream& operator<<(std::ostream& s, const telemetry_stats_hourly_entity& v) {
     s << "telemetry_stats_hourly_entity["
-      << "hour=" << v.hour
-      << ", source=" << v.source
-      << ", source_name=" << v.source_name
-      << ", level=" << v.level
-      << ", log_count=" << v.log_count
-      << ", unique_sessions=" << v.unique_sessions
-      << ", unique_accounts=" << v.unique_accounts
+      << "hour=" << v.hour << ", source=" << v.source << ", source_name=" << v.source_name
+      << ", level=" << v.level << ", log_count=" << v.log_count
+      << ", unique_sessions=" << v.unique_sessions << ", unique_accounts=" << v.unique_accounts
       << "]";
     return s;
 }
 
 std::ostream& operator<<(std::ostream& s, const telemetry_stats_daily_entity& v) {
     s << "telemetry_stats_daily_entity["
-      << "day=" << v.day
-      << ", source=" << v.source
-      << ", source_name=" << v.source_name
-      << ", component=" << v.component
-      << ", level=" << v.level
-      << ", log_count=" << v.log_count
-      << ", unique_sessions=" << v.unique_sessions
-      << ", unique_accounts=" << v.unique_accounts
+      << "day=" << v.day << ", source=" << v.source << ", source_name=" << v.source_name
+      << ", component=" << v.component << ", level=" << v.level << ", log_count=" << v.log_count
+      << ", unique_sessions=" << v.unique_sessions << ", unique_accounts=" << v.unique_accounts
       << "]";
     return s;
 }

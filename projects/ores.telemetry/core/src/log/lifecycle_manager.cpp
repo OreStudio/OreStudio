@@ -18,11 +18,10 @@
  *
  */
 #include "ores.telemetry.core/log/lifecycle_manager.hpp"
-
-#include <boost/make_shared.hpp>
+#include "ores.telemetry.core/log/skip_telemetry_guard.hpp"
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
-#include "ores.telemetry.core/log/skip_telemetry_guard.hpp"
+#include <boost/make_shared.hpp>
 
 namespace ores::telemetry::log {
 
@@ -51,12 +50,11 @@ lifecycle_manager::~lifecycle_manager() {
     // Base class destructor handles console and file sinks.
 }
 
-void lifecycle_manager::add_telemetry_sink(
-    std::shared_ptr<domain::resource> resource,
-    telemetry_sink_backend::log_record_handler handler) {
+void lifecycle_manager::add_telemetry_sink(std::shared_ptr<domain::resource> resource,
+                                           telemetry_sink_backend::log_record_handler handler) {
 
-    auto backend = boost::make_shared<telemetry_sink_backend>(
-        std::move(resource), std::move(handler));
+    auto backend =
+        boost::make_shared<telemetry_sink_backend>(std::move(resource), std::move(handler));
 
     telemetry_sink_ = boost::make_shared<telemetry_sink_type>(backend);
 
@@ -68,11 +66,10 @@ void lifecycle_manager::add_telemetry_sink(
     boost::log::core::get()->add_sink(telemetry_sink_);
 }
 
-void lifecycle_manager::add_database_sink(
-    std::shared_ptr<domain::resource> resource,
-    database_log_handler handler,
-    const std::string& source_type,
-    const std::string& source_name) {
+void lifecycle_manager::add_database_sink(std::shared_ptr<domain::resource> resource,
+                                          database_log_handler handler,
+                                          const std::string& source_type,
+                                          const std::string& source_name) {
 
     auto backend = boost::make_shared<database_sink_backend>(
         std::move(resource), std::move(handler), source_type, source_name);
@@ -80,9 +77,9 @@ void lifecycle_manager::add_database_sink(
     database_sink_ = boost::make_shared<database_sink_type>(backend);
 
     // Filter out records marked to skip telemetry (prevents recursive logging deadlock)
-    database_sink_->set_filter(
-        !boost::log::expressions::has_attr<bool>(skip_telemetry_attribute) ||
-        boost::log::expressions::attr<bool>(skip_telemetry_attribute) != true);
+    database_sink_->set_filter(!boost::log::expressions::has_attr<bool>(skip_telemetry_attribute) ||
+                               boost::log::expressions::attr<bool>(skip_telemetry_attribute) !=
+                                   true);
 
     boost::log::core::get()->add_sink(database_sink_);
 }

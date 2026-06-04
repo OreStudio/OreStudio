@@ -20,11 +20,11 @@
 #ifndef ORES_ASSETS_REPOSITORY_IMAGE_MAPPER_HPP
 #define ORES_ASSETS_REPOSITORY_IMAGE_MAPPER_HPP
 
-#include <vector>
-#include "ores.logging/make_logger.hpp"
 #include "ores.assets.api/domain/image.hpp"
-#include "ores.assets.core/repository/image_entity.hpp"
 #include "ores.assets.core/export.hpp"
+#include "ores.assets.core/repository/image_entity.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <vector>
 
 namespace ores::assets::repository {
 
@@ -33,8 +33,7 @@ namespace ores::assets::repository {
  */
 class ORES_ASSETS_CORE_EXPORT image_mapper {
 private:
-    inline static std::string_view logger_name =
-        "ores.assets.repository.image_mapper";
+    inline static std::string_view logger_name = "ores.assets.repository.image_mapper";
 
     static auto& lg() {
         using namespace ores::logging;
@@ -46,10 +45,8 @@ public:
     static domain::image map(const image_entity& v);
     static image_entity map(const domain::image& v);
 
-    static std::vector<domain::image>
-    map(const std::vector<image_entity>& v);
-    static std::vector<image_entity>
-    map(const std::vector<domain::image>& v);
+    static std::vector<domain::image> map(const std::vector<image_entity>& v);
+    static std::vector<image_entity> map(const std::vector<domain::image>& v);
 };
 
 }

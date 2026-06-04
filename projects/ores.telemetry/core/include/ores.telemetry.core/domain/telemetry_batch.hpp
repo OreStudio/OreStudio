@@ -20,10 +20,10 @@
 #ifndef ORES_TELEMETRY_CORE_DOMAIN_TELEMETRY_BATCH_HPP
 #define ORES_TELEMETRY_CORE_DOMAIN_TELEMETRY_BATCH_HPP
 
-#include <vector>
-#include <string>
-#include "ores.telemetry.core/domain/telemetry_source.hpp"
 #include "ores.telemetry.core/domain/telemetry_log_entry.hpp"
+#include "ores.telemetry.core/domain/telemetry_source.hpp"
+#include <string>
+#include <vector>
 
 namespace ores::telemetry::domain {
 

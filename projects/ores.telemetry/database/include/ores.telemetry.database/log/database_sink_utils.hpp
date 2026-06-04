@@ -20,11 +20,11 @@
 #ifndef ORES_TELEMETRY_DATABASE_LOG_DATABASE_SINK_UTILS_HPP
 #define ORES_TELEMETRY_DATABASE_LOG_DATABASE_SINK_UTILS_HPP
 
-#include <memory>
-#include <functional>
-#include <iostream>
 #include "ores.telemetry.core/log/database_sink_backend.hpp"
 #include "ores.telemetry.database/repository/telemetry_repository.hpp"
+#include <functional>
+#include <iostream>
+#include <memory>
 
 namespace ores::telemetry::database::log {
 
@@ -37,15 +37,15 @@ namespace ores::telemetry::database::log {
  * @param repo Shared pointer to the telemetry repository.
  * @return A handler function that stores log entries to the database.
  */
-inline ores::telemetry::log::database_log_handler make_database_handler(
-    std::shared_ptr<repository::telemetry_repository> repo) {
+inline ores::telemetry::log::database_log_handler
+make_database_handler(std::shared_ptr<repository::telemetry_repository> repo) {
     return [repo](const domain::telemetry_log_entry& entry) {
         try {
             repo->create(entry);
         } catch (const std::exception& ex) {
             // Log to stderr as a last resort, as we are inside a logging sink.
-            std::cerr << "[Logging Sink Error] Failed to store log entry: "
-                      << ex.what() << std::endl;
+            std::cerr << "[Logging Sink Error] Failed to store log entry: " << ex.what()
+                      << std::endl;
         }
     };
 }

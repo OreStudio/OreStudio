@@ -18,11 +18,10 @@
  *
  */
 #include "ores.assets.api/domain/image.hpp"
-
-#include <sstream>
-#include <catch2/catch_test_macros.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.assets.api/domain/image_json_io.hpp" // IWYU pragma: keep.
+#include "ores.logging/make_logger.hpp"
+#include <catch2/catch_test_macros.hpp>
+#include <sstream>
 
 namespace {
 

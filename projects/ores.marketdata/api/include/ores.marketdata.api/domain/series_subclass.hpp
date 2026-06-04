@@ -46,21 +46,21 @@ namespace ores::marketdata::domain {
  *   CROSS_ASSET: correlation (CORRELATION)
  */
 enum class series_subclass {
-    spot,          ///< Spot price or FX rate (scalar).
-    forward,       ///< Forward curve.
-    volatility,    ///< Volatility surface or curve.
-    yield,         ///< Yield / discount / zero-rate curve.
-    basis,         ///< Basis spread curve.
-    fra,           ///< FRA or money-market futures curve.
-    xccy,          ///< Cross-currency basis swap curve.
-    spread,        ///< Credit spread or hazard rate curve.
-    index_credit,  ///< CDS index or index option (avoids clash with std::index).
-    recovery,      ///< Recovery rate (scalar per entity/seniority/ccy).
-    swap,          ///< Inflation swap zero-coupon or year-on-year curve.
-    capfloor,      ///< Cap/floor volatility surface.
-    seasonality,   ///< Inflation seasonality adjustment factors.
-    price,         ///< Bond price.
-    correlation    ///< Cross-asset or cross-currency correlation.
+    spot,         ///< Spot price or FX rate (scalar).
+    forward,      ///< Forward curve.
+    volatility,   ///< Volatility surface or curve.
+    yield,        ///< Yield / discount / zero-rate curve.
+    basis,        ///< Basis spread curve.
+    fra,          ///< FRA or money-market futures curve.
+    xccy,         ///< Cross-currency basis swap curve.
+    spread,       ///< Credit spread or hazard rate curve.
+    index_credit, ///< CDS index or index option (avoids clash with std::index).
+    recovery,     ///< Recovery rate (scalar per entity/seniority/ccy).
+    swap,         ///< Inflation swap zero-coupon or year-on-year curve.
+    capfloor,     ///< Cap/floor volatility surface.
+    seasonality,  ///< Inflation seasonality adjustment factors.
+    price,        ///< Bond price.
+    correlation   ///< Cross-asset or cross-currency correlation.
 };
 
 }

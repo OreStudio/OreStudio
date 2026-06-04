@@ -20,8 +20,8 @@
 #ifndef ORES_ASSETS_DOMAIN_TAG_HPP
 #define ORES_ASSETS_DOMAIN_TAG_HPP
 
-#include <string>
 #include <optional>
+#include <string>
 
 namespace ores::assets::domain {
 

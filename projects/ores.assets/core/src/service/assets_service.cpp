@@ -25,11 +25,9 @@ using namespace ores::logging;
 
 assets_service::assets_service(context ctx)
     : ctx_(std::move(ctx))
-    , image_repo_{} {
-}
+    , image_repo_{} {}
 
-std::vector<domain::image> assets_service::get_images(
-    const std::vector<std::string>& image_ids) {
+std::vector<domain::image> assets_service::get_images(const std::vector<std::string>& image_ids) {
     BOOST_LOG_SEV(lg(), debug) << "Getting images by IDs, count=" << image_ids.size();
     return image_repo_.read_latest_by_ids(ctx_, image_ids);
 }

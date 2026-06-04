@@ -20,10 +20,10 @@
 #ifndef ORES_TELEMETRY_CORE_LOG_DATABASE_SINK_UTILS_HPP
 #define ORES_TELEMETRY_CORE_LOG_DATABASE_SINK_UTILS_HPP
 
-#include <memory>
+#include "ores.telemetry.core/log/database_sink_backend.hpp"
 #include <functional>
 #include <iostream>
-#include "ores.telemetry.core/log/database_sink_backend.hpp"
+#include <memory>
 
 namespace ores::telemetry::log {
 
@@ -37,15 +37,15 @@ namespace ores::telemetry::log {
  * @param handler A function that takes a telemetry_log_entry and stores it appropriately.
  * @return A handler function that can be used with the database sink backend.
  */
-inline database_log_handler make_forwarding_handler(
-    std::function<void(const domain::telemetry_log_entry&)> handler) {
+inline database_log_handler
+make_forwarding_handler(std::function<void(const domain::telemetry_log_entry&)> handler) {
     return [handler](const domain::telemetry_log_entry& entry) {
         try {
             handler(entry);
         } catch (const std::exception& ex) {
             // Log to stderr as a last resort, as we are inside a logging sink.
-            std::cerr << "[Logging Sink Error] Failed to forward log entry: "
-                      << ex.what() << std::endl;
+            std::cerr << "[Logging Sink Error] Failed to forward log entry: " << ex.what()
+                      << std::endl;
         }
     };
 }

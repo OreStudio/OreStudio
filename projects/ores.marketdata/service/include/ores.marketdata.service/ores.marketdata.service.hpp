@@ -23,7 +23,8 @@
 /**
  * @brief Market data ingestion and query service
  *
- * Standalone NATS microservice hosting market data handlers: series management, observation and fixing ingestion, and import of ORE market.txt and fixings.txt files.
+ * Standalone NATS microservice hosting market data handlers: series management, observation and
+ * fixing ingestion, and import of ORE market.txt and fixings.txt files.
  */
 namespace ores::marketdata::service {}
 

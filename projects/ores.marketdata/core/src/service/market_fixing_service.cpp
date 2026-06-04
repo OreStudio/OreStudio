@@ -31,8 +31,8 @@ market_fixing_service::list(const boost::uuids::uuid& series_id) {
 
 std::vector<domain::market_fixing>
 market_fixing_service::list(const boost::uuids::uuid& series_id,
-    const std::chrono::year_month_day& from_date,
-    const std::chrono::year_month_day& to_date) {
+                            const std::chrono::year_month_day& from_date,
+                            const std::chrono::year_month_day& to_date) {
     return repo_.read_latest(ctx_, series_id, from_date, to_date);
 }
 

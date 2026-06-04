@@ -20,10 +20,10 @@
 #ifndef ORES_MARKETDATA_API_MESSAGING_MARKET_SERIES_PROTOCOL_HPP
 #define ORES_MARKETDATA_API_MESSAGING_MARKET_SERIES_PROTOCOL_HPP
 
+#include "ores.marketdata.api/domain/market_series.hpp"
 #include <string>
 #include <string_view>
 #include <vector>
-#include "ores.marketdata.api/domain/market_series.hpp"
 
 namespace ores::marketdata::messaging {
 
@@ -32,7 +32,7 @@ struct get_market_series_request {
     static constexpr std::string_view nats_subject = "marketdata.v1.series.list";
     int offset = 0;
     int limit = 1000;
-    std::string series_type;  // empty = all types
+    std::string series_type; // empty = all types
 };
 
 struct get_market_series_response {
@@ -72,8 +72,7 @@ struct delete_market_series_response {
  */
 struct export_market_data_to_storage_request {
     using response_type = struct export_market_data_to_storage_response;
-    static constexpr std::string_view nats_subject =
-        "marketdata.v1.series.export-to-storage";
+    static constexpr std::string_view nats_subject = "marketdata.v1.series.export-to-storage";
 
     std::string storage_bucket;
     std::string storage_key;

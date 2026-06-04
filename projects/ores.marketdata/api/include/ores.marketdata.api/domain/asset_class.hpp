@@ -29,14 +29,14 @@ namespace ores::marketdata::domain {
  * series_subclass to enable efficient queries without parsing ORE key strings.
  */
 enum class asset_class {
-    fx,          ///< Foreign exchange rates, forwards and vol surfaces.
-    rates,       ///< Interest rate curves, vol surfaces and spreads.
-    credit,      ///< Credit spreads, hazard rates and recovery rates.
-    equity,      ///< Equity spot prices, forwards, dividends and vol surfaces.
-    commodity,   ///< Commodity spot prices, forwards and vol surfaces.
-    inflation,   ///< Inflation swap rates, cap/floor vols and seasonality.
-    bond,        ///< Bond prices and yield spreads.
-    cross_asset  ///< Cross-asset correlations.
+    fx,         ///< Foreign exchange rates, forwards and vol surfaces.
+    rates,      ///< Interest rate curves, vol surfaces and spreads.
+    credit,     ///< Credit spreads, hazard rates and recovery rates.
+    equity,     ///< Equity spot prices, forwards, dividends and vol surfaces.
+    commodity,  ///< Commodity spot prices, forwards and vol surfaces.
+    inflation,  ///< Inflation swap rates, cap/floor vols and seasonality.
+    bond,       ///< Bond prices and yield spreads.
+    cross_asset ///< Cross-asset correlations.
 };
 
 }

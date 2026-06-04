@@ -20,14 +20,14 @@
 #ifndef ORES_MARKETDATA_CORE_REPOSITORY_MARKET_SERIES_REPOSITORY_HPP
 #define ORES_MARKETDATA_CORE_REPOSITORY_MARKET_SERIES_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include <boost/uuid/uuid.hpp>
-#include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.core/export.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::marketdata::repository {
 
@@ -54,13 +54,12 @@ public:
     void write(context ctx, const std::vector<domain::market_series>& v);
 
     std::vector<domain::market_series> read_latest(context ctx);
-    std::vector<domain::market_series>
-    read_latest(context ctx, const boost::uuids::uuid& id);
-    std::vector<domain::market_series>
-    read_latest_by_type(context ctx, const std::string& series_type,
-        const std::string& metric, const std::string& qualifier);
-    std::vector<domain::market_series>
-    read_all(context ctx, const boost::uuids::uuid& id);
+    std::vector<domain::market_series> read_latest(context ctx, const boost::uuids::uuid& id);
+    std::vector<domain::market_series> read_latest_by_type(context ctx,
+                                                           const std::string& series_type,
+                                                           const std::string& metric,
+                                                           const std::string& qualifier);
+    std::vector<domain::market_series> read_all(context ctx, const boost::uuids::uuid& id);
 
     void remove(context ctx, const boost::uuids::uuid& id);
 };

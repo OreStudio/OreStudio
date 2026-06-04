@@ -20,15 +20,15 @@
 #ifndef ORES_TELEMETRY_CORE_DATABASE_LOG_DATABASE_SINK_HPP
 #define ORES_TELEMETRY_CORE_DATABASE_LOG_DATABASE_SINK_HPP
 
-#include <memory>
-#include <string>
-#include <functional>
-#include <boost/log/sinks/basic_sink_backend.hpp>
-#include <boost/log/sinks/frontend_requirements.hpp>
-#include <boost/uuid/uuid.hpp>
 #include "ores.telemetry.core/domain/resource.hpp"
 #include "ores.telemetry.core/domain/telemetry_log_entry.hpp"
 #include "ores.telemetry.core/export.hpp"
+#include <boost/log/sinks/basic_sink_backend.hpp>
+#include <boost/log/sinks/frontend_requirements.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <functional>
+#include <memory>
+#include <string>
 
 namespace ores::telemetry::log {
 
@@ -45,8 +45,8 @@ using database_log_handler = std::function<void(const domain::telemetry_log_entr
  * @brief Boost.Log sink backend that prepares logs for database storage.
  *
  * This sink extracts log information from Boost.Log records and converts them
- * to the telemetry domain model for storage in the database. It's designed to 
- * be used primarily for unit testing scenarios where logs need to be captured 
+ * to the telemetry domain model for storage in the database. It's designed to
+ * be used primarily for unit testing scenarios where logs need to be captured
  * in the database for inspection and validation.
  *
  * The sink can be enabled/disabled via configuration and operates independently
@@ -67,9 +67,8 @@ using database_log_handler = std::function<void(const domain::telemetry_log_entr
  * boost::log::core::get()->add_sink(sink);
  * @endcode
  */
-class ORES_TELEMETRY_CORE_EXPORT database_sink_backend :
-    public boost::log::sinks::basic_sink_backend<
-        boost::log::sinks::synchronized_feeding> {
+class ORES_TELEMETRY_CORE_EXPORT database_sink_backend
+    : public boost::log::sinks::basic_sink_backend<boost::log::sinks::synchronized_feeding> {
 public:
     /**
      * @brief Constructs the database sink backend.
@@ -80,11 +79,10 @@ public:
      * @param source_type Type of source ('client' or 'server', default: 'test').
      * @param source_name Name of the source application (default: 'unit-test').
      */
-    explicit database_sink_backend(
-        std::shared_ptr<domain::resource> resource,
-        database_log_handler handler,
-        const std::string& source_type = "test",
-        const std::string& source_name = "unit-test");
+    explicit database_sink_backend(std::shared_ptr<domain::resource> resource,
+                                   database_log_handler handler,
+                                   const std::string& source_type = "test",
+                                   const std::string& source_name = "unit-test");
 
     /**
      * @brief Processes a Boost.Log record and converts it for database storage.

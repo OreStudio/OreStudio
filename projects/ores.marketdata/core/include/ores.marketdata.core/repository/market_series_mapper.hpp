@@ -20,11 +20,11 @@
 #ifndef ORES_MARKETDATA_CORE_REPOSITORY_MARKET_SERIES_MAPPER_HPP
 #define ORES_MARKETDATA_CORE_REPOSITORY_MARKET_SERIES_MAPPER_HPP
 
-#include <vector>
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
-#include "ores.marketdata.core/repository/market_series_entity.hpp"
 #include "ores.marketdata.core/export.hpp"
+#include "ores.marketdata.core/repository/market_series_entity.hpp"
+#include <vector>
 
 namespace ores::marketdata::repository {
 
@@ -33,8 +33,7 @@ namespace ores::marketdata::repository {
  */
 class ORES_MARKETDATA_CORE_EXPORT market_series_mapper {
 private:
-    inline static std::string_view logger_name =
-        "ores.marketdata.repository.market_series_mapper";
+    inline static std::string_view logger_name = "ores.marketdata.repository.market_series_mapper";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -46,10 +45,8 @@ public:
     static domain::market_series map(const market_series_entity& v);
     static market_series_entity map(const domain::market_series& v);
 
-    static std::vector<domain::market_series>
-    map(const std::vector<market_series_entity>& v);
-    static std::vector<market_series_entity>
-    map(const std::vector<domain::market_series>& v);
+    static std::vector<domain::market_series> map(const std::vector<market_series_entity>& v);
+    static std::vector<market_series_entity> map(const std::vector<domain::market_series>& v);
 };
 
 }

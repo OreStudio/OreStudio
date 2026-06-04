@@ -20,33 +20,33 @@
 #ifndef ORES_ASSETS_GENERATORS_IMAGE_TAG_GENERATOR_HPP
 #define ORES_ASSETS_GENERATORS_IMAGE_TAG_GENERATOR_HPP
 
-#include <vector>
-#include <boost/uuid/uuid.hpp>
 #include "ores.assets.api/domain/image_tag.hpp"
-#include "ores.utility/generation/generation_context.hpp"
 #include "ores.assets.core/export.hpp"
+#include "ores.utility/generation/generation_context.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <vector>
 
 namespace ores::assets::generators {
 
 /**
  * @brief Generates a synthetic image-tag association.
  */
-ORES_ASSETS_CORE_EXPORT domain::image_tag generate_synthetic_image_tag(
-    utility::generation::generation_context& ctx);
+ORES_ASSETS_CORE_EXPORT domain::image_tag
+generate_synthetic_image_tag(utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates a synthetic image-tag with specific IDs.
  */
-ORES_ASSETS_CORE_EXPORT domain::image_tag generate_synthetic_image_tag(
-    utility::generation::generation_context& ctx,
-    const boost::uuids::uuid& image_id,
-    const boost::uuids::uuid& tag_id);
+ORES_ASSETS_CORE_EXPORT domain::image_tag
+generate_synthetic_image_tag(utility::generation::generation_context& ctx,
+                             const boost::uuids::uuid& image_id,
+                             const boost::uuids::uuid& tag_id);
 
 /**
  * @brief Generates N synthetic image-tag associations. May contain duplicates.
  */
-ORES_ASSETS_CORE_EXPORT std::vector<domain::image_tag> generate_synthetic_image_tags(std::size_t n,
-    utility::generation::generation_context& ctx);
+ORES_ASSETS_CORE_EXPORT std::vector<domain::image_tag>
+generate_synthetic_image_tags(std::size_t n, utility::generation::generation_context& ctx);
 
 }
 

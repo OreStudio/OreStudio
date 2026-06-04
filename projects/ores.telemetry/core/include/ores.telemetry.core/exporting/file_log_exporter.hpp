@@ -20,11 +20,11 @@
 #ifndef ORES_TELEMETRY_CORE_EXPORTING_FILE_LOG_EXPORTER_HPP
 #define ORES_TELEMETRY_CORE_EXPORTING_FILE_LOG_EXPORTER_HPP
 
-#include <mutex>
-#include <fstream>
-#include <filesystem>
-#include "ores.telemetry.core/exporting/log_exporter.hpp"
 #include "ores.telemetry.core/export.hpp"
+#include "ores.telemetry.core/exporting/log_exporter.hpp"
+#include <filesystem>
+#include <fstream>
+#include <mutex>
 
 namespace ores::telemetry::exporting {
 

@@ -20,11 +20,11 @@
 #ifndef ORES_TELEMETRY_CORE_DOMAIN_TELEMETRY_LOG_ENTRY_HPP
 #define ORES_TELEMETRY_CORE_DOMAIN_TELEMETRY_LOG_ENTRY_HPP
 
-#include <chrono>
-#include <string>
-#include <optional>
-#include <boost/uuid/uuid.hpp>
 #include "ores.telemetry.core/domain/telemetry_source.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <optional>
+#include <string>
 
 namespace ores::telemetry::domain {
 

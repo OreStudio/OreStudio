@@ -20,11 +20,11 @@
 #ifndef ORES_TELEMETRY_CORE_DOMAIN_RESOURCE_HPP
 #define ORES_TELEMETRY_CORE_DOMAIN_RESOURCE_HPP
 
+#include "ores.telemetry.core/domain/attribute_value.hpp"
+#include "ores.telemetry.core/export.hpp"
 #include <cstdint>
 #include <optional>
 #include <string>
-#include "ores.telemetry.core/domain/attribute_value.hpp"
-#include "ores.telemetry.core/export.hpp"
 
 namespace ores::telemetry::domain {
 
@@ -77,7 +77,7 @@ struct ORES_TELEMETRY_CORE_EXPORT resource final {
      * @return A resource populated with detected attributes.
      */
     static resource from_environment(std::string_view service_name,
-                                      std::string_view service_version);
+                                     std::string_view service_version);
 };
 
 }

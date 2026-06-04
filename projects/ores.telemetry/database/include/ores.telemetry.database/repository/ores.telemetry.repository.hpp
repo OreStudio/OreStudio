@@ -33,7 +33,6 @@
  * The telemetry_repository supports efficient batch inserts and time-range
  * queries optimized for TimescaleDB hypertables.
  */
-namespace ores::telemetry::repository {
-}
+namespace ores::telemetry::repository {}
 
 #endif

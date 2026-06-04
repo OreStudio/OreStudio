@@ -20,12 +20,12 @@
 #ifndef ORES_TELEMETRY_CORE_GENERATORS_SPAN_ID_GENERATOR_HPP
 #define ORES_TELEMETRY_CORE_GENERATORS_SPAN_ID_GENERATOR_HPP
 
-#include <atomic>
-#include <cstdint>
-#include <random>
-#include <mutex>
 #include "ores.telemetry.core/domain/span_id.hpp"
 #include "ores.telemetry.core/export.hpp"
+#include <atomic>
+#include <cstdint>
+#include <mutex>
+#include <random>
 
 namespace ores::telemetry::generators {
 

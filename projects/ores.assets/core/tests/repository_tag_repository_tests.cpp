@@ -17,20 +17,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.assets.core/repository/tag_repository.hpp"
-
-#include <algorithm>
-#include <catch2/catch_test_macros.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.logging/make_logger.hpp"
-#include "ores.testing/scoped_database_helper.hpp"
-#include "ores.testing/make_generation_context.hpp"
-#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
-#include "ores.assets.api/domain/tag.hpp" // IWYU pragma: keep.
+#include "ores.assets.api/domain/tag.hpp"         // IWYU pragma: keep.
 #include "ores.assets.api/domain/tag_json_io.hpp" // IWYU pragma: keep.
 #include "ores.assets.core/generators/tag_generator.hpp"
+#include "ores.assets.core/repository/tag_repository.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.testing/make_generation_context.hpp"
+#include "ores.testing/scoped_database_helper.hpp"
+#include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
+#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
+#include <catch2/catch_test_macros.hpp>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
 
 namespace {
 
@@ -86,8 +85,8 @@ TEST_CASE("read_latest_tags", tags) {
     // Verify all written tags can be found (other tests may have added more)
     CHECK(read_tags.size() >= written_tags.size());
     for (const auto& written : written_tags) {
-        auto it = std::ranges::find_if(read_tags,
-            [&written](const tag& t) { return t.tag_id == written.tag_id; });
+        auto it = std::ranges::find_if(
+            read_tags, [&written](const tag& t) { return t.tag_id == written.tag_id; });
         CHECK(it != read_tags.end());
     }
 }

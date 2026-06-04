@@ -18,23 +18,22 @@
  *
  */
 #include "ores.marketdata.core/service/import_service.hpp"
-
+#include "ores.marketdata.api/domain/asset_class.hpp"
+#include "ores.marketdata.api/domain/market_fixing.hpp"
+#include "ores.marketdata.api/domain/market_observation.hpp"
+#include "ores.marketdata.api/domain/market_series.hpp"
+#include "ores.marketdata.api/domain/series_subclass.hpp"
+#include "ores.marketdata.core/repository/market_fixings_repository.hpp"
+#include "ores.marketdata.core/repository/market_observations_repository.hpp"
+#include "ores.marketdata.core/repository/market_series_repository.hpp"
+#include "ores.ore.core/market/fixing.hpp"
+#include "ores.ore.core/market/market_data_parser.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_generators.hpp>
 #include <map>
 #include <sstream>
 #include <stdexcept>
 #include <tuple>
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include "ores.marketdata.api/domain/asset_class.hpp"
-#include "ores.marketdata.api/domain/series_subclass.hpp"
-#include "ores.marketdata.api/domain/market_series.hpp"
-#include "ores.marketdata.api/domain/market_observation.hpp"
-#include "ores.marketdata.api/domain/market_fixing.hpp"
-#include "ores.marketdata.core/repository/market_series_repository.hpp"
-#include "ores.marketdata.core/repository/market_observations_repository.hpp"
-#include "ores.marketdata.core/repository/market_fixings_repository.hpp"
-#include "ores.ore.core/market/market_data_parser.hpp"
-#include "ores.ore.core/market/fixing.hpp"
 
 namespace ores::marketdata::service {
 
@@ -54,52 +53,52 @@ series_classification classify_series_type(const std::string& series_type) {
 
     static const std::map<std::string, series_classification> k_table = {
         // FX
-        {"FX",               {ac::fx,          sc::spot,        true}},
-        {"FXFWD",            {ac::fx,          sc::forward,     false}},
-        {"FX_OPTION",        {ac::fx,          sc::volatility,  false}},
+        {"FX", {ac::fx, sc::spot, true}},
+        {"FXFWD", {ac::fx, sc::forward, false}},
+        {"FX_OPTION", {ac::fx, sc::volatility, false}},
         // Rates curves
-        {"DISCOUNT",         {ac::rates,       sc::yield,       false}},
-        {"ZERO",             {ac::rates,       sc::yield,       false}},
-        {"MM",               {ac::rates,       sc::yield,       false}},
-        {"MM_FUTURE",        {ac::rates,       sc::fra,         false}},
-        {"FRA",              {ac::rates,       sc::fra,         false}},
-        {"IMM_FRA",          {ac::rates,       sc::fra,         false}},
-        {"IR_SWAP",          {ac::rates,       sc::yield,       false}},
+        {"DISCOUNT", {ac::rates, sc::yield, false}},
+        {"ZERO", {ac::rates, sc::yield, false}},
+        {"MM", {ac::rates, sc::yield, false}},
+        {"MM_FUTURE", {ac::rates, sc::fra, false}},
+        {"FRA", {ac::rates, sc::fra, false}},
+        {"IMM_FRA", {ac::rates, sc::fra, false}},
+        {"IR_SWAP", {ac::rates, sc::yield, false}},
         // Rates spreads
-        {"BASIS_SWAP",       {ac::rates,       sc::basis,       false}},
-        {"BMA_SWAP",         {ac::rates,       sc::basis,       false}},
-        {"CC_BASIS_SWAP",    {ac::rates,       sc::xccy,        false}},
-        {"CC_FIX_FLOAT_SWAP",{ac::rates,       sc::xccy,        false}},
+        {"BASIS_SWAP", {ac::rates, sc::basis, false}},
+        {"BMA_SWAP", {ac::rates, sc::basis, false}},
+        {"CC_BASIS_SWAP", {ac::rates, sc::xccy, false}},
+        {"CC_FIX_FLOAT_SWAP", {ac::rates, sc::xccy, false}},
         // Rates vols
-        {"SWAPTION",         {ac::rates,       sc::volatility,  false}},
-        {"CAPFLOOR",         {ac::rates,       sc::volatility,  false}},
+        {"SWAPTION", {ac::rates, sc::volatility, false}},
+        {"CAPFLOOR", {ac::rates, sc::volatility, false}},
         // Credit
-        {"HAZARD_RATE",      {ac::credit,      sc::spread,      false}},
-        {"CDS",              {ac::credit,      sc::spread,      false}},
-        {"CDS_INDEX",        {ac::credit,      sc::index_credit,false}},
-        {"INDEX_CDS_OPTION", {ac::credit,      sc::index_credit,false}},
-        {"RECOVERY_RATE",    {ac::credit,      sc::recovery,    true}},
+        {"HAZARD_RATE", {ac::credit, sc::spread, false}},
+        {"CDS", {ac::credit, sc::spread, false}},
+        {"CDS_INDEX", {ac::credit, sc::index_credit, false}},
+        {"INDEX_CDS_OPTION", {ac::credit, sc::index_credit, false}},
+        {"RECOVERY_RATE", {ac::credit, sc::recovery, true}},
         // Equity
-        {"EQUITY",           {ac::equity,      sc::spot,        true}},
-        {"EQUITY_FWD",       {ac::equity,      sc::forward,     false}},
-        {"EQUITY_DIVIDEND",  {ac::equity,      sc::forward,     false}},
-        {"EQUITY_OPTION",    {ac::equity,      sc::volatility,  false}},
+        {"EQUITY", {ac::equity, sc::spot, true}},
+        {"EQUITY_FWD", {ac::equity, sc::forward, false}},
+        {"EQUITY_DIVIDEND", {ac::equity, sc::forward, false}},
+        {"EQUITY_OPTION", {ac::equity, sc::volatility, false}},
         // Commodity
-        {"COMMODITY",        {ac::commodity,   sc::spot,        true}},
-        {"COMMODITY_FWD",    {ac::commodity,   sc::forward,     false}},
-        {"COMMODITY_OPTION", {ac::commodity,   sc::volatility,  false}},
+        {"COMMODITY", {ac::commodity, sc::spot, true}},
+        {"COMMODITY_FWD", {ac::commodity, sc::forward, false}},
+        {"COMMODITY_OPTION", {ac::commodity, sc::volatility, false}},
         // Inflation
-        {"ZC_INFLATIONSWAP",     {ac::inflation, sc::swap,       false}},
-        {"YY_INFLATIONSWAP",     {ac::inflation, sc::swap,       false}},
-        {"ZC_INFLATIONCAPFLOOR", {ac::inflation, sc::capfloor,   false}},
-        {"YY_INFLATIONCAPFLOOR", {ac::inflation, sc::capfloor,   false}},
-        {"SEASONALITY",          {ac::inflation, sc::seasonality, false}},
+        {"ZC_INFLATIONSWAP", {ac::inflation, sc::swap, false}},
+        {"YY_INFLATIONSWAP", {ac::inflation, sc::swap, false}},
+        {"ZC_INFLATIONCAPFLOOR", {ac::inflation, sc::capfloor, false}},
+        {"YY_INFLATIONCAPFLOOR", {ac::inflation, sc::capfloor, false}},
+        {"SEASONALITY", {ac::inflation, sc::seasonality, false}},
         // Bond
-        {"BOND",             {ac::bond,        sc::price,       false}},
+        {"BOND", {ac::bond, sc::price, false}},
         // Cross-asset
-        {"CORRELATION",      {ac::cross_asset, sc::correlation, true}},
+        {"CORRELATION", {ac::cross_asset, sc::correlation, true}},
         // Fixings (index series)
-        {"FIXING",           {ac::rates,       sc::yield,       true}},
+        {"FIXING", {ac::rates, sc::yield, true}},
     };
 
     const auto it = k_table.find(series_type);
@@ -110,7 +109,8 @@ series_classification classify_series_type(const std::string& series_type) {
 
 } // namespace
 
-import_service::import_service(context ctx) : ctx_(std::move(ctx)) {}
+import_service::import_service(context ctx)
+    : ctx_(std::move(ctx)) {}
 
 messaging::import_market_data_response
 import_service::import(const messaging::import_market_data_request& req) {
@@ -125,16 +125,15 @@ import_service::import(const messaging::import_market_data_request& req) {
     std::map<SeriesKey, boost::uuids::uuid> series_cache;
 
     auto find_or_create_series = [&](const std::string& series_type,
-        const std::string& metric,
-        const std::string& qualifier) -> boost::uuids::uuid {
+                                     const std::string& metric,
+                                     const std::string& qualifier) -> boost::uuids::uuid {
         const auto key = std::make_tuple(series_type, metric, qualifier);
         const auto it = series_cache.find(key);
         if (it != series_cache.end())
             return it->second;
 
         // Look up existing series in DB.
-        const auto existing = series_repo.read_latest_by_type(
-            ctx_, series_type, metric, qualifier);
+        const auto existing = series_repo.read_latest_by_type(ctx_, series_type, metric, qualifier);
         if (!existing.empty()) {
             series_cache.emplace(key, existing.front().id);
             return existing.front().id;
@@ -171,8 +170,7 @@ import_service::import(const messaging::import_market_data_request& req) {
         observations.reserve(data.size());
 
         for (const auto& d : data) {
-            const auto sid = find_or_create_series(
-                d.series_type, d.metric, d.qualifier);
+            const auto sid = find_or_create_series(d.series_type, d.metric, d.qualifier);
 
             domain::market_observation obs;
             obs.id = gen();

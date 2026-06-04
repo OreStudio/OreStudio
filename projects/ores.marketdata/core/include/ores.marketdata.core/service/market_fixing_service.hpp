@@ -20,15 +20,15 @@
 #ifndef ORES_MARKETDATA_CORE_SERVICE_MARKET_FIXING_SERVICE_HPP
 #define ORES_MARKETDATA_CORE_SERVICE_MARKET_FIXING_SERVICE_HPP
 
-#include <chrono>
-#include <vector>
-#include <optional>
-#include <boost/uuid/uuid.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/market_fixing.hpp"
-#include "ores.marketdata.core/repository/market_fixings_repository.hpp"
 #include "ores.marketdata.core/export.hpp"
+#include "ores.marketdata.core/repository/market_fixings_repository.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <optional>
+#include <vector>
 
 namespace ores::marketdata::service {
 
@@ -37,8 +37,7 @@ namespace ores::marketdata::service {
  */
 class ORES_MARKETDATA_CORE_EXPORT market_fixing_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.marketdata.service.market_fixing_service";
+    inline static std::string_view logger_name = "ores.marketdata.service.market_fixing_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -51,13 +50,11 @@ public:
 
     explicit market_fixing_service(context ctx);
 
-    std::vector<domain::market_fixing>
-    list(const boost::uuids::uuid& series_id);
+    std::vector<domain::market_fixing> list(const boost::uuids::uuid& series_id);
 
-    std::vector<domain::market_fixing>
-    list(const boost::uuids::uuid& series_id,
-        const std::chrono::year_month_day& from_date,
-        const std::chrono::year_month_day& to_date);
+    std::vector<domain::market_fixing> list(const boost::uuids::uuid& series_id,
+                                            const std::chrono::year_month_day& from_date,
+                                            const std::chrono::year_month_day& to_date);
 
     void save(const domain::market_fixing& v);
     void save(const std::vector<domain::market_fixing>& v);

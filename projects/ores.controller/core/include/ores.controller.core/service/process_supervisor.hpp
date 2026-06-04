@@ -20,23 +20,23 @@
 #ifndef ORES_CONTROLLER_CORE_SERVICE_PROCESS_SUPERVISOR_HPP
 #define ORES_CONTROLLER_CORE_SERVICE_PROCESS_SUPERVISOR_HPP
 
+#include "ores.controller.api/domain/service_definition.hpp"
+#include "ores.controller.core/export.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.nats/config/nats_options.hpp"
+#include "ores.utility/concurrency/retry_strategy.hpp"
+#include <boost/asio/awaitable.hpp>
+#include <boost/asio/io_context.hpp>
+#include <boost/asio/thread_pool.hpp>
+#include <boost/process/v2/process.hpp>
 #include <atomic>
+#include <filesystem>
 #include <map>
 #include <memory>
 #include <optional>
 #include <string>
 #include <vector>
-#include <filesystem>
-#include <boost/asio/awaitable.hpp>
-#include <boost/asio/io_context.hpp>
-#include <boost/asio/thread_pool.hpp>
-#include <boost/process/v2/process.hpp>
-#include "ores.logging/make_logger.hpp"
-#include "ores.nats/config/nats_options.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.controller.api/domain/service_definition.hpp"
-#include "ores.utility/concurrency/retry_strategy.hpp"
-#include "ores.controller.core/export.hpp"
 
 namespace ores::controller::service {
 
@@ -64,8 +64,7 @@ namespace ores::controller::service {
  */
 class ORES_CONTROLLER_CORE_EXPORT process_supervisor {
 private:
-    inline static std::string_view logger_name =
-        "ores.controller.service.process_supervisor";
+    inline static std::string_view logger_name = "ores.controller.service.process_supervisor";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -76,14 +75,13 @@ private:
     // Default args template used when service_definition.args_template is empty.
     // {nats_tls_args} expands to "--nats-tls-ca … --nats-tls-cert … --nats-tls-key …"
     // when mTLS is configured, or to an empty string otherwise.
-    static constexpr std::string_view default_args_template =
-        "--log-enabled "
-        "--log-level {log_level} "
-        "--log-directory {log_dir} "
-        "--log-replica-index {replica_index} "
-        "--nats-url {nats_url} "
-        "--nats-subject-prefix {nats_prefix} "
-        "{nats_tls_args}";
+    static constexpr std::string_view default_args_template = "--log-enabled "
+                                                              "--log-level {log_level} "
+                                                              "--log-directory {log_dir} "
+                                                              "--log-replica-index {replica_index} "
+                                                              "--nats-url {nats_url} "
+                                                              "--nats-subject-prefix {nats_prefix} "
+                                                              "{nats_tls_args}";
 
     using process_key = std::pair<std::string, int>; // (service_name, replica_index)
 
@@ -97,12 +95,12 @@ private:
 
 public:
     process_supervisor(boost::asio::io_context& ioc,
-        std::filesystem::path bin_dir,
-        ores::nats::config::nats_options nats,
-        std::string log_level,
-        ores::database::context db_ctx,
-        int http_port = 51000,
-        int wt_port = 51002);
+                       std::filesystem::path bin_dir,
+                       ores::nats::config::nats_options nats,
+                       std::string log_level,
+                       ores::database::context db_ctx,
+                       int http_port = 51000,
+                       int wt_port = 51002);
 
     // -------------------------------------------------------------------------
     // Bulk start / stop
@@ -150,28 +148,22 @@ public:
     void request_restart(const std::string& service_name, int replica_index);
 
 private:
-    boost::asio::awaitable<void> do_launch(std::string service_name,
-        int replica_index);
-    boost::asio::awaitable<void> do_stop(std::string service_name,
-        int replica_index);
-    boost::asio::awaitable<void> monitor_process(
-        std::shared_ptr<process_entry> entry);
-    boost::asio::awaitable<bool> wait_for_log_ready(
-        std::filesystem::path log_path, std::chrono::seconds timeout,
-        std::uintmax_t start_offset = 0);
+    boost::asio::awaitable<void> do_launch(std::string service_name, int replica_index);
+    boost::asio::awaitable<void> do_stop(std::string service_name, int replica_index);
+    boost::asio::awaitable<void> monitor_process(std::shared_ptr<process_entry> entry);
+    boost::asio::awaitable<bool> wait_for_log_ready(std::filesystem::path log_path,
+                                                    std::chrono::seconds timeout,
+                                                    std::uintmax_t start_offset = 0);
 
     std::vector<std::string> build_args(const api::domain::service_definition& def,
-        int replica_index) const;
-    std::filesystem::path log_path_for(const std::string& service_name,
-        int replica_index) const;
-    std::filesystem::path stderr_path_for(const std::string& service_name,
-        int replica_index) const;
-    std::filesystem::path pid_path_for(const std::string& service_name,
-        int replica_index) const;
-    void write_pid_file(const std::string& service_name, int replica_index,
-        boost::process::v2::pid_type pid) const;
-    void remove_pid_file(const std::string& service_name,
-        int replica_index) const;
+                                        int replica_index) const;
+    std::filesystem::path log_path_for(const std::string& service_name, int replica_index) const;
+    std::filesystem::path stderr_path_for(const std::string& service_name, int replica_index) const;
+    std::filesystem::path pid_path_for(const std::string& service_name, int replica_index) const;
+    void write_pid_file(const std::string& service_name,
+                        int replica_index,
+                        boost::process::v2::pid_type pid) const;
+    void remove_pid_file(const std::string& service_name, int replica_index) const;
 
     boost::asio::io_context& ioc_;
     boost::asio::thread_pool db_pool_{1};

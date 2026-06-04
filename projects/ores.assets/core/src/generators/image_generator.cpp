@@ -18,29 +18,28 @@
  *
  */
 #include "ores.assets.core/generators/image_generator.hpp"
-
-#include <unordered_set>
+#include "ores.utility/generation/generation_keys.hpp"
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include <faker-cxx/lorem.h>
-#include <faker-cxx/string.h>
 #include <faker-cxx/number.h>
-#include "ores.utility/generation/generation_keys.hpp"
+#include <faker-cxx/string.h>
+#include <unordered_set>
 
 namespace ores::assets::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::image generate_synthetic_image(
-    utility::generation::generation_context& ctx) {
-    const auto modified_by = ctx.env().get_or(
-        generation_keys::modified_by, "system");
+domain::image generate_synthetic_image(utility::generation::generation_context& ctx) {
+    const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
 
     domain::image r;
     r.image_id = ctx.generate_uuid();
     r.key = faker::string::alphanumeric(8);
     r.description = std::string(faker::lorem::sentence());
     r.svg_data = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\">"
-                 "<rect fill=\"#" + faker::number::hexadecimal(6) + "\" width=\"100\" height=\"100\"/>"
+                 "<rect fill=\"#" +
+                 faker::number::hexadecimal(6) +
+                 "\" width=\"100\" height=\"100\"/>"
                  "</svg>";
     r.modified_by = modified_by;
     r.change_reason_code = "system.test";
@@ -51,7 +50,7 @@ domain::image generate_synthetic_image(
 }
 
 std::vector<domain::image> generate_synthetic_images(std::size_t n,
-    utility::generation::generation_context& ctx) {
+                                                     utility::generation::generation_context& ctx) {
     std::vector<domain::image> r;
     r.reserve(n);
     while (r.size() < n)
@@ -60,8 +59,8 @@ std::vector<domain::image> generate_synthetic_images(std::size_t n,
     return r;
 }
 
-std::vector<domain::image> generate_unique_synthetic_images(std::size_t n,
-    utility::generation::generation_context& ctx) {
+std::vector<domain::image>
+generate_unique_synthetic_images(std::size_t n, utility::generation::generation_context& ctx) {
     std::unordered_set<std::string> seen;
     seen.reserve(n);
 

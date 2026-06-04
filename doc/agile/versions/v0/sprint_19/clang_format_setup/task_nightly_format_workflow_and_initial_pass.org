@@ -64,4 +64,4 @@ a conflict between the new config and the existing tree state.
 
 clang-tidy (static analysis) is a separate story — it requires
 =compile_commands.json=, check selection, and a full build environment
-in CI. Filed as a capture: [[id:][Set up clang-tidy static analysis]].
+in CI. Filed as a capture: [[id:A16A6F10-1362-4009-9BFB-44402D7A9403][Set up clang-tidy static analysis]].

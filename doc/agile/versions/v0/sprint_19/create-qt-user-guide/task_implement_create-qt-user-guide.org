@@ -8,7 +8,7 @@
 #+filetags: :create-qt-user-guide:sprint_19:v0:
 #+owner: marco
 #+branch: feature/create-qt-user-guide
-#+pr:
+#+pr: https://github.com/OreStudio/OreStudio/pull/1063
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-05
@@ -73,7 +73,7 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1063][#1063]] | [doc,agile] Manual Administration part: accounts, roles, tenants; user guide story |
 
 * Review
 

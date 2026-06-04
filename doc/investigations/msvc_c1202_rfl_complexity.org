@@ -2,50 +2,267 @@
 :ID: D75F4921-B431-4E78-99AB-62A47F761D1D
 :END:
 #+title: Investigation: MSVC C1202 and rfl complexity
-#+description: Root cause analysis of recursive template depth limits in reflect-cpp.
+#+description: Complete technical record of the MSVC C1202 / Clang nesting limit problem caused by reflect-cpp, covering root cause, every approach tried, why each succeeded or failed, and the correct way forward.
 #+type: investigation
 #+level: cross
 #+filetags: :msvc:clang:cpp:reflect_cpp:investigation:
 #+created: 2026-05-23
-#+updated: 2026-05-23
+#+updated: 2026-06-04
 
-This page documents a formal historical record of an [[id:A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D][investigation]] into Root cause analysis of recursive template depth limits in reflect-cpp..
+* Overview
 
-* Context
+ORE Studio uses [[https://github.com/getml/reflect-cpp][reflect-cpp (rfl)]] for JSON serialisation and deserialisation.
+rfl's internal mechanism for field-uniqueness checking
+(=rfl::internal::no_duplicate_field_names= in =rfl/Literal.hpp=) creates a
+compile-time =rfl::Literal<f1, f2, …, fN>= holding every reflected field name
+and performs an O(N²) constexpr string-equality check across all N names.
 
-The ORE Studio project encountered persistent compilation failures in =projects/ores.qt.api/src/ClientManagerTrades.cpp= across different compilers (Clang on Linux, MSVC on Windows). These failures surfaced as "expression nesting limit exceeded" in Clang and "recursive type or function dependency context too complex (C1202)" in MSVC. The project has a history of fighting these limits, with several previous workarounds being introduced and later reverted.
+MSVC imposes a hard internal limit on the "recursive type or function dependency
+context" — the width of the template instantiation graph. When N is large
+enough, this graph saturates and MSVC aborts with:
 
-* Methodology
+#+begin_example
+fatal error C1202: recursive type or function dependency context too complex
+#+end_example
 
-The investigation involved:
-1.  **Log Analysis**: Examining the detailed error messages from both Clang and MSVC to identify the exact point of failure within the =reflect-cpp= (=rfl=) library.
-2.  **Codebase Archaeology**: Using =git log= and =grep= to trace the history of these files and understand previous attempts to fix the issue (e.g., TU splits, two-phase parsing).
-3.  **Domain Mapping**: Analyzing the structure of the types being reflected, specifically the =trade= struct and the =trade_instrument= variant.
-4.  **Static Analysis**: Reviewing the `rfl` internal headers (=StringLiteral.hpp=, =no_duplicate_field_names.hpp=) to understand the O(N) and O(N²) compile-time complexity of its reflection engine.
+The =/constexpr:depth= and =/constexpr:steps= flags (already set to 100 000 and
+10 000 000 respectively) have *no effect* on C1202: they govern constexpr
+evaluation budgets, not the template instantiation graph width.
 
-* Paths taken
+Clang has a related but distinct failure: fold-expression nesting in
+=rfl::AddTagsToVariants= exceeds =-fbracket-depth= (default 256) when a variant
+has many alternatives.
 
-- **Analysis of previous workarounds**: Investigated Sprint 17 documentation and commit history (=cae36769f=, =52ae0ae55=, =d6d60c039=). Found that a "two-phase parse" and "TU split" were previously used but reverted in PR #763 and PR #786 in favor of global compiler flag increases and per-TU pragmas.
-- **Verification of current failure**: Confirmed that despite having =/constexpr:depth100000= and =/constexpr:steps10000000=, MSVC still fails with C1202. This indicates a hard limit on template instantiation depth rather than just a step budget.
-- **Clang limit identification**: Identified that Clang fails due to =-fbracket-depth= defaulting to 256, which is exceeded by fold expressions processing long type names in =rfl::AddTagsToVariants=.
-- **Reflect-cpp upstream check**: Checked for similar issues in the =reflect-cpp= repository, leading to the opening of [[https://github.com/getml/reflect-cpp/issues/350][Issue #350]].
+This document is the canonical reference. Individual sprint tasks and stories
+link here rather than re-stating the analysis.
 
-* Conclusions
+* Mechanics of the failure
 
-1.  **Root Cause**: The complexity of the =trade_instrument= variant (9 alternatives, many with nested fields and complex namespaces) exceeds the default recursion and nesting limits of modern compilers when combined with the 25-field =trade= struct in a single reflection pass.
-2.  **Reflect-cpp Behavior**: =rfl::internal::no_duplicate_field_names= performs an O(N²) constexpr check for field uniqueness. For complex variants, this check triggers deep template recursion.
-3.  **Failure of Simple Flag Increases**: While raising constexpr limits helps with budget, it does not solve the deep "dependency context" limit in MSVC or the "expression nesting" limit in Clang. Structural isolation is required.
+** rfl::Literal and no_duplicate_field_names
 
-* Recommendations
+When rfl reflects a struct =S=, it builds an =rfl::Literal<f1, f2, …, fN>= where
+the =fi= are the /effective/ field names of =S=. For a plain struct, "effective"
+means the struct's own direct fields. For a struct containing
+=rfl::Flatten<Sub>=, "effective" means the union of the parent's non-Flatten
+fields plus all of =Sub='s effective fields — the flattening is recursive.
 
-1.  **Triple Isolation Strategy**:
-    - **Increase Global Limits (Clang)**: Add =-fbracket-depth=1024= to handle deep fold expressions.
-    - **Structural Isolation (TU Split)**: Move =getTradeDetail= (the variant-heavy call) to a dedicated translation unit (=ClientManagerTradeDetail.cpp=) to prevent it from sharing context with =listTrades= (the struct-heavy call).
-    - **Protocol Decomposition (Two-Phase Parse)**: Restore the two-phase deserialization in =trade_protocol.hpp= to break the massive single reflection pass into two smaller ones.
-2.  **Long-term Fix**: Monitor [[https://github.com/getml/reflect-cpp/issues/350][reflect-cpp issue #350]] for an upstream fix that reduces the O(N²) complexity of the field uniqueness check.
+=no_duplicate_field_names= then checks every pair =(fi, fj)= with i≠j for
+equality, producing an O(N²) instantiation graph of width proportional to N².
+
+*Key fact: rfl::Flatten does not reduce the parent Literal size.* A parent struct
+with three =rfl::Flatten= members whose sub-structs have 5, 9, and 5 fields
+respectively will produce a parent Literal with 5+9+5 = 19 entries — identical
+to the original flat 19-field struct. The sub-structs are /also/ reflected
+independently (producing smaller Literals), but the parent Literal is not
+reduced.
+
+** Two distinct failure modes
+
+Understanding the /mode/ of failure is essential for choosing the right fix:
+
+*** Mode 1 — Context accumulation (TU saturation)
+
+C1202 fires when a TU has already accumulated a large template instantiation
+context from other headers and types, and then encounters one more large rfl
+Literal that tips it over the limit. The C1202 is not caused by any single
+struct alone — it requires the /combination/ of a saturated context and an
+additional Literal.
+
+Characteristics:
+- Fires late in the build (high step number, e.g. step 4651/4936).
+- Disappears when the offending TU is split or the context is reduced.
+- The same struct compiles fine in a clean TU.
+- Sensitive to compilation order.
+
+*** Mode 2 — Single-struct saturation (clean TU)
+
+C1202 fires on a specific struct even in a clean TU with minimal includes. The
+struct's Literal alone saturates the limit regardless of surrounding context.
+
+Characteristics:
+- Fires early in the build (low step number, e.g. step 1140/4939).
+- Does not disappear with TU splitting or two-phase parse.
+- Repeatable regardless of compilation order.
+- The ONLY fix is to reduce the Literal size for that struct below the threshold.
+
+The threshold for Mode 2 is somewhere below 19 fields. 9-field sub-structs
+compile without issue; 19 fields in a single effective Literal does not.
+
+* Chronological record of approaches
+
+** Sprint 16 — Initial TU split (workaround, not a fix)
+
+=ClientManager.cpp= was split into focused per-function TUs (PRs #754, #757).
+This addressed Mode 1 failures by reducing context per TU. It is a maintenance
+burden but provided short-term relief.
+
+** Sprint 17 — Constexpr flag raises (ineffective for C1202)
+
+Tasks: [[id:970E36F2-DC20-45E4-B1B7-186F86F46650][Raise MSVC constexpr limits (sprint 17)]]
+
+Raised =/constexpr:depth= and =/constexpr:steps= to large values. Had no effect
+on C1202 (wrong category of limit). Reverted/superseded.
+
+** Sprint 17 — trade struct decomposition via rfl::Flatten (worked for Mode 1)
+
+Task: [[id:CAEA4E7D-A6DB-4716-83E5-6F47ADD7819D][Decompose trade into rfl::Flatten sub-structs (sprint 17)]] — PR #761
+
+=trade= had 25 fields. Decomposed into 5 sub-structs (identity/parties/
+classification/lifecycle/audit, max 7 fields each) composed via =rfl::Flatten=.
+
+*Result*: C1202 on =trade= resolved. This worked because =trade='s C1202 was a
+Mode 1 failure — the 25-field parent Literal was not saturating the limit alone;
+it only fired in combination with other large types in the same TU. Reducing the
+accumulated instantiation context (by making each sub-struct available as a
+separate, smaller template instantiation) was sufficient.
+
+*What was NOT understood at the time*: =rfl::Flatten= does NOT reduce the parent
+=trade= Literal — =trade= still has a 25-field effective Literal. The fix worked
+because =trade= was a Mode 1 case. Had =trade= been a Mode 2 case (firing alone
+in a clean TU), =rfl::Flatten= would not have helped.
+
+** Sprint 18 — Investigation and Triple Isolation (addressed trade_instrument)
+
+Task: [[id:D1E4921B-B431-4E78-99AB-62A47F761D1D][Investigate RFL complexity root cause (sprint 18)]]
+Story: [[id:D8B1A670-3B02-11F1-BCE2-4B06F4BBA5D9][Resolve RFL complexity issues (sprint 18)]]
+
+Investigation identified =rfl::AddTagsToVariants= on =trade_instrument= (a
+variant of ~30 leaf types totalling 502 field names) as the primary driver of
+Clang failures. The Triple Isolation strategy was implemented: TU split +
+two-phase parse + global =-fbracket-depth=1024=.
+
+=swaption_instr_outer= was introduced as a surrogate struct to isolate heavy
+rfl instantiation from caller TUs. This is a correct pattern for Mode 1.
+
+** Sprint 19 task 9 — swap_leg rfl::Flatten (applied to a Mode 2 case — did not work)
+
+Task: [[id:C19E28EF-FA66-4A53-8958-7F3D7A093F46][Fix C1202 in ClientManagerExportPortfolio.cpp (task 9, sprint 19)]] — PR #1031
+
+=swap_leg= has 19 fields. After PR #1010 isolated =export_portfolio_response=
+into =ClientManagerExportPortfolio.cpp=, MSVC C1202 fired at step 1140/4939
+(early in the build, clean TU) — a Mode 2 failure.
+
+Following the sprint 17 precedent, =rfl::Flatten= was applied: =swap_leg= was
+split into =swap_leg_identity= (5), =swap_leg_terms= (9), =swap_leg_audit= (5)
+composed via =rfl::Flatten=.
+
+*Result*: C1202 persisted. The Windows CI error (step 1140/4939) after PR #1031
+shows the identical 19-field Literal:
+
+#+begin_example
+rfl::Literal<"version","tenant_id","id","instrument_id","leg_number",
+"leg_type_code","day_count_fraction_code","business_day_convention_code",
+"payment_frequency_code","floating_index_code","fixed_rate","spread",
+"notional","currency","modified_by","performed_by","change_reason_code",
+"change_commentary","recorded_at">
+#+end_example
+
+*Why it failed*: =swap_leg= is a Mode 2 case. Its 19-field effective Literal
+(which =rfl::Flatten= does not reduce) saturates the MSVC graph limit in a
+clean TU. The sprint 17 precedent was misapplied — that precedent was valid
+for Mode 1 but not Mode 2.
+
+*Side effects of task 9 that should be kept*: The struct decomposition
+(=swap_leg_identity= / =swap_leg_terms= / =swap_leg_audit=) is architecturally
+sound and all callers have been updated. The decomposition should be retained;
+only the =rfl::Flatten= composition mechanism should change.
+
+* The correct fix for Mode 2
+
+The only way to eliminate a Mode 2 C1202 is to ensure no single rfl Literal
+exceeds the MSVC threshold. Since the threshold is somewhere below 19, and
+sub-structs with ≤9 fields compile cleanly, the fix is:
+
+*Remove =rfl::Flatten= from =swap_leg= and use plain nested sub-structs.*
+
+#+begin_src cpp
+// Before (rfl::Flatten — effective Literal still has 19 fields):
+struct swap_leg {
+    rfl::Flatten<swap_leg_identity> identity;  // contributes 5 names to parent Literal
+    rfl::Flatten<swap_leg_terms>   terms;       // contributes 9 names to parent Literal
+    rfl::Flatten<swap_leg_audit>   audit;       // contributes 5 names to parent Literal
+    // → parent swap_leg Literal: 19 fields → C1202
+};
+
+// After (plain nested structs — each reflected independently):
+struct swap_leg {
+    swap_leg_identity identity;   // reflected as its own 5-field Literal
+    swap_leg_terms    terms;      // reflected as its own 9-field Literal
+    swap_leg_audit    audit;      // reflected as its own 5-field Literal
+    // → parent swap_leg Literal: 3 fields → safe
+};
+#+end_src
+
+With plain nested structs, rfl reflects each sub-struct independently. The
+parent =swap_leg= Literal has 3 fields; no Literal exceeds 9 fields.
+
+*Wire format consequence*: the JSON representation changes from flat to nested:
+
+#+begin_example
+// Before (flat):
+{"version": 1, "tenant_id": "...", "id": "...", ...(19 fields at top level)...}
+
+// After (nested):
+{"identity": {"version": 1, "tenant_id": "...", ...},
+ "terms":    {"leg_type_code": "Fixed", ...},
+ "audit":    {"modified_by": "...", ...}}
+#+end_example
+
+Both the server (=ores.trading.service=) and the client (=ores.qt=) are in the
+same repository and deployed together. There are no external consumers of the
+=swap_leg= wire format. The change is safe.
+
+*Caller simplification*: the =.get()= accessor (an =rfl::Flatten= artifact)
+is removed. =sl.identity.get().version= becomes =sl.identity.version=.
+
+* Decision table: which approach for which failure mode
+
+| Approach | Mode 1 (TU saturation) | Mode 2 (clean TU) | Wire format |
+|----------+-----------------------+--------------------+-------------|
+| Raise constexpr flags | No effect on C1202 | No effect on C1202 | Unchanged |
+| TU split / isolation TU | Effective | Ineffective | Unchanged |
+| Two-phase parse / surrogate | Effective | Ineffective | Unchanged |
+| rfl::Flatten decomposition | Reduces context, may help | Ineffective (Literal unchanged) | Unchanged (flat) |
+| Plain nested structs (no Flatten) | N/A | *Effective* | Changes to nested |
+| Custom rfl reflector | Possible but complex | Possible but complex | Configurable |
+
+* Open questions and future work
+
+** Threshold
+
+The exact field count at which MSVC fires C1202 in a clean TU is not
+precisely known. 9 fields is safe; 19 fields is not. Any new struct with more
+than ~12 fields should be evaluated before using rfl on it in isolation.
+
+** reflect-cpp issue #350
+
+[[https://github.com/getml/reflect-cpp/issues/350][reflect-cpp Issue #350]] was opened to request an upstream fix. If rfl
+eliminates the O(N²) compile-time uniqueness check (or provides a way to
+disable it per type), Mode 2 failures would disappear and the wire-format
+change would be unnecessary. Monitor this issue.
+
+** Other structs at risk
+
+Any domain struct with >~12 fields that appears in an rfl serialisation chain
+in a relatively clean TU is at risk of Mode 2 C1202. A project-wide audit of
+field counts against the safety threshold would prevent future surprises.
+
+* Related artefacts
+
+| Artefact | Link | Notes |
+|----------+------+-------|
+| Sprint 16 story | [[id:B2A3C4D5-E6F7-4A8B-9C0D-1E2F3A4B5C6D][Windows portability fixes]] | Initial TU split |
+| Sprint 17 story | [[id:FBE68713-40C1-4B1D-A228-1C55AB4ABC34][MSVC C1202 constexpr depth fixes]] | trade Flatten + constexpr flags |
+| Sprint 17 task | [[id:CAEA4E7D-A6DB-4716-83E5-6F47ADD7819D][Decompose trade into rfl::Flatten sub-structs]] | Mode 1 fix (correctly applied) |
+| Sprint 17 plan | [[id:5319618A-FEB6-46F4-9588-11495CA8E164][MSVC C1202 — Decompose trade into Sub-Structs]] | Design doc for trade fix |
+| Sprint 18 story | [[id:D8B1A670-3B02-11F1-BCE2-4B06F4BBA5D9][Resolve RFL complexity issues]] | trade_instrument / Triple Isolation |
+| Sprint 18 task | [[id:D1E4921B-B431-4E78-99AB-62A47F761D1D][Investigate RFL complexity root cause]] | Produced original investigation report |
+| Sprint 19 story | [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]] | Current story |
+| Sprint 19 task 9 | [[id:C19E28EF-FA66-4A53-8958-7F3D7A093F46][Fix C1202 in ClientManagerExportPortfolio.cpp (swap_leg Flatten)]] | rfl::Flatten misapplied to Mode 2 |
+| Sprint 19 task 10 | [[id:CE1217C9-82FB-45DB-AEEB-D7B5EEA64B70][Replace rfl::Flatten with plain nested structs in swap_leg]] | Correct Mode 2 fix |
+| reflect-cpp upstream | [[https://github.com/getml/reflect-cpp/issues/350][Issue #350]] | Upstream awareness |
 
 * See also
 
-- [[id:FBE68713-40C1-4B1D-A228-1C55AB4ABC34][MSVC C1202 constexpr depth fixes]] (Sprint 17 story)
-- [[id:970E36F2-DC20-45E4-B1B7-186F86F46650][Task: Restore two-phase rfl parse in getTradeDetail to fix MSVC C1202]]
-- [[https://github.com/getml/reflect-cpp/issues/350][reflect-cpp Issue #350]]
+- [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]] — current sprint 19 story.
+- [[id:FBE68713-40C1-4B1D-A228-1C55AB4ABC34][MSVC C1202 constexpr depth fixes]] — sprint 17 story; trade decomposition.

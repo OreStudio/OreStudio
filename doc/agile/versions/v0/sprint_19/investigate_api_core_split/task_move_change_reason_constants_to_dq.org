@@ -68,7 +68,7 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1052][#1052]] | [dq,iam,qt,http,ore] Move change reason constants to ores.dq.api |
 
 * Review
 

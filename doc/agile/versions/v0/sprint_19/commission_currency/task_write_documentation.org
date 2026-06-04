@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :commission_currency:sprint_19:v0:
 #+owner: marco
-#+branch: feature/commission-currency
+#+branch: feature/currency-write-docs
 #+pr:
 #+blocked_on: none
 #+blocked_since:
@@ -32,7 +32,7 @@ The manual chapter is the highest-priority item; it is entirely absent.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Qt and shell verification tasks (for accurate screenshots / command output). |
@@ -52,12 +52,13 @@ The manual chapter is the highest-priority item; it is entirely absent.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1035][#1035]] | [doc,compass] Add manual chapters 4-5 (reference data, currencies); expand chapter 3 |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Chapter 4 missing required '** Overview' section | doc/manual/user_guide/chapter_4_reference_data.org | Accepted | Fixed in e41e24392; heading added before intro paragraph. |
+| 2 | Internal manual cross-reference uses file: link instead of id: link | doc/manual/user_guide/chapter_5_currencies.org | Accepted | Fixed in 3478b213a; now links to chapter 4 id FD54D29E. |
 
 * Result

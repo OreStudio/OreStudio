@@ -1478,6 +1478,13 @@ def cmd_fleet(args):
 # Types whose parent compass can resolve from "where we are".
 _DEFAULTABLE_PARENT = {"story": "sprint", "sprint": "version"}
 
+# Types whose parent is a fixed folder, independent of "where we are".
+_STATIC_PARENT = {
+    "skill": "doc/llm/skills",
+    "manual": "doc/manual/user_guide",
+    "memory": "doc/llm/memory",
+}
+
 def _default_parent_dir(doc_type):
     """Parent dir derived from the current sprint/version, or None."""
     parent_kind = _DEFAULTABLE_PARENT.get(doc_type)
@@ -1711,11 +1718,13 @@ def cmd_add(argv):
     """
     if not argv or argv[0] in ("-h", "--help"):
         print("usage: compass add <type> [generate_doc options]\n"
-              "  types: story task sprint version recipe knowledge component\n"
+              "  types: story task sprint version recipe knowledge manual component\n"
               "         capture memory investigation product_identity skill\n"
               "         diagram entity_org dataset_overview\n"
               "  --parent-dir defaults to the current sprint (story) or\n"
-              "  version (sprint), or doc/llm/skills (skill); required otherwise.\n"
+              "  version (sprint), doc/llm/skills (skill),\n"
+              "  doc/manual/user_guide (manual), or doc/llm/memory (memory);\n"
+              "  required otherwise.\n"
               "  diagram: scaffolds a .puml file with the standard licence header.\n"
               "  entity_org: scaffolds projects/ores.<component>/modeling/\n"
               "    ores.<component>.<slug>.org; requires --component, --slug,\n"
@@ -1735,8 +1744,8 @@ def cmd_add(argv):
     has_parent = any(a == "--parent-dir" or a.startswith("--parent-dir=")
                      for a in rest)
     if not has_parent:
-        if doc_type == "skill":
-            default_parent = "doc/llm/skills"
+        if doc_type in _STATIC_PARENT:
+            default_parent = _STATIC_PARENT[doc_type]
             rest += ["--parent-dir", default_parent]
             print(f"ℹ️  --parent-dir not given; using default: {default_parent}",
                   file=sys.stderr)
@@ -1762,6 +1771,13 @@ def cmd_add(argv):
     if rc in (None, 0):
         print("ℹ️  Remember to wire the new artefact into its parent "
               "(e.g. the sprint's * Stories table) where needed.", file=sys.stderr)
+        if doc_type == "manual":
+            print("⚠️  Manual link rule: [[id:UUID]] links to documents outside"
+                  " doc/manual/ will break the PDF export.", file=sys.stderr)
+            print("   Use HTTP URLs for external references. Internal chapter"
+                  " id-links are fine.", file=sys.stderr)
+            print("   See: projects/ores.lisp/modeling/manual.org §Link conventions",
+                  file=sys.stderr)
         return 0
     if isinstance(rc, str):   # sys.exit("message") — surface it
         print(rc, file=sys.stderr)

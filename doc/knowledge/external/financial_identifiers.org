@@ -1,0 +1,193 @@
+:PROPERTIES:
+:ID: 810AE48E-E180-42C6-B4F7-FA81826F3588
+:END:
+#+title: Standard Financial Identifiers
+#+description: Reference guide to the standard identifiers used in financial markets and OreStudio: LEI, BIC, ISIN, FIGI, CUSIP, SEDOL, MIC, RIC, BBG, and CIK.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:external:identifiers:lei:bic:isin:figi:gleif:reference:
+#+created: 2026-06-04
+#+updated: 2026-06-04
+
+Financial markets use a patchwork of identifier schemes — some
+ISO-standardised, some proprietary, some jurisdiction-specific —
+to uniquely identify legal entities, financial instruments, and
+trading venues. OreStudio stores these identifiers in the
+=refdata_party_identifiers_tbl= and =refdata_counterparty_identifiers_tbl=
+junction tables, keyed by scheme code. This document describes the
+ten most common identifiers encountered in OreStudio and its data
+sources. Return to [[id:CF2C4F3A-9C5C-4E7A-9E16-2A3A8C1D4C11][External knowledge]].
+
+* Detail
+
+** Entity Identifiers
+
+These identifiers classify legal entities — corporations, banks,
+funds, branches, and other organised bodies.
+
+*** LEI — Legal Entity Identifier
+
+- *Standard*: ISO 17442
+- *Issuer*: GLEIF-accredited Local Operating Units (LOUs)
+- *Format*: 20 characters alphanumeric (e.g. =7H6GLXDRUGQFU57RNE97=)
+- *Scope*: Global; any legal entity participating in financial markets
+
+The LEI is a globally unique identifier for legal entities. It was
+mandated by the G20 after the 2008 financial crisis to improve
+transparency in over-the-counter derivatives markets. Today it is
+required for trade reporting under MiFID II, EMIR, Dodd-Frank, and
+Basel III. The 20-character code encodes the issuing LOU (first
+4 chars), entity-specific identifier (chars 5–18), and two check
+digits.
+
+The GLEIF (Global Legal Entity Identifier Foundation) maintains the
+global LEI registry as open data, including corporate hierarchy
+relationships (parent/child/ultimate parent). OreStudio imports
+this dataset to seed counterparties and, optionally, the party
+hierarchy during tenant provisioning.
+
+*** BIC — Business Identifier Code
+
+- *Standard*: ISO 9362 (also called SWIFT BIC)
+- *Issuer*: SWIFT (Society for Worldwide Interbank Financial Telecommunication)
+- *Format*: 8 or 11 characters (e.g. =DEUTDEFF= or =DEUTDEDB=)
+- *Scope*: Banks and financial institutions with SWIFT membership
+
+The BIC uniquely identifies a financial institution in the SWIFT
+messaging network. It encodes institution code (4 chars), country
+(2 chars), location (2 chars), and optional branch (3 chars).
+BICs are used in SWIFT MT messages and ISO 20022 MX messages for
+payment routing and settlement instructions. GLEIF publishes a
+LEI-to-BIC mapping dataset that allows counterparty BICs to be
+resolved from their LEIs; OreStudio imports this mapping.
+
+*** CIK — Central Index Key
+
+- *Standard*: Proprietary (US SEC)
+- *Issuer*: US Securities and Exchange Commission (SEC)
+- *Format*: Up to 10 digits (e.g. =0000789019= for Microsoft)
+- *Scope*: Companies and individuals filing with the US SEC
+
+The CIK is the SEC's internal identifier for all EDGAR filers —
+public companies, fund managers, and individuals required to file
+disclosures. Used when cross-referencing OreStudio counterparty
+records with US regulatory filings.
+
+** Instrument Identifiers
+
+These identifiers classify financial instruments — equities, bonds,
+derivatives, and other tradeable securities.
+
+*** ISIN — International Securities Identification Number
+
+- *Standard*: ISO 6166
+- *Issuer*: National Numbering Agencies (NNAs) per jurisdiction
+- *Format*: 12 characters: 2-letter country code + 9-char NSIN + check digit
+  (e.g. =US0378331005= for Apple Inc.)
+- *Scope*: Global; primary identifier for equities, bonds, and derivatives
+
+The ISIN is the globally accepted primary identifier for securities
+and the one required by most regulatory reporting frameworks (MiFID
+II RTS 2, EMIR). It maps to the underlying national identifier
+(CUSIP for US, SEDOL for UK, etc.) via the issuing NNA. OreStudio
+uses ISINs as the primary instrument identifier in trade records.
+
+*** CUSIP — Committee on Uniform Security Identification Procedures
+
+- *Standard*: ANSI X9.6
+- *Issuer*: CUSIP Global Services (operated by FactSet)
+- *Format*: 9 characters: 6-char issuer + 2-char issue + check digit
+  (e.g. =037833100= for Apple Inc.)
+- *Scope*: US and Canadian equity and debt securities
+
+CUSIP is the dominant identifier for North American securities.
+The first 6 characters identify the issuer; the next 2 characters
+identify the specific issue (equity class, bond maturity, etc.).
+An ISIN for a US security is =US= + CUSIP + check digit.
+
+*** SEDOL — Stock Exchange Daily Official List
+
+- *Standard*: Proprietary (London Stock Exchange Group)
+- *Issuer*: LSEG
+- *Format*: 7 characters alphanumeric: 6-char identifier + check digit
+  (e.g. =0263494= for BP plc)
+- *Scope*: UK and Irish securities; widely used internationally
+
+SEDOL is the primary identifier for securities listed on UK and
+Irish exchanges. It is widely used in European fund administration
+and is embedded in the ISIN for UK securities (=GB= + SEDOL-derived).
+
+*** FIGI — Financial Instrument Global Identifier
+
+- *Standard*: Open standard (Object Management Group)
+- *Issuer*: Bloomberg (as the allocation agent)
+- *Format*: 12 characters alphanumeric (e.g. =BBG000B9XRY4= for Apple Inc.)
+- *Scope*: Global; instruments across all asset classes including OTC
+
+FIGI (formerly Bloomberg Global Identifier / BBGID) is an open,
+freely available identifier for financial instruments, including
+OTC derivatives that have no ISIN. Unlike CUSIP and SEDOL, the
+FIGI registry is public and downloadable. Each unique combination
+of instrument, exchange, and currency gets a distinct FIGI. The
+GLEIF DQ pipeline maps LEIs to FIGIs for OTC instrument identification.
+
+** Market and Venue Identifiers
+
+*** MIC — Market Identifier Code
+
+- *Standard*: ISO 10383
+- *Issuer*: SWIFT (on behalf of ISO)
+- *Format*: 4 characters alphanumeric (e.g. =XLON= for London Stock Exchange,
+  =XNYS= for New York Stock Exchange)
+- *Scope*: Global; exchanges and trading venues
+
+The MIC identifies a regulated exchange, trading platform, or
+systematic internaliser. MICs appear in trade reports (MiFID II
+transaction reporting requires the MIC of the execution venue),
+in ISIN suffixes, and in order routing instructions. OreStudio
+uses MICs when recording the execution venue of equity and listed
+derivative trades.
+
+** Market Data Identifiers
+
+These identifiers are proprietary to specific data vendors and
+used in market data subscriptions rather than regulatory reporting.
+
+*** RIC — Reuters Instrument Code
+
+- *Standard*: Proprietary (LSEG / Refinitiv)
+- *Issuer*: London Stock Exchange Group (formerly Thomson Reuters)
+- *Format*: Variable length; ticker + exchange suffix
+  (e.g. =AAPL.O= for Apple on NASDAQ, =EUR=X= for EUR/USD spot)
+- *Scope*: Equities, FX, rates, commodities on LSEG data feeds
+
+The RIC is the primary instrument identifier on Refinitiv (LSEG)
+data terminals and APIs. It encodes both the instrument and the
+market/contributor. OreStudio uses RICs in market data
+configurations that pull from Refinitiv feeds, and in fixing
+workflows where a Reuters rate is the authoritative source.
+
+*** BBG — Bloomberg Ticker / Yellow Key
+
+- *Standard*: Proprietary (Bloomberg L.P.)
+- *Issuer*: Bloomberg
+- *Format*: Ticker + market sector (Yellow Key), e.g. =AAPL US Equity=,
+  =EUR Curncy=, =US0003M Index=
+- *Scope*: Instruments accessible on Bloomberg Terminal
+
+The Bloomberg ticker plus Yellow Key (asset class) uniquely
+identifies an instrument on the Bloomberg Terminal. OreStudio
+market data configurations that consume Bloomberg data reference
+instruments by their BBG ticker. Bloomberg also issues FIGIs
+(see above) as its open-standard equivalent.
+
+* See also
+
+- [[id:1A95DFA1-932C-B094-4653-BFCAD266C2AD][Coding Schemes]] — the FpML URI-tagged scheme mechanism that
+  OreStudio uses to store multiple identifiers per party.
+- [[https://www.gleif.org/en/lei-data/gleif-golden-copy][GLEIF Golden Copy]] — full LEI registry download (open data).
+- [[https://www.iso.org/standard/78408.html][ISO 17442]] — LEI standard specification.
+- [[https://www.iso.org/standard/60390.html][ISO 9362]] — BIC standard specification.
+- [[https://www.iso.org/standard/44811.html][ISO 6166]] — ISIN standard specification.
+- [[https://www.iso.org/standard/61067.html][ISO 10383]] — MIC standard specification.
+- [[https://www.openfigi.com][OpenFIGI]] — FIGI registry and lookup API (free).

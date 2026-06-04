@@ -17,6 +17,8 @@
 # pin the running-head title, since the included chapters' #+title keywords
 # would otherwise concatenate into it.
 #+latex_header: \usepackage{graphicx}
+#+latex_header: \usepackage{lettrine}
+#+latex_header: \usepackage{tabularx}
 #+latex_header: \makeatletter
 #+latex_header: \def\maxwidth{\ifdim\Gin@nat@width>0.7\linewidth 0.7\linewidth\else\Gin@nat@width\fi}
 #+latex_header: \makeatother
@@ -31,27 +33,36 @@
 #+latex_header: \definecolor{oreaccent}{rgb}{0.11,0.43,0.64}
 #+latex_header: \definecolor{orenote}{rgb}{0.60,0.30,0.24}
 #+latex_header: \hypersetup{colorlinks=true,allcolors=oreaccent}
-# Understated, tufte-friendly note box for #+begin_note ... #+end_note:
-# thin rules top and bottom (echoing the booktabs table look), no side
-# borders or fill, text and rules in a muted brick colour distinct from
-# the blue headings. Smaller text, like a tufte aside.
+# Note box for #+begin_note ... #+end_note:
+# Inline left-border callout in the orenote brick colour. No top/bottom
+# rules. Stays in the text column so it cannot collide with Tufte margin
+# figures or sidenotes. Uses tcolorbox with only a left rule.
 #+latex_header: \usepackage[most]{tcolorbox}
-#+latex_header: \newtcolorbox{note}{enhanced, breakable, colback=white, colframe=orenote, coltext=orenote, boxrule=0pt, toprule=0.6pt, bottomrule=0.6pt, leftrule=0pt, rightrule=0pt, sharp corners, left=0pt, right=0pt, top=1.4mm, bottom=1.4mm, fontupper=\small}
+#+latex_header: \newtcolorbox{note}{colback=white, colframe=orenote, coltext=orenote, boxrule=0pt, leftrule=2pt, sharp corners, left=6pt, right=0pt, top=1mm, bottom=1mm, fontupper=\small, enhanced}
+#+latex_header: \newtcolorbox{tangent}{enhanced, breakable, colback=yellow!10, colframe=orange!40!brown, coltext=black!85, boxrule=0.5pt, sharp corners, left=8pt, right=8pt, top=3mm, bottom=3mm, fontupper=\small}
 #+latex_header: \AtBeginDocument{\renewcommand{\plaintitle}{ORE Studio User Manual}}
 # Include subsections (level *** in the chapters) in the table of contents.
 #+latex_header: \setcounter{tocdepth}{2}
 #+latex_header: \titleformat{\section}[hang]{\normalfont\Large\itshape\color{oreaccent}}{\thesection}{1em}{}[]
 #+latex_header: \titleformat{\subsection}[hang]{\normalfont\large\itshape\color{oreaccent}}{\thesubsection}{1em}{}[]
 #+latex_header: \makeatletter
-#+latex_header: \titleformat{\chapter}[display]{\relax\ifthenelse{\NOT\boolean{@tufte@symmetric}}{\begin{fullwidth}}{}}{\itshape\huge\color{oreaccent}\thechapter}{0pt}{\huge\rmfamily\itshape\color{oreaccent}}[\ifthenelse{\NOT\boolean{@tufte@symmetric}}{\end{fullwidth}}{}]
+#+latex_header: \definecolor{orechapternum}{rgb}{0.47,0.66,0.78}
+#+latex_header: \setcounter{secnumdepth}{0}
+#+latex_header: \titleformat{\chapter}[display]{\relax\ifthenelse{\NOT\boolean{@tufte@symmetric}}{\begin{fullwidth}}{}}{\raggedleft\fontsize{90}{90}\selectfont\color{orechapternum}\thechapter}{-12pt}{\huge\rmfamily\itshape\color{oreaccent}}[\ifthenelse{\NOT\boolean{@tufte@symmetric}}{\end{fullwidth}}{}]
 #+latex_header: \makeatother
 
 #+html: <script>document.title = "ORE Studio User Manual";</script>
 #+HTML: <p><a href="user_manual.pdf">Download PDF</a></p>
 
-# List of figures (PDF only) — the LaTeX primitive, placed after the TOC.
+# List of figures and tables (PDF only) — LaTeX primitives, placed after the TOC.
 #+latex: \clearpage
 #+latex: \listoffigures
+#+latex: \clearpage
+#+latex: \listoftables
+
+#+latex: \part{Getting Started}
+#+latex: \bigskip
+#+latex: \noindent\textit{Everything you need to go from a fresh installation to a fully provisioned, operational OreStudio deployment: what the application is, how to connect to a backend, and how to bootstrap the system for first use.}
 
 * Introduction
 
@@ -64,3 +75,15 @@
 * Initial Setup
 
 #+include: "chapter_3_initial_setup.org" :minlevel 2
+
+#+latex: \part{Reference Data}
+#+latex: \bigskip
+#+latex: \noindent\textit{Reference data is the slowly-changing master data that underpins all financial activity in OreStudio — the currencies, counterparties, books, and market conventions that trades and analytics refer to. This part documents each reference data entity: what it represents, how to manage it through the Qt interface, and how to work with it from the shell and CLI.}
+
+* Reference Data
+
+#+include: "chapter_4_reference_data.org" :minlevel 2
+
+* Currencies
+
+#+include: "chapter_5_currencies.org" :minlevel 2

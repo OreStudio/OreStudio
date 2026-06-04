@@ -12,7 +12,7 @@
 ** Understanding the multi-tenant, multi-party model
 
 Before you can use ORE Studio for the first time, the system must be
-bootstrapped — meaning the initial administrative structure must be
+provisioned — meaning the initial administrative structure must be
 established. Understanding why this step exists requires a brief
 introduction to how ORE Studio organises data.
 
@@ -39,7 +39,7 @@ controls:
 - *Automation* — programmatic test infrastructure; not for human use; no controls.
 
 The *system tenant* is special — it is created automatically during
-bootstrapping and cannot be deleted. It is the home of the platform
+system provisioning and cannot be deleted. It is the home of the platform
 administrator accounts. There is exactly one system tenant per
 deployment. All other tenants are created by platform administrators
 working from the system tenant.
@@ -66,35 +66,63 @@ when the tenant is provisioned. The system party is the administrative
 home for tenant administrator accounts. It is not a business entity
 and should not be used for trading activity.
 
-Business parties — the entities that actually own trades,
-counterparties, and analytics results — are *operational parties*.
-You create these after the tenant is provisioned, using the Party
-Provisioner.
+Business parties — the entities that actually own trades, books,
+and analytics results — are *operational parties*. You create these
+after the tenant is provisioned, using the Party Provisioner.
+
+In financial industry usage, the set of operational parties
+representing your own organisation is called /the house/. The house
+hierarchy models your corporate structure: the root party is your
+top-level legal entity; its children are subsidiaries, branches, or
+regional offices; their children are individual trading desks or
+booking centres. Trades, positions, and risk reports all belong to a
+specific party within the house.
+
+Distinct from the house are /counterparties/ — the external legal
+entities your house trades with (banks, broker-dealers, corporates,
+funds). Counterparties are reference data: they are attached to trade
+tickets to identify the facing entity, but they do not own books or
+belong to the party hierarchy. The house versus counterparty
+distinction appears throughout OreStudio's UI and data model; keeping
+it clear is important when working with trades and risk reports.
 
 # Diagram source: assets/images/party_hierarchy_diagram.puml
 # Regenerate the PNG with: plantuml assets/images/party_hierarchy_diagram.puml
-#+caption[A simple party hierarchy]: A simple party hierarchy: the system party at the top, the root operational party (Acme Group) below it, and two child operational parties (Acme London, Acme New York). Arrows point from parent to child.
+#+caption[A simple party hierarchy]: A simple party hierarchy showing the house: the system party at the top, the root operational party (Acme Group) below it, and two child operational parties (Acme London, Acme New York).
 [[../../../assets/images/party_hierarchy_diagram.png]]
 
-A user logs in to a specific party within a tenant. Their data
+A user logs in to a specific party within the house. Their data
 visibility is determined by their position in the hierarchy: a user
 logged in at "Acme Group" sees data from both "Acme London" and
 "Acme New York"; a user logged in at "Acme London" sees only their
 own data.
 
-*** The bootstrapping sequence
+*** The provisioning sequence
 
 A freshly installed ORE Studio backend goes through a fixed sequence
-before it is ready for normal use:
+before it is ready for normal use. Each step requires a specific login
+identity:
 
-1. *System bootstrap* — the first platform administrator account is
-   created and the system tenant is initialised. Until this step
-   completes, the backend runs in /bootstrap mode/ and accepts no
-   normal user logins.
-2. *Tenant provisioning* — one or more tenants are created by the
-   platform administrator.
-3. *Party provisioning* — within each tenant, the operational party
-   hierarchy is established by the tenant administrator.
+1. *System provisioning* — no login is needed; the backend is in
+   /provisioning mode/ and the System Provisioner wizard launches
+   automatically the first time any client connects. This step creates
+   the platform administrator account and provisions the first tenant
+   and its tenant administrator. Until it completes, no normal user
+   logins are accepted.
+
+2. *Tenant provisioning* — log out of the system administrator session
+   (or simply connect as a new user) and *log in as the tenant
+   administrator* created in step 1. OreStudio detects that this
+   account has never logged in before and launches the Tenant
+   Provisioner automatically. This step seeds the tenant with reference
+   data and creates the house party hierarchy.
+
+3. *Party provisioning* — *log in to a specific house party* using the
+   tenant administrator account, or any operational account that holds
+   party setup permissions for that party. OreStudio detects that the
+   party has not yet been provisioned and launches the Party Setup
+   wizard. Repeat this step for each party in the hierarchy that needs
+   its own counterparties, books, and reports.
 
 Each step has a corresponding wizard in the ORE Studio UI. The
 following sections walk through each one.
@@ -102,17 +130,17 @@ following sections walk through each one.
 ** The System Provisioner wizard
 
 The first time you connect to a backend that has never been initialised,
-ORE Studio detects /bootstrap mode/ and launches the *New System
+ORE Studio detects /provisioning mode/ and launches the *New System
 Provisioner* automatically. This one-time wizard creates the platform
 administrator account, chooses a single- or multi-tenant layout, and
 provisions the first tenant together with its own administrator.
 
 *** Welcome
 
-#+caption[The System Provisioner welcome page]: The System Provisioner welcome page, shown when the backend is in bootstrap mode. It lists the three setup steps.
+#+caption[The System Provisioner welcome page]: The System Provisioner welcome page, shown when the backend is in provisioning mode. It lists the three setup steps.
 [[../../../assets/images/system_provisioner_welcome.png]]
 
-The welcome page confirms the system is in bootstrap mode and outlines
+The welcome page confirms the system is in provisioning mode and outlines
 the steps: create the administrator account, choose the setup mode, and
 create the first tenant. Click *Next*.
 
@@ -182,7 +210,7 @@ logging each step. When it finishes, click *Continue*.
 The final page summarises what was created and tells you the next step:
 log in as the tenant administrator to run the Tenant Provisioner. To
 create further tenants later, use /System → Identity → Tenants/ and click
-*Onboard*. Click *Finish* — the backend leaves bootstrap mode and the
+*Onboard*. Click *Finish* — the backend leaves provisioning mode and the
 login dialog appears.
 
 ** The Tenant Provisioner wizard
@@ -213,39 +241,118 @@ use. Choose a catalogue and click *Next*.
 
 *** Choose a data source
 
-#+caption[Choosing the party data source]: Choosing how to populate the party hierarchy: search the GLEIF LEI registry, or generate realistic synthetic data.
+#+caption[Choosing the party data source]: Choosing how the tenant's internal party hierarchy — your organisation's own legal entities and business units — will be seeded.
 [[../../../assets/images/tenant_provisioner_choose_data_source.png]]
 
-Decide how the tenant's party hierarchy is seeded:
+This step seeds the /internal/ party hierarchy: the legal entities and
+business units that represent your own organisation — what practitioners
+call /the house/. As described in [[*Parties][Parties]] above, these are the
+operational parties that own trades, books, and analytics results.
 
-- *GLEIF Registry* — search the global LEI registry for your real
-  organisation and import its structure.
-- *Generate Synthetic Data* — create realistic generated parties, useful
-  for evaluation and testing.
+The data source choice does *not* affect counterparties (the external
+entities your organisation trades with — those are imported separately
+in the Party Setup wizard). It only determines how the house structure
+is created.
+
+In a group context — for example a bank holding company with separate
+London and New York subsidiaries — the house hierarchy reflects the
+corporate structure. The root party is the top-level legal entity; its
+children are the subsidiary entities; their children are trading desks,
+books, or booking centres. Each node in this tree represents a real
+organisational unit, and users log in to the node that corresponds to
+their own entity.
+
+Two seeding methods are available:
+
+- *GLEIF Registry* — searches the global LEI registry for your real
+  organisation. The entity you select becomes the root party, and its
+  corporate descendants in the GLEIF hierarchy — subsidiaries,
+  branches, and related entities — are created automatically as child
+  parties. This is the recommended approach for production deployments:
+  the GLEIF data provides real legal entity names, LEI codes, and
+  verified corporate relationships.
+- *Generate Synthetic Data* — creates a realistic but fictional party
+  hierarchy using generated names. Use this for evaluation tenants,
+  demonstrations, or testing where you want a plausible structure
+  without importing real organisational data.
 
 Click *Next*.
 
 *** Party setup (optional)
 
-#+caption[The optional Party Setup step]: The optional Party Setup step. Search the GLEIF LEI registry, pick a root entity (here Barclays PLC), and its child entities are created automatically.
+#+caption[The optional Party Setup step]: The optional Party Setup step. Search the GLEIF LEI registry for your root entity (here Barclays PLC); its corporate descendants are created as child parties automatically.
 [[../../../assets/images/tenant_provisioner_party_setup.png]]
 
-If you chose the GLEIF registry, search it for your organisation: pick an
-*LEI dataset size*, filter by *Country*, and search by entity name. The
-entity you select becomes the root of your party hierarchy, and its child
-entities in the registry are created automatically. This step is optional
-— skip it to set parties up manually later. Click *Next*.
+It helps to be clear about what this step does and does not do.
+
+*What it creates*: the party /nodes/ — the named entries in the
+hierarchy that represent your legal entities and business units. Each
+node gets a name, a LEI code, and a position in the tree. After this
+step OreStudio knows that "Barclays PLC" exists as a party, that it
+is the parent of "Barclays Bank UK PLC", and so on. The hierarchy
+structure is in place.
+
+*What it does not create*: the operational /content/ within each
+party — the books, portfolios, business units, counterparties, and
+report definitions that each party uses day-to-day. That content is
+added separately, after provisioning, by the Party Setup wizard
+(described in [[*The Party Provisioner wizard][The Party Provisioner wizard]] below). Think of
+this step as building the org chart; the Party Setup wizard then
+stocks each office.
+
+To use the GLEIF registry, pick an *LEI dataset size* (which controls
+how much of the registry is loaded for searching), filter by *Country*
+if needed, and search by entity name. The entity you select becomes
+the /root house party/ — the top of your internal hierarchy. Its
+corporate children and grandchildren in the GLEIF registry
+(subsidiaries, branches, booking centres) are created automatically
+as child operational parties. You do not need to build the structure
+by hand; the GLEIF corporate hierarchy data does it for you.
+
+This step is optional — skip it to create parties manually later from
+the Parties window. Click *Next*.
 
 *** Publishing
 
-#+caption[The publishing step]: The publishing step. The catalogue and party data are published to the tenant in one operation, with live progress tracking.
+#+caption[The publishing step in progress]: The publishing step, showing 31 datasets being dispatched in dependency order. Dataset 28 (gleif.lei_counterparties.small) is in progress; datasets 29–31 are pending.
 [[../../../assets/images/tenant_provisioner_dataset_publishing.png]]
 
-ORE Studio publishes the selected catalogue and party data to the tenant,
-tracking progress per dataset.
+OreStudio runs a multi-step publishing pipeline to populate the tenant
+with all the data selected in the previous steps. The pipeline
+dispatches datasets in the correct dependency order — classification
+tables before the entities that reference them, catalogue data before
+GLEIF data — and shows live progress in the table.
 
-#+caption[Publishing complete]: Publishing complete — all datasets have been published to the tenant.
+Each row in the table is one dataset. The columns are:
+
+- *#* — the dataset's position in the dependency graph (zero-based).
+  Datasets with lower numbers are prerequisites for those with higher
+  numbers.
+- *Name* — the dataset identifier, in =source.dataset= form. The prefix
+  identifies the data source: =iso.*= datasets contain ISO standard
+  data (currencies, countries); =fpml.*= datasets contain FpML
+  reference classifications (party types, roles, regulatory sectors);
+  =gleif.*= datasets contain GLEIF LEI entity data (counterparties,
+  house parties).
+- *Status* — =pending= (not yet started), =in_progress= (actively
+  loading), or =completed= (finished successfully). A red status
+  indicates a failure.
+- *Warnings* — any non-fatal issues encountered during that dataset's
+  load, displayed as a count. Click the row to see details.
+- *Started At* / *Completed At* — UTC timestamps for the dataset's
+  execution window.
+
+The log panel at the bottom provides a running narrative: which
+catalogue is being published, how many datasets were dispatched, and
+the final outcome for each phase (reference data, organisation,
+activation).
+
+#+caption[Publishing complete]: All 31 datasets completed. The log confirms: reference data published, organisation associated with parties, and the tenant activated.
 [[../../../assets/images/tenant_provisioner_dataset_publishing_complete.png]]
+
+When all rows show =completed= and the log ends with "Organisation
+activated successfully", click *Commit* to finalise the setup, or
+*Back* to change your selections.
 
 *** Setup complete
 
@@ -269,19 +376,41 @@ configured later from the application menus).
 #+caption[The Party Setup welcome page]: The Party Setup welcome page, listing its steps: counterparty import, report definitions, and execute.
 [[../../../assets/images/party_provisioner_setup.png]]
 
-The welcome page explains that the party hierarchy already exists and
-that this wizard imports counterparties and configures the
-organisational structure. Click *Next*.
+By this point the house hierarchy — the party nodes representing your
+organisation's legal entities — already exists. This wizard populates
+one specific party within that hierarchy: it attaches the external
+counterparties that this party trades with, creates the internal
+organisational structure (business units, portfolios, and books), and
+defines the risk reports that will run on its data. Click *Next*.
 
 *** Counterparty import
 
-#+caption[Choosing the GLEIF dataset size for importing counterparties]: Choosing the GLEIF dataset size for importing counterparties — the external entities your organisation trades with.
+#+caption[Choosing the GLEIF dataset size for importing counterparties]: Choosing the GLEIF dataset size for importing counterparties. The dataset size controls how many real-world legal entities are loaded from GLEIF as counterparties.
 [[../../../assets/images/party_provisioner_counterparty_import.png]]
 
-/Counterparties/ are the external entities your organisation trades with.
-They are imported from the GLEIF LEI registry; choose the *dataset size*
-to control how many are imported. You can add more later from the
-Counterparties window. Click *Next*.
+/Counterparties/ are the external legal entities your organisation
+trades with — banks, broker-dealers, corporates, funds. Where parties
+(the house) represent your own organisational structure, counterparties
+represent the other side of your trades. The distinction is important:
+house parties own books and positions; counterparties appear on trade
+tickets as the facing entity.
+
+OreStudio imports counterparties from the GLEIF LEI registry. This is
+a deliberate design choice: GLEIF contains over two million real legal
+entities with verified names, LEI codes, countries of incorporation,
+and corporate relationships. Importing from GLEIF means your OreStudio
+instance starts with a realistic, authoritative counterparty population
+rather than a hand-crafted list. In an evaluation or demonstration
+tenant this is especially valuable — trades booked against real
+counterparty names (Deutsche Bank, JP Morgan, BlackRock) look and
+behave exactly as they would in production, making scenario testing
+meaningful.
+
+The *dataset size* controls how many GLEIF entities are loaded:
+smaller sizes load a representative subset quickly; larger sizes
+import a more complete global population. You can add individual
+counterparties later from the Counterparties window regardless of
+which size you choose. Click *Next*.
 
 *** Report definitions
 
@@ -297,13 +426,28 @@ Click *Next*.
 
 *** Execute
 
-#+caption[The execute step]: The execute step. Counterparties are imported and the organisation structure (business units, portfolios, books) and report definitions are created, with a live progress table and log.
+#+caption[The Party Setup execute step]: The execute step showing three datasets completed: testdata.business_units, testdata.portfolios, and testdata.books. The log below shows the four phases completed in sequence.
 [[../../../assets/images/party_provisioner_setup_party.png]]
 
-ORE Studio runs the setup in phases — importing counterparties,
-publishing the organisation structure (business units, portfolios,
-books), creating the report definitions, and activating the party. When
-it completes, click *Commit*.
+OreStudio runs the party setup in four phases, shown in the log panel:
+
+1. *Phase 1: importing counterparties* — loads the selected GLEIF
+   counterparty dataset into the party's counterparty table. The
+   progress table shows one row per dataset (e.g.
+   =gleif.lei_counterparties.small=), with the same Status /
+   Started At / Completed At columns as the Tenant Provisioner
+   publishing step.
+2. *Phase 2: publishing organisation structure* — creates the internal
+   organisational entities within the party: business units
+   (=testdata.business_units=), portfolios (=testdata.portfolios=),
+   and books (=testdata.books=). Books are the lowest-level containers
+   that own individual trades and positions.
+3. *Phase 3: creating report definitions* — creates the scheduled
+   risk-report configurations selected in the previous step.
+4. *Phase 4: activating party* — marks the party as operational so
+   users can log in to it and begin booking trades.
+
+When the log ends with "Party activated successfully", click *Commit*.
 
 *** Setup complete
 

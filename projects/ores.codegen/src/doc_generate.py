@@ -39,6 +39,7 @@ TYPE_TO_TEMPLATE = {
     "component": "doc_component.org.mustache",
     "recipe": "doc_recipe.org.mustache",
     "knowledge": "doc_knowledge.org.mustache",
+    "manual": "doc_manual.org.mustache",
     "skill": "doc_skill.org.mustache",
     "product_identity": "doc_product_identity.org.mustache",
     "capture": "doc_capture.org.mustache",
@@ -58,6 +59,7 @@ DEFAULT_INITIAL_STATE = {
     "component": "",
     "recipe": "",
     "knowledge": "",
+    "manual": "",
     "skill": "",
     "product_identity": "",
     "capture": "",
@@ -80,7 +82,7 @@ PARENT_OF_TYPE = {
 
 # Types that don't take a parent (and aren't stateful).
 PARENTLESS_TYPES = {
-    "version", "component", "recipe", "knowledge", "skill", "product_identity",
+    "version", "component", "recipe", "knowledge", "manual", "skill", "product_identity",
     "capture", "memory", "release_notes", "investigation", "runbook",
     "entity_org", "dataset_overview",
 }
@@ -466,7 +468,7 @@ def main(argv=None):
     elif args.type == "dataset_overview":
         out_dir = parent_dir
         out_file = out_dir / "dataset_overview.org"
-    elif args.type in ("component", "recipe", "knowledge", "product_identity",
+    elif args.type in ("component", "recipe", "knowledge", "manual", "product_identity",
                        "capture", "memory", "investigation"):
         # Captures live at agile/product_backlog/<bucket>/<slug>.org. The
         # caller passes --parent-dir as that bucket directory; we validate

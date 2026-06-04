@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: 220EF287-FA4C-45D9-B44E-B34F1BC29ED3
+:END:
+#+title: Task: Add manual doc type to ores.codegen and compass
+#+description: Add a manual document type to ores.codegen (template + registration) and compass (default parent-dir, help text, docs).
+#+type: task
+#+level: s1
+#+filetags: :compass:codegen:manual:documentation:consolidate_scripts_into_compass:sprint_19:v0:
+#+owner: marco
+#+branch: feature/currency-write-docs
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-03
+#+updated: 2026-06-03
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add =manual= as a first-class document type to =ores.codegen= and
+=compass=, so that user manual chapters can be scaffolded with
+=compass add manual= the same way knowledge docs and recipes are.
+
+* Status
+
+| Field        | Value                                                       |
+|--------------+-------------------------------------------------------------|
+| State        | DONE                                                        |
+| Parent story | [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]]                  |
+| Now          | Implemented on feature/currency-write-docs; pending PR.     |
+| Waiting on   | Nothing.                                                    |
+| Next         | Include in the commission-currency documentation PR.        |
+| Last touched | 2026-06-03                                                  |
+
+* Acceptance
+
+- =compass add manual --slug chapter_N_<topic>= scaffolds a well-formed
+  =#+type: manual= org file in =doc/manual/user_guide/= by default.
+- =--parent-dir= is optional; default is =doc/manual/user_guide=.
+- The scaffolded file uses =**= top-level headings (correct for
+  =:minlevel 2= inclusion in =user_manual.org=).
+- =manual= is registered in =doc_generate.py= (=TYPE_TO_TEMPLATE=,
+  =DEFAULT_INITIAL_STATE=, =PARENTLESS_TYPES=, output-path branch).
+- =compass add --help= lists =manual= in the types line.
+- =doc/meta/document_types.org= documents the =manual= type.
+- =doc/recipes/codegen/how_do_i_create_a_new_doc.org= has a
+  =** New manual chapter= section with a working example.
+
+* Notes
+
+Discovered as a prerequisite while writing the Chapter 4 Reference Data
+manual chapter on branch [[id:B3788A76-208E-4422-B277-17DF8FF3A78C][Write currency documentation]]. The =knowledge=
+type produced =#+type: knowledge= output which is incorrect for manual
+chapters; a dedicated type was needed.
+
+Also fixed a pre-existing =NameError= in =doc_show.py=: =_C_YELLOW= was
+referenced in =show_link_row= and =show_anchor= but never defined at
+module level, causing every =compass show= invocation to exit with
+code 1 after printing the outgoing-links section.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

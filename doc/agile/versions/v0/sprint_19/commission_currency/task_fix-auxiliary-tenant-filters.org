@@ -8,7 +8,7 @@
 #+filetags: :commission_currency:sprint_19:v0:
 #+owner: marco
 #+branch: feature/fix-auxiliary-tenant-filters
-#+pr:
+#+pr: https://github.com/OreStudio/OreStudio/pull/1042
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-04
@@ -98,7 +98,7 @@ Per repository (rounding_type, monetary_nature, currency_market_tier):
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1042][#1042]] | [refdata,compass] Tenant-filter currency auxiliaries; fix stale goto references |
 
 * Review
 

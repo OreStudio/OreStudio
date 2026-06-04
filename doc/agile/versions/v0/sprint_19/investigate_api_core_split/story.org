@@ -45,9 +45,9 @@ stories will extend the cleanup to all of them.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] |
-| Now           | Constants move implemented; full build verifying. |
+| Now           | Constants move in PR #1052; eventing split task filed. |
 | Waiting on    | Nothing.                               |
-| Next          | Land the constants-move PR; close the story. |
+| Next          | Land PR #1052, then the eventing api/core split. |
 | Last touched  | 2026-06-04                               |
 
 * Acceptance
@@ -70,6 +70,7 @@ stories will extend the cleanup to all of them.
 |------+-------+-------+-----+-------------|
 | [[id:681BBF6B-4DD8-411A-9B19-76AA5E14C1FC][Inventory api/core contents across split components]] | DONE | 2026-06-04 | 2026-06-04 | Catalogue api vs core contents + link deps for all 17 split components, DQ first; flag heavy apis; investigation report. PRs #1045, #1048 merged. |
 | [[id:9409F936-C45C-4BF8-9507-D796907D1E45][Move change reason constants from ores.database to ores.dq.api]] | STARTED | 2026-06-04 | | Constants are DQ-domain; ores.database has zero internal uses. Cycle-safe now dq.api is light. No aliases; fix all consumers. |
+| [[id:9800051F-8F04-4F2E-A143-4BFE2617816D][Split ores.eventing into api and core sub-components]] | BACKLOG | | | eventing links database PUBLIC and every api links eventing — the remaining transitive leak. api = domain + bus/registry; core = postgres_event_source. 18 consumers repointed. |
 
 * Decisions
 

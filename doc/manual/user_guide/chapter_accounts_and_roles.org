@@ -9,20 +9,18 @@
 #+created: 2026-06-05
 #+updated: 2026-06-05
 
-This chapter covers day-to-day account management: the Accounts window
-and how it differs between administrator identities, the account detail
-dialog and each of its tabs, the flow for creating a new account, and
-the roles and permissions that govern what an account may do.
-
-** Overview
-
-@@latex:\lettrine[lines=2,nindent=0em]{E}{very} \textsc{person}@@@@html:Every person@@ and process that talks to OreStudio does so
-through an /account/. The provisioning wizards described in the
+@@latex:\lettrine[lines=2,nindent=0em]{E}{very} \textsc{person} and @@@@html:Every person and @@process that talks to OreStudio does so through
+an /account/. The provisioning wizards described in the
 [[id:A9F2C3E1-74B5-4D8A-9C6E-3B1F7D2E5A04][Initial Setup]] chapter create the first accounts for you — the
 platform administrator during system provisioning and the tenant
 administrator during tenant creation. Those wizards are a one-time
 bootstrap: every account after that is created and managed in the
 Accounts window described here.
+
+This chapter covers day-to-day account management: the Accounts window
+and how it differs between administrator identities, the account detail
+dialog and each of its tabs, the flow for creating a new account, and
+the roles and permissions that govern what an account may do.
 
 Accounts come in four types, shown as coloured badges throughout the
 UI: /User/ for people, /Service/ for OreStudio's own backend

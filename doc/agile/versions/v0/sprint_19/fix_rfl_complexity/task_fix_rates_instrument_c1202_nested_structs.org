@@ -1,0 +1,79 @@
+:PROPERTIES:
+:ID: F6D9FC71-A9B7-445B-80DE-3F7091682029
+:END:
+#+title: Task: Decompose all instrument types into nested structs for C1202 safety and symmetry
+#+description: All 9 types in rates_instrument_variant have 15-20 fields — all above the Mode 2 C1202 threshold. After swap_leg (task 10), MSVC fires next on inflation_swap_instrument (18 fields). Fix all 9 in one sweep by extracting instrument_identity (7 fields) and instrument_audit (5 fields) as shared nested sub-structs, keeping type-specific fields ≤8.
+#+type: task
+#+level: s1
+#+filetags: :fix_rfl_complexity:sprint_19:v0:
+#+owner: marco
+#+branch: feature/fix-rates-instrument-c1202-nested-structs
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-04
+#+updated: 2026-06-04
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+All 9 types in =rates_instrument_variant= have 15–20 fields, all above the MSVC
+Mode 2 C1202 threshold (~12 fields in a clean TU). After task 10 fixed
+=swap_leg=, the next struct to fire in =ClientManagerExportPortfolio.cpp= is
+=inflation_swap_instrument= (18 fields), followed by each of the remaining 8
+types in turn. See [[id:D75F4921-B431-4E78-99AB-62A47F761D1D][Investigation: MSVC C1202 and rfl complexity]] for the full
+taxonomy.
+
+Field audit:
+
+| Struct | Fields |
+|--------+--------|
+| =fra_instrument= | 20 |
+| =swaption_instrument= | 19 |
+| =knock_out_swap_instrument= | 18 |
+| =inflation_swap_instrument= | 18 |
+| =vanilla_swap_instrument= | 17 |
+| =rpa_instrument= | 17 |
+| =callable_swap_instrument= | 17 |
+| =balance_guaranteed_swap_instrument= | 16 |
+| =cap_floor_instrument= | 15 |
+
+All share a common 12-field block: version, tenant_id, workspace_id,
+instrument_id, trade_type_code, party_id, trade_id (identity — 7) +
+modified_by, performed_by, change_reason_code, change_commentary,
+recorded_at (audit — 5).
+
+Fix: extract =instrument_identity= (7 fields) and =instrument_audit= (5 fields)
+as shared nested sub-structs. Each instrument becomes:
+
+#+begin_src cpp
+struct <type>_instrument final {
+    instrument_identity identity;   // 7 fields
+    /* type-specific fields (≤8) */
+    instrument_audit    audit;      // 5 fields
+};
+#+end_src
+
+Parent Literal: 3 fields (or identity + n_specific + audit). No Literal exceeds
+9 fields. Wire format changes to nested JSON (same justification as task 10 —
+internal-only, server and client in same repo).
+
+* Status
+
+| Field        | Value                                                                     |
+|--------------+---------------------------------------------------------------------------|
+| State        | STARTED                                                                   |
+| Parent story | [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]]                           |
+| Now          | Root cause confirmed; field audit complete; design ready.                 |
+| Waiting on   | Nothing.                                                                  |
+| Next         | Extract instrument_identity + instrument_audit; update all 9 structs and callers. |
+| Last touched | 2026-06-04                                                                |
+
+* Acceptance
+
+- Windows CI green: no C1202 in =ClientManagerExportPortfolio.cpp= for any instrument type.
+- All 9 =rates_instrument_variant= types use =instrument_identity= and =instrument_audit=.
+- No Literal in the reflection chain exceeds 9 fields.
+- Linux and macOS CI unaffected.

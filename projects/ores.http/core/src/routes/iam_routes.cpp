@@ -767,10 +767,16 @@ asio::awaitable<http_response> iam_routes::handle_list_accounts(const http_reque
         auto limit_str = req.get_query_param("limit");
 
         try {
-            if (!offset_str.empty())
+            if (!offset_str.empty()) {
+                if (offset_str.front() == '-')
+                    co_return http_response::bad_request("Invalid offset or limit query parameter");
                 offset = std::stoul(offset_str);
-            if (!limit_str.empty())
+            }
+            if (!limit_str.empty()) {
+                if (limit_str.front() == '-')
+                    co_return http_response::bad_request("Invalid offset or limit query parameter");
                 limit = std::stoul(limit_str);
+            }
         } catch (const std::exception&) {
             co_return http_response::bad_request("Invalid offset or limit query parameter");
         }
@@ -1293,10 +1299,16 @@ asio::awaitable<http_response> iam_routes::handle_list_sessions(const http_reque
         auto limit_str = req.get_query_param("limit");
 
         try {
-            if (!offset_str.empty())
+            if (!offset_str.empty()) {
+                if (offset_str.front() == '-')
+                    co_return http_response::bad_request("Invalid offset or limit query parameter");
                 offset = std::stoul(offset_str);
-            if (!limit_str.empty())
+            }
+            if (!limit_str.empty()) {
+                if (limit_str.front() == '-')
+                    co_return http_response::bad_request("Invalid offset or limit query parameter");
                 limit = std::stoul(limit_str);
+            }
         } catch (const std::exception&) {
             co_return http_response::bad_request("Invalid offset or limit query parameter");
         }

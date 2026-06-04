@@ -131,7 +131,7 @@ CI and build tooling improvements: code formatting, static analysis, and build h
 #+ATTR_HTML: :class hug-leading
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
-| [[id:78D292E4-EA18-4FDE-9B23-E0F446A1B526][Set up clang-format]] | STARTED | 2026-06-04 | | Fix .clang-format (c++23, ORE include ordering); CMake format/check-format targets; nightly GH Actions format PR; initial format pass. |
+| [[id:78D292E4-EA18-4FDE-9B23-E0F446A1B526][Set up clang-format]] | DONE | 2026-06-04 | 2026-06-05 | Fix .clang-format (c++23, ORE include ordering); CMake format/check-format targets; nightly GH Actions format PR; initial format pass all 13 groups (~4700 files). |
 
 ** Agile
 

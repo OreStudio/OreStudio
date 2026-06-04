@@ -15,7 +15,8 @@ set key outside right
 set xlabel "Day"
 set ylabel "Lines"
 set title sprintf("Sprint %d — Daily Line Churn", sprint)
+set xtics rotate by -45 font "sans,8"
 
 infile_act = sprintf("build/output/sprint_%s/sprint_activity.csv", sprint_str)
-plot infile_act using 4 every ::1 with boxes lc rgb "#27AE60" title "Added", \
-     "" using 5 every ::1 with boxes lc rgb "#E74C3C" title "Deleted"
+plot infile_act using 0:4:xticlabels(stringcolumn(1)) every ::1 with boxes lc rgb "#27AE60" title "Added", \
+     "" using 0:5 every ::1 with boxes lc rgb "#E74C3C" title "Deleted"

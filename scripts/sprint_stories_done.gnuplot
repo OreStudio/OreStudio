@@ -15,6 +15,7 @@ set key outside right
 set xlabel "Day"
 set ylabel "Stories"
 set title sprintf("Sprint %d — Cumulative Stories Done", sprint)
+set xtics rotate by -45 font "sans,8"
 
 infile_prog = sprintf("build/output/sprint_%s/sprint_progress.csv", sprint_str)
-plot infile_prog using 0:2 every ::1 with linespoints lc rgb "#2C3E50" lw 3 pt 9 title "Done"
+plot infile_prog using 0:2:xticlabels(stringcolumn(1)) every ::1 with linespoints lc rgb "#2C3E50" lw 3 pt 9 title "Done"

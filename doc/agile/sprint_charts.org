@@ -155,10 +155,11 @@ set y2label "Commits"
 set ytics nomirror
 set y2tics
 set title sprintf("Sprint %d — PRs & Commits per Day", sprint)
+set xtics rotate by -45 font "sans,8"
 
 infile_act = sprintf("build/output/sprint_%s/sprint_activity.csv", sprint_str)
-plot infile_act using 2 every ::1 title "PRs" with boxes lc rgb "#4A90D9", \
-     "" using 3 every ::1 axes x1y2 title "Commits" with linespoints lc rgb "#E67E22" lw 2 pt 7
+plot infile_act using 0:2:xticlabels(stringcolumn(1)) every ::1 title "PRs" with boxes lc rgb "#4A90D9", \
+     "" using 0:3 every ::1 axes x1y2 title "Commits" with linespoints lc rgb "#E67E22" lw 2 pt 7
 #+end_src
 
 *** Daily Line Churn
@@ -181,10 +182,11 @@ set key outside right
 set xlabel "Day"
 set ylabel "Lines"
 set title sprintf("Sprint %d — Daily Line Churn", sprint)
+set xtics rotate by -45 font "sans,8"
 
 infile_act = sprintf("build/output/sprint_%s/sprint_activity.csv", sprint_str)
-plot infile_act using 4 every ::1 with boxes lc rgb "#27AE60" title "Added", \
-     "" using 5 every ::1 with boxes lc rgb "#E74C3C" title "Deleted"
+plot infile_act using 0:4:xticlabels(stringcolumn(1)) every ::1 with boxes lc rgb "#27AE60" title "Added", \
+     "" using 0:5 every ::1 with boxes lc rgb "#E74C3C" title "Deleted"
 #+end_src
 
 *** PR Cycle Time
@@ -233,9 +235,10 @@ set key outside right
 set xlabel "Day"
 set ylabel "Stories"
 set title sprintf("Sprint %d — Cumulative Stories Done", sprint)
+set xtics rotate by -45 font "sans,8"
 
 infile_prog = sprintf("build/output/sprint_%s/sprint_progress.csv", sprint_str)
-plot infile_prog using 0:2 every ::1 with linespoints lc rgb "#2C3E50" lw 3 pt 9 title "Done"
+plot infile_prog using 0:2:xticlabels(stringcolumn(1)) every ::1 with linespoints lc rgb "#2C3E50" lw 3 pt 9 title "Done"
 #+end_src
 
 * See also

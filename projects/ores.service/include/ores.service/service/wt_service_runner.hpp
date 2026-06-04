@@ -20,25 +20,25 @@
 #ifndef ORES_SERVICE_SERVICE_WT_SERVICE_RUNNER_HPP
 #define ORES_SERVICE_SERVICE_WT_SERVICE_RUNNER_HPP
 
-#include <thread>
-#include <vector>
-#include <functional>
-#include <string_view>
-#include <boost/asio/co_spawn.hpp>
-#include <boost/asio/io_context.hpp>
-#include <boost/asio/use_future.hpp>
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/jwks.hpp"
 #include "ores.nats/service/subscription.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
+#include <boost/asio/co_spawn.hpp>
+#include <boost/asio/io_context.hpp>
+#include <boost/asio/use_future.hpp>
+#include <functional>
+#include <string_view>
+#include <thread>
+#include <vector>
 
 namespace ores::service::service {
 
 namespace detail {
 
-template<typename WtSetupFn>
+template <typename WtSetupFn>
 void run_wt_impl(ores::nats::service::client& nats,
                  std::string_view name,
                  std::vector<ores::nats::service::subscription> subs,
@@ -108,7 +108,7 @@ void run_wt_impl(ores::nats::service::client& nats,
  * @param wt_setup_fn Callable: () -> void; starts and blocks on Wt server.
  * @param on_started  Optional: called after registration, before wt_setup_fn.
  */
-template<typename RegisterFn, typename WtSetupFn>
+template <typename RegisterFn, typename WtSetupFn>
 void run_wt(ores::nats::service::client& nats,
             ores::database::context ctx,
             std::string_view name,
@@ -125,9 +125,7 @@ void run_wt(ores::nats::service::client& nats,
     boost::asio::io_context io_ctx;
     BOOST_LOG_SEV(lg, info) << "Fetching JWKS public key from IAM...";
     auto jwks_future = boost::asio::co_spawn(
-        io_ctx,
-        ores::nats::service::fetch_jwks_public_key(nats),
-        boost::asio::use_future);
+        io_ctx, ores::nats::service::fetch_jwks_public_key(nats), boost::asio::use_future);
     io_ctx.run();
 
     const std::string pub_key = jwks_future.get();
@@ -137,8 +135,8 @@ void run_wt(ores::nats::service::client& nats,
         ores::security::jwt::jwt_authenticator::create_rs256_verifier(pub_key);
 
     auto subs = register_fn(nats, std::move(ctx), std::move(verifier));
-    detail::run_wt_impl(nats, name, std::move(subs),
-                        std::forward<WtSetupFn>(wt_setup_fn), std::move(on_started));
+    detail::run_wt_impl(
+        nats, name, std::move(subs), std::forward<WtSetupFn>(wt_setup_fn), std::move(on_started));
 }
 
 /**
@@ -156,7 +154,7 @@ void run_wt(ores::nats::service::client& nats,
  * @param wt_setup_fn Callable: () -> void; starts and blocks on Wt server.
  * @param on_started  Optional: called after registration, before wt_setup_fn.
  */
-template<typename RegisterFn, typename WtSetupFn>
+template <typename RegisterFn, typename WtSetupFn>
 void run_wt(ores::nats::service::client& nats,
             std::string_view name,
             RegisterFn&& register_fn,
@@ -172,9 +170,7 @@ void run_wt(ores::nats::service::client& nats,
     boost::asio::io_context io_ctx;
     BOOST_LOG_SEV(lg, info) << "Fetching JWKS public key from IAM...";
     auto jwks_future = boost::asio::co_spawn(
-        io_ctx,
-        ores::nats::service::fetch_jwks_public_key(nats),
-        boost::asio::use_future);
+        io_ctx, ores::nats::service::fetch_jwks_public_key(nats), boost::asio::use_future);
     io_ctx.run();
 
     const std::string pub_key = jwks_future.get();
@@ -184,8 +180,8 @@ void run_wt(ores::nats::service::client& nats,
         ores::security::jwt::jwt_authenticator::create_rs256_verifier(pub_key);
 
     auto subs = register_fn(nats, std::move(verifier));
-    detail::run_wt_impl(nats, name, std::move(subs),
-                        std::forward<WtSetupFn>(wt_setup_fn), std::move(on_started));
+    detail::run_wt_impl(
+        nats, name, std::move(subs), std::forward<WtSetupFn>(wt_setup_fn), std::move(on_started));
 }
 
 } // namespace ores::service::service

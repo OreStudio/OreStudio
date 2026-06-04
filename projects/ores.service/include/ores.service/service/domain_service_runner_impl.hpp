@@ -20,8 +20,10 @@
 #ifndef ORES_SERVICE_SERVICE_DOMAIN_SERVICE_RUNNER_IMPL_HPP
 #define ORES_SERVICE_SERVICE_DOMAIN_SERVICE_RUNNER_IMPL_HPP
 
-#include <functional>
-#include <optional>
+#include "ores.logging/make_logger.hpp"
+#include "ores.nats/service/jwks.hpp"
+#include "ores.platform/process/signals.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
 #include <boost/asio/bind_cancellation_slot.hpp>
 #include <boost/asio/cancellation_signal.hpp>
 #include <boost/asio/co_spawn.hpp>
@@ -29,22 +31,19 @@
 #include <boost/asio/signal_set.hpp>
 #include <boost/asio/use_awaitable.hpp>
 #include <boost/system/error_code.hpp>
-#include "ores.logging/make_logger.hpp"
-#include "ores.nats/service/jwks.hpp"
-#include "ores.platform/process/signals.hpp"
-#include "ores.security/jwt/jwt_authenticator.hpp"
+#include <functional>
+#include <optional>
 
 namespace ores::service::service {
 
-template<typename RegisterFn>
-boost::asio::awaitable<void>
-run(boost::asio::io_context& io_ctx,
-    ores::nats::service::client& nats,
-    ores::database::context ctx,
-    std::string_view name,
-    RegisterFn&& register_fn,
-    std::function<void(boost::asio::io_context&)> on_started,
-    std::function<void()> on_shutdown) {
+template <typename RegisterFn>
+boost::asio::awaitable<void> run(boost::asio::io_context& io_ctx,
+                                 ores::nats::service::client& nats,
+                                 ores::database::context ctx,
+                                 std::string_view name,
+                                 RegisterFn&& register_fn,
+                                 std::function<void(boost::asio::io_context&)> on_started,
+                                 std::function<void()> on_shutdown) {
 
     using namespace ores::logging;
     static const std::string_view logger_name = "ores.service.service.runner";
@@ -62,7 +61,8 @@ run(boost::asio::io_context& io_ctx,
     for (int sig : ores::platform::process::shutdown_signals)
         signals.add(sig);
     signals.async_wait([&startup_cancel](const boost::system::error_code& ec, int) {
-        if (!ec) startup_cancel.emit(boost::asio::cancellation_type::all);
+        if (!ec)
+            startup_cancel.emit(boost::asio::cancellation_type::all);
     });
 
     // co_spawn with bind_cancellation_slot propagates the slot to the spawned
@@ -73,8 +73,7 @@ run(boost::asio::io_context& io_ctx,
         pub_key = co_await boost::asio::co_spawn(
             io_ctx,
             ores::nats::service::fetch_jwks_public_key(nats),
-            boost::asio::bind_cancellation_slot(
-                startup_cancel.slot(), boost::asio::use_awaitable));
+            boost::asio::bind_cancellation_slot(startup_cancel.slot(), boost::asio::use_awaitable));
     } catch (const boost::system::system_error& e) {
         if (e.code() != boost::asio::error::operation_aborted) {
             BOOST_LOG_SEV(lg, error) << "Fatal error during startup: " << e.what();
@@ -107,20 +106,20 @@ run(boost::asio::io_context& io_ctx,
     co_await signals.async_wait(boost::asio::use_awaitable);
 
     BOOST_LOG_SEV(lg, info) << "Shutdown signal received. Draining...";
-    if (on_shutdown) on_shutdown();
+    if (on_shutdown)
+        on_shutdown();
     nats.drain();
     BOOST_LOG_SEV(lg, info) << "Shutdown complete: " << name;
     co_return;
 }
 
-template<typename RegisterFn>
-boost::asio::awaitable<void>
-run(boost::asio::io_context& io_ctx,
-    ores::nats::service::client& nats,
-    std::string_view name,
-    RegisterFn&& register_fn,
-    std::function<void(boost::asio::io_context&)> on_started,
-    std::function<void()> on_shutdown) {
+template <typename RegisterFn>
+boost::asio::awaitable<void> run(boost::asio::io_context& io_ctx,
+                                 ores::nats::service::client& nats,
+                                 std::string_view name,
+                                 RegisterFn&& register_fn,
+                                 std::function<void(boost::asio::io_context&)> on_started,
+                                 std::function<void()> on_shutdown) {
 
     using namespace ores::logging;
     static const std::string_view logger_name = "ores.service.service.runner";
@@ -134,7 +133,8 @@ run(boost::asio::io_context& io_ctx,
     for (int s : ores::platform::process::shutdown_signals)
         signals.add(s);
     signals.async_wait([&startup_cancel](const boost::system::error_code& ec, int) {
-        if (!ec) startup_cancel.emit(boost::asio::cancellation_type::all);
+        if (!ec)
+            startup_cancel.emit(boost::asio::cancellation_type::all);
     });
 
     std::string pub_key;
@@ -142,8 +142,7 @@ run(boost::asio::io_context& io_ctx,
         pub_key = co_await boost::asio::co_spawn(
             io_ctx,
             ores::nats::service::fetch_jwks_public_key(nats),
-            boost::asio::bind_cancellation_slot(
-                startup_cancel.slot(), boost::asio::use_awaitable));
+            boost::asio::bind_cancellation_slot(startup_cancel.slot(), boost::asio::use_awaitable));
     } catch (const boost::system::system_error& e) {
         if (e.code() != boost::asio::error::operation_aborted) {
             BOOST_LOG_SEV(lg, error) << "Fatal error during startup: " << e.what();
@@ -173,7 +172,8 @@ run(boost::asio::io_context& io_ctx,
     co_await signals.async_wait(boost::asio::use_awaitable);
 
     BOOST_LOG_SEV(lg, info) << "Shutdown signal received. Draining...";
-    if (on_shutdown) on_shutdown();
+    if (on_shutdown)
+        on_shutdown();
     nats.drain();
     BOOST_LOG_SEV(lg, info) << "Shutdown complete: " << name;
     co_return;

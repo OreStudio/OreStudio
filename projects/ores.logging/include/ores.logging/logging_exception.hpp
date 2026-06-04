@@ -20,9 +20,9 @@
 #ifndef ORES_LOGGING_LOGGING_EXCEPTION_HPP
 #define ORES_LOGGING_LOGGING_EXCEPTION_HPP
 
-#include <string>
-#include <boost/exception/info.hpp>
 #include "ores.logging/export.hpp"
+#include <boost/exception/info.hpp>
+#include <string>
 
 namespace ores::logging {
 
@@ -30,7 +30,7 @@ namespace ores::logging {
  * @brief An exception has occurred during logging.
  */
 class ORES_LOGGING_EXPORT logging_exception : public virtual std::exception,
-                          public virtual boost::exception {
+                                              public virtual boost::exception {
 public:
     explicit logging_exception(std::string_view message = "")
         : message_(message) {}

@@ -22,9 +22,9 @@
 #include <boost/config.hpp>
 
 #ifdef ORES_GEO_LIBRARY
-#  define ORES_GEO_EXPORT BOOST_SYMBOL_EXPORT
+#    define ORES_GEO_EXPORT BOOST_SYMBOL_EXPORT
 #else
-#  define ORES_GEO_EXPORT BOOST_SYMBOL_IMPORT
+#    define ORES_GEO_EXPORT BOOST_SYMBOL_IMPORT
 #endif
 
 #endif

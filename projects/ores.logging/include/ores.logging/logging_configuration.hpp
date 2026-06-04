@@ -20,11 +20,11 @@
 #ifndef ORES_LOGGING_LOGGING_CONFIGURATION_HPP
 #define ORES_LOGGING_LOGGING_CONFIGURATION_HPP
 
-#include <string>
-#include <optional>
-#include <boost/program_options.hpp>
-#include "ores.logging/logging_options.hpp"
 #include "ores.logging/export.hpp"
+#include "ores.logging/logging_options.hpp"
+#include <boost/program_options.hpp>
+#include <optional>
+#include <string>
 
 namespace ores::logging {
 

@@ -18,17 +18,16 @@
  *
  */
 #include "ores.storage/net/storage_transfer.hpp"
-
-#include <chrono>
-#include <fstream>
-#include <boost/uuid/uuid.hpp>
-#include "ores.utility/compression/gzip.hpp"
-#include <boost/uuid/uuid_generators.hpp>
-#include <boost/uuid/uuid_io.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.storage/filesystem/archiver.hpp"
 #include "ores.storage/net/http_client.hpp"
 #include "ores.storage/net/storage_paths.hpp"
-#include "ores.storage/filesystem/archiver.hpp"
+#include "ores.utility/compression/gzip.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <chrono>
+#include <fstream>
 
 namespace ores::storage::net {
 
@@ -55,67 +54,67 @@ fs::path make_temp_archive() {
 storage_transfer::storage_transfer(std::string http_base_url)
     : http_base_url_(std::move(http_base_url)) {}
 
-void storage_transfer::pack(const fs::path& src_dir,
-    const fs::path& dest_archive) {
-    BOOST_LOG_SEV(lg(), debug) << "Packing directory: " << src_dir.string()
-                               << " -> " << dest_archive.string();
+void storage_transfer::pack(const fs::path& src_dir, const fs::path& dest_archive) {
+    BOOST_LOG_SEV(lg(), debug) << "Packing directory: " << src_dir.string() << " -> "
+                               << dest_archive.string();
     const auto t0 = std::chrono::steady_clock::now();
     filesystem::archiver::pack(src_dir, dest_archive);
-    const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
-        std::chrono::steady_clock::now() - t0).count();
+    const auto ms =
+        std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - t0)
+            .count();
     BOOST_LOG_SEV(lg(), debug) << "Pack complete: " << dest_archive.string()
-                               << " bytes=" << fs::file_size(dest_archive)
-                               << " duration=" << ms << "ms";
+                               << " bytes=" << fs::file_size(dest_archive) << " duration=" << ms
+                               << "ms";
 }
 
-void storage_transfer::unpack(const fs::path& archive,
-    const fs::path& dest_dir) {
-    BOOST_LOG_SEV(lg(), debug) << "Unpacking archive: " << archive.string()
-                               << " -> " << dest_dir.string();
+void storage_transfer::unpack(const fs::path& archive, const fs::path& dest_dir) {
+    BOOST_LOG_SEV(lg(), debug) << "Unpacking archive: " << archive.string() << " -> "
+                               << dest_dir.string();
     const auto bytes = fs::file_size(archive);
     const auto t0 = std::chrono::steady_clock::now();
     fs::create_directories(dest_dir);
     filesystem::archiver::extract(archive, dest_dir);
-    const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
-        std::chrono::steady_clock::now() - t0).count();
+    const auto ms =
+        std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - t0)
+            .count();
     BOOST_LOG_SEV(lg(), debug) << "Unpack complete: dest=" << dest_dir.string()
-                               << " bytes=" << bytes
-                               << " duration=" << ms << "ms";
+                               << " bytes=" << bytes << " duration=" << ms << "ms";
 }
 
-void storage_transfer::upload(const std::string& bucket, const std::string& key,
-    const fs::path& src_file) {
+void storage_transfer::upload(const std::string& bucket,
+                              const std::string& key,
+                              const fs::path& src_file) {
     const auto url = storage_paths::make_object_url(http_base_url_, bucket, key);
     const auto bytes = fs::file_size(src_file);
-    BOOST_LOG_SEV(lg(), debug) << "Uploading: bucket=" << bucket
-                               << " key=" << key
+    BOOST_LOG_SEV(lg(), debug) << "Uploading: bucket=" << bucket << " key=" << key
                                << " bytes=" << bytes;
     const auto t0 = std::chrono::steady_clock::now();
     http_client::put(url, src_file);
-    const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
-        std::chrono::steady_clock::now() - t0).count();
-    BOOST_LOG_SEV(lg(), debug) << "Upload complete: bucket=" << bucket
-                               << " key=" << key
+    const auto ms =
+        std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - t0)
+            .count();
+    BOOST_LOG_SEV(lg(), debug) << "Upload complete: bucket=" << bucket << " key=" << key
                                << " duration=" << ms << "ms";
 }
 
-void storage_transfer::download(const std::string& bucket, const std::string& key,
-    const fs::path& dest_file) {
+void storage_transfer::download(const std::string& bucket,
+                                const std::string& key,
+                                const fs::path& dest_file) {
     const auto url = storage_paths::make_object_url(http_base_url_, bucket, key);
-    BOOST_LOG_SEV(lg(), debug) << "Downloading: bucket=" << bucket
-                               << " key=" << key;
+    BOOST_LOG_SEV(lg(), debug) << "Downloading: bucket=" << bucket << " key=" << key;
     const auto t0 = std::chrono::steady_clock::now();
     http_client::get(url, dest_file);
-    const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
-        std::chrono::steady_clock::now() - t0).count();
-    BOOST_LOG_SEV(lg(), debug) << "Download complete: bucket=" << bucket
-                               << " key=" << key
-                               << " bytes=" << fs::file_size(dest_file)
-                               << " duration=" << ms << "ms";
+    const auto ms =
+        std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - t0)
+            .count();
+    BOOST_LOG_SEV(lg(), debug) << "Download complete: bucket=" << bucket << " key=" << key
+                               << " bytes=" << fs::file_size(dest_file) << " duration=" << ms
+                               << "ms";
 }
 
 void storage_transfer::pack_and_upload(const fs::path& src_dir,
-    const std::string& bucket, const std::string& key) {
+                                       const std::string& bucket,
+                                       const std::string& key) {
     BOOST_LOG_SEV(lg(), debug) << "pack_and_upload: src=" << src_dir.string()
                                << " bucket=" << bucket << " key=" << key;
     const auto tmp = make_temp_archive();
@@ -131,9 +130,9 @@ void storage_transfer::pack_and_upload(const fs::path& src_dir,
 }
 
 void storage_transfer::fetch_and_unpack(const std::string& bucket,
-    const std::string& key, const fs::path& dest_dir) {
-    BOOST_LOG_SEV(lg(), debug) << "fetch_and_unpack: bucket=" << bucket
-                               << " key=" << key
+                                        const std::string& key,
+                                        const fs::path& dest_dir) {
+    BOOST_LOG_SEV(lg(), debug) << "fetch_and_unpack: bucket=" << bucket << " key=" << key
                                << " dest=" << dest_dir.string();
     const auto tmp = make_temp_archive();
     try {
@@ -148,26 +147,23 @@ void storage_transfer::fetch_and_unpack(const std::string& bucket,
 }
 
 void storage_transfer::upload_blob(const std::string& bucket,
-    const std::string& key, std::span<const char> data) {
+                                   const std::string& key,
+                                   std::span<const char> data) {
     using ores::utility::compression::gzip_compress;
 
-    BOOST_LOG_SEV(lg(), debug) << "upload_blob: bucket=" << bucket
-                               << " key=" << key
+    BOOST_LOG_SEV(lg(), debug) << "upload_blob: bucket=" << bucket << " key=" << key
                                << " raw_bytes=" << data.size();
 
     const auto compressed = gzip_compress(data);
-    BOOST_LOG_SEV(lg(), debug) << "upload_blob: compressed "
-                               << data.size() << " -> "
+    BOOST_LOG_SEV(lg(), debug) << "upload_blob: compressed " << data.size() << " -> "
                                << compressed.size() << " bytes";
 
     boost::uuids::random_generator gen;
-    const auto tmp = fs::temp_directory_path() /
-        (boost::uuids::to_string(gen()) + ".blob.gz");
+    const auto tmp = fs::temp_directory_path() / (boost::uuids::to_string(gen()) + ".blob.gz");
     try {
         {
             std::ofstream out(tmp, std::ios::binary);
-            out.write(compressed.data(),
-                static_cast<std::streamsize>(compressed.size()));
+            out.write(compressed.data(), static_cast<std::streamsize>(compressed.size()));
         }
         upload(bucket, key, tmp);
         fs::remove(tmp);
@@ -179,29 +175,25 @@ void storage_transfer::upload_blob(const std::string& bucket,
 }
 
 std::vector<char> storage_transfer::download_blob(const std::string& bucket,
-    const std::string& key) {
+                                                  const std::string& key) {
     using ores::utility::compression::gzip_decompress;
 
-    BOOST_LOG_SEV(lg(), debug) << "download_blob: bucket=" << bucket
-                               << " key=" << key;
+    BOOST_LOG_SEV(lg(), debug) << "download_blob: bucket=" << bucket << " key=" << key;
 
     boost::uuids::random_generator gen;
-    const auto tmp = fs::temp_directory_path() /
-        (boost::uuids::to_string(gen()) + ".blob.gz");
+    const auto tmp = fs::temp_directory_path() / (boost::uuids::to_string(gen()) + ".blob.gz");
     try {
         download(bucket, key, tmp);
         const auto compressed_size = fs::file_size(tmp);
         std::vector<char> compressed(compressed_size);
         {
             std::ifstream in(tmp, std::ios::binary);
-            in.read(compressed.data(),
-                static_cast<std::streamsize>(compressed_size));
+            in.read(compressed.data(), static_cast<std::streamsize>(compressed_size));
         }
         fs::remove(tmp);
 
         auto result = gzip_decompress(compressed);
-        BOOST_LOG_SEV(lg(), debug) << "download_blob: decompressed "
-                                   << compressed_size << " -> "
+        BOOST_LOG_SEV(lg(), debug) << "download_blob: decompressed " << compressed_size << " -> "
                                    << result.size() << " bytes";
         return result;
     } catch (...) {

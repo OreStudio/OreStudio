@@ -20,9 +20,9 @@
 #ifndef ORES_STORAGE_NET_HTTP_CLIENT_HPP
 #define ORES_STORAGE_NET_HTTP_CLIENT_HPP
 
-#include <string>
-#include <filesystem>
 #include "ores.storage/export.hpp"
+#include <filesystem>
+#include <string>
 
 namespace ores::storage::net {
 

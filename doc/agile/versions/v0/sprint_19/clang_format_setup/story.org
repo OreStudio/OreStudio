@@ -54,7 +54,20 @@ so formatting is corrected continuously without blocking PRs.
 |------+-------+-------+-----+-------------|
 | [[id:1634444D-1E43-4E04-8865-9B50F9335BBC][Fix .clang-format config for ORE Studio conventions]] | BACKLOG | | | Update Standard to c++23, fix include ordering, tune to match actual code style. |
 | [[id:6487BBAC-004A-4040-A6E9-AF3A7CDBF256][Add CMake format and check-format targets]] | BACKLOG | | | format target runs in-place; check-format is a dry-run gate for CI/local use. |
-| [[id:BA1511EE-03E1-4FB3-8439-DFA437B68BA9][Add nightly GH Actions format workflow + initial format pass]] | BACKLOG | | | Nightly workflow raises a PR on drift; run initial pass to clean up the tree. |
+| [[id:BA1511EE-03E1-4FB3-8439-DFA437B68BA9][Add nightly GH Actions format workflow + initial format pass]] | DONE | 2026-06-04 | 2026-06-04 | Nightly workflow raises a PR on drift; run initial pass to clean up the tree. |
+| [[id:0D2F9E8D-2B90-47C0-A0EC-4AEF8B9F88FA][Format pass: logging, service, storage, geo, fpml, codegen]] | BACKLOG | | | Group 1 — 51 files. |
+| [[id:B327BCDD-EBD2-4A51-85BD-7F80F549E166][Format pass: platform, utility, nats, eventing, security, testing]] | BACKLOG | | | Group 2 — 123 files. |
+| [[id:2F7B9CE1-4FFA-4F2F-A37A-1B912373FCA4][Format pass: connections, database, workspace, variability]] | BACKLOG | | | Group 3 — 163 files. |
+| [[id:ABCCB938-2C6C-4279-A7BD-91444B7CAD89][Format pass: http, shell, wt.service]] | BACKLOG | | | Group 4 — 126 files. |
+| [[id:C79E7B3F-8498-473E-AFCB-53DD869B3F70][Format pass: analytics, scheduler, workflow, synthetic]] | BACKLOG | | | Group 5 — 170 files. |
+| [[id:96A6DC50-2CE1-4811-A796-550C21130A5C][Format pass: assets, marketdata, telemetry, controller]] | BACKLOG | | | Group 6 — 314 files. |
+| [[id:E3F990AF-C0A5-40BA-89F0-80D16CA7AA90][Format pass: iam]] | BACKLOG | | | Group 7 — 277 files. |
+| [[id:CFC8CCBA-01F8-477A-A279-68C1D0AAA742][Format pass: compute, reporting, cli]] | BACKLOG | | | Group 8 — 464 files. |
+| [[id:68C5A492-8D46-4253-82A4-2A551C10A9A2][Format pass: ore]] | BACKLOG | | | Group 9 — 139 files. |
+| [[id:867BC65C-0BFD-4D5A-9D7E-0C741DA38E17][Format pass: dq]] | BACKLOG | | | Group 10 — 433 files. |
+| [[id:AE6DD798-1052-4036-B108-6539FF94DBBD][Format pass: refdata]] | BACKLOG | | | Group 11 — 723 files. |
+| [[id:99EBE90F-0D27-44A3-B608-C188EC914822][Format pass: trading]] | BACKLOG | | | Group 12 — 769 files. |
+| [[id:FC3A5F66-708A-4387-A3A6-85EC43C9B3B3][Format pass: qt]] | BACKLOG | | | Group 13 — 1014 files. |
 
 * Decisions
 

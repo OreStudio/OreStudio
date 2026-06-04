@@ -18,7 +18,6 @@
  *
  */
 #include "ores.logging/boost_severity.hpp"
-
 #include <stdexcept>
 
 namespace ores::logging {
@@ -46,26 +45,37 @@ boost_severity to_boost_severity(const std::string& s) {
 
 boost_severity to_boost_severity(severity_level level) {
     switch (level) {
-    case severity_level::trace: return boost_severity::trace;
-    case severity_level::debug: return boost_severity::debug;
-    case severity_level::info:  return boost_severity::info;
-    case severity_level::warn:  return boost_severity::warn;
-    case severity_level::error: return boost_severity::error;
-    case severity_level::fatal: return boost_severity::error;
-    default:
-        throw std::invalid_argument("Invalid or unexpected severity level");
+        case severity_level::trace:
+            return boost_severity::trace;
+        case severity_level::debug:
+            return boost_severity::debug;
+        case severity_level::info:
+            return boost_severity::info;
+        case severity_level::warn:
+            return boost_severity::warn;
+        case severity_level::error:
+            return boost_severity::error;
+        case severity_level::fatal:
+            return boost_severity::error;
+        default:
+            throw std::invalid_argument("Invalid or unexpected severity level");
     }
 }
 
 severity_level to_domain_severity(boost_severity sev) {
     switch (sev) {
-    case boost_severity::trace: return severity_level::trace;
-    case boost_severity::debug: return severity_level::debug;
-    case boost_severity::info:  return severity_level::info;
-    case boost_severity::warn:  return severity_level::warn;
-    case boost_severity::error: return severity_level::error;
-    default:
-        throw std::invalid_argument("Invalid or unexpected severity level");
+        case boost_severity::trace:
+            return severity_level::trace;
+        case boost_severity::debug:
+            return severity_level::debug;
+        case boost_severity::info:
+            return severity_level::info;
+        case boost_severity::warn:
+            return severity_level::warn;
+        case boost_severity::error:
+            return severity_level::error;
+        default:
+            throw std::invalid_argument("Invalid or unexpected severity level");
     }
 }
 

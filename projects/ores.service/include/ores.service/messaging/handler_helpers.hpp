@@ -20,19 +20,19 @@
 #ifndef ORES_SERVICE_MESSAGING_HANDLER_HELPERS_HPP
 #define ORES_SERVICE_MESSAGING_HANDLER_HELPERS_HPP
 
-#include <optional>
-#include <span>
-#include <string_view>
-#include <boost/uuid/uuid.hpp>
-#include <rfl/json.hpp>
+#include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/correlation.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
-#include "ores.nats/domain/correlation.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.utility/rfl/reflectors.hpp"
 #include "ores.service/error_code.hpp"
+#include "ores.utility/rfl/reflectors.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <optional>
+#include <rfl/json.hpp>
+#include <span>
+#include <string_view>
 
 namespace ores::service::messaging {
 
@@ -50,17 +50,14 @@ namespace ores::service::messaging {
  * The returned string can be threaded into downstream NATS calls via
  * nats_client::with_correlation_id(cid) when the handler makes outbound calls.
  */
-template<typename Logger>
-inline std::string log_handler_entry(Logger& lg,
-    const ores::nats::message& msg) {
+template <typename Logger>
+inline std::string log_handler_entry(Logger& lg, const ores::nats::message& msg) {
     using namespace ores::logging;
     auto cid = ores::nats::extract_or_generate_correlation_id(msg);
-    const auto sid_it = msg.headers.find(
-        std::string(ores::nats::headers::nats_session_id));
+    const auto sid_it = msg.headers.find(std::string(ores::nats::headers::nats_session_id));
     if (sid_it != msg.headers.end() && !sid_it->second.empty())
-        BOOST_LOG_SEV(lg, info) << msg.subject
-            << " correlation_id=" << cid
-            << " session_id=" << sid_it->second;
+        BOOST_LOG_SEV(lg, info) << msg.subject << " correlation_id=" << cid
+                                << " session_id=" << sid_it->second;
     else
         BOOST_LOG_SEV(lg, info) << msg.subject << " correlation_id=" << cid;
     return cid;
@@ -70,8 +67,8 @@ inline std::string log_handler_entry(Logger& lg,
  * @brief Default change reason codes for server-stamped writes.
  */
 namespace change_reasons {
-    inline constexpr std::string_view new_record = "system.new_record";
-    inline constexpr std::string_view update = "system.update";
+inline constexpr std::string_view new_record = "system.new_record";
+inline constexpr std::string_view update = "system.update";
 } // namespace change_reasons
 
 /**
@@ -95,16 +92,16 @@ namespace change_reasons {
  * @param ctx           Per-request database context derived from the JWT.
  * @param change_reason Default change reason code (applied only if obj has none).
  */
-template<typename T>
-void stamp(T& obj, const ores::database::context& ctx,
-    std::string_view change_reason = change_reasons::new_record) {
+template <typename T>
+void stamp(T& obj,
+           const ores::database::context& ctx,
+           std::string_view change_reason = change_reasons::new_record) {
     // tenant_id is a security boundary — always derived from the validated JWT,
     // never from client-supplied data.
     if constexpr (requires { obj.tenant_id; }) {
         if constexpr (std::is_assignable_v<decltype(obj.tenant_id)&, std::string>)
             obj.tenant_id = ctx.tenant_id().to_string();
-        else if constexpr (std::is_assignable_v<decltype(obj.tenant_id)&,
-                boost::uuids::uuid>)
+        else if constexpr (std::is_assignable_v<decltype(obj.tenant_id)&, boost::uuids::uuid>)
             obj.tenant_id = ctx.tenant_id().to_uuid();
         else
             obj.tenant_id = ctx.tenant_id();
@@ -145,11 +142,10 @@ inline const std::string& delegated_actor(const ores::database::context& ctx) {
     return ctx.actor().empty() ? ctx.service_account() : ctx.actor();
 }
 
-template<typename Resp>
-void reply(ores::nats::service::client& nats,
-    const ores::nats::message& msg,
-    const Resp& resp) {
-    if (msg.reply_subject.empty()) return;
+template <typename Resp>
+void reply(ores::nats::service::client& nats, const ores::nats::message& msg, const Resp& resp) {
+    if (msg.reply_subject.empty())
+        return;
     const auto json = rfl::json::write(resp);
     const auto* p = reinterpret_cast<const std::byte*>(json.data());
     nats.publish(msg.reply_subject, std::span<const std::byte>(p, json.size()));
@@ -175,17 +171,20 @@ void reply(ores::nats::service::client& nats,
  * @endcode
  */
 inline bool has_permission(const ores::database::context& ctx,
-    std::string_view required_permission) {
+                           std::string_view required_permission) {
     const auto& perms = ctx.roles();
     // Empty list: token predates RBAC — allow to preserve backward compat.
-    if (perms.empty()) return true;
+    if (perms.empty())
+        return true;
     // Exact match or component-level wildcard
     for (const auto& p : perms) {
-        if (p == "*" || p == required_permission) return true;
+        if (p == "*" || p == required_permission)
+            return true;
         // Component-level wildcard: "iam::*" satisfies "iam::accounts:create"
         if (p.size() >= 2 && p.ends_with("::*")) {
             const auto prefix = std::string_view(p).substr(0, p.size() - 1);
-            if (required_permission.starts_with(prefix)) return true;
+            if (required_permission.starts_with(prefix))
+                return true;
         }
     }
     return false;
@@ -194,28 +193,38 @@ inline bool has_permission(const ores::database::context& ctx,
 // Publish an error reply with an X-Error header.
 // The reply subject is used if present; no-op otherwise.
 inline void error_reply(ores::nats::service::client& nats,
-    const ores::nats::message& msg,
-    ores::service::error_code code) {
-    if (msg.reply_subject.empty()) return;
+                        const ores::nats::message& msg,
+                        ores::service::error_code code) {
+    if (msg.reply_subject.empty())
+        return;
     std::string_view error_str;
     switch (code) {
-        case ores::service::error_code::token_expired: error_str = "token_expired"; break;
-        case ores::service::error_code::forbidden:     error_str = "forbidden";     break;
-        case ores::service::error_code::bad_request:   error_str = "bad_request";   break;
-        default:                                       error_str = "unauthorized";  break;
+        case ores::service::error_code::token_expired:
+            error_str = "token_expired";
+            break;
+        case ores::service::error_code::forbidden:
+            error_str = "forbidden";
+            break;
+        case ores::service::error_code::bad_request:
+            error_str = "bad_request";
+            break;
+        default:
+            error_str = "unauthorized";
+            break;
     }
-    nats.publish(msg.reply_subject, std::span<const std::byte>{},
-        {{std::string(ores::nats::headers::x_error), std::string(error_str)}});
+    nats.publish(msg.reply_subject,
+                 std::span<const std::byte>{},
+                 {{std::string(ores::nats::headers::x_error), std::string(error_str)}});
 }
 
 // Deserialise the message payload from JSON into Req.
 // Returns nullopt on parse failure.
-template<typename Req>
+template <typename Req>
 std::optional<Req> decode(const ores::nats::message& msg) {
-    const std::string_view sv(
-        reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
+    const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
     auto r = rfl::json::read<Req>(sv);
-    if (!r) return std::nullopt;
+    if (!r)
+        return std::nullopt;
     return *r;
 }
 

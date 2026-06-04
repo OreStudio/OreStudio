@@ -20,19 +20,19 @@
 #ifndef ORES_SERVICE_SERVICE_HEARTBEAT_PUBLISHER_HPP
 #define ORES_SERVICE_SERVICE_HEARTBEAT_PUBLISHER_HPP
 
-#include <string>
-#include <cstdint>
+#include "ores.logging/make_logger.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.telemetry.core/messaging/service_samples_protocol.hpp"
+#include "ores.utility/uuid/uuid_v7_generator.hpp"
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/steady_timer.hpp>
 #include <boost/asio/this_coro.hpp>
 #include <boost/asio/use_awaitable.hpp>
 #include <boost/system/system_error.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <cstdint>
 #include <rfl/json.hpp>
-#include "ores.logging/make_logger.hpp"
-#include "ores.nats/service/client.hpp"
-#include "ores.utility/uuid/uuid_v7_generator.hpp"
-#include "ores.telemetry.core/messaging/service_samples_protocol.hpp"
+#include <string>
 
 namespace ores::service::service {
 
@@ -50,8 +50,7 @@ namespace ores::service::service {
  */
 class heartbeat_publisher {
 private:
-    inline static std::string_view logger_name =
-        "ores.service.service.heartbeat_publisher";
+    inline static std::string_view logger_name = "ores.service.service.heartbeat_publisher";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -81,8 +80,7 @@ public:
      */
     boost::asio::awaitable<void> run() {
         BOOST_LOG_SEV(lg(), ores::logging::info)
-            << "Heartbeat publisher started for '" << service_name_
-            << "' instance=" << instance_id_
+            << "Heartbeat publisher started for '" << service_name_ << "' instance=" << instance_id_
             << " interval=" << interval_seconds_ << "s";
 
         auto executor = co_await boost::asio::this_coro::executor;
@@ -91,14 +89,12 @@ public:
         try {
             for (;;) {
                 publish_once();
-                timer.expires_after(
-                    std::chrono::seconds(interval_seconds_));
+                timer.expires_after(std::chrono::seconds(interval_seconds_));
                 co_await timer.async_wait(boost::asio::use_awaitable);
             }
         } catch (const boost::system::system_error& e) {
             if (e.code() != boost::asio::error::operation_aborted) {
-                BOOST_LOG_SEV(lg(), ores::logging::warn)
-                    << "Heartbeat timer error: " << e.what();
+                BOOST_LOG_SEV(lg(), ores::logging::warn) << "Heartbeat timer error: " << e.what();
             }
         }
 
@@ -118,14 +114,11 @@ private:
             std::vector<std::byte> data(
                 reinterpret_cast<const std::byte*>(json.data()),
                 reinterpret_cast<const std::byte*>(json.data() + json.size()));
-            nats_.publish(
-                telemetry::messaging::service_heartbeat_message::nats_subject,
-                std::move(data));
-            BOOST_LOG_SEV(lg(), ores::logging::trace)
-                << "Heartbeat published: " << service_name_;
+            nats_.publish(telemetry::messaging::service_heartbeat_message::nats_subject,
+                          std::move(data));
+            BOOST_LOG_SEV(lg(), ores::logging::trace) << "Heartbeat published: " << service_name_;
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), ores::logging::warn)
-                << "Failed to publish heartbeat: " << e.what();
+            BOOST_LOG_SEV(lg(), ores::logging::warn) << "Failed to publish heartbeat: " << e.what();
         }
     }
 

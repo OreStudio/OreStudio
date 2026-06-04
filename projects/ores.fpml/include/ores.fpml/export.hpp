@@ -23,9 +23,9 @@
 #include <boost/config.hpp>
 
 #ifdef ORES_FPML_LIBRARY
-#  define ORES_FPML_EXPORT BOOST_SYMBOL_EXPORT
+#    define ORES_FPML_EXPORT BOOST_SYMBOL_EXPORT
 #else
-#  define ORES_FPML_EXPORT BOOST_SYMBOL_IMPORT
+#    define ORES_FPML_EXPORT BOOST_SYMBOL_IMPORT
 #endif
 
 #endif

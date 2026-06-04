@@ -20,11 +20,11 @@
 #ifndef ORES_LOGGING_LOGGING_OPTIONS_HPP
 #define ORES_LOGGING_LOGGING_OPTIONS_HPP
 
+#include "ores.logging/export.hpp"
+#include <filesystem>
 #include <iosfwd>
 #include <optional>
 #include <string>
-#include <filesystem>
-#include "ores.logging/export.hpp"
 
 namespace ores::logging {
 

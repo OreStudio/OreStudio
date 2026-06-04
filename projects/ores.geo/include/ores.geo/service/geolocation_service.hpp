@@ -20,13 +20,13 @@
 #ifndef ORES_GEO_SERVICE_GEOLOCATION_SERVICE_HPP
 #define ORES_GEO_SERVICE_GEOLOCATION_SERVICE_HPP
 
-#include <string>
-#include <optional>
-#include <expected>
-#include <boost/asio/ip/address.hpp>
 #include "ores.database/domain/context.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.geo/export.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <boost/asio/ip/address.hpp>
+#include <expected>
+#include <optional>
+#include <string>
 
 namespace ores::geo::service {
 
@@ -86,8 +86,7 @@ public:
     lookup(const std::string& ip_string) const;
 
 private:
-    inline static std::string_view logger_name =
-        "ores.geo.service.geolocation_service";
+    inline static std::string_view logger_name = "ores.geo.service.geolocation_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;

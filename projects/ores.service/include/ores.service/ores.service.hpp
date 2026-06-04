@@ -23,7 +23,10 @@
 /**
  * @brief Common infrastructure shared by all domain microservices
  *
- * Provides the standard domain service lifecycle: early signal handling (SIGINT/SIGTERM), JWKS public-key fetch with exponential backoff, JWT verifier creation, subscription registration, graceful NATS drain, and shutdown logging. Eliminates boilerplate duplicated across the nine domain service binaries.
+ * Provides the standard domain service lifecycle: early signal handling (SIGINT/SIGTERM), JWKS
+ * public-key fetch with exponential backoff, JWT verifier creation, subscription registration,
+ * graceful NATS drain, and shutdown logging. Eliminates boilerplate duplicated across the nine
+ * domain service binaries.
  */
 namespace ores::service {}
 

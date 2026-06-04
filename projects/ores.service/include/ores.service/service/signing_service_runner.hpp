@@ -20,13 +20,13 @@
 #ifndef ORES_SERVICE_SERVICE_SIGNING_SERVICE_RUNNER_HPP
 #define ORES_SERVICE_SERVICE_SIGNING_SERVICE_RUNNER_HPP
 
-#include <string>
-#include <functional>
-#include <string_view>
-#include <boost/asio/awaitable.hpp>
-#include <boost/asio/io_context.hpp>
 #include "ores.database/domain/context.hpp"
 #include "ores.nats/service/client.hpp"
+#include <boost/asio/awaitable.hpp>
+#include <boost/asio/io_context.hpp>
+#include <functional>
+#include <string>
+#include <string_view>
 
 namespace ores::service::service {
 
@@ -56,7 +56,7 @@ namespace ores::service::service {
  * @param on_started      Optional: called after registration, before signal wait.
  * @param on_shutdown     Optional: called after signal, before nats.drain().
  */
-template<typename RegisterFn>
+template <typename RegisterFn>
 boost::asio::awaitable<void>
 run_signing(boost::asio::io_context& io_ctx,
             ores::nats::service::client& nats,
@@ -64,8 +64,8 @@ run_signing(boost::asio::io_context& io_ctx,
             std::string_view name,
             const std::string& jwt_private_key,
             RegisterFn&& register_fn,
-            std::function<void(boost::asio::io_context&)> on_started  = {},
-            std::function<void()>                          on_shutdown = {});
+            std::function<void(boost::asio::io_context&)> on_started = {},
+            std::function<void()> on_shutdown = {});
 
 } // namespace ores::service::service
 

@@ -20,30 +20,28 @@
 #ifndef ORES_SERVICE_SERVICE_SIGNING_SERVICE_RUNNER_IMPL_HPP
 #define ORES_SERVICE_SERVICE_SIGNING_SERVICE_RUNNER_IMPL_HPP
 
-#include <functional>
-#include <boost/asio/signal_set.hpp>
-#include <boost/asio/use_awaitable.hpp>
-#include <boost/system/error_code.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.platform/process/signals.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
+#include <boost/asio/signal_set.hpp>
+#include <boost/asio/use_awaitable.hpp>
+#include <boost/system/error_code.hpp>
+#include <functional>
 
 namespace ores::service::service {
 
-template<typename RegisterFn>
-boost::asio::awaitable<void>
-run_signing(boost::asio::io_context& io_ctx,
-            ores::nats::service::client& nats,
-            ores::database::context ctx,
-            std::string_view name,
-            const std::string& jwt_private_key,
-            RegisterFn&& register_fn,
-            std::function<void(boost::asio::io_context&)> on_started,
-            std::function<void()> on_shutdown) {
+template <typename RegisterFn>
+boost::asio::awaitable<void> run_signing(boost::asio::io_context& io_ctx,
+                                         ores::nats::service::client& nats,
+                                         ores::database::context ctx,
+                                         std::string_view name,
+                                         const std::string& jwt_private_key,
+                                         RegisterFn&& register_fn,
+                                         std::function<void(boost::asio::io_context&)> on_started,
+                                         std::function<void()> on_shutdown) {
 
     using namespace ores::logging;
-    static const std::string_view logger_name =
-        "ores.service.service.signing_runner";
+    static const std::string_view logger_name = "ores.service.service.signing_runner";
     static auto& lg = []() -> auto& {
         static auto instance = make_logger(logger_name);
         return instance;
@@ -53,8 +51,7 @@ run_signing(boost::asio::io_context& io_ctx,
     for (int s : ores::platform::process::shutdown_signals)
         signals.add(s);
 
-    auto signer = ores::security::jwt::jwt_authenticator::create_rs256_signer(
-        jwt_private_key);
+    auto signer = ores::security::jwt::jwt_authenticator::create_rs256_signer(jwt_private_key);
     BOOST_LOG_SEV(lg, info) << "RS256 signer initialised.";
 
     auto subs = register_fn(nats, std::move(ctx), std::move(signer));
@@ -70,7 +67,8 @@ run_signing(boost::asio::io_context& io_ctx,
     co_await signals.async_wait(boost::asio::use_awaitable);
 
     BOOST_LOG_SEV(lg, info) << "Shutdown signal received. Draining...";
-    if (on_shutdown) on_shutdown();
+    if (on_shutdown)
+        on_shutdown();
     nats.drain();
     BOOST_LOG_SEV(lg, info) << "Shutdown complete: " << name;
     co_return;

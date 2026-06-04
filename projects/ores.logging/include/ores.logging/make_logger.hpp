@@ -20,15 +20,14 @@
 #ifndef ORES_LOGGING_MAKE_LOGGER_HPP
 #define ORES_LOGGING_MAKE_LOGGER_HPP
 
-#include <string_view>
+#include "ores.logging/boost_severity.hpp"
 #include <boost/log/sources/record_ostream.hpp>
 #include <boost/log/sources/severity_channel_logger.hpp>
-#include "ores.logging/boost_severity.hpp"
+#include <string_view>
 
 namespace ores::logging {
 
-using logger_t = boost::log::sources::severity_channel_logger_mt<
-    boost_severity, std::string_view>;
+using logger_t = boost::log::sources::severity_channel_logger_mt<boost_severity, std::string_view>;
 
 inline logger_t make_logger(std::string_view component_name) {
     using namespace boost::log;

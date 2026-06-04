@@ -18,9 +18,8 @@
  *
  */
 #include "ores.geo/service/geolocation_service.hpp"
-
-#include <boost/system/error_code.hpp>
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include <boost/system/error_code.hpp>
 
 namespace ores::geo::service {
 

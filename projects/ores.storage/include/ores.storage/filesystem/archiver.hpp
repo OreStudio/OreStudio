@@ -20,8 +20,8 @@
 #ifndef ORES_STORAGE_FILESYSTEM_ARCHIVER_HPP
 #define ORES_STORAGE_FILESYSTEM_ARCHIVER_HPP
 
-#include <filesystem>
 #include "ores.storage/export.hpp"
+#include <filesystem>
 
 namespace ores::storage::filesystem {
 
@@ -45,7 +45,7 @@ public:
      * @throws std::runtime_error on failure.
      */
     static void pack(const std::filesystem::path& src_dir,
-        const std::filesystem::path& dest_archive);
+                     const std::filesystem::path& dest_archive);
 
     /**
      * @brief Extract a .tar.gz archive into a destination directory.
@@ -55,7 +55,7 @@ public:
      * @throws std::runtime_error on failure.
      */
     static void extract(const std::filesystem::path& archive,
-        const std::filesystem::path& dest_dir);
+                        const std::filesystem::path& dest_dir);
 };
 
 }

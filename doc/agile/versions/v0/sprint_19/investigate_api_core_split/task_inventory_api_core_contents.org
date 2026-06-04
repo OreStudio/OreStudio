@@ -77,7 +77,10 @@ task closes. Plans do not outlive their task.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Link database PRIVATE in refdata.core | projects/ores.refdata/core/src/CMakeLists.txt | Declined | 123 public headers include ores.database; usage requirement must propagate — PUBLIC correct. |
+| 2 | Link database PRIVATE in synthetic.core | projects/ores.synthetic/core/src/CMakeLists.txt | Declined | 3 public headers include ores.database; PUBLIC correct. |
+| 3 | Link database PRIVATE in workspace.core | projects/ores.workspace/core/src/CMakeLists.txt | Declined | 4 public headers include ores.database; PUBLIC correct. |
+| 4 | Fully qualify namespace alias | projects/ores.qt/api/src/ChangeReasonDialog.cpp | Accepted | Fixed in 43fa9fd3c; matches ores.qt.api alias idiom. |
 
 * Result
 

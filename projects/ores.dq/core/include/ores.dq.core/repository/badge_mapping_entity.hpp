@@ -43,8 +43,8 @@ struct badge_mapping_entity {
     std::string tenant_id;
     std::string entity_code;
     std::string badge_code;
-    std::optional<db_timestamp> valid_from;
-    std::optional<db_timestamp> valid_to;
+    db_timestamp valid_from = "9999-12-31 23:59:59";
+    db_timestamp valid_to = "9999-12-31 23:59:59";
 };
 
 std::ostream& operator<<(std::ostream& s, const badge_mapping_entity& v);

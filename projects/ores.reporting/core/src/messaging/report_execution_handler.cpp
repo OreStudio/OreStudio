@@ -25,6 +25,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include "ores.utility/rfl/reflectors.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include "ores.reporting.api/messaging/report_execution_protocol.hpp"
@@ -322,7 +323,8 @@ void report_execution_handler::assemble_bundle(ores::nats::message msg) {
         bundle.market_data_storage_key = req.market_data_storage_key;
         bundle.trade_count = req.trade_count;
         bundle.series_count = req.series_count;
-        bundle.created_at = std::nullopt;  // DB default (current_timestamp)
+        bundle.created_at = ores::platform::time::datetime::to_db_string(
+            std::chrono::system_clock::now());
 
         repository::report_input_bundle_repository bundle_repo;
         bundle_repo.create(tenant_ctx, bundle);

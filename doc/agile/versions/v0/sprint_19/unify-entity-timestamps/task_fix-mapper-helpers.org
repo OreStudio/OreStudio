@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-03
-#+updated: 2026-06-03
+#+updated: 2026-06-04
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:71116F94-09A7-43FD-BD56-4B5B25BEAC80][Unify entity timestamp handling]] story.
@@ -31,12 +31,12 @@ Nullable columns (=completed_at=, =last_event_at=, etc.) must stay as
 
 | Field        | Value                                                        |
 |--------------+--------------------------------------------------------------|
-| State        | STARTED                                                      |
+| State        | DONE                                                         |
 | Parent story | [[id:71116F94-09A7-43FD-BD56-4B5B25BEAC80][Unify entity timestamp handling]] |
-| Now          | Plan written. Ready to implement.                            |
+| Now          | Complete. Bulk landed in PR #1033; stragglers mopped up on follow-up branch. |
 | Waiting on   | Nothing.                                                     |
-| Next         | Run transformation script on all entity files.               |
-| Last touched | 2026-06-03                                                   |
+| Next         | Nothing — task closed.                                       |
+| Last touched | 2026-06-04                                                   |
 
 * Acceptance
 
@@ -111,3 +111,25 @@ grep -rn "optional<db_timestamp>" projects/ --include="*_entity.hpp" | grep -v b
 |   |                 |      |          |       |
 
 * Result
+
+Bulk conversion (~100 entity files) landed in PR #1033 on branch
+=feature/unify-entity-timestamps=. The mop-up on
+=feature/unify-entity-timestamps-mopup= fixed the 7 remaining
+=optional<db_timestamp>= fields whose DDL columns are =NOT NULL=:
+
+- =badge_mapping_entity.hpp= — =valid_from=/=valid_to= (with the
+  standard =9999-12-31 23:59:59= defaults, currency pattern).
+- =database_info_entity.hpp=, =workflow_step_entity.hpp=,
+  =workflow_instance_entity.hpp=, =workflow_batch_link_entity.hpp=,
+  =report_input_bundle_entity.hpp= — =created_at= (service_instance
+  pattern, no struct default).
+
+Read-side mappers dropped their null-guard + dereference
+(=database_info_mapper=, =workflow_step_mapper=,
+=workflow_instance_mapper=). Two write sites that relied on
+=nullopt= → DB =current_timestamp= default now set the timestamp
+explicitly via =datetime::to_db_string(now())=
+(=report_execution_handler=, =report_submit_handler=).
+
+The 11 remaining =optional<db_timestamp>= fields were verified
+nullable in DDL — correctly optional. Full build green.

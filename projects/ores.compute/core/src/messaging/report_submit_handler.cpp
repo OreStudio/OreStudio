@@ -19,10 +19,12 @@
  */
 #include "ores.compute.core/messaging/report_submit_handler.hpp"
 
+#include <chrono>
 #include <format>
 #include <rfl/json.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_generators.hpp>
+#include "ores.platform/time/datetime.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
@@ -138,6 +140,8 @@ void report_submit_handler::submit(ores::nats::message msg) {
         link.tenant_id            = req.tenant_id;
         link.workflow_step_id     = wf->step_id;
         link.workflow_instance_id = wf->instance_id;
+        link.created_at           = ores::platform::time::datetime::to_db_string(
+            std::chrono::system_clock::now());
 
         repository::workflow_batch_link_repository link_repo;
         link_repo.create(tenant_ctx, link);

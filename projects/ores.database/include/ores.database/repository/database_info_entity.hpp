@@ -43,7 +43,7 @@ struct database_info_entity {
     std::string build_environment;
     std::string git_commit;
     std::string git_date;
-    std::optional<db_timestamp> created_at;
+    db_timestamp created_at;
 };
 
 ORES_DATABASE_EXPORT std::ostream& operator<<(std::ostream& s, const database_info_entity& v);

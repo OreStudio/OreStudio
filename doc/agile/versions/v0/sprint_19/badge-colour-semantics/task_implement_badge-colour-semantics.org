@@ -39,11 +39,11 @@ Apply the gray-is-inactive rule across the badge system. Audit findings:
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                 |
 | Parent story | [[id:72E7A7D0-A268-410F-B137-942DC5F16934][Badge colour semantics: reserve gray for inactive states]] |
-| Now          | Implementation done; full build running. |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Build green; commit; PR.               |
+| Next         | Nothing — task closed.                 |
 | Last touched | 2026-06-04                               |
 
 * Acceptance
@@ -80,3 +80,14 @@ task closes. Plans do not outlive their task.)
 | 2 | Validate DB colours before building stylesheet | BadgeLabelUtils.cpp | Fixed in 04c0aa7af | Invalid colour now keeps the orange fallback. |
 
 * Result
+
+Delivered in PR #1044. Seed data recoloured (service teal, unlocked and
+done green) with rule-stating comments; orange missing-definition
+fallback (=color_constants::badge_fallback=) across all 12 badge
+resolver sites; =BadgeLabelUtils= + =DetailDialogBase::setBadgeCache=
+with Online/Locked rendered as DB-driven badges in the account detail
+dialog via the new =account_online= code domain. Review round 1: colour
+validation added (invalid DB colour keeps the fallback); the
+=:with-sub-superscript= plural suggestion declined with empirical
+evidence. Full build green twice; site build green after fixing a
+broken parent link in the UX doc task.

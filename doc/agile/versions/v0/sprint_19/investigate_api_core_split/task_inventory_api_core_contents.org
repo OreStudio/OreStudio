@@ -71,6 +71,7 @@ task closes. Plans do not outlive their task.)
 | PR | Title |
 |----+-------|
 | [[https://github.com/OreStudio/OreStudio/pull/1045][#1045]] | [agile] Scaffold API/core split investigation story |
+| [[https://github.com/OreStudio/OreStudio/pull/1048][#1048]] | [dq,qt,iam,refdata] Remove database dependency from ores.dq.api |
 
 * Review
 

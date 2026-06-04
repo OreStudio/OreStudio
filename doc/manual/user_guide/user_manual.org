@@ -19,6 +19,7 @@
 #+latex_header: \usepackage{graphicx}
 #+latex_header: \usepackage{lettrine}
 #+latex_header: \usepackage{tabularx}
+#+latex_header: \usepackage{placeins}
 #+latex_header: \makeatletter
 #+latex_header: \def\maxwidth{\ifdim\Gin@nat@width>0.7\linewidth 0.7\linewidth\else\Gin@nat@width\fi}
 #+latex_header: \makeatother

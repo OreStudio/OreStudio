@@ -34,9 +34,9 @@ the /tenant/ it belongs to and the /parties/ it is assigned (see
 
 ** The Accounts window
 
-Open the Accounts window from /System ▸ Administration ▸ Accounts/.
-The Administration menu is only present for accounts that hold
-administrative permissions.
+Open the Accounts window from the /Administration/ submenu of the
+/System/ menu. The Administration menu is only present for accounts
+that hold administrative permissions.
 
 The window lists every account visible to your login identity, one row
 per account. Alongside the username and email, badge columns show the
@@ -155,6 +155,7 @@ party context, at least one party:
 #+caption[New Account — Parties tab]: Assigning the new account to =BARCLAYS PLC=. The combo box lists the tenant's party hierarchy.
 [[../../../assets/images/account_new_account_party.png]]
 
+#+latex: \FloatBarrier
 If you save without assigning a party, OreStudio asks for
 confirmation — such accounts exist but cannot enter any party context
 at login:
@@ -197,8 +198,8 @@ permission is needed by everyone in trading, it is added to the
 =Trading= role once rather than to every trader's account, and an
 account's capabilities can be read at a glance from its role list.
 
-Open the Roles window from /System ▸ Administration ▸ Roles/ to see
-the bundles:
+Open the Roles window from the /Administration/ submenu of the
+/System/ menu to see the bundles:
 
 #+caption[The Roles window]: The Roles window listing the built-in roles — one per backend domain service plus the administrative and operational roles — with their permission counts and provenance.
 [[../../../assets/images/roles_main_window.png]]

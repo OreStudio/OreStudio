@@ -54,7 +54,8 @@ carry no operational controls and are not intended for human use.
 
 ** The Tenants window
 
-Open the Tenants window from /System ▸ Administration ▸ Tenants/.
+Open the Tenants window from the /Administration/ submenu of the
+/System/ menu.
 
 #+caption[The Tenants window]: The Tenants window on a freshly provisioned installation: the =system= root tenant and one business tenant, =barclays_plc=, both /active/. Each row shows the tenant code, display name, type, hostname, lifecycle status, and provenance.
 [[../../../assets/images/tenants_main_window.png]]

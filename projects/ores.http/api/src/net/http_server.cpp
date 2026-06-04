@@ -133,7 +133,8 @@ asio::awaitable<void> http_server::accept_connections() {
             if (active_connections_.load() >= options_.max_connections) {
                 BOOST_LOG_SEV(lg(), warn) << "Max connections reached (" << options_.max_connections
                                           << "), rejecting connection";
-                socket.close();
+                boost::system::error_code ec;
+                socket.close(ec);
                 continue;
             }
 

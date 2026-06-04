@@ -78,7 +78,7 @@ login_result session_manager::login(const std::string& username,
 
         BOOST_LOG_SEV(lg(), info) << "User '" << username << "' logged in from " << client_ip;
 
-    } catch (const std::runtime_error& e) {
+    } catch (const std::exception& e) {
         result.error_message = e.what();
         BOOST_LOG_SEV(lg(), warn) << "Login failed for '" << username << "': " << e.what();
     }

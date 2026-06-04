@@ -87,7 +87,8 @@ std::string storage_routes::resolve_path(const std::string& bucket, const std::s
     const fs::path full_path = (bucket_path / key).lexically_normal();
 
     // Ensure the resolved path stays within the bucket directory.
-    auto [it1, it2] = std::mismatch(bucket_path.begin(), bucket_path.end(), full_path.begin());
+    auto [it1, it2] = std::mismatch(
+        bucket_path.begin(), bucket_path.end(), full_path.begin(), full_path.end());
     if (it1 != bucket_path.end()) {
         BOOST_LOG_SEV(lg(), warn) << "Path traversal attempt: bucket=" << bucket << " key=" << key;
         return {};

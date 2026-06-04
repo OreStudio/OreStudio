@@ -150,20 +150,21 @@ void AccountRolesWidget::load() {
         }
     });
 
-    QFuture<LoadResult> future = QtConcurrent::run([self, accountId, has_account]() -> LoadResult {
+    auto* clientManager = clientManager_;
+    QFuture<LoadResult> future = QtConcurrent::run([self, clientManager, accountId, has_account]() -> LoadResult {
         if (!self)
             return {.success = false};
 
         if (has_account) {
-            auto accountRolesFuture = std::async(std::launch::async, [&self, &accountId]() {
+            auto accountRolesFuture = std::async(std::launch::async, [clientManager, accountId]() {
                 iam::messaging::get_account_roles_request request;
                 request.account_id = boost::uuids::to_string(accountId);
-                return self->clientManager_->process_authenticated_request(std::move(request));
+                return clientManager->process_authenticated_request(std::move(request));
             });
 
-            auto allRolesFuture = std::async(std::launch::async, [&self]() {
+            auto allRolesFuture = std::async(std::launch::async, [clientManager]() {
                 iam::messaging::list_roles_request request;
-                return self->clientManager_->process_authenticated_request(std::move(request));
+                return clientManager->process_authenticated_request(std::move(request));
             });
 
             auto accountRolesResult = accountRolesFuture.get();
@@ -186,7 +187,7 @@ void AccountRolesWidget::load() {
 
         // Create mode: only fetch all roles
         iam::messaging::list_roles_request request;
-        auto result = self->clientManager_->process_authenticated_request(std::move(request));
+        auto result = clientManager->process_authenticated_request(std::move(request));
 
         if (!result) {
             BOOST_LOG_SEV(lg(), error) << "Failed to fetch roles: " << result.error();

@@ -256,18 +256,26 @@ void AccountHistoryDialog::displayFullDetailsTab(int version_index) {
     ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));
 }
 
-#define CHECK_DIFF_STRING(FIELD_NAME, FIELD)                          \
-    if (current.data.FIELD != previous.data.FIELD) {                  \
-        diffs.append({FIELD_NAME,                                     \
-                      {QString::fromStdString(previous.data.FIELD),   \
-                       QString::fromStdString(current.data.FIELD)}}); \
-    }
+namespace {
 
-#define CHECK_DIFF_BOOL(FIELD_NAME, FIELD)                                                       \
-    if (current.data.FIELD != previous.data.FIELD) {                                             \
-        diffs.append({FIELD_NAME,                                                                \
-                      {previous.data.FIELD ? "Yes" : "No", current.data.FIELD ? "Yes" : "No"}}); \
-    }
+void check_diff_string(AccountHistoryDialog::DiffResult& diffs,
+                       const QString& field_name,
+                       const std::string& current_val,
+                       const std::string& previous_val) {
+    if (current_val != previous_val)
+        diffs.append({field_name,
+                      {QString::fromStdString(previous_val), QString::fromStdString(current_val)}});
+}
+
+void check_diff_bool(AccountHistoryDialog::DiffResult& diffs,
+                     const QString& field_name,
+                     bool current_val,
+                     bool previous_val) {
+    if (current_val != previous_val)
+        diffs.append({field_name, {previous_val ? "Yes" : "No", current_val ? "Yes" : "No"}});
+}
+
+}
 
 AccountHistoryDialog::DiffResult
 AccountHistoryDialog::calculateDiff(const iam::domain::account_version& current,
@@ -275,15 +283,11 @@ AccountHistoryDialog::calculateDiff(const iam::domain::account_version& current,
 
     DiffResult diffs;
 
-    // Compare string fields
-    CHECK_DIFF_STRING("Username", username);
-    CHECK_DIFF_STRING("Email", email);
+    check_diff_string(diffs, "Username", current.data.username, previous.data.username);
+    check_diff_string(diffs, "Email", current.data.email, previous.data.email);
 
     return diffs;
 }
-
-#undef CHECK_DIFF_STRING
-#undef CHECK_DIFF_BOOL
 
 void AccountHistoryDialog::setupToolbar() {
     toolBar_ = new QToolBar(this);

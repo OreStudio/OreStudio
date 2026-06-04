@@ -8,6 +8,12 @@
 
 * Overview
 
+#+begin_note
+The colour semantics that badge definitions must follow — gray reserved
+for inactive/negative states, orange as the missing-definition fallback
+— along with the full badge colour catalogue live in [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]].
+#+end_note
+
 Badge rendering in ORE Studio is currently fully hardcoded in C++. Colours live
 in =ColorConstants.hpp=, resolver functions live in =BadgeColors.hpp=, and some
 delegates (e.g. =AccountItemDelegate=) hardcode colours inline. There is no

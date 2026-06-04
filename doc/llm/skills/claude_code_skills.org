@@ -7,13 +7,23 @@
 #+level: cross
 #+filetags: :skills:claude_code:catalogue:index:knowledge:
 #+created: 2024-06-15
-#+updated: 2026-05-21
+#+updated: 2026-06-04
 
 Every Claude Code [[id:4F6384FE-CDE9-40F6-B13D-8A84B6CD77F7][skill]] used with ORE Studio lives at
 =doc/llm/skills/<slug>/SKILL.org= and is listed below, grouped by area. Skills are
 /task-shaped/: each one is the playbook an LLM session loads to perform a
 specific unit of work end-to-end. Compare with [[id:66F2A9E8-0385-4D56-B4B1-0957208990DC][function]], which is /role-shaped/.
 See [[id:654D4A70-E63D-4C18-B5A5-886066E36314][CMake Runner]] for the deployment workflow or return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+
+#+begin_note
+*Skill naming.* Skill slugs use kebab-case (dashes, not underscores):
+=run-runbook=, =cmake-runner=, =skill-manager=. The slug is both the
+directory name under =doc/llm/skills/= and the =name:= field in the
+skill's frontmatter — keep them identical. Note that deployment
+(=deploy_skills=) does not remove stale directories from
+=.claude/skills/=, so after renaming a skill delete the old deployed
+directory by hand.
+#+end_note
 
 * Meta-skills
 

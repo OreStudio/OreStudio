@@ -1,0 +1,190 @@
+:PROPERTIES:
+:ID: 166B2D77-6D04-47D5-A651-5431E1F2E082
+:END:
+#+title: UX Language
+#+description: The umbrella visual-language reference for ORE Studio: colour semantics (gray means inactive, orange means missing badge definition), the badge colour catalogue, iconography rules, and the anatomy of a typical entity's windows.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:ui:ux:design:badges:icons:
+#+created: 2026-06-04
+#+updated: 2026-06-04
+#+startup: inlineimages
+
+* Summary
+
+ORE Studio's UI speaks one visual language across every window: colours
+carry fixed meanings (gray always reads "inactive", orange always reads
+"missing badge definition"), icons follow the semantic rules of the
+[[id:6EF42145-CEE7-4035-806A-A4200A3E003A][Icon Guidelines]], and every entity presents the same three windows — an
+MDI list window, a detail dialog, and a history dialog — with identical
+toolbars, badges and paging behaviour. This document is the umbrella
+reference for that language; the per-aspect documents it links to carry
+the inventories. The aesthetic rules (typography, spacing, motion) live
+in [[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][UI design principles]]; this document covers /semantics/: what the
+visual vocabulary means.
+
+* Detail
+
+** Colour semantics
+
+Badge and indicator colours are drawn from the Tailwind palette and
+carry fixed, application-wide meanings. The two load-bearing rules:
+
+1. /Gray (=#6b7280=) is reserved for inactive states./ Gray exclusively
+   means inactive, off, "no", never-used, or otherwise negative/dormant:
+   =Inactive=, =Never= (logged in), =Draft=, =Raw= (unprocessed), the
+   "No" half of boolean badges, =Pending=/=Unsent= result states. No
+   positive, completed or neutral-active state may be gray — "Unlocked"
+   is green, "Done" is green, "Service" is teal.
+
+2. /Orange (=#f97316=) means "badge definition missing"./ When a badge
+   resolver finds no definition for a code-domain value (or the
+   definition carries an unparseable colour), the badge renders in
+   orange — =color_constants::badge_fallback=. Orange is never a
+   semantic state colour: an orange badge in the UI is a gap in the
+   badge seed data to be fixed, deliberately visible rather than
+   camouflaged as "inactive".
+
+The full colour vocabulary:
+
+| Colour | Hex       | Meaning                                            |
+|--------+-----------+----------------------------------------------------|
+| Green  | =#22c55e= | Positive/healthy: active, online, success, done, unlocked, actual |
+| Red    | =#ef4444= | Negative/destructive: locked, failed, fail policy, archived |
+| Amber  | =#eab308= | Caution: frozen, old login, no-reply, skip policy, suspended, estimated |
+| Blue   | =#3b82f6= | Informational/neutral: pending, recent, queue, primary origin, user account |
+| Sky    | =#0ea5e9= | In-progress/transitional: running, cleaned, bootstrapping |
+| Teal   | =#14b8a6= | Service account type                               |
+| Violet | =#7c3aed= / =#8b5cf6= / =#a855f7= | Classifications: virtual type, derived origin, enriched treatment, LLM account |
+| Pink   | =#ec4899= | Simulated nature                                   |
+| Gray   | =#6b7280= | *Inactive only*: inactive, never, draft, raw, "No" |
+| Orange | =#f97316= | *Missing badge definition* (fallback, never semantic) |
+
+*** Badge colour catalogue
+
+Badges are database-driven: severities, code domains, definitions and
+mappings live in the =dq= schema, seeded by
+=projects/ores.sql/populate/dq/dq_badge_system_populate.sql= — *the
+populate script is the source of truth*; this table documents intent.
+The mechanism (schema, BadgeCache, delegate resolution) is described in
+the [[id:7E4B1C93-2F8A-4D56-B3E7-9A0C5F812D6E][badge system design]].
+
+| Badge                  | Colour | Semantics                          |
+|------------------------+--------+------------------------------------|
+| =active=               | Green  | Record is active and operational   |
+| =inactive=             | Gray   | Record is inactive (rule 1)        |
+| =frozen=               | Amber  | No changes permitted               |
+| =pending=              | Blue   | Awaiting processing or approval    |
+| =type_virtual=         | Violet | Virtual construct                  |
+| =type_physical=        | Blue   | Physical construct                 |
+| =login_online=         | Green  | User currently logged in           |
+| =login_recent=         | Blue   | Logged in recently                 |
+| =login_old=            | Amber  | Not logged in for a long time      |
+| =login_never=          | Gray   | Never logged in (rule 1)           |
+| =account_locked=       | Red    | Account locked                     |
+| =account_unlocked=     | Green  | Account accessible (positive)      |
+| =account_type_user=    | Blue   | Human user account                 |
+| =account_type_service= | Teal   | Service account                    |
+| =account_type_algorithm= | Amber | Algorithm account                 |
+| =account_type_llm=     | Violet | LLM agent account                  |
+| =outcome_success=      | Green  | Task completed successfully        |
+| =outcome_failed=       | Red    | Task failed                        |
+| =outcome_no_reply=     | Amber  | No reply from worker               |
+| =state_running=        | Sky    | Task executing                     |
+| =state_done=           | Green  | Task completed (positive)          |
+| =policy_skip=          | Amber  | Skip overlapping executions        |
+| =policy_queue=         | Blue   | Queue overlapping executions       |
+| =policy_fail=          | Red    | Fail on overlapping executions     |
+| =fsm_draft=            | Gray   | Draft, not yet active (rule 1)     |
+| =fsm_suspended=        | Amber  | Suspended                          |
+| =archived=             | Red    | Archived, no longer active         |
+| =origin_primary=       | Blue   | Primary data source                |
+| =origin_derived=       | Violet | Derived from another source        |
+| =nature_actual=        | Green  | Real-world data                    |
+| =nature_estimated=     | Amber  | Estimated data                     |
+| =nature_simulated=     | Pink   | Simulated data                     |
+| =treatment_raw=        | Gray   | Unprocessed (rule 1)               |
+| =treatment_cleaned=    | Sky    | Cleaned                            |
+| =treatment_enriched=   | Violet | Enriched                           |
+| =tenant_bootstrapping= | Sky    | Awaiting provisioning wizard       |
+
+Badges render through two code paths, both resolving via =BadgeCache=:
+=DelegatePaintUtils::draw_centered_badge= in table delegates, and
+=BadgeLabelUtils::apply= for labels in detail dialogs. Both fall back
+to orange per rule 2.
+
+** Iconography
+
+The icon vocabulary — inventory, variants, sizes and semantic usage
+rules — lives in the [[id:6EF42145-CEE7-4035-806A-A4200A3E003A][Icon Guidelines]]. The semantic core: each action
+has exactly one icon application-wide (Reload, Add, Edit, Delete,
+History never vary between windows), entity types carry their own
+identifying icon in window titles and menus, and icon colour follows
+the same rules as badges — the standard toolbar tint is
+=color_constants::icon_color=, with gray reserved for disabled actions.
+
+** Entity window anatomy
+
+Every persisted entity presents the same three windows, so a user who
+has learned one entity has learned them all. The screenshots below use
+currencies and accounts; the anatomy is identical for any entity.
+
+*** MDI list window
+
+[[../../../assets/images/currencies_main_window.png]]
+
+The list window is an MDI child inside the main window:
+
+- /Toolbar/ — =Reload=, =Add=, =Edit=, =Delete=, =History= in fixed
+  order with fixed icons. Actions that need a selection (=Edit=,
+  =Delete=, =History=) are disabled — grayed, per the colour rule —
+  until a row is selected.
+- /Table/ — one row per latest record version. Status-like columns
+  render as badges (see the colour catalogue); =Version= is monospace;
+  =Recorded At= shows relative time ("4 minutes ago").
+- /Footer/ — "Showing all records (N)" plus the pagination controls:
+  =First= / =Previous= / =Next= / =Last=, a =Load All= action, and a
+  page-size combo (25/50/100/200/500, default 100). Windows whose
+  record count fits one page show the controls disabled.
+- /Eventing/ — changes made in another session arrive via NATS and
+  refresh the view without manual reload; the reload button carries a
+  stale indicator when unseen changes are pending.
+
+*** Detail dialog
+
+[[../../../assets/images/account_details.png]]
+
+Opened by =Add= or =Edit= (or double-click). One dialog serves create,
+edit and read-only historical modes:
+
+- /Form/ — the entity's editable fields; combo boxes are populated
+  from reference data and show a loading state while fetching.
+- /Tabs/ — related aspects beyond the core form (e.g. an account's
+  Parties and Roles tabs); read-only status groups render values as
+  badges via =BadgeLabelUtils= (e.g. Online/Locked).
+- /Provenance/ — who changed the record, when, and why (version,
+  modified by, performed by, change reason, commentary).
+
+[[../../../assets/images/account_details_provenance.png]]
+
+- /Change reason flow/ — saving a modification prompts for a change
+  reason (category-filtered) and optional commentary, which feed the
+  provenance of the new version.
+
+*** History dialog
+
+[[../../../assets/images/currency_history_dialog.png]]
+
+Opened by =History= on a selected row. Shows every version of the
+record, newest first, with the same badge and provenance vocabulary as
+the detail dialog. Selecting a version opens it read-only in the
+detail dialog. Deleting a record preserves its history.
+
+* See also
+
+- [[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][UI design principles]] — the aesthetic rules: typography, colour
+  values, spacing, motion.
+- [[id:6EF42145-CEE7-4035-806A-A4200A3E003A][Icon Guidelines]] — the icon inventory and semantic usage rules.
+- [[id:7E4B1C93-2F8A-4D56-B3E7-9A0C5F812D6E][Database-Driven Badge System Design]] — the badge mechanism: schema,
+  caching, delegate resolution.
+- [[id:5B271351-399A-4BD7-A096-E5DF1EDAD8F5][Developer Links]] — developer-facing index, including this document.

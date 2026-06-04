@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :ux:documentation:knowledge:badge-colour-semantics:sprint_19:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/ux-language-doc
+#+pr: https://github.com/OreStudio/OreStudio/pull/1051
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-04
@@ -22,7 +22,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 Start the project's UX language documentation: a single umbrella doc that
 states the visual-language rules (colours, icons, window anatomy) and links
 to the existing per-aspect documents. Today the icon inventory lives in
-[[id:2A167638-8B5A-4691-90CB-4A6B55785108][Icon Guidelines]] and badge mechanics in the badge-system design plan, but
+[[id:6EF42145-CEE7-4035-806A-A4200A3E003A][Icon Guidelines]] and badge mechanics in the badge-system design plan, but
 there is no place that documents the /language/: what colours mean, what a
 typical entity window looks like, and how the pieces relate.
 
@@ -40,7 +40,7 @@ typical entity window looks like, and how the pieces relate.
    - A catalogue table of all badge definitions with hex colours and
      semantics, mirroring =dq_badge_system_populate.sql= (note the populate
      script is the source of truth; the table documents intent).
-3. /Iconography section./ Link to [[id:2A167638-8B5A-4691-90CB-4A6B55785108][Icon Guidelines]] (which carries the icon
+3. /Iconography section./ Link to [[id:6EF42145-CEE7-4035-806A-A4200A3E003A][Icon Guidelines]] (which carries the icon
    inventory); summarise the semantic rules only.
 4. /Entity window anatomy section./ Using the existing screenshots
    (=tmp/= and =doc/assets/images/=), document the standard windows of a
@@ -68,11 +68,11 @@ typical entity window looks like, and how the pieces relate.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                 |
 | Parent story | [[id:72E7A7D0-A268-410F-B137-942DC5F16934][Badge colour semantics: reserve gray for inactive states]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing — task closed.                 |
 | Last touched | 2026-06-04                               |
 
 * Plan
@@ -87,12 +87,23 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1051][#1051]] | [doc] UX Language: colour semantics, badge catalogue, entity window anatomy |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1-4 | Image paths should be ../../ not ../../../ | ux_language.org | Declined | Images live in assets/images/ at repo root; doc/assets does not exist. Verified on disk + green site build. |
 
 * Result
+
+Created =doc/knowledge/ui/ux_language.org= ([[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]]) with the four
+sections: colour semantics (the gray and orange rules plus a ten-colour
+vocabulary table), the badge colour catalogue (all 36 definitions, with
+the populate script noted as source of truth), iconography (linking the
+Icon Guidelines inventory), and entity window anatomy (MDI list window
+with toolbar/badges/paging, detail dialog with provenance and
+change-reason flow, history dialog — illustrated with four screenshots).
+Inbound links added from ui_design_principles, icon_guidelines, the
+badge system design plan (note box) and a new Design and UX section on
+the Developer Links page. Site build green locally.

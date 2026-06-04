@@ -20,19 +20,19 @@
 #ifndef ORES_WT_SERVICE_APPLICATION_CONTEXT_HPP
 #define ORES_WT_SERVICE_APPLICATION_CONTEXT_HPP
 
-#include <memory>
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/database_options.hpp"
+#include "ores.eventing/service/event_bus.hpp"
+#include "ores.eventing/service/postgres_event_source.hpp"
 #include "ores.iam.core/service/account_service.hpp"
 #include "ores.iam.core/service/account_setup_service.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
 #include "ores.iam.core/service/bootstrap_mode_service.hpp"
-#include "ores.variability.core/service/system_settings_service.hpp"
-#include "ores.variability.api/eventing/system_setting_changed_event.hpp"
-#include "ores.refdata.core/service/currency_service.hpp"
 #include "ores.refdata.core/service/country_service.hpp"
-#include "ores.eventing/service/event_bus.hpp"
-#include "ores.eventing/service/postgres_event_source.hpp"
+#include "ores.refdata.core/service/currency_service.hpp"
+#include "ores.variability.api/eventing/system_setting_changed_event.hpp"
+#include "ores.variability.core/service/system_settings_service.hpp"
+#include <memory>
 
 namespace ores::wt::service {
 
@@ -48,7 +48,9 @@ public:
     static application_context& instance();
 
     void initialize(const database::database_options& db_opts);
-    bool is_initialized() const { return initialized_; }
+    bool is_initialized() const {
+        return initialized_;
+    }
 
     /**
      * @brief Start the event source to listen for PostgreSQL notifications.
@@ -64,7 +66,9 @@ public:
      */
     void stop_eventing();
 
-    database::context& db_context() { return *db_context_; }
+    database::context& db_context() {
+        return *db_context_;
+    }
 
     iam::service::account_service& account_service() {
         return *account_service_;
@@ -90,7 +94,9 @@ public:
         return *country_service_;
     }
 
-    bool is_bootstrap_mode() const { return is_bootstrap_mode_; }
+    bool is_bootstrap_mode() const {
+        return is_bootstrap_mode_;
+    }
 
 private:
     application_context() = default;

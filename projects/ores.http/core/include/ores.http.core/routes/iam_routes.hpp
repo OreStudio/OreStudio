@@ -20,22 +20,22 @@
 #ifndef ORES_HTTP_CORE_ROUTES_IAM_ROUTES_HPP
 #define ORES_HTTP_CORE_ROUTES_IAM_ROUTES_HPP
 
-#include <memory>
-#include <expected>
-#include <boost/uuid/uuid.hpp>
-#include <rfl/json.hpp>
+#include "ores.database/domain/context.hpp"
+#include "ores.geo/service/geolocation_service.hpp"
 #include "ores.http.api/net/router.hpp"
 #include "ores.http.api/openapi/endpoint_registry.hpp"
-#include "ores.security/jwt/jwt_authenticator.hpp"
+#include "ores.http.core/export.hpp"
+#include "ores.iam.api/service/auth_session_service.hpp"
+#include "ores.iam.core/repository/session_repository.hpp"
 #include "ores.iam.core/service/account_service.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
-#include "ores.iam.core/repository/session_repository.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.iam.api/service/auth_session_service.hpp"
-#include "ores.variability.core/service/system_settings_service.hpp"
-#include "ores.geo/service/geolocation_service.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.http.core/export.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include "ores.variability.core/service/system_settings_service.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <expected>
+#include <memory>
+#include <rfl/json.hpp>
 
 namespace ores::http_server::routes {
 
@@ -91,17 +91,17 @@ struct ORES_HTTP_CORE_EXPORT auth_result {
 class ORES_HTTP_CORE_EXPORT iam_routes final {
 public:
     iam_routes(database::context ctx,
-        std::shared_ptr<variability::service::system_settings_service> system_flags,
-        std::shared_ptr<iam::service::auth_session_service> sessions,
-        std::shared_ptr<iam::service::authorization_service> auth_service,
-        std::shared_ptr<ores::security::jwt::jwt_authenticator> authenticator,
-        std::shared_ptr<geo::service::geolocation_service> geo_service);
+               std::shared_ptr<variability::service::system_settings_service> system_flags,
+               std::shared_ptr<iam::service::auth_session_service> sessions,
+               std::shared_ptr<iam::service::authorization_service> auth_service,
+               std::shared_ptr<ores::security::jwt::jwt_authenticator> authenticator,
+               std::shared_ptr<geo::service::geolocation_service> geo_service);
 
     /**
      * @brief Registers all IAM routes with the router.
      */
     void register_routes(std::shared_ptr<http::net::router> router,
-        std::shared_ptr<http::openapi::endpoint_registry> registry);
+                         std::shared_ptr<http::openapi::endpoint_registry> registry);
 
 private:
     inline static std::string_view logger_name = "ores.http.server.routes.iam_routes";
@@ -203,10 +203,10 @@ private:
      * @param operation_name Name of the operation for logging
      * @return auth_result on success, http_response error (401/403) on failure
      */
-    std::expected<auth_result, http::domain::http_response> check_auth(
-        const http::domain::http_request& req,
-        std::string_view required_permission = "",
-        std::string_view operation_name = "");
+    std::expected<auth_result, http::domain::http_response>
+    check_auth(const http::domain::http_request& req,
+               std::string_view required_permission = "",
+               std::string_view operation_name = "");
 
     /**
      * @brief Parse JSON request body into a typed struct.
@@ -216,15 +216,13 @@ private:
      * @param operation_name Name of the operation for logging
      * @return Parsed request on success, http_response error (400) on failure
      */
-    template<typename T>
-    std::expected<T, http::domain::http_response> parse_body(
-        const http::domain::http_request& req,
-        std::string_view operation_name) {
+    template <typename T>
+    std::expected<T, http::domain::http_response> parse_body(const http::domain::http_request& req,
+                                                             std::string_view operation_name) {
         using ores::logging::warn;
         auto result = rfl::json::read<T>(req.body);
         if (!result) {
-            BOOST_LOG_SEV(lg(), warn) << operation_name
-                                      << ": invalid request body";
+            BOOST_LOG_SEV(lg(), warn) << operation_name << ": invalid request body";
             return std::unexpected(
                 http::domain::http_response::bad_request("Invalid request body"));
         }

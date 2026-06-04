@@ -20,9 +20,9 @@
 #ifndef ORES_SHELL_APP_PAGINATION_CONTEXT_HPP
 #define ORES_SHELL_APP_PAGINATION_CONTEXT_HPP
 
-#include <string>
 #include <cstdint>
 #include <functional>
+#include <string>
 #include <unordered_map>
 
 namespace ores::shell::app {
@@ -88,8 +88,7 @@ public:
      * @param entity_name The name of the entity.
      * @param callback The callback to invoke for listing.
      */
-    void register_list_callback(const std::string& entity_name,
-                                list_callback callback);
+    void register_list_callback(const std::string& entity_name, list_callback callback);
 
     /**
      * @brief Get the list callback for an entity.

@@ -18,11 +18,10 @@
  *
  */
 #include "ores.http.api/net/http_server.hpp"
-
+#include "ores.http.api/net/http_session.hpp"
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 #include <boost/asio/use_awaitable.hpp>
-#include "ores.http.api/net/http_session.hpp"
 
 namespace ores::http::net {
 
@@ -50,7 +49,7 @@ http_server::http_server(asio::io_context& io_ctx, const http_server_options& op
         BOOST_LOG_SEV(lg(), warn) << "RS256 from file not yet implemented";
     } else {
         BOOST_LOG_SEV(lg(), warn) << "No JWT configuration provided, "
-            << "authentication will not be enforced";
+                                  << "authentication will not be enforced";
     }
 
     setup_builtin_routes();
@@ -60,47 +59,50 @@ void http_server::setup_builtin_routes() {
     BOOST_LOG_SEV(lg(), debug) << "Setting up built-in routes";
 
     // Health check endpoint
-    auto health_builder = router_->get("/health")
-        .summary("Health check")
-        .description("Returns server health status")
-        .tags({"system"})
-        .handler([](const domain::http_request&) -> asio::awaitable<domain::http_response> {
-            co_return domain::http_response::json(R"({"status":"healthy"})");
-        });
+    auto health_builder =
+        router_->get("/health")
+            .summary("Health check")
+            .description("Returns server health status")
+            .tags({"system"})
+            .handler([](const domain::http_request&) -> asio::awaitable<domain::http_response> {
+                co_return domain::http_response::json(R"({"status":"healthy"})");
+            });
     router_->add_route(health_builder.build());
 
     // OpenAPI spec endpoint
-    auto openapi_builder = router_->get("/openapi.json")
-        .summary("OpenAPI specification")
-        .description("Returns the OpenAPI 3.0 JSON specification")
-        .tags({"system"})
-        .handler([this](const domain::http_request&) -> asio::awaitable<domain::http_response> {
-            auto spec = registry_->generate_openapi_json();
-            co_return domain::http_response::json(spec);
-        });
+    auto openapi_builder =
+        router_->get("/openapi.json")
+            .summary("OpenAPI specification")
+            .description("Returns the OpenAPI 3.0 JSON specification")
+            .tags({"system"})
+            .handler([this](const domain::http_request&) -> asio::awaitable<domain::http_response> {
+                auto spec = registry_->generate_openapi_json();
+                co_return domain::http_response::json(spec);
+            });
     router_->add_route(openapi_builder.build());
 
     // Swagger UI endpoint
-    auto swagger_builder = router_->get("/swagger")
-        .summary("Swagger UI")
-        .description("Interactive API documentation")
-        .tags({"system"})
-        .handler([this](const domain::http_request&) -> asio::awaitable<domain::http_response> {
-            auto html = registry_->generate_swagger_ui_html("/openapi.json");
-            domain::http_response resp;
-            resp.status = domain::http_status::ok;
-            resp.content_type = "text/html";
-            resp.body = html;
-            co_return resp;
-        });
+    auto swagger_builder =
+        router_->get("/swagger")
+            .summary("Swagger UI")
+            .description("Interactive API documentation")
+            .tags({"system"})
+            .handler([this](const domain::http_request&) -> asio::awaitable<domain::http_response> {
+                auto html = registry_->generate_swagger_ui_html("/openapi.json");
+                domain::http_response resp;
+                resp.status = domain::http_status::ok;
+                resp.content_type = "text/html";
+                resp.body = html;
+                co_return resp;
+            });
     router_->add_route(swagger_builder.build());
 
     BOOST_LOG_SEV(lg(), info) << "Built-in routes registered: /health, /openapi.json, /swagger";
 }
 
 asio::awaitable<void> http_server::run() {
-    BOOST_LOG_SEV(lg(), info) << "Starting HTTP server on " << options_.address
-        << ":" << options_.port;
+    BOOST_LOG_SEV(lg(), info) << "Starting HTTP server on " << options_.address << ":"
+                              << options_.port;
 
     tcp::endpoint endpoint(asio::ip::make_address(options_.address), options_.port);
 
@@ -125,25 +127,25 @@ asio::awaitable<void> http_server::accept_connections() {
             tcp::socket socket = co_await acceptor_->async_accept(asio::use_awaitable);
 
             auto remote = socket.remote_endpoint();
-            BOOST_LOG_SEV(lg(), info) << "Accepted connection from "
-                << remote.address().to_string() << ":" << remote.port();
+            BOOST_LOG_SEV(lg(), info) << "Accepted connection from " << remote.address().to_string()
+                                      << ":" << remote.port();
 
             if (active_connections_.load() >= options_.max_connections) {
-                BOOST_LOG_SEV(lg(), warn) << "Max connections reached ("
-                    << options_.max_connections << "), rejecting connection";
+                BOOST_LOG_SEV(lg(), warn) << "Max connections reached (" << options_.max_connections
+                                          << "), rejecting connection";
                 socket.close();
                 continue;
             }
 
             active_connections_.fetch_add(1);
-            BOOST_LOG_SEV(lg(), debug) << "Active connections: "
-                << active_connections_.load();
+            BOOST_LOG_SEV(lg(), debug) << "Active connections: " << active_connections_.load();
 
             // Create and run session
             auto session = std::make_shared<http_session>(
                 std::move(socket), router_, authenticator_, options_, bytes_callback_);
 
-            asio::co_spawn(io_ctx_,
+            asio::co_spawn(
+                io_ctx_,
                 [this, session]() -> asio::awaitable<void> {
                     try {
                         co_await session->run();
@@ -151,8 +153,8 @@ asio::awaitable<void> http_server::accept_connections() {
                         BOOST_LOG_SEV(lg(), error) << "Session exception: " << e.what();
                     }
                     active_connections_.fetch_sub(1);
-                    BOOST_LOG_SEV(lg(), debug) << "Session ended, active connections: "
-                        << active_connections_.load();
+                    BOOST_LOG_SEV(lg(), debug)
+                        << "Session ended, active connections: " << active_connections_.load();
                 },
                 asio::detached);
 
@@ -179,7 +181,8 @@ void http_server::stop() {
     }
 
     BOOST_LOG_SEV(lg(), info) << "HTTP server stop initiated, "
-        << "waiting for " << active_connections_.load() << " active connections";
+                              << "waiting for " << active_connections_.load()
+                              << " active connections";
 }
 
 }

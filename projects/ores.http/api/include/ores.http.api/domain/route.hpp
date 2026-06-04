@@ -20,16 +20,16 @@
 #ifndef ORES_HTTP_DOMAIN_ROUTE_HPP
 #define ORES_HTTP_DOMAIN_ROUTE_HPP
 
-#include <regex>
-#include <string>
-#include <vector>
-#include <optional>
-#include <functional>
-#include <boost/asio/awaitable.hpp>
 #include "ores.http.api/domain/http_method.hpp"
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http.api/export.hpp"
+#include <boost/asio/awaitable.hpp>
+#include <functional>
+#include <optional>
+#include <regex>
+#include <string>
+#include <vector>
 
 namespace ores::http::domain {
 
@@ -39,7 +39,7 @@ namespace ores::http::domain {
 struct query_param final {
     std::string name;
     std::string type = "string";
-    std::string format;           // Optional format (e.g., uuid, date)
+    std::string format; // Optional format (e.g., uuid, date)
     bool required = false;
     std::string description;
     std::optional<std::string> default_value;
@@ -54,8 +54,8 @@ struct query_param final {
 struct request_body_schema final {
     std::string content_type = "application/json";
     bool required = true;
-    std::string json_schema;   // JSON schema from rfl::json::to_schema<T>()
-    std::string example_json;  // Example JSON from generator
+    std::string json_schema;  // JSON schema from rfl::json::to_schema<T>()
+    std::string example_json; // Example JSON from generator
 };
 
 /**
@@ -68,15 +68,14 @@ struct response_schema final {
     std::string status_code = "200";
     std::string description = "Successful response";
     std::string content_type = "application/json";
-    std::string json_schema;   // JSON schema from rfl::json::to_schema<T>()
-    std::string example_json;  // Example JSON from generator
+    std::string json_schema;  // JSON schema from rfl::json::to_schema<T>()
+    std::string example_json; // Example JSON from generator
 };
 
 /**
  * @brief Handler function type for HTTP requests.
  */
-using request_handler = std::function<
-    boost::asio::awaitable<http_response>(const http_request&)>;
+using request_handler = std::function<boost::asio::awaitable<http_response>(const http_request&)>;
 
 /**
  * @brief Represents a registered route with pattern matching.
@@ -152,7 +151,7 @@ struct ORES_HTTP_API_EXPORT route final {
      * @returns True if matched, with path_params populated.
      */
     bool match(const std::string& path,
-        std::unordered_map<std::string, std::string>& path_params) const;
+               std::unordered_map<std::string, std::string>& path_params) const;
 };
 
 }

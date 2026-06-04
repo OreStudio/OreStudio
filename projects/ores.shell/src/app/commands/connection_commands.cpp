@@ -18,14 +18,13 @@
  *
  */
 #include "ores.shell/app/commands/connection_commands.hpp"
-
-#include <ostream>
-#include <functional>
-#include <rfl/json.hpp>
-#include <cli/cli.h>
+#include "ores.iam.api/messaging/bootstrap_protocol.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/config/nats_options.hpp"
-#include "ores.iam.api/messaging/bootstrap_protocol.hpp"
+#include <cli/cli.h>
+#include <functional>
+#include <ostream>
+#include <rfl/json.hpp>
 
 namespace ores::shell::app::commands {
 
@@ -34,8 +33,7 @@ using ores::nats::service::nats_client;
 
 namespace {
 
-inline std::string_view anon_logger_name =
-    "ores.shell.app.commands.connection_commands";
+inline std::string_view anon_logger_name = "ores.shell.app.commands.connection_commands";
 
 auto& anon_lg() {
     static auto instance = make_logger(anon_logger_name);
@@ -45,14 +43,14 @@ auto& anon_lg() {
 void check_bootstrap_status(nats_client& session, std::ostream& out) {
     try {
         auto reply = session.request(iam::messaging::bootstrap_status_request::nats_subject,
-            rfl::json::write(iam::messaging::bootstrap_status_request{}));
-        auto data_str = std::string(
-            reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
+                                     rfl::json::write(iam::messaging::bootstrap_status_request{}));
+        auto data_str =
+            std::string(reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
         auto result = rfl::json::read<iam::messaging::bootstrap_status_response>(data_str);
-        if (!result) return;
+        if (!result)
+            return;
         if (result->is_in_bootstrap_mode) {
-            BOOST_LOG_SEV(anon_lg(), warn) << "System is in bootstrap mode: "
-                                           << result->message;
+            BOOST_LOG_SEV(anon_lg(), warn) << "System is in bootstrap mode: " << result->message;
             out << std::endl;
             out << "WARNING: System is in BOOTSTRAP MODE" << std::endl;
             out << "  " << result->message << std::endl;
@@ -67,22 +65,27 @@ void check_bootstrap_status(nats_client& session, std::ostream& out) {
 
 } // anonymous namespace
 
-void connection_commands::
-register_commands(cli::Menu& root_menu, nats_client& session) {
-    root_menu.Insert("connect", [&session](std::ostream& out,
-            std::string host, std::string port, std::string /*identifier*/) {
-        process_connect(std::ref(out), std::ref(session),
-            std::move(host), std::move(port), std::string{});
-        }, "Connect to server (optional: host port identifier)");
+void connection_commands::register_commands(cli::Menu& root_menu, nats_client& session) {
+    root_menu.Insert(
+        "connect",
+        [&session](
+            std::ostream& out, std::string host, std::string port, std::string /*identifier*/) {
+            process_connect(
+                std::ref(out), std::ref(session), std::move(host), std::move(port), std::string{});
+        },
+        "Connect to server (optional: host port identifier)");
 
-    root_menu.Insert("disconnect", [&session](std::ostream& out) {
-        process_disconnect(std::ref(out), std::ref(session));
-    }, "Disconnect from server");
+    root_menu.Insert(
+        "disconnect",
+        [&session](std::ostream& out) { process_disconnect(std::ref(out), std::ref(session)); },
+        "Disconnect from server");
 }
 
-void connection_commands::
-process_connect(std::ostream& out, nats_client& session,
-    std::string host, std::string port, std::string /*identifier*/) {
+void connection_commands::process_connect(std::ostream& out,
+                                          nats_client& session,
+                                          std::string host,
+                                          std::string port,
+                                          std::string /*identifier*/) {
 
     const std::string resolved_host = host.empty() ? "localhost" : std::move(host);
     std::uint16_t resolved_port = 4222;
@@ -96,8 +99,7 @@ process_connect(std::ostream& out, nats_client& session,
         }
     }
 
-    const std::string nats_url =
-        "nats://" + resolved_host + ":" + std::to_string(resolved_port);
+    const std::string nats_url = "nats://" + resolved_host + ":" + std::to_string(resolved_port);
 
     try {
         nats::config::nats_options opts;
@@ -110,8 +112,7 @@ process_connect(std::ostream& out, nats_client& session,
     }
 }
 
-void connection_commands::
-process_disconnect(std::ostream& out, nats_client& session) {
+void connection_commands::process_disconnect(std::ostream& out, nats_client& session) {
     if (!session.is_connected()) {
         out << "✗ Not connected." << std::endl;
         return;

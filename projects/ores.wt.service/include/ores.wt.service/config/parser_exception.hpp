@@ -20,8 +20,8 @@
 #ifndef ORES_WT_SERVICE_CONFIG_PARSER_EXCEPTION_HPP
 #define ORES_WT_SERVICE_CONFIG_PARSER_EXCEPTION_HPP
 
-#include <string>
 #include <stdexcept>
+#include <string>
 
 namespace ores::wt::service::config {
 

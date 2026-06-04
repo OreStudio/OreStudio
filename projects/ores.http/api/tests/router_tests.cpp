@@ -17,11 +17,10 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.http.api/net/router.hpp"
 #include "ores.http.api/domain/http_response.hpp"
-
-#include <catch2/catch_test_macros.hpp>
+#include "ores.http.api/net/router.hpp"
 #include "ores.logging/make_logger.hpp"
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 
@@ -40,10 +39,10 @@ TEST_CASE("router_matches_simple_path", tags) {
 
     router r;
     auto builder = r.get("/health")
-        .summary("Health check")
-        .handler([](const http_request&) -> boost::asio::awaitable<http_response> {
-            co_return http_response::json(R"({"status":"ok"})");
-        });
+                       .summary("Health check")
+                       .handler([](const http_request&) -> boost::asio::awaitable<http_response> {
+                           co_return http_response::json(R"({"status":"ok"})");
+                       });
     r.add_route(builder.build());
 
     std::unordered_map<std::string, std::string> params;
@@ -60,10 +59,10 @@ TEST_CASE("router_matches_path_with_parameter", tags) {
 
     router r;
     auto builder = r.get("/users/{id}")
-        .summary("Get user")
-        .handler([](const http_request&) -> boost::asio::awaitable<http_response> {
-            co_return http_response::json(R"({"id":"123"})");
-        });
+                       .summary("Get user")
+                       .handler([](const http_request&) -> boost::asio::awaitable<http_response> {
+                           co_return http_response::json(R"({"id":"123"})");
+                       });
     r.add_route(builder.build());
 
     std::unordered_map<std::string, std::string> params;
@@ -81,10 +80,10 @@ TEST_CASE("router_matches_path_with_multiple_parameters", tags) {
 
     router r;
     auto builder = r.get("/users/{userId}/posts/{postId}")
-        .summary("Get user post")
-        .handler([](const http_request&) -> boost::asio::awaitable<http_response> {
-            co_return http_response::json(R"({})");
-        });
+                       .summary("Get user post")
+                       .handler([](const http_request&) -> boost::asio::awaitable<http_response> {
+                           co_return http_response::json(R"({})");
+                       });
     r.add_route(builder.build());
 
     std::unordered_map<std::string, std::string> params;
@@ -101,8 +100,8 @@ TEST_CASE("router_returns_empty_for_unmatched_path", tags) {
     BOOST_LOG_SEV(lg, info) << "Testing unmatched path";
 
     router r;
-    auto builder = r.get("/health")
-        .handler([](const http_request&) -> boost::asio::awaitable<http_response> {
+    auto builder =
+        r.get("/health").handler([](const http_request&) -> boost::asio::awaitable<http_response> {
             co_return http_response::json(R"({})");
         });
     r.add_route(builder.build());
@@ -119,13 +118,15 @@ TEST_CASE("router_distinguishes_methods", tags) {
 
     router r;
     r.add_route(r.get("/resource")
-        .handler([](const http_request&) -> boost::asio::awaitable<http_response> {
-            co_return http_response::json(R"({"method":"get"})");
-        }).build());
+                    .handler([](const http_request&) -> boost::asio::awaitable<http_response> {
+                        co_return http_response::json(R"({"method":"get"})");
+                    })
+                    .build());
     r.add_route(r.post("/resource")
-        .handler([](const http_request&) -> boost::asio::awaitable<http_response> {
-            co_return http_response::json(R"({"method":"post"})");
-        }).build());
+                    .handler([](const http_request&) -> boost::asio::awaitable<http_response> {
+                        co_return http_response::json(R"({"method":"post"})");
+                    })
+                    .build());
 
     std::unordered_map<std::string, std::string> params;
 

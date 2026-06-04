@@ -20,12 +20,12 @@
 #ifndef ORES_SHELL_APP_HOST_HPP
 #define ORES_SHELL_APP_HOST_HPP
 
-#include <vector>
-#include <string>
-#include <ostream>
-#include <boost/asio/awaitable.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.shell/export.hpp"
+#include <boost/asio/awaitable.hpp>
+#include <ostream>
+#include <string>
+#include <vector>
 
 namespace ores::shell::app {
 
@@ -47,7 +47,8 @@ public:
      * @brief Executes the console workflow.
      */
     static int execute(const std::vector<std::string>& args,
-        std::ostream& std_output, std::ostream& error_output);
+                       std::ostream& std_output,
+                       std::ostream& error_output);
 };
 
 }

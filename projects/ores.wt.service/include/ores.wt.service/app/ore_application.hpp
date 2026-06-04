@@ -20,14 +20,14 @@
 #ifndef ORES_WT_SERVICE_APP_ORE_APPLICATION_HPP
 #define ORES_WT_SERVICE_APP_ORE_APPLICATION_HPP
 
+#include "ores.wt.service/app/login_widget.hpp"
+#include "ores.wt.service/service/session_manager.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <Wt/WApplication.h>
 #include <Wt/WLineEdit.h>
 #include <Wt/WPasswordEdit.h>
 #include <Wt/WPushButton.h>
 #include <Wt/WText.h>
-#include <boost/uuid/uuid.hpp>
-#include "ores.wt.service/app/login_widget.hpp"
-#include "ores.wt.service/service/session_manager.hpp"
 
 namespace ores::wt::service::app {
 
@@ -44,15 +44,20 @@ public:
 
     static ore_application* instance();
 
-    service::session_manager& session_manager() { return session_manager_; }
-    bool is_logged_in() const { return session_manager_.is_logged_in(); }
+    service::session_manager& session_manager() {
+        return session_manager_;
+    }
+    bool is_logged_in() const {
+        return session_manager_.is_logged_in();
+    }
 
 private:
     void show_login();
     void show_bootstrap();
     void show_main_view();
     void on_login_attempt(const std::string& username, const std::string& password);
-    void on_bootstrap_create(const std::string& username, const std::string& email,
+    void on_bootstrap_create(const std::string& username,
+                             const std::string& email,
                              const std::string& password);
     void on_logout();
     void setup_theme();

@@ -18,12 +18,11 @@
  *
  */
 #include "ores.http.core/routes/assets_routes.hpp"
-
-#include <rfl/json.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.assets.api/messaging/assets_protocol.hpp"
 #include "ores.assets.core/service/assets_service.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include <boost/uuid/uuid_io.hpp>
+#include <rfl/json.hpp>
 
 namespace ores::http_server::routes {
 
@@ -32,25 +31,26 @@ using namespace ores::http::domain;
 namespace asio = boost::asio;
 
 assets_routes::assets_routes(database::context ctx,
-    std::shared_ptr<iam::service::auth_session_service> sessions)
+                             std::shared_ptr<iam::service::auth_session_service> sessions)
     : ctx_(std::move(ctx))
     , sessions_(std::move(sessions)) {
     BOOST_LOG_SEV(lg(), debug) << "Assets routes initialized";
 }
 
 void assets_routes::register_routes(std::shared_ptr<http::net::router> router,
-    std::shared_ptr<http::openapi::endpoint_registry> registry) {
+                                    std::shared_ptr<http::openapi::endpoint_registry> registry) {
 
     BOOST_LOG_SEV(lg(), info) << "Registering Assets routes";
 
-    auto get_images = router->post("/api/v1/assets/images")
-        .summary("Get images")
-        .description("Retrieve images by ID (batch, max 100)")
-        .tags({"assets"})
-        .auth_required()
-        .body<assets::messaging::get_images_request>()
-        .response<assets::messaging::get_images_response>()
-        .handler([this](const http_request& req) { return handle_get_images(req); });
+    auto get_images =
+        router->post("/api/v1/assets/images")
+            .summary("Get images")
+            .description("Retrieve images by ID (batch, max 100)")
+            .tags({"assets"})
+            .auth_required()
+            .body<assets::messaging::get_images_request>()
+            .response<assets::messaging::get_images_response>()
+            .handler([this](const http_request& req) { return handle_get_images(req); });
     router->add_route(get_images.build());
     registry->register_route(get_images.build());
 

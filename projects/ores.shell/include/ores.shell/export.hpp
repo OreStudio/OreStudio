@@ -23,9 +23,9 @@
 #include <boost/config.hpp>
 
 #ifdef ORES_SHELL_LIBRARY
-#  define ORES_SHELL_EXPORT BOOST_SYMBOL_EXPORT
+#    define ORES_SHELL_EXPORT BOOST_SYMBOL_EXPORT
 #else
-#  define ORES_SHELL_EXPORT BOOST_SYMBOL_IMPORT
+#    define ORES_SHELL_EXPORT BOOST_SYMBOL_IMPORT
 #endif
 
 #endif

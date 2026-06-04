@@ -21,12 +21,12 @@
 #define ORES_WT_SERVICE_APP_CURRENCY_LIST_WIDGET_HPP
 
 #include <Wt/WContainerWidget.h>
-#include <Wt/WTable.h>
 #include <Wt/WPushButton.h>
-#include <Wt/WText.h>
 #include <Wt/WSignal.h>
-#include <vector>
+#include <Wt/WTable.h>
+#include <Wt/WText.h>
 #include <string>
+#include <vector>
 
 namespace ores::wt::service::app {
 
@@ -50,9 +50,15 @@ class currency_list_widget : public Wt::WContainerWidget {
 public:
     currency_list_widget();
 
-    Wt::Signal<>& add_requested() { return add_requested_; }
-    Wt::Signal<std::string>& edit_requested() { return edit_requested_; }
-    Wt::Signal<std::string>& delete_requested() { return delete_requested_; }
+    Wt::Signal<>& add_requested() {
+        return add_requested_;
+    }
+    Wt::Signal<std::string>& edit_requested() {
+        return edit_requested_;
+    }
+    Wt::Signal<std::string>& delete_requested() {
+        return delete_requested_;
+    }
 
     void refresh();
     void set_currencies(const std::vector<currency_row>& currencies);

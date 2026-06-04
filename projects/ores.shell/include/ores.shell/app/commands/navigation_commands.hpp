@@ -20,9 +20,9 @@
 #ifndef ORES_SHELL_APP_COMMANDS_NAVIGATION_COMMANDS_HPP
 #define ORES_SHELL_APP_COMMANDS_NAVIGATION_COMMANDS_HPP
 
-#include <iosfwd>
 #include "ores.logging/make_logger.hpp"
 #include "ores.shell/app/pagination_context.hpp"
+#include <iosfwd>
 
 namespace cli {
 
@@ -44,8 +44,7 @@ namespace ores::shell::app::commands {
  */
 class navigation_commands {
 private:
-    inline static std::string_view logger_name =
-        "ores.shell.app.commands.navigation_commands";
+    inline static std::string_view logger_name = "ores.shell.app.commands.navigation_commands";
 
     static auto& lg() {
         using namespace ores::logging;
@@ -62,8 +61,7 @@ public:
      * @param root_menu The root menu to add commands to.
      * @param pagination The pagination context for state management.
      */
-    static void register_commands(cli::Menu& root_menu,
-                                  pagination_context& pagination);
+    static void register_commands(cli::Menu& root_menu, pagination_context& pagination);
 
     /**
      * @brief Move to the next page.
@@ -115,9 +113,8 @@ public:
      * @param pagination The pagination context.
      * @param size Optional new page size (0 means just show current).
      */
-    static void process_page_size(std::ostream& out,
-                                  pagination_context& pagination,
-                                  std::uint32_t size = 0);
+    static void
+    process_page_size(std::ostream& out, pagination_context& pagination, std::uint32_t size = 0);
 };
 
 }

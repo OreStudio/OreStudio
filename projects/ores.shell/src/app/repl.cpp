@@ -18,27 +18,26 @@
  *
  */
 #include "ores.shell/app/repl.hpp"
-
-#include <iostream>
-#include <rfl/json.hpp>
-#include <cli/cli.h>
-#include <cli/clifilesession.h>
-#include "ores.utility/version/version.hpp"
-#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/messaging/login_protocol.hpp"
+#include "ores.shell/app/commands/accounts_commands.hpp"
 #include "ores.shell/app/commands/change_reason_categories_commands.hpp"
 #include "ores.shell/app/commands/change_reasons_commands.hpp"
+#include "ores.shell/app/commands/connection_commands.hpp"
 #include "ores.shell/app/commands/countries_commands.hpp"
 #include "ores.shell/app/commands/currencies_commands.hpp"
-#include "ores.shell/app/commands/connection_commands.hpp"
-#include "ores.shell/app/commands/accounts_commands.hpp"
-#include "ores.shell/app/commands/variability_commands.hpp"
-#include "ores.shell/app/commands/subscription_commands.hpp"
-#include "ores.shell/app/commands/rbac_commands.hpp"
-#include "ores.shell/app/commands/tenants_commands.hpp"
 #include "ores.shell/app/commands/navigation_commands.hpp"
+#include "ores.shell/app/commands/rbac_commands.hpp"
 #include "ores.shell/app/commands/script_commands.hpp"
+#include "ores.shell/app/commands/subscription_commands.hpp"
+#include "ores.shell/app/commands/tenants_commands.hpp"
+#include "ores.shell/app/commands/variability_commands.hpp"
+#include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
+#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "ores.utility/version/version.hpp"
+#include <cli/cli.h>
+#include <cli/clifilesession.h>
+#include <iostream>
+#include <rfl/json.hpp>
 
 namespace ores::shell::app {
 
@@ -101,12 +100,11 @@ void repl::cleanup() {
     if (session_.is_logged_in()) {
         BOOST_LOG_SEV(lg(), debug) << "Sending logout request before exit.";
         try {
-            std::ignore = session_.authenticated_request("iam.v1.auth.logout",
-                rfl::json::write(iam::messaging::logout_request{}));
+            std::ignore = session_.authenticated_request(
+                "iam.v1.auth.logout", rfl::json::write(iam::messaging::logout_request{}));
             BOOST_LOG_SEV(lg(), info) << "Logged out successfully.";
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), warn) << "Logout request failed during cleanup: "
-                                      << e.what();
+            BOOST_LOG_SEV(lg(), warn) << "Logout request failed during cleanup: " << e.what();
         }
         session_.clear_auth();
     }

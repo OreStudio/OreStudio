@@ -18,14 +18,14 @@
  *
  */
 #include "ores.wt.service/app/account_dialog.hpp"
-#include <Wt/WLabel.h>
 #include <Wt/WBreak.h>
+#include <Wt/WLabel.h>
 
 namespace ores::wt::service::app {
 
 account_dialog::account_dialog(mode m)
-    : Wt::WDialog(m == mode::add ? "Add Account" : "Edit Account"),
-      mode_(m) {
+    : Wt::WDialog(m == mode::add ? "Add Account" : "Edit Account")
+    , mode_(m) {
     setModal(true);
     setResizable(true);
     setClosable(true);
@@ -52,24 +52,20 @@ void account_dialog::setup_form() {
         return ptr;
     };
 
-    username_edit_ = add_field("Username",
-        std::make_unique<Wt::WLineEdit>());
+    username_edit_ = add_field("Username", std::make_unique<Wt::WLineEdit>());
     username_edit_->setPlaceholderText("Enter username");
     if (mode_ == mode::edit) {
         username_edit_->setReadOnly(true);
     }
 
-    email_edit_ = add_field("Email",
-        std::make_unique<Wt::WLineEdit>());
+    email_edit_ = add_field("Email", std::make_unique<Wt::WLineEdit>());
     email_edit_->setPlaceholderText("user@example.com");
 
-    password_edit_ = add_field("Password",
-        std::make_unique<Wt::WPasswordEdit>());
-    password_edit_->setPlaceholderText(
-        mode_ == mode::add ? "Enter password" : "Leave blank to keep current");
+    password_edit_ = add_field("Password", std::make_unique<Wt::WPasswordEdit>());
+    password_edit_->setPlaceholderText(mode_ == mode::add ? "Enter password" :
+                                                            "Leave blank to keep current");
 
-    confirm_password_edit_ = add_field("Confirm Password",
-        std::make_unique<Wt::WPasswordEdit>());
+    confirm_password_edit_ = add_field("Confirm Password", std::make_unique<Wt::WPasswordEdit>());
     confirm_password_edit_->setPlaceholderText("Confirm password");
 
     status_text_ = content->addWidget(std::make_unique<Wt::WText>());
@@ -77,13 +73,11 @@ void account_dialog::setup_form() {
 }
 
 void account_dialog::setup_buttons() {
-    auto save_btn = footer()->addWidget(
-        std::make_unique<Wt::WPushButton>("Save"));
+    auto save_btn = footer()->addWidget(std::make_unique<Wt::WPushButton>("Save"));
     save_btn->setStyleClass("btn btn-primary");
     save_btn->clicked().connect(this, &account_dialog::validate_and_save);
 
-    auto cancel_btn = footer()->addWidget(
-        std::make_unique<Wt::WPushButton>("Cancel"));
+    auto cancel_btn = footer()->addWidget(std::make_unique<Wt::WPushButton>("Cancel"));
     cancel_btn->setStyleClass("btn btn-secondary ms-2");
     cancel_btn->clicked().connect([this] { reject(); });
 }

@@ -18,31 +18,30 @@
  *
  */
 #include "ores.http.core/routes/iam_routes.hpp"
-
-#include <algorithm>
-#include <sstream>
-#include <rfl/json.hpp>
-#include "ores.security/jwt/jwt_claims.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.iam.api/domain/account_json.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.dq.api/domain/change_reason_constants.hpp"
-#include "ores.iam.api/domain/role_json.hpp"
-#include "ores.iam.api/domain/permission_json.hpp"
+#include "ores.iam.api/domain/account_json.hpp"
+#include "ores.iam.api/domain/account_version.hpp"
 #include "ores.iam.api/domain/permission.hpp"
+#include "ores.iam.api/domain/permission_json.hpp"
 #include "ores.iam.api/domain/role.hpp"
+#include "ores.iam.api/domain/role_json.hpp"
 #include "ores.iam.api/domain/session.hpp"
-#include <boost/uuid/uuid_generators.hpp>
-#include "ores.iam.api/messaging/login_protocol.hpp"
-#include "ores.iam.api/messaging/signup_protocol.hpp"
-#include "ores.iam.api/messaging/bootstrap_protocol.hpp"
+#include "ores.iam.api/messaging/account_history_protocol.hpp"
 #include "ores.iam.api/messaging/account_protocol.hpp"
 #include "ores.iam.api/messaging/authorization_protocol.hpp"
+#include "ores.iam.api/messaging/bootstrap_protocol.hpp"
+#include "ores.iam.api/messaging/login_protocol.hpp"
 #include "ores.iam.api/messaging/session_protocol.hpp"
-#include "ores.iam.api/messaging/account_history_protocol.hpp"
-#include "ores.iam.api/domain/account_version.hpp"
-#include "ores.iam.core/service/signup_service.hpp"
+#include "ores.iam.api/messaging/signup_protocol.hpp"
 #include "ores.iam.core/service/account_setup_service.hpp"
-#include "ores.database/service/tenant_context.hpp"
+#include "ores.iam.core/service/signup_service.hpp"
+#include "ores.security/jwt/jwt_claims.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include <boost/uuid/uuid_generators.hpp>
+#include <algorithm>
+#include <rfl/json.hpp>
+#include <sstream>
 
 namespace ores::http_server::routes {
 
@@ -57,7 +56,7 @@ namespace {
  */
 struct parsed_principal {
     std::string username;
-    std::string hostname;  ///< Empty if no hostname specified (system tenant)
+    std::string hostname; ///< Empty if no hostname specified (system tenant)
 };
 
 /**
@@ -74,21 +73,18 @@ parsed_principal parse_principal(const std::string& principal) {
     if (at_pos == std::string::npos) {
         return {.username = principal, .hostname = ""};
     }
-    return {
-        .username = principal.substr(0, at_pos),
-        .hostname = principal.substr(at_pos + 1)
-    };
+    return {.username = principal.substr(0, at_pos), .hostname = principal.substr(at_pos + 1)};
 }
 
-}  // anonymous namespace
+} // anonymous namespace
 namespace reason = ores::dq::domain::change_reason_constants;
 
 iam_routes::iam_routes(database::context ctx,
-    std::shared_ptr<variability::service::system_settings_service> system_flags,
-    std::shared_ptr<iam::service::auth_session_service> sessions,
-    std::shared_ptr<iam::service::authorization_service> auth_service,
-    std::shared_ptr<ores::security::jwt::jwt_authenticator> authenticator,
-    std::shared_ptr<geo::service::geolocation_service> geo_service)
+                       std::shared_ptr<variability::service::system_settings_service> system_flags,
+                       std::shared_ptr<iam::service::auth_session_service> sessions,
+                       std::shared_ptr<iam::service::authorization_service> auth_service,
+                       std::shared_ptr<ores::security::jwt::jwt_authenticator> authenticator,
+                       std::shared_ptr<geo::service::geolocation_service> geo_service)
     : ctx_(std::move(ctx))
     , account_service_(ctx_)
     , session_repo_(ctx_)
@@ -101,292 +97,316 @@ iam_routes::iam_routes(database::context ctx,
 }
 
 void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
-    std::shared_ptr<http::openapi::endpoint_registry> registry) {
+                                 std::shared_ptr<http::openapi::endpoint_registry> registry) {
 
     BOOST_LOG_SEV(lg(), info) << "Registering IAM routes";
 
     // Authentication routes (no auth required for login/signup/bootstrap)
     auto login = router->post("/api/v1/auth/login")
-        .summary("User login")
-        .description("Authenticate user with username and password")
-        .tags({"auth"})
-        .body<iam::messaging::login_request>()
-        .response<iam::messaging::login_response>()
-        .handler([this](const http_request& req) { return handle_login(req); });
+                     .summary("User login")
+                     .description("Authenticate user with username and password")
+                     .tags({"auth"})
+                     .body<iam::messaging::login_request>()
+                     .response<iam::messaging::login_response>()
+                     .handler([this](const http_request& req) { return handle_login(req); });
     router->add_route(login.build());
     registry->register_route(login.build());
 
     auto logout = router->post("/api/v1/auth/logout")
-        .summary("User logout")
-        .description("Logout current session")
-        .tags({"auth"})
-        .auth_required()
-        .response<iam::messaging::logout_response>()
-        .handler([this](const http_request& req) { return handle_logout(req); });
+                      .summary("User logout")
+                      .description("Logout current session")
+                      .tags({"auth"})
+                      .auth_required()
+                      .response<iam::messaging::logout_response>()
+                      .handler([this](const http_request& req) { return handle_logout(req); });
     router->add_route(logout.build());
     registry->register_route(logout.build());
 
     auto signup = router->post("/api/v1/auth/signup")
-        .summary("User signup")
-        .description("Create a new account (when self-registration is enabled)")
-        .tags({"auth"})
-        .body<iam::messaging::signup_request>()
-        .response<iam::messaging::signup_response>()
-        .handler([this](const http_request& req) { return handle_signup(req); });
+                      .summary("User signup")
+                      .description("Create a new account (when self-registration is enabled)")
+                      .tags({"auth"})
+                      .body<iam::messaging::signup_request>()
+                      .response<iam::messaging::signup_response>()
+                      .handler([this](const http_request& req) { return handle_signup(req); });
     router->add_route(signup.build());
     registry->register_route(signup.build());
 
-    auto bootstrap_status = router->get("/api/v1/auth/bootstrap-status")
-        .summary("Get bootstrap status")
-        .description("Check if system is in bootstrap mode awaiting initial admin")
-        .tags({"auth"})
-        .response<iam::messaging::bootstrap_status_response>()
-        .handler([this](const http_request& req) { return handle_bootstrap_status(req); });
+    auto bootstrap_status =
+        router->get("/api/v1/auth/bootstrap-status")
+            .summary("Get bootstrap status")
+            .description("Check if system is in bootstrap mode awaiting initial admin")
+            .tags({"auth"})
+            .response<iam::messaging::bootstrap_status_response>()
+            .handler([this](const http_request& req) { return handle_bootstrap_status(req); });
     router->add_route(bootstrap_status.build());
     registry->register_route(bootstrap_status.build());
 
-    auto bootstrap = router->post("/api/v1/auth/bootstrap")
-        .summary("Create initial admin")
-        .description("Create initial admin account (bootstrap mode only, localhost only)")
-        .tags({"auth"})
-        .body<iam::messaging::create_initial_admin_request>()
-        .response<iam::messaging::create_initial_admin_response>()
-        .handler([this](const http_request& req) { return handle_create_initial_admin(req); });
+    auto bootstrap =
+        router->post("/api/v1/auth/bootstrap")
+            .summary("Create initial admin")
+            .description("Create initial admin account (bootstrap mode only, localhost only)")
+            .tags({"auth"})
+            .body<iam::messaging::create_initial_admin_request>()
+            .response<iam::messaging::create_initial_admin_response>()
+            .handler([this](const http_request& req) { return handle_create_initial_admin(req); });
     router->add_route(bootstrap.build());
     registry->register_route(bootstrap.build());
 
     // Account management routes
-    auto list_accounts = router->get("/api/v1/accounts")
-        .summary("List accounts")
-        .description("Retrieve accounts with pagination")
-        .tags({"accounts"})
-        .auth_required()
-        .query_param("offset", "integer", "", false, "Pagination offset", "0")
-        .query_param("limit", "integer", "", false, "Maximum number of results", "100")
-        .response<iam::messaging::get_accounts_response>()
-        .handler([this](const http_request& req) { return handle_list_accounts(req); });
+    auto list_accounts =
+        router->get("/api/v1/accounts")
+            .summary("List accounts")
+            .description("Retrieve accounts with pagination")
+            .tags({"accounts"})
+            .auth_required()
+            .query_param("offset", "integer", "", false, "Pagination offset", "0")
+            .query_param("limit", "integer", "", false, "Maximum number of results", "100")
+            .response<iam::messaging::get_accounts_response>()
+            .handler([this](const http_request& req) { return handle_list_accounts(req); });
     router->add_route(list_accounts.build());
     registry->register_route(list_accounts.build());
 
-    auto create_account = router->post("/api/v1/accounts")
-        .summary("Create account")
-        .description("Create a new user account")
-        .tags({"accounts"})
-        .auth_required()
-        .roles({"TenantAdmin", "SuperAdmin"})
-        .body<iam::messaging::save_account_request>()
-        .response<iam::messaging::save_account_response>()
-        .handler([this](const http_request& req) { return handle_create_account(req); });
+    auto create_account =
+        router->post("/api/v1/accounts")
+            .summary("Create account")
+            .description("Create a new user account")
+            .tags({"accounts"})
+            .auth_required()
+            .roles({"TenantAdmin", "SuperAdmin"})
+            .body<iam::messaging::save_account_request>()
+            .response<iam::messaging::save_account_response>()
+            .handler([this](const http_request& req) { return handle_create_account(req); });
     router->add_route(create_account.build());
     registry->register_route(create_account.build());
 
-    auto delete_account = router->delete_("/api/v1/accounts/{id}")
-        .summary("Delete account")
-        .description("Delete an account by ID")
-        .tags({"accounts"})
-        .auth_required()
-        .roles({"TenantAdmin", "SuperAdmin"})
-        .response<iam::messaging::delete_account_response>()
-        .handler([this](const http_request& req) { return handle_delete_account(req); });
+    auto delete_account =
+        router->delete_("/api/v1/accounts/{id}")
+            .summary("Delete account")
+            .description("Delete an account by ID")
+            .tags({"accounts"})
+            .auth_required()
+            .roles({"TenantAdmin", "SuperAdmin"})
+            .response<iam::messaging::delete_account_response>()
+            .handler([this](const http_request& req) { return handle_delete_account(req); });
     router->add_route(delete_account.build());
     registry->register_route(delete_account.build());
 
-    auto update_account = router->put("/api/v1/accounts/{id}")
-        .summary("Update account")
-        .description("Update account details")
-        .tags({"accounts"})
-        .auth_required()
-        .roles({"TenantAdmin", "SuperAdmin"})
-        .body<iam::messaging::save_account_request>()
-        .response<iam::messaging::save_account_response>()
-        .handler([this](const http_request& req) { return handle_update_account(req); });
+    auto update_account =
+        router->put("/api/v1/accounts/{id}")
+            .summary("Update account")
+            .description("Update account details")
+            .tags({"accounts"})
+            .auth_required()
+            .roles({"TenantAdmin", "SuperAdmin"})
+            .body<iam::messaging::save_account_request>()
+            .response<iam::messaging::save_account_response>()
+            .handler([this](const http_request& req) { return handle_update_account(req); });
     router->add_route(update_account.build());
     registry->register_route(update_account.build());
 
-    auto account_history = router->get("/api/v1/accounts/{username}/history")
-        .summary("Get account history")
-        .description("Retrieve version history for an account")
-        .tags({"accounts"})
-        .auth_required()
-        .response<iam::messaging::get_account_history_response>()
-        .handler([this](const http_request& req) { return handle_get_account_history(req); });
+    auto account_history =
+        router->get("/api/v1/accounts/{username}/history")
+            .summary("Get account history")
+            .description("Retrieve version history for an account")
+            .tags({"accounts"})
+            .auth_required()
+            .response<iam::messaging::get_account_history_response>()
+            .handler([this](const http_request& req) { return handle_get_account_history(req); });
     router->add_route(account_history.build());
     registry->register_route(account_history.build());
 
-    auto lock_accounts = router->post("/api/v1/accounts/lock")
-        .summary("Lock accounts")
-        .description("Lock one or more accounts")
-        .tags({"accounts"})
-        .auth_required()
-        .roles({"TenantAdmin", "SuperAdmin"})
-        .body<iam::messaging::lock_account_request>()
-        .response<iam::messaging::lock_account_response>()
-        .handler([this](const http_request& req) { return handle_lock_accounts(req); });
+    auto lock_accounts =
+        router->post("/api/v1/accounts/lock")
+            .summary("Lock accounts")
+            .description("Lock one or more accounts")
+            .tags({"accounts"})
+            .auth_required()
+            .roles({"TenantAdmin", "SuperAdmin"})
+            .body<iam::messaging::lock_account_request>()
+            .response<iam::messaging::lock_account_response>()
+            .handler([this](const http_request& req) { return handle_lock_accounts(req); });
     router->add_route(lock_accounts.build());
     registry->register_route(lock_accounts.build());
 
-    auto unlock_accounts = router->post("/api/v1/accounts/unlock")
-        .summary("Unlock accounts")
-        .description("Unlock one or more accounts")
-        .tags({"accounts"})
-        .auth_required()
-        .roles({"TenantAdmin", "SuperAdmin"})
-        .body<iam::messaging::unlock_account_request>()
-        .response<iam::messaging::unlock_account_response>()
-        .handler([this](const http_request& req) { return handle_unlock_accounts(req); });
+    auto unlock_accounts =
+        router->post("/api/v1/accounts/unlock")
+            .summary("Unlock accounts")
+            .description("Unlock one or more accounts")
+            .tags({"accounts"})
+            .auth_required()
+            .roles({"TenantAdmin", "SuperAdmin"})
+            .body<iam::messaging::unlock_account_request>()
+            .response<iam::messaging::unlock_account_response>()
+            .handler([this](const http_request& req) { return handle_unlock_accounts(req); });
     router->add_route(unlock_accounts.build());
     registry->register_route(unlock_accounts.build());
 
-    auto login_info = router->get("/api/v1/accounts/login-info")
-        .summary("List login info")
-        .description("Retrieve login info for all accounts")
-        .tags({"accounts"})
-        .auth_required()
-        .response<iam::messaging::list_login_info_response>()
-        .handler([this](const http_request& req) { return handle_list_login_info(req); });
+    auto login_info =
+        router->get("/api/v1/accounts/login-info")
+            .summary("List login info")
+            .description("Retrieve login info for all accounts")
+            .tags({"accounts"})
+            .auth_required()
+            .response<iam::messaging::list_login_info_response>()
+            .handler([this](const http_request& req) { return handle_list_login_info(req); });
     router->add_route(login_info.build());
     registry->register_route(login_info.build());
 
-    auto reset_password = router->post("/api/v1/accounts/reset-password")
-        .summary("Reset password")
-        .description("Admin-initiated password reset for accounts")
-        .tags({"accounts"})
-        .auth_required()
-        .roles({"TenantAdmin", "SuperAdmin"})
-        .body<iam::messaging::reset_password_request>()
-        .response<iam::messaging::reset_password_response>()
-        .handler([this](const http_request& req) { return handle_reset_password(req); });
+    auto reset_password =
+        router->post("/api/v1/accounts/reset-password")
+            .summary("Reset password")
+            .description("Admin-initiated password reset for accounts")
+            .tags({"accounts"})
+            .auth_required()
+            .roles({"TenantAdmin", "SuperAdmin"})
+            .body<iam::messaging::reset_password_request>()
+            .response<iam::messaging::reset_password_response>()
+            .handler([this](const http_request& req) { return handle_reset_password(req); });
     router->add_route(reset_password.build());
     registry->register_route(reset_password.build());
 
     // Current user routes
-    auto change_password = router->post("/api/v1/me/change-password")
-        .summary("Change password")
-        .description("Change own password")
-        .tags({"me"})
-        .auth_required()
-        .body<iam::messaging::change_password_request>()
-        .response<iam::messaging::change_password_response>()
-        .handler([this](const http_request& req) { return handle_change_password(req); });
+    auto change_password =
+        router->post("/api/v1/me/change-password")
+            .summary("Change password")
+            .description("Change own password")
+            .tags({"me"})
+            .auth_required()
+            .body<iam::messaging::change_password_request>()
+            .response<iam::messaging::change_password_response>()
+            .handler([this](const http_request& req) { return handle_change_password(req); });
     router->add_route(change_password.build());
     registry->register_route(change_password.build());
 
-    auto update_email = router->put("/api/v1/me/email")
-        .summary("Update email")
-        .description("Update own email address")
-        .tags({"me"})
-        .auth_required()
-        .body<iam::messaging::update_my_email_request>()
-        .response<iam::messaging::update_my_email_response>()
-        .handler([this](const http_request& req) { return handle_update_my_email(req); });
+    auto update_email =
+        router->put("/api/v1/me/email")
+            .summary("Update email")
+            .description("Update own email address")
+            .tags({"me"})
+            .auth_required()
+            .body<iam::messaging::update_my_email_request>()
+            .response<iam::messaging::update_my_email_response>()
+            .handler([this](const http_request& req) { return handle_update_my_email(req); });
     router->add_route(update_email.build());
     registry->register_route(update_email.build());
 
     // RBAC routes
-    auto list_roles = router->get("/api/v1/roles")
-        .summary("List roles")
-        .description("List all roles in the system")
-        .tags({"rbac"})
-        .auth_required()
-        .response<iam::messaging::list_roles_response>()
-        .handler([this](const http_request& req) { return handle_list_roles(req); });
+    auto list_roles =
+        router->get("/api/v1/roles")
+            .summary("List roles")
+            .description("List all roles in the system")
+            .tags({"rbac"})
+            .auth_required()
+            .response<iam::messaging::list_roles_response>()
+            .handler([this](const http_request& req) { return handle_list_roles(req); });
     router->add_route(list_roles.build());
     registry->register_route(list_roles.build());
 
     auto get_role = router->get("/api/v1/roles/{id}")
-        .summary("Get role")
-        .description("Get a specific role by ID")
-        .tags({"rbac"})
-        .auth_required()
-        .response<iam::messaging::get_role_response>()
-        .handler([this](const http_request& req) { return handle_get_role(req); });
+                        .summary("Get role")
+                        .description("Get a specific role by ID")
+                        .tags({"rbac"})
+                        .auth_required()
+                        .response<iam::messaging::get_role_response>()
+                        .handler([this](const http_request& req) { return handle_get_role(req); });
     router->add_route(get_role.build());
     registry->register_route(get_role.build());
 
-    auto list_permissions = router->get("/api/v1/permissions")
-        .summary("List permissions")
-        .description("List all permissions in the system")
-        .tags({"rbac"})
-        .auth_required()
-        .response<iam::messaging::list_permissions_response>()
-        .handler([this](const http_request& req) { return handle_list_permissions(req); });
+    auto list_permissions =
+        router->get("/api/v1/permissions")
+            .summary("List permissions")
+            .description("List all permissions in the system")
+            .tags({"rbac"})
+            .auth_required()
+            .response<iam::messaging::list_permissions_response>()
+            .handler([this](const http_request& req) { return handle_list_permissions(req); });
     router->add_route(list_permissions.build());
     registry->register_route(list_permissions.build());
 
-    auto assign_role = router->post("/api/v1/accounts/{id}/roles")
-        .summary("Assign role")
-        .description("Assign a role to an account")
-        .tags({"rbac"})
-        .auth_required()
-        .roles({"TenantAdmin", "SuperAdmin"})
-        .body<iam::messaging::assign_role_request>()
-        .response<iam::messaging::assign_role_response>()
-        .handler([this](const http_request& req) { return handle_assign_role(req); });
+    auto assign_role =
+        router->post("/api/v1/accounts/{id}/roles")
+            .summary("Assign role")
+            .description("Assign a role to an account")
+            .tags({"rbac"})
+            .auth_required()
+            .roles({"TenantAdmin", "SuperAdmin"})
+            .body<iam::messaging::assign_role_request>()
+            .response<iam::messaging::assign_role_response>()
+            .handler([this](const http_request& req) { return handle_assign_role(req); });
     router->add_route(assign_role.build());
     registry->register_route(assign_role.build());
 
-    auto revoke_role = router->delete_("/api/v1/accounts/{accountId}/roles/{roleId}")
-        .summary("Revoke role")
-        .description("Revoke a role from an account")
-        .tags({"rbac"})
-        .auth_required()
-        .roles({"TenantAdmin", "SuperAdmin"})
-        .response<iam::messaging::revoke_role_response>()
-        .handler([this](const http_request& req) { return handle_revoke_role(req); });
+    auto revoke_role =
+        router->delete_("/api/v1/accounts/{accountId}/roles/{roleId}")
+            .summary("Revoke role")
+            .description("Revoke a role from an account")
+            .tags({"rbac"})
+            .auth_required()
+            .roles({"TenantAdmin", "SuperAdmin"})
+            .response<iam::messaging::revoke_role_response>()
+            .handler([this](const http_request& req) { return handle_revoke_role(req); });
     router->add_route(revoke_role.build());
     registry->register_route(revoke_role.build());
 
-    auto account_roles = router->get("/api/v1/accounts/{id}/roles")
-        .summary("Get account roles")
-        .description("Get all roles assigned to an account")
-        .tags({"rbac"})
-        .auth_required()
-        .response<iam::messaging::get_account_roles_response>()
-        .handler([this](const http_request& req) { return handle_get_account_roles(req); });
+    auto account_roles =
+        router->get("/api/v1/accounts/{id}/roles")
+            .summary("Get account roles")
+            .description("Get all roles assigned to an account")
+            .tags({"rbac"})
+            .auth_required()
+            .response<iam::messaging::get_account_roles_response>()
+            .handler([this](const http_request& req) { return handle_get_account_roles(req); });
     router->add_route(account_roles.build());
     registry->register_route(account_roles.build());
 
     auto account_perms = router->get("/api/v1/accounts/{id}/permissions")
-        .summary("Get account permissions")
-        .description("Get effective permissions for an account")
-        .tags({"rbac"})
-        .auth_required()
-        .response<iam::messaging::get_account_permissions_response>()
-        .handler([this](const http_request& req) { return handle_get_account_permissions(req); });
+                             .summary("Get account permissions")
+                             .description("Get effective permissions for an account")
+                             .tags({"rbac"})
+                             .auth_required()
+                             .response<iam::messaging::get_account_permissions_response>()
+                             .handler([this](const http_request& req) {
+                                 return handle_get_account_permissions(req);
+                             });
     router->add_route(account_perms.build());
     registry->register_route(account_perms.build());
 
     // Session routes
-    auto list_sessions = router->get("/api/v1/sessions")
-        .summary("List sessions")
-        .description("List session history")
-        .tags({"sessions"})
-        .auth_required()
-        .query_param("account_id", "string", "uuid", false, "Filter by account UUID")
-        .query_param("offset", "integer", "", false, "Pagination offset", "0")
-        .query_param("limit", "integer", "", false, "Maximum number of results", "100")
-        .response<iam::messaging::list_sessions_response>()
-        .handler([this](const http_request& req) { return handle_list_sessions(req); });
+    auto list_sessions =
+        router->get("/api/v1/sessions")
+            .summary("List sessions")
+            .description("List session history")
+            .tags({"sessions"})
+            .auth_required()
+            .query_param("account_id", "string", "uuid", false, "Filter by account UUID")
+            .query_param("offset", "integer", "", false, "Pagination offset", "0")
+            .query_param("limit", "integer", "", false, "Maximum number of results", "100")
+            .response<iam::messaging::list_sessions_response>()
+            .handler([this](const http_request& req) { return handle_list_sessions(req); });
     router->add_route(list_sessions.build());
     registry->register_route(list_sessions.build());
 
     auto session_stats = router->get("/api/v1/sessions/statistics")
-        .summary("Get session statistics")
-        .description("Get aggregated session statistics")
-        .tags({"sessions"})
-        .auth_required()
-        .response<iam::messaging::get_session_statistics_response>()
-        .handler([this](const http_request& req) { return handle_get_session_statistics(req); });
+                             .summary("Get session statistics")
+                             .description("Get aggregated session statistics")
+                             .tags({"sessions"})
+                             .auth_required()
+                             .response<iam::messaging::get_session_statistics_response>()
+                             .handler([this](const http_request& req) {
+                                 return handle_get_session_statistics(req);
+                             });
     router->add_route(session_stats.build());
     registry->register_route(session_stats.build());
 
-    auto active_sessions = router->get("/api/v1/sessions/active")
-        .summary("Get active sessions")
-        .description("Get currently active sessions")
-        .tags({"sessions"})
-        .auth_required()
-        .response<iam::messaging::get_active_sessions_response>()
-        .handler([this](const http_request& req) { return handle_get_active_sessions(req); });
+    auto active_sessions =
+        router->get("/api/v1/sessions/active")
+            .summary("Get active sessions")
+            .description("Get currently active sessions")
+            .tags({"sessions"})
+            .auth_required()
+            .response<iam::messaging::get_active_sessions_response>()
+            .handler([this](const http_request& req) { return handle_get_active_sessions(req); });
     router->add_route(active_sessions.build());
     registry->register_route(active_sessions.build());
 
@@ -395,10 +415,10 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
 
 // Authorization helper
 
-std::expected<auth_result, http_response> iam_routes::check_auth(
-    const http_request& req,
-    std::string_view required_permission,
-    std::string_view operation_name) {
+std::expected<auth_result, http_response>
+iam_routes::check_auth(const http_request& req,
+                       std::string_view required_permission,
+                       std::string_view operation_name) {
 
     // Step 1: Check authentication
     if (!req.authenticated_user) {
@@ -411,21 +431,21 @@ std::expected<auth_result, http_response> iam_routes::check_auth(
     try {
         account_id = boost::uuids::string_generator()(req.authenticated_user->subject);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << operation_name
-                                   << " failed: invalid account ID in JWT: " << e.what();
+        BOOST_LOG_SEV(lg(), error)
+            << operation_name << " failed: invalid account ID in JWT: " << e.what();
         return std::unexpected(http_response::unauthorized("Invalid token"));
     }
 
     // Step 3: Check if user has admin permissions (for convenience)
-    bool is_admin = auth_service_->has_permission(account_id,
-        iam::domain::permissions::accounts_read);
+    bool is_admin =
+        auth_service_->has_permission(account_id, iam::domain::permissions::accounts_read);
 
     // Step 4: Check required permission if specified
     if (!required_permission.empty()) {
         if (!auth_service_->has_permission(account_id, std::string(required_permission))) {
-            BOOST_LOG_SEV(lg(), warn) << operation_name << " denied: account "
-                                      << boost::uuids::to_string(account_id)
-                                      << " lacks " << required_permission << " permission";
+            BOOST_LOG_SEV(lg(), warn)
+                << operation_name << " denied: account " << boost::uuids::to_string(account_id)
+                << " lacks " << required_permission << " permission";
             return std::unexpected(http_response::forbidden("Insufficient permissions"));
         }
     }
@@ -456,16 +476,13 @@ asio::awaitable<http_response> iam_routes::handle_login(const http_request& req)
             ctx_ = database::service::tenant_context::with_system_tenant(ctx_);
             tenant_name = "System";
         } else {
-            tenant_id =
-                database::service::tenant_context::lookup_by_hostname(ctx_, hostname);
+            tenant_id = database::service::tenant_context::lookup_by_hostname(ctx_, hostname);
             ctx_ = database::service::tenant_context::with_tenant(ctx_, tenant_id.to_string());
-            tenant_name =
-                database::service::tenant_context::lookup_name(ctx_, tenant_id);
+            tenant_name = database::service::tenant_context::lookup_name(ctx_, tenant_id);
         }
 
         auto ip_address = boost::asio::ip::make_address(req.remote_address);
-        auto account = account_service_.login(
-            username, login_req->password, ip_address);
+        auto account = account_service_.login(username, login_req->password, ip_address);
 
         auto login_info = account_service_.get_login_info(account.id);
 
@@ -490,21 +507,19 @@ asio::awaitable<http_response> iam_routes::handle_login(const http_request& req)
         auto geo_result = geo_service_->lookup(ip_address);
         if (geo_result) {
             sess.country_code = geo_result->country_code;
-            BOOST_LOG_SEV(lg(), debug) << "Geolocation for " << ip_address
-                                       << ": " << sess.country_code;
+            BOOST_LOG_SEV(lg(), debug)
+                << "Geolocation for " << ip_address << ": " << sess.country_code;
         } else {
-            BOOST_LOG_SEV(lg(), debug) << "Geolocation lookup failed for "
-                                       << ip_address;
+            BOOST_LOG_SEV(lg(), debug) << "Geolocation lookup failed for " << ip_address;
         }
 
         // Persist session to database
         try {
             session_repo_.create(sess);
-            BOOST_LOG_SEV(lg(), debug) << "HTTP session persisted: "
-                                       << boost::uuids::to_string(sess.id);
+            BOOST_LOG_SEV(lg(), debug)
+                << "HTTP session persisted: " << boost::uuids::to_string(sess.id);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), warn) << "Failed to persist HTTP session: "
-                                      << e.what();
+            BOOST_LOG_SEV(lg(), warn) << "Failed to persist HTTP session: " << e.what();
             // Continue anyway - session tracking is not critical
         }
 
@@ -532,21 +547,18 @@ asio::awaitable<http_response> iam_routes::handle_login(const http_request& req)
             auto token_opt = authenticator_->create_token(claims);
             if (token_opt) {
                 token = *token_opt;
-                BOOST_LOG_SEV(lg(), debug) << "Generated JWT token for user: "
-                    << account.username;
+                BOOST_LOG_SEV(lg(), debug) << "Generated JWT token for user: " << account.username;
             } else {
-                BOOST_LOG_SEV(lg(), warn) << "Failed to generate JWT token for user: "
-                    << account.username;
+                BOOST_LOG_SEV(lg(), warn)
+                    << "Failed to generate JWT token for user: " << account.username;
             }
         }
 
         // Build response with token
         std::ostringstream oss;
-        oss << R"({"success":true,"account_id":")"
-            << boost::uuids::to_string(account.id) << R"(","tenant_id":")"
-            << tenant_id.to_string() << R"(","tenant_name":")"
-            << tenant_name << R"(","username":")"
-            << account.username << R"(","email":")"
+        oss << R"({"success":true,"account_id":")" << boost::uuids::to_string(account.id)
+            << R"(","tenant_id":")" << tenant_id.to_string() << R"(","tenant_name":")"
+            << tenant_name << R"(","username":")" << account.username << R"(","email":")"
             << account.email << R"(","password_reset_required":)"
             << (login_info.password_reset_required ? "true" : "false");
 
@@ -583,21 +595,20 @@ asio::awaitable<http_response> iam_routes::handle_logout(const http_request& req
         // End the session record if session_id is in the JWT
         if (req.authenticated_user && req.authenticated_user->session_id) {
             try {
-                auto session_id = boost::uuids::string_generator()(
-                    *req.authenticated_user->session_id);
+                auto session_id =
+                    boost::uuids::string_generator()(*req.authenticated_user->session_id);
                 auto now = std::chrono::system_clock::now();
 
                 // We need the start_time to update the session. Read it first.
                 auto session = session_repo_.read(session_id);
                 if (session) {
-                    session_repo_.end_session(session_id, session->start_time,
-                        now, 0, 0);  // No byte tracking for HTTP
-                    BOOST_LOG_SEV(lg(), debug) << "HTTP session ended: "
-                                               << *req.authenticated_user->session_id;
+                    session_repo_.end_session(
+                        session_id, session->start_time, now, 0, 0); // No byte tracking for HTTP
+                    BOOST_LOG_SEV(lg(), debug)
+                        << "HTTP session ended: " << *req.authenticated_user->session_id;
                 }
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(lg(), warn) << "Failed to end HTTP session: "
-                                          << e.what();
+                BOOST_LOG_SEV(lg(), warn) << "Failed to end HTTP session: " << e.what();
                 // Continue anyway - session tracking is not critical
             }
         }
@@ -658,8 +669,8 @@ asio::awaitable<http_response> iam_routes::handle_bootstrap_status(const http_re
         iam::messaging::bootstrap_status_response resp;
         resp.is_in_bootstrap_mode = in_bootstrap;
         resp.message = in_bootstrap ?
-            "System in BOOTSTRAP MODE - awaiting initial admin account creation" :
-            "System in SECURE MODE - admin account exists";
+                           "System in BOOTSTRAP MODE - awaiting initial admin account creation" :
+                           "System in SECURE MODE - admin account exists";
 
         co_return http_response::json(rfl::json::write(resp));
     } catch (const std::exception& e) {
@@ -672,23 +683,22 @@ asio::awaitable<http_response> iam_routes::handle_create_initial_admin(const htt
     BOOST_LOG_SEV(lg(), debug) << "Handling create initial admin request";
 
     // Check if request is from localhost
-    bool is_localhost = req.remote_address.starts_with("127.0.0.1") ||
-                       req.remote_address.starts_with("::1");
+    bool is_localhost =
+        req.remote_address.starts_with("127.0.0.1") || req.remote_address.starts_with("::1");
     if (!is_localhost) {
-        BOOST_LOG_SEV(lg(), warn)
-            << "Rejected create_initial_admin from non-localhost: "
-            << req.remote_address;
+        BOOST_LOG_SEV(lg(), warn) << "Rejected create_initial_admin from non-localhost: "
+                                  << req.remote_address;
         co_return http_response::forbidden("Bootstrap endpoint only accessible from localhost");
     }
 
     if (!system_flags_->is_bootstrap_mode_enabled()) {
-        BOOST_LOG_SEV(lg(), warn)
-            << "Rejected create_initial_admin: system not in bootstrap mode";
-        co_return http_response::forbidden("System not in bootstrap mode - admin account already exists");
+        BOOST_LOG_SEV(lg(), warn) << "Rejected create_initial_admin: system not in bootstrap mode";
+        co_return http_response::forbidden(
+            "System not in bootstrap mode - admin account already exists");
     }
 
-    auto admin_req = parse_body<iam::messaging::create_initial_admin_request>(
-        req, "create_initial_admin");
+    auto admin_req =
+        parse_body<iam::messaging::create_initial_admin_request>(req, "create_initial_admin");
     if (!admin_req) {
         co_return admin_req.error();
     }
@@ -712,17 +722,22 @@ asio::awaitable<http_response> iam_routes::handle_create_initial_admin(const htt
         // This checks role exists BEFORE creating account to avoid orphaned accounts
         iam::service::account_setup_service setup_service(account_service_, auth_service_);
         auto account = setup_service.create_account_with_role(
-            username, admin_req->email, admin_req->password,
-            "bootstrap", iam::domain::roles::super_admin,
+            username,
+            admin_req->email,
+            admin_req->password,
+            "bootstrap",
+            iam::domain::roles::super_admin,
             "Initial admin account created during system bootstrap");
 
         // Exit bootstrap mode - updates database and shared cache
-        system_flags_->set_bootstrap_mode(false, "system",
-            std::string{reason::codes::new_record}, "Bootstrap mode disabled after initial admin account created");
+        system_flags_->set_bootstrap_mode(
+            false,
+            "system",
+            std::string{reason::codes::new_record},
+            "Bootstrap mode disabled after initial admin account created");
 
-        BOOST_LOG_SEV(lg(), info)
-            << "Created initial admin account with ID: " << account.id
-            << " for username: " << account.username;
+        BOOST_LOG_SEV(lg(), info) << "Created initial admin account with ID: " << account.id
+                                  << " for username: " << account.username;
         BOOST_LOG_SEV(lg(), info) << "System transitioned to SECURE MODE";
 
         iam::messaging::create_initial_admin_response resp;
@@ -751,8 +766,10 @@ asio::awaitable<http_response> iam_routes::handle_list_accounts(const http_reque
         auto offset_str = req.get_query_param("offset");
         auto limit_str = req.get_query_param("limit");
 
-        if (!offset_str.empty()) offset = std::stoul(offset_str);
-        if (!limit_str.empty()) limit = std::stoul(limit_str);
+        if (!offset_str.empty())
+            offset = std::stoul(offset_str);
+        if (!limit_str.empty())
+            limit = std::stoul(limit_str);
 
         auto accounts = account_service_.list_accounts(offset, limit);
 
@@ -782,9 +799,11 @@ asio::awaitable<http_response> iam_routes::handle_create_account(const http_requ
     try {
         // Use setup_service to create account with default Viewer role
         iam::service::account_setup_service setup_service(account_service_, auth_service_);
-        auto account = setup_service.create_account(
-            create_req->principal, create_req->email,
-            create_req->password, req.authenticated_user->username.value_or("system"));
+        auto account =
+            setup_service.create_account(create_req->principal,
+                                         create_req->email,
+                                         create_req->password,
+                                         req.authenticated_user->username.value_or("system"));
 
         iam::messaging::save_account_response resp;
         resp.success = true;
@@ -844,9 +863,12 @@ asio::awaitable<http_response> iam_routes::handle_update_account(const http_requ
 
     try {
         auto uuid = boost::uuids::string_generator()(account_id);
-        bool success = account_service_.update_account(uuid, update_req->email,
-            req.authenticated_user->username.value_or("system"),
-            "update", "");
+        bool success =
+            account_service_.update_account(uuid,
+                                            update_req->email,
+                                            req.authenticated_user->username.value_or("system"),
+                                            "update",
+                                            "");
 
         iam::messaging::save_account_response resp;
         resp.success = success;
@@ -878,10 +900,9 @@ asio::awaitable<http_response> iam_routes::handle_get_account_history(const http
         }
 
         // Sort by version descending (newest first) - use database version field
-        std::sort(accounts.begin(), accounts.end(),
-            [](const auto& a, const auto& b) {
-                return a.version > b.version;
-            });
+        std::sort(accounts.begin(), accounts.end(), [](const auto& a, const auto& b) {
+            return a.version > b.version;
+        });
 
         resp.success = true;
         resp.message = "History retrieved successfully";
@@ -889,7 +910,7 @@ asio::awaitable<http_response> iam_routes::handle_get_account_history(const http
         for (const auto& account : accounts) {
             iam::domain::account_version ver;
             ver.data = account;
-            ver.version_number = account.version;  // Use database version field
+            ver.version_number = account.version; // Use database version field
             ver.modified_by = account.modified_by;
             ver.recorded_at = account.recorded_at;
             ver.change_summary = "Version " + std::to_string(ver.version_number);
@@ -998,8 +1019,8 @@ asio::awaitable<http_response> iam_routes::handle_list_login_info(const http_req
 asio::awaitable<http_response> iam_routes::handle_reset_password(const http_request& req) {
     BOOST_LOG_SEV(lg(), debug) << "Handling reset password request";
 
-    auto auth = check_auth(req, iam::domain::permissions::accounts_reset_password,
-        "reset_password");
+    auto auth =
+        check_auth(req, iam::domain::permissions::accounts_reset_password, "reset_password");
     if (!auth) {
         co_return auth.error();
     }
@@ -1164,8 +1185,8 @@ asio::awaitable<http_response> iam_routes::handle_assign_role(const http_request
     try {
         auto uuid = boost::uuids::string_generator()(account_id);
         auto role_uuid = boost::uuids::string_generator()(assign_req->role_id);
-        auth_service_->assign_role(uuid, role_uuid,
-            req.authenticated_user->username.value_or("system"));
+        auth_service_->assign_role(
+            uuid, role_uuid, req.authenticated_user->username.value_or("system"));
 
         iam::messaging::assign_role_response resp;
         resp.success = true;
@@ -1267,8 +1288,10 @@ asio::awaitable<http_response> iam_routes::handle_list_sessions(const http_reque
         auto offset_str = req.get_query_param("offset");
         auto limit_str = req.get_query_param("limit");
 
-        if (!offset_str.empty()) offset = std::stoul(offset_str);
-        if (!limit_str.empty()) limit = std::stoul(limit_str);
+        if (!offset_str.empty())
+            offset = std::stoul(offset_str);
+        if (!limit_str.empty())
+            limit = std::stoul(limit_str);
 
         // Determine target account
         boost::uuids::uuid target_account_id = auth->account_id;
@@ -1343,13 +1366,13 @@ asio::awaitable<http_response> iam_routes::handle_get_session_statistics(const h
         std::vector<iam::domain::session_statistics> stats;
         if (aggregate_mode) {
             stats = session_repo_.read_aggregate_daily_statistics(start_time, end_time);
-            BOOST_LOG_SEV(lg(), info) << "Retrieved " << stats.size()
-                                      << " aggregate statistics entries";
+            BOOST_LOG_SEV(lg(), info)
+                << "Retrieved " << stats.size() << " aggregate statistics entries";
         } else {
             stats = session_repo_.read_daily_statistics(target_account_id, start_time, end_time);
-            BOOST_LOG_SEV(lg(), info) << "Retrieved " << stats.size()
-                                      << " statistics entries for account "
-                                      << boost::uuids::to_string(target_account_id);
+            BOOST_LOG_SEV(lg(), info)
+                << "Retrieved " << stats.size() << " statistics entries for account "
+                << boost::uuids::to_string(target_account_id);
         }
 
         iam::messaging::get_session_statistics_response resp;
@@ -1376,14 +1399,14 @@ asio::awaitable<http_response> iam_routes::handle_get_active_sessions(const http
         if (auth->is_admin) {
             // Admin gets all active sessions
             active_sessions = session_repo_.read_all_active();
-            BOOST_LOG_SEV(lg(), info) << "Retrieved " << active_sessions.size()
-                                      << " active sessions (admin view)";
+            BOOST_LOG_SEV(lg(), info)
+                << "Retrieved " << active_sessions.size() << " active sessions (admin view)";
         } else {
             // Non-admin gets only their own active sessions
             active_sessions = session_repo_.read_active_by_account(auth->account_id);
-            BOOST_LOG_SEV(lg(), info) << "Retrieved " << active_sessions.size()
-                                      << " active sessions for account "
-                                      << boost::uuids::to_string(auth->account_id);
+            BOOST_LOG_SEV(lg(), info)
+                << "Retrieved " << active_sessions.size() << " active sessions for account "
+                << boost::uuids::to_string(auth->account_id);
         }
 
         iam::messaging::get_active_sessions_response resp;

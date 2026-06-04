@@ -20,12 +20,12 @@
 #ifndef ORES_SHELL_CONFIG_OPTIONS_HPP
 #define ORES_SHELL_CONFIG_OPTIONS_HPP
 
+#include "ores.logging/logging_options.hpp"
+#include "ores.nats/config/nats_options.hpp"
+#include "ores.shell/config/login_options.hpp"
+#include "ores.telemetry.core/exporting/telemetry_options.hpp"
 #include <iosfwd>
 #include <optional>
-#include "ores.shell/config/login_options.hpp"
-#include "ores.nats/config/nats_options.hpp"
-#include "ores.logging/logging_options.hpp"
-#include "ores.telemetry.core/exporting/telemetry_options.hpp"
 
 namespace ores::shell::config {
 

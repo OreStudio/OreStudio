@@ -17,27 +17,27 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <iostream>
-#include <openssl/crypto.h>
+#include "ores.database/domain/exceptions.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.platform/environment/environment.hpp"
+#include "ores.service/service/exit_codes.hpp"
+#include "ores.service/service/heartbeat_publisher.hpp"
+#include "ores.service/service/wt_service_runner.hpp"
+#include "ores.telemetry.core/log/lifecycle_manager.hpp"
+#include "ores.utility/version/version.hpp"
+#include "ores.wt.service/app/ore_application.hpp"
+#include "ores.wt.service/config/parser.hpp"
+#include "ores.wt.service/config/parser_exception.hpp"
+#include "ores.wt.service/messaging/registrar.hpp"
+#include "ores.wt.service/service/application_context.hpp"
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 #include <boost/scope_exit.hpp>
-#include <Wt/WServer.h>
 #include <Wt/WLogSink.h>
-#include "ores.wt.service/config/parser.hpp"
-#include "ores.wt.service/config/parser_exception.hpp"
-#include "ores.database/domain/exceptions.hpp"
-#include "ores.service/service/exit_codes.hpp"
-#include "ores.wt.service/service/application_context.hpp"
-#include "ores.wt.service/app/ore_application.hpp"
-#include "ores.wt.service/messaging/registrar.hpp"
-#include "ores.telemetry.core/log/lifecycle_manager.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.utility/version/version.hpp"
-#include "ores.platform/environment/environment.hpp"
-#include "ores.nats/service/client.hpp"
-#include "ores.service/service/wt_service_runner.hpp"
-#include "ores.service/service/heartbeat_publisher.hpp"
+#include <Wt/WServer.h>
+#include <iostream>
+#include <openssl/crypto.h>
 
 namespace {
 
@@ -50,8 +50,7 @@ const std::string default_port = "8080";
 constexpr std::string_view service_name = "ores.wt.service";
 constexpr std::string_view service_version = ORES_VERSION;
 
-std::unique_ptr<Wt::WApplication>
-create_application(const Wt::WEnvironment& env) {
+std::unique_ptr<Wt::WApplication> create_application(const Wt::WEnvironment& env) {
     return std::make_unique<ores::wt::service::app::ore_application>(env);
 }
 
@@ -67,7 +66,8 @@ public:
     explicit boost_log_sink()
         : lg_(ores::logging::make_logger("ores.wt.service.wt")) {}
 
-    void log(const std::string& type, const std::string& /*scope*/,
+    void log(const std::string& type,
+             const std::string& /*scope*/,
              const std::string& message) const noexcept override {
         try {
             using namespace ores::logging;
@@ -79,7 +79,8 @@ public:
                 BOOST_LOG_SEV(lg_, error) << message;
             else
                 BOOST_LOG_SEV(lg_, info) << message;
-        } catch (...) {}
+        } catch (...) {
+        }
     }
 
 private:
@@ -103,13 +104,11 @@ int run(int argc, char* argv[]) {
 
     std::unique_ptr<ores::telemetry::log::lifecycle_manager> log_mgr;
     if (opts.logging.has_value()) {
-        log_mgr = std::make_unique<ores::telemetry::log::lifecycle_manager>(
-            opts.logging.value());
+        log_mgr = std::make_unique<ores::telemetry::log::lifecycle_manager>(opts.logging.value());
     }
 
     auto lg(make_logger("ores.wt.service"));
-    BOOST_LOG_SEV(lg, info) << ores::utility::version::format_startup_message(
-        "ORE Studio Web");
+    BOOST_LOG_SEV(lg, info) << ores::utility::version::format_startup_message("ORE Studio Web");
 
     // Initialise the application context (internal DB context + eventing).
     auto& app_ctx = ores::wt::service::application_context::instance();
@@ -150,8 +149,8 @@ int run(int argc, char* argv[]) {
         BOOST_LOG_SEV(lg, info) << "Using Wt resources from: " << resources_dir.value();
     }
 
-    BOOST_LOG_SEV(lg, info) << "HTTP server listening on http://" << http_address
-                            << ":" << http_port;
+    BOOST_LOG_SEV(lg, info) << "HTTP server listening on http://" << http_address << ":"
+                            << http_port;
 
     std::vector<char*> wt_argv;
     for (auto& s : wt_argv_strings) {
@@ -163,16 +162,16 @@ int run(int argc, char* argv[]) {
     // Construct NATS client.
     ores::nats::service::client nats(opts.nats);
     nats.connect();
-    BOOST_LOG_SEV(lg, info) << "Connected to NATS: " << opts.nats.url
-                            << " (namespace: '"
-                            << (opts.nats.subject_prefix.empty() ? "(none)" : opts.nats.subject_prefix)
+    BOOST_LOG_SEV(lg, info) << "Connected to NATS: " << opts.nats.url << " (namespace: '"
+                            << (opts.nats.subject_prefix.empty() ? "(none)" :
+                                                                   opts.nats.subject_prefix)
                             << "')";
 
     ores::service::service::run_wt(
-        nats, service_name,
+        nats,
+        service_name,
         [](auto& n, auto v) {
-            return ores::wt::service::messaging::registrar::register_handlers(
-                n, std::move(v));
+            return ores::wt::service::messaging::registrar::register_handlers(n, std::move(v));
         },
         [&]() {
             boost_log_sink wt_sink;
@@ -190,9 +189,7 @@ int run(int argc, char* argv[]) {
         [&nats](boost::asio::io_context& ioc) {
             auto hb = std::make_shared<ores::service::service::heartbeat_publisher>(
                 std::string(service_name), std::string(service_version), nats);
-            boost::asio::co_spawn(ioc,
-                [hb]() { return hb->run(); },
-                boost::asio::detached);
+            boost::asio::co_spawn(ioc, [hb]() { return hb->run(); }, boost::asio::detached);
         });
 
     app_ctx.stop_eventing();
@@ -206,15 +203,15 @@ int run(int argc, char* argv[]) {
 int main(int argc, char* argv[]) {
     BOOST_SCOPE_EXIT(void) {
         OPENSSL_cleanup();
-    } BOOST_SCOPE_EXIT_END
+    }
+    BOOST_SCOPE_EXIT_END
 
     try {
         return run(argc, argv);
     } catch (const ores::wt::service::config::parser_exception&) {
         return EXIT_FAILURE;
     } catch (const ores::database::db_connection_exception&) {
-        return static_cast<int>(
-            ores::service::service::exit_code::db_connection_failed);
+        return static_cast<int>(ores::service::service::exit_code::db_connection_failed);
     } catch (const std::exception& e) {
         std::cerr << "Fatal error: " << e.what() << std::endl;
         return EXIT_FAILURE;

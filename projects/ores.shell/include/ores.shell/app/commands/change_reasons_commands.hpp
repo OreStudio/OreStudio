@@ -37,8 +37,7 @@ namespace ores::shell::app::commands {
  */
 class change_reasons_commands {
 private:
-    inline static std::string_view logger_name =
-        "ores.shell.app.commands.change_reasons_commands";
+    inline static std::string_view logger_name = "ores.shell.app.commands.change_reasons_commands";
 
     static auto& lg() {
         using namespace ores::logging;
@@ -56,8 +55,8 @@ public:
      * pagination_context is passed for API consistency.
      */
     static void register_commands(cli::Menu& root_menu,
-        ores::nats::service::nats_client& session,
-        pagination_context& pagination);
+                                  ores::nats::service::nats_client& session,
+                                  pagination_context& pagination);
 
     /**
      * @brief Process a get change reasons request.
@@ -68,7 +67,7 @@ public:
      * @param session Client session for connectivity.
      */
     static void process_get_change_reasons(std::ostream& out,
-        ores::nats::service::nats_client& session);
+                                           ores::nats::service::nats_client& session);
 
     /**
      * @brief Process an add change reason request.
@@ -83,9 +82,11 @@ public:
      * @param change_commentary Free-text commentary explaining the change
      */
     static void process_add_change_reason(std::ostream& out,
-        ores::nats::service::nats_client& session,
-        std::string code, std::string description,
-        std::string category_code, std::string change_commentary);
+                                          ores::nats::service::nats_client& session,
+                                          std::string code,
+                                          std::string description,
+                                          std::string category_code,
+                                          std::string change_commentary);
 
     /**
      * @brief Process a delete change reason request.
@@ -97,8 +98,8 @@ public:
      * @param code Code of the change reason to delete
      */
     static void process_delete_change_reason(std::ostream& out,
-        ores::nats::service::nats_client& session,
-        std::string code);
+                                             ores::nats::service::nats_client& session,
+                                             std::string code);
 
     /**
      * @brief Process a get change reason history request.
@@ -110,8 +111,8 @@ public:
      * @param code Code of the change reason
      */
     static void process_get_change_reason_history(std::ostream& out,
-        ores::nats::service::nats_client& session,
-        std::string code);
+                                                  ores::nats::service::nats_client& session,
+                                                  std::string code);
 };
 
 }

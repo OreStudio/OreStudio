@@ -20,19 +20,19 @@
 #ifndef ORES_HTTP_NET_HTTP_SESSION_HPP
 #define ORES_HTTP_NET_HTTP_SESSION_HPP
 
-#include <memory>
-#include <string>
-#include <chrono>
-#include <functional>
-#include <boost/asio/ip/tcp.hpp>
+#include "ores.http.api/export.hpp"
+#include "ores.http.api/net/http_server_options.hpp"
+#include "ores.http.api/net/router.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
 #include <boost/asio/awaitable.hpp>
+#include <boost/asio/ip/tcp.hpp>
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
-#include "ores.http.api/net/router.hpp"
-#include "ores.http.api/net/http_server_options.hpp"
-#include "ores.security/jwt/jwt_authenticator.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.http.api/export.hpp"
+#include <chrono>
+#include <functional>
+#include <memory>
+#include <string>
 
 namespace ores::http::net {
 
@@ -47,11 +47,10 @@ namespace ores::http::net {
  * @param bytes_sent Number of bytes sent in this request's response
  * @param bytes_received Number of bytes received in this request's body
  */
-using session_bytes_callback = std::function<void(
-    const std::string& session_id,
-    std::chrono::system_clock::time_point start_time,
-    std::size_t bytes_sent,
-    std::size_t bytes_received)>;
+using session_bytes_callback = std::function<void(const std::string& session_id,
+                                                  std::chrono::system_clock::time_point start_time,
+                                                  std::size_t bytes_sent,
+                                                  std::size_t bytes_received)>;
 
 /**
  * @brief Handles a single HTTP session/connection.
@@ -59,10 +58,10 @@ using session_bytes_callback = std::function<void(
 class ORES_HTTP_API_EXPORT http_session final : public std::enable_shared_from_this<http_session> {
 public:
     explicit http_session(boost::asio::ip::tcp::socket socket,
-        std::shared_ptr<router> router,
-        std::shared_ptr<ores::security::jwt::jwt_authenticator> authenticator,
-        const http_server_options& options,
-        session_bytes_callback bytes_callback = nullptr);
+                          std::shared_ptr<router> router,
+                          std::shared_ptr<ores::security::jwt::jwt_authenticator> authenticator,
+                          const http_server_options& options,
+                          session_bytes_callback bytes_callback = nullptr);
 
     /**
      * @brief Starts processing the session.
@@ -78,14 +77,14 @@ private:
         return instance;
     }
 
-    boost::asio::awaitable<void> handle_request(
-        boost::beast::http::request<boost::beast::http::string_body> req);
+    boost::asio::awaitable<void>
+    handle_request(boost::beast::http::request<boost::beast::http::string_body> req);
 
-    domain::http_request convert_request(
-        const boost::beast::http::request<boost::beast::http::string_body>& req);
+    domain::http_request
+    convert_request(const boost::beast::http::request<boost::beast::http::string_body>& req);
 
-    boost::beast::http::response<boost::beast::http::string_body> convert_response(
-        const domain::http_response& resp, unsigned version, bool keep_alive);
+    boost::beast::http::response<boost::beast::http::string_body>
+    convert_response(const domain::http_response& resp, unsigned version, bool keep_alive);
 
     domain::http_method convert_method(boost::beast::http::verb verb);
 

@@ -18,10 +18,9 @@
  *
  */
 #include "ores.http.api/domain/route.hpp"
-
-#include <regex>
-#include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
+#include <catch2/catch_test_macros.hpp>
+#include <regex>
 
 namespace {
 
@@ -29,8 +28,8 @@ const std::string test_suite("ores.http.tests");
 const std::string tags("[route]");
 
 ores::http::domain::route make_route(const std::string& pattern,
-    const std::regex& regex,
-    const std::vector<std::string>& param_names) {
+                                     const std::regex& regex,
+                                     const std::vector<std::string>& param_names) {
     ores::http::domain::route r;
     r.method = ores::http::domain::http_method::get;
     r.pattern = pattern;
@@ -89,8 +88,8 @@ TEST_CASE("route_match_with_multiple_parameters", tags) {
     BOOST_LOG_SEV(lg, info) << "Testing route matching with multiple path parameters";
 
     auto sut = make_route("/users/{userId}/posts/{postId}",
-        std::regex("^/users/([^/]+)/posts/([^/]+)$"),
-        {"userId", "postId"});
+                          std::regex("^/users/([^/]+)/posts/([^/]+)$"),
+                          {"userId", "postId"});
 
     std::unordered_map<std::string, std::string> params;
     bool matched = sut.match("/users/42/posts/100", params);
@@ -105,8 +104,7 @@ TEST_CASE("route_match_with_uuid_parameter", tags) {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing route matching with UUID path parameter";
 
-    auto sut = make_route("/accounts/{id}",
-        std::regex("^/accounts/([^/]+)$"), {"id"});
+    auto sut = make_route("/accounts/{id}", std::regex("^/accounts/([^/]+)$"), {"id"});
 
     std::unordered_map<std::string, std::string> params;
     bool matched = sut.match("/accounts/550e8400-e29b-41d4-a716-446655440000", params);

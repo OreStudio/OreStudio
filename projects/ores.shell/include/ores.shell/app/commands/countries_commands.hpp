@@ -37,8 +37,7 @@ namespace ores::shell::app::commands {
  */
 class countries_commands {
 private:
-    inline static std::string_view logger_name =
-        "ores.shell.app.commands.countries_commands";
+    inline static std::string_view logger_name = "ores.shell.app.commands.countries_commands";
 
     static auto& lg() {
         using namespace ores::logging;
@@ -53,8 +52,8 @@ public:
      * Creates the countries submenu and adds country operations.
      */
     static void register_commands(cli::Menu& root_menu,
-        ores::nats::service::nats_client& session,
-        pagination_context& pagination);
+                                  ores::nats::service::nats_client& session,
+                                  pagination_context& pagination);
 
     /**
      * @brief Process a get countries request.
@@ -66,8 +65,8 @@ public:
      * @param pagination Pagination context for state management.
      */
     static void process_get_countries(std::ostream& out,
-        ores::nats::service::nats_client& session,
-        pagination_context& pagination);
+                                      ores::nats::service::nats_client& session,
+                                      pagination_context& pagination);
 
     /**
      * @brief Process an add country request.
@@ -86,11 +85,14 @@ public:
      * @param change_commentary Free-text commentary explaining the change
      */
     static void process_add_country(std::ostream& out,
-        ores::nats::service::nats_client& session,
-        std::string alpha2_code, std::string alpha3_code,
-        std::string numeric_code, std::string name,
-        std::string official_name, std::string change_reason_code,
-        std::string change_commentary);
+                                    ores::nats::service::nats_client& session,
+                                    std::string alpha2_code,
+                                    std::string alpha3_code,
+                                    std::string numeric_code,
+                                    std::string name,
+                                    std::string official_name,
+                                    std::string change_reason_code,
+                                    std::string change_commentary);
 
     /**
      * @brief Process a delete country request.
@@ -102,8 +104,8 @@ public:
      * @param alpha2_code ISO 3166-1 alpha-2 code of the country to delete
      */
     static void process_delete_country(std::ostream& out,
-        ores::nats::service::nats_client& session,
-        std::string alpha2_code);
+                                       ores::nats::service::nats_client& session,
+                                       std::string alpha2_code);
 
     /**
      * @brief Process a get country history request.
@@ -115,8 +117,8 @@ public:
      * @param alpha2_code ISO 3166-1 alpha-2 code of the country
      */
     static void process_get_country_history(std::ostream& out,
-        ores::nats::service::nats_client& session,
-        std::string alpha2_code);
+                                            ores::nats::service::nats_client& session,
+                                            std::string alpha2_code);
 };
 
 }

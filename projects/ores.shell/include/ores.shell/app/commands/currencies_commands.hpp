@@ -37,8 +37,7 @@ namespace ores::shell::app::commands {
  */
 class currencies_commands {
 private:
-    inline static std::string_view logger_name =
-        "ores.shell.app.commands.currencies_commands";
+    inline static std::string_view logger_name = "ores.shell.app.commands.currencies_commands";
 
     static auto& lg() {
         using namespace ores::logging;
@@ -53,8 +52,8 @@ public:
      * Creates the currencies submenu and adds currency operations.
      */
     static void register_commands(cli::Menu& root_menu,
-        ores::nats::service::nats_client& session,
-        pagination_context& pagination);
+                                  ores::nats::service::nats_client& session,
+                                  pagination_context& pagination);
 
     /**
      * @brief Process a get currencies request.
@@ -66,8 +65,8 @@ public:
      * @param pagination Pagination context for state management.
      */
     static void process_get_currencies(std::ostream& out,
-        ores::nats::service::nats_client& session,
-        pagination_context& pagination);
+                                       ores::nats::service::nats_client& session,
+                                       pagination_context& pagination);
 
     /**
      * @brief Process an add currency request.
@@ -86,11 +85,14 @@ public:
      * @param change_commentary Free-text commentary explaining the change
      */
     static void process_add_currency(std::ostream& out,
-        ores::nats::service::nats_client& session,
-        std::string iso_code, std::string name,
-        std::string numeric_code, std::string symbol,
-        std::string fractions_per_unit, std::string change_reason_code,
-        std::string change_commentary);
+                                     ores::nats::service::nats_client& session,
+                                     std::string iso_code,
+                                     std::string name,
+                                     std::string numeric_code,
+                                     std::string symbol,
+                                     std::string fractions_per_unit,
+                                     std::string change_reason_code,
+                                     std::string change_commentary);
 
     /**
      * @brief Process a delete currency request.
@@ -102,8 +104,8 @@ public:
      * @param iso_code ISO 4217 code of the currency to delete
      */
     static void process_delete_currency(std::ostream& out,
-        ores::nats::service::nats_client& session,
-        std::string iso_code);
+                                        ores::nats::service::nats_client& session,
+                                        std::string iso_code);
 
     /**
      * @brief Process a get currency history request.
@@ -115,8 +117,8 @@ public:
      * @param iso_code ISO 4217 code of the currency
      */
     static void process_get_currency_history(std::ostream& out,
-        ores::nats::service::nats_client& session,
-        std::string iso_code);
+                                             ores::nats::service::nats_client& session,
+                                             std::string iso_code);
 };
 
 }

@@ -18,7 +18,6 @@
  *
  */
 #include "ores.http.api/domain/http_request.hpp"
-
 #include <algorithm>
 
 namespace ores::http::domain {
@@ -26,8 +25,9 @@ namespace ores::http::domain {
 std::string http_request::get_header(const std::string& name) const {
     // Headers are stored with lowercase keys (normalized on insertion)
     std::string lower_name = name;
-    std::transform(lower_name.begin(), lower_name.end(), lower_name.begin(),
-        [](unsigned char c) { return std::tolower(c); });
+    std::transform(lower_name.begin(), lower_name.end(), lower_name.begin(), [](unsigned char c) {
+        return std::tolower(c);
+    });
     auto it = headers.find(lower_name);
     if (it != headers.end()) {
         return it->second;

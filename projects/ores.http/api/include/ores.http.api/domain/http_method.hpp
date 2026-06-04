@@ -27,15 +27,7 @@ namespace ores::http::domain {
 /**
  * @brief HTTP methods supported by the server.
  */
-enum class http_method : std::uint8_t {
-    get,
-    post,
-    put,
-    patch,
-    delete_,
-    head,
-    options
-};
+enum class http_method : std::uint8_t { get, post, put, patch, delete_, head, options };
 
 }
 

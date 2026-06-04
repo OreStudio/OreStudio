@@ -20,13 +20,13 @@
 #ifndef ORES_WT_SERVICE_APP_CURRENCY_DIALOG_HPP
 #define ORES_WT_SERVICE_APP_CURRENCY_DIALOG_HPP
 
+#include <Wt/WComboBox.h>
 #include <Wt/WDialog.h>
 #include <Wt/WLineEdit.h>
-#include <Wt/WSpinBox.h>
-#include <Wt/WComboBox.h>
 #include <Wt/WPushButton.h>
-#include <Wt/WText.h>
 #include <Wt/WSignal.h>
+#include <Wt/WSpinBox.h>
+#include <Wt/WText.h>
 
 namespace ores::wt::service::app {
 
@@ -60,7 +60,9 @@ public:
     void set_currency(const currency_data& data);
     currency_data get_currency() const;
 
-    Wt::Signal<currency_data>& saved() { return saved_; }
+    Wt::Signal<currency_data>& saved() {
+        return saved_;
+    }
 
 private:
     void setup_form();

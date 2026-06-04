@@ -22,7 +22,7 @@
 namespace ores::http::domain {
 
 bool route::match(const std::string& path,
-    std::unordered_map<std::string, std::string>& path_params) const {
+                  std::unordered_map<std::string, std::string>& path_params) const {
 
     std::smatch matches;
     if (!std::regex_match(path, matches, regex)) {

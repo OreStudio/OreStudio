@@ -18,7 +18,6 @@
  *
  */
 #include "ores.shell/config/login_options.hpp"
-
 #include <iostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>

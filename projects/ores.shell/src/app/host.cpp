@@ -18,13 +18,12 @@
  *
  */
 #include "ores.shell/app/host.hpp"
-
-#include <cstdlib>
-#include <boost/exception/diagnostic_information.hpp>
-#include "ores.telemetry.core/log/lifecycle_manager.hpp"
-#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.shell/app/application.hpp"
 #include "ores.shell/config/parser.hpp"
+#include "ores.telemetry.core/log/lifecycle_manager.hpp"
+#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <boost/exception/diagnostic_information.hpp>
+#include <cstdlib>
 
 namespace ores::shell::app {
 
@@ -33,7 +32,8 @@ using ores::shell::config::parser;
 using ores::telemetry::log::lifecycle_manager;
 
 int host::execute(const std::vector<std::string>& args,
-    std::ostream& std_output, std::ostream& error_output) {
+                  std::ostream& std_output,
+                  std::ostream& error_output) {
     /*
      * Create the configuration from command line options.
      */
@@ -77,7 +77,7 @@ int host::execute(const std::vector<std::string>& args,
          * boost exception, we would not have access to the what() method and
          * thus could not provide the exception message to the console.
          */
-        const auto *const be(dynamic_cast<const boost::exception* const>(&e));
+        const auto* const be(dynamic_cast<const boost::exception* const>(&e));
         if (be != nullptr) {
             using boost::diagnostic_information;
             BOOST_LOG_SEV(lg(), error) << "Error: " << diagnostic_information(*be);

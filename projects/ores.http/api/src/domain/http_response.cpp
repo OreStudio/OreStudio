@@ -18,7 +18,6 @@
  *
  */
 #include "ores.http.api/domain/http_response.hpp"
-
 #include <rfl.hpp>
 #include <rfl/json.hpp>
 
@@ -64,8 +63,7 @@ http_response http_response::internal_error(const std::string& message) {
     return error(http_status::internal_server_error, message);
 }
 
-http_response& http_response::set_header(const std::string& name,
-    const std::string& value) {
+http_response& http_response::set_header(const std::string& name, const std::string& value) {
     headers[name] = value;
     return *this;
 }

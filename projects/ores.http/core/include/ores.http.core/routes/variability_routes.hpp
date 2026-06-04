@@ -20,14 +20,14 @@
 #ifndef ORES_HTTP_CORE_ROUTES_VARIABILITY_ROUTES_HPP
 #define ORES_HTTP_CORE_ROUTES_VARIABILITY_ROUTES_HPP
 
-#include <memory>
+#include "ores.database/domain/context.hpp"
 #include "ores.http.api/net/router.hpp"
 #include "ores.http.api/openapi/endpoint_registry.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.variability.core/service/system_settings_service.hpp"
+#include "ores.http.core/export.hpp"
 #include "ores.iam.api/service/auth_session_service.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.http.core/export.hpp"
+#include "ores.variability.core/service/system_settings_service.hpp"
+#include <memory>
 
 namespace ores::http_server::routes {
 
@@ -41,7 +41,8 @@ namespace ores::http_server::routes {
  */
 class ORES_HTTP_CORE_EXPORT variability_routes final {
 public:
-    variability_routes(database::context ctx,
+    variability_routes(
+        database::context ctx,
         std::shared_ptr<variability::service::system_settings_service> system_settings,
         std::shared_ptr<iam::service::auth_session_service> sessions);
 
@@ -49,7 +50,7 @@ public:
      * @brief Registers all Variability routes with the router.
      */
     void register_routes(std::shared_ptr<http::net::router> router,
-        std::shared_ptr<http::openapi::endpoint_registry> registry);
+                         std::shared_ptr<http::openapi::endpoint_registry> registry);
 
 private:
     inline static std::string_view logger_name = "ores.http.server.routes.variability_routes";

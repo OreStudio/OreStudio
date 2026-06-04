@@ -20,10 +20,10 @@
 #ifndef ORES_SHELL_APP_APPLICATION_HPP
 #define ORES_SHELL_APP_APPLICATION_HPP
 
-#include <optional>
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/config/nats_options.hpp"
 #include "ores.shell/config/login_options.hpp"
+#include <optional>
 
 namespace ores::shell::app {
 
@@ -32,8 +32,7 @@ namespace ores::shell::app {
  */
 class application final {
 private:
-    inline static std::string_view logger_name =
-        "ores.shell.app.application";
+    inline static std::string_view logger_name = "ores.shell.app.application";
 
     static auto& lg() {
         using namespace ores::logging;
@@ -48,9 +47,8 @@ public:
      * @param connection_config Optional connection configuration for auto-connect.
      * @param login_config Optional login credentials for auto-login.
      */
-    explicit application(
-        std::optional<nats::config::nats_options> connection_config = std::nullopt,
-        std::optional<config::login_options> login_config = std::nullopt);
+    explicit application(std::optional<nats::config::nats_options> connection_config = std::nullopt,
+                         std::optional<config::login_options> login_config = std::nullopt);
 
     application(const application&) = delete;
     application& operator=(const application&) = delete;

@@ -17,23 +17,21 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.http.api/openapi/endpoint_registry.hpp"
 #include "ores.http.api/domain/route.hpp"
-
-#include <catch2/catch_test_macros.hpp>
+#include "ores.http.api/openapi/endpoint_registry.hpp"
 #include "ores.logging/make_logger.hpp"
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 
 const std::string test_suite("ores.http.tests");
 const std::string tags("[endpoint_registry]");
 
-ores::http::domain::route make_test_route(
-    ores::http::domain::http_method method,
-    const std::string& pattern,
-    const std::string& summary = "",
-    const std::string& description = "",
-    bool requires_auth = false) {
+ores::http::domain::route make_test_route(ores::http::domain::http_method method,
+                                          const std::string& pattern,
+                                          const std::string& summary = "",
+                                          const std::string& description = "",
+                                          bool requires_auth = false) {
 
     ores::http::domain::route r;
     r.method = method;
@@ -253,8 +251,8 @@ TEST_CASE("endpoint_registry_includes_authentication_requirement", tags) {
     BOOST_LOG_SEV(lg, info) << "Testing authentication requirement inclusion";
 
     endpoint_registry registry;
-    registry.register_route(make_test_route(
-        http_method::get, "/protected", "Protected endpoint", "", true));
+    registry.register_route(
+        make_test_route(http_method::get, "/protected", "Protected endpoint", "", true));
 
     auto json = registry.generate_openapi_json();
 
@@ -287,14 +285,15 @@ TEST_CASE("endpoint_registry_includes_description", tags) {
     BOOST_LOG_SEV(lg, info) << "Testing description inclusion";
 
     endpoint_registry registry;
-    registry.register_route(make_test_route(
-        http_method::get, "/users", "Get all users",
-        "Returns a paginated list of all users in the system"));
+    registry.register_route(make_test_route(http_method::get,
+                                            "/users",
+                                            "Get all users",
+                                            "Returns a paginated list of all users in the system"));
 
     auto json = registry.generate_openapi_json();
 
-    REQUIRE(json.find("\"description\":\"Returns a paginated list of all users in the system\"")
-        != std::string::npos);
+    REQUIRE(json.find("\"description\":\"Returns a paginated list of all users in the system\"") !=
+            std::string::npos);
 }
 
 TEST_CASE("endpoint_registry_includes_standard_responses", tags) {

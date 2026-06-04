@@ -51,8 +51,7 @@ public:
      *
      * Creates the change-reason-categories submenu and adds operations.
      */
-    static void register_commands(cli::Menu& root_menu,
-        ores::nats::service::nats_client& session);
+    static void register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session);
 
     /**
      * @brief Process a get change reason categories request.
@@ -63,7 +62,7 @@ public:
      * @param session Client session for connectivity.
      */
     static void process_get_categories(std::ostream& out,
-        ores::nats::service::nats_client& session);
+                                       ores::nats::service::nats_client& session);
 
     /**
      * @brief Process an add change reason category request.
@@ -77,9 +76,10 @@ public:
      * @param change_commentary Free-text commentary explaining the change
      */
     static void process_add_category(std::ostream& out,
-        ores::nats::service::nats_client& session,
-        std::string code, std::string description,
-        std::string change_commentary);
+                                     ores::nats::service::nats_client& session,
+                                     std::string code,
+                                     std::string description,
+                                     std::string change_commentary);
 
     /**
      * @brief Process a delete change reason category request.
@@ -91,8 +91,8 @@ public:
      * @param code Code of the category to delete
      */
     static void process_delete_category(std::ostream& out,
-        ores::nats::service::nats_client& session,
-        std::string code);
+                                        ores::nats::service::nats_client& session,
+                                        std::string code);
 
     /**
      * @brief Process a get category history request.
@@ -104,8 +104,8 @@ public:
      * @param code Code of the category
      */
     static void process_get_category_history(std::ostream& out,
-        ores::nats::service::nats_client& session,
-        std::string code);
+                                             ores::nats::service::nats_client& session,
+                                             std::string code);
 };
 
 }

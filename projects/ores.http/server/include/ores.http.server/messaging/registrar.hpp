@@ -20,11 +20,11 @@
 #ifndef ORES_HTTP_SERVER_MESSAGING_REGISTRAR_HPP
 #define ORES_HTTP_SERVER_MESSAGING_REGISTRAR_HPP
 
-#include <string>
-#include <vector>
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
+#include <string>
+#include <vector>
 
 namespace ores::http_server::messaging {
 

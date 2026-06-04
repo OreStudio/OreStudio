@@ -20,12 +20,12 @@
 #ifndef ORES_SHELL_APP_REPL_HPP
 #define ORES_SHELL_APP_REPL_HPP
 
-#include <iosfwd>
-#include <memory>
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/pagination_context.hpp"
 #include "ores.shell/export.hpp"
+#include <iosfwd>
+#include <memory>
 
 namespace cli {
 
@@ -45,8 +45,7 @@ namespace ores::shell::app {
  */
 class ORES_SHELL_EXPORT repl final {
 private:
-    inline static std::string_view logger_name =
-        "ores.shell.app.repl";
+    inline static std::string_view logger_name = "ores.shell.app.repl";
 
     static auto& lg() {
         using namespace ores::logging;

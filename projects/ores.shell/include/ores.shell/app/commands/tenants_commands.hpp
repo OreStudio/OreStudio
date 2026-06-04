@@ -39,8 +39,7 @@ namespace ores::shell::app::commands {
  */
 class tenants_commands {
 private:
-    inline static std::string_view logger_name =
-        "ores.shell.app.commands.tenants_commands";
+    inline static std::string_view logger_name = "ores.shell.app.commands.tenants_commands";
 
     static auto& lg() {
         using namespace ores::logging;
@@ -58,8 +57,8 @@ public:
      * pagination_context is passed for API consistency.
      */
     static void register_commands(cli::Menu& root_menu,
-        ores::nats::service::nats_client& session,
-        pagination_context& pagination);
+                                  ores::nats::service::nats_client& session,
+                                  pagination_context& pagination);
 
     /**
      * @brief Process a get tenants request.
@@ -71,8 +70,8 @@ public:
      * @param include_deleted When true, includes soft-deleted tenants.
      */
     static void process_get_tenants(std::ostream& out,
-        ores::nats::service::nats_client& session,
-        bool include_deleted);
+                                    ores::nats::service::nats_client& session,
+                                    bool include_deleted);
 
     /**
      * @brief Process an add tenant request.
@@ -88,9 +87,12 @@ public:
      * @param description Optional description
      */
     static void process_add_tenant(std::ostream& out,
-        ores::nats::service::nats_client& session,
-        std::string code, std::string name, std::string type,
-        std::string hostname, std::string description);
+                                   ores::nats::service::nats_client& session,
+                                   std::string code,
+                                   std::string name,
+                                   std::string type,
+                                   std::string hostname,
+                                   std::string description);
 
     /**
      * @brief Process a tenant history request.
@@ -102,8 +104,8 @@ public:
      * @param tenant_id The tenant UUID to get history for.
      */
     static void process_tenant_history(std::ostream& out,
-        ores::nats::service::nats_client& session,
-        std::string tenant_id);
+                                       ores::nats::service::nats_client& session,
+                                       std::string tenant_id);
 
     /**
      * @brief Process a delete tenant request.
@@ -115,8 +117,8 @@ public:
      * @param tenant_id The tenant UUID to delete.
      */
     static void process_delete_tenant(std::ostream& out,
-        ores::nats::service::nats_client& session,
-        std::string tenant_id);
+                                      ores::nats::service::nats_client& session,
+                                      std::string tenant_id);
 };
 
 }

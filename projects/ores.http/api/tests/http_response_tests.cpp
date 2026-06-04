@@ -18,9 +18,8 @@
  *
  */
 #include "ores.http.api/domain/http_response.hpp"
-
-#include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 
@@ -167,8 +166,8 @@ TEST_CASE("http_response_set_header_returns_self_for_chaining", tags) {
 
     http_response sut;
     sut.set_header("Header1", "value1")
-       .set_header("Header2", "value2")
-       .set_header("Header3", "value3");
+        .set_header("Header2", "value2")
+        .set_header("Header3", "value3");
 
     CHECK(sut.headers.size() == 3);
     CHECK(sut.headers["Header1"] == "value1");

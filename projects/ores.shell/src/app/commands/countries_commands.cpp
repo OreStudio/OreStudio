@@ -18,14 +18,13 @@
  *
  */
 #include "ores.shell/app/commands/countries_commands.hpp"
-
-#include <ostream>
-#include <functional>
-#include <rfl/json.hpp>
+#include "ores.refdata.api/domain/country_table_io.hpp" // IWYU pragma: keep.
+#include "ores.refdata.api/messaging/country_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <cli/cli.h>
-#include "ores.refdata.api/messaging/country_protocol.hpp"
-#include "ores.refdata.api/domain/country_table_io.hpp" // IWYU pragma: keep.
+#include <functional>
+#include <ostream>
+#include <rfl/json.hpp>
 
 namespace ores::shell::app::commands {
 
@@ -34,13 +33,15 @@ using ores::nats::service::nats_client;
 
 namespace {
 
-template<typename Response>
-std::optional<Response> do_request(std::ostream& out, nats_client& session,
-    const std::string& subject, const std::string& body) {
+template <typename Response>
+std::optional<Response> do_request(std::ostream& out,
+                                   nats_client& session,
+                                   const std::string& subject,
+                                   const std::string& body) {
     try {
         auto reply = session.request(subject, body);
-        auto data_str = std::string(
-            reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
+        auto data_str =
+            std::string(reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
         auto result = rfl::json::read<Response>(data_str);
         if (!result) {
             out << "✗ Failed to parse response" << std::endl;
@@ -53,13 +54,15 @@ std::optional<Response> do_request(std::ostream& out, nats_client& session,
     }
 }
 
-template<typename Response>
-std::optional<Response> do_auth_request(std::ostream& out, nats_client& session,
-    const std::string& subject, const std::string& body) {
+template <typename Response>
+std::optional<Response> do_auth_request(std::ostream& out,
+                                        nats_client& session,
+                                        const std::string& subject,
+                                        const std::string& body) {
     try {
         auto reply = session.authenticated_request(subject, body);
-        auto data_str = std::string(
-            reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
+        auto data_str =
+            std::string(reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
         auto result = rfl::json::read<Response>(data_str);
         if (!result) {
             out << "✗ Failed to parse response" << std::endl;
@@ -74,53 +77,65 @@ std::optional<Response> do_auth_request(std::ostream& out, nats_client& session,
 
 } // anonymous namespace
 
-void countries_commands::
-register_commands(cli::Menu& root_menu, nats_client& session,
-                  pagination_context& pagination) {
-    auto countries_menu =
-        std::make_unique<cli::Menu>("countries");
+void countries_commands::register_commands(cli::Menu& root_menu,
+                                           nats_client& session,
+                                           pagination_context& pagination) {
+    auto countries_menu = std::make_unique<cli::Menu>("countries");
 
-    countries_menu->Insert("get", [&session, &pagination](std::ostream& out) {
-        process_get_countries(std::ref(out), std::ref(session),
-                              std::ref(pagination));
-    }, "Retrieve countries from the server (paginated)");
+    countries_menu->Insert(
+        "get",
+        [&session, &pagination](std::ostream& out) {
+            process_get_countries(std::ref(out), std::ref(session), std::ref(pagination));
+        },
+        "Retrieve countries from the server (paginated)");
 
     // Register list callback for navigation
-    pagination.register_list_callback("countries",
-        [&session, &pagination](std::ostream& out) {
-            process_get_countries(out, session, pagination);
-        });
+    pagination.register_list_callback("countries", [&session, &pagination](std::ostream& out) {
+        process_get_countries(out, session, pagination);
+    });
 
-    countries_menu->Insert("add", [&session](std::ostream& out,
-            std::string alpha2_code, std::string alpha3_code,
-            std::string numeric_code, std::string name,
-            std::string official_name, std::string change_reason_code,
-            std::string change_commentary) {
-        process_add_country(std::ref(out), std::ref(session),
-            std::move(alpha2_code), std::move(alpha3_code),
-            std::move(numeric_code), std::move(name),
-            std::move(official_name), std::move(change_reason_code),
-            std::move(change_commentary));
-    }, "Add a country (alpha2 alpha3 numeric name official_name reason_code \"commentary\")");
+    countries_menu->Insert(
+        "add",
+        [&session](std::ostream& out,
+                   std::string alpha2_code,
+                   std::string alpha3_code,
+                   std::string numeric_code,
+                   std::string name,
+                   std::string official_name,
+                   std::string change_reason_code,
+                   std::string change_commentary) {
+            process_add_country(std::ref(out),
+                                std::ref(session),
+                                std::move(alpha2_code),
+                                std::move(alpha3_code),
+                                std::move(numeric_code),
+                                std::move(name),
+                                std::move(official_name),
+                                std::move(change_reason_code),
+                                std::move(change_commentary));
+        },
+        "Add a country (alpha2 alpha3 numeric name official_name reason_code \"commentary\")");
 
-    countries_menu->Insert("delete", [&session](std::ostream& out,
-            std::string alpha2_code) {
-        process_delete_country(std::ref(out), std::ref(session),
-            std::move(alpha2_code));
-    }, "Delete a country by alpha-2 code");
+    countries_menu->Insert(
+        "delete",
+        [&session](std::ostream& out, std::string alpha2_code) {
+            process_delete_country(std::ref(out), std::ref(session), std::move(alpha2_code));
+        },
+        "Delete a country by alpha-2 code");
 
-    countries_menu->Insert("history", [&session](std::ostream& out,
-            std::string alpha2_code) {
-        process_get_country_history(std::ref(out), std::ref(session),
-            std::move(alpha2_code));
-    }, "Get version history for a country by alpha-2 code");
+    countries_menu->Insert(
+        "history",
+        [&session](std::ostream& out, std::string alpha2_code) {
+            process_get_country_history(std::ref(out), std::ref(session), std::move(alpha2_code));
+        },
+        "Get version history for a country by alpha-2 code");
 
     root_menu.Insert(std::move(countries_menu));
 }
 
-void countries_commands::
-process_get_countries(std::ostream& out, nats_client& session,
-                      pagination_context& pagination) {
+void countries_commands::process_get_countries(std::ostream& out,
+                                               nats_client& session,
+                                               pagination_context& pagination) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating get countries request.";
 
     auto& state = pagination.state_for("countries");
@@ -131,33 +146,36 @@ process_get_countries(std::ostream& out, nats_client& session,
 
     auto result = do_request<refdata::messaging::get_countries_response>(
         out, session, "refdata.v1.countries.list", rfl::json::write(req));
-    if (!result) return;
+    if (!result)
+        return;
 
     state.total_count = result->total_available_count;
     pagination.set_last_entity("countries");
 
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
-                              << result->countries.size() << " countries.";
+    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->countries.size()
+                              << " countries.";
     out << result->countries << std::endl;
 
     // Display pagination info
     const auto page = (state.current_offset / pagination.page_size()) + 1;
-    const auto total_pages = state.total_count > 0
-        ? ((state.total_count + pagination.page_size() - 1) / pagination.page_size())
-        : 1;
-    out << "\nPage " << page << " of " << total_pages
-        << " (" << result->countries.size() << " of "
+    const auto total_pages =
+        state.total_count > 0 ?
+            ((state.total_count + pagination.page_size() - 1) / pagination.page_size()) :
+            1;
+    out << "\nPage " << page << " of " << total_pages << " (" << result->countries.size() << " of "
         << state.total_count << " total)" << std::endl;
 }
 
-void countries_commands::
-process_add_country(std::ostream& out, nats_client& session,
-    std::string alpha2_code, std::string alpha3_code,
-    std::string numeric_code, std::string name,
-    std::string official_name, std::string change_reason_code,
-    std::string change_commentary) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating add country request for: "
-                               << alpha2_code;
+void countries_commands::process_add_country(std::ostream& out,
+                                             nats_client& session,
+                                             std::string alpha2_code,
+                                             std::string alpha3_code,
+                                             std::string numeric_code,
+                                             std::string name,
+                                             std::string official_name,
+                                             std::string change_reason_code,
+                                             std::string change_commentary) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating add country request for: " << alpha2_code;
 
     // Get modified_by from logged-in user
     if (!session.is_logged_in()) {
@@ -167,23 +185,22 @@ process_add_country(std::ostream& out, nats_client& session,
     const auto& modified_by = session.auth().username;
 
     auto req = refdata::messaging::save_country_request::from(
-        refdata::domain::country{
-            .version = 0,
-            .alpha2_code = std::move(alpha2_code),
-            .alpha3_code = std::move(alpha3_code),
-            .numeric_code = std::move(numeric_code),
-            .name = std::move(name),
-            .official_name = std::move(official_name),
-            .image_id = std::nullopt,
-            .modified_by = modified_by,
-            .change_reason_code = std::move(change_reason_code),
-            .change_commentary = std::move(change_commentary),
-            .recorded_at = std::chrono::system_clock::now()
-        });
+        refdata::domain::country{.version = 0,
+                                 .alpha2_code = std::move(alpha2_code),
+                                 .alpha3_code = std::move(alpha3_code),
+                                 .numeric_code = std::move(numeric_code),
+                                 .name = std::move(name),
+                                 .official_name = std::move(official_name),
+                                 .image_id = std::nullopt,
+                                 .modified_by = modified_by,
+                                 .change_reason_code = std::move(change_reason_code),
+                                 .change_commentary = std::move(change_commentary),
+                                 .recorded_at = std::chrono::system_clock::now()});
 
     auto result = do_auth_request<refdata::messaging::save_country_response>(
         out, session, "refdata.v1.countries.save", rfl::json::write(req));
-    if (!result) return;
+    if (!result)
+        return;
 
     if (result->success) {
         BOOST_LOG_SEV(lg(), info) << "Successfully added country.";
@@ -195,11 +212,10 @@ process_add_country(std::ostream& out, nats_client& session,
     }
 }
 
-void countries_commands::
-process_delete_country(std::ostream& out, nats_client& session,
-    std::string alpha2_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating delete country request for: "
-                               << alpha2_code;
+void countries_commands::process_delete_country(std::ostream& out,
+                                                nats_client& session,
+                                                std::string alpha2_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating delete country request for: " << alpha2_code;
 
     // Check if logged in
     if (!session.is_logged_in()) {
@@ -212,7 +228,8 @@ process_delete_country(std::ostream& out, nats_client& session,
 
     auto result = do_auth_request<refdata::messaging::delete_country_response>(
         out, session, "refdata.v1.countries.delete", rfl::json::write(req));
-    if (!result) return;
+    if (!result)
+        return;
 
     if (result->success) {
         BOOST_LOG_SEV(lg(), info) << "Successfully deleted country: " << alpha2_code;
@@ -223,11 +240,10 @@ process_delete_country(std::ostream& out, nats_client& session,
     }
 }
 
-void countries_commands::
-process_get_country_history(std::ostream& out, nats_client& session,
-    std::string alpha2_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get country history for: "
-                               << alpha2_code;
+void countries_commands::process_get_country_history(std::ostream& out,
+                                                     nats_client& session,
+                                                     std::string alpha2_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating get country history for: " << alpha2_code;
 
     // Check if logged in
     if (!session.is_logged_in()) {
@@ -240,11 +256,11 @@ process_get_country_history(std::ostream& out, nats_client& session,
 
     auto result = do_auth_request<refdata::messaging::get_country_history_response>(
         out, session, "refdata.v1.countries.history", rfl::json::write(req));
-    if (!result) return;
+    if (!result)
+        return;
 
     if (!result->success) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to get country history: "
-                                  << result->message;
+        BOOST_LOG_SEV(lg(), warn) << "Failed to get country history: " << result->message;
         out << "✗ " << result->message << std::endl;
         return;
     }
@@ -254,8 +270,8 @@ process_get_country_history(std::ostream& out, nats_client& session,
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
-                              << result->history.size() << " history records.";
+    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->history.size()
+                              << " history records.";
     out << result->history << std::endl;
 }
 

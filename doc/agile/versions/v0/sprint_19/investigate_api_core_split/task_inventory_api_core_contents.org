@@ -1,0 +1,81 @@
+:PROPERTIES:
+:ID: 681BBF6B-4DD8-411A-9B19-76AA5E14C1FC
+:END:
+#+title: Task: Inventory api/core contents across split components
+#+description: For all 17 api+core split components, catalogue what lives in each sub-component (facets, headers, link dependencies), flag every api that pulls in heavy dependencies (database, etc.), and characterise the coupling — starting with ores.dq. Produce an investigation report grounding the refactor decision.
+#+type: task
+#+level: s1
+#+filetags: :architecture:components:cpp:investigate_api_core_split:sprint_19:v0:
+#+owner: marco
+#+branch: feature/investigate-api-core-split
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-04
+#+updated: 2026-06-04
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BD519FC9-6B29-4055-877F-861E46043A06][Investigate the API/core split in components]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Produce the investigation report that grounds the api/core refactor
+decision:
+
+1. For each of the 17 api+core split components, catalogue what lives
+   in =api= and what lives in =core=: facets (domain, messaging,
+   eventing, generators, repository, service, ...), notable headers,
+   and the full =target_link_libraries= list of each sub-component.
+2. Flag every =api= that links heavy dependencies — =ores.database=
+   and similar — starting from the known offender, =ores.dq.api=
+   (=projects/ores.dq/api/src/CMakeLists.txt= links
+   =ores.database.lib=).
+3. For each flagged api, characterise the coupling: which headers or
+   facets drag the dependency in, and whether any genuine reason for
+   it exists.
+4. Recommend the refactor: what moves where so each api is standard
+   types only — or at worst depends on other apis. File the
+   follow-up refactor tasks/stories, DQ first.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:BD519FC9-6B29-4055-877F-861E46043A06][Investigate the API/core split in components]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-04                               |
+
+* Acceptance
+
+- Investigation report covering all 17 split components: api vs core
+  contents and full api link-dependency lists.
+- Every heavy-dependency api flagged, with the coupling traced to the
+  responsible headers/facets and its rationale (or lack of one)
+  recorded.
+- Refactor recommendation written into the parent story's
+  =* Decisions=; follow-up tasks/stories filed.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1045][#1045]] | [agile] Scaffold API/core split investigation story |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

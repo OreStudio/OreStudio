@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: CD257D0D-31A9-4950-9568-97CFBC2DC7EF
+:END:
+#+title: Task: Restructure agile process into per-concept pages
+#+description: Create dedicated pages for story (story, epic, sizing), task, sprint planning, sprint execution, and sprint closure — each opening with an agile-domain overview then the detail currently in the process page. Agile process becomes an overview/inventory page linking them; glossary and recipes link directly to the per-concept pages.
+#+type: task
+#+level: s1
+#+filetags: :documentation:agile:documentation_review_followups:sprint_19:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-04
+#+updated: 2026-06-04
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:305E3A3B-8A72-49D3-9972-FAF06FEB4552][Documentation review follow-ups]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:305E3A3B-8A72-49D3-9972-FAF06FEB4552][Documentation review follow-ups]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-04                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

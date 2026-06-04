@@ -69,4 +69,5 @@ they work with any installed version.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Use find -exec instead of find|xargs (space-safety + empty-match hang) | CMakeLists.txt | Accepted | 141772bc |
+| 2 | Missing PRs and Review tables | task_add_cmake_format_targets.org | Accepted | 141772bc |

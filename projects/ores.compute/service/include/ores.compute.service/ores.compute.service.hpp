@@ -23,7 +23,8 @@
 /**
  * @brief Compute service
  *
- * Standalone NATS microservice hosting compute handlers and running the in-process compute loop with SQL and message queue action handlers.
+ * Standalone NATS microservice hosting compute handlers and running the in-process compute loop
+ * with SQL and message queue action handlers.
  */
 namespace ores::compute.service {}
 

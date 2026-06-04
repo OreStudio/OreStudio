@@ -27,8 +27,7 @@ namespace ores::compute::messaging {
 
 struct pull_work_request {
     using response_type = struct pull_work_response;
-    static constexpr std::string_view nats_subject =
-        "compute.v1.work.pull";
+    static constexpr std::string_view nats_subject = "compute.v1.work.pull";
     std::string host_id;
 };
 
@@ -61,14 +60,12 @@ struct work_assignment_event {
 };
 
 struct heartbeat_message {
-    static constexpr std::string_view nats_subject =
-        "compute.v1.work.heartbeat";
+    static constexpr std::string_view nats_subject = "compute.v1.work.heartbeat";
     std::string host_id;
 };
 
 struct reap_work_message {
-    static constexpr std::string_view nats_subject =
-        "compute.v1.work.reap";
+    static constexpr std::string_view nats_subject = "compute.v1.work.reap";
 };
 
 }

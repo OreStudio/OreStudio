@@ -30,7 +30,7 @@ namespace ores::reporting::domain {
  *
  * Reference data table defining valid concurrency policies for report definitions.
  * Examples: 'skip', 'queue', 'fail'.
- * 
+ *
  * Concurrency policies control what happens when a scheduler trigger fires
  * for a report definition that already has a running instance.
  */

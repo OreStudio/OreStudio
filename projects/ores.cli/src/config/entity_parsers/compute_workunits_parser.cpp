@@ -18,16 +18,15 @@
  *
  */
 #include "ores.cli/config/entity_parsers/compute_workunits_parser.hpp"
-
-#include <boost/program_options.hpp>
-#include <boost/throw_exception.hpp>
-#include "ores.cli/config/parser_helpers.hpp"
-#include "ores.cli/config/parser_exception.hpp"
-#include "ores.cli/config/entity.hpp"
 #include "ores.cli/config/add_compute_workunit_options.hpp"
+#include "ores.cli/config/entity.hpp"
+#include "ores.cli/config/parser_exception.hpp"
+#include "ores.cli/config/parser_helpers.hpp"
 #include "ores.database/config/database_configuration.hpp"
 #include "ores.logging/logging_configuration.hpp"
 #include "ores.utility/program_options/environment_mapper_factory.hpp"
+#include <boost/program_options.hpp>
+#include <boost/throw_exception.hpp>
 
 namespace ores::cli::config::entity_parsers {
 
@@ -55,75 +54,53 @@ using ores::cli::config::parser_helpers::read_export_options;
 const std::string list_command_name("list");
 const std::string add_command_name("add");
 
-const std::vector<std::string> allowed_operations{
-    list_command_name,
-    add_command_name
-};
+const std::vector<std::string> allowed_operations{list_command_name, add_command_name};
 
 /**
  * @brief Creates the options description for the add workunit command.
  */
 options_description make_add_workunit_options_description() {
     options_description r("Add Workunit Options");
-    r.add_options()
-        ("batch-id",
-            value<std::string>(),
-            "Batch UUID (required)")
-        ("app-version-id",
-            value<std::string>(),
-            "App version UUID (required)")
-        ("input-uri",
-            value<std::string>(),
-            "URI of the input data bundle (required)")
-        ("config-uri",
-            value<std::string>(),
-            "URI of the engine config file (required)")
-        ("priority",
-            value<int>()->default_value(0),
-            "Scheduling priority (default: 0)")
-        ("target-redundancy",
-            value<int>()->default_value(1),
-            "Number of results required (default: 1)")
-        ("modified-by",
-            value<std::string>(),
-            "Username of modifier (required)");
+    r.add_options()("batch-id", value<std::string>(), "Batch UUID (required)")(
+        "app-version-id", value<std::string>(), "App version UUID (required)")(
+        "input-uri", value<std::string>(), "URI of the input data bundle (required)")(
+        "config-uri", value<std::string>(), "URI of the engine config file (required)")(
+        "priority", value<int>()->default_value(0), "Scheduling priority (default: 0)")(
+        "target-redundancy",
+        value<int>()->default_value(1),
+        "Number of results required (default: 1)")(
+        "modified-by", value<std::string>(), "Username of modifier (required)");
     return r;
 }
 
 /**
  * @brief Reads add workunit configuration from the variables map.
  */
-ores::cli::config::add_compute_workunit_options
-read_add_workunit_options(const variables_map& vm) {
+ores::cli::config::add_compute_workunit_options read_add_workunit_options(const variables_map& vm) {
     ores::cli::config::add_compute_workunit_options r;
 
     if (vm.count("modified-by") == 0) {
-        BOOST_THROW_EXCEPTION(
-            parser_exception("Must supply --modified-by for add command."));
+        BOOST_THROW_EXCEPTION(parser_exception("Must supply --modified-by for add command."));
     }
     r.modified_by = vm["modified-by"].as<std::string>();
 
     if (vm.count("batch-id") == 0) {
-        BOOST_THROW_EXCEPTION(
-            parser_exception("Must supply --batch-id for add command."));
+        BOOST_THROW_EXCEPTION(parser_exception("Must supply --batch-id for add command."));
     }
     r.batch_id = vm["batch-id"].as<std::string>();
 
     if (vm.count("app-version-id") == 0) {
-        BOOST_THROW_EXCEPTION(
-            parser_exception("Must supply --app-version-id for add command."));
+        BOOST_THROW_EXCEPTION(parser_exception("Must supply --app-version-id for add command."));
     }
     r.app_version_id = vm["app-version-id"].as<std::string>();
 
     if (vm.count("input-uri") == 0) {
-        BOOST_THROW_EXCEPTION(
-            parser_exception("Must supply --input-uri for add command."));
+        BOOST_THROW_EXCEPTION(parser_exception("Must supply --input-uri for add command."));
     }
     r.input_uri = vm["input-uri"].as<std::string>();
 
     if (vm.count("config-uri") == 0) {
-        BOOST_THROW_EXCEPTION(
-            parser_exception("Must supply --config-uri for add command."));
+        BOOST_THROW_EXCEPTION(parser_exception("Must supply --config-uri for add command."));
     }
     r.config_uri = vm["config-uri"].as<std::string>();
 
@@ -137,11 +114,10 @@ read_add_workunit_options(const variables_map& vm) {
 
 }
 
-std::optional<options>
-handle_compute_workunits_command(bool has_help,
-    const parsed_options& po,
-    std::ostream& info,
-    variables_map& vm) {
+std::optional<options> handle_compute_workunits_command(bool has_help,
+                                                        const parsed_options& po,
+                                                        std::ostream& info,
+                                                        variables_map& vm) {
 
     auto o(collect_unrecognized(po.options, include_positional));
     o.erase(o.begin());
@@ -149,15 +125,14 @@ handle_compute_workunits_command(bool has_help,
     if (has_help && o.empty()) {
         const std::vector<std::pair<std::string, std::string>> operations = {
             {"list", "List compute workunits as JSON or table"},
-            {"add",  "Add a new compute workunit"}
-        };
+            {"add", "Add a new compute workunit"}};
         print_entity_help("workunits", "Manage compute workunits", operations, info);
         return {};
     }
 
     if (o.empty()) {
-        BOOST_THROW_EXCEPTION(parser_exception(
-            "workunits command requires an operation (list, add)"));
+        BOOST_THROW_EXCEPTION(
+            parser_exception("workunits command requires an operation (list, add)"));
     }
 
     const auto operation = o.front();

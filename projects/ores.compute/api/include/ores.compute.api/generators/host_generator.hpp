@@ -20,25 +20,24 @@
 #ifndef ORES_COMPUTE_GENERATORS_HOST_GENERATOR_HPP
 #define ORES_COMPUTE_GENERATORS_HOST_GENERATOR_HPP
 
-#include <vector>
 #include "ores.compute.api/domain/host.hpp"
 #include "ores.compute.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include <vector>
 
 namespace ores::compute::generators {
 
 /**
  * @brief Generates a synthetic compute host.
  */
-ORES_COMPUTE_API_EXPORT domain::host generate_synthetic_host(
-    utility::generation::generation_context& ctx);
+ORES_COMPUTE_API_EXPORT domain::host
+generate_synthetic_host(utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic compute hosts.
  */
 ORES_COMPUTE_API_EXPORT std::vector<domain::host>
-generate_synthetic_hosts(std::size_t n,
-    utility::generation::generation_context& ctx);
+generate_synthetic_hosts(std::size_t n, utility::generation::generation_context& ctx);
 
 }
 

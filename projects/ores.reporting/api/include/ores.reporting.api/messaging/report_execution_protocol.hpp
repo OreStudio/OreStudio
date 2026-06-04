@@ -21,8 +21,8 @@
 #define ORES_REPORTING_API_MESSAGING_REPORT_EXECUTION_PROTOCOL_HPP
 
 #include <string>
-#include <vector>
 #include <string_view>
+#include <vector>
 
 namespace ores::reporting::messaging {
 
@@ -47,8 +47,7 @@ struct report_execution_request {
  * trading.v1.trades.portfolio.export.
  */
 struct gather_trades_request {
-    static constexpr std::string_view nats_subject =
-        "reporting.v1.report.gather-trades";
+    static constexpr std::string_view nats_subject = "reporting.v1.report.gather-trades";
     std::string report_instance_id;
     std::string definition_id;
     std::string tenant_id;
@@ -59,7 +58,7 @@ struct gather_trades_result {
     bool success = false;
     std::string message;
     int trade_count = 0;
-    std::string storage_key;  ///< Object storage key for MsgPack-serialised trades
+    std::string storage_key; ///< Object storage key for MsgPack-serialised trades
 };
 
 /**
@@ -69,8 +68,7 @@ struct gather_trades_result {
  * marketdata.v1.series.list.
  */
 struct gather_market_data_request {
-    static constexpr std::string_view nats_subject =
-        "reporting.v1.report.gather-market-data";
+    static constexpr std::string_view nats_subject = "reporting.v1.report.gather-market-data";
     std::string report_instance_id;
     std::string definition_id;
     std::string tenant_id;
@@ -81,7 +79,7 @@ struct gather_market_data_result {
     bool success = false;
     std::string message;
     int series_count = 0;
-    std::string storage_key;  ///< Object storage key for MsgPack-serialised market data
+    std::string storage_key; ///< Object storage key for MsgPack-serialised market data
 };
 
 /**
@@ -93,8 +91,7 @@ struct gather_market_data_result {
  * workflow engine via the build_command lambda.
  */
 struct assemble_bundle_request {
-    static constexpr std::string_view nats_subject =
-        "reporting.v1.report.assemble-bundle";
+    static constexpr std::string_view nats_subject = "reporting.v1.report.assemble-bundle";
     std::string report_instance_id;
     std::string definition_id;
     std::string tenant_id;
@@ -108,7 +105,7 @@ struct assemble_bundle_request {
 struct assemble_bundle_result {
     bool success = false;
     std::string message;
-    std::string bundle_id;   ///< UUID of the persisted report_input_bundle
+    std::string bundle_id; ///< UUID of the persisted report_input_bundle
 };
 
 /**
@@ -119,8 +116,7 @@ struct assemble_bundle_result {
  * without an extra round-trip to the reporting database.
  */
 struct prepare_ore_package_request {
-    static constexpr std::string_view nats_subject =
-        "ore.v1.report.prepare-package";
+    static constexpr std::string_view nats_subject = "ore.v1.report.prepare-package";
     std::string report_instance_id;
     std::string bundle_id;
     std::string tenant_id;
@@ -139,8 +135,7 @@ struct prepare_ore_package_result {
  * @brief Step 4: submit tarballs to the compute grid (ores.compute.service).
  */
 struct submit_compute_request {
-    static constexpr std::string_view nats_subject =
-        "compute.v1.report.submit";
+    static constexpr std::string_view nats_subject = "compute.v1.report.submit";
     std::string report_instance_id;
     std::string tenant_id;
     std::string correlation_id;
@@ -161,12 +156,11 @@ struct submit_compute_result {
  * storage, parse ORE result XML/CSV, and persist structured results.
  */
 struct collect_compute_results_request {
-    static constexpr std::string_view nats_subject =
-        "reporting.v1.report.collect-compute-results";
+    static constexpr std::string_view nats_subject = "reporting.v1.report.collect-compute-results";
     std::string report_instance_id;
     std::string tenant_id;
     std::string correlation_id;
-    std::string batch_id;  ///< UUID of the compute batch from submit_compute_result
+    std::string batch_id; ///< UUID of the compute batch from submit_compute_result
 };
 
 struct collect_compute_results_result {
@@ -178,8 +172,7 @@ struct collect_compute_results_result {
  * @brief Final step: mark the report instance as completed.
  */
 struct finalise_report_request {
-    static constexpr std::string_view nats_subject =
-        "reporting.v1.report.finalise";
+    static constexpr std::string_view nats_subject = "reporting.v1.report.finalise";
     std::string report_instance_id;
     std::string tenant_id;
     std::string correlation_id;
@@ -197,8 +190,7 @@ struct finalise_report_result {
  * Sets the report instance FSM to failed with the error in output_message.
  */
 struct fail_report_request {
-    static constexpr std::string_view nats_subject =
-        "reporting.v1.report.fail";
+    static constexpr std::string_view nats_subject = "reporting.v1.report.fail";
     std::string report_instance_id;
     std::string tenant_id;
     std::string correlation_id;

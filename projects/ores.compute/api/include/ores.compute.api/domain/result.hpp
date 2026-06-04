@@ -20,11 +20,11 @@
 #ifndef ORES_COMPUTE_DOMAIN_RESULT_HPP
 #define ORES_COMPUTE_DOMAIN_RESULT_HPP
 
-#include <string>
-#include <cstdint>
-#include <chrono>
-#include <boost/uuid/uuid.hpp>
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <cstdint>
+#include <string>
 
 namespace ores::compute::domain {
 

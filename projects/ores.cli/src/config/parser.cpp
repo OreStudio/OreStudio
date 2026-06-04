@@ -18,22 +18,22 @@
  *
  */
 #include "ores.cli/config/parser.hpp"
+#include "ores.cli/config/domain_parsers/compute_parser.hpp"
 #include "ores.cli/config/domain_parsers/dq_parser.hpp"
 #include "ores.cli/config/domain_parsers/iam_parser.hpp"
-#include "ores.cli/config/domain_parsers/refdata_parser.hpp"
-#include "ores.cli/config/domain_parsers/variability_parser.hpp"
-#include "ores.cli/config/domain_parsers/compute_parser.hpp"
-#include "ores.cli/config/domain_parsers/trading_parser.hpp"
 #include "ores.cli/config/domain_parsers/ore_parser.hpp"
+#include "ores.cli/config/domain_parsers/refdata_parser.hpp"
+#include "ores.cli/config/domain_parsers/trading_parser.hpp"
+#include "ores.cli/config/domain_parsers/variability_parser.hpp"
 #include "ores.cli/config/entity_parsers/accounts_parser.hpp"
 #include "ores.cli/config/entity_parsers/change_reason_categories_parser.hpp"
 #include "ores.cli/config/entity_parsers/change_reasons_parser.hpp"
 #include "ores.cli/config/entity_parsers/countries_parser.hpp"
 #include "ores.cli/config/entity_parsers/currencies_parser.hpp"
-#include "ores.cli/config/entity_parsers/system_settings_parser.hpp"
 #include "ores.cli/config/entity_parsers/login_info_parser.hpp"
 #include "ores.cli/config/entity_parsers/permissions_parser.hpp"
 #include "ores.cli/config/entity_parsers/roles_parser.hpp"
+#include "ores.cli/config/entity_parsers/system_settings_parser.hpp"
 #include "ores.cli/config/parser_exception.hpp"
 #include "ores.logging/logging_configuration.hpp"
 #include "ores.utility/program_options/common_configuration.hpp"
@@ -46,109 +46,109 @@
 
 namespace {
 
-    const std::string indent("   ");
-    const std::string more_information("Try --help' for more information.");
-    const std::string product_version("CLI for ORE Studio v" ORES_VERSION);
-    const std::string build_info(ores::utility::version::build_info());
-    const std::string usage_error_msg("Usage error: ");
-    const std::string no_command_msg("No command supplied. ");
+const std::string indent("   ");
+const std::string more_information("Try --help' for more information.");
+const std::string product_version("CLI for ORE Studio v" ORES_VERSION);
+const std::string build_info(ores::utility::version::build_info());
+const std::string usage_error_msg("Usage error: ");
+const std::string no_command_msg("No command supplied. ");
 
-    const std::string refdata_domain_name("refdata");
-    const std::string refdata_domain_desc("Reference data: currencies, countries.");
+const std::string refdata_domain_name("refdata");
+const std::string refdata_domain_desc("Reference data: currencies, countries.");
 
-    const std::string iam_domain_name("iam");
-    const std::string iam_domain_desc(
-        "Identity and access management: accounts, roles, permissions, login-info.");
+const std::string iam_domain_name("iam");
+const std::string
+    iam_domain_desc("Identity and access management: accounts, roles, permissions, login-info.");
 
-    const std::string dq_domain_name("dq");
-    const std::string dq_domain_desc("Data quality: change-reasons, change-reason-categories.");
+const std::string dq_domain_name("dq");
+const std::string dq_domain_desc("Data quality: change-reasons, change-reason-categories.");
 
-    const std::string variability_domain_name("variability");
-    const std::string variability_domain_desc("System settings and variability: system-settings.");
+const std::string variability_domain_name("variability");
+const std::string variability_domain_desc("System settings and variability: system-settings.");
 
-    const std::string compute_domain_name("compute");
-    const std::string compute_domain_desc("Distributed compute grid: hosts, apps, app-versions, batches, workunits, results.");
+const std::string compute_domain_name("compute");
+const std::string compute_domain_desc(
+    "Distributed compute grid: hosts, apps, app-versions, batches, workunits, results.");
 
-    const std::string trading_domain_name("trading");
-    const std::string trading_domain_desc("Trading: instrument reference data (day-count-fraction-types, leg-types, etc.).");
+const std::string trading_domain_name("trading");
+const std::string trading_domain_desc(
+    "Trading: instrument reference data (day-count-fraction-types, leg-types, etc.).");
 
-    const std::string ore_domain_name("ore");
-    const std::string ore_domain_desc("ORE: XML import/export utilities (roundtrip).");
+const std::string ore_domain_name("ore");
+const std::string ore_domain_desc("ORE: XML import/export utilities (roundtrip).");
 
-    const std::string operation_arg("operation");
+const std::string operation_arg("operation");
 
-    const std::string help_arg("help");
-    const std::string version_arg("version");
-    const std::string command_arg("command");
-    const std::string domain_arg("domain");
+const std::string help_arg("help");
+const std::string version_arg("version");
+const std::string command_arg("command");
+const std::string domain_arg("domain");
 
-    using boost::program_options::value;
-    using boost::program_options::variables_map;
-    using boost::program_options::parsed_options;
-    using boost::program_options::options_description;
-    using boost::program_options::positional_options_description;
+using boost::program_options::value;
+using boost::program_options::variables_map;
+using boost::program_options::parsed_options;
+using boost::program_options::options_description;
+using boost::program_options::positional_options_description;
 
-    using ores::cli::config::options;
-    using ores::cli::config::parser_exception;
-    namespace entity_parsers = ores::cli::config::entity_parsers;
-    namespace domain_parsers = ores::cli::config::domain_parsers;
+using ores::cli::config::options;
+using ores::cli::config::parser_exception;
+namespace entity_parsers = ores::cli::config::entity_parsers;
+namespace domain_parsers = ores::cli::config::domain_parsers;
 
-    /**
-     * @brief Creates the the top-level option descriptions that are visible to the
-     * end users.
-     */
-    options_description make_top_level_visible_options_description() {
-        using ores::logging::logging_configuration;
-        using ores::utility::program_options::common_configuration;
+/**
+ * @brief Creates the the top-level option descriptions that are visible to the
+ * end users.
+ */
+options_description make_top_level_visible_options_description() {
+    using ores::logging::logging_configuration;
+    using ores::utility::program_options::common_configuration;
 
-        const auto god(common_configuration::make_options_description());
-        const auto lod(logging_configuration::make_options_description("ores.cli.log"));
+    const auto god(common_configuration::make_options_description());
+    const auto lod(logging_configuration::make_options_description("ores.cli.log"));
 
-        options_description r;
-        r.add(god).add(lod);
-        return r;
+    options_description r;
+    r.add(god).add(lod);
+    return r;
+}
+
+/**
+ * @brief Creates the the top-level option descriptions that are hidden to end
+ * users.
+ */
+options_description make_top_level_hidden_options_description() {
+    options_description r("Commands");
+    r.add_options()("domain", value<std::string>(), "Domain sub-menu.")(
+        "command", value<std::string>(), "Entity command to execute.")(
+        "args", value<std::vector<std::string>>(), "Arguments for command");
+    return r;
+}
+
+/**
+ * @brief Creates the positional options.
+ */
+positional_options_description make_positional_options() {
+    positional_options_description r;
+    r.add("domain", 1).add("command", 1).add("args", -1);
+    return r;
+}
+
+
+/**
+ * @brief Ensures the supplied domain is a valid domain.
+ */
+void validate_domain_name(const std::string& domain_name) {
+    const bool is_valid(domain_name == refdata_domain_name || domain_name == iam_domain_name ||
+                        domain_name == dq_domain_name || domain_name == variability_domain_name ||
+                        domain_name == compute_domain_name || domain_name == trading_domain_name ||
+                        domain_name == ore_domain_name);
+
+    if (!is_valid) {
+        BOOST_THROW_EXCEPTION(parser_exception(
+            std::format("Invalid or unsupported domain: {}. "
+                        "Available domains: refdata, iam, dq, variability, compute, trading, ore",
+                        domain_name)));
     }
-
-    /**
-     * @brief Creates the the top-level option descriptions that are hidden to end
-     * users.
-     */
-    options_description make_top_level_hidden_options_description() {
-        options_description r("Commands");
-        r.add_options()("domain", value<std::string>(), "Domain sub-menu.")(
-            "command", value<std::string>(), "Entity command to execute.")(
-            "args", value<std::vector<std::string>>(), "Arguments for command");
-        return r;
-    }
-
-    /**
-     * @brief Creates the positional options.
-     */
-    positional_options_description make_positional_options() {
-        positional_options_description r;
-        r.add("domain", 1).add("command", 1).add("args", -1);
-        return r;
-    }
-
-
-    /**
-     * @brief Ensures the supplied domain is a valid domain.
-     */
-    void validate_domain_name(const std::string& domain_name) {
-        const bool is_valid(domain_name == refdata_domain_name || domain_name == iam_domain_name ||
-                            domain_name == dq_domain_name ||
-                            domain_name == variability_domain_name ||
-                            domain_name == compute_domain_name ||
-                            domain_name == trading_domain_name ||
-                            domain_name == ore_domain_name);
-
-        if (!is_valid) {
-            BOOST_THROW_EXCEPTION(
-                parser_exception(std::format("Invalid or unsupported domain: {}. "
-                                             "Available domains: refdata, iam, dq, variability, compute, trading, ore",
-                                             domain_name)));
-        }
-    }
+}
 }
 
 /**
@@ -337,24 +337,24 @@ std::optional<options> parse_arguments(const std::vector<std::string>& arguments
 
 namespace ores::cli::config {
 
-    std::optional<options> parser::parse(const std::vector<std::string>& arguments,
-                                         std::ostream& info,
-                                         std::ostream& err) const {
+std::optional<options> parser::parse(const std::vector<std::string>& arguments,
+                                     std::ostream& info,
+                                     std::ostream& err) const {
 
-        try {
-            return parse_arguments(arguments, info);
-        } catch (const parser_exception& e) {
-            err << usage_error_msg << e.what() << std::endl << more_information << std::endl;
-            BOOST_THROW_EXCEPTION(e);
-        } catch (const boost::program_options::unknown_option& e) {
-            std::string msg = e.what();
-            msg += ": '" + e.get_option_name() + "'";
-            err << usage_error_msg << msg << std::endl << more_information << std::endl;
-            BOOST_THROW_EXCEPTION(parser_exception(msg));
-        } catch (const boost::program_options::error& e) {
-            err << usage_error_msg << e.what() << std::endl << more_information << std::endl;
-            BOOST_THROW_EXCEPTION(parser_exception(e.what()));
-        }
+    try {
+        return parse_arguments(arguments, info);
+    } catch (const parser_exception& e) {
+        err << usage_error_msg << e.what() << std::endl << more_information << std::endl;
+        BOOST_THROW_EXCEPTION(e);
+    } catch (const boost::program_options::unknown_option& e) {
+        std::string msg = e.what();
+        msg += ": '" + e.get_option_name() + "'";
+        err << usage_error_msg << msg << std::endl << more_information << std::endl;
+        BOOST_THROW_EXCEPTION(parser_exception(msg));
+    } catch (const boost::program_options::error& e) {
+        err << usage_error_msg << e.what() << std::endl << more_information << std::endl;
+        BOOST_THROW_EXCEPTION(parser_exception(e.what()));
     }
+}
 
 }

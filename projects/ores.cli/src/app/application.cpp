@@ -19,127 +19,126 @@
  *
  */
 #include "ores.cli/app/application.hpp"
-
-#include <algorithm>
-#include <chrono>
-#include <optional>
-#include <type_traits>
-#include <unordered_map>
-#include "ores.utility/version/version.hpp"
-#include <boost/lexical_cast.hpp>
-#include <boost/throw_exception.hpp>
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include <rfl/json.hpp>
-#include <sqlgen/postgres.hpp>
-#include <magic_enum/magic_enum.hpp>
-#include "ores.database/service/tenant_context.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.utility/streaming/std_vector.hpp"  // IWYU pragma: keep.
-#include "ores.database/service/context_factory.hpp"
-#include "ores.database/domain/database_options.hpp"
-#include "ores.platform/time/datetime.hpp"
-#include "ores.ore.core/xml/importer.hpp"
-#include "ores.ore.core/xml/exporter.hpp"
-#include "ores.refdata.api/csv/exporter.hpp"
-#include "ores.refdata.api/domain/currency_table.hpp"
-#include "ores.refdata.api/domain/currency_json.hpp"
-#include "ores.refdata.core/repository/currency_repository.hpp"
-#include "ores.refdata.core/repository/zero_convention_repository.hpp"
-#include "ores.refdata.core/repository/deposit_convention_repository.hpp"
-#include "ores.refdata.core/repository/swap_convention_repository.hpp"
-#include "ores.refdata.core/repository/ois_convention_repository.hpp"
-#include "ores.refdata.core/repository/fra_convention_repository.hpp"
-#include "ores.refdata.core/repository/ibor_index_convention_repository.hpp"
-#include "ores.refdata.core/repository/overnight_index_convention_repository.hpp"
-#include "ores.refdata.core/repository/fx_convention_repository.hpp"
-#include "ores.refdata.core/repository/cds_convention_repository.hpp"
-#include "ores.iam.core/service/bootstrap_mode_service.hpp"
-#include "ores.iam.core/service/authorization_service.hpp"
-#include "ores.iam.api/domain/role.hpp"
-#include "ores.iam.api/domain/account_json.hpp"
-#include "ores.iam.api/domain/account_table.hpp"
-#include "ores.security/crypto/password_hasher.hpp"
-#include "ores.security/validation/password_validator.hpp"
-#include "ores.iam.core/repository/account_repository.hpp"
-#include "ores.variability.api/domain/system_setting_json_io.hpp"
-#include "ores.variability.api/domain/system_setting_table_io.hpp"
-#include "ores.variability.core/repository/system_settings_repository.hpp"
-#include "ores.iam.api/domain/login_info_json.hpp"
-#include "ores.iam.api/domain/login_info_table.hpp"
-#include "ores.iam.core/repository/login_info_repository.hpp"
-#include "ores.iam.api/domain/role_json.hpp"
-#include "ores.iam.api/domain/role_table.hpp"
-#include "ores.iam.core/repository/role_repository.hpp"
-#include "ores.iam.api/domain/permission_json.hpp"
-#include "ores.iam.api/domain/permission_table.hpp"
-#include "ores.iam.core/repository/permission_repository.hpp"
-#include "ores.dq.api/domain/change_reason_json_io.hpp"
-#include "ores.dq.api/domain/change_reason_table_io.hpp"
-#include "ores.dq.core/repository/change_reason_repository.hpp"
-#include "ores.dq.api/domain/change_reason_category_json_io.hpp"
-#include "ores.dq.api/domain/change_reason_category_table_io.hpp"
-#include "ores.dq.core/repository/change_reason_category_repository.hpp"
-#include "ores.refdata.api/domain/country_json_io.hpp"
-#include "ores.refdata.api/domain/country_table_io.hpp"
-#include "ores.refdata.core/repository/country_repository.hpp"
-#include "ores.cli/config/export_options.hpp"
-#include "ores.cli/config/add_currency_options.hpp"
+#include "ores.cli/app/application_exception.hpp"
 #include "ores.cli/config/add_account_options.hpp"
-#include "ores.cli/config/add_system_setting_options.hpp"
-#include "ores.cli/config/add_login_info_options.hpp"
-#include "ores.cli/config/add_role_options.hpp"
-#include "ores.cli/config/add_permission_options.hpp"
-#include "ores.cli/config/add_country_options.hpp"
-#include "ores.cli/config/add_change_reason_options.hpp"
+#include "ores.cli/config/add_business_day_convention_type_options.hpp"
 #include "ores.cli/config/add_change_reason_category_options.hpp"
-#include <boost/uuid/random_generator.hpp>
-#include "ores.compute.api/domain/host_table_io.hpp"
-#include "ores.compute.api/domain/host_json_io.hpp"
-#include "ores.compute.api/domain/app_table_io.hpp"
-#include "ores.compute.api/domain/app_json_io.hpp"
-#include "ores.compute.api/domain/app_version_table_io.hpp"
-#include "ores.compute.api/domain/app_version_json_io.hpp"
-#include "ores.compute.api/domain/batch_table_io.hpp"
-#include "ores.compute.api/domain/batch_json_io.hpp"
-#include "ores.compute.api/domain/workunit_table_io.hpp"
-#include "ores.compute.api/domain/workunit_json_io.hpp"
-#include "ores.compute.api/domain/result_table_io.hpp"
-#include "ores.compute.api/domain/result_json_io.hpp"
-#include "ores.compute.core/repository/host_repository.hpp"
-#include "ores.compute.core/repository/app_repository.hpp"
-#include "ores.compute.core/repository/app_version_repository.hpp"
-#include "ores.compute.core/repository/app_version_platform_repository.hpp"
-#include "ores.compute.core/repository/platform_repository.hpp"
-#include "ores.compute.core/repository/batch_repository.hpp"
-#include "ores.compute.core/repository/workunit_repository.hpp"
-#include "ores.compute.core/repository/result_repository.hpp"
+#include "ores.cli/config/add_change_reason_options.hpp"
 #include "ores.cli/config/add_compute_app_options.hpp"
 #include "ores.cli/config/add_compute_app_version_options.hpp"
 #include "ores.cli/config/add_compute_batch_options.hpp"
 #include "ores.cli/config/add_compute_workunit_options.hpp"
-#include "ores.trading.api/domain/day_count_fraction_type_json_io.hpp"
-#include "ores.trading.api/domain/day_count_fraction_type_table_io.hpp"
-#include "ores.trading.core/repository/day_count_fraction_type_repository.hpp"
+#include "ores.cli/config/add_country_options.hpp"
+#include "ores.cli/config/add_currency_options.hpp"
+#include "ores.cli/config/add_day_count_fraction_type_options.hpp"
+#include "ores.cli/config/add_floating_index_type_options.hpp"
+#include "ores.cli/config/add_leg_type_options.hpp"
+#include "ores.cli/config/add_login_info_options.hpp"
+#include "ores.cli/config/add_payment_frequency_type_options.hpp"
+#include "ores.cli/config/add_permission_options.hpp"
+#include "ores.cli/config/add_role_options.hpp"
+#include "ores.cli/config/add_system_setting_options.hpp"
+#include "ores.cli/config/export_options.hpp"
+#include "ores.compute.api/domain/app_json_io.hpp"
+#include "ores.compute.api/domain/app_table_io.hpp"
+#include "ores.compute.api/domain/app_version_json_io.hpp"
+#include "ores.compute.api/domain/app_version_table_io.hpp"
+#include "ores.compute.api/domain/batch_json_io.hpp"
+#include "ores.compute.api/domain/batch_table_io.hpp"
+#include "ores.compute.api/domain/host_json_io.hpp"
+#include "ores.compute.api/domain/host_table_io.hpp"
+#include "ores.compute.api/domain/result_json_io.hpp"
+#include "ores.compute.api/domain/result_table_io.hpp"
+#include "ores.compute.api/domain/workunit_json_io.hpp"
+#include "ores.compute.api/domain/workunit_table_io.hpp"
+#include "ores.compute.core/repository/app_repository.hpp"
+#include "ores.compute.core/repository/app_version_platform_repository.hpp"
+#include "ores.compute.core/repository/app_version_repository.hpp"
+#include "ores.compute.core/repository/batch_repository.hpp"
+#include "ores.compute.core/repository/host_repository.hpp"
+#include "ores.compute.core/repository/platform_repository.hpp"
+#include "ores.compute.core/repository/result_repository.hpp"
+#include "ores.compute.core/repository/workunit_repository.hpp"
+#include "ores.database/domain/database_options.hpp"
+#include "ores.database/service/context_factory.hpp"
+#include "ores.database/service/tenant_context.hpp"
+#include "ores.dq.api/domain/change_reason_category_json_io.hpp"
+#include "ores.dq.api/domain/change_reason_category_table_io.hpp"
+#include "ores.dq.api/domain/change_reason_json_io.hpp"
+#include "ores.dq.api/domain/change_reason_table_io.hpp"
+#include "ores.dq.core/repository/change_reason_category_repository.hpp"
+#include "ores.dq.core/repository/change_reason_repository.hpp"
+#include "ores.iam.api/domain/account_json.hpp"
+#include "ores.iam.api/domain/account_table.hpp"
+#include "ores.iam.api/domain/login_info_json.hpp"
+#include "ores.iam.api/domain/login_info_table.hpp"
+#include "ores.iam.api/domain/permission_json.hpp"
+#include "ores.iam.api/domain/permission_table.hpp"
+#include "ores.iam.api/domain/role.hpp"
+#include "ores.iam.api/domain/role_json.hpp"
+#include "ores.iam.api/domain/role_table.hpp"
+#include "ores.iam.core/repository/account_repository.hpp"
+#include "ores.iam.core/repository/login_info_repository.hpp"
+#include "ores.iam.core/repository/permission_repository.hpp"
+#include "ores.iam.core/repository/role_repository.hpp"
+#include "ores.iam.core/service/authorization_service.hpp"
+#include "ores.iam.core/service/bootstrap_mode_service.hpp"
+#include "ores.ore.core/xml/exporter.hpp"
+#include "ores.ore.core/xml/importer.hpp"
+#include "ores.platform/time/datetime.hpp"
+#include "ores.refdata.api/csv/exporter.hpp"
+#include "ores.refdata.api/domain/country_json_io.hpp"
+#include "ores.refdata.api/domain/country_table_io.hpp"
+#include "ores.refdata.api/domain/currency_json.hpp"
+#include "ores.refdata.api/domain/currency_table.hpp"
+#include "ores.refdata.core/repository/cds_convention_repository.hpp"
+#include "ores.refdata.core/repository/country_repository.hpp"
+#include "ores.refdata.core/repository/currency_repository.hpp"
+#include "ores.refdata.core/repository/deposit_convention_repository.hpp"
+#include "ores.refdata.core/repository/fra_convention_repository.hpp"
+#include "ores.refdata.core/repository/fx_convention_repository.hpp"
+#include "ores.refdata.core/repository/ibor_index_convention_repository.hpp"
+#include "ores.refdata.core/repository/ois_convention_repository.hpp"
+#include "ores.refdata.core/repository/overnight_index_convention_repository.hpp"
+#include "ores.refdata.core/repository/swap_convention_repository.hpp"
+#include "ores.refdata.core/repository/zero_convention_repository.hpp"
+#include "ores.security/crypto/password_hasher.hpp"
+#include "ores.security/validation/password_validator.hpp"
 #include "ores.trading.api/domain/business_day_convention_type_json_io.hpp"
 #include "ores.trading.api/domain/business_day_convention_type_table_io.hpp"
-#include "ores.trading.core/repository/business_day_convention_type_repository.hpp"
+#include "ores.trading.api/domain/day_count_fraction_type_json_io.hpp"
+#include "ores.trading.api/domain/day_count_fraction_type_table_io.hpp"
 #include "ores.trading.api/domain/floating_index_type_json_io.hpp"
 #include "ores.trading.api/domain/floating_index_type_table_io.hpp"
-#include "ores.trading.core/repository/floating_index_type_repository.hpp"
-#include "ores.trading.api/domain/payment_frequency_type_json_io.hpp"
-#include "ores.trading.api/domain/payment_frequency_type_table_io.hpp"
-#include "ores.trading.core/repository/payment_frequency_type_repository.hpp"
 #include "ores.trading.api/domain/leg_type_json_io.hpp"
 #include "ores.trading.api/domain/leg_type_table_io.hpp"
+#include "ores.trading.api/domain/payment_frequency_type_json_io.hpp"
+#include "ores.trading.api/domain/payment_frequency_type_table_io.hpp"
+#include "ores.trading.core/repository/business_day_convention_type_repository.hpp"
+#include "ores.trading.core/repository/day_count_fraction_type_repository.hpp"
+#include "ores.trading.core/repository/floating_index_type_repository.hpp"
 #include "ores.trading.core/repository/leg_type_repository.hpp"
-#include "ores.cli/config/add_day_count_fraction_type_options.hpp"
-#include "ores.cli/config/add_business_day_convention_type_options.hpp"
-#include "ores.cli/config/add_floating_index_type_options.hpp"
-#include "ores.cli/config/add_payment_frequency_type_options.hpp"
-#include "ores.cli/config/add_leg_type_options.hpp"
-#include "ores.cli/app/application_exception.hpp"
+#include "ores.trading.core/repository/payment_frequency_type_repository.hpp"
+#include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
+#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "ores.utility/version/version.hpp"
+#include "ores.variability.api/domain/system_setting_json_io.hpp"
+#include "ores.variability.api/domain/system_setting_table_io.hpp"
+#include "ores.variability.core/repository/system_settings_repository.hpp"
+#include <boost/lexical_cast.hpp>
+#include <boost/throw_exception.hpp>
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
+#include <chrono>
+#include <magic_enum/magic_enum.hpp>
+#include <optional>
+#include <rfl/json.hpp>
+#include <sqlgen/postgres.hpp>
+#include <type_traits>
+#include <unordered_map>
 
 namespace ores::cli::app {
 
@@ -151,29 +150,27 @@ using ores::refdata::domain::currency;
 using refdata::repository::currency_repository;
 using connection = sqlgen::Result<rfl::Ref<sqlgen::postgres::Connection>>;
 
-database::context application::make_context(
-    const std::optional<database::database_options>& db_opts) {
+database::context
+application::make_context(const std::optional<database::database_options>& db_opts) {
     using database::context_factory;
 
     if (!db_opts.has_value()) {
-        BOOST_THROW_EXCEPTION(
-            application_exception("Database configuration is required."));
+        BOOST_THROW_EXCEPTION(application_exception("Database configuration is required."));
     }
 
-    context_factory::configuration cfg {
-        .database_options = db_opts.value(),
-        .pool_size = 4,
-        .num_attempts = 10,
-        .wait_time_in_seconds = 1,
-        .service_account = db_opts.value().user
-    };
+    context_factory::configuration cfg{.database_options = db_opts.value(),
+                                       .pool_size = 4,
+                                       .num_attempts = 10,
+                                       .wait_time_in_seconds = 1,
+                                       .service_account = db_opts.value().user};
 
     return context_factory::make_context(cfg);
 }
 
 application::application(std::ostream& output_stream,
-    const std::optional<database::database_options>& db_opts)
-    : output_stream_(output_stream), context_(make_context(db_opts)) {
+                         const std::optional<database::database_options>& db_opts)
+    : output_stream_(output_stream)
+    , context_(make_context(db_opts)) {
     BOOST_LOG_SEV(lg(), debug) << "Creating application.";
 
     // Set tenant context if provided
@@ -190,30 +187,28 @@ void application::set_tenant_context(const std::string& tenant) {
     }
 }
 
-void application::
-import_currencies(const std::vector<std::filesystem::path> files) const {
+void application::import_currencies(const std::vector<std::filesystem::path> files) const {
     currency_repository rp;
 
     for (const auto& f : files) {
         BOOST_LOG_SEV(lg(), debug) << "Processing file: " << f;
         auto ccys(ore_importer::import_currency_config(f));
         rp.write(context_, ccys);
-        output_stream_ << f.filename() << ": Imported a total of "
-                       << ccys.size() << " currencies." << std::endl;
+        output_stream_ << f.filename() << ": Imported a total of " << ccys.size() << " currencies."
+                       << std::endl;
     }
 }
 
-void application::
-import_conventions(const std::vector<std::filesystem::path>& files) const {
-    refdata::repository::zero_convention_repository          zero_rp;
-    refdata::repository::deposit_convention_repository       deposit_rp;
-    refdata::repository::swap_convention_repository          swap_rp;
-    refdata::repository::ois_convention_repository           ois_rp;
-    refdata::repository::fra_convention_repository           fra_rp;
-    refdata::repository::ibor_index_convention_repository    ibor_rp;
+void application::import_conventions(const std::vector<std::filesystem::path>& files) const {
+    refdata::repository::zero_convention_repository zero_rp;
+    refdata::repository::deposit_convention_repository deposit_rp;
+    refdata::repository::swap_convention_repository swap_rp;
+    refdata::repository::ois_convention_repository ois_rp;
+    refdata::repository::fra_convention_repository fra_rp;
+    refdata::repository::ibor_index_convention_repository ibor_rp;
     refdata::repository::overnight_index_convention_repository overnight_rp;
-    refdata::repository::fx_convention_repository            fx_rp;
-    refdata::repository::cds_convention_repository           cds_rp;
+    refdata::repository::fx_convention_repository fx_rp;
+    refdata::repository::cds_convention_repository cds_rp;
 
     for (const auto& f : files) {
         BOOST_LOG_SEV(lg(), debug) << "Processing file: " << f;
@@ -229,27 +224,22 @@ import_conventions(const std::vector<std::filesystem::path>& files) const {
         fx_rp.write(context_, convs.fx);
         cds_rp.write(context_, convs.cds);
 
-        const auto total = convs.zero.size() + convs.deposit.size() +
-            convs.swap.size() + convs.ois.size() + convs.fra.size() +
-            convs.ibor_index.size() + convs.overnight_index.size() +
-            convs.fx.size() + convs.cds.size();
+        const auto total = convs.zero.size() + convs.deposit.size() + convs.swap.size() +
+                           convs.ois.size() + convs.fra.size() + convs.ibor_index.size() +
+                           convs.overnight_index.size() + convs.fx.size() + convs.cds.size();
 
         output_stream_ << f.filename() << ": Imported " << total
                        << " conventions (zero=" << convs.zero.size()
-                       << ", deposit=" << convs.deposit.size()
-                       << ", swap=" << convs.swap.size()
-                       << ", ois=" << convs.ois.size()
-                       << ", fra=" << convs.fra.size()
+                       << ", deposit=" << convs.deposit.size() << ", swap=" << convs.swap.size()
+                       << ", ois=" << convs.ois.size() << ", fra=" << convs.fra.size()
                        << ", ibor=" << convs.ibor_index.size()
                        << ", overnight=" << convs.overnight_index.size()
-                       << ", fx=" << convs.fx.size()
-                       << ", cds=" << convs.cds.size()
-                       << ")." << std::endl;
+                       << ", fx=" << convs.fx.size() << ", cds=" << convs.cds.size() << ")."
+                       << std::endl;
     }
 }
 
-void application::
-import_data(const std::optional<config::import_options>& ocfg) const {
+void application::import_data(const std::optional<config::import_options>& ocfg) const {
     if (!ocfg.has_value()) {
         BOOST_LOG_SEV(lg(), debug) << "No importing configuration found.";
         return;
@@ -264,14 +254,12 @@ import_data(const std::optional<config::import_options>& ocfg) const {
             import_conventions(cfg.targets);
             break;
         default:
-            BOOST_THROW_EXCEPTION(
-                application_exception(std::format("Unsupported entity: {}",
-                        magic_enum::enum_name(cfg.target_entity))));
+            BOOST_THROW_EXCEPTION(application_exception(
+                std::format("Unsupported entity: {}", magic_enum::enum_name(cfg.target_entity))));
     }
 }
 
-void application::
-export_currencies(const config::export_options& cfg) const {
+void application::export_currencies(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Exporting currency configurations.";
     refdata::repository::currency_repository rp;
 
@@ -310,8 +298,7 @@ export_currencies(const config::export_options& cfg) const {
     }
 }
 
-void application::
-export_accounts(const config::export_options& cfg) const {
+void application::export_accounts(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Exporting accounts.";
     iam::repository::account_repository repo(context_);
 
@@ -343,8 +330,7 @@ export_accounts(const config::export_options& cfg) const {
     }
 }
 
-void application::
-export_system_settings(const config::export_options& cfg) const {
+void application::export_system_settings(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Exporting system settings.";
 
     variability::repository::system_settings_repository repo;
@@ -379,8 +365,7 @@ export_system_settings(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Exported " << settings.size() << " system setting(s).";
 }
 
-void application::
-export_login_info(const config::export_options& cfg) const {
+void application::export_login_info(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Exporting login info.";
 
     iam::repository::login_info_repository repo(context_);
@@ -413,8 +398,7 @@ export_login_info(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Exported " << infos.size() << " login info record(s).";
 }
 
-void application::
-export_roles(const config::export_options& cfg) const {
+void application::export_roles(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Exporting roles.";
 
     iam::repository::role_repository repo(context_);
@@ -446,8 +430,7 @@ export_roles(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Exported " << items.size() << " role(s).";
 }
 
-void application::
-export_permissions(const config::export_options& cfg) const {
+void application::export_permissions(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Exporting permissions.";
 
     iam::repository::permission_repository repo(context_);
@@ -479,8 +462,7 @@ export_permissions(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Exported " << items.size() << " permission(s).";
 }
 
-void application::
-export_countries(const config::export_options& cfg) const {
+void application::export_countries(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Exporting countries.";
 
     refdata::repository::country_repository repo;
@@ -523,8 +505,7 @@ export_countries(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Exported " << items.size() << " country(ies).";
 }
 
-void application::
-export_change_reasons(const config::export_options& cfg) const {
+void application::export_change_reasons(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Exporting change reasons.";
 
     dq::repository::change_reason_repository repo(context_);
@@ -559,8 +540,7 @@ export_change_reasons(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Exported " << items.size() << " change reason(s).";
 }
 
-void application::
-export_change_reason_categories(const config::export_options& cfg) const {
+void application::export_change_reason_categories(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Exporting change reason categories.";
 
     dq::repository::change_reason_category_repository repo(context_);
@@ -588,15 +568,14 @@ export_change_reason_categories(const config::export_options& cfg) const {
     } else if (cfg.target_format == config::format::table) {
         output_stream_ << items << std::endl;
     } else {
-        BOOST_THROW_EXCEPTION(
-            application_exception("Only JSON and table formats are supported for change reason categories"));
+        BOOST_THROW_EXCEPTION(application_exception(
+            "Only JSON and table formats are supported for change reason categories"));
     }
 
     BOOST_LOG_SEV(lg(), debug) << "Exported " << items.size() << " change reason category(ies).";
 }
 
-void application::
-export_compute_hosts(const config::export_options& cfg) const {
+void application::export_compute_hosts(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Exporting compute hosts.";
 
     compute::repository::host_repository repo;
@@ -622,8 +601,7 @@ export_compute_hosts(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Exported " << items.size() << " compute host(s).";
 }
 
-void application::
-export_compute_apps(const config::export_options& cfg) const {
+void application::export_compute_apps(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Exporting compute apps.";
 
     compute::repository::app_repository repo;
@@ -649,8 +627,7 @@ export_compute_apps(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Exported " << items.size() << " compute app(s).";
 }
 
-void application::
-export_compute_app_versions(const config::export_options& cfg) const {
+void application::export_compute_app_versions(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Exporting compute app versions.";
 
     compute::repository::app_version_repository repo;
@@ -669,15 +646,14 @@ export_compute_app_versions(const config::export_options& cfg) const {
     } else if (cfg.target_format == config::format::table) {
         output_stream_ << items << std::endl;
     } else {
-        BOOST_THROW_EXCEPTION(
-            application_exception("Only JSON and table formats are supported for compute app versions"));
+        BOOST_THROW_EXCEPTION(application_exception(
+            "Only JSON and table formats are supported for compute app versions"));
     }
 
     BOOST_LOG_SEV(lg(), debug) << "Exported " << items.size() << " compute app version(s).";
 }
 
-void application::
-export_compute_batches(const config::export_options& cfg) const {
+void application::export_compute_batches(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Exporting compute batches.";
 
     compute::repository::batch_repository repo;
@@ -703,8 +679,7 @@ export_compute_batches(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Exported " << items.size() << " compute batch(es).";
 }
 
-void application::
-export_compute_workunits(const config::export_options& cfg) const {
+void application::export_compute_workunits(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Exporting compute workunits.";
 
     compute::repository::workunit_repository repo;
@@ -723,15 +698,14 @@ export_compute_workunits(const config::export_options& cfg) const {
     } else if (cfg.target_format == config::format::table) {
         output_stream_ << items << std::endl;
     } else {
-        BOOST_THROW_EXCEPTION(
-            application_exception("Only JSON and table formats are supported for compute workunits"));
+        BOOST_THROW_EXCEPTION(application_exception(
+            "Only JSON and table formats are supported for compute workunits"));
     }
 
     BOOST_LOG_SEV(lg(), debug) << "Exported " << items.size() << " compute workunit(s).";
 }
 
-void application::
-export_compute_results(const config::export_options& cfg) const {
+void application::export_compute_results(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Exporting compute results.";
 
     compute::repository::result_repository repo;
@@ -757,16 +731,15 @@ export_compute_results(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Exported " << items.size() << " compute result(s).";
 }
 
-void application::
-export_day_count_fraction_types(const config::export_options& cfg) const {
+void application::export_day_count_fraction_types(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Exporting day count fraction types.";
 
     trading::repository::day_count_fraction_type_repository repo;
     std::vector<trading::domain::day_count_fraction_type> items;
 
     if (!cfg.key.empty()) {
-        items = cfg.all_versions ? repo.read_all(context_, cfg.key)
-                                 : repo.read_latest(context_, cfg.key);
+        items = cfg.all_versions ? repo.read_all(context_, cfg.key) :
+                                   repo.read_latest(context_, cfg.key);
     } else {
         items = repo.read_latest(context_);
     }
@@ -789,16 +762,15 @@ export_day_count_fraction_types(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Exported " << items.size() << " day count fraction type(s).";
 }
 
-void application::
-export_business_day_convention_types(const config::export_options& cfg) const {
+void application::export_business_day_convention_types(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Exporting business day convention types.";
 
     trading::repository::business_day_convention_type_repository repo;
     std::vector<trading::domain::business_day_convention_type> items;
 
     if (!cfg.key.empty()) {
-        items = cfg.all_versions ? repo.read_all(context_, cfg.key)
-                                 : repo.read_latest(context_, cfg.key);
+        items = cfg.all_versions ? repo.read_all(context_, cfg.key) :
+                                   repo.read_latest(context_, cfg.key);
     } else {
         items = repo.read_latest(context_);
     }
@@ -818,19 +790,19 @@ export_business_day_convention_types(const config::export_options& cfg) const {
             "Only JSON and table formats are supported for business day convention types"));
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Exported " << items.size() << " business day convention type(s).";
+    BOOST_LOG_SEV(lg(), debug) << "Exported " << items.size()
+                               << " business day convention type(s).";
 }
 
-void application::
-export_floating_index_types(const config::export_options& cfg) const {
+void application::export_floating_index_types(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Exporting floating index types.";
 
     trading::repository::floating_index_type_repository repo;
     std::vector<trading::domain::floating_index_type> items;
 
     if (!cfg.key.empty()) {
-        items = cfg.all_versions ? repo.read_all(context_, cfg.key)
-                                 : repo.read_latest(context_, cfg.key);
+        items = cfg.all_versions ? repo.read_all(context_, cfg.key) :
+                                   repo.read_latest(context_, cfg.key);
     } else {
         items = repo.read_latest(context_);
     }
@@ -853,16 +825,15 @@ export_floating_index_types(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Exported " << items.size() << " floating index type(s).";
 }
 
-void application::
-export_payment_frequency_types(const config::export_options& cfg) const {
+void application::export_payment_frequency_types(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Exporting payment frequency types.";
 
     trading::repository::payment_frequency_type_repository repo;
     std::vector<trading::domain::payment_frequency_type> items;
 
     if (!cfg.key.empty()) {
-        items = cfg.all_versions ? repo.read_all(context_, cfg.key)
-                                 : repo.read_latest(context_, cfg.key);
+        items = cfg.all_versions ? repo.read_all(context_, cfg.key) :
+                                   repo.read_latest(context_, cfg.key);
     } else {
         items = repo.read_latest(context_);
     }
@@ -885,16 +856,15 @@ export_payment_frequency_types(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Exported " << items.size() << " payment frequency type(s).";
 }
 
-void application::
-export_leg_types(const config::export_options& cfg) const {
+void application::export_leg_types(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Exporting leg types.";
 
     trading::repository::leg_type_repository repo;
     std::vector<trading::domain::leg_type> items;
 
     if (!cfg.key.empty()) {
-        items = cfg.all_versions ? repo.read_all(context_, cfg.key)
-                                 : repo.read_latest(context_, cfg.key);
+        items = cfg.all_versions ? repo.read_all(context_, cfg.key) :
+                                   repo.read_latest(context_, cfg.key);
     } else {
         items = repo.read_latest(context_);
     }
@@ -910,15 +880,14 @@ export_leg_types(const config::export_options& cfg) const {
     } else if (cfg.target_format == config::format::table) {
         output_stream_ << items << std::endl;
     } else {
-        BOOST_THROW_EXCEPTION(application_exception(
-            "Only JSON and table formats are supported for leg types"));
+        BOOST_THROW_EXCEPTION(
+            application_exception("Only JSON and table formats are supported for leg types"));
     }
 
     BOOST_LOG_SEV(lg(), debug) << "Exported " << items.size() << " leg type(s).";
 }
 
-void application::
-export_data(const std::optional<config::export_options>& ocfg) const {
+void application::export_data(const std::optional<config::export_options>& ocfg) const {
     if (!ocfg.has_value()) {
         BOOST_LOG_SEV(lg(), debug) << "No dumping configuration found.";
         return;
@@ -996,8 +965,7 @@ export_data(const std::optional<config::export_options>& ocfg) const {
 }
 
 void application::run(const config::options& cfg) const {
-    BOOST_LOG_SEV(lg(), info) << utility::version::format_startup_message(
-        "ORE Studio CLI");
+    BOOST_LOG_SEV(lg(), info) << utility::version::format_startup_message("ORE Studio CLI");
 
     import_data(cfg.importing);
     export_data(cfg.exporting);
@@ -1008,8 +976,7 @@ void application::run(const config::options& cfg) const {
     return;
 }
 
-void application::
-delete_currency(const config::delete_options& cfg) const {
+void application::delete_currency(const config::delete_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Deleting currency: " << cfg.key;
     currency_repository rp;
     rp.remove(context_, cfg.key);
@@ -1017,8 +984,7 @@ delete_currency(const config::delete_options& cfg) const {
     BOOST_LOG_SEV(lg(), info) << "Deleted currency: " << cfg.key;
 }
 
-void application::
-delete_account(const config::delete_options& cfg) const {
+void application::delete_account(const config::delete_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Deleting account: " << cfg.key;
     iam::repository::account_repository repo(context_);
 
@@ -1026,8 +992,7 @@ delete_account(const config::delete_options& cfg) const {
     boost::uuids::uuid account_id;
     try {
         account_id = boost::lexical_cast<boost::uuids::uuid>(cfg.key);
-        BOOST_LOG_SEV(lg(), debug) << "Parsed key as UUID: "
-                                   << boost::uuids::to_string(account_id);
+        BOOST_LOG_SEV(lg(), debug) << "Parsed key as UUID: " << boost::uuids::to_string(account_id);
     } catch (const boost::bad_lexical_cast&) {
         // If not a UUID, treat as username and look it up
         BOOST_LOG_SEV(lg(), debug) << "Key is not a UUID, treating as username";
@@ -1037,19 +1002,16 @@ delete_account(const config::delete_options& cfg) const {
                 application_exception(std::format("Account not found: {}", cfg.key)));
         }
         account_id = accounts.front().id;
-        BOOST_LOG_SEV(lg(), debug) << "Found account ID: "
-                                   << boost::uuids::to_string(account_id);
+        BOOST_LOG_SEV(lg(), debug) << "Found account ID: " << boost::uuids::to_string(account_id);
     }
 
     repo.remove(account_id);
-    output_stream_ << "Account deleted successfully: "
-                   << boost::uuids::to_string(account_id) << std::endl;
-    BOOST_LOG_SEV(lg(), info) << "Deleted account: "
-                              << boost::uuids::to_string(account_id);
+    output_stream_ << "Account deleted successfully: " << boost::uuids::to_string(account_id)
+                   << std::endl;
+    BOOST_LOG_SEV(lg(), info) << "Deleted account: " << boost::uuids::to_string(account_id);
 }
 
-void application::
-delete_system_setting(const config::delete_options& cfg) const {
+void application::delete_system_setting(const config::delete_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Deleting system setting: " << cfg.key;
     variability::repository::system_settings_repository repo;
     repo.remove(context_, cfg.key);
@@ -1057,8 +1019,7 @@ delete_system_setting(const config::delete_options& cfg) const {
     BOOST_LOG_SEV(lg(), info) << "Deleted system setting: " << cfg.key;
 }
 
-void application::
-delete_login_info(const config::delete_options& cfg) const {
+void application::delete_login_info(const config::delete_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Deleting login info for account: " << cfg.key;
     iam::repository::login_info_repository repo(context_);
 
@@ -1078,8 +1039,7 @@ delete_login_info(const config::delete_options& cfg) const {
                               << boost::uuids::to_string(account_id);
 }
 
-void application::
-delete_role(const config::delete_options& cfg) const {
+void application::delete_role(const config::delete_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Deleting role: " << cfg.key;
     iam::repository::role_repository repo(context_);
 
@@ -1098,14 +1058,12 @@ delete_role(const config::delete_options& cfg) const {
     }
 
     repo.remove(role_id);
-    output_stream_ << "Role deleted successfully: "
-                   << boost::uuids::to_string(role_id) << std::endl;
-    BOOST_LOG_SEV(lg(), info) << "Deleted role: "
-                              << boost::uuids::to_string(role_id);
+    output_stream_ << "Role deleted successfully: " << boost::uuids::to_string(role_id)
+                   << std::endl;
+    BOOST_LOG_SEV(lg(), info) << "Deleted role: " << boost::uuids::to_string(role_id);
 }
 
-void application::
-delete_permission(const config::delete_options& cfg) const {
+void application::delete_permission(const config::delete_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Deleting permission: " << cfg.key;
     iam::repository::permission_repository repo(context_);
 
@@ -1124,14 +1082,12 @@ delete_permission(const config::delete_options& cfg) const {
     }
 
     repo.remove(perm_id);
-    output_stream_ << "Permission deleted successfully: "
-                   << boost::uuids::to_string(perm_id) << std::endl;
-    BOOST_LOG_SEV(lg(), info) << "Deleted permission: "
-                              << boost::uuids::to_string(perm_id);
+    output_stream_ << "Permission deleted successfully: " << boost::uuids::to_string(perm_id)
+                   << std::endl;
+    BOOST_LOG_SEV(lg(), info) << "Deleted permission: " << boost::uuids::to_string(perm_id);
 }
 
-void application::
-delete_country(const config::delete_options& cfg) const {
+void application::delete_country(const config::delete_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Deleting country: " << cfg.key;
     refdata::repository::country_repository repo;
     repo.remove(context_, cfg.key);
@@ -1139,8 +1095,7 @@ delete_country(const config::delete_options& cfg) const {
     BOOST_LOG_SEV(lg(), info) << "Deleted country: " << cfg.key;
 }
 
-void application::
-delete_change_reason(const config::delete_options& cfg) const {
+void application::delete_change_reason(const config::delete_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Deleting change reason: " << cfg.key;
     dq::repository::change_reason_repository repo(context_);
     repo.remove(cfg.key);
@@ -1148,8 +1103,7 @@ delete_change_reason(const config::delete_options& cfg) const {
     BOOST_LOG_SEV(lg(), info) << "Deleted change reason: " << cfg.key;
 }
 
-void application::
-delete_change_reason_category(const config::delete_options& cfg) const {
+void application::delete_change_reason_category(const config::delete_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Deleting change reason category: " << cfg.key;
     dq::repository::change_reason_category_repository repo(context_);
     repo.remove(cfg.key);
@@ -1157,8 +1111,7 @@ delete_change_reason_category(const config::delete_options& cfg) const {
     BOOST_LOG_SEV(lg(), info) << "Deleted change reason category: " << cfg.key;
 }
 
-void application::
-delete_data(const std::optional<config::delete_options>& ocfg) const {
+void application::delete_data(const std::optional<config::delete_options>& ocfg) const {
     if (!ocfg.has_value()) {
         BOOST_LOG_SEV(lg(), debug) << "No deletion configuration found.";
         return;
@@ -1225,8 +1178,7 @@ delete_data(const std::optional<config::delete_options>& ocfg) const {
     }
 }
 
-void application::
-delete_day_count_fraction_type(const config::delete_options& cfg) const {
+void application::delete_day_count_fraction_type(const config::delete_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Deleting day count fraction type: " << cfg.key;
     trading::repository::day_count_fraction_type_repository repo;
     repo.remove(context_, cfg.key);
@@ -1234,8 +1186,7 @@ delete_day_count_fraction_type(const config::delete_options& cfg) const {
     BOOST_LOG_SEV(lg(), info) << "Deleted day count fraction type: " << cfg.key;
 }
 
-void application::
-delete_business_day_convention_type(const config::delete_options& cfg) const {
+void application::delete_business_day_convention_type(const config::delete_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Deleting business day convention type: " << cfg.key;
     trading::repository::business_day_convention_type_repository repo;
     repo.remove(context_, cfg.key);
@@ -1243,8 +1194,7 @@ delete_business_day_convention_type(const config::delete_options& cfg) const {
     BOOST_LOG_SEV(lg(), info) << "Deleted business day convention type: " << cfg.key;
 }
 
-void application::
-delete_floating_index_type(const config::delete_options& cfg) const {
+void application::delete_floating_index_type(const config::delete_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Deleting floating index type: " << cfg.key;
     trading::repository::floating_index_type_repository repo;
     repo.remove(context_, cfg.key);
@@ -1252,8 +1202,7 @@ delete_floating_index_type(const config::delete_options& cfg) const {
     BOOST_LOG_SEV(lg(), info) << "Deleted floating index type: " << cfg.key;
 }
 
-void application::
-delete_payment_frequency_type(const config::delete_options& cfg) const {
+void application::delete_payment_frequency_type(const config::delete_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Deleting payment frequency type: " << cfg.key;
     trading::repository::payment_frequency_type_repository repo;
     repo.remove(context_, cfg.key);
@@ -1261,8 +1210,7 @@ delete_payment_frequency_type(const config::delete_options& cfg) const {
     BOOST_LOG_SEV(lg(), info) << "Deleted payment frequency type: " << cfg.key;
 }
 
-void application::
-delete_leg_type(const config::delete_options& cfg) const {
+void application::delete_leg_type(const config::delete_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Deleting leg type: " << cfg.key;
     trading::repository::leg_type_repository repo;
     repo.remove(context_, cfg.key);
@@ -1270,8 +1218,7 @@ delete_leg_type(const config::delete_options& cfg) const {
     BOOST_LOG_SEV(lg(), info) << "Deleted leg type: " << cfg.key;
 }
 
-void application::
-add_currency(const config::add_currency_options& cfg) const {
+void application::add_currency(const config::add_currency_options& cfg) const {
     BOOST_LOG_SEV(lg(), info) << "Adding currency: " << cfg.iso_code;
 
     // Construct currency from command-line arguments
@@ -1302,8 +1249,7 @@ add_currency(const config::add_currency_options& cfg) const {
     BOOST_LOG_SEV(lg(), info) << "Added currency: " << currency.iso_code;
 }
 
-void application::
-add_account(const config::add_account_options& cfg) const {
+void application::add_account(const config::add_account_options& cfg) const {
     BOOST_LOG_SEV(lg(), info) << "Adding account: " << cfg.username;
 
     // Generate UUID for the account
@@ -1317,18 +1263,16 @@ add_account(const config::add_account_options& cfg) const {
     variability::repository::system_settings_repository setting_repo;
     const auto disable_validation_settings =
         setting_repo.read_latest(context_, "system.disable_password_validation");
-    const bool enforce_policy = disable_validation_settings.empty() ||
-                                disable_validation_settings[0].value != "true";
+    const bool enforce_policy =
+        disable_validation_settings.empty() || disable_validation_settings[0].value != "true";
 
-    const auto validation_result =
-        password_validator::validate(cfg.password, enforce_policy);
+    const auto validation_result = password_validator::validate(cfg.password, enforce_policy);
 
     if (!validation_result.is_valid) {
-        BOOST_LOG_SEV(lg(), error) << "Password validation failed: "
-                                   << validation_result.error_message;
+        BOOST_LOG_SEV(lg(), error)
+            << "Password validation failed: " << validation_result.error_message;
         output_stream_ << "Error: " << validation_result.error_message << std::endl;
-        BOOST_THROW_EXCEPTION(
-            application_exception(validation_result.error_message));
+        BOOST_THROW_EXCEPTION(application_exception(validation_result.error_message));
     }
 
     // Hash the password
@@ -1347,8 +1291,8 @@ add_account(const config::add_account_options& cfg) const {
     account.performed_by = cfg.modified_by;
     account.username = cfg.username;
     account.password_hash = password_hash;
-    account.password_salt = "";  // Not used - hash contains salt
-    account.totp_secret = "";    // Can be set later
+    account.password_salt = ""; // Not used - hash contains salt
+    account.totp_secret = "";   // Can be set later
     account.email = cfg.email;
 
     iam::service::bootstrap_mode_service bootstrap_svc(
@@ -1370,8 +1314,7 @@ add_account(const config::add_account_options& cfg) const {
         auto admin_role = auth_service->find_role_by_name(iam::domain::roles::super_admin);
         if (admin_role) {
             auth_service->assign_role(account_id, admin_role->id, cfg.modified_by);
-            BOOST_LOG_SEV(lg(), info) << "Assigned Admin role to account: "
-                                      << account.username;
+            BOOST_LOG_SEV(lg(), info) << "Assigned Admin role to account: " << account.username;
             output_stream_ << "Assigned Admin role to account." << std::endl;
         }
     }
@@ -1383,8 +1326,7 @@ add_account(const config::add_account_options& cfg) const {
     }
 }
 
-void application::
-add_system_setting(const config::add_system_setting_options& cfg) const {
+void application::add_system_setting(const config::add_system_setting_options& cfg) const {
     BOOST_LOG_SEV(lg(), info) << "Adding system setting: " << cfg.setting_name;
 
     // Construct system setting from command-line arguments
@@ -1404,8 +1346,7 @@ add_system_setting(const config::add_system_setting_options& cfg) const {
     BOOST_LOG_SEV(lg(), info) << "Added system setting: " << setting.name;
 }
 
-void application::
-add_login_info(const config::add_login_info_options& cfg) const {
+void application::add_login_info(const config::add_login_info_options& cfg) const {
     BOOST_LOG_SEV(lg(), info) << "Adding login info for account: " << cfg.account_id;
 
     // Parse account ID
@@ -1435,8 +1376,7 @@ add_login_info(const config::add_login_info_options& cfg) const {
                               << boost::uuids::to_string(account_id);
 }
 
-void application::
-add_role(const config::add_role_options& cfg) const {
+void application::add_role(const config::add_role_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Adding role: " << cfg.name;
 
     iam::domain::role record;
@@ -1460,8 +1400,7 @@ add_role(const config::add_role_options& cfg) const {
     BOOST_LOG_SEV(lg(), info) << "Added role: " << cfg.name;
 }
 
-void application::
-add_permission(const config::add_permission_options& cfg) const {
+void application::add_permission(const config::add_permission_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Adding permission: " << cfg.code;
 
     iam::domain::permission record;
@@ -1477,8 +1416,7 @@ add_permission(const config::add_permission_options& cfg) const {
     BOOST_LOG_SEV(lg(), info) << "Added permission: " << cfg.code;
 }
 
-void application::
-add_country(const config::add_country_options& cfg) const {
+void application::add_country(const config::add_country_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Adding country: " << cfg.alpha2_code;
 
     refdata::domain::country record;
@@ -1505,8 +1443,7 @@ add_country(const config::add_country_options& cfg) const {
     BOOST_LOG_SEV(lg(), info) << "Added country: " << cfg.alpha2_code;
 }
 
-void application::
-add_change_reason(const config::add_change_reason_options& cfg) const {
+void application::add_change_reason(const config::add_change_reason_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Adding change reason: " << cfg.code;
 
     dq::domain::change_reason record;
@@ -1535,8 +1472,8 @@ add_change_reason(const config::add_change_reason_options& cfg) const {
     BOOST_LOG_SEV(lg(), info) << "Added change reason: " << cfg.code;
 }
 
-void application::
-add_change_reason_category(const config::add_change_reason_category_options& cfg) const {
+void application::add_change_reason_category(
+    const config::add_change_reason_category_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Adding change reason category: " << cfg.code;
 
     dq::domain::change_reason_category record;
@@ -1556,8 +1493,7 @@ add_change_reason_category(const config::add_change_reason_category_options& cfg
     BOOST_LOG_SEV(lg(), info) << "Added change reason category: " << cfg.code;
 }
 
-void application::
-add_compute_host(const config::add_compute_host_options& cfg) const {
+void application::add_compute_host(const config::add_compute_host_options& cfg) const {
     BOOST_LOG_SEV(lg(), info) << "Adding compute host: " << cfg.external_id;
 
     compute::domain::host record;
@@ -1578,8 +1514,7 @@ add_compute_host(const config::add_compute_host_options& cfg) const {
     BOOST_LOG_SEV(lg(), info) << "Added compute host: " << record.external_id;
 }
 
-void application::
-add_compute_app(const config::add_compute_app_options& cfg) const {
+void application::add_compute_app(const config::add_compute_app_options& cfg) const {
     BOOST_LOG_SEV(lg(), info) << "Adding compute app: " << cfg.name;
 
     compute::domain::app record;
@@ -1596,10 +1531,10 @@ add_compute_app(const config::add_compute_app_options& cfg) const {
     BOOST_LOG_SEV(lg(), info) << "Added compute app: " << record.name;
 }
 
-void application::
-add_compute_app_version(const config::add_compute_app_version_options& cfg) const {
-    BOOST_LOG_SEV(lg(), info) << "Adding compute app version: "
-                              << cfg.wrapper_version << "/" << cfg.engine_version;
+void application::add_compute_app_version(
+    const config::add_compute_app_version_options& cfg) const {
+    BOOST_LOG_SEV(lg(), info) << "Adding compute app version: " << cfg.wrapper_version << "/"
+                              << cfg.engine_version;
 
     boost::uuids::uuid app_id;
     try {
@@ -1636,8 +1571,8 @@ add_compute_app_version(const config::add_compute_app_version_options& cfg) cons
     for (const auto& pp : cfg.platform_packages) {
         const auto it = plat_by_code.find(pp.platform_code);
         if (it == plat_by_code.end()) {
-            BOOST_THROW_EXCEPTION(application_exception(std::format(
-                "Unknown platform code: {}", pp.platform_code)));
+            BOOST_THROW_EXCEPTION(
+                application_exception(std::format("Unknown platform code: {}", pp.platform_code)));
         }
 
         compute::domain::app_version_platform avp;
@@ -1651,18 +1586,20 @@ add_compute_app_version(const config::add_compute_app_version_options& cfg) cons
 
     compute::repository::app_version_platform_repository avp_repo;
     avp_repo.replace_for_version(context_,
-        boost::uuids::to_string(record.id), junction_rows,
-        cfg.modified_by, cfg.modified_by,
-        record.change_reason_code, "Initial import");
+                                 boost::uuids::to_string(record.id),
+                                 junction_rows,
+                                 cfg.modified_by,
+                                 cfg.modified_by,
+                                 record.change_reason_code,
+                                 "Initial import");
 
-    output_stream_ << "Successfully added compute app version: "
-                   << record.wrapper_version << "/" << record.engine_version << std::endl;
-    BOOST_LOG_SEV(lg(), info) << "Added compute app version: "
-                              << record.wrapper_version << "/" << record.engine_version;
+    output_stream_ << "Successfully added compute app version: " << record.wrapper_version << "/"
+                   << record.engine_version << std::endl;
+    BOOST_LOG_SEV(lg(), info) << "Added compute app version: " << record.wrapper_version << "/"
+                              << record.engine_version;
 }
 
-void application::
-add_compute_batch(const config::add_compute_batch_options& cfg) const {
+void application::add_compute_batch(const config::add_compute_batch_options& cfg) const {
     BOOST_LOG_SEV(lg(), info) << "Adding compute batch: " << cfg.external_ref;
 
     compute::domain::batch record;
@@ -1679,8 +1616,7 @@ add_compute_batch(const config::add_compute_batch_options& cfg) const {
     BOOST_LOG_SEV(lg(), info) << "Added compute batch: " << record.external_ref;
 }
 
-void application::
-add_compute_workunit(const config::add_compute_workunit_options& cfg) const {
+void application::add_compute_workunit(const config::add_compute_workunit_options& cfg) const {
     BOOST_LOG_SEV(lg(), info) << "Adding compute workunit for batch: " << cfg.batch_id;
 
     boost::uuids::uuid batch_id;
@@ -1695,8 +1631,8 @@ add_compute_workunit(const config::add_compute_workunit_options& cfg) const {
     try {
         app_version_id = boost::lexical_cast<boost::uuids::uuid>(cfg.app_version_id);
     } catch (const boost::bad_lexical_cast&) {
-        BOOST_THROW_EXCEPTION(
-            application_exception(std::format("Invalid app version ID UUID: {}", cfg.app_version_id)));
+        BOOST_THROW_EXCEPTION(application_exception(
+            std::format("Invalid app version ID UUID: {}", cfg.app_version_id)));
     }
 
     compute::domain::workunit record;
@@ -1713,14 +1649,13 @@ add_compute_workunit(const config::add_compute_workunit_options& cfg) const {
     compute::repository::workunit_repository repo;
     repo.write(context_, record);
 
-    output_stream_ << "Successfully added compute workunit: "
-                   << boost::uuids::to_string(record.id) << std::endl;
-    BOOST_LOG_SEV(lg(), info) << "Added compute workunit: "
-                              << boost::uuids::to_string(record.id);
+    output_stream_ << "Successfully added compute workunit: " << boost::uuids::to_string(record.id)
+                   << std::endl;
+    BOOST_LOG_SEV(lg(), info) << "Added compute workunit: " << boost::uuids::to_string(record.id);
 }
 
-void application::
-add_day_count_fraction_type(const config::add_day_count_fraction_type_options& cfg) const {
+void application::add_day_count_fraction_type(
+    const config::add_day_count_fraction_type_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Adding day count fraction type: " << cfg.code;
 
     trading::domain::day_count_fraction_type record;
@@ -1738,8 +1673,8 @@ add_day_count_fraction_type(const config::add_day_count_fraction_type_options& c
     BOOST_LOG_SEV(lg(), info) << "Added day count fraction type: " << cfg.code;
 }
 
-void application::
-add_business_day_convention_type(const config::add_business_day_convention_type_options& cfg) const {
+void application::add_business_day_convention_type(
+    const config::add_business_day_convention_type_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Adding business day convention type: " << cfg.code;
 
     trading::domain::business_day_convention_type record;
@@ -1757,8 +1692,8 @@ add_business_day_convention_type(const config::add_business_day_convention_type_
     BOOST_LOG_SEV(lg(), info) << "Added business day convention type: " << cfg.code;
 }
 
-void application::
-add_floating_index_type(const config::add_floating_index_type_options& cfg) const {
+void application::add_floating_index_type(
+    const config::add_floating_index_type_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Adding floating index type: " << cfg.code;
 
     trading::domain::floating_index_type record;
@@ -1776,8 +1711,8 @@ add_floating_index_type(const config::add_floating_index_type_options& cfg) cons
     BOOST_LOG_SEV(lg(), info) << "Added floating index type: " << cfg.code;
 }
 
-void application::
-add_payment_frequency_type(const config::add_payment_frequency_type_options& cfg) const {
+void application::add_payment_frequency_type(
+    const config::add_payment_frequency_type_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Adding payment frequency type: " << cfg.code;
 
     trading::domain::payment_frequency_type record;
@@ -1795,8 +1730,7 @@ add_payment_frequency_type(const config::add_payment_frequency_type_options& cfg
     BOOST_LOG_SEV(lg(), info) << "Added payment frequency type: " << cfg.code;
 }
 
-void application::
-add_leg_type(const config::add_leg_type_options& cfg) const {
+void application::add_leg_type(const config::add_leg_type_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Adding leg type: " << cfg.code;
 
     trading::domain::leg_type record;
@@ -1814,60 +1748,62 @@ add_leg_type(const config::add_leg_type_options& cfg) const {
     BOOST_LOG_SEV(lg(), info) << "Added leg type: " << cfg.code;
 }
 
-void application::
-add_data(const std::optional<config::add_options>& ocfg) const {
+void application::add_data(const std::optional<config::add_options>& ocfg) const {
     if (!ocfg.has_value()) {
         BOOST_LOG_SEV(lg(), debug) << "No add configuration found.";
         return;
     }
 
     const auto& cfg(ocfg.value());
-    std::visit([this](const auto& opts) {
-        using T = std::decay_t<decltype(opts)>;
-        if constexpr (std::is_same_v<T, config::add_currency_options>) {
-            add_currency(opts);
-        } else if constexpr (std::is_same_v<T, config::add_account_options>) {
-            add_account(opts);
-        } else if constexpr (std::is_same_v<T, config::add_system_setting_options>) {
-            add_system_setting(opts);
-        } else if constexpr (std::is_same_v<T, config::add_login_info_options>) {
-            add_login_info(opts);
-        } else if constexpr (std::is_same_v<T, config::add_role_options>) {
-            add_role(opts);
-        } else if constexpr (std::is_same_v<T, config::add_permission_options>) {
-            add_permission(opts);
-        } else if constexpr (std::is_same_v<T, config::add_country_options>) {
-            add_country(opts);
-        } else if constexpr (std::is_same_v<T, config::add_change_reason_options>) {
-            add_change_reason(opts);
-        } else if constexpr (std::is_same_v<T, config::add_change_reason_category_options>) {
-            add_change_reason_category(opts);
-        } else if constexpr (std::is_same_v<T, config::add_compute_host_options>) {
-            add_compute_host(opts);
-        } else if constexpr (std::is_same_v<T, config::add_compute_app_options>) {
-            add_compute_app(opts);
-        } else if constexpr (std::is_same_v<T, config::add_compute_app_version_options>) {
-            add_compute_app_version(opts);
-        } else if constexpr (std::is_same_v<T, config::add_compute_batch_options>) {
-            add_compute_batch(opts);
-        } else if constexpr (std::is_same_v<T, config::add_compute_workunit_options>) {
-            add_compute_workunit(opts);
-        } else if constexpr (std::is_same_v<T, config::add_day_count_fraction_type_options>) {
-            add_day_count_fraction_type(opts);
-        } else if constexpr (std::is_same_v<T, config::add_business_day_convention_type_options>) {
-            add_business_day_convention_type(opts);
-        } else if constexpr (std::is_same_v<T, config::add_floating_index_type_options>) {
-            add_floating_index_type(opts);
-        } else if constexpr (std::is_same_v<T, config::add_payment_frequency_type_options>) {
-            add_payment_frequency_type(opts);
-        } else if constexpr (std::is_same_v<T, config::add_leg_type_options>) {
-            add_leg_type(opts);
-        } else {
-            []<bool flag = false>() {
-                static_assert(flag, "unhandled type in std::visit for add_data");
-            }();
-        }
-    }, cfg);
+    std::visit(
+        [this](const auto& opts) {
+            using T = std::decay_t<decltype(opts)>;
+            if constexpr (std::is_same_v<T, config::add_currency_options>) {
+                add_currency(opts);
+            } else if constexpr (std::is_same_v<T, config::add_account_options>) {
+                add_account(opts);
+            } else if constexpr (std::is_same_v<T, config::add_system_setting_options>) {
+                add_system_setting(opts);
+            } else if constexpr (std::is_same_v<T, config::add_login_info_options>) {
+                add_login_info(opts);
+            } else if constexpr (std::is_same_v<T, config::add_role_options>) {
+                add_role(opts);
+            } else if constexpr (std::is_same_v<T, config::add_permission_options>) {
+                add_permission(opts);
+            } else if constexpr (std::is_same_v<T, config::add_country_options>) {
+                add_country(opts);
+            } else if constexpr (std::is_same_v<T, config::add_change_reason_options>) {
+                add_change_reason(opts);
+            } else if constexpr (std::is_same_v<T, config::add_change_reason_category_options>) {
+                add_change_reason_category(opts);
+            } else if constexpr (std::is_same_v<T, config::add_compute_host_options>) {
+                add_compute_host(opts);
+            } else if constexpr (std::is_same_v<T, config::add_compute_app_options>) {
+                add_compute_app(opts);
+            } else if constexpr (std::is_same_v<T, config::add_compute_app_version_options>) {
+                add_compute_app_version(opts);
+            } else if constexpr (std::is_same_v<T, config::add_compute_batch_options>) {
+                add_compute_batch(opts);
+            } else if constexpr (std::is_same_v<T, config::add_compute_workunit_options>) {
+                add_compute_workunit(opts);
+            } else if constexpr (std::is_same_v<T, config::add_day_count_fraction_type_options>) {
+                add_day_count_fraction_type(opts);
+            } else if constexpr (std::is_same_v<T,
+                                                config::add_business_day_convention_type_options>) {
+                add_business_day_convention_type(opts);
+            } else if constexpr (std::is_same_v<T, config::add_floating_index_type_options>) {
+                add_floating_index_type(opts);
+            } else if constexpr (std::is_same_v<T, config::add_payment_frequency_type_options>) {
+                add_payment_frequency_type(opts);
+            } else if constexpr (std::is_same_v<T, config::add_leg_type_options>) {
+                add_leg_type(opts);
+            } else {
+                []<bool flag = false>() {
+                    static_assert(flag, "unhandled type in std::visit for add_data");
+                }();
+            }
+        },
+        cfg);
 }
 
 }

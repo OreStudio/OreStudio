@@ -20,12 +20,11 @@
 #ifndef ORES_CLI_CONFIG_LIST_OPTIONS_HPP
 #define ORES_CLI_CONFIG_LIST_OPTIONS_HPP
 
-#include <iosfwd>
-#include <string>
 #include "ores.cli/config/entity.hpp"
 #include "ores.cli/config/format.hpp"
-
 #include "ores.cli/export.hpp"
+#include <iosfwd>
+#include <string>
 
 namespace ores::cli::config {
 

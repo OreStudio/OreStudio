@@ -18,15 +18,14 @@
  *
  */
 #include "ores.cli/config/entity_parsers/compute_results_parser.hpp"
-
-#include <boost/program_options.hpp>
-#include <boost/throw_exception.hpp>
-#include "ores.cli/config/parser_helpers.hpp"
-#include "ores.cli/config/parser_exception.hpp"
 #include "ores.cli/config/entity.hpp"
+#include "ores.cli/config/parser_exception.hpp"
+#include "ores.cli/config/parser_helpers.hpp"
 #include "ores.database/config/database_configuration.hpp"
 #include "ores.logging/logging_configuration.hpp"
 #include "ores.utility/program_options/environment_mapper_factory.hpp"
+#include <boost/program_options.hpp>
+#include <boost/throw_exception.hpp>
 
 namespace ores::cli::config::entity_parsers {
 
@@ -53,32 +52,27 @@ using ores::cli::config::parser_helpers::read_export_options;
 
 const std::string list_command_name("list");
 
-const std::vector<std::string> allowed_operations{
-    list_command_name
-};
+const std::vector<std::string> allowed_operations{list_command_name};
 
 }
 
-std::optional<options>
-handle_compute_results_command(bool has_help,
-    const parsed_options& po,
-    std::ostream& info,
-    variables_map& vm) {
+std::optional<options> handle_compute_results_command(bool has_help,
+                                                      const parsed_options& po,
+                                                      std::ostream& info,
+                                                      variables_map& vm) {
 
     auto o(collect_unrecognized(po.options, include_positional));
     o.erase(o.begin());
 
     if (has_help && o.empty()) {
         const std::vector<std::pair<std::string, std::string>> operations = {
-            {"list", "List compute results as JSON or table"}
-        };
+            {"list", "List compute results as JSON or table"}};
         print_entity_help("results", "Manage compute results", operations, info);
         return {};
     }
 
     if (o.empty()) {
-        BOOST_THROW_EXCEPTION(parser_exception(
-            "results command requires an operation (list)"));
+        BOOST_THROW_EXCEPTION(parser_exception("results command requires an operation (list)"));
     }
 
     const auto operation = o.front();

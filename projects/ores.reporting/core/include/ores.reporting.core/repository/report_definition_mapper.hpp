@@ -20,10 +20,10 @@
 #ifndef ORES_REPORTING_REPOSITORY_REPORT_DEFINITION_MAPPER_HPP
 #define ORES_REPORTING_REPOSITORY_REPORT_DEFINITION_MAPPER_HPP
 
-#include "ores.reporting.api/domain/report_definition.hpp"
-#include "ores.reporting.core/repository/report_definition_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.reporting.api/domain/report_definition.hpp"
 #include "ores.reporting.core/export.hpp"
+#include "ores.reporting.core/repository/report_definition_entity.hpp"
 
 namespace ores::reporting::repository {
 
@@ -40,6 +40,7 @@ private:
         static auto instance = make_logger(logger_name);
         return instance;
     }
+
 public:
     static domain::report_definition map(const report_definition_entity& v);
     static report_definition_entity map(const domain::report_definition& v);

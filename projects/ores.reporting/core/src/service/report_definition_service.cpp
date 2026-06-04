@@ -18,11 +18,10 @@
  *
  */
 #include "ores.reporting.core/service/report_definition_service.hpp"
-
-#include <stdexcept>
+#include "ores.database/repository/bitemporal_operations.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include <stdexcept>
 
 namespace ores::reporting::service {
 
@@ -33,11 +32,14 @@ namespace {
 
 // Returns the UUID of the initial (draft) FSM state for the
 // report_definition_lifecycle machine via the dedicated Postgres helper.
-std::optional<boost::uuids::uuid>
-find_draft_state_id(const ores::database::context& ctx, logging::logger_t& log) {
+std::optional<boost::uuids::uuid> find_draft_state_id(const ores::database::context& ctx,
+                                                      logging::logger_t& log) {
     const auto rows = execute_parameterized_string_query(
-        ctx, "SELECT ores_reporting_initial_definition_state_fn()::text",
-        {}, log, "Looking up report_definition_lifecycle initial state");
+        ctx,
+        "SELECT ores_reporting_initial_definition_state_fn()::text",
+        {},
+        log,
+        "Looking up report_definition_lifecycle initial state");
     if (rows.empty() || rows.front().empty()) {
         BOOST_LOG_SEV(log, warn) << "Initial report definition FSM state not found";
         return std::nullopt;
@@ -62,7 +64,8 @@ std::optional<domain::report_definition>
 report_definition_service::find_definition(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Finding report definition: " << id;
     auto results = repo_.read_latest(ctx_, id);
-    if (results.empty()) return std::nullopt;
+    if (results.empty())
+        return std::nullopt;
     return results.front();
 }
 

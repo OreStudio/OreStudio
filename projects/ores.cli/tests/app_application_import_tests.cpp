@@ -18,17 +18,16 @@
  *
  */
 #include "ores.cli/app/application.hpp"
-
-#include <sstream>
-#include <filesystem>
-#include <catch2/catch_test_macros.hpp>
-#include "ores.logging/make_logger.hpp"
-#include "ores.testing/database_helper.hpp"
-#include "ores.testing/test_database_manager.hpp"
-#include "ores.testing/project_root.hpp"
-#include "ores.cli/config/options.hpp"
 #include "ores.cli/config/import_options.hpp"
+#include "ores.cli/config/options.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.core/repository/currency_repository.hpp"
+#include "ores.testing/database_helper.hpp"
+#include "ores.testing/project_root.hpp"
+#include "ores.testing/test_database_manager.hpp"
+#include <catch2/catch_test_macros.hpp>
+#include <filesystem>
+#include <sstream>
 
 namespace {
 
@@ -81,8 +80,7 @@ TEST_CASE("import_currencies_from_test_file", tags) {
     refdata::repository::currency_repository repo;
     auto read_currencies = repo.read_latest(h.context());
 
-    BOOST_LOG_SEV(lg, debug) << "Read " << read_currencies.size()
-                             << " currencies from database";
+    BOOST_LOG_SEV(lg, debug) << "Read " << read_currencies.size() << " currencies from database";
     BOOST_LOG_SEV(lg, debug) << "Console output: " << os.str();
 
     // Verify currencies are present (may have been imported by this or previous test)
@@ -114,8 +112,7 @@ TEST_CASE("import_currencies_from_multiple_files", tags) {
 
     const std::vector<std::filesystem::path> test_files = {
         ore_path("examples/Legacy/Example_1/Input/currencies.xml"),
-        ore_path("examples/Legacy/Example_41/Input/currencies.xml")
-    };
+        ore_path("examples/Legacy/Example_41/Input/currencies.xml")};
 
     BOOST_LOG_SEV(lg, debug) << "Importing currencies from multiple files.";
 
@@ -143,8 +140,7 @@ TEST_CASE("import_currencies_from_multiple_files", tags) {
     refdata::repository::currency_repository repo;
     auto read_currencies = repo.read_latest(h.context());
 
-    BOOST_LOG_SEV(lg, debug) << "Total currencies in database: "
-                             << read_currencies.size();
+    BOOST_LOG_SEV(lg, debug) << "Total currencies in database: " << read_currencies.size();
     BOOST_LOG_SEV(lg, debug) << "Console output: " << os.str();
 
     for (const auto& ccy : read_currencies)
@@ -189,15 +185,14 @@ TEST_CASE("import_and_query_specific_currency", tags) {
     refdata::repository::currency_repository repo;
     auto pgk_currencies = repo.read_latest(h.context(), target_iso);
 
-    BOOST_LOG_SEV(lg, debug) << "Found " << pgk_currencies.size()
-                             << " currencies with ISO code " << target_iso;
+    BOOST_LOG_SEV(lg, debug) << "Found " << pgk_currencies.size() << " currencies with ISO code "
+                             << target_iso;
     BOOST_LOG_SEV(lg, debug) << "Console output: " << os.str();
 
     REQUIRE(!pgk_currencies.empty());
 
     const auto& pgk = pgk_currencies[0];
-    BOOST_LOG_SEV(lg, debug) << "Currency details: " << pgk.iso_code
-                             << " - " << pgk.name;
+    BOOST_LOG_SEV(lg, debug) << "Currency details: " << pgk.iso_code << " - " << pgk.name;
 
     CHECK(pgk.iso_code == "PGK");
     CHECK(pgk.name == "Papua New Guinean kina");
@@ -230,15 +225,14 @@ TEST_CASE("import_currencies_verifies_imported_data", tags) {
     refdata::repository::currency_repository repo;
     auto after_import = repo.read_latest(h.context());
 
-    BOOST_LOG_SEV(lg, debug) << "After import currency count: "
-                             << after_import.size();
+    BOOST_LOG_SEV(lg, debug) << "After import currency count: " << after_import.size();
     BOOST_LOG_SEV(lg, debug) << "Console output: " << os.str();
 
     // Verify the currencies from the test file exist
-    bool found_pgk = std::ranges::any_of(after_import,
-        [](const auto& c) { return c.iso_code == "PGK"; });
-    bool found_sos = std::ranges::any_of(after_import,
-        [](const auto& c) { return c.iso_code == "SOS"; });
+    bool found_pgk =
+        std::ranges::any_of(after_import, [](const auto& c) { return c.iso_code == "PGK"; });
+    bool found_sos =
+        std::ranges::any_of(after_import, [](const auto& c) { return c.iso_code == "SOS"; });
 
     CHECK(found_pgk);
     CHECK(found_sos);
@@ -323,12 +317,10 @@ TEST_CASE("import_currencies_from_api_test_file", tags) {
     refdata::repository::currency_repository repo;
     auto read_currencies = repo.read_latest(h.context());
 
-    BOOST_LOG_SEV(lg, debug) << "Verified " << read_currencies.size()
-                             << " currencies in database";
+    BOOST_LOG_SEV(lg, debug) << "Verified " << read_currencies.size() << " currencies in database";
 
     for (const auto& ccy : read_currencies) {
-        BOOST_LOG_SEV(lg, debug) << "Currency: " << ccy.iso_code
-                                 << " - " << ccy.name;
+        BOOST_LOG_SEV(lg, debug) << "Currency: " << ccy.iso_code << " - " << ccy.name;
     }
 
     CHECK(!read_currencies.empty());

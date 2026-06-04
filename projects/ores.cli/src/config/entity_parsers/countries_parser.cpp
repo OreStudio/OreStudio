@@ -18,16 +18,15 @@
  *
  */
 #include "ores.cli/config/entity_parsers/countries_parser.hpp"
-
-#include <boost/program_options.hpp>
-#include <boost/throw_exception.hpp>
-#include "ores.cli/config/parser_helpers.hpp"
-#include "ores.cli/config/parser_exception.hpp"
-#include "ores.cli/config/entity.hpp"
 #include "ores.cli/config/add_country_options.hpp"
+#include "ores.cli/config/entity.hpp"
+#include "ores.cli/config/parser_exception.hpp"
+#include "ores.cli/config/parser_helpers.hpp"
 #include "ores.database/config/database_configuration.hpp"
 #include "ores.logging/logging_configuration.hpp"
 #include "ores.utility/program_options/environment_mapper_factory.hpp"
+#include <boost/program_options.hpp>
+#include <boost/throw_exception.hpp>
 
 namespace ores::cli::config::entity_parsers {
 
@@ -59,22 +58,19 @@ const std::string delete_command_name("delete");
 const std::string add_command_name("add");
 
 const std::vector<std::string> allowed_operations{
-    list_command_name, delete_command_name, add_command_name
-};
+    list_command_name, delete_command_name, add_command_name};
 
 options_description make_add_country_options_description() {
     options_description r("Add Country Options");
-    r.add_options()
-        ("alpha2-code", value<std::string>(),
-            "ISO 3166-1 alpha-2 code, e.g., US (required)")
-        ("alpha3-code", value<std::string>(),
-            "ISO 3166-1 alpha-3 code, e.g., USA (required)")
-        ("name", value<std::string>(), "Country name (required)")
-        ("numeric-code", value<std::string>(), "ISO 3166-1 numeric code")
-        ("official-name", value<std::string>(), "Official country name")
-        ("modified-by", value<std::string>(), "Username of modifier (required)")
-        ("change-reason-code", value<std::string>(), "Change reason code")
-        ("change-commentary", value<std::string>(), "Change commentary");
+    r.add_options()(
+        "alpha2-code", value<std::string>(), "ISO 3166-1 alpha-2 code, e.g., US (required)")(
+        "alpha3-code", value<std::string>(), "ISO 3166-1 alpha-3 code, e.g., USA (required)")(
+        "name", value<std::string>(), "Country name (required)")(
+        "numeric-code", value<std::string>(), "ISO 3166-1 numeric code")(
+        "official-name", value<std::string>(), "Official country name")(
+        "modified-by", value<std::string>(), "Username of modifier (required)")(
+        "change-reason-code", value<std::string>(), "Change reason code")(
+        "change-commentary", value<std::string>(), "Change commentary");
 
     return r;
 }
@@ -95,8 +91,7 @@ add_country_options read_add_country_options(const variables_map& vm) {
     r.alpha3_code = vm["alpha3-code"].as<std::string>();
 
     if (vm.count("name") == 0) {
-        BOOST_THROW_EXCEPTION(
-            parser_exception("Must supply --name for add country command."));
+        BOOST_THROW_EXCEPTION(parser_exception("Must supply --name for add country command."));
     }
     r.name = vm["name"].as<std::string>();
 
@@ -123,11 +118,10 @@ add_country_options read_add_country_options(const variables_map& vm) {
 
 }
 
-std::optional<options>
-handle_countries_command(bool has_help,
-    const parsed_options& po,
-    std::ostream& info,
-    variables_map& vm) {
+std::optional<options> handle_countries_command(bool has_help,
+                                                const parsed_options& po,
+                                                std::ostream& info,
+                                                variables_map& vm) {
 
     auto o(collect_unrecognized(po.options, include_positional));
     o.erase(o.begin());
@@ -136,15 +130,14 @@ handle_countries_command(bool has_help,
         const std::vector<std::pair<std::string, std::string>> operations = {
             {"list", "List countries as JSON or table"},
             {"delete", "Delete a country by alpha-2 code"},
-            {"add", "Add a new country"}
-        };
+            {"add", "Add a new country"}};
         print_entity_help("countries", "Manage countries", operations, info);
         return {};
     }
 
     if (o.empty()) {
-        BOOST_THROW_EXCEPTION(parser_exception(
-            "countries command requires an operation (list, delete, add)"));
+        BOOST_THROW_EXCEPTION(
+            parser_exception("countries command requires an operation (list, delete, add)"));
     }
 
     const auto operation = o.front();

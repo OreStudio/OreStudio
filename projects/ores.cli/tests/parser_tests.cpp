@@ -31,8 +31,8 @@
 
 namespace {
 
-    const std::string_view test_suite("ores.cli.tests");
-    const std::string tags("[parsing]");
+const std::string_view test_suite("ores.cli.tests");
+const std::string tags("[parsing]");
 
 }
 
@@ -133,10 +133,17 @@ TEST_CASE("test_logging_options", tags) {
     parser p;
     std::ostringstream info, error;
 
-    std::vector<std::string> args = {"refdata",         "currencies",  "import",
-                                     "--log-enabled",   "--log-level", "debug",
-                                     "--log-directory", "test_logs",   "--log-to-console",
-                                     "--target",        "test.xml"};
+    std::vector<std::string> args = {"refdata",
+                                     "currencies",
+                                     "import",
+                                     "--log-enabled",
+                                     "--log-level",
+                                     "debug",
+                                     "--log-directory",
+                                     "test_logs",
+                                     "--log-to-console",
+                                     "--target",
+                                     "test.xml"};
     BOOST_LOG_SEV(lg, debug) << "Args: " << args;
 
     auto result = p.parse(args, info, error);
@@ -157,8 +164,8 @@ TEST_CASE("test_import_basic", tags) {
     parser p;
     std::ostringstream info, error;
 
-    std::vector<std::string> args = {"refdata", "currencies", "import", "--target",
-                                     "test_file.xml"};
+    std::vector<std::string> args = {
+        "refdata", "currencies", "import", "--target", "test_file.xml"};
     BOOST_LOG_SEV(lg, debug) << "Args: " << args;
 
     auto result = p.parse(args, info, error);
@@ -179,8 +186,15 @@ TEST_CASE("test_import_multiple_targets", tags) {
     parser p;
     std::ostringstream info, error;
 
-    std::vector<std::string> args = {"refdata",  "currencies", "import",   "--target", "file1.xml",
-                                     "--target", "file2.xml",  "--target", "file3.xml"};
+    std::vector<std::string> args = {"refdata",
+                                     "currencies",
+                                     "import",
+                                     "--target",
+                                     "file1.xml",
+                                     "--target",
+                                     "file2.xml",
+                                     "--target",
+                                     "file3.xml"};
     BOOST_LOG_SEV(lg, debug) << "Args: " << args;
 
     auto result = p.parse(args, info, error);
@@ -226,9 +240,16 @@ TEST_CASE("test_export_full_options", tags) {
     parser p;
     std::ostringstream info, error;
 
-    std::vector<std::string> args = {"refdata",    "currencies", "list", "--as-of",
-                                     "2025-01-01", "--key",      "USD",  "--all-versions",
-                                     "--format",   "xml"};
+    std::vector<std::string> args = {"refdata",
+                                     "currencies",
+                                     "list",
+                                     "--as-of",
+                                     "2025-01-01",
+                                     "--key",
+                                     "USD",
+                                     "--all-versions",
+                                     "--format",
+                                     "xml"};
     BOOST_LOG_SEV(lg, debug) << "Args: " << args;
 
     auto result = p.parse(args, info, error);
@@ -287,8 +308,14 @@ TEST_CASE("test_import_with_logging", tags) {
     parser p;
     std::ostringstream info, error;
 
-    std::vector<std::string> args = {"refdata",     "currencies", "import",   "--log-enabled",
-                                     "--log-level", "trace",      "--target", "test.xml"};
+    std::vector<std::string> args = {"refdata",
+                                     "currencies",
+                                     "import",
+                                     "--log-enabled",
+                                     "--log-level",
+                                     "trace",
+                                     "--target",
+                                     "test.xml"};
     BOOST_LOG_SEV(lg, debug) << "Args: " << args;
 
     auto result = p.parse(args, info, error);
@@ -309,8 +336,14 @@ TEST_CASE("test_export_with_logging", tags) {
     parser p;
     std::ostringstream info, error;
 
-    std::vector<std::string> args = {"refdata",     "currencies", "list",     "--log-enabled",
-                                     "--log-level", "warn",       "--format", "json"};
+    std::vector<std::string> args = {"refdata",
+                                     "currencies",
+                                     "list",
+                                     "--log-enabled",
+                                     "--log-level",
+                                     "warn",
+                                     "--format",
+                                     "json"};
     BOOST_LOG_SEV(lg, debug) << "Args: " << args;
 
     auto result = p.parse(args, info, error);

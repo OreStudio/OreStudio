@@ -18,16 +18,15 @@
  *
  */
 #include "ores.cli/config/entity_parsers/accounts_parser.hpp"
-
-#include <boost/program_options.hpp>
-#include <boost/throw_exception.hpp>
-#include "ores.cli/config/parser_helpers.hpp"
-#include "ores.cli/config/parser_exception.hpp"
-#include "ores.cli/config/entity.hpp"
 #include "ores.cli/config/add_account_options.hpp"
+#include "ores.cli/config/entity.hpp"
+#include "ores.cli/config/parser_exception.hpp"
+#include "ores.cli/config/parser_helpers.hpp"
 #include "ores.database/config/database_configuration.hpp"
 #include "ores.logging/logging_configuration.hpp"
 #include "ores.utility/program_options/environment_mapper_factory.hpp"
+#include <boost/program_options.hpp>
+#include <boost/throw_exception.hpp>
 
 namespace ores::cli::config::entity_parsers {
 
@@ -60,30 +59,18 @@ const std::string list_command_name("list");
 const std::string add_command_name("add");
 
 const std::vector<std::string> allowed_operations{
-    list_command_name, delete_command_name, add_command_name
-};
+    list_command_name, delete_command_name, add_command_name};
 
 /**
  * @brief Creates the options related to adding accounts.
  */
 options_description make_add_account_options_description() {
     options_description r("Add Account Options");
-    r.add_options()
-        ("username",
-            value<std::string>(),
-            "Account username (required)")
-        ("email",
-            value<std::string>(),
-            "Account email address (required)")
-        ("password",
-            value<std::string>(),
-            "Account password (required)")
-        ("admin",
-            bool_switch()->default_value(false),
-            "Assign Admin role to the account via RBAC")
-        ("modified-by",
-            value<std::string>(),
-            "Username of modifier (required)");
+    r.add_options()("username", value<std::string>(), "Account username (required)")(
+        "email", value<std::string>(), "Account email address (required)")(
+        "password", value<std::string>(), "Account password (required)")(
+        "admin", bool_switch()->default_value(false), "Assign Admin role to the account via RBAC")(
+        "modified-by", value<std::string>(), "Username of modifier (required)");
 
     return r;
 }
@@ -91,32 +78,27 @@ options_description make_add_account_options_description() {
 /**
  * @brief Reads the add configuration from the variables map for accounts.
  */
-ores::cli::config::add_account_options
-read_add_account_options(const variables_map& vm) {
+ores::cli::config::add_account_options read_add_account_options(const variables_map& vm) {
     ores::cli::config::add_account_options r;
 
     if (vm.count("modified-by") == 0) {
-        BOOST_THROW_EXCEPTION(
-            parser_exception("Must supply --modified-by for add command."));
+        BOOST_THROW_EXCEPTION(parser_exception("Must supply --modified-by for add command."));
     }
     r.modified_by = vm["modified-by"].as<std::string>();
 
     // Account-specific required fields
     if (vm.count("username") == 0) {
-        BOOST_THROW_EXCEPTION(
-            parser_exception("Must supply --username for add account command."));
+        BOOST_THROW_EXCEPTION(parser_exception("Must supply --username for add account command."));
     }
     r.username = vm["username"].as<std::string>();
 
     if (vm.count("email") == 0) {
-        BOOST_THROW_EXCEPTION(
-            parser_exception("Must supply --email for add account command."));
+        BOOST_THROW_EXCEPTION(parser_exception("Must supply --email for add account command."));
     }
     r.email = vm["email"].as<std::string>();
 
     if (vm.count("password") == 0) {
-        BOOST_THROW_EXCEPTION(
-            parser_exception("Must supply --password for add account command."));
+        BOOST_THROW_EXCEPTION(parser_exception("Must supply --password for add account command."));
     }
     r.password = vm["password"].as<std::string>();
 
@@ -128,11 +110,10 @@ read_add_account_options(const variables_map& vm) {
 
 }
 
-std::optional<options>
-handle_accounts_command(bool has_help,
-    const parsed_options& po,
-    std::ostream& info,
-    variables_map& vm) {
+std::optional<options> handle_accounts_command(bool has_help,
+                                               const parsed_options& po,
+                                               std::ostream& info,
+                                               variables_map& vm) {
 
     // Collect all unrecognized options from the first pass
     auto o(collect_unrecognized(po.options, include_positional));
@@ -143,15 +124,14 @@ handle_accounts_command(bool has_help,
         const std::vector<std::pair<std::string, std::string>> operations = {
             {"list", "List accounts as JSON or table (internal formats)"},
             {"delete", "Delete an account by username or UUID"},
-            {"add", "Add an account using command-line arguments"}
-        };
+            {"add", "Add an account using command-line arguments"}};
         print_entity_help("accounts", "Manage accounts", operations, info);
         return {};
     }
 
     if (o.empty()) {
-        BOOST_THROW_EXCEPTION(parser_exception(
-            "accounts command requires an operation (list, delete, add)"));
+        BOOST_THROW_EXCEPTION(
+            parser_exception("accounts command requires an operation (list, delete, add)"));
     }
 
     const auto operation = o.front();

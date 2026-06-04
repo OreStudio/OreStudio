@@ -25,12 +25,7 @@ namespace ores::cli::config {
 /**
  * @brief List of available formats.
  */
-enum class format {
-    json,
-    xml,
-    csv,
-    table
-};
+enum class format { json, xml, csv, table };
 
 }
 

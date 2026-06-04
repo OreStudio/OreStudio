@@ -20,9 +20,9 @@
 #ifndef ORES_COMPUTE_WRAPPER_APP_APPLICATION_HPP
 #define ORES_COMPUTE_WRAPPER_APP_APPLICATION_HPP
 
-#include <boost/asio/awaitable.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.compute.wrapper/config/options.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <boost/asio/awaitable.hpp>
 
 namespace ores::compute::wrapper::app {
 
@@ -31,8 +31,7 @@ namespace ores::compute::wrapper::app {
  */
 class application final {
 private:
-    inline static std::string_view logger_name =
-        "ores.compute.wrapper.app.application";
+    inline static std::string_view logger_name = "ores.compute.wrapper.app.application";
 
     static auto& lg() {
         using namespace ores::logging;
@@ -47,7 +46,7 @@ public:
 
 public:
     boost::asio::awaitable<void> run(boost::asio::io_context& io_ctx,
-        const config::options& cfg) const;
+                                     const config::options& cfg) const;
 };
 
 }

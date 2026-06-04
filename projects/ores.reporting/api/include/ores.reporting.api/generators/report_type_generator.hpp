@@ -20,25 +20,24 @@
 #ifndef ORES_REPORTING_GENERATORS_REPORT_TYPE_GENERATOR_HPP
 #define ORES_REPORTING_GENERATORS_REPORT_TYPE_GENERATOR_HPP
 
-#include <vector>
-#include "ores.reporting.api/export.hpp"
 #include "ores.reporting.api/domain/report_type.hpp"
+#include "ores.reporting.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include <vector>
 
 namespace ores::reporting::generators {
 
 /**
  * @brief Generates a synthetic report_type.
  */
-ORES_REPORTING_API_EXPORT domain::report_type generate_synthetic_report_type(
-    utility::generation::generation_context& ctx);
+ORES_REPORTING_API_EXPORT domain::report_type
+generate_synthetic_report_type(utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic report_types.
  */
 ORES_REPORTING_API_EXPORT std::vector<domain::report_type>
-generate_synthetic_report_types(std::size_t n,
-    utility::generation::generation_context& ctx);
+generate_synthetic_report_types(std::size_t n, utility::generation::generation_context& ctx);
 
 }
 

@@ -18,7 +18,6 @@
  *
  */
 #include "ores.reporting.core/repository/concurrency_policy_entity.hpp"
-
 #include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>

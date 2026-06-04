@@ -18,19 +18,17 @@
  *
  */
 #include "ores.compute.core/repository/workunit_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
-#include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.compute.api/domain/workunit_json_io.hpp" // IWYU pragma: keep.
+#include "ores.database/repository/mapper_helpers.hpp"
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::compute::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::workunit
-workunit_mapper::map(const workunit_entity& v) {
+domain::workunit workunit_mapper::map(const workunit_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::workunit r;
@@ -43,7 +41,9 @@ workunit_mapper::map(const workunit_entity& v) {
     r.config_uri = v.config_uri.value_or("");
     r.priority = v.priority;
     r.target_redundancy = v.target_redundancy;
-    r.canonical_result_id = v.canonical_result_id.has_value() ? boost::lexical_cast<boost::uuids::uuid>(*v.canonical_result_id) : boost::uuids::uuid{};
+    r.canonical_result_id = v.canonical_result_id.has_value() ?
+                                boost::lexical_cast<boost::uuids::uuid>(*v.canonical_result_id) :
+                                boost::uuids::uuid{};
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -54,8 +54,7 @@ workunit_mapper::map(const workunit_entity& v) {
     return r;
 }
 
-workunit_entity
-workunit_mapper::map(const domain::workunit& v) {
+workunit_entity workunit_mapper::map(const domain::workunit& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     workunit_entity r;
@@ -68,7 +67,9 @@ workunit_mapper::map(const domain::workunit& v) {
     r.config_uri = v.config_uri.empty() ? std::nullopt : std::optional(v.config_uri);
     r.priority = v.priority;
     r.target_redundancy = v.target_redundancy;
-    r.canonical_result_id = (v.canonical_result_id == boost::uuids::uuid{}) ? std::nullopt : std::optional(boost::uuids::to_string(v.canonical_result_id));
+    r.canonical_result_id = (v.canonical_result_id == boost::uuids::uuid{}) ?
+                                std::nullopt :
+                                std::optional(boost::uuids::to_string(v.canonical_result_id));
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -78,22 +79,14 @@ workunit_mapper::map(const domain::workunit& v) {
     return r;
 }
 
-std::vector<domain::workunit>
-workunit_mapper::map(const std::vector<workunit_entity>& v) {
+std::vector<domain::workunit> workunit_mapper::map(const std::vector<workunit_entity>& v) {
     return map_vector<workunit_entity, domain::workunit>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
-std::vector<workunit_entity>
-workunit_mapper::map(const std::vector<domain::workunit>& v) {
+std::vector<workunit_entity> workunit_mapper::map(const std::vector<domain::workunit>& v) {
     return map_vector<domain::workunit, workunit_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

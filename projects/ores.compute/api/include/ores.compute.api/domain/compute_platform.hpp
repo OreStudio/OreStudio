@@ -20,9 +20,9 @@
 #ifndef ORES_COMPUTE_DOMAIN_COMPUTE_PLATFORM_HPP
 #define ORES_COMPUTE_DOMAIN_COMPUTE_PLATFORM_HPP
 
-#include <string>
-#include <optional>
 #include <boost/uuid/uuid.hpp>
+#include <optional>
+#include <string>
 
 namespace ores::compute::domain {
 
@@ -36,11 +36,11 @@ namespace ores::compute::domain {
  */
 struct compute_platform final {
     boost::uuids::uuid id;
-    std::string code;          // e.g. "x64-linux"
-    std::string display_name;  // e.g. "Linux x86-64"
+    std::string code;         // e.g. "x64-linux"
+    std::string display_name; // e.g. "Linux x86-64"
     std::string description;
-    std::string os_family;     // linux / macos / windows
-    std::string cpu_arch;      // x86_64 / aarch64
+    std::string os_family;          // linux / macos / windows
+    std::string cpu_arch;           // x86_64 / aarch64
     std::optional<std::string> abi; // gnu / musl / msvc / mingw / nullopt
     bool is_active = true;
 };

@@ -20,37 +20,37 @@
 #ifndef ORES_CLI_APP_APPLICATION_HPP
 #define ORES_CLI_APP_APPLICATION_HPP
 
-#include <vector>
-#include <ostream>
-#include <optional>
-#include <filesystem>
-#include "ores.logging/make_logger.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.database/domain/database_options.hpp"
-#include "ores.cli/config/options.hpp"
-#include "ores.cli/config/import_options.hpp"
-#include "ores.cli/config/export_options.hpp"
-#include "ores.cli/config/delete_options.hpp"
-#include "ores.cli/config/add_options.hpp"
-#include "ores.cli/config/add_currency_options.hpp"
 #include "ores.cli/config/add_account_options.hpp"
-#include "ores.cli/config/add_system_setting_options.hpp"
-#include "ores.cli/config/add_login_info_options.hpp"
-#include "ores.cli/config/add_role_options.hpp"
-#include "ores.cli/config/add_permission_options.hpp"
-#include "ores.cli/config/add_country_options.hpp"
-#include "ores.cli/config/add_change_reason_options.hpp"
+#include "ores.cli/config/add_business_day_convention_type_options.hpp"
 #include "ores.cli/config/add_change_reason_category_options.hpp"
+#include "ores.cli/config/add_change_reason_options.hpp"
 #include "ores.cli/config/add_compute_app_options.hpp"
 #include "ores.cli/config/add_compute_app_version_options.hpp"
 #include "ores.cli/config/add_compute_batch_options.hpp"
 #include "ores.cli/config/add_compute_workunit_options.hpp"
+#include "ores.cli/config/add_country_options.hpp"
+#include "ores.cli/config/add_currency_options.hpp"
 #include "ores.cli/config/add_day_count_fraction_type_options.hpp"
-#include "ores.cli/config/add_business_day_convention_type_options.hpp"
 #include "ores.cli/config/add_floating_index_type_options.hpp"
-#include "ores.cli/config/add_payment_frequency_type_options.hpp"
 #include "ores.cli/config/add_leg_type_options.hpp"
+#include "ores.cli/config/add_login_info_options.hpp"
+#include "ores.cli/config/add_options.hpp"
+#include "ores.cli/config/add_payment_frequency_type_options.hpp"
+#include "ores.cli/config/add_permission_options.hpp"
+#include "ores.cli/config/add_role_options.hpp"
+#include "ores.cli/config/add_system_setting_options.hpp"
+#include "ores.cli/config/delete_options.hpp"
+#include "ores.cli/config/export_options.hpp"
+#include "ores.cli/config/import_options.hpp"
+#include "ores.cli/config/options.hpp"
 #include "ores.cli/export.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/database_options.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <filesystem>
+#include <optional>
+#include <ostream>
+#include <vector>
 
 namespace ores::cli::app {
 
@@ -59,8 +59,7 @@ namespace ores::cli::app {
  */
 class ORES_CLI_EXPORT application final {
 private:
-    inline static std::string_view logger_name =
-        "ores.cli.application";
+    inline static std::string_view logger_name = "ores.cli.application";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -70,13 +69,12 @@ private:
 
 public:
     explicit application(std::ostream& output_stream,
-        const std::optional<database::database_options>& db_opts);
+                         const std::optional<database::database_options>& db_opts);
     application(const application&) = delete;
     application& operator=(const application&) = delete;
 
 private:
-    static database::context
-    make_context(const std::optional<database::database_options>& db_opts);
+    static database::context make_context(const std::optional<database::database_options>& db_opts);
 
     /**
      * @brief Sets the tenant context on the database connection.
@@ -148,7 +146,8 @@ private:
     void delete_leg_type(const config::delete_options& cfg) const;
 
     void add_day_count_fraction_type(const config::add_day_count_fraction_type_options& cfg) const;
-    void add_business_day_convention_type(const config::add_business_day_convention_type_options& cfg) const;
+    void add_business_day_convention_type(
+        const config::add_business_day_convention_type_options& cfg) const;
     void add_floating_index_type(const config::add_floating_index_type_options& cfg) const;
     void add_payment_frequency_type(const config::add_payment_frequency_type_options& cfg) const;
     void add_leg_type(const config::add_leg_type_options& cfg) const;

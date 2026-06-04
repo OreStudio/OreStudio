@@ -17,11 +17,10 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.cli/config/parser_helpers.hpp"
 #include "ores.cli/config/parser_exception.hpp"
-
-#include <sstream>
+#include "ores.cli/config/parser_helpers.hpp"
 #include <catch2/catch_test_macros.hpp>
+#include <sstream>
 
 namespace {
 
@@ -57,16 +56,12 @@ TEST_CASE("validate_operation_accepts_allowed_operation", tags) {
 
 TEST_CASE("validate_operation_throws_on_invalid_operation", tags) {
     const std::vector<std::string> allowed = {"list", "delete"};
-    REQUIRE_THROWS_AS(
-        ph::validate_operation("currencies", "import", allowed),
-        parser_exception);
+    REQUIRE_THROWS_AS(ph::validate_operation("currencies", "import", allowed), parser_exception);
 }
 
 TEST_CASE("validate_operation_throws_on_empty_operation", tags) {
     const std::vector<std::string> allowed = {"list", "delete"};
-    REQUIRE_THROWS_AS(
-        ph::validate_operation("currencies", "", allowed),
-        parser_exception);
+    REQUIRE_THROWS_AS(ph::validate_operation("currencies", "", allowed), parser_exception);
 }
 
 // --- read_format ---
@@ -119,12 +114,8 @@ TEST_CASE("read_export_options_with_defaults", tags) {
 
 TEST_CASE("read_export_options_with_all_flags", tags) {
     auto desc = ph::make_export_options_description();
-    auto vm = make_vm(desc, {
-        "--format", "xml",
-        "--as-of", "2025-01-01",
-        "--key", "USD",
-        "--all-versions"
-    });
+    auto vm = make_vm(
+        desc, {"--format", "xml", "--as-of", "2025-01-01", "--key", "USD", "--all-versions"});
 
     auto opts = ph::read_export_options(vm, entity::currencies);
 
@@ -151,9 +142,7 @@ TEST_CASE("read_delete_options_throws_without_key", tags) {
     auto desc = ph::make_delete_options_description();
     auto vm = make_vm(desc, {});
 
-    REQUIRE_THROWS_AS(
-        ph::read_delete_options(vm, entity::accounts),
-        parser_exception);
+    REQUIRE_THROWS_AS(ph::read_delete_options(vm, entity::accounts), parser_exception);
 }
 
 // --- print_entity_help ---
@@ -161,9 +150,7 @@ TEST_CASE("read_delete_options_throws_without_key", tags) {
 TEST_CASE("print_entity_help_produces_expected_output", tags) {
     std::ostringstream ss;
     const std::vector<std::pair<std::string, std::string>> operations = {
-        {"list", "List all currencies"},
-        {"delete", "Delete a currency"}
-    };
+        {"list", "List all currencies"}, {"delete", "Delete a currency"}};
 
     ph::print_entity_help("currencies", "Manage currencies", operations, ss);
     const auto output = ss.str();

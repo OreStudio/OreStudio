@@ -18,23 +18,22 @@
  *
  */
 #include "ores.compute.core/messaging/report_submit_handler.hpp"
-
-#include <chrono>
-#include <format>
-#include <rfl/json.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include "ores.platform/time/datetime.hpp"
-#include "ores.database/service/tenant_context.hpp"
-#include "ores.service/messaging/workflow_helpers.hpp"
-#include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.compute.api/domain/batch.hpp"
 #include "ores.compute.api/domain/workunit.hpp"
 #include "ores.compute.api/messaging/work_protocol.hpp"
+#include "ores.compute.core/repository/workflow_batch_link_repository.hpp"
 #include "ores.compute.core/service/batch_service.hpp"
 #include "ores.compute.core/service/workunit_service.hpp"
-#include "ores.compute.core/repository/workflow_batch_link_repository.hpp"
+#include "ores.database/service/tenant_context.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.reporting.api/messaging/report_execution_protocol.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.service/messaging/workflow_helpers.hpp"
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <chrono>
+#include <format>
+#include <rfl/json.hpp>
 
 namespace ores::compute::messaging {
 
@@ -52,16 +51,17 @@ std::string assignment_subject(const std::string& tenant_id) {
 
 } // namespace
 
-report_submit_handler::report_submit_handler(
-    ores::nats::service::client& nats, ores::database::context ctx)
-    : nats_(nats), ctx_(std::move(ctx)) {}
+report_submit_handler::report_submit_handler(ores::nats::service::client& nats,
+                                             ores::database::context ctx)
+    : nats_(nats)
+    , ctx_(std::move(ctx)) {}
 
 void report_submit_handler::submit(ores::nats::message msg) {
     auto wf = workflow_step_context::from_message(nats_, msg);
-    if (!wf) return;
+    if (!wf)
+        return;
 
-    const std::string_view sv(
-        reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
+    const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
     auto parsed = rfl::json::read<submit_compute_request>(sv);
     if (!parsed) {
         wf->fail("Failed to decode submit_compute_request");
@@ -69,8 +69,7 @@ void report_submit_handler::submit(ores::nats::message msg) {
     }
     const auto& req = *parsed;
 
-    BOOST_LOG_SEV(lg(), info) << "submit_compute starting | instance="
-                              << req.report_instance_id
+    BOOST_LOG_SEV(lg(), info) << "submit_compute starting | instance=" << req.report_instance_id
                               << " tarballs=" << req.tarball_uris.size();
 
     try {
@@ -79,8 +78,7 @@ void report_submit_handler::submit(ores::nats::message msg) {
             return;
         }
 
-        auto tenant_ctx = ores::database::service::tenant_context::with_tenant(
-            ctx_, req.tenant_id);
+        auto tenant_ctx = ores::database::service::tenant_context::with_tenant(ctx_, req.tenant_id);
 
         const auto batch_uuid = boost::uuids::random_generator()();
         const auto batch_id = boost::uuids::to_string(batch_uuid);
@@ -108,7 +106,7 @@ void report_submit_handler::submit(ores::nats::message msg) {
             domain::workunit wu;
             wu.id = wu_uuid;
             wu.batch_id = batch_uuid;
-            wu.app_version_id = {};   // Placeholder: no ORE app version yet
+            wu.app_version_id = {}; // Placeholder: no ORE app version yet
             wu.input_uri = tarball_uri;
             wu.priority = 1;
             wu.target_redundancy = 1;
@@ -119,9 +117,9 @@ void report_submit_handler::submit(ores::nats::message msg) {
 
             // Publish work assignment event (fire-and-forget).
             work_assignment_event evt;
-            evt.workunit_id   = wu_id;
+            evt.workunit_id = wu_id;
             evt.app_version_id = boost::uuids::to_string(wu.app_version_id);
-            evt.input_uri     = tarball_uri;
+            evt.input_uri = tarball_uri;
             // result_id, package_uri, config_uri, output_uri left empty
             // until the compute app version is wired up.
 
@@ -129,28 +127,25 @@ void report_submit_handler::submit(ores::nats::message msg) {
             const auto data = std::as_bytes(std::span{json.data(), json.size()});
             nats_.publish(assignment_subject(req.tenant_id), data);
 
-            BOOST_LOG_SEV(lg(), debug)
-                << "Dispatched work assignment for workunit " << wu_id;
+            BOOST_LOG_SEV(lg(), debug) << "Dispatched work assignment for workunit " << wu_id;
         }
 
         // Record the async bridge row: batch_workflow_bridge will publish
         // step_completed_event once the batch reaches "closed" status.
         repository::workflow_batch_link_entity link;
-        link.batch_id             = batch_id;
-        link.tenant_id            = req.tenant_id;
-        link.workflow_step_id     = wf->step_id;
+        link.batch_id = batch_id;
+        link.tenant_id = req.tenant_id;
+        link.workflow_step_id = wf->step_id;
         link.workflow_instance_id = wf->instance_id;
-        link.created_at           = ores::platform::time::datetime::to_db_string(
-            std::chrono::system_clock::now());
+        link.created_at =
+            ores::platform::time::datetime::to_db_string(std::chrono::system_clock::now());
 
         repository::workflow_batch_link_repository link_repo;
         link_repo.create(tenant_ctx, link);
 
-        BOOST_LOG_SEV(lg(), info)
-            << "submit_compute deferred | instance=" << req.report_instance_id
-            << " batch=" << batch_id
-            << " workunits=" << workunit_ids.size()
-            << " step=" << wf->step_id;
+        BOOST_LOG_SEV(lg(), info) << "submit_compute deferred | instance=" << req.report_instance_id
+                                  << " batch=" << batch_id << " workunits=" << workunit_ids.size()
+                                  << " step=" << wf->step_id;
 
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "submit_compute failed: " << e.what();

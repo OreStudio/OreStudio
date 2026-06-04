@@ -20,12 +20,12 @@
 #ifndef ORES_CLI_APP_HOST_HPP
 #define ORES_CLI_APP_HOST_HPP
 
-#include <vector>
-#include <string>
-#include <ostream>
-#include <boost/asio/awaitable.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.cli/export.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <boost/asio/awaitable.hpp>
+#include <ostream>
+#include <string>
+#include <vector>
 
 namespace ores::cli::app {
 
@@ -34,8 +34,7 @@ namespace ores::cli::app {
  */
 class ORES_CLI_EXPORT host {
 private:
-    inline static std::string_view logger_name =
-        "ores.cli.app.host";
+    inline static std::string_view logger_name = "ores.cli.app.host";
 
     static auto& lg() {
         using namespace ores::logging;
@@ -43,12 +42,13 @@ private:
         return instance;
     }
 
-  public:
+public:
     /**
      * @brief Executes the console workflow.
      */
     static int execute(const std::vector<std::string>& args,
-        std::ostream& std_output, std::ostream& error_output);
+                       std::ostream& std_output,
+                       std::ostream& error_output);
 };
 
 }

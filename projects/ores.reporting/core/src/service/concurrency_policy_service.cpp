@@ -18,7 +18,6 @@
  *
  */
 #include "ores.reporting.core/service/concurrency_policy_service.hpp"
-
 #include <stdexcept>
 
 namespace ores::reporting::service {
@@ -37,7 +36,8 @@ std::optional<domain::concurrency_policy>
 concurrency_policy_service::find_policy(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Finding concurrency policy: " << code;
     auto results = repo_.read_latest(ctx_, code);
-    if (results.empty()) return std::nullopt;
+    if (results.empty())
+        return std::nullopt;
     return results.front();
 }
 

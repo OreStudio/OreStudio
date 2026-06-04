@@ -18,13 +18,12 @@
  *
  */
 #include "ores.compute.service/app/host.hpp"
-
-#include <cstdlib>
-#include <boost/exception/diagnostic_information.hpp>
-#include "ores.telemetry.core/log/lifecycle_manager.hpp"
-#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.compute.service/app/application.hpp"
 #include "ores.compute.service/config/parser.hpp"
+#include "ores.telemetry.core/log/lifecycle_manager.hpp"
+#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <boost/exception/diagnostic_information.hpp>
+#include <cstdlib>
 
 namespace ores::compute::service::app {
 
@@ -32,9 +31,10 @@ using namespace ores::logging;
 using ores::compute::service::config::parser;
 using ores::telemetry::log::lifecycle_manager;
 
-boost::asio::awaitable<int>
-host::execute(const std::vector<std::string>& args, std::ostream& std_output,
-    std::ostream& error_output, boost::asio::io_context& io_ctx) {
+boost::asio::awaitable<int> host::execute(const std::vector<std::string>& args,
+                                          std::ostream& std_output,
+                                          std::ostream& error_output,
+                                          boost::asio::io_context& io_ctx) {
     parser p;
     const auto ocfg(p.parse(args, std_output, error_output));
 
@@ -52,7 +52,7 @@ host::execute(const std::vector<std::string>& args, std::ostream& std_output,
         co_await app.run(io_ctx, cfg);
         co_return EXIT_SUCCESS;
     } catch (const std::exception& e) {
-        const auto *const be(dynamic_cast<const boost::exception* const>(&e));
+        const auto* const be(dynamic_cast<const boost::exception* const>(&e));
         if (be != nullptr) {
             using boost::diagnostic_information;
             BOOST_LOG_SEV(lg(), error) << "Error: " << diagnostic_information(*be);

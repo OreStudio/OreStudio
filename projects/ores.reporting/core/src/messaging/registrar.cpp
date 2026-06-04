@@ -18,33 +18,32 @@
  *
  */
 #include "ores.reporting.core/messaging/registrar.hpp"
-
-#include <memory>
-#include <optional>
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
-#include "ores.reporting.api/messaging/report_type_protocol.hpp"
-#include "ores.reporting.api/messaging/report_definition_protocol.hpp"
-#include "ores.reporting.api/messaging/report_instance_protocol.hpp"
 #include "ores.reporting.api/messaging/concurrency_policy_protocol.hpp"
-#include "ores.reporting.core/messaging/report_type_handler.hpp"
-#include "ores.reporting.core/messaging/report_definition_handler.hpp"
-#include "ores.reporting.core/messaging/report_instance_handler.hpp"
+#include "ores.reporting.api/messaging/report_definition_protocol.hpp"
+#include "ores.reporting.api/messaging/report_execution_protocol.hpp"
+#include "ores.reporting.api/messaging/report_instance_protocol.hpp"
+#include "ores.reporting.api/messaging/report_type_protocol.hpp"
 #include "ores.reporting.core/messaging/concurrency_policy_handler.hpp"
+#include "ores.reporting.core/messaging/publish_from_dq_handler.hpp"
+#include "ores.reporting.core/messaging/report_definition_handler.hpp"
 #include "ores.reporting.core/messaging/report_definition_template_handler.hpp"
 #include "ores.reporting.core/messaging/report_execution_handler.hpp"
-#include "ores.reporting.core/messaging/publish_from_dq_handler.hpp"
-#include "ores.reporting.api/messaging/report_execution_protocol.hpp"
+#include "ores.reporting.core/messaging/report_instance_handler.hpp"
+#include "ores.reporting.core/messaging/report_type_handler.hpp"
 #include "ores.workflow.core/service/fsm_state_map.hpp"
+#include <memory>
+#include <optional>
 
 namespace ores::reporting::messaging {
 
 std::vector<ores::nats::service::subscription>
 registrar::register_handlers(ores::nats::service::client& nats,
-    ores::database::context ctx,
-    std::optional<ores::security::jwt::jwt_authenticator> verifier,
-    ores::nats::service::nats_client& svc_nats,
-    std::string http_base_url) {
+                             ores::database::context ctx,
+                             std::optional<ores::security::jwt::jwt_authenticator> verifier,
+                             ores::nats::service::nats_client& svc_nats,
+                             std::string http_base_url) {
     std::vector<ores::nats::service::subscription> subs;
 
     // ----------------------------------------------------------------
@@ -57,87 +56,106 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // Report definition templates
     // ----------------------------------------------------------------
     auto rdth = std::make_shared<report_definition_template_handler>(nats, ctx, verifier);
-    subs.push_back(nats.queue_subscribe(
-        get_report_definition_templates_request::nats_subject, "ores.reporting.service",
-        [rdth](ores::nats::message msg) { rdth->list(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(get_report_definition_templates_request::nats_subject,
+                             "ores.reporting.service",
+                             [rdth](ores::nats::message msg) { rdth->list(std::move(msg)); }));
 
     // ----------------------------------------------------------------
     // Report types
     // ----------------------------------------------------------------
     auto rth = std::make_shared<report_type_handler>(nats, ctx, verifier);
-    subs.push_back(nats.queue_subscribe(
-        get_report_types_request::nats_subject, "ores.reporting.service",
-        [rth](ores::nats::message msg) { rth->list(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
-        save_report_type_request::nats_subject, "ores.reporting.service",
-        [rth](ores::nats::message msg) { rth->save(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
-        delete_report_type_request::nats_subject, "ores.reporting.service",
-        [rth](ores::nats::message msg) { rth->remove(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
-        get_report_type_history_request::nats_subject, "ores.reporting.service",
-        [rth](ores::nats::message msg) { rth->history(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(get_report_types_request::nats_subject,
+                             "ores.reporting.service",
+                             [rth](ores::nats::message msg) { rth->list(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(save_report_type_request::nats_subject,
+                             "ores.reporting.service",
+                             [rth](ores::nats::message msg) { rth->save(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(delete_report_type_request::nats_subject,
+                             "ores.reporting.service",
+                             [rth](ores::nats::message msg) { rth->remove(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(get_report_type_history_request::nats_subject,
+                             "ores.reporting.service",
+                             [rth](ores::nats::message msg) { rth->history(std::move(msg)); }));
 
     // ----------------------------------------------------------------
     // Report definitions
     // ----------------------------------------------------------------
     auto rdh = std::make_shared<report_definition_handler>(nats, ctx, verifier, svc_nats);
-    subs.push_back(nats.queue_subscribe(
-        get_report_definitions_request::nats_subject, "ores.reporting.service",
-        [rdh](ores::nats::message msg) { rdh->list(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
-        save_report_definition_request::nats_subject, "ores.reporting.service",
-        [rdh](ores::nats::message msg) { rdh->save(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
-        delete_report_definition_request::nats_subject, "ores.reporting.service",
-        [rdh](ores::nats::message msg) { rdh->remove(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
-        get_report_definition_history_request::nats_subject, "ores.reporting.service",
-        [rdh](ores::nats::message msg) { rdh->history(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
-        schedule_report_definitions_request::nats_subject, "ores.reporting.service",
-        [rdh](ores::nats::message msg) { rdh->schedule(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
-        unschedule_report_definitions_request::nats_subject, "ores.reporting.service",
-        [rdh](ores::nats::message msg) { rdh->unschedule(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(get_report_definitions_request::nats_subject,
+                             "ores.reporting.service",
+                             [rdh](ores::nats::message msg) { rdh->list(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(save_report_definition_request::nats_subject,
+                             "ores.reporting.service",
+                             [rdh](ores::nats::message msg) { rdh->save(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(delete_report_definition_request::nats_subject,
+                             "ores.reporting.service",
+                             [rdh](ores::nats::message msg) { rdh->remove(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(get_report_definition_history_request::nats_subject,
+                             "ores.reporting.service",
+                             [rdh](ores::nats::message msg) { rdh->history(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(schedule_report_definitions_request::nats_subject,
+                             "ores.reporting.service",
+                             [rdh](ores::nats::message msg) { rdh->schedule(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(unschedule_report_definitions_request::nats_subject,
+                             "ores.reporting.service",
+                             [rdh](ores::nats::message msg) { rdh->unschedule(std::move(msg)); }));
 
     // ----------------------------------------------------------------
     // Report instances
     // ----------------------------------------------------------------
-    auto rih = std::make_shared<report_instance_handler>(
-        nats, ctx, verifier, instance_states);
-    subs.push_back(nats.queue_subscribe(
-        get_report_instances_request::nats_subject, "ores.reporting.service",
-        [rih](ores::nats::message msg) { rih->list(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
-        save_report_instance_request::nats_subject, "ores.reporting.service",
-        [rih](ores::nats::message msg) { rih->save(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
-        delete_report_instance_request::nats_subject, "ores.reporting.service",
-        [rih](ores::nats::message msg) { rih->remove(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
-        get_report_instance_history_request::nats_subject, "ores.reporting.service",
-        [rih](ores::nats::message msg) { rih->history(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
-        trigger_report_instance_message::nats_subject, "ores.reporting.service",
-        [rih](ores::nats::message msg) { rih->trigger(std::move(msg)); }));
+    auto rih = std::make_shared<report_instance_handler>(nats, ctx, verifier, instance_states);
+    subs.push_back(
+        nats.queue_subscribe(get_report_instances_request::nats_subject,
+                             "ores.reporting.service",
+                             [rih](ores::nats::message msg) { rih->list(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(save_report_instance_request::nats_subject,
+                             "ores.reporting.service",
+                             [rih](ores::nats::message msg) { rih->save(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(delete_report_instance_request::nats_subject,
+                             "ores.reporting.service",
+                             [rih](ores::nats::message msg) { rih->remove(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(get_report_instance_history_request::nats_subject,
+                             "ores.reporting.service",
+                             [rih](ores::nats::message msg) { rih->history(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(trigger_report_instance_message::nats_subject,
+                             "ores.reporting.service",
+                             [rih](ores::nats::message msg) { rih->trigger(std::move(msg)); }));
 
     // ----------------------------------------------------------------
     // Concurrency policies
     // ----------------------------------------------------------------
     auto cph = std::make_shared<concurrency_policy_handler>(nats, ctx, verifier);
-    subs.push_back(nats.queue_subscribe(
-        get_concurrency_policies_request::nats_subject, "ores.reporting.service",
-        [cph](ores::nats::message msg) { cph->list(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
-        save_concurrency_policy_request::nats_subject, "ores.reporting.service",
-        [cph](ores::nats::message msg) { cph->save(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
-        delete_concurrency_policy_request::nats_subject, "ores.reporting.service",
-        [cph](ores::nats::message msg) { cph->remove(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
-        get_concurrency_policy_history_request::nats_subject, "ores.reporting.service",
-        [cph](ores::nats::message msg) { cph->history(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(get_concurrency_policies_request::nats_subject,
+                             "ores.reporting.service",
+                             [cph](ores::nats::message msg) { cph->list(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(save_concurrency_policy_request::nats_subject,
+                             "ores.reporting.service",
+                             [cph](ores::nats::message msg) { cph->save(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(delete_concurrency_policy_request::nats_subject,
+                             "ores.reporting.service",
+                             [cph](ores::nats::message msg) { cph->remove(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(get_concurrency_policy_history_request::nats_subject,
+                             "ores.reporting.service",
+                             [cph](ores::nats::message msg) { cph->history(std::move(msg)); }));
 
     // ----------------------------------------------------------------
     // Report execution workflow step handlers
@@ -146,38 +164,44 @@ registrar::register_handlers(ores::nats::service::client& nats,
         nats, ctx, svc_nats, instance_states, std::move(http_base_url));
 
     subs.push_back(nats.queue_subscribe(
-        std::string(gather_trades_request::nats_subject), "ores.reporting.service",
+        std::string(gather_trades_request::nats_subject),
+        "ores.reporting.service",
         [reh](ores::nats::message msg) { reh->gather_trades(std::move(msg)); }));
 
     subs.push_back(nats.queue_subscribe(
-        std::string(gather_market_data_request::nats_subject), "ores.reporting.service",
+        std::string(gather_market_data_request::nats_subject),
+        "ores.reporting.service",
         [reh](ores::nats::message msg) { reh->gather_market_data(std::move(msg)); }));
 
     subs.push_back(nats.queue_subscribe(
-        std::string(assemble_bundle_request::nats_subject), "ores.reporting.service",
+        std::string(assemble_bundle_request::nats_subject),
+        "ores.reporting.service",
         [reh](ores::nats::message msg) { reh->assemble_bundle(std::move(msg)); }));
 
     subs.push_back(nats.queue_subscribe(
-        std::string(collect_compute_results_request::nats_subject), "ores.reporting.service",
+        std::string(collect_compute_results_request::nats_subject),
+        "ores.reporting.service",
         [reh](ores::nats::message msg) { reh->collect_results(std::move(msg)); }));
 
-    subs.push_back(nats.queue_subscribe(
-        std::string(finalise_report_request::nats_subject), "ores.reporting.service",
-        [reh](ores::nats::message msg) { reh->finalise(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(std::string(finalise_report_request::nats_subject),
+                             "ores.reporting.service",
+                             [reh](ores::nats::message msg) { reh->finalise(std::move(msg)); }));
 
-    subs.push_back(nats.queue_subscribe(
-        std::string(fail_report_request::nats_subject), "ores.reporting.service",
-        [reh](ores::nats::message msg) { reh->fail(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(std::string(fail_report_request::nats_subject),
+                             "ores.reporting.service",
+                             [reh](ores::nats::message msg) { reh->fail(std::move(msg)); }));
 
     // ----------------------------------------------------------------
     // Publish-from-DQ workflow step handler
     // ----------------------------------------------------------------
     {
         auto pdq = std::make_shared<publish_from_dq_handler>(nats, ctx);
-        subs.push_back(nats.queue_subscribe(
-            "reporting.v1.report-definitions.publish-from-dq",
-            "ores.reporting.service",
-            [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); }));
+        subs.push_back(
+            nats.queue_subscribe("reporting.v1.report-definitions.publish-from-dq",
+                                 "ores.reporting.service",
+                                 [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); }));
     }
 
     return subs;

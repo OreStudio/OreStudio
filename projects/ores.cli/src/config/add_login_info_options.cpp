@@ -18,7 +18,6 @@
  *
  */
 #include "ores.cli/config/add_login_info_options.hpp"
-
 #include <ostream>
 
 namespace ores::cli::config {
@@ -26,8 +25,10 @@ namespace ores::cli::config {
 std::ostream& operator<<(std::ostream& s, const add_login_info_options& v) {
     s << "{ account_id: " << v.account_id;
 
-    if (v.locked) s << ", locked: " << (*v.locked ? "true" : "false");
-    if (v.failed_logins) s << ", failed_logins: " << *v.failed_logins;
+    if (v.locked)
+        s << ", locked: " << (*v.locked ? "true" : "false");
+    if (v.failed_logins)
+        s << ", failed_logins: " << *v.failed_logins;
 
     s << " }";
     return s;

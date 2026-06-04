@@ -20,10 +20,10 @@
 #ifndef ORES_REPORTING_DOMAIN_REPORT_INSTANCE_TABLE_HPP
 #define ORES_REPORTING_DOMAIN_REPORT_INSTANCE_TABLE_HPP
 
+#include "ores.reporting.api/domain/report_instance.hpp"
+#include "ores.reporting.api/export.hpp"
 #include <string>
 #include <vector>
-#include "ores.reporting.api/export.hpp"
-#include "ores.reporting.api/domain/report_instance.hpp"
 
 namespace ores::reporting::domain {
 

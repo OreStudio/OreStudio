@@ -20,8 +20,8 @@
 #ifndef ORES_COMPUTE_WRAPPER_NET_HTTP_CLIENT_HPP
 #define ORES_COMPUTE_WRAPPER_NET_HTTP_CLIENT_HPP
 
-#include <string>
 #include <filesystem>
+#include <string>
 
 namespace ores::compute::wrapper::net {
 
@@ -42,8 +42,7 @@ public:
      * @param dest  Local path where the downloaded content will be written
      * @throws std::runtime_error on connection, HTTP, or I/O failure
      */
-    static void download(const std::string& url,
-        const std::filesystem::path& dest);
+    static void download(const std::string& url, const std::filesystem::path& dest);
 
     /**
      * @brief Uploads a local file to a remote URL via HTTP PUT.
@@ -52,8 +51,7 @@ public:
      * @param src  Local path of the file to upload
      * @throws std::runtime_error on connection, HTTP, or I/O failure
      */
-    static void upload(const std::string& url,
-        const std::filesystem::path& src);
+    static void upload(const std::string& url, const std::filesystem::path& src);
 
 private:
     /**

@@ -20,11 +20,11 @@
 #ifndef ORES_COMPUTE_SERVICE_APP_BATCH_WORKFLOW_BRIDGE_HPP
 #define ORES_COMPUTE_SERVICE_APP_BATCH_WORKFLOW_BRIDGE_HPP
 
-#include <cstdint>
-#include <boost/asio/awaitable.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/client.hpp"
+#include <boost/asio/awaitable.hpp>
+#include <cstdint>
 
 namespace ores::compute::service::app {
 
@@ -45,8 +45,7 @@ namespace ores::compute::service::app {
  */
 class batch_workflow_bridge {
 private:
-    inline static std::string_view logger_name =
-        "ores.compute.service.app.batch_workflow_bridge";
+    inline static std::string_view logger_name = "ores.compute.service.app.batch_workflow_bridge";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;

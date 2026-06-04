@@ -20,12 +20,12 @@
 #ifndef ORES_REPORTING_REPOSITORY_REPORT_INPUT_BUNDLE_REPOSITORY_HPP
 #define ORES_REPORTING_REPOSITORY_REPORT_INPUT_BUNDLE_REPOSITORY_HPP
 
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.reporting.core/export.hpp"
+#include "ores.reporting.core/repository/report_input_bundle_entity.hpp"
 #include <optional>
 #include <string>
-#include "ores.logging/make_logger.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.reporting.core/repository/report_input_bundle_entity.hpp"
-#include "ores.reporting.core/export.hpp"
 
 namespace ores::reporting::repository {
 
@@ -58,8 +58,8 @@ public:
      *
      * @return The bundle if found, nullopt otherwise.
      */
-    std::optional<report_input_bundle_entity>
-    find_by_instance_id(context ctx, const std::string& instance_id);
+    std::optional<report_input_bundle_entity> find_by_instance_id(context ctx,
+                                                                  const std::string& instance_id);
 };
 
 }

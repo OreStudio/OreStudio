@@ -20,14 +20,14 @@
 #ifndef ORES_REPORTING_SERVICE_REPORT_INSTANCE_SERVICE_HPP
 #define ORES_REPORTING_SERVICE_REPORT_INSTANCE_SERVICE_HPP
 
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.reporting.api/domain/report_instance.hpp"
+#include "ores.reporting.core/export.hpp"
+#include "ores.reporting.core/repository/report_instance_repository.hpp"
+#include <optional>
 #include <string>
 #include <vector>
-#include <optional>
-#include "ores.logging/make_logger.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.reporting.api/domain/report_instance.hpp"
-#include "ores.reporting.core/repository/report_instance_repository.hpp"
-#include "ores.reporting.core/export.hpp"
 
 namespace ores::reporting::service {
 
@@ -36,8 +36,7 @@ namespace ores::reporting::service {
  */
 class ORES_REPORTING_CORE_EXPORT report_instance_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.reporting.service.report_instance_service";
+    inline static std::string_view logger_name = "ores.reporting.service.report_instance_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -52,15 +51,13 @@ public:
 
     std::vector<domain::report_instance> list_instances();
 
-    std::optional<domain::report_instance>
-    find_instance(const std::string& id);
+    std::optional<domain::report_instance> find_instance(const std::string& id);
 
     void save_instance(const domain::report_instance& v);
 
     void remove_instance(const std::string& id);
 
-    std::vector<domain::report_instance>
-    get_instance_history(const std::string& id);
+    std::vector<domain::report_instance> get_instance_history(const std::string& id);
 
 private:
     context ctx_;

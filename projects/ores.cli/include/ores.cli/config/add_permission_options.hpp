@@ -20,11 +20,10 @@
 #ifndef ORES_CLI_CONFIG_ADD_PERMISSION_OPTIONS_HPP
 #define ORES_CLI_CONFIG_ADD_PERMISSION_OPTIONS_HPP
 
-#include <iosfwd>
-#include <string>
-#include <optional>
-
 #include "ores.cli/export.hpp"
+#include <iosfwd>
+#include <optional>
+#include <string>
 
 namespace ores::cli::config {
 

@@ -22,10 +22,10 @@
 
 namespace ores::cli::config {
 
-    /**
-     * @brief Top-level domain sub-menus exposed by the CLI.
-     */
-    enum class domain { refdata, iam, dq, variability };
+/**
+ * @brief Top-level domain sub-menus exposed by the CLI.
+ */
+enum class domain { refdata, iam, dq, variability };
 
 }
 

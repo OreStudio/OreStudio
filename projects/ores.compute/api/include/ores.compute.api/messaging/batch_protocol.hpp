@@ -20,17 +20,16 @@
 #ifndef ORES_COMPUTE_MESSAGING_BATCH_PROTOCOL_HPP
 #define ORES_COMPUTE_MESSAGING_BATCH_PROTOCOL_HPP
 
+#include "ores.compute.api/domain/batch.hpp"
 #include <string>
 #include <string_view>
 #include <vector>
-#include "ores.compute.api/domain/batch.hpp"
 
 namespace ores::compute::messaging {
 
 struct list_batches_request {
     using response_type = struct list_batches_response;
-    static constexpr std::string_view nats_subject =
-        "compute.v1.batches.list";
+    static constexpr std::string_view nats_subject = "compute.v1.batches.list";
     int offset = 0;
     int limit = 100;
 };
@@ -42,8 +41,7 @@ struct list_batches_response {
 
 struct save_batch_request {
     using response_type = struct save_batch_response;
-    static constexpr std::string_view nats_subject =
-        "compute.v1.batches.save";
+    static constexpr std::string_view nats_subject = "compute.v1.batches.save";
     ores::compute::domain::batch batch;
     std::string change_reason_code;
     std::string change_commentary;
@@ -56,8 +54,7 @@ struct save_batch_response {
 
 struct get_batch_history_request {
     using response_type = struct get_batch_history_response;
-    static constexpr std::string_view nats_subject =
-        "compute.v1.batches.history";
+    static constexpr std::string_view nats_subject = "compute.v1.batches.history";
     std::string id;
 };
 

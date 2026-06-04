@@ -20,28 +20,27 @@
 #ifndef ORES_COMPUTE_MESSAGING_APP_VERSION_HANDLER_HPP
 #define ORES_COMPUTE_MESSAGING_APP_VERSION_HANDLER_HPP
 
-#include <optional>
-#include <stdexcept>
-#include <rfl/json.hpp>
-#include <boost/uuid/uuid_io.hpp>
+#include "ores.compute.api/messaging/app_version_protocol.hpp"
+#include "ores.compute.core/export.hpp"
+#include "ores.compute.core/repository/app_version_platform_repository.hpp"
+#include "ores.compute.core/service/app_version_service.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.database/domain/context.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include "ores.compute.api/messaging/app_version_protocol.hpp"
-#include "ores.compute.core/service/app_version_service.hpp"
-#include "ores.compute.core/repository/app_version_platform_repository.hpp"
-#include "ores.compute.core/export.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <optional>
+#include <rfl/json.hpp>
+#include <stdexcept>
 
 namespace ores::compute::messaging {
 
 namespace {
 inline auto& app_version_handler_lg() {
-    static auto instance = ores::logging::make_logger(
-        "ores.compute.messaging.app_version_handler");
+    static auto instance = ores::logging::make_logger("ores.compute.messaging.app_version_handler");
     return instance;
 }
 } // namespace
@@ -52,18 +51,18 @@ using ores::service::messaging::decode;
 using ores::service::messaging::has_permission;
 using namespace ores::logging;
 
-class ORES_COMPUTE_CORE_EXPORT app_version_handler  {
+class ORES_COMPUTE_CORE_EXPORT app_version_handler {
 public:
     app_version_handler(ores::nats::service::client& nats,
-        ores::database::context ctx,
-        std::optional<ores::security::jwt::jwt_authenticator> verifier)
-        : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier)) {}
+                        ores::database::context ctx,
+                        std::optional<ores::security::jwt::jwt_authenticator> verifier)
+        : nats_(nats)
+        , ctx_(std::move(ctx))
+        , verifier_(std::move(verifier)) {}
 
     void list(ores::nats::message msg) {
-        BOOST_LOG_SEV(app_version_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        BOOST_LOG_SEV(app_version_handler_lg(), debug) << "Handling " << msg.subject;
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -74,20 +73,17 @@ public:
         try {
             if (auto req = decode<list_app_versions_request>(msg)) {
                 resp.app_versions = svc.list();
-                resp.total_available_count =
-                    static_cast<int>(resp.app_versions.size());
+                resp.total_available_count = static_cast<int>(resp.app_versions.size());
             }
-        } catch (...) {}
+        } catch (...) {
+        }
         reply(nats_, msg, resp);
-        BOOST_LOG_SEV(app_version_handler_lg(), debug)
-            << "Completed " << msg.subject;
+        BOOST_LOG_SEV(app_version_handler_lg(), debug) << "Completed " << msg.subject;
     }
 
     void save(ores::nats::message msg) {
-        BOOST_LOG_SEV(app_version_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        BOOST_LOG_SEV(app_version_handler_lg(), debug) << "Handling " << msg.subject;
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -106,32 +102,26 @@ public:
                 // Qt / CLI callers only need to make one round-trip.
                 repository::app_version_platform_repository avp_repo;
                 avp_repo.replace_for_version(ctx,
-                    boost::uuids::to_string(req->app_version.id),
-                    req->platforms,
-                    req->app_version.modified_by,
-                    req->app_version.performed_by,
-                    req->app_version.change_reason_code,
-                    req->app_version.change_commentary);
+                                             boost::uuids::to_string(req->app_version.id),
+                                             req->platforms,
+                                             req->app_version.modified_by,
+                                             req->app_version.performed_by,
+                                             req->app_version.change_reason_code,
+                                             req->app_version.change_commentary);
 
-                reply(nats_, msg,
-                    save_app_version_response{.success = true});
+                reply(nats_, msg, save_app_version_response{.success = true});
             } catch (const std::exception& e) {
-                reply(nats_, msg, save_app_version_response{
-                    .success = false, .message = e.what()});
+                reply(nats_, msg, save_app_version_response{.success = false, .message = e.what()});
             }
         } else {
-            BOOST_LOG_SEV(app_version_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(app_version_handler_lg(), warn) << "Failed to decode: " << msg.subject;
         }
-        BOOST_LOG_SEV(app_version_handler_lg(), debug)
-            << "Completed " << msg.subject;
+        BOOST_LOG_SEV(app_version_handler_lg(), debug) << "Completed " << msg.subject;
     }
 
     void history(ores::nats::message msg) {
-        BOOST_LOG_SEV(app_version_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        BOOST_LOG_SEV(app_version_handler_lg(), debug) << "Handling " << msg.subject;
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -148,15 +138,12 @@ public:
             resp.message = e.what();
         }
         reply(nats_, msg, resp);
-        BOOST_LOG_SEV(app_version_handler_lg(), debug)
-            << "Completed " << msg.subject;
+        BOOST_LOG_SEV(app_version_handler_lg(), debug) << "Completed " << msg.subject;
     }
 
     void list_platforms(ores::nats::message msg) {
-        BOOST_LOG_SEV(app_version_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        BOOST_LOG_SEV(app_version_handler_lg(), debug) << "Handling " << msg.subject;
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -164,23 +151,20 @@ public:
         const auto& ctx = *ctx_expected;
         auto req = decode<list_app_version_platforms_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(app_version_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(app_version_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
         list_app_version_platforms_response resp;
         try {
             repository::app_version_platform_repository avp_repo;
-            resp.platforms = avp_repo.list_for_version(
-                ctx, req->app_version_id);
+            resp.platforms = avp_repo.list_for_version(ctx, req->app_version_id);
         } catch (const std::exception& e) {
             resp.success = false;
             resp.message = e.what();
         }
         reply(nats_, msg, resp);
-        BOOST_LOG_SEV(app_version_handler_lg(), debug)
-            << "Completed " << msg.subject;
+        BOOST_LOG_SEV(app_version_handler_lg(), debug) << "Completed " << msg.subject;
     }
 
 private:

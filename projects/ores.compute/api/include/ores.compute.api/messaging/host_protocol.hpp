@@ -20,17 +20,16 @@
 #ifndef ORES_COMPUTE_MESSAGING_HOST_PROTOCOL_HPP
 #define ORES_COMPUTE_MESSAGING_HOST_PROTOCOL_HPP
 
+#include "ores.compute.api/domain/host.hpp"
 #include <string>
 #include <string_view>
 #include <vector>
-#include "ores.compute.api/domain/host.hpp"
 
 namespace ores::compute::messaging {
 
 struct list_hosts_request {
     using response_type = struct list_hosts_response;
-    static constexpr std::string_view nats_subject =
-        "compute.v1.hosts.list";
+    static constexpr std::string_view nats_subject = "compute.v1.hosts.list";
     int offset = 0;
     int limit = 100;
 };
@@ -42,8 +41,7 @@ struct list_hosts_response {
 
 struct save_host_request {
     using response_type = struct save_host_response;
-    static constexpr std::string_view nats_subject =
-        "compute.v1.hosts.save";
+    static constexpr std::string_view nats_subject = "compute.v1.hosts.save";
     ores::compute::domain::host host;
     std::string change_reason_code;
     std::string change_commentary;
@@ -56,8 +54,7 @@ struct save_host_response {
 
 struct delete_host_request {
     using response_type = struct delete_host_response;
-    static constexpr std::string_view nats_subject =
-        "compute.v1.hosts.delete";
+    static constexpr std::string_view nats_subject = "compute.v1.hosts.delete";
     std::string id;
     std::string change_reason_code;
     std::string change_commentary;

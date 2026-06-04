@@ -18,25 +18,31 @@
  *
  */
 #include "ores.cli/config/add_currency_options.hpp"
-
 #include <ostream>
 
 namespace ores::cli::config {
 
 std::ostream& operator<<(std::ostream& s, const add_currency_options& v) {
-    s << "{ iso_code: " << v.iso_code
-      << ", name: " << v.name
-      << ", modified_by: " << v.modified_by;
+    s << "{ iso_code: " << v.iso_code << ", name: " << v.name << ", modified_by: " << v.modified_by;
 
-    if (v.numeric_code) s << ", numeric_code: " << *v.numeric_code;
-    if (v.symbol) s << ", symbol: " << *v.symbol;
-    if (v.fraction_symbol) s << ", fraction_symbol: " << *v.fraction_symbol;
-    if (v.fractions_per_unit) s << ", fractions_per_unit: " << *v.fractions_per_unit;
-    if (v.rounding_type) s << ", rounding_type: " << *v.rounding_type;
-    if (v.rounding_precision) s << ", rounding_precision: " << *v.rounding_precision;
-    if (v.format) s << ", format: " << *v.format;
-    if (v.monetary_nature) s << ", monetary_nature: " << *v.monetary_nature;
-    if (v.market_tier) s << ", market_tier: " << *v.market_tier;
+    if (v.numeric_code)
+        s << ", numeric_code: " << *v.numeric_code;
+    if (v.symbol)
+        s << ", symbol: " << *v.symbol;
+    if (v.fraction_symbol)
+        s << ", fraction_symbol: " << *v.fraction_symbol;
+    if (v.fractions_per_unit)
+        s << ", fractions_per_unit: " << *v.fractions_per_unit;
+    if (v.rounding_type)
+        s << ", rounding_type: " << *v.rounding_type;
+    if (v.rounding_precision)
+        s << ", rounding_precision: " << *v.rounding_precision;
+    if (v.format)
+        s << ", format: " << *v.format;
+    if (v.monetary_nature)
+        s << ", monetary_nature: " << *v.monetary_nature;
+    if (v.market_tier)
+        s << ", market_tier: " << *v.market_tier;
 
     s << " }";
     return s;

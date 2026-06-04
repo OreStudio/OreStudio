@@ -20,18 +20,18 @@
 #ifndef ORES_CLI_CONFIG_PARSER_HELPERS_HPP
 #define ORES_CLI_CONFIG_PARSER_HELPERS_HPP
 
+#include "ores.cli/config/delete_options.hpp"
+#include "ores.cli/config/entity.hpp"
+#include "ores.cli/config/export_options.hpp"
+#include "ores.cli/config/format.hpp"
+#include "ores.cli/config/options.hpp"
+#include "ores.cli/export.hpp"
+#include <boost/program_options.hpp>
+#include <iosfwd>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
-#include <optional>
-#include <iosfwd>
-#include <boost/program_options.hpp>
-#include "ores.cli/config/entity.hpp"
-#include "ores.cli/config/format.hpp"
-#include "ores.cli/config/options.hpp"
-#include "ores.cli/config/export_options.hpp"
-#include "ores.cli/config/delete_options.hpp"
-#include "ores.cli/export.hpp"
 
 namespace ores::cli::config::parser_helpers {
 
@@ -52,12 +52,11 @@ struct simple_entity_config {
  * This eliminates boilerplate code for simple entity parsers.
  */
 ORES_CLI_EXPORT std::optional<options>
-handle_simple_entity_command(
-    const simple_entity_config& cfg,
-    bool has_help,
-    const boost::program_options::parsed_options& po,
-    std::ostream& info,
-    boost::program_options::variables_map& vm);
+handle_simple_entity_command(const simple_entity_config& cfg,
+                             bool has_help,
+                             const boost::program_options::parsed_options& po,
+                             std::ostream& info,
+                             boost::program_options::variables_map& vm);
 
 /**
  * @brief Prints the header of the help text, applicable to all cases.
@@ -72,7 +71,8 @@ ORES_CLI_EXPORT void print_help_header(std::ostream& s);
  * @param info information stream.
  */
 ORES_CLI_EXPORT void print_help_command(const std::string& command_name,
-    const boost::program_options::options_description& od, std::ostream& info);
+                                        const boost::program_options::options_description& od,
+                                        std::ostream& info);
 
 /**
  * @brief Adds database and logging options to an options_description.
@@ -84,16 +84,17 @@ add_common_options(boost::program_options::options_description base);
  * @brief Validates that an operation is in the list of allowed operations.
  */
 ORES_CLI_EXPORT void validate_operation(const std::string& entity_name,
-    const std::string& operation,
-    const std::vector<std::string>& allowed_operations);
+                                        const std::string& operation,
+                                        const std::vector<std::string>& allowed_operations);
 
 /**
  * @brief Prints entity-level help showing available operations.
  */
-ORES_CLI_EXPORT void print_entity_help(const std::string& entity_name,
-    const std::string& description,
-    const std::vector<std::pair<std::string, std::string>>& operations,
-    std::ostream& info);
+ORES_CLI_EXPORT void
+print_entity_help(const std::string& entity_name,
+                  const std::string& description,
+                  const std::vector<std::pair<std::string, std::string>>& operations,
+                  std::ostream& info);
 
 /**
  * @brief Creates the options related to exporting/listing.
@@ -113,14 +114,14 @@ ORES_CLI_EXPORT format read_format(const boost::program_options::variables_map& 
 /**
  * @brief Reads the export configuration from the variables map.
  */
-ORES_CLI_EXPORT export_options read_export_options(
-    const boost::program_options::variables_map& vm, entity e);
+ORES_CLI_EXPORT export_options read_export_options(const boost::program_options::variables_map& vm,
+                                                   entity e);
 
 /**
  * @brief Reads the delete configuration from the variables map.
  */
-ORES_CLI_EXPORT delete_options read_delete_options(
-    const boost::program_options::variables_map& vm, entity e);
+ORES_CLI_EXPORT delete_options read_delete_options(const boost::program_options::variables_map& vm,
+                                                   entity e);
 
 }
 

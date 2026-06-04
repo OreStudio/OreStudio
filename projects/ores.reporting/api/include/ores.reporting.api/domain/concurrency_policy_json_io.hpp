@@ -20,9 +20,9 @@
 #ifndef ORES_REPORTING_DOMAIN_CONCURRENCY_POLICY_JSON_IO_HPP
 #define ORES_REPORTING_DOMAIN_CONCURRENCY_POLICY_JSON_IO_HPP
 
-#include <iosfwd>
-#include "ores.reporting.api/export.hpp"
 #include "ores.reporting.api/domain/concurrency_policy.hpp"
+#include "ores.reporting.api/export.hpp"
+#include <iosfwd>
 
 namespace ores::reporting::domain {
 

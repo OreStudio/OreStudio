@@ -20,27 +20,27 @@
 #ifndef ORES_REPORTING_MESSAGING_REPORT_DEFINITION_HANDLER_HPP
 #define ORES_REPORTING_MESSAGING_REPORT_DEFINITION_HANDLER_HPP
 
-#include <optional>
-#include <expected>
+#include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
-#include "ores.database/domain/context.hpp"
+#include "ores.reporting.api/messaging/report_definition_protocol.hpp"
+#include "ores.reporting.core/export.hpp"
+#include "ores.reporting.core/service/report_definition_service.hpp"
+#include "ores.reporting.core/service/report_scheduling_service.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include "ores.reporting.api/messaging/report_definition_protocol.hpp"
-#include "ores.reporting.core/service/report_definition_service.hpp"
-#include "ores.reporting.core/service/report_scheduling_service.hpp"
-#include "ores.reporting.core/export.hpp"
+#include <expected>
+#include <optional>
 
 namespace ores::reporting::messaging {
 
 namespace {
 inline auto& report_definition_handler_lg() {
-    static auto instance = ores::logging::make_logger(
-        "ores.reporting.messaging.report_definition_handler");
+    static auto instance =
+        ores::logging::make_logger("ores.reporting.messaging.report_definition_handler");
     return instance;
 }
 } // namespace
@@ -56,17 +56,17 @@ using namespace ores::logging;
 class ORES_REPORTING_CORE_EXPORT report_definition_handler {
 public:
     report_definition_handler(ores::nats::service::client& nats,
-        ores::database::context ctx,
-        std::optional<ores::security::jwt::jwt_authenticator> verifier,
-        ores::nats::service::nats_client& svc_nats)
-        : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier))
+                              ores::database::context ctx,
+                              std::optional<ores::security::jwt::jwt_authenticator> verifier,
+                              ores::nats::service::nats_client& svc_nats)
+        : nats_(nats)
+        , ctx_(std::move(ctx))
+        , verifier_(std::move(verifier))
         , svc_nats_(svc_nats) {}
 
     void list(ores::nats::message msg) {
-        BOOST_LOG_SEV(report_definition_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        BOOST_LOG_SEV(report_definition_handler_lg(), debug) << "Handling " << msg.subject;
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -76,19 +76,16 @@ public:
         get_report_definitions_response resp;
         try {
             resp.definitions = svc.list_definitions();
-            resp.total_available_count =
-                static_cast<int>(resp.definitions.size());
-        } catch (...) {}
+            resp.total_available_count = static_cast<int>(resp.definitions.size());
+        } catch (...) {
+        }
         reply(nats_, msg, resp);
-        BOOST_LOG_SEV(report_definition_handler_lg(), debug)
-            << "Completed " << msg.subject;
+        BOOST_LOG_SEV(report_definition_handler_lg(), debug) << "Completed " << msg.subject;
     }
 
     void save(ores::nats::message msg) {
-        BOOST_LOG_SEV(report_definition_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        BOOST_LOG_SEV(report_definition_handler_lg(), debug) << "Handling " << msg.subject;
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -103,25 +100,22 @@ public:
             try {
                 stamp(req->definition, ctx);
                 svc.save_definition(req->definition);
-                reply(nats_, msg,
-                    save_report_definition_response{.success = true});
+                reply(nats_, msg, save_report_definition_response{.success = true});
             } catch (const std::exception& e) {
-                reply(nats_, msg, save_report_definition_response{
-                    .success = false, .message = e.what()});
+                reply(nats_,
+                      msg,
+                      save_report_definition_response{.success = false, .message = e.what()});
             }
         } else {
             BOOST_LOG_SEV(report_definition_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
         }
-        BOOST_LOG_SEV(report_definition_handler_lg(), debug)
-            << "Completed " << msg.subject;
+        BOOST_LOG_SEV(report_definition_handler_lg(), debug) << "Completed " << msg.subject;
     }
 
     void remove(ores::nats::message msg) {
-        BOOST_LOG_SEV(report_definition_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        BOOST_LOG_SEV(report_definition_handler_lg(), debug) << "Handling " << msg.subject;
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -136,25 +130,22 @@ public:
             try {
                 for (const auto& id : req->ids)
                     svc.remove_definition(id);
-                reply(nats_, msg,
-                    delete_report_definition_response{.success = true});
+                reply(nats_, msg, delete_report_definition_response{.success = true});
             } catch (const std::exception& e) {
-                reply(nats_, msg, delete_report_definition_response{
-                    .success = false, .message = e.what()});
+                reply(nats_,
+                      msg,
+                      delete_report_definition_response{.success = false, .message = e.what()});
             }
         } else {
             BOOST_LOG_SEV(report_definition_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
         }
-        BOOST_LOG_SEV(report_definition_handler_lg(), debug)
-            << "Completed " << msg.subject;
+        BOOST_LOG_SEV(report_definition_handler_lg(), debug) << "Completed " << msg.subject;
     }
 
     void history(ores::nats::message msg) {
-        BOOST_LOG_SEV(report_definition_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        BOOST_LOG_SEV(report_definition_handler_lg(), debug) << "Handling " << msg.subject;
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -164,26 +155,26 @@ public:
             service::report_definition_service svc(ctx);
             try {
                 auto hist = svc.get_definition_history(req->id);
-                reply(nats_, msg, get_report_definition_history_response{
-                    .success = true,
-                    .history = std::move(hist)});
+                reply(nats_,
+                      msg,
+                      get_report_definition_history_response{.success = true,
+                                                             .history = std::move(hist)});
             } catch (const std::exception& e) {
-                reply(nats_, msg, get_report_definition_history_response{
-                    .success = false, .message = e.what()});
+                reply(
+                    nats_,
+                    msg,
+                    get_report_definition_history_response{.success = false, .message = e.what()});
             }
         } else {
             BOOST_LOG_SEV(report_definition_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
         }
-        BOOST_LOG_SEV(report_definition_handler_lg(), debug)
-            << "Completed " << msg.subject;
+        BOOST_LOG_SEV(report_definition_handler_lg(), debug) << "Completed " << msg.subject;
     }
 
     void schedule(ores::nats::message msg) {
-        BOOST_LOG_SEV(report_definition_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        BOOST_LOG_SEV(report_definition_handler_lg(), debug) << "Handling " << msg.subject;
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -195,8 +186,7 @@ public:
         }
         if (auto req = decode<schedule_report_definitions_request>(msg)) {
             service::report_definition_service svc(ctx);
-            auto delegated = svc_nats_.with_delegation(
-                ores::nats::service::extract_bearer(msg));
+            auto delegated = svc_nats_.with_delegation(ores::nats::service::extract_bearer(msg));
             service::report_scheduling_service scheduler(ctx_, delegated);
             const auto& actor = delegated_actor(ctx);
             int scheduled_count = 0;
@@ -205,12 +195,12 @@ public:
             for (const auto& id : req->ids) {
                 try {
                     auto def = svc.find_definition(id);
-                    if (!def) continue;
+                    if (!def)
+                        continue;
                     auto result = scheduler.schedule_one(*def, actor);
                     if (!result) {
                         BOOST_LOG_SEV(report_definition_handler_lg(), error)
-                            << "Failed to schedule definition " << id
-                            << ": " << result.error();
+                            << "Failed to schedule definition " << id << ": " << result.error();
                         failed_ids.push_back(id);
                         if (first_error.empty())
                             first_error = result.error();
@@ -219,31 +209,28 @@ public:
                     }
                 } catch (const std::exception& e) {
                     BOOST_LOG_SEV(report_definition_handler_lg(), error)
-                        << "Failed to schedule definition " << id
-                        << ": " << e.what();
+                        << "Failed to schedule definition " << id << ": " << e.what();
                     failed_ids.push_back(id);
                     if (first_error.empty())
                         first_error = e.what();
                 }
             }
-            reply(nats_, msg, schedule_report_definitions_response{
-                .success = failed_ids.empty(),
-                .message = first_error,
-                .scheduled_count = scheduled_count,
-                .failed_ids = std::move(failed_ids)});
+            reply(nats_,
+                  msg,
+                  schedule_report_definitions_response{.success = failed_ids.empty(),
+                                                       .message = first_error,
+                                                       .scheduled_count = scheduled_count,
+                                                       .failed_ids = std::move(failed_ids)});
         } else {
             BOOST_LOG_SEV(report_definition_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
         }
-        BOOST_LOG_SEV(report_definition_handler_lg(), debug)
-            << "Completed " << msg.subject;
+        BOOST_LOG_SEV(report_definition_handler_lg(), debug) << "Completed " << msg.subject;
     }
 
     void unschedule(ores::nats::message msg) {
-        BOOST_LOG_SEV(report_definition_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        BOOST_LOG_SEV(report_definition_handler_lg(), debug) << "Handling " << msg.subject;
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -255,8 +242,7 @@ public:
         }
         if (auto req = decode<unschedule_report_definitions_request>(msg)) {
             service::report_definition_service svc(ctx);
-            auto delegated = svc_nats_.with_delegation(
-                ores::nats::service::extract_bearer(msg));
+            auto delegated = svc_nats_.with_delegation(ores::nats::service::extract_bearer(msg));
             service::report_scheduling_service scheduler(ctx_, delegated);
             const auto& actor = delegated_actor(ctx);
             int unscheduled_count = 0;
@@ -265,12 +251,12 @@ public:
             for (const auto& id : req->ids) {
                 try {
                     auto def = svc.find_definition(id);
-                    if (!def) continue;
+                    if (!def)
+                        continue;
                     auto result = scheduler.unschedule_one(*def, actor);
                     if (!result) {
                         BOOST_LOG_SEV(report_definition_handler_lg(), error)
-                            << "Failed to unschedule definition " << id
-                            << ": " << result.error();
+                            << "Failed to unschedule definition " << id << ": " << result.error();
                         failed_ids.push_back(id);
                         if (first_error.empty())
                             first_error = result.error();
@@ -279,24 +265,23 @@ public:
                     }
                 } catch (const std::exception& e) {
                     BOOST_LOG_SEV(report_definition_handler_lg(), error)
-                        << "Failed to unschedule definition " << id
-                        << ": " << e.what();
+                        << "Failed to unschedule definition " << id << ": " << e.what();
                     failed_ids.push_back(id);
                     if (first_error.empty())
                         first_error = e.what();
                 }
             }
-            reply(nats_, msg, unschedule_report_definitions_response{
-                .success = failed_ids.empty(),
-                .message = first_error,
-                .unscheduled_count = unscheduled_count,
-                .failed_ids = std::move(failed_ids)});
+            reply(nats_,
+                  msg,
+                  unschedule_report_definitions_response{.success = failed_ids.empty(),
+                                                         .message = first_error,
+                                                         .unscheduled_count = unscheduled_count,
+                                                         .failed_ids = std::move(failed_ids)});
         } else {
             BOOST_LOG_SEV(report_definition_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
         }
-        BOOST_LOG_SEV(report_definition_handler_lg(), debug)
-            << "Completed " << msg.subject;
+        BOOST_LOG_SEV(report_definition_handler_lg(), debug) << "Completed " << msg.subject;
     }
 
 private:

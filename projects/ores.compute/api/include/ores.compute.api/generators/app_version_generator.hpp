@@ -20,28 +20,26 @@
 #ifndef ORES_COMPUTE_GENERATORS_APP_VERSION_GENERATOR_HPP
 #define ORES_COMPUTE_GENERATORS_APP_VERSION_GENERATOR_HPP
 
-#include <vector>
-#include <boost/uuid/uuid.hpp>
 #include "ores.compute.api/domain/app_version.hpp"
 #include "ores.compute.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <vector>
 
 namespace ores::compute::generators {
 
 /**
  * @brief Generates a synthetic app version for the given app.
  */
-ORES_COMPUTE_API_EXPORT domain::app_version generate_synthetic_app_version(
-    const boost::uuids::uuid& app_id,
-    utility::generation::generation_context& ctx);
+ORES_COMPUTE_API_EXPORT domain::app_version
+generate_synthetic_app_version(const boost::uuids::uuid& app_id,
+                               utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic app versions for the given app.
  */
-ORES_COMPUTE_API_EXPORT std::vector<domain::app_version>
-generate_synthetic_app_versions(std::size_t n,
-    const boost::uuids::uuid& app_id,
-    utility::generation::generation_context& ctx);
+ORES_COMPUTE_API_EXPORT std::vector<domain::app_version> generate_synthetic_app_versions(
+    std::size_t n, const boost::uuids::uuid& app_id, utility::generation::generation_context& ctx);
 
 }
 

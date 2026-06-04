@@ -20,10 +20,10 @@
 #ifndef ORES_REPORTING_REPOSITORY_RISK_REPORT_CONFIG_ENTITY_HPP
 #define ORES_REPORTING_REPOSITORY_RISK_REPORT_CONFIG_ENTITY_HPP
 
+#include "ores.database/repository/db_types.hpp"
+#include "sqlgen/PrimaryKey.hpp"
 #include <optional>
 #include <string>
-#include "sqlgen/PrimaryKey.hpp"
-#include "ores.database/repository/db_types.hpp"
 
 namespace ores::reporting::repository {
 
@@ -31,8 +31,7 @@ using db_timestamp = ores::database::repository::db_timestamp;
 
 struct risk_report_config_entity {
     constexpr static const char* schema = "public";
-    constexpr static const char* tablename =
-        "ores_reporting_risk_report_configs_tbl";
+    constexpr static const char* tablename = "ores_reporting_risk_report_configs_tbl";
 
     sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;

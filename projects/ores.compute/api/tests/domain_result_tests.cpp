@@ -18,14 +18,13 @@
  *
  */
 #include "ores.compute.api/domain/result.hpp"
-
-#include <sstream>
-#include <catch2/catch_test_macros.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.logging/make_logger.hpp"
 #include "ores.compute.api/domain/result_json_io.hpp" // IWYU pragma: keep.
 #include "ores.compute.api/domain/result_table.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <boost/uuid/uuid_generators.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <sstream>
 
 namespace {
 
@@ -52,7 +51,7 @@ TEST_CASE("create_result_with_valid_fields", tags) {
     sut.host_id = boost::uuids::random_generator()();
     sut.pgmq_msg_id = 42;
     sut.server_state = 5; // Done
-    sut.outcome = 1; // Success
+    sut.outcome = 1;      // Success
     sut.output_uri = "s3://bucket/outputs/result-001.zip";
     sut.received_at = std::chrono::system_clock::now();
 

@@ -18,7 +18,6 @@
  *
  */
 #include "ores.cli/config/options.hpp"
-
 #include <rfl.hpp>
 #include <rfl/json.hpp>
 

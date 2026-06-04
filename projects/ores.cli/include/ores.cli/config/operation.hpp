@@ -25,13 +25,7 @@ namespace ores::cli::config {
 /**
  * @brief List of available operations that can be performed on entities.
  */
-enum class operation {
-    import_data,
-    export_data,
-    list_entity,
-    delete_entity,
-    add_entity
-};
+enum class operation { import_data, export_data, list_entity, delete_entity, add_entity };
 
 }
 

@@ -18,9 +18,8 @@
  *
  */
 #include "ores.reporting.api/domain/report_instance_table_io.hpp"
-
-#include <ostream>
 #include "ores.reporting.api/domain/report_instance_table.hpp"
+#include <ostream>
 
 namespace ores::reporting::domain {
 

@@ -31,22 +31,20 @@ namespace ores::compute::repository {
  */
 class batch_mapper {
 private:
-    inline static std::string_view logger_name =
-        "ores.compute.repository.batch_mapper";
+    inline static std::string_view logger_name = "ores.compute.repository.batch_mapper";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }
+
 public:
     static domain::batch map(const batch_entity& v);
     static batch_entity map(const domain::batch& v);
 
-    static std::vector<domain::batch>
-    map(const std::vector<batch_entity>& v);
-    static std::vector<batch_entity>
-    map(const std::vector<domain::batch>& v);
+    static std::vector<domain::batch> map(const std::vector<batch_entity>& v);
+    static std::vector<batch_entity> map(const std::vector<domain::batch>& v);
 };
 
 }

@@ -18,7 +18,6 @@
  *
  */
 #include "ores.reporting.core/repository/concurrency_policy_mapper.hpp"
-
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.reporting.api/domain/concurrency_policy_json_io.hpp" // IWYU pragma: keep.
 
@@ -27,8 +26,7 @@ namespace ores::reporting::repository {
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::concurrency_policy
-concurrency_policy_mapper::map(const concurrency_policy_entity& v) {
+domain::concurrency_policy concurrency_policy_mapper::map(const concurrency_policy_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::concurrency_policy r;
@@ -47,8 +45,7 @@ concurrency_policy_mapper::map(const concurrency_policy_entity& v) {
     return r;
 }
 
-concurrency_policy_entity
-concurrency_policy_mapper::map(const domain::concurrency_policy& v) {
+concurrency_policy_entity concurrency_policy_mapper::map(const domain::concurrency_policy& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     concurrency_policy_entity r;
@@ -69,19 +66,13 @@ concurrency_policy_mapper::map(const domain::concurrency_policy& v) {
 std::vector<domain::concurrency_policy>
 concurrency_policy_mapper::map(const std::vector<concurrency_policy_entity>& v) {
     return map_vector<concurrency_policy_entity, domain::concurrency_policy>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<concurrency_policy_entity>
 concurrency_policy_mapper::map(const std::vector<domain::concurrency_policy>& v) {
     return map_vector<domain::concurrency_policy, concurrency_policy_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

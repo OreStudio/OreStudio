@@ -21,9 +21,9 @@
 #define ORES_COMPUTE_REPOSITORY_WORKFLOW_BATCH_LINK_ENTITY_HPP
 
 #include "ores.database/repository/db_types.hpp"
-#include <string>
 #include <optional>
 #include <sqlgen/postgres.hpp>
+#include <string>
 
 namespace ores::compute::repository {
 
@@ -36,9 +36,8 @@ using db_timestamp = ores::database::repository::db_timestamp;
  * deleted by batch_workflow_bridge when the batch reaches a terminal state.
  */
 struct workflow_batch_link_entity {
-    constexpr static const char* schema    = "public";
-    constexpr static const char* tablename =
-        "ores_compute_workflow_batch_links_tbl";
+    constexpr static const char* schema = "public";
+    constexpr static const char* tablename = "ores_compute_workflow_batch_links_tbl";
 
     sqlgen::PrimaryKey<std::string> batch_id;
     std::string tenant_id;

@@ -21,10 +21,10 @@
 #include "ores.cli/config/add_change_reason_category_options.hpp"
 #include "ores.cli/config/add_change_reason_options.hpp"
 #include "ores.cli/config/add_country_options.hpp"
-#include "ores.cli/config/add_system_setting_options.hpp"
 #include "ores.cli/config/add_login_info_options.hpp"
 #include "ores.cli/config/add_permission_options.hpp"
 #include "ores.cli/config/add_role_options.hpp"
+#include "ores.cli/config/add_system_setting_options.hpp"
 #include "ores.cli/config/entity.hpp"
 #include "ores.cli/config/format.hpp"
 #include "ores.cli/config/parser.hpp"
@@ -38,7 +38,7 @@
 
 namespace {
 
-    const std::string_view test_suite("ores.cli.tests");
+const std::string_view test_suite("ores.cli.tests");
 
 }
 
@@ -467,9 +467,13 @@ TEST_CASE("test_permissions_add_with_all_fields", permissions_tags) {
     parser p;
     std::ostringstream info, error;
 
-    std::vector<std::string> args = {
-        "iam",           "permissions",     "add", "--code", "reports:generate",
-        "--description", "Generate reports"};
+    std::vector<std::string> args = {"iam",
+                                     "permissions",
+                                     "add",
+                                     "--code",
+                                     "reports:generate",
+                                     "--description",
+                                     "Generate reports"};
     BOOST_LOG_SEV(lg, debug) << "Args: " << args;
 
     auto result = p.parse(args, info, error);
@@ -1003,8 +1007,8 @@ TEST_CASE("test_system_settings_delete_operation", system_settings_tags) {
     parser p;
     std::ostringstream info, error;
 
-    std::vector<std::string> args = {"variability", "system-settings", "delete", "--key",
-                                     "system.dark_mode"};
+    std::vector<std::string> args = {
+        "variability", "system-settings", "delete", "--key", "system.dark_mode"};
     BOOST_LOG_SEV(lg, debug) << "Args: " << args;
 
     auto result = p.parse(args, info, error);
@@ -1033,10 +1037,17 @@ TEST_CASE("test_system_settings_add_with_all_fields", system_settings_tags) {
     parser p;
     std::ostringstream info, error;
 
-    std::vector<std::string> args = {
-        "variability",   "system-settings",       "add",       "--name", "system.dark_mode",
-        "--description", "Enable dark mode UI", "--value", "true",   "--modified-by",
-        "admin"};
+    std::vector<std::string> args = {"variability",
+                                     "system-settings",
+                                     "add",
+                                     "--name",
+                                     "system.dark_mode",
+                                     "--description",
+                                     "Enable dark mode UI",
+                                     "--value",
+                                     "true",
+                                     "--modified-by",
+                                     "admin"};
     BOOST_LOG_SEV(lg, debug) << "Args: " << args;
 
     auto result = p.parse(args, info, error);
@@ -1135,8 +1146,8 @@ TEST_CASE("test_login_info_delete_operation", login_info_tags) {
     parser p;
     std::ostringstream info, error;
 
-    std::vector<std::string> args = {"iam", "login-info", "delete", "--key",
-                                     "550e8400-e29b-41d4-a716-446655440000"};
+    std::vector<std::string> args = {
+        "iam", "login-info", "delete", "--key", "550e8400-e29b-41d4-a716-446655440000"};
     BOOST_LOG_SEV(lg, debug) << "Args: " << args;
 
     auto result = p.parse(args, info, error);

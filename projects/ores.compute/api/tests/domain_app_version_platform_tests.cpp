@@ -18,12 +18,11 @@
  *
  */
 #include "ores.compute.api/domain/app_version_platform.hpp"
-
-#include <sstream>
-#include <catch2/catch_test_macros.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.compute.api/domain/app_version_platform_json_io.hpp" // IWYU pragma: keep.
+#include "ores.logging/make_logger.hpp"
+#include <boost/uuid/uuid_generators.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <sstream>
 
 namespace {
 
@@ -42,8 +41,7 @@ TEST_CASE("create_app_version_platform_with_valid_fields", tags) {
     sut.app_version_id = boost::uuids::random_generator()();
     sut.platform_id = boost::uuids::random_generator()();
     sut.platform_code = "x64-linux";
-    sut.package_uri =
-        "/api/v1/storage/compute/packages/ore/1.8.15.0/ore-1.8.15.0-x64-linux.tar.gz";
+    sut.package_uri = "/api/v1/storage/compute/packages/ore/1.8.15.0/ore-1.8.15.0-x64-linux.tar.gz";
 
     BOOST_LOG_SEV(lg, info) << "AppVersionPlatform: " << sut;
 

@@ -18,7 +18,6 @@
  *
  */
 #include "ores.compute.core/service/workunit_service.hpp"
-
 #include <stdexcept>
 
 namespace ores::compute::service {
@@ -33,11 +32,11 @@ std::vector<domain::workunit> workunit_service::list() {
     return repo_.read_latest(ctx_);
 }
 
-std::optional<domain::workunit>
-workunit_service::find(const std::string& id) {
+std::optional<domain::workunit> workunit_service::find(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Finding workunit: " << id;
     auto results = repo_.read_latest(ctx_, id);
-    if (results.empty()) return std::nullopt;
+    if (results.empty())
+        return std::nullopt;
     return results.front();
 }
 
@@ -49,14 +48,12 @@ void workunit_service::save(const domain::workunit& v) {
     BOOST_LOG_SEV(lg(), info) << "Saved workunit: " << v.id;
 }
 
-std::vector<domain::workunit>
-workunit_service::history(const std::string& id) {
+std::vector<domain::workunit> workunit_service::history(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for workunit: " << id;
     return repo_.read_all(ctx_, id);
 }
 
-std::vector<domain::workunit>
-workunit_service::list_by_batch(const std::string& batch_id) {
+std::vector<domain::workunit> workunit_service::list_by_batch(const std::string& batch_id) {
     BOOST_LOG_SEV(lg(), debug) << "Listing workunits by batch: " << batch_id;
     return repo_.read_by_batch(ctx_, batch_id);
 }

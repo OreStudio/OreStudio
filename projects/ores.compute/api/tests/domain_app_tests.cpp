@@ -18,14 +18,13 @@
  *
  */
 #include "ores.compute.api/domain/app.hpp"
-
-#include <sstream>
-#include <catch2/catch_test_macros.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.logging/make_logger.hpp"
 #include "ores.compute.api/domain/app_json_io.hpp" // IWYU pragma: keep.
 #include "ores.compute.api/domain/app_table.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <boost/uuid/uuid_generators.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <sstream>
 
 namespace {
 

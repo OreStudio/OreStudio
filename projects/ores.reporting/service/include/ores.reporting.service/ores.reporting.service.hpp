@@ -23,7 +23,8 @@
 /**
  * @brief Reporting service
  *
- * Standalone NATS microservice hosting reporting handlers: report type definitions, report definitions, report instances, and concurrency policies.
+ * Standalone NATS microservice hosting reporting handlers: report type definitions, report
+ * definitions, report instances, and concurrency policies.
  */
 namespace ores::reporting.service {}
 

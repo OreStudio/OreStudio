@@ -18,17 +18,16 @@
  *
  */
 #include "ores.cli/config/parser_helpers.hpp"
-
+#include "ores.cli/config/parser_exception.hpp"
+#include "ores.database/config/database_configuration.hpp"
+#include "ores.logging/logging_configuration.hpp"
+#include "ores.utility/program_options/environment_mapper_factory.hpp"
+#include <boost/throw_exception.hpp>
+#include <algorithm>
 #include <format>
 #include <iomanip>
-#include <ostream>
-#include <algorithm>
-#include <boost/throw_exception.hpp>
 #include <magic_enum/magic_enum.hpp>
-#include "ores.logging/logging_configuration.hpp"
-#include "ores.database/config/database_configuration.hpp"
-#include "ores.cli/config/parser_exception.hpp"
-#include "ores.utility/program_options/environment_mapper_factory.hpp"
+#include <ostream>
 
 namespace ores::cli::config::parser_helpers {
 
@@ -42,18 +41,18 @@ const std::string delete_key_arg("key");
 }
 
 void print_help_header(std::ostream& s) {
-    s << "ORE Studio is a User Interface for Open Source Risk Engine (ORE)."
-      << std::endl
+    s << "ORE Studio is a User Interface for Open Source Risk Engine (ORE)." << std::endl
       << "CLI provides a command line version of the interface." << std::endl
       << "ORE Studio is created by the ORE Studio project. " << std::endl;
 }
 
 void print_help_command(const std::string& command_name,
-    const boost::program_options::options_description& od, std::ostream& info) {
+                        const boost::program_options::options_description& od,
+                        std::ostream& info) {
     print_help_header(info);
-    info << "Displaying options specific to the '" << command_name << "' command. "
+    info << "Displaying options specific to the '" << command_name << "' command. " << std::endl
+         << "For global options, type --help." << std::endl
          << std::endl
-         << "For global options, type --help." << std::endl << std::endl
          << od;
 }
 
@@ -71,40 +70,42 @@ add_common_options(boost::program_options::options_description base) {
 }
 
 void validate_operation(const std::string& entity_name,
-    const std::string& operation,
-    const std::vector<std::string>& allowed_operations) {
+                        const std::string& operation,
+                        const std::vector<std::string>& allowed_operations) {
 
     if (std::ranges::find(allowed_operations, operation) == allowed_operations.end()) {
         std::string ops_list;
         for (size_t i = 0; i < allowed_operations.size(); ++i) {
-            if (i > 0) ops_list += ", ";
+            if (i > 0)
+                ops_list += ", ";
             ops_list += allowed_operations[i];
         }
 
-        throw parser_exception(std::format(
-            "Invalid operation for {}: {}. Valid operations: {}",
-            entity_name, operation, ops_list));
+        throw parser_exception(std::format("Invalid operation for {}: {}. Valid operations: {}",
+                                           entity_name,
+                                           operation,
+                                           ops_list));
     }
 }
 
 void print_entity_help(const std::string& entity_name,
-    const std::string& description,
-    const std::vector<std::pair<std::string, std::string>>& operations,
-    std::ostream& info) {
+                       const std::string& description,
+                       const std::vector<std::pair<std::string, std::string>>& operations,
+                       std::ostream& info) {
 
     info << entity_name << " - " << description << std::endl << std::endl;
-    info << "Usage: ores.cli " << entity_name << " <operation> [options]"
-         << std::endl << std::endl;
+    info << "Usage: ores.cli " << entity_name << " <operation> [options]" << std::endl << std::endl;
     info << "Available operations:" << std::endl;
 
     const unsigned int operation_width(15);
     for (const auto& [op_name, op_desc] : operations) {
-        info << indent << std::setfill(' ') << std::left
-             << std::setw(operation_width) << op_name << op_desc << std::endl;
+        info << indent << std::setfill(' ') << std::left << std::setw(operation_width) << op_name
+             << op_desc << std::endl;
     }
 
-    info << std::endl << "For operation-specific options, use: "
-         << entity_name << " <operation> --help" << std::endl;
+    info << std::endl
+         << "For operation-specific options, use: " << entity_name << " <operation> --help"
+         << std::endl;
 }
 
 boost::program_options::options_description make_export_options_description() {
@@ -112,12 +113,12 @@ boost::program_options::options_description make_export_options_description() {
     using boost::program_options::value;
 
     options_description r("Export");
-    r.add_options()
-        ("as-of", value<std::string>(),
-            "Time point from which to dump data. If not supplied, defaults to latest.")
-        ("key", value<std::string>(), "Key to filter data by.")
-        ("all-versions", "If supplied, retrieves all versions.")
-        ("format", value<std::string>(), "Format to export data in, e.g. xml or json.");
+    r.add_options()("as-of",
+                    value<std::string>(),
+                    "Time point from which to dump data. If not supplied, defaults to latest.")(
+        "key", value<std::string>(), "Key to filter data by.")(
+        "all-versions", "If supplied, retrieves all versions.")(
+        "format", value<std::string>(), "Format to export data in, e.g. xml or json.");
 
     return r;
 }
@@ -127,8 +128,8 @@ boost::program_options::options_description make_delete_options_description() {
     using boost::program_options::value;
 
     options_description r("Delete");
-    r.add_options()
-        ("key", value<std::string>(), "Key to identify the entity (e.g., account ID or username).");
+    r.add_options()(
+        "key", value<std::string>(), "Key to identify the entity (e.g., account ID or username).");
 
     return r;
 }
@@ -142,12 +143,10 @@ format read_format(const boost::program_options::variables_map& vm) {
     if (f.has_value())
         return f.value();
 
-    BOOST_THROW_EXCEPTION(
-        parser_exception("Invalid or unsupported format: '" + s + "'"));
+    BOOST_THROW_EXCEPTION(parser_exception("Invalid or unsupported format: '" + s + "'"));
 }
 
-export_options read_export_options(
-    const boost::program_options::variables_map& vm, entity e) {
+export_options read_export_options(const boost::program_options::variables_map& vm, entity e) {
     export_options r;
 
     r.target_entity = e;
@@ -163,15 +162,13 @@ export_options read_export_options(
     return r;
 }
 
-delete_options read_delete_options(
-    const boost::program_options::variables_map& vm, entity e) {
+delete_options read_delete_options(const boost::program_options::variables_map& vm, entity e) {
     delete_options r;
 
     r.target_entity = e;
 
     if (vm.count(delete_key_arg) == 0) {
-        BOOST_THROW_EXCEPTION(
-            parser_exception("Must supply --key argument for delete command."));
+        BOOST_THROW_EXCEPTION(parser_exception("Must supply --key argument for delete command."));
     }
     r.key = vm[delete_key_arg].as<std::string>();
 
@@ -179,12 +176,11 @@ delete_options read_delete_options(
 }
 
 std::optional<options>
-handle_simple_entity_command(
-    const simple_entity_config& cfg,
-    bool has_help,
-    const boost::program_options::parsed_options& po,
-    std::ostream& info,
-    boost::program_options::variables_map& vm) {
+handle_simple_entity_command(const simple_entity_config& cfg,
+                             bool has_help,
+                             const boost::program_options::parsed_options& po,
+                             std::ostream& info,
+                             boost::program_options::variables_map& vm) {
 
     using boost::program_options::command_line_parser;
     using boost::program_options::parse_environment;
@@ -196,9 +192,7 @@ handle_simple_entity_command(
 
     constexpr std::string_view list_op = "list";
     constexpr std::string_view delete_op = "delete";
-    const std::vector<std::string> allowed_operations{
-        std::string(list_op), std::string(delete_op)
-    };
+    const std::vector<std::string> allowed_operations{std::string(list_op), std::string(delete_op)};
 
     // Collect all unrecognized options from the first pass
     auto o(collect_unrecognized(po.options, include_positional));
@@ -208,10 +202,8 @@ handle_simple_entity_command(
     if (has_help && o.empty()) {
         const std::vector<std::pair<std::string, std::string>> operations = {
             {"list", std::string(cfg.list_description)},
-            {"delete", std::string(cfg.delete_description)}
-        };
-        print_entity_help(std::string(cfg.name), std::string(cfg.description),
-            operations, info);
+            {"delete", std::string(cfg.delete_description)}};
+        print_entity_help(std::string(cfg.name), std::string(cfg.description), operations, info);
         return {};
     }
 

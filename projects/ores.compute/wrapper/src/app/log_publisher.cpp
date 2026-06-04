@@ -18,15 +18,14 @@
  *
  */
 #include "ores.compute.wrapper/app/log_publisher.hpp"
-
-#include <fstream>
-#include <span>
-#include <string>
-#include <vector>
-#include <rfl/json.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/log/ore_log_parser.hpp"
 #include "ores.telemetry.core/messaging/telemetry_protocol.hpp"
+#include <fstream>
+#include <rfl/json.hpp>
+#include <span>
+#include <string>
+#include <vector>
 
 namespace ores::compute::wrapper::app {
 
@@ -35,43 +34,39 @@ namespace {
 using namespace ores::logging;
 
 inline auto& log_publisher_lg() {
-    static auto instance = ores::logging::make_logger(
-        "ores.compute.wrapper.app.log_publisher");
+    static auto instance = ores::logging::make_logger("ores.compute.wrapper.app.log_publisher");
     return instance;
 }
 
 constexpr std::size_t batch_size = 200;
 
 void publish_batch(ores::nats::service::client& nats,
-    ores::telemetry::messaging::publish_log_entries_request& req)
-{
+                   ores::telemetry::messaging::publish_log_entries_request& req) {
     if (req.entries.empty())
         return;
 
     const auto json = rfl::json::write(req);
     const auto* p = reinterpret_cast<const std::byte*>(json.data());
     nats.publish(ores::telemetry::messaging::publish_log_entries_request::nats_subject,
-        std::span<const std::byte>(p, json.size()));
+                 std::span<const std::byte>(p, json.size()));
     req.entries.clear();
 }
 
 } // namespace
 
 void publish_ore_logs(ores::nats::service::client& nats,
-    const std::string& result_id,
-    const std::filesystem::path& job_dir)
-{
+                      const std::string& result_id,
+                      const std::filesystem::path& job_dir) {
     const auto log_path = job_dir / "Output" / "log.txt";
     std::ifstream f(log_path);
     if (!f.is_open()) {
-        BOOST_LOG_SEV(log_publisher_lg(), debug)
-            << "ORE log not found: " << log_path;
+        BOOST_LOG_SEV(log_publisher_lg(), debug) << "ORE log not found: " << log_path;
         return;
     }
 
     ores::telemetry::messaging::publish_log_entries_request req;
     req.source_name = "ores.compute.ore_log";
-    req.tag         = result_id;
+    req.tag = result_id;
 
     std::size_t parsed = 0;
     std::size_t skipped = 0;
@@ -83,11 +78,12 @@ void publish_ore_logs(ores::nats::service::client& nats,
             continue;
         }
         ores::telemetry::messaging::publish_log_entry_item item;
-        item.level        = parsed_line->level;
+        item.level = parsed_line->level;
         item.timestamp_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
-            parsed_line->timestamp.time_since_epoch()).count();
-        item.component    = parsed_line->source;
-        item.message      = parsed_line->message;
+                                parsed_line->timestamp.time_since_epoch())
+                                .count();
+        item.component = parsed_line->source;
+        item.message = parsed_line->message;
         req.entries.push_back(std::move(item));
         ++parsed;
 
@@ -96,31 +92,29 @@ void publish_ore_logs(ores::nats::service::client& nats,
     }
     publish_batch(nats, req);
 
-    BOOST_LOG_SEV(log_publisher_lg(), debug)
-        << "Published " << parsed << " ORE log entries ("
-        << skipped << " skipped) for result " << result_id;
+    BOOST_LOG_SEV(log_publisher_lg(), debug) << "Published " << parsed << " ORE log entries ("
+                                             << skipped << " skipped) for result " << result_id;
 }
 
 void publish_engine_logs(ores::nats::service::client& nats,
-    const std::string& result_id,
-    const std::filesystem::path& job_dir)
-{
+                         const std::string& result_id,
+                         const std::filesystem::path& job_dir) {
     const auto log_path = job_dir / "engine.log";
     std::ifstream f(log_path);
     if (!f.is_open()) {
-        BOOST_LOG_SEV(log_publisher_lg(), debug)
-            << "Engine log not found: " << log_path;
+        BOOST_LOG_SEV(log_publisher_lg(), debug) << "Engine log not found: " << log_path;
         return;
     }
 
     ores::telemetry::messaging::publish_log_entries_request req;
     req.source_name = "ores.compute.wrapper";
-    req.tag         = result_id;
+    req.tag = result_id;
 
     // Base timestamp at job completion time; each line gets +1ms so that
     // relative ordering is preserved in the viewer.
     const auto base_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
-        std::chrono::system_clock::now().time_since_epoch()).count();
+                             std::chrono::system_clock::now().time_since_epoch())
+                             .count();
 
     std::size_t count = 0;
     std::string line;
@@ -128,10 +122,10 @@ void publish_engine_logs(ores::nats::service::client& nats,
         if (line.empty())
             continue;
         ores::telemetry::messaging::publish_log_entry_item item;
-        item.level        = "info";
+        item.level = "info";
         item.timestamp_ms = base_ms + static_cast<std::int64_t>(count);
-        item.component    = "ores.compute.wrapper";
-        item.message      = line;
+        item.component = "ores.compute.wrapper";
+        item.message = line;
         req.entries.push_back(std::move(item));
         ++count;
 

@@ -22,39 +22,39 @@
 
 namespace ores::cli::config {
 
-    /**
-     * @brief List of available entities to target.
-     */
-    enum class entity {
-        // refdata
-        currencies,
-        countries,
-        conventions,
-        // iam
-        accounts,
-        roles,
-        permissions,
-        login_info,
-        // dq
-        change_reasons,
-        change_reason_categories,
-        // variability
-        feature_flags,
-        system_settings,
-        // compute
-        compute_hosts,
-        compute_apps,
-        compute_app_versions,
-        compute_batches,
-        compute_workunits,
-        compute_results,
-        // trading
-        day_count_fraction_types,
-        business_day_convention_types,
-        floating_index_types,
-        payment_frequency_types,
-        leg_types
-    };
+/**
+ * @brief List of available entities to target.
+ */
+enum class entity {
+    // refdata
+    currencies,
+    countries,
+    conventions,
+    // iam
+    accounts,
+    roles,
+    permissions,
+    login_info,
+    // dq
+    change_reasons,
+    change_reason_categories,
+    // variability
+    feature_flags,
+    system_settings,
+    // compute
+    compute_hosts,
+    compute_apps,
+    compute_app_versions,
+    compute_batches,
+    compute_workunits,
+    compute_results,
+    // trading
+    day_count_fraction_types,
+    business_day_convention_types,
+    floating_index_types,
+    payment_frequency_types,
+    leg_types
+};
 
 }
 

@@ -20,20 +20,20 @@
 #ifndef ORES_COMPUTE_MESSAGING_REGISTRAR_HPP
 #define ORES_COMPUTE_MESSAGING_REGISTRAR_HPP
 
-#include <optional>
-#include <vector>
+#include "ores.compute.core/export.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
-#include "ores.database/domain/context.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
-#include "ores.compute.core/export.hpp"
+#include <optional>
+#include <vector>
 
 namespace ores::compute::messaging {
 
 class ORES_COMPUTE_CORE_EXPORT registrar {
 public:
-    static std::vector<ores::nats::service::subscription>
-    register_handlers(ores::nats::service::client& nats,
+    static std::vector<ores::nats::service::subscription> register_handlers(
+        ores::nats::service::client& nats,
         ores::database::context ctx,
         std::optional<ores::security::jwt::jwt_authenticator> verifier = std::nullopt);
 };

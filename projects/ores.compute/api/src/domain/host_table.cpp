@@ -18,10 +18,9 @@
  *
  */
 #include "ores.compute.api/domain/host_table.hpp"
-
-#include <sstream>
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
+#include <sstream>
 
 namespace ores::compute::domain {
 
@@ -29,15 +28,13 @@ std::string convert_to_table(const std::vector<host>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header
-          << "ID" << "External ID" << "Display Name" << "Location" << "CPU Count"
+    table << fort::header << "ID" << "External ID" << "Display Name" << "Location" << "CPU Count"
           << "RAM (MB)" << "GPU Type" << "Last RPC Time" << "Credit Total"
           << "Modified By" << "Recorded At" << fort::endr;
 
     for (const auto& h : v) {
-        table << boost::uuids::to_string(h.id)
-              << h.external_id << h.display_name << h.location << h.cpu_count
-              << h.ram_mb << h.gpu_type << h.last_rpc_time << h.credit_total
+        table << boost::uuids::to_string(h.id) << h.external_id << h.display_name << h.location
+              << h.cpu_count << h.ram_mb << h.gpu_type << h.last_rpc_time << h.credit_total
               << h.modified_by << h.recorded_at << fort::endr;
     }
 

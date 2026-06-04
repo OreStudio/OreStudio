@@ -18,9 +18,8 @@
  *
  */
 #include "ores.compute.api/domain/batch_table_io.hpp"
-
-#include <ostream>
 #include "ores.compute.api/domain/batch_table.hpp"
+#include <ostream>
 
 namespace ores::compute::domain {
 

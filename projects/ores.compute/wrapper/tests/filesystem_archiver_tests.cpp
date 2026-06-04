@@ -18,12 +18,11 @@
  *
  */
 #include "ores.compute.wrapper/filesystem/archiver.hpp"
-
+#include "ores.logging/make_logger.hpp"
+#include <catch2/catch_test_macros.hpp>
+#include <filesystem>
 #include <fstream>
 #include <stdexcept>
-#include <filesystem>
-#include <catch2/catch_test_macros.hpp>
-#include "ores.logging/make_logger.hpp"
 
 namespace {
 
@@ -62,8 +61,8 @@ TEST_CASE("pack_and_extract_single_file", tags) {
     auto lg(make_logger(test_suite));
 
     const auto scratch = make_scratch("single_file");
-    const auto src  = scratch / "src";
-    const auto out  = scratch / "output.tar.gz";
+    const auto src = scratch / "src";
+    const auto out = scratch / "output.tar.gz";
     const auto dest = scratch / "dest";
     fs::create_directories(src);
     fs::create_directories(dest);
@@ -91,16 +90,16 @@ TEST_CASE("pack_and_extract_multiple_files", tags) {
     auto lg(make_logger(test_suite));
 
     const auto scratch = make_scratch("multiple_files");
-    const auto src  = scratch / "src";
-    const auto out  = scratch / "output.tar.gz";
+    const auto src = scratch / "src";
+    const auto out = scratch / "output.tar.gz";
     const auto dest = scratch / "dest";
     fs::create_directories(src);
     fs::create_directories(dest);
 
     const std::vector<std::pair<std::string, std::string>> files = {
-        { "alpha.txt",   "content of alpha" },
-        { "beta.txt",    "content of beta"  },
-        { "gamma.txt",   "content of gamma" },
+        {"alpha.txt", "content of alpha"},
+        {"beta.txt", "content of beta"},
+        {"gamma.txt", "content of gamma"},
     };
 
     for (const auto& [name, content] : files)
@@ -124,15 +123,15 @@ TEST_CASE("pack_and_extract_preserves_subdirectory_structure", tags) {
     auto lg(make_logger(test_suite));
 
     const auto scratch = make_scratch("subdir_structure");
-    const auto src  = scratch / "src";
-    const auto out  = scratch / "output.tar.gz";
+    const auto src = scratch / "src";
+    const auto out = scratch / "output.tar.gz";
     const auto dest = scratch / "dest";
     fs::create_directories(dest);
 
     // Three levels deep
-    write_text(src / "root.txt",              "root level");
-    write_text(src / "a" / "a1.txt",          "a/a1");
-    write_text(src / "a" / "b" / "ab1.txt",   "a/b/ab1");
+    write_text(src / "root.txt", "root level");
+    write_text(src / "a" / "a1.txt", "a/a1");
+    write_text(src / "a" / "b" / "ab1.txt", "a/b/ab1");
 
     BOOST_LOG_SEV(lg, info) << "Packing nested structure from: " << src;
     archiver::pack(src, out);
@@ -154,8 +153,8 @@ TEST_CASE("pack_and_extract_binary_content_roundtrip", tags) {
     auto lg(make_logger(test_suite));
 
     const auto scratch = make_scratch("binary_content");
-    const auto src  = scratch / "src";
-    const auto out  = scratch / "output.tar.gz";
+    const auto src = scratch / "src";
+    const auto out = scratch / "output.tar.gz";
     const auto dest = scratch / "dest";
     fs::create_directories(src);
     fs::create_directories(dest);
@@ -172,7 +171,7 @@ TEST_CASE("pack_and_extract_binary_content_roundtrip", tags) {
     }
 
     BOOST_LOG_SEV(lg, info) << "Packing binary file (" << original.size()
-        << " bytes) from: " << src;
+                            << " bytes) from: " << src;
     archiver::pack(src, out);
     archiver::extract(out, dest);
 

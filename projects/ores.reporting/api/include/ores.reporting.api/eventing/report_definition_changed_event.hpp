@@ -20,10 +20,10 @@
 #ifndef ORES_REPORTING_EVENTING_REPORT_DEFINITION_CHANGED_EVENT_HPP
 #define ORES_REPORTING_EVENTING_REPORT_DEFINITION_CHANGED_EVENT_HPP
 
-#include <chrono>
-#include <vector>
-#include <string>
 #include "ores.eventing/domain/event_traits.hpp"
+#include <chrono>
+#include <string>
+#include <vector>
 
 namespace ores::reporting::eventing {
 
@@ -55,7 +55,7 @@ struct report_definition_changed_event final {
 
 namespace ores::eventing::domain {
 
-template<>
+template <>
 struct event_traits<ores::reporting::eventing::report_definition_changed_event> {
     static constexpr std::string_view name = "ores.reporting.report_definition_changed";
 };

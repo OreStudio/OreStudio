@@ -20,11 +20,10 @@
 #ifndef ORES_CLI_CONFIG_ADD_CHANGE_REASON_CATEGORY_OPTIONS_HPP
 #define ORES_CLI_CONFIG_ADD_CHANGE_REASON_CATEGORY_OPTIONS_HPP
 
-#include <iosfwd>
-#include <string>
-#include <optional>
-
 #include "ores.cli/export.hpp"
+#include <iosfwd>
+#include <optional>
+#include <string>
 
 namespace ores::cli::config {
 
@@ -38,7 +37,8 @@ struct add_change_reason_category_options final {
     std::optional<std::string> change_commentary;
 };
 
-ORES_CLI_EXPORT std::ostream& operator<<(std::ostream& s, const add_change_reason_category_options& v);
+ORES_CLI_EXPORT std::ostream& operator<<(std::ostream& s,
+                                         const add_change_reason_category_options& v);
 
 }
 

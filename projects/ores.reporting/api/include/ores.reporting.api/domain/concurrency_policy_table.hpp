@@ -20,10 +20,10 @@
 #ifndef ORES_REPORTING_DOMAIN_CONCURRENCY_POLICY_TABLE_HPP
 #define ORES_REPORTING_DOMAIN_CONCURRENCY_POLICY_TABLE_HPP
 
+#include "ores.reporting.api/domain/concurrency_policy.hpp"
+#include "ores.reporting.api/export.hpp"
 #include <string>
 #include <vector>
-#include "ores.reporting.api/export.hpp"
-#include "ores.reporting.api/domain/concurrency_policy.hpp"
 
 namespace ores::reporting::domain {
 

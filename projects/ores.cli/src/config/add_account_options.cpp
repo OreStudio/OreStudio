@@ -18,18 +18,16 @@
  *
  */
 #include "ores.cli/config/add_account_options.hpp"
-
 #include <ostream>
 
 namespace ores::cli::config {
 
 std::ostream& operator<<(std::ostream& s, const add_account_options& v) {
-    s << "{ username: " << v.username
-      << ", email: " << v.email
-      << ", password: [REDACTED]"
+    s << "{ username: " << v.username << ", email: " << v.email << ", password: [REDACTED]"
       << ", modified_by: " << v.modified_by;
 
-    if (v.admin) s << ", admin: " << (*v.admin ? "true" : "false");
+    if (v.admin)
+        s << ", admin: " << (*v.admin ? "true" : "false");
 
     s << " }";
     return s;

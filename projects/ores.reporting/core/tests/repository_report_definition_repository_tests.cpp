@@ -17,20 +17,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.reporting.core/repository/report_definition_repository.hpp"
-#include "ores.reporting.core/repository/report_type_repository.hpp"
-
-#include <catch2/catch_test_macros.hpp>
-#include <boost/uuid/uuid_io.hpp>
 #include "ores.logging/make_logger.hpp"
-#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.reporting.api/domain/report_definition.hpp"
 #include "ores.reporting.api/domain/report_definition_json_io.hpp" // IWYU pragma: keep.
 #include "ores.reporting.api/generators/report_definition_generator.hpp"
 #include "ores.reporting.api/generators/report_type_generator.hpp"
-#include "ores.refdata.core/repository/party_repository.hpp"
+#include "ores.reporting.core/repository/report_definition_repository.hpp"
+#include "ores.reporting.core/repository/report_type_repository.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
+#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <boost/uuid/uuid_io.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 
@@ -58,7 +57,7 @@ boost::uuids::uuid get_test_party_id(ores::testing::database_helper& h) {
  * no seeded report types, we insert one here to satisfy the constraint.
  */
 std::string setup_test_report_type(ores::testing::database_helper& h,
-    ores::utility::generation::generation_context& ctx) {
+                                   ores::utility::generation::generation_context& ctx) {
     ores::reporting::repository::report_type_repository rt_repo;
     auto rt = ores::reporting::generators::generate_synthetic_report_type(ctx);
     rt_repo.write(h.context(), rt);

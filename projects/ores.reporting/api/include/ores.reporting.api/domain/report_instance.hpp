@@ -20,12 +20,12 @@
 #ifndef ORES_REPORTING_DOMAIN_REPORT_INSTANCE_HPP
 #define ORES_REPORTING_DOMAIN_REPORT_INSTANCE_HPP
 
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <cstdint>
 #include <optional>
 #include <string>
-#include <boost/uuid/uuid.hpp>
-#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::reporting::domain {
 
@@ -34,10 +34,10 @@ namespace ores::reporting::domain {
  *
  * A single execution of a report_definition. Created automatically when the
  * scheduler fires a trigger for an active definition.
- * 
+ *
  * Lifecycle is managed through the report_instance_lifecycle FSM machine.
  * fsm_state_id points to the current state in ores_dq_fsm_states_tbl.
- * 
+ *
  * started_at is NULL when the instance is cancelled or skipped before execution
  * begins. completed_at is NULL while running or in a terminal-before-start state.
  */

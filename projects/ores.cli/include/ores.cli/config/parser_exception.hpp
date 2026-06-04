@@ -20,9 +20,9 @@
 #ifndef ORES_CLI_CONFIG_PARSER_EXCEPTION_HPP
 #define ORES_CLI_CONFIG_PARSER_EXCEPTION_HPP
 
-#include <string>
-#include <boost/exception/info.hpp>
 #include "ores.cli/export.hpp"
+#include <boost/exception/info.hpp>
+#include <string>
 
 namespace ores::cli::config {
 
@@ -30,7 +30,7 @@ namespace ores::cli::config {
  * @brief A fatal error has occurred during option parsing.
  */
 class ORES_CLI_EXPORT parser_exception : public virtual std::exception,
-                         public virtual boost::exception {
+                                         public virtual boost::exception {
 public:
     explicit parser_exception(std::string_view message = "")
         : message_(message) {}

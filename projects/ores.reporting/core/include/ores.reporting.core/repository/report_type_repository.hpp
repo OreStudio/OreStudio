@@ -20,13 +20,13 @@
 #ifndef ORES_REPORTING_REPOSITORY_REPORT_TYPE_REPOSITORY_HPP
 #define ORES_REPORTING_REPOSITORY_REPORT_TYPE_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.reporting.api/domain/report_type.hpp"
 #include "ores.reporting.core/export.hpp"
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::reporting::repository {
 
@@ -35,8 +35,7 @@ namespace ores::reporting::repository {
  */
 class ORES_REPORTING_CORE_EXPORT report_type_repository {
 private:
-    inline static std::string_view logger_name =
-        "ores.reporting.repository.report_type_repository";
+    inline static std::string_view logger_name = "ores.reporting.repository.report_type_repository";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -53,10 +52,8 @@ public:
     void write(context ctx, const std::vector<domain::report_type>& v);
 
     std::vector<domain::report_type> read_latest(context ctx);
-    std::vector<domain::report_type>
-    read_latest(context ctx, const std::string& code);
-    std::vector<domain::report_type>
-    read_all(context ctx, const std::string& code);
+    std::vector<domain::report_type> read_latest(context ctx, const std::string& code);
+    std::vector<domain::report_type> read_all(context ctx, const std::string& code);
 
     void remove(context ctx, const std::string& code);
 };

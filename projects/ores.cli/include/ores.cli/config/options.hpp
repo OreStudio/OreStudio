@@ -20,18 +20,17 @@
 #ifndef ORES_CLI_CONFIG_HPP
 #define ORES_CLI_CONFIG_HPP
 
+#include "ores.cli/config/add_options.hpp"
+#include "ores.cli/config/delete_options.hpp"
+#include "ores.cli/config/export_options.hpp"
+#include "ores.cli/config/import_options.hpp"
+#include "ores.cli/config/list_options.hpp"
+#include "ores.cli/config/ore_roundtrip_options.hpp"
+#include "ores.cli/export.hpp"
+#include "ores.database/domain/database_options.hpp"
+#include "ores.logging/logging_options.hpp"
 #include <iosfwd>
 #include <optional>
-#include "ores.logging/logging_options.hpp"
-#include "ores.database/domain/database_options.hpp"
-#include "ores.cli/config/import_options.hpp"
-#include "ores.cli/config/export_options.hpp"
-#include "ores.cli/config/delete_options.hpp"
-#include "ores.cli/config/list_options.hpp"
-#include "ores.cli/config/add_options.hpp"
-#include "ores.cli/config/ore_roundtrip_options.hpp"
-
-#include "ores.cli/export.hpp"
 
 namespace ores::cli::config {
 

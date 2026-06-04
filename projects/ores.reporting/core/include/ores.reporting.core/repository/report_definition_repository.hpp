@@ -20,13 +20,13 @@
 #ifndef ORES_REPORTING_REPOSITORY_REPORT_DEFINITION_REPOSITORY_HPP
 #define ORES_REPORTING_REPOSITORY_REPORT_DEFINITION_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.reporting.api/domain/report_definition.hpp"
 #include "ores.reporting.core/export.hpp"
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::reporting::repository {
 
@@ -65,13 +65,10 @@ public:
      * @param chain  Full resolution chain [selected, parent, ..., live].
      */
     std::vector<domain::report_definition>
-    read_latest_with_resolution(context ctx,
-        const std::vector<std::string>& chain);
+    read_latest_with_resolution(context ctx, const std::vector<std::string>& chain);
 
-    std::vector<domain::report_definition>
-    read_latest(context ctx, const std::string& id);
-    std::vector<domain::report_definition>
-    read_all(context ctx, const std::string& id);
+    std::vector<domain::report_definition> read_latest(context ctx, const std::string& id);
+    std::vector<domain::report_definition> read_all(context ctx, const std::string& id);
 
     void remove(context ctx, const std::string& id);
 };

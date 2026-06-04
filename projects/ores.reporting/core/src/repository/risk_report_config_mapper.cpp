@@ -18,23 +18,20 @@
  *
  */
 #include "ores.reporting.core/repository/risk_report_config_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::reporting::repository {
 
 using namespace ores::database::repository;
 
-domain::risk_report_config
-risk_report_config_mapper::map(const risk_report_config_entity& v) {
+domain::risk_report_config risk_report_config_mapper::map(const risk_report_config_entity& v) {
     domain::risk_report_config r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
-    r.report_definition_id =
-        boost::lexical_cast<boost::uuids::uuid>(v.report_definition_id);
+    r.report_definition_id = boost::lexical_cast<boost::uuids::uuid>(v.report_definition_id);
 
     r.base_currency = v.base_currency;
     r.observation_model = v.observation_model;
@@ -78,8 +75,7 @@ risk_report_config_mapper::map(const risk_report_config_entity& v) {
 }
 
 std::vector<domain::risk_report_config>
-risk_report_config_mapper::map(
-    const std::vector<risk_report_config_entity>& v) {
+risk_report_config_mapper::map(const std::vector<risk_report_config_entity>& v) {
     std::vector<domain::risk_report_config> r;
     r.reserve(v.size());
     for (const auto& e : v)

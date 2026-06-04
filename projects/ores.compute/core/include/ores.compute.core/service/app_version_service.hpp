@@ -20,24 +20,23 @@
 #ifndef ORES_COMPUTE_SERVICE_APP_VERSION_SERVICE_HPP
 #define ORES_COMPUTE_SERVICE_APP_VERSION_SERVICE_HPP
 
+#include "ores.compute.api/domain/app_version.hpp"
+#include "ores.compute.core/export.hpp"
+#include "ores.compute.core/repository/app_version_repository.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <optional>
 #include <string>
 #include <vector>
-#include <optional>
-#include "ores.logging/make_logger.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.compute.api/domain/app_version.hpp"
-#include "ores.compute.core/repository/app_version_repository.hpp"
-#include "ores.compute.core/export.hpp"
 
 namespace ores::compute::service {
 
 /**
  * @brief Service for managing compute application versions.
  */
-class ORES_COMPUTE_CORE_EXPORT app_version_service  {
+class ORES_COMPUTE_CORE_EXPORT app_version_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.compute.service.app_version_service";
+    inline static std::string_view logger_name = "ores.compute.service.app_version_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;

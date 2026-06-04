@@ -20,10 +20,10 @@
 #ifndef ORES_COMPUTE_DOMAIN_APP_TABLE_IO_HPP
 #define ORES_COMPUTE_DOMAIN_APP_TABLE_IO_HPP
 
-#include <iosfwd>
-#include <vector>
 #include "ores.compute.api/domain/app.hpp"
 #include "ores.compute.api/export.hpp"
+#include <iosfwd>
+#include <vector>
 
 namespace ores::compute::domain {
 

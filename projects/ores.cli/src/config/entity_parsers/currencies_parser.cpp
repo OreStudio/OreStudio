@@ -18,17 +18,16 @@
  *
  */
 #include "ores.cli/config/entity_parsers/currencies_parser.hpp"
-
-#include <filesystem>
-#include <boost/program_options.hpp>
-#include <boost/throw_exception.hpp>
-#include "ores.cli/config/parser_helpers.hpp"
-#include "ores.cli/config/parser_exception.hpp"
-#include "ores.cli/config/entity.hpp"
 #include "ores.cli/config/add_currency_options.hpp"
+#include "ores.cli/config/entity.hpp"
+#include "ores.cli/config/parser_exception.hpp"
+#include "ores.cli/config/parser_helpers.hpp"
 #include "ores.database/config/database_configuration.hpp"
 #include "ores.logging/logging_configuration.hpp"
 #include "ores.utility/program_options/environment_mapper_factory.hpp"
+#include <boost/program_options.hpp>
+#include <boost/throw_exception.hpp>
+#include <filesystem>
 
 namespace ores::cli::config::entity_parsers {
 
@@ -64,20 +63,20 @@ const std::string delete_command_name("delete");
 const std::string list_command_name("list");
 const std::string add_command_name("add");
 
-const std::vector<std::string> allowed_operations{
-    import_command_name, export_command_name, list_command_name,
-    delete_command_name, add_command_name
-};
+const std::vector<std::string> allowed_operations{import_command_name,
+                                                  export_command_name,
+                                                  list_command_name,
+                                                  delete_command_name,
+                                                  add_command_name};
 
 /**
  * @brief Creates the options related to importing.
  */
 options_description make_import_options_description() {
     options_description r("Import");
-    r.add_options()
-        ("target",
-            value<std::vector<std::string>>(),
-            "One or more target files containing entities.");
+    r.add_options()("target",
+                    value<std::vector<std::string>>(),
+                    "One or more target files containing entities.");
 
     return r;
 }
@@ -87,43 +86,18 @@ options_description make_import_options_description() {
  */
 options_description make_add_currency_options_description() {
     options_description r("Add Currency Options");
-    r.add_options()
-        ("iso-code",
-            value<std::string>(),
-            "Currency ISO code (required, e.g., USD)")
-        ("name",
-            value<std::string>(),
-            "Currency name (required, e.g., 'United States Dollar')")
-        ("numeric-code",
-            value<std::string>()->default_value("0"),
-            "Currency numeric code")
-        ("symbol",
-            value<std::string>()->default_value(""),
-            "Currency symbol")
-        ("fraction-symbol",
-            value<std::string>()->default_value(""),
-            "Fraction symbol")
-        ("fractions-per-unit",
-            value<int>()->default_value(100),
-            "Fractions per unit")
-        ("rounding-type",
-            value<std::string>()->default_value("Closest"),
-            "Rounding type")
-        ("rounding-precision",
-            value<int>()->default_value(2),
-            "Rounding precision")
-        ("format",
-            value<std::string>()->default_value(""),
-            "Display format")
-        ("monetary-nature",
-            value<std::string>()->default_value(""),
-            "Monetary nature")
-        ("market-tier",
-            value<std::string>()->default_value(""),
-            "Market tier")
-        ("modified-by",
-            value<std::string>(),
-            "Username of modifier (required)");
+    r.add_options()("iso-code", value<std::string>(), "Currency ISO code (required, e.g., USD)")(
+        "name", value<std::string>(), "Currency name (required, e.g., 'United States Dollar')")(
+        "numeric-code", value<std::string>()->default_value("0"), "Currency numeric code")(
+        "symbol", value<std::string>()->default_value(""), "Currency symbol")(
+        "fraction-symbol", value<std::string>()->default_value(""), "Fraction symbol")(
+        "fractions-per-unit", value<int>()->default_value(100), "Fractions per unit")(
+        "rounding-type", value<std::string>()->default_value("Closest"), "Rounding type")(
+        "rounding-precision", value<int>()->default_value(2), "Rounding precision")(
+        "format", value<std::string>()->default_value(""), "Display format")(
+        "monetary-nature", value<std::string>()->default_value(""), "Monetary nature")(
+        "market-tier", value<std::string>()->default_value(""), "Market tier")(
+        "modified-by", value<std::string>(), "Username of modifier (required)");
 
     return r;
 }
@@ -137,46 +111,40 @@ import_options read_import_options(const variables_map& vm, entity e) {
     r.target_entity = e;
 
     if (vm.count(import_targets_arg) == 0) {
-        BOOST_THROW_EXCEPTION(
-            parser_exception("Must supply at least one import target."));
+        BOOST_THROW_EXCEPTION(parser_exception("Must supply at least one import target."));
     }
 
     const auto t(vm[import_targets_arg].as<std::vector<std::string>>());
     if (t.empty()) {
-        BOOST_THROW_EXCEPTION(
-            parser_exception("Must supply at least one import target."));
+        BOOST_THROW_EXCEPTION(parser_exception("Must supply at least one import target."));
     }
 
     r.targets.reserve(t.size());
     using std::filesystem::absolute;
-    std::ranges::transform(t, std::back_inserter(r.targets),
-        [](const auto& s) { return absolute(s); });
+    std::ranges::transform(
+        t, std::back_inserter(r.targets), [](const auto& s) { return absolute(s); });
     return r;
 }
 
 /**
  * @brief Reads the add configuration from the variables map for currencies.
  */
-ores::cli::config::add_currency_options
-read_add_currency_options(const variables_map& vm) {
+ores::cli::config::add_currency_options read_add_currency_options(const variables_map& vm) {
     ores::cli::config::add_currency_options r;
 
     if (vm.count("modified-by") == 0) {
-        BOOST_THROW_EXCEPTION(
-            parser_exception("Must supply --modified-by for add command."));
+        BOOST_THROW_EXCEPTION(parser_exception("Must supply --modified-by for add command."));
     }
     r.modified_by = vm["modified-by"].as<std::string>();
 
     // Currency-specific required fields
     if (vm.count("iso-code") == 0) {
-        BOOST_THROW_EXCEPTION(
-            parser_exception("Must supply --iso-code for add currency command."));
+        BOOST_THROW_EXCEPTION(parser_exception("Must supply --iso-code for add currency command."));
     }
     r.iso_code = vm["iso-code"].as<std::string>();
 
     if (vm.count("name") == 0) {
-        BOOST_THROW_EXCEPTION(
-            parser_exception("Must supply --name for add currency command."));
+        BOOST_THROW_EXCEPTION(parser_exception("Must supply --name for add currency command."));
     }
     r.name = vm["name"].as<std::string>();
 
@@ -205,11 +173,10 @@ read_add_currency_options(const variables_map& vm) {
 
 }
 
-std::optional<options>
-handle_currencies_command(bool has_help,
-    const parsed_options& po,
-    std::ostream& info,
-    variables_map& vm) {
+std::optional<options> handle_currencies_command(bool has_help,
+                                                 const parsed_options& po,
+                                                 std::ostream& info,
+                                                 variables_map& vm) {
 
     // Collect all unrecognized options from the first pass
     auto o(collect_unrecognized(po.options, include_positional));
@@ -222,8 +189,7 @@ handle_currencies_command(bool has_help,
             {"export", "Export currencies to ORE XML or CSV (external formats)"},
             {"list", "List currencies as JSON or table (internal formats)"},
             {"delete", "Delete a currency by ISO code"},
-            {"add", "Add currencies from JSON files"}
-        };
+            {"add", "Add currencies from JSON files"}};
         print_entity_help("currencies", "Manage currencies", operations, info);
         return {};
     }
@@ -261,8 +227,7 @@ handle_currencies_command(bool has_help,
         store(command_line_parser(o).options(d).run(), vm);
         store(parse_environment(d, name_mapper), vm);
         if (vm.count("format") == 0) {
-            BOOST_THROW_EXCEPTION(
-                parser_exception("Must supply --format for export command."));
+            BOOST_THROW_EXCEPTION(parser_exception("Must supply --format for export command."));
         }
         r.exporting = read_export_options(vm, entity::currencies);
     } else if (operation == delete_command_name) {

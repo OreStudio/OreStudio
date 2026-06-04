@@ -20,13 +20,13 @@
 #ifndef ORES_REPORTING_REPOSITORY_CONCURRENCY_POLICY_REPOSITORY_HPP
 #define ORES_REPORTING_REPOSITORY_CONCURRENCY_POLICY_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.reporting.api/domain/concurrency_policy.hpp"
 #include "ores.reporting.core/export.hpp"
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::reporting::repository {
 
@@ -53,10 +53,8 @@ public:
     void write(context ctx, const std::vector<domain::concurrency_policy>& v);
 
     std::vector<domain::concurrency_policy> read_latest(context ctx);
-    std::vector<domain::concurrency_policy>
-    read_latest(context ctx, const std::string& code);
-    std::vector<domain::concurrency_policy>
-    read_all(context ctx, const std::string& code);
+    std::vector<domain::concurrency_policy> read_latest(context ctx, const std::string& code);
+    std::vector<domain::concurrency_policy> read_all(context ctx, const std::string& code);
 
     void remove(context ctx, const std::string& code);
 };

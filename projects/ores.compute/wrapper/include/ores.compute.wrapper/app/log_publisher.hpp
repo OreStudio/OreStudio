@@ -20,9 +20,9 @@
 #ifndef ORES_COMPUTE_WRAPPER_APP_LOG_PUBLISHER_HPP
 #define ORES_COMPUTE_WRAPPER_APP_LOG_PUBLISHER_HPP
 
+#include "ores.nats/service/client.hpp"
 #include <filesystem>
 #include <string>
-#include "ores.nats/service/client.hpp"
 
 namespace ores::compute::wrapper::app {
 
@@ -35,8 +35,8 @@ namespace ores::compute::wrapper::app {
  * @c result_id for downstream filtering.
  */
 void publish_ore_logs(ores::nats::service::client& nats,
-    const std::string& result_id,
-    const std::filesystem::path& job_dir);
+                      const std::string& result_id,
+                      const std::filesystem::path& job_dir);
 
 /**
  * @brief Publishes wrapper engine.log lines to telemetry.
@@ -46,8 +46,8 @@ void publish_ore_logs(ores::nats::service::client& nats,
  * with @c result_id.
  */
 void publish_engine_logs(ores::nats::service::client& nats,
-    const std::string& result_id,
-    const std::filesystem::path& job_dir);
+                         const std::string& result_id,
+                         const std::filesystem::path& job_dir);
 
 } // namespace ores::compute::wrapper::app
 

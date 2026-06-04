@@ -18,16 +18,15 @@
  *
  */
 #include "ores.cli/config/entity_parsers/roles_parser.hpp"
-
-#include <boost/program_options.hpp>
-#include <boost/throw_exception.hpp>
-#include "ores.cli/config/parser_helpers.hpp"
-#include "ores.cli/config/parser_exception.hpp"
-#include "ores.cli/config/entity.hpp"
 #include "ores.cli/config/add_role_options.hpp"
+#include "ores.cli/config/entity.hpp"
+#include "ores.cli/config/parser_exception.hpp"
+#include "ores.cli/config/parser_helpers.hpp"
 #include "ores.database/config/database_configuration.hpp"
 #include "ores.logging/logging_configuration.hpp"
 #include "ores.utility/program_options/environment_mapper_factory.hpp"
+#include <boost/program_options.hpp>
+#include <boost/throw_exception.hpp>
 
 namespace ores::cli::config::entity_parsers {
 
@@ -59,19 +58,18 @@ const std::string delete_command_name("delete");
 const std::string add_command_name("add");
 
 const std::vector<std::string> allowed_operations{
-    list_command_name, delete_command_name, add_command_name
-};
+    list_command_name, delete_command_name, add_command_name};
 
 options_description make_add_role_options_description() {
     options_description r("Add Role Options");
-    r.add_options()
-        ("name", value<std::string>(), "Role name (required)")
-        ("description", value<std::string>(), "Role description")
-        ("modified-by", value<std::string>(), "Username of modifier (required)")
-        ("change-reason-code", value<std::string>(), "Change reason code")
-        ("change-commentary", value<std::string>(), "Change commentary")
-        ("permission-code", value<std::vector<std::string>>()->multitoken(),
-            "Permission codes to assign (can specify multiple)");
+    r.add_options()("name", value<std::string>(), "Role name (required)")(
+        "description", value<std::string>(), "Role description")(
+        "modified-by", value<std::string>(), "Username of modifier (required)")(
+        "change-reason-code", value<std::string>(), "Change reason code")(
+        "change-commentary", value<std::string>(), "Change commentary")(
+        "permission-code",
+        value<std::vector<std::string>>()->multitoken(),
+        "Permission codes to assign (can specify multiple)");
 
     return r;
 }
@@ -80,14 +78,12 @@ add_role_options read_add_role_options(const variables_map& vm) {
     add_role_options r;
 
     if (vm.count("name") == 0) {
-        BOOST_THROW_EXCEPTION(
-            parser_exception("Must supply --name for add role command."));
+        BOOST_THROW_EXCEPTION(parser_exception("Must supply --name for add role command."));
     }
     r.name = vm["name"].as<std::string>();
 
     if (vm.count("modified-by") == 0) {
-        BOOST_THROW_EXCEPTION(
-            parser_exception("Must supply --modified-by for add role command."));
+        BOOST_THROW_EXCEPTION(parser_exception("Must supply --modified-by for add role command."));
     }
     r.modified_by = vm["modified-by"].as<std::string>();
 
@@ -108,11 +104,10 @@ add_role_options read_add_role_options(const variables_map& vm) {
 
 }
 
-std::optional<options>
-handle_roles_command(bool has_help,
-    const parsed_options& po,
-    std::ostream& info,
-    variables_map& vm) {
+std::optional<options> handle_roles_command(bool has_help,
+                                            const parsed_options& po,
+                                            std::ostream& info,
+                                            variables_map& vm) {
 
     auto o(collect_unrecognized(po.options, include_positional));
     o.erase(o.begin());
@@ -121,15 +116,14 @@ handle_roles_command(bool has_help,
         const std::vector<std::pair<std::string, std::string>> operations = {
             {"list", "List roles as JSON or table"},
             {"delete", "Delete a role by ID"},
-            {"add", "Add a new role"}
-        };
+            {"add", "Add a new role"}};
         print_entity_help("roles", "Manage roles", operations, info);
         return {};
     }
 
     if (o.empty()) {
-        BOOST_THROW_EXCEPTION(parser_exception(
-            "roles command requires an operation (list, delete, add)"));
+        BOOST_THROW_EXCEPTION(
+            parser_exception("roles command requires an operation (list, delete, add)"));
     }
 
     const auto operation = o.front();

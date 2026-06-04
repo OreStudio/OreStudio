@@ -20,17 +20,18 @@
 #ifndef ORES_REPORTING_DOMAIN_REPORT_INSTANCE_TABLE_IO_HPP
 #define ORES_REPORTING_DOMAIN_REPORT_INSTANCE_TABLE_IO_HPP
 
+#include "ores.reporting.api/domain/report_instance.hpp"
+#include "ores.reporting.api/export.hpp"
 #include <iosfwd>
 #include <vector>
-#include "ores.reporting.api/export.hpp"
-#include "ores.reporting.api/domain/report_instance.hpp"
 
 namespace ores::reporting::domain {
 
 /**
  * @brief Dumps the report_instance objects to a stream in table format.
  */
-ORES_REPORTING_API_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<report_instance>& v);
+ORES_REPORTING_API_EXPORT std::ostream& operator<<(std::ostream& s,
+                                                   const std::vector<report_instance>& v);
 
 }
 

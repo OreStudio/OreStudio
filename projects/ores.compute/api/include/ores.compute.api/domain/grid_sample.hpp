@@ -20,8 +20,8 @@
 #ifndef ORES_COMPUTE_DOMAIN_GRID_SAMPLE_HPP
 #define ORES_COMPUTE_DOMAIN_GRID_SAMPLE_HPP
 
-#include <chrono>
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <chrono>
 
 namespace ores::compute::domain {
 

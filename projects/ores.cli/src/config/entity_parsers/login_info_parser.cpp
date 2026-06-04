@@ -18,16 +18,15 @@
  *
  */
 #include "ores.cli/config/entity_parsers/login_info_parser.hpp"
-
-#include <boost/program_options.hpp>
-#include <boost/throw_exception.hpp>
-#include "ores.cli/config/parser_helpers.hpp"
-#include "ores.cli/config/parser_exception.hpp"
-#include "ores.cli/config/entity.hpp"
 #include "ores.cli/config/add_login_info_options.hpp"
+#include "ores.cli/config/entity.hpp"
+#include "ores.cli/config/parser_exception.hpp"
+#include "ores.cli/config/parser_helpers.hpp"
 #include "ores.database/config/database_configuration.hpp"
 #include "ores.logging/logging_configuration.hpp"
 #include "ores.utility/program_options/environment_mapper_factory.hpp"
+#include <boost/program_options.hpp>
+#include <boost/throw_exception.hpp>
 
 namespace ores::cli::config::entity_parsers {
 
@@ -59,24 +58,21 @@ const std::string list_command_name("list");
 const std::string add_command_name("add");
 
 const std::vector<std::string> allowed_operations{
-    list_command_name, delete_command_name, add_command_name
-};
+    list_command_name, delete_command_name, add_command_name};
 
 /**
  * @brief Creates the options related to adding login info.
  */
 options_description make_add_login_info_options_description() {
     options_description r("Add Login Info Options");
-    r.add_options()
-        ("account-id",
-            value<std::string>(),
-            "Account ID (UUID) for the login info (required)")
-        ("locked",
-            value<bool>()->default_value(false),
-            "Whether the account is locked (default: false)")
-        ("failed-logins",
-            value<int>()->default_value(0),
-            "Number of failed login attempts (default: 0)");
+    r.add_options()(
+        "account-id", value<std::string>(), "Account ID (UUID) for the login info (required)")(
+        "locked",
+        value<bool>()->default_value(false),
+        "Whether the account is locked (default: false)")(
+        "failed-logins",
+        value<int>()->default_value(0),
+        "Number of failed login attempts (default: 0)");
 
     return r;
 }
@@ -84,8 +80,7 @@ options_description make_add_login_info_options_description() {
 /**
  * @brief Reads the add configuration from the variables map for login info.
  */
-ores::cli::config::add_login_info_options
-read_add_login_info_options(const variables_map& vm) {
+ores::cli::config::add_login_info_options read_add_login_info_options(const variables_map& vm) {
     ores::cli::config::add_login_info_options r;
 
     // Login info requires account-id
@@ -106,11 +101,10 @@ read_add_login_info_options(const variables_map& vm) {
 
 }
 
-std::optional<options>
-handle_login_info_command(bool has_help,
-    const parsed_options& po,
-    std::ostream& info,
-    variables_map& vm) {
+std::optional<options> handle_login_info_command(bool has_help,
+                                                 const parsed_options& po,
+                                                 std::ostream& info,
+                                                 variables_map& vm) {
 
     // Collect all unrecognized options from the first pass
     auto o(collect_unrecognized(po.options, include_positional));
@@ -121,15 +115,14 @@ handle_login_info_command(bool has_help,
         const std::vector<std::pair<std::string, std::string>> operations = {
             {"list", "List login info records as JSON or table"},
             {"delete", "Delete a login info record by account ID"},
-            {"add", "Add a new login info record"}
-        };
+            {"add", "Add a new login info record"}};
         print_entity_help("login-info", "Manage login tracking information", operations, info);
         return {};
     }
 
     if (o.empty()) {
-        BOOST_THROW_EXCEPTION(parser_exception(
-            "login-info command requires an operation (list, delete, add)"));
+        BOOST_THROW_EXCEPTION(
+            parser_exception("login-info command requires an operation (list, delete, add)"));
     }
 
     const auto operation = o.front();

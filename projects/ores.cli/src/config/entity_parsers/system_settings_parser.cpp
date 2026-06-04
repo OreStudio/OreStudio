@@ -18,16 +18,15 @@
  *
  */
 #include "ores.cli/config/entity_parsers/system_settings_parser.hpp"
-
-#include <boost/program_options.hpp>
-#include <boost/throw_exception.hpp>
-#include "ores.cli/config/parser_helpers.hpp"
-#include "ores.cli/config/parser_exception.hpp"
-#include "ores.cli/config/entity.hpp"
 #include "ores.cli/config/add_system_setting_options.hpp"
+#include "ores.cli/config/entity.hpp"
+#include "ores.cli/config/parser_exception.hpp"
+#include "ores.cli/config/parser_helpers.hpp"
 #include "ores.database/config/database_configuration.hpp"
 #include "ores.logging/logging_configuration.hpp"
 #include "ores.utility/program_options/environment_mapper_factory.hpp"
+#include <boost/program_options.hpp>
+#include <boost/throw_exception.hpp>
 
 namespace ores::cli::config::entity_parsers {
 
@@ -59,30 +58,20 @@ const std::string list_command_name("list");
 const std::string add_command_name("add");
 
 const std::vector<std::string> allowed_operations{
-    list_command_name, delete_command_name, add_command_name
-};
+    list_command_name, delete_command_name, add_command_name};
 
 /**
  * @brief Creates the options related to adding system settings.
  */
 options_description make_add_system_setting_options_description() {
     options_description r("Add System Setting Options");
-    r.add_options()
-        ("name",
-            value<std::string>(),
-            "Setting name (required)")
-        ("value",
-            value<std::string>()->default_value(""),
-            "Setting value")
-        ("data-type",
-            value<std::string>()->default_value("boolean"),
-            "Setting data type: boolean, integer, string, json (default: boolean)")
-        ("description",
-            value<std::string>()->default_value(""),
-            "Setting description")
-        ("modified-by",
-            value<std::string>(),
-            "Username of modifier (required)");
+    r.add_options()("name", value<std::string>(), "Setting name (required)")(
+        "value", value<std::string>()->default_value(""), "Setting value")(
+        "data-type",
+        value<std::string>()->default_value("boolean"),
+        "Setting data type: boolean, integer, string, json (default: boolean)")(
+        "description", value<std::string>()->default_value(""), "Setting description")(
+        "modified-by", value<std::string>(), "Username of modifier (required)");
 
     return r;
 }
@@ -95,8 +84,7 @@ read_add_system_setting_options(const variables_map& vm) {
     ores::cli::config::add_system_setting_options r;
 
     if (vm.count("modified-by") == 0) {
-        BOOST_THROW_EXCEPTION(
-            parser_exception("Must supply --modified-by for add command."));
+        BOOST_THROW_EXCEPTION(parser_exception("Must supply --modified-by for add command."));
     }
     r.modified_by = vm["modified-by"].as<std::string>();
 
@@ -118,11 +106,10 @@ read_add_system_setting_options(const variables_map& vm) {
 
 }
 
-std::optional<options>
-handle_system_settings_command(bool has_help,
-    const parsed_options& po,
-    std::ostream& info,
-    variables_map& vm) {
+std::optional<options> handle_system_settings_command(bool has_help,
+                                                      const parsed_options& po,
+                                                      std::ostream& info,
+                                                      variables_map& vm) {
 
     // Collect all unrecognized options from the first pass
     auto o(collect_unrecognized(po.options, include_positional));
@@ -133,15 +120,14 @@ handle_system_settings_command(bool has_help,
         const std::vector<std::pair<std::string, std::string>> operations = {
             {"list", "List system settings as JSON or table"},
             {"delete", "Delete a system setting by name"},
-            {"add", "Add or update a system setting"}
-        };
+            {"add", "Add or update a system setting"}};
         print_entity_help("system-settings", "Manage system settings", operations, info);
         return {};
     }
 
     if (o.empty()) {
-        BOOST_THROW_EXCEPTION(parser_exception(
-            "system-settings command requires an operation (list, delete, add)"));
+        BOOST_THROW_EXCEPTION(
+            parser_exception("system-settings command requires an operation (list, delete, add)"));
     }
 
     const auto operation = o.front();

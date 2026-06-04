@@ -18,16 +18,15 @@
  *
  */
 #include "ores.cli/config/add_compute_app_options.hpp"
-
 #include <ostream>
 
 namespace ores::cli::config {
 
 std::ostream& operator<<(std::ostream& s, const add_compute_app_options& v) {
-    s << "{ name: " << v.name
-      << ", modified_by: " << v.modified_by;
+    s << "{ name: " << v.name << ", modified_by: " << v.modified_by;
 
-    if (v.description) s << ", description: " << *v.description;
+    if (v.description)
+        s << ", description: " << *v.description;
 
     s << " }";
     return s;

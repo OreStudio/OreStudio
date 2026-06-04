@@ -18,13 +18,12 @@
  *
  */
 #include "ores.reporting.core/repository/concurrency_policy_repository.hpp"
-
-#include <sqlgen/postgres.hpp>
-#include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
 #include "ores.reporting.api/domain/concurrency_policy_json_io.hpp" // IWYU pragma: keep.
 #include "ores.reporting.core/repository/concurrency_policy_entity.hpp"
 #include "ores.reporting.core/repository/concurrency_policy_mapper.hpp"
+#include <sqlgen/postgres.hpp>
 
 namespace ores::reporting::repository {
 
@@ -39,28 +38,28 @@ std::string concurrency_policy_repository::sql() {
 
 void concurrency_policy_repository::write(context ctx, const domain::concurrency_policy& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing concurrency policy: " << v.code;
-    execute_write_query(ctx, concurrency_policy_mapper::map(v),
-        lg(), "Writing concurrency policy to database.");
+    execute_write_query(
+        ctx, concurrency_policy_mapper::map(v), lg(), "Writing concurrency policy to database.");
 }
 
-void concurrency_policy_repository::write(
-    context ctx, const std::vector<domain::concurrency_policy>& v) {
+void concurrency_policy_repository::write(context ctx,
+                                          const std::vector<domain::concurrency_policy>& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing concurrency policies. Count: " << v.size();
-    execute_write_query(ctx, concurrency_policy_mapper::map(v),
-        lg(), "Writing concurrency policies to database.");
+    execute_write_query(
+        ctx, concurrency_policy_mapper::map(v), lg(), "Writing concurrency policies to database.");
 }
 
-std::vector<domain::concurrency_policy>
-concurrency_policy_repository::read_latest(context ctx) {
+std::vector<domain::concurrency_policy> concurrency_policy_repository::read_latest(context ctx) {
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<concurrency_policy_entity>> |
-        where("valid_to"_c == max.value()) |
-        order_by("code"_c);
+                       where("valid_to"_c == max.value()) | order_by("code"_c);
 
     return execute_read_query<concurrency_policy_entity, domain::concurrency_policy>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return concurrency_policy_mapper::map(entities); },
-        lg(), "Reading latest concurrency policies");
+        lg(),
+        "Reading latest concurrency policies");
 }
 
 std::vector<domain::concurrency_policy>
@@ -68,32 +67,35 @@ concurrency_policy_repository::read_latest(context ctx, const std::string& code)
     BOOST_LOG_SEV(lg(), debug) << "Reading latest concurrency policy. code: " << code;
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<concurrency_policy_entity>> |
-        where("code"_c == code && "valid_to"_c == max.value());
+                       where("code"_c == code && "valid_to"_c == max.value());
 
     return execute_read_query<concurrency_policy_entity, domain::concurrency_policy>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return concurrency_policy_mapper::map(entities); },
-        lg(), "Reading latest concurrency policy by code.");
+        lg(),
+        "Reading latest concurrency policy by code.");
 }
 
 std::vector<domain::concurrency_policy>
 concurrency_policy_repository::read_all(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all concurrency policy versions. code: " << code;
     const auto query = sqlgen::read<std::vector<concurrency_policy_entity>> |
-        where("code"_c == code) |
-        order_by("version"_c.desc());
+                       where("code"_c == code) | order_by("version"_c.desc());
 
     return execute_read_query<concurrency_policy_entity, domain::concurrency_policy>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return concurrency_policy_mapper::map(entities); },
-        lg(), "Reading all concurrency policy versions by code.");
+        lg(),
+        "Reading all concurrency policy versions by code.");
 }
 
 void concurrency_policy_repository::remove(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing concurrency policy: " << code;
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::delete_from<concurrency_policy_entity> |
-        where("code"_c == code && "valid_to"_c == max.value());
+                       where("code"_c == code && "valid_to"_c == max.value());
 
     execute_delete_query(ctx, query, lg(), "Removing concurrency policy from database.");
 }

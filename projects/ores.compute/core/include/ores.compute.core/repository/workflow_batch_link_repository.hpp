@@ -20,13 +20,13 @@
 #ifndef ORES_COMPUTE_REPOSITORY_WORKFLOW_BATCH_LINK_REPOSITORY_HPP
 #define ORES_COMPUTE_REPOSITORY_WORKFLOW_BATCH_LINK_REPOSITORY_HPP
 
+#include "ores.compute.core/export.hpp"
+#include "ores.compute.core/repository/workflow_batch_link_entity.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <sqlgen/postgres.hpp>
 #include <string>
 #include <vector>
-#include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.compute.core/repository/workflow_batch_link_entity.hpp"
-#include "ores.compute.core/export.hpp"
 
 namespace ores::compute::repository {
 

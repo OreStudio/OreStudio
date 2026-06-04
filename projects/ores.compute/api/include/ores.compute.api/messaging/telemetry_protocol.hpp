@@ -20,10 +20,10 @@
 #ifndef ORES_COMPUTE_MESSAGING_TELEMETRY_PROTOCOL_HPP
 #define ORES_COMPUTE_MESSAGING_TELEMETRY_PROTOCOL_HPP
 
+#include <cstdint>
 #include <string>
 #include <string_view>
 #include <vector>
-#include <cstdint>
 
 namespace ores::compute::messaging {
 
@@ -33,18 +33,17 @@ namespace ores::compute::messaging {
 
 struct get_grid_stats_request {
     using response_type = struct get_grid_stats_response;
-    static constexpr std::string_view nats_subject =
-        "compute.v1.telemetry.get_grid_stats";
+    static constexpr std::string_view nats_subject = "compute.v1.telemetry.get_grid_stats";
 };
 
 struct node_stats_summary {
     std::string host_id;
-    int         tasks_completed{0};
-    int         tasks_since_last{0};
+    int tasks_completed{0};
+    int tasks_since_last{0};
     std::int64_t avg_task_duration_ms{0};
     std::int64_t input_bytes_fetched{0};
     std::int64_t output_bytes_uploaded{0};
-    int         seconds_since_hb{0};
+    int seconds_since_hb{0};
 };
 
 struct get_grid_stats_response {
@@ -81,12 +80,11 @@ struct get_grid_stats_response {
 // =============================================================================
 
 struct node_sample_message {
-    static constexpr std::string_view nats_subject =
-        "compute.v1.telemetry.node_samples";
+    static constexpr std::string_view nats_subject = "compute.v1.telemetry.node_samples";
 
     std::string tenant_id;
     std::string host_id;
-    std::string sampled_at;  // ISO-8601
+    std::string sampled_at; // ISO-8601
 
     int tasks_completed{0};
     int tasks_failed{0};

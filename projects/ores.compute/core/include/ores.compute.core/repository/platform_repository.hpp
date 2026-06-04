@@ -20,19 +20,18 @@
 #ifndef ORES_COMPUTE_REPOSITORY_PLATFORM_REPOSITORY_HPP
 #define ORES_COMPUTE_REPOSITORY_PLATFORM_REPOSITORY_HPP
 
-#include <vector>
-#include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
-#include "ores.database/domain/context.hpp"
 #include "ores.compute.api/domain/compute_platform.hpp"
 #include "ores.compute.core/export.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <sqlgen/postgres.hpp>
+#include <vector>
 
 namespace ores::compute::repository {
 
 class ORES_COMPUTE_CORE_EXPORT platform_repository {
 private:
-    inline static std::string_view logger_name =
-        "ores.compute.repository.platform_repository";
+    inline static std::string_view logger_name = "ores.compute.repository.platform_repository";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;

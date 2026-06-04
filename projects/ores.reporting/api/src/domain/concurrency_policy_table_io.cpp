@@ -18,9 +18,8 @@
  *
  */
 #include "ores.reporting.api/domain/concurrency_policy_table_io.hpp"
-
-#include <ostream>
 #include "ores.reporting.api/domain/concurrency_policy_table.hpp"
+#include <ostream>
 
 namespace ores::reporting::domain {
 

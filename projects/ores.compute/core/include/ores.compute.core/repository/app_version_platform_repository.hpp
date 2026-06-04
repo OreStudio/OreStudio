@@ -20,11 +20,11 @@
 #ifndef ORES_COMPUTE_REPOSITORY_APP_VERSION_PLATFORM_REPOSITORY_HPP
 #define ORES_COMPUTE_REPOSITORY_APP_VERSION_PLATFORM_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include "ores.database/domain/context.hpp"
 #include "ores.compute.api/domain/app_version_platform.hpp"
 #include "ores.compute.core/export.hpp"
+#include "ores.database/domain/context.hpp"
+#include <string>
+#include <vector>
 
 namespace ores::compute::repository {
 
@@ -44,8 +44,8 @@ public:
      * @brief Return all active junction rows for a given app version, with
      * the platform code denormalised from ores_compute_platforms_tbl.
      */
-    std::vector<domain::app_version_platform>
-    list_for_version(database::context ctx, const std::string& app_version_id);
+    std::vector<domain::app_version_platform> list_for_version(database::context ctx,
+                                                               const std::string& app_version_id);
 
     /**
      * @brief Replace all active junction rows for the given app version with
@@ -55,12 +55,12 @@ public:
      * (app_version, platform) pair.
      */
     void replace_for_version(database::context ctx,
-        const std::string& app_version_id,
-        const std::vector<domain::app_version_platform>& rows,
-        const std::string& modified_by,
-        const std::string& performed_by,
-        const std::string& change_reason_code,
-        const std::string& change_commentary);
+                             const std::string& app_version_id,
+                             const std::vector<domain::app_version_platform>& rows,
+                             const std::string& modified_by,
+                             const std::string& performed_by,
+                             const std::string& change_reason_code,
+                             const std::string& change_commentary);
 };
 
 }

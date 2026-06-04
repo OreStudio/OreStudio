@@ -27,13 +27,13 @@
 
 namespace ores::cli::config::domain_parsers {
 
-    /**
-     * @brief Handles parsing of refdata domain commands.
-     */
-    std::optional<options> handle_refdata_command(bool has_help,
-                                                  const boost::program_options::parsed_options& po,
-                                                  std::ostream& info,
-                                                  boost::program_options::variables_map& vm);
+/**
+ * @brief Handles parsing of refdata domain commands.
+ */
+std::optional<options> handle_refdata_command(bool has_help,
+                                              const boost::program_options::parsed_options& po,
+                                              std::ostream& info,
+                                              boost::program_options::variables_map& vm);
 
 }
 

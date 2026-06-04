@@ -20,17 +20,16 @@
 #ifndef ORES_REPORTING_MESSAGING_REPORT_TYPE_PROTOCOL_HPP
 #define ORES_REPORTING_MESSAGING_REPORT_TYPE_PROTOCOL_HPP
 
+#include "ores.reporting.api/domain/report_type.hpp"
 #include <string>
 #include <string_view>
 #include <vector>
-#include "ores.reporting.api/domain/report_type.hpp"
 
 namespace ores::reporting::messaging {
 
 struct get_report_types_request {
     using response_type = struct get_report_types_response;
-    static constexpr std::string_view nats_subject =
-        "reporting.v1.report-types.list";
+    static constexpr std::string_view nats_subject = "reporting.v1.report-types.list";
     int offset = 0;
     int limit = 100;
 };
@@ -42,8 +41,7 @@ struct get_report_types_response {
 
 struct save_report_type_request {
     using response_type = struct save_report_type_response;
-    static constexpr std::string_view nats_subject =
-        "reporting.v1.report-types.save";
+    static constexpr std::string_view nats_subject = "reporting.v1.report-types.save";
     ores::reporting::domain::report_type type;
 };
 
@@ -54,8 +52,7 @@ struct save_report_type_response {
 
 struct delete_report_type_request {
     using response_type = struct delete_report_type_response;
-    static constexpr std::string_view nats_subject =
-        "reporting.v1.report-types.delete";
+    static constexpr std::string_view nats_subject = "reporting.v1.report-types.delete";
     std::vector<std::string> codes;
 };
 
@@ -66,8 +63,7 @@ struct delete_report_type_response {
 
 struct get_report_type_history_request {
     using response_type = struct get_report_type_history_response;
-    static constexpr std::string_view nats_subject =
-        "reporting.v1.report-types.history";
+    static constexpr std::string_view nats_subject = "reporting.v1.report-types.history";
     std::string code;
 };
 

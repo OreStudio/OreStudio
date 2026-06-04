@@ -20,14 +20,14 @@
 #ifndef ORES_REPORTING_SERVICE_CONCURRENCY_POLICY_SERVICE_HPP
 #define ORES_REPORTING_SERVICE_CONCURRENCY_POLICY_SERVICE_HPP
 
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.reporting.api/domain/concurrency_policy.hpp"
+#include "ores.reporting.core/export.hpp"
+#include "ores.reporting.core/repository/concurrency_policy_repository.hpp"
+#include <optional>
 #include <string>
 #include <vector>
-#include <optional>
-#include "ores.logging/make_logger.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.reporting.api/domain/concurrency_policy.hpp"
-#include "ores.reporting.core/repository/concurrency_policy_repository.hpp"
-#include "ores.reporting.core/export.hpp"
 
 namespace ores::reporting::service {
 
@@ -52,15 +52,13 @@ public:
 
     std::vector<domain::concurrency_policy> list_policies();
 
-    std::optional<domain::concurrency_policy>
-    find_policy(const std::string& code);
+    std::optional<domain::concurrency_policy> find_policy(const std::string& code);
 
     void save_policy(const domain::concurrency_policy& v);
 
     void remove_policy(const std::string& code);
 
-    std::vector<domain::concurrency_policy>
-    get_policy_history(const std::string& code);
+    std::vector<domain::concurrency_policy> get_policy_history(const std::string& code);
 
 private:
     context ctx_;

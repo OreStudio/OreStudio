@@ -18,23 +18,19 @@
  *
  */
 #include "ores.compute.api/generators/batch_generator.hpp"
-
+#include "ores.utility/generation/generation_keys.hpp"
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::compute::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::batch generate_synthetic_batch(
-    utility::generation::generation_context& ctx) {
+domain::batch generate_synthetic_batch(utility::generation::generation_context& ctx) {
     static std::atomic<int> counter{0};
     const auto idx = ++counter;
-    const auto modified_by = ctx.env().get_or(
-        generation_keys::modified_by, "system");
-    const auto tenant_id = ctx.env().get_or(
-        generation_keys::tenant_id, "system");
+    const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
+    const auto tenant_id = ctx.env().get_or(generation_keys::tenant_id, "system");
 
     domain::batch r;
     r.version = 1;
@@ -51,8 +47,7 @@ domain::batch generate_synthetic_batch(
 }
 
 std::vector<domain::batch>
-generate_synthetic_batches(std::size_t n,
-    utility::generation::generation_context& ctx) {
+generate_synthetic_batches(std::size_t n, utility::generation::generation_context& ctx) {
     std::vector<domain::batch> r;
     r.reserve(n);
     while (r.size() < n)

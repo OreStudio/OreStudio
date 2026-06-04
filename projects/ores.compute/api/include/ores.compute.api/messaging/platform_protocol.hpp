@@ -20,16 +20,15 @@
 #ifndef ORES_COMPUTE_MESSAGING_PLATFORM_PROTOCOL_HPP
 #define ORES_COMPUTE_MESSAGING_PLATFORM_PROTOCOL_HPP
 
-#include <vector>
-#include <string_view>
 #include "ores.compute.api/domain/compute_platform.hpp"
+#include <string_view>
+#include <vector>
 
 namespace ores::compute::messaging {
 
 struct list_platforms_request {
     using response_type = struct list_platforms_response;
-    static constexpr std::string_view nats_subject =
-        "compute.v1.platforms.list";
+    static constexpr std::string_view nats_subject = "compute.v1.platforms.list";
 };
 
 struct list_platforms_response {

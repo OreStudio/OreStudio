@@ -18,7 +18,6 @@
  *
  */
 #include "ores.reporting.core/repository/report_definition_entity.hpp"
-
 #include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>

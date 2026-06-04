@@ -18,14 +18,13 @@
  *
  */
 #include "ores.compute.api/domain/host.hpp"
-
-#include <sstream>
-#include <catch2/catch_test_macros.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.logging/make_logger.hpp"
 #include "ores.compute.api/domain/host_json_io.hpp" // IWYU pragma: keep.
 #include "ores.compute.api/domain/host_table.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <boost/uuid/uuid_generators.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <sstream>
 
 namespace {
 
@@ -207,8 +206,8 @@ TEST_CASE("create_host_with_faker", tags) {
     sut.version = faker::number::integer(1, 10);
     sut.modified_by = std::string(faker::internet::username());
     sut.id = boost::uuids::random_generator()();
-    sut.external_id = std::string(faker::word::noun()) + "-" +
-        std::to_string(faker::number::integer(1, 99));
+    sut.external_id =
+        std::string(faker::word::noun()) + "-" + std::to_string(faker::number::integer(1, 99));
     sut.location = std::string(faker::location::city());
     sut.cpu_count = faker::number::integer(4, 128);
     sut.ram_mb = faker::number::integer(8192, 131072);
@@ -235,8 +234,8 @@ TEST_CASE("host_table_with_faker_data", tags) {
         h.version = faker::number::integer(1, 10);
         h.modified_by = std::string(faker::internet::username());
         h.id = boost::uuids::random_generator()();
-        h.external_id = std::string(faker::word::noun()) + "-" +
-            std::to_string(faker::number::integer(1, 99));
+        h.external_id =
+            std::string(faker::word::noun()) + "-" + std::to_string(faker::number::integer(1, 99));
         h.location = std::string(faker::location::city());
         h.cpu_count = faker::number::integer(4, 128);
         h.ram_mb = faker::number::integer(8192, 131072);

@@ -20,14 +20,14 @@
 #ifndef ORES_REPORTING_MESSAGING_REPORT_EXECUTION_HANDLER_HPP
 #define ORES_REPORTING_MESSAGING_REPORT_EXECUTION_HANDLER_HPP
 
-#include <string>
+#include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.workflow.core/service/fsm_state_map.hpp"
 #include "ores.reporting.core/export.hpp"
+#include "ores.workflow.core/service/fsm_state_map.hpp"
+#include <string>
 
 namespace ores::reporting::messaging {
 
@@ -55,10 +55,10 @@ private:
 
 public:
     report_execution_handler(ores::nats::service::client& nats,
-        ores::database::context ctx,
-        ores::nats::service::nats_client svc_nats,
-        ores::workflow::service::fsm_state_map instance_states,
-        std::string http_base_url);
+                             ores::database::context ctx,
+                             ores::nats::service::nats_client svc_nats,
+                             ores::workflow::service::fsm_state_map instance_states,
+                             std::string http_base_url);
 
     void gather_trades(ores::nats::message msg);
     void gather_market_data(ores::nats::message msg);
@@ -69,8 +69,8 @@ public:
 
 private:
     void mark_instance_failed(const std::string& tenant_id,
-        const std::string& instance_id,
-        const std::string& error_message);
+                              const std::string& instance_id,
+                              const std::string& error_message);
 
     ores::nats::service::client& nats_;
     ores::database::context ctx_;

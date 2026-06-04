@@ -35,6 +35,6 @@
  * The module is organized into namespaces: config (option parsing and
  * configuration), and app (application hosting and execution).
  */
-namespace ores::cli { }
+namespace ores::cli {}
 
 #endif

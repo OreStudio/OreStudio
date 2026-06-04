@@ -17,16 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.reporting.api/domain/report_instance.hpp"
-
-#include <sstream>
-#include <catch2/catch_test_macros.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
+#include "ores.reporting.api/domain/report_instance.hpp"
 #include "ores.reporting.api/domain/report_instance_json_io.hpp" // IWYU pragma: keep.
 #include "ores.reporting.api/domain/report_instance_table.hpp"
 #include "ores.reporting.api/domain/report_instance_table_io.hpp" // IWYU pragma: keep.
+#include <boost/uuid/uuid_generators.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <sstream>
 
 namespace {
 
@@ -173,8 +172,7 @@ TEST_CASE("create_report_instance_with_faker", tags) {
 TEST_CASE("create_multiple_random_report_instances", tags) {
     auto lg(make_logger(test_suite));
 
-    const std::vector<std::string> names = {"Daily Risk", "Weekly Grid",
-        "Monthly Summary"};
+    const std::vector<std::string> names = {"Daily Risk", "Weekly Grid", "Monthly Summary"};
     for (const auto& name : names) {
         auto sut = make_report_instance(name);
         BOOST_LOG_SEV(lg, info) << "Report instance: " << sut;

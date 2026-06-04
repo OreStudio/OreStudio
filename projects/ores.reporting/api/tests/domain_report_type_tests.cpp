@@ -17,15 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.reporting.api/domain/report_type.hpp"
-
-#include <sstream>
-#include <catch2/catch_test_macros.hpp>
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
+#include "ores.reporting.api/domain/report_type.hpp"
 #include "ores.reporting.api/domain/report_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.reporting.api/domain/report_type_table.hpp"
 #include "ores.reporting.api/domain/report_type_table_io.hpp" // IWYU pragma: keep.
+#include <catch2/catch_test_macros.hpp>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <sstream>
 
 namespace {
 
@@ -34,8 +33,7 @@ using ores::reporting::domain::report_type;
 const std::string_view test_suite("ores.reporting.tests");
 const std::string tags("[domain]");
 
-report_type make_report_type(const std::string& code, const std::string& name,
-    int display_order) {
+report_type make_report_type(const std::string& code, const std::string& name, int display_order) {
     report_type rt;
     rt.version = 1;
     rt.code = code;
@@ -129,8 +127,7 @@ TEST_CASE("create_multiple_random_report_types", tags) {
     auto lg(make_logger(test_suite));
 
     const std::vector<std::tuple<std::string, std::string, int>> types = {
-        {"risk", "Risk Report", 1}, {"grid", "Grid Report", 2},
-        {"cashflow", "Cashflow Report", 3}};
+        {"risk", "Risk Report", 1}, {"grid", "Grid Report", 2}, {"cashflow", "Cashflow Report", 3}};
     for (const auto& [code, name, order] : types) {
         auto sut = make_report_type(code, name, order);
         BOOST_LOG_SEV(lg, info) << "Report type: " << sut;
@@ -156,8 +153,8 @@ TEST_CASE("report_type_convert_multiple_to_table", tags) {
 
     std::vector<report_type> items;
     for (int i = 0; i < 3; ++i)
-        items.push_back(make_report_type("type" + std::to_string(i),
-            "Type " + std::to_string(i), i + 1));
+        items.push_back(
+            make_report_type("type" + std::to_string(i), "Type " + std::to_string(i), i + 1));
 
     auto table = convert_to_table(items);
 

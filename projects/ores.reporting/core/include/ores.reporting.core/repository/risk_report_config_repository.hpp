@@ -20,13 +20,13 @@
 #ifndef ORES_REPORTING_REPOSITORY_RISK_REPORT_CONFIG_REPOSITORY_HPP
 #define ORES_REPORTING_REPOSITORY_RISK_REPORT_CONFIG_REPOSITORY_HPP
 
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.reporting.api/domain/risk_report_config.hpp"
+#include "ores.reporting.core/export.hpp"
 #include <optional>
 #include <string>
 #include <vector>
-#include "ores.logging/make_logger.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.reporting.api/domain/risk_report_config.hpp"
-#include "ores.reporting.core/export.hpp"
 
 namespace ores::reporting::repository {
 
@@ -65,24 +65,21 @@ public:
      * explicit book scope, then portfolio scope (with subtree expansion),
      * then falls back to all tenant books.
      */
-    std::vector<std::string>
-    resolve_book_ids(context ctx, const std::string& config_id);
+    std::vector<std::string> resolve_book_ids(context ctx, const std::string& config_id);
 
     /**
      * @brief Returns the active book UUIDs scoped to a risk_report_config.
      *
      * Empty vector means "all books within the selected portfolios".
      */
-    std::vector<std::string>
-    get_book_scope(context ctx, const std::string& config_id);
+    std::vector<std::string> get_book_scope(context ctx, const std::string& config_id);
 
     /**
      * @brief Returns the active portfolio UUIDs scoped to a risk_report_config.
      *
      * Empty vector means "all portfolios visible to the tenant".
      */
-    std::vector<std::string>
-    get_portfolio_scope(context ctx, const std::string& config_id);
+    std::vector<std::string> get_portfolio_scope(context ctx, const std::string& config_id);
 };
 
 }

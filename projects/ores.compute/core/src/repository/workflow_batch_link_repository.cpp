@@ -18,10 +18,9 @@
  *
  */
 #include "ores.compute.core/repository/workflow_batch_link_repository.hpp"
-
-#include <sqlgen/postgres.hpp>
-#include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
+#include <sqlgen/postgres.hpp>
 
 namespace ores::compute::repository {
 
@@ -30,39 +29,35 @@ using namespace sqlgen;
 using namespace sqlgen::literals;
 using namespace ores::database::repository;
 
-void workflow_batch_link_repository::create(
-    context ctx, const workflow_batch_link_entity& link) {
+void workflow_batch_link_repository::create(context ctx, const workflow_batch_link_entity& link) {
 
-    BOOST_LOG_SEV(lg(), debug)
-        << "Creating workflow batch link: " << link.batch_id.value();
+    BOOST_LOG_SEV(lg(), debug) << "Creating workflow batch link: " << link.batch_id.value();
 
-    const auto r = sqlgen::session(ctx.connection_pool())
-        .and_then(insert(link));
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(insert(link));
     ensure_success(r, lg());
 
     BOOST_LOG_SEV(lg(), debug) << "Workflow batch link created.";
 }
 
-std::vector<workflow_batch_link_entity>
-workflow_batch_link_repository::find_all(context ctx) {
+std::vector<workflow_batch_link_entity> workflow_batch_link_repository::find_all(context ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Finding all pending batch workflow links";
 
     const auto query = sqlgen::read<std::vector<workflow_batch_link_entity>>;
 
-    return execute_read_query<
-        workflow_batch_link_entity, workflow_batch_link_entity>(
-        ctx, query,
+    return execute_read_query<workflow_batch_link_entity, workflow_batch_link_entity>(
+        ctx,
+        query,
         [](const auto& entities) { return entities; },
-        lg(), "Finding all batch workflow links");
+        lg(),
+        "Finding all batch workflow links");
 }
 
-void workflow_batch_link_repository::remove(
-    context ctx, const std::string& batch_id) {
+void workflow_batch_link_repository::remove(context ctx, const std::string& batch_id) {
 
     BOOST_LOG_SEV(lg(), debug) << "Removing workflow batch link: " << batch_id;
 
-    const auto query = sqlgen::delete_from<workflow_batch_link_entity> |
-        where("batch_id"_c == batch_id);
+    const auto query =
+        sqlgen::delete_from<workflow_batch_link_entity> | where("batch_id"_c == batch_id);
 
     execute_delete_query(ctx, query, lg(), "Removing workflow batch link.");
 }

@@ -17,16 +17,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <iostream>
-#include <boost/scope_exit.hpp>
-#include <openssl/crypto.h>
 #include "ores.cli/app/host.hpp"
 #include "ores.cli/config/parser_exception.hpp"
+#include <boost/scope_exit.hpp>
+#include <iostream>
+#include <openssl/crypto.h>
 
 int main(int argc, char** argv) {
     BOOST_SCOPE_EXIT(void) {
         OPENSSL_cleanup();
-    } BOOST_SCOPE_EXIT_END;
+    }
+    BOOST_SCOPE_EXIT_END;
 
     using ores::cli::app::host;
     using ores::cli::config::parser_exception;

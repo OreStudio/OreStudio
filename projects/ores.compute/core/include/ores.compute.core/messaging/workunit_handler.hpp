@@ -20,34 +20,33 @@
 #ifndef ORES_COMPUTE_MESSAGING_WORKUNIT_HANDLER_HPP
 #define ORES_COMPUTE_MESSAGING_WORKUNIT_HANDLER_HPP
 
-#include <optional>
-#include <span>
-#include <stdexcept>
-#include <rfl/json.hpp>
-#include <boost/uuid/random_generator.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include "ores.logging/make_logger.hpp"
+#include "ores.compute.api/messaging/work_protocol.hpp"
+#include "ores.compute.api/messaging/workunit_protocol.hpp"
 #include "ores.compute.api/net/compute_storage.hpp"
+#include "ores.compute.core/export.hpp"
+#include "ores.compute.core/repository/app_version_platform_repository.hpp"
+#include "ores.compute.core/service/result_service.hpp"
+#include "ores.compute.core/service/workunit_service.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.dq.api/domain/change_reason.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.database/domain/context.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include "ores.compute.api/messaging/workunit_protocol.hpp"
-#include "ores.compute.api/messaging/work_protocol.hpp"
-#include "ores.compute.core/service/workunit_service.hpp"
-#include "ores.dq.api/domain/change_reason.hpp"
-#include "ores.compute.core/service/result_service.hpp"
-#include "ores.compute.core/repository/app_version_platform_repository.hpp"
-#include "ores.compute.core/export.hpp"
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <optional>
+#include <rfl/json.hpp>
+#include <span>
+#include <stdexcept>
 
 namespace ores::compute::messaging {
 
 namespace {
 inline auto& workunit_handler_lg() {
-    static auto instance = ores::logging::make_logger(
-        "ores.compute.messaging.workunit_handler");
+    static auto instance = ores::logging::make_logger("ores.compute.messaging.workunit_handler");
     return instance;
 }
 } // namespace
@@ -60,18 +59,18 @@ using ores::service::messaging::error_reply;
 using ores::service::messaging::has_permission;
 using namespace ores::logging;
 
-class ORES_COMPUTE_CORE_EXPORT workunit_handler  {
+class ORES_COMPUTE_CORE_EXPORT workunit_handler {
 public:
     workunit_handler(ores::nats::service::client& nats,
-        ores::database::context ctx,
-        std::optional<ores::security::jwt::jwt_authenticator> verifier)
-        : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier)) {}
+                     ores::database::context ctx,
+                     std::optional<ores::security::jwt::jwt_authenticator> verifier)
+        : nats_(nats)
+        , ctx_(std::move(ctx))
+        , verifier_(std::move(verifier)) {}
 
     void list(ores::nats::message msg) {
-        BOOST_LOG_SEV(workunit_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        BOOST_LOG_SEV(workunit_handler_lg(), debug) << "Handling " << msg.subject;
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -82,20 +81,17 @@ public:
         try {
             if (auto req = decode<list_workunits_request>(msg)) {
                 resp.workunits = svc.list();
-                resp.total_available_count =
-                    static_cast<int>(resp.workunits.size());
+                resp.total_available_count = static_cast<int>(resp.workunits.size());
             }
-        } catch (...) {}
+        } catch (...) {
+        }
         reply(nats_, msg, resp);
-        BOOST_LOG_SEV(workunit_handler_lg(), debug)
-            << "Completed " << msg.subject;
+        BOOST_LOG_SEV(workunit_handler_lg(), debug) << "Completed " << msg.subject;
     }
 
     void save(ores::nats::message msg) {
-        BOOST_LOG_SEV(workunit_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        BOOST_LOG_SEV(workunit_handler_lg(), debug) << "Handling " << msg.subject;
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -114,10 +110,8 @@ public:
                 // Dispatcher: create target_redundancy result rows (state=2 Unsent)
                 // and publish each as a JetStream assignment event.
                 service::result_service result_svc(ctx);
-                const auto wu_id_str =
-                    boost::uuids::to_string(req->workunit.id);
-                const auto av_id_str =
-                    boost::uuids::to_string(req->workunit.app_version_id);
+                const auto wu_id_str = boost::uuids::to_string(req->workunit.id);
+                const auto av_id_str = boost::uuids::to_string(req->workunit.app_version_id);
                 const auto tenant_id_str = ctx.tenant_id().to_string();
                 const auto redundancy = req->workunit.target_redundancy;
 
@@ -129,10 +123,8 @@ public:
                 const auto avps = avp_repo.list_for_version(ctx, av_id_str);
                 if (avps.empty()) {
                     BOOST_LOG_SEV(workunit_handler_lg(), warn)
-                        << "No platform packages for app_version "
-                        << av_id_str
-                        << " — workunit " << wu_id_str
-                        << " cannot be dispatched.";
+                        << "No platform packages for app_version " << av_id_str << " — workunit "
+                        << wu_id_str << " cannot be dispatched.";
                     reply(nats_, msg, save_workunit_response{.success = true});
                     return;
                 }
@@ -153,38 +145,32 @@ public:
 
                     const auto result_id_str = boost::uuids::to_string(r.id);
                     const auto event = work_assignment_event{
-                        .result_id      = result_id_str,
-                        .workunit_id    = wu_id_str,
+                        .result_id = result_id_str,
+                        .workunit_id = wu_id_str,
                         .app_version_id = av_id_str,
-                        .package_uri    = avp.package_uri,
-                        .input_uri      = req->workunit.input_uri,
-                        .config_uri     = req->workunit.config_uri,
-                        .output_uri     = ores::compute::net::compute_storage::output_path(
-                            result_id_str)};
+                        .package_uri = avp.package_uri,
+                        .input_uri = req->workunit.input_uri,
+                        .config_uri = req->workunit.config_uri,
+                        .output_uri =
+                            ores::compute::net::compute_storage::output_path(result_id_str)};
                     const auto json = rfl::json::write(event);
-                    const auto* p =
-                        reinterpret_cast<const std::byte*>(json.data());
-                    nats_.js_publish(
-                        "compute.v1.work.assignments." + tenant_id_str
-                            + "." + avp.platform_code,
-                        std::span<const std::byte>(p, json.size()));
+                    const auto* p = reinterpret_cast<const std::byte*>(json.data());
+                    nats_.js_publish("compute.v1.work.assignments." + tenant_id_str + "." +
+                                         avp.platform_code,
+                                     std::span<const std::byte>(p, json.size()));
                     BOOST_LOG_SEV(workunit_handler_lg(), debug)
-                        << "Dispatched result " << result_id_str
-                        << " for workunit " << wu_id_str
+                        << "Dispatched result " << result_id_str << " for workunit " << wu_id_str
                         << " on platform " << avp.platform_code;
                 }
 
                 reply(nats_, msg, save_workunit_response{.success = true});
             } catch (const std::exception& e) {
-                reply(nats_, msg, save_workunit_response{
-                    .success = false, .message = e.what()});
+                reply(nats_, msg, save_workunit_response{.success = false, .message = e.what()});
             }
         } else {
-            BOOST_LOG_SEV(workunit_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(workunit_handler_lg(), warn) << "Failed to decode: " << msg.subject;
         }
-        BOOST_LOG_SEV(workunit_handler_lg(), debug)
-            << "Completed " << msg.subject;
+        BOOST_LOG_SEV(workunit_handler_lg(), debug) << "Completed " << msg.subject;
     }
 
 private:

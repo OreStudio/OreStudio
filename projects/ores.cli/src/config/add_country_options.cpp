@@ -18,23 +18,25 @@
  *
  */
 #include "ores.cli/config/add_country_options.hpp"
-
 #include <ostream>
 
 namespace ores::cli::config {
 
 std::ostream& operator<<(std::ostream& s, const add_country_options& v) {
-    s << "{ alpha2_code: " << v.alpha2_code
-      << ", alpha3_code: " << v.alpha3_code
+    s << "{ alpha2_code: " << v.alpha2_code << ", alpha3_code: " << v.alpha3_code
       << ", name: " << v.name;
 
-    if (v.numeric_code) s << ", numeric_code: " << *v.numeric_code;
-    if (v.official_name) s << ", official_name: " << *v.official_name;
+    if (v.numeric_code)
+        s << ", numeric_code: " << *v.numeric_code;
+    if (v.official_name)
+        s << ", official_name: " << *v.official_name;
 
     s << ", modified_by: " << v.modified_by;
 
-    if (v.change_reason_code) s << ", change_reason_code: " << *v.change_reason_code;
-    if (v.change_commentary) s << ", change_commentary: " << *v.change_commentary;
+    if (v.change_reason_code)
+        s << ", change_reason_code: " << *v.change_reason_code;
+    if (v.change_commentary)
+        s << ", change_commentary: " << *v.change_commentary;
 
     s << " }";
     return s;

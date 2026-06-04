@@ -20,10 +20,10 @@
 #ifndef ORES_DATABASE_SERVICE_TENANT_CONTEXT_HPP
 #define ORES_DATABASE_SERVICE_TENANT_CONTEXT_HPP
 
-#include <string>
 #include "ores.database/domain/context.hpp"
-#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.database/export.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <string>
 
 namespace ores::database::service {
 
@@ -43,8 +43,7 @@ public:
      * Uses max UUID instead of nil UUID to prevent confusion with
      * uninitialized UUIDs (boost::uuids::uuid default-constructs to nil).
      */
-    static constexpr const char* system_tenant_id =
-        "ffffffff-ffff-ffff-ffff-ffffffffffff";
+    static constexpr const char* system_tenant_id = "ffffffff-ffff-ffff-ffff-ffffffffffff";
 
     tenant_context() = delete;
 
@@ -62,8 +61,7 @@ public:
      * @return A new context configured for the specified tenant.
      * @throws std::runtime_error if tenant not found.
      */
-    [[nodiscard]] static context with_tenant(const context& ctx,
-        const std::string& tenant);
+    [[nodiscard]] static context with_tenant(const context& ctx, const std::string& tenant);
 
     /**
      * @brief Creates a new context with the system tenant.
@@ -84,8 +82,7 @@ public:
      * @return The tenant ID.
      * @throws std::runtime_error if tenant not found.
      */
-    static utility::uuid::tenant_id lookup_by_code(const context& ctx,
-        const std::string& code);
+    static utility::uuid::tenant_id lookup_by_code(const context& ctx, const std::string& code);
 
     /**
      * @brief Looks up a tenant ID by its hostname.
@@ -96,7 +93,7 @@ public:
      * @throws std::runtime_error if tenant not found.
      */
     static utility::uuid::tenant_id lookup_by_hostname(const context& ctx,
-        const std::string& hostname);
+                                                       const std::string& hostname);
 
     /**
      * @brief Looks up a tenant name by its ID.
@@ -109,8 +106,7 @@ public:
      * @return The tenant name.
      * @throws std::runtime_error if tenant not found.
      */
-    static std::string lookup_name(const context& ctx,
-        const utility::uuid::tenant_id& tenant_id);
+    static std::string lookup_name(const context& ctx, const utility::uuid::tenant_id& tenant_id);
 
     /**
      * @brief Checks if a string is a valid UUID format.

@@ -20,10 +20,10 @@
 #ifndef ORES_WORKSPACE_API_EVENTING_WORKSPACE_CHANGED_EVENT_HPP
 #define ORES_WORKSPACE_API_EVENTING_WORKSPACE_CHANGED_EVENT_HPP
 
-#include <chrono>
-#include <vector>
-#include <string>
 #include "ores.eventing/domain/event_traits.hpp"
+#include <chrono>
+#include <string>
+#include <vector>
 
 namespace ores::workspace::eventing {
 
@@ -43,7 +43,7 @@ struct workspace_changed_event final {
 
 namespace ores::eventing::domain {
 
-template<>
+template <>
 struct event_traits<ores::workspace::eventing::workspace_changed_event> {
     static constexpr std::string_view name = "ores.workspace.workspace_changed";
 };

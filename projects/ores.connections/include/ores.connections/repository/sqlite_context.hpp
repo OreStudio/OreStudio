@@ -20,11 +20,11 @@
 #ifndef ORES_CONNECTIONS_REPOSITORY_SQLITE_CONTEXT_HPP
 #define ORES_CONNECTIONS_REPOSITORY_SQLITE_CONTEXT_HPP
 
+#include "ores.connections/export.hpp"
 #include <filesystem>
 #include <rfl/Result.hpp>
 #include <sqlgen/Ref.hpp>
 #include <sqlgen/sqlite.hpp>
-#include "ores.connections/export.hpp"
 
 namespace ores::connections::repository {
 
@@ -54,7 +54,9 @@ public:
     /**
      * @brief Get the database file path.
      */
-    const std::filesystem::path& db_path() const { return db_path_; }
+    const std::filesystem::path& db_path() const {
+        return db_path_;
+    }
 
     /**
      * @brief Initialize the database schema if it doesn't exist.

@@ -20,23 +20,23 @@
 #ifndef ORES_VARIABILITY_MESSAGING_SYSTEM_SETTING_HANDLER_HPP
 #define ORES_VARIABILITY_MESSAGING_SYSTEM_SETTING_HANDLER_HPP
 
-#include <optional>
+#include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.database/domain/context.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include "ores.variability.api/messaging/system_settings_protocol.hpp"
 #include "ores.variability.core/service/system_settings_service.hpp"
+#include <optional>
 
 namespace ores::variability::messaging {
 
 namespace {
 inline auto& system_setting_handler_lg() {
-    static auto instance = ores::logging::make_logger(
-        "ores.variability.messaging.system_setting_handler");
+    static auto instance =
+        ores::logging::make_logger("ores.variability.messaging.system_setting_handler");
     return instance;
 }
 } // namespace
@@ -51,15 +51,15 @@ using namespace ores::logging;
 class system_setting_handler {
 public:
     system_setting_handler(ores::nats::service::client& nats,
-        ores::database::context ctx,
-        std::optional<ores::security::jwt::jwt_authenticator> verifier)
-        : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier)) {}
+                           ores::database::context ctx,
+                           std::optional<ores::security::jwt::jwt_authenticator> verifier)
+        : nats_(nats)
+        , ctx_(std::move(ctx))
+        , verifier_(std::move(verifier)) {}
 
     void list(ores::nats::message msg) {
-        BOOST_LOG_SEV(system_setting_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        BOOST_LOG_SEV(system_setting_handler_lg(), debug) << "Handling " << msg.subject;
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -69,17 +69,15 @@ public:
         list_settings_response resp;
         try {
             resp.settings = svc.get_all();
-        } catch (...) {}
-        BOOST_LOG_SEV(system_setting_handler_lg(), debug)
-            << "Completed " << msg.subject;
+        } catch (...) {
+        }
+        BOOST_LOG_SEV(system_setting_handler_lg(), debug) << "Completed " << msg.subject;
         reply(nats_, msg, resp);
     }
 
     void save(ores::nats::message msg) {
-        BOOST_LOG_SEV(system_setting_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        BOOST_LOG_SEV(system_setting_handler_lg(), debug) << "Handling " << msg.subject;
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -94,27 +92,21 @@ public:
             try {
                 stamp(req->data, ctx);
                 svc.save(req->data);
-                BOOST_LOG_SEV(system_setting_handler_lg(), debug)
-                    << "Completed " << msg.subject;
-                reply(nats_, msg,
-                    save_setting_response{.success = true});
+                BOOST_LOG_SEV(system_setting_handler_lg(), debug) << "Completed " << msg.subject;
+                reply(nats_, msg, save_setting_response{.success = true});
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(system_setting_handler_lg(), error)
                     << msg.subject << " failed: " << e.what();
-                reply(nats_, msg, save_setting_response{
-                    .success = false, .message = e.what()});
+                reply(nats_, msg, save_setting_response{.success = false, .message = e.what()});
             }
         } else {
-            BOOST_LOG_SEV(system_setting_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(system_setting_handler_lg(), warn) << "Failed to decode: " << msg.subject;
         }
     }
 
     void remove(ores::nats::message msg) {
-        BOOST_LOG_SEV(system_setting_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        BOOST_LOG_SEV(system_setting_handler_lg(), debug) << "Handling " << msg.subject;
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -128,27 +120,23 @@ public:
         if (auto req = decode<delete_setting_request>(msg)) {
             try {
                 svc.remove(req->name);
-                BOOST_LOG_SEV(system_setting_handler_lg(), debug)
-                    << "Completed " << msg.subject;
-                reply(nats_, msg,
-                    delete_setting_response{.success = true});
+                BOOST_LOG_SEV(system_setting_handler_lg(), debug) << "Completed " << msg.subject;
+                reply(nats_, msg, delete_setting_response{.success = true});
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(system_setting_handler_lg(), error)
                     << msg.subject << " failed: " << e.what();
-                reply(nats_, msg, delete_setting_response{
-                    .success = false, .error_message = e.what()});
+                reply(nats_,
+                      msg,
+                      delete_setting_response{.success = false, .error_message = e.what()});
             }
         } else {
-            BOOST_LOG_SEV(system_setting_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(system_setting_handler_lg(), warn) << "Failed to decode: " << msg.subject;
         }
     }
 
     void history(ores::nats::message msg) {
-        BOOST_LOG_SEV(system_setting_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        BOOST_LOG_SEV(system_setting_handler_lg(), debug) << "Handling " << msg.subject;
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -158,20 +146,19 @@ public:
         if (auto req = decode<get_setting_history_request>(msg)) {
             try {
                 auto hist = svc.get_history(req->name);
-                BOOST_LOG_SEV(system_setting_handler_lg(), debug)
-                    << "Completed " << msg.subject;
-                reply(nats_, msg, get_setting_history_response{
-                    .success = true,
-                    .history = std::move(hist)});
+                BOOST_LOG_SEV(system_setting_handler_lg(), debug) << "Completed " << msg.subject;
+                reply(nats_,
+                      msg,
+                      get_setting_history_response{.success = true, .history = std::move(hist)});
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(system_setting_handler_lg(), error)
                     << msg.subject << " failed: " << e.what();
-                reply(nats_, msg, get_setting_history_response{
-                    .success = false, .message = e.what()});
+                reply(nats_,
+                      msg,
+                      get_setting_history_response{.success = false, .message = e.what()});
             }
         } else {
-            BOOST_LOG_SEV(system_setting_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(system_setting_handler_lg(), warn) << "Failed to decode: " << msg.subject;
         }
     }
 

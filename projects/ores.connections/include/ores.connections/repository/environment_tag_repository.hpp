@@ -20,11 +20,11 @@
 #ifndef ORES_CONNECTIONS_REPOSITORY_ENVIRONMENT_TAG_REPOSITORY_HPP
 #define ORES_CONNECTIONS_REPOSITORY_ENVIRONMENT_TAG_REPOSITORY_HPP
 
-#include <vector>
-#include <boost/uuid/uuid.hpp>
 #include "ores.connections/domain/environment_tag.hpp"
-#include "ores.connections/repository/sqlite_context.hpp"
 #include "ores.connections/export.hpp"
+#include "ores.connections/repository/sqlite_context.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <vector>
 
 namespace ores::connections::repository {
 
@@ -38,8 +38,8 @@ public:
     /**
      * @brief Get all tags for an environment.
      */
-    std::vector<domain::environment_tag> read_by_environment(
-        const boost::uuids::uuid& environment_id);
+    std::vector<domain::environment_tag>
+    read_by_environment(const boost::uuids::uuid& environment_id);
 
     /**
      * @brief Get all environments for a tag.

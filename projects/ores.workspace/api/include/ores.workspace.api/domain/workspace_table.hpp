@@ -20,10 +20,10 @@
 #ifndef ORES_WORKSPACE_DOMAIN_WORKSPACE_TABLE_HPP
 #define ORES_WORKSPACE_DOMAIN_WORKSPACE_TABLE_HPP
 
-#include <string>
-#include <vector>
 #include "ores.workspace.api/domain/workspace.hpp"
 #include "ores.workspace.api/export.hpp"
+#include <string>
+#include <vector>
 
 namespace ores::workspace::domain {
 

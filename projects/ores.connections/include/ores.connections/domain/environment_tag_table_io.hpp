@@ -20,17 +20,18 @@
 #ifndef ORES_CONNECTIONS_DOMAIN_ENVIRONMENT_TAG_TABLE_IO_HPP
 #define ORES_CONNECTIONS_DOMAIN_ENVIRONMENT_TAG_TABLE_IO_HPP
 
-#include <iosfwd>
-#include <vector>
 #include "ores.connections/domain/environment_tag.hpp"
 #include "ores.connections/export.hpp"
+#include <iosfwd>
+#include <vector>
 
 namespace ores::connections::domain {
 
 /**
  * @brief Dumps a collection of environment_tag objects to a stream in table format.
  */
-ORES_CONNECTIONS_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<environment_tag>& v);
+ORES_CONNECTIONS_EXPORT std::ostream& operator<<(std::ostream& s,
+                                                 const std::vector<environment_tag>& v);
 
 }
 

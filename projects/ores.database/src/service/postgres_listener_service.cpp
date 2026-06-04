@@ -18,22 +18,19 @@
  *
  */
 #include "ores.database/service/postgres_listener_service.hpp"
-
+#include <algorithm>
 #include <chrono>
 #include <thread>
-#include <algorithm>
 
 namespace ores::database::service {
 
 using namespace ores::logging;
 
-postgres_listener_service::postgres_listener_service(
-    context ctx,
-    notification_callback_t callback)
-    : ctx_(std::move(ctx)),
-      notification_callback_(std::move(callback)),
-      connection_(std::nullopt),
-      running_(false) {
+postgres_listener_service::postgres_listener_service(context ctx, notification_callback_t callback)
+    : ctx_(std::move(ctx))
+    , notification_callback_(std::move(callback))
+    , connection_(std::nullopt)
+    , running_(false) {
     BOOST_LOG_SEV(lg(), debug) << "Listener service created.";
 }
 
@@ -54,8 +51,7 @@ bool postgres_listener_service::open_connection() {
 
     auto result = sqlgen::postgres::connect(ctx_.credentials());
     if (!result) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to connect to database: "
-                                   << result.error().what();
+        BOOST_LOG_SEV(lg(), error) << "Failed to connect to database: " << result.error().what();
         return false;
     }
 
@@ -74,9 +70,8 @@ void postgres_listener_service::issue_pending_listens() {
     for (const auto& channel : subscribed_channels_) {
         auto result = (*connection_)->listen(channel);
         if (!result) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to LISTEN on channel '"
-                                       << channel << "': "
-                                       << result.error().what();
+            BOOST_LOG_SEV(lg(), error)
+                << "Failed to LISTEN on channel '" << channel << "': " << result.error().what();
         } else {
             BOOST_LOG_SEV(lg(), info) << "Listening on channel: " << channel;
         }
@@ -127,10 +122,9 @@ void postgres_listener_service::subscribe(const std::string& channel_name) {
     std::lock_guard lock(mutex_);
 
     // Check if already subscribed
-    if (std::find(subscribed_channels_.begin(), subscribed_channels_.end(),
-                  channel_name) != subscribed_channels_.end()) {
-        BOOST_LOG_SEV(lg(), debug) << "Already subscribed to channel: "
-                                   << channel_name;
+    if (std::find(subscribed_channels_.begin(), subscribed_channels_.end(), channel_name) !=
+        subscribed_channels_.end()) {
+        BOOST_LOG_SEV(lg(), debug) << "Already subscribed to channel: " << channel_name;
         return;
     }
 
@@ -140,21 +134,19 @@ void postgres_listener_service::subscribe(const std::string& channel_name) {
     if (connection_.has_value() && running_) {
         auto result = (*connection_)->listen(channel_name);
         if (!result) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to LISTEN on channel '"
-                                       << channel_name << "': "
-                                       << result.error().what();
+            BOOST_LOG_SEV(lg(), error) << "Failed to LISTEN on channel '" << channel_name
+                                       << "': " << result.error().what();
         } else {
             BOOST_LOG_SEV(lg(), info) << "Listening on channel: " << channel_name;
         }
     } else {
-        BOOST_LOG_SEV(lg(), debug) << "Subscription queued for channel: "
-                                   << channel_name
-                                   << " (will activate on start)";
+        BOOST_LOG_SEV(lg(), debug)
+            << "Subscription queued for channel: " << channel_name << " (will activate on start)";
     }
 }
 
 void postgres_listener_service::notify(const std::string& channel_name,
-                                        const std::string& payload) {
+                                       const std::string& payload) {
     std::lock_guard lock(mutex_);
 
     if (!connection_.has_value()) {
@@ -164,9 +156,8 @@ void postgres_listener_service::notify(const std::string& channel_name,
 
     auto result = (*connection_)->notify(channel_name, payload);
     if (!result) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to NOTIFY on channel '"
-                                   << channel_name << "': "
-                                   << result.error().what();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to NOTIFY on channel '" << channel_name << "': " << result.error().what();
     } else {
         BOOST_LOG_SEV(lg(), debug) << "Sent NOTIFY on channel: " << channel_name;
     }
@@ -195,8 +186,7 @@ void postgres_listener_service::listen_loop() {
             if (!connection_.has_value()) {
                 connection_ok = false;
             } else if (!(*connection_)->consume_input()) {
-                BOOST_LOG_SEV(lg(), error)
-                    << "Connection error while consuming input.";
+                BOOST_LOG_SEV(lg(), error) << "Connection error while consuming input.";
                 connection_ = std::nullopt;
                 connection_ok = false;
             } else {
@@ -209,21 +199,21 @@ void postgres_listener_service::listen_loop() {
         }
 
         if (!connection_ok) {
-            if (!running_) break;
+            if (!running_)
+                break;
 
             BOOST_LOG_SEV(lg(), warn)
-                << "Listener connection lost. Reconnecting in "
-                << backoff.count() << "s...";
+                << "Listener connection lost. Reconnecting in " << backoff.count() << "s...";
             std::this_thread::sleep_for(backoff);
             backoff = std::min(backoff * 2, max_backoff);
 
-            if (!running_) break;
+            if (!running_)
+                break;
 
             std::lock_guard lock(mutex_);
             auto result = sqlgen::postgres::connect(ctx_.credentials());
             if (!result) {
-                BOOST_LOG_SEV(lg(), error)
-                    << "Reconnect failed: " << result.error().what();
+                BOOST_LOG_SEV(lg(), error) << "Reconnect failed: " << result.error().what();
                 continue; // will retry after next backoff
             }
             connection_ = std::move(*result);
@@ -248,8 +238,7 @@ void postgres_listener_service::handle_notification(
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Received notification on channel: "
-                               << notification.channel
+    BOOST_LOG_SEV(lg(), debug) << "Received notification on channel: " << notification.channel
                                << " with payload: " << notification.payload;
 
     notification_callback_(notification.channel, notification.payload);

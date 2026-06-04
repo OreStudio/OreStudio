@@ -20,32 +20,32 @@
 #ifndef ORES_CONNECTIONS_GENERATORS_CONNECTION_GENERATOR_HPP
 #define ORES_CONNECTIONS_GENERATORS_CONNECTION_GENERATOR_HPP
 
-#include <vector>
-#include <boost/uuid/uuid.hpp>
 #include "ores.connections/domain/connection.hpp"
-#include "ores.utility/generation/generation_context.hpp"
 #include "ores.connections/export.hpp"
+#include "ores.utility/generation/generation_context.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <vector>
 
 namespace ores::connections::generators {
 
 /**
  * @brief Generates a synthetic connection with manual host/port (no environment link).
  */
-ORES_CONNECTIONS_EXPORT domain::connection generate_synthetic_connection(
-    utility::generation::generation_context& ctx);
+ORES_CONNECTIONS_EXPORT domain::connection
+generate_synthetic_connection(utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates a synthetic connection assigned to a specific folder.
  */
-ORES_CONNECTIONS_EXPORT domain::connection generate_synthetic_connection(
-    utility::generation::generation_context& ctx,
-    const boost::uuids::uuid& folder_id);
+ORES_CONNECTIONS_EXPORT domain::connection
+generate_synthetic_connection(utility::generation::generation_context& ctx,
+                              const boost::uuids::uuid& folder_id);
 
 /**
  * @brief Generates N synthetic connections.
  */
-ORES_CONNECTIONS_EXPORT std::vector<domain::connection> generate_synthetic_connections(
-    std::size_t n, utility::generation::generation_context& ctx);
+ORES_CONNECTIONS_EXPORT std::vector<domain::connection>
+generate_synthetic_connections(std::size_t n, utility::generation::generation_context& ctx);
 
 }
 

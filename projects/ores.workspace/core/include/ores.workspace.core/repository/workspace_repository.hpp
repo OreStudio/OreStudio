@@ -20,14 +20,14 @@
 #ifndef ORES_WORKSPACE_REPOSITORY_WORKSPACE_REPOSITORY_HPP
 #define ORES_WORKSPACE_REPOSITORY_WORKSPACE_REPOSITORY_HPP
 
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.workspace.api/domain/workspace.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <optional>
+#include <sqlgen/postgres.hpp>
 #include <string>
 #include <vector>
-#include <boost/uuid/uuid.hpp>
-#include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.workspace.api/domain/workspace.hpp"
 
 namespace ores::workspace::repository {
 
@@ -36,8 +36,7 @@ namespace ores::workspace::repository {
  */
 class workspace_repository {
 private:
-    inline static std::string_view logger_name =
-        "ores.workspace.repository.workspace_repository";
+    inline static std::string_view logger_name = "ores.workspace.repository.workspace_repository";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -54,15 +53,12 @@ public:
     void write(context ctx, const std::vector<domain::workspace>& v);
 
     std::vector<domain::workspace> read_latest(context ctx);
-    std::vector<domain::workspace>
-    read_latest(context ctx, const std::string& id);
-    std::vector<domain::workspace>
-    read_all(context ctx, const std::string& id);
+    std::vector<domain::workspace> read_latest(context ctx, const std::string& id);
+    std::vector<domain::workspace> read_all(context ctx, const std::string& id);
 
     void remove(context ctx, const std::string& id);
 
-    std::vector<domain::workspace>
-    read_history(context ctx, const std::string& id);
+    std::vector<domain::workspace> read_history(context ctx, const std::string& id);
 
     /**
      * @brief Returns all active workspaces ordered by name.
@@ -72,28 +68,28 @@ public:
     /**
      * @brief Returns a workspace by UUID string, or nullopt if not found.
      */
-    std::optional<domain::workspace>
-    find_by_id(context ctx, const std::string& id);
+    std::optional<domain::workspace> find_by_id(context ctx, const std::string& id);
 
     /**
      * @brief Archives the workspace: closes current record and inserts archived.
      */
-    void archive(context ctx, const std::string& id,
-        const std::string& modified_by,
-        const std::string& change_reason_code,
-        const std::string& change_commentary);
+    void archive(context ctx,
+                 const std::string& id,
+                 const std::string& modified_by,
+                 const std::string& change_reason_code,
+                 const std::string& change_commentary);
 
     /**
      * @brief Returns the UUID ancestor resolution chain for a workspace.
      */
-    std::vector<std::string>
-    resolution_order(context ctx, const std::string& workspace_id);
+    std::vector<std::string> resolution_order(context ctx, const std::string& workspace_id);
 
     /**
      * @brief Replaces the trade scope for a workspace.
      */
-    void set_trade_scope(context ctx, const std::string& workspace_id,
-        const std::vector<boost::uuids::uuid>& trade_ids);
+    void set_trade_scope(context ctx,
+                         const std::string& workspace_id,
+                         const std::vector<boost::uuids::uuid>& trade_ids);
 
     /**
      * @brief Removes all trade scope entries for a workspace.

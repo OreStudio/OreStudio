@@ -17,20 +17,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.connections/service/connection_manager.hpp"
-
-#include <filesystem>
-#include <catch2/catch_test_macros.hpp>
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.logging/make_logger.hpp"
-#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
-#include "ores.utility/generation/generation_context.hpp"
 #include "ores.connections/domain/folder_json_io.hpp" // IWYU pragma: keep.
-#include "ores.connections/domain/tag_json_io.hpp" // IWYU pragma: keep.
+#include "ores.connections/domain/tag_json_io.hpp"    // IWYU pragma: keep.
+#include "ores.connections/generators/connection_generator.hpp"
+#include "ores.connections/generators/environment_generator.hpp"
 #include "ores.connections/generators/folder_generator.hpp"
 #include "ores.connections/generators/tag_generator.hpp"
-#include "ores.connections/generators/environment_generator.hpp"
-#include "ores.connections/generators/connection_generator.hpp"
+#include "ores.connections/service/connection_manager.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.utility/generation/generation_context.hpp"
+#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <catch2/catch_test_macros.hpp>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <filesystem>
 
 namespace {
 
@@ -41,17 +40,23 @@ class scoped_connection_manager {
 public:
     scoped_connection_manager(const std::string& master_password = "test_master_password")
         : db_path_(std::filesystem::temp_directory_path() /
-                   ("ores_test_" + std::to_string(std::rand()) + ".db")),
-          manager_(db_path_, master_password),
-          master_password_(master_password) {}
+                   ("ores_test_" + std::to_string(std::rand()) + ".db"))
+        , manager_(db_path_, master_password)
+        , master_password_(master_password) {}
 
     ~scoped_connection_manager() {
         std::filesystem::remove(db_path_);
     }
 
-    ores::connections::service::connection_manager& manager() { return manager_; }
-    const std::string& master_password() const { return master_password_; }
-    const std::filesystem::path& db_path() const { return db_path_; }
+    ores::connections::service::connection_manager& manager() {
+        return manager_;
+    }
+    const std::string& master_password() const {
+        return master_password_;
+    }
+    const std::filesystem::path& db_path() const {
+        return db_path_;
+    }
 
 private:
     std::filesystem::path db_path_;
@@ -323,7 +328,7 @@ TEST_CASE("change_master_password", "[service]") {
     const std::string conn_password = "connection_password";
 
     std::filesystem::path db_path = std::filesystem::temp_directory_path() /
-        ("ores_test_" + std::to_string(std::rand()) + ".db");
+                                    ("ores_test_" + std::to_string(std::rand()) + ".db");
 
     {
         // Create manager with old password

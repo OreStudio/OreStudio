@@ -18,16 +18,15 @@
  *
  */
 #include "ores.workspace.core/repository/workspace_repository.hpp"
-
-#include <stdexcept>
-#include <sqlgen/postgres.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.workspace.api/domain/workspace_json_io.hpp" // IWYU pragma: keep.
 #include "ores.workspace.core/repository/workspace_entity.hpp"
 #include "ores.workspace.core/repository/workspace_mapper.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <sqlgen/postgres.hpp>
+#include <stdexcept>
 
 namespace ores::workspace::repository {
 
@@ -42,57 +41,57 @@ std::string workspace_repository::sql() {
 
 void workspace_repository::write(context ctx, const domain::workspace& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing workspace: " << v.id;
-    execute_write_query(ctx, workspace_mapper::map(v),
-        lg(), "Writing workspace to database.");
+    execute_write_query(ctx, workspace_mapper::map(v), lg(), "Writing workspace to database.");
 }
 
-void workspace_repository::write(
-    context ctx, const std::vector<domain::workspace>& v) {
+void workspace_repository::write(context ctx, const std::vector<domain::workspace>& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing workspaces. Count: " << v.size();
-    execute_write_query(ctx, workspace_mapper::map(v),
-        lg(), "Writing workspaces to database.");
+    execute_write_query(ctx, workspace_mapper::map(v), lg(), "Writing workspaces to database.");
 }
 
-std::vector<domain::workspace>
-workspace_repository::read_latest(context ctx) {
+std::vector<domain::workspace> workspace_repository::read_latest(context ctx) {
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<workspace_entity>> |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-        order_by("id"_c);
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("id"_c);
 
     return execute_read_query<workspace_entity, domain::workspace>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return workspace_mapper::map(entities); },
-        lg(), "Reading latest workspaces");
+        lg(),
+        "Reading latest workspaces");
 }
 
-std::vector<domain::workspace>
-workspace_repository::read_latest(context ctx, const std::string& id) {
+std::vector<domain::workspace> workspace_repository::read_latest(context ctx,
+                                                                 const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest workspace. id: " << id;
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<workspace_entity>> |
-        where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
     return execute_read_query<workspace_entity, domain::workspace>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return workspace_mapper::map(entities); },
-        lg(), "Reading latest workspace by id.");
+        lg(),
+        "Reading latest workspace by id.");
 }
 
-std::vector<domain::workspace>
-workspace_repository::read_all(context ctx, const std::string& id) {
+std::vector<domain::workspace> workspace_repository::read_all(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all workspace versions. id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<workspace_entity>> |
-        where("tenant_id"_c == tid && "id"_c == id) |
-        order_by("version"_c.desc());
+                       where("tenant_id"_c == tid && "id"_c == id) | order_by("version"_c.desc());
 
     return execute_read_query<workspace_entity, domain::workspace>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return workspace_mapper::map(entities); },
-        lg(), "Reading all workspace versions by id.");
+        lg(),
+        "Reading all workspace versions by id.");
 }
 
 void workspace_repository::remove(context ctx, const std::string& id) {
@@ -100,44 +99,47 @@ void workspace_repository::remove(context ctx, const std::string& id) {
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<workspace_entity> |
-        where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
     execute_delete_query(ctx, query, lg(), "Removing workspace from database.");
 }
 
-std::vector<domain::workspace>
-workspace_repository::read_history(context ctx, const std::string& id) {
+std::vector<domain::workspace> workspace_repository::read_history(context ctx,
+                                                                  const std::string& id) {
     return read_all(ctx, id);
 }
 
-std::vector<domain::workspace>
-workspace_repository::list_active(context ctx) {
+std::vector<domain::workspace> workspace_repository::list_active(context ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Listing active workspaces.";
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const std::string active("active");
-    const auto query = sqlgen::read<std::vector<workspace_entity>> |
+    const auto query =
+        sqlgen::read<std::vector<workspace_entity>> |
         where("tenant_id"_c == tid && "valid_to"_c == max.value() && "status_code"_c == active) |
         order_by("name"_c);
 
     return execute_read_query<workspace_entity, domain::workspace>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return workspace_mapper::map(entities); },
-        lg(), "Listing active workspaces");
+        lg(),
+        "Listing active workspaces");
 }
 
-std::optional<domain::workspace>
-workspace_repository::find_by_id(context ctx, const std::string& id) {
+std::optional<domain::workspace> workspace_repository::find_by_id(context ctx,
+                                                                  const std::string& id) {
     const auto results = read_latest(ctx, id);
     if (results.empty())
         return std::nullopt;
     return results.front();
 }
 
-void workspace_repository::archive(context ctx, const std::string& id,
-    const std::string& modified_by,
-    const std::string& change_reason_code,
-    const std::string& change_commentary) {
+void workspace_repository::archive(context ctx,
+                                   const std::string& id,
+                                   const std::string& modified_by,
+                                   const std::string& change_reason_code,
+                                   const std::string& change_commentary) {
 
     BOOST_LOG_SEV(lg(), debug) << "Archiving workspace: " << id;
     const auto current = find_by_id(ctx, id);
@@ -153,29 +155,29 @@ void workspace_repository::archive(context ctx, const std::string& id,
     write(ctx, archived);
 }
 
-std::vector<std::string>
-workspace_repository::resolution_order(context ctx,
-    const std::string& workspace_id) {
+std::vector<std::string> workspace_repository::resolution_order(context ctx,
+                                                                const std::string& workspace_id) {
 
     BOOST_LOG_SEV(lg(), debug) << "Resolving workspace chain for: " << workspace_id;
     const auto tid = ctx.tenant_id().to_string();
     const std::string sql =
         "SELECT unnest(ores_workspace_resolution_order_fn($1::uuid, $2::uuid))::text";
     return execute_parameterized_string_query(
-        ctx, sql, {workspace_id, tid},
-        lg(), "Resolving workspace resolution order");
+        ctx, sql, {workspace_id, tid}, lg(), "Resolving workspace resolution order");
 }
 
 void workspace_repository::set_trade_scope(context ctx,
-    const std::string& workspace_id,
-    const std::vector<boost::uuids::uuid>& trade_ids) {
+                                           const std::string& workspace_id,
+                                           const std::vector<boost::uuids::uuid>& trade_ids) {
 
     BOOST_LOG_SEV(lg(), debug) << "Setting trade scope for workspace: " << workspace_id
                                << " count: " << trade_ids.size();
     execute_parameterized_command(
         ctx,
         "DELETE FROM ores_workspace_trade_scope_tbl WHERE workspace_id = $1::uuid",
-        {workspace_id}, lg(), "Clearing existing trade scope");
+        {workspace_id},
+        lg(),
+        "Clearing existing trade scope");
 
     for (const auto& tid : trade_ids) {
         execute_parameterized_command(
@@ -183,18 +185,20 @@ void workspace_repository::set_trade_scope(context ctx,
             "INSERT INTO ores_workspace_trade_scope_tbl (workspace_id, trade_id)"
             " VALUES ($1::uuid, $2::uuid)",
             {workspace_id, boost::uuids::to_string(tid)},
-            lg(), "Inserting trade scope entry");
+            lg(),
+            "Inserting trade scope entry");
     }
 }
 
-void workspace_repository::clear_trade_scope(context ctx,
-    const std::string& workspace_id) {
+void workspace_repository::clear_trade_scope(context ctx, const std::string& workspace_id) {
 
     BOOST_LOG_SEV(lg(), debug) << "Clearing trade scope for workspace: " << workspace_id;
     execute_parameterized_command(
         ctx,
         "DELETE FROM ores_workspace_trade_scope_tbl WHERE workspace_id = $1::uuid",
-        {workspace_id}, lg(), "Clearing trade scope");
+        {workspace_id},
+        lg(),
+        "Clearing trade scope");
 }
 
 }

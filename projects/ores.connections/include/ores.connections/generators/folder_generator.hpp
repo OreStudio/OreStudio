@@ -20,32 +20,32 @@
 #ifndef ORES_CONNECTIONS_GENERATORS_FOLDER_GENERATOR_HPP
 #define ORES_CONNECTIONS_GENERATORS_FOLDER_GENERATOR_HPP
 
-#include <vector>
-#include <boost/uuid/uuid.hpp>
 #include "ores.connections/domain/folder.hpp"
-#include "ores.utility/generation/generation_context.hpp"
 #include "ores.connections/export.hpp"
+#include "ores.utility/generation/generation_context.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <vector>
 
 namespace ores::connections::generators {
 
 /**
  * @brief Generates a synthetic folder (root level, no parent).
  */
-ORES_CONNECTIONS_EXPORT domain::folder generate_synthetic_folder(
-    utility::generation::generation_context& ctx);
+ORES_CONNECTIONS_EXPORT domain::folder
+generate_synthetic_folder(utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates a synthetic folder with a specific parent.
  */
-ORES_CONNECTIONS_EXPORT domain::folder generate_synthetic_folder(
-    utility::generation::generation_context& ctx,
-    const boost::uuids::uuid& parent_id);
+ORES_CONNECTIONS_EXPORT domain::folder
+generate_synthetic_folder(utility::generation::generation_context& ctx,
+                          const boost::uuids::uuid& parent_id);
 
 /**
  * @brief Generates N synthetic root folders.
  */
-ORES_CONNECTIONS_EXPORT std::vector<domain::folder> generate_synthetic_folders(std::size_t n,
-    utility::generation::generation_context& ctx);
+ORES_CONNECTIONS_EXPORT std::vector<domain::folder>
+generate_synthetic_folders(std::size_t n, utility::generation::generation_context& ctx);
 
 }
 

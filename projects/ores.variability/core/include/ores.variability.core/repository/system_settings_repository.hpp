@@ -20,15 +20,15 @@
 #ifndef ORES_VARIABILITY_REPOSITORY_SYSTEM_SETTINGS_REPOSITORY_HPP
 #define ORES_VARIABILITY_REPOSITORY_SYSTEM_SETTINGS_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include <cstdint>
-#include <unordered_map>
-#include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.variability.api/domain/system_setting.hpp"
 #include "ores.variability.core/export.hpp"
+#include <cstdint>
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 namespace ores::variability::repository {
 
@@ -67,15 +67,14 @@ public:
      */
     /**@{*/
     std::vector<domain::system_setting> read_latest(context ctx);
-    std::vector<domain::system_setting> read_latest(context ctx,
-        const std::string& name);
+    std::vector<domain::system_setting> read_latest(context ctx, const std::string& name);
     /**@}*/
 
     /**
      * @brief Reads latest settings with pagination.
      */
-    std::vector<domain::system_setting> read_latest(context ctx,
-        std::uint32_t offset, std::uint32_t limit);
+    std::vector<domain::system_setting>
+    read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
 
     /**
      * @brief Gets the total count of active settings.
@@ -87,8 +86,7 @@ public:
      */
     /**@{*/
     std::vector<domain::system_setting> read_all(context ctx);
-    std::vector<domain::system_setting> read_all(context ctx,
-        const std::string& name);
+    std::vector<domain::system_setting> read_all(context ctx, const std::string& name);
     /**@}*/
 
     /**
@@ -97,8 +95,8 @@ public:
      * Returns a name→value map by calling ores_variability_get_system_settings_fn.
      * Used by service contexts that hold no direct SELECT grant on the table.
      */
-    std::unordered_map<std::string, std::string>
-    read_for_tenant(context ctx, const std::string& tenant_id);
+    std::unordered_map<std::string, std::string> read_for_tenant(context ctx,
+                                                                 const std::string& tenant_id);
 
     /**
      * @brief Logically deletes a setting by closing its temporal validity.

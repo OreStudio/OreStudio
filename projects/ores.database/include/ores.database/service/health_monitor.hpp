@@ -20,18 +20,18 @@
 #ifndef ORES_DATABASE_HEALTH_MONITOR_HPP
 #define ORES_DATABASE_HEALTH_MONITOR_HPP
 
-#include <mutex>
-#include <atomic>
-#include <chrono>
-#include <string>
-#include <functional>
-#include <boost/asio/awaitable.hpp>
-#include <boost/asio/io_context.hpp>
-#include <boost/asio/cancellation_signal.hpp>
-#include <boost/log/trivial.hpp>
-#include <boost/log/sources/severity_channel_logger.hpp>
 #include "ores.database/domain/database_options.hpp"
 #include "ores.database/export.hpp"
+#include <boost/asio/awaitable.hpp>
+#include <boost/asio/cancellation_signal.hpp>
+#include <boost/asio/io_context.hpp>
+#include <boost/log/sources/severity_channel_logger.hpp>
+#include <boost/log/trivial.hpp>
+#include <atomic>
+#include <chrono>
+#include <functional>
+#include <mutex>
+#include <string>
 
 namespace ores::database {
 
@@ -60,12 +60,11 @@ namespace ores::database {
 class ORES_DATABASE_EXPORT health_monitor final {
 private:
     using severity_level = boost::log::trivial::severity_level;
-    using logger_type = boost::log::sources::severity_channel_logger_mt<
-        severity_level, std::string>;
+    using logger_type =
+        boost::log::sources::severity_channel_logger_mt<severity_level, std::string>;
 
     [[nodiscard]] static logger_type& lg() {
-        static logger_type instance(
-            boost::log::keywords::channel = "ores.database.health_monitor");
+        static logger_type instance(boost::log::keywords::channel = "ores.database.health_monitor");
         return instance;
     }
 
@@ -86,7 +85,7 @@ public:
      * @param poll_interval Interval between health checks.
      */
     explicit health_monitor(database_options options,
-        std::chrono::seconds poll_interval = std::chrono::seconds(5));
+                            std::chrono::seconds poll_interval = std::chrono::seconds(5));
 
     ~health_monitor() = default;
 

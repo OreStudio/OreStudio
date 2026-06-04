@@ -20,12 +20,12 @@
 #ifndef ORES_DATABASE_CONTEXT_HPP
 #define ORES_DATABASE_CONTEXT_HPP
 
-#include <vector>
-#include <optional>
-#include <sqlgen/postgres.hpp>
-#include <boost/uuid/uuid.hpp>
 #include "ores.database/domain/tenant_aware_pool.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <optional>
+#include <sqlgen/postgres.hpp>
+#include <vector>
 
 namespace ores::database {
 
@@ -57,10 +57,13 @@ public:
                      utility::uuid::tenant_id tenant_id,
                      std::string actor = "",
                      std::string service_account = "")
-    : connection_pool_(std::move(connection_pool), credentials,
-                       std::move(tenant_id), std::move(actor), service_account),
-      credentials_(std::move(credentials)),
-      service_account_(std::move(service_account)) {}
+        : connection_pool_(std::move(connection_pool),
+                           credentials,
+                           std::move(tenant_id),
+                           std::move(actor),
+                           service_account)
+        , credentials_(std::move(credentials))
+        , service_account_(std::move(service_account)) {}
 
     /**
      * @brief Constructs a tenant-and-party-aware context.
@@ -72,22 +75,29 @@ public:
                      std::vector<boost::uuids::uuid> visible_party_ids,
                      std::string actor = "",
                      std::string service_account = "")
-    : connection_pool_(std::move(connection_pool), credentials,
-                       std::move(tenant_id), party_id,
-                       std::move(visible_party_ids), std::move(actor),
-                       service_account),
-      credentials_(std::move(credentials)),
-      service_account_(std::move(service_account)) {}
+        : connection_pool_(std::move(connection_pool),
+                           credentials,
+                           std::move(tenant_id),
+                           party_id,
+                           std::move(visible_party_ids),
+                           std::move(actor),
+                           service_account)
+        , credentials_(std::move(credentials))
+        , service_account_(std::move(service_account)) {}
 
     /**
      * @brief Gets the tenant-aware connection pool.
      */
-    connection_pool_type& connection_pool() { return connection_pool_; }
+    connection_pool_type& connection_pool() {
+        return connection_pool_;
+    }
 
     /**
      * @brief Gets the credentials for this context.
      */
-    const sqlgen::postgres::Credentials& credentials() const { return credentials_; }
+    const sqlgen::postgres::Credentials& credentials() const {
+        return credentials_;
+    }
 
     /**
      * @brief Gets the tenant ID for this context.
@@ -116,7 +126,9 @@ public:
      * This is the username extracted from the JWT of the inbound request.
      * Used to stamp modified_by on domain objects.
      */
-    const std::string& actor() const { return connection_pool_.actor(); }
+    const std::string& actor() const {
+        return connection_pool_.actor();
+    }
 
     /**
      * @brief Gets the service account for this context.
@@ -125,7 +137,9 @@ public:
      * set once at startup and preserved across per-request contexts.
      * Used to stamp performed_by on domain objects.
      */
-    const std::string& service_account() const { return service_account_; }
+    const std::string& service_account() const {
+        return service_account_;
+    }
 
     /**
      * @brief Gets the underlying raw connection pool.
@@ -140,7 +154,9 @@ public:
      * Populated from the JWT at request time for service-to-service calls;
      * empty for contexts that pre-date the RBAC enforcement layer.
      */
-    const std::vector<std::string>& roles() const { return roles_; }
+    const std::vector<std::string>& roles() const {
+        return roles_;
+    }
 
     /**
      * @brief Returns a copy of this context with the given permission codes.
@@ -159,7 +175,9 @@ public:
      *
      * Defaults to the Live workspace sentinel UUID if not set.
      */
-    const std::string& workspace_id() const { return workspace_id_; }
+    const std::string& workspace_id() const {
+        return workspace_id_;
+    }
 
     /**
      * @brief Returns a copy of this context scoped to a specific workspace.
@@ -188,8 +206,7 @@ public:
     /**
      * @brief Returns a copy of this context with the given resolution chain.
      */
-    [[nodiscard]] context with_workspace_resolution(
-        std::vector<std::string> chain) const {
+    [[nodiscard]] context with_workspace_resolution(std::vector<std::string> chain) const {
         auto copy = *this;
         copy.workspace_resolution_ = std::move(chain);
         return copy;
@@ -200,10 +217,12 @@ public:
      *
      * The service_account is preserved from the base context.
      */
-    [[nodiscard]] context with_tenant(utility::uuid::tenant_id tenant_id,
-                                      std::string actor) const {
-        return context(connection_pool_.underlying_pool(), credentials_,
-                       std::move(tenant_id), std::move(actor), service_account_);
+    [[nodiscard]] context with_tenant(utility::uuid::tenant_id tenant_id, std::string actor) const {
+        return context(connection_pool_.underlying_pool(),
+                       credentials_,
+                       std::move(tenant_id),
+                       std::move(actor),
+                       service_account_);
     }
 
     /**
@@ -211,14 +230,16 @@ public:
      *
      * The service_account is preserved from the base context.
      */
-    [[nodiscard]] context with_party(
-        utility::uuid::tenant_id tenant_id,
-        boost::uuids::uuid party_id,
-        std::vector<boost::uuids::uuid> visible_party_ids,
-        std::string actor) const {
-        return context(connection_pool_.underlying_pool(), credentials_,
-                       std::move(tenant_id), party_id,
-                       std::move(visible_party_ids), std::move(actor),
+    [[nodiscard]] context with_party(utility::uuid::tenant_id tenant_id,
+                                     boost::uuids::uuid party_id,
+                                     std::vector<boost::uuids::uuid> visible_party_ids,
+                                     std::string actor) const {
+        return context(connection_pool_.underlying_pool(),
+                       credentials_,
+                       std::move(tenant_id),
+                       party_id,
+                       std::move(visible_party_ids),
+                       std::move(actor),
                        service_account_);
     }
 

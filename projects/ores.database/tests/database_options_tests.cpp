@@ -18,10 +18,9 @@
  *
  */
 #include "ores.database/domain/database_options.hpp"
-
-#include <sstream>
-#include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
+#include <catch2/catch_test_macros.hpp>
+#include <sstream>
 
 namespace {
 

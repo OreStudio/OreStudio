@@ -18,7 +18,6 @@
  *
  */
 #include "ores.connections/repository/folder_mapper.hpp"
-
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
@@ -51,8 +50,7 @@ domain::folder folder_mapper::to_domain(const folder_entity& e) {
     return f;
 }
 
-std::vector<folder_entity> folder_mapper::to_entities(
-    const std::vector<domain::folder>& folders) {
+std::vector<folder_entity> folder_mapper::to_entities(const std::vector<domain::folder>& folders) {
     std::vector<folder_entity> entities;
     entities.reserve(folders.size());
     for (const auto& f : folders) {
@@ -61,8 +59,7 @@ std::vector<folder_entity> folder_mapper::to_entities(
     return entities;
 }
 
-std::vector<domain::folder> folder_mapper::to_domain(
-    const std::vector<folder_entity>& entities) {
+std::vector<domain::folder> folder_mapper::to_domain(const std::vector<folder_entity>& entities) {
     std::vector<domain::folder> folders;
     folders.reserve(entities.size());
     for (const auto& e : entities) {

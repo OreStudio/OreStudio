@@ -18,9 +18,8 @@
  *
  */
 #include "ores.workspace.api/domain/workspace_table_io.hpp"
-
-#include <ostream>
 #include "ores.workspace.api/domain/workspace_table.hpp"
+#include <ostream>
 
 namespace ores::workspace::domain {
 

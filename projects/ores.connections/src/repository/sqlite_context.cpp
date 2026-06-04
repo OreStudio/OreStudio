@@ -18,7 +18,6 @@
  *
  */
 #include "ores.connections/repository/sqlite_context.hpp"
-
 #include <stdexcept>
 
 namespace ores::connections::repository {
@@ -33,8 +32,7 @@ rfl::Result<sqlite_context::connection_ref> sqlite_context::connect() const {
 void sqlite_context::initialize_schema() {
     auto conn_result = connect();
     if (!conn_result) {
-        throw std::runtime_error("Failed to connect to SQLite database: " +
-                                 db_path_.string());
+        throw std::runtime_error("Failed to connect to SQLite database: " + db_path_.string());
     }
 
     auto& conn = *conn_result;
@@ -141,14 +139,16 @@ void sqlite_context::initialize_schema() {
 
     // Migration: Add subject_prefix column to environments if it doesn't exist
     try {
-        conn->execute("ALTER TABLE environments ADD COLUMN subject_prefix TEXT NOT NULL DEFAULT ''");
+        conn->execute(
+            "ALTER TABLE environments ADD COLUMN subject_prefix TEXT NOT NULL DEFAULT ''");
     } catch (...) {
         // Column already exists, ignore
     }
 
     // Migration: Add http_port column to environments if it doesn't exist
     try {
-        conn->execute("ALTER TABLE environments ADD COLUMN http_port INTEGER NOT NULL DEFAULT 8080");
+        conn->execute(
+            "ALTER TABLE environments ADD COLUMN http_port INTEGER NOT NULL DEFAULT 8080");
     } catch (...) {
         // Column already exists, ignore
     }
@@ -188,8 +188,7 @@ void sqlite_context::initialize_schema() {
 void sqlite_context::purge_all_data() {
     auto conn_result = connect();
     if (!conn_result) {
-        throw std::runtime_error("Failed to connect to SQLite database: " +
-                                 db_path_.string());
+        throw std::runtime_error("Failed to connect to SQLite database: " + db_path_.string());
     }
 
     auto& conn = *conn_result;

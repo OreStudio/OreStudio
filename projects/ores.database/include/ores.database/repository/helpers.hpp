@@ -20,13 +20,13 @@
 #ifndef ORES_DATABASE_REPOSITORY_HELPERS_HPP
 #define ORES_DATABASE_REPOSITORY_HELPERS_HPP
 
-#include <string>
-#include <format>
-#include <boost/exception/diagnostic_information.hpp>
-#include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/repository/db_types.hpp"
 #include "ores.database/repository/repository_exception.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <boost/exception/diagnostic_information.hpp>
+#include <format>
+#include <sqlgen/postgres.hpp>
+#include <string>
 
 namespace ores::database::repository {
 
@@ -54,15 +54,14 @@ inline constexpr const char* MAX_TIMESTAMP = "9999-12-31 23:59:59";
  * auto result = session.and_then(query);
  * ensure_success(result); // Throws if query failed
  */
-template<typename T>
+template <typename T>
 void ensure_success(const T& result, logging::logger_t& lg) {
     using namespace ores::logging;
 
     if (!result) {
         BOOST_LOG_SEV(lg, error) << result.error().what();
         BOOST_THROW_EXCEPTION(
-            repository_exception(std::format("Repository error: {}",
-                    result.error().what())));
+            repository_exception(std::format("Repository error: {}", result.error().what())));
     }
 }
 
@@ -88,8 +87,7 @@ inline auto make_timestamp(const std::string& s, logging::logger_t& lg) {
         BOOST_LOG_SEV(lg, error) << "Error converting timestamp: '" << s
                                  << "'. Error: " << r.error().what();
         BOOST_THROW_EXCEPTION(
-            repository_exception(
-                std::format("Timestamp conversion error: {}", s)));
+            repository_exception(std::format("Timestamp conversion error: {}", s)));
     }
     return r;
 }
@@ -108,7 +106,7 @@ inline auto make_timestamp(const std::string& s, logging::logger_t& lg) {
  * std::string sql = generate_create_table_sql<account_entity>(
  *     "ores.iam.repository.account_repository");
  */
-template<typename EntityType>
+template <typename EntityType>
 std::string generate_create_table_sql(logging::logger_t& lg) {
     using namespace ores::logging;
     using namespace sqlgen;

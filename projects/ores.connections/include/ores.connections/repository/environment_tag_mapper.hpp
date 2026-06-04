@@ -20,9 +20,9 @@
 #ifndef ORES_CONNECTIONS_REPOSITORY_ENVIRONMENT_TAG_MAPPER_HPP
 #define ORES_CONNECTIONS_REPOSITORY_ENVIRONMENT_TAG_MAPPER_HPP
 
-#include <vector>
 #include "ores.connections/domain/environment_tag.hpp"
 #include "ores.connections/repository/environment_tag_entity.hpp"
+#include <vector>
 
 namespace ores::connections::repository {
 
@@ -30,10 +30,10 @@ class environment_tag_mapper final {
 public:
     static environment_tag_entity to_entity(const domain::environment_tag& et);
     static domain::environment_tag to_domain(const environment_tag_entity& e);
-    static std::vector<environment_tag_entity> to_entities(
-        const std::vector<domain::environment_tag>& tags);
-    static std::vector<domain::environment_tag> to_domain(
-        const std::vector<environment_tag_entity>& entities);
+    static std::vector<environment_tag_entity>
+    to_entities(const std::vector<domain::environment_tag>& tags);
+    static std::vector<domain::environment_tag>
+    to_domain(const std::vector<environment_tag_entity>& entities);
 };
 
 }

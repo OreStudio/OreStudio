@@ -20,12 +20,12 @@
 #ifndef ORES_DATABASE_REPOSITORY_DATABASE_INFO_ENTITY_HPP
 #define ORES_DATABASE_REPOSITORY_DATABASE_INFO_ENTITY_HPP
 
-#include <string>
+#include "ores.database/export.hpp"
+#include "ores.database/repository/db_types.hpp"
+#include "sqlgen/PrimaryKey.hpp"
 #include <optional>
 #include <ostream>
-#include "ores.database/repository/db_types.hpp"
-#include "ores.database/export.hpp"
-#include "sqlgen/PrimaryKey.hpp"
+#include <string>
 
 namespace ores::database::repository {
 

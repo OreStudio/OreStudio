@@ -18,10 +18,9 @@
  *
  */
 #include "ores.connections/domain/tag_table_io.hpp"
-
-#include <ostream>
-#include <fort.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <fort.hpp>
+#include <ostream>
 
 namespace ores::connections::domain {
 
@@ -32,9 +31,7 @@ std::ostream& operator<<(std::ostream& s, const std::vector<tag>& v) {
     table << fort::header << "ID" << "Name" << fort::endr;
 
     for (const auto& t : v) {
-        table << boost::uuids::to_string(t.id)
-              << t.name
-              << fort::endr;
+        table << boost::uuids::to_string(t.id) << t.name << fort::endr;
     }
 
     s << table.to_string();

@@ -20,8 +20,8 @@
 #ifndef ORES_CONNECTIONS_DOMAIN_TAG_HPP
 #define ORES_CONNECTIONS_DOMAIN_TAG_HPP
 
-#include <string>
 #include <boost/uuid/uuid.hpp>
+#include <string>
 
 namespace ores::connections::domain {
 

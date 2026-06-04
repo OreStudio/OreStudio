@@ -20,27 +20,27 @@
 #ifndef ORES_CONNECTIONS_SERVICE_CONNECTION_MANAGER_HPP
 #define ORES_CONNECTIONS_SERVICE_CONNECTION_MANAGER_HPP
 
-#include <string>
-#include <vector>
-#include <optional>
-#include <filesystem>
-#include <boost/uuid/uuid.hpp>
-#include "ores.connections/domain/folder.hpp"
-#include "ores.connections/domain/tag.hpp"
 #include "ores.connections/domain/connection.hpp"
 #include "ores.connections/domain/connection_tag.hpp"
 #include "ores.connections/domain/environment.hpp"
 #include "ores.connections/domain/environment_tag.hpp"
+#include "ores.connections/domain/folder.hpp"
 #include "ores.connections/domain/recent_party.hpp"
-#include "ores.connections/repository/sqlite_context.hpp"
-#include "ores.connections/repository/folder_repository.hpp"
-#include "ores.connections/repository/tag_repository.hpp"
+#include "ores.connections/domain/tag.hpp"
+#include "ores.connections/export.hpp"
 #include "ores.connections/repository/connection_repository.hpp"
 #include "ores.connections/repository/connection_tag_repository.hpp"
 #include "ores.connections/repository/environment_repository.hpp"
 #include "ores.connections/repository/environment_tag_repository.hpp"
+#include "ores.connections/repository/folder_repository.hpp"
 #include "ores.connections/repository/recent_party_repository.hpp"
-#include "ores.connections/export.hpp"
+#include "ores.connections/repository/sqlite_context.hpp"
+#include "ores.connections/repository/tag_repository.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <filesystem>
+#include <optional>
+#include <string>
+#include <vector>
 
 namespace ores::connections::service {
 
@@ -66,7 +66,7 @@ public:
         int port{0};
         int http_port{8080};
         std::string username;
-        std::string password;    ///< decrypted
+        std::string password; ///< decrypted
         std::string name;
         std::string subject_prefix;
         std::optional<boost::uuids::uuid> environment_id;
@@ -78,8 +78,7 @@ public:
      * @param db_path Path to the SQLite database file.
      * @param master_password Master password for encryption/decryption.
      */
-    connection_manager(const std::filesystem::path& db_path,
-                       const std::string& master_password);
+    connection_manager(const std::filesystem::path& db_path, const std::string& master_password);
 
     // Folder operations
     void create_folder(const domain::folder& folder);
@@ -104,28 +103,25 @@ public:
     void delete_environment(const boost::uuids::uuid& id);
     std::vector<domain::environment> get_all_environments();
     std::optional<domain::environment> get_environment(const boost::uuids::uuid& id);
-    std::vector<domain::environment> get_environments_in_folder(
-        const std::optional<boost::uuids::uuid>& folder_id);
+    std::vector<domain::environment>
+    get_environments_in_folder(const std::optional<boost::uuids::uuid>& folder_id);
 
     // Environment-tag operations
     void add_tag_to_environment(const boost::uuids::uuid& environment_id,
                                 const boost::uuids::uuid& tag_id);
     void remove_tag_from_environment(const boost::uuids::uuid& environment_id,
                                      const boost::uuids::uuid& tag_id);
-    std::vector<domain::tag> get_tags_for_environment(
-        const boost::uuids::uuid& environment_id);
-    std::vector<domain::environment> get_environments_with_tag(
-        const boost::uuids::uuid& tag_id);
+    std::vector<domain::tag> get_tags_for_environment(const boost::uuids::uuid& environment_id);
+    std::vector<domain::environment> get_environments_with_tag(const boost::uuids::uuid& tag_id);
 
     // Connection operations (credentials, optional link to environment)
     void create_connection(domain::connection conn, const std::string& password);
-    void update_connection(domain::connection conn,
-                           const std::optional<std::string>& password);
+    void update_connection(domain::connection conn, const std::optional<std::string>& password);
     void delete_connection(const boost::uuids::uuid& id);
     std::vector<domain::connection> get_all_connections();
     std::optional<domain::connection> get_connection(const boost::uuids::uuid& id);
-    std::vector<domain::connection> get_connections_in_folder(
-        const std::optional<boost::uuids::uuid>& folder_id);
+    std::vector<domain::connection>
+    get_connections_in_folder(const std::optional<boost::uuids::uuid>& folder_id);
 
     /**
      * @brief Get decrypted password for a connection.
@@ -137,10 +133,8 @@ public:
                                const boost::uuids::uuid& tag_id);
     void remove_tag_from_connection(const boost::uuids::uuid& connection_id,
                                     const boost::uuids::uuid& tag_id);
-    std::vector<domain::tag> get_tags_for_connection(
-        const boost::uuids::uuid& connection_id);
-    std::vector<domain::connection> get_connections_with_tag(
-        const boost::uuids::uuid& tag_id);
+    std::vector<domain::tag> get_tags_for_connection(const boost::uuids::uuid& connection_id);
+    std::vector<domain::connection> get_connections_with_tag(const boost::uuids::uuid& tag_id);
 
     /**
      * @brief Resolve a connection to its full details for opening a login dialog.
@@ -183,8 +177,7 @@ public:
     /**
      * @brief Record a successful party selection for the recent-parties list.
      */
-    void record_party_selection(const boost::uuids::uuid& party_id,
-                                const std::string& party_name);
+    void record_party_selection(const boost::uuids::uuid& party_id, const std::string& party_name);
 
     /**
      * @brief Delete all data from the database.

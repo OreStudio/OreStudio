@@ -20,17 +20,18 @@
 #ifndef ORES_WORKSPACE_DOMAIN_WORKSPACE_TABLE_IO_HPP
 #define ORES_WORKSPACE_DOMAIN_WORKSPACE_TABLE_IO_HPP
 
-#include <iosfwd>
-#include <vector>
 #include "ores.workspace.api/domain/workspace.hpp"
 #include "ores.workspace.api/export.hpp"
+#include <iosfwd>
+#include <vector>
 
 namespace ores::workspace::domain {
 
 /**
  * @brief Dumps the workspace objects to a stream in table format.
  */
-ORES_WORKSPACE_API_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<workspace>& v);
+ORES_WORKSPACE_API_EXPORT std::ostream& operator<<(std::ostream& s,
+                                                   const std::vector<workspace>& v);
 
 }
 

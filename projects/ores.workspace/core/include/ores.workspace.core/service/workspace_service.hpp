@@ -20,15 +20,15 @@
 #ifndef ORES_WORKSPACE_CORE_SERVICE_WORKSPACE_SERVICE_HPP
 #define ORES_WORKSPACE_CORE_SERVICE_WORKSPACE_SERVICE_HPP
 
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.workspace.api/domain/workspace.hpp"
+#include "ores.workspace.core/export.hpp"
+#include "ores.workspace.core/repository/workspace_repository.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <optional>
 #include <string>
 #include <vector>
-#include <boost/uuid/uuid.hpp>
-#include "ores.database/domain/context.hpp"
-#include "ores.workspace.api/domain/workspace.hpp"
-#include "ores.workspace.core/repository/workspace_repository.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.workspace.core/export.hpp"
 
 namespace ores::workspace::service {
 
@@ -40,8 +40,7 @@ namespace ores::workspace::service {
  */
 class ORES_WORKSPACE_CORE_EXPORT workspace_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.workspace.core.service.workspace_service";
+    inline static std::string_view logger_name = "ores.workspace.core.service.workspace_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -75,9 +74,9 @@ public:
      * @brief Archives a workspace by UUID string.
      */
     void archive_workspace(const std::string& id,
-        const std::string& modified_by,
-        const std::string& change_reason_code,
-        const std::string& change_commentary);
+                           const std::string& modified_by,
+                           const std::string& change_reason_code,
+                           const std::string& change_commentary);
 
     /**
      * @brief Soft-deletes a workspace and its associated data.
@@ -96,15 +95,14 @@ public:
      * @brief Replaces the trade scope for a workspace.
      */
     void set_trade_scope(const std::string& workspace_id,
-        const std::vector<boost::uuids::uuid>& trade_ids);
+                         const std::vector<boost::uuids::uuid>& trade_ids);
 
     /**
      * @brief Clears all trade scope entries for a workspace.
      */
     void clear_trade_scope(const std::string& workspace_id);
 
-    std::vector<domain::workspace>
-    get_workspace_history(const std::string& id);
+    std::vector<domain::workspace> get_workspace_history(const std::string& id);
 
 private:
     context ctx_;

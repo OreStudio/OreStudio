@@ -20,9 +20,9 @@
 #ifndef ORES_CONNECTIONS_REPOSITORY_ENVIRONMENT_MAPPER_HPP
 #define ORES_CONNECTIONS_REPOSITORY_ENVIRONMENT_MAPPER_HPP
 
-#include <vector>
 #include "ores.connections/domain/environment.hpp"
 #include "ores.connections/repository/environment_entity.hpp"
+#include <vector>
 
 namespace ores::connections::repository {
 
@@ -30,10 +30,10 @@ class environment_mapper final {
 public:
     static environment_entity to_entity(const domain::environment& env);
     static domain::environment to_domain(const environment_entity& e);
-    static std::vector<environment_entity> to_entities(
-        const std::vector<domain::environment>& envs);
-    static std::vector<domain::environment> to_domain(
-        const std::vector<environment_entity>& entities);
+    static std::vector<environment_entity>
+    to_entities(const std::vector<domain::environment>& envs);
+    static std::vector<domain::environment>
+    to_domain(const std::vector<environment_entity>& entities);
 };
 
 }

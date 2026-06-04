@@ -18,20 +18,18 @@
  *
  */
 #include "ores.workspace.core/repository/workspace_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.workspace.api/domain/workspace_json_io.hpp" // IWYU pragma: keep.
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::workspace::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::workspace
-workspace_mapper::map(const workspace_entity& v) {
+domain::workspace workspace_mapper::map(const workspace_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::workspace r;
@@ -42,8 +40,14 @@ workspace_mapper::map(const workspace_entity& v) {
     r.name = v.name;
     r.description = v.description.value_or("");
     r.source_path = v.source_path.value_or("");
-    r.parent_workspace_id = v.parent_workspace_id.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.parent_workspace_id)) : std::nullopt;
-    r.scope_portfolio_id = v.scope_portfolio_id.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.scope_portfolio_id)) : std::nullopt;
+    r.parent_workspace_id =
+        v.parent_workspace_id.has_value() ?
+            std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.parent_workspace_id)) :
+            std::nullopt;
+    r.scope_portfolio_id =
+        v.scope_portfolio_id.has_value() ?
+            std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.scope_portfolio_id)) :
+            std::nullopt;
     r.owner_id = boost::lexical_cast<boost::uuids::uuid>(v.owner_id);
     r.status_code = v.status_code;
     r.modified_by = v.modified_by;
@@ -56,8 +60,7 @@ workspace_mapper::map(const workspace_entity& v) {
     return r;
 }
 
-workspace_entity
-workspace_mapper::map(const domain::workspace& v) {
+workspace_entity workspace_mapper::map(const domain::workspace& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     workspace_entity r;
@@ -68,8 +71,12 @@ workspace_mapper::map(const domain::workspace& v) {
     r.name = v.name;
     r.description = v.description;
     r.source_path = v.source_path.empty() ? std::nullopt : std::optional(v.source_path);
-    r.parent_workspace_id = v.parent_workspace_id.has_value() ? std::optional(boost::uuids::to_string(*v.parent_workspace_id)) : std::nullopt;
-    r.scope_portfolio_id = v.scope_portfolio_id.has_value() ? std::optional(boost::uuids::to_string(*v.scope_portfolio_id)) : std::nullopt;
+    r.parent_workspace_id = v.parent_workspace_id.has_value() ?
+                                std::optional(boost::uuids::to_string(*v.parent_workspace_id)) :
+                                std::nullopt;
+    r.scope_portfolio_id = v.scope_portfolio_id.has_value() ?
+                               std::optional(boost::uuids::to_string(*v.scope_portfolio_id)) :
+                               std::nullopt;
     r.owner_id = boost::uuids::to_string(v.owner_id);
     r.status_code = v.status_code;
     r.modified_by = v.modified_by;
@@ -81,22 +88,14 @@ workspace_mapper::map(const domain::workspace& v) {
     return r;
 }
 
-std::vector<domain::workspace>
-workspace_mapper::map(const std::vector<workspace_entity>& v) {
+std::vector<domain::workspace> workspace_mapper::map(const std::vector<workspace_entity>& v) {
     return map_vector<workspace_entity, domain::workspace>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
-std::vector<workspace_entity>
-workspace_mapper::map(const std::vector<domain::workspace>& v) {
+std::vector<workspace_entity> workspace_mapper::map(const std::vector<domain::workspace>& v) {
     return map_vector<domain::workspace, workspace_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

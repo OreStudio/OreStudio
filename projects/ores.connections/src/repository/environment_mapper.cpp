@@ -18,7 +18,6 @@
  *
  */
 #include "ores.connections/repository/environment_mapper.hpp"
-
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
@@ -55,8 +54,8 @@ domain::environment environment_mapper::to_domain(const environment_entity& e) {
     return env;
 }
 
-std::vector<environment_entity> environment_mapper::to_entities(
-    const std::vector<domain::environment>& envs) {
+std::vector<environment_entity>
+environment_mapper::to_entities(const std::vector<domain::environment>& envs) {
     std::vector<environment_entity> entities;
     entities.reserve(envs.size());
     for (const auto& env : envs) {
@@ -65,8 +64,8 @@ std::vector<environment_entity> environment_mapper::to_entities(
     return entities;
 }
 
-std::vector<domain::environment> environment_mapper::to_domain(
-    const std::vector<environment_entity>& entities) {
+std::vector<domain::environment>
+environment_mapper::to_domain(const std::vector<environment_entity>& entities) {
     std::vector<domain::environment> envs;
     envs.reserve(entities.size());
     for (const auto& e : entities) {

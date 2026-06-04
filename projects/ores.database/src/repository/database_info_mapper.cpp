@@ -18,19 +18,17 @@
  *
  */
 #include "ores.database/repository/database_info_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
-#include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.database/domain/database_info_json_io.hpp" // IWYU pragma: keep.
+#include "ores.database/repository/mapper_helpers.hpp"
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::database::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::database_info
-database_info_mapper::map(const database_info_entity& v) {
+domain::database_info database_info_mapper::map(const database_info_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::database_info r;
@@ -48,10 +46,7 @@ database_info_mapper::map(const database_info_entity& v) {
 std::vector<domain::database_info>
 database_info_mapper::map(const std::vector<database_info_entity>& v) {
     return map_vector<database_info_entity, domain::database_info>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 }

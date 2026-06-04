@@ -20,25 +20,24 @@
 #ifndef ORES_WORKSPACE_GENERATORS_WORKSPACE_GENERATOR_HPP
 #define ORES_WORKSPACE_GENERATORS_WORKSPACE_GENERATOR_HPP
 
-#include <vector>
-#include "ores.workspace.api/export.hpp"
-#include "ores.workspace.api/domain/workspace.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include "ores.workspace.api/domain/workspace.hpp"
+#include "ores.workspace.api/export.hpp"
+#include <vector>
 
 namespace ores::workspace::generators {
 
 /**
  * @brief Generates a synthetic workspace.
  */
-ORES_WORKSPACE_API_EXPORT domain::workspace generate_synthetic_workspace(
-    utility::generation::generation_context& ctx);
+ORES_WORKSPACE_API_EXPORT domain::workspace
+generate_synthetic_workspace(utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic workspaces.
  */
 ORES_WORKSPACE_API_EXPORT std::vector<domain::workspace>
-generate_synthetic_workspaces(std::size_t n,
-    utility::generation::generation_context& ctx);
+generate_synthetic_workspaces(std::size_t n, utility::generation::generation_context& ctx);
 
 }
 

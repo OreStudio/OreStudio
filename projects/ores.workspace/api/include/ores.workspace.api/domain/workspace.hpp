@@ -20,11 +20,11 @@
 #ifndef ORES_WORKSPACE_DOMAIN_WORKSPACE_HPP
 #define ORES_WORKSPACE_DOMAIN_WORKSPACE_HPP
 
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <optional>
 #include <string>
-#include <boost/uuid/uuid.hpp>
-#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::workspace::domain {
 

@@ -18,14 +18,12 @@
  *
  */
 #include "ores.connections/repository/recent_party_mapper.hpp"
-
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
 namespace ores::connections::repository {
 
-recent_party_entity recent_party_mapper::to_entity(
-    const domain::recent_party& rp) {
+recent_party_entity recent_party_mapper::to_entity(const domain::recent_party& rp) {
     recent_party_entity e;
     e.party_id = boost::uuids::to_string(rp.party_id);
     e.party_name = rp.party_name;
@@ -33,8 +31,7 @@ recent_party_entity recent_party_mapper::to_entity(
     return e;
 }
 
-domain::recent_party recent_party_mapper::to_domain(
-    const recent_party_entity& e) {
+domain::recent_party recent_party_mapper::to_domain(const recent_party_entity& e) {
     boost::uuids::string_generator gen;
     domain::recent_party rp;
     rp.party_id = gen(e.party_id.value());
@@ -43,8 +40,8 @@ domain::recent_party recent_party_mapper::to_domain(
     return rp;
 }
 
-std::vector<domain::recent_party> recent_party_mapper::to_domain(
-    const std::vector<recent_party_entity>& entities) {
+std::vector<domain::recent_party>
+recent_party_mapper::to_domain(const std::vector<recent_party_entity>& entities) {
     std::vector<domain::recent_party> result;
     result.reserve(entities.size());
     for (const auto& e : entities)

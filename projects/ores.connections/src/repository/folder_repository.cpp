@@ -18,17 +18,16 @@
  *
  */
 #include "ores.connections/repository/folder_repository.hpp"
-
-#include <format>
-#include <stdexcept>
-#include <boost/uuid/uuid_io.hpp>
-#include <sqlgen/read.hpp>
-#include <sqlgen/insert.hpp>
-#include <sqlgen/delete_from.hpp>
-#include <sqlgen/where.hpp>
-#include <sqlgen/literals.hpp>
 #include "ores.connections/repository/folder_entity.hpp"
 #include "ores.connections/repository/folder_mapper.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <format>
+#include <sqlgen/delete_from.hpp>
+#include <sqlgen/insert.hpp>
+#include <sqlgen/literals.hpp>
+#include <sqlgen/read.hpp>
+#include <sqlgen/where.hpp>
+#include <stdexcept>
 
 namespace ores::connections::repository {
 
@@ -49,8 +48,7 @@ void folder_repository::write(const domain::folder& f) {
     auto result = sqlgen::insert_or_replace(*conn, entity);
     if (!result) {
         (*conn)->rollback();
-        throw std::runtime_error(std::format("Failed to write folder: {}",
-            result.error().what()));
+        throw std::runtime_error(std::format("Failed to write folder: {}", result.error().what()));
     }
     (*conn)->commit();
 }
@@ -66,8 +64,7 @@ void folder_repository::write(const std::vector<domain::folder>& folders) {
     auto result = sqlgen::insert_or_replace(*conn, entities);
     if (!result) {
         (*conn)->rollback();
-        throw std::runtime_error(std::format("Failed to write folders: {}",
-            result.error().what()));
+        throw std::runtime_error(std::format("Failed to write folders: {}", result.error().what()));
     }
     (*conn)->commit();
 }
@@ -81,27 +78,24 @@ std::vector<domain::folder> folder_repository::read_all() {
     auto query = sqlgen::read<std::vector<folder_entity>>;
     auto result = query(*conn);
     if (!result) {
-        throw std::runtime_error(std::format("Failed to read folders: {}",
-            result.error().what()));
+        throw std::runtime_error(std::format("Failed to read folders: {}", result.error().what()));
     }
 
     return folder_mapper::to_domain(*result);
 }
 
-std::optional<domain::folder> folder_repository::read_by_id(
-    const boost::uuids::uuid& id) {
+std::optional<domain::folder> folder_repository::read_by_id(const boost::uuids::uuid& id) {
     auto conn = ctx_.connect();
     if (!conn) {
         throw std::runtime_error("Failed to connect to database");
     }
 
     const std::string id_str = boost::uuids::to_string(id);
-    auto query = sqlgen::read<std::vector<folder_entity>> |
-        where("id"_c == id_str);
+    auto query = sqlgen::read<std::vector<folder_entity>> | where("id"_c == id_str);
     auto result = query(*conn);
     if (!result) {
-        throw std::runtime_error(std::format("Failed to read folder by ID: {}",
-            result.error().what()));
+        throw std::runtime_error(
+            std::format("Failed to read folder by ID: {}", result.error().what()));
     }
 
     if (result->empty()) {
@@ -110,8 +104,8 @@ std::optional<domain::folder> folder_repository::read_by_id(
     return folder_mapper::to_domain(result->front());
 }
 
-std::vector<domain::folder> folder_repository::read_by_parent(
-    const std::optional<boost::uuids::uuid>& parent_id) {
+std::vector<domain::folder>
+folder_repository::read_by_parent(const std::optional<boost::uuids::uuid>& parent_id) {
     auto conn = ctx_.connect();
     if (!conn) {
         throw std::runtime_error("Failed to connect to database");
@@ -120,21 +114,19 @@ std::vector<domain::folder> folder_repository::read_by_parent(
     std::vector<folder_entity> entities;
     if (parent_id) {
         const std::string pid_str = boost::uuids::to_string(*parent_id);
-        auto query = sqlgen::read<std::vector<folder_entity>> |
-            where("parent_id"_c == pid_str);
+        auto query = sqlgen::read<std::vector<folder_entity>> | where("parent_id"_c == pid_str);
         auto result = query(*conn);
         if (!result) {
-            throw std::runtime_error(std::format("Failed to read folders by parent: {}",
-                result.error().what()));
+            throw std::runtime_error(
+                std::format("Failed to read folders by parent: {}", result.error().what()));
         }
         entities = *result;
     } else {
-        auto query = sqlgen::read<std::vector<folder_entity>> |
-            where("parent_id"_c.is_null());
+        auto query = sqlgen::read<std::vector<folder_entity>> | where("parent_id"_c.is_null());
         auto result = query(*conn);
         if (!result) {
-            throw std::runtime_error(std::format("Failed to read root folders: {}",
-                result.error().what()));
+            throw std::runtime_error(
+                std::format("Failed to read root folders: {}", result.error().what()));
         }
         entities = *result;
     }
@@ -154,8 +146,7 @@ void folder_repository::remove(const boost::uuids::uuid& id) {
     auto result = query(*conn);
     if (!result) {
         (*conn)->rollback();
-        throw std::runtime_error(std::format("Failed to delete folder: {}",
-            result.error().what()));
+        throw std::runtime_error(std::format("Failed to delete folder: {}", result.error().what()));
     }
     (*conn)->commit();
 }

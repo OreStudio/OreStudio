@@ -20,11 +20,11 @@
 #ifndef ORES_CONNECTIONS_REPOSITORY_CONNECTION_TAG_REPOSITORY_HPP
 #define ORES_CONNECTIONS_REPOSITORY_CONNECTION_TAG_REPOSITORY_HPP
 
-#include <vector>
-#include <boost/uuid/uuid.hpp>
 #include "ores.connections/domain/connection_tag.hpp"
-#include "ores.connections/repository/sqlite_context.hpp"
 #include "ores.connections/export.hpp"
+#include "ores.connections/repository/sqlite_context.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <vector>
 
 namespace ores::connections::repository {
 
@@ -38,8 +38,7 @@ public:
     /**
      * @brief Get all tags for a connection.
      */
-    std::vector<domain::connection_tag> read_by_connection(
-        const boost::uuids::uuid& connection_id);
+    std::vector<domain::connection_tag> read_by_connection(const boost::uuids::uuid& connection_id);
 
     /**
      * @brief Get all connections for a tag.

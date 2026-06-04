@@ -20,11 +20,11 @@
 #ifndef ORES_VARIABILITY_DOMAIN_SYSTEM_SETTING_JSON_IO_HPP
 #define ORES_VARIABILITY_DOMAIN_SYSTEM_SETTING_JSON_IO_HPP
 
+#include "ores.variability.api/domain/system_setting.hpp"
+#include "ores.variability.api/export.hpp"
 #include <iosfwd>
 #include <string>
 #include <vector>
-#include "ores.variability.api/export.hpp"
-#include "ores.variability.api/domain/system_setting.hpp"
 
 namespace ores::variability::domain {
 

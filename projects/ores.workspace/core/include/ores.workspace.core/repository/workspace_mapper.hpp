@@ -20,9 +20,9 @@
 #ifndef ORES_WORKSPACE_REPOSITORY_WORKSPACE_MAPPER_HPP
 #define ORES_WORKSPACE_REPOSITORY_WORKSPACE_MAPPER_HPP
 
+#include "ores.logging/make_logger.hpp"
 #include "ores.workspace.api/domain/workspace.hpp"
 #include "ores.workspace.core/repository/workspace_entity.hpp"
-#include "ores.logging/make_logger.hpp"
 
 namespace ores::workspace::repository {
 
@@ -31,22 +31,20 @@ namespace ores::workspace::repository {
  */
 class workspace_mapper {
 private:
-    inline static std::string_view logger_name =
-        "ores.workspace.repository.workspace_mapper";
+    inline static std::string_view logger_name = "ores.workspace.repository.workspace_mapper";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }
+
 public:
     static domain::workspace map(const workspace_entity& v);
     static workspace_entity map(const domain::workspace& v);
 
-    static std::vector<domain::workspace>
-    map(const std::vector<workspace_entity>& v);
-    static std::vector<workspace_entity>
-    map(const std::vector<domain::workspace>& v);
+    static std::vector<domain::workspace> map(const std::vector<workspace_entity>& v);
+    static std::vector<workspace_entity> map(const std::vector<domain::workspace>& v);
 };
 
 }

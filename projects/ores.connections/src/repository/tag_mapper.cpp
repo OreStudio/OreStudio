@@ -18,7 +18,6 @@
  *
  */
 #include "ores.connections/repository/tag_mapper.hpp"
-
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
@@ -39,8 +38,7 @@ domain::tag tag_mapper::to_domain(const tag_entity& e) {
     return t;
 }
 
-std::vector<tag_entity> tag_mapper::to_entities(
-    const std::vector<domain::tag>& tags) {
+std::vector<tag_entity> tag_mapper::to_entities(const std::vector<domain::tag>& tags) {
     std::vector<tag_entity> entities;
     entities.reserve(tags.size());
     for (const auto& t : tags) {
@@ -49,8 +47,7 @@ std::vector<tag_entity> tag_mapper::to_entities(
     return entities;
 }
 
-std::vector<domain::tag> tag_mapper::to_domain(
-    const std::vector<tag_entity>& entities) {
+std::vector<domain::tag> tag_mapper::to_domain(const std::vector<tag_entity>& entities) {
     std::vector<domain::tag> tags;
     tags.reserve(entities.size());
     for (const auto& e : entities) {

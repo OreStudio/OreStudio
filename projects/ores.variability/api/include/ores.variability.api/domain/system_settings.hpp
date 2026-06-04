@@ -21,8 +21,8 @@
 #define ORES_VARIABILITY_DOMAIN_SYSTEM_SETTINGS_HPP
 
 #include <array>
-#include <string_view>
 #include <stdexcept>
+#include <string_view>
 
 namespace ores::variability::domain {
 
@@ -35,7 +35,7 @@ namespace ores::variability::domain {
  */
 struct system_setting_definition {
     std::string_view name;
-    std::string_view data_type;      // "boolean" | "integer" | "string" | "json"
+    std::string_view data_type; // "boolean" | "integer" | "string" | "json"
     std::string_view default_value;
     std::string_view description;
 };
@@ -47,72 +47,59 @@ struct system_setting_definition {
  * JWT token refresh plan PR.
  */
 inline constexpr std::array system_setting_definitions = {
-    system_setting_definition{
-        .name = "system.bootstrap_mode",
-        .data_type = "boolean",
-        .default_value = "true",
-        .description = "Indicates whether the system is in bootstrap mode "
-        "(waiting for initial admin account)."
-    },
-    system_setting_definition{
-        .name = "system.user_signups",
-        .data_type = "boolean",
-        .default_value = "false",
-        .description = "Controls whether user self-registration is allowed."
-    },
-    system_setting_definition{
-        .name = "system.signup_requires_authorization",
-        .data_type = "boolean",
-        .default_value = "false",
-        .description = "Controls whether new signups require admin authorization. "
-        "NOT YET IMPLEMENTED - enabling will cause signup to fail."
-    },
-    system_setting_definition{
-        .name = "system.disable_password_validation",
-        .data_type = "boolean",
-        .default_value = "false",
-        .description = "When enabled, disables strict password validation. "
-        "FOR TESTING/DEVELOPMENT ONLY."
-    },
-    system_setting_definition{
-        .name = "system.synthetic_data_generation",
-        .data_type = "boolean",
-        .default_value = "false",
-        .description = "Enables synthetic test data generation in the UI. "
-        "FOR TESTING/DEVELOPMENT ONLY."
-    },
+    system_setting_definition{.name = "system.bootstrap_mode",
+                              .data_type = "boolean",
+                              .default_value = "true",
+                              .description = "Indicates whether the system is in bootstrap mode "
+                                             "(waiting for initial admin account)."},
+    system_setting_definition{.name = "system.user_signups",
+                              .data_type = "boolean",
+                              .default_value = "false",
+                              .description = "Controls whether user self-registration is allowed."},
+    system_setting_definition{.name = "system.signup_requires_authorization",
+                              .data_type = "boolean",
+                              .default_value = "false",
+                              .description =
+                                  "Controls whether new signups require admin authorization. "
+                                  "NOT YET IMPLEMENTED - enabling will cause signup to fail."},
+    system_setting_definition{.name = "system.disable_password_validation",
+                              .data_type = "boolean",
+                              .default_value = "false",
+                              .description = "When enabled, disables strict password validation. "
+                                             "FOR TESTING/DEVELOPMENT ONLY."},
+    system_setting_definition{.name = "system.synthetic_data_generation",
+                              .data_type = "boolean",
+                              .default_value = "false",
+                              .description = "Enables synthetic test data generation in the UI. "
+                                             "FOR TESTING/DEVELOPMENT ONLY."},
     // -------------------------------------------------------------------------
     // IAM token lifetime settings
     // -------------------------------------------------------------------------
-    system_setting_definition{
-        .name = "iam.token.access_lifetime_seconds",
-        .data_type = "integer",
-        .default_value = "1800",
-        .description = "Lifetime in seconds of every issued JWT access token. "
-        "Default is 1800 (30 minutes)."
-    },
-    system_setting_definition{
-        .name = "iam.token.party_selection_lifetime_seconds",
-        .data_type = "integer",
-        .default_value = "300",
-        .description = "Lifetime in seconds of the short-lived party-selection "
-        "step token. Default is 300 (5 minutes)."
-    },
+    system_setting_definition{.name = "iam.token.access_lifetime_seconds",
+                              .data_type = "integer",
+                              .default_value = "1800",
+                              .description =
+                                  "Lifetime in seconds of every issued JWT access token. "
+                                  "Default is 1800 (30 minutes)."},
+    system_setting_definition{.name = "iam.token.party_selection_lifetime_seconds",
+                              .data_type = "integer",
+                              .default_value = "300",
+                              .description =
+                                  "Lifetime in seconds of the short-lived party-selection "
+                                  "step token. Default is 300 (5 minutes)."},
     system_setting_definition{
         .name = "iam.token.max_session_seconds",
         .data_type = "integer",
         .default_value = "28800",
-        .description = "Hard ceiling in seconds after which a session must "
-        "re-authenticate regardless of refresh activity. Default is 28800 (8 hours)."
-    },
-    system_setting_definition{
-        .name = "iam.token.refresh_threshold_pct",
-        .data_type = "integer",
-        .default_value = "80",
-        .description = "Percentage of token lifetime at which the client "
-        "proactively requests a token refresh. Default is 80 (80%)."
-    }
-};
+        .description =
+            "Hard ceiling in seconds after which a session must "
+            "re-authenticate regardless of refresh activity. Default is 28800 (8 hours)."},
+    system_setting_definition{.name = "iam.token.refresh_threshold_pct",
+                              .data_type = "integer",
+                              .default_value = "80",
+                              .description =
+                                  "Percentage of token lifetime at which the client "
+                                  "proactively requests a token refresh. Default is 80 (80%)."}};
 
 /**
  * @brief Looks up a setting definition by name.
@@ -125,8 +112,8 @@ get_setting_definition(std::string_view name) {
         if (def.name == name)
             return def;
     }
-    throw std::out_of_range(
-        std::string("System setting definition not found: ") + std::string(name));
+    throw std::out_of_range(std::string("System setting definition not found: ") +
+                            std::string(name));
 }
 
 /**
@@ -134,8 +121,7 @@ get_setting_definition(std::string_view name) {
  *
  * @throws std::out_of_range if name is not registered.
  */
-[[nodiscard]] inline std::string_view
-get_setting_default(std::string_view name) {
+[[nodiscard]] inline std::string_view get_setting_default(std::string_view name) {
     return get_setting_definition(name).default_value;
 }
 

@@ -18,7 +18,6 @@
  *
  */
 #include "ores.workspace.service/config/options.hpp"
-
 #include <rfl.hpp>
 #include <rfl/json.hpp>
 

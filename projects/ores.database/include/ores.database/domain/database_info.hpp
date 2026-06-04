@@ -20,9 +20,9 @@
 #ifndef ORES_DATABASE_DOMAIN_DATABASE_INFO_HPP
 #define ORES_DATABASE_DOMAIN_DATABASE_INFO_HPP
 
+#include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <string>
-#include <boost/uuid/uuid.hpp>
 
 namespace ores::database::domain {
 

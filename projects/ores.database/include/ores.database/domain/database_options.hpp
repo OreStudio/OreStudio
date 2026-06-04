@@ -20,11 +20,11 @@
 #ifndef ORES_DATABASE_DATABASE_OPTIONS_HPP
 #define ORES_DATABASE_DATABASE_OPTIONS_HPP
 
+#include "ores.database/export.hpp"
 #include <iosfwd>
-#include <string>
 #include <rfl.hpp>
 #include <sqlgen/postgres.hpp>
-#include "ores.database/export.hpp"
+#include <string>
 
 namespace ores::database {
 

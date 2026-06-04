@@ -20,13 +20,13 @@
 #ifndef ORES_DATABASE_REPOSITORY_MAPPER_HELPERS_HPP
 #define ORES_DATABASE_REPOSITORY_MAPPER_HELPERS_HPP
 
-#include <vector>
-#include <chrono>
-#include <sqlgen/postgres.hpp>
+#include "ores.database/repository/db_types.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.platform/time/time_utils.hpp"
-#include "ores.database/repository/db_types.hpp"
+#include <chrono>
+#include <sqlgen/postgres.hpp>
+#include <vector>
 
 namespace ores::database::repository {
 
@@ -53,22 +53,19 @@ namespace ores::database::repository {
  *     "db entities"
  * );
  */
-template<typename Source, typename Dest, typename MapFunc>
-std::vector<Dest> map_vector(
-    const std::vector<Source>& source,
-    MapFunc&& map_func,
-    logging::logger_t& lg,
-    const std::string& log_prefix) {
+template <typename Source, typename Dest, typename MapFunc>
+std::vector<Dest> map_vector(const std::vector<Source>& source,
+                             MapFunc&& map_func,
+                             logging::logger_t& lg,
+                             const std::string& log_prefix) {
 
     using namespace ores::logging;
 
-    BOOST_LOG_SEV(lg, debug) << "Mapping " << log_prefix
-                             << ". Total: " << source.size();
+    BOOST_LOG_SEV(lg, debug) << "Mapping " << log_prefix << ". Total: " << source.size();
 
     std::vector<Dest> result;
     result.reserve(source.size());
-    std::ranges::transform(source, std::back_inserter(result),
-        std::forward<MapFunc>(map_func));
+    std::ranges::transform(source, std::back_inserter(result), std::forward<MapFunc>(map_func));
 
     BOOST_LOG_SEV(lg, debug) << "Mapped " << log_prefix << ".";
     return result;
@@ -90,8 +87,7 @@ std::vector<Dest> map_vector(
  */
 inline std::chrono::system_clock::time_point
 timestamp_to_timepoint(std::string_view timestamp_str) {
-    return platform::time::datetime::from_iso8601_utc(
-        std::string{timestamp_str});
+    return platform::time::datetime::from_iso8601_utc(std::string{timestamp_str});
 }
 
 /**
@@ -113,8 +109,7 @@ timestamp_to_timepoint(std::string_view timestamp_str) {
  * @example
  * auto tp = timestamp_to_timepoint(entity.last_login);
  */
-inline std::chrono::system_clock::time_point
-timestamp_to_timepoint(const db_timestamp& ts) {
+inline std::chrono::system_clock::time_point timestamp_to_timepoint(const db_timestamp& ts) {
     return platform::time::datetime::from_iso8601_utc(ts.str() + "+00");
 }
 

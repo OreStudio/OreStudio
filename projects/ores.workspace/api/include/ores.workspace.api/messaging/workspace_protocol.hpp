@@ -20,9 +20,9 @@
 #ifndef ORES_WORKSPACE_API_MESSAGING_WORKSPACE_PROTOCOL_HPP
 #define ORES_WORKSPACE_API_MESSAGING_WORKSPACE_PROTOCOL_HPP
 
+#include "ores.workspace.api/domain/workspace.hpp"
 #include <string>
 #include <vector>
-#include "ores.workspace.api/domain/workspace.hpp"
 
 namespace ores::workspace::messaging {
 
@@ -54,7 +54,7 @@ struct create_workspace_request {
 struct create_workspace_response {
     bool success = false;
     std::string message;
-    std::string id;  // UUID string of the created workspace
+    std::string id; // UUID string of the created workspace
 };
 
 // ---------------------------------------------------------------------------
@@ -64,7 +64,7 @@ struct create_workspace_response {
 struct archive_workspace_request {
     using response_type = struct archive_workspace_response;
     static constexpr std::string_view nats_subject = "workspace.v1.workspaces.archive";
-    std::string id;  // UUID string
+    std::string id; // UUID string
     std::string modified_by;
     std::string change_reason_code;
     std::string change_commentary;
@@ -82,7 +82,7 @@ struct archive_workspace_response {
 struct remove_workspace_request {
     using response_type = struct remove_workspace_response;
     static constexpr std::string_view nats_subject = "workspace.v1.workspaces.remove";
-    std::string id;  // UUID string
+    std::string id; // UUID string
     std::string modified_by;
     std::string change_reason_code;
     std::string change_commentary;
@@ -100,11 +100,11 @@ struct remove_workspace_response {
 struct resolve_workspace_request {
     using response_type = struct resolve_workspace_response;
     static constexpr std::string_view nats_subject = "workspace.v1.workspaces.resolve";
-    std::string workspace_id;  // UUID string
+    std::string workspace_id; // UUID string
 };
 
 struct resolve_workspace_response {
-    std::vector<std::string> resolution_order;  // UUID strings
+    std::vector<std::string> resolution_order; // UUID strings
 };
 
 // ---------------------------------------------------------------------------
@@ -114,7 +114,7 @@ struct resolve_workspace_response {
 struct set_trade_scope_request {
     using response_type = struct set_trade_scope_response;
     static constexpr std::string_view nats_subject = "workspace.v1.trade-scope.set";
-    std::string workspace_id;  // UUID string
+    std::string workspace_id; // UUID string
     std::vector<std::string> trade_ids;
 };
 
@@ -130,7 +130,7 @@ struct set_trade_scope_response {
 struct clear_trade_scope_request {
     using response_type = struct clear_trade_scope_response;
     static constexpr std::string_view nats_subject = "workspace.v1.trade-scope.clear";
-    std::string workspace_id;  // UUID string
+    std::string workspace_id; // UUID string
 };
 
 struct clear_trade_scope_response {
@@ -144,9 +144,8 @@ struct clear_trade_scope_response {
 
 struct get_workspace_history_request {
     using response_type = struct get_workspace_history_response;
-    static constexpr std::string_view nats_subject =
-        "workspace.v1.workspaces.history";
-    std::string id;  // UUID string
+    static constexpr std::string_view nats_subject = "workspace.v1.workspaces.history";
+    std::string id; // UUID string
 };
 
 struct get_workspace_history_response {

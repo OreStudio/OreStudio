@@ -18,12 +18,11 @@
  *
  */
 #include "ores.database/domain/database_options.hpp"
-
+#include "ores.logging/make_logger.hpp"
 #include <ostream>
-#include <string_view>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
-#include "ores.logging/make_logger.hpp"
+#include <string_view>
 
 namespace ores::database {
 
@@ -43,21 +42,20 @@ std::ostream& operator<<(std::ostream& s, const database_options& v) {
 }
 
 sqlgen::postgres::Credentials to_credentials(const database_options& opts) {
-    return sqlgen::postgres::Credentials {
-        .user = opts.user,
-        .password = opts.password(),
-        .host = opts.host,
-        .dbname = opts.database,
-        .port = opts.port,
-        .notice_handler = [](const char* msg) {
-            using namespace ores::logging;
-            // libpq appends a trailing newline; strip it before logging.
-            std::string_view sv(msg);
-            if (!sv.empty() && sv.back() == '\n')
-                sv.remove_suffix(1);
-            BOOST_LOG_SEV(lg(), debug) << sv;
-        }
-    };
+    return sqlgen::postgres::Credentials{.user = opts.user,
+                                         .password = opts.password(),
+                                         .host = opts.host,
+                                         .dbname = opts.database,
+                                         .port = opts.port,
+                                         .notice_handler = [](const char* msg) {
+                                             using namespace ores::logging;
+                                             // libpq appends a trailing newline; strip it before
+                                             // logging.
+                                             std::string_view sv(msg);
+                                             if (!sv.empty() && sv.back() == '\n')
+                                                 sv.remove_suffix(1);
+                                             BOOST_LOG_SEV(lg(), debug) << sv;
+                                         }};
 }
 
 }

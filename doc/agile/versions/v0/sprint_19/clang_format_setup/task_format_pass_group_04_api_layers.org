@@ -48,12 +48,16 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1055][#1055]] | [format] Initial clang-format pass: group 4 (http, shell, wt.service) |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
+| 1 | std::mismatch 3-arg unsafe on path traversal (OOB read) | storage_routes.cpp | Accepted | 4-arg overload; bd2667e |
+| 2 | socket.close() can throw, breaking accept loop | http_server.cpp | Accepted | socket.close(ec); bd2667e |
+| 3 | std::stoul throws on bad input → 500 not 400 | iam_routes.cpp | Accepted | try/catch → bad_request; bd2667e |
+| 4 | catch(runtime_error) too narrow; misses other std exceptions | session_manager.cpp | Accepted | catch(std::exception); bd2667e |
 |   |                 |      |          |       |
 
 * Result

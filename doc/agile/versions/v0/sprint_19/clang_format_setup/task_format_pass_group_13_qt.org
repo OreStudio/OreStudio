@@ -48,12 +48,15 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1065][#1065]] | [format] Initial clang-format pass: group 13 (qt) — final group |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
+| 1 | QPointer not thread-safe; self->clientManager_ dereferenced in std::async without null check | AccountPartiesWidget.cpp | Accepted | Capture clientManager_ as raw ptr before lambda; bd2667e |
+| 2 | Same QPointer data race in AccountRolesWidget | AccountRolesWidget.cpp | Accepted | Same fix; bd2667e |
+| 3 | Unhygienic CHECK_DIFF macros rely on scope variables | AccountHistoryDialog.cpp | Accepted | Replaced with check_diff_string/bool helpers; bd2667e |
 |   |                 |      |          |       |
 
 * Result

@@ -18,11 +18,10 @@
  *
  */
 #include "ores.logging/logging_configuration.hpp"
-
-#include <format>
-#include <boost/throw_exception.hpp>
 #include "ores.logging/boost_severity.hpp"
 #include "ores.logging/logging_exception.hpp"
+#include <boost/throw_exception.hpp>
+#include <format>
 
 namespace ores::logging {
 
@@ -45,27 +44,25 @@ logging_configuration::make_options_description(const std::string& log_file) {
     using boost::program_options::options_description;
 
     options_description r("Logging");
-    r.add_options()
-        ("log-enabled,e", "Generate a log file.")
-        ("log-level,l", value<std::string>()->default_value("info"),
-            "What level to use for logging. Valid values: trace, debug, info, "
-            "warn, error.")
-        ("log-to-console",
-            "Output logging to the console, as well as to file.")
-        ("log-directory", value<std::string>()->default_value("log"),
-            "Where to place the log files.")
-        ("log-filename", value<std::string>()->default_value(log_file),
-            "Name of the log file.")
-        ("log-include-pid",
-            "Include process ID in log filename (e.g., app.12345.log).")
-        ("log-replica-index", value<int>(),
-            "Replica index to embed in log filename (e.g., 0 → app.0.log).");
+    r.add_options()("log-enabled,e", "Generate a log file.")(
+        "log-level,l",
+        value<std::string>()->default_value("info"),
+        "What level to use for logging. Valid values: trace, debug, info, "
+        "warn, error.")("log-to-console", "Output logging to the console, as well as to file.")(
+        "log-directory",
+        value<std::string>()->default_value("log"),
+        "Where to place the log files.")(
+        "log-filename", value<std::string>()->default_value(log_file), "Name of the log file.")(
+        "log-include-pid", "Include process ID in log filename (e.g., app.12345.log).")(
+        "log-replica-index",
+        value<int>(),
+        "Replica index to embed in log filename (e.g., 0 → app.0.log).");
 
     return r;
 }
 
-std::optional<logging_options> logging_configuration::
-read_options(const boost::program_options::variables_map& vm) {
+std::optional<logging_options>
+logging_configuration::read_options(const boost::program_options::variables_map& vm) {
 
     const bool enabled(vm.count(logging_log_enabled_arg) != 0);
     if (!enabled)
@@ -82,9 +79,8 @@ read_options(const boost::program_options::variables_map& vm) {
     try {
         to_boost_severity(s);
         r.severity = s;
-    } catch(const std::exception&) {
-        BOOST_THROW_EXCEPTION(logging_exception(
-                std::format("Log level is invalid: {}!", s)));
+    } catch (const std::exception&) {
+        BOOST_THROW_EXCEPTION(logging_exception(std::format("Log level is invalid: {}!", s)));
     }
 
     return r;

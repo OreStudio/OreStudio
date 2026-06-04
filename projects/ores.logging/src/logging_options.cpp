@@ -18,7 +18,6 @@
  *
  */
 #include "ores.logging/logging_options.hpp"
-
 #include <rfl.hpp>
 #include <rfl/json.hpp>
 

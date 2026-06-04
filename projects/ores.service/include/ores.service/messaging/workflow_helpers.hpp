@@ -20,16 +20,16 @@
 #ifndef ORES_SERVICE_MESSAGING_WORKFLOW_HELPERS_HPP
 #define ORES_SERVICE_MESSAGING_WORKFLOW_HELPERS_HPP
 
+#include "ores.nats/domain/message.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.workflow.api/messaging/steps_query_protocol.hpp"
+#include "ores.workflow.api/messaging/workflow_events.hpp"
 #include <chrono>
 #include <optional>
+#include <rfl/json.hpp>
 #include <span>
 #include <string>
 #include <string_view>
-#include <rfl/json.hpp>
-#include "ores.nats/domain/message.hpp"
-#include "ores.nats/service/client.hpp"
-#include "ores.workflow.api/messaging/workflow_events.hpp"
-#include "ores.workflow.api/messaging/steps_query_protocol.hpp"
 
 namespace ores::service::messaging {
 
@@ -39,14 +39,12 @@ namespace ores::service::messaging {
  * Domain services extract this from inbound commands to detect re-dispatched
  * commands (idempotency check) and echo it back in the step-completed event.
  */
-inline constexpr std::string_view workflow_step_id_header =
-    "X-Workflow-Step-Id";
+inline constexpr std::string_view workflow_step_id_header = "X-Workflow-Step-Id";
 
 /**
  * @brief NATS header name for the parent workflow instance.
  */
-inline constexpr std::string_view workflow_instance_id_header =
-    "X-Workflow-Instance-Id";
+inline constexpr std::string_view workflow_instance_id_header = "X-Workflow-Instance-Id";
 
 /**
  * @brief NATS header name for the tenant that owns the workflow instance.
@@ -73,12 +71,12 @@ inline bool is_workflow_command(const ores::nats::message& msg) {
  *
  * Returns empty string if the header is absent.
  */
-inline std::string extract_workflow_header(
-    const ores::nats::message& msg,
-    std::string_view header_name) {
+inline std::string extract_workflow_header(const ores::nats::message& msg,
+                                           std::string_view header_name) {
 
     const auto it = msg.headers.find(std::string(header_name));
-    if (it == msg.headers.end()) return {};
+    if (it == msg.headers.end())
+        return {};
     return it->second;
 }
 
@@ -115,15 +113,15 @@ struct workflow_step_context {
      * (i.e. missing the X-Workflow-Step-Id header).
      */
     [[nodiscard]] static std::optional<workflow_step_context>
-    from_message(ores::nats::service::client& nats,
-        const ores::nats::message& msg) {
+    from_message(ores::nats::service::client& nats, const ores::nats::message& msg) {
 
-        if (!is_workflow_command(msg)) return std::nullopt;
+        if (!is_workflow_command(msg))
+            return std::nullopt;
         return workflow_step_context{
-            .step_id     = extract_workflow_header(msg, workflow_step_id_header),
+            .step_id = extract_workflow_header(msg, workflow_step_id_header),
             .instance_id = extract_workflow_header(msg, workflow_instance_id_header),
-            .tenant_id   = extract_workflow_header(msg, workflow_tenant_id_header),
-            .nats        = &nats};
+            .tenant_id = extract_workflow_header(msg, workflow_tenant_id_header),
+            .nats = &nats};
     }
 
     /**
@@ -132,8 +130,7 @@ struct workflow_step_context {
      * @param result_json Serialised JSON result payload.
      */
     void complete(const std::string& result_json) const {
-        publish(ores::workflow::messaging::step_outcome::completed,
-            result_json, "", {});
+        publish(ores::workflow::messaging::step_outcome::completed, result_json, "", {});
     }
 
     /**
@@ -147,9 +144,9 @@ struct workflow_step_context {
      * @param log         Ordered list of per-item log entries.
      */
     void warn(const std::string& result_json,
-        const std::vector<ores::workflow::messaging::step_log_entry>& log) const {
-        publish(ores::workflow::messaging::step_outcome::completed_with_warnings,
-            result_json, "", log);
+              const std::vector<ores::workflow::messaging::step_log_entry>& log) const {
+        publish(
+            ores::workflow::messaging::step_outcome::completed_with_warnings, result_json, "", log);
     }
 
     /**
@@ -161,31 +158,26 @@ struct workflow_step_context {
      *                  show individual failure reasons.
      */
     void fail(const std::string& error_msg,
-        const std::vector<ores::workflow::messaging::step_log_entry>& log = {}) const {
-        publish(ores::workflow::messaging::step_outcome::failed,
-            "", error_msg, log);
+              const std::vector<ores::workflow::messaging::step_log_entry>& log = {}) const {
+        publish(ores::workflow::messaging::step_outcome::failed, "", error_msg, log);
     }
 
 private:
-    void publish(
-        ores::workflow::messaging::step_outcome outcome,
-        const std::string& result_json,
-        const std::string& error_msg,
-        const std::vector<ores::workflow::messaging::step_log_entry>& log) const {
+    void publish(ores::workflow::messaging::step_outcome outcome,
+                 const std::string& result_json,
+                 const std::string& error_msg,
+                 const std::vector<ores::workflow::messaging::step_log_entry>& log) const {
 
-        ores::workflow::messaging::step_completed_event event{
-            .workflow_instance_id = instance_id,
-            .step_id              = step_id,
-            .outcome              = outcome,
-            .result_json          = result_json,
-            .error_message        = error_msg,
-            .log                  = log};
+        ores::workflow::messaging::step_completed_event event{.workflow_instance_id = instance_id,
+                                                              .step_id = step_id,
+                                                              .outcome = outcome,
+                                                              .result_json = result_json,
+                                                              .error_message = error_msg,
+                                                              .log = log};
 
         const auto json = rfl::json::write(event);
-        const auto data = std::as_bytes(
-            std::span{json.data(), json.size()});
-        nats->js_publish(
-            ores::workflow::messaging::step_completed_event::nats_subject, data);
+        const auto data = std::as_bytes(std::span{json.data(), json.size()});
+        nats->js_publish(ores::workflow::messaging::step_completed_event::nats_subject, data);
     }
 };
 
@@ -196,31 +188,28 @@ private:
  * convenient.  Prefer workflow_step_context::complete() / warn() / fail()
  * for new code.
  */
-inline void publish_step_completion(
-    ores::nats::service::client& nats,
-    const std::string& step_id,
-    const std::string& instance_id,
-    ores::workflow::messaging::step_outcome outcome,
-    const std::string& result_json,
-    const std::string& error_msg,
-    const std::vector<ores::workflow::messaging::step_log_entry>& log = {}) {
+inline void
+publish_step_completion(ores::nats::service::client& nats,
+                        const std::string& step_id,
+                        const std::string& instance_id,
+                        ores::workflow::messaging::step_outcome outcome,
+                        const std::string& result_json,
+                        const std::string& error_msg,
+                        const std::vector<ores::workflow::messaging::step_log_entry>& log = {}) {
 
     workflow_step_context ctx{
-        .step_id = step_id,
-        .instance_id = instance_id,
-        .tenant_id = {},
-        .nats = &nats};
+        .step_id = step_id, .instance_id = instance_id, .tenant_id = {}, .nats = &nats};
 
     switch (outcome) {
-    case ores::workflow::messaging::step_outcome::completed:
-        ctx.complete(result_json);
-        break;
-    case ores::workflow::messaging::step_outcome::completed_with_warnings:
-        ctx.warn(result_json, log);
-        break;
-    case ores::workflow::messaging::step_outcome::failed:
-        ctx.fail(error_msg, log);
-        break;
+        case ores::workflow::messaging::step_outcome::completed:
+            ctx.complete(result_json);
+            break;
+        case ores::workflow::messaging::step_outcome::completed_with_warnings:
+            ctx.warn(result_json, log);
+            break;
+        case ores::workflow::messaging::step_outcome::failed:
+            ctx.fail(error_msg, log);
+            break;
     }
 }
 
@@ -253,9 +242,8 @@ struct cached_step_result {
  * @param step_id UUID string echoed from the X-Workflow-Step-Id header.
  * @return Cached result if the step already completed; std::nullopt otherwise.
  */
-inline std::optional<cached_step_result> check_step_idempotency(
-    ores::nats::service::client& nats,
-    const std::string& step_id) {
+inline std::optional<cached_step_result> check_step_idempotency(ores::nats::service::client& nats,
+                                                                const std::string& step_id) {
 
     using namespace ores::workflow::messaging;
 
@@ -265,20 +253,18 @@ inline std::optional<cached_step_result> check_step_idempotency(
 
     try {
         const auto reply_msg = nats.request_sync(
-            get_step_result_request::nats_subject, data,
-            {}, std::chrono::seconds(5));
+            get_step_result_request::nats_subject, data, {}, std::chrono::seconds(5));
 
-        const std::string_view sv(
-            reinterpret_cast<const char*>(reply_msg.data.data()),
-            reply_msg.data.size());
+        const std::string_view sv(reinterpret_cast<const char*>(reply_msg.data.data()),
+                                  reply_msg.data.size());
         const auto resp = rfl::json::read<get_step_result_response>(sv);
-        if (!resp || !resp->found) return std::nullopt;
+        if (!resp || !resp->found)
+            return std::nullopt;
 
-        return cached_step_result{
-            .outcome       = resp->outcome,
-            .result_json   = resp->result_json,
-            .error_message = resp->error_message,
-            .log           = resp->log};
+        return cached_step_result{.outcome = resp->outcome,
+                                  .result_json = resp->result_json,
+                                  .error_message = resp->error_message,
+                                  .log = resp->log};
     } catch (const std::exception&) {
         // Fail open: if the workflow service is unreachable, proceed with
         // normal execution. The engine's own idempotency guard (step state

@@ -18,11 +18,10 @@
  *
  */
 #include "ores.logging/logging_options_validator.hpp"
-
-#include <boost/throw_exception.hpp>
-#include <boost/filesystem/operations.hpp>
 #include "ores.logging/boost_severity.hpp"
 #include "ores.logging/logging_exception.hpp"
+#include <boost/filesystem/operations.hpp>
+#include <boost/throw_exception.hpp>
 
 namespace ores::logging {
 
@@ -41,8 +40,7 @@ void logging_options_validator::validate(const logging_options& cfg) {
      * to have been supplied either, as its only applicable to file logging.
      */
     if (cfg.filename.empty() && !cfg.output_directory.empty()) {
-        const std::string unexpected_dir(
-            "Output directory supplied without a file name.");
+        const std::string unexpected_dir("Output directory supplied without a file name.");
         BOOST_THROW_EXCEPTION(logging_exception(unexpected_dir));
     }
 

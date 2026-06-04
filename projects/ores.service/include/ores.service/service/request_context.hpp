@@ -20,13 +20,13 @@
 #ifndef ORES_SERVICE_SERVICE_REQUEST_CONTEXT_HPP
 #define ORES_SERVICE_SERVICE_REQUEST_CONTEXT_HPP
 
-#include <expected>
-#include <optional>
 #include "ores.database/domain/context.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/error_code.hpp"
 #include "ores.service/export.hpp"
+#include <expected>
+#include <optional>
 
 namespace ores::service::service {
 
@@ -49,10 +49,9 @@ namespace ores::service::service {
  * @param verifier  JWT authenticator. If empty, @p base_ctx is returned as-is.
  */
 ORES_SERVICE_EXPORT std::expected<ores::database::context, ores::service::error_code>
-make_request_context(
-    const ores::database::context& base_ctx,
-    const ores::nats::message& msg,
-    const std::optional<ores::security::jwt::jwt_authenticator>& verifier);
+make_request_context(const ores::database::context& base_ctx,
+                     const ores::nats::message& msg,
+                     const std::optional<ores::security::jwt::jwt_authenticator>& verifier);
 
 /**
  * @brief Builds a per-request database context from a raw JWT Bearer token.
@@ -70,10 +69,9 @@ make_request_context(
  * @param verifier  JWT authenticator used to validate the token.
  */
 ORES_SERVICE_EXPORT std::expected<ores::database::context, ores::service::error_code>
-make_context_from_jwt(
-    const ores::database::context& base_ctx,
-    const std::string& token,
-    const ores::security::jwt::jwt_authenticator& verifier);
+make_context_from_jwt(const ores::database::context& base_ctx,
+                      const std::string& token,
+                      const ores::security::jwt::jwt_authenticator& verifier);
 
 } // namespace ores::service::service
 

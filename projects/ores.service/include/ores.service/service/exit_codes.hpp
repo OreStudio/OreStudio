@@ -32,13 +32,13 @@ namespace ores::service::service {
  * categories are discovered; never reuse an existing value.
  */
 enum class exit_code : int {
-    ok                     = 0,  ///< Clean shutdown (normal or graceful signal)
-    general_error          = 1,  ///< Unclassified runtime error
-    config_error           = 2,  ///< Missing / invalid configuration
-    db_connection_failed   = 3,  ///< Could not acquire a PostgreSQL connection
-    nats_connection_failed = 4,  ///< Could not connect to NATS
-    startup_timeout        = 5,  ///< Timed out waiting for a dependency
-    auth_error             = 6,  ///< Authentication or authorisation failure
+    ok = 0,                     ///< Clean shutdown (normal or graceful signal)
+    general_error = 1,          ///< Unclassified runtime error
+    config_error = 2,           ///< Missing / invalid configuration
+    db_connection_failed = 3,   ///< Could not acquire a PostgreSQL connection
+    nats_connection_failed = 4, ///< Could not connect to NATS
+    startup_timeout = 5,        ///< Timed out waiting for a dependency
+    auth_error = 6,             ///< Authentication or authorisation failure
 };
 
 /**
@@ -49,14 +49,22 @@ enum class exit_code : int {
  */
 inline constexpr std::string_view exit_code_name(exit_code code) noexcept {
     switch (code) {
-    case exit_code::ok:                     return "ok";
-    case exit_code::general_error:          return "general_error";
-    case exit_code::config_error:           return "config_error";
-    case exit_code::db_connection_failed:   return "db_connection_failed";
-    case exit_code::nats_connection_failed: return "nats_connection_failed";
-    case exit_code::startup_timeout:        return "startup_timeout";
-    case exit_code::auth_error:             return "auth_error";
-    default:                                return "unknown";
+        case exit_code::ok:
+            return "ok";
+        case exit_code::general_error:
+            return "general_error";
+        case exit_code::config_error:
+            return "config_error";
+        case exit_code::db_connection_failed:
+            return "db_connection_failed";
+        case exit_code::nats_connection_failed:
+            return "nats_connection_failed";
+        case exit_code::startup_timeout:
+            return "startup_timeout";
+        case exit_code::auth_error:
+            return "auth_error";
+        default:
+            return "unknown";
     }
 }
 
@@ -69,14 +77,22 @@ inline constexpr std::string_view exit_code_name(exit_code code) noexcept {
  */
 inline constexpr exit_code to_exit_code(int raw) noexcept {
     switch (raw) {
-    case 0: return exit_code::ok;
-    case 1: return exit_code::general_error;
-    case 2: return exit_code::config_error;
-    case 3: return exit_code::db_connection_failed;
-    case 4: return exit_code::nats_connection_failed;
-    case 5: return exit_code::startup_timeout;
-    case 6: return exit_code::auth_error;
-    default: return exit_code::general_error;
+        case 0:
+            return exit_code::ok;
+        case 1:
+            return exit_code::general_error;
+        case 2:
+            return exit_code::config_error;
+        case 3:
+            return exit_code::db_connection_failed;
+        case 4:
+            return exit_code::nats_connection_failed;
+        case 5:
+            return exit_code::startup_timeout;
+        case 6:
+            return exit_code::auth_error;
+        default:
+            return exit_code::general_error;
     }
 }
 

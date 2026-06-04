@@ -20,12 +20,12 @@
 #ifndef ORES_STORAGE_NET_STORAGE_TRANSFER_HPP
 #define ORES_STORAGE_NET_STORAGE_TRANSFER_HPP
 
+#include "ores.storage/export.hpp"
 #include <cstddef>
+#include <filesystem>
 #include <span>
 #include <string>
 #include <vector>
-#include <filesystem>
-#include "ores.storage/export.hpp"
 
 namespace ores::storage::net {
 
@@ -62,8 +62,7 @@ public:
      * @param dest_archive  Output archive path.
      * @throws std::runtime_error on failure.
      */
-    void pack(const std::filesystem::path& src_dir,
-        const std::filesystem::path& dest_archive);
+    void pack(const std::filesystem::path& src_dir, const std::filesystem::path& dest_archive);
 
     /**
      * @brief Extract a .tar.gz archive into a destination directory.
@@ -72,8 +71,7 @@ public:
      * @param dest_dir  Directory into which entries are extracted.
      * @throws std::runtime_error on failure.
      */
-    void unpack(const std::filesystem::path& archive,
-        const std::filesystem::path& dest_dir);
+    void unpack(const std::filesystem::path& archive, const std::filesystem::path& dest_dir);
 
     /**
      * @brief Upload a local file to storage via HTTP PUT.
@@ -83,8 +81,9 @@ public:
      * @param src_file  Local file to upload.
      * @throws std::runtime_error on HTTP or I/O failure.
      */
-    void upload(const std::string& bucket, const std::string& key,
-        const std::filesystem::path& src_file);
+    void upload(const std::string& bucket,
+                const std::string& key,
+                const std::filesystem::path& src_file);
 
     /**
      * @brief Download an object from storage via HTTP GET.
@@ -94,8 +93,9 @@ public:
      * @param dest_file  Local path to write the downloaded content.
      * @throws std::runtime_error on HTTP or I/O failure.
      */
-    void download(const std::string& bucket, const std::string& key,
-        const std::filesystem::path& dest_file);
+    void download(const std::string& bucket,
+                  const std::string& key,
+                  const std::filesystem::path& dest_file);
 
     // ── Composite helpers ─────────────────────────────────────────────────
 
@@ -106,7 +106,8 @@ public:
      * The temp file is removed after a successful upload.
      */
     void pack_and_upload(const std::filesystem::path& src_dir,
-        const std::string& bucket, const std::string& key);
+                         const std::string& bucket,
+                         const std::string& key);
 
     /**
      * @brief Download from storage into a temp archive, then extract.
@@ -114,8 +115,9 @@ public:
      * Equivalent to: download(bucket, key, tmp) + unpack(tmp, dest_dir).
      * The temp file is removed after successful extraction.
      */
-    void fetch_and_unpack(const std::string& bucket, const std::string& key,
-        const std::filesystem::path& dest_dir);
+    void fetch_and_unpack(const std::string& bucket,
+                          const std::string& key,
+                          const std::filesystem::path& dest_dir);
 
     /**
      * @brief Upload an in-memory blob to storage.
@@ -124,8 +126,7 @@ public:
      * the temp file.  Useful for serialised binary payloads (e.g. MsgPack)
      * that are too large for NATS messages.
      */
-    void upload_blob(const std::string& bucket, const std::string& key,
-        std::span<const char> data);
+    void upload_blob(const std::string& bucket, const std::string& key, std::span<const char> data);
 
     /**
      * @brief Download a blob from storage into memory.
@@ -133,8 +134,7 @@ public:
      * Downloads to a UUID-named temp file, reads it into a vector, then
      * removes the temp file.
      */
-    std::vector<char> download_blob(const std::string& bucket,
-        const std::string& key);
+    std::vector<char> download_blob(const std::string& bucket, const std::string& key);
 
 private:
     std::string http_base_url_;

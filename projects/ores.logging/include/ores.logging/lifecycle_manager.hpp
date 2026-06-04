@@ -20,14 +20,14 @@
 #ifndef ORES_LOGGING_LIFECYCLE_MANAGER_HPP
 #define ORES_LOGGING_LIFECYCLE_MANAGER_HPP
 
+#include "ores.logging/boost_severity.hpp"
+#include "ores.logging/export.hpp"
+#include "ores.logging/logging_options.hpp"
+#include <boost/log/sinks.hpp>
+#include <boost/shared_ptr.hpp>
+#include <filesystem>
 #include <memory>
 #include <optional>
-#include <filesystem>
-#include <boost/shared_ptr.hpp>
-#include <boost/log/sinks.hpp>
-#include "ores.logging/boost_severity.hpp"
-#include "ores.logging/logging_options.hpp"
-#include "ores.logging/export.hpp"
 
 namespace ores::logging {
 
@@ -43,10 +43,10 @@ namespace ores::logging {
  */
 class ORES_LOGGING_EXPORT lifecycle_manager {
 protected:
-    using file_sink_type = boost::log::sinks::synchronous_sink<
-        boost::log::sinks::text_file_backend>;
-    using console_sink_type = boost::log::sinks::synchronous_sink<
-        boost::log::sinks::text_ostream_backend>;
+    using file_sink_type =
+        boost::log::sinks::synchronous_sink<boost::log::sinks::text_file_backend>;
+    using console_sink_type =
+        boost::log::sinks::synchronous_sink<boost::log::sinks::text_ostream_backend>;
 
 public:
     lifecycle_manager(lifecycle_manager&&) = delete;
@@ -59,17 +59,15 @@ protected:
      * @note path is non-const by ref by design.
      */
     static boost::shared_ptr<file_sink_type>
-    make_file_sink(std::filesystem::path path, boost_severity severity,
-        std::string tag);
+    make_file_sink(std::filesystem::path path, boost_severity severity, std::string tag);
 
     /**
      * @brief Creates a boost log console sink.
      */
-    static boost::shared_ptr<console_sink_type> make_console_sink(
-        boost_severity severity, std::string tag);
+    static boost::shared_ptr<console_sink_type> make_console_sink(boost_severity severity,
+                                                                  std::string tag);
 
 public:
-
     /**
      * @brief Initialise logging for the entire application.
      *

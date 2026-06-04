@@ -20,8 +20,8 @@
 #ifndef ORES_LOGGING_LOGGING_OPTIONS_VALIDATOR_HPP
 #define ORES_LOGGING_LOGGING_OPTIONS_VALIDATOR_HPP
 
-#include "ores.logging/logging_options.hpp"
 #include "ores.logging/export.hpp"
+#include "ores.logging/logging_options.hpp"
 
 namespace ores::logging {
 

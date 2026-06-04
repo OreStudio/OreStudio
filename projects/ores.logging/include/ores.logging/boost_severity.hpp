@@ -20,11 +20,11 @@
 #ifndef ORES_LOGGING_BOOST_SEVERITY_HPP
 #define ORES_LOGGING_BOOST_SEVERITY_HPP
 
-#include <string>
+#include "ores.logging/export.hpp"
+#include "ores.logging/severity_level.hpp"
 #include <ostream>
 #include <stdexcept>
-#include "ores.logging/severity_level.hpp"
-#include "ores.logging/export.hpp"
+#include <string>
 
 namespace ores::logging {
 
@@ -38,13 +38,7 @@ namespace ores::logging {
  * @note This is an implementation detail and should not be used directly
  * by client code.
  */
-enum boost_severity {
-    trace,
-    debug,
-    info,
-    warn,
-    error
-};
+enum boost_severity { trace, debug, info, warn, error };
 
 /**
  * @brief Converts a string to boost_severity.
@@ -76,18 +70,28 @@ ORES_LOGGING_EXPORT severity_level to_domain_severity(boost_severity sev);
  *
  * Required for interoperability with Boost.Log.
  */
-template<typename CharT, typename TraitsT>
-inline std::basic_ostream<CharT, TraitsT>&
-operator<<(std::basic_ostream<CharT, TraitsT>& stream, boost_severity level) {
-    switch(level) {
-    case boost_severity::trace: stream << "TRACE"; break;
-    case boost_severity::debug: stream << "DEBUG"; break;
-    case boost_severity::info:  stream << "INFO"; break;
-    case boost_severity::warn:  stream << "WARN"; break;
-    case boost_severity::error: stream << "ERROR"; break;
-    default:
-        throw std::invalid_argument("Invalid or unexpected severity level");
-        break;
+template <typename CharT, typename TraitsT>
+inline std::basic_ostream<CharT, TraitsT>& operator<<(std::basic_ostream<CharT, TraitsT>& stream,
+                                                      boost_severity level) {
+    switch (level) {
+        case boost_severity::trace:
+            stream << "TRACE";
+            break;
+        case boost_severity::debug:
+            stream << "DEBUG";
+            break;
+        case boost_severity::info:
+            stream << "INFO";
+            break;
+        case boost_severity::warn:
+            stream << "WARN";
+            break;
+        case boost_severity::error:
+            stream << "ERROR";
+            break;
+        default:
+            throw std::invalid_argument("Invalid or unexpected severity level");
+            break;
     }
     return stream;
 }

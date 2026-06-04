@@ -18,32 +18,30 @@
  *
  */
 #include "ores.storage/net/http_client.hpp"
-
-#include <limits>
-#include <stdexcept>
+#include <boost/asio/connect.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
-#include <boost/asio/connect.hpp>
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
+#include <limits>
+#include <stdexcept>
 
 namespace ores::storage::net {
 
 namespace beast = boost::beast;
-namespace http  = boost::beast::http;
-namespace asio  = boost::asio;
-using tcp       = asio::ip::tcp;
+namespace http = boost::beast::http;
+namespace asio = boost::asio;
+using tcp = asio::ip::tcp;
 
 http_client::url_parts http_client::parse_url(const std::string& url) {
     constexpr std::string_view prefix = "http://";
     if (url.substr(0, prefix.size()) != prefix)
         throw std::runtime_error("http_client: only http:// URLs supported: " + url);
 
-    const auto rest      = url.substr(prefix.size());
-    const auto slash     = rest.find('/');
+    const auto rest = url.substr(prefix.size());
+    const auto slash = rest.find('/');
     const auto authority = (slash == std::string::npos) ? rest : rest.substr(0, slash);
-    const auto path      = (slash == std::string::npos) ? std::string("/") :
-                           rest.substr(slash);
+    const auto path = (slash == std::string::npos) ? std::string("/") : rest.substr(slash);
 
     const auto colon = authority.rfind(':');
     if (colon == std::string::npos)
@@ -80,8 +78,8 @@ void http_client::get(const std::string& url, const std::filesystem::path& dest)
     http::read(stream, buf, parser);
 
     if (parser.get().result_int() < 200 || parser.get().result_int() >= 300)
-        throw std::runtime_error("http_client: GET " + url + " returned HTTP "
-            + std::to_string(parser.get().result_int()));
+        throw std::runtime_error("http_client: GET " + url + " returned HTTP " +
+                                 std::to_string(parser.get().result_int()));
 
     beast::error_code ec;
     stream.socket().shutdown(tcp::socket::shutdown_both, ec);
@@ -114,8 +112,8 @@ void http_client::put(const std::string& url, const std::filesystem::path& src) 
     http::read(stream, buf, res);
 
     if (res.result_int() < 200 || res.result_int() >= 300)
-        throw std::runtime_error("http_client: PUT " + url + " returned HTTP "
-            + std::to_string(res.result_int()));
+        throw std::runtime_error("http_client: PUT " + url + " returned HTTP " +
+                                 std::to_string(res.result_int()));
 
     beast::error_code ec;
     stream.socket().shutdown(tcp::socket::shutdown_both, ec);

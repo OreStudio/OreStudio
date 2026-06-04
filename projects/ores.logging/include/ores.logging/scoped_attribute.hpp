@@ -20,11 +20,11 @@
 #ifndef ORES_LOGGING_SCOPED_ATTRIBUTE_HPP
 #define ORES_LOGGING_SCOPED_ATTRIBUTE_HPP
 
-#include <string>
-#include <optional>
-#include <boost/log/core.hpp>
-#include <boost/log/attributes/constant.hpp>
 #include <boost/log/attributes/attribute_set.hpp>
+#include <boost/log/attributes/constant.hpp>
+#include <boost/log/core.hpp>
+#include <optional>
+#include <string>
 
 namespace ores::logging {
 
@@ -68,8 +68,7 @@ public:
      */
     explicit scoped_attribute(const std::string& attribute_name) {
         auto result = boost::log::core::get()->add_thread_attribute(
-            attribute_name,
-            boost::log::attributes::constant<bool>(true));
+            attribute_name, boost::log::attributes::constant<bool>(true));
         if (result.second) {
             iterator_ = result.first;
         }

@@ -51,8 +51,7 @@ struct storage_paths {
      * @param key     Object key; may contain slashes for hierarchical keys.
      * @return        Path string, e.g. "/api/v1/storage/compute-packages/abc123".
      */
-    static std::string make_object_path(std::string_view bucket,
-        std::string_view key) {
+    static std::string make_object_path(std::string_view bucket, std::string_view key) {
         std::string path;
         path.reserve(prefix.size() + 1 + bucket.size() + 1 + key.size());
         path += prefix;
@@ -71,8 +70,8 @@ struct storage_paths {
      * @param key       Object key.
      * @return          Full URL string.
      */
-    static std::string make_object_url(std::string_view base_url,
-        std::string_view bucket, std::string_view key) {
+    static std::string
+    make_object_url(std::string_view base_url, std::string_view bucket, std::string_view key) {
         std::string url(base_url);
         url += make_object_path(bucket, key);
         return url;

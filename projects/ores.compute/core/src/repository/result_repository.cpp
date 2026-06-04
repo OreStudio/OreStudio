@@ -18,13 +18,12 @@
  *
  */
 #include "ores.compute.core/repository/result_repository.hpp"
-
-#include <sqlgen/postgres.hpp>
-#include "ores.database/repository/helpers.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.compute.api/domain/result_json_io.hpp" // IWYU pragma: keep.
 #include "ores.compute.core/repository/result_entity.hpp"
 #include "ores.compute.core/repository/result_mapper.hpp"
+#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
+#include <sqlgen/postgres.hpp>
 
 namespace ores::compute::repository {
 
@@ -39,87 +38,89 @@ std::string result_repository::sql() {
 
 void result_repository::write(context ctx, const domain::result& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing compute result: " << v.id;
-    execute_write_query(ctx, result_mapper::map(v),
-        lg(), "Writing compute result to database.");
+    execute_write_query(ctx, result_mapper::map(v), lg(), "Writing compute result to database.");
 }
 
-void result_repository::write(
-    context ctx, const std::vector<domain::result>& v) {
+void result_repository::write(context ctx, const std::vector<domain::result>& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing compute results. Count: " << v.size();
-    execute_write_query(ctx, result_mapper::map(v),
-        lg(), "Writing compute results to database.");
+    execute_write_query(ctx, result_mapper::map(v), lg(), "Writing compute results to database.");
 }
 
-std::vector<domain::result>
-result_repository::read_latest(context ctx) {
+std::vector<domain::result> result_repository::read_latest(context ctx) {
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<result_entity>> |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-        order_by("id"_c);
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("id"_c);
 
     return execute_read_query<result_entity, domain::result>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return result_mapper::map(entities); },
-        lg(), "Reading latest compute results");
+        lg(),
+        "Reading latest compute results");
 }
 
-std::vector<domain::result>
-result_repository::read_latest(context ctx, const std::string& id) {
+std::vector<domain::result> result_repository::read_latest(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest compute result. id: " << id;
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<result_entity>> |
-        where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
     return execute_read_query<result_entity, domain::result>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return result_mapper::map(entities); },
-        lg(), "Reading latest compute result by id.");
+        lg(),
+        "Reading latest compute result by id.");
 }
 
-std::vector<domain::result>
-result_repository::read_all(context ctx, const std::string& id) {
+std::vector<domain::result> result_repository::read_all(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all compute result versions. id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<result_entity>> |
-        where("tenant_id"_c == tid && "id"_c == id) |
-        order_by("version"_c.desc());
+                       where("tenant_id"_c == tid && "id"_c == id) | order_by("version"_c.desc());
 
     return execute_read_query<result_entity, domain::result>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return result_mapper::map(entities); },
-        lg(), "Reading all compute result versions by id.");
+        lg(),
+        "Reading all compute result versions by id.");
 }
 
-std::vector<domain::result>
-result_repository::read_by_workunit(context ctx, const std::string& workunit_id) {
+std::vector<domain::result> result_repository::read_by_workunit(context ctx,
+                                                                const std::string& workunit_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading results by workunit: " << workunit_id;
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<result_entity>> |
-        where("tenant_id"_c == tid && "workunit_id"_c == workunit_id
-            && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "workunit_id"_c == workunit_id &&
+                             "valid_to"_c == max.value());
 
     return execute_read_query<result_entity, domain::result>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return result_mapper::map(entities); },
-        lg(), "Reading results by workunit.");
+        lg(),
+        "Reading results by workunit.");
 }
 
-std::vector<domain::result>
-result_repository::read_by_state(context ctx, int server_state) {
+std::vector<domain::result> result_repository::read_by_state(context ctx, int server_state) {
     BOOST_LOG_SEV(lg(), debug) << "Reading results by state: " << server_state;
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<result_entity>> |
-        where("tenant_id"_c == tid && "server_state"_c == server_state
-            && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "server_state"_c == server_state &&
+                             "valid_to"_c == max.value());
 
     return execute_read_query<result_entity, domain::result>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return result_mapper::map(entities); },
-        lg(), "Reading results by state.");
+        lg(),
+        "Reading results by state.");
 }
 
 void result_repository::remove(context ctx, const std::string& id) {
@@ -127,7 +128,7 @@ void result_repository::remove(context ctx, const std::string& id) {
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<result_entity> |
-        where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
     execute_delete_query(ctx, query, lg(), "Removing compute result from database.");
 }

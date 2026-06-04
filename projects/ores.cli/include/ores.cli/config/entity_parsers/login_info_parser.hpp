@@ -20,21 +20,20 @@
 #ifndef ORES_CLI_CONFIG_ENTITY_PARSERS_LOGIN_INFO_PARSER_HPP
 #define ORES_CLI_CONFIG_ENTITY_PARSERS_LOGIN_INFO_PARSER_HPP
 
-#include <optional>
-#include <iosfwd>
-#include <boost/program_options.hpp>
 #include "ores.cli/config/options.hpp"
+#include <boost/program_options.hpp>
+#include <iosfwd>
+#include <optional>
 
 namespace ores::cli::config::entity_parsers {
 
 /**
  * @brief Handles parsing of login-info entity commands.
  */
-std::optional<options>
-handle_login_info_command(bool has_help,
-    const boost::program_options::parsed_options& po,
-    std::ostream& info,
-    boost::program_options::variables_map& vm);
+std::optional<options> handle_login_info_command(bool has_help,
+                                                 const boost::program_options::parsed_options& po,
+                                                 std::ostream& info,
+                                                 boost::program_options::variables_map& vm);
 
 }
 

@@ -18,7 +18,6 @@
  *
  */
 #include "ores.reporting.core/service/report_type_service.hpp"
-
 #include <stdexcept>
 
 namespace ores::reporting::service {
@@ -33,11 +32,11 @@ std::vector<domain::report_type> report_type_service::list_types() {
     return repo_.read_latest(ctx_);
 }
 
-std::optional<domain::report_type>
-report_type_service::find_type(const std::string& code) {
+std::optional<domain::report_type> report_type_service::find_type(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Finding report type: " << code;
     auto results = repo_.read_latest(ctx_, code);
-    if (results.empty()) return std::nullopt;
+    if (results.empty())
+        return std::nullopt;
     return results.front();
 }
 
@@ -55,8 +54,7 @@ void report_type_service::remove_type(const std::string& code) {
     BOOST_LOG_SEV(lg(), info) << "Removed report type: " << code;
 }
 
-std::vector<domain::report_type>
-report_type_service::get_type_history(const std::string& code) {
+std::vector<domain::report_type> report_type_service::get_type_history(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for report type: " << code;
     return repo_.read_all(ctx_, code);
 }

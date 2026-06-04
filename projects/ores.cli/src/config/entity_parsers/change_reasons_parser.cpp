@@ -18,16 +18,15 @@
  *
  */
 #include "ores.cli/config/entity_parsers/change_reasons_parser.hpp"
-
-#include <boost/program_options.hpp>
-#include <boost/throw_exception.hpp>
-#include "ores.cli/config/parser_helpers.hpp"
-#include "ores.cli/config/parser_exception.hpp"
-#include "ores.cli/config/entity.hpp"
 #include "ores.cli/config/add_change_reason_options.hpp"
+#include "ores.cli/config/entity.hpp"
+#include "ores.cli/config/parser_exception.hpp"
+#include "ores.cli/config/parser_helpers.hpp"
 #include "ores.database/config/database_configuration.hpp"
 #include "ores.logging/logging_configuration.hpp"
 #include "ores.utility/program_options/environment_mapper_factory.hpp"
+#include <boost/program_options.hpp>
+#include <boost/throw_exception.hpp>
 
 namespace ores::cli::config::entity_parsers {
 
@@ -60,26 +59,26 @@ const std::string delete_command_name("delete");
 const std::string add_command_name("add");
 
 const std::vector<std::string> allowed_operations{
-    list_command_name, delete_command_name, add_command_name
-};
+    list_command_name, delete_command_name, add_command_name};
 
 options_description make_add_change_reason_options_description() {
     options_description r("Add Change Reason Options");
-    r.add_options()
-        ("code", value<std::string>(),
-            "Change reason code in format category.reason (required)")
-        ("description", value<std::string>(), "Description (required)")
-        ("category-code", value<std::string>(), "Category code (required)")
-        ("applies-to-amend", bool_switch()->default_value(true),
-            "Can be used for amend operations (default: true)")
-        ("applies-to-delete", bool_switch()->default_value(true),
-            "Can be used for delete operations (default: true)")
-        ("requires-commentary", bool_switch()->default_value(false),
-            "Commentary is mandatory (default: false)")
-        ("display-order", value<int>()->default_value(0),
-            "Display order for UI (default: 0)")
-        ("modified-by", value<std::string>(), "Username of modifier (required)")
-        ("change-commentary", value<std::string>(), "Change commentary");
+    r.add_options()(
+        "code", value<std::string>(), "Change reason code in format category.reason (required)")(
+        "description", value<std::string>(), "Description (required)")(
+        "category-code", value<std::string>(), "Category code (required)")(
+        "applies-to-amend",
+        bool_switch()->default_value(true),
+        "Can be used for amend operations (default: true)")(
+        "applies-to-delete",
+        bool_switch()->default_value(true),
+        "Can be used for delete operations (default: true)")(
+        "requires-commentary",
+        bool_switch()->default_value(false),
+        "Commentary is mandatory (default: false)")(
+        "display-order", value<int>()->default_value(0), "Display order for UI (default: 0)")(
+        "modified-by", value<std::string>(), "Username of modifier (required)")(
+        "change-commentary", value<std::string>(), "Change commentary");
 
     return r;
 }
@@ -124,11 +123,10 @@ add_change_reason_options read_add_change_reason_options(const variables_map& vm
 
 }
 
-std::optional<options>
-handle_change_reasons_command(bool has_help,
-    const parsed_options& po,
-    std::ostream& info,
-    variables_map& vm) {
+std::optional<options> handle_change_reasons_command(bool has_help,
+                                                     const parsed_options& po,
+                                                     std::ostream& info,
+                                                     variables_map& vm) {
 
     auto o(collect_unrecognized(po.options, include_positional));
     o.erase(o.begin());
@@ -137,15 +135,14 @@ handle_change_reasons_command(bool has_help,
         const std::vector<std::pair<std::string, std::string>> operations = {
             {"list", "List change reasons as JSON or table"},
             {"delete", "Delete a change reason by code"},
-            {"add", "Add a new change reason"}
-        };
+            {"add", "Add a new change reason"}};
         print_entity_help("change-reasons", "Manage change reasons", operations, info);
         return {};
     }
 
     if (o.empty()) {
-        BOOST_THROW_EXCEPTION(parser_exception(
-            "change-reasons command requires an operation (list, delete, add)"));
+        BOOST_THROW_EXCEPTION(
+            parser_exception("change-reasons command requires an operation (list, delete, add)"));
     }
 
     const auto operation = o.front();

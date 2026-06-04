@@ -18,7 +18,6 @@
  *
  */
 #include "ores.reporting.core/service/report_instance_service.hpp"
-
 #include <stdexcept>
 
 namespace ores::reporting::service {
@@ -37,7 +36,8 @@ std::optional<domain::report_instance>
 report_instance_service::find_instance(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Finding report instance: " << id;
     auto results = repo_.read_latest(ctx_, id);
-    if (results.empty()) return std::nullopt;
+    if (results.empty())
+        return std::nullopt;
     return results.front();
 }
 

@@ -20,9 +20,9 @@
 #ifndef ORES_COMPUTE_DOMAIN_RESULT_JSON_IO_HPP
 #define ORES_COMPUTE_DOMAIN_RESULT_JSON_IO_HPP
 
-#include <iosfwd>
 #include "ores.compute.api/domain/result.hpp"
 #include "ores.compute.api/export.hpp"
+#include <iosfwd>
 
 namespace ores::compute::domain {
 

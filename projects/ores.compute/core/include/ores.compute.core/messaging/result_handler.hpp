@@ -20,33 +20,32 @@
 #ifndef ORES_COMPUTE_MESSAGING_RESULT_HANDLER_HPP
 #define ORES_COMPUTE_MESSAGING_RESULT_HANDLER_HPP
 
-#include <optional>
-#include <stdexcept>
-#include <algorithm>
-#include <rfl/json.hpp>
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
+#include "ores.compute.api/messaging/result_protocol.hpp"
+#include "ores.compute.core/export.hpp"
+#include "ores.compute.core/service/batch_service.hpp"
+#include "ores.compute.core/service/result_service.hpp"
+#include "ores.compute.core/service/workunit_service.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.dq.api/domain/change_reason.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.database/domain/context.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include "ores.compute.api/messaging/result_protocol.hpp"
-#include "ores.compute.core/service/result_service.hpp"
-#include "ores.dq.api/domain/change_reason.hpp"
-#include "ores.compute.core/service/workunit_service.hpp"
-#include "ores.compute.core/service/batch_service.hpp"
-#include "ores.compute.core/export.hpp"
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
+#include <optional>
+#include <rfl/json.hpp>
+#include <stdexcept>
 
 namespace ores::compute::messaging {
 
 namespace {
 inline auto& result_handler_lg() {
-    static auto instance = ores::logging::make_logger(
-        "ores.compute.messaging.result_handler");
+    static auto instance = ores::logging::make_logger("ores.compute.messaging.result_handler");
     return instance;
 }
 } // namespace
@@ -58,18 +57,18 @@ using ores::service::messaging::stamp;
 using ores::service::messaging::error_reply;
 using namespace ores::logging;
 
-class ORES_COMPUTE_CORE_EXPORT result_handler  {
+class ORES_COMPUTE_CORE_EXPORT result_handler {
 public:
     result_handler(ores::nats::service::client& nats,
-        ores::database::context ctx,
-        std::optional<ores::security::jwt::jwt_authenticator> verifier)
-        : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier)) {}
+                   ores::database::context ctx,
+                   std::optional<ores::security::jwt::jwt_authenticator> verifier)
+        : nats_(nats)
+        , ctx_(std::move(ctx))
+        , verifier_(std::move(verifier)) {}
 
     void list(ores::nats::message msg) {
-        BOOST_LOG_SEV(result_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        BOOST_LOG_SEV(result_handler_lg(), debug) << "Handling " << msg.subject;
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -80,18 +79,16 @@ public:
         try {
             if (auto req = decode<list_results_request>(msg)) {
                 resp.results = svc.list();
-                resp.total_available_count =
-                    static_cast<int>(resp.results.size());
+                resp.total_available_count = static_cast<int>(resp.results.size());
             }
-        } catch (...) {}
+        } catch (...) {
+        }
         reply(nats_, msg, resp);
-        BOOST_LOG_SEV(result_handler_lg(), debug)
-            << "Completed " << msg.subject;
+        BOOST_LOG_SEV(result_handler_lg(), debug) << "Completed " << msg.subject;
     }
 
     void submit(ores::nats::message msg) {
-        BOOST_LOG_SEV(result_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        BOOST_LOG_SEV(result_handler_lg(), debug) << "Handling " << msg.subject;
         // submit_result is called by trusted wrapper nodes without a JWT;
         // use the service context directly (same pattern as heartbeat handler).
         const auto& ctx = ctx_;
@@ -100,9 +97,10 @@ public:
                 service::result_service result_svc(ctx);
                 auto existing = result_svc.find(req->result_id);
                 if (!existing) {
-                    reply(nats_, msg, submit_result_response{
-                        .success = false,
-                        .message = "Result not found: " + req->result_id});
+                    reply(nats_,
+                          msg,
+                          submit_result_response{.success = false,
+                                                 .message = "Result not found: " + req->result_id});
                     return;
                 }
                 auto r = *existing;
@@ -112,19 +110,17 @@ public:
                 r.outcome = req->outcome;
                 if (!req->host_id.empty()) {
                     try {
-                        r.host_id = boost::lexical_cast<boost::uuids::uuid>(
-                            req->host_id);
+                        r.host_id = boost::lexical_cast<boost::uuids::uuid>(req->host_id);
                     } catch (const boost::bad_lexical_cast& e) {
                         BOOST_LOG_SEV(result_handler_lg(), warn)
-                            << "Invalid host_id in submit_result_request: "
-                            << req->host_id << " (" << e.what() << ")";
+                            << "Invalid host_id in submit_result_request: " << req->host_id << " ("
+                            << e.what() << ")";
                     }
                 }
                 r.error_message = req->error_message;
                 r.change_reason_code = ores::dq::domain::change_reasons::system_new_record;
-                r.change_commentary = req->error_message.empty()
-                    ? "Output received from wrapper"
-                    : req->error_message;
+                r.change_commentary = req->error_message.empty() ? "Output received from wrapper" :
+                                                                   req->error_message;
                 stamp(r, ctx);
                 result_svc.save(r);
 
@@ -134,12 +130,9 @@ public:
                 const auto wu_id_str = boost::uuids::to_string(r.workunit_id);
                 const auto wu_opt = wu_svc.find(wu_id_str);
                 if (wu_opt && wu_opt->canonical_result_id == boost::uuids::uuid{}) {
-                    const auto wu_results =
-                        result_svc.list_by_workunit(wu_id_str);
-                    const int done = static_cast<int>(
-                        std::ranges::count_if(wu_results, [](const auto& res) {
-                            return res.server_state == 5;
-                        }));
+                    const auto wu_results = result_svc.list_by_workunit(wu_id_str);
+                    const int done = static_cast<int>(std::ranges::count_if(
+                        wu_results, [](const auto& res) { return res.server_state == 5; }));
                     if (done >= wu_opt->target_redundancy) {
                         auto wu = *wu_opt;
                         wu.canonical_result_id = r.id;
@@ -148,34 +141,28 @@ public:
                         stamp(wu, ctx);
                         wu_svc.save(wu);
                         BOOST_LOG_SEV(result_handler_lg(), info)
-                            << "Validator: canonical result set for workunit "
-                            << wu_id_str;
+                            << "Validator: canonical result set for workunit " << wu_id_str;
 
                         // Assimilator: if all workunits in the batch have a
                         // canonical result, close the batch.
-                        const auto batch_id_str =
-                            boost::uuids::to_string(wu.batch_id);
-                        const auto batch_wus =
-                            wu_svc.list_by_batch(batch_id_str);
-                        const bool all_done = std::ranges::all_of(
-                            batch_wus, [](const auto& w) {
-                                return w.canonical_result_id != boost::uuids::uuid{};
-                            });
+                        const auto batch_id_str = boost::uuids::to_string(wu.batch_id);
+                        const auto batch_wus = wu_svc.list_by_batch(batch_id_str);
+                        const bool all_done = std::ranges::all_of(batch_wus, [](const auto& w) {
+                            return w.canonical_result_id != boost::uuids::uuid{};
+                        });
                         if (all_done) {
                             service::batch_service batch_svc(ctx);
-                            const auto batch_opt =
-                                batch_svc.find(batch_id_str);
+                            const auto batch_opt = batch_svc.find(batch_id_str);
                             if (batch_opt) {
                                 auto batch = *batch_opt;
                                 batch.status = "closed";
-                                batch.change_reason_code = ores::dq::domain::change_reasons::system_new_record;
-                                batch.change_commentary =
-                                    "All workunits complete";
+                                batch.change_reason_code =
+                                    ores::dq::domain::change_reasons::system_new_record;
+                                batch.change_commentary = "All workunits complete";
                                 stamp(batch, ctx);
                                 batch_svc.save(batch);
                                 BOOST_LOG_SEV(result_handler_lg(), info)
-                                    << "Assimilator: batch "
-                                    << batch_id_str << " closed";
+                                    << "Assimilator: batch " << batch_id_str << " closed";
                             }
                         }
                     }
@@ -183,15 +170,12 @@ public:
 
                 reply(nats_, msg, submit_result_response{.success = true});
             } catch (const std::exception& e) {
-                reply(nats_, msg, submit_result_response{
-                    .success = false, .message = e.what()});
+                reply(nats_, msg, submit_result_response{.success = false, .message = e.what()});
             }
         } else {
-            BOOST_LOG_SEV(result_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(result_handler_lg(), warn) << "Failed to decode: " << msg.subject;
         }
-        BOOST_LOG_SEV(result_handler_lg(), debug)
-            << "Completed " << msg.subject;
+        BOOST_LOG_SEV(result_handler_lg(), debug) << "Completed " << msg.subject;
     }
 
 private:

@@ -17,16 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.eventing/domain/event_traits.hpp"
+#include "ores.eventing/service/event_bus.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.reporting.api/eventing/concurrency_policy_changed_event.hpp"
 #include "ores.reporting.api/eventing/report_definition_changed_event.hpp"
 #include "ores.reporting.api/eventing/report_instance_changed_event.hpp"
 #include "ores.reporting.api/eventing/report_type_changed_event.hpp"
-#include "ores.eventing/domain/event_traits.hpp"
-#include "ores.eventing/service/event_bus.hpp"
-
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.logging/make_logger.hpp"
 
 namespace {
 
@@ -49,7 +48,7 @@ TEST_CASE("event_traits_concurrency_policy_changed_event", tags) {
     BOOST_LOG_SEV(lg, info) << "Testing concurrency_policy_changed_event traits";
 
     REQUIRE(event_traits<concurrency_policy_changed_event>::name ==
-        "ores.reporting.concurrency_policy_changed");
+            "ores.reporting.concurrency_policy_changed");
     STATIC_REQUIRE(has_event_traits<concurrency_policy_changed_event>);
 }
 
@@ -59,7 +58,7 @@ TEST_CASE("event_traits_report_definition_changed_event", tags) {
     BOOST_LOG_SEV(lg, info) << "Testing report_definition_changed_event traits";
 
     REQUIRE(event_traits<report_definition_changed_event>::name ==
-        "ores.reporting.report_definition_changed");
+            "ores.reporting.report_definition_changed");
     STATIC_REQUIRE(has_event_traits<report_definition_changed_event>);
 }
 
@@ -69,7 +68,7 @@ TEST_CASE("event_traits_report_instance_changed_event", tags) {
     BOOST_LOG_SEV(lg, info) << "Testing report_instance_changed_event traits";
 
     REQUIRE(event_traits<report_instance_changed_event>::name ==
-        "ores.reporting.report_instance_changed");
+            "ores.reporting.report_instance_changed");
     STATIC_REQUIRE(has_event_traits<report_instance_changed_event>);
 }
 
@@ -78,8 +77,7 @@ TEST_CASE("event_traits_report_type_changed_event", tags) {
 
     BOOST_LOG_SEV(lg, info) << "Testing report_type_changed_event traits";
 
-    REQUIRE(event_traits<report_type_changed_event>::name ==
-        "ores.reporting.report_type_changed");
+    REQUIRE(event_traits<report_type_changed_event>::name == "ores.reporting.report_type_changed");
     STATIC_REQUIRE(has_event_traits<report_type_changed_event>);
 }
 
@@ -91,8 +89,7 @@ TEST_CASE("create_concurrency_policy_changed_event", tags) {
     sut.codes = {"skip", "queue"};
     sut.tenant_id = "system";
 
-    BOOST_LOG_SEV(lg, info) << "Concurrency policy changed event - codes: "
-        << sut.codes.size();
+    BOOST_LOG_SEV(lg, info) << "Concurrency policy changed event - codes: " << sut.codes.size();
 
     CHECK(sut.codes.size() == 2);
     CHECK(sut.codes[0] == "skip");
@@ -107,8 +104,7 @@ TEST_CASE("create_report_definition_changed_event", tags) {
     sut.ids = {"uuid-def-1", "uuid-def-2"};
     sut.tenant_id = "tenant1";
 
-    BOOST_LOG_SEV(lg, info) << "Report definition changed event - ids: "
-        << sut.ids.size();
+    BOOST_LOG_SEV(lg, info) << "Report definition changed event - ids: " << sut.ids.size();
 
     CHECK(sut.ids.size() == 2);
     CHECK(sut.tenant_id == "tenant1");
@@ -122,8 +118,7 @@ TEST_CASE("create_report_instance_changed_event", tags) {
     sut.ids = {"uuid-inst-1"};
     sut.tenant_id = "tenant1";
 
-    BOOST_LOG_SEV(lg, info) << "Report instance changed event - ids: "
-        << sut.ids.size();
+    BOOST_LOG_SEV(lg, info) << "Report instance changed event - ids: " << sut.ids.size();
 
     CHECK(sut.ids.size() == 1);
     CHECK(!sut.tenant_id.empty());
@@ -137,8 +132,7 @@ TEST_CASE("create_report_type_changed_event", tags) {
     sut.codes = {"risk", "grid"};
     sut.tenant_id = "system";
 
-    BOOST_LOG_SEV(lg, info) << "Report type changed event - codes: "
-        << sut.codes.size();
+    BOOST_LOG_SEV(lg, info) << "Report type changed event - codes: " << sut.codes.size();
 
     CHECK(sut.codes.size() == 2);
     CHECK(sut.tenant_id == "system");

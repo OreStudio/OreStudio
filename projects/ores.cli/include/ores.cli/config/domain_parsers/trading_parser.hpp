@@ -20,10 +20,10 @@
 #ifndef ORES_CLI_CONFIG_DOMAIN_PARSERS_TRADING_PARSER_HPP
 #define ORES_CLI_CONFIG_DOMAIN_PARSERS_TRADING_PARSER_HPP
 
-#include <optional>
-#include <iosfwd>
-#include <boost/program_options.hpp>
 #include "ores.cli/config/options.hpp"
+#include <boost/program_options.hpp>
+#include <iosfwd>
+#include <optional>
 
 namespace ores::cli::config::domain_parsers {
 
@@ -31,9 +31,9 @@ namespace ores::cli::config::domain_parsers {
  * @brief Handles parsing of trading domain commands.
  */
 std::optional<options> handle_trading_command(bool has_help,
-    const boost::program_options::parsed_options& po,
-    std::ostream& info,
-    boost::program_options::variables_map& vm);
+                                              const boost::program_options::parsed_options& po,
+                                              std::ostream& info,
+                                              boost::program_options::variables_map& vm);
 
 }
 

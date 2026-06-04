@@ -20,11 +20,11 @@
 #ifndef ORES_COMPUTE_REPOSITORY_APP_VERSION_ENTITY_HPP
 #define ORES_COMPUTE_REPOSITORY_APP_VERSION_ENTITY_HPP
 
-#include <string>
-#include <optional>
-#include <ostream>
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
+#include <optional>
+#include <ostream>
+#include <string>
 
 namespace ores::compute::repository {
 

@@ -20,8 +20,8 @@
 #ifndef ORES_COMPUTE_DOMAIN_APP_HPP
 #define ORES_COMPUTE_DOMAIN_APP_HPP
 
-#include <string>
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <string>
 
 namespace ores::compute::domain {
 

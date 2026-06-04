@@ -18,16 +18,15 @@
  *
  */
 #include "ores.cli/config/entity_parsers/compute_app_versions_parser.hpp"
-
-#include <boost/program_options.hpp>
-#include <boost/throw_exception.hpp>
-#include "ores.cli/config/parser_helpers.hpp"
-#include "ores.cli/config/parser_exception.hpp"
-#include "ores.cli/config/entity.hpp"
 #include "ores.cli/config/add_compute_app_version_options.hpp"
+#include "ores.cli/config/entity.hpp"
+#include "ores.cli/config/parser_exception.hpp"
+#include "ores.cli/config/parser_helpers.hpp"
 #include "ores.database/config/database_configuration.hpp"
 #include "ores.logging/logging_configuration.hpp"
 #include "ores.utility/program_options/environment_mapper_factory.hpp"
+#include <boost/program_options.hpp>
+#include <boost/throw_exception.hpp>
 
 namespace ores::cli::config::entity_parsers {
 
@@ -55,33 +54,22 @@ using ores::cli::config::parser_helpers::read_export_options;
 const std::string list_command_name("list");
 const std::string add_command_name("add");
 
-const std::vector<std::string> allowed_operations{
-    list_command_name, add_command_name
-};
+const std::vector<std::string> allowed_operations{list_command_name, add_command_name};
 
 options_description make_add_compute_app_version_options_description() {
     options_description r("Add Compute App Version Options");
-    r.add_options()
-        ("app-id",
-            value<std::string>(),
-            "Parent app UUID (required)")
-        ("wrapper-version",
-            value<std::string>(),
-            "Wrapper binary version, e.g. 'v1.2.0' (required)")
-        ("engine-version",
-            value<std::string>(),
-            "Engine version, e.g. 'ORE-Studio-7.1' (required)")
-        ("platform-package",
-            value<std::vector<std::string>>()->multitoken(),
-            "Per-platform package as '<platform-code>=<package-uri>' "
-            "(required; repeatable). Platform codes match vcpkg triplets "
-            "(x64-linux, arm64-osx, x64-windows, ...).")
-        ("min-ram-mb",
-            value<int>()->default_value(0),
-            "Minimum RAM in MB required")
-        ("modified-by",
-            value<std::string>(),
-            "Username of modifier (required)");
+    r.add_options()("app-id", value<std::string>(), "Parent app UUID (required)")(
+        "wrapper-version",
+        value<std::string>(),
+        "Wrapper binary version, e.g. 'v1.2.0' (required)")(
+        "engine-version", value<std::string>(), "Engine version, e.g. 'ORE-Studio-7.1' (required)")(
+        "platform-package",
+        value<std::vector<std::string>>()->multitoken(),
+        "Per-platform package as '<platform-code>=<package-uri>' "
+        "(required; repeatable). Platform codes match vcpkg triplets "
+        "(x64-linux, arm64-osx, x64-windows, ...).")(
+        "min-ram-mb", value<int>()->default_value(0), "Minimum RAM in MB required")(
+        "modified-by", value<std::string>(), "Username of modifier (required)");
 
     return r;
 }
@@ -91,8 +79,7 @@ read_add_compute_app_version_options(const variables_map& vm) {
     ores::cli::config::add_compute_app_version_options r;
 
     if (vm.count("modified-by") == 0) {
-        BOOST_THROW_EXCEPTION(
-            parser_exception("Must supply --modified-by for add command."));
+        BOOST_THROW_EXCEPTION(parser_exception("Must supply --modified-by for add command."));
     }
     r.modified_by = vm["modified-by"].as<std::string>();
 
@@ -115,19 +102,17 @@ read_add_compute_app_version_options(const variables_map& vm) {
     r.engine_version = vm["engine-version"].as<std::string>();
 
     if (vm.count("platform-package") == 0) {
-        BOOST_THROW_EXCEPTION(parser_exception(
-            "Must supply at least one --platform-package "
-            "'<platform-code>=<package-uri>' for add app-version command."));
+        BOOST_THROW_EXCEPTION(
+            parser_exception("Must supply at least one --platform-package "
+                             "'<platform-code>=<package-uri>' for add app-version command."));
     }
     for (const auto& raw : vm["platform-package"].as<std::vector<std::string>>()) {
         const auto eq = raw.find('=');
         if (eq == std::string::npos || eq == 0 || eq == raw.size() - 1) {
             BOOST_THROW_EXCEPTION(parser_exception(
-                "--platform-package must be '<platform-code>=<package-uri>': "
-                + raw));
+                "--platform-package must be '<platform-code>=<package-uri>': " + raw));
         }
-        r.platform_packages.push_back(
-            {raw.substr(0, eq), raw.substr(eq + 1)});
+        r.platform_packages.push_back({raw.substr(0, eq), raw.substr(eq + 1)});
     }
 
     if (vm.count("min-ram-mb") != 0)
@@ -138,11 +123,10 @@ read_add_compute_app_version_options(const variables_map& vm) {
 
 }
 
-std::optional<options>
-handle_compute_app_versions_command(bool has_help,
-    const parsed_options& po,
-    std::ostream& info,
-    variables_map& vm) {
+std::optional<options> handle_compute_app_versions_command(bool has_help,
+                                                           const parsed_options& po,
+                                                           std::ostream& info,
+                                                           variables_map& vm) {
 
     auto o(collect_unrecognized(po.options, include_positional));
     o.erase(o.begin());
@@ -150,15 +134,14 @@ handle_compute_app_versions_command(bool has_help,
     if (has_help && o.empty()) {
         const std::vector<std::pair<std::string, std::string>> operations = {
             {"list", "List compute app versions as JSON or table"},
-            {"add", "Add a new compute app version"}
-        };
+            {"add", "Add a new compute app version"}};
         print_entity_help("app-versions", "Manage compute app versions", operations, info);
         return {};
     }
 
     if (o.empty()) {
-        BOOST_THROW_EXCEPTION(parser_exception(
-            "app-versions command requires an operation (list, add)"));
+        BOOST_THROW_EXCEPTION(
+            parser_exception("app-versions command requires an operation (list, add)"));
     }
 
     const auto operation = o.front();

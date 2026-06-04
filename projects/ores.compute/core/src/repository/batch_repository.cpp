@@ -18,13 +18,12 @@
  *
  */
 #include "ores.compute.core/repository/batch_repository.hpp"
-
-#include <sqlgen/postgres.hpp>
-#include "ores.database/repository/helpers.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.compute.api/domain/batch_json_io.hpp" // IWYU pragma: keep.
 #include "ores.compute.core/repository/batch_entity.hpp"
 #include "ores.compute.core/repository/batch_mapper.hpp"
+#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
+#include <sqlgen/postgres.hpp>
 
 namespace ores::compute::repository {
 
@@ -39,57 +38,56 @@ std::string batch_repository::sql() {
 
 void batch_repository::write(context ctx, const domain::batch& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing compute batch: " << v.id;
-    execute_write_query(ctx, batch_mapper::map(v),
-        lg(), "Writing compute batch to database.");
+    execute_write_query(ctx, batch_mapper::map(v), lg(), "Writing compute batch to database.");
 }
 
-void batch_repository::write(
-    context ctx, const std::vector<domain::batch>& v) {
+void batch_repository::write(context ctx, const std::vector<domain::batch>& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing compute batches. Count: " << v.size();
-    execute_write_query(ctx, batch_mapper::map(v),
-        lg(), "Writing compute batches to database.");
+    execute_write_query(ctx, batch_mapper::map(v), lg(), "Writing compute batches to database.");
 }
 
-std::vector<domain::batch>
-batch_repository::read_latest(context ctx) {
+std::vector<domain::batch> batch_repository::read_latest(context ctx) {
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<batch_entity>> |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-        order_by("id"_c);
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("id"_c);
 
     return execute_read_query<batch_entity, domain::batch>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return batch_mapper::map(entities); },
-        lg(), "Reading latest compute batches");
+        lg(),
+        "Reading latest compute batches");
 }
 
-std::vector<domain::batch>
-batch_repository::read_latest(context ctx, const std::string& id) {
+std::vector<domain::batch> batch_repository::read_latest(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest compute batch. id: " << id;
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<batch_entity>> |
-        where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
     return execute_read_query<batch_entity, domain::batch>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return batch_mapper::map(entities); },
-        lg(), "Reading latest compute batch by id.");
+        lg(),
+        "Reading latest compute batch by id.");
 }
 
-std::vector<domain::batch>
-batch_repository::read_all(context ctx, const std::string& id) {
+std::vector<domain::batch> batch_repository::read_all(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all compute batch versions. id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<batch_entity>> |
-        where("tenant_id"_c == tid && "id"_c == id) |
-        order_by("version"_c.desc());
+                       where("tenant_id"_c == tid && "id"_c == id) | order_by("version"_c.desc());
 
     return execute_read_query<batch_entity, domain::batch>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return batch_mapper::map(entities); },
-        lg(), "Reading all compute batch versions by id.");
+        lg(),
+        "Reading all compute batch versions by id.");
 }
 
 void batch_repository::remove(context ctx, const std::string& id) {
@@ -97,7 +95,7 @@ void batch_repository::remove(context ctx, const std::string& id) {
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<batch_entity> |
-        where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
     execute_delete_query(ctx, query, lg(), "Removing compute batch from database.");
 }

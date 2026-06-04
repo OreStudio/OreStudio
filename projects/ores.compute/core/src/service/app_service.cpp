@@ -18,9 +18,8 @@
  *
  */
 #include "ores.compute.core/service/app_service.hpp"
-
-#include <stdexcept>
 #include "ores.service/messaging/handler_helpers.hpp"
+#include <stdexcept>
 
 using ores::service::messaging::stamp;
 
@@ -39,7 +38,8 @@ std::vector<domain::app> app_service::list() {
 std::optional<domain::app> app_service::find(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Finding app: " << id;
     auto results = repo_.read_latest(ctx_, id);
-    if (results.empty()) return std::nullopt;
+    if (results.empty())
+        return std::nullopt;
     return results.front();
 }
 

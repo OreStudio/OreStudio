@@ -20,17 +20,16 @@
 #ifndef ORES_REPORTING_MESSAGING_REPORT_INSTANCE_PROTOCOL_HPP
 #define ORES_REPORTING_MESSAGING_REPORT_INSTANCE_PROTOCOL_HPP
 
+#include "ores.reporting.api/domain/report_instance.hpp"
 #include <string>
 #include <string_view>
 #include <vector>
-#include "ores.reporting.api/domain/report_instance.hpp"
 
 namespace ores::reporting::messaging {
 
 struct get_report_instances_request {
     using response_type = struct get_report_instances_response;
-    static constexpr std::string_view nats_subject =
-        "reporting.v1.report-instances.list";
+    static constexpr std::string_view nats_subject = "reporting.v1.report-instances.list";
     int offset = 0;
     int limit = 100;
 };
@@ -42,8 +41,7 @@ struct get_report_instances_response {
 
 struct save_report_instance_request {
     using response_type = struct save_report_instance_response;
-    static constexpr std::string_view nats_subject =
-        "reporting.v1.report-instances.save";
+    static constexpr std::string_view nats_subject = "reporting.v1.report-instances.save";
     ores::reporting::domain::report_instance instance;
 };
 
@@ -54,8 +52,7 @@ struct save_report_instance_response {
 
 struct delete_report_instance_request {
     using response_type = struct delete_report_instance_response;
-    static constexpr std::string_view nats_subject =
-        "reporting.v1.report-instances.delete";
+    static constexpr std::string_view nats_subject = "reporting.v1.report-instances.delete";
     std::vector<std::string> ids;
 };
 
@@ -66,8 +63,7 @@ struct delete_report_instance_response {
 
 struct get_report_instance_history_request {
     using response_type = struct get_report_instance_history_response;
-    static constexpr std::string_view nats_subject =
-        "reporting.v1.report-instances.history";
+    static constexpr std::string_view nats_subject = "reporting.v1.report-instances.history";
     std::string id;
 };
 
@@ -85,8 +81,7 @@ struct get_report_instance_history_response {
  * The reporting service handles it by creating a new report_instance.
  */
 struct trigger_report_instance_message {
-    static constexpr std::string_view nats_subject =
-        "reporting.v1.report-instances.trigger";
+    static constexpr std::string_view nats_subject = "reporting.v1.report-instances.trigger";
     std::string report_definition_id;
     std::string tenant_id;
     std::int64_t job_instance_id = 0;

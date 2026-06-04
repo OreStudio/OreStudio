@@ -20,11 +20,11 @@
 #ifndef ORES_REPORTING_API_WORKFLOW_REPORT_EXECUTION_WORKFLOW_HPP
 #define ORES_REPORTING_API_WORKFLOW_REPORT_EXECUTION_WORKFLOW_HPP
 
-#include <rfl/json.hpp>
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.reporting.api/messaging/report_execution_protocol.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.workflow.api/service/workflow_definition.hpp"
 #include "ores.workflow.api/service/workflow_registry.hpp"
+#include <rfl/json.hpp>
 
 namespace ores::reporting::workflow {
 
@@ -42,8 +42,8 @@ namespace ores::reporting::workflow {
  *
  * Compensation: fail_report marks the instance as failed on any step failure.
  */
-inline void register_report_execution_workflow(
-    ores::workflow::service::workflow_registry& registry) {
+inline void
+register_report_execution_workflow(ores::workflow::service::workflow_registry& registry) {
 
     using namespace ores::workflow::service;
     using namespace ores::reporting::messaging;
@@ -51,13 +51,12 @@ inline void register_report_execution_workflow(
     workflow_definition def;
     def.type_name = "report_execution_workflow";
     def.description = "Executes a risk report end-to-end: gathers trades and "
-        "market data, assembles the input bundle, prepares the ORE package, "
-        "submits to the compute grid, collects results, and finalises the report.";
+                      "market data, assembles the input bundle, prepares the ORE package, "
+                      "submits to the compute grid, collects results, and finalises the report.";
 
     def.build_steps = [](const std::string& /*request_json*/,
-        const std::string& /*tenant_id*/,
-        const std::string& /*correlation_id*/) -> std::vector<workflow_step_def> {
-
+                         const std::string& /*tenant_id*/,
+                         const std::string& /*correlation_id*/) -> std::vector<workflow_step_def> {
         using namespace ores::reporting::messaging;
         std::vector<workflow_step_def> steps;
 
@@ -72,25 +71,27 @@ inline void register_report_execution_workflow(
             s.compensation_subject = std::string(fail_report_request::nats_subject);
 
             s.build_command = [](const std::string& request_json,
-                const std::vector<std::string>&) -> std::string {
+                                 const std::vector<std::string>&) -> std::string {
                 auto req = rfl::json::read<report_execution_request>(request_json);
-                if (!req) return "{}";
-                return rfl::json::write(gather_trades_request{
-                    .report_instance_id = req->report_instance_id,
-                    .definition_id      = req->definition_id,
-                    .tenant_id          = req->tenant_id,
-                    .correlation_id     = req->correlation_id});
+                if (!req)
+                    return "{}";
+                return rfl::json::write(
+                    gather_trades_request{.report_instance_id = req->report_instance_id,
+                                          .definition_id = req->definition_id,
+                                          .tenant_id = req->tenant_id,
+                                          .correlation_id = req->correlation_id});
             };
 
             s.build_compensation = [](const std::string& cmd_json,
-                const std::string&) -> std::string {
+                                      const std::string&) -> std::string {
                 auto cmd = rfl::json::read<gather_trades_request>(cmd_json);
-                if (!cmd) return "{}";
+                if (!cmd)
+                    return "{}";
                 return rfl::json::write(fail_report_request{
                     .report_instance_id = cmd->report_instance_id,
-                    .tenant_id          = cmd->tenant_id,
-                    .correlation_id     = cmd->correlation_id,
-                    .error_message      = "Report execution failed during trade gathering"});
+                    .tenant_id = cmd->tenant_id,
+                    .correlation_id = cmd->correlation_id,
+                    .error_message = "Report execution failed during trade gathering"});
             };
 
             steps.push_back(std::move(s));
@@ -107,25 +108,27 @@ inline void register_report_execution_workflow(
             s.compensation_subject = std::string(fail_report_request::nats_subject);
 
             s.build_command = [](const std::string& request_json,
-                const std::vector<std::string>&) -> std::string {
+                                 const std::vector<std::string>&) -> std::string {
                 auto req = rfl::json::read<report_execution_request>(request_json);
-                if (!req) return "{}";
-                return rfl::json::write(gather_market_data_request{
-                    .report_instance_id = req->report_instance_id,
-                    .definition_id      = req->definition_id,
-                    .tenant_id          = req->tenant_id,
-                    .correlation_id     = req->correlation_id});
+                if (!req)
+                    return "{}";
+                return rfl::json::write(
+                    gather_market_data_request{.report_instance_id = req->report_instance_id,
+                                               .definition_id = req->definition_id,
+                                               .tenant_id = req->tenant_id,
+                                               .correlation_id = req->correlation_id});
             };
 
             s.build_compensation = [](const std::string& cmd_json,
-                const std::string&) -> std::string {
+                                      const std::string&) -> std::string {
                 auto cmd = rfl::json::read<gather_market_data_request>(cmd_json);
-                if (!cmd) return "{}";
+                if (!cmd)
+                    return "{}";
                 return rfl::json::write(fail_report_request{
                     .report_instance_id = cmd->report_instance_id,
-                    .tenant_id          = cmd->tenant_id,
-                    .correlation_id     = cmd->correlation_id,
-                    .error_message      = "Report execution failed during market data gathering"});
+                    .tenant_id = cmd->tenant_id,
+                    .correlation_id = cmd->correlation_id,
+                    .error_message = "Report execution failed during market data gathering"});
             };
 
             steps.push_back(std::move(s));
@@ -142,26 +145,27 @@ inline void register_report_execution_workflow(
             s.compensation_subject = std::string(fail_report_request::nats_subject);
 
             s.build_command = [](const std::string& request_json,
-                const std::vector<std::string>& results) -> std::string {
+                                 const std::vector<std::string>& results) -> std::string {
                 auto req = rfl::json::read<report_execution_request>(request_json);
-                if (!req) return "{}";
+                if (!req)
+                    return "{}";
 
                 assemble_bundle_request cmd;
                 cmd.report_instance_id = req->report_instance_id;
-                cmd.definition_id      = req->definition_id;
-                cmd.tenant_id          = req->tenant_id;
-                cmd.correlation_id     = req->correlation_id;
+                cmd.definition_id = req->definition_id;
+                cmd.tenant_id = req->tenant_id;
+                cmd.correlation_id = req->correlation_id;
 
                 if (results.size() > 0) {
                     if (auto r = rfl::json::read<gather_trades_result>(results[0])) {
                         cmd.trades_storage_key = r->storage_key;
-                        cmd.trade_count        = r->trade_count;
+                        cmd.trade_count = r->trade_count;
                     }
                 }
                 if (results.size() > 1) {
                     if (auto r = rfl::json::read<gather_market_data_result>(results[1])) {
                         cmd.market_data_storage_key = r->storage_key;
-                        cmd.series_count            = r->series_count;
+                        cmd.series_count = r->series_count;
                     }
                 }
 
@@ -169,14 +173,15 @@ inline void register_report_execution_workflow(
             };
 
             s.build_compensation = [](const std::string& cmd_json,
-                const std::string&) -> std::string {
+                                      const std::string&) -> std::string {
                 auto cmd = rfl::json::read<assemble_bundle_request>(cmd_json);
-                if (!cmd) return "{}";
+                if (!cmd)
+                    return "{}";
                 return rfl::json::write(fail_report_request{
                     .report_instance_id = cmd->report_instance_id,
-                    .tenant_id          = cmd->tenant_id,
-                    .correlation_id     = cmd->correlation_id,
-                    .error_message      = "Report execution failed during bundle assembly"});
+                    .tenant_id = cmd->tenant_id,
+                    .correlation_id = cmd->correlation_id,
+                    .error_message = "Report execution failed during bundle assembly"});
             };
 
             steps.push_back(std::move(s));
@@ -193,14 +198,15 @@ inline void register_report_execution_workflow(
             s.compensation_subject = std::string(fail_report_request::nats_subject);
 
             s.build_command = [](const std::string& request_json,
-                const std::vector<std::string>& results) -> std::string {
+                                 const std::vector<std::string>& results) -> std::string {
                 auto req = rfl::json::read<report_execution_request>(request_json);
-                if (!req) return "{}";
+                if (!req)
+                    return "{}";
 
                 prepare_ore_package_request cmd;
                 cmd.report_instance_id = req->report_instance_id;
-                cmd.tenant_id          = req->tenant_id;
-                cmd.correlation_id     = req->correlation_id;
+                cmd.tenant_id = req->tenant_id;
+                cmd.correlation_id = req->correlation_id;
 
                 if (results.size() > 2) {
                     if (auto r = rfl::json::read<assemble_bundle_result>(results[2])) {
@@ -222,14 +228,15 @@ inline void register_report_execution_workflow(
             };
 
             s.build_compensation = [](const std::string& cmd_json,
-                const std::string&) -> std::string {
+                                      const std::string&) -> std::string {
                 auto cmd = rfl::json::read<prepare_ore_package_request>(cmd_json);
-                if (!cmd) return "{}";
+                if (!cmd)
+                    return "{}";
                 return rfl::json::write(fail_report_request{
                     .report_instance_id = cmd->report_instance_id,
-                    .tenant_id          = cmd->tenant_id,
-                    .correlation_id     = cmd->correlation_id,
-                    .error_message      = "Report execution failed during ORE package preparation"});
+                    .tenant_id = cmd->tenant_id,
+                    .correlation_id = cmd->correlation_id,
+                    .error_message = "Report execution failed during ORE package preparation"});
             };
 
             steps.push_back(std::move(s));
@@ -246,14 +253,15 @@ inline void register_report_execution_workflow(
             s.compensation_subject = std::string(fail_report_request::nats_subject);
 
             s.build_command = [](const std::string& request_json,
-                const std::vector<std::string>& results) -> std::string {
+                                 const std::vector<std::string>& results) -> std::string {
                 auto req = rfl::json::read<report_execution_request>(request_json);
-                if (!req) return "{}";
+                if (!req)
+                    return "{}";
 
                 submit_compute_request cmd;
                 cmd.report_instance_id = req->report_instance_id;
-                cmd.tenant_id          = req->tenant_id;
-                cmd.correlation_id     = req->correlation_id;
+                cmd.tenant_id = req->tenant_id;
+                cmd.correlation_id = req->correlation_id;
 
                 if (results.size() > 3) {
                     if (auto r = rfl::json::read<prepare_ore_package_result>(results[3])) {
@@ -265,14 +273,15 @@ inline void register_report_execution_workflow(
             };
 
             s.build_compensation = [](const std::string& cmd_json,
-                const std::string&) -> std::string {
+                                      const std::string&) -> std::string {
                 auto cmd = rfl::json::read<submit_compute_request>(cmd_json);
-                if (!cmd) return "{}";
+                if (!cmd)
+                    return "{}";
                 return rfl::json::write(fail_report_request{
                     .report_instance_id = cmd->report_instance_id,
-                    .tenant_id          = cmd->tenant_id,
-                    .correlation_id     = cmd->correlation_id,
-                    .error_message      = "Report execution failed during compute submission"});
+                    .tenant_id = cmd->tenant_id,
+                    .correlation_id = cmd->correlation_id,
+                    .error_message = "Report execution failed during compute submission"});
             };
 
             steps.push_back(std::move(s));
@@ -289,14 +298,15 @@ inline void register_report_execution_workflow(
             s.compensation_subject = std::string(fail_report_request::nats_subject);
 
             s.build_command = [](const std::string& request_json,
-                const std::vector<std::string>& results) -> std::string {
+                                 const std::vector<std::string>& results) -> std::string {
                 auto req = rfl::json::read<report_execution_request>(request_json);
-                if (!req) return "{}";
+                if (!req)
+                    return "{}";
 
                 collect_compute_results_request cmd;
                 cmd.report_instance_id = req->report_instance_id;
-                cmd.tenant_id          = req->tenant_id;
-                cmd.correlation_id     = req->correlation_id;
+                cmd.tenant_id = req->tenant_id;
+                cmd.correlation_id = req->correlation_id;
 
                 if (results.size() > 4) {
                     if (auto r = rfl::json::read<submit_compute_result>(results[4])) {
@@ -308,14 +318,15 @@ inline void register_report_execution_workflow(
             };
 
             s.build_compensation = [](const std::string& cmd_json,
-                const std::string&) -> std::string {
+                                      const std::string&) -> std::string {
                 auto cmd = rfl::json::read<collect_compute_results_request>(cmd_json);
-                if (!cmd) return "{}";
+                if (!cmd)
+                    return "{}";
                 return rfl::json::write(fail_report_request{
                     .report_instance_id = cmd->report_instance_id,
-                    .tenant_id          = cmd->tenant_id,
-                    .correlation_id     = cmd->correlation_id,
-                    .error_message      = "Report execution failed during result collection"});
+                    .tenant_id = cmd->tenant_id,
+                    .correlation_id = cmd->correlation_id,
+                    .error_message = "Report execution failed during result collection"});
             };
 
             steps.push_back(std::move(s));
@@ -332,24 +343,26 @@ inline void register_report_execution_workflow(
             s.compensation_subject = std::string(fail_report_request::nats_subject);
 
             s.build_command = [](const std::string& request_json,
-                const std::vector<std::string>&) -> std::string {
+                                 const std::vector<std::string>&) -> std::string {
                 auto req = rfl::json::read<report_execution_request>(request_json);
-                if (!req) return "{}";
-                return rfl::json::write(finalise_report_request{
-                    .report_instance_id = req->report_instance_id,
-                    .tenant_id          = req->tenant_id,
-                    .correlation_id     = req->correlation_id});
+                if (!req)
+                    return "{}";
+                return rfl::json::write(
+                    finalise_report_request{.report_instance_id = req->report_instance_id,
+                                            .tenant_id = req->tenant_id,
+                                            .correlation_id = req->correlation_id});
             };
 
             s.build_compensation = [](const std::string& cmd_json,
-                const std::string&) -> std::string {
+                                      const std::string&) -> std::string {
                 auto cmd = rfl::json::read<finalise_report_request>(cmd_json);
-                if (!cmd) return "{}";
-                return rfl::json::write(fail_report_request{
-                    .report_instance_id = cmd->report_instance_id,
-                    .tenant_id          = cmd->tenant_id,
-                    .correlation_id     = cmd->correlation_id,
-                    .error_message      = "Workflow compensation triggered"});
+                if (!cmd)
+                    return "{}";
+                return rfl::json::write(
+                    fail_report_request{.report_instance_id = cmd->report_instance_id,
+                                        .tenant_id = cmd->tenant_id,
+                                        .correlation_id = cmd->correlation_id,
+                                        .error_message = "Workflow compensation triggered"});
             };
 
             steps.push_back(std::move(s));

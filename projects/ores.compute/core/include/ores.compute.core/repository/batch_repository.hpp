@@ -20,13 +20,13 @@
 #ifndef ORES_COMPUTE_REPOSITORY_BATCH_REPOSITORY_HPP
 #define ORES_COMPUTE_REPOSITORY_BATCH_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
-#include "ores.database/domain/context.hpp"
 #include "ores.compute.api/domain/batch.hpp"
 #include "ores.compute.core/export.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::compute::repository {
 
@@ -35,8 +35,7 @@ namespace ores::compute::repository {
  */
 class ORES_COMPUTE_CORE_EXPORT batch_repository {
 private:
-    inline static std::string_view logger_name =
-        "ores.compute.repository.batch_repository";
+    inline static std::string_view logger_name = "ores.compute.repository.batch_repository";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -53,10 +52,8 @@ public:
     void write(context ctx, const std::vector<domain::batch>& v);
 
     std::vector<domain::batch> read_latest(context ctx);
-    std::vector<domain::batch>
-    read_latest(context ctx, const std::string& id);
-    std::vector<domain::batch>
-    read_all(context ctx, const std::string& id);
+    std::vector<domain::batch> read_latest(context ctx, const std::string& id);
+    std::vector<domain::batch> read_all(context ctx, const std::string& id);
 
     void remove(context ctx, const std::string& id);
 };

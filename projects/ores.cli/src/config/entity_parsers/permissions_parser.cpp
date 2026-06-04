@@ -18,16 +18,15 @@
  *
  */
 #include "ores.cli/config/entity_parsers/permissions_parser.hpp"
-
-#include <boost/program_options.hpp>
-#include <boost/throw_exception.hpp>
-#include "ores.cli/config/parser_helpers.hpp"
-#include "ores.cli/config/parser_exception.hpp"
-#include "ores.cli/config/entity.hpp"
 #include "ores.cli/config/add_permission_options.hpp"
+#include "ores.cli/config/entity.hpp"
+#include "ores.cli/config/parser_exception.hpp"
+#include "ores.cli/config/parser_helpers.hpp"
 #include "ores.database/config/database_configuration.hpp"
 #include "ores.logging/logging_configuration.hpp"
 #include "ores.utility/program_options/environment_mapper_factory.hpp"
+#include <boost/program_options.hpp>
+#include <boost/throw_exception.hpp>
 
 namespace ores::cli::config::entity_parsers {
 
@@ -59,15 +58,13 @@ const std::string delete_command_name("delete");
 const std::string add_command_name("add");
 
 const std::vector<std::string> allowed_operations{
-    list_command_name, delete_command_name, add_command_name
-};
+    list_command_name, delete_command_name, add_command_name};
 
 options_description make_add_permission_options_description() {
     options_description r("Add Permission Options");
-    r.add_options()
-        ("code", value<std::string>(),
-            "Permission code in format resource:action (required)")
-        ("description", value<std::string>(), "Permission description");
+    r.add_options()(
+        "code", value<std::string>(), "Permission code in format resource:action (required)")(
+        "description", value<std::string>(), "Permission description");
 
     return r;
 }
@@ -76,8 +73,7 @@ add_permission_options read_add_permission_options(const variables_map& vm) {
     add_permission_options r;
 
     if (vm.count("code") == 0) {
-        BOOST_THROW_EXCEPTION(
-            parser_exception("Must supply --code for add permission command."));
+        BOOST_THROW_EXCEPTION(parser_exception("Must supply --code for add permission command."));
     }
     r.code = vm["code"].as<std::string>();
 
@@ -89,11 +85,10 @@ add_permission_options read_add_permission_options(const variables_map& vm) {
 
 }
 
-std::optional<options>
-handle_permissions_command(bool has_help,
-    const parsed_options& po,
-    std::ostream& info,
-    variables_map& vm) {
+std::optional<options> handle_permissions_command(bool has_help,
+                                                  const parsed_options& po,
+                                                  std::ostream& info,
+                                                  variables_map& vm) {
 
     auto o(collect_unrecognized(po.options, include_positional));
     o.erase(o.begin());
@@ -102,15 +97,14 @@ handle_permissions_command(bool has_help,
         const std::vector<std::pair<std::string, std::string>> operations = {
             {"list", "List permissions as JSON or table"},
             {"delete", "Delete a permission by ID"},
-            {"add", "Add a new permission"}
-        };
+            {"add", "Add a new permission"}};
         print_entity_help("permissions", "Manage permissions", operations, info);
         return {};
     }
 
     if (o.empty()) {
-        BOOST_THROW_EXCEPTION(parser_exception(
-            "permissions command requires an operation (list, delete, add)"));
+        BOOST_THROW_EXCEPTION(
+            parser_exception("permissions command requires an operation (list, delete, add)"));
     }
 
     const auto operation = o.front();

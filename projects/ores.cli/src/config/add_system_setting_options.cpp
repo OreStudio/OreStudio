@@ -18,18 +18,19 @@
  *
  */
 #include "ores.cli/config/add_system_setting_options.hpp"
-
 #include <ostream>
 
 namespace ores::cli::config {
 
 std::ostream& operator<<(std::ostream& s, const add_system_setting_options& v) {
-    s << "{ setting_name: " << v.setting_name
-      << ", modified_by: " << v.modified_by;
+    s << "{ setting_name: " << v.setting_name << ", modified_by: " << v.modified_by;
 
-    if (v.value) s << ", value: " << *v.value;
-    if (v.data_type) s << ", data_type: " << *v.data_type;
-    if (v.description) s << ", description: " << *v.description;
+    if (v.value)
+        s << ", value: " << *v.value;
+    if (v.data_type)
+        s << ", data_type: " << *v.data_type;
+    if (v.description)
+        s << ", description: " << *v.description;
 
     s << " }";
     return s;

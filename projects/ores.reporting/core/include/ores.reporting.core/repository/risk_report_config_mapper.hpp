@@ -20,11 +20,11 @@
 #ifndef ORES_REPORTING_REPOSITORY_RISK_REPORT_CONFIG_MAPPER_HPP
 #define ORES_REPORTING_REPOSITORY_RISK_REPORT_CONFIG_MAPPER_HPP
 
-#include <vector>
 #include "ores.logging/make_logger.hpp"
 #include "ores.reporting.api/domain/risk_report_config.hpp"
-#include "ores.reporting.core/repository/risk_report_config_entity.hpp"
 #include "ores.reporting.core/export.hpp"
+#include "ores.reporting.core/repository/risk_report_config_entity.hpp"
+#include <vector>
 
 namespace ores::reporting::repository {
 

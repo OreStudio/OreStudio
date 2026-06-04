@@ -18,9 +18,8 @@
  *
  */
 #include "ores.compute.api/domain/app_version_table_io.hpp"
-
-#include <ostream>
 #include "ores.compute.api/domain/app_version_table.hpp"
+#include <ostream>
 
 namespace ores::compute::domain {
 

@@ -20,14 +20,14 @@
 #ifndef ORES_REPORTING_SERVICE_REPORT_DEFINITION_SERVICE_HPP
 #define ORES_REPORTING_SERVICE_REPORT_DEFINITION_SERVICE_HPP
 
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.reporting.api/domain/report_definition.hpp"
+#include "ores.reporting.core/export.hpp"
+#include "ores.reporting.core/repository/report_definition_repository.hpp"
+#include <optional>
 #include <string>
 #include <vector>
-#include <optional>
-#include "ores.logging/make_logger.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.reporting.api/domain/report_definition.hpp"
-#include "ores.reporting.core/repository/report_definition_repository.hpp"
-#include "ores.reporting.core/export.hpp"
 
 namespace ores::reporting::service {
 
@@ -36,8 +36,7 @@ namespace ores::reporting::service {
  */
 class ORES_REPORTING_CORE_EXPORT report_definition_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.reporting.service.report_definition_service";
+    inline static std::string_view logger_name = "ores.reporting.service.report_definition_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -52,15 +51,13 @@ public:
 
     std::vector<domain::report_definition> list_definitions();
 
-    std::optional<domain::report_definition>
-    find_definition(const std::string& id);
+    std::optional<domain::report_definition> find_definition(const std::string& id);
 
     void save_definition(domain::report_definition v);
 
     void remove_definition(const std::string& id);
 
-    std::vector<domain::report_definition>
-    get_definition_history(const std::string& id);
+    std::vector<domain::report_definition> get_definition_history(const std::string& id);
 
 private:
     context ctx_;

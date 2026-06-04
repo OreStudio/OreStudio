@@ -18,24 +18,20 @@
  *
  */
 #include "ores.compute.api/generators/app_version_generator.hpp"
-
+#include "ores.utility/generation/generation_keys.hpp"
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::compute::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::app_version generate_synthetic_app_version(
-    const boost::uuids::uuid& app_id,
-    utility::generation::generation_context& ctx) {
+domain::app_version generate_synthetic_app_version(const boost::uuids::uuid& app_id,
+                                                   utility::generation::generation_context& ctx) {
     static std::atomic<int> counter{0};
     const auto idx = ++counter;
-    const auto modified_by = ctx.env().get_or(
-        generation_keys::modified_by, "system");
-    const auto tenant_id = ctx.env().get_or(
-        generation_keys::tenant_id, "system");
+    const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
+    const auto tenant_id = ctx.env().get_or(generation_keys::tenant_id, "system");
 
     domain::app_version r;
     r.version = 1;
@@ -53,10 +49,8 @@ domain::app_version generate_synthetic_app_version(
     return r;
 }
 
-std::vector<domain::app_version>
-generate_synthetic_app_versions(std::size_t n,
-    const boost::uuids::uuid& app_id,
-    utility::generation::generation_context& ctx) {
+std::vector<domain::app_version> generate_synthetic_app_versions(
+    std::size_t n, const boost::uuids::uuid& app_id, utility::generation::generation_context& ctx) {
     std::vector<domain::app_version> r;
     r.reserve(n);
     while (r.size() < n)

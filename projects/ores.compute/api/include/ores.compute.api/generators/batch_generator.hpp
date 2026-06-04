@@ -20,25 +20,24 @@
 #ifndef ORES_COMPUTE_GENERATORS_BATCH_GENERATOR_HPP
 #define ORES_COMPUTE_GENERATORS_BATCH_GENERATOR_HPP
 
-#include <vector>
 #include "ores.compute.api/domain/batch.hpp"
 #include "ores.compute.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include <vector>
 
 namespace ores::compute::generators {
 
 /**
  * @brief Generates a synthetic compute batch.
  */
-ORES_COMPUTE_API_EXPORT domain::batch generate_synthetic_batch(
-    utility::generation::generation_context& ctx);
+ORES_COMPUTE_API_EXPORT domain::batch
+generate_synthetic_batch(utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic compute batches.
  */
 ORES_COMPUTE_API_EXPORT std::vector<domain::batch>
-generate_synthetic_batches(std::size_t n,
-    utility::generation::generation_context& ctx);
+generate_synthetic_batches(std::size_t n, utility::generation::generation_context& ctx);
 
 }
 

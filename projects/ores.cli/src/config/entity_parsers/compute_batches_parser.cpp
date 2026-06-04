@@ -18,16 +18,15 @@
  *
  */
 #include "ores.cli/config/entity_parsers/compute_batches_parser.hpp"
-
-#include <boost/program_options.hpp>
-#include <boost/throw_exception.hpp>
-#include "ores.cli/config/parser_helpers.hpp"
-#include "ores.cli/config/parser_exception.hpp"
-#include "ores.cli/config/entity.hpp"
 #include "ores.cli/config/add_compute_batch_options.hpp"
+#include "ores.cli/config/entity.hpp"
+#include "ores.cli/config/parser_exception.hpp"
+#include "ores.cli/config/parser_helpers.hpp"
 #include "ores.database/config/database_configuration.hpp"
 #include "ores.logging/logging_configuration.hpp"
 #include "ores.utility/program_options/environment_mapper_factory.hpp"
+#include <boost/program_options.hpp>
+#include <boost/throw_exception.hpp>
 
 namespace ores::cli::config::entity_parsers {
 
@@ -55,22 +54,17 @@ using ores::cli::config::parser_helpers::read_export_options;
 const std::string list_command_name("list");
 const std::string add_command_name("add");
 
-const std::vector<std::string> allowed_operations{
-    list_command_name, add_command_name
-};
+const std::vector<std::string> allowed_operations{list_command_name, add_command_name};
 
 options_description make_add_compute_batch_options_description() {
     options_description r("Add Compute Batch Options");
-    r.add_options()
-        ("external-ref",
-            value<std::string>(),
-            "External reference linking to the originating system (required)")
-        ("status",
-            value<std::string>()->default_value("open"),
-            "Lifecycle status: open, processing, assimilating, closed")
-        ("modified-by",
-            value<std::string>(),
-            "Username of modifier (required)");
+    r.add_options()("external-ref",
+                    value<std::string>(),
+                    "External reference linking to the originating system (required)")(
+        "status",
+        value<std::string>()->default_value("open"),
+        "Lifecycle status: open, processing, assimilating, closed")(
+        "modified-by", value<std::string>(), "Username of modifier (required)");
 
     return r;
 }
@@ -80,8 +74,7 @@ read_add_compute_batch_options(const variables_map& vm) {
     ores::cli::config::add_compute_batch_options r;
 
     if (vm.count("modified-by") == 0) {
-        BOOST_THROW_EXCEPTION(
-            parser_exception("Must supply --modified-by for add command."));
+        BOOST_THROW_EXCEPTION(parser_exception("Must supply --modified-by for add command."));
     }
     r.modified_by = vm["modified-by"].as<std::string>();
 
@@ -99,27 +92,24 @@ read_add_compute_batch_options(const variables_map& vm) {
 
 }
 
-std::optional<options>
-handle_compute_batches_command(bool has_help,
-    const parsed_options& po,
-    std::ostream& info,
-    variables_map& vm) {
+std::optional<options> handle_compute_batches_command(bool has_help,
+                                                      const parsed_options& po,
+                                                      std::ostream& info,
+                                                      variables_map& vm) {
 
     auto o(collect_unrecognized(po.options, include_positional));
     o.erase(o.begin());
 
     if (has_help && o.empty()) {
         const std::vector<std::pair<std::string, std::string>> operations = {
-            {"list", "List compute batches as JSON or table"},
-            {"add", "Add a new compute batch"}
-        };
+            {"list", "List compute batches as JSON or table"}, {"add", "Add a new compute batch"}};
         print_entity_help("batches", "Manage compute batches", operations, info);
         return {};
     }
 
     if (o.empty()) {
-        BOOST_THROW_EXCEPTION(parser_exception(
-            "batches command requires an operation (list, add)"));
+        BOOST_THROW_EXCEPTION(
+            parser_exception("batches command requires an operation (list, add)"));
     }
 
     const auto operation = o.front();

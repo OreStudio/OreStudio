@@ -20,12 +20,12 @@
 #ifndef ORES_CLI_CONFIG_PARSER_HPP
 #define ORES_CLI_CONFIG_PARSER_HPP
 
-#include <iosfwd>
-#include <vector>
-#include <string>
-#include <optional>
 #include "ores.cli/config/options.hpp"
 #include "ores.cli/export.hpp"
+#include <iosfwd>
+#include <optional>
+#include <string>
+#include <vector>
 
 namespace ores::cli::config {
 
@@ -41,8 +41,7 @@ namespace ores::cli::config {
 class ORES_CLI_EXPORT parser final {
 public:
     std::optional<options>
-    parse(const std::vector<std::string>& arguments, std::ostream& info,
-        std::ostream& error) const;
+    parse(const std::vector<std::string>& arguments, std::ostream& info, std::ostream& error) const;
 };
 
 }

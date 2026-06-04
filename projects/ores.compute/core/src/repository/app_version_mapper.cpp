@@ -18,19 +18,17 @@
  *
  */
 #include "ores.compute.core/repository/app_version_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
-#include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.compute.api/domain/app_version_json_io.hpp" // IWYU pragma: keep.
+#include "ores.database/repository/mapper_helpers.hpp"
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::compute::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::app_version
-app_version_mapper::map(const app_version_entity& v) {
+domain::app_version app_version_mapper::map(const app_version_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::app_version r;
@@ -51,8 +49,7 @@ app_version_mapper::map(const app_version_entity& v) {
     return r;
 }
 
-app_version_entity
-app_version_mapper::map(const domain::app_version& v) {
+app_version_entity app_version_mapper::map(const domain::app_version& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     app_version_entity r;
@@ -72,22 +69,14 @@ app_version_mapper::map(const domain::app_version& v) {
     return r;
 }
 
-std::vector<domain::app_version>
-app_version_mapper::map(const std::vector<app_version_entity>& v) {
+std::vector<domain::app_version> app_version_mapper::map(const std::vector<app_version_entity>& v) {
     return map_vector<app_version_entity, domain::app_version>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
-std::vector<app_version_entity>
-app_version_mapper::map(const std::vector<domain::app_version>& v) {
+std::vector<app_version_entity> app_version_mapper::map(const std::vector<domain::app_version>& v) {
     return map_vector<domain::app_version, app_version_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

@@ -18,16 +18,15 @@
  *
  */
 #include "ores.cli/config/domain_parsers/ore_parser.hpp"
-
-#include <filesystem>
-#include <format>
-#include <iomanip>
-#include <boost/program_options.hpp>
-#include <boost/throw_exception.hpp>
 #include "ores.cli/config/ore_roundtrip_options.hpp"
 #include "ores.cli/config/parser_exception.hpp"
 #include "ores.cli/config/parser_helpers.hpp"
 #include "ores.logging/logging_configuration.hpp"
+#include <boost/program_options.hpp>
+#include <boost/throw_exception.hpp>
+#include <filesystem>
+#include <format>
+#include <iomanip>
 
 namespace ores::cli::config::domain_parsers {
 
@@ -48,59 +47,55 @@ using ores::cli::config::ore_roundtrip_options;
 using ores::cli::config::parser_helpers::print_help_command;
 
 const std::string roundtrip_name("roundtrip");
-const std::string roundtrip_desc(
-    "Roundtrip all portfolio XML files through the import→export pipeline. "
-    "No database access required.");
+const std::string
+    roundtrip_desc("Roundtrip all portfolio XML files through the import→export pipeline. "
+                   "No database access required.");
 
 void print_domain_help(std::ostream& info) {
     info << "ore: ORE XML import/export utilities." << std::endl << std::endl;
 
     const unsigned int command_width(15);
     auto row([&](const std::string& name, const std::string& desc) {
-        info << "  " << std::setfill(' ') << std::left << std::setw(command_width)
-             << name << desc << std::endl;
+        info << "  " << std::setfill(' ') << std::left << std::setw(command_width) << name << desc
+             << std::endl;
     });
 
     row(roundtrip_name, roundtrip_desc);
-    info << std::endl
-         << "Use: ores.cli ore <command> --help for details." << std::endl;
+    info << std::endl << "Use: ores.cli ore <command> --help for details." << std::endl;
 }
 
 options_description make_roundtrip_options_description() {
     options_description r("Roundtrip options");
-    r.add_options()
-        ("input-dir",
-            value<std::string>(),
-            "Directory containing ORE portfolio XML files (recursive).")
-        ("output-dir",
-            value<std::string>(),
-            "Directory to write roundtrip outputs (mirrors input tree).");
+    r.add_options()("input-dir",
+                    value<std::string>(),
+                    "Directory containing ORE portfolio XML files (recursive).")(
+        "output-dir",
+        value<std::string>(),
+        "Directory to write roundtrip outputs (mirrors input tree).");
     return r;
 }
 
 ore_roundtrip_options read_roundtrip_options(const variables_map& vm) {
     if (vm.count("input-dir") == 0) {
-        BOOST_THROW_EXCEPTION(parser_exception(
-            "Must supply <input-dir> for ore roundtrip command."));
+        BOOST_THROW_EXCEPTION(
+            parser_exception("Must supply <input-dir> for ore roundtrip command."));
     }
     if (vm.count("output-dir") == 0) {
-        BOOST_THROW_EXCEPTION(parser_exception(
-            "Must supply --output-dir for ore roundtrip command."));
+        BOOST_THROW_EXCEPTION(
+            parser_exception("Must supply --output-dir for ore roundtrip command."));
     }
 
     using std::filesystem::absolute;
     ore_roundtrip_options r;
-    r.input_dir  = absolute(vm["input-dir"].as<std::string>());
+    r.input_dir = absolute(vm["input-dir"].as<std::string>());
     r.output_dir = absolute(vm["output-dir"].as<std::string>());
     return r;
 }
 
 }
 
-std::optional<options> handle_ore_command(bool has_help,
-    const parsed_options& po,
-    std::ostream& info,
-    variables_map& vm) {
+std::optional<options>
+handle_ore_command(bool has_help, const parsed_options& po, std::ostream& info, variables_map& vm) {
 
     auto unrecognized = collect_unrecognized(po.options, include_positional);
     // unrecognized[0] = "ore", unrecognized[1] = command, rest = command args
@@ -108,9 +103,8 @@ std::optional<options> handle_ore_command(bool has_help,
     if (unrecognized.size() > 2)
         command_args = std::vector<std::string>(unrecognized.begin() + 2, unrecognized.end());
 
-    const std::string command_name = vm.count("command")
-        ? vm["command"].as<std::string>()
-        : std::string{};
+    const std::string command_name =
+        vm.count("command") ? vm["command"].as<std::string>() : std::string{};
 
     if (has_help && command_name.empty()) {
         print_domain_help(info);
@@ -118,14 +112,12 @@ std::optional<options> handle_ore_command(bool has_help,
     }
 
     if (command_name.empty()) {
-        BOOST_THROW_EXCEPTION(parser_exception(
-            "ore command requires a subcommand (roundtrip)."));
+        BOOST_THROW_EXCEPTION(parser_exception("ore command requires a subcommand (roundtrip)."));
     }
 
     if (command_name != roundtrip_name) {
         BOOST_THROW_EXCEPTION(parser_exception(std::format(
-            "Invalid or unsupported ore command: {}. Available: roundtrip",
-            command_name)));
+            "Invalid or unsupported ore command: {}. Available: roundtrip", command_name)));
     }
 
     // Parse roundtrip-specific options
@@ -138,10 +130,7 @@ std::optional<options> handle_ore_command(bool has_help,
         return {};
     }
 
-    auto new_po = command_line_parser(command_args)
-        .options(d)
-        .positional(pos)
-        .run();
+    auto new_po = command_line_parser(command_args).options(d).positional(pos).run();
 
     variables_map new_vm;
     store(new_po, new_vm);

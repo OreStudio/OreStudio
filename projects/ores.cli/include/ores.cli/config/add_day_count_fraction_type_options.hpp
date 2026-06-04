@@ -20,11 +20,10 @@
 #ifndef ORES_CLI_CONFIG_ADD_DAY_COUNT_FRACTION_TYPE_OPTIONS_HPP
 #define ORES_CLI_CONFIG_ADD_DAY_COUNT_FRACTION_TYPE_OPTIONS_HPP
 
-#include <iosfwd>
-#include <string>
-#include <optional>
-
 #include "ores.cli/export.hpp"
+#include <iosfwd>
+#include <optional>
+#include <string>
 
 namespace ores::cli::config {
 
@@ -37,7 +36,8 @@ struct add_day_count_fraction_type_options final {
     std::optional<std::string> description;
 };
 
-ORES_CLI_EXPORT std::ostream& operator<<(std::ostream& s, const add_day_count_fraction_type_options& v);
+ORES_CLI_EXPORT std::ostream& operator<<(std::ostream& s,
+                                         const add_day_count_fraction_type_options& v);
 
 }
 

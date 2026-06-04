@@ -20,12 +20,12 @@
 #ifndef ORES_COMPUTE_WRAPPER_CONFIG_OPTIONS_HPP
 #define ORES_COMPUTE_WRAPPER_CONFIG_OPTIONS_HPP
 
+#include "ores.logging/logging_options.hpp"
+#include "ores.nats/config/nats_options.hpp"
 #include <cstdint>
 #include <iosfwd>
 #include <optional>
 #include <string>
-#include "ores.logging/logging_options.hpp"
-#include "ores.nats/config/nats_options.hpp"
 
 namespace ores::compute::wrapper::config {
 

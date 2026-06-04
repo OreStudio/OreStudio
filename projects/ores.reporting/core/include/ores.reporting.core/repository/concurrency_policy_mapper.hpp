@@ -20,10 +20,10 @@
 #ifndef ORES_REPORTING_REPOSITORY_CONCURRENCY_POLICY_MAPPER_HPP
 #define ORES_REPORTING_REPOSITORY_CONCURRENCY_POLICY_MAPPER_HPP
 
-#include "ores.reporting.api/domain/concurrency_policy.hpp"
-#include "ores.reporting.core/repository/concurrency_policy_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.reporting.api/domain/concurrency_policy.hpp"
 #include "ores.reporting.core/export.hpp"
+#include "ores.reporting.core/repository/concurrency_policy_entity.hpp"
 
 namespace ores::reporting::repository {
 
@@ -40,6 +40,7 @@ private:
         static auto instance = make_logger(logger_name);
         return instance;
     }
+
 public:
     static domain::concurrency_policy map(const concurrency_policy_entity& v);
     static concurrency_policy_entity map(const domain::concurrency_policy& v);

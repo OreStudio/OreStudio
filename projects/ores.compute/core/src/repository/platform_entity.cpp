@@ -18,15 +18,12 @@
  *
  */
 #include "ores.compute.core/repository/platform_entity.hpp"
-
 #include <ostream>
 
 namespace ores::compute::repository {
 
 std::ostream& operator<<(std::ostream& s, const platform_entity& v) {
-    s << "{ id: " << v.id.value()
-      << ", code: " << v.code
-      << ", display_name: " << v.display_name
+    s << "{ id: " << v.id.value() << ", code: " << v.code << ", display_name: " << v.display_name
       << " }";
     return s;
 }

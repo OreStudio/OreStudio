@@ -20,10 +20,10 @@
 #ifndef ORES_COMPUTE_DOMAIN_RESULT_TABLE_HPP
 #define ORES_COMPUTE_DOMAIN_RESULT_TABLE_HPP
 
-#include <string>
-#include <vector>
 #include "ores.compute.api/domain/result.hpp"
 #include "ores.compute.api/export.hpp"
+#include <string>
+#include <vector>
 
 namespace ores::compute::domain {
 

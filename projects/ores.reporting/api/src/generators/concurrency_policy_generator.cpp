@@ -18,20 +18,18 @@
  *
  */
 #include "ores.reporting.api/generators/concurrency_policy_generator.hpp"
-
+#include "ores.utility/generation/generation_keys.hpp"
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::reporting::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::concurrency_policy generate_synthetic_concurrency_policy(
-    utility::generation::generation_context& ctx) {
+domain::concurrency_policy
+generate_synthetic_concurrency_policy(utility::generation::generation_context& ctx) {
     static std::atomic<int> counter{0};
-    const auto modified_by = ctx.env().get_or(
-        std::string(generation_keys::modified_by), "system");
+    const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
 
     domain::concurrency_policy r;
     r.version = 1;
@@ -49,7 +47,7 @@ domain::concurrency_policy generate_synthetic_concurrency_policy(
 
 std::vector<domain::concurrency_policy>
 generate_synthetic_concurrency_policies(std::size_t n,
-    utility::generation::generation_context& ctx) {
+                                        utility::generation::generation_context& ctx) {
     std::vector<domain::concurrency_policy> r;
     r.reserve(n);
     while (r.size() < n)

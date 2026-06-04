@@ -18,7 +18,6 @@
  *
  */
 #include "ores.cli/config/add_options.hpp"
-
 #include <ostream>
 
 namespace ores::cli::config {

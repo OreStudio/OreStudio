@@ -20,14 +20,14 @@
 #ifndef ORES_REPORTING_MESSAGING_REGISTRAR_HPP
 #define ORES_REPORTING_MESSAGING_REGISTRAR_HPP
 
+#include "ores.database/domain/context.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.nats/service/nats_client.hpp"
+#include "ores.nats/service/subscription.hpp"
+#include "ores.reporting.core/export.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
 #include <optional>
 #include <vector>
-#include "ores.nats/service/client.hpp"
-#include "ores.nats/service/subscription.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.security/jwt/jwt_authenticator.hpp"
-#include "ores.nats/service/nats_client.hpp"
-#include "ores.reporting.core/export.hpp"
 
 namespace ores::reporting::messaging {
 
@@ -35,10 +35,10 @@ class ORES_REPORTING_CORE_EXPORT registrar {
 public:
     static std::vector<ores::nats::service::subscription>
     register_handlers(ores::nats::service::client& nats,
-        ores::database::context ctx,
-        std::optional<ores::security::jwt::jwt_authenticator> verifier,
-        ores::nats::service::nats_client& svc_nats,
-        std::string http_base_url);
+                      ores::database::context ctx,
+                      std::optional<ores::security::jwt::jwt_authenticator> verifier,
+                      ores::nats::service::nats_client& svc_nats,
+                      std::string http_base_url);
 };
 
 }

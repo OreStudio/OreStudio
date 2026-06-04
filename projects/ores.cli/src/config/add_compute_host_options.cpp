@@ -18,19 +18,21 @@
  *
  */
 #include "ores.cli/config/add_compute_host_options.hpp"
-
 #include <ostream>
 
 namespace ores::cli::config {
 
 std::ostream& operator<<(std::ostream& s, const add_compute_host_options& v) {
-    s << "{ external_id: " << v.external_id
-      << ", modified_by: " << v.modified_by;
+    s << "{ external_id: " << v.external_id << ", modified_by: " << v.modified_by;
 
-    if (v.location)  s << ", location: "  << *v.location;
-    if (v.cpu_count) s << ", cpu_count: " << *v.cpu_count;
-    if (v.ram_mb)    s << ", ram_mb: "    << *v.ram_mb;
-    if (v.gpu_type)  s << ", gpu_type: "  << *v.gpu_type;
+    if (v.location)
+        s << ", location: " << *v.location;
+    if (v.cpu_count)
+        s << ", cpu_count: " << *v.cpu_count;
+    if (v.ram_mb)
+        s << ", ram_mb: " << *v.ram_mb;
+    if (v.gpu_type)
+        s << ", gpu_type: " << *v.gpu_type;
 
     s << " }";
     return s;

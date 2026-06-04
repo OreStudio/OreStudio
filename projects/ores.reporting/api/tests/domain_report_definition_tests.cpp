@@ -17,16 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.reporting.api/domain/report_definition.hpp"
-
-#include <sstream>
-#include <catch2/catch_test_macros.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
+#include "ores.reporting.api/domain/report_definition.hpp"
 #include "ores.reporting.api/domain/report_definition_json_io.hpp" // IWYU pragma: keep.
 #include "ores.reporting.api/domain/report_definition_table.hpp"
 #include "ores.reporting.api/domain/report_definition_table_io.hpp" // IWYU pragma: keep.
+#include <boost/uuid/uuid_generators.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <sstream>
 
 namespace {
 
@@ -36,7 +35,7 @@ const std::string_view test_suite("ores.reporting.tests");
 const std::string tags("[domain]");
 
 report_definition make_report_definition(const std::string& name,
-    const std::string& report_type = "risk") {
+                                         const std::string& report_type = "risk") {
     report_definition rd;
     rd.version = 1;
     rd.id = boost::uuids::random_generator()();
@@ -171,8 +170,7 @@ TEST_CASE("create_multiple_random_report_definitions", tags) {
     auto lg(make_logger(test_suite));
 
     const std::vector<std::pair<std::string, std::string>> defs = {
-        {"Daily Risk", "risk"}, {"Weekly Grid", "grid"},
-        {"Monthly Summary", "risk"}};
+        {"Daily Risk", "risk"}, {"Weekly Grid", "grid"}, {"Monthly Summary", "risk"}};
     for (const auto& [name, type] : defs) {
         auto sut = make_report_definition(name, type);
         BOOST_LOG_SEV(lg, info) << "Report definition: " << sut;
@@ -184,8 +182,7 @@ TEST_CASE("create_multiple_random_report_definitions", tags) {
 TEST_CASE("report_definition_convert_single_to_table", tags) {
     auto lg(make_logger(test_suite));
 
-    std::vector<report_definition> items = {
-        make_report_definition("Daily Risk Report")};
+    std::vector<report_definition> items = {make_report_definition("Daily Risk Report")};
     auto table = convert_to_table(items);
 
     BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;

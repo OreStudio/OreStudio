@@ -20,9 +20,9 @@
 #ifndef ORES_REPORTING_DOMAIN_REPORT_DEFINITION_JSON_IO_HPP
 #define ORES_REPORTING_DOMAIN_REPORT_DEFINITION_JSON_IO_HPP
 
-#include <iosfwd>
 #include "ores.reporting.api/domain/report_definition.hpp"
 #include "ores.reporting.api/export.hpp"
+#include <iosfwd>
 
 namespace ores::reporting::domain {
 

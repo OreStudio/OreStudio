@@ -20,8 +20,8 @@
 #ifndef ORES_COMPUTE_WRAPPER_FILESYSTEM_ARCHIVER_HPP
 #define ORES_COMPUTE_WRAPPER_FILESYSTEM_ARCHIVER_HPP
 
-#include <filesystem>
 #include "ores.compute.wrapper/export.hpp"
+#include <filesystem>
 
 namespace ores::compute::wrapper::filesystem {
 
@@ -45,7 +45,7 @@ public:
      * @throws std::runtime_error on failure.
      */
     static void pack(const std::filesystem::path& source_dir,
-        const std::filesystem::path& output_archive);
+                     const std::filesystem::path& output_archive);
 
     /**
      * @brief Extract a .tar.gz archive into a destination directory.
@@ -56,7 +56,7 @@ public:
      * @throws std::runtime_error on failure.
      */
     static void extract(const std::filesystem::path& archive_path,
-        const std::filesystem::path& dest_dir);
+                        const std::filesystem::path& dest_dir);
 };
 
 }

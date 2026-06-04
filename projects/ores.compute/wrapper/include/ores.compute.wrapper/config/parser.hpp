@@ -20,11 +20,11 @@
 #ifndef ORES_COMPUTE_WRAPPER_CONFIG_PARSER_HPP
 #define ORES_COMPUTE_WRAPPER_CONFIG_PARSER_HPP
 
-#include <iosfwd>
-#include <vector>
-#include <string>
-#include <optional>
 #include "ores.compute.wrapper/config/options.hpp"
+#include <iosfwd>
+#include <optional>
+#include <string>
+#include <vector>
 
 namespace ores::compute::wrapper::config {
 
@@ -37,8 +37,7 @@ namespace ores::compute::wrapper::config {
 class parser final {
 public:
     std::optional<options>
-    parse(const std::vector<std::string>& arguments, std::ostream& info,
-        std::ostream& error) const;
+    parse(const std::vector<std::string>& arguments, std::ostream& info, std::ostream& error) const;
 };
 
 }

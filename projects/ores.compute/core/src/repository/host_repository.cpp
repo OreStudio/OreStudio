@@ -18,13 +18,12 @@
  *
  */
 #include "ores.compute.core/repository/host_repository.hpp"
-
-#include <sqlgen/postgres.hpp>
-#include "ores.database/repository/helpers.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.compute.api/domain/host_json_io.hpp" // IWYU pragma: keep.
 #include "ores.compute.core/repository/host_entity.hpp"
 #include "ores.compute.core/repository/host_mapper.hpp"
+#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
+#include <sqlgen/postgres.hpp>
 
 namespace ores::compute::repository {
 
@@ -39,57 +38,56 @@ std::string host_repository::sql() {
 
 void host_repository::write(context ctx, const domain::host& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing compute host: " << v.id;
-    execute_write_query(ctx, host_mapper::map(v),
-        lg(), "Writing compute host to database.");
+    execute_write_query(ctx, host_mapper::map(v), lg(), "Writing compute host to database.");
 }
 
-void host_repository::write(
-    context ctx, const std::vector<domain::host>& v) {
+void host_repository::write(context ctx, const std::vector<domain::host>& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing compute hosts. Count: " << v.size();
-    execute_write_query(ctx, host_mapper::map(v),
-        lg(), "Writing compute hosts to database.");
+    execute_write_query(ctx, host_mapper::map(v), lg(), "Writing compute hosts to database.");
 }
 
-std::vector<domain::host>
-host_repository::read_latest(context ctx) {
+std::vector<domain::host> host_repository::read_latest(context ctx) {
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<host_entity>> |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-        order_by("id"_c);
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("id"_c);
 
     return execute_read_query<host_entity, domain::host>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return host_mapper::map(entities); },
-        lg(), "Reading latest compute hosts");
+        lg(),
+        "Reading latest compute hosts");
 }
 
-std::vector<domain::host>
-host_repository::read_latest(context ctx, const std::string& id) {
+std::vector<domain::host> host_repository::read_latest(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest compute host. id: " << id;
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<host_entity>> |
-        where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
     return execute_read_query<host_entity, domain::host>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return host_mapper::map(entities); },
-        lg(), "Reading latest compute host by id.");
+        lg(),
+        "Reading latest compute host by id.");
 }
 
-std::vector<domain::host>
-host_repository::read_all(context ctx, const std::string& id) {
+std::vector<domain::host> host_repository::read_all(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all compute host versions. id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<host_entity>> |
-        where("tenant_id"_c == tid && "id"_c == id) |
-        order_by("version"_c.desc());
+                       where("tenant_id"_c == tid && "id"_c == id) | order_by("version"_c.desc());
 
     return execute_read_query<host_entity, domain::host>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return host_mapper::map(entities); },
-        lg(), "Reading all compute host versions by id.");
+        lg(),
+        "Reading all compute host versions by id.");
 }
 
 void host_repository::remove(context ctx, const std::string& id) {
@@ -97,7 +95,7 @@ void host_repository::remove(context ctx, const std::string& id) {
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<host_entity> |
-        where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
     execute_delete_query(ctx, query, lg(), "Removing compute host from database.");
 }

@@ -18,22 +18,23 @@
  *
  */
 #include "ores.cli/config/add_role_options.hpp"
-
 #include <ostream>
 
 namespace ores::cli::config {
 
 std::ostream& operator<<(std::ostream& s, const add_role_options& v) {
-    s << "{ name: " << v.name
-      << ", description: " << v.description
+    s << "{ name: " << v.name << ", description: " << v.description
       << ", modified_by: " << v.modified_by;
 
-    if (v.change_reason_code) s << ", change_reason_code: " << *v.change_reason_code;
-    if (v.change_commentary) s << ", change_commentary: " << *v.change_commentary;
+    if (v.change_reason_code)
+        s << ", change_reason_code: " << *v.change_reason_code;
+    if (v.change_commentary)
+        s << ", change_commentary: " << *v.change_commentary;
 
     s << ", permission_codes: [";
     for (size_t i = 0; i < v.permission_codes.size(); ++i) {
-        if (i > 0) s << ", ";
+        if (i > 0)
+            s << ", ";
         s << v.permission_codes[i];
     }
     s << "] }";

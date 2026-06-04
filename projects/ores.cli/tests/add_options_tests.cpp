@@ -17,16 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.cli/config/add_options.hpp"
-#include "ores.cli/config/add_currency_options.hpp"
 #include "ores.cli/config/add_account_options.hpp"
-#include "ores.cli/config/add_system_setting_options.hpp"
+#include "ores.cli/config/add_currency_options.hpp"
 #include "ores.cli/config/add_login_info_options.hpp"
-
+#include "ores.cli/config/add_options.hpp"
+#include "ores.cli/config/add_system_setting_options.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <catch2/catch_test_macros.hpp>
 #include <sstream>
 #include <variant>
-#include <catch2/catch_test_macros.hpp>
-#include "ores.logging/make_logger.hpp"
 
 namespace {
 
@@ -228,18 +227,20 @@ TEST_CASE("add_options_visit_pattern", tags) {
     add_options sut = currency;
 
     std::string entity_type;
-    std::visit([&entity_type](auto&& opts) {
-        using T = std::decay_t<decltype(opts)>;
-        if constexpr (std::is_same_v<T, add_currency_options>) {
-            entity_type = "currency";
-        } else if constexpr (std::is_same_v<T, add_account_options>) {
-            entity_type = "account";
-        } else if constexpr (std::is_same_v<T, add_system_setting_options>) {
-            entity_type = "system_setting";
-        } else if constexpr (std::is_same_v<T, add_login_info_options>) {
-            entity_type = "login_info";
-        }
-    }, sut);
+    std::visit(
+        [&entity_type](auto&& opts) {
+            using T = std::decay_t<decltype(opts)>;
+            if constexpr (std::is_same_v<T, add_currency_options>) {
+                entity_type = "currency";
+            } else if constexpr (std::is_same_v<T, add_account_options>) {
+                entity_type = "account";
+            } else if constexpr (std::is_same_v<T, add_system_setting_options>) {
+                entity_type = "system_setting";
+            } else if constexpr (std::is_same_v<T, add_login_info_options>) {
+                entity_type = "login_info";
+            }
+        },
+        sut);
 
     CHECK(entity_type == "currency");
 }

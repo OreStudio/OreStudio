@@ -20,12 +20,12 @@
 #ifndef ORES_REPORTING_API_DOMAIN_RISK_REPORT_CONFIG_HPP
 #define ORES_REPORTING_API_DOMAIN_RISK_REPORT_CONFIG_HPP
 
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <optional>
 #include <string>
 #include <vector>
-#include <boost/uuid/uuid.hpp>
-#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::reporting::domain {
 
@@ -47,11 +47,11 @@ struct risk_report_config final {
 
     // ── Core ORE setup ───────────────────────────────────────────────
     std::string base_currency;
-    std::string observation_model = "disable";  ///< disable|none|move|defer
+    std::string observation_model = "disable"; ///< disable|none|move|defer
     int n_threads = 1;
 
     // ── Market data convention ───────────────────────────────────────
-    std::string market_data_type = "eod";       ///< live|eod|date
+    std::string market_data_type = "eod";        ///< live|eod|date
     std::optional<std::string> market_data_date; ///< ISO date; set when type=date
 
     // ── Analytics flags (0/1) ────────────────────────────────────────
@@ -79,7 +79,7 @@ struct risk_report_config final {
 
     // ── Parametric VaR settings ──────────────────────────────────────
     std::vector<double> var_quantiles;
-    std::string var_method = "delta";  ///< delta|delta_gamma_normal|monte_carlo
+    std::string var_method = "delta"; ///< delta|delta_gamma_normal|monte_carlo
 
     // ── SIMM / Initial margin settings ───────────────────────────────
     std::string simm_version;

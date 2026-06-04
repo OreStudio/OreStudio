@@ -20,17 +20,16 @@
 #ifndef ORES_COMPUTE_MESSAGING_RESULT_PROTOCOL_HPP
 #define ORES_COMPUTE_MESSAGING_RESULT_PROTOCOL_HPP
 
+#include "ores.compute.api/domain/result.hpp"
 #include <string>
 #include <string_view>
 #include <vector>
-#include "ores.compute.api/domain/result.hpp"
 
 namespace ores::compute::messaging {
 
 struct list_results_request {
     using response_type = struct list_results_response;
-    static constexpr std::string_view nats_subject =
-        "compute.v1.results.list";
+    static constexpr std::string_view nats_subject = "compute.v1.results.list";
     int offset = 0;
     int limit = 100;
 };
@@ -42,10 +41,9 @@ struct list_results_response {
 
 struct submit_result_request {
     using response_type = struct submit_result_response;
-    static constexpr std::string_view nats_subject =
-        "compute.v1.results.submit";
+    static constexpr std::string_view nats_subject = "compute.v1.results.submit";
     std::string result_id;
-    std::string host_id;   // UUID string of the wrapper node that ran the job
+    std::string host_id; // UUID string of the wrapper node that ran the job
     std::string output_uri;
     int outcome = 0;
     std::string error_message; // Human-readable failure reason; empty on success

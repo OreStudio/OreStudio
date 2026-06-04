@@ -20,25 +20,24 @@
 #ifndef ORES_COMPUTE_GENERATORS_APP_GENERATOR_HPP
 #define ORES_COMPUTE_GENERATORS_APP_GENERATOR_HPP
 
-#include <vector>
 #include "ores.compute.api/domain/app.hpp"
 #include "ores.compute.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include <vector>
 
 namespace ores::compute::generators {
 
 /**
  * @brief Generates a synthetic compute app.
  */
-ORES_COMPUTE_API_EXPORT domain::app generate_synthetic_app(
-    utility::generation::generation_context& ctx);
+ORES_COMPUTE_API_EXPORT domain::app
+generate_synthetic_app(utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic compute apps.
  */
 ORES_COMPUTE_API_EXPORT std::vector<domain::app>
-generate_synthetic_apps(std::size_t n,
-    utility::generation::generation_context& ctx);
+generate_synthetic_apps(std::size_t n, utility::generation::generation_context& ctx);
 
 }
 

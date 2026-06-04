@@ -18,12 +18,11 @@
  *
  */
 #include "ores.compute.service/app/compute_grid_poller.hpp"
-
+#include "ores.compute.core/repository/compute_telemetry_repository.hpp"
 #include <boost/asio/steady_timer.hpp>
 #include <boost/asio/this_coro.hpp>
 #include <boost/asio/use_awaitable.hpp>
 #include <boost/system/system_error.hpp>
-#include "ores.compute.core/repository/compute_telemetry_repository.hpp"
 
 namespace ores::compute::service::app {
 
@@ -39,18 +38,15 @@ void compute_grid_poller::poll_once() {
     const auto sample = telemetry_repo.compute_grid_stats(ctx_);
     telemetry_repo.insert_grid_sample(ctx_, sample);
 
-    BOOST_LOG_SEV(lg(), debug)
-        << "Grid sample: hosts=" << sample.total_hosts
-        << " online=" << sample.online_hosts
-        << " idle=" << sample.idle_hosts
-        << " in_progress=" << sample.results_in_progress
-        << " workunits=" << sample.total_workunits;
+    BOOST_LOG_SEV(lg(), debug) << "Grid sample: hosts=" << sample.total_hosts
+                               << " online=" << sample.online_hosts << " idle=" << sample.idle_hosts
+                               << " in_progress=" << sample.results_in_progress
+                               << " workunits=" << sample.total_workunits;
 }
 
 boost::asio::awaitable<void> compute_grid_poller::run() {
-    BOOST_LOG_SEV(lg(), info)
-        << "Compute grid poller started. Sampling every "
-        << interval_seconds_ << "s";
+    BOOST_LOG_SEV(lg(), info) << "Compute grid poller started. Sampling every " << interval_seconds_
+                              << "s";
 
     auto executor = co_await boost::asio::this_coro::executor;
     boost::asio::steady_timer timer(executor);
@@ -60,8 +56,7 @@ boost::asio::awaitable<void> compute_grid_poller::run() {
             try {
                 poll_once();
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(lg(), warn)
-                    << "Grid poll failed: " << e.what();
+                BOOST_LOG_SEV(lg(), warn) << "Grid poll failed: " << e.what();
             }
 
             timer.expires_after(std::chrono::seconds(interval_seconds_));
@@ -69,8 +64,7 @@ boost::asio::awaitable<void> compute_grid_poller::run() {
         }
     } catch (const boost::system::system_error& e) {
         if (e.code() != boost::asio::error::operation_aborted) {
-            BOOST_LOG_SEV(lg(), warn)
-                << "Grid poller timer error: " << e.what();
+            BOOST_LOG_SEV(lg(), warn) << "Grid poller timer error: " << e.what();
         }
     }
 

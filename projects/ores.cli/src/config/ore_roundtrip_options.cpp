@@ -18,7 +18,6 @@
  *
  */
 #include "ores.cli/config/ore_roundtrip_options.hpp"
-
 #include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>

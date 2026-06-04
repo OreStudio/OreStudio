@@ -18,11 +18,10 @@
  *
  */
 #include "ores.compute.core/repository/host_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
-#include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.compute.api/domain/host_json_io.hpp" // IWYU pragma: keep.
+#include "ores.database/repository/mapper_helpers.hpp"
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::compute::repository {
 
@@ -30,8 +29,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 using ores::platform::time::datetime;
 
-domain::host
-host_mapper::map(const host_entity& v) {
+domain::host host_mapper::map(const host_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::host r;
@@ -59,8 +57,7 @@ host_mapper::map(const host_entity& v) {
     return r;
 }
 
-host_entity
-host_mapper::map(const domain::host& v) {
+host_entity host_mapper::map(const domain::host& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     host_entity r;
@@ -87,22 +84,14 @@ host_mapper::map(const domain::host& v) {
     return r;
 }
 
-std::vector<domain::host>
-host_mapper::map(const std::vector<host_entity>& v) {
+std::vector<domain::host> host_mapper::map(const std::vector<host_entity>& v) {
     return map_vector<host_entity, domain::host>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
-std::vector<host_entity>
-host_mapper::map(const std::vector<domain::host>& v) {
+std::vector<host_entity> host_mapper::map(const std::vector<domain::host>& v) {
     return map_vector<domain::host, host_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

@@ -20,10 +20,10 @@
 #ifndef ORES_REPORTING_REPOSITORY_REPORT_INPUT_BUNDLE_ENTITY_HPP
 #define ORES_REPORTING_REPOSITORY_REPORT_INPUT_BUNDLE_ENTITY_HPP
 
-#include <optional>
-#include <string>
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
+#include <optional>
+#include <string>
 
 namespace ores::reporting::repository {
 
@@ -37,8 +37,7 @@ using db_timestamp = ores::database::repository::db_timestamp;
  */
 struct report_input_bundle_entity {
     constexpr static const char* schema = "public";
-    constexpr static const char* tablename =
-        "ores_reporting_report_input_bundles_tbl";
+    constexpr static const char* tablename = "ores_reporting_report_input_bundles_tbl";
 
     sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;

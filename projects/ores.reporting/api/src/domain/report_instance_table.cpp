@@ -18,18 +18,17 @@
  *
  */
 #include "ores.reporting.api/domain/report_instance_table.hpp"
-
+#include "ores.platform/time/datetime.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
-#include "ores.platform/time/datetime.hpp"
 
 namespace ores::reporting::domain {
 
 namespace {
 
-std::string format_timepoint(
-    const std::optional<std::chrono::system_clock::time_point>& tp) {
-    if (!tp) return "N/A";
+std::string format_timepoint(const std::optional<std::chrono::system_clock::time_point>& tp) {
+    if (!tp)
+        return "N/A";
     return ores::platform::time::datetime::to_iso8601_utc(*tp);
 }
 
@@ -39,18 +38,12 @@ std::string convert_to_table(const std::vector<report_instance>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header
-          << "ID" << "Name" << "Started At" << "Completed At"
+    table << fort::header << "ID" << "Name" << "Started At" << "Completed At"
           << "Version" << "Modified By" << fort::endr;
 
     for (const auto& ri : v) {
-        table << boost::uuids::to_string(ri.id)
-              << ri.name
-              << format_timepoint(ri.started_at)
-              << format_timepoint(ri.completed_at)
-              << ri.version
-              << ri.modified_by
-              << fort::endr;
+        table << boost::uuids::to_string(ri.id) << ri.name << format_timepoint(ri.started_at)
+              << format_timepoint(ri.completed_at) << ri.version << ri.modified_by << fort::endr;
     }
     return table.to_string();
 }

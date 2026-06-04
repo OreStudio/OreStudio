@@ -20,17 +20,16 @@
 #ifndef ORES_COMPUTE_MESSAGING_APP_PROTOCOL_HPP
 #define ORES_COMPUTE_MESSAGING_APP_PROTOCOL_HPP
 
+#include "ores.compute.api/domain/app.hpp"
 #include <string>
 #include <string_view>
 #include <vector>
-#include "ores.compute.api/domain/app.hpp"
 
 namespace ores::compute::messaging {
 
 struct list_apps_request {
     using response_type = struct list_apps_response;
-    static constexpr std::string_view nats_subject =
-        "compute.v1.apps.list";
+    static constexpr std::string_view nats_subject = "compute.v1.apps.list";
     int offset = 0;
     int limit = 100;
 };
@@ -42,8 +41,7 @@ struct list_apps_response {
 
 struct save_app_request {
     using response_type = struct save_app_response;
-    static constexpr std::string_view nats_subject =
-        "compute.v1.apps.save";
+    static constexpr std::string_view nats_subject = "compute.v1.apps.save";
     ores::compute::domain::app app;
     std::string change_reason_code;
     std::string change_commentary;
@@ -56,8 +54,7 @@ struct save_app_response {
 
 struct get_app_history_request {
     using response_type = struct get_app_history_response;
-    static constexpr std::string_view nats_subject =
-        "compute.v1.apps.history";
+    static constexpr std::string_view nats_subject = "compute.v1.apps.history";
     std::string id;
 };
 

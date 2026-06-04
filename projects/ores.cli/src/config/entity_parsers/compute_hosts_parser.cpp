@@ -18,16 +18,15 @@
  *
  */
 #include "ores.cli/config/entity_parsers/compute_hosts_parser.hpp"
-
-#include <boost/program_options.hpp>
-#include <boost/throw_exception.hpp>
-#include "ores.cli/config/parser_helpers.hpp"
-#include "ores.cli/config/parser_exception.hpp"
-#include "ores.cli/config/entity.hpp"
 #include "ores.cli/config/add_compute_host_options.hpp"
+#include "ores.cli/config/entity.hpp"
+#include "ores.cli/config/parser_exception.hpp"
+#include "ores.cli/config/parser_helpers.hpp"
 #include "ores.database/config/database_configuration.hpp"
 #include "ores.logging/logging_configuration.hpp"
 #include "ores.utility/program_options/environment_mapper_factory.hpp"
+#include <boost/program_options.hpp>
+#include <boost/throw_exception.hpp>
 
 namespace ores::cli::config::entity_parsers {
 
@@ -55,66 +54,61 @@ using ores::cli::config::parser_helpers::read_export_options;
 const std::string list_command_name("list");
 const std::string add_command_name("add");
 
-const std::vector<std::string> allowed_operations{
-    list_command_name, add_command_name
-};
+const std::vector<std::string> allowed_operations{list_command_name, add_command_name};
 
 options_description make_add_compute_host_options_description() {
     options_description r("Add Compute Host Options");
-    r.add_options()
-        ("external-id",
-            value<std::string>(),
-            "UUID identifying this node's host record (required)")
-        ("location",
-            value<std::string>()->default_value(""),
-            "Deployment location, e.g. 'us-east-1' or 'office-rack-1'")
-        ("cpu-count",
-            value<int>()->default_value(0),
-            "Number of logical CPUs available on this host")
-        ("ram-mb",
-            value<int>()->default_value(0),
-            "Total RAM in MB available on this host")
-        ("gpu-type",
-            value<std::string>()->default_value(""),
-            "GPU model string, e.g. 'NVIDIA RTX 4090' (leave blank if none)")
-        ("modified-by",
-            value<std::string>(),
-            "Username of the admin registering this host (required)");
+    r.add_options()(
+        "external-id", value<std::string>(), "UUID identifying this node's host record (required)")(
+        "location",
+        value<std::string>()->default_value(""),
+        "Deployment location, e.g. 'us-east-1' or 'office-rack-1'")(
+        "cpu-count",
+        value<int>()->default_value(0),
+        "Number of logical CPUs available on this host")(
+        "ram-mb", value<int>()->default_value(0), "Total RAM in MB available on this host")(
+        "gpu-type",
+        value<std::string>()->default_value(""),
+        "GPU model string, e.g. 'NVIDIA RTX 4090' (leave blank if none)")(
+        "modified-by",
+        value<std::string>(),
+        "Username of the admin registering this host (required)");
 
     return r;
 }
 
-ores::cli::config::add_compute_host_options
-read_add_compute_host_options(const variables_map& vm) {
+ores::cli::config::add_compute_host_options read_add_compute_host_options(const variables_map& vm) {
     ores::cli::config::add_compute_host_options r;
 
     if (vm.count("modified-by") == 0) {
-        BOOST_THROW_EXCEPTION(
-            parser_exception("Must supply --modified-by for add command."));
+        BOOST_THROW_EXCEPTION(parser_exception("Must supply --modified-by for add command."));
     }
     r.modified_by = vm["modified-by"].as<std::string>();
 
     if (vm.count("external-id") == 0) {
-        BOOST_THROW_EXCEPTION(
-            parser_exception("Must supply --external-id for add host command."));
+        BOOST_THROW_EXCEPTION(parser_exception("Must supply --external-id for add host command."));
     }
     r.external_id = vm["external-id"].as<std::string>();
 
     if (vm.count("location") != 0) {
         const auto v = vm["location"].as<std::string>();
-        if (!v.empty()) r.location = v;
+        if (!v.empty())
+            r.location = v;
     }
     if (vm.count("cpu-count") != 0) {
         const auto v = vm["cpu-count"].as<int>();
-        if (v > 0) r.cpu_count = v;
+        if (v > 0)
+            r.cpu_count = v;
     }
     if (vm.count("ram-mb") != 0) {
         const auto v = vm["ram-mb"].as<int>();
-        if (v > 0) r.ram_mb = v;
+        if (v > 0)
+            r.ram_mb = v;
     }
     if (vm.count("gpu-type") != 0) {
         const auto v = vm["gpu-type"].as<std::string>();
-        if (!v.empty()) r.gpu_type = v;
+        if (!v.empty())
+            r.gpu_type = v;
     }
 
     return r;
@@ -122,11 +116,10 @@ read_add_compute_host_options(const variables_map& vm) {
 
 }
 
-std::optional<options>
-handle_compute_hosts_command(bool has_help,
-    const parsed_options& po,
-    std::ostream& info,
-    variables_map& vm) {
+std::optional<options> handle_compute_hosts_command(bool has_help,
+                                                    const parsed_options& po,
+                                                    std::ostream& info,
+                                                    variables_map& vm) {
 
     auto o(collect_unrecognized(po.options, include_positional));
     o.erase(o.begin());
@@ -134,15 +127,13 @@ handle_compute_hosts_command(bool has_help,
     if (has_help && o.empty()) {
         const std::vector<std::pair<std::string, std::string>> operations = {
             {"list", "List compute hosts as JSON or table"},
-            {"add",  "Register a new compute host node"}
-        };
+            {"add", "Register a new compute host node"}};
         print_entity_help("hosts", "Manage compute hosts", operations, info);
         return {};
     }
 
     if (o.empty()) {
-        BOOST_THROW_EXCEPTION(parser_exception(
-            "hosts command requires an operation (list, add)"));
+        BOOST_THROW_EXCEPTION(parser_exception("hosts command requires an operation (list, add)"));
     }
 
     const auto operation = o.front();

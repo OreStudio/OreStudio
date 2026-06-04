@@ -20,17 +20,18 @@
 #ifndef ORES_COMPUTE_DOMAIN_APP_VERSION_TABLE_IO_HPP
 #define ORES_COMPUTE_DOMAIN_APP_VERSION_TABLE_IO_HPP
 
-#include <iosfwd>
-#include <vector>
 #include "ores.compute.api/domain/app_version.hpp"
 #include "ores.compute.api/export.hpp"
+#include <iosfwd>
+#include <vector>
 
 namespace ores::compute::domain {
 
 /**
  * @brief Dumps the app_version objects to a stream in table format.
  */
-ORES_COMPUTE_API_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<app_version>& v);
+ORES_COMPUTE_API_EXPORT std::ostream& operator<<(std::ostream& s,
+                                                 const std::vector<app_version>& v);
 
 }
 

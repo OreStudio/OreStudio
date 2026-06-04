@@ -18,16 +18,15 @@
  *
  */
 #include "ores.compute.core/repository/app_version_platform_repository.hpp"
-
-#include <algorithm>
-#include <string>
-#include <vector>
-#include <catch2/catch_test_macros.hpp>
-#include <boost/uuid/random_generator.hpp>
-#include <boost/uuid/uuid_io.hpp>
+#include "ores.compute.core/repository/platform_repository.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.testing/database_helper.hpp"
-#include "ores.compute.core/repository/platform_repository.hpp"
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
+#include <catch2/catch_test_macros.hpp>
+#include <string>
+#include <vector>
 
 namespace {
 
@@ -51,25 +50,25 @@ std::vector<compute_platform> seeded_platforms(database_helper& h) {
 }
 
 app_version_platform make_row(database_helper& h,
-    const boost::uuids::uuid& av_id, const compute_platform& p,
-    const std::string& uri_suffix) {
+                              const boost::uuids::uuid& av_id,
+                              const compute_platform& p,
+                              const std::string& uri_suffix) {
     app_version_platform r;
     r.tenant_id = h.tenant_id();
     r.app_version_id = av_id;
     r.platform_id = p.id;
     r.platform_code = p.code;
-    r.package_uri =
-        "/api/v1/storage/compute/packages/test/" + p.code + "/" + uri_suffix;
+    r.package_uri = "/api/v1/storage/compute/packages/test/" + p.code + "/" + uri_suffix;
     return r;
 }
 
 /// list_for_version reports platform_code via a JOIN — callers compare
 /// codes rather than ids, so surface them sorted for stable equality.
-std::vector<std::string> sorted_codes(
-    const std::vector<app_version_platform>& rows) {
+std::vector<std::string> sorted_codes(const std::vector<app_version_platform>& rows) {
     std::vector<std::string> codes;
     codes.reserve(rows.size());
-    for (const auto& r : rows) codes.push_back(r.platform_code);
+    for (const auto& r : rows)
+        codes.push_back(r.platform_code);
     std::sort(codes.begin(), codes.end());
     return codes;
 }
@@ -84,13 +83,18 @@ TEST_CASE("replace_for_version_initial_insert_lists_all_rows", tags) {
     const auto av_id_str = boost::uuids::to_string(av_id);
 
     app_version_platform_repository repo;
-    std::vector<app_version_platform> rows {
+    std::vector<app_version_platform> rows{
         make_row(h, av_id, platforms[0], "pkg-a.tar.gz"),
         make_row(h, av_id, platforms[1], "pkg-b.tar.gz"),
     };
 
-    CHECK_NOTHROW(repo.replace_for_version(h.context(), av_id_str, rows,
-        h.db_user(), h.db_user(), "system.new_record", "initial insert"));
+    CHECK_NOTHROW(repo.replace_for_version(h.context(),
+                                           av_id_str,
+                                           rows,
+                                           h.db_user(),
+                                           h.db_user(),
+                                           "system.new_record",
+                                           "initial insert"));
 
     const auto listed = repo.list_for_version(h.context(), av_id_str);
     CHECK(listed.size() == 2);
@@ -113,16 +117,28 @@ TEST_CASE("replace_for_version_swap_removes_old_adds_new", tags) {
 
     app_version_platform_repository repo;
     // Seed with platforms[0] + platforms[1].
-    repo.replace_for_version(h.context(), av_id_str, {
-        make_row(h, av_id, platforms[0], "old-a.tar.gz"),
-        make_row(h, av_id, platforms[1], "old-b.tar.gz"),
-    }, h.db_user(), h.db_user(), "system.new_record", "initial");
+    repo.replace_for_version(h.context(),
+                             av_id_str,
+                             {
+                                 make_row(h, av_id, platforms[0], "old-a.tar.gz"),
+                                 make_row(h, av_id, platforms[1], "old-b.tar.gz"),
+                             },
+                             h.db_user(),
+                             h.db_user(),
+                             "system.new_record",
+                             "initial");
 
     // Replace with platforms[0] + platforms[2]; platforms[1] should be gone.
-    repo.replace_for_version(h.context(), av_id_str, {
-        make_row(h, av_id, platforms[0], "new-a.tar.gz"),
-        make_row(h, av_id, platforms[2], "new-c.tar.gz"),
-    }, h.db_user(), h.db_user(), "system.new_record", "swap");
+    repo.replace_for_version(h.context(),
+                             av_id_str,
+                             {
+                                 make_row(h, av_id, platforms[0], "new-a.tar.gz"),
+                                 make_row(h, av_id, platforms[2], "new-c.tar.gz"),
+                             },
+                             h.db_user(),
+                             h.db_user(),
+                             "system.new_record",
+                             "swap");
 
     const auto listed = repo.list_for_version(h.context(), av_id_str);
     CHECK(listed.size() == 2);
@@ -147,13 +163,19 @@ TEST_CASE("replace_for_version_empty_set_drops_all_active", tags) {
     const auto av_id_str = boost::uuids::to_string(av_id);
 
     app_version_platform_repository repo;
-    repo.replace_for_version(h.context(), av_id_str, {
-        make_row(h, av_id, platforms[0], "seed.tar.gz"),
-    }, h.db_user(), h.db_user(), "system.new_record", "seed");
+    repo.replace_for_version(h.context(),
+                             av_id_str,
+                             {
+                                 make_row(h, av_id, platforms[0], "seed.tar.gz"),
+                             },
+                             h.db_user(),
+                             h.db_user(),
+                             "system.new_record",
+                             "seed");
     REQUIRE(repo.list_for_version(h.context(), av_id_str).size() == 1);
 
-    repo.replace_for_version(h.context(), av_id_str, {},
-        h.db_user(), h.db_user(), "system.new_record", "clear");
+    repo.replace_for_version(
+        h.context(), av_id_str, {}, h.db_user(), h.db_user(), "system.new_record", "clear");
 
     CHECK(repo.list_for_version(h.context(), av_id_str).empty());
 }
@@ -164,16 +186,16 @@ TEST_CASE("replace_for_version_is_idempotent", tags) {
     const auto av_id = boost::uuids::random_generator()();
     const auto av_id_str = boost::uuids::to_string(av_id);
 
-    std::vector<app_version_platform> rows {
+    std::vector<app_version_platform> rows{
         make_row(h, av_id, platforms[0], "same.tar.gz"),
         make_row(h, av_id, platforms[1], "same.tar.gz"),
     };
 
     app_version_platform_repository repo;
-    repo.replace_for_version(h.context(), av_id_str, rows,
-        h.db_user(), h.db_user(), "system.new_record", "first");
-    repo.replace_for_version(h.context(), av_id_str, rows,
-        h.db_user(), h.db_user(), "system.new_record", "same again");
+    repo.replace_for_version(
+        h.context(), av_id_str, rows, h.db_user(), h.db_user(), "system.new_record", "first");
+    repo.replace_for_version(
+        h.context(), av_id_str, rows, h.db_user(), h.db_user(), "system.new_record", "same again");
 
     const auto listed = repo.list_for_version(h.context(), av_id_str);
     CHECK(listed.size() == 2);
@@ -185,8 +207,7 @@ TEST_CASE("replace_for_version_is_idempotent", tags) {
 
 TEST_CASE("list_for_version_returns_empty_for_unknown_id", tags) {
     database_helper h;
-    const auto unknown = boost::uuids::to_string(
-        boost::uuids::random_generator()());
+    const auto unknown = boost::uuids::to_string(boost::uuids::random_generator()());
 
     app_version_platform_repository repo;
     CHECK(repo.list_for_version(h.context(), unknown).empty());
@@ -199,18 +220,28 @@ TEST_CASE("list_for_version_filters_by_app_version", tags) {
     const auto av_b = boost::uuids::random_generator()();
 
     app_version_platform_repository repo;
-    repo.replace_for_version(h.context(), boost::uuids::to_string(av_a), {
-        make_row(h, av_a, platforms[0], "a0.tar.gz"),
-        make_row(h, av_a, platforms[1], "a1.tar.gz"),
-    }, h.db_user(), h.db_user(), "system.new_record", "av_a");
-    repo.replace_for_version(h.context(), boost::uuids::to_string(av_b), {
-        make_row(h, av_b, platforms[0], "b0.tar.gz"),
-    }, h.db_user(), h.db_user(), "system.new_record", "av_b");
+    repo.replace_for_version(h.context(),
+                             boost::uuids::to_string(av_a),
+                             {
+                                 make_row(h, av_a, platforms[0], "a0.tar.gz"),
+                                 make_row(h, av_a, platforms[1], "a1.tar.gz"),
+                             },
+                             h.db_user(),
+                             h.db_user(),
+                             "system.new_record",
+                             "av_a");
+    repo.replace_for_version(h.context(),
+                             boost::uuids::to_string(av_b),
+                             {
+                                 make_row(h, av_b, platforms[0], "b0.tar.gz"),
+                             },
+                             h.db_user(),
+                             h.db_user(),
+                             "system.new_record",
+                             "av_b");
 
-    const auto a_rows = repo.list_for_version(
-        h.context(), boost::uuids::to_string(av_a));
-    const auto b_rows = repo.list_for_version(
-        h.context(), boost::uuids::to_string(av_b));
+    const auto a_rows = repo.list_for_version(h.context(), boost::uuids::to_string(av_a));
+    const auto b_rows = repo.list_for_version(h.context(), boost::uuids::to_string(av_b));
 
     CHECK(a_rows.size() == 2);
     CHECK(b_rows.size() == 1);

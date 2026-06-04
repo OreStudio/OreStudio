@@ -18,21 +18,20 @@
  *
  */
 #include "ores.compute.wrapper/net/http_client.hpp"
-
-#include <fstream>
-#include <stdexcept>
+#include <boost/asio/connect.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
-#include <boost/asio/connect.hpp>
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
+#include <fstream>
+#include <stdexcept>
 
 namespace ores::compute::wrapper::net {
 
 namespace beast = boost::beast;
-namespace http  = boost::beast::http;
-namespace asio  = boost::asio;
-using tcp       = asio::ip::tcp;
+namespace http = boost::beast::http;
+namespace asio = boost::asio;
+using tcp = asio::ip::tcp;
 
 http_client::url_parts http_client::parse_url(const std::string& url) {
     // Expect http://host:port/path
@@ -43,8 +42,7 @@ http_client::url_parts http_client::parse_url(const std::string& url) {
     const auto rest = url.substr(prefix.size()); // host:port/path
     const auto slash = rest.find('/');
     const auto authority = (slash == std::string::npos) ? rest : rest.substr(0, slash);
-    const auto path      = (slash == std::string::npos) ? std::string("/") :
-                           rest.substr(slash);
+    const auto path = (slash == std::string::npos) ? std::string("/") : rest.substr(slash);
 
     const auto colon = authority.rfind(':');
     if (colon == std::string::npos)
@@ -53,8 +51,7 @@ http_client::url_parts http_client::parse_url(const std::string& url) {
     return {authority.substr(0, colon), authority.substr(colon + 1), path};
 }
 
-void http_client::download(const std::string& url,
-    const std::filesystem::path& dest) {
+void http_client::download(const std::string& url, const std::filesystem::path& dest) {
 
     const auto parts = parse_url(url);
 
@@ -76,9 +73,8 @@ void http_client::download(const std::string& url,
     http::read(stream, buf, res);
 
     if (res.result_int() < 200 || res.result_int() >= 300) {
-        throw std::runtime_error(
-            "http_client: GET " + url + " returned HTTP " +
-            std::to_string(res.result_int()));
+        throw std::runtime_error("http_client: GET " + url + " returned HTTP " +
+                                 std::to_string(res.result_int()));
     }
 
     // Write to destination
@@ -93,16 +89,14 @@ void http_client::download(const std::string& url,
     // Ignore shutdown errors (remote may close first)
 }
 
-void http_client::upload(const std::string& url,
-    const std::filesystem::path& src) {
+void http_client::upload(const std::string& url, const std::filesystem::path& src) {
 
     // Read file into memory
     std::ifstream f(src, std::ios::binary);
     if (!f)
         throw std::runtime_error("http_client: cannot open for reading: " + src.string());
     // Extra parentheses avoid the vexing parse.
-    const std::string body((std::istreambuf_iterator<char>(f)),
-                            std::istreambuf_iterator<char>());
+    const std::string body((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
 
     const auto parts = parse_url(url);
 
@@ -127,9 +121,8 @@ void http_client::upload(const std::string& url,
     http::read(stream, buf, res);
 
     if (res.result_int() < 200 || res.result_int() >= 300) {
-        throw std::runtime_error(
-            "http_client: PUT " + url + " returned HTTP " +
-            std::to_string(res.result_int()));
+        throw std::runtime_error("http_client: PUT " + url + " returned HTTP " +
+                                 std::to_string(res.result_int()));
     }
 
     beast::error_code ec;

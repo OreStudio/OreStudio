@@ -20,14 +20,14 @@
 #ifndef ORES_COMPUTE_REPOSITORY_COMPUTE_TELEMETRY_REPOSITORY_HPP
 #define ORES_COMPUTE_REPOSITORY_COMPUTE_TELEMETRY_REPOSITORY_HPP
 
-#include <optional>
-#include <vector>
-#include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
-#include "ores.database/domain/context.hpp"
 #include "ores.compute.api/domain/grid_sample.hpp"
 #include "ores.compute.api/domain/node_sample.hpp"
 #include "ores.compute.core/export.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <optional>
+#include <sqlgen/postgres.hpp>
+#include <vector>
 
 namespace ores::compute::repository {
 
@@ -66,8 +66,7 @@ public:
      *
      * Returns nullopt if no samples exist yet.
      */
-    std::optional<domain::grid_sample>
-    latest_grid_sample(context ctx);
+    std::optional<domain::grid_sample> latest_grid_sample(context ctx);
 
     /**
      * @brief Return the most recent sample per node for the context's tenant.
@@ -75,8 +74,7 @@ public:
      * Uses DISTINCT ON (host_id) to return exactly one row per host,
      * the one with the most recent sampled_at, in a single database query.
      */
-    std::vector<domain::node_sample>
-    latest_node_samples(context ctx);
+    std::vector<domain::node_sample> latest_node_samples(context ctx);
 
     /**
      * @brief Compute current grid statistics using SQL aggregations.

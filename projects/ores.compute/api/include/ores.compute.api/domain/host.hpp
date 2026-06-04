@@ -20,10 +20,10 @@
 #ifndef ORES_COMPUTE_DOMAIN_HOST_HPP
 #define ORES_COMPUTE_DOMAIN_HOST_HPP
 
-#include <string>
-#include <cstdint>
-#include <chrono>
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <chrono>
+#include <cstdint>
+#include <string>
 
 namespace ores::compute::domain {
 

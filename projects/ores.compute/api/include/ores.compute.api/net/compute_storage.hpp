@@ -20,9 +20,9 @@
 #ifndef ORES_COMPUTE_API_NET_COMPUTE_STORAGE_HPP
 #define ORES_COMPUTE_API_NET_COMPUTE_STORAGE_HPP
 
+#include "ores.storage/net/storage_paths.hpp"
 #include <string>
 #include <string_view>
-#include "ores.storage/net/storage_paths.hpp"
 
 namespace ores::compute::net {
 
@@ -56,8 +56,7 @@ struct compute_storage {
      * @param id   App version UUID as string.
      * @param ext  File extension including the leading dot (e.g. ".tar.gz").
      */
-    static std::string package_key(std::string_view id,
-        std::string_view ext = "") {
+    static std::string package_key(std::string_view id, std::string_view ext = "") {
         std::string k = "packages/";
         k += id;
         k += ext;
@@ -77,9 +76,9 @@ struct compute_storage {
      * this path) round-trips through the same helper.
      */
     static std::string package_key(std::string_view app_name,
-        std::string_view version,
-        std::string_view platform_code,
-        std::string_view ext) {
+                                   std::string_view version,
+                                   std::string_view platform_code,
+                                   std::string_view ext) {
         std::string k = "packages/";
         k += app_name;
         k += '/';
@@ -100,8 +99,7 @@ struct compute_storage {
      * @param workunit_id  Workunit UUID as string.
      * @param ext          File extension including the leading dot.
      */
-    static std::string input_key(std::string_view workunit_id,
-        std::string_view ext = "") {
+    static std::string input_key(std::string_view workunit_id, std::string_view ext = "") {
         std::string k = "input/";
         k += workunit_id;
         k += ext;
@@ -114,8 +112,7 @@ struct compute_storage {
      * @param workunit_id  Workunit UUID as string.
      * @param ext          File extension including the leading dot.
      */
-    static std::string config_key(std::string_view workunit_id,
-        std::string_view ext = "") {
+    static std::string config_key(std::string_view workunit_id, std::string_view ext = "") {
         std::string k = "config/";
         k += workunit_id;
         k += ext;
@@ -136,10 +133,8 @@ struct compute_storage {
 
     // Convenience path builders
 
-    static std::string package_path(std::string_view id,
-        std::string_view ext = "") {
-        return ores::storage::net::storage_paths::make_object_path(
-            bucket, package_key(id, ext));
+    static std::string package_path(std::string_view id, std::string_view ext = "") {
+        return ores::storage::net::storage_paths::make_object_path(bucket, package_key(id, ext));
     }
 
     /**
@@ -150,28 +145,25 @@ struct compute_storage {
      * clients don't have to synthesise the path inline.
      */
     static std::string package_path(std::string_view app_name,
-        std::string_view version,
-        std::string_view platform_code,
-        std::string_view ext) {
+                                    std::string_view version,
+                                    std::string_view platform_code,
+                                    std::string_view ext) {
         return ores::storage::net::storage_paths::make_object_path(
             bucket, package_key(app_name, version, platform_code, ext));
     }
 
-    static std::string input_path(std::string_view workunit_id,
-        std::string_view ext = "") {
-        return ores::storage::net::storage_paths::make_object_path(
-            bucket, input_key(workunit_id, ext));
+    static std::string input_path(std::string_view workunit_id, std::string_view ext = "") {
+        return ores::storage::net::storage_paths::make_object_path(bucket,
+                                                                   input_key(workunit_id, ext));
     }
 
-    static std::string config_path(std::string_view workunit_id,
-        std::string_view ext = "") {
-        return ores::storage::net::storage_paths::make_object_path(
-            bucket, config_key(workunit_id, ext));
+    static std::string config_path(std::string_view workunit_id, std::string_view ext = "") {
+        return ores::storage::net::storage_paths::make_object_path(bucket,
+                                                                   config_key(workunit_id, ext));
     }
 
     static std::string output_path(std::string_view result_id) {
-        return ores::storage::net::storage_paths::make_object_path(
-            bucket, output_key(result_id));
+        return ores::storage::net::storage_paths::make_object_path(bucket, output_key(result_id));
     }
 };
 

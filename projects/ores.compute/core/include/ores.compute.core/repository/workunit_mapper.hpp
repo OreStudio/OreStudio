@@ -31,22 +31,20 @@ namespace ores::compute::repository {
  */
 class workunit_mapper {
 private:
-    inline static std::string_view logger_name =
-        "ores.compute.repository.workunit_mapper";
+    inline static std::string_view logger_name = "ores.compute.repository.workunit_mapper";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }
+
 public:
     static domain::workunit map(const workunit_entity& v);
     static workunit_entity map(const domain::workunit& v);
 
-    static std::vector<domain::workunit>
-    map(const std::vector<workunit_entity>& v);
-    static std::vector<workunit_entity>
-    map(const std::vector<domain::workunit>& v);
+    static std::vector<domain::workunit> map(const std::vector<workunit_entity>& v);
+    static std::vector<workunit_entity> map(const std::vector<domain::workunit>& v);
 };
 
 }

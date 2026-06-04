@@ -17,15 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.reporting.api/domain/concurrency_policy.hpp"
-
-#include <sstream>
-#include <catch2/catch_test_macros.hpp>
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
+#include "ores.reporting.api/domain/concurrency_policy.hpp"
 #include "ores.reporting.api/domain/concurrency_policy_json_io.hpp" // IWYU pragma: keep.
 #include "ores.reporting.api/domain/concurrency_policy_table.hpp"
 #include "ores.reporting.api/domain/concurrency_policy_table_io.hpp" // IWYU pragma: keep.
+#include <catch2/catch_test_macros.hpp>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <sstream>
 
 namespace {
 
@@ -34,8 +33,8 @@ using ores::reporting::domain::concurrency_policy;
 const std::string_view test_suite("ores.reporting.tests");
 const std::string tags("[domain]");
 
-concurrency_policy make_concurrency_policy(const std::string& code,
-    const std::string& name, int display_order) {
+concurrency_policy
+make_concurrency_policy(const std::string& code, const std::string& name, int display_order) {
     concurrency_policy cp;
     cp.version = 1;
     cp.code = code;
@@ -141,8 +140,7 @@ TEST_CASE("create_multiple_random_concurrency_policies", tags) {
 TEST_CASE("concurrency_policy_convert_single_to_table", tags) {
     auto lg(make_logger(test_suite));
 
-    std::vector<concurrency_policy> items = {
-        make_concurrency_policy("fail", "Fail", 3)};
+    std::vector<concurrency_policy> items = {make_concurrency_policy("fail", "Fail", 3)};
     auto table = convert_to_table(items);
 
     BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;

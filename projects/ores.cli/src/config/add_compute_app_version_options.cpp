@@ -18,28 +18,27 @@
  *
  */
 #include "ores.cli/config/add_compute_app_version_options.hpp"
-
-#include <ostream>
 #include <numeric>
+#include <ostream>
 
 namespace ores::cli::config {
 
 std::ostream& operator<<(std::ostream& s, const add_compute_app_version_options& v) {
-    s << "{ app_id: " << v.app_id
-      << ", wrapper_version: " << v.wrapper_version
-      << ", engine_version: " << v.engine_version
-      << ", platform_packages: ["
-      << std::accumulate(v.platform_packages.begin(), v.platform_packages.end(),
+    s << "{ app_id: " << v.app_id << ", wrapper_version: " << v.wrapper_version
+      << ", engine_version: " << v.engine_version << ", platform_packages: ["
+      << std::accumulate(
+             v.platform_packages.begin(),
+             v.platform_packages.end(),
              std::string{},
-             [](const std::string& a,
-                 const add_compute_app_version_options::platform_package& b) {
+             [](const std::string& a, const add_compute_app_version_options::platform_package& b) {
                  const auto item = b.platform_code + "=" + b.package_uri;
                  return a.empty() ? item : a + ", " + item;
              })
       << "]"
       << ", modified_by: " << v.modified_by;
 
-    if (v.min_ram_mb) s << ", min_ram_mb: " << *v.min_ram_mb;
+    if (v.min_ram_mb)
+        s << ", min_ram_mb: " << *v.min_ram_mb;
 
     s << " }";
     return s;

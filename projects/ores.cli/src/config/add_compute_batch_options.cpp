@@ -18,16 +18,15 @@
  *
  */
 #include "ores.cli/config/add_compute_batch_options.hpp"
-
 #include <ostream>
 
 namespace ores::cli::config {
 
 std::ostream& operator<<(std::ostream& s, const add_compute_batch_options& v) {
-    s << "{ external_ref: " << v.external_ref
-      << ", modified_by: " << v.modified_by;
+    s << "{ external_ref: " << v.external_ref << ", modified_by: " << v.modified_by;
 
-    if (v.status) s << ", status: " << *v.status;
+    if (v.status)
+        s << ", status: " << *v.status;
 
     s << " }";
     return s;

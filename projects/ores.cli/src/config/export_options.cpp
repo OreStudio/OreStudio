@@ -18,10 +18,9 @@
  *
  */
 #include "ores.cli/config/export_options.hpp"
-
+#include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
-#include <ostream>
 
 namespace ores::cli::config {
 

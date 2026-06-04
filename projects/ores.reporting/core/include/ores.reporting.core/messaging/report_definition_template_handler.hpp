@@ -20,25 +20,25 @@
 #ifndef ORES_REPORTING_MESSAGING_REPORT_DEFINITION_TEMPLATE_HANDLER_HPP
 #define ORES_REPORTING_MESSAGING_REPORT_DEFINITION_TEMPLATE_HANDLER_HPP
 
-#include <optional>
-#include <rfl/json.hpp>
+#include "ores.database/domain/context.hpp"
+#include "ores.dq.api/messaging/report_definition_template_protocol.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.database/domain/context.hpp"
+#include "ores.reporting.api/messaging/report_definition_protocol.hpp"
+#include "ores.reporting.core/export.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include "ores.reporting.api/messaging/report_definition_protocol.hpp"
-#include "ores.dq.api/messaging/report_definition_template_protocol.hpp"
-#include "ores.reporting.core/export.hpp"
+#include <optional>
+#include <rfl/json.hpp>
 
 namespace ores::reporting::messaging {
 
 namespace {
 inline auto& report_definition_template_handler_lg() {
-    static auto instance = ores::logging::make_logger(
-        "ores.reporting.messaging.report_definition_template_handler");
+    static auto instance =
+        ores::logging::make_logger("ores.reporting.messaging.report_definition_template_handler");
     return instance;
 }
 } // namespace
@@ -50,16 +50,17 @@ using namespace ores::logging;
 
 class ORES_REPORTING_CORE_EXPORT report_definition_template_handler {
 public:
-    report_definition_template_handler(ores::nats::service::client& nats,
+    report_definition_template_handler(
+        ores::nats::service::client& nats,
         ores::database::context ctx,
         std::optional<ores::security::jwt::jwt_authenticator> verifier)
-        : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier)) {}
+        : nats_(nats)
+        , ctx_(std::move(ctx))
+        , verifier_(std::move(verifier)) {}
 
     void list(ores::nats::message msg) {
-        BOOST_LOG_SEV(report_definition_template_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        BOOST_LOG_SEV(report_definition_template_handler_lg(), debug) << "Handling " << msg.subject;
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -77,11 +78,11 @@ public:
             const auto dq_reply = nats_.request_sync(
                 ores::dq::messaging::list_dq_report_definition_templates_request::nats_subject,
                 std::span<const std::byte>(p, json.size()));
-            const std::string_view sv(
-                reinterpret_cast<const char*>(dq_reply.data.data()),
-                dq_reply.data.size());
+            const std::string_view sv(reinterpret_cast<const char*>(dq_reply.data.data()),
+                                      dq_reply.data.size());
             const auto dq_resp =
-                rfl::json::read<ores::dq::messaging::list_dq_report_definition_templates_response>(sv);
+                rfl::json::read<ores::dq::messaging::list_dq_report_definition_templates_response>(
+                    sv);
             if (!dq_resp || !dq_resp->success) {
                 resp.success = false;
                 resp.message = dq_resp ? dq_resp->message : dq_resp.error().what();

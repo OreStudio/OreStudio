@@ -20,10 +20,10 @@
 #ifndef ORES_REPORTING_DOMAIN_REPORT_DEFINITION_HPP
 #define ORES_REPORTING_DOMAIN_REPORT_DEFINITION_HPP
 
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <optional>
 #include <string>
-#include <boost/uuid/uuid.hpp>
-#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::reporting::domain {
 
@@ -33,10 +33,10 @@ namespace ores::reporting::domain {
  * The persistent template for a report. Describes what to run, when to run it,
  * and how to handle concurrent executions. Type-specific configuration (e.g.
  * risk parameters) lives in a separate table keyed by report_definition_id.
- * 
+ *
  * Lifecycle is managed through the report_definition_lifecycle FSM machine.
  * fsm_state_id points to the current state in ores_dq_fsm_states_tbl.
- * 
+ *
  * scheduler_job_id links to ores_scheduler_job_definitions_tbl.id and is set
  * by the scheduler service when the definition is activated (state: active).
  * It is cleared when the definition is suspended or archived.
@@ -100,7 +100,8 @@ struct report_definition final {
     std::string concurrency_policy;
 
     /**
-     * @brief Scheduler job UUID (FK to ores_scheduler_job_definitions_tbl). Present only when status is active.
+     * @brief Scheduler job UUID (FK to ores_scheduler_job_definitions_tbl). Present only when
+     * status is active.
      */
     std::optional<boost::uuids::uuid> scheduler_job_id;
 

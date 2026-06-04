@@ -18,17 +18,16 @@
  *
  */
 #include "ores.cli/config/add_change_reason_category_options.hpp"
-
 #include <ostream>
 
 namespace ores::cli::config {
 
 std::ostream& operator<<(std::ostream& s, const add_change_reason_category_options& v) {
-    s << "{ code: " << v.code
-      << ", description: " << v.description
+    s << "{ code: " << v.code << ", description: " << v.description
       << ", modified_by: " << v.modified_by;
 
-    if (v.change_commentary) s << ", change_commentary: " << *v.change_commentary;
+    if (v.change_commentary)
+        s << ", change_commentary: " << *v.change_commentary;
 
     s << " }";
     return s;

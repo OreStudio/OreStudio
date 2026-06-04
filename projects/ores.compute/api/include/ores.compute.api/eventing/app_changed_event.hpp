@@ -20,10 +20,10 @@
 #ifndef ORES_COMPUTE_EVENTING_APP_CHANGED_EVENT_HPP
 #define ORES_COMPUTE_EVENTING_APP_CHANGED_EVENT_HPP
 
-#include <chrono>
-#include <vector>
-#include <string>
 #include "ores.eventing/domain/event_traits.hpp"
+#include <chrono>
+#include <string>
+#include <vector>
 
 namespace ores::compute::eventing {
 
@@ -44,7 +44,7 @@ struct app_changed_event final {
 
 namespace ores::eventing::domain {
 
-template<>
+template <>
 struct event_traits<ores::compute::eventing::app_changed_event> {
     static constexpr std::string_view name = "ores.compute.app_changed";
 };

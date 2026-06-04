@@ -20,35 +20,34 @@
 #ifndef ORES_COMPUTE_MESSAGING_WORK_HANDLER_HPP
 #define ORES_COMPUTE_MESSAGING_WORK_HANDLER_HPP
 
-#include <array>
-#include <cstdint>
-#include <optional>
-#include <stdexcept>
-#include <chrono>
-#include <rfl/json.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_io.hpp>
+#include "ores.compute.api/messaging/work_protocol.hpp"
+#include "ores.compute.core/export.hpp"
+#include "ores.compute.core/service/host_service.hpp"
+#include "ores.compute.core/service/result_service.hpp"
+#include "ores.compute.core/service/workunit_service.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.dq.api/domain/change_reason.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.database/domain/context.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include "ores.compute.api/messaging/work_protocol.hpp"
-#include "ores.compute.core/service/host_service.hpp"
-#include "ores.dq.api/domain/change_reason.hpp"
-#include "ores.compute.core/service/result_service.hpp"
-#include "ores.compute.core/service/workunit_service.hpp"
-#include "ores.compute.core/export.hpp"
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <array>
+#include <chrono>
+#include <cstdint>
+#include <optional>
+#include <rfl/json.hpp>
+#include <stdexcept>
 
 namespace ores::compute::messaging {
 
 namespace {
 inline auto& work_handler_lg() {
-    static auto instance = ores::logging::make_logger(
-        "ores.compute.messaging.work_handler");
+    static auto instance = ores::logging::make_logger("ores.compute.messaging.work_handler");
     return instance;
 }
 
@@ -60,24 +59,19 @@ inline auto& work_handler_lg() {
  */
 inline std::string make_display_name(const boost::uuids::uuid& id) {
     static constexpr std::array adjectives = {
-        "amber", "bold", "brave", "bumbling", "calm", "clever", "daring",
-        "dazzling", "eager", "fierce", "frantic", "gentle", "graceful",
-        "happy", "humble", "idle", "jolly", "kind", "lively", "merry",
-        "nimble", "outgoing", "plucky", "quiet", "rowdy", "rusty", "swift",
-        "timid", "upbeat", "vibrant", "witty", "zany"
-    };
+        "amber", "bold",   "brave",   "bumbling", "calm",     "clever",   "daring", "dazzling",
+        "eager", "fierce", "frantic", "gentle",   "graceful", "happy",    "humble", "idle",
+        "jolly", "kind",   "lively",  "merry",    "nimble",   "outgoing", "plucky", "quiet",
+        "rowdy", "rusty",  "swift",   "timid",    "upbeat",   "vibrant",  "witty",  "zany"};
     static constexpr std::array animals = {
-        "armadillo", "badger", "bison", "capybara", "caracal", "dhole",
-        "dingo", "echidna", "ermine", "falcon", "gecko", "hamster",
-        "iguana", "jackal", "koala", "lemur", "marmot", "narwhal",
-        "orca", "pangolin", "quokka", "raccoon", "salamander", "tapir",
-        "uakari", "viper", "walrus", "xerus", "yak", "zorilla"
-    };
-    const std::uint32_t seed =
-        (static_cast<std::uint32_t>(id.data[0]) << 24) |
-        (static_cast<std::uint32_t>(id.data[1]) << 16) |
-        (static_cast<std::uint32_t>(id.data[2]) << 8)  |
-         static_cast<std::uint32_t>(id.data[3]);
+        "armadillo", "badger",  "bison",  "capybara", "caracal", "dhole",   "dingo",      "echidna",
+        "ermine",    "falcon",  "gecko",  "hamster",  "iguana",  "jackal",  "koala",      "lemur",
+        "marmot",    "narwhal", "orca",   "pangolin", "quokka",  "raccoon", "salamander", "tapir",
+        "uakari",    "viper",   "walrus", "xerus",    "yak",     "zorilla"};
+    const std::uint32_t seed = (static_cast<std::uint32_t>(id.data[0]) << 24) |
+                               (static_cast<std::uint32_t>(id.data[1]) << 16) |
+                               (static_cast<std::uint32_t>(id.data[2]) << 8) |
+                               static_cast<std::uint32_t>(id.data[3]);
     return std::string(adjectives[seed % adjectives.size()]) + "-" +
            std::string(animals[(seed >> 8) % animals.size()]);
 }
@@ -92,18 +86,18 @@ using ores::service::messaging::error_reply;
 using ores::service::messaging::has_permission;
 using namespace ores::logging;
 
-class ORES_COMPUTE_CORE_EXPORT work_handler  {
+class ORES_COMPUTE_CORE_EXPORT work_handler {
 public:
     work_handler(ores::nats::service::client& nats,
-        ores::database::context ctx,
-        std::optional<ores::security::jwt::jwt_authenticator> verifier)
-        : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier)) {}
+                 ores::database::context ctx,
+                 std::optional<ores::security::jwt::jwt_authenticator> verifier)
+        : nats_(nats)
+        , ctx_(std::move(ctx))
+        , verifier_(std::move(verifier)) {}
 
     void pull(ores::nats::message msg) {
-        BOOST_LOG_SEV(work_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        BOOST_LOG_SEV(work_handler_lg(), debug) << "Handling " << msg.subject;
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -118,22 +112,21 @@ public:
                 service::result_service result_svc(ctx);
                 auto unsent = result_svc.list_by_state(2); // Unsent
                 if (unsent.empty()) {
-                    reply(nats_, msg, pull_work_response{
-                        .success = false,
-                        .message = "No work available"});
-                    BOOST_LOG_SEV(work_handler_lg(), debug)
-                        << "No unsent results available";
+                    reply(nats_,
+                          msg,
+                          pull_work_response{.success = false, .message = "No work available"});
+                    BOOST_LOG_SEV(work_handler_lg(), debug) << "No unsent results available";
                     return;
                 }
 
                 boost::uuids::uuid host_uuid;
                 try {
-                    host_uuid = boost::lexical_cast<boost::uuids::uuid>(
-                        req->host_id);
+                    host_uuid = boost::lexical_cast<boost::uuids::uuid>(req->host_id);
                 } catch (...) {
-                    reply(nats_, msg, pull_work_response{
-                        .success = false,
-                        .message = "Invalid host_id: " + req->host_id});
+                    reply(nats_,
+                          msg,
+                          pull_work_response{.success = false,
+                                             .message = "Invalid host_id: " + req->host_id});
                     return;
                 }
 
@@ -149,37 +142,34 @@ public:
                 const auto wu_id_str = boost::uuids::to_string(r.workunit_id);
                 const auto wu_opt = wu_svc.find(wu_id_str);
                 if (!wu_opt) {
-                    reply(nats_, msg, pull_work_response{
-                        .success = false,
-                        .message = "Workunit not found: " + wu_id_str});
+                    reply(nats_,
+                          msg,
+                          pull_work_response{.success = false,
+                                             .message = "Workunit not found: " + wu_id_str});
                     return;
                 }
 
-                reply(nats_, msg, pull_work_response{
-                    .success = true,
-                    .result_id = boost::uuids::to_string(r.id),
-                    .workunit_id = wu_id_str,
-                    .app_version_id = boost::uuids::to_string(
-                        wu_opt->app_version_id),
-                    .input_uri = wu_opt->input_uri,
-                    .config_uri = wu_opt->config_uri});
+                reply(nats_,
+                      msg,
+                      pull_work_response{.success = true,
+                                         .result_id = boost::uuids::to_string(r.id),
+                                         .workunit_id = wu_id_str,
+                                         .app_version_id =
+                                             boost::uuids::to_string(wu_opt->app_version_id),
+                                         .input_uri = wu_opt->input_uri,
+                                         .config_uri = wu_opt->config_uri});
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(work_handler_lg(), error)
-                    << "Pull error: " << e.what();
-                reply(nats_, msg, pull_work_response{
-                    .success = false, .message = e.what()});
+                BOOST_LOG_SEV(work_handler_lg(), error) << "Pull error: " << e.what();
+                reply(nats_, msg, pull_work_response{.success = false, .message = e.what()});
             }
         } else {
-            BOOST_LOG_SEV(work_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(work_handler_lg(), warn) << "Failed to decode: " << msg.subject;
         }
-        BOOST_LOG_SEV(work_handler_lg(), debug)
-            << "Completed " << msg.subject;
+        BOOST_LOG_SEV(work_handler_lg(), debug) << "Completed " << msg.subject;
     }
 
     void heartbeat(ores::nats::message msg) {
-        BOOST_LOG_SEV(work_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        BOOST_LOG_SEV(work_handler_lg(), debug) << "Handling " << msg.subject;
         // Heartbeats are unauthenticated fire-and-forget publishes from wrapper
         // nodes — use the service context directly (no JWT required).
         if (auto req = decode<heartbeat_message>(msg)) {
@@ -201,8 +191,8 @@ public:
                         h.id = boost::lexical_cast<boost::uuids::uuid>(req->host_id);
                     } catch (const boost::bad_lexical_cast& e) {
                         BOOST_LOG_SEV(work_handler_lg(), warn)
-                            << "Invalid host_id in heartbeat: " << req->host_id
-                            << " (" << e.what() << ")";
+                            << "Invalid host_id in heartbeat: " << req->host_id << " (" << e.what()
+                            << ")";
                         return;
                     }
                     h.external_id = req->host_id;
@@ -217,20 +207,16 @@ public:
                 }
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(work_handler_lg(), error)
-                    << "Heartbeat error for host " << req->host_id
-                    << ": " << e.what();
+                    << "Heartbeat error for host " << req->host_id << ": " << e.what();
             }
         } else {
-            BOOST_LOG_SEV(work_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(work_handler_lg(), warn) << "Failed to decode: " << msg.subject;
         }
-        BOOST_LOG_SEV(work_handler_lg(), debug)
-            << "Completed " << msg.subject;
+        BOOST_LOG_SEV(work_handler_lg(), debug) << "Completed " << msg.subject;
     }
 
     void reap(ores::nats::message msg) {
-        BOOST_LOG_SEV(work_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        BOOST_LOG_SEV(work_handler_lg(), debug) << "Handling " << msg.subject;
         // Reaper runs with service context (no per-request JWT needed).
         static constexpr auto stale_threshold = std::chrono::minutes(5);
         try {
@@ -241,15 +227,18 @@ public:
             const auto now = std::chrono::system_clock::now();
 
             for (auto& r : in_progress) {
-                if (r.host_id == boost::uuids::uuid{}) continue;
+                if (r.host_id == boost::uuids::uuid{})
+                    continue;
                 const auto host_id_str = boost::uuids::to_string(r.host_id);
                 const auto host_opt = host_svc.find(host_id_str);
-                if (!host_opt) continue;
+                if (!host_opt)
+                    continue;
 
                 const auto& last_seen = host_opt->last_rpc_time;
                 if (last_seen == std::chrono::system_clock::time_point{})
                     continue;
-                if (now - last_seen <= stale_threshold) continue;
+                if (now - last_seen <= stale_threshold)
+                    continue;
 
                 r.host_id = boost::uuids::uuid{};
                 r.server_state = 2; // Unsent — back in the queue
@@ -259,15 +248,14 @@ public:
                 result_svc.save(r);
                 ++reaped;
                 BOOST_LOG_SEV(work_handler_lg(), info)
-                    << "Reaped result " << boost::uuids::to_string(r.id)
-                    << " from stale host " << host_id_str;
+                    << "Reaped result " << boost::uuids::to_string(r.id) << " from stale host "
+                    << host_id_str;
             }
 
             BOOST_LOG_SEV(work_handler_lg(), info)
                 << "Reap complete. Reaped " << reaped << " results.";
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(work_handler_lg(), error)
-                << "Reap error: " << e.what();
+            BOOST_LOG_SEV(work_handler_lg(), error) << "Reap error: " << e.what();
         }
     }
 

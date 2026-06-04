@@ -18,7 +18,6 @@
  *
  */
 #include "ores.cli/config/add_permission_options.hpp"
-
 #include <ostream>
 
 namespace ores::cli::config {
@@ -26,7 +25,8 @@ namespace ores::cli::config {
 std::ostream& operator<<(std::ostream& s, const add_permission_options& v) {
     s << "{ code: " << v.code;
 
-    if (v.description) s << ", description: " << *v.description;
+    if (v.description)
+        s << ", description: " << *v.description;
 
     s << " }";
     return s;

@@ -20,26 +20,25 @@
 #ifndef ORES_COMPUTE_MESSAGING_APP_HANDLER_HPP
 #define ORES_COMPUTE_MESSAGING_APP_HANDLER_HPP
 
-#include <optional>
-#include <stdexcept>
-#include <rfl/json.hpp>
+#include "ores.compute.api/messaging/app_protocol.hpp"
+#include "ores.compute.core/export.hpp"
+#include "ores.compute.core/service/app_service.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.database/domain/context.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include "ores.compute.api/messaging/app_protocol.hpp"
-#include "ores.compute.core/service/app_service.hpp"
-#include "ores.compute.core/export.hpp"
+#include <optional>
+#include <rfl/json.hpp>
+#include <stdexcept>
 
 namespace ores::compute::messaging {
 
 namespace {
 inline auto& app_handler_lg() {
-    static auto instance = ores::logging::make_logger(
-        "ores.compute.messaging.app_handler");
+    static auto instance = ores::logging::make_logger("ores.compute.messaging.app_handler");
     return instance;
 }
 } // namespace
@@ -50,18 +49,18 @@ using ores::service::messaging::decode;
 using ores::service::messaging::has_permission;
 using namespace ores::logging;
 
-class ORES_COMPUTE_CORE_EXPORT app_handler  {
+class ORES_COMPUTE_CORE_EXPORT app_handler {
 public:
     app_handler(ores::nats::service::client& nats,
-        ores::database::context ctx,
-        std::optional<ores::security::jwt::jwt_authenticator> verifier)
-        : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier)) {}
+                ores::database::context ctx,
+                std::optional<ores::security::jwt::jwt_authenticator> verifier)
+        : nats_(nats)
+        , ctx_(std::move(ctx))
+        , verifier_(std::move(verifier)) {}
 
     void list(ores::nats::message msg) {
-        BOOST_LOG_SEV(app_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        BOOST_LOG_SEV(app_handler_lg(), debug) << "Handling " << msg.subject;
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -72,20 +71,17 @@ public:
         try {
             if (auto req = decode<list_apps_request>(msg)) {
                 resp.apps = svc.list();
-                resp.total_available_count =
-                    static_cast<int>(resp.apps.size());
+                resp.total_available_count = static_cast<int>(resp.apps.size());
             }
-        } catch (...) {}
+        } catch (...) {
+        }
         reply(nats_, msg, resp);
-        BOOST_LOG_SEV(app_handler_lg(), debug)
-            << "Completed " << msg.subject;
+        BOOST_LOG_SEV(app_handler_lg(), debug) << "Completed " << msg.subject;
     }
 
     void save(ores::nats::message msg) {
-        BOOST_LOG_SEV(app_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        BOOST_LOG_SEV(app_handler_lg(), debug) << "Handling " << msg.subject;
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -101,22 +97,17 @@ public:
                 svc.save(req->app);
                 reply(nats_, msg, save_app_response{.success = true});
             } catch (const std::exception& e) {
-                reply(nats_, msg, save_app_response{
-                    .success = false, .message = e.what()});
+                reply(nats_, msg, save_app_response{.success = false, .message = e.what()});
             }
         } else {
-            BOOST_LOG_SEV(app_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(app_handler_lg(), warn) << "Failed to decode: " << msg.subject;
         }
-        BOOST_LOG_SEV(app_handler_lg(), debug)
-            << "Completed " << msg.subject;
+        BOOST_LOG_SEV(app_handler_lg(), debug) << "Completed " << msg.subject;
     }
 
     void history(ores::nats::message msg) {
-        BOOST_LOG_SEV(app_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        BOOST_LOG_SEV(app_handler_lg(), debug) << "Handling " << msg.subject;
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -133,8 +124,7 @@ public:
             resp.message = e.what();
         }
         reply(nats_, msg, resp);
-        BOOST_LOG_SEV(app_handler_lg(), debug)
-            << "Completed " << msg.subject;
+        BOOST_LOG_SEV(app_handler_lg(), debug) << "Completed " << msg.subject;
     }
 
 private:

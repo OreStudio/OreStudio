@@ -20,17 +20,16 @@
 #ifndef ORES_COMPUTE_MESSAGING_WORKUNIT_PROTOCOL_HPP
 #define ORES_COMPUTE_MESSAGING_WORKUNIT_PROTOCOL_HPP
 
+#include "ores.compute.api/domain/workunit.hpp"
 #include <string>
 #include <string_view>
 #include <vector>
-#include "ores.compute.api/domain/workunit.hpp"
 
 namespace ores::compute::messaging {
 
 struct list_workunits_request {
     using response_type = struct list_workunits_response;
-    static constexpr std::string_view nats_subject =
-        "compute.v1.workunits.list";
+    static constexpr std::string_view nats_subject = "compute.v1.workunits.list";
     int offset = 0;
     int limit = 100;
 };
@@ -42,8 +41,7 @@ struct list_workunits_response {
 
 struct save_workunit_request {
     using response_type = struct save_workunit_response;
-    static constexpr std::string_view nats_subject =
-        "compute.v1.workunits.save";
+    static constexpr std::string_view nats_subject = "compute.v1.workunits.save";
     ores::compute::domain::workunit workunit;
     std::string change_reason_code;
     std::string change_commentary;

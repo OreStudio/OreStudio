@@ -18,10 +18,9 @@
  *
  */
 #include "ores.compute.api/domain/app_table.hpp"
-
-#include <sstream>
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
+#include <sstream>
 
 namespace ores::compute::domain {
 
@@ -29,14 +28,12 @@ std::string convert_to_table(const std::vector<app>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header
-          << "ID" << "Name" << "Description"
+    table << fort::header << "ID" << "Name" << "Description"
           << "Modified By" << "Recorded At" << fort::endr;
 
     for (const auto& a : v) {
-        table << boost::uuids::to_string(a.id)
-              << a.name << a.description
-              << a.modified_by << a.recorded_at << fort::endr;
+        table << boost::uuids::to_string(a.id) << a.name << a.description << a.modified_by
+              << a.recorded_at << fort::endr;
     }
 
     std::ostringstream ss;

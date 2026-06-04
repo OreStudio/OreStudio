@@ -18,7 +18,6 @@
  *
  */
 #include "ores.compute.core/service/host_service.hpp"
-
 #include <stdexcept>
 
 namespace ores::compute::service {
@@ -36,7 +35,8 @@ std::vector<domain::host> host_service::list() {
 std::optional<domain::host> host_service::find(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Finding host: " << id;
     auto results = repo_.read_latest(ctx_, id);
-    if (results.empty()) return std::nullopt;
+    if (results.empty())
+        return std::nullopt;
     return results.front();
 }
 

@@ -18,21 +18,19 @@
  *
  */
 #include "ores.reporting.api/generators/report_instance_generator.hpp"
-
+#include "ores.utility/generation/generation_keys.hpp"
+#include <boost/uuid/random_generator.hpp>
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include <boost/uuid/random_generator.hpp>
-#include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::reporting::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::report_instance generate_synthetic_report_instance(
-    utility::generation::generation_context& ctx) {
+domain::report_instance
+generate_synthetic_report_instance(utility::generation::generation_context& ctx) {
     static std::atomic<int> counter{0};
-    const auto modified_by = ctx.env().get_or(
-        std::string(generation_keys::modified_by), "system");
+    const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
 
     domain::report_instance r;
     r.version = 1;
@@ -53,8 +51,7 @@ domain::report_instance generate_synthetic_report_instance(
 }
 
 std::vector<domain::report_instance>
-generate_synthetic_report_instances(std::size_t n,
-    utility::generation::generation_context& ctx) {
+generate_synthetic_report_instances(std::size_t n, utility::generation::generation_context& ctx) {
     std::vector<domain::report_instance> r;
     r.reserve(n);
     while (r.size() < n)

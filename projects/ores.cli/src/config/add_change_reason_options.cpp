@@ -18,24 +18,27 @@
  *
  */
 #include "ores.cli/config/add_change_reason_options.hpp"
-
 #include <ostream>
 
 namespace ores::cli::config {
 
 std::ostream& operator<<(std::ostream& s, const add_change_reason_options& v) {
-    s << "{ code: " << v.code
-      << ", description: " << v.description
+    s << "{ code: " << v.code << ", description: " << v.description
       << ", category_code: " << v.category_code;
 
-    if (v.applies_to_amend) s << ", applies_to_amend: " << (*v.applies_to_amend ? "true" : "false");
-    if (v.applies_to_delete) s << ", applies_to_delete: " << (*v.applies_to_delete ? "true" : "false");
-    if (v.requires_commentary) s << ", requires_commentary: " << (*v.requires_commentary ? "true" : "false");
-    if (v.display_order) s << ", display_order: " << *v.display_order;
+    if (v.applies_to_amend)
+        s << ", applies_to_amend: " << (*v.applies_to_amend ? "true" : "false");
+    if (v.applies_to_delete)
+        s << ", applies_to_delete: " << (*v.applies_to_delete ? "true" : "false");
+    if (v.requires_commentary)
+        s << ", requires_commentary: " << (*v.requires_commentary ? "true" : "false");
+    if (v.display_order)
+        s << ", display_order: " << *v.display_order;
 
     s << ", modified_by: " << v.modified_by;
 
-    if (v.change_commentary) s << ", change_commentary: " << *v.change_commentary;
+    if (v.change_commentary)
+        s << ", change_commentary: " << *v.change_commentary;
 
     s << " }";
     return s;

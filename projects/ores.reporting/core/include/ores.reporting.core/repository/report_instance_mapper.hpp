@@ -20,10 +20,10 @@
 #ifndef ORES_REPORTING_REPOSITORY_REPORT_INSTANCE_MAPPER_HPP
 #define ORES_REPORTING_REPOSITORY_REPORT_INSTANCE_MAPPER_HPP
 
-#include "ores.reporting.api/domain/report_instance.hpp"
-#include "ores.reporting.core/repository/report_instance_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.reporting.api/domain/report_instance.hpp"
 #include "ores.reporting.core/export.hpp"
+#include "ores.reporting.core/repository/report_instance_entity.hpp"
 
 namespace ores::reporting::repository {
 
@@ -32,22 +32,20 @@ namespace ores::reporting::repository {
  */
 class ORES_REPORTING_CORE_EXPORT report_instance_mapper {
 private:
-    inline static std::string_view logger_name =
-        "ores.reporting.repository.report_instance_mapper";
+    inline static std::string_view logger_name = "ores.reporting.repository.report_instance_mapper";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }
+
 public:
     static domain::report_instance map(const report_instance_entity& v);
     static report_instance_entity map(const domain::report_instance& v);
 
-    static std::vector<domain::report_instance>
-    map(const std::vector<report_instance_entity>& v);
-    static std::vector<report_instance_entity>
-    map(const std::vector<domain::report_instance>& v);
+    static std::vector<domain::report_instance> map(const std::vector<report_instance_entity>& v);
+    static std::vector<report_instance_entity> map(const std::vector<domain::report_instance>& v);
 };
 
 }

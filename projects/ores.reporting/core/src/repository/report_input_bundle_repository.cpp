@@ -18,11 +18,10 @@
  *
  */
 #include "ores.reporting.core/repository/report_input_bundle_repository.hpp"
-
-#include <sqlgen/postgres.hpp>
-#include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
 #include "ores.reporting.core/repository/report_input_bundle_entity.hpp"
+#include <sqlgen/postgres.hpp>
 
 namespace ores::reporting::repository {
 
@@ -31,38 +30,34 @@ using namespace sqlgen::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-void report_input_bundle_repository::create(
-    context ctx, const report_input_bundle_entity& bundle) {
+void report_input_bundle_repository::create(context ctx, const report_input_bundle_entity& bundle) {
 
-    BOOST_LOG_SEV(lg(), debug) << "Creating report_input_bundle: "
-                               << bundle.id.value();
+    BOOST_LOG_SEV(lg(), debug) << "Creating report_input_bundle: " << bundle.id.value();
 
-    const auto r = sqlgen::session(ctx.connection_pool())
-        .and_then(insert(bundle));
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(insert(bundle));
     ensure_success(r, lg());
 
     BOOST_LOG_SEV(lg(), debug) << "report_input_bundle created.";
 }
 
 std::optional<report_input_bundle_entity>
-report_input_bundle_repository::find_by_instance_id(
-    context ctx, const std::string& instance_id) {
+report_input_bundle_repository::find_by_instance_id(context ctx, const std::string& instance_id) {
 
-    BOOST_LOG_SEV(lg(), debug)
-        << "Finding report_input_bundle for instance: " << instance_id;
+    BOOST_LOG_SEV(lg(), debug) << "Finding report_input_bundle for instance: " << instance_id;
 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<report_input_bundle_entity>> |
-        where("tenant_id"_c == tid &&
-              "report_instance_id"_c == instance_id);
+                       where("tenant_id"_c == tid && "report_instance_id"_c == instance_id);
 
-    auto results = execute_read_query<
-        report_input_bundle_entity, report_input_bundle_entity>(
-        ctx, query,
+    auto results = execute_read_query<report_input_bundle_entity, report_input_bundle_entity>(
+        ctx,
+        query,
         [](const auto& entities) { return entities; },
-        lg(), "Finding report_input_bundle by instance_id");
+        lg(),
+        "Finding report_input_bundle by instance_id");
 
-    if (results.empty()) return std::nullopt;
+    if (results.empty())
+        return std::nullopt;
     return results.front();
 }
 

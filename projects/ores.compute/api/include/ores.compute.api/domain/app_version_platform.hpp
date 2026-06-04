@@ -20,9 +20,9 @@
 #ifndef ORES_COMPUTE_DOMAIN_APP_VERSION_PLATFORM_HPP
 #define ORES_COMPUTE_DOMAIN_APP_VERSION_PLATFORM_HPP
 
-#include <string>
-#include <boost/uuid/uuid.hpp>
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <string>
 
 namespace ores::compute::domain {
 

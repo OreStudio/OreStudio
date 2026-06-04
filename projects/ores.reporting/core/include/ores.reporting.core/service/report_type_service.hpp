@@ -20,14 +20,14 @@
 #ifndef ORES_REPORTING_SERVICE_REPORT_TYPE_SERVICE_HPP
 #define ORES_REPORTING_SERVICE_REPORT_TYPE_SERVICE_HPP
 
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.reporting.api/domain/report_type.hpp"
+#include "ores.reporting.core/export.hpp"
+#include "ores.reporting.core/repository/report_type_repository.hpp"
+#include <optional>
 #include <string>
 #include <vector>
-#include <optional>
-#include "ores.logging/make_logger.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.reporting.api/domain/report_type.hpp"
-#include "ores.reporting.core/repository/report_type_repository.hpp"
-#include "ores.reporting.core/export.hpp"
 
 namespace ores::reporting::service {
 
@@ -36,8 +36,7 @@ namespace ores::reporting::service {
  */
 class ORES_REPORTING_CORE_EXPORT report_type_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.reporting.service.report_type_service";
+    inline static std::string_view logger_name = "ores.reporting.service.report_type_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -52,15 +51,13 @@ public:
 
     std::vector<domain::report_type> list_types();
 
-    std::optional<domain::report_type>
-    find_type(const std::string& code);
+    std::optional<domain::report_type> find_type(const std::string& code);
 
     void save_type(const domain::report_type& v);
 
     void remove_type(const std::string& code);
 
-    std::vector<domain::report_type>
-    get_type_history(const std::string& code);
+    std::vector<domain::report_type> get_type_history(const std::string& code);
 
 private:
     context ctx_;

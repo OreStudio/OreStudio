@@ -18,12 +18,11 @@
  *
  */
 #include "ores.compute.core/repository/platform_repository.hpp"
-
-#include <sqlgen/postgres.hpp>
+#include "ores.compute.core/repository/platform_entity.hpp"
+#include "ores.database/repository/bitemporal_operations.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include "ores.database/repository/bitemporal_operations.hpp"
-#include "ores.compute.core/repository/platform_entity.hpp"
+#include <sqlgen/postgres.hpp>
 
 namespace ores::compute::repository {
 
@@ -32,17 +31,16 @@ using namespace sqlgen::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-std::vector<domain::compute_platform>
-platform_repository::read_active(context ctx) {
+std::vector<domain::compute_platform> platform_repository::read_active(context ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Reading active compute platforms";
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     const auto query = sqlgen::read<std::vector<platform_entity>> |
-        where("valid_to"_c == max.value()) |
-        order_by("display_name"_c);
+                       where("valid_to"_c == max.value()) | order_by("display_name"_c);
 
     return execute_read_query<platform_entity, domain::compute_platform>(
-        ctx, query,
+        ctx,
+        query,
         [](const std::vector<platform_entity>& entities) {
             std::vector<domain::compute_platform> result;
             result.reserve(entities.size());
@@ -52,8 +50,7 @@ platform_repository::read_active(context ctx) {
                     p.id = boost::lexical_cast<boost::uuids::uuid>(e.id.value());
                 } catch (const boost::bad_lexical_cast& ex) {
                     BOOST_LOG_SEV(lg(), error)
-                        << "Failed to parse platform UUID '"
-                        << e.id.value() << "': " << ex.what();
+                        << "Failed to parse platform UUID '" << e.id.value() << "': " << ex.what();
                     continue;
                 }
                 p.code = e.code;
@@ -67,7 +64,8 @@ platform_repository::read_active(context ctx) {
             }
             return result;
         },
-        lg(), "Reading active platforms");
+        lg(),
+        "Reading active platforms");
 }
 
 }

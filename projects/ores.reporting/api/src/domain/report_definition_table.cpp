@@ -18,7 +18,6 @@
  *
  */
 #include "ores.reporting.api/domain/report_definition_table.hpp"
-
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
 
@@ -32,7 +31,8 @@ std::string convert_to_table(const std::vector<report_definition>& v) {
     table << fort::header << "ID" << "Name" << "Type" << "Modified By" << "Version" << fort::endr;
 
     for (const auto& rd : v) {
-        table << boost::uuids::to_string(rd.id) << rd.name << rd.report_type << rd.modified_by << rd.version << fort::endr;
+        table << boost::uuids::to_string(rd.id) << rd.name << rd.report_type << rd.modified_by
+              << rd.version << fort::endr;
     }
     return table.to_string();
 }

@@ -20,11 +20,11 @@
 #ifndef ORES_REPORTING_REPOSITORY_REPORT_DEFINITION_ENTITY_HPP
 #define ORES_REPORTING_REPOSITORY_REPORT_DEFINITION_ENTITY_HPP
 
-#include <string>
+#include "sqlgen/PrimaryKey.hpp"
+#include "sqlgen/Timestamp.hpp"
 #include <optional>
 #include <ostream>
-#include "sqlgen/Timestamp.hpp"
-#include "sqlgen/PrimaryKey.hpp"
+#include <string>
 
 namespace ores::reporting::repository {
 

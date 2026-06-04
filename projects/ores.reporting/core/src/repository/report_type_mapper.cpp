@@ -18,7 +18,6 @@
  *
  */
 #include "ores.reporting.core/repository/report_type_mapper.hpp"
-
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.reporting.api/domain/report_type_json_io.hpp" // IWYU pragma: keep.
 
@@ -27,8 +26,7 @@ namespace ores::reporting::repository {
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::report_type
-report_type_mapper::map(const report_type_entity& v) {
+domain::report_type report_type_mapper::map(const report_type_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::report_type r;
@@ -47,8 +45,7 @@ report_type_mapper::map(const report_type_entity& v) {
     return r;
 }
 
-report_type_entity
-report_type_mapper::map(const domain::report_type& v) {
+report_type_entity report_type_mapper::map(const domain::report_type& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     report_type_entity r;
@@ -66,22 +63,14 @@ report_type_mapper::map(const domain::report_type& v) {
     return r;
 }
 
-std::vector<domain::report_type>
-report_type_mapper::map(const std::vector<report_type_entity>& v) {
+std::vector<domain::report_type> report_type_mapper::map(const std::vector<report_type_entity>& v) {
     return map_vector<report_type_entity, domain::report_type>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
-std::vector<report_type_entity>
-report_type_mapper::map(const std::vector<domain::report_type>& v) {
+std::vector<report_type_entity> report_type_mapper::map(const std::vector<domain::report_type>& v) {
     return map_vector<domain::report_type, report_type_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

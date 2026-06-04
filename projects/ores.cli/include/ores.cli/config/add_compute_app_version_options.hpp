@@ -20,12 +20,11 @@
 #ifndef ORES_CLI_CONFIG_ADD_COMPUTE_APP_VERSION_OPTIONS_HPP
 #define ORES_CLI_CONFIG_ADD_COMPUTE_APP_VERSION_OPTIONS_HPP
 
+#include "ores.cli/export.hpp"
 #include <iosfwd>
+#include <optional>
 #include <string>
 #include <vector>
-#include <optional>
-
-#include "ores.cli/export.hpp"
 
 namespace ores::cli::config {
 

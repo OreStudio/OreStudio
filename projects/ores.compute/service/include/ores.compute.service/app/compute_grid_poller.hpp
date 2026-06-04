@@ -20,10 +20,10 @@
 #ifndef ORES_COMPUTE_SERVICE_APP_COMPUTE_GRID_POLLER_HPP
 #define ORES_COMPUTE_SERVICE_APP_COMPUTE_GRID_POLLER_HPP
 
-#include <cstdint>
-#include <boost/asio/awaitable.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <boost/asio/awaitable.hpp>
+#include <cstdint>
 
 namespace ores::compute::service::app {
 
@@ -38,8 +38,7 @@ namespace ores::compute::service::app {
  */
 class compute_grid_poller {
 private:
-    inline static std::string_view logger_name =
-        "ores.compute.service.app.compute_grid_poller";
+    inline static std::string_view logger_name = "ores.compute.service.app.compute_grid_poller";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -48,8 +47,7 @@ private:
     }
 
 public:
-    compute_grid_poller(std::uint32_t interval_seconds,
-                        ores::database::context ctx);
+    compute_grid_poller(std::uint32_t interval_seconds, ores::database::context ctx);
 
     /**
      * @brief Async coroutine entry point.

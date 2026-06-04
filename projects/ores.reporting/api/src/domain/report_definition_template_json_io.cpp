@@ -18,7 +18,6 @@
  *
  */
 #include "ores.reporting.api/domain/report_definition_template_json_io.hpp"
-
 #include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>

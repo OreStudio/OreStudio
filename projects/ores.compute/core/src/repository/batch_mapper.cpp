@@ -18,19 +18,17 @@
  *
  */
 #include "ores.compute.core/repository/batch_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
-#include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.compute.api/domain/batch_json_io.hpp" // IWYU pragma: keep.
+#include "ores.database/repository/mapper_helpers.hpp"
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::compute::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::batch
-batch_mapper::map(const batch_entity& v) {
+domain::batch batch_mapper::map(const batch_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::batch r;
@@ -49,8 +47,7 @@ batch_mapper::map(const batch_entity& v) {
     return r;
 }
 
-batch_entity
-batch_mapper::map(const domain::batch& v) {
+batch_entity batch_mapper::map(const domain::batch& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     batch_entity r;
@@ -68,22 +65,14 @@ batch_mapper::map(const domain::batch& v) {
     return r;
 }
 
-std::vector<domain::batch>
-batch_mapper::map(const std::vector<batch_entity>& v) {
+std::vector<domain::batch> batch_mapper::map(const std::vector<batch_entity>& v) {
     return map_vector<batch_entity, domain::batch>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
-std::vector<batch_entity>
-batch_mapper::map(const std::vector<domain::batch>& v) {
+std::vector<batch_entity> batch_mapper::map(const std::vector<domain::batch>& v) {
     return map_vector<domain::batch, batch_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

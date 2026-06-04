@@ -20,12 +20,11 @@
 #ifndef ORES_CLI_CONFIG_IMPORTING_CONFIG_HPP
 #define ORES_CLI_CONFIG_IMPORTING_CONFIG_HPP
 
+#include "ores.cli/config/entity.hpp"
+#include "ores.cli/export.hpp"
+#include <filesystem>
 #include <iosfwd>
 #include <vector>
-#include <filesystem>
-#include "ores.cli/config/entity.hpp"
-
-#include "ores.cli/export.hpp"
 
 namespace ores::cli::config {
 

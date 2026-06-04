@@ -18,20 +18,19 @@
  *
  */
 #include "ores.cli/config/add_compute_workunit_options.hpp"
-
 #include <ostream>
 
 namespace ores::cli::config {
 
 std::ostream& operator<<(std::ostream& s, const add_compute_workunit_options& v) {
-    s << "{ batch_id: " << v.batch_id
-      << ", app_version_id: " << v.app_version_id
-      << ", input_uri: " << v.input_uri
-      << ", config_uri: " << v.config_uri
+    s << "{ batch_id: " << v.batch_id << ", app_version_id: " << v.app_version_id
+      << ", input_uri: " << v.input_uri << ", config_uri: " << v.config_uri
       << ", modified_by: " << v.modified_by;
 
-    if (v.priority)           s << ", priority: "           << *v.priority;
-    if (v.target_redundancy)  s << ", target_redundancy: "  << *v.target_redundancy;
+    if (v.priority)
+        s << ", priority: " << *v.priority;
+    if (v.target_redundancy)
+        s << ", target_redundancy: " << *v.target_redundancy;
 
     s << " }";
     return s;

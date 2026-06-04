@@ -18,13 +18,12 @@
  *
  */
 #include "ores.compute.core/repository/workunit_repository.hpp"
-
-#include <sqlgen/postgres.hpp>
-#include "ores.database/repository/helpers.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.compute.api/domain/workunit_json_io.hpp" // IWYU pragma: keep.
 #include "ores.compute.core/repository/workunit_entity.hpp"
 #include "ores.compute.core/repository/workunit_mapper.hpp"
+#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
+#include <sqlgen/postgres.hpp>
 
 namespace ores::compute::repository {
 
@@ -39,72 +38,73 @@ std::string workunit_repository::sql() {
 
 void workunit_repository::write(context ctx, const domain::workunit& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing workunit: " << v.id;
-    execute_write_query(ctx, workunit_mapper::map(v),
-        lg(), "Writing workunit to database.");
+    execute_write_query(ctx, workunit_mapper::map(v), lg(), "Writing workunit to database.");
 }
 
-void workunit_repository::write(
-    context ctx, const std::vector<domain::workunit>& v) {
+void workunit_repository::write(context ctx, const std::vector<domain::workunit>& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing workunits. Count: " << v.size();
-    execute_write_query(ctx, workunit_mapper::map(v),
-        lg(), "Writing workunits to database.");
+    execute_write_query(ctx, workunit_mapper::map(v), lg(), "Writing workunits to database.");
 }
 
-std::vector<domain::workunit>
-workunit_repository::read_latest(context ctx) {
+std::vector<domain::workunit> workunit_repository::read_latest(context ctx) {
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<workunit_entity>> |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-        order_by("id"_c);
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("id"_c);
 
     return execute_read_query<workunit_entity, domain::workunit>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return workunit_mapper::map(entities); },
-        lg(), "Reading latest workunits");
+        lg(),
+        "Reading latest workunits");
 }
 
-std::vector<domain::workunit>
-workunit_repository::read_latest(context ctx, const std::string& id) {
+std::vector<domain::workunit> workunit_repository::read_latest(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest workunit. id: " << id;
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<workunit_entity>> |
-        where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
     return execute_read_query<workunit_entity, domain::workunit>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return workunit_mapper::map(entities); },
-        lg(), "Reading latest workunit by id.");
+        lg(),
+        "Reading latest workunit by id.");
 }
 
-std::vector<domain::workunit>
-workunit_repository::read_all(context ctx, const std::string& id) {
+std::vector<domain::workunit> workunit_repository::read_all(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all workunit versions. id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<workunit_entity>> |
-        where("tenant_id"_c == tid && "id"_c == id) |
-        order_by("version"_c.desc());
+                       where("tenant_id"_c == tid && "id"_c == id) | order_by("version"_c.desc());
 
     return execute_read_query<workunit_entity, domain::workunit>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return workunit_mapper::map(entities); },
-        lg(), "Reading all workunit versions by id.");
+        lg(),
+        "Reading all workunit versions by id.");
 }
 
-std::vector<domain::workunit>
-workunit_repository::read_by_batch(context ctx, const std::string& batch_id) {
+std::vector<domain::workunit> workunit_repository::read_by_batch(context ctx,
+                                                                 const std::string& batch_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading workunits by batch: " << batch_id;
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<workunit_entity>> |
-        where("tenant_id"_c == tid && "batch_id"_c == batch_id
-            && "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::read<std::vector<workunit_entity>> |
+        where("tenant_id"_c == tid && "batch_id"_c == batch_id && "valid_to"_c == max.value());
 
     return execute_read_query<workunit_entity, domain::workunit>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return workunit_mapper::map(entities); },
-        lg(), "Reading workunits by batch.");
+        lg(),
+        "Reading workunits by batch.");
 }
 
 void workunit_repository::remove(context ctx, const std::string& id) {
@@ -112,7 +112,7 @@ void workunit_repository::remove(context ctx, const std::string& id) {
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<workunit_entity> |
-        where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
     execute_delete_query(ctx, query, lg(), "Removing workunit from database.");
 }

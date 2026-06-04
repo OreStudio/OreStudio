@@ -20,11 +20,11 @@
 #ifndef ORES_REPORTING_SERVICE_CONFIG_OPTIONS_HPP
 #define ORES_REPORTING_SERVICE_CONFIG_OPTIONS_HPP
 
+#include "ores.database/domain/database_options.hpp"
+#include "ores.logging/logging_options.hpp"
+#include "ores.nats/config/nats_options.hpp"
 #include <iosfwd>
 #include <optional>
-#include "ores.logging/logging_options.hpp"
-#include "ores.database/domain/database_options.hpp"
-#include "ores.nats/config/nats_options.hpp"
 
 namespace ores::reporting::service::config {
 

@@ -20,25 +20,25 @@
 #ifndef ORES_REPORTING_GENERATORS_CONCURRENCY_POLICY_GENERATOR_HPP
 #define ORES_REPORTING_GENERATORS_CONCURRENCY_POLICY_GENERATOR_HPP
 
-#include <vector>
-#include "ores.reporting.api/export.hpp"
 #include "ores.reporting.api/domain/concurrency_policy.hpp"
+#include "ores.reporting.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include <vector>
 
 namespace ores::reporting::generators {
 
 /**
  * @brief Generates a synthetic concurrency_policy.
  */
-ORES_REPORTING_API_EXPORT domain::concurrency_policy generate_synthetic_concurrency_policy(
-    utility::generation::generation_context& ctx);
+ORES_REPORTING_API_EXPORT domain::concurrency_policy
+generate_synthetic_concurrency_policy(utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic concurrency_policies.
  */
 ORES_REPORTING_API_EXPORT std::vector<domain::concurrency_policy>
 generate_synthetic_concurrency_policies(std::size_t n,
-    utility::generation::generation_context& ctx);
+                                        utility::generation::generation_context& ctx);
 
 }
 

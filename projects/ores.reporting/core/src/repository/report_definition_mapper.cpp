@@ -18,19 +18,17 @@
  *
  */
 #include "ores.reporting.core/repository/report_definition_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.reporting.api/domain/report_definition_json_io.hpp" // IWYU pragma: keep.
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::reporting::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::report_definition
-report_definition_mapper::map(const report_definition_entity& v) {
+domain::report_definition report_definition_mapper::map(const report_definition_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::report_definition r;
@@ -42,10 +40,15 @@ report_definition_mapper::map(const report_definition_entity& v) {
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.description = v.description;
     r.report_type = v.report_type;
-    r.fsm_state_id = v.fsm_state_id.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.fsm_state_id)) : std::nullopt;
+    r.fsm_state_id = v.fsm_state_id.has_value() ?
+                         std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.fsm_state_id)) :
+                         std::nullopt;
     r.schedule_expression = v.schedule_expression;
     r.concurrency_policy = v.concurrency_policy;
-    r.scheduler_job_id = v.scheduler_job_id.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.scheduler_job_id)) : std::nullopt;
+    r.scheduler_job_id =
+        v.scheduler_job_id.has_value() ?
+            std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.scheduler_job_id)) :
+            std::nullopt;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -56,8 +59,7 @@ report_definition_mapper::map(const report_definition_entity& v) {
     return r;
 }
 
-report_definition_entity
-report_definition_mapper::map(const domain::report_definition& v) {
+report_definition_entity report_definition_mapper::map(const domain::report_definition& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     report_definition_entity r;
@@ -69,10 +71,14 @@ report_definition_mapper::map(const domain::report_definition& v) {
     r.party_id = boost::uuids::to_string(v.party_id);
     r.description = v.description;
     r.report_type = v.report_type;
-    r.fsm_state_id = v.fsm_state_id.has_value() ? std::optional(boost::uuids::to_string(*v.fsm_state_id)) : std::nullopt;
+    r.fsm_state_id = v.fsm_state_id.has_value() ?
+                         std::optional(boost::uuids::to_string(*v.fsm_state_id)) :
+                         std::nullopt;
     r.schedule_expression = v.schedule_expression;
     r.concurrency_policy = v.concurrency_policy;
-    r.scheduler_job_id = v.scheduler_job_id.has_value() ? std::optional(boost::uuids::to_string(*v.scheduler_job_id)) : std::nullopt;
+    r.scheduler_job_id = v.scheduler_job_id.has_value() ?
+                             std::optional(boost::uuids::to_string(*v.scheduler_job_id)) :
+                             std::nullopt;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -85,19 +91,13 @@ report_definition_mapper::map(const domain::report_definition& v) {
 std::vector<domain::report_definition>
 report_definition_mapper::map(const std::vector<report_definition_entity>& v) {
     return map_vector<report_definition_entity, domain::report_definition>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<report_definition_entity>
 report_definition_mapper::map(const std::vector<domain::report_definition>& v) {
     return map_vector<domain::report_definition, report_definition_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

@@ -18,19 +18,16 @@
  *
  */
 #include "ores.compute.wrapper/app/application.hpp"
-
-#include <algorithm>
-
-#include <atomic>
-#include <chrono>
-#include <csignal>
-#include <format>
-#include <filesystem>
-#include <fstream>
-#include <mutex>
-#include <sstream>
-#include <span>
-#include <thread>
+#include "ores.compute.api/messaging/result_protocol.hpp"
+#include "ores.compute.api/messaging/telemetry_protocol.hpp"
+#include "ores.compute.api/messaging/work_protocol.hpp"
+#include "ores.compute.wrapper/app/log_publisher.hpp"
+#include "ores.compute.wrapper/filesystem/archiver.hpp"
+#include "ores.compute.wrapper/net/http_client.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.service/service/domain_service_runner.hpp"
+#include "ores.service/service/heartbeat_publisher.hpp"
+#include "ores.utility/version/version.hpp"
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/connect_pipe.hpp>
 #include <boost/asio/detached.hpp>
@@ -42,17 +39,18 @@
 #include <boost/process/v2/process.hpp>
 #include <boost/process/v2/start_dir.hpp>
 #include <boost/process/v2/stdio.hpp>
+#include <algorithm>
+#include <atomic>
+#include <chrono>
+#include <csignal>
+#include <filesystem>
+#include <format>
+#include <fstream>
+#include <mutex>
 #include <rfl/json.hpp>
-#include "ores.compute.wrapper/filesystem/archiver.hpp"
-#include "ores.utility/version/version.hpp"
-#include "ores.nats/service/client.hpp"
-#include "ores.compute.api/messaging/work_protocol.hpp"
-#include "ores.compute.api/messaging/result_protocol.hpp"
-#include "ores.compute.api/messaging/telemetry_protocol.hpp"
-#include "ores.compute.wrapper/net/http_client.hpp"
-#include "ores.compute.wrapper/app/log_publisher.hpp"
-#include "ores.service/service/domain_service_runner.hpp"
-#include "ores.service/service/heartbeat_publisher.hpp"
+#include <span>
+#include <sstream>
+#include <thread>
 
 namespace ores::compute::wrapper::app {
 
@@ -82,11 +80,13 @@ std::string to_iso8601(std::chrono::system_clock::time_point tp) {
 class node_stats_reporter {
 public:
     node_stats_reporter(ores::nats::service::client& nats,
-        const std::string& host_id,
-        const std::string& tenant_id,
-        std::uint32_t interval_seconds)
-        : nats_(nats), host_id_(host_id), tenant_id_(tenant_id),
-          interval_(interval_seconds) {}
+                        const std::string& host_id,
+                        const std::string& tenant_id,
+                        std::uint32_t interval_seconds)
+        : nats_(nats)
+        , host_id_(host_id)
+        , tenant_id_(tenant_id)
+        , interval_(interval_seconds) {}
 
     void start() {
         stop_ = false;
@@ -99,7 +99,9 @@ public:
             thread_.join();
     }
 
-    ~node_stats_reporter() { stop(); }
+    ~node_stats_reporter() {
+        stop();
+    }
 
     /**
      * @brief Record a successfully completed task.
@@ -109,8 +111,8 @@ public:
      * @param output_bytes Bytes of output data uploaded for this task.
      */
     void record_task_completed(std::int64_t duration_ms,
-                                std::int64_t input_bytes,
-                                std::int64_t output_bytes) {
+                               std::int64_t input_bytes,
+                               std::int64_t output_bytes) {
         ++tasks_completed_;
         std::lock_guard lock(interval_mutex_);
         ++tasks_since_last_;
@@ -140,8 +142,7 @@ public:
     }
 
 private:
-    inline static std::string_view logger_name =
-        "ores.compute.wrapper.app.node_stats_reporter";
+    inline static std::string_view logger_name = "ores.compute.wrapper.app.node_stats_reporter";
     static auto& lg() {
         static auto instance = ores::logging::make_logger(logger_name);
         return instance;
@@ -169,15 +170,15 @@ private:
         {
             std::lock_guard lock(interval_mutex_);
             tasks_since_last = tasks_since_last_;
-            duration_sum     = duration_sum_;
-            max_duration     = max_duration_;
-            input_bytes      = input_bytes_;
-            output_bytes     = output_bytes_;
+            duration_sum = duration_sum_;
+            max_duration = max_duration_;
+            input_bytes = input_bytes_;
+            output_bytes = output_bytes_;
             tasks_since_last_ = 0;
-            duration_sum_     = 0;
-            max_duration_     = 0;
-            input_bytes_      = 0;
-            output_bytes_     = 0;
+            duration_sum_ = 0;
+            max_duration_ = 0;
+            input_bytes_ = 0;
+            output_bytes_ = 0;
         }
 
         // Compute seconds since last heartbeat.
@@ -185,44 +186,38 @@ private:
         {
             std::lock_guard lock(hb_mutex_);
             if (heartbeat_ever_sent_) {
-                const auto elapsed =
-                    std::chrono::steady_clock::now() - last_heartbeat_;
+                const auto elapsed = std::chrono::steady_clock::now() - last_heartbeat_;
                 seconds_since_hb = static_cast<int>(
-                    std::chrono::duration_cast<std::chrono::seconds>(elapsed)
-                    .count());
+                    std::chrono::duration_cast<std::chrono::seconds>(elapsed).count());
             }
         }
 
-        const std::int64_t avg_ms =
-            (tasks_since_last > 0) ? (duration_sum / tasks_since_last) : 0;
+        const std::int64_t avg_ms = (tasks_since_last > 0) ? (duration_sum / tasks_since_last) : 0;
 
         compute::messaging::node_sample_message msg;
-        msg.tenant_id            = tenant_id_;
-        msg.host_id              = host_id_;
-        msg.sampled_at           = to_iso8601(std::chrono::system_clock::now());
-        msg.tasks_completed      = tasks_completed_.load();
-        msg.tasks_failed         = tasks_failed_.load();
-        msg.tasks_since_last     = tasks_since_last;
+        msg.tenant_id = tenant_id_;
+        msg.host_id = host_id_;
+        msg.sampled_at = to_iso8601(std::chrono::system_clock::now());
+        msg.tasks_completed = tasks_completed_.load();
+        msg.tasks_failed = tasks_failed_.load();
+        msg.tasks_since_last = tasks_since_last;
         msg.avg_task_duration_ms = avg_ms;
         msg.max_task_duration_ms = max_duration;
-        msg.input_bytes_fetched  = input_bytes;
+        msg.input_bytes_fetched = input_bytes;
         msg.output_bytes_uploaded = output_bytes;
-        msg.seconds_since_hb     = seconds_since_hb;
+        msg.seconds_since_hb = seconds_since_hb;
 
         try {
             const auto json = rfl::json::write(msg);
             const auto* p = reinterpret_cast<const std::byte*>(json.data());
             nats_.publish(compute::messaging::node_sample_message::nats_subject,
-                std::span<const std::byte>(p, json.size()));
+                          std::span<const std::byte>(p, json.size()));
             BOOST_LOG_SEV(lg(), debug)
-                << "Published node telemetry sample: tasks_since_last="
-                << tasks_since_last
-                << " avg_ms=" << avg_ms
-                << " input_bytes=" << input_bytes
+                << "Published node telemetry sample: tasks_since_last=" << tasks_since_last
+                << " avg_ms=" << avg_ms << " input_bytes=" << input_bytes
                 << " output_bytes=" << output_bytes;
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), warn)
-                << "Node telemetry publish failed: " << e.what();
+            BOOST_LOG_SEV(lg(), warn) << "Node telemetry publish failed: " << e.what();
         }
     }
 
@@ -262,11 +257,13 @@ private:
 class heartbeat_sender {
 public:
     heartbeat_sender(ores::nats::service::client& nats,
-        const std::string& host_id,
-        std::uint32_t interval_seconds,
-        node_stats_reporter* reporter = nullptr)
-        : nats_(nats), host_id_(host_id), interval_(interval_seconds),
-          reporter_(reporter) {}
+                     const std::string& host_id,
+                     std::uint32_t interval_seconds,
+                     node_stats_reporter* reporter = nullptr)
+        : nats_(nats)
+        , host_id_(host_id)
+        , interval_(interval_seconds)
+        , reporter_(reporter) {}
 
     void start() {
         stop_ = false;
@@ -279,7 +276,9 @@ public:
             thread_.join();
     }
 
-    ~heartbeat_sender() { stop(); }
+    ~heartbeat_sender() {
+        stop();
+    }
 
 private:
     void run() {
@@ -293,8 +292,7 @@ private:
         }
     }
 
-    inline static std::string_view logger_name =
-        "ores.compute.wrapper.app.heartbeat_sender";
+    inline static std::string_view logger_name = "ores.compute.wrapper.app.heartbeat_sender";
     static auto& lg() {
         static auto instance = ores::logging::make_logger(logger_name);
         return instance;
@@ -307,7 +305,7 @@ private:
             const auto json = rfl::json::write(msg);
             const auto* p = reinterpret_cast<const std::byte*>(json.data());
             nats_.publish(compute::messaging::heartbeat_message::nats_subject,
-                std::span<const std::byte>(p, json.size()));
+                          std::span<const std::byte>(p, json.size()));
             if (reporter_)
                 reporter_->notify_heartbeat();
         } catch (const std::exception& e) {
@@ -327,12 +325,12 @@ private:
  * @brief Submit a result back to the compute service.
  */
 void submit_result(ores::nats::service::client& nats,
-    const std::string& result_id,
-    const std::string& host_id,
-    const std::string& output_uri,
-    int outcome,
-    const std::string& error_message,
-    auto& lg) {
+                   const std::string& result_id,
+                   const std::string& host_id,
+                   const std::string& output_uri,
+                   int outcome,
+                   const std::string& error_message,
+                   auto& lg) {
 
     compute::messaging::submit_result_request req;
     req.result_id = result_id;
@@ -344,16 +342,13 @@ void submit_result(ores::nats::service::client& nats,
     const auto json = rfl::json::write(req);
     const auto* p = reinterpret_cast<const std::byte*>(json.data());
 
-    const auto reply = nats.request_sync(
-        compute::messaging::submit_result_request::nats_subject,
-        std::span<const std::byte>(p, json.size()));
+    const auto reply = nats.request_sync(compute::messaging::submit_result_request::nats_subject,
+                                         std::span<const std::byte>(p, json.size()));
 
-    const std::string_view reply_data(
-        reinterpret_cast<const char*>(reply.data.data()),
-        reply.data.size());
+    const std::string_view reply_data(reinterpret_cast<const char*>(reply.data.data()),
+                                      reply.data.size());
 
-    const auto resp = rfl::json::read<compute::messaging::submit_result_response>(
-        reply_data);
+    const auto resp = rfl::json::read<compute::messaging::submit_result_response>(reply_data);
     if (!resp || !resp->success) {
         const std::string msg = resp ? resp->message : "failed to deserialize response";
         BOOST_LOG_SEV(lg, error) << "results.submit failed: " << msg;
@@ -394,8 +389,7 @@ manifest read_manifest(const fs::path& package_dir) {
     if (!f)
         throw std::runtime_error("manifest.json not found in " + package_dir.string());
     // Extra parentheses avoid the vexing parse.
-    const std::string json((std::istreambuf_iterator<char>(f)),
-                            std::istreambuf_iterator<char>());
+    const std::string json((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
     const auto m = rfl::json::read<manifest>(json);
     if (!m)
         throw std::runtime_error("Failed to parse manifest.json: " + m.error().what());
@@ -408,8 +402,7 @@ manifest read_manifest(const fs::path& package_dir) {
  * Each token is single-quoted so the output can be pasted verbatim into a
  * shell even if paths contain spaces.
  */
-std::string format_cmdline(const std::string& exe,
-    const std::vector<std::string>& args) {
+std::string format_cmdline(const std::string& exe, const std::vector<std::string>& args) {
     std::string s = "'" + exe + "'";
     for (const auto& a : args)
         s += " '" + a + "'";
@@ -421,13 +414,14 @@ std::string format_cmdline(const std::string& exe,
  */
 std::string tail_file(const fs::path& path, int max_lines = 50) {
     std::ifstream f(path);
-    if (!f) return {};
+    if (!f)
+        return {};
     std::vector<std::string> lines;
     std::string line;
     while (std::getline(f, line))
         lines.push_back(std::move(line));
-    const int start = static_cast<int>(lines.size()) > max_lines
-        ? static_cast<int>(lines.size()) - max_lines : 0;
+    const int start =
+        static_cast<int>(lines.size()) > max_lines ? static_cast<int>(lines.size()) - max_lines : 0;
     std::string out;
     for (int i = start; i < static_cast<int>(lines.size()); ++i)
         out += lines[i] + "\n";
@@ -438,9 +432,9 @@ std::string tail_file(const fs::path& path, int max_lines = 50) {
  * @brief Replace {input}, {config}, {output} placeholders in argument list.
  */
 std::vector<std::string> substitute_args(const std::vector<std::string>& tmpl,
-    const std::string& input_path,
-    const std::string& config_path,
-    const std::string& output_path) {
+                                         const std::string& input_path,
+                                         const std::string& config_path,
+                                         const std::string& output_path) {
 
     std::vector<std::string> result;
     result.reserve(tmpl.size());
@@ -453,7 +447,7 @@ std::vector<std::string> substitute_args(const std::vector<std::string>& tmpl,
                 pos += to.size();
             }
         };
-        replace_all("{input}",  input_path);
+        replace_all("{input}", input_path);
         replace_all("{config}", config_path);
         replace_all("{output}", output_path);
         result.push_back(std::move(s));
@@ -472,14 +466,14 @@ std::vector<std::string> substitute_args(const std::vector<std::string>& tmpl,
  * 6. If a reporter is provided, record the task outcome and timing.
  */
 void process_assignment(ores::nats::service::client& nats,
-    const compute::messaging::work_assignment_event& evt,
-    const config::options& cfg,
-    node_stats_reporter* reporter,
-    auto& lg) {
+                        const compute::messaging::work_assignment_event& evt,
+                        const config::options& cfg,
+                        node_stats_reporter* reporter,
+                        auto& lg) {
 
     BOOST_LOG_SEV(lg, debug) << "Processing assignment: result=" << evt.result_id
-                              << " workunit=" << evt.workunit_id
-                              << " app_version=" << evt.app_version_id;
+                             << " workunit=" << evt.workunit_id
+                             << " app_version=" << evt.app_version_id;
 
     heartbeat_sender hb(nats, cfg.host_id, cfg.heartbeat_interval_seconds, reporter);
     hb.start();
@@ -495,18 +489,15 @@ void process_assignment(ores::nats::service::client& nats,
 
     try {
         // 1. Download and unpack package if not cached
-        const fs::path pkg_cache_dir =
-            fs::path(cfg.work_dir) / "packages" / evt.app_version_id;
+        const fs::path pkg_cache_dir = fs::path(cfg.work_dir) / "packages" / evt.app_version_id;
         if (!fs::exists(pkg_cache_dir / "manifest.json")) {
             BOOST_LOG_SEV(lg, debug) << "Downloading package: " << evt.app_version_id;
             const fs::path pkg_archive =
                 pkg_cache_dir.parent_path() / (evt.app_version_id + ".tar.gz");
-            net::http_client::download(make_url(cfg.http_base_url, evt.package_uri),
-                pkg_archive);
+            net::http_client::download(make_url(cfg.http_base_url, evt.package_uri), pkg_archive);
 
             fs::create_directories(pkg_cache_dir);
-            ores::compute::wrapper::filesystem::archiver::extract(
-                pkg_archive, pkg_cache_dir);
+            ores::compute::wrapper::filesystem::archiver::extract(pkg_archive, pkg_cache_dir);
         }
 
         const auto mf = read_manifest(pkg_cache_dir);
@@ -514,20 +505,17 @@ void process_assignment(ores::nats::service::client& nats,
         // 2. Per-job scratch directory — input archive is extracted here.
         //    ORE runs with job_dir as its working directory so that relative
         //    paths in ore.xml (inputs, outputs, log.txt) resolve correctly.
-        const fs::path job_dir =
-            fs::path(cfg.work_dir) / "jobs" / evt.result_id;
+        const fs::path job_dir = fs::path(cfg.work_dir) / "jobs" / evt.result_id;
         fs::create_directories(job_dir);
 
         // Download input archive and unpack into job_dir.
         const fs::path input_archive = job_dir / "input.tar.gz";
         BOOST_LOG_SEV(lg, debug) << "Downloading input";
-        net::http_client::download(make_url(cfg.http_base_url, evt.input_uri),
-            input_archive);
+        net::http_client::download(make_url(cfg.http_base_url, evt.input_uri), input_archive);
         input_bytes = static_cast<std::int64_t>(fs::file_size(input_archive));
         BOOST_LOG_SEV(lg, debug) << "Extracting input (" << input_bytes << " bytes)"
-            << " to: " << job_dir.string();
-        ores::compute::wrapper::filesystem::archiver::extract(
-            input_archive, job_dir);
+                                 << " to: " << job_dir.string();
+        ores::compute::wrapper::filesystem::archiver::extract(input_archive, job_dir);
 
         // 3. Spawn engine using Boost.Process to avoid shell injection.
         //    Args in the manifest are passed verbatim; no placeholder substitution
@@ -541,8 +529,7 @@ void process_assignment(ores::nats::service::client& nats,
 
         // Log exact command line so it can be reproduced manually.
         const fs::path engine_log_path = job_dir / "engine.log";
-        BOOST_LOG_SEV(lg, debug) << "Engine command: "
-            << format_cmdline(exe.string(), args);
+        BOOST_LOG_SEV(lg, debug) << "Engine command: " << format_cmdline(exe.string(), args);
         BOOST_LOG_SEV(lg, debug) << "Engine log:     " << engine_log_path.string();
         BOOST_LOG_SEV(lg, debug) << "Input dir:      " << job_dir.string();
         BOOST_LOG_SEV(lg, debug) << "ORE log:        " << (job_dir / "Output" / "log.txt").string();
@@ -557,11 +544,11 @@ void process_assignment(ores::nats::service::client& nats,
         boost::asio::connect_pipe(err_r, err_w);
 
         const auto engine_start = std::chrono::steady_clock::now();
-        bp2::process engine_proc(
-            boost::asio::any_io_executor(proc_ioc.get_executor()),
-            boost::filesystem::path(exe.string()), args,
-            bp2::process_start_dir(job_dir.string()),
-            bp2::process_stdio{.in = nullptr, .out = out_w, .err = err_w});
+        bp2::process engine_proc(boost::asio::any_io_executor(proc_ioc.get_executor()),
+                                 boost::filesystem::path(exe.string()),
+                                 args,
+                                 bp2::process_start_dir(job_dir.string()),
+                                 bp2::process_stdio{.in = nullptr, .out = out_w, .err = err_w});
 
         // Close write ends so readers see EOF when the process exits.
         out_w.close();
@@ -570,30 +557,29 @@ void process_assignment(ores::nats::service::client& nats,
         // Drain stdout and stderr concurrently to avoid pipe-buffer deadlock.
         std::string out_buf, err_buf;
         boost::system::error_code out_ec, err_ec;
-        std::thread t_out([&] {
-            boost::asio::read(out_r, boost::asio::dynamic_buffer(out_buf), out_ec);
-        });
-        std::thread t_err([&] {
-            boost::asio::read(err_r, boost::asio::dynamic_buffer(err_buf), err_ec);
-        });
+        std::thread t_out(
+            [&] { boost::asio::read(out_r, boost::asio::dynamic_buffer(out_buf), out_ec); });
+        std::thread t_err(
+            [&] { boost::asio::read(err_r, boost::asio::dynamic_buffer(err_buf), err_ec); });
         t_out.join();
         t_err.join();
 
         engine_proc.wait();
         const auto engine_end = std::chrono::steady_clock::now();
-        duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
-            engine_end - engine_start).count();
+        duration_ms =
+            std::chrono::duration_cast<std::chrono::milliseconds>(engine_end - engine_start)
+                .count();
 
         // Write combined output to engine.log.
         {
-            std::ofstream engine_log(engine_log_path,
-                std::ios::out | std::ios::trunc);
+            std::ofstream engine_log(engine_log_path, std::ios::out | std::ios::trunc);
             if (engine_log) {
-                if (!out_buf.empty()) engine_log << out_buf;
-                if (!err_buf.empty()) engine_log << err_buf;
+                if (!out_buf.empty())
+                    engine_log << out_buf;
+                if (!err_buf.empty())
+                    engine_log << err_buf;
             } else {
-                BOOST_LOG_SEV(lg, warn) << "Cannot open engine log: "
-                    << engine_log_path.string();
+                BOOST_LOG_SEV(lg, warn) << "Cannot open engine log: " << engine_log_path.string();
             }
         }
 
@@ -604,13 +590,10 @@ void process_assignment(ores::nats::service::client& nats,
             // detail than stdout/stderr. Fall back to engine.log (our pipe
             // capture) if log.txt wasn't produced.
             const fs::path ore_log_path = job_dir / "Output" / "log.txt";
-            const auto ore_log = fs::exists(ore_log_path)
-                ? tail_file(ore_log_path) : std::string{};
-            const auto engine_output = ore_log.empty()
-                ? tail_file(engine_log_path) : ore_log;
-            error_message = "Engine exited with code "
-                + std::to_string(exit_code)
-                + (engine_output.empty() ? "" : "\n" + engine_output);
+            const auto ore_log = fs::exists(ore_log_path) ? tail_file(ore_log_path) : std::string{};
+            const auto engine_output = ore_log.empty() ? tail_file(engine_log_path) : ore_log;
+            error_message = "Engine exited with code " + std::to_string(exit_code) +
+                            (engine_output.empty() ? "" : "\n" + engine_output);
             BOOST_LOG_SEV(lg, error) << "Engine exited with code " << exit_code;
             if (!engine_output.empty())
                 BOOST_LOG_SEV(lg, error) << "Engine output:\n" << engine_output;
@@ -621,21 +604,16 @@ void process_assignment(ores::nats::service::client& nats,
             // Pack the whole directory into a tar.gz and upload it as one blob.
             const fs::path output_dir = job_dir / "Output";
             if (!fs::exists(output_dir) || fs::is_empty(output_dir)) {
-                BOOST_LOG_SEV(lg, warn) << "No output found in: "
-                    << output_dir.string();
+                BOOST_LOG_SEV(lg, warn) << "No output found in: " << output_dir.string();
             } else {
                 const fs::path output_archive = job_dir / "output.tar.gz";
-                ores::compute::wrapper::filesystem::archiver::pack(
-                    output_dir, output_archive);
+                ores::compute::wrapper::filesystem::archiver::pack(output_dir, output_archive);
 
-                output_bytes = static_cast<std::int64_t>(
-                    fs::file_size(output_archive));
-                BOOST_LOG_SEV(lg, debug) << "Uploading output archive: "
-                    << output_archive.string()
-                    << " (" << output_bytes << " bytes)";
-                net::http_client::upload(
-                    make_url(cfg.http_base_url, evt.output_uri),
-                    output_archive);
+                output_bytes = static_cast<std::int64_t>(fs::file_size(output_archive));
+                BOOST_LOG_SEV(lg, debug) << "Uploading output archive: " << output_archive.string()
+                                         << " (" << output_bytes << " bytes)";
+                net::http_client::upload(make_url(cfg.http_base_url, evt.output_uri),
+                                         output_archive);
             }
             BOOST_LOG_SEV(lg, info) << "Job complete: " << evt.result_id;
             outcome = 1; // Success
@@ -649,8 +627,7 @@ void process_assignment(ores::nats::service::client& nats,
     hb.stop();
 
     {
-        const fs::path log_job_dir =
-            fs::path(cfg.work_dir) / "jobs" / evt.result_id;
+        const fs::path log_job_dir = fs::path(cfg.work_dir) / "jobs" / evt.result_id;
         publish_ore_logs(nats, evt.result_id, log_job_dir);
         publish_engine_logs(nats, evt.result_id, log_job_dir);
     }
@@ -668,9 +645,8 @@ void process_assignment(ores::nats::service::client& nats,
 
 } // namespace
 
-boost::asio::awaitable<void>
-application::run(boost::asio::io_context& io_ctx,
-    const config::options& cfg) const {
+boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
+                                              const config::options& cfg) const {
 
     BOOST_LOG_SEV(lg(), info) << ores::utility::version::format_startup_message(
         "ores.compute.wrapper", 0, 1);
@@ -679,26 +655,24 @@ application::run(boost::asio::io_context& io_ctx,
     BOOST_LOG_SEV(lg(), info) << "Work dir  : " << cfg.work_dir;
     BOOST_LOG_SEV(lg(), info) << "Heartbeat : " << cfg.heartbeat_interval_seconds << "s";
     BOOST_LOG_SEV(lg(), info) << "Telemetry : "
-        << (cfg.telemetry_interval_seconds > 0
-            ? std::to_string(cfg.telemetry_interval_seconds) + "s"
-            : "disabled");
+                              << (cfg.telemetry_interval_seconds > 0 ?
+                                      std::to_string(cfg.telemetry_interval_seconds) + "s" :
+                                      "disabled");
     BOOST_LOG_SEV(lg(), info) << "HTTP Base : "
-        << (cfg.http_base_url.empty() ? "(none)" : cfg.http_base_url);
+                              << (cfg.http_base_url.empty() ? "(none)" : cfg.http_base_url);
 
     ores::nats::service::client nats(cfg.nats);
     nats.connect();
-    BOOST_LOG_SEV(lg(), info) << "Connected to NATS: " << cfg.nats.url
-                              << " (namespace: '"
-                              << (cfg.nats.subject_prefix.empty() ? "(none)" : cfg.nats.subject_prefix)
+    BOOST_LOG_SEV(lg(), info) << "Connected to NATS: " << cfg.nats.url << " (namespace: '"
+                              << (cfg.nats.subject_prefix.empty() ? "(none)" :
+                                                                    cfg.nats.subject_prefix)
                               << "')";
 
     // Ensure the durable compute assignments stream exists. Idempotent.
     try {
         const auto stream_name = nats.make_stream_name("compute_assignments");
         auto admin = nats.make_admin();
-        admin.ensure_stream(stream_name, {
-            nats.make_subject("compute.v1.work.assignments.>")
-        });
+        admin.ensure_stream(stream_name, {nats.make_subject("compute.v1.work.assignments.>")});
         BOOST_LOG_SEV(lg(), info) << "Compute JetStream stream ready: " << stream_name;
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Failed to ensure compute stream: " << e.what();
@@ -728,27 +702,28 @@ application::run(boost::asio::io_context& io_ctx,
     const std::string my_triplet(ores::utility::version::platform_triplet());
     const std::string work_subject =
         "compute.v1.work.assignments." + cfg.tenant_id + "." + my_triplet;
-    const std::string durable_name =
-        "compute_wrapper_" + sanitised_tenant + "_" + my_triplet;
+    const std::string durable_name = "compute_wrapper_" + sanitised_tenant + "_" + my_triplet;
     const std::string queue_group = "ores.compute.wrapper." + my_triplet;
 
     co_await ores::service::service::run(
-        io_ctx, nats, service_name,
-        [&nats, &cfg, raw_reporter, &work_subject, &durable_name, &queue_group,
-         this](auto& n, auto /*verifier*/) {
+        io_ctx,
+        nats,
+        service_name,
+        [&nats, &cfg, raw_reporter, &work_subject, &durable_name, &queue_group, this](
+            auto& n, auto /*verifier*/) {
             BOOST_LOG_SEV(lg(), info) << "Subscribing to: " << work_subject;
             auto sub = n.js_queue_subscribe(
-                work_subject, durable_name, queue_group,
+                work_subject,
+                durable_name,
+                queue_group,
                 [&nats, &cfg, raw_reporter, this](ores::nats::message msg) {
-                    const std::string_view data(
-                        reinterpret_cast<const char*>(msg.data.data()),
-                        msg.data.size());
-                    const auto evt = rfl::json::read<
-                        compute::messaging::work_assignment_event>(data);
+                    const std::string_view data(reinterpret_cast<const char*>(msg.data.data()),
+                                                msg.data.size());
+                    const auto evt =
+                        rfl::json::read<compute::messaging::work_assignment_event>(data);
                     if (!evt) {
                         BOOST_LOG_SEV(lg(), error)
-                            << "Failed to decode work_assignment_event: "
-                            << evt.error().what();
+                            << "Failed to decode work_assignment_event: " << evt.error().what();
                         return;
                     }
                     process_assignment(nats, *evt, cfg, raw_reporter, lg());
@@ -762,18 +737,16 @@ application::run(boost::asio::io_context& io_ctx,
             // dashboard (telemetry.v1.services.heartbeat).
             auto hb = std::make_shared<ores::service::service::heartbeat_publisher>(
                 std::string(service_name), std::string(service_version), nats);
-            boost::asio::co_spawn(ioc,
-                [hb]() { return hb->run(); },
-                boost::asio::detached);
+            boost::asio::co_spawn(ioc, [hb]() { return hb->run(); }, boost::asio::detached);
 
             // Compute-domain idle heartbeat and node telemetry reporter.
             idle_hb.start();
             BOOST_LOG_SEV(lg(), info) << "Idle heartbeat sender started ("
-                << cfg.heartbeat_interval_seconds << "s interval).";
+                                      << cfg.heartbeat_interval_seconds << "s interval).";
             if (reporter) {
                 reporter->start();
                 BOOST_LOG_SEV(lg(), info) << "Node telemetry reporter started ("
-                    << cfg.telemetry_interval_seconds << "s interval).";
+                                          << cfg.telemetry_interval_seconds << "s interval).";
             }
         },
         [&]() {

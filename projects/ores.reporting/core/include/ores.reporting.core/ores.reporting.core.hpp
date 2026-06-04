@@ -20,20 +20,19 @@
 #pragma once
 
 // Domain types
-#include "ores.reporting.api/domain/report_type.hpp"
 #include "ores.reporting.api/domain/concurrency_policy.hpp"
 #include "ores.reporting.api/domain/report_definition.hpp"
 #include "ores.reporting.api/domain/report_instance.hpp"
+#include "ores.reporting.api/domain/report_type.hpp"
 
 // Repository
-#include "ores.reporting.core/repository/report_type_repository.hpp"
 #include "ores.reporting.core/repository/concurrency_policy_repository.hpp"
 #include "ores.reporting.core/repository/report_definition_repository.hpp"
 #include "ores.reporting.core/repository/report_instance_repository.hpp"
+#include "ores.reporting.core/repository/report_type_repository.hpp"
 
 // Service
-#include "ores.reporting.core/service/report_type_service.hpp"
 #include "ores.reporting.core/service/concurrency_policy_service.hpp"
 #include "ores.reporting.core/service/report_definition_service.hpp"
 #include "ores.reporting.core/service/report_instance_service.hpp"
-
+#include "ores.reporting.core/service/report_type_service.hpp"

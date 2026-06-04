@@ -18,14 +18,13 @@
  *
  */
 #include "ores.compute.api/domain/batch.hpp"
-
-#include <sstream>
-#include <catch2/catch_test_macros.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.logging/make_logger.hpp"
 #include "ores.compute.api/domain/batch_json_io.hpp" // IWYU pragma: keep.
 #include "ores.compute.api/domain/batch_table.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <boost/uuid/uuid_generators.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <sstream>
 
 namespace {
 
@@ -174,8 +173,8 @@ TEST_CASE("create_batch_with_faker", tags) {
     sut.version = faker::number::integer(1, 10);
     sut.modified_by = std::string(faker::internet::username());
     sut.id = boost::uuids::random_generator()();
-    sut.external_ref = std::string(faker::word::noun()) + "-" +
-        std::to_string(faker::number::integer(1000, 9999));
+    sut.external_ref =
+        std::string(faker::word::noun()) + "-" + std::to_string(faker::number::integer(1000, 9999));
     sut.status = statuses[faker::number::integer(0, 3)];
 
     BOOST_LOG_SEV(lg, info) << "Batch: " << sut;
@@ -198,7 +197,7 @@ TEST_CASE("batch_table_with_faker_data", tags) {
         b.modified_by = std::string(faker::internet::username());
         b.id = boost::uuids::random_generator()();
         b.external_ref = std::string(faker::word::noun()) + "-" +
-            std::to_string(faker::number::integer(1000, 9999));
+                         std::to_string(faker::number::integer(1000, 9999));
         b.status = statuses[faker::number::integer(0, 3)];
         batches.push_back(b);
     }

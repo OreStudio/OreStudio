@@ -20,9 +20,9 @@
 #ifndef ORES_CLI_APP_APPLICATION_EXCEPTION_HPP
 #define ORES_CLI_APP_APPLICATION_EXCEPTION_HPP
 
-#include <string>
-#include <boost/exception/info.hpp>
 #include "ores.cli/export.hpp"
+#include <boost/exception/info.hpp>
+#include <string>
 
 namespace ores::cli::app {
 
@@ -30,7 +30,7 @@ namespace ores::cli::app {
  * @brief A fatal error has occurred whilst the application was running.
  */
 class ORES_CLI_EXPORT application_exception : public virtual std::exception,
-                              public virtual boost::exception {
+                                              public virtual boost::exception {
 public:
     explicit application_exception(std::string_view message = "")
         : message_(message) {}

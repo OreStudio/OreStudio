@@ -18,16 +18,15 @@
  *
  */
 #include "ores.cli/config/entity_parsers/day_count_fraction_types_parser.hpp"
-
-#include <boost/program_options.hpp>
-#include <boost/throw_exception.hpp>
-#include "ores.cli/config/parser_helpers.hpp"
-#include "ores.cli/config/parser_exception.hpp"
-#include "ores.cli/config/entity.hpp"
 #include "ores.cli/config/add_day_count_fraction_type_options.hpp"
+#include "ores.cli/config/entity.hpp"
+#include "ores.cli/config/parser_exception.hpp"
+#include "ores.cli/config/parser_helpers.hpp"
 #include "ores.database/config/database_configuration.hpp"
 #include "ores.logging/logging_configuration.hpp"
 #include "ores.utility/program_options/environment_mapper_factory.hpp"
+#include <boost/program_options.hpp>
+#include <boost/throw_exception.hpp>
 
 namespace ores::cli::config::entity_parsers {
 
@@ -60,25 +59,18 @@ const std::string list_command_name("list");
 const std::string add_command_name("add");
 
 const std::vector<std::string> allowed_operations{
-    export_command_name, list_command_name,
-    delete_command_name, add_command_name
-};
+    export_command_name, list_command_name, delete_command_name, add_command_name};
 
 /**
  * @brief Creates the options related to adding day count fraction types.
  */
 options_description make_add_day_count_fraction_type_options_description() {
     options_description r("Add Day count fraction types Options");
-    r.add_options()
-        ("code",
-            value<std::string>(),
-            "Unique code (required)")
-        ("description",
-            value<std::string>()->default_value(""),
-            "Human-readable description (optional)")
-        ("modified-by",
-            value<std::string>(),
-            "Username of modifier (required)");
+    r.add_options()("code", value<std::string>(), "Unique code (required)")(
+        "description",
+        value<std::string>()->default_value(""),
+        "Human-readable description (optional)")(
+        "modified-by", value<std::string>(), "Username of modifier (required)");
 
     return r;
 }
@@ -91,14 +83,12 @@ read_add_day_count_fraction_type_options(const variables_map& vm) {
     ores::cli::config::add_day_count_fraction_type_options r;
 
     if (vm.count("modified-by") == 0) {
-        BOOST_THROW_EXCEPTION(
-            parser_exception("Must supply --modified-by for add command."));
+        BOOST_THROW_EXCEPTION(parser_exception("Must supply --modified-by for add command."));
     }
     r.modified_by = vm["modified-by"].as<std::string>();
 
     if (vm.count("code") == 0) {
-        BOOST_THROW_EXCEPTION(
-            parser_exception("Must supply --code for add command."));
+        BOOST_THROW_EXCEPTION(parser_exception("Must supply --code for add command."));
     }
     r.code = vm["code"].as<std::string>();
 
@@ -113,11 +103,10 @@ read_add_day_count_fraction_type_options(const variables_map& vm) {
 
 }
 
-std::optional<options>
-handle_day_count_fraction_types_command(bool has_help,
-    const parsed_options& po,
-    std::ostream& info,
-    variables_map& vm) {
+std::optional<options> handle_day_count_fraction_types_command(bool has_help,
+                                                               const parsed_options& po,
+                                                               std::ostream& info,
+                                                               variables_map& vm) {
 
     auto o(collect_unrecognized(po.options, include_positional));
     o.erase(o.begin()); // Remove command name
@@ -127,9 +116,9 @@ handle_day_count_fraction_types_command(bool has_help,
             {"export", "Export day count fraction types to external formats"},
             {"list", "List day count fraction types as JSON or table"},
             {"delete", "Delete a day count fraction type by code"},
-            {"add", "Add a new day count fraction type"}
-        };
-        print_entity_help("day_count_fraction_types", "Manage day count fraction types", operations, info);
+            {"add", "Add a new day count fraction type"}};
+        print_entity_help(
+            "day_count_fraction_types", "Manage day count fraction types", operations, info);
         return {};
     }
 

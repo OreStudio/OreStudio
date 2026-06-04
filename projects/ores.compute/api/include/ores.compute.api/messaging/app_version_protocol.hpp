@@ -20,18 +20,17 @@
 #ifndef ORES_COMPUTE_MESSAGING_APP_VERSION_PROTOCOL_HPP
 #define ORES_COMPUTE_MESSAGING_APP_VERSION_PROTOCOL_HPP
 
+#include "ores.compute.api/domain/app_version.hpp"
+#include "ores.compute.api/domain/app_version_platform.hpp"
 #include <string>
 #include <string_view>
 #include <vector>
-#include "ores.compute.api/domain/app_version.hpp"
-#include "ores.compute.api/domain/app_version_platform.hpp"
 
 namespace ores::compute::messaging {
 
 struct list_app_versions_request {
     using response_type = struct list_app_versions_response;
-    static constexpr std::string_view nats_subject =
-        "compute.v1.app-versions.list";
+    static constexpr std::string_view nats_subject = "compute.v1.app-versions.list";
     int offset = 0;
     int limit = 100;
 };
@@ -43,8 +42,7 @@ struct list_app_versions_response {
 
 struct save_app_version_request {
     using response_type = struct save_app_version_response;
-    static constexpr std::string_view nats_subject =
-        "compute.v1.app-versions.save";
+    static constexpr std::string_view nats_subject = "compute.v1.app-versions.save";
     ores::compute::domain::app_version app_version;
     std::vector<ores::compute::domain::app_version_platform> platforms;
     std::string change_reason_code;
@@ -58,8 +56,7 @@ struct save_app_version_response {
 
 struct get_app_version_history_request {
     using response_type = struct get_app_version_history_response;
-    static constexpr std::string_view nats_subject =
-        "compute.v1.app-versions.history";
+    static constexpr std::string_view nats_subject = "compute.v1.app-versions.history";
     std::string id;
 };
 
@@ -71,8 +68,7 @@ struct get_app_version_history_response {
 
 struct list_app_version_platforms_request {
     using response_type = struct list_app_version_platforms_response;
-    static constexpr std::string_view nats_subject =
-        "compute.v1.app-versions.platforms.list";
+    static constexpr std::string_view nats_subject = "compute.v1.app-versions.platforms.list";
     std::string app_version_id;
 };
 

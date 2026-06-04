@@ -30,7 +30,7 @@ namespace ores::reporting::domain {
  *
  * Reference data table defining valid report type classifications.
  * Examples: 'risk', 'grid'.
- * 
+ *
  * Report types are managed by the system tenant and drive which
  * configuration block is used when creating a report definition.
  */

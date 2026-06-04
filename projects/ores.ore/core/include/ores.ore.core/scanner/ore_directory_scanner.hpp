@@ -20,13 +20,13 @@
 #ifndef ORES_ORE_CORE_SCANNER_ORE_DIRECTORY_SCANNER_HPP
 #define ORES_ORE_CORE_SCANNER_ORE_DIRECTORY_SCANNER_HPP
 
+#include "ores.logging/make_logger.hpp"
+#include "ores.ore.core/export.hpp"
+#include "ores.ore.core/scanner/scan_result.hpp"
 #include <filesystem>
 #include <string>
 #include <unordered_set>
 #include <vector>
-#include "ores.ore.core/export.hpp"
-#include "ores.ore.core/scanner/scan_result.hpp"
-#include "ores.logging/make_logger.hpp"
 
 namespace ores::ore::scanner {
 
@@ -40,8 +40,7 @@ namespace ores::ore::scanner {
  */
 class ORES_ORE_CORE_EXPORT ore_directory_scanner {
 private:
-    inline static std::string_view logger_name =
-        "ores.ore.scanner.ore_directory_scanner";
+    inline static std::string_view logger_name = "ores.ore.scanner.ore_directory_scanner";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -56,9 +55,8 @@ public:
      * @param root       Directory to scan recursively.
      * @param exclusions Directory name segments to skip (e.g. {"Input"}).
      */
-    explicit ore_directory_scanner(
-        std::filesystem::path root,
-        std::unordered_set<std::string> exclusions = {});
+    explicit ore_directory_scanner(std::filesystem::path root,
+                                   std::unordered_set<std::string> exclusions = {});
 
     /**
      * @brief Walks the directory tree and classifies all files.

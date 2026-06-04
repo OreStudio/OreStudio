@@ -18,12 +18,11 @@
  *
  */
 #include "ores.ore.core/market/market_data_parser.hpp"
-
+#include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <sstream>
 #include <stdexcept>
 #include <string>
-#include <catch2/catch_test_macros.hpp>
 
 namespace {
 
@@ -48,8 +47,8 @@ TEST_CASE("parse_market_data_accepts_yyyymmdd_date", tags) {
     const auto result = parse_market_data(in);
 
     REQUIRE(result.size() == 1);
-    CHECK(result[0].date  == ymd(2016, 2, 5));
-    CHECK(result[0].key   == "ZERO/RATE/EUR/BANK_EUR_BORROW/A365/2Y");
+    CHECK(result[0].date == ymd(2016, 2, 5));
+    CHECK(result[0].key == "ZERO/RATE/EUR/BANK_EUR_BORROW/A365/2Y");
     CHECK(result[0].value == "0.0024");
 }
 
@@ -58,8 +57,8 @@ TEST_CASE("parse_market_data_accepts_yyyy_mm_dd_date", tags) {
     const auto result = parse_market_data(in);
 
     REQUIRE(result.size() == 1);
-    CHECK(result[0].date  == ymd(2022, 1, 31));
-    CHECK(result[0].key   == "BASIS_SWAP/BASIS_SPREAD/3M/1D/USD/10Y");
+    CHECK(result[0].date == ymd(2022, 1, 31));
+    CHECK(result[0].key == "BASIS_SWAP/BASIS_SPREAD/3M/1D/USD/10Y");
     CHECK(result[0].value == "0.0027750000");
 }
 
@@ -96,11 +95,10 @@ TEST_CASE("parse_market_data_preserves_negative_value", tags) {
 // =============================================================================
 
 TEST_CASE("parse_market_data_skips_blank_lines", tags) {
-    std::istringstream in(
-        "20160205 FX/RATE/EUR/CHF 1.0947\n"
-        "\n"
-        "   \n"
-        "20160205 FX/RATE/EUR/USD 1.0857\n");
+    std::istringstream in("20160205 FX/RATE/EUR/CHF 1.0947\n"
+                          "\n"
+                          "   \n"
+                          "20160205 FX/RATE/EUR/USD 1.0857\n");
     const auto result = parse_market_data(in);
 
     REQUIRE(result.size() == 2);
@@ -109,11 +107,10 @@ TEST_CASE("parse_market_data_skips_blank_lines", tags) {
 }
 
 TEST_CASE("parse_market_data_skips_comment_lines", tags) {
-    std::istringstream in(
-        "# This is a comment\n"
-        "20160205 FX/RATE/EUR/CHF 1.0947\n"
-        "# Another comment\n"
-        "20160205 FX/RATE/EUR/USD 1.0857\n");
+    std::istringstream in("# This is a comment\n"
+                          "20160205 FX/RATE/EUR/CHF 1.0947\n"
+                          "# Another comment\n"
+                          "20160205 FX/RATE/EUR/USD 1.0857\n");
     const auto result = parse_market_data(in);
 
     REQUIRE(result.size() == 2);
@@ -138,7 +135,7 @@ TEST_CASE("parse_market_data_accepts_tab_separated_line", tags) {
     const auto result = parse_market_data(in);
 
     REQUIRE(result.size() == 1);
-    CHECK(result[0].key   == "FX/RATE/EUR/CHF");
+    CHECK(result[0].key == "FX/RATE/EUR/CHF");
     CHECK(result[0].value == "1.0947");
 }
 
@@ -147,15 +144,14 @@ TEST_CASE("parse_market_data_accepts_comma_separated_line", tags) {
     const auto result = parse_market_data(in);
 
     REQUIRE(result.size() == 1);
-    CHECK(result[0].date  == ymd(2022, 9, 26));
-    CHECK(result[0].key   == "BOND/YIELD_SPREAD/ISIN:US15135BAW19");
+    CHECK(result[0].date == ymd(2022, 9, 26));
+    CHECK(result[0].key == "BOND/YIELD_SPREAD/ISIN:US15135BAW19");
     CHECK(result[0].value == "0.02080707597");
 }
 
 TEST_CASE("parse_market_data_handles_mixed_delimiter_file", tags) {
-    std::istringstream in(
-        "2022-09-26 BASIS_SWAP/BASIS_SPREAD/3M/1D/USD/10Y 0.0026500000\n"
-        "2022-09-26,BOND/YIELD_SPREAD/ISIN:US15135BAW19,0.02080707597\n");
+    std::istringstream in("2022-09-26 BASIS_SWAP/BASIS_SPREAD/3M/1D/USD/10Y 0.0026500000\n"
+                          "2022-09-26,BOND/YIELD_SPREAD/ISIN:US15135BAW19,0.02080707597\n");
     const auto result = parse_market_data(in);
 
     REQUIRE(result.size() == 2);
@@ -198,10 +194,9 @@ TEST_CASE("parse_market_data_throws_on_unrecognised_date_format", tags) {
 // =============================================================================
 
 TEST_CASE("parse_market_data_parses_multiple_entries_in_order", tags) {
-    std::istringstream in(
-        "20160205 ZERO/RATE/EUR/BANK_EUR_BORROW/A365/2Y 0.0024\n"
-        "20160205 FX/RATE/EUR/CHF 1.0947\n"
-        "20160205 EQUITY/PRICE/SP5/USD 2023.81\n");
+    std::istringstream in("20160205 ZERO/RATE/EUR/BANK_EUR_BORROW/A365/2Y 0.0024\n"
+                          "20160205 FX/RATE/EUR/CHF 1.0947\n"
+                          "20160205 EQUITY/PRICE/SP5/USD 2023.81\n");
     const auto result = parse_market_data(in);
 
     REQUIRE(result.size() == 3);
@@ -219,9 +214,9 @@ TEST_CASE("parse_fixings_accepts_yyyy_mm_dd_date", tags) {
     const auto result = parse_fixings(in);
 
     REQUIRE(result.size() == 1);
-    CHECK(result[0].date       == ymd(2021, 9, 30));
+    CHECK(result[0].date == ymd(2021, 9, 30));
     CHECK(result[0].index_name == "EUR-EONIA");
-    CHECK(result[0].value      == "0.0074600000");
+    CHECK(result[0].value == "0.0074600000");
 }
 
 TEST_CASE("parse_fixings_accepts_yyyymmdd_date", tags) {
@@ -229,9 +224,9 @@ TEST_CASE("parse_fixings_accepts_yyyymmdd_date", tags) {
     const auto result = parse_fixings(in);
 
     REQUIRE(result.size() == 1);
-    CHECK(result[0].date       == ymd(2016, 2, 5));
+    CHECK(result[0].date == ymd(2016, 2, 5));
     CHECK(result[0].index_name == "EUR-EONIA");
-    CHECK(result[0].value      == "-0.003560");
+    CHECK(result[0].value == "-0.003560");
 }
 
 // =============================================================================
@@ -239,17 +234,16 @@ TEST_CASE("parse_fixings_accepts_yyyymmdd_date", tags) {
 // =============================================================================
 
 TEST_CASE("parse_fixings_skips_blank_and_comment_lines", tags) {
-    std::istringstream in(
-        "# fixings file\n"
-        "\n"
-        "2016-01-28 EQ-SP5 2244.2\n"
-        "2016-01-29 EQ-SP5 2210\n");
+    std::istringstream in("# fixings file\n"
+                          "\n"
+                          "2016-01-28 EQ-SP5 2244.2\n"
+                          "2016-01-29 EQ-SP5 2210\n");
     const auto result = parse_fixings(in);
 
     REQUIRE(result.size() == 2);
     CHECK(result[0].index_name == "EQ-SP5");
-    CHECK(result[0].value      == "2244.2");
-    CHECK(result[1].value      == "2210");
+    CHECK(result[0].value == "2244.2");
+    CHECK(result[1].value == "2210");
 }
 
 TEST_CASE("parse_fixings_preserves_trailing_zeros_in_value", tags) {

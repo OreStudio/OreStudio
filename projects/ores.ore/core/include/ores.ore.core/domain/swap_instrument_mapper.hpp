@@ -20,22 +20,22 @@
 #ifndef ORES_ORE_CORE_DOMAIN_SWAP_INSTRUMENT_MAPPER_HPP
 #define ORES_ORE_CORE_DOMAIN_SWAP_INSTRUMENT_MAPPER_HPP
 
-#include <vector>
-#include "ores.ore.core/export.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/domain/domain.hpp"
-#include "ores.trading.api/domain/fra_instrument.hpp"
-#include "ores.trading.api/domain/vanilla_swap_instrument.hpp"
-#include "ores.trading.api/domain/cap_floor_instrument.hpp"
-#include "ores.trading.api/domain/swaption_instrument.hpp"
+#include "ores.ore.core/export.hpp"
 #include "ores.trading.api/domain/balance_guaranteed_swap_instrument.hpp"
 #include "ores.trading.api/domain/callable_swap_instrument.hpp"
-#include "ores.trading.api/domain/knock_out_swap_instrument.hpp"
+#include "ores.trading.api/domain/cap_floor_instrument.hpp"
+#include "ores.trading.api/domain/fra_instrument.hpp"
 #include "ores.trading.api/domain/inflation_swap_instrument.hpp"
+#include "ores.trading.api/domain/instrument.hpp"
+#include "ores.trading.api/domain/knock_out_swap_instrument.hpp"
+#include "ores.trading.api/domain/rates_instrument_variant.hpp"
 #include "ores.trading.api/domain/rpa_instrument.hpp"
 #include "ores.trading.api/domain/swap_leg.hpp"
-#include "ores.trading.api/domain/instrument.hpp"
-#include "ores.trading.api/domain/rates_instrument_variant.hpp"
+#include "ores.trading.api/domain/swaption_instrument.hpp"
+#include "ores.trading.api/domain/vanilla_swap_instrument.hpp"
+#include <vector>
 
 namespace ores::ore::domain {
 
@@ -64,8 +64,7 @@ namespace ores::ore::domain {
  */
 class ORES_ORE_CORE_EXPORT swap_instrument_mapper {
 private:
-    inline static std::string_view logger_name =
-        "ores.ore.domain.swap_instrument_mapper";
+    inline static std::string_view logger_name = "ores.ore.domain.swap_instrument_mapper";
 
     static auto& lg() {
         using namespace ores::logging;
@@ -101,24 +100,21 @@ public:
     /**
      * @brief Reverse-maps ORES domain types back to a Swap ORE XSD trade.
      */
-    static trade reverse_swap(
-        const ores::trading::domain::vanilla_swap_instrument& instr,
-        const std::vector<ores::trading::domain::swap_leg>& legs);
+    static trade reverse_swap(const ores::trading::domain::vanilla_swap_instrument& instr,
+                              const std::vector<ores::trading::domain::swap_leg>& legs);
 
     /**
      * @brief Reverse-maps ORES domain types back to a ForwardRateAgreement
      * ORE XSD trade.
      */
-    static trade reverse_fra(
-        const ores::trading::domain::fra_instrument& instr,
-        const std::vector<ores::trading::domain::swap_leg>& legs);
+    static trade reverse_fra(const ores::trading::domain::fra_instrument& instr,
+                             const std::vector<ores::trading::domain::swap_leg>& legs);
 
     /**
      * @brief Reverse-maps ORES domain types back to a CapFloor ORE XSD trade.
      */
-    static trade reverse_capfloor(
-        const ores::trading::domain::cap_floor_instrument& instr,
-        const std::vector<ores::trading::domain::swap_leg>& legs);
+    static trade reverse_capfloor(const ores::trading::domain::cap_floor_instrument& instr,
+                                  const std::vector<ores::trading::domain::swap_leg>& legs);
 
     /**
      * @brief Forward-maps a Swaption trade (SwaptionData) to ORES domain types,
@@ -132,9 +128,8 @@ public:
     /**
      * @brief Reverse-maps ORES domain types back to a Swaption ORE XSD trade.
      */
-    static trade reverse_swaption(
-        const ores::trading::domain::swaption_instrument& instr,
-        const std::vector<ores::trading::domain::swap_leg>& legs);
+    static trade reverse_swaption(const ores::trading::domain::swaption_instrument& instr,
+                                  const std::vector<ores::trading::domain::swap_leg>& legs);
 
     /**
      * @brief Forward-maps a CallableSwap trade (CallableSwapData) to ORES
@@ -149,9 +144,8 @@ public:
      * @brief Reverse-maps ORES domain types back to a CallableSwap ORE XSD
      * trade.
      */
-    static trade reverse_callable_swap(
-        const ores::trading::domain::callable_swap_instrument& instr,
-        const std::vector<ores::trading::domain::swap_leg>& legs);
+    static trade reverse_callable_swap(const ores::trading::domain::callable_swap_instrument& instr,
+                                       const std::vector<ores::trading::domain::swap_leg>& legs);
 
     /**
      * @brief Forward-maps a FlexiSwap trade (FlexiSwapData) to ORES domain
@@ -173,13 +167,11 @@ public:
     static trading::domain::swap_instrument_data forward_balance_guaranteed_swap(const trade& t);
 
 private:
-    static ores::trading::domain::swap_leg map_leg(
-        const legData& ld, int leg_number);
+    static ores::trading::domain::swap_leg map_leg(const legData& ld, int leg_number);
 
-    static legData reverse_leg(
-        const std::string& start_date,
-        const std::string& maturity_date,
-        const ores::trading::domain::swap_leg& sl);
+    static legData reverse_leg(const std::string& start_date,
+                               const std::string& maturity_date,
+                               const ores::trading::domain::swap_leg& sl);
 
     static legData_Notionals_t make_notionals(double notional);
 };

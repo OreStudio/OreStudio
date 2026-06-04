@@ -18,24 +18,23 @@
  *
  */
 #include "ores.ore.service/messaging/ore_import_execute_handler.hpp"
-
-#include <format>
-#include <set>
-#include <rfl/json.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include "ores.utility/rfl/reflectors.hpp"
-#include "ores.storage/net/storage_transfer.hpp"
-#include "ores.ore.api/net/ore_storage.hpp"
 #include "ores.ore.api/messaging/ore_import_engine_protocol.hpp"
-#include "ores.ore.core/scanner/ore_directory_scanner.hpp"
+#include "ores.ore.api/net/ore_storage.hpp"
+#include "ores.ore.core/domain/trade_mapper.hpp"
 #include "ores.ore.core/planner/ore_import_planner.hpp"
+#include "ores.ore.core/scanner/ore_directory_scanner.hpp"
+#include "ores.refdata.api/messaging/book_protocol.hpp"
 #include "ores.refdata.api/messaging/currency_protocol.hpp"
 #include "ores.refdata.api/messaging/portfolio_protocol.hpp"
-#include "ores.refdata.api/messaging/book_protocol.hpp"
-#include "ores.trading.api/messaging/trade_protocol.hpp"
-#include "ores.trading.api/messaging/instrument_protocol.hpp"
-#include "ores.ore.core/domain/trade_mapper.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
+#include "ores.storage/net/storage_transfer.hpp"
+#include "ores.trading.api/messaging/instrument_protocol.hpp"
+#include "ores.trading.api/messaging/trade_protocol.hpp"
+#include "ores.utility/rfl/reflectors.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <format>
+#include <rfl/json.hpp>
+#include <set>
 
 namespace ores::ore::service::messaging {
 
@@ -49,10 +48,9 @@ namespace {
  *
  * Returns nullopt and populates out_error on any error.
  */
-template<typename Req>
+template <typename Req>
 std::optional<typename Req::response_type>
-nats_call(ores::nats::service::nats_client& nats, const Req& request,
-    std::string& out_error) {
+nats_call(ores::nats::service::nats_client& nats, const Req& request, std::string& out_error) {
     using Resp = typename Req::response_type;
     try {
         const auto json = rfl::json::write(request);
@@ -60,26 +58,26 @@ nats_call(ores::nats::service::nats_client& nats, const Req& request,
 
         const auto err_it = msg.headers.find("X-Error");
         if (err_it != msg.headers.end()) {
-            out_error = std::format("Service error on {}: {}",
-                Req::nats_subject, err_it->second);
+            out_error = std::format("Service error on {}: {}", Req::nats_subject, err_it->second);
             return std::nullopt;
         }
-        const std::string_view sv(
-            reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
+        const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
         auto result = rfl::json::read<Resp>(sv);
         if (!result) {
-            out_error = std::format("Failed to parse response from {}: {}",
-                Req::nats_subject, result.error().what());
+            out_error = std::format(
+                "Failed to parse response from {}: {}", Req::nats_subject, result.error().what());
             return std::nullopt;
         }
-        if constexpr (requires { result->success; result->message; }) {
+        if constexpr (requires {
+                          result->success;
+                          result->message;
+                      }) {
             if (!result->success)
                 out_error = result->message;
         }
         return *result;
     } catch (const std::exception& e) {
-        out_error = std::format("Exception calling {}: {}",
-            Req::nats_subject, e.what());
+        out_error = std::format("Exception calling {}: {}", Req::nats_subject, e.what());
         return std::nullopt;
     }
 }
@@ -103,26 +101,26 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
     const auto step_id = extract_workflow_header(msg, workflow_step_id_header);
     const auto inst_id = extract_workflow_header(msg, workflow_instance_id_header);
 
-    const std::string_view sv(
-        reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
+    const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
     auto parsed = rfl::json::read<ore_import_execute_request>(sv);
     if (!parsed) {
-        BOOST_LOG_SEV(lg(), error) << "ore.import.execute: failed to decode request | step="
-                                   << step_id;
-        publish_step_completion(nats_, step_id, inst_id,
-            ores::workflow::messaging::step_outcome::failed, "",
-            "Failed to decode ore_import_execute_request");
+        BOOST_LOG_SEV(lg(), error)
+            << "ore.import.execute: failed to decode request | step=" << step_id;
+        publish_step_completion(nats_,
+                                step_id,
+                                inst_id,
+                                ores::workflow::messaging::step_outcome::failed,
+                                "",
+                                "Failed to decode ore_import_execute_request");
         return;
     }
     const auto& req = *parsed;
 
     BOOST_LOG_SEV(lg(), info) << "ore.import.execute starting | corr=" << req.correlation_id
-                              << " request_id=" << req.request_id
-                              << " step=" << step_id;
+                              << " request_id=" << req.request_id << " step=" << step_id;
 
-    auto delegated_nats = outbound_nats_
-        .with_delegation(req.bearer_token)
-        .with_correlation_id(req.correlation_id);
+    auto delegated_nats =
+        outbound_nats_.with_delegation(req.bearer_token).with_correlation_id(req.correlation_id);
 
     ore_import_execute_result result;
     result.correlation_id = req.correlation_id;
@@ -140,21 +138,20 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
     try {
         std::filesystem::create_directories(import_dir);
         ores::storage::net::storage_transfer transfer(http_base_url_);
-        transfer.fetch_and_unpack(
-            std::string(ores::ore::net::ore_storage::bucket),
-            ores::ore::net::ore_storage::import_key(req.request_id),
-            import_dir);
+        transfer.fetch_and_unpack(std::string(ores::ore::net::ore_storage::bucket),
+                                  ores::ore::net::ore_storage::import_key(req.request_id),
+                                  import_dir);
     } catch (const std::exception& e) {
         const auto failure = std::format("fetch_and_unpack failed: {}", e.what());
-        BOOST_LOG_SEV(lg(), error) << "ore.import.execute step 0 failed | corr="
-                                   << req.correlation_id << " error=" << failure;
-        publish_step_completion(nats_, step_id, inst_id,
-            ores::workflow::messaging::step_outcome::failed, "", failure);
+        BOOST_LOG_SEV(lg(), error)
+            << "ore.import.execute step 0 failed | corr=" << req.correlation_id
+            << " error=" << failure;
+        publish_step_completion(
+            nats_, step_id, inst_id, ores::workflow::messaging::step_outcome::failed, "", failure);
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "ore.import.execute step 0 complete | corr="
-                              << req.correlation_id
+    BOOST_LOG_SEV(lg(), info) << "ore.import.execute step 0 complete | corr=" << req.correlation_id
                               << " import_dir=" << import_dir.string();
 
     // -------------------------------------------------------------------------
@@ -166,15 +163,15 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
         scan = scanner.scan();
     } catch (const std::exception& e) {
         const auto failure = std::format("Directory scan failed: {}", e.what());
-        BOOST_LOG_SEV(lg(), error) << "ore.import.execute step 1 failed | corr="
-                                   << req.correlation_id << " error=" << failure;
-        publish_step_completion(nats_, step_id, inst_id,
-            ores::workflow::messaging::step_outcome::failed, "", failure);
+        BOOST_LOG_SEV(lg(), error)
+            << "ore.import.execute step 1 failed | corr=" << req.correlation_id
+            << " error=" << failure;
+        publish_step_completion(
+            nats_, step_id, inst_id, ores::workflow::messaging::step_outcome::failed, "", failure);
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "ore.import.execute step 1 complete | corr="
-                              << req.correlation_id
+    BOOST_LOG_SEV(lg(), info) << "ore.import.execute step 1 complete | corr=" << req.correlation_id
                               << " currency_files=" << scan.currency_files.size()
                               << " portfolio_files=" << scan.portfolio_files.size()
                               << " ignored_files=" << scan.ignored_files.size();
@@ -191,18 +188,18 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
         std::string err;
         auto list_resp = nats_call(delegated_nats, list_req, err);
         if (!list_resp) {
-            BOOST_LOG_SEV(lg(), error) << "ore.import.execute step 2 failed | corr="
-                                       << req.correlation_id << " error=" << err;
-            publish_step_completion(nats_, step_id, inst_id,
-                ores::workflow::messaging::step_outcome::failed, "", err);
+            BOOST_LOG_SEV(lg(), error)
+                << "ore.import.execute step 2 failed | corr=" << req.correlation_id
+                << " error=" << err;
+            publish_step_completion(
+                nats_, step_id, inst_id, ores::workflow::messaging::step_outcome::failed, "", err);
             return;
         }
         for (const auto& c : list_resp->currencies)
             existing_iso_codes.insert(c.iso_code);
     }
 
-    BOOST_LOG_SEV(lg(), info) << "ore.import.execute step 2 complete | corr="
-                              << req.correlation_id
+    BOOST_LOG_SEV(lg(), info) << "ore.import.execute step 2 complete | corr=" << req.correlation_id
                               << " existing_iso_codes=" << existing_iso_codes.size();
 
     // -------------------------------------------------------------------------
@@ -210,15 +207,20 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
     // -------------------------------------------------------------------------
     ores::ore::planner::import_choices choices;
     if (!req.import_choices_json.empty()) {
-        auto parsed_choices = rfl::json::read<ores::ore::planner::import_choices>(
-            req.import_choices_json);
+        auto parsed_choices =
+            rfl::json::read<ores::ore::planner::import_choices>(req.import_choices_json);
         if (!parsed_choices) {
             const auto failure = std::format("Failed to parse import_choices_json: {}",
-                parsed_choices.error().what());
-            BOOST_LOG_SEV(lg(), error) << "ore.import.execute step 3 failed | corr="
-                                       << req.correlation_id << " error=" << failure;
-            publish_step_completion(nats_, step_id, inst_id,
-                ores::workflow::messaging::step_outcome::failed, "", failure);
+                                             parsed_choices.error().what());
+            BOOST_LOG_SEV(lg(), error)
+                << "ore.import.execute step 3 failed | corr=" << req.correlation_id
+                << " error=" << failure;
+            publish_step_completion(nats_,
+                                    step_id,
+                                    inst_id,
+                                    ores::workflow::messaging::step_outcome::failed,
+                                    "",
+                                    failure);
             return;
         }
         choices = std::move(*parsed_choices);
@@ -231,19 +233,18 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
         plan = planner.plan();
     } catch (const std::exception& e) {
         const auto failure = std::format("Import plan failed: {}", e.what());
-        BOOST_LOG_SEV(lg(), error) << "ore.import.execute step 3 failed | corr="
-                                   << req.correlation_id << " error=" << failure;
-        publish_step_completion(nats_, step_id, inst_id,
-            ores::workflow::messaging::step_outcome::failed, "", failure);
+        BOOST_LOG_SEV(lg(), error)
+            << "ore.import.execute step 3 failed | corr=" << req.correlation_id
+            << " error=" << failure;
+        publish_step_completion(
+            nats_, step_id, inst_id, ores::workflow::messaging::step_outcome::failed, "", failure);
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "ore.import.execute step 3 complete | corr="
-                              << req.correlation_id
+    BOOST_LOG_SEV(lg(), info) << "ore.import.execute step 3 complete | corr=" << req.correlation_id
                               << " currencies=" << plan.currencies.size()
                               << " portfolios=" << plan.portfolios.size()
-                              << " books=" << plan.books.size()
-                              << " trades=" << plan.trades.size();
+                              << " books=" << plan.books.size() << " trades=" << plan.trades.size();
 
     // -------------------------------------------------------------------------
     // Step 4: save currencies
@@ -255,22 +256,25 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
         std::string err;
         auto resp = nats_call(delegated_nats, save_req, err);
         if (!resp || !resp->success) {
-            const auto failure = err.empty()
-                ? std::format("save_currency failed for {}: {}",
-                    iso, resp ? resp->message : "(no response)")
-                : err;
-            BOOST_LOG_SEV(lg(), error) << "ore.import.execute step 4 failed | corr="
-                                       << req.correlation_id
-                                       << " iso_code=" << iso << " error=" << failure;
-            publish_step_completion(nats_, step_id, inst_id,
-                ores::workflow::messaging::step_outcome::failed, "", failure);
+            const auto failure = err.empty() ? std::format("save_currency failed for {}: {}",
+                                                           iso,
+                                                           resp ? resp->message : "(no response)") :
+                                               err;
+            BOOST_LOG_SEV(lg(), error)
+                << "ore.import.execute step 4 failed | corr=" << req.correlation_id
+                << " iso_code=" << iso << " error=" << failure;
+            publish_step_completion(nats_,
+                                    step_id,
+                                    inst_id,
+                                    ores::workflow::messaging::step_outcome::failed,
+                                    "",
+                                    failure);
             return;
         }
         result.saved_currency_iso_codes.push_back(iso);
     }
 
-    BOOST_LOG_SEV(lg(), info) << "ore.import.execute step 4 complete | corr="
-                              << req.correlation_id
+    BOOST_LOG_SEV(lg(), info) << "ore.import.execute step 4 complete | corr=" << req.correlation_id
                               << " saved=" << result.saved_currency_iso_codes.size();
 
     // -------------------------------------------------------------------------
@@ -284,22 +288,27 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
         std::string err;
         auto resp = nats_call(delegated_nats, save_req, err);
         if (!resp || !resp->success) {
-            const auto failure = err.empty()
-                ? std::format("save_portfolio failed for '{}' ({}): {}",
-                    name, pid, resp ? resp->message : "(no response)")
-                : err;
-            BOOST_LOG_SEV(lg(), error) << "ore.import.execute step 5 failed | corr="
-                                       << req.correlation_id
-                                       << " portfolio=" << pid << " error=" << failure;
-            publish_step_completion(nats_, step_id, inst_id,
-                ores::workflow::messaging::step_outcome::failed, "", failure);
+            const auto failure = err.empty() ?
+                                     std::format("save_portfolio failed for '{}' ({}): {}",
+                                                 name,
+                                                 pid,
+                                                 resp ? resp->message : "(no response)") :
+                                     err;
+            BOOST_LOG_SEV(lg(), error)
+                << "ore.import.execute step 5 failed | corr=" << req.correlation_id
+                << " portfolio=" << pid << " error=" << failure;
+            publish_step_completion(nats_,
+                                    step_id,
+                                    inst_id,
+                                    ores::workflow::messaging::step_outcome::failed,
+                                    "",
+                                    failure);
             return;
         }
         result.saved_portfolio_ids.push_back(pid);
     }
 
-    BOOST_LOG_SEV(lg(), info) << "ore.import.execute step 5 complete | corr="
-                              << req.correlation_id
+    BOOST_LOG_SEV(lg(), info) << "ore.import.execute step 5 complete | corr=" << req.correlation_id
                               << " saved=" << result.saved_portfolio_ids.size();
 
     // -------------------------------------------------------------------------
@@ -313,22 +322,26 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
         std::string err;
         auto resp = nats_call(delegated_nats, save_req, err);
         if (!resp || !resp->success) {
-            const auto failure = err.empty()
-                ? std::format("save_book failed for '{}' ({}): {}",
-                    name, bid, resp ? resp->message : "(no response)")
-                : err;
-            BOOST_LOG_SEV(lg(), error) << "ore.import.execute step 6 failed | corr="
-                                       << req.correlation_id
-                                       << " book=" << bid << " error=" << failure;
-            publish_step_completion(nats_, step_id, inst_id,
-                ores::workflow::messaging::step_outcome::failed, "", failure);
+            const auto failure = err.empty() ? std::format("save_book failed for '{}' ({}): {}",
+                                                           name,
+                                                           bid,
+                                                           resp ? resp->message : "(no response)") :
+                                               err;
+            BOOST_LOG_SEV(lg(), error)
+                << "ore.import.execute step 6 failed | corr=" << req.correlation_id
+                << " book=" << bid << " error=" << failure;
+            publish_step_completion(nats_,
+                                    step_id,
+                                    inst_id,
+                                    ores::workflow::messaging::step_outcome::failed,
+                                    "",
+                                    failure);
             return;
         }
         result.saved_book_ids.push_back(bid);
     }
 
-    BOOST_LOG_SEV(lg(), info) << "ore.import.execute step 6 complete | corr="
-                              << req.correlation_id
+    BOOST_LOG_SEV(lg(), info) << "ore.import.execute step 6 complete | corr=" << req.correlation_id
                               << " saved=" << result.saved_book_ids.size();
 
     // -------------------------------------------------------------------------
@@ -346,22 +359,17 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
         auto resp = nats_call(delegated_nats, save_req, trade_error);
         if (!resp || !resp->success) {
             const auto trade_msg = resp ? resp->message : trade_error;
-            BOOST_LOG_SEV(lg(), warn) << "ore.import.execute trade save failed | corr="
-                                      << req.correlation_id
-                                      << " trade_id=" << tid
-                                      << " source=" << src
-                                      << " error=" << trade_msg;
-            result.item_errors.push_back({
-                .source_file = src,
-                .item_id = ext_id,
-                .message = trade_msg});
+            BOOST_LOG_SEV(lg(), warn)
+                << "ore.import.execute trade save failed | corr=" << req.correlation_id
+                << " trade_id=" << tid << " source=" << src << " error=" << trade_msg;
+            result.item_errors.push_back(
+                {.source_file = src, .item_id = ext_id, .message = trade_msg});
         } else {
             result.saved_trade_ids.push_back(tid);
         }
     }
 
-    BOOST_LOG_SEV(lg(), info) << "ore.import.execute step 7 complete | corr="
-                              << req.correlation_id
+    BOOST_LOG_SEV(lg(), info) << "ore.import.execute step 7 complete | corr=" << req.correlation_id
                               << " saved=" << result.saved_trade_ids.size()
                               << " failed=" << result.item_errors.size();
 
@@ -381,180 +389,232 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
         using ores::trading::domain::scripted_instrument;
         std::string instr_error;
 
-        const auto save_ok = std::visit([&](const auto& r) -> bool {
-            using T = std::decay_t<decltype(r)>;
-            if constexpr (std::is_same_v<T, std::monostate>) {
-                return true; // no instrument for this trade type
-            } else if constexpr (std::is_same_v<T, swap_instrument_data>) {
-                return std::visit([&](const auto& instr) -> bool {
-                    using InstrT = std::decay_t<decltype(instr)>;
-                    using namespace ores::trading::domain;
-                    if constexpr (std::is_same_v<InstrT, fra_instrument>) {
-                        save_fra_instrument_request req; req.data = instr;
-                        auto resp = nats_call(delegated_nats, req, instr_error);
-                        return resp && resp->success;
-                    } else if constexpr (std::is_same_v<InstrT, vanilla_swap_instrument>) {
-                        save_vanilla_swap_instrument_request req; req.data = instr;
-                        auto resp = nats_call(delegated_nats, req, instr_error);
-                        return resp && resp->success;
-                    } else if constexpr (std::is_same_v<InstrT, cap_floor_instrument>) {
-                        save_cap_floor_instrument_request req; req.data = instr;
-                        auto resp = nats_call(delegated_nats, req, instr_error);
-                        return resp && resp->success;
-                    } else if constexpr (std::is_same_v<InstrT, swaption_instrument>) {
-                        save_swaption_instrument_request req; req.data = instr;
-                        auto resp = nats_call(delegated_nats, req, instr_error);
-                        return resp && resp->success;
-                    } else if constexpr (std::is_same_v<InstrT, balance_guaranteed_swap_instrument>) {
-                        save_balance_guaranteed_swap_instrument_request req; req.data = instr;
-                        auto resp = nats_call(delegated_nats, req, instr_error);
-                        return resp && resp->success;
-                    } else if constexpr (std::is_same_v<InstrT, callable_swap_instrument>) {
-                        save_callable_swap_instrument_request req; req.data = instr;
-                        auto resp = nats_call(delegated_nats, req, instr_error);
-                        return resp && resp->success;
-                    } else if constexpr (std::is_same_v<InstrT, knock_out_swap_instrument>) {
-                        save_knock_out_swap_instrument_request req; req.data = instr;
-                        auto resp = nats_call(delegated_nats, req, instr_error);
-                        return resp && resp->success;
-                    } else if constexpr (std::is_same_v<InstrT, inflation_swap_instrument>) {
-                        save_inflation_swap_instrument_request req; req.data = instr;
-                        auto resp = nats_call(delegated_nats, req, instr_error);
-                        return resp && resp->success;
-                    } else if constexpr (std::is_same_v<InstrT, rpa_instrument>) {
-                        save_rpa_instrument_request req; req.data = instr;
-                        auto resp = nats_call(delegated_nats, req, instr_error);
-                        return resp && resp->success;
-                    } else {
-                        return true;
-                    }
-                }, r.instrument);
-            } else if constexpr (std::is_same_v<T, fx_instrument_variant>) {
-                return std::visit([&](const auto& instr) -> bool {
-                    using InstrT = std::decay_t<decltype(instr)>;
-                    using namespace ores::trading::domain;
-                    if constexpr (std::is_same_v<InstrT, fx_forward_instrument>) {
-                        save_fx_forward_instrument_request req; req.data = instr;
-                        auto resp = nats_call(delegated_nats, req, instr_error);
-                        return resp && resp->success;
-                    } else if constexpr (std::is_same_v<InstrT, fx_vanilla_option_instrument>) {
-                        save_fx_vanilla_option_instrument_request req; req.data = instr;
-                        auto resp = nats_call(delegated_nats, req, instr_error);
-                        return resp && resp->success;
-                    } else if constexpr (std::is_same_v<InstrT, fx_barrier_option_instrument>) {
-                        save_fx_barrier_option_instrument_request req; req.data = instr;
-                        auto resp = nats_call(delegated_nats, req, instr_error);
-                        return resp && resp->success;
-                    } else if constexpr (std::is_same_v<InstrT, fx_digital_option_instrument>) {
-                        save_fx_digital_option_instrument_request req; req.data = instr;
-                        auto resp = nats_call(delegated_nats, req, instr_error);
-                        return resp && resp->success;
-                    } else if constexpr (std::is_same_v<InstrT, fx_asian_forward_instrument>) {
-                        save_fx_asian_forward_instrument_request req; req.data = instr;
-                        auto resp = nats_call(delegated_nats, req, instr_error);
-                        return resp && resp->success;
-                    } else if constexpr (std::is_same_v<InstrT, fx_accumulator_instrument>) {
-                        save_fx_accumulator_instrument_request req; req.data = instr;
-                        auto resp = nats_call(delegated_nats, req, instr_error);
-                        return resp && resp->success;
-                    } else if constexpr (std::is_same_v<InstrT, fx_variance_swap_instrument>) {
-                        save_fx_variance_swap_instrument_request req; req.data = instr;
-                        auto resp = nats_call(delegated_nats, req, instr_error);
-                        return resp && resp->success;
-                    } else {
-                        return true;
-                    }
-                }, r);
-            } else if constexpr (std::is_same_v<T, bond_instrument>) {
-                save_bond_instrument_request req; req.data = r;
-                auto resp = nats_call(delegated_nats, req, instr_error);
-                return resp && resp->success;
-            } else if constexpr (std::is_same_v<T, credit_instrument>) {
-                save_credit_instrument_request req; req.data = r;
-                auto resp = nats_call(delegated_nats, req, instr_error);
-                return resp && resp->success;
-            } else if constexpr (std::is_same_v<T, equity_instrument_variant>) {
-                return std::visit([&](const auto& instr) -> bool {
-                    using InstrT = std::decay_t<decltype(instr)>;
-                    using namespace ores::trading::domain;
-                    if constexpr (std::is_same_v<InstrT, equity_option_instrument>) {
-                        save_equity_option_instrument_request req; req.data = instr;
-                        auto resp = nats_call(delegated_nats, req, instr_error);
-                        return resp && resp->success;
-                    } else if constexpr (std::is_same_v<InstrT, equity_digital_option_instrument>) {
-                        save_equity_digital_option_instrument_request req; req.data = instr;
-                        auto resp = nats_call(delegated_nats, req, instr_error);
-                        return resp && resp->success;
-                    } else if constexpr (std::is_same_v<InstrT, equity_barrier_option_instrument>) {
-                        save_equity_barrier_option_instrument_request req; req.data = instr;
-                        auto resp = nats_call(delegated_nats, req, instr_error);
-                        return resp && resp->success;
-                    } else if constexpr (std::is_same_v<InstrT, equity_asian_option_instrument>) {
-                        save_equity_asian_option_instrument_request req; req.data = instr;
-                        auto resp = nats_call(delegated_nats, req, instr_error);
-                        return resp && resp->success;
-                    } else if constexpr (std::is_same_v<InstrT, equity_forward_instrument>) {
-                        save_equity_forward_instrument_request req; req.data = instr;
-                        auto resp = nats_call(delegated_nats, req, instr_error);
-                        return resp && resp->success;
-                    } else if constexpr (std::is_same_v<InstrT, equity_variance_swap_instrument>) {
-                        save_equity_variance_swap_instrument_request req; req.data = instr;
-                        auto resp = nats_call(delegated_nats, req, instr_error);
-                        return resp && resp->success;
-                    } else if constexpr (std::is_same_v<InstrT, equity_swap_instrument>) {
-                        save_equity_swap_instrument_request req; req.data = instr;
-                        auto resp = nats_call(delegated_nats, req, instr_error);
-                        return resp && resp->success;
-                    } else if constexpr (std::is_same_v<InstrT, equity_accumulator_instrument>) {
-                        save_equity_accumulator_instrument_request req; req.data = instr;
-                        auto resp = nats_call(delegated_nats, req, instr_error);
-                        return resp && resp->success;
-                    } else if constexpr (std::is_same_v<InstrT, equity_position_instrument>) {
-                        save_equity_position_instrument_request req; req.data = instr;
-                        auto resp = nats_call(delegated_nats, req, instr_error);
-                        return resp && resp->success;
-                    } else {
-                        // Unknown per-type alternative — fail loudly so a new
-                        // variant added without updating this dispatch surfaces
-                        // at import time instead of silently skipping saves.
-                        instr_error = "equity variant alternative not handled "
-                                      "by import dispatch";
-                        return false;
-                    }
-                }, r);
-            } else if constexpr (std::is_same_v<T, commodity_instrument>) {
-                save_commodity_instrument_request req; req.data = r;
-                auto resp = nats_call(delegated_nats, req, instr_error);
-                return resp && resp->success;
-            } else if constexpr (std::is_same_v<T, composite_instrument_data>) {
-                save_composite_instrument_request req; req.data = r.instrument;
-                auto resp = nats_call(delegated_nats, req, instr_error);
-                return resp && resp->success;
-            } else if constexpr (std::is_same_v<T, scripted_instrument>) {
-                save_scripted_instrument_request req; req.data = r;
-                auto resp = nats_call(delegated_nats, req, instr_error);
-                return resp && resp->success;
-            } else {
-                return true;
-            }
-        }, item.instrument);
+        const auto save_ok = std::visit(
+            [&](const auto& r) -> bool {
+                using T = std::decay_t<decltype(r)>;
+                if constexpr (std::is_same_v<T, std::monostate>) {
+                    return true; // no instrument for this trade type
+                } else if constexpr (std::is_same_v<T, swap_instrument_data>) {
+                    return std::visit(
+                        [&](const auto& instr) -> bool {
+                            using InstrT = std::decay_t<decltype(instr)>;
+                            using namespace ores::trading::domain;
+                            if constexpr (std::is_same_v<InstrT, fra_instrument>) {
+                                save_fra_instrument_request req;
+                                req.data = instr;
+                                auto resp = nats_call(delegated_nats, req, instr_error);
+                                return resp && resp->success;
+                            } else if constexpr (std::is_same_v<InstrT, vanilla_swap_instrument>) {
+                                save_vanilla_swap_instrument_request req;
+                                req.data = instr;
+                                auto resp = nats_call(delegated_nats, req, instr_error);
+                                return resp && resp->success;
+                            } else if constexpr (std::is_same_v<InstrT, cap_floor_instrument>) {
+                                save_cap_floor_instrument_request req;
+                                req.data = instr;
+                                auto resp = nats_call(delegated_nats, req, instr_error);
+                                return resp && resp->success;
+                            } else if constexpr (std::is_same_v<InstrT, swaption_instrument>) {
+                                save_swaption_instrument_request req;
+                                req.data = instr;
+                                auto resp = nats_call(delegated_nats, req, instr_error);
+                                return resp && resp->success;
+                            } else if constexpr (std::is_same_v<
+                                                     InstrT,
+                                                     balance_guaranteed_swap_instrument>) {
+                                save_balance_guaranteed_swap_instrument_request req;
+                                req.data = instr;
+                                auto resp = nats_call(delegated_nats, req, instr_error);
+                                return resp && resp->success;
+                            } else if constexpr (std::is_same_v<InstrT, callable_swap_instrument>) {
+                                save_callable_swap_instrument_request req;
+                                req.data = instr;
+                                auto resp = nats_call(delegated_nats, req, instr_error);
+                                return resp && resp->success;
+                            } else if constexpr (std::is_same_v<InstrT,
+                                                                knock_out_swap_instrument>) {
+                                save_knock_out_swap_instrument_request req;
+                                req.data = instr;
+                                auto resp = nats_call(delegated_nats, req, instr_error);
+                                return resp && resp->success;
+                            } else if constexpr (std::is_same_v<InstrT,
+                                                                inflation_swap_instrument>) {
+                                save_inflation_swap_instrument_request req;
+                                req.data = instr;
+                                auto resp = nats_call(delegated_nats, req, instr_error);
+                                return resp && resp->success;
+                            } else if constexpr (std::is_same_v<InstrT, rpa_instrument>) {
+                                save_rpa_instrument_request req;
+                                req.data = instr;
+                                auto resp = nats_call(delegated_nats, req, instr_error);
+                                return resp && resp->success;
+                            } else {
+                                return true;
+                            }
+                        },
+                        r.instrument);
+                } else if constexpr (std::is_same_v<T, fx_instrument_variant>) {
+                    return std::visit(
+                        [&](const auto& instr) -> bool {
+                            using InstrT = std::decay_t<decltype(instr)>;
+                            using namespace ores::trading::domain;
+                            if constexpr (std::is_same_v<InstrT, fx_forward_instrument>) {
+                                save_fx_forward_instrument_request req;
+                                req.data = instr;
+                                auto resp = nats_call(delegated_nats, req, instr_error);
+                                return resp && resp->success;
+                            } else if constexpr (std::is_same_v<InstrT,
+                                                                fx_vanilla_option_instrument>) {
+                                save_fx_vanilla_option_instrument_request req;
+                                req.data = instr;
+                                auto resp = nats_call(delegated_nats, req, instr_error);
+                                return resp && resp->success;
+                            } else if constexpr (std::is_same_v<InstrT,
+                                                                fx_barrier_option_instrument>) {
+                                save_fx_barrier_option_instrument_request req;
+                                req.data = instr;
+                                auto resp = nats_call(delegated_nats, req, instr_error);
+                                return resp && resp->success;
+                            } else if constexpr (std::is_same_v<InstrT,
+                                                                fx_digital_option_instrument>) {
+                                save_fx_digital_option_instrument_request req;
+                                req.data = instr;
+                                auto resp = nats_call(delegated_nats, req, instr_error);
+                                return resp && resp->success;
+                            } else if constexpr (std::is_same_v<InstrT,
+                                                                fx_asian_forward_instrument>) {
+                                save_fx_asian_forward_instrument_request req;
+                                req.data = instr;
+                                auto resp = nats_call(delegated_nats, req, instr_error);
+                                return resp && resp->success;
+                            } else if constexpr (std::is_same_v<InstrT,
+                                                                fx_accumulator_instrument>) {
+                                save_fx_accumulator_instrument_request req;
+                                req.data = instr;
+                                auto resp = nats_call(delegated_nats, req, instr_error);
+                                return resp && resp->success;
+                            } else if constexpr (std::is_same_v<InstrT,
+                                                                fx_variance_swap_instrument>) {
+                                save_fx_variance_swap_instrument_request req;
+                                req.data = instr;
+                                auto resp = nats_call(delegated_nats, req, instr_error);
+                                return resp && resp->success;
+                            } else {
+                                return true;
+                            }
+                        },
+                        r);
+                } else if constexpr (std::is_same_v<T, bond_instrument>) {
+                    save_bond_instrument_request req;
+                    req.data = r;
+                    auto resp = nats_call(delegated_nats, req, instr_error);
+                    return resp && resp->success;
+                } else if constexpr (std::is_same_v<T, credit_instrument>) {
+                    save_credit_instrument_request req;
+                    req.data = r;
+                    auto resp = nats_call(delegated_nats, req, instr_error);
+                    return resp && resp->success;
+                } else if constexpr (std::is_same_v<T, equity_instrument_variant>) {
+                    return std::visit(
+                        [&](const auto& instr) -> bool {
+                            using InstrT = std::decay_t<decltype(instr)>;
+                            using namespace ores::trading::domain;
+                            if constexpr (std::is_same_v<InstrT, equity_option_instrument>) {
+                                save_equity_option_instrument_request req;
+                                req.data = instr;
+                                auto resp = nats_call(delegated_nats, req, instr_error);
+                                return resp && resp->success;
+                            } else if constexpr (std::is_same_v<InstrT,
+                                                                equity_digital_option_instrument>) {
+                                save_equity_digital_option_instrument_request req;
+                                req.data = instr;
+                                auto resp = nats_call(delegated_nats, req, instr_error);
+                                return resp && resp->success;
+                            } else if constexpr (std::is_same_v<InstrT,
+                                                                equity_barrier_option_instrument>) {
+                                save_equity_barrier_option_instrument_request req;
+                                req.data = instr;
+                                auto resp = nats_call(delegated_nats, req, instr_error);
+                                return resp && resp->success;
+                            } else if constexpr (std::is_same_v<InstrT,
+                                                                equity_asian_option_instrument>) {
+                                save_equity_asian_option_instrument_request req;
+                                req.data = instr;
+                                auto resp = nats_call(delegated_nats, req, instr_error);
+                                return resp && resp->success;
+                            } else if constexpr (std::is_same_v<InstrT,
+                                                                equity_forward_instrument>) {
+                                save_equity_forward_instrument_request req;
+                                req.data = instr;
+                                auto resp = nats_call(delegated_nats, req, instr_error);
+                                return resp && resp->success;
+                            } else if constexpr (std::is_same_v<InstrT,
+                                                                equity_variance_swap_instrument>) {
+                                save_equity_variance_swap_instrument_request req;
+                                req.data = instr;
+                                auto resp = nats_call(delegated_nats, req, instr_error);
+                                return resp && resp->success;
+                            } else if constexpr (std::is_same_v<InstrT, equity_swap_instrument>) {
+                                save_equity_swap_instrument_request req;
+                                req.data = instr;
+                                auto resp = nats_call(delegated_nats, req, instr_error);
+                                return resp && resp->success;
+                            } else if constexpr (std::is_same_v<InstrT,
+                                                                equity_accumulator_instrument>) {
+                                save_equity_accumulator_instrument_request req;
+                                req.data = instr;
+                                auto resp = nats_call(delegated_nats, req, instr_error);
+                                return resp && resp->success;
+                            } else if constexpr (std::is_same_v<InstrT,
+                                                                equity_position_instrument>) {
+                                save_equity_position_instrument_request req;
+                                req.data = instr;
+                                auto resp = nats_call(delegated_nats, req, instr_error);
+                                return resp && resp->success;
+                            } else {
+                                // Unknown per-type alternative — fail loudly so a new
+                                // variant added without updating this dispatch surfaces
+                                // at import time instead of silently skipping saves.
+                                instr_error = "equity variant alternative not handled "
+                                              "by import dispatch";
+                                return false;
+                            }
+                        },
+                        r);
+                } else if constexpr (std::is_same_v<T, commodity_instrument>) {
+                    save_commodity_instrument_request req;
+                    req.data = r;
+                    auto resp = nats_call(delegated_nats, req, instr_error);
+                    return resp && resp->success;
+                } else if constexpr (std::is_same_v<T, composite_instrument_data>) {
+                    save_composite_instrument_request req;
+                    req.data = r.instrument;
+                    auto resp = nats_call(delegated_nats, req, instr_error);
+                    return resp && resp->success;
+                } else if constexpr (std::is_same_v<T, scripted_instrument>) {
+                    save_scripted_instrument_request req;
+                    req.data = r;
+                    auto resp = nats_call(delegated_nats, req, instr_error);
+                    return resp && resp->success;
+                } else {
+                    return true;
+                }
+            },
+            item.instrument);
 
         if (save_ok) {
             ++instruments_saved;
         } else {
-            BOOST_LOG_SEV(lg(), warn) << "ore.import.execute instrument save failed | corr="
-                                      << req.correlation_id
-                                      << " trade=" << item.trade.identity.external_id
-                                      << " error=" << instr_error;
-            result.item_errors.push_back({
-                .source_file = item.source_file.string(),
-                .item_id = item.trade.identity.external_id,
-                .message = "Instrument save failed: " + instr_error});
+            BOOST_LOG_SEV(lg(), warn)
+                << "ore.import.execute instrument save failed | corr=" << req.correlation_id
+                << " trade=" << item.trade.identity.external_id << " error=" << instr_error;
+            result.item_errors.push_back({.source_file = item.source_file.string(),
+                                          .item_id = item.trade.identity.external_id,
+                                          .message = "Instrument save failed: " + instr_error});
         }
     }
 
-    BOOST_LOG_SEV(lg(), info) << "ore.import.execute step 8 complete | corr="
-                              << req.correlation_id
+    BOOST_LOG_SEV(lg(), info) << "ore.import.execute step 8 complete | corr=" << req.correlation_id
                               << " instruments_saved=" << instruments_saved;
 
     // -------------------------------------------------------------------------
@@ -563,9 +623,7 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
     // Total failure: all planned trades failed to save (and at least one was attempted).
     // Adjust this constant to change the threshold for saga compensation.
     const bool all_trades_failed =
-        !plan.trades.empty() &&
-        result.saved_trade_ids.empty() &&
-        !result.item_errors.empty();
+        !plan.trades.empty() && result.saved_trade_ids.empty() && !result.item_errors.empty();
 
     using wf_outcome = ores::workflow::messaging::step_outcome;
     using wf_log_level = ores::workflow::messaging::step_log_level;
@@ -582,25 +640,23 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
 
     std::vector<wf_log_entry> step_log;
     if (!result.saved_trade_ids.empty()) {
-        step_log.push_back({
-            .level = wf_log_level::info,
-            .message = std::format("Saved {} trade(s).",
-                result.saved_trade_ids.size()),
-            .context = {}});
+        step_log.push_back(
+            {.level = wf_log_level::info,
+             .message = std::format("Saved {} trade(s).", result.saved_trade_ids.size()),
+             .context = {}});
     }
     for (const auto& ie : result.item_errors) {
-        step_log.push_back({
-            .level = (outcome == wf_outcome::failed)
-                ? wf_log_level::error : wf_log_level::warn,
-            .message = ie.message,
-            .context = ie.item_id.empty() ? ie.source_file : ie.item_id});
+        step_log.push_back(
+            {.level = (outcome == wf_outcome::failed) ? wf_log_level::error : wf_log_level::warn,
+             .message = ie.message,
+             .context = ie.item_id.empty() ? ie.source_file : ie.item_id});
     }
 
     result.success = outcome != wf_outcome::failed;
-    result.message = result.item_errors.empty()
-        ? "ORE import completed."
-        : std::format("ORE import completed with {} error(s).",
-            result.item_errors.size());
+    result.message =
+        result.item_errors.empty() ?
+            "ORE import completed." :
+            std::format("ORE import completed with {} error(s).", result.item_errors.size());
 
     BOOST_LOG_SEV(lg(), info) << "ore.import.execute complete | corr=" << req.correlation_id
                               << " currencies=" << result.saved_currency_iso_codes.size()
@@ -611,14 +667,17 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                               << " outcome=" << ores::workflow::messaging::to_string(outcome);
 
     if (outcome == wf_outcome::failed) {
-        publish_step_completion(nats_, step_id, inst_id,
-            wf_outcome::failed, rfl::json::write(result),
-            std::format("All {} trade save(s) failed.",
-                result.item_errors.size()),
+        publish_step_completion(
+            nats_,
+            step_id,
+            inst_id,
+            wf_outcome::failed,
+            rfl::json::write(result),
+            std::format("All {} trade save(s) failed.", result.item_errors.size()),
             step_log);
     } else {
-        publish_step_completion(nats_, step_id, inst_id,
-            outcome, rfl::json::write(result), "", step_log);
+        publish_step_completion(
+            nats_, step_id, inst_id, outcome, rfl::json::write(result), "", step_log);
     }
 }
 
@@ -628,15 +687,17 @@ void ore_import_execute_handler::rollback(ores::nats::message msg) {
     const auto step_id = extract_workflow_header(msg, workflow_step_id_header);
     const auto inst_id = extract_workflow_header(msg, workflow_instance_id_header);
 
-    const std::string_view sv(
-        reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
+    const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
     auto parsed = rfl::json::read<ore_import_rollback_request>(sv);
     if (!parsed) {
-        BOOST_LOG_SEV(lg(), error) << "ore.import.rollback: failed to decode request | step="
-                                   << step_id;
-        publish_step_completion(nats_, step_id, inst_id,
-            ores::workflow::messaging::step_outcome::failed, "",
-            "Failed to decode ore_import_rollback_request");
+        BOOST_LOG_SEV(lg(), error)
+            << "ore.import.rollback: failed to decode request | step=" << step_id;
+        publish_step_completion(nats_,
+                                step_id,
+                                inst_id,
+                                ores::workflow::messaging::step_outcome::failed,
+                                "",
+                                "Failed to decode ore_import_rollback_request");
         return;
     }
     const auto& req = *parsed;
@@ -644,39 +705,38 @@ void ore_import_execute_handler::rollback(ores::nats::message msg) {
     BOOST_LOG_SEV(lg(), info) << "ore.import.rollback starting | corr=" << req.correlation_id
                               << " step=" << step_id;
 
-    auto delegated_nats = outbound_nats_
-        .with_delegation(req.bearer_token)
-        .with_correlation_id(req.correlation_id);
+    auto delegated_nats =
+        outbound_nats_.with_delegation(req.bearer_token).with_correlation_id(req.correlation_id);
 
     // ── Delete trades ────────────────────────────────────────────────────────
     if (!req.saved_trade_ids.empty()) {
         BOOST_LOG_SEV(lg(), info) << "ore.import.rollback: delete trades | corr="
-                                  << req.correlation_id
-                                  << " count=" << req.saved_trade_ids.size();
+                                  << req.correlation_id << " count=" << req.saved_trade_ids.size();
         ores::trading::messaging::delete_trade_request del_req;
         del_req.ids = req.saved_trade_ids;
         std::string err;
         auto r = nats_call(delegated_nats, del_req, err);
         if (!r || !r->success) {
             const auto reason = (r && !r->message.empty()) ? r->message : err;
-            BOOST_LOG_SEV(lg(), error) << "ore.import.rollback delete_trades failed | corr="
-                                       << req.correlation_id << " error=" << reason;
+            BOOST_LOG_SEV(lg(), error)
+                << "ore.import.rollback delete_trades failed | corr=" << req.correlation_id
+                << " error=" << reason;
         }
     }
 
     // ── Delete books ─────────────────────────────────────────────────────────
     if (!req.saved_book_ids.empty()) {
         BOOST_LOG_SEV(lg(), info) << "ore.import.rollback: delete books | corr="
-                                  << req.correlation_id
-                                  << " count=" << req.saved_book_ids.size();
+                                  << req.correlation_id << " count=" << req.saved_book_ids.size();
         ores::refdata::messaging::delete_book_request del_req;
         del_req.ids = req.saved_book_ids;
         std::string err;
         auto r = nats_call(delegated_nats, del_req, err);
         if (!r || !r->success) {
             const auto reason = (r && !r->message.empty()) ? r->message : err;
-            BOOST_LOG_SEV(lg(), error) << "ore.import.rollback delete_books failed | corr="
-                                       << req.correlation_id << " error=" << reason;
+            BOOST_LOG_SEV(lg(), error)
+                << "ore.import.rollback delete_books failed | corr=" << req.correlation_id
+                << " error=" << reason;
         }
     }
 
@@ -686,14 +746,15 @@ void ore_import_execute_handler::rollback(ores::nats::message msg) {
                                   << req.correlation_id
                                   << " count=" << req.saved_portfolio_ids.size();
         ores::refdata::messaging::delete_portfolio_request del_req;
-        del_req.ids = std::vector<std::string>(
-            req.saved_portfolio_ids.rbegin(), req.saved_portfolio_ids.rend());
+        del_req.ids = std::vector<std::string>(req.saved_portfolio_ids.rbegin(),
+                                               req.saved_portfolio_ids.rend());
         std::string err;
         auto r = nats_call(delegated_nats, del_req, err);
         if (!r || !r->success) {
             const auto reason = (r && !r->message.empty()) ? r->message : err;
-            BOOST_LOG_SEV(lg(), error) << "ore.import.rollback delete_portfolios failed | corr="
-                                       << req.correlation_id << " error=" << reason;
+            BOOST_LOG_SEV(lg(), error)
+                << "ore.import.rollback delete_portfolios failed | corr=" << req.correlation_id
+                << " error=" << reason;
         }
     }
 
@@ -708,14 +769,19 @@ void ore_import_execute_handler::rollback(ores::nats::message msg) {
         auto r = nats_call(delegated_nats, del_req, err);
         if (!r || !r->success) {
             const auto reason = (r && !r->message.empty()) ? r->message : err;
-            BOOST_LOG_SEV(lg(), error) << "ore.import.rollback delete_currencies failed | corr="
-                                       << req.correlation_id << " error=" << reason;
+            BOOST_LOG_SEV(lg(), error)
+                << "ore.import.rollback delete_currencies failed | corr=" << req.correlation_id
+                << " error=" << reason;
         }
     }
 
     BOOST_LOG_SEV(lg(), info) << "ore.import.rollback complete | corr=" << req.correlation_id;
-    publish_step_completion(nats_, step_id, inst_id,
-        ores::workflow::messaging::step_outcome::completed, "{\"success\":true}", "");
+    publish_step_completion(nats_,
+                            step_id,
+                            inst_id,
+                            ores::workflow::messaging::step_outcome::completed,
+                            "{\"success\":true}",
+                            "");
 }
 
 }

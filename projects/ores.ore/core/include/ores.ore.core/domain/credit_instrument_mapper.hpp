@@ -20,9 +20,9 @@
 #ifndef ORES_ORE_CORE_DOMAIN_CREDIT_INSTRUMENT_MAPPER_HPP
 #define ORES_ORE_CORE_DOMAIN_CREDIT_INSTRUMENT_MAPPER_HPP
 
-#include "ores.ore.core/export.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/domain/domain.hpp"
+#include "ores.ore.core/export.hpp"
 #include "ores.trading.api/domain/credit_instrument.hpp"
 
 namespace ores::ore::domain {
@@ -40,8 +40,7 @@ namespace ores::ore::domain {
  */
 class ORES_ORE_CORE_EXPORT credit_instrument_mapper {
 private:
-    inline static std::string_view logger_name =
-        "ores.ore.domain.credit_instrument_mapper";
+    inline static std::string_view logger_name = "ores.ore.domain.credit_instrument_mapper";
 
     static auto& lg() {
         using namespace ores::logging;
@@ -58,24 +57,16 @@ public:
     static trading::domain::credit_instrument forward_rpa(const trade& t);
 
     static trade reverse_cds(const ores::trading::domain::credit_instrument& instr);
-    static trade reverse_index_cds(
-        const ores::trading::domain::credit_instrument& instr);
-    static trade reverse_index_cds_option(
-        const ores::trading::domain::credit_instrument& instr);
-    static trade reverse_credit_linked_swap(
-        const ores::trading::domain::credit_instrument& instr);
-    static trade reverse_synthetic_cdo(
-        const ores::trading::domain::credit_instrument& instr);
-    static trade reverse_rpa(
-        const ores::trading::domain::credit_instrument& instr);
+    static trade reverse_index_cds(const ores::trading::domain::credit_instrument& instr);
+    static trade reverse_index_cds_option(const ores::trading::domain::credit_instrument& instr);
+    static trade reverse_credit_linked_swap(const ores::trading::domain::credit_instrument& instr);
+    static trade reverse_synthetic_cdo(const ores::trading::domain::credit_instrument& instr);
+    static trade reverse_rpa(const ores::trading::domain::credit_instrument& instr);
 
 private:
-    static void map_cds_leg(
-        const legData& ld,
-        ores::trading::domain::credit_instrument& instr);
+    static void map_cds_leg(const legData& ld, ores::trading::domain::credit_instrument& instr);
 
-    static legData reverse_cds_leg(
-        const ores::trading::domain::credit_instrument& instr);
+    static legData reverse_cds_leg(const ores::trading::domain::credit_instrument& instr);
 };
 
 }

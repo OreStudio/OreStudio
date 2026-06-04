@@ -19,9 +19,8 @@
  */
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/domain/swap_instrument_mapper.hpp"
-
-#include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 using Catch::Approx;
 #include "ores.logging/make_logger.hpp"
@@ -55,8 +54,8 @@ using ores::ore::domain::swap_instrument_mapper;
 using namespace ores::logging;
 
 std::filesystem::path example_path(const std::string& filename) {
-    return ores::testing::project_root::resolve(
-        "external/ore/examples/Products/Example_Trades/" + filename);
+    return ores::testing::project_root::resolve("external/ore/examples/Products/Example_Trades/" +
+                                                filename);
 }
 
 ores::ore::domain::trade load_first_trade(const std::string& filename) {
@@ -80,9 +79,7 @@ TEST_CASE("mapper_roundtrip_swap_vanilla_forward", tags) {
     const auto t = load_first_trade("IR_Swap_Vanilla.xml");
 
     const auto result = swap_instrument_mapper::forward_swap(t);
-    const auto& instr =
-        std::get<ores::trading::domain::vanilla_swap_instrument>(
-            result.instrument);
+    const auto& instr = std::get<ores::trading::domain::vanilla_swap_instrument>(result.instrument);
     const auto& legs = result.legs;
 
     CHECK(instr.start_date == "2023-02-21");
@@ -107,9 +104,7 @@ TEST_CASE("mapper_roundtrip_swap_vanilla_reverse", tags) {
     const auto result = swap_instrument_mapper::forward_swap(t);
 
     const auto reconstructed = swap_instrument_mapper::reverse_swap(
-        std::get<ores::trading::domain::vanilla_swap_instrument>(
-            result.instrument),
-        result.legs);
+        std::get<ores::trading::domain::vanilla_swap_instrument>(result.instrument), result.legs);
 
     REQUIRE(reconstructed.SwapData.operator bool());
     CHECK(reconstructed.SwapData->LegData.size() == 2);
@@ -132,8 +127,7 @@ TEST_CASE("mapper_roundtrip_fra_forward", tags) {
     const auto t = load_first_trade("IR_FRA.xml");
 
     const auto result = swap_instrument_mapper::forward_fra(t);
-    const auto& instr =
-        std::get<ores::trading::domain::fra_instrument>(result.instrument);
+    const auto& instr = std::get<ores::trading::domain::fra_instrument>(result.instrument);
     const auto& legs = result.legs;
 
     CHECK(instr.start_date == "2026-10-19");
@@ -154,8 +148,7 @@ TEST_CASE("mapper_roundtrip_fra_reverse", tags) {
     const auto result = swap_instrument_mapper::forward_fra(t);
 
     const auto reconstructed = swap_instrument_mapper::reverse_fra(
-        std::get<ores::trading::domain::fra_instrument>(result.instrument),
-        result.legs);
+        std::get<ores::trading::domain::fra_instrument>(result.instrument), result.legs);
 
     REQUIRE(reconstructed.ForwardRateAgreementData.operator bool());
     const auto& fra = *reconstructed.ForwardRateAgreementData;
@@ -176,8 +169,7 @@ TEST_CASE("mapper_roundtrip_capfloor_forward", tags) {
     const auto t = load_first_trade("IR_Cap_on_IBOR.xml");
 
     const auto result = swap_instrument_mapper::forward_capfloor(t);
-    const auto& instr =
-        std::get<ores::trading::domain::cap_floor_instrument>(result.instrument);
+    const auto& instr = std::get<ores::trading::domain::cap_floor_instrument>(result.instrument);
     const auto& legs = result.legs;
 
     CHECK(instr.start_date == "2023-10-11");
@@ -197,8 +189,7 @@ TEST_CASE("mapper_roundtrip_capfloor_reverse", tags) {
     const auto result = swap_instrument_mapper::forward_capfloor(t);
 
     const auto reconstructed = swap_instrument_mapper::reverse_capfloor(
-        std::get<ores::trading::domain::cap_floor_instrument>(result.instrument),
-        result.legs);
+        std::get<ores::trading::domain::cap_floor_instrument>(result.instrument), result.legs);
 
     REQUIRE(reconstructed.CapFloorData.operator bool());
     const auto& cf = *reconstructed.CapFloorData;
@@ -206,8 +197,7 @@ TEST_CASE("mapper_roundtrip_capfloor_reverse", tags) {
     CHECK(ores::ore::domain::to_string(cf.LegData.Currency) == "EUR");
     CHECK(cf.LegData.ScheduleData.Rules.size() == 1);
     CHECK(std::string(cf.LegData.ScheduleData.Rules[0].StartDate) == "2023-10-11");
-    CHECK(std::string(cf.LegData.legDataType.FloatingLegData->Index) ==
-          "EUR-EURIBOR-6M");
+    CHECK(std::string(cf.LegData.legDataType.FloatingLegData->Index) == "EUR-EURIBOR-6M");
     BOOST_LOG_SEV(lg, info) << "CapFloor reverse-mapper test passed";
 }
 
@@ -220,11 +210,10 @@ TEST_CASE("mapper_roundtrip_ccs_forward", tags) {
     const auto t = load_first_trade("IRFX_Cross_Currency_Swap_rebalancing.xml");
 
     const auto result = swap_instrument_mapper::forward_swap(t);
-    REQUIRE(std::holds_alternative<ores::trading::domain::vanilla_swap_instrument>(
-        result.instrument));
+    REQUIRE(
+        std::holds_alternative<ores::trading::domain::vanilla_swap_instrument>(result.instrument));
     const auto& legs = result.legs;
 
     REQUIRE(legs.size() >= 2);
-    BOOST_LOG_SEV(lg, info) << "CCS forward-mapper test passed, legs: "
-                            << legs.size();
+    BOOST_LOG_SEV(lg, info) << "CCS forward-mapper test passed, legs: " << legs.size();
 }

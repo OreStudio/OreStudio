@@ -17,12 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.ore.core/domain/domain.hpp"
-
-#include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.ore.core/domain/domain.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/project_root.hpp"
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 
@@ -37,13 +36,11 @@ using ores::ore::domain::crossAssetModel;
 using namespace ores::logging;
 
 void require_crossassetmodel_equal(const crossAssetModel& original,
-                                    const crossAssetModel& roundtripped) {
+                                   const crossAssetModel& roundtripped) {
     CHECK(roundtripped.DomesticCcy == original.DomesticCcy);
-    CHECK(roundtripped.Currencies.Currency.size() ==
-          original.Currencies.Currency.size());
+    CHECK(roundtripped.Currencies.Currency.size() == original.Currencies.Currency.size());
     CHECK(roundtripped.BootstrapTolerance == original.BootstrapTolerance);
-    CHECK(roundtripped.InterestRateModels.LGM.size() ==
-          original.InterestRateModels.LGM.size());
+    CHECK(roundtripped.InterestRateModels.LGM.size() == original.InterestRateModels.LGM.size());
     CHECK(roundtripped.InterestRateModels.HWModel.size() ==
           original.InterestRateModels.HWModel.size());
     CHECK(static_cast<bool>(roundtripped.ForeignExchangeModels) ==

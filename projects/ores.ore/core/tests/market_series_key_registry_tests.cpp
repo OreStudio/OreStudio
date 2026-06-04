@@ -18,9 +18,8 @@
  *
  */
 #include "ores.ore.core/market/series_key_registry.hpp"
-
-#include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_template_test_macros.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 
@@ -50,9 +49,9 @@ void check_decomposition(const test_case& tc) {
     INFO("key: " << tc.key);
     const auto dk = decompose_key(tc.key);
     CHECK(dk.series_type == tc.series_type);
-    CHECK(dk.metric      == tc.metric);
-    CHECK(dk.qualifier   == tc.qualifier);
-    CHECK(dk.point_id    == tc.point_id);
+    CHECK(dk.metric == tc.metric);
+    CHECK(dk.qualifier == tc.qualifier);
+    CHECK(dk.point_id == tc.point_id);
     CHECK(reconstruct_key(dk) == tc.key);
 }
 
@@ -67,13 +66,16 @@ TEST_CASE("decompose_fx_forward", tags) {
 }
 
 TEST_CASE("decompose_discount_curve", tags) {
-    check_decomposition({"DISCOUNT/RATE/EUR/BANK_EUR_BORROW/2Y",
-                         "DISCOUNT", "RATE", "EUR/BANK_EUR_BORROW", "2Y"});
+    check_decomposition(
+        {"DISCOUNT/RATE/EUR/BANK_EUR_BORROW/2Y", "DISCOUNT", "RATE", "EUR/BANK_EUR_BORROW", "2Y"});
 }
 
 TEST_CASE("decompose_zero_curve_with_day_count", tags) {
     check_decomposition({"ZERO/RATE/EUR/BANK_EUR_BORROW/A365/2Y",
-                         "ZERO", "RATE", "EUR/BANK_EUR_BORROW/A365", "2Y"});
+                         "ZERO",
+                         "RATE",
+                         "EUR/BANK_EUR_BORROW/A365",
+                         "2Y"});
 }
 
 TEST_CASE("decompose_mm_curve", tags) {
@@ -85,43 +87,50 @@ TEST_CASE("decompose_fra", tags) {
 }
 
 TEST_CASE("decompose_ir_swap", tags) {
-    check_decomposition({"IR_SWAP/RATE/CHF/2D/1D/1M",
-                         "IR_SWAP", "RATE", "CHF/2D/1D", "1M"});
+    check_decomposition({"IR_SWAP/RATE/CHF/2D/1D/1M", "IR_SWAP", "RATE", "CHF/2D/1D", "1M"});
 }
 
 TEST_CASE("decompose_basis_swap", tags) {
-    check_decomposition({"BASIS_SWAP/BASIS_SPREAD/6M/3M/CHF/1Y",
-                         "BASIS_SWAP", "BASIS_SPREAD", "6M/3M/CHF", "1Y"});
+    check_decomposition(
+        {"BASIS_SWAP/BASIS_SPREAD/6M/3M/CHF/1Y", "BASIS_SWAP", "BASIS_SPREAD", "6M/3M/CHF", "1Y"});
 }
 
 TEST_CASE("decompose_bma_swap", tags) {
-    check_decomposition({"BMA_SWAP/RATIO/USD/3M/3M",
-                         "BMA_SWAP", "RATIO", "USD/3M", "3M"});
+    check_decomposition({"BMA_SWAP/RATIO/USD/3M/3M", "BMA_SWAP", "RATIO", "USD/3M", "3M"});
 }
 
 TEST_CASE("decompose_cc_basis_swap", tags) {
     check_decomposition({"CC_BASIS_SWAP/BASIS_SPREAD/USD/3M/CHF/3M/1Y",
-                         "CC_BASIS_SWAP", "BASIS_SPREAD", "USD/3M/CHF/3M", "1Y"});
+                         "CC_BASIS_SWAP",
+                         "BASIS_SPREAD",
+                         "USD/3M/CHF/3M",
+                         "1Y"});
 }
 
 TEST_CASE("decompose_swaption_atm", tags) {
-    check_decomposition({"SWAPTION/RATE_LNVOL/CHF/25Y/10Y/ATM",
-                         "SWAPTION", "RATE_LNVOL", "CHF", "25Y/10Y/ATM"});
+    check_decomposition(
+        {"SWAPTION/RATE_LNVOL/CHF/25Y/10Y/ATM", "SWAPTION", "RATE_LNVOL", "CHF", "25Y/10Y/ATM"});
 }
 
 TEST_CASE("decompose_capfloor_with_strike", tags) {
     check_decomposition({"CAPFLOOR/RATE_LNVOL/CHF/20Y/6M/0/0/0.025",
-                         "CAPFLOOR", "RATE_LNVOL", "CHF", "20Y/6M/0/0/0.025"});
+                         "CAPFLOOR",
+                         "RATE_LNVOL",
+                         "CHF",
+                         "20Y/6M/0/0/0.025"});
 }
 
 TEST_CASE("decompose_hazard_rate", tags) {
-    check_decomposition({"HAZARD_RATE/RATE/CPTY_A/SR/USD/5Y",
-                         "HAZARD_RATE", "RATE", "CPTY_A/SR/USD", "5Y"});
+    check_decomposition(
+        {"HAZARD_RATE/RATE/CPTY_A/SR/USD/5Y", "HAZARD_RATE", "RATE", "CPTY_A/SR/USD", "5Y"});
 }
 
 TEST_CASE("decompose_recovery_rate_scalar", tags) {
     check_decomposition({"RECOVERY_RATE/RATE/CPTY_A/SR/USD",
-                         "RECOVERY_RATE", "RATE", "CPTY_A/SR/USD", std::nullopt});
+                         "RECOVERY_RATE",
+                         "RATE",
+                         "CPTY_A/SR/USD",
+                         std::nullopt});
 }
 
 TEST_CASE("decompose_equity_spot_scalar", tags) {
@@ -129,39 +138,39 @@ TEST_CASE("decompose_equity_spot_scalar", tags) {
 }
 
 TEST_CASE("decompose_equity_forward", tags) {
-    check_decomposition({"EQUITY_FWD/PRICE/SP5/1Y",
-                         "EQUITY_FWD", "PRICE", "SP5", "1Y"});
+    check_decomposition({"EQUITY_FWD/PRICE/SP5/1Y", "EQUITY_FWD", "PRICE", "SP5", "1Y"});
 }
 
 TEST_CASE("decompose_commodity_scalar", tags) {
-    check_decomposition({"COMMODITY/PRICE/GOLD",
-                         "COMMODITY", "PRICE", "GOLD", std::nullopt});
+    check_decomposition({"COMMODITY/PRICE/GOLD", "COMMODITY", "PRICE", "GOLD", std::nullopt});
 }
 
 TEST_CASE("decompose_zc_inflation_swap", tags) {
-    check_decomposition({"ZC_INFLATIONSWAP/RATE/UKRPI/2Y",
-                         "ZC_INFLATIONSWAP", "RATE", "UKRPI", "2Y"});
+    check_decomposition(
+        {"ZC_INFLATIONSWAP/RATE/UKRPI/2Y", "ZC_INFLATIONSWAP", "RATE", "UKRPI", "2Y"});
 }
 
 TEST_CASE("decompose_correlation_scalar", tags) {
     check_decomposition({"CORRELATION/RATE/EUR-EURIBOR-6M/EUR-EURIBOR-3M",
-                         "CORRELATION", "RATE",
-                         "EUR-EURIBOR-6M/EUR-EURIBOR-3M", std::nullopt});
+                         "CORRELATION",
+                         "RATE",
+                         "EUR-EURIBOR-6M/EUR-EURIBOR-3M",
+                         std::nullopt});
 }
 
 TEST_CASE("decompose_unknown_type_fallback", tags) {
     // Unknown types: qualifier absorbs everything after metric, no point_id.
     const auto dk = decompose_key("RATING/SCORE/MOODYS/CPTY_A/AAA");
     CHECK(dk.series_type == "RATING");
-    CHECK(dk.metric      == "SCORE");
-    CHECK(dk.qualifier   == "MOODYS/CPTY_A/AAA");
+    CHECK(dk.metric == "SCORE");
+    CHECK(dk.qualifier == "MOODYS/CPTY_A/AAA");
     CHECK(!dk.point_id.has_value());
     CHECK(reconstruct_key(dk) == "RATING/SCORE/MOODYS/CPTY_A/AAA");
 }
 
 TEST_CASE("decompose_key_too_short_throws", tags) {
     CHECK_THROWS_AS(decompose_key("ONLYONE"), std::invalid_argument);
-    CHECK_THROWS_AS(decompose_key(""),        std::invalid_argument);
+    CHECK_THROWS_AS(decompose_key(""), std::invalid_argument);
 }
 
 TEST_CASE("roundtrip_all_known_types", tags) {

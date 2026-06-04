@@ -20,11 +20,11 @@
 #ifndef ORES_ORE_API_WORKFLOW_ORE_IMPORT_WORKFLOW_HPP
 #define ORES_ORE_API_WORKFLOW_ORE_IMPORT_WORKFLOW_HPP
 
-#include <rfl/json.hpp>
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.ore.api/messaging/ore_import_engine_protocol.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.workflow.api/service/workflow_definition.hpp"
 #include "ores.workflow.api/service/workflow_registry.hpp"
+#include <rfl/json.hpp>
 
 namespace ores::ore::workflow {
 
@@ -45,21 +45,19 @@ namespace ores::ore::workflow {
  * the saved entity IDs from the ore_import_execute_result stored as
  * the step's response_json and builds an ore_import_rollback_request.
  */
-inline void register_ore_import_workflow(
-    ores::workflow::service::workflow_registry& registry) {
+inline void register_ore_import_workflow(ores::workflow::service::workflow_registry& registry) {
 
     using namespace ores::workflow::service;
 
     workflow_definition def;
     def.type_name = "ore_import_workflow";
     def.description = "Imports an ORE XML tarball: downloads from storage, "
-        "parses XML, maps to domain entities, and persists all "
-        "currencies, portfolios, books, and trades.";
+                      "parses XML, maps to domain entities, and persists all "
+                      "currencies, portfolios, books, and trades.";
 
     def.build_steps = [](const std::string& /*request_json*/,
-        const std::string& /*tenant_id*/,
-        const std::string& /*correlation_id*/) -> std::vector<workflow_step_def> {
-
+                         const std::string& /*tenant_id*/,
+                         const std::string& /*correlation_id*/) -> std::vector<workflow_step_def> {
         std::vector<workflow_step_def> steps;
 
         // ----------------------------------------------------------------
@@ -69,20 +67,19 @@ inline void register_ore_import_workflow(
             workflow_step_def s;
             s.name = "ore_import_execute";
             s.description = "Fetch tarball from storage, parse ORE XML, map to "
-                "domain entities, and persist all to repositories.";
-            s.command_subject = std::string(
-                ores::ore::messaging::ore_import_execute_request::nats_subject);
-            s.compensation_subject = std::string(
-                ores::ore::messaging::ore_import_rollback_request::nats_subject);
+                            "domain entities, and persist all to repositories.";
+            s.command_subject =
+                std::string(ores::ore::messaging::ore_import_execute_request::nats_subject);
+            s.compensation_subject =
+                std::string(ores::ore::messaging::ore_import_rollback_request::nats_subject);
 
             s.build_command = [](const std::string& request_json,
-                const std::vector<std::string>&) -> std::string {
+                                 const std::vector<std::string>&) -> std::string {
                 return request_json;
             };
 
             s.build_compensation = [](const std::string& cmd_json,
-                const std::string& result_json) -> std::string {
-
+                                      const std::string& result_json) -> std::string {
                 using ores::ore::messaging::ore_import_execute_request;
                 using ores::ore::messaging::ore_import_execute_result;
                 using ores::ore::messaging::ore_import_rollback_request;
@@ -93,13 +90,13 @@ inline void register_ore_import_workflow(
                 ore_import_rollback_request rollback;
                 if (cmd) {
                     rollback.correlation_id = cmd->correlation_id;
-                    rollback.bearer_token   = cmd->bearer_token;
+                    rollback.bearer_token = cmd->bearer_token;
                 }
                 if (res) {
                     rollback.saved_currency_iso_codes = res->saved_currency_iso_codes;
-                    rollback.saved_portfolio_ids      = res->saved_portfolio_ids;
-                    rollback.saved_book_ids           = res->saved_book_ids;
-                    rollback.saved_trade_ids          = res->saved_trade_ids;
+                    rollback.saved_portfolio_ids = res->saved_portfolio_ids;
+                    rollback.saved_book_ids = res->saved_book_ids;
+                    rollback.saved_trade_ids = res->saved_trade_ids;
                 }
                 return rfl::json::write(rollback);
             };

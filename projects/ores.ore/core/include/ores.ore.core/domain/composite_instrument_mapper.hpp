@@ -20,9 +20,9 @@
 #ifndef ORES_ORE_CORE_DOMAIN_COMPOSITE_INSTRUMENT_MAPPER_HPP
 #define ORES_ORE_CORE_DOMAIN_COMPOSITE_INSTRUMENT_MAPPER_HPP
 
-#include "ores.ore.core/export.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/domain/domain.hpp"
+#include "ores.ore.core/export.hpp"
 #include "ores.trading.api/domain/composite_instrument.hpp"
 #include "ores.trading.api/domain/instrument.hpp"
 
@@ -39,8 +39,7 @@ namespace ores::ore::domain {
  */
 class ORES_ORE_CORE_EXPORT composite_instrument_mapper {
 private:
-    inline static std::string_view logger_name =
-        "ores.ore.domain.composite_instrument_mapper";
+    inline static std::string_view logger_name = "ores.ore.domain.composite_instrument_mapper";
 
     static auto& lg() {
         using namespace ores::logging;
@@ -52,17 +51,15 @@ public:
     static trading::domain::composite_instrument_data forward_composite_trade(const trade& t);
     static trading::domain::composite_instrument_data forward_multi_leg_option(const trade& t);
     static trading::domain::composite_instrument_data forward_total_return_swap(const trade& t);
-    static trading::domain::composite_instrument_data forward_contract_for_difference(
-        const trade& t);
+    static trading::domain::composite_instrument_data
+    forward_contract_for_difference(const trade& t);
 
-    static trade reverse_composite_trade(
-        const ores::trading::domain::composite_instrument& instr);
-    static trade reverse_multi_leg_option(
-        const ores::trading::domain::composite_instrument& instr);
-    static trade reverse_total_return_swap(
-        const ores::trading::domain::composite_instrument& instr);
-    static trade reverse_contract_for_difference(
-        const ores::trading::domain::composite_instrument& instr);
+    static trade reverse_composite_trade(const ores::trading::domain::composite_instrument& instr);
+    static trade reverse_multi_leg_option(const ores::trading::domain::composite_instrument& instr);
+    static trade
+    reverse_total_return_swap(const ores::trading::domain::composite_instrument& instr);
+    static trade
+    reverse_contract_for_difference(const ores::trading::domain::composite_instrument& instr);
 };
 
 }

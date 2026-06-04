@@ -18,7 +18,6 @@
  *
  */
 #include "ores.ore.core/scanner/ore_directory_scanner.hpp"
-
 #include <array>
 #include <fstream>
 
@@ -26,14 +25,12 @@ namespace ores::ore::scanner {
 
 using namespace ores::logging;
 
-ore_directory_scanner::ore_directory_scanner(
-    std::filesystem::path root,
-    std::unordered_set<std::string> exclusions)
-    : root_(std::move(root)),
-      exclusions_(std::move(exclusions)) {}
+ore_directory_scanner::ore_directory_scanner(std::filesystem::path root,
+                                             std::unordered_set<std::string> exclusions)
+    : root_(std::move(root))
+    , exclusions_(std::move(exclusions)) {}
 
-bool ore_directory_scanner::is_excluded(
-    const std::filesystem::path& relative_path) const {
+bool ore_directory_scanner::is_excluded(const std::filesystem::path& relative_path) const {
     for (const auto& component : relative_path) {
         if (exclusions_.contains(component.string()))
             return true;
@@ -52,14 +49,12 @@ scan_result ore_directory_scanner::scan() {
         return result;
     }
 
-    for (const auto& entry :
-             std::filesystem::recursive_directory_iterator(root_)) {
+    for (const auto& entry : std::filesystem::recursive_directory_iterator(root_)) {
         if (!entry.is_regular_file()) {
             continue;
         }
 
-        const auto relative =
-            std::filesystem::relative(entry.path(), root_);
+        const auto relative = std::filesystem::relative(entry.path(), root_);
 
         if (is_excluded(relative)) {
             result.ignored_files.push_back(entry.path());
@@ -78,8 +73,7 @@ scan_result ore_directory_scanner::scan() {
         std::array<char, 512> buf{};
         std::ifstream f(entry.path(), std::ios::binary);
         const auto n = static_cast<std::size_t>(
-            f.read(buf.data(), static_cast<std::streamsize>(buf.size()))
-             .gcount());
+            f.read(buf.data(), static_cast<std::streamsize>(buf.size())).gcount());
         const std::string_view head(buf.data(), n);
 
         if (head.find("<Portfolio>") != std::string_view::npos) {
@@ -93,12 +87,9 @@ scan_result ore_directory_scanner::scan() {
         }
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Scan complete: "
-                              << result.currency_files.size()
-                              << " currency files, "
-                              << result.portfolio_files.size()
-                              << " portfolio files, "
-                              << result.ignored_files.size()
+    BOOST_LOG_SEV(lg(), info) << "Scan complete: " << result.currency_files.size()
+                              << " currency files, " << result.portfolio_files.size()
+                              << " portfolio files, " << result.ignored_files.size()
                               << " ignored files";
     return result;
 }

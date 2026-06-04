@@ -17,14 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.logging/make_logger.hpp"
+#include "ores.ore.core/domain/credit_instrument_mapper.hpp"
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/domain/trade_mapper.hpp"
-#include "ores.ore.core/domain/credit_instrument_mapper.hpp"
-
-#include <catch2/catch_test_macros.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/project_root.hpp"
+#include <catch2/catch_test_macros.hpp>
 
 /**
  * @file xml_credit_mapper_roundtrip_tests.cpp
@@ -49,8 +48,8 @@ using ores::trading::domain::credit_instrument;
 using namespace ores::logging;
 
 std::filesystem::path example_path(const std::string& filename) {
-    return ores::testing::project_root::resolve(
-        "external/ore/examples/Products/Example_Trades/" + filename);
+    return ores::testing::project_root::resolve("external/ore/examples/Products/Example_Trades/" +
+                                                filename);
 }
 
 credit_instrument load_and_map(const std::string& filename) {
@@ -83,8 +82,7 @@ TEST_CASE("credit_mapper_roundtrip_cds", tags) {
     REQUIRE(rt.CreditDefaultSwapData);
     CHECK(rt.CreditDefaultSwapData->creditCurveIdType.CreditCurveId);
 
-    BOOST_LOG_SEV(lg, info) << "CDS roundtrip passed. Reference: "
-                            << r.reference_entity;
+    BOOST_LOG_SEV(lg, info) << "CDS roundtrip passed. Reference: " << r.reference_entity;
 }
 
 TEST_CASE("credit_mapper_roundtrip_index_cds", tags) {
@@ -101,8 +99,7 @@ TEST_CASE("credit_mapper_roundtrip_index_cds", tags) {
     const auto rt = credit_instrument_mapper::reverse_index_cds(r);
     REQUIRE(rt.IndexCreditDefaultSwapData);
 
-    BOOST_LOG_SEV(lg, info) << "IndexCDS roundtrip passed. Index: "
-                            << r.index_name;
+    BOOST_LOG_SEV(lg, info) << "IndexCDS roundtrip passed. Index: " << r.index_name;
 }
 
 TEST_CASE("credit_mapper_roundtrip_index_cds_option", tags) {
@@ -119,8 +116,7 @@ TEST_CASE("credit_mapper_roundtrip_index_cds_option", tags) {
     REQUIRE(rt.IndexCreditDefaultSwapOptionData);
     CHECK(rt.IndexCreditDefaultSwapOptionData->Strike);
 
-    BOOST_LOG_SEV(lg, info) << "IndexCDSOption roundtrip passed. Expiry: "
-                            << r.option_expiry_date;
+    BOOST_LOG_SEV(lg, info) << "IndexCDSOption roundtrip passed. Expiry: " << r.option_expiry_date;
 }
 
 TEST_CASE("credit_mapper_roundtrip_credit_linked_swap", tags) {
@@ -150,8 +146,8 @@ TEST_CASE("credit_mapper_roundtrip_synthetic_cdo", tags) {
     // Reverse roundtrip
     const auto rt = credit_instrument_mapper::reverse_synthetic_cdo(r);
     REQUIRE(rt.CdoData);
-    const bool has_tranche = (rt.CdoData->AttachmentPoint != 0.0f ||
-                              rt.CdoData->DetachmentPoint != 0.0f);
+    const bool has_tranche =
+        (rt.CdoData->AttachmentPoint != 0.0f || rt.CdoData->DetachmentPoint != 0.0f);
     CHECK(has_tranche);
 
     BOOST_LOG_SEV(lg, info) << "SyntheticCDO roundtrip passed. Attachment: "
@@ -160,8 +156,7 @@ TEST_CASE("credit_mapper_roundtrip_synthetic_cdo", tags) {
 
 TEST_CASE("credit_mapper_roundtrip_rpa", tags) {
     auto lg(make_logger(test_suite));
-    const auto r = load_and_map(
-        "Credit_RiskParticipationAgreement_on_Vanilla_Swap.xml");
+    const auto r = load_and_map("Credit_RiskParticipationAgreement_on_Vanilla_Swap.xml");
 
     CHECK(r.trade_type_code == "RiskParticipationAgreement");
     CHECK(!r.reference_entity.empty());
@@ -172,6 +167,5 @@ TEST_CASE("credit_mapper_roundtrip_rpa", tags) {
     const auto rt = credit_instrument_mapper::reverse_rpa(r);
     REQUIRE(rt.RiskParticipationAgreementData);
 
-    BOOST_LOG_SEV(lg, info) << "RPA roundtrip passed. Reference: "
-                            << r.reference_entity;
+    BOOST_LOG_SEV(lg, info) << "RPA roundtrip passed. Reference: " << r.reference_entity;
 }

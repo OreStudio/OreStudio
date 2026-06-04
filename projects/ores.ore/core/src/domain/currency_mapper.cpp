@@ -18,9 +18,8 @@
  *
  */
 #include "ores.ore.core/domain/currency_mapper.hpp"
-
-#include <map>
 #include "ores.refdata.api/domain/currency_json_io.hpp" // IWYU pragma: keep.
+#include <map>
 
 namespace ores::ore::domain {
 
@@ -34,8 +33,7 @@ roundingType parse_rounding_type(const std::string& s) {
         {"Down", roundingType::Down},
         {"Closest", roundingType::Closest},
         {"Floor", roundingType::Floor},
-        {"Ceiling", roundingType::Ceiling}
-    };
+        {"Ceiling", roundingType::Ceiling}};
 
     if (auto it = rounding_map.find(s); it != rounding_map.end()) {
         return it->second;
@@ -47,9 +45,12 @@ roundingType parse_rounding_type(const std::string& s) {
 // ORE uses: "Major", "Minor", "Metal", "Crypto" (and others).
 // OreStudio accepts: "fiat", "commodity", "synthetic", "supranational".
 std::string map_monetary_nature(const std::string& ore_type) {
-    if (ore_type.empty()) return "";
-    if (ore_type == "Metal") return "commodity";
-    if (ore_type == "Crypto") return "synthetic";
+    if (ore_type.empty())
+        return "";
+    if (ore_type == "Metal")
+        return "commodity";
+    if (ore_type == "Crypto")
+        return "synthetic";
     // "Major", "Minor", or anything else → fiat
     return "fiat";
 }
@@ -68,7 +69,7 @@ refdata::domain::currency currency_mapper::map(const currencyDefinition& v) {
     r.fractions_per_unit = static_cast<int>(v.FractionsPerUnit);
     r.rounding_type = to_string(v.RoundingType);
     r.rounding_precision = static_cast<int>(v.RoundingPrecision);
-    r.format = "";  // Not in XSD
+    r.format = ""; // Not in XSD
     const std::string ore_type = v.CurrencyType ? std::string(*v.CurrencyType) : "";
     r.monetary_nature = map_monetary_nature(ore_type);
     // market_tier is left empty on import and is not written on export.
@@ -110,13 +111,12 @@ currencyDefinition currency_mapper::map(const refdata::domain::currency& v) {
 }
 
 std::vector<refdata::domain::currency> currency_mapper::map(const currencyConfig& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping ORE XML entities. Total: "
-                             << v.Currency.size();
+    BOOST_LOG_SEV(lg(), trace) << "Mapping ORE XML entities. Total: " << v.Currency.size();
 
     std::vector<refdata::domain::currency> r;
     r.reserve(v.Currency.size());
-    std::ranges::transform(v.Currency, std::back_inserter(r),
-        [](const auto& ve) { return map(ve); });
+    std::ranges::transform(
+        v.Currency, std::back_inserter(r), [](const auto& ve) { return map(ve); });
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entities.";
     return r;
 }
@@ -126,8 +126,8 @@ currencyConfig currency_mapper::map(const std::vector<refdata::domain::currency>
 
     currencyConfig r;
     r.Currency.reserve(v.size());
-    std::ranges::transform(v, std::back_inserter(r.Currency),
-        [](const auto& ve) { return map(ve); });
+    std::ranges::transform(
+        v, std::back_inserter(r.Currency), [](const auto& ve) { return map(ve); });
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entities.";
     return r;
 }

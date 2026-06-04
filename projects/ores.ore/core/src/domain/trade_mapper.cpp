@@ -18,17 +18,16 @@
  *
  */
 #include "ores.ore.core/domain/trade_mapper.hpp"
-
-#include <boost/uuid/nil_generator.hpp>
-#include "ores.trading.api/domain/trade_json_io.hpp" // IWYU pragma: keep.
-#include "ores.ore.core/domain/swap_instrument_mapper.hpp"
-#include "ores.ore.core/domain/fx_instrument_mapper.hpp"
 #include "ores.ore.core/domain/bond_instrument_mapper.hpp"
+#include "ores.ore.core/domain/commodity_instrument_mapper.hpp"
+#include "ores.ore.core/domain/composite_instrument_mapper.hpp"
 #include "ores.ore.core/domain/credit_instrument_mapper.hpp"
 #include "ores.ore.core/domain/equity_instrument_mapper.hpp"
-#include "ores.ore.core/domain/commodity_instrument_mapper.hpp"
+#include "ores.ore.core/domain/fx_instrument_mapper.hpp"
 #include "ores.ore.core/domain/scripted_instrument_mapper.hpp"
-#include "ores.ore.core/domain/composite_instrument_mapper.hpp"
+#include "ores.ore.core/domain/swap_instrument_mapper.hpp"
+#include "ores.trading.api/domain/trade_json_io.hpp" // IWYU pragma: keep.
+#include <boost/uuid/nil_generator.hpp>
 
 namespace ores::ore::domain {
 
@@ -74,13 +73,11 @@ trading::domain::trade trade_mapper::map(const trade& v) {
 }
 
 std::vector<trading::domain::trade> trade_mapper::map(const portfolio& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping ORE XML portfolio. Total trades: "
-                               << v.Trade.size();
+    BOOST_LOG_SEV(lg(), trace) << "Mapping ORE XML portfolio. Total trades: " << v.Trade.size();
 
     std::vector<trading::domain::trade> r;
     r.reserve(v.Trade.size());
-    std::ranges::transform(v.Trade, std::back_inserter(r),
-        [](const auto& ve) { return map(ve); });
+    std::ranges::transform(v.Trade, std::back_inserter(r), [](const auto& ve) { return map(ve); });
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped portfolio trades.";
     return r;
@@ -144,8 +141,7 @@ trade_mapper::map_fx_instrument(const trade& v) {
     return std::nullopt;
 }
 
-std::optional<trading::domain::bond_instrument>
-trade_mapper::map_bond_instrument(const trade& v) {
+std::optional<trading::domain::bond_instrument> trade_mapper::map_bond_instrument(const trade& v) {
     const std::string type = to_string(v.TradeType);
     if (type == "Bond")
         return bond_instrument_mapper::forward_bond(v);
@@ -267,14 +263,22 @@ trade_mapper::map_composite_instrument(const trade& v) {
 }
 
 trading::domain::trade_instrument trade_mapper::map_instrument(const trade& v) {
-    if (auto r = map_swap_instrument(v))      return *r;
-    if (auto r = map_fx_instrument(v))        return *r;
-    if (auto r = map_bond_instrument(v))      return *r;
-    if (auto r = map_credit_instrument(v))    return *r;
-    if (auto r = map_equity_instrument(v))    return *r;
-    if (auto r = map_commodity_instrument(v)) return *r;
-    if (auto r = map_scripted_instrument(v))  return *r;
-    if (auto r = map_composite_instrument(v)) return *r;
+    if (auto r = map_swap_instrument(v))
+        return *r;
+    if (auto r = map_fx_instrument(v))
+        return *r;
+    if (auto r = map_bond_instrument(v))
+        return *r;
+    if (auto r = map_credit_instrument(v))
+        return *r;
+    if (auto r = map_equity_instrument(v))
+        return *r;
+    if (auto r = map_commodity_instrument(v))
+        return *r;
+    if (auto r = map_scripted_instrument(v))
+        return *r;
+    if (auto r = map_composite_instrument(v))
+        return *r;
     return std::monostate{};
 }
 

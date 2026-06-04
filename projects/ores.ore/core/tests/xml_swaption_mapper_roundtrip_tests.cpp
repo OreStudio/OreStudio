@@ -17,14 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/domain/swap_instrument_mapper.hpp"
-
-#include <catch2/catch_test_macros.hpp>
-#include <catch2/catch_approx.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/project_root.hpp"
+#include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 using Catch::Approx;
 
@@ -43,12 +42,11 @@ using ores::ore::domain::swap_instrument_mapper;
 using namespace ores::logging;
 
 std::filesystem::path example_path(const std::string& filename) {
-    return ores::testing::project_root::resolve(
-        "external/ore/examples/Products/Example_Trades/" + filename);
+    return ores::testing::project_root::resolve("external/ore/examples/Products/Example_Trades/" +
+                                                filename);
 }
 
-ores::ore::domain::trade load_trade(
-        const std::string& filename, std::size_t index = 0) {
+ores::ore::domain::trade load_trade(const std::string& filename, std::size_t index = 0) {
     using ores::platform::filesystem::file;
     const auto path = example_path(filename);
     const std::string content = file::read_content(path);
@@ -69,11 +67,10 @@ TEST_CASE("mapper_roundtrip_swaption_european_forward", tags) {
     const auto t = load_trade("IR_Swaption_European.xml", 0);
 
     const auto result = swap_instrument_mapper::forward_swaption(t);
-    const auto& instr =
-        std::get<ores::trading::domain::swaption_instrument>(result.instrument);
+    const auto& instr = std::get<ores::trading::domain::swaption_instrument>(result.instrument);
 
     CHECK(instr.exercise_type == "European");
-    CHECK(instr.expiry_date == "2033-02-20");   // first exercise date
+    CHECK(instr.expiry_date == "2033-02-20"); // first exercise date
     CHECK(instr.maturity_date == "2043-02-21");
     REQUIRE(result.legs.size() == 2u);
     // leg 0: floating (EUR-EURIBOR-3M)
@@ -91,11 +88,8 @@ TEST_CASE("mapper_roundtrip_swaption_european_reverse", tags) {
     const auto t = load_trade("IR_Swaption_European.xml", 0);
     const auto result = swap_instrument_mapper::forward_swaption(t);
 
-    const auto reconstructed =
-        swap_instrument_mapper::reverse_swaption(
-            std::get<ores::trading::domain::swaption_instrument>(
-                result.instrument),
-            result.legs);
+    const auto reconstructed = swap_instrument_mapper::reverse_swaption(
+        std::get<ores::trading::domain::swaption_instrument>(result.instrument), result.legs);
 
     REQUIRE(reconstructed.SwaptionData.operator bool());
     const auto& sd = *reconstructed.SwaptionData;
@@ -106,9 +100,8 @@ TEST_CASE("mapper_roundtrip_swaption_european_reverse", tags) {
     REQUIRE(sd.OptionData->exerciseDatesGroup.operator bool());
     REQUIRE(sd.OptionData->exerciseDatesGroup->ExerciseDates.operator bool());
     REQUIRE(!sd.OptionData->exerciseDatesGroup->ExerciseDates->ExerciseDate.empty());
-    CHECK(std::string(
-        sd.OptionData->exerciseDatesGroup->ExerciseDates->ExerciseDate[0])
-        == "2033-02-20");
+    CHECK(std::string(sd.OptionData->exerciseDatesGroup->ExerciseDates->ExerciseDate[0]) ==
+          "2033-02-20");
 
     // Two legs reconstructed
     REQUIRE(sd.LegData.size() == 2u);
@@ -126,8 +119,7 @@ TEST_CASE("mapper_roundtrip_swaption_bermudan_forward", tags) {
     const auto t = load_trade("IR_Swaption_Bermudan.xml", 0);
 
     const auto result = swap_instrument_mapper::forward_swaption(t);
-    const auto& instr =
-        std::get<ores::trading::domain::swaption_instrument>(result.instrument);
+    const auto& instr = std::get<ores::trading::domain::swaption_instrument>(result.instrument);
 
     CHECK(instr.exercise_type == "Bermudan");
     // First exercise date from the 6 listed
@@ -146,8 +138,7 @@ TEST_CASE("mapper_roundtrip_callable_swap_forward", tags) {
 
     const auto result = swap_instrument_mapper::forward_callable_swap(t);
     const auto& instr =
-        std::get<ores::trading::domain::callable_swap_instrument>(
-            result.instrument);
+        std::get<ores::trading::domain::callable_swap_instrument>(result.instrument);
 
     // Exercise dates captured as JSON array
     CHECK(!instr.call_dates_json.empty());
@@ -163,11 +154,8 @@ TEST_CASE("mapper_roundtrip_callable_swap_reverse", tags) {
     const auto t = load_trade("IR_Callable_Swap_Bermudan.xml", 0);
     const auto result = swap_instrument_mapper::forward_callable_swap(t);
 
-    const auto reconstructed =
-        swap_instrument_mapper::reverse_callable_swap(
-            std::get<ores::trading::domain::callable_swap_instrument>(
-                result.instrument),
-            result.legs);
+    const auto reconstructed = swap_instrument_mapper::reverse_callable_swap(
+        std::get<ores::trading::domain::callable_swap_instrument>(result.instrument), result.legs);
 
     REQUIRE(reconstructed.CallableSwapData.operator bool());
     const auto& cd = *reconstructed.CallableSwapData;

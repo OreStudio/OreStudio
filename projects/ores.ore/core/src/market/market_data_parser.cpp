@@ -18,14 +18,13 @@
  *
  */
 #include "ores.ore.core/market/market_data_parser.hpp"
-
+#include "ores.ore.core/market/series_key_registry.hpp"
+#include "ores.platform/time/time_utils.hpp"
 #include <istream>
 #include <stdexcept>
 #include <string>
 #include <string_view>
 #include <vector>
-#include "ores.platform/time/time_utils.hpp"
-#include "ores.ore.core/market/series_key_registry.hpp"
 
 namespace ores::ore::market {
 
@@ -60,8 +59,8 @@ line_tokens tokenize(std::string_view line) {
     if (c1 != std::string_view::npos) {
         const auto c2 = line.find(',', c1 + 1);
         if (c2 != std::string_view::npos) {
-            const auto date  = line.substr(0, c1);
-            const auto key   = line.substr(c1 + 1, c2 - c1 - 1);
+            const auto date = line.substr(0, c1);
+            const auto key = line.substr(c1 + 1, c2 - c1 - 1);
             const auto value = line.substr(c2 + 1);
             if (date.empty() || key.empty() || value.empty())
                 throw std::invalid_argument("fewer than 3 tokens: " + std::string(line));
@@ -120,18 +119,17 @@ std::vector<market_datum> parse_market_data(std::istream& in) {
         try {
             const auto [date_str, key_str, val_str] = tokenize(sv);
             market_datum datum;
-            datum.date  = ores::platform::time::time_utils::parse_date(date_str);
-            datum.key   = std::string(key_str);
+            datum.date = ores::platform::time::time_utils::parse_date(date_str);
+            datum.key = std::string(key_str);
             datum.value = std::string(val_str);
             const auto dk = decompose_key(datum.key);
             datum.series_type = dk.series_type;
-            datum.metric      = dk.metric;
-            datum.qualifier   = dk.qualifier;
-            datum.point_id    = dk.point_id;
+            datum.metric = dk.metric;
+            datum.qualifier = dk.qualifier;
+            datum.point_id = dk.point_id;
             result.push_back(std::move(datum));
         } catch (const std::invalid_argument& ex) {
-            throw std::invalid_argument(
-                "line " + std::to_string(line_no) + ": " + ex.what());
+            throw std::invalid_argument("line " + std::to_string(line_no) + ": " + ex.what());
         }
     }
 
@@ -160,14 +158,13 @@ std::vector<fixing> parse_fixings(std::istream& in) {
         try {
             const auto [date_str, idx_str, val_str] = tokenize(sv);
             fixing f;
-            f.date       = ores::platform::time::time_utils::parse_date(date_str);
+            f.date = ores::platform::time::time_utils::parse_date(date_str);
             f.index_name = std::string(idx_str);
-            f.qualifier  = f.index_name;
-            f.value      = std::string(val_str);
+            f.qualifier = f.index_name;
+            f.value = std::string(val_str);
             result.push_back(std::move(f));
         } catch (const std::invalid_argument& ex) {
-            throw std::invalid_argument(
-                "line " + std::to_string(line_no) + ": " + ex.what());
+            throw std::invalid_argument("line " + std::to_string(line_no) + ": " + ex.what());
         }
     }
 

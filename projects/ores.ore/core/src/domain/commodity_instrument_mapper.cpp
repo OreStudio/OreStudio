@@ -18,7 +18,6 @@
  *
  */
 #include "ores.ore.core/domain/commodity_instrument_mapper.hpp"
-
 #include <map>
 #include <stdexcept>
 
@@ -45,136 +44,108 @@ commodity_instrument make_base(const std::string& trade_type_code) {
 
 currencyCode parse_currency_code(const std::string& s) {
     static const std::map<std::string, currencyCode> map = {
-        {"AED", currencyCode::AED}, {"AFN", currencyCode::AFN},
-        {"ALL", currencyCode::ALL}, {"AMD", currencyCode::AMD},
-        {"ANG", currencyCode::ANG}, {"AOA", currencyCode::AOA},
-        {"ARS", currencyCode::ARS}, {"AUD", currencyCode::AUD},
-        {"AWG", currencyCode::AWG}, {"AZN", currencyCode::AZN},
-        {"BAM", currencyCode::BAM}, {"BBD", currencyCode::BBD},
-        {"BDT", currencyCode::BDT}, {"BGN", currencyCode::BGN},
-        {"BHD", currencyCode::BHD}, {"BIF", currencyCode::BIF},
-        {"BMD", currencyCode::BMD}, {"BND", currencyCode::BND},
-        {"BOB", currencyCode::BOB}, {"BOV", currencyCode::BOV},
-        {"BRL", currencyCode::BRL}, {"BSD", currencyCode::BSD},
-        {"BTN", currencyCode::BTN}, {"BWP", currencyCode::BWP},
-        {"BYN", currencyCode::BYN}, {"BZD", currencyCode::BZD},
-        {"CAD", currencyCode::CAD}, {"CDF", currencyCode::CDF},
-        {"CHE", currencyCode::CHE}, {"CHF", currencyCode::CHF},
-        {"CHW", currencyCode::CHW}, {"CLF", currencyCode::CLF},
-        {"CLP", currencyCode::CLP}, {"CNH", currencyCode::CNH},
-        {"CNT", currencyCode::CNT}, {"CNY", currencyCode::CNY},
-        {"COP", currencyCode::COP}, {"COU", currencyCode::COU},
-        {"CRC", currencyCode::CRC}, {"CUC", currencyCode::CUC},
-        {"CUP", currencyCode::CUP}, {"CVE", currencyCode::CVE},
-        {"CYP", currencyCode::CYP}, {"CZK", currencyCode::CZK},
-        {"DJF", currencyCode::DJF}, {"DKK", currencyCode::DKK},
-        {"DOP", currencyCode::DOP}, {"DZD", currencyCode::DZD},
-        {"EGP", currencyCode::EGP}, {"ERN", currencyCode::ERN},
-        {"ETB", currencyCode::ETB}, {"EUR", currencyCode::EUR},
-        {"FJD", currencyCode::FJD}, {"FKP", currencyCode::FKP},
-        {"GBP", currencyCode::GBP}, {"GEL", currencyCode::GEL},
-        {"GGP", currencyCode::GGP}, {"GHS", currencyCode::GHS},
-        {"GIP", currencyCode::GIP}, {"GMD", currencyCode::GMD},
-        {"GNF", currencyCode::GNF}, {"GTQ", currencyCode::GTQ},
-        {"GYD", currencyCode::GYD}, {"HKD", currencyCode::HKD},
-        {"HNL", currencyCode::HNL}, {"HRK", currencyCode::HRK},
-        {"HTG", currencyCode::HTG}, {"HUF", currencyCode::HUF},
-        {"IDR", currencyCode::IDR}, {"ILS", currencyCode::ILS},
-        {"IMP", currencyCode::IMP}, {"INR", currencyCode::INR},
-        {"IQD", currencyCode::IQD}, {"IRR", currencyCode::IRR},
-        {"ISK", currencyCode::ISK}, {"JEP", currencyCode::JEP},
-        {"JMD", currencyCode::JMD}, {"JOD", currencyCode::JOD},
-        {"JPY", currencyCode::JPY}, {"KES", currencyCode::KES},
-        {"KGS", currencyCode::KGS}, {"KHR", currencyCode::KHR},
-        {"KID", currencyCode::KID}, {"KMF", currencyCode::KMF},
-        {"KPW", currencyCode::KPW}, {"KRW", currencyCode::KRW},
-        {"KWD", currencyCode::KWD}, {"KYD", currencyCode::KYD},
-        {"KZT", currencyCode::KZT}, {"LAK", currencyCode::LAK},
-        {"LBP", currencyCode::LBP}, {"LKR", currencyCode::LKR},
-        {"LRD", currencyCode::LRD}, {"LSL", currencyCode::LSL},
-        {"LTL", currencyCode::LTL}, {"LVL", currencyCode::LVL},
-        {"LYD", currencyCode::LYD}, {"MAD", currencyCode::MAD},
-        {"MDL", currencyCode::MDL}, {"MGA", currencyCode::MGA},
-        {"MKD", currencyCode::MKD}, {"MMK", currencyCode::MMK},
-        {"MNT", currencyCode::MNT}, {"MOP", currencyCode::MOP},
-        {"MRU", currencyCode::MRU}, {"MUR", currencyCode::MUR},
-        {"MVR", currencyCode::MVR}, {"MWK", currencyCode::MWK},
-        {"MXN", currencyCode::MXN}, {"MXV", currencyCode::MXV},
-        {"MYR", currencyCode::MYR}, {"MZN", currencyCode::MZN},
-        {"NAD", currencyCode::NAD}, {"NGN", currencyCode::NGN},
-        {"NIO", currencyCode::NIO}, {"NOK", currencyCode::NOK},
-        {"NPR", currencyCode::NPR}, {"NZD", currencyCode::NZD},
-        {"OMR", currencyCode::OMR}, {"PAB", currencyCode::PAB},
-        {"PEN", currencyCode::PEN}, {"PGK", currencyCode::PGK},
-        {"PHP", currencyCode::PHP}, {"PKR", currencyCode::PKR},
-        {"PLN", currencyCode::PLN}, {"PYG", currencyCode::PYG},
-        {"QAR", currencyCode::QAR}, {"RON", currencyCode::RON},
-        {"RSD", currencyCode::RSD}, {"RUB", currencyCode::RUB},
-        {"RWF", currencyCode::RWF}, {"SAR", currencyCode::SAR},
-        {"SBD", currencyCode::SBD}, {"SCR", currencyCode::SCR},
-        {"SDG", currencyCode::SDG}, {"SEK", currencyCode::SEK},
-        {"SGD", currencyCode::SGD}, {"SHP", currencyCode::SHP},
-        {"SLL", currencyCode::SLL}, {"SOS", currencyCode::SOS},
-        {"SRD", currencyCode::SRD}, {"STN", currencyCode::STN},
-        {"SVC", currencyCode::SVC}, {"SYP", currencyCode::SYP},
-        {"SZL", currencyCode::SZL}, {"THB", currencyCode::THB},
-        {"TJS", currencyCode::TJS}, {"TMT", currencyCode::TMT},
-        {"TND", currencyCode::TND}, {"TOP", currencyCode::TOP},
-        {"TRY", currencyCode::TRY}, {"TTD", currencyCode::TTD},
-        {"TWD", currencyCode::TWD},
-        {"TZS", currencyCode::TZS}, {"UAH", currencyCode::UAH},
-        {"UGX", currencyCode::UGX}, {"USD", currencyCode::USD},
-        {"USN", currencyCode::USN}, {"UYI", currencyCode::UYI},
-        {"UYU", currencyCode::UYU}, {"UYW", currencyCode::UYW},
-        {"UZS", currencyCode::UZS}, {"VES", currencyCode::VES},
-        {"VND", currencyCode::VND}, {"VUV", currencyCode::VUV},
-        {"WST", currencyCode::WST}, {"XAF", currencyCode::XAF},
-        {"XAG", currencyCode::XAG}, {"XAU", currencyCode::XAU},
-        {"XCD", currencyCode::XCD},
-        {"XOF", currencyCode::XOF}, {"XPD", currencyCode::XPD},
-        {"XPF", currencyCode::XPF}, {"XPT", currencyCode::XPT},
-        {"XSU", currencyCode::XSU}, {"XUA", currencyCode::XUA},
-        {"YER", currencyCode::YER}, {"ZAR", currencyCode::ZAR},
-        {"ZMW", currencyCode::ZMW}, {"ZWL", currencyCode::ZWL},
-        {"BTC", currencyCode::BTC}, {"ETH", currencyCode::ETH},
-        {"XBT", currencyCode::XBT}, {"ETC", currencyCode::ETC},
-        {"BCH", currencyCode::BCH}, {"XRP", currencyCode::XRP},
-        {"LTC", currencyCode::LTC}, {"ZUR", currencyCode::ZUR},
-        {"ZUG", currencyCode::ZUG},
+        {"AED", currencyCode::AED}, {"AFN", currencyCode::AFN}, {"ALL", currencyCode::ALL},
+        {"AMD", currencyCode::AMD}, {"ANG", currencyCode::ANG}, {"AOA", currencyCode::AOA},
+        {"ARS", currencyCode::ARS}, {"AUD", currencyCode::AUD}, {"AWG", currencyCode::AWG},
+        {"AZN", currencyCode::AZN}, {"BAM", currencyCode::BAM}, {"BBD", currencyCode::BBD},
+        {"BDT", currencyCode::BDT}, {"BGN", currencyCode::BGN}, {"BHD", currencyCode::BHD},
+        {"BIF", currencyCode::BIF}, {"BMD", currencyCode::BMD}, {"BND", currencyCode::BND},
+        {"BOB", currencyCode::BOB}, {"BOV", currencyCode::BOV}, {"BRL", currencyCode::BRL},
+        {"BSD", currencyCode::BSD}, {"BTN", currencyCode::BTN}, {"BWP", currencyCode::BWP},
+        {"BYN", currencyCode::BYN}, {"BZD", currencyCode::BZD}, {"CAD", currencyCode::CAD},
+        {"CDF", currencyCode::CDF}, {"CHE", currencyCode::CHE}, {"CHF", currencyCode::CHF},
+        {"CHW", currencyCode::CHW}, {"CLF", currencyCode::CLF}, {"CLP", currencyCode::CLP},
+        {"CNH", currencyCode::CNH}, {"CNT", currencyCode::CNT}, {"CNY", currencyCode::CNY},
+        {"COP", currencyCode::COP}, {"COU", currencyCode::COU}, {"CRC", currencyCode::CRC},
+        {"CUC", currencyCode::CUC}, {"CUP", currencyCode::CUP}, {"CVE", currencyCode::CVE},
+        {"CYP", currencyCode::CYP}, {"CZK", currencyCode::CZK}, {"DJF", currencyCode::DJF},
+        {"DKK", currencyCode::DKK}, {"DOP", currencyCode::DOP}, {"DZD", currencyCode::DZD},
+        {"EGP", currencyCode::EGP}, {"ERN", currencyCode::ERN}, {"ETB", currencyCode::ETB},
+        {"EUR", currencyCode::EUR}, {"FJD", currencyCode::FJD}, {"FKP", currencyCode::FKP},
+        {"GBP", currencyCode::GBP}, {"GEL", currencyCode::GEL}, {"GGP", currencyCode::GGP},
+        {"GHS", currencyCode::GHS}, {"GIP", currencyCode::GIP}, {"GMD", currencyCode::GMD},
+        {"GNF", currencyCode::GNF}, {"GTQ", currencyCode::GTQ}, {"GYD", currencyCode::GYD},
+        {"HKD", currencyCode::HKD}, {"HNL", currencyCode::HNL}, {"HRK", currencyCode::HRK},
+        {"HTG", currencyCode::HTG}, {"HUF", currencyCode::HUF}, {"IDR", currencyCode::IDR},
+        {"ILS", currencyCode::ILS}, {"IMP", currencyCode::IMP}, {"INR", currencyCode::INR},
+        {"IQD", currencyCode::IQD}, {"IRR", currencyCode::IRR}, {"ISK", currencyCode::ISK},
+        {"JEP", currencyCode::JEP}, {"JMD", currencyCode::JMD}, {"JOD", currencyCode::JOD},
+        {"JPY", currencyCode::JPY}, {"KES", currencyCode::KES}, {"KGS", currencyCode::KGS},
+        {"KHR", currencyCode::KHR}, {"KID", currencyCode::KID}, {"KMF", currencyCode::KMF},
+        {"KPW", currencyCode::KPW}, {"KRW", currencyCode::KRW}, {"KWD", currencyCode::KWD},
+        {"KYD", currencyCode::KYD}, {"KZT", currencyCode::KZT}, {"LAK", currencyCode::LAK},
+        {"LBP", currencyCode::LBP}, {"LKR", currencyCode::LKR}, {"LRD", currencyCode::LRD},
+        {"LSL", currencyCode::LSL}, {"LTL", currencyCode::LTL}, {"LVL", currencyCode::LVL},
+        {"LYD", currencyCode::LYD}, {"MAD", currencyCode::MAD}, {"MDL", currencyCode::MDL},
+        {"MGA", currencyCode::MGA}, {"MKD", currencyCode::MKD}, {"MMK", currencyCode::MMK},
+        {"MNT", currencyCode::MNT}, {"MOP", currencyCode::MOP}, {"MRU", currencyCode::MRU},
+        {"MUR", currencyCode::MUR}, {"MVR", currencyCode::MVR}, {"MWK", currencyCode::MWK},
+        {"MXN", currencyCode::MXN}, {"MXV", currencyCode::MXV}, {"MYR", currencyCode::MYR},
+        {"MZN", currencyCode::MZN}, {"NAD", currencyCode::NAD}, {"NGN", currencyCode::NGN},
+        {"NIO", currencyCode::NIO}, {"NOK", currencyCode::NOK}, {"NPR", currencyCode::NPR},
+        {"NZD", currencyCode::NZD}, {"OMR", currencyCode::OMR}, {"PAB", currencyCode::PAB},
+        {"PEN", currencyCode::PEN}, {"PGK", currencyCode::PGK}, {"PHP", currencyCode::PHP},
+        {"PKR", currencyCode::PKR}, {"PLN", currencyCode::PLN}, {"PYG", currencyCode::PYG},
+        {"QAR", currencyCode::QAR}, {"RON", currencyCode::RON}, {"RSD", currencyCode::RSD},
+        {"RUB", currencyCode::RUB}, {"RWF", currencyCode::RWF}, {"SAR", currencyCode::SAR},
+        {"SBD", currencyCode::SBD}, {"SCR", currencyCode::SCR}, {"SDG", currencyCode::SDG},
+        {"SEK", currencyCode::SEK}, {"SGD", currencyCode::SGD}, {"SHP", currencyCode::SHP},
+        {"SLL", currencyCode::SLL}, {"SOS", currencyCode::SOS}, {"SRD", currencyCode::SRD},
+        {"STN", currencyCode::STN}, {"SVC", currencyCode::SVC}, {"SYP", currencyCode::SYP},
+        {"SZL", currencyCode::SZL}, {"THB", currencyCode::THB}, {"TJS", currencyCode::TJS},
+        {"TMT", currencyCode::TMT}, {"TND", currencyCode::TND}, {"TOP", currencyCode::TOP},
+        {"TRY", currencyCode::TRY}, {"TTD", currencyCode::TTD}, {"TWD", currencyCode::TWD},
+        {"TZS", currencyCode::TZS}, {"UAH", currencyCode::UAH}, {"UGX", currencyCode::UGX},
+        {"USD", currencyCode::USD}, {"USN", currencyCode::USN}, {"UYI", currencyCode::UYI},
+        {"UYU", currencyCode::UYU}, {"UYW", currencyCode::UYW}, {"UZS", currencyCode::UZS},
+        {"VES", currencyCode::VES}, {"VND", currencyCode::VND}, {"VUV", currencyCode::VUV},
+        {"WST", currencyCode::WST}, {"XAF", currencyCode::XAF}, {"XAG", currencyCode::XAG},
+        {"XAU", currencyCode::XAU}, {"XCD", currencyCode::XCD}, {"XOF", currencyCode::XOF},
+        {"XPD", currencyCode::XPD}, {"XPF", currencyCode::XPF}, {"XPT", currencyCode::XPT},
+        {"XSU", currencyCode::XSU}, {"XUA", currencyCode::XUA}, {"YER", currencyCode::YER},
+        {"ZAR", currencyCode::ZAR}, {"ZMW", currencyCode::ZMW}, {"ZWL", currencyCode::ZWL},
+        {"BTC", currencyCode::BTC}, {"ETH", currencyCode::ETH}, {"XBT", currencyCode::XBT},
+        {"ETC", currencyCode::ETC}, {"BCH", currencyCode::BCH}, {"XRP", currencyCode::XRP},
+        {"LTC", currencyCode::LTC}, {"ZUR", currencyCode::ZUR}, {"ZUG", currencyCode::ZUG},
     };
     const auto it = map.find(s);
     if (it == map.end())
-        throw std::runtime_error(
-            "parse_currency_code: unrecognised currency code '" + s +
-            "' — cannot produce valid ORE XML");
+        throw std::runtime_error("parse_currency_code: unrecognised currency code '" + s +
+                                 "' — cannot produce valid ORE XML");
     return it->second;
 }
 
 // Extract option type string from optionData.
 std::string extract_option_type(const optionData& od) {
-    if (od.OptionType) return std::string(*od.OptionType);
+    if (od.OptionType)
+        return std::string(*od.OptionType);
     return {};
 }
 
 // Extract exercise style string from optionData.
 std::string extract_exercise_style(const optionData& od) {
-    if (od.Style) return std::string(*od.Style);
+    if (od.Style)
+        return std::string(*od.Style);
     return {};
 }
 
 // Extract first exercise date from optionData.
 std::string first_exercise_date(const optionData& od) {
-    if (!od.exerciseDatesGroup) return {};
-    if (!od.exerciseDatesGroup->ExerciseDates) return {};
-    if (od.exerciseDatesGroup->ExerciseDates->ExerciseDate.empty()) return {};
-    return std::string(
-        od.exerciseDatesGroup->ExerciseDates->ExerciseDate.front());
+    if (!od.exerciseDatesGroup)
+        return {};
+    if (!od.exerciseDatesGroup->ExerciseDates)
+        return {};
+    if (od.exerciseDatesGroup->ExerciseDates->ExerciseDate.empty())
+        return {};
+    return std::string(od.exerciseDatesGroup->ExerciseDates->ExerciseDate.front());
 }
 
 // Extract underlying name from underlyingTypes_group_t.
 std::string extract_underlying_name(const underlyingTypes_group_t& u) {
-    if (u.Name) return std::string(*u.Name);
-    if (u.Underlying) return std::string(u.Underlying->Name);
+    if (u.Name)
+        return std::string(*u.Name);
+    if (u.Underlying)
+        return std::string(u.Underlying->Name);
     return {};
 }
 
@@ -187,12 +158,13 @@ struct swap_leg_info {
     std::string maturity_date;
 };
 
-swap_leg_info extract_floating_leg_info(
-        const xsd::vector<legData>& legs) {
+swap_leg_info extract_floating_leg_info(const xsd::vector<legData>& legs) {
     swap_leg_info info;
     for (const auto& leg : legs) {
-        if (!leg.legDataType) continue;
-        if (!leg.legDataType->CommodityFloatingLegData) continue;
+        if (!leg.legDataType)
+            continue;
+        if (!leg.legDataType->CommodityFloatingLegData)
+            continue;
         const auto& fl = *leg.legDataType->CommodityFloatingLegData;
         info.commodity_code = std::string(fl.Name);
         if (leg.Currency)
@@ -245,12 +217,12 @@ optionData make_option_data(const commodity_instrument& instr) {
 // Forward: CommodityForward
 // ---------------------------------------------------------------------------
 
-trading::domain::commodity_instrument commodity_instrument_mapper::forward_commodity_forward(
-        const trade& t) {
-    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping CommodityForward: "
-                               << std::string(t.id);
+trading::domain::commodity_instrument
+commodity_instrument_mapper::forward_commodity_forward(const trade& t) {
+    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping CommodityForward: " << std::string(t.id);
     trading::domain::commodity_instrument result = make_base("CommodityForward");
-    if (!t.CommodityForwardData) return result;
+    if (!t.CommodityForwardData)
+        return result;
     const auto& d = *t.CommodityForwardData;
 
     result.commodity_code = std::string(d.Name);
@@ -265,12 +237,12 @@ trading::domain::commodity_instrument commodity_instrument_mapper::forward_commo
 // Forward: CommodityOption
 // ---------------------------------------------------------------------------
 
-trading::domain::commodity_instrument commodity_instrument_mapper::forward_commodity_option(
-        const trade& t) {
-    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping CommodityOption: "
-                               << std::string(t.id);
+trading::domain::commodity_instrument
+commodity_instrument_mapper::forward_commodity_option(const trade& t) {
+    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping CommodityOption: " << std::string(t.id);
     trading::domain::commodity_instrument result = make_base("CommodityOption");
-    if (!t.CommodityOptionData) return result;
+    if (!t.CommodityOptionData)
+        return result;
     const auto& d = *t.CommodityOptionData;
 
     result.commodity_code = std::string(d.Name);
@@ -287,12 +259,12 @@ trading::domain::commodity_instrument commodity_instrument_mapper::forward_commo
 // Forward: CommoditySwap
 // ---------------------------------------------------------------------------
 
-trading::domain::commodity_instrument commodity_instrument_mapper::forward_commodity_swap(
-        const trade& t) {
-    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping CommoditySwap: "
-                               << std::string(t.id);
+trading::domain::commodity_instrument
+commodity_instrument_mapper::forward_commodity_swap(const trade& t) {
+    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping CommoditySwap: " << std::string(t.id);
     trading::domain::commodity_instrument result = make_base("CommoditySwap");
-    if (!t.SwapData) return result;
+    if (!t.SwapData)
+        return result;
     const auto& d = *t.SwapData;
 
     const auto info = extract_floating_leg_info(d.LegData);
@@ -309,14 +281,13 @@ trading::domain::commodity_instrument commodity_instrument_mapper::forward_commo
 
 trading::domain::commodity_instrument
 commodity_instrument_mapper::forward_commodity_swaption(const trade& t) {
-    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping CommoditySwaption: "
-                               << std::string(t.id);
+    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping CommoditySwaption: " << std::string(t.id);
     trading::domain::commodity_instrument result = make_base("CommoditySwaption");
-    if (!t.CommoditySwaptionData) return result;
+    if (!t.CommoditySwaptionData)
+        return result;
     const auto& d = *t.CommoditySwaptionData;
 
-    result.swaption_expiry_date =
-        first_exercise_date(d.OptionData);
+    result.swaption_expiry_date = first_exercise_date(d.OptionData);
     const auto info = extract_floating_leg_info(d.LegData);
     result.commodity_code = info.commodity_code;
     result.currency = info.currency;
@@ -331,14 +302,13 @@ commodity_instrument_mapper::forward_commodity_swaption(const trade& t) {
 
 trading::domain::commodity_instrument
 commodity_instrument_mapper::forward_commodity_variance_swap(const trade& t) {
-    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping CommodityVarianceSwap: "
-                               << std::string(t.id);
+    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping CommodityVarianceSwap: " << std::string(t.id);
     trading::domain::commodity_instrument result = make_base("CommodityVarianceSwap");
-    if (!t.CommodityVarianceSwapData) return result;
+    if (!t.CommodityVarianceSwapData)
+        return result;
     const auto& d = *t.CommodityVarianceSwapData;
 
-    result.commodity_code =
-        extract_underlying_name(d.underlyingTypes);
+    result.commodity_code = extract_underlying_name(d.underlyingTypes);
     result.currency = to_string(d.Currency);
     result.start_date = std::string(d.StartDate);
     result.maturity_date = std::string(d.EndDate);
@@ -351,12 +321,13 @@ commodity_instrument_mapper::forward_commodity_variance_swap(const trade& t) {
 // Forward: CommodityAveragePriceOption
 // ---------------------------------------------------------------------------
 
-trading::domain::commodity_instrument commodity_instrument_mapper::forward_commodity_apo(
-        const trade& t) {
+trading::domain::commodity_instrument
+commodity_instrument_mapper::forward_commodity_apo(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping CommodityAveragePriceOption: "
                                << std::string(t.id);
     trading::domain::commodity_instrument result = make_base("CommodityAveragePriceOption");
-    if (!t.CommodityAveragePriceOptionData) return result;
+    if (!t.CommodityAveragePriceOptionData)
+        return result;
     const auto& d = *t.CommodityAveragePriceOptionData;
 
     result.commodity_code = std::string(d.Name);
@@ -378,23 +349,21 @@ trading::domain::commodity_instrument commodity_instrument_mapper::forward_commo
 
 trading::domain::commodity_instrument
 commodity_instrument_mapper::forward_commodity_option_strip(const trade& t) {
-    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping CommodityOptionStrip: "
-                               << std::string(t.id);
+    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping CommodityOptionStrip: " << std::string(t.id);
     trading::domain::commodity_instrument result = make_base("CommodityOptionStrip");
-    if (!t.CommodityOptionStripData) return result;
+    if (!t.CommodityOptionStripData)
+        return result;
     const auto& d = *t.CommodityOptionStripData;
 
     // Extract commodity code from the leg's floating data
-    if (d.LegData.legDataType &&
-            d.LegData.legDataType->CommodityFloatingLegData) {
+    if (d.LegData.legDataType && d.LegData.legDataType->CommodityFloatingLegData) {
         const auto& fl = *d.LegData.legDataType->CommodityFloatingLegData;
         result.commodity_code = std::string(fl.Name);
     }
     if (d.LegData.Currency)
         result.currency = std::string(*d.LegData.Currency);
     if (d.LegData.ScheduleData && !d.LegData.ScheduleData->Rules.empty())
-        result.strip_frequency_code =
-            std::string(d.LegData.ScheduleData->Rules.front().Tenor);
+        result.strip_frequency_code = std::string(d.LegData.ScheduleData->Rules.front().Tenor);
     return result;
 }
 
@@ -402,8 +371,7 @@ commodity_instrument_mapper::forward_commodity_option_strip(const trade& t) {
 // Reverse: CommodityForward
 // ---------------------------------------------------------------------------
 
-trade commodity_instrument_mapper::reverse_commodity_forward(
-        const commodity_instrument& instr) {
+trade commodity_instrument_mapper::reverse_commodity_forward(const commodity_instrument& instr) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping CommodityForward";
     trade t;
     t.TradeType = oreTradeType::CommodityForward;
@@ -422,8 +390,7 @@ trade commodity_instrument_mapper::reverse_commodity_forward(
 // Reverse: CommodityOption
 // ---------------------------------------------------------------------------
 
-trade commodity_instrument_mapper::reverse_commodity_option(
-        const commodity_instrument& instr) {
+trade commodity_instrument_mapper::reverse_commodity_option(const commodity_instrument& instr) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping CommodityOption";
     trade t;
     t.TradeType = oreTradeType::CommodityOption;
@@ -441,8 +408,7 @@ trade commodity_instrument_mapper::reverse_commodity_option(
 // Reverse: CommoditySwap
 // ---------------------------------------------------------------------------
 
-trade commodity_instrument_mapper::reverse_commodity_swap(
-        const commodity_instrument& instr) {
+trade commodity_instrument_mapper::reverse_commodity_swap(const commodity_instrument& instr) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping CommoditySwap";
     trade t;
     t.TradeType = oreTradeType::CommoditySwap;
@@ -498,8 +464,7 @@ trade commodity_instrument_mapper::reverse_commodity_swap(
 // Reverse: CommoditySwaption
 // ---------------------------------------------------------------------------
 
-trade commodity_instrument_mapper::reverse_commodity_swaption(
-        const commodity_instrument& instr) {
+trade commodity_instrument_mapper::reverse_commodity_swaption(const commodity_instrument& instr) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping CommoditySwaption";
     trade t;
     t.TradeType = oreTradeType::CommoditySwaption;
@@ -541,7 +506,7 @@ trade commodity_instrument_mapper::reverse_commodity_swaption(
 // ---------------------------------------------------------------------------
 
 trade commodity_instrument_mapper::reverse_commodity_variance_swap(
-        const commodity_instrument& instr) {
+    const commodity_instrument& instr) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping CommodityVarianceSwap";
     trade t;
     t.TradeType = oreTradeType::CommodityVarianceSwap;
@@ -565,8 +530,7 @@ trade commodity_instrument_mapper::reverse_commodity_variance_swap(
 // Reverse: CommodityAveragePriceOption
 // ---------------------------------------------------------------------------
 
-trade commodity_instrument_mapper::reverse_commodity_apo(
-        const commodity_instrument& instr) {
+trade commodity_instrument_mapper::reverse_commodity_apo(const commodity_instrument& instr) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping CommodityAveragePriceOption";
     trade t;
     t.TradeType = oreTradeType::CommodityAveragePriceOption;
@@ -592,7 +556,7 @@ trade commodity_instrument_mapper::reverse_commodity_apo(
 // ---------------------------------------------------------------------------
 
 trade commodity_instrument_mapper::reverse_commodity_option_strip(
-        const commodity_instrument& instr) {
+    const commodity_instrument& instr) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping CommodityOptionStrip";
     trade t;
     t.TradeType = oreTradeType::CommodityOptionStrip;

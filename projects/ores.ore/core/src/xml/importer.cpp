@@ -18,16 +18,15 @@
  *
  */
 #include "ores.ore.core/xml/importer.hpp"
-
-#include <sstream>
-#include <type_traits>
-#include "ores.platform/filesystem/file.hpp"
-#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
-#include "ores.ore.core/domain/domain.hpp"
-#include "ores.ore.core/domain/currency_mapper.hpp"
 #include "ores.ore.core/domain/calendar_adjustment_mapper.hpp"
 #include "ores.ore.core/domain/conventions_mapper.hpp"
+#include "ores.ore.core/domain/currency_mapper.hpp"
+#include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/domain/trade_mapper.hpp"
+#include "ores.platform/filesystem/file.hpp"
+#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <sstream>
+#include <type_traits>
 
 namespace ores::ore::xml {
 
@@ -63,8 +62,7 @@ std::string importer::validate_currency(const currency& c) {
     return errors.str();
 }
 
-std::vector<currency>
-importer::import_currency_config(const std::filesystem::path& path) {
+std::vector<currency> importer::import_currency_config(const std::filesystem::path& path) {
     BOOST_LOG_SEV(lg(), debug) << "Started import: " << path.generic_string();
 
     using namespace ores::platform::filesystem;
@@ -75,14 +73,12 @@ importer::import_currency_config(const std::filesystem::path& path) {
     domain::load_data(c, ccy_cfg);
     const auto r = domain::currency_mapper::map(ccy_cfg);
 
-    BOOST_LOG_SEV(lg(), debug) << "Finished importing " << r.size()
-                               << " currencies. Result: " << r;
+    BOOST_LOG_SEV(lg(), debug) << "Finished importing " << r.size() << " currencies. Result: " << r;
 
     return r;
 }
 
-std::string importer::validate_calendar_adjustment(
-    const refdata::domain::calendar_adjustment& ca) {
+std::string importer::validate_calendar_adjustment(const refdata::domain::calendar_adjustment& ca) {
     std::ostringstream errors;
 
     if (ca.calendar_name.empty())
@@ -103,8 +99,7 @@ importer::import_calendar_adjustments(const std::filesystem::path& path) {
     domain::load_data(c, ca);
     const auto r = domain::calendar_adjustment_mapper::map(ca);
 
-    BOOST_LOG_SEV(lg(), debug) << "Finished importing " << r.size()
-                               << " calendar adjustments.";
+    BOOST_LOG_SEV(lg(), debug) << "Finished importing " << r.size() << " calendar adjustments.";
     return r;
 }
 
@@ -147,51 +142,50 @@ importer::import_portfolio_with_context(const std::filesystem::path& path) {
             item.instrument = domain::trade_mapper::map_instrument(t);
 
             // Record the routing discriminator; UUIDs are minted by the caller.
-            std::visit([&](const auto& result) {
-                using T = std::decay_t<decltype(result)>;
-                using ores::trading::domain::product_type;
-                using ores::trading::domain::swap_instrument_data;
-                using ores::trading::domain::fx_instrument_variant;
-                using ores::trading::domain::bond_instrument;
-                using ores::trading::domain::credit_instrument;
-                using ores::trading::domain::equity_instrument_variant;
-                using ores::trading::domain::commodity_instrument;
-                using ores::trading::domain::composite_instrument_data;
-                using ores::trading::domain::scripted_instrument;
-                if constexpr (std::is_same_v<T, swap_instrument_data>)
-                    item.trade.classification.product_type = product_type::swap;
-                else if constexpr (std::is_same_v<T, fx_instrument_variant>)
-                    item.trade.classification.product_type = product_type::fx;
-                else if constexpr (std::is_same_v<T, bond_instrument>)
-                    item.trade.classification.product_type = product_type::bond;
-                else if constexpr (std::is_same_v<T, credit_instrument>)
-                    item.trade.classification.product_type = product_type::credit;
-                else if constexpr (std::is_same_v<T, equity_instrument_variant>)
-                    item.trade.classification.product_type = product_type::equity;
-                else if constexpr (std::is_same_v<T, commodity_instrument>)
-                    item.trade.classification.product_type = product_type::commodity;
-                else if constexpr (std::is_same_v<T, composite_instrument_data>)
-                    item.trade.classification.product_type = product_type::composite;
-                else if constexpr (std::is_same_v<T, scripted_instrument>)
-                    item.trade.classification.product_type = product_type::scripted;
-            }, item.instrument);
+            std::visit(
+                [&](const auto& result) {
+                    using T = std::decay_t<decltype(result)>;
+                    using ores::trading::domain::product_type;
+                    using ores::trading::domain::swap_instrument_data;
+                    using ores::trading::domain::fx_instrument_variant;
+                    using ores::trading::domain::bond_instrument;
+                    using ores::trading::domain::credit_instrument;
+                    using ores::trading::domain::equity_instrument_variant;
+                    using ores::trading::domain::commodity_instrument;
+                    using ores::trading::domain::composite_instrument_data;
+                    using ores::trading::domain::scripted_instrument;
+                    if constexpr (std::is_same_v<T, swap_instrument_data>)
+                        item.trade.classification.product_type = product_type::swap;
+                    else if constexpr (std::is_same_v<T, fx_instrument_variant>)
+                        item.trade.classification.product_type = product_type::fx;
+                    else if constexpr (std::is_same_v<T, bond_instrument>)
+                        item.trade.classification.product_type = product_type::bond;
+                    else if constexpr (std::is_same_v<T, credit_instrument>)
+                        item.trade.classification.product_type = product_type::credit;
+                    else if constexpr (std::is_same_v<T, equity_instrument_variant>)
+                        item.trade.classification.product_type = product_type::equity;
+                    else if constexpr (std::is_same_v<T, commodity_instrument>)
+                        item.trade.classification.product_type = product_type::commodity;
+                    else if constexpr (std::is_same_v<T, composite_instrument_data>)
+                        item.trade.classification.product_type = product_type::composite;
+                    else if constexpr (std::is_same_v<T, scripted_instrument>)
+                        item.trade.classification.product_type = product_type::scripted;
+                },
+                item.instrument);
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), error)
-                << "Failed to map instrument for trade "
-                << std::string(t.id) << ": " << e.what();
+                << "Failed to map instrument for trade " << std::string(t.id) << ": " << e.what();
         }
 
         r.push_back(std::move(item));
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Finished importing " << r.size()
-                               << " trades with context.";
+    BOOST_LOG_SEV(lg(), debug) << "Finished importing " << r.size() << " trades with context.";
     return r;
 }
 
 
-domain::mapped_conventions
-importer::import_conventions(const std::filesystem::path& path) {
+domain::mapped_conventions importer::import_conventions(const std::filesystem::path& path) {
     BOOST_LOG_SEV(lg(), debug) << "Started import: " << path.generic_string();
 
     using namespace ores::platform::filesystem;
@@ -202,8 +196,7 @@ importer::import_conventions(const std::filesystem::path& path) {
     domain::load_data(c, conv);
     const auto r = domain::conventions_mapper::map(conv);
 
-    BOOST_LOG_SEV(lg(), debug) << "Finished importing conventions from "
-                               << path.generic_string();
+    BOOST_LOG_SEV(lg(), debug) << "Finished importing conventions from " << path.generic_string();
     return r;
 }
 

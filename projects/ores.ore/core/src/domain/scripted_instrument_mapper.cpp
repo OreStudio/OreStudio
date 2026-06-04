@@ -45,14 +45,18 @@ std::string index_vector_to_json(const stFreeStyleIndexVector& v) {
     std::string json = "[";
     bool first = true;
     for (const auto& val : v.Value) {
-        if (!first) json += ",";
+        if (!first)
+            json += ",";
         // Escape backslashes and double-quotes
         const std::string s = std::string(val);
         std::string esc;
         for (char c : s) {
-            if (c == '"')       esc += "\\\"";
-            else if (c == '\\') esc += "\\\\";
-            else                esc += c;
+            if (c == '"')
+                esc += "\\\"";
+            else if (c == '\\')
+                esc += "\\\\";
+            else
+                esc += c;
         }
         json += "\"" + esc + "\"";
         first = false;
@@ -63,33 +67,45 @@ std::string index_vector_to_json(const stFreeStyleIndexVector& v) {
 
 // Build a minimal JSON parameters object from key scalar fields of a
 // named scripted product.
-std::string make_params_json(const std::string& put_call,
-                             float notional, float strike) {
-    return "{\"PutCall\":\"" + put_call + "\","
-           "\"Notional\":" + std::to_string(notional) + ","
-           "\"Strike\":" + std::to_string(strike) + "}";
+std::string make_params_json(const std::string& put_call, float notional, float strike) {
+    return "{\"PutCall\":\"" + put_call +
+           "\","
+           "\"Notional\":" +
+           std::to_string(notional) +
+           ","
+           "\"Strike\":" +
+           std::to_string(strike) + "}";
 }
 
 // Parse a JSON array of strings: ["val1","val2",...] -> vector of strings.
 std::vector<std::string> parse_json_string_array(const std::string& json) {
     std::vector<std::string> result;
     std::size_t i = 0;
-    while (i < json.size() && json[i] != '[') ++i;
-    if (i >= json.size()) return result;
+    while (i < json.size() && json[i] != '[')
+        ++i;
+    if (i >= json.size())
+        return result;
     ++i; // skip '['
     while (i < json.size()) {
-        while (i < json.size() &&
-               (json[i] == ' ' || json[i] == ',' || json[i] == '\t')) ++i;
-        if (i >= json.size() || json[i] == ']') break;
-        if (json[i] != '"') { ++i; continue; }
+        while (i < json.size() && (json[i] == ' ' || json[i] == ',' || json[i] == '\t'))
+            ++i;
+        if (i >= json.size() || json[i] == ']')
+            break;
+        if (json[i] != '"') {
+            ++i;
+            continue;
+        }
         ++i; // skip opening quote
         std::string val;
         while (i < json.size() && json[i] != '"') {
             if (json[i] == '\\' && i + 1 < json.size()) {
                 ++i;
-                if (json[i] == '"')       val += '"';
-                else if (json[i] == '\\') val += '\\';
-                else                      val += json[i];
+                if (json[i] == '"')
+                    val += '"';
+                else if (json[i] == '\\')
+                    val += '\\';
+                else
+                    val += json[i];
             } else {
                 val += json[i];
             }
@@ -103,31 +119,42 @@ std::vector<std::string> parse_json_string_array(const std::string& json) {
 
 // Parse a simple JSON object: {"Key":"strval",...} or {"Key":numval,...}.
 // Values are returned as strings; numeric values are kept as their JSON text.
-std::vector<std::pair<std::string,std::string>>
-parse_json_object(const std::string& json) {
-    std::vector<std::pair<std::string,std::string>> result;
+std::vector<std::pair<std::string, std::string>> parse_json_object(const std::string& json) {
+    std::vector<std::pair<std::string, std::string>> result;
     std::size_t i = 0;
-    while (i < json.size() && json[i] != '{') ++i;
-    if (i >= json.size()) return result;
+    while (i < json.size() && json[i] != '{')
+        ++i;
+    if (i >= json.size())
+        return result;
     ++i; // skip '{'
     while (i < json.size()) {
-        while (i < json.size() &&
-               (json[i] == ' ' || json[i] == ',' || json[i] == '\t')) ++i;
-        if (i >= json.size() || json[i] == '}') break;
-        if (json[i] != '"') { ++i; continue; }
+        while (i < json.size() && (json[i] == ' ' || json[i] == ',' || json[i] == '\t'))
+            ++i;
+        if (i >= json.size() || json[i] == '}')
+            break;
+        if (json[i] != '"') {
+            ++i;
+            continue;
+        }
         ++i; // skip opening quote of key
         std::string key;
-        while (i < json.size() && json[i] != '"') { key += json[i]; ++i; }
+        while (i < json.size() && json[i] != '"') {
+            key += json[i];
+            ++i;
+        }
         ++i; // skip closing quote of key
-        while (i < json.size() && json[i] != ':') ++i;
+        while (i < json.size() && json[i] != ':')
+            ++i;
         ++i; // skip ':'
-        while (i < json.size() && (json[i] == ' ' || json[i] == '\t')) ++i;
+        while (i < json.size() && (json[i] == ' ' || json[i] == '\t'))
+            ++i;
         std::string val;
         if (i < json.size() && json[i] == '"') {
             ++i; // skip opening quote of string value
             while (i < json.size() && json[i] != '"') {
                 if (json[i] == '\\' && i + 1 < json.size()) {
-                    ++i; val += json[i];
+                    ++i;
+                    val += json[i];
                 } else {
                     val += json[i];
                 }
@@ -150,10 +177,9 @@ parse_json_object(const std::string& json) {
 // Forward: ScriptedTrade
 // ---------------------------------------------------------------------------
 
-trading::domain::scripted_instrument scripted_instrument_mapper::forward_scripted_trade(
-        const trade& t) {
-    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping ScriptedTrade: "
-                               << std::string(t.id);
+trading::domain::scripted_instrument
+scripted_instrument_mapper::forward_scripted_trade(const trade& t) {
+    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping ScriptedTrade: " << std::string(t.id);
     trading::domain::scripted_instrument result = make_base("ScriptedTrade");
 
     // Named scripted product: AsianBasketOptionData
@@ -162,9 +188,7 @@ trading::domain::scripted_instrument scripted_instrument_mapper::forward_scripte
         result.script_name = "AsianBasketOption";
         result.underlyings_json = index_vector_to_json(d.Underlyings);
         result.parameters_json = make_params_json(
-            std::string(d.PutCall),
-            static_cast<float>(d.Notional),
-            static_cast<float>(d.Strike));
+            std::string(d.PutCall), static_cast<float>(d.Notional), static_cast<float>(d.Strike));
         return result;
     }
 
@@ -173,10 +197,8 @@ trading::domain::scripted_instrument scripted_instrument_mapper::forward_scripte
         const auto& d = *t.AverageStrikeBasketOptionData;
         result.script_name = "AverageStrikeBasketOption";
         result.underlyings_json = index_vector_to_json(d.Underlyings);
-        result.parameters_json = make_params_json(
-            std::string(d.PutCall),
-            static_cast<float>(d.Notional),
-            0.0f);
+        result.parameters_json =
+            make_params_json(std::string(d.PutCall), static_cast<float>(d.Notional), 0.0f);
         return result;
     }
 
@@ -192,11 +214,10 @@ trading::domain::scripted_instrument scripted_instrument_mapper::forward_scripte
             std::string params = "{";
             bool first = true;
             for (const auto& num : d.Data.Number) {
-                if (!first) params += ",";
-                const std::string val =
-                    num.Value ? std::string(*num.Value) : "";
-                params += "\"" + std::string(num.Name) + "\":\""
-                        + val + "\"";
+                if (!first)
+                    params += ",";
+                const std::string val = num.Value ? std::string(*num.Value) : "";
+                params += "\"" + std::string(num.Name) + "\":\"" + val + "\"";
                 first = false;
             }
             params += "}";
@@ -207,9 +228,9 @@ trading::domain::scripted_instrument scripted_instrument_mapper::forward_scripte
             std::string underlyings = "[";
             bool first = true;
             for (const auto& idx : d.Data.Index) {
-                if (!first) underlyings += ",";
-                const std::string val =
-                    idx.Value ? std::string(*idx.Value) : "";
+                if (!first)
+                    underlyings += ",";
+                const std::string val = idx.Value ? std::string(*idx.Value) : "";
                 underlyings += "\"" + val + "\"";
                 first = false;
             }
@@ -226,8 +247,7 @@ trading::domain::scripted_instrument scripted_instrument_mapper::forward_scripte
 // Reverse: ScriptedTrade
 // ---------------------------------------------------------------------------
 
-trade scripted_instrument_mapper::reverse_scripted_trade(
-        const scripted_instrument& instr) {
+trade scripted_instrument_mapper::reverse_scripted_trade(const scripted_instrument& instr) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping ScriptedTrade";
     trade t;
     t.TradeType = oreTradeType::ScriptedTrade;
@@ -253,8 +273,7 @@ trade scripted_instrument_mapper::reverse_scripted_trade(
         const auto vals = parse_json_string_array(instr.underlyings_json);
         for (std::size_t idx = 0; idx < vals.size(); ++idx) {
             scriptedTradeData_Data_t_Index_t entry;
-            static_cast<std::string&>(entry.Name) =
-                "Underlying_" + std::to_string(idx);
+            static_cast<std::string&>(entry.Name) = "Underlying_" + std::to_string(idx);
             scriptedTradeData_Data_t_Index_t_Value_t v;
             static_cast<std::string&>(v) = vals[idx];
             entry.Value = std::move(v);
@@ -282,12 +301,12 @@ trade scripted_instrument_mapper::reverse_scripted_trade(
 // Forward: DoubleDigitalOption
 // ---------------------------------------------------------------------------
 
-trading::domain::scripted_instrument scripted_instrument_mapper::forward_double_digital_option(
-        const trade& t) {
-    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping DoubleDigitalOption: "
-                               << std::string(t.id);
+trading::domain::scripted_instrument
+scripted_instrument_mapper::forward_double_digital_option(const trade& t) {
+    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping DoubleDigitalOption: " << std::string(t.id);
     trading::domain::scripted_instrument result = make_base("DoubleDigitalOption");
-    if (!t.DoubleDigitalOptionData) return result;
+    if (!t.DoubleDigitalOptionData)
+        return result;
     const auto& d = *t.DoubleDigitalOptionData;
     result.script_name = "DoubleDigitalOption";
 
@@ -298,8 +317,10 @@ trading::domain::scripted_instrument scripted_instrument_mapper::forward_double_
                           d.Underlying2 ? &*d.Underlying2 : nullptr,
                           d.Underlying3 ? &*d.Underlying3 : nullptr,
                           d.Underlying4 ? &*d.Underlying4 : nullptr}) {
-        if (!u) continue;
-        if (!first) underlyings += ",";
+        if (!u)
+            continue;
+        if (!first)
+            underlyings += ",";
         underlyings += "\"" + std::string(u->Name) + "\"";
         first = false;
     }
@@ -309,14 +330,11 @@ trading::domain::scripted_instrument scripted_instrument_mapper::forward_double_
     result.parameters_json =
         "{\"BinaryPayout\":" + std::to_string(d.BinaryPayout) +
         ",\"BinaryLevel1\":" + std::to_string(d.BinaryLevel1) +
-        ",\"BinaryLevel2\":" + std::to_string(d.BinaryLevel2) +
-        ",\"Type1\":\"" + std::string(d.Type1) + "\"" +
-        ",\"Type2\":\"" + std::string(d.Type2) + "\"" +
-        ",\"Position\":\"" + to_string(d.Position) + "\"" +
-        ",\"Expiry\":\"" + std::string(d.Expiry) + "\"" +
-        ",\"Settlement\":\"" + std::string(d.Settlement) + "\"" +
-        ",\"PayCcy\":\"" + to_string(d.PayCcy) + "\"" +
-        "}";
+        ",\"BinaryLevel2\":" + std::to_string(d.BinaryLevel2) + ",\"Type1\":\"" +
+        std::string(d.Type1) + "\"" + ",\"Type2\":\"" + std::string(d.Type2) + "\"" +
+        ",\"Position\":\"" + to_string(d.Position) + "\"" + ",\"Expiry\":\"" +
+        std::string(d.Expiry) + "\"" + ",\"Settlement\":\"" + std::string(d.Settlement) + "\"" +
+        ",\"PayCcy\":\"" + to_string(d.PayCcy) + "\"" + "}";
     return result;
 }
 
@@ -324,12 +342,12 @@ trading::domain::scripted_instrument scripted_instrument_mapper::forward_double_
 // Forward: PerformanceOption_01
 // ---------------------------------------------------------------------------
 
-trading::domain::scripted_instrument scripted_instrument_mapper::forward_performance_option_01(
-        const trade& t) {
-    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping PerformanceOption_01: "
-                               << std::string(t.id);
+trading::domain::scripted_instrument
+scripted_instrument_mapper::forward_performance_option_01(const trade& t) {
+    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping PerformanceOption_01: " << std::string(t.id);
     trading::domain::scripted_instrument result = make_base("PerformanceOption_01");
-    if (!t.PerformanceOption01Data) return result;
+    if (!t.PerformanceOption01Data)
+        return result;
     const auto& d = *t.PerformanceOption01Data;
     result.script_name = "PerformanceOption_01";
 
@@ -337,22 +355,21 @@ trading::domain::scripted_instrument scripted_instrument_mapper::forward_perform
     std::string underlyings = "[";
     bool first = true;
     for (const auto& u : d.Underlyings.Underlying) {
-        if (!first) underlyings += ",";
+        if (!first)
+            underlyings += ",";
         underlyings += "\"" + std::string(u.Name) + "\"";
         first = false;
     }
     underlyings += "]";
     result.underlyings_json = underlyings;
 
-    result.parameters_json =
-        "{\"NotionalAmount\":" + std::to_string(d.NotionalAmount) +
-        ",\"ParticipationRate\":" + std::to_string(d.ParticipationRate) +
-        ",\"Strike\":" + std::to_string(d.Strike) +
-        ",\"ValuationDate\":\"" + std::string(d.ValuationDate) + "\"" +
-        ",\"SettlementDate\":\"" + std::string(d.SettlementDate) + "\"" +
-        ",\"Position\":\"" + to_string(d.Position) + "\"" +
-        ",\"PayCcy\":\"" + to_string(d.PayCcy) + "\"" +
-        "}";
+    result.parameters_json = "{\"NotionalAmount\":" + std::to_string(d.NotionalAmount) +
+                             ",\"ParticipationRate\":" + std::to_string(d.ParticipationRate) +
+                             ",\"Strike\":" + std::to_string(d.Strike) + ",\"ValuationDate\":\"" +
+                             std::string(d.ValuationDate) + "\"" + ",\"SettlementDate\":\"" +
+                             std::string(d.SettlementDate) + "\"" + ",\"Position\":\"" +
+                             to_string(d.Position) + "\"" + ",\"PayCcy\":\"" + to_string(d.PayCcy) +
+                             "\"" + "}";
     return result;
 }
 
@@ -360,21 +377,19 @@ trading::domain::scripted_instrument scripted_instrument_mapper::forward_perform
 // Forward: KnockOutSwap
 // ---------------------------------------------------------------------------
 
-trading::domain::scripted_instrument scripted_instrument_mapper::forward_knock_out_swap(
-        const trade& t) {
-    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping KnockOutSwap: "
-                               << std::string(t.id);
+trading::domain::scripted_instrument
+scripted_instrument_mapper::forward_knock_out_swap(const trade& t) {
+    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping KnockOutSwap: " << std::string(t.id);
     trading::domain::scripted_instrument result = make_base("KnockOutSwap");
-    if (!t.KnockOutSwapData) return result;
+    if (!t.KnockOutSwapData)
+        return result;
     const auto& d = *t.KnockOutSwapData;
     result.script_name = "KnockOutSwap";
 
-    std::string params =
-        "{\"BarrierType\":\"" + to_string(d.BarrierData.Type) + "\"" +
-        ",\"BarrierStartDate\":\"" + std::string(d.BarrierStartDate) + "\"";
+    std::string params = "{\"BarrierType\":\"" + to_string(d.BarrierData.Type) + "\"" +
+                         ",\"BarrierStartDate\":\"" + std::string(d.BarrierStartDate) + "\"";
     if (!d.BarrierData.Levels.Level.empty())
-        params += ",\"BarrierLevel\":" +
-            std::to_string(d.BarrierData.Levels.Level.front());
+        params += ",\"BarrierLevel\":" + std::to_string(d.BarrierData.Levels.Level.front());
     params += "}";
     result.parameters_json = params;
     return result;
@@ -384,29 +399,35 @@ trading::domain::scripted_instrument scripted_instrument_mapper::forward_knock_o
 // Reverse: DoubleDigitalOption
 // ---------------------------------------------------------------------------
 
-trade scripted_instrument_mapper::reverse_double_digital_option(
-        const scripted_instrument& instr) {
+trade scripted_instrument_mapper::reverse_double_digital_option(const scripted_instrument& instr) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping DoubleDigitalOption";
     trade t;
     t.TradeType = oreTradeType::DoubleDigitalOption;
     doubleDigitalOptionData d;
     // Required fields — parse from parameters_json where possible
-    static_cast<std::string&>(d.Expiry)     = "2000-01-01";
+    static_cast<std::string&>(d.Expiry) = "2000-01-01";
     static_cast<std::string&>(d.Settlement) = "2000-01-01";
     static_cast<std::string&>(d.Type1) = "OverOrUnder";
     static_cast<std::string&>(d.Type2) = "OverOrUnder";
     d.Position = longShort::Long;
-    d.PayCcy   = currencyCode::USD;
+    d.PayCcy = currencyCode::USD;
     for (const auto& [key, val] : parse_json_object(instr.parameters_json)) {
-        if      (key == "BinaryPayout")  d.BinaryPayout  = std::stof(val);
-        else if (key == "BinaryLevel1")  d.BinaryLevel1  = std::stof(val);
-        else if (key == "BinaryLevel2")  d.BinaryLevel2  = std::stof(val);
-        else if (key == "Type1")         static_cast<std::string&>(d.Type1) = val;
-        else if (key == "Type2")         static_cast<std::string&>(d.Type2) = val;
-        else if (key == "Expiry")        static_cast<std::string&>(d.Expiry) = val;
-        else if (key == "Settlement")    static_cast<std::string&>(d.Settlement) = val;
-        else if (key == "Position")      d.Position = (val == "Short") ?
-                                             longShort::Short : longShort::Long;
+        if (key == "BinaryPayout")
+            d.BinaryPayout = std::stof(val);
+        else if (key == "BinaryLevel1")
+            d.BinaryLevel1 = std::stof(val);
+        else if (key == "BinaryLevel2")
+            d.BinaryLevel2 = std::stof(val);
+        else if (key == "Type1")
+            static_cast<std::string&>(d.Type1) = val;
+        else if (key == "Type2")
+            static_cast<std::string&>(d.Type2) = val;
+        else if (key == "Expiry")
+            static_cast<std::string&>(d.Expiry) = val;
+        else if (key == "Settlement")
+            static_cast<std::string&>(d.Settlement) = val;
+        else if (key == "Position")
+            d.Position = (val == "Short") ? longShort::Short : longShort::Long;
     }
     // Reconstruct underlyings from underlyings_json
     const auto unames = parse_json_string_array(instr.underlyings_json);
@@ -415,10 +436,14 @@ trade scripted_instrument_mapper::reverse_double_digital_option(
         static_cast<std::string&>(u.Name) = name;
         return u;
     };
-    if (unames.size() > 0) d.Underlying1 = make_underlying(unames[0]);
-    if (unames.size() > 1) d.Underlying2 = make_underlying(unames[1]);
-    if (unames.size() > 2) d.Underlying3 = make_underlying(unames[2]);
-    if (unames.size() > 3) d.Underlying4 = make_underlying(unames[3]);
+    if (unames.size() > 0)
+        d.Underlying1 = make_underlying(unames[0]);
+    if (unames.size() > 1)
+        d.Underlying2 = make_underlying(unames[1]);
+    if (unames.size() > 2)
+        d.Underlying3 = make_underlying(unames[2]);
+    if (unames.size() > 3)
+        d.Underlying4 = make_underlying(unames[3]);
     t.DoubleDigitalOptionData = std::move(d);
     return t;
 }
@@ -427,20 +452,22 @@ trade scripted_instrument_mapper::reverse_double_digital_option(
 // Reverse: PerformanceOption_01
 // ---------------------------------------------------------------------------
 
-trade scripted_instrument_mapper::reverse_performance_option_01(
-        const scripted_instrument& instr) {
+trade scripted_instrument_mapper::reverse_performance_option_01(const scripted_instrument& instr) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping PerformanceOption_01";
     trade t;
     t.TradeType = oreTradeType::PerformanceOption_01;
     performanceOption01Data d;
     d.Position = longShort::Long;
-    d.PayCcy   = currencyCode::USD;
-    static_cast<std::string&>(d.ValuationDate)  = "2000-01-01";
+    d.PayCcy = currencyCode::USD;
+    static_cast<std::string&>(d.ValuationDate) = "2000-01-01";
     static_cast<std::string&>(d.SettlementDate) = "2000-01-01";
     for (const auto& [key, val] : parse_json_object(instr.parameters_json)) {
-        if      (key == "NotionalAmount")    d.NotionalAmount    = std::stof(val);
-        else if (key == "ParticipationRate") d.ParticipationRate = std::stof(val);
-        else if (key == "Strike")            d.Strike            = std::stof(val);
+        if (key == "NotionalAmount")
+            d.NotionalAmount = std::stof(val);
+        else if (key == "ParticipationRate")
+            d.ParticipationRate = std::stof(val);
+        else if (key == "Strike")
+            d.Strike = std::stof(val);
         else if (key == "ValuationDate")
             static_cast<std::string&>(d.ValuationDate) = val;
         else if (key == "SettlementDate")
@@ -462,8 +489,7 @@ trade scripted_instrument_mapper::reverse_performance_option_01(
 // Reverse: KnockOutSwap
 // ---------------------------------------------------------------------------
 
-trade scripted_instrument_mapper::reverse_knock_out_swap(
-        const scripted_instrument& instr) {
+trade scripted_instrument_mapper::reverse_knock_out_swap(const scripted_instrument& instr) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping KnockOutSwap";
     trade t;
     t.TradeType = oreTradeType::KnockOutSwap;
@@ -476,10 +502,14 @@ trade scripted_instrument_mapper::reverse_knock_out_swap(
         else if (key == "BarrierLevel")
             d.BarrierData.Levels.Level.push_back(std::stof(val));
         else if (key == "BarrierType") {
-            if      (val == "UpAndOut")    d.BarrierData.Type = barrierType::UpAndOut;
-            else if (val == "UpAndIn")     d.BarrierData.Type = barrierType::UpAndIn;
-            else if (val == "DownAndIn")   d.BarrierData.Type = barrierType::DownAndIn;
-            else                           d.BarrierData.Type = barrierType::DownAndOut;
+            if (val == "UpAndOut")
+                d.BarrierData.Type = barrierType::UpAndOut;
+            else if (val == "UpAndIn")
+                d.BarrierData.Type = barrierType::UpAndIn;
+            else if (val == "DownAndIn")
+                d.BarrierData.Type = barrierType::DownAndIn;
+            else
+                d.BarrierData.Type = barrierType::DownAndOut;
         }
     }
     t.KnockOutSwapData = std::move(d);

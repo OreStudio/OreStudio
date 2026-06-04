@@ -18,27 +18,25 @@
  *
  */
 #include "ores.ore.core/planner/ore_import_planner.hpp"
-
+#include "ores.dq.api/domain/change_reason_constants.hpp"
+#include "ores.ore.core/hierarchy/ore_hierarchy_builder.hpp"
+#include "ores.ore.core/xml/importer.hpp"
+#include "ores.trading.api/domain/trade_instrument.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <unordered_set>
-#include "ores.ore.core/xml/importer.hpp"
-#include "ores.ore.core/hierarchy/ore_hierarchy_builder.hpp"
-#include "ores.dq.api/domain/change_reason_constants.hpp"
-#include "ores.trading.api/domain/trade_instrument.hpp"
 
 namespace ores::ore::planner {
 
 using namespace ores::logging;
 namespace reason = ores::dq::domain::change_reason_constants;
 
-ore_import_planner::ore_import_planner(
-    scanner::scan_result scan_result,
-    std::set<std::string> existing_iso_codes,
-    import_choices choices)
-    : scan_result_(std::move(scan_result)),
-      existing_iso_codes_(std::move(existing_iso_codes)),
-      choices_(std::move(choices)) {}
+ore_import_planner::ore_import_planner(scanner::scan_result scan_result,
+                                       std::set<std::string> existing_iso_codes,
+                                       import_choices choices)
+    : scan_result_(std::move(scan_result))
+    , existing_iso_codes_(std::move(existing_iso_codes))
+    , choices_(std::move(choices)) {}
 
 ore_import_plan ore_import_planner::plan() {
     ore_import_plan result;
@@ -55,13 +53,11 @@ ore_import_plan ore_import_planner::plan() {
         for (auto& c : currencies) {
             if (choices_.currency_mode == currency_import_mode::missing_only &&
                 existing_iso_codes_.count(c.iso_code) > 0) {
-                BOOST_LOG_SEV(lg(), debug)
-                    << "Skipping existing currency: " << c.iso_code;
+                BOOST_LOG_SEV(lg(), debug) << "Skipping existing currency: " << c.iso_code;
                 continue;
             }
             if (!planned_iso.insert(c.iso_code).second) {
-                BOOST_LOG_SEV(lg(), debug)
-                    << "Skipping duplicate currency: " << c.iso_code;
+                BOOST_LOG_SEV(lg(), debug) << "Skipping duplicate currency: " << c.iso_code;
                 continue;
             }
             c.change_reason_code = std::string(reason::codes::new_record);
@@ -70,8 +66,7 @@ ore_import_plan ore_import_planner::plan() {
         }
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Planned " << result.currencies.size()
-                              << " currencies";
+    BOOST_LOG_SEV(lg(), info) << "Planned " << result.currencies.size() << " currencies";
 
     // =========================================================================
     // Step 2: Portfolio / Book hierarchy (or existing-book fast path)
@@ -87,7 +82,7 @@ ore_import_plan ore_import_planner::plan() {
     // When the user selected an existing book as the import target, stamp all
     // trades into that book directly — no new portfolios or books are created.
     if (choices_.existing_target_book_id && choices_.existing_parent_portfolio_id) {
-        const auto target_book_id      = *choices_.existing_target_book_id;
+        const auto target_book_id = *choices_.existing_target_book_id;
         const auto target_portfolio_id = *choices_.existing_parent_portfolio_id;
         const auto& defs = choices_.defaults;
 
@@ -100,12 +95,13 @@ ore_import_plan ore_import_planner::plan() {
                     item.trade.identity.id = uuid_gen();
                     if (!std::holds_alternative<std::monostate>(item.instrument)) {
                         const auto instr_id = uuid_gen();
-                        trading::domain::stamp_ids(item.instrument, instr_id, item.trade.identity.id);
+                        trading::domain::stamp_ids(
+                            item.instrument, instr_id, item.trade.identity.id);
                         item.trade.classification.instrument_id = instr_id;
                     }
-                    item.trade.parties.book_id      = target_book_id;
+                    item.trade.parties.book_id = target_book_id;
                     item.trade.parties.portfolio_id = target_portfolio_id;
-                    item.trade.identity.party_id    = choices_.party_id;
+                    item.trade.identity.party_id = choices_.party_id;
                     if (!defs.trade_date.empty())
                         item.trade.lifecycle.trade_date = defs.trade_date;
                     if (!defs.effective_date.empty())
@@ -121,9 +117,9 @@ ore_import_plan ore_import_planner::plan() {
             }
         }
 
-        BOOST_LOG_SEV(lg(), info) << "Import plan (existing book): "
-                                  << result.currencies.size() << " currencies, "
-                                  << result.trades.size() << " trades into existing book";
+        BOOST_LOG_SEV(lg(), info) << "Import plan (existing book): " << result.currencies.size()
+                                  << " currencies, " << result.trades.size()
+                                  << " trades into existing book";
         return result;
     }
 
@@ -214,8 +210,7 @@ ore_import_plan ore_import_planner::plan() {
         const std::size_t trades_before = result.trades.size();
         const auto& defs = choices_.defaults;
         for (const auto& source_file : node.source_files) {
-            auto items =
-                xml::importer::import_portfolio_with_context(source_file);
+            auto items = xml::importer::import_portfolio_with_context(source_file);
 
             for (auto& item : items) {
                 item.trade.identity.id = uuid_gen();
@@ -245,18 +240,15 @@ ore_import_plan ore_import_planner::plan() {
 
         if (result.trades.size() == trades_before) {
             // No trades found — skip this book to avoid empty book nodes.
-            BOOST_LOG_SEV(lg(), debug)
-                << "Skipping empty book: " << node.name;
+            BOOST_LOG_SEV(lg(), debug) << "Skipping empty book: " << node.name;
             continue;
         }
         result.books.push_back(b);
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Import plan: "
-                              << result.currencies.size() << " currencies, "
-                              << result.portfolios.size() << " portfolios, "
-                              << result.books.size() << " books, "
-                              << result.trades.size() << " trades";
+    BOOST_LOG_SEV(lg(), info) << "Import plan: " << result.currencies.size() << " currencies, "
+                              << result.portfolios.size() << " portfolios, " << result.books.size()
+                              << " books, " << result.trades.size() << " trades";
     return result;
 }
 

@@ -18,7 +18,6 @@
  *
  */
 #include "ores.ore.core/domain/calendar_adjustment_mapper.hpp"
-
 #include <algorithm>
 
 namespace ores::ore::domain {
@@ -29,12 +28,11 @@ namespace {
 
 constexpr std::string_view audit_modified_by = "ores";
 constexpr std::string_view audit_reason_code = "system.external_data_import";
-constexpr std::string_view audit_commentary  = "Imported from ORE XML";
+constexpr std::string_view audit_commentary = "Imported from ORE XML";
 
 } // namespace
 
-refdata::domain::calendar_adjustment
-calendar_adjustment_mapper::map(const newcalendar& v) {
+refdata::domain::calendar_adjustment calendar_adjustment_mapper::map(const newcalendar& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping ORE calendar: " << std::string(v.name);
 
     refdata::domain::calendar_adjustment r;
@@ -55,9 +53,9 @@ calendar_adjustment_mapper::map(const newcalendar& v) {
             r.additional_business_days.push_back(std::string(d));
     }
 
-    r.modified_by        = std::string(audit_modified_by);
+    r.modified_by = std::string(audit_modified_by);
     r.change_reason_code = std::string(audit_reason_code);
-    r.change_commentary  = std::string(audit_commentary);
+    r.change_commentary = std::string(audit_commentary);
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped calendar: " << r.calendar_name
                                << " holidays=" << r.additional_holidays.size()
@@ -67,20 +65,17 @@ calendar_adjustment_mapper::map(const newcalendar& v) {
 
 std::vector<refdata::domain::calendar_adjustment>
 calendar_adjustment_mapper::map(const calendaradjustment& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping ORE calendar adjustments. Total: "
-                               << v.Calendar.size();
+    BOOST_LOG_SEV(lg(), trace) << "Mapping ORE calendar adjustments. Total: " << v.Calendar.size();
 
     std::vector<refdata::domain::calendar_adjustment> r;
     r.reserve(v.Calendar.size());
-    std::ranges::transform(v.Calendar, std::back_inserter(r),
-        [](const auto& c) { return map(c); });
+    std::ranges::transform(v.Calendar, std::back_inserter(r), [](const auto& c) { return map(c); });
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped " << r.size() << " calendar adjustments.";
     return r;
 }
 
-newcalendar calendar_adjustment_mapper::reverse(
-        const refdata::domain::calendar_adjustment& v) {
+newcalendar calendar_adjustment_mapper::reverse(const refdata::domain::calendar_adjustment& v) {
     BOOST_LOG_SEV(lg(), trace) << "Reverse-mapping calendar: " << v.calendar_name;
 
     newcalendar r;
@@ -106,10 +101,9 @@ newcalendar calendar_adjustment_mapper::reverse(
     return r;
 }
 
-calendaradjustment calendar_adjustment_mapper::reverse(
-        const std::vector<refdata::domain::calendar_adjustment>& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Reverse-mapping " << v.size()
-                               << " calendar adjustments.";
+calendaradjustment
+calendar_adjustment_mapper::reverse(const std::vector<refdata::domain::calendar_adjustment>& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Reverse-mapping " << v.size() << " calendar adjustments.";
 
     calendaradjustment r;
     r.Calendar.reserve(v.size());

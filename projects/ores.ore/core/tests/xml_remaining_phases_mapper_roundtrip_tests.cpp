@@ -17,19 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.ore.core/domain/domain.hpp"
-#include "ores.ore.core/domain/trade_mapper.hpp"
-#include "ores.ore.core/domain/fx_instrument_mapper.hpp"
-#include "ores.ore.core/domain/equity_instrument_mapper.hpp"
-#include "ores.ore.core/domain/scripted_instrument_mapper.hpp"
-#include "ores.ore.core/domain/composite_instrument_mapper.hpp"
-#include "ores.ore.core/domain/bond_instrument_mapper.hpp"
-
-#include <catch2/catch_test_macros.hpp>
-#include <catch2/catch_approx.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.ore.core/domain/bond_instrument_mapper.hpp"
+#include "ores.ore.core/domain/composite_instrument_mapper.hpp"
+#include "ores.ore.core/domain/domain.hpp"
+#include "ores.ore.core/domain/equity_instrument_mapper.hpp"
+#include "ores.ore.core/domain/fx_instrument_mapper.hpp"
+#include "ores.ore.core/domain/scripted_instrument_mapper.hpp"
+#include "ores.ore.core/domain/trade_mapper.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/project_root.hpp"
+#include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 using Catch::Approx;
 
@@ -44,10 +43,8 @@ using Catch::Approx;
 
 namespace {
 
-const std::string_view test_suite(
-    "ores.ore.remaining.phases.mapper.roundtrip.tests");
-const std::string tags(
-    "[ore][xml][mapper][roundtrip][remaining]");
+const std::string_view test_suite("ores.ore.remaining.phases.mapper.roundtrip.tests");
+const std::string tags("[ore][xml][mapper][roundtrip][remaining]");
 
 using ores::ore::domain::portfolio;
 using ores::ore::domain::fx_instrument_mapper;
@@ -64,8 +61,8 @@ using ores::trading::domain::bond_instrument;
 using namespace ores::logging;
 
 std::filesystem::path example_path(const std::string& filename) {
-    return ores::testing::project_root::resolve(
-        "external/ore/examples/Products/Example_Trades/" + filename);
+    return ores::testing::project_root::resolve("external/ore/examples/Products/Example_Trades/" +
+                                                filename);
 }
 
 fx_instrument_variant load_and_map_fx(const std::string& filename) {
@@ -74,8 +71,7 @@ fx_instrument_variant load_and_map_fx(const std::string& filename) {
     portfolio p;
     ores::ore::domain::load_data(content, p);
     REQUIRE(!p.Trade.empty());
-    auto r = ores::ore::domain::trade_mapper::map_fx_instrument(
-        p.Trade.front());
+    auto r = ores::ore::domain::trade_mapper::map_fx_instrument(p.Trade.front());
     REQUIRE(r.has_value());
     return *r;
 }
@@ -86,8 +82,7 @@ equity_instrument_variant load_and_map_equity(const std::string& filename) {
     portfolio p;
     ores::ore::domain::load_data(content, p);
     REQUIRE(!p.Trade.empty());
-    auto r = ores::ore::domain::trade_mapper::map_equity_instrument(
-        p.Trade.front());
+    auto r = ores::ore::domain::trade_mapper::map_equity_instrument(p.Trade.front());
     REQUIRE(r.has_value());
     return *r;
 }
@@ -98,8 +93,7 @@ scripted_instrument load_and_map_scripted(const std::string& filename) {
     portfolio p;
     ores::ore::domain::load_data(content, p);
     REQUIRE(!p.Trade.empty());
-    auto r = ores::ore::domain::trade_mapper::map_scripted_instrument(
-        p.Trade.front());
+    auto r = ores::ore::domain::trade_mapper::map_scripted_instrument(p.Trade.front());
     REQUIRE(r.has_value());
     return *r;
 }
@@ -110,21 +104,18 @@ composite_instrument_data load_and_map_composite(const std::string& filename) {
     portfolio p;
     ores::ore::domain::load_data(content, p);
     REQUIRE(!p.Trade.empty());
-    auto r = ores::ore::domain::trade_mapper::map_composite_instrument(
-        p.Trade.front());
+    auto r = ores::ore::domain::trade_mapper::map_composite_instrument(p.Trade.front());
     REQUIRE(r.has_value());
     return *r;
 }
 
-bond_instrument load_and_map_bond(const std::string& filename,
-        std::size_t index = 0) {
+bond_instrument load_and_map_bond(const std::string& filename, std::size_t index = 0) {
     using ores::platform::filesystem::file;
     const std::string content = file::read_content(example_path(filename));
     portfolio p;
     ores::ore::domain::load_data(content, p);
     REQUIRE(p.Trade.size() > index);
-    auto r = ores::ore::domain::trade_mapper::map_bond_instrument(
-        p.Trade[index]);
+    auto r = ores::ore::domain::trade_mapper::map_bond_instrument(p.Trade[index]);
     REQUIRE(r.has_value());
     return *r;
 }
@@ -219,8 +210,7 @@ TEST_CASE("fx_kiko_barrier_option_reverse", tags) {
 TEST_CASE("equity_double_barrier_option_forward", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map_equity("Equity_Double_Barrier_Option.xml");
-    const auto& instr =
-        std::get<ores::trading::domain::equity_barrier_option_instrument>(r);
+    const auto& instr = std::get<ores::trading::domain::equity_barrier_option_instrument>(r);
 
     CHECK(instr.trade_type_code == "EquityDoubleBarrierOption");
     CHECK(!instr.option_type.empty());
@@ -232,11 +222,9 @@ TEST_CASE("equity_double_barrier_option_forward", tags) {
 TEST_CASE("equity_double_barrier_option_reverse", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map_equity("Equity_Double_Barrier_Option.xml");
-    const auto& instr =
-        std::get<ores::trading::domain::equity_barrier_option_instrument>(r);
+    const auto& instr = std::get<ores::trading::domain::equity_barrier_option_instrument>(r);
 
-    const auto rt = equity_instrument_mapper::reverse_equity_double_barrier_option(
-        instr);
+    const auto rt = equity_instrument_mapper::reverse_equity_double_barrier_option(instr);
     REQUIRE(rt.EquityDoubleBarrierOptionData.operator bool());
 
     BOOST_LOG_SEV(lg, info) << "EquityDoubleBarrierOption reverse test passed";
@@ -250,8 +238,7 @@ TEST_CASE("equity_european_barrier_option_forward", tags) {
     auto lg(make_logger(test_suite));
     // Reuse EquityBarrierOption file (same structure, different trade type)
     const auto r = load_and_map_equity("Equity_European_Barrier_Option.xml");
-    const auto& instr =
-        std::get<ores::trading::domain::equity_barrier_option_instrument>(r);
+    const auto& instr = std::get<ores::trading::domain::equity_barrier_option_instrument>(r);
 
     CHECK(instr.trade_type_code == "EquityEuropeanBarrierOption");
     CHECK(!instr.option_type.empty());
@@ -262,11 +249,9 @@ TEST_CASE("equity_european_barrier_option_forward", tags) {
 TEST_CASE("equity_european_barrier_option_reverse", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map_equity("Equity_European_Barrier_Option.xml");
-    const auto& instr =
-        std::get<ores::trading::domain::equity_barrier_option_instrument>(r);
+    const auto& instr = std::get<ores::trading::domain::equity_barrier_option_instrument>(r);
 
-    const auto rt = equity_instrument_mapper::reverse_equity_european_barrier_option(
-        instr);
+    const auto rt = equity_instrument_mapper::reverse_equity_european_barrier_option(instr);
     REQUIRE(rt.EquityEuropeanBarrierOptionData.operator bool());
 
     BOOST_LOG_SEV(lg, info) << "EquityEuropeanBarrierOption reverse test passed";
@@ -368,8 +353,7 @@ TEST_CASE("total_return_swap_reverse", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map_composite("Hybrid_GenericTRS_with_Bond.xml");
 
-    const auto rt = composite_instrument_mapper::reverse_total_return_swap(
-        r.instrument);
+    const auto rt = composite_instrument_mapper::reverse_total_return_swap(r.instrument);
     CHECK(rt.TradeType == ores::ore::domain::oreTradeType::TotalReturnSwap);
 
     BOOST_LOG_SEV(lg, info) << "TotalReturnSwap reverse test passed";
@@ -392,8 +376,7 @@ TEST_CASE("contract_for_difference_reverse", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map_composite("Hybrid_CFD.xml");
 
-    const auto rt = composite_instrument_mapper::reverse_contract_for_difference(
-        r.instrument);
+    const auto rt = composite_instrument_mapper::reverse_contract_for_difference(r.instrument);
     CHECK(rt.TradeType == ores::ore::domain::oreTradeType::ContractForDifference);
 
     BOOST_LOG_SEV(lg, info) << "ContractForDifference reverse test passed";

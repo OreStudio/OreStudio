@@ -19,13 +19,12 @@
  */
 #include "ores.ore.core/market/market_data_parser.hpp"
 #include "ores.ore.core/market/market_data_serializer.hpp"
-
+#include "ores.platform/filesystem/file.hpp"
+#include "ores.testing/project_root.hpp"
+#include <catch2/catch_test_macros.hpp>
 #include <sstream>
 #include <string>
 #include <vector>
-#include <catch2/catch_test_macros.hpp>
-#include "ores.platform/filesystem/file.hpp"
-#include "ores.testing/project_root.hpp"
 
 /**
  * @file market_market_data_roundtrip_tests.cpp
@@ -71,8 +70,8 @@ void check_market_roundtrip(const std::string& rel_path) {
     REQUIRE(roundtripped.size() == original.size());
     for (std::size_t i = 0; i < original.size(); ++i) {
         INFO("entry " << i);
-        CHECK(roundtripped[i].date  == original[i].date);
-        CHECK(roundtripped[i].key   == original[i].key);
+        CHECK(roundtripped[i].date == original[i].date);
+        CHECK(roundtripped[i].key == original[i].key);
         CHECK(roundtripped[i].value == original[i].value);
     }
 }
@@ -100,9 +99,9 @@ void check_fixings_roundtrip(const std::string& rel_path) {
     REQUIRE(roundtripped.size() == original.size());
     for (std::size_t i = 0; i < original.size(); ++i) {
         INFO("entry " << i);
-        CHECK(roundtripped[i].date       == original[i].date);
+        CHECK(roundtripped[i].date == original[i].date);
         CHECK(roundtripped[i].index_name == original[i].index_name);
-        CHECK(roundtripped[i].value      == original[i].value);
+        CHECK(roundtripped[i].value == original[i].value);
     }
 }
 

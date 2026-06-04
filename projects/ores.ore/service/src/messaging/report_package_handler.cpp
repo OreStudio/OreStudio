@@ -18,16 +18,15 @@
  *
  */
 #include "ores.ore.service/messaging/report_package_handler.hpp"
-
-#include <fstream>
-#include <format>
-#include <filesystem>
-#include <rfl/json.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/uuid/uuid_generators.hpp>
+#include "ores.reporting.api/messaging/report_execution_protocol.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include "ores.storage/net/storage_transfer.hpp"
-#include "ores.reporting.api/messaging/report_execution_protocol.hpp"
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <filesystem>
+#include <format>
+#include <fstream>
+#include <rfl/json.hpp>
 
 namespace ores::ore::service::messaging {
 
@@ -45,16 +44,17 @@ std::string tarball_storage_key(const std::string& instance_id) {
 
 } // namespace
 
-report_package_handler::report_package_handler(
-    ores::nats::service::client& nats, std::string http_base_url)
-    : nats_(nats), http_base_url_(std::move(http_base_url)) {}
+report_package_handler::report_package_handler(ores::nats::service::client& nats,
+                                               std::string http_base_url)
+    : nats_(nats)
+    , http_base_url_(std::move(http_base_url)) {}
 
 void report_package_handler::prepare_package(ores::nats::message msg) {
     auto wf = workflow_step_context::from_message(nats_, msg);
-    if (!wf) return;
+    if (!wf)
+        return;
 
-    const std::string_view sv(
-        reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
+    const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
     auto parsed = rfl::json::read<prepare_ore_package_request>(sv);
     if (!parsed) {
         wf->fail("Failed to decode prepare_ore_package_request");
@@ -78,36 +78,32 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
         ores::storage::net::storage_transfer transfer(http_base_url_);
 
         // ── Create a staging directory ────────────────────────────────
-        const auto stage_dir = std::filesystem::temp_directory_path()
-            / boost::uuids::to_string(boost::uuids::random_generator()());
+        const auto stage_dir = std::filesystem::temp_directory_path() /
+                               boost::uuids::to_string(boost::uuids::random_generator()());
         std::filesystem::create_directories(stage_dir);
 
         // ── Download trades blob ──────────────────────────────────────
-        BOOST_LOG_SEV(lg(), debug)
-            << "Downloading trades blob: " << req.trades_storage_key;
-        const auto trades_blob = transfer.download_blob(
-            std::string(report_data_bucket), req.trades_storage_key);
+        BOOST_LOG_SEV(lg(), debug) << "Downloading trades blob: " << req.trades_storage_key;
+        const auto trades_blob =
+            transfer.download_blob(std::string(report_data_bucket), req.trades_storage_key);
         {
-            std::ofstream f(stage_dir / "trades.msgpack",
-                std::ios::binary | std::ios::trunc);
+            std::ofstream f(stage_dir / "trades.msgpack", std::ios::binary | std::ios::trunc);
             f.write(trades_blob.data(), static_cast<std::streamsize>(trades_blob.size()));
         }
 
         // ── Download market data blob ─────────────────────────────────
         BOOST_LOG_SEV(lg(), debug)
             << "Downloading market data blob: " << req.market_data_storage_key;
-        const auto md_blob = transfer.download_blob(
-            std::string(report_data_bucket), req.market_data_storage_key);
+        const auto md_blob =
+            transfer.download_blob(std::string(report_data_bucket), req.market_data_storage_key);
         {
-            std::ofstream f(stage_dir / "market_data.msgpack",
-                std::ios::binary | std::ios::trunc);
+            std::ofstream f(stage_dir / "market_data.msgpack", std::ios::binary | std::ios::trunc);
             f.write(md_blob.data(), static_cast<std::streamsize>(md_blob.size()));
         }
 
         // ── Pack into a tar.gz and upload ─────────────────────────────
         const auto tarball_key = tarball_storage_key(req.report_instance_id);
-        transfer.pack_and_upload(stage_dir,
-            std::string(report_data_bucket), tarball_key);
+        transfer.pack_and_upload(stage_dir, std::string(report_data_bucket), tarball_key);
 
         // ── Clean up staging directory ────────────────────────────────
         std::filesystem::remove_all(stage_dir);
@@ -117,13 +113,13 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
         prepare_ore_package_result result;
         result.success = true;
         result.tarball_uris = {tarball_uri};
-        result.message = std::format(
-            "Packaged {} bytes trades + {} bytes market data into {}",
-            trades_blob.size(), md_blob.size(), tarball_key);
+        result.message = std::format("Packaged {} bytes trades + {} bytes market data into {}",
+                                     trades_blob.size(),
+                                     md_blob.size(),
+                                     tarball_key);
 
         BOOST_LOG_SEV(lg(), info) << "prepare_ore_package complete | instance="
-                                  << req.report_instance_id
-                                  << " tarball=" << tarball_key;
+                                  << req.report_instance_id << " tarball=" << tarball_key;
 
         wf->complete(rfl::json::write(result));
     } catch (const std::exception& e) {

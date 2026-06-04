@@ -20,9 +20,9 @@
 #ifndef ORES_ORE_CORE_DOMAIN_BOND_INSTRUMENT_MAPPER_HPP
 #define ORES_ORE_CORE_DOMAIN_BOND_INSTRUMENT_MAPPER_HPP
 
-#include "ores.ore.core/export.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/domain/domain.hpp"
+#include "ores.ore.core/export.hpp"
 #include "ores.trading.api/domain/bond_instrument.hpp"
 
 namespace ores::ore::domain {
@@ -50,8 +50,7 @@ namespace ores::ore::domain {
  */
 class ORES_ORE_CORE_EXPORT bond_instrument_mapper {
 private:
-    inline static std::string_view logger_name =
-        "ores.ore.domain.bond_instrument_mapper";
+    inline static std::string_view logger_name = "ores.ore.domain.bond_instrument_mapper";
 
     static auto& lg() {
         using namespace ores::logging;
@@ -59,11 +58,9 @@ private:
         return instance;
     }
 
-    static void map_bond_data(const bondData& bd,
-        ores::trading::domain::bond_instrument& instr);
+    static void map_bond_data(const bondData& bd, ores::trading::domain::bond_instrument& instr);
 
-    static bondData reverse_bond_data(
-        const ores::trading::domain::bond_instrument& instr);
+    static bondData reverse_bond_data(const ores::trading::domain::bond_instrument& instr);
 
 public:
     static trading::domain::bond_instrument forward_bond(const trade& t);
@@ -74,20 +71,13 @@ public:
     static trading::domain::bond_instrument forward_bond_trs(const trade& t);
     static trading::domain::bond_instrument forward_bond_repo(const trade& t);
 
-    static trade reverse_bond(
-        const ores::trading::domain::bond_instrument& instr);
-    static trade reverse_forward_bond(
-        const ores::trading::domain::bond_instrument& instr);
-    static trade reverse_callable_bond(
-        const ores::trading::domain::bond_instrument& instr);
-    static trade reverse_convertible_bond(
-        const ores::trading::domain::bond_instrument& instr);
-    static trade reverse_bond_option(
-        const ores::trading::domain::bond_instrument& instr);
-    static trade reverse_bond_trs(
-        const ores::trading::domain::bond_instrument& instr);
-    static trade reverse_bond_repo(
-        const ores::trading::domain::bond_instrument& instr);
+    static trade reverse_bond(const ores::trading::domain::bond_instrument& instr);
+    static trade reverse_forward_bond(const ores::trading::domain::bond_instrument& instr);
+    static trade reverse_callable_bond(const ores::trading::domain::bond_instrument& instr);
+    static trade reverse_convertible_bond(const ores::trading::domain::bond_instrument& instr);
+    static trade reverse_bond_option(const ores::trading::domain::bond_instrument& instr);
+    static trade reverse_bond_trs(const ores::trading::domain::bond_instrument& instr);
+    static trade reverse_bond_repo(const ores::trading::domain::bond_instrument& instr);
 };
 
 }

@@ -20,8 +20,8 @@
 #ifndef ORES_ORE_SERVICE_APP_APPLICATION_EXCEPTION_HPP
 #define ORES_ORE_SERVICE_APP_APPLICATION_EXCEPTION_HPP
 
-#include <string>
 #include <stdexcept>
+#include <string>
 
 namespace ores::ore::service::app {
 

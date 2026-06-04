@@ -17,14 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.ore.core/domain/domain.hpp"
-#include "ores.ore.core/domain/trade_mapper.hpp"
-#include "ores.ore.core/domain/fx_instrument_mapper.hpp"
-
-#include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.ore.core/domain/domain.hpp"
+#include "ores.ore.core/domain/fx_instrument_mapper.hpp"
+#include "ores.ore.core/domain/trade_mapper.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/project_root.hpp"
+#include <catch2/catch_test_macros.hpp>
 
 /**
  * @file xml_fx_exotic_mapper_roundtrip_tests.cpp
@@ -55,8 +54,8 @@ using ores::trading::domain::fx_accumulator_instrument;
 using namespace ores::logging;
 
 std::filesystem::path example_path(const std::string& filename) {
-    return ores::testing::project_root::resolve(
-        "external/ore/examples/Products/Example_Trades/" + filename);
+    return ores::testing::project_root::resolve("external/ore/examples/Products/Example_Trades/" +
+                                                filename);
 }
 
 fx_instrument_variant load_and_map(const std::string& filename) {
@@ -65,8 +64,7 @@ fx_instrument_variant load_and_map(const std::string& filename) {
     portfolio p;
     ores::ore::domain::load_data(content, p);
     REQUIRE(!p.Trade.empty());
-    auto r = ores::ore::domain::trade_mapper::map_fx_instrument(
-        p.Trade.front());
+    auto r = ores::ore::domain::trade_mapper::map_fx_instrument(p.Trade.front());
     REQUIRE(r.has_value());
     return *r;
 }
@@ -89,8 +87,7 @@ TEST_CASE("fx_exotic_mapper_roundtrip_barrier_option", tags) {
     const bool has_data = rt.FxBarrierOptionData.operator bool();
     REQUIRE(has_data);
 
-    BOOST_LOG_SEV(lg, info) << "FxBarrierOption roundtrip passed. Barrier: "
-                            << instr.barrier_type;
+    BOOST_LOG_SEV(lg, info) << "FxBarrierOption roundtrip passed. Barrier: " << instr.barrier_type;
 }
 
 TEST_CASE("fx_exotic_mapper_roundtrip_digital_option", tags) {
@@ -110,8 +107,7 @@ TEST_CASE("fx_exotic_mapper_roundtrip_digital_option", tags) {
     const bool has_data = rt.FxDigitalOptionData.operator bool();
     REQUIRE(has_data);
 
-    BOOST_LOG_SEV(lg, info) << "FxDigitalOption roundtrip passed. Strike: "
-                            << *instr.strike;
+    BOOST_LOG_SEV(lg, info) << "FxDigitalOption roundtrip passed. Strike: " << *instr.strike;
 }
 
 TEST_CASE("fx_exotic_mapper_roundtrip_digital_barrier_option", tags) {
@@ -152,8 +148,7 @@ TEST_CASE("fx_exotic_mapper_roundtrip_touch_option", tags) {
     const bool has_data = rt.FxTouchOptionData.operator bool();
     REQUIRE(has_data);
 
-    BOOST_LOG_SEV(lg, info) << "FxTouchOption roundtrip passed. Barrier: "
-                            << *instr.lower_barrier;
+    BOOST_LOG_SEV(lg, info) << "FxTouchOption roundtrip passed. Barrier: " << *instr.lower_barrier;
 }
 
 TEST_CASE("fx_exotic_mapper_roundtrip_double_touch_option", tags) {
@@ -189,8 +184,7 @@ TEST_CASE("fx_exotic_mapper_roundtrip_variance_swap", tags) {
     const bool has_data = rt.FxVarianceSwapData.operator bool();
     REQUIRE(has_data);
 
-    BOOST_LOG_SEV(lg, info) << "FxVarianceSwap roundtrip passed. Strike: "
-                            << instr.strike;
+    BOOST_LOG_SEV(lg, info) << "FxVarianceSwap roundtrip passed. Strike: " << instr.strike;
 }
 
 TEST_CASE("fx_exotic_mapper_roundtrip_average_forward", tags) {
@@ -209,8 +203,7 @@ TEST_CASE("fx_exotic_mapper_roundtrip_average_forward", tags) {
     const bool has_data = rt.FxAverageForwardData.operator bool();
     REQUIRE(has_data);
 
-    BOOST_LOG_SEV(lg, info) << "FxAverageForward roundtrip passed. FX index: "
-                            << instr.fx_index;
+    BOOST_LOG_SEV(lg, info) << "FxAverageForward roundtrip passed. FX index: " << instr.fx_index;
 }
 
 TEST_CASE("fx_exotic_mapper_roundtrip_accumulator", tags) {
@@ -227,8 +220,7 @@ TEST_CASE("fx_exotic_mapper_roundtrip_accumulator", tags) {
     const bool has_data = rt.FxAccumulatorData.operator bool();
     REQUIRE(has_data);
 
-    BOOST_LOG_SEV(lg, info) << "FxAccumulator roundtrip passed. Amount: "
-                            << instr.fixing_amount;
+    BOOST_LOG_SEV(lg, info) << "FxAccumulator roundtrip passed. Amount: " << instr.fixing_amount;
 }
 
 TEST_CASE("fx_exotic_mapper_roundtrip_tarf", tags) {
@@ -251,8 +243,7 @@ TEST_CASE("fx_exotic_mapper_roundtrip_tarf", tags) {
     const bool has_data = rt.FxTaRFData.operator bool();
     REQUIRE(has_data);
 
-    BOOST_LOG_SEV(lg, info) << "FxTaRF roundtrip passed. Amount: "
-                            << *instr.fixing_amount;
+    BOOST_LOG_SEV(lg, info) << "FxTaRF roundtrip passed. Amount: " << *instr.fixing_amount;
 }
 
 TEST_CASE("fx_exotic_mapper_roundtrip_generic_barrier_option", tags) {

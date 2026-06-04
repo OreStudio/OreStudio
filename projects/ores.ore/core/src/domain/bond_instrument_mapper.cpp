@@ -18,7 +18,6 @@
  *
  */
 #include "ores.ore.core/domain/bond_instrument_mapper.hpp"
-
 #include <stdexcept>
 
 namespace ores::ore::domain {
@@ -43,7 +42,8 @@ bond_instrument make_base(const std::string& trade_type_code) {
 }
 
 std::string first_tenor(const xsd::optional<scheduleData>& sd) {
-    if (!sd || sd->Rules.empty()) return {};
+    if (!sd || sd->Rules.empty())
+        return {};
     return std::string(sd->Rules.front().Tenor);
 }
 
@@ -53,8 +53,7 @@ std::string first_tenor(const xsd::optional<scheduleData>& sd) {
 // Common: map bondData fields → bond_instrument
 // ---------------------------------------------------------------------------
 
-void bond_instrument_mapper::map_bond_data(
-        const bondData& bd, bond_instrument& instr) {
+void bond_instrument_mapper::map_bond_data(const bondData& bd, bond_instrument& instr) {
     instr.security_id = std::string(bd.SecurityId);
     if (bd.IssuerId)
         instr.issuer = std::string(*bd.IssuerId);
@@ -71,16 +70,15 @@ void bond_instrument_mapper::map_bond_data(
         if (ld.Currency)
             instr.currency = std::string(*ld.Currency);
         if (ld.Notionals && !ld.Notionals->Notional.empty())
-            instr.face_value = static_cast<double>(
-                ld.Notionals->Notional.front());
+            instr.face_value = static_cast<double>(ld.Notionals->Notional.front());
         if (ld.DayCounter)
             instr.day_count_code = to_string(*ld.DayCounter);
         instr.coupon_frequency_code = first_tenor(ld.ScheduleData);
 
         if (ld.legDataType && ld.legDataType->FixedLegData &&
-                !ld.legDataType->FixedLegData->Rates.Rate.empty())
-            instr.coupon_rate = static_cast<double>(
-                ld.legDataType->FixedLegData->Rates.Rate.front());
+            !ld.legDataType->FixedLegData->Rates.Rate.empty())
+            instr.coupon_rate =
+                static_cast<double>(ld.legDataType->FixedLegData->Rates.Rate.front());
 
         if (ld.ScheduleData && !ld.ScheduleData->Rules.empty()) {
             const auto& rule = ld.ScheduleData->Rules.front();
@@ -94,8 +92,7 @@ void bond_instrument_mapper::map_bond_data(
 // Common: bond_instrument → bondData
 // ---------------------------------------------------------------------------
 
-bondData bond_instrument_mapper::reverse_bond_data(
-        const bond_instrument& instr) {
+bondData bond_instrument_mapper::reverse_bond_data(const bond_instrument& instr) {
     bondData bd;
 
     static_cast<std::string&>(bd.SecurityId) = instr.security_id;
@@ -181,10 +178,8 @@ trading::domain::bond_instrument bond_instrument_mapper::forward_bond(const trad
 // Forward: ForwardBond
 // ---------------------------------------------------------------------------
 
-trading::domain::bond_instrument bond_instrument_mapper::forward_forward_bond(
-        const trade& t) {
-    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping ForwardBond: "
-                               << std::string(t.id);
+trading::domain::bond_instrument bond_instrument_mapper::forward_forward_bond(const trade& t) {
+    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping ForwardBond: " << std::string(t.id);
     trading::domain::bond_instrument result = make_base("ForwardBond");
     if (t.ForwardBondData)
         map_bond_data(t.ForwardBondData->BondData, result);
@@ -195,10 +190,8 @@ trading::domain::bond_instrument bond_instrument_mapper::forward_forward_bond(
 // Forward: CallableBond
 // ---------------------------------------------------------------------------
 
-trading::domain::bond_instrument bond_instrument_mapper::forward_callable_bond(
-        const trade& t) {
-    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping CallableBond: "
-                               << std::string(t.id);
+trading::domain::bond_instrument bond_instrument_mapper::forward_callable_bond(const trade& t) {
+    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping CallableBond: " << std::string(t.id);
     trading::domain::bond_instrument result = make_base("CallableBond");
     if (t.CallableBondData)
         map_bond_data(t.CallableBondData->BondData, result);
@@ -209,10 +202,8 @@ trading::domain::bond_instrument bond_instrument_mapper::forward_callable_bond(
 // Forward: ConvertibleBond
 // ---------------------------------------------------------------------------
 
-trading::domain::bond_instrument bond_instrument_mapper::forward_convertible_bond(
-        const trade& t) {
-    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping ConvertibleBond: "
-                               << std::string(t.id);
+trading::domain::bond_instrument bond_instrument_mapper::forward_convertible_bond(const trade& t) {
+    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping ConvertibleBond: " << std::string(t.id);
     trading::domain::bond_instrument result = make_base("ConvertibleBond");
     if (t.ConvertibleBondData)
         map_bond_data(t.ConvertibleBondData->BondData, result);
@@ -235,8 +226,7 @@ trade bond_instrument_mapper::reverse_bond(const bond_instrument& instr) {
 // Reverse: ForwardBond
 // ---------------------------------------------------------------------------
 
-trade bond_instrument_mapper::reverse_forward_bond(
-        const bond_instrument& instr) {
+trade bond_instrument_mapper::reverse_forward_bond(const bond_instrument& instr) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping ForwardBond";
     trade t;
     t.TradeType = oreTradeType::ForwardBond;
@@ -250,8 +240,7 @@ trade bond_instrument_mapper::reverse_forward_bond(
 // Reverse: CallableBond
 // ---------------------------------------------------------------------------
 
-trade bond_instrument_mapper::reverse_callable_bond(
-        const bond_instrument& instr) {
+trade bond_instrument_mapper::reverse_callable_bond(const bond_instrument& instr) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping CallableBond";
     trade t;
     t.TradeType = oreTradeType::CallableBond;
@@ -265,8 +254,7 @@ trade bond_instrument_mapper::reverse_callable_bond(
 // Reverse: ConvertibleBond
 // ---------------------------------------------------------------------------
 
-trade bond_instrument_mapper::reverse_convertible_bond(
-        const bond_instrument& instr) {
+trade bond_instrument_mapper::reverse_convertible_bond(const bond_instrument& instr) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping ConvertibleBond";
     trade t;
     t.TradeType = oreTradeType::ConvertibleBond;
@@ -280,12 +268,11 @@ trade bond_instrument_mapper::reverse_convertible_bond(
 // Forward: BondOption
 // ---------------------------------------------------------------------------
 
-trading::domain::bond_instrument bond_instrument_mapper::forward_bond_option(
-        const trade& t) {
-    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping BondOption: "
-                               << std::string(t.id);
+trading::domain::bond_instrument bond_instrument_mapper::forward_bond_option(const trade& t) {
+    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping BondOption: " << std::string(t.id);
     trading::domain::bond_instrument result = make_base("BondOption");
-    if (!t.BondOptionData) return result;
+    if (!t.BondOptionData)
+        return result;
     const auto& d = *t.BondOptionData;
 
     map_bond_data(d.BondData, result);
@@ -293,11 +280,10 @@ trading::domain::bond_instrument bond_instrument_mapper::forward_bond_option(
     // Option fields
     if (d.OptionData.OptionType)
         result.option_type = std::string(*d.OptionData.OptionType);
-    if (d.OptionData.exerciseDatesGroup &&
-            d.OptionData.exerciseDatesGroup->ExerciseDates &&
-            !d.OptionData.exerciseDatesGroup->ExerciseDates->ExerciseDate.empty())
-        result.option_expiry_date = std::string(
-            d.OptionData.exerciseDatesGroup->ExerciseDates->ExerciseDate.front());
+    if (d.OptionData.exerciseDatesGroup && d.OptionData.exerciseDatesGroup->ExerciseDates &&
+        !d.OptionData.exerciseDatesGroup->ExerciseDates->ExerciseDate.empty())
+        result.option_expiry_date =
+            std::string(d.OptionData.exerciseDatesGroup->ExerciseDates->ExerciseDate.front());
     if (d.strikeGroup.Strike) {
         const std::string s(*d.strikeGroup.Strike);
         if (!s.empty())
@@ -312,10 +298,10 @@ trading::domain::bond_instrument bond_instrument_mapper::forward_bond_option(
 // ---------------------------------------------------------------------------
 
 trading::domain::bond_instrument bond_instrument_mapper::forward_bond_trs(const trade& t) {
-    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping BondTRS: "
-                               << std::string(t.id);
+    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping BondTRS: " << std::string(t.id);
     trading::domain::bond_instrument result = make_base("BondTRS");
-    if (!t.BondTRSData) return result;
+    if (!t.BondTRSData)
+        return result;
     const auto& d = *t.BondTRSData;
 
     map_bond_data(d.BondData, result);
@@ -326,10 +312,8 @@ trading::domain::bond_instrument bond_instrument_mapper::forward_bond_trs(const 
     const auto& ld = d.FundingData.LegData;
     if (ld.legDataType) {
         if (ld.legDataType->FloatingLegData)
-            result.trs_funding_leg_code =
-                std::string(ld.legDataType->FloatingLegData->Index);
-        else if (ld.legDataType->FixedLegData &&
-                !ld.legDataType->FixedLegData->Rates.Rate.empty())
+            result.trs_funding_leg_code = std::string(ld.legDataType->FloatingLegData->Index);
+        else if (ld.legDataType->FixedLegData && !ld.legDataType->FixedLegData->Rates.Rate.empty())
             result.trs_funding_leg_code = "Fixed";
     }
 
@@ -340,8 +324,7 @@ trading::domain::bond_instrument bond_instrument_mapper::forward_bond_trs(const 
 // Reverse: BondOption
 // ---------------------------------------------------------------------------
 
-trade bond_instrument_mapper::reverse_bond_option(
-        const bond_instrument& instr) {
+trade bond_instrument_mapper::reverse_bond_option(const bond_instrument& instr) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping BondOption";
     trade t;
     t.TradeType = oreTradeType::BondOption;
@@ -374,8 +357,7 @@ trade bond_instrument_mapper::reverse_bond_option(
 // Reverse: BondTRS
 // ---------------------------------------------------------------------------
 
-trade bond_instrument_mapper::reverse_bond_trs(
-        const bond_instrument& instr) {
+trade bond_instrument_mapper::reverse_bond_trs(const bond_instrument& instr) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping BondTRS";
     trade t;
     t.TradeType = oreTradeType::BondTRS;
@@ -387,8 +369,7 @@ trade bond_instrument_mapper::reverse_bond_trs(
     d.TotalReturnData.PriceType = std::move(pt);
     // Reconstruct funding leg from captured code.
     d.FundingData.LegData.Payer = false;
-    if (instr.trs_funding_leg_code.empty() ||
-            instr.trs_funding_leg_code == "Fixed") {
+    if (instr.trs_funding_leg_code.empty() || instr.trs_funding_leg_code == "Fixed") {
         d.FundingData.LegData.LegType = legType::Fixed;
     } else {
         d.FundingData.LegData.LegType = legType::Floating;
@@ -407,10 +388,10 @@ trade bond_instrument_mapper::reverse_bond_trs(
 // ---------------------------------------------------------------------------
 
 trading::domain::bond_instrument bond_instrument_mapper::forward_bond_repo(const trade& t) {
-    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping BondRepo: "
-                               << std::string(t.id);
+    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping BondRepo: " << std::string(t.id);
     trading::domain::bond_instrument result = make_base("BondRepo");
-    if (!t.BondRepoData) return result;
+    if (!t.BondRepoData)
+        return result;
     const auto& d = *t.BondRepoData;
     map_bond_data(d.BondData, result);
     // Repo leg: capture payment frequency from leg type

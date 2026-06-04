@@ -20,11 +20,11 @@
 #ifndef ORES_ORE_CORE_HIERARCHY_IMPORT_NODE_HPP
 #define ORES_ORE_CORE_HIERARCHY_IMPORT_NODE_HPP
 
-#include <string>
-#include <optional>
 #include <cstddef>
-#include <vector>
 #include <filesystem>
+#include <optional>
+#include <string>
+#include <vector>
 
 namespace ores::ore::hierarchy {
 

@@ -18,20 +18,19 @@
  *
  */
 #include "ores.ore.service/messaging/ore_import_handler.hpp"
-
-#include <algorithm>
-#include <span>
-#include <rfl/json.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include <boost/uuid/uuid_io.hpp>
 #include "ores.nats/domain/correlation.hpp"
 #include "ores.nats/service/nats_client.hpp"
+#include "ores.ore.api/messaging/ore_import_engine_protocol.hpp"
+#include "ores.ore.api/messaging/ore_import_protocol.hpp"
 #include "ores.service/error_code.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include "ores.ore.api/messaging/ore_import_protocol.hpp"
-#include "ores.ore.api/messaging/ore_import_engine_protocol.hpp"
 #include "ores.workflow.api/messaging/workflow_events.hpp"
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
+#include <rfl/json.hpp>
+#include <span>
 
 namespace ores::ore::service::messaging {
 
@@ -39,8 +38,8 @@ using namespace ores::logging;
 using namespace ores::service::messaging;
 
 ore_import_handler::ore_import_handler(ores::nats::service::client& nats,
-    ores::database::context ctx,
-    ores::security::jwt::jwt_authenticator signer)
+                                       ores::database::context ctx,
+                                       ores::security::jwt::jwt_authenticator signer)
     : nats_(nats)
     , ctx_(std::move(ctx))
     , signer_(std::move(signer)) {}
@@ -68,30 +67,34 @@ void ore_import_handler::ore_import(ores::nats::message msg) {
     auto req = decode<ore_import_request>(msg);
     if (!req) {
         BOOST_LOG_SEV(lg(), warn) << "ore.import bad payload | corr=" << correlation_id;
-        reply(nats_, msg, ore_import_response{
-            .success = false,
-            .message = "Invalid request payload.",
-            .correlation_id = correlation_id});
+        reply(nats_,
+              msg,
+              ore_import_response{.success = false,
+                                  .message = "Invalid request payload.",
+                                  .correlation_id = correlation_id});
         return;
     }
 
     if (req->request_id.empty()) {
-        reply(nats_, msg, ore_import_response{
-            .success = false,
-            .message = "request_id is required.",
-            .correlation_id = correlation_id});
+        reply(nats_,
+              msg,
+              ore_import_response{.success = false,
+                                  .message = "request_id is required.",
+                                  .correlation_id = correlation_id});
         return;
     }
 
     // Validate request_id — must contain only alphanumeric characters and
     // hyphens to prevent path traversal when constructing the work directory.
-    const bool safe = std::all_of(req->request_id.begin(), req->request_id.end(),
-        [](unsigned char c) { return std::isalnum(c) || c == '-'; });
+    const bool safe = std::all_of(req->request_id.begin(),
+                                  req->request_id.end(),
+                                  [](unsigned char c) { return std::isalnum(c) || c == '-'; });
     if (!safe) {
-        reply(nats_, msg, ore_import_response{
-            .success = false,
-            .message = "request_id contains invalid characters.",
-            .correlation_id = correlation_id});
+        reply(nats_,
+              msg,
+              ore_import_response{.success = false,
+                                  .message = "request_id contains invalid characters.",
+                                  .correlation_id = correlation_id});
         return;
     }
 
@@ -107,18 +110,18 @@ void ore_import_handler::ore_import(ores::nats::message msg) {
 
     // Build the internal execute request (stored as workflow_instance.request_json).
     ore_import_execute_request execute_req;
-    execute_req.request_id         = req->request_id;
+    execute_req.request_id = req->request_id;
     execute_req.import_choices_json = req->import_choices_json;
-    execute_req.correlation_id     = correlation_id;
-    execute_req.bearer_token       = bearer;
+    execute_req.correlation_id = correlation_id;
+    execute_req.bearer_token = bearer;
 
     // Dispatch start_workflow_message — fire and forget.
     start_workflow_message swm;
-    swm.type           = "ore_import_workflow";
-    swm.tenant_id      = boost::uuids::to_string(req_ctx.tenant_id().to_uuid());
-    swm.request_json   = rfl::json::write(execute_req);
+    swm.type = "ore_import_workflow";
+    swm.tenant_id = boost::uuids::to_string(req_ctx.tenant_id().to_uuid());
+    swm.request_json = rfl::json::write(execute_req);
     swm.correlation_id = correlation_id;
-    swm.instance_id    = instance_id_str;
+    swm.instance_id = instance_id_str;
 
     const auto swm_json = rfl::json::write(swm);
     const auto data = std::as_bytes(std::span{swm_json.data(), swm_json.size()});
@@ -127,11 +130,12 @@ void ore_import_handler::ore_import(ores::nats::message msg) {
     BOOST_LOG_SEV(lg(), info) << "ore.import workflow dispatched | corr=" << correlation_id
                               << " instance_id=" << instance_id_str;
 
-    reply(nats_, msg, ore_import_response{
-        .success              = true,
-        .message              = "ORE import submitted.",
-        .correlation_id       = correlation_id,
-        .workflow_instance_id = instance_id_str});
+    reply(nats_,
+          msg,
+          ore_import_response{.success = true,
+                              .message = "ORE import submitted.",
+                              .correlation_id = correlation_id,
+                              .workflow_instance_id = instance_id_str});
 }
 
 }

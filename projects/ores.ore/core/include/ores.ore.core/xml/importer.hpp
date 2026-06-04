@@ -21,15 +21,15 @@
 #ifndef ORES_ORE_CORE_XML_IMPORTER_HPP
 #define ORES_ORE_CORE_XML_IMPORTER_HPP
 
-#include <vector>
-#include <filesystem>
-#include "ores.ore.core/export.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata.api/domain/currency.hpp"
+#include "ores.ore.core/domain/conventions_mapper.hpp"
+#include "ores.ore.core/export.hpp"
 #include "ores.refdata.api/domain/calendar_adjustment.hpp"
+#include "ores.refdata.api/domain/currency.hpp"
 #include "ores.trading.api/domain/trade.hpp"
 #include "ores.trading.api/domain/trade_instrument.hpp"
-#include "ores.ore.core/domain/conventions_mapper.hpp"
+#include <filesystem>
+#include <vector>
 
 namespace ores::ore::xml {
 
@@ -46,9 +46,9 @@ namespace ores::ore::xml {
  */
 struct trade_import_item {
     trading::domain::trade trade;
-    std::string ore_counterparty_name;             ///< ORE CounterParty string, empty if absent
-    std::filesystem::path source_file;             ///< ORE XML file this trade was read from
-    trading::domain::trade_instrument instrument;  ///< monostate if trade type not yet mapped
+    std::string ore_counterparty_name;            ///< ORE CounterParty string, empty if absent
+    std::filesystem::path source_file;            ///< ORE XML file this trade was read from
+    trading::domain::trade_instrument instrument; ///< monostate if trade type not yet mapped
 };
 
 /**
@@ -85,8 +85,7 @@ public:
      * @param ca Calendar adjustment to validate
      * @return Empty string if valid, otherwise error message
      */
-    static std::string validate_calendar_adjustment(
-        const refdata::domain::calendar_adjustment& ca);
+    static std::string validate_calendar_adjustment(const refdata::domain::calendar_adjustment& ca);
 
     /**
      * @brief Imports calendar adjustments from an ORE calendaradjustment XML file.
@@ -113,8 +112,7 @@ public:
      * @param path Path to the conventions.xml file
      * @return @c mapped_conventions struct containing one vector per convention type
      */
-    static domain::mapped_conventions
-    import_conventions(const std::filesystem::path& path);
+    static domain::mapped_conventions import_conventions(const std::filesystem::path& path);
 
     /**
      * @brief Validates a trade against minimum import requirements.

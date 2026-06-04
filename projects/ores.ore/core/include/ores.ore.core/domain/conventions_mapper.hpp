@@ -20,19 +20,19 @@
 #ifndef ORES_ORE_CORE_DOMAIN_CONVENTIONS_MAPPER_HPP
 #define ORES_ORE_CORE_DOMAIN_CONVENTIONS_MAPPER_HPP
 
-#include <vector>
-#include "ores.ore.core/export.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/domain/domain.hpp"
-#include "ores.refdata.api/domain/zero_convention.hpp"
-#include "ores.refdata.api/domain/deposit_convention.hpp"
-#include "ores.refdata.api/domain/swap_convention.hpp"
-#include "ores.refdata.api/domain/ois_convention.hpp"
-#include "ores.refdata.api/domain/fra_convention.hpp"
-#include "ores.refdata.api/domain/ibor_index_convention.hpp"
-#include "ores.refdata.api/domain/overnight_index_convention.hpp"
-#include "ores.refdata.api/domain/fx_convention.hpp"
+#include "ores.ore.core/export.hpp"
 #include "ores.refdata.api/domain/cds_convention.hpp"
+#include "ores.refdata.api/domain/deposit_convention.hpp"
+#include "ores.refdata.api/domain/fra_convention.hpp"
+#include "ores.refdata.api/domain/fx_convention.hpp"
+#include "ores.refdata.api/domain/ibor_index_convention.hpp"
+#include "ores.refdata.api/domain/ois_convention.hpp"
+#include "ores.refdata.api/domain/overnight_index_convention.hpp"
+#include "ores.refdata.api/domain/swap_convention.hpp"
+#include "ores.refdata.api/domain/zero_convention.hpp"
+#include <vector>
 
 namespace ores::ore::domain {
 
@@ -45,15 +45,15 @@ namespace ores::ore::domain {
  * that are not yet modelled and are silently skipped during import.
  */
 struct mapped_conventions {
-    std::vector<refdata::domain::zero_convention>            zero;
-    std::vector<refdata::domain::deposit_convention>         deposit;
-    std::vector<refdata::domain::swap_convention>            swap;
-    std::vector<refdata::domain::ois_convention>             ois;
-    std::vector<refdata::domain::fra_convention>             fra;
-    std::vector<refdata::domain::ibor_index_convention>      ibor_index;
+    std::vector<refdata::domain::zero_convention> zero;
+    std::vector<refdata::domain::deposit_convention> deposit;
+    std::vector<refdata::domain::swap_convention> swap;
+    std::vector<refdata::domain::ois_convention> ois;
+    std::vector<refdata::domain::fra_convention> fra;
+    std::vector<refdata::domain::ibor_index_convention> ibor_index;
     std::vector<refdata::domain::overnight_index_convention> overnight_index;
-    std::vector<refdata::domain::fx_convention>              fx;
-    std::vector<refdata::domain::cds_convention>             cds;
+    std::vector<refdata::domain::fx_convention> fx;
+    std::vector<refdata::domain::cds_convention> cds;
 };
 
 /**
@@ -65,8 +65,7 @@ struct mapped_conventions {
  */
 class ORES_ORE_CORE_EXPORT conventions_mapper {
 private:
-    inline static std::string_view logger_name =
-        "ores.ore.domain.conventions_mapper";
+    inline static std::string_view logger_name = "ores.ore.domain.conventions_mapper";
 
     static auto& lg() {
         using namespace ores::logging;
@@ -88,32 +87,24 @@ public:
      */
     static mapped_conventions map(const conventions& v);
 
-    static refdata::domain::zero_convention
-    map_zero(const zeroType& v);
+    static refdata::domain::zero_convention map_zero(const zeroType& v);
 
-    static refdata::domain::deposit_convention
-    map_deposit(const depositType& v);
+    static refdata::domain::deposit_convention map_deposit(const depositType& v);
 
-    static refdata::domain::swap_convention
-    map_swap(const swapType& v);
+    static refdata::domain::swap_convention map_swap(const swapType& v);
 
-    static refdata::domain::ois_convention
-    map_ois(const oisType& v);
+    static refdata::domain::ois_convention map_ois(const oisType& v);
 
-    static refdata::domain::fra_convention
-    map_fra(const fraType& v);
+    static refdata::domain::fra_convention map_fra(const fraType& v);
 
-    static refdata::domain::ibor_index_convention
-    map_ibor_index(const iborIndexType& v);
+    static refdata::domain::ibor_index_convention map_ibor_index(const iborIndexType& v);
 
     static refdata::domain::overnight_index_convention
     map_overnight_index(const overnightIndexType& v);
 
-    static refdata::domain::fx_convention
-    map_fx(const fxType& v);
+    static refdata::domain::fx_convention map_fx(const fxType& v);
 
-    static refdata::domain::cds_convention
-    map_cds(const cdsConventionsType& v);
+    static refdata::domain::cds_convention map_cds(const cdsConventionsType& v);
 
     /**
      * @brief Reconstructs an ORE conventions XML document from mapped domain conventions.

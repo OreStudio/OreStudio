@@ -18,7 +18,7 @@
  *
  */
 #include "ores.ore.core/log/ore_log_parser.hpp"
-
+#include "ores.platform/time/time_utils.hpp"
 #include <array>
 #include <chrono>
 #include <cstdlib>
@@ -28,18 +28,22 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
-#include "ores.platform/time/time_utils.hpp"
 
 namespace ores::ore::log {
 
 namespace {
 
 std::string_view map_level(std::string_view ore_level) {
-    if (ore_level == "DATA")    return "debug";
-    if (ore_level == "NOTICE")  return "info";
-    if (ore_level == "WARNING") return "warn";
-    if (ore_level == "ERROR")   return "error";
-    if (ore_level == "ALERT")   return "error";
+    if (ore_level == "DATA")
+        return "debug";
+    if (ore_level == "NOTICE")
+        return "info";
+    if (ore_level == "WARNING")
+        return "warn";
+    if (ore_level == "ERROR")
+        return "error";
+    if (ore_level == "ALERT")
+        return "error";
     return {};
 }
 
@@ -88,7 +92,7 @@ std::optional<ore_log_line> parse_ore_log_line(std::string_view line) {
             dt_part = ts_str.substr(0, dot_pos);
             const auto us_str = ts_str.substr(dot_pos + 1);
             // Pad to 6 digits so "123" → 123000 µs
-            std::array<char, 7> us_buf = {'0','0','0','0','0','0','\0'};
+            std::array<char, 7> us_buf = {'0', '0', '0', '0', '0', '0', '\0'};
             const auto copy_len = std::min(us_str.size(), std::size_t{6});
             std::memcpy(us_buf.data(), us_str.data(), copy_len);
             microseconds = std::strtol(us_buf.data(), nullptr, 10);
@@ -105,8 +109,8 @@ std::optional<ore_log_line> parse_ore_log_line(std::string_view line) {
         ss >> std::get_time(&tm, ore_log_timestamp_format.data());
         if (ss.fail())
             return std::nullopt;
-        timestamp = ores::platform::time::time_utils::to_time_point_utc(tm)
-            + std::chrono::microseconds(microseconds);
+        timestamp = ores::platform::time::time_utils::to_time_point_utc(tm) +
+                    std::chrono::microseconds(microseconds);
     }
 
     // 3. Source in (...)
@@ -125,10 +129,10 @@ std::optional<ore_log_line> parse_ore_log_line(std::string_view line) {
         return std::nullopt;
 
     ore_log_line result;
-    result.level     = std::string(mapped);
+    result.level = std::string(mapped);
     result.timestamp = timestamp;
-    result.source    = source;
-    result.message   = std::string(line.substr(2));
+    result.source = source;
+    result.message = std::string(line.substr(2));
     return result;
 }
 

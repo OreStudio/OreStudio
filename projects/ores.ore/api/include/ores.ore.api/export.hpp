@@ -23,9 +23,9 @@
 #include <boost/config.hpp>
 
 #ifdef ORES_ORE_API_LIBRARY
-#  define ORES_ORE_API_EXPORT BOOST_SYMBOL_EXPORT
+#    define ORES_ORE_API_EXPORT BOOST_SYMBOL_EXPORT
 #else
-#  define ORES_ORE_API_EXPORT BOOST_SYMBOL_IMPORT
+#    define ORES_ORE_API_EXPORT BOOST_SYMBOL_IMPORT
 #endif
 
 #endif

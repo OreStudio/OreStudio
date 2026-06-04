@@ -17,13 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.ore.core/domain/domain.hpp"
-
-#include <filesystem>
-#include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.ore.core/domain/domain.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/project_root.hpp"
+#include <catch2/catch_test_macros.hpp>
+#include <filesystem>
 
 namespace {
 
@@ -68,8 +67,8 @@ TEST_CASE("read_currency_config_from_simple_xml", tags) {
     BOOST_LOG_SEV(lg, debug) << "Parsed " << ccy_cfg.Currency.size() << " currencies";
 
     const auto& first = ccy_cfg.Currency.front();
-    BOOST_LOG_SEV(lg, debug) << "Currency: " << std::string(first.ISOCode)
-                             << " - " << std::string(first.Name);
+    BOOST_LOG_SEV(lg, debug) << "Currency: " << std::string(first.ISOCode) << " - "
+                             << std::string(first.Name);
 
     CHECK(std::string(first.Name) == "United Arab Emirates dirham");
     CHECK(std::string(first.ISOCode) == "AED");
@@ -100,8 +99,8 @@ TEST_CASE("read_currency_config_from_currencies_xml", tags) {
     BOOST_LOG_SEV(lg, debug) << "Parsed " << ccy_cfg.Currency.size() << " currencies";
 
     const auto& first = ccy_cfg.Currency.front();
-    BOOST_LOG_SEV(lg, debug) << "First currency: " << std::string(first.ISOCode)
-                             << " - " << std::string(first.Name);
+    BOOST_LOG_SEV(lg, debug) << "First currency: " << std::string(first.ISOCode) << " - "
+                             << std::string(first.Name);
 
     CHECK(std::string(first.Name) == "United Arab Emirates dirham");
     CHECK(std::string(first.ISOCode) == "AED");
@@ -115,8 +114,8 @@ TEST_CASE("read_currency_config_from_currencies_xml", tags) {
     CHECK(std::string(*first.CurrencyType) == "Major");
 
     const auto& last = ccy_cfg.Currency.back();
-    BOOST_LOG_SEV(lg, debug) << "Last currency: " << std::string(last.ISOCode)
-                             << " - " << std::string(last.Name);
+    BOOST_LOG_SEV(lg, debug) << "Last currency: " << std::string(last.ISOCode) << " - "
+                             << std::string(last.Name);
 
     CHECK(std::string(last.Name) == "Bitcoin");
     CHECK(std::string(last.ISOCode) == "BTC");
@@ -148,8 +147,8 @@ TEST_CASE("read_currency_config_from_example_1", tags) {
     BOOST_LOG_SEV(lg, debug) << "Parsed " << ccy_cfg.Currency.size() << " currencies";
 
     const auto& first = ccy_cfg.Currency.front();
-    BOOST_LOG_SEV(lg, debug) << "Currency: " << std::string(first.ISOCode)
-                             << " - " << std::string(first.Name);
+    BOOST_LOG_SEV(lg, debug) << "Currency: " << std::string(first.ISOCode) << " - "
+                             << std::string(first.Name);
 
     CHECK(std::string(first.Name) == "Papua New Guinean kina");
     CHECK(std::string(first.ISOCode) == "PGK");

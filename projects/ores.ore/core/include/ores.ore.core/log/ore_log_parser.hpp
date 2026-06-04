@@ -20,11 +20,11 @@
 #ifndef ORES_ORE_CORE_LOG_ORE_LOG_PARSER_HPP
 #define ORES_ORE_CORE_LOG_ORE_LOG_PARSER_HPP
 
+#include "ores.ore.core/export.hpp"
 #include <chrono>
 #include <optional>
 #include <string>
 #include <string_view>
-#include "ores.ore.core/export.hpp"
 
 namespace ores::ore::log {
 

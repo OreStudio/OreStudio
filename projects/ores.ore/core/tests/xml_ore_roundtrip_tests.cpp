@@ -17,12 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.ore.core/domain/domain.hpp"
-
-#include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.ore.core/domain/domain.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/project_root.hpp"
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 
@@ -37,21 +36,15 @@ using ores::ore::domain::ore;
 using namespace ores::logging;
 
 void require_ore_equal(const ore& original, const ore& roundtripped) {
-    REQUIRE(roundtripped.Setup.Parameter.size() ==
-            original.Setup.Parameter.size());
+    REQUIRE(roundtripped.Setup.Parameter.size() == original.Setup.Parameter.size());
     for (size_t i = 0; i < original.Setup.Parameter.size(); ++i) {
-        CHECK(roundtripped.Setup.Parameter.at(i).name ==
-              original.Setup.Parameter.at(i).name);
+        CHECK(roundtripped.Setup.Parameter.at(i).name == original.Setup.Parameter.at(i).name);
     }
-    CHECK(static_cast<bool>(roundtripped.Logging) ==
-          static_cast<bool>(original.Logging));
-    CHECK(static_cast<bool>(roundtripped.Markets) ==
-          static_cast<bool>(original.Markets));
-    REQUIRE(roundtripped.Analytics.Analytic.size() ==
-            original.Analytics.Analytic.size());
+    CHECK(static_cast<bool>(roundtripped.Logging) == static_cast<bool>(original.Logging));
+    CHECK(static_cast<bool>(roundtripped.Markets) == static_cast<bool>(original.Markets));
+    REQUIRE(roundtripped.Analytics.Analytic.size() == original.Analytics.Analytic.size());
     for (size_t i = 0; i < original.Analytics.Analytic.size(); ++i) {
-        CHECK(roundtripped.Analytics.Analytic.at(i).type ==
-              original.Analytics.Analytic.at(i).type);
+        CHECK(roundtripped.Analytics.Analytic.at(i).type == original.Analytics.Analytic.at(i).type);
         CHECK(roundtripped.Analytics.Analytic.at(i).Parameter.size() ==
               original.Analytics.Analytic.at(i).Parameter.size());
     }

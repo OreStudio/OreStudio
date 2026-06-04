@@ -17,12 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.ore.core/domain/domain.hpp"
-
-#include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.ore.core/domain/domain.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/project_root.hpp"
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 
@@ -37,25 +36,21 @@ using ores::ore::domain::sensitivityanalysis;
 using namespace ores::logging;
 
 void require_sensitivityanalysis_equal(const sensitivityanalysis& original,
-                                        const sensitivityanalysis& roundtripped) {
+                                       const sensitivityanalysis& roundtripped) {
     CHECK(roundtripped.DiscountCurves.DiscountCurve.size() ==
           original.DiscountCurves.DiscountCurve.size());
-    CHECK(static_cast<bool>(roundtripped.IndexCurves) ==
-          static_cast<bool>(original.IndexCurves));
+    CHECK(static_cast<bool>(roundtripped.IndexCurves) == static_cast<bool>(original.IndexCurves));
     if (original.IndexCurves)
         CHECK(roundtripped.IndexCurves->IndexCurve.size() ==
               original.IndexCurves->IndexCurve.size());
-    CHECK(static_cast<bool>(roundtripped.FxSpots) ==
-          static_cast<bool>(original.FxSpots));
+    CHECK(static_cast<bool>(roundtripped.FxSpots) == static_cast<bool>(original.FxSpots));
     CHECK(static_cast<bool>(roundtripped.SwaptionVolatilities) ==
           static_cast<bool>(original.SwaptionVolatilities));
     CHECK(static_cast<bool>(roundtripped.CapFloorVolatilities) ==
           static_cast<bool>(original.CapFloorVolatilities));
-    CHECK(static_cast<bool>(roundtripped.CreditCurves) ==
-          static_cast<bool>(original.CreditCurves));
+    CHECK(static_cast<bool>(roundtripped.CreditCurves) == static_cast<bool>(original.CreditCurves));
     CHECK(roundtripped.ParConversion == original.ParConversion);
-    CHECK(static_cast<bool>(roundtripped.ComputeGamma) ==
-          static_cast<bool>(original.ComputeGamma));
+    CHECK(static_cast<bool>(roundtripped.ComputeGamma) == static_cast<bool>(original.ComputeGamma));
     CHECK(static_cast<bool>(roundtripped.CrossGammaFilter) ==
           static_cast<bool>(original.CrossGammaFilter));
 }

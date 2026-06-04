@@ -17,13 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.ore.core/domain/domain.hpp"
-
-#include <filesystem>
-#include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.ore.core/domain/domain.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/project_root.hpp"
+#include <catch2/catch_test_macros.hpp>
+#include <filesystem>
 
 namespace {
 
@@ -41,7 +40,7 @@ using namespace ores::logging;
  * @brief Compare two pricingengines objects by checking collection sizes.
  */
 void require_pricingengines_equal(const pricingengines& original,
-                                   const pricingengines& roundtripped) {
+                                  const pricingengines& roundtripped) {
     CHECK(roundtripped.Product.size() == original.Product.size());
     CHECK(static_cast<bool>(roundtripped.GlobalParameters) ==
           static_cast<bool>(original.GlobalParameters));
@@ -49,16 +48,14 @@ void require_pricingengines_equal(const pricingengines& original,
     // Spot check: verify first Product type if present
     if (!original.Product.empty()) {
         REQUIRE(!roundtripped.Product.empty());
-        CHECK(std::string(roundtripped.Product[0].type) ==
-              std::string(original.Product[0].type));
+        CHECK(std::string(roundtripped.Product[0].type) == std::string(original.Product[0].type));
     }
 }
 
 /**
  * @brief Perform a structural roundtrip test on pricingengines.
  */
-void test_pricingengines_roundtrip(const std::string& xml_content,
-                                    const std::string& source_name) {
+void test_pricingengines_roundtrip(const std::string& xml_content, const std::string& source_name) {
     auto lg(make_logger(test_suite));
 
     // Step 1: Parse original XML
@@ -108,4 +105,3 @@ TEST_CASE("pricingengines_roundtrip_ore_api", tags) {
 TEST_CASE("pricingengines_roundtrip_minimal_setup", tags) {
     test_pricingengines_roundtrip_from_file("examples/MinimalSetup/Input/pricingengine.xml");
 }
-

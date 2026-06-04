@@ -17,13 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.ore.core/domain/domain.hpp"
-
-#include <filesystem>
-#include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.ore.core/domain/domain.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/project_root.hpp"
+#include <catch2/catch_test_macros.hpp>
+#include <filesystem>
 
 namespace {
 
@@ -81,13 +80,13 @@ void require_currency_equal(const currencyDefinition& original,
 /**
  * @brief Compare two currencyConfig objects.
  */
-void require_config_equal(const currencyConfig& original,
-                          const currencyConfig& roundtripped) {
+void require_config_equal(const currencyConfig& original, const currencyConfig& roundtripped) {
     REQUIRE(roundtripped.Currency.size() == original.Currency.size());
 
     for (std::size_t i = 0; i < original.Currency.size(); ++i) {
-        require_currency_equal(original.Currency[i], roundtripped.Currency[i],
-                              std::string(original.Currency[i].ISOCode));
+        require_currency_equal(original.Currency[i],
+                               roundtripped.Currency[i],
+                               std::string(original.Currency[i].ISOCode));
     }
 }
 

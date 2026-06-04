@@ -20,11 +20,11 @@
 #ifndef ORES_ORE_CORE_MARKET_MARKET_DATA_PARSER_HPP
 #define ORES_ORE_CORE_MARKET_MARKET_DATA_PARSER_HPP
 
-#include <iosfwd>
-#include <vector>
 #include "ores.ore.core/export.hpp"
 #include "ores.ore.core/market/fixing.hpp"
 #include "ores.ore.core/market/market_datum.hpp"
+#include <iosfwd>
+#include <vector>
 
 namespace ores::ore::market {
 

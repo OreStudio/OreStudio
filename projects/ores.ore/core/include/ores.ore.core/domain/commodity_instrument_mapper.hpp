@@ -20,9 +20,9 @@
 #ifndef ORES_ORE_CORE_DOMAIN_COMMODITY_INSTRUMENT_MAPPER_HPP
 #define ORES_ORE_CORE_DOMAIN_COMMODITY_INSTRUMENT_MAPPER_HPP
 
-#include "ores.ore.core/export.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/domain/domain.hpp"
+#include "ores.ore.core/export.hpp"
 #include "ores.trading.api/domain/commodity_instrument.hpp"
 
 namespace ores::ore::domain {
@@ -44,8 +44,7 @@ namespace ores::ore::domain {
  */
 class ORES_ORE_CORE_EXPORT commodity_instrument_mapper {
 private:
-    inline static std::string_view logger_name =
-        "ores.ore.domain.commodity_instrument_mapper";
+    inline static std::string_view logger_name = "ores.ore.domain.commodity_instrument_mapper";
 
     static auto& lg() {
         using namespace ores::logging;
@@ -59,27 +58,22 @@ public:
     static trading::domain::commodity_instrument forward_commodity_option(const trade& t);
     static trading::domain::commodity_instrument forward_commodity_swap(const trade& t);
     static trading::domain::commodity_instrument forward_commodity_swaption(const trade& t);
-    static trading::domain::commodity_instrument forward_commodity_variance_swap(
-        const trade& t);
+    static trading::domain::commodity_instrument forward_commodity_variance_swap(const trade& t);
     static trading::domain::commodity_instrument forward_commodity_apo(const trade& t);
-    static trading::domain::commodity_instrument forward_commodity_option_strip(
-        const trade& t);
+    static trading::domain::commodity_instrument forward_commodity_option_strip(const trade& t);
 
     // Reverse mappings
-    static trade reverse_commodity_forward(
-        const ores::trading::domain::commodity_instrument& instr);
-    static trade reverse_commodity_option(
-        const ores::trading::domain::commodity_instrument& instr);
-    static trade reverse_commodity_swap(
-        const ores::trading::domain::commodity_instrument& instr);
-    static trade reverse_commodity_swaption(
-        const ores::trading::domain::commodity_instrument& instr);
-    static trade reverse_commodity_variance_swap(
-        const ores::trading::domain::commodity_instrument& instr);
-    static trade reverse_commodity_apo(
-        const ores::trading::domain::commodity_instrument& instr);
-    static trade reverse_commodity_option_strip(
-        const ores::trading::domain::commodity_instrument& instr);
+    static trade
+    reverse_commodity_forward(const ores::trading::domain::commodity_instrument& instr);
+    static trade reverse_commodity_option(const ores::trading::domain::commodity_instrument& instr);
+    static trade reverse_commodity_swap(const ores::trading::domain::commodity_instrument& instr);
+    static trade
+    reverse_commodity_swaption(const ores::trading::domain::commodity_instrument& instr);
+    static trade
+    reverse_commodity_variance_swap(const ores::trading::domain::commodity_instrument& instr);
+    static trade reverse_commodity_apo(const ores::trading::domain::commodity_instrument& instr);
+    static trade
+    reverse_commodity_option_strip(const ores::trading::domain::commodity_instrument& instr);
 };
 
 }

@@ -17,23 +17,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.logging/make_logger.hpp"
+#include "ores.ore.core/domain/bond_instrument_mapper.hpp"
+#include "ores.ore.core/domain/commodity_instrument_mapper.hpp"
+#include "ores.ore.core/domain/composite_instrument_mapper.hpp"
+#include "ores.ore.core/domain/credit_instrument_mapper.hpp"
+#include "ores.ore.core/domain/equity_instrument_mapper.hpp"
+#include "ores.ore.core/domain/fx_instrument_mapper.hpp"
+#include "ores.ore.core/domain/scripted_instrument_mapper.hpp"
+#include "ores.ore.core/domain/swap_instrument_mapper.hpp"
 #include "ores.ore.core/planner/ore_import_planner.hpp"
-
-#include <set>
-#include <variant>
+#include "ores.testing/project_root.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
-#include "ores.logging/make_logger.hpp"
-#include "ores.testing/project_root.hpp"
-#include "ores.ore.core/domain/swap_instrument_mapper.hpp"
-#include "ores.ore.core/domain/fx_instrument_mapper.hpp"
-#include "ores.ore.core/domain/bond_instrument_mapper.hpp"
-#include "ores.ore.core/domain/credit_instrument_mapper.hpp"
-#include "ores.ore.core/domain/equity_instrument_mapper.hpp"
-#include "ores.ore.core/domain/commodity_instrument_mapper.hpp"
-#include "ores.ore.core/domain/scripted_instrument_mapper.hpp"
-#include "ores.ore.core/domain/composite_instrument_mapper.hpp"
+#include <set>
+#include <variant>
 
 namespace {
 
@@ -45,8 +44,7 @@ std::filesystem::path ore_path(const std::string& relative) {
 }
 
 // Build a minimal scan_result pointing at a legacy ORE example directory
-ores::ore::scanner::scan_result make_scan_result(
-    const std::filesystem::path& root) {
+ores::ore::scanner::scan_result make_scan_result(const std::filesystem::path& root) {
     ores::ore::scanner::scan_result r;
     r.root = root;
 
@@ -59,10 +57,11 @@ ores::ore::scanner::scan_result make_scan_result(
         r.currency_files.push_back(currency_xml);
 
     // Collect portfolio XML files
-    for (const auto& entry :
-             std::filesystem::recursive_directory_iterator(root)) {
-        if (!entry.is_regular_file()) continue;
-        if (entry.path().extension() != ".xml") continue;
+    for (const auto& entry : std::filesystem::recursive_directory_iterator(root)) {
+        if (!entry.is_regular_file())
+            continue;
+        if (entry.path().extension() != ".xml")
+            continue;
         const auto fname = entry.path().filename().string();
         if (fname.starts_with("portfolio"))
             r.portfolio_files.push_back(entry.path());
@@ -70,8 +69,7 @@ ores::ore::scanner::scan_result make_scan_result(
     return r;
 }
 
-ores::ore::planner::import_choices default_choices(
-    const std::filesystem::path& /*root*/) {
+ores::ore::planner::import_choices default_choices(const std::filesystem::path& /*root*/) {
     ores::ore::planner::import_choices c;
     c.parent_portfolio_name = "Example1";
     c.create_parent_portfolio = true;
@@ -139,8 +137,7 @@ TEST_CASE("plan_skips_existing_iso_codes_when_mode_is_missing_only", tags) {
     ore_import_planner planner_none(sr, all_codes, choices);
     const auto plan_none = planner_none.plan();
 
-    BOOST_LOG_SEV(lg, info) << "Currencies after filtering: "
-                            << plan_none.currencies.size();
+    BOOST_LOG_SEV(lg, info) << "Currencies after filtering: " << plan_none.currencies.size();
     CHECK(plan_none.currencies.empty());
 
     // Third run — mark only half as existing
@@ -153,8 +150,7 @@ TEST_CASE("plan_skips_existing_iso_codes_when_mode_is_missing_only", tags) {
         }
         ore_import_planner planner_half(sr, half_codes, choices);
         const auto plan_half = planner_half.plan();
-        BOOST_LOG_SEV(lg, info) << "Currencies with half filtered: "
-                                << plan_half.currencies.size();
+        BOOST_LOG_SEV(lg, info) << "Currencies with half filtered: " << plan_half.currencies.size();
         CHECK(plan_half.currencies.size() < total);
         CHECK(plan_half.currencies.size() > 0);
     }
@@ -173,10 +169,11 @@ TEST_CASE("plan_creates_portfolios_and_books_from_portfolio_files", tags) {
 
     // Add Input/ portfolio files relative to root
     sr.portfolio_files.clear();
-    for (const auto& entry :
-             std::filesystem::recursive_directory_iterator(root)) {
-        if (!entry.is_regular_file()) continue;
-        if (entry.path().extension() != ".xml") continue;
+    for (const auto& entry : std::filesystem::recursive_directory_iterator(root)) {
+        if (!entry.is_regular_file())
+            continue;
+        if (entry.path().extension() != ".xml")
+            continue;
         if (entry.path().filename().string().starts_with("portfolio"))
             sr.portfolio_files.push_back(entry.path());
     }
@@ -229,11 +226,10 @@ TEST_CASE("plan_with_parent_portfolio_has_one_extra_portfolio", tags) {
     const auto plan_with_parent = p2.plan();
 
     BOOST_LOG_SEV(lg, info) << "Without parent: " << plan_no_parent.portfolios.size()
-                            << " portfolios. With parent: "
-                            << plan_with_parent.portfolios.size() << " portfolios.";
+                            << " portfolios. With parent: " << plan_with_parent.portfolios.size()
+                            << " portfolios.";
 
-    CHECK(plan_with_parent.portfolios.size() ==
-          plan_no_parent.portfolios.size() + 1);
+    CHECK(plan_with_parent.portfolios.size() == plan_no_parent.portfolios.size() + 1);
 }
 
 // =============================================================================
@@ -304,45 +300,51 @@ TEST_CASE("plan_instrument_trade_id_matches_minted_trade_id", tags) {
         INFO("Trade external_id: " << item.trade.identity.external_id);
         REQUIRE(item.trade.identity.id != nil);
 
-        std::visit([&](const auto& r) {
-            using ores::trading::domain::swap_instrument_data;
-            using ores::trading::domain::fx_instrument_variant;
-            using ores::trading::domain::equity_instrument_variant;
-            using ores::trading::domain::composite_instrument_data;
-            using T = std::decay_t<decltype(r)>;
-            if constexpr (std::is_same_v<T, std::monostate>) {
-                // No instrument mapping for this trade type — skip.
-            } else if constexpr (std::is_same_v<T, swap_instrument_data>) {
-                std::visit([&](const auto& instr) {
-                    INFO("Instrument variant index checked");
-                    REQUIRE(instr.identity.trade_id.has_value());
-                    CHECK(*instr.identity.trade_id == item.trade.identity.id);
+        std::visit(
+            [&](const auto& r) {
+                using ores::trading::domain::swap_instrument_data;
+                using ores::trading::domain::fx_instrument_variant;
+                using ores::trading::domain::equity_instrument_variant;
+                using ores::trading::domain::composite_instrument_data;
+                using T = std::decay_t<decltype(r)>;
+                if constexpr (std::is_same_v<T, std::monostate>) {
+                    // No instrument mapping for this trade type — skip.
+                } else if constexpr (std::is_same_v<T, swap_instrument_data>) {
+                    std::visit(
+                        [&](const auto& instr) {
+                            INFO("Instrument variant index checked");
+                            REQUIRE(instr.identity.trade_id.has_value());
+                            CHECK(*instr.identity.trade_id == item.trade.identity.id);
+                            ++checked;
+                        },
+                        r.instrument);
+                } else if constexpr (std::is_same_v<T, fx_instrument_variant> ||
+                                     std::is_same_v<T, equity_instrument_variant>) {
+                    std::visit(
+                        [&](const auto& instr) {
+                            INFO("Instrument variant index checked");
+                            REQUIRE(instr.trade_id.has_value());
+                            CHECK(*instr.trade_id == item.trade.identity.id);
+                            ++checked;
+                        },
+                        r);
+                } else if constexpr (std::is_same_v<T, composite_instrument_data>) {
+                    REQUIRE(r.instrument.trade_id.has_value());
+                    CHECK(*r.instrument.trade_id == item.trade.identity.id);
                     ++checked;
-                }, r.instrument);
-            } else if constexpr (std::is_same_v<T, fx_instrument_variant> ||
-                                 std::is_same_v<T, equity_instrument_variant>) {
-                std::visit([&](const auto& instr) {
-                    INFO("Instrument variant index checked");
-                    REQUIRE(instr.trade_id.has_value());
-                    CHECK(*instr.trade_id == item.trade.identity.id);
+                } else {
+                    // bond/credit/commodity/scripted — direct trade_id field
+                    REQUIRE(r.trade_id.has_value());
+                    CHECK(*r.trade_id == item.trade.identity.id);
                     ++checked;
-                }, r);
-            } else if constexpr (std::is_same_v<T, composite_instrument_data>) {
-                REQUIRE(r.instrument.trade_id.has_value());
-                CHECK(*r.instrument.trade_id == item.trade.identity.id);
-                ++checked;
-            } else {
-                // bond/credit/commodity/scripted — direct trade_id field
-                REQUIRE(r.trade_id.has_value());
-                CHECK(*r.trade_id == item.trade.identity.id);
-                ++checked;
-            }
-        }, item.instrument);
+                }
+            },
+            item.instrument);
     }
 
     CHECK(checked > 0);
-    BOOST_LOG_SEV(lg, info) << "Verified instrument.trade_id back-reference for "
-                            << checked << " trade(s)";
+    BOOST_LOG_SEV(lg, info) << "Verified instrument.trade_id back-reference for " << checked
+                            << " trade(s)";
 }
 
 TEST_CASE("plan_trade_defaults_override_parsed_values", tags) {

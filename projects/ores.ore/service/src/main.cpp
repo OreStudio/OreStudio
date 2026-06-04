@@ -17,19 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <iostream>
-#include <boost/asio/io_context.hpp>
-#include <boost/asio/co_spawn.hpp>
-#include <boost/asio/awaitable.hpp>
-#include <boost/asio/detached.hpp>
-#include <openssl/crypto.h>
 #include "ores.ore.service/app/host.hpp"
 #include "ores.ore.service/config/parser_exception.hpp"
+#include <boost/asio/awaitable.hpp>
+#include <boost/asio/co_spawn.hpp>
+#include <boost/asio/detached.hpp>
+#include <boost/asio/io_context.hpp>
+#include <iostream>
+#include <openssl/crypto.h>
 
 namespace {
 
-boost::asio::awaitable<int>
-async_main(int argc, char** argv, boost::asio::io_context& io_ctx) {
+boost::asio::awaitable<int> async_main(int argc, char** argv, boost::asio::io_context& io_ctx) {
     using ores::ore::service::app::host;
     using ores::ore::service::config::parser_exception;
 
@@ -54,10 +53,13 @@ int main(int argc, char** argv) {
     boost::asio::io_context io_ctx;
 
     int result = EXIT_FAILURE;
-    boost::asio::co_spawn(io_ctx, [&]() -> boost::asio::awaitable<void> {
+    boost::asio::co_spawn(
+        io_ctx,
+        [&]() -> boost::asio::awaitable<void> {
             result = co_await async_main(argc, argv, io_ctx);
             io_ctx.stop();
-        }, boost::asio::detached);
+        },
+        boost::asio::detached);
 
     io_ctx.run();
 

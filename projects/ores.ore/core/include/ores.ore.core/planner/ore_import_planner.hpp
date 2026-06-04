@@ -20,13 +20,13 @@
 #ifndef ORES_ORE_CORE_PLANNER_ORE_IMPORT_PLANNER_HPP
 #define ORES_ORE_CORE_PLANNER_ORE_IMPORT_PLANNER_HPP
 
-#include <set>
-#include <string>
+#include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/export.hpp"
-#include "ores.ore.core/scanner/scan_result.hpp"
 #include "ores.ore.core/planner/import_choices.hpp"
 #include "ores.ore.core/planner/ore_import_plan.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.ore.core/scanner/scan_result.hpp"
+#include <set>
+#include <string>
 
 namespace ores::ore::planner {
 
@@ -44,8 +44,7 @@ namespace ores::ore::planner {
  */
 class ORES_ORE_CORE_EXPORT ore_import_planner {
 private:
-    inline static std::string_view logger_name =
-        "ores.ore.planner.ore_import_planner";
+    inline static std::string_view logger_name = "ores.ore.planner.ore_import_planner";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -61,10 +60,9 @@ public:
      * @param existing_iso_codes ISO codes already present in the database.
      * @param choices            User-supplied import options.
      */
-    explicit ore_import_planner(
-        scanner::scan_result scan_result,
-        std::set<std::string> existing_iso_codes,
-        import_choices choices);
+    explicit ore_import_planner(scanner::scan_result scan_result,
+                                std::set<std::string> existing_iso_codes,
+                                import_choices choices);
 
     /**
      * @brief Builds the import plan.

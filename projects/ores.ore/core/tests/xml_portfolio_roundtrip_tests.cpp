@@ -17,10 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.ore.core/domain/domain.hpp"
-
-#include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.ore.core/domain/domain.hpp"
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 
@@ -33,15 +32,13 @@ using namespace ores::logging;
 /**
  * @brief Compare two portfolio objects by checking trade count and IDs.
  */
-void require_portfolio_equal(const portfolio& original,
-                              const portfolio& roundtripped) {
+void require_portfolio_equal(const portfolio& original, const portfolio& roundtripped) {
     CHECK(roundtripped.Trade.size() == original.Trade.size());
 
     // Spot check: verify first trade ID if present
     if (!original.Trade.empty()) {
         REQUIRE(!roundtripped.Trade.empty());
-        CHECK(std::string(roundtripped.Trade[0].id) ==
-              std::string(original.Trade[0].id));
+        CHECK(std::string(roundtripped.Trade[0].id) == std::string(original.Trade[0].id));
 
         // Check first trade type matches (TradeType is required)
         CHECK(roundtripped.Trade[0].TradeType == original.Trade[0].TradeType);
@@ -50,16 +47,14 @@ void require_portfolio_equal(const portfolio& original,
     // Spot check: verify all trade IDs match
     for (std::size_t i = 0; i < original.Trade.size(); ++i) {
         INFO("Checking trade at index " << i);
-        CHECK(std::string(roundtripped.Trade[i].id) ==
-              std::string(original.Trade[i].id));
+        CHECK(std::string(roundtripped.Trade[i].id) == std::string(original.Trade[i].id));
     }
 }
 
 /**
  * @brief Perform a structural roundtrip test on portfolio.
  */
-void test_portfolio_roundtrip(const std::string& xml_content,
-                               const std::string& source_name) {
+void test_portfolio_roundtrip(const std::string& xml_content, const std::string& source_name) {
     auto lg(make_logger(test_suite));
 
     // Step 1: Parse original XML
@@ -139,4 +134,3 @@ TEST_CASE("portfolio_roundtrip_with_portfolio_ids", tags) {
 
     test_portfolio_roundtrip(xml, "with_portfolio_ids_inline");
 }
-

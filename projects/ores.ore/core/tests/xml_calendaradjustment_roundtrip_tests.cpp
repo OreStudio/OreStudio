@@ -17,12 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.ore.core/domain/domain.hpp"
-
-#include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.ore.core/domain/domain.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/project_root.hpp"
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 
@@ -37,15 +36,14 @@ using ores::ore::domain::calendaradjustment;
 using namespace ores::logging;
 
 void require_calendaradjustment_equal(const calendaradjustment& original,
-                                       const calendaradjustment& roundtripped) {
+                                      const calendaradjustment& roundtripped) {
     REQUIRE(roundtripped.Calendar.size() == original.Calendar.size());
     for (size_t i = 0; i < original.Calendar.size(); ++i) {
         const auto& orig = original.Calendar.at(i);
         const auto& rt = roundtripped.Calendar.at(i);
         CHECK(rt.name == orig.name);
 
-        REQUIRE(static_cast<bool>(rt.BaseCalendar) ==
-                static_cast<bool>(orig.BaseCalendar));
+        REQUIRE(static_cast<bool>(rt.BaseCalendar) == static_cast<bool>(orig.BaseCalendar));
         if (orig.BaseCalendar)
             CHECK(*rt.BaseCalendar == *orig.BaseCalendar);
 
@@ -57,8 +55,7 @@ void require_calendaradjustment_equal(const calendaradjustment& original,
         REQUIRE(static_cast<bool>(rt.AdditionalBusinessDays) ==
                 static_cast<bool>(orig.AdditionalBusinessDays));
         if (orig.AdditionalBusinessDays)
-            CHECK(rt.AdditionalBusinessDays->Date ==
-                  orig.AdditionalBusinessDays->Date);
+            CHECK(rt.AdditionalBusinessDays->Date == orig.AdditionalBusinessDays->Date);
     }
 }
 

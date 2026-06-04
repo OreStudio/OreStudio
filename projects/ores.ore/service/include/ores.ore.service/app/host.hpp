@@ -20,13 +20,13 @@
 #ifndef ORES_ORE_SERVICE_APP_HOST_HPP
 #define ORES_ORE_SERVICE_APP_HOST_HPP
 
-#include <iosfwd>
-#include <vector>
-#include <string>
-#include <boost/asio/awaitable.hpp>
-#include <boost/asio/io_context.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.service/export.hpp"
+#include <boost/asio/awaitable.hpp>
+#include <boost/asio/io_context.hpp>
+#include <iosfwd>
+#include <string>
+#include <vector>
 
 namespace ores::ore::service::app {
 
@@ -47,9 +47,10 @@ private:
     }
 
 public:
-    static boost::asio::awaitable<int>
-    execute(const std::vector<std::string>& args, std::ostream& std_output,
-        std::ostream& error_output, boost::asio::io_context& io_ctx);
+    static boost::asio::awaitable<int> execute(const std::vector<std::string>& args,
+                                               std::ostream& std_output,
+                                               std::ostream& error_output,
+                                               boost::asio::io_context& io_ctx);
 };
 
 }

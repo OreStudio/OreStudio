@@ -60,7 +60,7 @@ task closes. Plans do not outlive their task.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Now field should be 'Nothing.' on DONE tasks | task_fix-mapper-write-sites.org | Fixed in c54d298b1 | |
 
 * Result
 

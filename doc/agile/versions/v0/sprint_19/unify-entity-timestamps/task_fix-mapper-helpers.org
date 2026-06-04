@@ -108,7 +108,8 @@ grep -rn "optional<db_timestamp>" projects/ --include="*_entity.hpp" | grep -v b
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | valid_from should default to early epoch, not 9999 | badge_mapping_entity.hpp | Declined | Matches currency/badge_definition/host pattern; DB trigger owns the fields on insert. |
+| 2 | Now field should be 'Nothing.' on DONE tasks | task_fix-mapper-helpers.org | Fixed in c54d298b1 | |
 
 * Result
 

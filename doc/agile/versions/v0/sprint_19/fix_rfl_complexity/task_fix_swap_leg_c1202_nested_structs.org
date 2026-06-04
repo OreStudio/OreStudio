@@ -99,6 +99,19 @@ struct swap_leg {
 rfl now creates three separate Literals of size ≤9. =swap_leg= itself has a
 3-field Literal. No Literal exceeds the MSVC threshold.
 
+* Plan
+
+Full technical analysis is in [[id:D75F4921-B431-4E78-99AB-62A47F761D1D][Investigation: MSVC C1202 and rfl complexity]].
+
+1. Rewrote the investigation document with the Mode 1 / Mode 2 failure taxonomy,
+   chronological record of all prior approaches, why =rfl::Flatten= works for Mode 1
+   but not Mode 2, architectural impact analysis, and a decision table.
+2. Removed =rfl::Flatten= from =swap_leg.hpp=; kept the three sub-structs as plain
+   nested structs.
+3. Updated all callers (13 files) to remove =.get()= accessors.
+4. Updated =instrument.hpp= =stamp_ids= dispatch accordingly.
+5. Verified Linux build clean; site build clean (fixed two fabricated org-roam IDs).
+
 * PRs
 
 | PR                                                                        | Title                                                                         |

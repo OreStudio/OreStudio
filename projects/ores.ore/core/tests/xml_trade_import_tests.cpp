@@ -17,16 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.ore.core/xml/importer.hpp"
-
-#include <fstream>
-#include <chrono>
-#include <algorithm>
-#include <filesystem>
-#include <boost/uuid/random_generator.hpp>
-#include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.ore.core/xml/importer.hpp"
 #include "ores.testing/project_root.hpp"
+#include <boost/uuid/random_generator.hpp>
+#include <algorithm>
+#include <catch2/catch_test_macros.hpp>
+#include <chrono>
+#include <filesystem>
+#include <fstream>
 
 namespace {
 
@@ -38,8 +37,8 @@ std::filesystem::path ore_path(const std::string& relative) {
 }
 
 std::filesystem::path example_path(const std::string& filename) {
-    return ores::testing::project_root::resolve(
-        "external/ore/examples/Products/Example_Trades/" + filename);
+    return ores::testing::project_root::resolve("external/ore/examples/Products/Example_Trades/" +
+                                                filename);
 }
 
 }
@@ -115,8 +114,7 @@ TEST_CASE("validate_trade_with_multiple_errors", tags) {
 TEST_CASE("import_portfolio_from_minimal_swap", tags) {
     auto lg(make_logger(test_suite));
 
-    const auto f = ore_path(
-        "examples/MinimalSetup/Input/portfolio_swap.xml");
+    const auto f = ore_path("examples/MinimalSetup/Input/portfolio_swap.xml");
     BOOST_LOG_SEV(lg, debug) << "Importing from: " << f;
 
     const auto items = importer::import_portfolio_with_context(f);
@@ -159,8 +157,7 @@ TEST_CASE("import_portfolio_from_example_1", tags) {
 TEST_CASE("import_portfolio_from_minimal_swaptions", tags) {
     auto lg(make_logger(test_suite));
 
-    const auto f = ore_path(
-        "examples/MinimalSetup/Input/portfolio_swaptions.xml");
+    const auto f = ore_path("examples/MinimalSetup/Input/portfolio_swaptions.xml");
     BOOST_LOG_SEV(lg, debug) << "Importing from: " << f;
 
     const auto items = importer::import_portfolio_with_context(f);
@@ -187,23 +184,22 @@ TEST_CASE("import_portfolio_all_trades_pass_validation", tags) {
         CHECK(errors.empty());
     }
 
-    BOOST_LOG_SEV(lg, debug) << "All " << items.size()
-                             << " imported trades pass validation";
+    BOOST_LOG_SEV(lg, debug) << "All " << items.size() << " imported trades pass validation";
 }
 
 TEST_CASE("import_portfolio_all_ore_example_files_can_be_parsed", tags) {
     auto lg(make_logger(test_suite));
 
-    const auto root =
-        ores::testing::project_root::resolve("external/ore/examples");
+    const auto root = ores::testing::project_root::resolve("external/ore/examples");
 
     // Collect all XML files that contain a <Portfolio> element, sorted for
     // reproducible ordering.
     std::vector<std::filesystem::path> portfolio_files;
-    for (const auto& entry :
-             std::filesystem::recursive_directory_iterator(root)) {
-        if (!entry.is_regular_file()) continue;
-        if (entry.path().extension() != ".xml") continue;
+    for (const auto& entry : std::filesystem::recursive_directory_iterator(root)) {
+        if (!entry.is_regular_file())
+            continue;
+        if (entry.path().extension() != ".xml")
+            continue;
 
         std::ifstream ifs(entry.path(), std::ios::binary);
         std::string buf(4096, '\0');
@@ -227,29 +223,27 @@ TEST_CASE("import_portfolio_all_ore_example_files_can_be_parsed", tags) {
         try {
             items = importer::import_portfolio_with_context(file);
         } catch (const std::exception& e) {
-            FAIL_CHECK("Exception importing " << file.filename()
-                       << ": " << e.what());
+            FAIL_CHECK("Exception importing " << file.filename() << ": " << e.what());
             continue;
         }
 
         const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
-            std::chrono::steady_clock::now() - t0).count();
+                            std::chrono::steady_clock::now() - t0)
+                            .count();
 
         trade_count += static_cast<int>(items.size());
-        BOOST_LOG_SEV(lg, info) << file.filename() << " -> "
-                                << items.size() << " trades in " << ms << "ms";
+        BOOST_LOG_SEV(lg, info) << file.filename() << " -> " << items.size() << " trades in " << ms
+                                << "ms";
 
         for (const auto& item : items) {
             const auto errors = importer::validate_trade(item.trade);
-            INFO("File: " << file.filename()
-                 << "  Trade: " << item.trade.identity.external_id);
+            INFO("File: " << file.filename() << "  Trade: " << item.trade.identity.external_id);
             CHECK(errors.empty());
         }
     }
 
-    BOOST_LOG_SEV(lg, info) << "Total trades imported across all "
-                            << portfolio_files.size() << " files: "
-                            << trade_count;
+    BOOST_LOG_SEV(lg, info) << "Total trades imported across all " << portfolio_files.size()
+                            << " files: " << trade_count;
 }
 
 // =============================================================================
@@ -275,10 +269,10 @@ TEST_CASE("import_portfolio_with_context_swap_has_instrument", tags) {
     item.trade.classification.instrument_id = instr_uuid;
 
     const auto& r = std::get<swap_instrument_data>(item.instrument);
-    const auto instr_id = std::visit(
-        [](const auto& instr) { return instr.identity.instrument_id; }, r.instrument);
-    const auto trade_id_opt = std::visit(
-        [](const auto& instr) { return instr.identity.trade_id; }, r.instrument);
+    const auto instr_id =
+        std::visit([](const auto& instr) { return instr.identity.instrument_id; }, r.instrument);
+    const auto trade_id_opt =
+        std::visit([](const auto& instr) { return instr.identity.trade_id; }, r.instrument);
     CHECK(instr_id != item.trade.identity.id);
     REQUIRE(trade_id_opt.has_value());
     CHECK(*trade_id_opt == item.trade.identity.id);
@@ -319,8 +313,7 @@ TEST_CASE("import_portfolio_with_context_fx_forward_has_instrument", tags) {
     CHECK(!instr.bought_currency.empty());
     CHECK(!instr.sold_currency.empty());
 
-    BOOST_LOG_SEV(lg, info) << "FX instrument mapped: "
-                            << instr.bought_currency << "/"
+    BOOST_LOG_SEV(lg, info) << "FX instrument mapped: " << instr.bought_currency << "/"
                             << instr.sold_currency;
 }
 

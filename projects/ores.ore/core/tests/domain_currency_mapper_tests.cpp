@@ -17,10 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.ore.core/domain/currency_mapper.hpp"
-
-#include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.ore.core/domain/currency_mapper.hpp"
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 
@@ -105,13 +104,11 @@ TEST_CASE("map_currency_definition_all_rounding_types", tags) {
         std::string expected;
     };
 
-    const std::vector<test_case> cases = {
-        {roundingType::Up, "Up"},
-        {roundingType::Down, "Down"},
-        {roundingType::Closest, "Closest"},
-        {roundingType::Floor, "Floor"},
-        {roundingType::Ceiling, "Ceiling"}
-    };
+    const std::vector<test_case> cases = {{roundingType::Up, "Up"},
+                                          {roundingType::Down, "Down"},
+                                          {roundingType::Closest, "Closest"},
+                                          {roundingType::Floor, "Floor"},
+                                          {roundingType::Ceiling, "Ceiling"}};
 
     for (const auto& tc : cases) {
         currencyDefinition def;

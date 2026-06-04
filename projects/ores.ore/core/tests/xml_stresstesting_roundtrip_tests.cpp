@@ -17,12 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.ore.core/domain/domain.hpp"
-
-#include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.ore.core/domain/domain.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/project_root.hpp"
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 
@@ -36,8 +35,7 @@ std::filesystem::path ore_path(const std::string& relative) {
 using ores::ore::domain::stresstesting;
 using namespace ores::logging;
 
-void require_stresstesting_equal(const stresstesting& original,
-                                  const stresstesting& roundtripped) {
+void require_stresstesting_equal(const stresstesting& original, const stresstesting& roundtripped) {
     CHECK(static_cast<bool>(roundtripped.UseSpreadedTermStructures) ==
           static_cast<bool>(original.UseSpreadedTermStructures));
     REQUIRE(roundtripped.StressTest.size() == original.StressTest.size());
@@ -45,14 +43,10 @@ void require_stresstesting_equal(const stresstesting& original,
         const auto& orig = original.StressTest.at(i);
         const auto& rt = roundtripped.StressTest.at(i);
         CHECK(rt.id == orig.id);
-        CHECK(static_cast<bool>(rt.ParShifts) ==
-              static_cast<bool>(orig.ParShifts));
-        CHECK(static_cast<bool>(rt.DiscountCurves) ==
-              static_cast<bool>(orig.DiscountCurves));
-        CHECK(static_cast<bool>(rt.FxSpots) ==
-              static_cast<bool>(orig.FxSpots));
-        CHECK(static_cast<bool>(rt.EquitySpots) ==
-              static_cast<bool>(orig.EquitySpots));
+        CHECK(static_cast<bool>(rt.ParShifts) == static_cast<bool>(orig.ParShifts));
+        CHECK(static_cast<bool>(rt.DiscountCurves) == static_cast<bool>(orig.DiscountCurves));
+        CHECK(static_cast<bool>(rt.FxSpots) == static_cast<bool>(orig.FxSpots));
+        CHECK(static_cast<bool>(rt.EquitySpots) == static_cast<bool>(orig.EquitySpots));
         CHECK(static_cast<bool>(rt.SurvivalProbabilities) ==
               static_cast<bool>(orig.SurvivalProbabilities));
     }

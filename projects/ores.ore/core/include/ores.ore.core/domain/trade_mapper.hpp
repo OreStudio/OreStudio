@@ -20,20 +20,20 @@
 #ifndef ORES_ORE_CORE_DOMAIN_TRADE_MAPPER_HPP
 #define ORES_ORE_CORE_DOMAIN_TRADE_MAPPER_HPP
 
-#include <optional>
-#include "ores.ore.core/export.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.ore.core/domain/bond_instrument_mapper.hpp"
+#include "ores.ore.core/domain/commodity_instrument_mapper.hpp"
+#include "ores.ore.core/domain/composite_instrument_mapper.hpp"
+#include "ores.ore.core/domain/credit_instrument_mapper.hpp"
+#include "ores.ore.core/domain/domain.hpp"
+#include "ores.ore.core/domain/equity_instrument_mapper.hpp"
+#include "ores.ore.core/domain/fx_instrument_mapper.hpp"
+#include "ores.ore.core/domain/scripted_instrument_mapper.hpp"
+#include "ores.ore.core/domain/swap_instrument_mapper.hpp"
+#include "ores.ore.core/export.hpp"
 #include "ores.trading.api/domain/trade.hpp"
 #include "ores.trading.api/domain/trade_instrument.hpp"
-#include "ores.ore.core/domain/domain.hpp"
-#include "ores.ore.core/domain/swap_instrument_mapper.hpp"
-#include "ores.ore.core/domain/fx_instrument_mapper.hpp"
-#include "ores.ore.core/domain/bond_instrument_mapper.hpp"
-#include "ores.ore.core/domain/credit_instrument_mapper.hpp"
-#include "ores.ore.core/domain/equity_instrument_mapper.hpp"
-#include "ores.ore.core/domain/commodity_instrument_mapper.hpp"
-#include "ores.ore.core/domain/scripted_instrument_mapper.hpp"
-#include "ores.ore.core/domain/composite_instrument_mapper.hpp"
+#include <optional>
 
 namespace ores::ore::domain {
 
@@ -87,8 +87,7 @@ public:
      * Returns a populated result for Swap, CrossCurrencySwap, InflationSwap,
      * ForwardRateAgreement, and CapFloor. Returns empty for all other types.
      */
-    static std::optional<trading::domain::swap_instrument_data>
-    map_swap_instrument(const trade& v);
+    static std::optional<trading::domain::swap_instrument_data> map_swap_instrument(const trade& v);
 
     /**
      * @brief Dispatches an FX-family trade to fx_instrument_mapper.
@@ -96,8 +95,7 @@ public:
      * Returns a populated result for FxForward, FxSwap, and FxOption.
      * Returns empty for all other types.
      */
-    static std::optional<trading::domain::fx_instrument_variant>
-    map_fx_instrument(const trade& v);
+    static std::optional<trading::domain::fx_instrument_variant> map_fx_instrument(const trade& v);
 
     /**
      * @brief Dispatches a credit-family trade to credit_instrument_mapper.
@@ -106,8 +104,7 @@ public:
      * IndexCreditDefaultSwapOption, CreditLinkedSwap, SyntheticCDO, and
      * RiskParticipationAgreement. Returns empty for all other types.
      */
-    static std::optional<trading::domain::credit_instrument>
-    map_credit_instrument(const trade& v);
+    static std::optional<trading::domain::credit_instrument> map_credit_instrument(const trade& v);
 
     /**
      * @brief Dispatches a bond-family trade to bond_instrument_mapper.
@@ -115,8 +112,7 @@ public:
      * Returns a populated result for Bond, ForwardBond, CallableBond,
      * and ConvertibleBond. Returns empty for all other types.
      */
-    static std::optional<trading::domain::bond_instrument>
-    map_bond_instrument(const trade& v);
+    static std::optional<trading::domain::bond_instrument> map_bond_instrument(const trade& v);
 
     /**
      * @brief Dispatches an equity-family trade to equity_instrument_mapper.

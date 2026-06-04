@@ -20,10 +20,10 @@
 #ifndef ORES_ORE_CORE_PLANNER_IMPORT_CHOICES_HPP
 #define ORES_ORE_CORE_PLANNER_IMPORT_CHOICES_HPP
 
+#include <boost/uuid/uuid.hpp>
+#include <optional>
 #include <string>
 #include <vector>
-#include <optional>
-#include <boost/uuid/uuid.hpp>
 
 namespace ores::ore::planner {
 
@@ -31,8 +31,8 @@ namespace ores::ore::planner {
  * @brief Controls how currencies are imported.
  */
 enum class currency_import_mode {
-    all,           ///< Import all currencies found in scan
-    missing_only   ///< Skip ISO codes already present in the database
+    all,         ///< Import all currencies found in scan
+    missing_only ///< Skip ISO codes already present in the database
 };
 
 /**

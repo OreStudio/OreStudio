@@ -17,14 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/domain/fx_instrument_mapper.hpp"
-
-#include <catch2/catch_test_macros.hpp>
-#include <catch2/catch_approx.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/project_root.hpp"
+#include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 using Catch::Approx;
 
@@ -52,8 +51,8 @@ using ores::trading::domain::fx_vanilla_option_instrument;
 using namespace ores::logging;
 
 std::filesystem::path example_path(const std::string& filename) {
-    return ores::testing::project_root::resolve(
-        "external/ore/examples/Products/Example_Trades/" + filename);
+    return ores::testing::project_root::resolve("external/ore/examples/Products/Example_Trades/" +
+                                                filename);
 }
 
 ores::ore::domain::trade load_first_trade(const std::string& filename) {
@@ -184,8 +183,7 @@ TEST_CASE("mapper_roundtrip_fx_option_reverse", tags) {
     REQUIRE(opt.OptionData.exerciseDatesGroup.operator bool());
     REQUIRE(opt.OptionData.exerciseDatesGroup->ExerciseDates.operator bool());
     REQUIRE(!opt.OptionData.exerciseDatesGroup->ExerciseDates->ExerciseDate.empty());
-    CHECK(std::string(
-        opt.OptionData.exerciseDatesGroup->ExerciseDates->ExerciseDate.front())
-        == "2033-02-20");
+    CHECK(std::string(opt.OptionData.exerciseDatesGroup->ExerciseDates->ExerciseDate.front()) ==
+          "2033-02-20");
     BOOST_LOG_SEV(lg, info) << "FxOption reverse-mapper test passed";
 }

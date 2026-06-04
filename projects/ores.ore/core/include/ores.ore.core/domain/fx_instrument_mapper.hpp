@@ -20,17 +20,17 @@
 #ifndef ORES_ORE_CORE_DOMAIN_FX_INSTRUMENT_MAPPER_HPP
 #define ORES_ORE_CORE_DOMAIN_FX_INSTRUMENT_MAPPER_HPP
 
-#include "ores.ore.core/export.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/domain/domain.hpp"
-#include "ores.trading.api/domain/fx_forward_instrument.hpp"
-#include "ores.trading.api/domain/fx_vanilla_option_instrument.hpp"
+#include "ores.ore.core/export.hpp"
+#include "ores.trading.api/domain/fx_accumulator_instrument.hpp"
+#include "ores.trading.api/domain/fx_asian_forward_instrument.hpp"
 #include "ores.trading.api/domain/fx_barrier_option_instrument.hpp"
 #include "ores.trading.api/domain/fx_digital_option_instrument.hpp"
-#include "ores.trading.api/domain/fx_asian_forward_instrument.hpp"
-#include "ores.trading.api/domain/fx_accumulator_instrument.hpp"
-#include "ores.trading.api/domain/fx_variance_swap_instrument.hpp"
+#include "ores.trading.api/domain/fx_forward_instrument.hpp"
 #include "ores.trading.api/domain/fx_instrument_variant.hpp"
+#include "ores.trading.api/domain/fx_vanilla_option_instrument.hpp"
+#include "ores.trading.api/domain/fx_variance_swap_instrument.hpp"
 
 namespace ores::ore::domain {
 
@@ -57,8 +57,7 @@ namespace ores::ore::domain {
  */
 class ORES_ORE_CORE_EXPORT fx_instrument_mapper {
 private:
-    inline static std::string_view logger_name =
-        "ores.ore.domain.fx_instrument_mapper";
+    inline static std::string_view logger_name = "ores.ore.domain.fx_instrument_mapper";
 
     static auto& lg() {
         using namespace ores::logging;
@@ -73,7 +72,8 @@ public:
     static trading::domain::fx_instrument_variant forward_fx_option(const trade& t);
     static trading::domain::fx_instrument_variant forward_fx_barrier_option(const trade& t);
     static trading::domain::fx_instrument_variant forward_fx_double_barrier_option(const trade& t);
-    static trading::domain::fx_instrument_variant forward_fx_european_barrier_option(const trade& t);
+    static trading::domain::fx_instrument_variant
+    forward_fx_european_barrier_option(const trade& t);
     static trading::domain::fx_instrument_variant forward_fx_kiko_barrier_option(const trade& t);
     static trading::domain::fx_instrument_variant forward_fx_generic_barrier_option(const trade& t);
     static trading::domain::fx_instrument_variant forward_fx_digital_option(const trade& t);
@@ -85,14 +85,12 @@ public:
     static trading::domain::fx_instrument_variant forward_fx_tarf(const trade& t);
 
     // Reverse mappings (typed domain object → ORE XSD)
-    static trade reverse_fx_forward(
-        const ores::trading::domain::fx_forward_instrument& instr);
-    static trade reverse_fx_swap(
-        const ores::trading::domain::fx_forward_instrument& instr);
-    static trade reverse_fx_option(
-        const ores::trading::domain::fx_vanilla_option_instrument& instr);
-    static trade reverse_fx_barrier_option(
-        const ores::trading::domain::fx_barrier_option_instrument& instr);
+    static trade reverse_fx_forward(const ores::trading::domain::fx_forward_instrument& instr);
+    static trade reverse_fx_swap(const ores::trading::domain::fx_forward_instrument& instr);
+    static trade
+    reverse_fx_option(const ores::trading::domain::fx_vanilla_option_instrument& instr);
+    static trade
+    reverse_fx_barrier_option(const ores::trading::domain::fx_barrier_option_instrument& instr);
     static trade reverse_fx_double_barrier_option(
         const ores::trading::domain::fx_barrier_option_instrument& instr);
     static trade reverse_fx_european_barrier_option(
@@ -101,20 +99,19 @@ public:
         const ores::trading::domain::fx_barrier_option_instrument& instr);
     static trade reverse_fx_generic_barrier_option(
         const ores::trading::domain::fx_barrier_option_instrument& instr);
-    static trade reverse_fx_digital_option(
-        const ores::trading::domain::fx_digital_option_instrument& instr);
+    static trade
+    reverse_fx_digital_option(const ores::trading::domain::fx_digital_option_instrument& instr);
     static trade reverse_fx_digital_barrier_option(
         const ores::trading::domain::fx_digital_option_instrument& instr);
-    static trade reverse_fx_touch_option(
-        const ores::trading::domain::fx_digital_option_instrument& instr);
-    static trade reverse_fx_variance_swap(
-        const ores::trading::domain::fx_variance_swap_instrument& instr);
-    static trade reverse_fx_average_forward(
-        const ores::trading::domain::fx_asian_forward_instrument& instr);
-    static trade reverse_fx_accumulator(
-        const ores::trading::domain::fx_accumulator_instrument& instr);
-    static trade reverse_fx_tarf(
-        const ores::trading::domain::fx_asian_forward_instrument& instr);
+    static trade
+    reverse_fx_touch_option(const ores::trading::domain::fx_digital_option_instrument& instr);
+    static trade
+    reverse_fx_variance_swap(const ores::trading::domain::fx_variance_swap_instrument& instr);
+    static trade
+    reverse_fx_average_forward(const ores::trading::domain::fx_asian_forward_instrument& instr);
+    static trade
+    reverse_fx_accumulator(const ores::trading::domain::fx_accumulator_instrument& instr);
+    static trade reverse_fx_tarf(const ores::trading::domain::fx_asian_forward_instrument& instr);
 
 private:
     static barrierData make_barrier(const std::string& type, double level);

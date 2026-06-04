@@ -23,7 +23,9 @@
 /**
  * @brief ORE import microservice
  *
- * Standalone NATS microservice that receives ORE import workflow requests, downloads and unpacks ORE directory tarballs from storage, plans the import using ore_import_planner, and orchestrates saga steps against refdata, trading, and marketdata services with full compensation support.
+ * Standalone NATS microservice that receives ORE import workflow requests, downloads and unpacks
+ * ORE directory tarballs from storage, plans the import using ore_import_planner, and orchestrates
+ * saga steps against refdata, trading, and marketdata services with full compensation support.
  */
 namespace ores::ore.service {}
 

@@ -17,13 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.ore.core/domain/domain.hpp"
-
-#include <filesystem>
-#include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.ore.core/domain/domain.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/project_root.hpp"
+#include <catch2/catch_test_macros.hpp>
+#include <filesystem>
 
 namespace {
 
@@ -43,23 +42,40 @@ using namespace ores::logging;
 std::size_t count_elements(const curveconfiguration& cc) {
     std::size_t count = 0;
 
-    if (cc.FXSpots) count += cc.FXSpots->FXSpot.size();
-    if (cc.FXVolatilities) count += cc.FXVolatilities->FXVolatility.size();
-    if (cc.SwaptionVolatilities) count += cc.SwaptionVolatilities->SwaptionVolatility.size();
-    if (cc.YieldVolatilities) count += cc.YieldVolatilities->YieldVolatility.size();
-    if (cc.CapFloorVolatilities) count += cc.CapFloorVolatilities->CapFloorVolatility.size();
-    if (cc.CDSVolatilities) count += cc.CDSVolatilities->CDSVolatility.size();
-    if (cc.DefaultCurves) count += cc.DefaultCurves->DefaultCurve.size();
-    if (cc.YieldCurves) count += cc.YieldCurves->YieldCurve.size();
-    if (cc.InflationCurves) count += cc.InflationCurves->InflationCurve.size();
-    if (cc.InflationCapFloorVolatilities) count += cc.InflationCapFloorVolatilities->InflationCapFloorVolatility.size();
-    if (cc.EquityCurves) count += cc.EquityCurves->EquityCurve.size();
-    if (cc.EquityVolatilities) count += cc.EquityVolatilities->EquityVolatility.size();
-    if (cc.Securities) count += cc.Securities->Security.size();
-    if (cc.BaseCorrelations) count += cc.BaseCorrelations->BaseCorrelation.size();
-    if (cc.CommodityCurves) count += cc.CommodityCurves->CommodityCurve.size();
-    if (cc.CommodityVolatilities) count += cc.CommodityVolatilities->CommodityVolatility.size();
-    if (cc.Correlations) count += cc.Correlations->Correlation.size();
+    if (cc.FXSpots)
+        count += cc.FXSpots->FXSpot.size();
+    if (cc.FXVolatilities)
+        count += cc.FXVolatilities->FXVolatility.size();
+    if (cc.SwaptionVolatilities)
+        count += cc.SwaptionVolatilities->SwaptionVolatility.size();
+    if (cc.YieldVolatilities)
+        count += cc.YieldVolatilities->YieldVolatility.size();
+    if (cc.CapFloorVolatilities)
+        count += cc.CapFloorVolatilities->CapFloorVolatility.size();
+    if (cc.CDSVolatilities)
+        count += cc.CDSVolatilities->CDSVolatility.size();
+    if (cc.DefaultCurves)
+        count += cc.DefaultCurves->DefaultCurve.size();
+    if (cc.YieldCurves)
+        count += cc.YieldCurves->YieldCurve.size();
+    if (cc.InflationCurves)
+        count += cc.InflationCurves->InflationCurve.size();
+    if (cc.InflationCapFloorVolatilities)
+        count += cc.InflationCapFloorVolatilities->InflationCapFloorVolatility.size();
+    if (cc.EquityCurves)
+        count += cc.EquityCurves->EquityCurve.size();
+    if (cc.EquityVolatilities)
+        count += cc.EquityVolatilities->EquityVolatility.size();
+    if (cc.Securities)
+        count += cc.Securities->Security.size();
+    if (cc.BaseCorrelations)
+        count += cc.BaseCorrelations->BaseCorrelation.size();
+    if (cc.CommodityCurves)
+        count += cc.CommodityCurves->CommodityCurve.size();
+    if (cc.CommodityVolatilities)
+        count += cc.CommodityVolatilities->CommodityVolatility.size();
+    if (cc.Correlations)
+        count += cc.Correlations->Correlation.size();
 
     return count;
 }
@@ -68,12 +84,11 @@ std::size_t count_elements(const curveconfiguration& cc) {
  * @brief Compare two curveconfiguration objects by checking collection sizes.
  */
 void require_curveconfig_equal(const curveconfiguration& original,
-                                const curveconfiguration& roundtripped) {
+                               const curveconfiguration& roundtripped) {
     // Check presence of optional sections
     CHECK(static_cast<bool>(roundtripped.ReportConfiguration) ==
           static_cast<bool>(original.ReportConfiguration));
-    CHECK(static_cast<bool>(roundtripped.FXSpots) ==
-          static_cast<bool>(original.FXSpots));
+    CHECK(static_cast<bool>(roundtripped.FXSpots) == static_cast<bool>(original.FXSpots));
     CHECK(static_cast<bool>(roundtripped.FXVolatilities) ==
           static_cast<bool>(original.FXVolatilities));
     CHECK(static_cast<bool>(roundtripped.SwaptionVolatilities) ==
@@ -86,26 +101,22 @@ void require_curveconfig_equal(const curveconfiguration& original,
           static_cast<bool>(original.CDSVolatilities));
     CHECK(static_cast<bool>(roundtripped.DefaultCurves) ==
           static_cast<bool>(original.DefaultCurves));
-    CHECK(static_cast<bool>(roundtripped.YieldCurves) ==
-          static_cast<bool>(original.YieldCurves));
+    CHECK(static_cast<bool>(roundtripped.YieldCurves) == static_cast<bool>(original.YieldCurves));
     CHECK(static_cast<bool>(roundtripped.InflationCurves) ==
           static_cast<bool>(original.InflationCurves));
     CHECK(static_cast<bool>(roundtripped.InflationCapFloorVolatilities) ==
           static_cast<bool>(original.InflationCapFloorVolatilities));
-    CHECK(static_cast<bool>(roundtripped.EquityCurves) ==
-          static_cast<bool>(original.EquityCurves));
+    CHECK(static_cast<bool>(roundtripped.EquityCurves) == static_cast<bool>(original.EquityCurves));
     CHECK(static_cast<bool>(roundtripped.EquityVolatilities) ==
           static_cast<bool>(original.EquityVolatilities));
-    CHECK(static_cast<bool>(roundtripped.Securities) ==
-          static_cast<bool>(original.Securities));
+    CHECK(static_cast<bool>(roundtripped.Securities) == static_cast<bool>(original.Securities));
     CHECK(static_cast<bool>(roundtripped.BaseCorrelations) ==
           static_cast<bool>(original.BaseCorrelations));
     CHECK(static_cast<bool>(roundtripped.CommodityCurves) ==
           static_cast<bool>(original.CommodityCurves));
     CHECK(static_cast<bool>(roundtripped.CommodityVolatilities) ==
           static_cast<bool>(original.CommodityVolatilities));
-    CHECK(static_cast<bool>(roundtripped.Correlations) ==
-          static_cast<bool>(original.Correlations));
+    CHECK(static_cast<bool>(roundtripped.Correlations) == static_cast<bool>(original.Correlations));
 
     // Check collection sizes
     if (original.FXSpots) {
@@ -161,7 +172,8 @@ void require_curveconfig_equal(const curveconfiguration& original,
     }
 
     // Spot check: verify first swaption volatility CurveId if present
-    if (original.SwaptionVolatilities && !original.SwaptionVolatilities->SwaptionVolatility.empty()) {
+    if (original.SwaptionVolatilities &&
+        !original.SwaptionVolatilities->SwaptionVolatility.empty()) {
         REQUIRE(!roundtripped.SwaptionVolatilities->SwaptionVolatility.empty());
         CHECK(std::string(roundtripped.SwaptionVolatilities->SwaptionVolatility[0].CurveId) ==
               std::string(original.SwaptionVolatilities->SwaptionVolatility[0].CurveId));
@@ -171,8 +183,7 @@ void require_curveconfig_equal(const curveconfiguration& original,
 /**
  * @brief Perform a structural roundtrip test on curveconfiguration.
  */
-void test_curveconfig_roundtrip(const std::string& xml_content,
-                                 const std::string& source_name) {
+void test_curveconfig_roundtrip(const std::string& xml_content, const std::string& source_name) {
     auto lg(make_logger(test_suite));
 
     // Step 1: Parse original XML
@@ -227,4 +238,3 @@ TEST_CASE("curveconfig_roundtrip_inflation", tags) {
 TEST_CASE("curveconfig_roundtrip_sabr", tags) {
     test_curveconfig_roundtrip_from_file("examples/CurveBuilding/Input/curveconfig_sabr.xml");
 }
-

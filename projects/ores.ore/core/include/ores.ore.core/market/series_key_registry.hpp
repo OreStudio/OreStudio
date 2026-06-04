@@ -20,9 +20,9 @@
 #ifndef ORES_ORE_CORE_MARKET_SERIES_KEY_REGISTRY_HPP
 #define ORES_ORE_CORE_MARKET_SERIES_KEY_REGISTRY_HPP
 
+#include "ores.ore.core/export.hpp"
 #include <optional>
 #include <string>
-#include "ores.ore.core/export.hpp"
 
 namespace ores::ore::market {
 

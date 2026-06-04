@@ -17,17 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.ore.core/domain/domain.hpp"
-
-#include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.ore.core/domain/domain.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/project_root.hpp"
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 
-const std::string_view test_suite(
-    "ores.ore.collateralbalances.roundtrip.tests");
+const std::string_view test_suite("ores.ore.collateralbalances.roundtrip.tests");
 const std::string tags("[ore][xml][roundtrip][collateralbalances]");
 
 std::filesystem::path ore_path(const std::string& relative) {
@@ -38,19 +36,16 @@ using ores::ore::domain::collateralBalances;
 using namespace ores::logging;
 
 void require_collateralbalances_equal(const collateralBalances& original,
-                                       const collateralBalances& roundtripped) {
-    REQUIRE(roundtripped.CollateralBalance.size() ==
-            original.CollateralBalance.size());
+                                      const collateralBalances& roundtripped) {
+    REQUIRE(roundtripped.CollateralBalance.size() == original.CollateralBalance.size());
     for (size_t i = 0; i < original.CollateralBalance.size(); ++i) {
         const auto& orig = original.CollateralBalance.at(i);
         const auto& rt = roundtripped.CollateralBalance.at(i);
         CHECK(static_cast<bool>(rt.nettingSetGroup.NettingSetId) ==
               static_cast<bool>(orig.nettingSetGroup.NettingSetId));
         if (orig.nettingSetGroup.NettingSetId)
-            CHECK(*rt.nettingSetGroup.NettingSetId ==
-                  *orig.nettingSetGroup.NettingSetId);
-        CHECK(static_cast<bool>(rt.Currency) ==
-              static_cast<bool>(orig.Currency));
+            CHECK(*rt.nettingSetGroup.NettingSetId == *orig.nettingSetGroup.NettingSetId);
+        CHECK(static_cast<bool>(rt.Currency) == static_cast<bool>(orig.Currency));
         if (orig.Currency)
             CHECK(*rt.Currency == *orig.Currency);
         CHECK(rt.InitialMargin == orig.InitialMargin);
@@ -83,11 +78,9 @@ void test_roundtrip_from_file(const std::string& relative_path) {
 }
 
 TEST_CASE("collateralbalances_roundtrip_exposure_with_collateral", tags) {
-    test_roundtrip_from_file(
-        "examples/ExposureWithCollateral/Input/collateralbalances.xml");
+    test_roundtrip_from_file("examples/ExposureWithCollateral/Input/collateralbalances.xml");
 }
 
 TEST_CASE("collateralbalances_roundtrip_xva_risk", tags) {
-    test_roundtrip_from_file(
-        "examples/XvaRisk/Input/collateralbalances.xml");
+    test_roundtrip_from_file("examples/XvaRisk/Input/collateralbalances.xml");
 }

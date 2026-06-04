@@ -20,10 +20,10 @@
 #ifndef ORES_ORE_API_MESSAGING_ORE_IMPORT_ENGINE_PROTOCOL_HPP
 #define ORES_ORE_API_MESSAGING_ORE_IMPORT_ENGINE_PROTOCOL_HPP
 
-#include <string>
-#include <vector>
-#include <string_view>
 #include "ores.ore.api/messaging/ore_import_protocol.hpp"
+#include <string>
+#include <string_view>
+#include <vector>
 
 namespace ores::ore::messaging {
 
@@ -41,10 +41,10 @@ namespace ores::ore::messaging {
 struct ore_import_execute_request {
     static constexpr std::string_view nats_subject = "ore.v1.ore.import.execute";
 
-    std::string request_id;           ///< UUID; storage key root for the tarball
-    std::string import_choices_json;  ///< JSON-serialised import_choices
+    std::string request_id;          ///< UUID; storage key root for the tarball
+    std::string import_choices_json; ///< JSON-serialised import_choices
     std::string correlation_id;
-    std::string bearer_token;         ///< Caller's JWT — used for delegated NATS calls
+    std::string bearer_token; ///< Caller's JWT — used for delegated NATS calls
 };
 
 /**
@@ -75,7 +75,7 @@ struct ore_import_rollback_request {
     static constexpr std::string_view nats_subject = "ore.v1.ore.import.rollback";
 
     std::string correlation_id;
-    std::string bearer_token;         ///< Caller's JWT — used for delegated NATS calls
+    std::string bearer_token; ///< Caller's JWT — used for delegated NATS calls
     std::vector<std::string> saved_currency_iso_codes;
     std::vector<std::string> saved_portfolio_ids;
     std::vector<std::string> saved_book_ids;

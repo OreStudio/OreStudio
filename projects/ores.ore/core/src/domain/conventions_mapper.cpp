@@ -18,7 +18,6 @@
  *
  */
 #include "ores.ore.core/domain/conventions_mapper.hpp"
-
 #include <algorithm>
 #include <map>
 #include <stdexcept>
@@ -29,15 +28,15 @@ using namespace ores::logging;
 
 namespace {
 
-constexpr std::string_view audit_modified_by      = "ores";
-constexpr std::string_view audit_reason_code      = "system.external_data_import";
-constexpr std::string_view audit_commentary       = "Imported from ORE XML";
+constexpr std::string_view audit_modified_by = "ores";
+constexpr std::string_view audit_reason_code = "system.external_data_import";
+constexpr std::string_view audit_commentary = "Imported from ORE XML";
 
-template<typename T>
+template <typename T>
 void set_audit(T& r) {
-    r.modified_by        = std::string(audit_modified_by);
+    r.modified_by = std::string(audit_modified_by);
     r.change_reason_code = std::string(audit_reason_code);
-    r.change_commentary  = std::string(audit_commentary);
+    r.change_commentary = std::string(audit_commentary);
 }
 
 // ---------------------------------------------------------------------------
@@ -46,84 +45,142 @@ void set_audit(T& r) {
 
 domain::dayCounter parse_day_counter(const std::string& s) {
     using dc = domain::dayCounter;
-    if (s == "ACT/360")                   return dc::Actual_360;
-    if (s == "ACT/360 (incl. last)")      return dc::A360__Incl_Last_;
-    if (s == "ACT/365.FIXED")             return dc::A365F;
-    if (s == "ACT/365L")                  return dc::ACT_365L;
-    if (s == "ACT/365 (Canadian Bond)")   return dc::Act_365__Canadian_Bond_;
-    if (s == "T360")                      return dc::T360;
-    if (s == "30/360")                    return dc::_30_360;
-    if (s == "ACT/nACT")                  return dc::ACT_nACT;
-    if (s == "30E/360")                   return dc::_30E_360;
-    if (s == "30E/360.ISDA")              return dc::_30E_360_ISDA;
-    if (s == "30/360 (German)")           return dc::_30_360_German;
-    if (s == "30/360 (Italian)")          return dc::_30_360_Italian;
-    if (s == "ACT/ACT.ISDA")             return dc::ActActISDA;
-    if (s == "ACT/ACT.ISMA")             return dc::ActActISMA;
-    if (s == "ACT/ACT.AFB")              return dc::ActActAFB;
-    if (s == "1/1")                       return dc::_1_1;
-    if (s == "BUS/252")                   return dc::BUS_252;
-    if (s == "NL/365")                    return dc::NL_365;
-    if (s == "ACT/365 (JGB)")            return dc::Actual_365__JGB_;
-    if (s == "Simple")                    return dc::Simple;
-    if (s == "Year")                      return dc::Year;
-    if (s == "ACT/364")                   return dc::A364;
-    if (s == "Month")                     return dc::Month;
+    if (s == "ACT/360")
+        return dc::Actual_360;
+    if (s == "ACT/360 (incl. last)")
+        return dc::A360__Incl_Last_;
+    if (s == "ACT/365.FIXED")
+        return dc::A365F;
+    if (s == "ACT/365L")
+        return dc::ACT_365L;
+    if (s == "ACT/365 (Canadian Bond)")
+        return dc::Act_365__Canadian_Bond_;
+    if (s == "T360")
+        return dc::T360;
+    if (s == "30/360")
+        return dc::_30_360;
+    if (s == "ACT/nACT")
+        return dc::ACT_nACT;
+    if (s == "30E/360")
+        return dc::_30E_360;
+    if (s == "30E/360.ISDA")
+        return dc::_30E_360_ISDA;
+    if (s == "30/360 (German)")
+        return dc::_30_360_German;
+    if (s == "30/360 (Italian)")
+        return dc::_30_360_Italian;
+    if (s == "ACT/ACT.ISDA")
+        return dc::ActActISDA;
+    if (s == "ACT/ACT.ISMA")
+        return dc::ActActISMA;
+    if (s == "ACT/ACT.AFB")
+        return dc::ActActAFB;
+    if (s == "1/1")
+        return dc::_1_1;
+    if (s == "BUS/252")
+        return dc::BUS_252;
+    if (s == "NL/365")
+        return dc::NL_365;
+    if (s == "ACT/365 (JGB)")
+        return dc::Actual_365__JGB_;
+    if (s == "Simple")
+        return dc::Simple;
+    if (s == "Year")
+        return dc::Year;
+    if (s == "ACT/364")
+        return dc::A364;
+    if (s == "Month")
+        return dc::Month;
     throw std::runtime_error("parse_day_counter: unrecognised '" + s + "'");
 }
 
 domain::businessDayConvention parse_bdc(const std::string& s) {
     using bdc = domain::businessDayConvention;
-    if (s == "Following")                  return bdc::Following;
-    if (s == "ModifiedFollowing")          return bdc::ModifiedFollowing;
-    if (s == "Preceding")                  return bdc::Preceding;
-    if (s == "ModifiedPreceding")          return bdc::ModifiedPreceding;
-    if (s == "HalfMonthModifiedFollowing") return bdc::HalfMonthModifiedFollowing;
-    if (s == "Nearest")                    return bdc::NEAREST;
-    if (s == "Unadjusted")                 return bdc::Unadjusted;
+    if (s == "Following")
+        return bdc::Following;
+    if (s == "ModifiedFollowing")
+        return bdc::ModifiedFollowing;
+    if (s == "Preceding")
+        return bdc::Preceding;
+    if (s == "ModifiedPreceding")
+        return bdc::ModifiedPreceding;
+    if (s == "HalfMonthModifiedFollowing")
+        return bdc::HalfMonthModifiedFollowing;
+    if (s == "Nearest")
+        return bdc::NEAREST;
+    if (s == "Unadjusted")
+        return bdc::Unadjusted;
     throw std::runtime_error("parse_bdc: unrecognised '" + s + "'");
 }
 
 domain::frequencyType parse_frequency(const std::string& s) {
     using ft = domain::frequencyType;
-    if (s == "Once")        return ft::Once;
-    if (s == "Annual")      return ft::Annual;
-    if (s == "Semiannual")  return ft::Semiannual;
-    if (s == "Quarterly")   return ft::Quarterly;
-    if (s == "Bimonthly")   return ft::Bimonthly;
-    if (s == "Monthly")     return ft::Monthly;
-    if (s == "Lunarmonth")  return ft::Lunarmonth;
-    if (s == "Weekly")      return ft::Weekly;
-    if (s == "Daily")       return ft::Daily;
+    if (s == "Once")
+        return ft::Once;
+    if (s == "Annual")
+        return ft::Annual;
+    if (s == "Semiannual")
+        return ft::Semiannual;
+    if (s == "Quarterly")
+        return ft::Quarterly;
+    if (s == "Bimonthly")
+        return ft::Bimonthly;
+    if (s == "Monthly")
+        return ft::Monthly;
+    if (s == "Lunarmonth")
+        return ft::Lunarmonth;
+    if (s == "Weekly")
+        return ft::Weekly;
+    if (s == "Daily")
+        return ft::Daily;
     throw std::runtime_error("parse_frequency: unrecognised '" + s + "'");
 }
 
 domain::compounding parse_compounding(const std::string& s) {
     using cm = domain::compounding;
-    if (s == "Simple")               return cm::Simple;
-    if (s == "Compounded")           return cm::Compounded;
-    if (s == "Continuous")           return cm::Continuous;
-    if (s == "SimpleThenCompounded") return cm::SimpleThenCompounded;
+    if (s == "Simple")
+        return cm::Simple;
+    if (s == "Compounded")
+        return cm::Compounded;
+    if (s == "Continuous")
+        return cm::Continuous;
+    if (s == "SimpleThenCompounded")
+        return cm::SimpleThenCompounded;
     throw std::runtime_error("parse_compounding: unrecognised '" + s + "'");
 }
 
 domain::dateRule parse_date_rule(const std::string& s) {
     using dr = domain::dateRule;
-    if (s == "Backward")                return dr::Backward;
-    if (s == "Forward")                 return dr::Forward;
-    if (s == "Zero")                    return dr::Zero;
-    if (s == "ThirdWednesday")          return dr::ThirdWednesday;
-    if (s == "Twentieth")               return dr::Twentieth;
-    if (s == "TwentiethIMM")            return dr::TwentiethIMM;
-    if (s == "OldCDS")                  return dr::OldCDS;
-    if (s == "CDS")                     return dr::CDS;
-    if (s == "CDS2015")                 return dr::CDS2015;
-    if (s == "ThirdThursday")           return dr::ThirdThursday;
-    if (s == "ThirdFriday")             return dr::ThirdFriday;
-    if (s == "MondayAfterThirdFriday")  return dr::MondayAfterThirdFriday;
-    if (s == "TuesdayAfterThirdFriday") return dr::TuesdayAfterThirdFriday;
-    if (s == "LastWednesday")           return dr::LastWednesday;
-    if (s == "EveryThursday")           return dr::EveryThursday;
+    if (s == "Backward")
+        return dr::Backward;
+    if (s == "Forward")
+        return dr::Forward;
+    if (s == "Zero")
+        return dr::Zero;
+    if (s == "ThirdWednesday")
+        return dr::ThirdWednesday;
+    if (s == "Twentieth")
+        return dr::Twentieth;
+    if (s == "TwentiethIMM")
+        return dr::TwentiethIMM;
+    if (s == "OldCDS")
+        return dr::OldCDS;
+    if (s == "CDS")
+        return dr::CDS;
+    if (s == "CDS2015")
+        return dr::CDS2015;
+    if (s == "ThirdThursday")
+        return dr::ThirdThursday;
+    if (s == "ThirdFriday")
+        return dr::ThirdFriday;
+    if (s == "MondayAfterThirdFriday")
+        return dr::MondayAfterThirdFriday;
+    if (s == "TuesdayAfterThirdFriday")
+        return dr::TuesdayAfterThirdFriday;
+    if (s == "LastWednesday")
+        return dr::LastWednesday;
+    if (s == "EveryThursday")
+        return dr::EveryThursday;
     throw std::runtime_error("parse_date_rule: unrecognised '" + s + "'");
 }
 
@@ -134,59 +191,48 @@ domain::bool_ make_bool(bool v) {
 domain::currencyCode parse_currency_code(const std::string& s) {
     using cc = domain::currencyCode;
     static const std::map<std::string, cc> kMap = {
-        {"AED", cc::AED}, {"AFN", cc::AFN}, {"ALL", cc::ALL}, {"AMD", cc::AMD},
-        {"ANG", cc::ANG}, {"AOA", cc::AOA}, {"ARS", cc::ARS}, {"AUD", cc::AUD},
-        {"AWG", cc::AWG}, {"AZN", cc::AZN}, {"BAM", cc::BAM}, {"BBD", cc::BBD},
-        {"BDT", cc::BDT}, {"BGN", cc::BGN}, {"BHD", cc::BHD}, {"BIF", cc::BIF},
-        {"BMD", cc::BMD}, {"BND", cc::BND}, {"BOB", cc::BOB}, {"BOV", cc::BOV},
-        {"BRL", cc::BRL}, {"BSD", cc::BSD}, {"BTN", cc::BTN}, {"BWP", cc::BWP},
-        {"BYN", cc::BYN}, {"BZD", cc::BZD}, {"CAD", cc::CAD}, {"CDF", cc::CDF},
-        {"CHE", cc::CHE}, {"CHF", cc::CHF}, {"CHW", cc::CHW}, {"CLF", cc::CLF},
-        {"CLP", cc::CLP}, {"CNH", cc::CNH}, {"CNT", cc::CNT}, {"CNY", cc::CNY},
-        {"COP", cc::COP}, {"COU", cc::COU}, {"CRC", cc::CRC}, {"CUC", cc::CUC},
-        {"CUP", cc::CUP}, {"CVE", cc::CVE}, {"CYP", cc::CYP}, {"CZK", cc::CZK},
-        {"DJF", cc::DJF}, {"DKK", cc::DKK}, {"DOP", cc::DOP}, {"DZD", cc::DZD},
-        {"EGP", cc::EGP}, {"ERN", cc::ERN}, {"ETB", cc::ETB}, {"EUR", cc::EUR},
-        {"FJD", cc::FJD}, {"FKP", cc::FKP}, {"GBP", cc::GBP}, {"GEL", cc::GEL},
-        {"GGP", cc::GGP}, {"GHS", cc::GHS}, {"GIP", cc::GIP}, {"GMD", cc::GMD},
-        {"GNF", cc::GNF}, {"GTQ", cc::GTQ}, {"GYD", cc::GYD}, {"HKD", cc::HKD},
-        {"HNL", cc::HNL}, {"HRK", cc::HRK}, {"HTG", cc::HTG}, {"HUF", cc::HUF},
-        {"IDR", cc::IDR}, {"ILS", cc::ILS}, {"IMP", cc::IMP}, {"INR", cc::INR},
-        {"IQD", cc::IQD}, {"IRR", cc::IRR}, {"ISK", cc::ISK}, {"JEP", cc::JEP},
-        {"JMD", cc::JMD}, {"JOD", cc::JOD}, {"JPY", cc::JPY}, {"KES", cc::KES},
-        {"KGS", cc::KGS}, {"KHR", cc::KHR}, {"KID", cc::KID}, {"KMF", cc::KMF},
-        {"KPW", cc::KPW}, {"KRW", cc::KRW}, {"KWD", cc::KWD}, {"KYD", cc::KYD},
-        {"KZT", cc::KZT}, {"LAK", cc::LAK}, {"LBP", cc::LBP}, {"LKR", cc::LKR},
-        {"LRD", cc::LRD}, {"LSL", cc::LSL}, {"LTL", cc::LTL}, {"LVL", cc::LVL},
-        {"LYD", cc::LYD}, {"MAD", cc::MAD}, {"MDL", cc::MDL}, {"MGA", cc::MGA},
-        {"MKD", cc::MKD}, {"MMK", cc::MMK}, {"MNT", cc::MNT}, {"MOP", cc::MOP},
-        {"MRU", cc::MRU}, {"MUR", cc::MUR}, {"MVR", cc::MVR}, {"MWK", cc::MWK},
-        {"MXN", cc::MXN}, {"MXV", cc::MXV}, {"MYR", cc::MYR}, {"MZN", cc::MZN},
-        {"NAD", cc::NAD}, {"NGN", cc::NGN}, {"NIO", cc::NIO}, {"NOK", cc::NOK},
-        {"NPR", cc::NPR}, {"NZD", cc::NZD}, {"OMR", cc::OMR}, {"PAB", cc::PAB},
-        {"PEN", cc::PEN}, {"PGK", cc::PGK}, {"PHP", cc::PHP}, {"PKR", cc::PKR},
-        {"PLN", cc::PLN}, {"PYG", cc::PYG}, {"QAR", cc::QAR}, {"RON", cc::RON},
-        {"RSD", cc::RSD}, {"RUB", cc::RUB}, {"RWF", cc::RWF}, {"SAR", cc::SAR},
-        {"SBD", cc::SBD}, {"SCR", cc::SCR}, {"SDG", cc::SDG}, {"SEK", cc::SEK},
-        {"SGD", cc::SGD}, {"SHP", cc::SHP}, {"SLL", cc::SLL}, {"SOS", cc::SOS},
-        {"SRD", cc::SRD}, {"STN", cc::STN}, {"SVC", cc::SVC}, {"SYP", cc::SYP},
-        {"SZL", cc::SZL}, {"THB", cc::THB}, {"TJS", cc::TJS}, {"TMT", cc::TMT},
-        {"TND", cc::TND}, {"TOP", cc::TOP}, {"TRY", cc::TRY}, {"TTD", cc::TTD},
-        {"TWD", cc::TWD}, {"TZS", cc::TZS}, {"UAH", cc::UAH}, {"UGX", cc::UGX},
-        {"USD", cc::USD}, {"USN", cc::USN}, {"UYI", cc::UYI}, {"UYU", cc::UYU},
-        {"UYW", cc::UYW}, {"UZS", cc::UZS}, {"VES", cc::VES}, {"VND", cc::VND},
-        {"VUV", cc::VUV}, {"WST", cc::WST}, {"XAF", cc::XAF}, {"XAG", cc::XAG},
-        {"XAU", cc::XAU}, {"XCD", cc::XCD}, {"XOF", cc::XOF}, {"XPD", cc::XPD},
-        {"XPF", cc::XPF}, {"XPT", cc::XPT}, {"XSU", cc::XSU}, {"XUA", cc::XUA},
-        {"YER", cc::YER}, {"ZAR", cc::ZAR}, {"ZMW", cc::ZMW}, {"ZWL", cc::ZWL},
-        {"BTC", cc::BTC}, {"ETH", cc::ETH}, {"XBT", cc::XBT}, {"ETC", cc::ETC},
-        {"BCH", cc::BCH}, {"XRP", cc::XRP}, {"LTC", cc::LTC},
-        {"ZUR", cc::ZUR}, {"ZUG", cc::ZUG},
+        {"AED", cc::AED}, {"AFN", cc::AFN}, {"ALL", cc::ALL}, {"AMD", cc::AMD}, {"ANG", cc::ANG},
+        {"AOA", cc::AOA}, {"ARS", cc::ARS}, {"AUD", cc::AUD}, {"AWG", cc::AWG}, {"AZN", cc::AZN},
+        {"BAM", cc::BAM}, {"BBD", cc::BBD}, {"BDT", cc::BDT}, {"BGN", cc::BGN}, {"BHD", cc::BHD},
+        {"BIF", cc::BIF}, {"BMD", cc::BMD}, {"BND", cc::BND}, {"BOB", cc::BOB}, {"BOV", cc::BOV},
+        {"BRL", cc::BRL}, {"BSD", cc::BSD}, {"BTN", cc::BTN}, {"BWP", cc::BWP}, {"BYN", cc::BYN},
+        {"BZD", cc::BZD}, {"CAD", cc::CAD}, {"CDF", cc::CDF}, {"CHE", cc::CHE}, {"CHF", cc::CHF},
+        {"CHW", cc::CHW}, {"CLF", cc::CLF}, {"CLP", cc::CLP}, {"CNH", cc::CNH}, {"CNT", cc::CNT},
+        {"CNY", cc::CNY}, {"COP", cc::COP}, {"COU", cc::COU}, {"CRC", cc::CRC}, {"CUC", cc::CUC},
+        {"CUP", cc::CUP}, {"CVE", cc::CVE}, {"CYP", cc::CYP}, {"CZK", cc::CZK}, {"DJF", cc::DJF},
+        {"DKK", cc::DKK}, {"DOP", cc::DOP}, {"DZD", cc::DZD}, {"EGP", cc::EGP}, {"ERN", cc::ERN},
+        {"ETB", cc::ETB}, {"EUR", cc::EUR}, {"FJD", cc::FJD}, {"FKP", cc::FKP}, {"GBP", cc::GBP},
+        {"GEL", cc::GEL}, {"GGP", cc::GGP}, {"GHS", cc::GHS}, {"GIP", cc::GIP}, {"GMD", cc::GMD},
+        {"GNF", cc::GNF}, {"GTQ", cc::GTQ}, {"GYD", cc::GYD}, {"HKD", cc::HKD}, {"HNL", cc::HNL},
+        {"HRK", cc::HRK}, {"HTG", cc::HTG}, {"HUF", cc::HUF}, {"IDR", cc::IDR}, {"ILS", cc::ILS},
+        {"IMP", cc::IMP}, {"INR", cc::INR}, {"IQD", cc::IQD}, {"IRR", cc::IRR}, {"ISK", cc::ISK},
+        {"JEP", cc::JEP}, {"JMD", cc::JMD}, {"JOD", cc::JOD}, {"JPY", cc::JPY}, {"KES", cc::KES},
+        {"KGS", cc::KGS}, {"KHR", cc::KHR}, {"KID", cc::KID}, {"KMF", cc::KMF}, {"KPW", cc::KPW},
+        {"KRW", cc::KRW}, {"KWD", cc::KWD}, {"KYD", cc::KYD}, {"KZT", cc::KZT}, {"LAK", cc::LAK},
+        {"LBP", cc::LBP}, {"LKR", cc::LKR}, {"LRD", cc::LRD}, {"LSL", cc::LSL}, {"LTL", cc::LTL},
+        {"LVL", cc::LVL}, {"LYD", cc::LYD}, {"MAD", cc::MAD}, {"MDL", cc::MDL}, {"MGA", cc::MGA},
+        {"MKD", cc::MKD}, {"MMK", cc::MMK}, {"MNT", cc::MNT}, {"MOP", cc::MOP}, {"MRU", cc::MRU},
+        {"MUR", cc::MUR}, {"MVR", cc::MVR}, {"MWK", cc::MWK}, {"MXN", cc::MXN}, {"MXV", cc::MXV},
+        {"MYR", cc::MYR}, {"MZN", cc::MZN}, {"NAD", cc::NAD}, {"NGN", cc::NGN}, {"NIO", cc::NIO},
+        {"NOK", cc::NOK}, {"NPR", cc::NPR}, {"NZD", cc::NZD}, {"OMR", cc::OMR}, {"PAB", cc::PAB},
+        {"PEN", cc::PEN}, {"PGK", cc::PGK}, {"PHP", cc::PHP}, {"PKR", cc::PKR}, {"PLN", cc::PLN},
+        {"PYG", cc::PYG}, {"QAR", cc::QAR}, {"RON", cc::RON}, {"RSD", cc::RSD}, {"RUB", cc::RUB},
+        {"RWF", cc::RWF}, {"SAR", cc::SAR}, {"SBD", cc::SBD}, {"SCR", cc::SCR}, {"SDG", cc::SDG},
+        {"SEK", cc::SEK}, {"SGD", cc::SGD}, {"SHP", cc::SHP}, {"SLL", cc::SLL}, {"SOS", cc::SOS},
+        {"SRD", cc::SRD}, {"STN", cc::STN}, {"SVC", cc::SVC}, {"SYP", cc::SYP}, {"SZL", cc::SZL},
+        {"THB", cc::THB}, {"TJS", cc::TJS}, {"TMT", cc::TMT}, {"TND", cc::TND}, {"TOP", cc::TOP},
+        {"TRY", cc::TRY}, {"TTD", cc::TTD}, {"TWD", cc::TWD}, {"TZS", cc::TZS}, {"UAH", cc::UAH},
+        {"UGX", cc::UGX}, {"USD", cc::USD}, {"USN", cc::USN}, {"UYI", cc::UYI}, {"UYU", cc::UYU},
+        {"UYW", cc::UYW}, {"UZS", cc::UZS}, {"VES", cc::VES}, {"VND", cc::VND}, {"VUV", cc::VUV},
+        {"WST", cc::WST}, {"XAF", cc::XAF}, {"XAG", cc::XAG}, {"XAU", cc::XAU}, {"XCD", cc::XCD},
+        {"XOF", cc::XOF}, {"XPD", cc::XPD}, {"XPF", cc::XPF}, {"XPT", cc::XPT}, {"XSU", cc::XSU},
+        {"XUA", cc::XUA}, {"YER", cc::YER}, {"ZAR", cc::ZAR}, {"ZMW", cc::ZMW}, {"ZWL", cc::ZWL},
+        {"BTC", cc::BTC}, {"ETH", cc::ETH}, {"XBT", cc::XBT}, {"ETC", cc::ETC}, {"BCH", cc::BCH},
+        {"XRP", cc::XRP}, {"LTC", cc::LTC}, {"ZUR", cc::ZUR}, {"ZUG", cc::ZUG},
     };
     const auto it = kMap.find(s);
     if (it == kMap.end())
-        throw std::runtime_error(
-            "parse_currency_code: unrecognised '" + s + "'");
+        throw std::runtime_error("parse_currency_code: unrecognised '" + s + "'");
     return it->second;
 }
 
@@ -325,8 +371,7 @@ iborIndexType reverse_ibor_index(const refdata::domain::ibor_index_convention& v
     return r;
 }
 
-overnightIndexType reverse_overnight_index(
-        const refdata::domain::overnight_index_convention& v) {
+overnightIndexType reverse_overnight_index(const refdata::domain::overnight_index_convention& v) {
     overnightIndexType r;
     static_cast<std::string&>(r.Id) = v.id;
     static_cast<std::string&>(r.FixingCalendar) = v.fixing_calendar;
@@ -383,232 +428,251 @@ cdsConventionsType reverse_cds(const refdata::domain::cds_convention& v) {
 std::string conventions_mapper::normalize_bdc(domain::businessDayConvention v) {
     using bdc = domain::businessDayConvention;
     switch (v) {
-    case bdc::F:
-    case bdc::Following:
-    case bdc::FOLLOWING:
-        return "Following";
-    case bdc::MF:
-    case bdc::ModifiedFollowing:
-    case bdc::Modified_Following:
-    case bdc::MODIFIEDF:
-    case bdc::MODFOLLOWING:
-        return "ModifiedFollowing";
-    case bdc::P:
-    case bdc::Preceding:
-    case bdc::PRECEDING:
-        return "Preceding";
-    case bdc::MP:
-    case bdc::ModifiedPreceding:
-    case bdc::Modified_Preceding:
-    case bdc::MODIFIEDP:
-        return "ModifiedPreceding";
-    case bdc::HMMF:
-    case bdc::HalfMonthModifiedFollowing:
-    case bdc::HalfMonthMF:
-    case bdc::Half_Month_Modified_Following:
-    case bdc::HALFMONTHMF:
-        return "HalfMonthModifiedFollowing";
-    case bdc::NEAREST:
-        return "Nearest";
-    case bdc::NONE:
-    case bdc::NotApplicable:
-        return "Unadjusted";
-    case bdc::U:
-    case bdc::Unadjusted:
-    case bdc::INDIFF:
-        return "Unadjusted";
-    case bdc::_:
-    default:
-        throw std::runtime_error("Unknown business day convention enum value");
+        case bdc::F:
+        case bdc::Following:
+        case bdc::FOLLOWING:
+            return "Following";
+        case bdc::MF:
+        case bdc::ModifiedFollowing:
+        case bdc::Modified_Following:
+        case bdc::MODIFIEDF:
+        case bdc::MODFOLLOWING:
+            return "ModifiedFollowing";
+        case bdc::P:
+        case bdc::Preceding:
+        case bdc::PRECEDING:
+            return "Preceding";
+        case bdc::MP:
+        case bdc::ModifiedPreceding:
+        case bdc::Modified_Preceding:
+        case bdc::MODIFIEDP:
+            return "ModifiedPreceding";
+        case bdc::HMMF:
+        case bdc::HalfMonthModifiedFollowing:
+        case bdc::HalfMonthMF:
+        case bdc::Half_Month_Modified_Following:
+        case bdc::HALFMONTHMF:
+            return "HalfMonthModifiedFollowing";
+        case bdc::NEAREST:
+            return "Nearest";
+        case bdc::NONE:
+        case bdc::NotApplicable:
+            return "Unadjusted";
+        case bdc::U:
+        case bdc::Unadjusted:
+        case bdc::INDIFF:
+            return "Unadjusted";
+        case bdc::_:
+        default:
+            throw std::runtime_error("Unknown business day convention enum value");
     }
 }
 
 std::string conventions_mapper::normalize_day_counter(domain::dayCounter v) {
     using dc = domain::dayCounter;
     switch (v) {
-    case dc::A360:
-    case dc::Actual_360:
-    case dc::ACT_360:
-    case dc::Act_360:
-        return "ACT/360";
-    case dc::A360__Incl_Last_:
-    case dc::Actual_360__Incl_Last_:
-    case dc::ACT_360__Incl_Last_:
-        return "ACT/360 (incl. last)";
-    case dc::A365:
-    case dc::A365F:
-    case dc::Actual_365__Fixed_:
-    case dc::Actual_365__fixed_:
-    case dc::ACT_365_FIXED:
-    case dc::ACT_365:
-    case dc::Act_365:
-        return "ACT/365.FIXED";
-    case dc::ACT_365L:
-    case dc::Act_365L:
-        return "ACT/365L";
-    case dc::Act_365__Canadian_Bond_:
-        return "ACT/365 (Canadian Bond)";
-    case dc::T360:
-        return "T360";
-    case dc::_30_360:
-    case dc::_30_360_US:
-    case dc::_30_360__US_:
-    case dc::_30_360_NASD:
-    case dc::_30U_360:
-    case dc::_30US_360:
-    case dc::_30_360__Bond_Basis_:
-        return "30/360";
-    case dc::ACT_nACT:
-        return "ACT/nACT";
-    case dc::_30E_360__Eurobond_Basis_:
-    case dc::_30_360_AIBD__Euro_:
-    case dc::_30E_360_ICMA:
-    case dc::_30E_360_ICMA_2:
-    case dc::_30E_360:
-    case dc::_30E_360E:
-        return "30E/360";
-    case dc::_30E_360_ISDA:
-    case dc::_30E_360_ISDA_2:
-        return "30E/360.ISDA";
-    case dc::_30_360_German:
-    case dc::_30_360__German_:
-        return "30/360 (German)";
-    case dc::_30_360_Italian:
-    case dc::_30_360__Italian_:
-        return "30/360 (Italian)";
-    case dc::ActActISDA:
-    case dc::ACT_ACT_ISDA:
-    case dc::Actual_Actual__ISDA_:
-    case dc::ActualActual__ISDA_:
-    case dc::ACT_ACT:
-    case dc::Act_Act:
-    case dc::ACT29:
-    case dc::ACT:
-        return "ACT/ACT.ISDA";
-    case dc::ActActISMA:
-    case dc::Actual_Actual__ISMA_:
-    case dc::ActualActual__ISMA_:
-    case dc::ACT_ACT_ISMA:
-    case dc::ActActICMA:
-    case dc::Actual_Actual__ICMA_:
-    case dc::ActualActual__ICMA_:
-    case dc::ACT_ACT_ICMA:
-        return "ACT/ACT.ISMA";
-    case dc::ActActAFB:
-    case dc::ACT_ACT_AFB:
-    case dc::Actual_Actual__AFB_:
-        return "ACT/ACT.AFB";
-    case dc::_1_1:
-        return "1/1";
-    case dc::BUS_252:
-    case dc::Business_252:
-        return "BUS/252";
-    case dc::Actual_365__No_Leap_:
-    case dc::Act_365__NL_:
-    case dc::NL_365:
-        return "NL/365";
-    case dc::Actual_365__JGB_:
-        return "ACT/365 (JGB)";
-    case dc::Simple:
-        return "Simple";
-    case dc::Year:
-        return "Year";
-    case dc::A364:
-    case dc::Actual_364:
-    case dc::Act_364:
-    case dc::ACT_364:
-        return "ACT/364";
-    case dc::Month:
-        return "Month";
-    default:
-        throw std::runtime_error("Unknown day counter enum value");
+        case dc::A360:
+        case dc::Actual_360:
+        case dc::ACT_360:
+        case dc::Act_360:
+            return "ACT/360";
+        case dc::A360__Incl_Last_:
+        case dc::Actual_360__Incl_Last_:
+        case dc::ACT_360__Incl_Last_:
+            return "ACT/360 (incl. last)";
+        case dc::A365:
+        case dc::A365F:
+        case dc::Actual_365__Fixed_:
+        case dc::Actual_365__fixed_:
+        case dc::ACT_365_FIXED:
+        case dc::ACT_365:
+        case dc::Act_365:
+            return "ACT/365.FIXED";
+        case dc::ACT_365L:
+        case dc::Act_365L:
+            return "ACT/365L";
+        case dc::Act_365__Canadian_Bond_:
+            return "ACT/365 (Canadian Bond)";
+        case dc::T360:
+            return "T360";
+        case dc::_30_360:
+        case dc::_30_360_US:
+        case dc::_30_360__US_:
+        case dc::_30_360_NASD:
+        case dc::_30U_360:
+        case dc::_30US_360:
+        case dc::_30_360__Bond_Basis_:
+            return "30/360";
+        case dc::ACT_nACT:
+            return "ACT/nACT";
+        case dc::_30E_360__Eurobond_Basis_:
+        case dc::_30_360_AIBD__Euro_:
+        case dc::_30E_360_ICMA:
+        case dc::_30E_360_ICMA_2:
+        case dc::_30E_360:
+        case dc::_30E_360E:
+            return "30E/360";
+        case dc::_30E_360_ISDA:
+        case dc::_30E_360_ISDA_2:
+            return "30E/360.ISDA";
+        case dc::_30_360_German:
+        case dc::_30_360__German_:
+            return "30/360 (German)";
+        case dc::_30_360_Italian:
+        case dc::_30_360__Italian_:
+            return "30/360 (Italian)";
+        case dc::ActActISDA:
+        case dc::ACT_ACT_ISDA:
+        case dc::Actual_Actual__ISDA_:
+        case dc::ActualActual__ISDA_:
+        case dc::ACT_ACT:
+        case dc::Act_Act:
+        case dc::ACT29:
+        case dc::ACT:
+            return "ACT/ACT.ISDA";
+        case dc::ActActISMA:
+        case dc::Actual_Actual__ISMA_:
+        case dc::ActualActual__ISMA_:
+        case dc::ACT_ACT_ISMA:
+        case dc::ActActICMA:
+        case dc::Actual_Actual__ICMA_:
+        case dc::ActualActual__ICMA_:
+        case dc::ACT_ACT_ICMA:
+            return "ACT/ACT.ISMA";
+        case dc::ActActAFB:
+        case dc::ACT_ACT_AFB:
+        case dc::Actual_Actual__AFB_:
+            return "ACT/ACT.AFB";
+        case dc::_1_1:
+            return "1/1";
+        case dc::BUS_252:
+        case dc::Business_252:
+            return "BUS/252";
+        case dc::Actual_365__No_Leap_:
+        case dc::Act_365__NL_:
+        case dc::NL_365:
+            return "NL/365";
+        case dc::Actual_365__JGB_:
+            return "ACT/365 (JGB)";
+        case dc::Simple:
+            return "Simple";
+        case dc::Year:
+            return "Year";
+        case dc::A364:
+        case dc::Actual_364:
+        case dc::Act_364:
+        case dc::ACT_364:
+            return "ACT/364";
+        case dc::Month:
+            return "Month";
+        default:
+            throw std::runtime_error("Unknown day counter enum value");
     }
 }
 
 std::string conventions_mapper::normalize_frequency(domain::frequencyType v) {
     using ft = domain::frequencyType;
     switch (v) {
-    case ft::Z:
-    case ft::Once:
-        return "Once";
-    case ft::A:
-    case ft::Annual:
-        return "Annual";
-    case ft::S:
-    case ft::Semiannual:
-        return "Semiannual";
-    case ft::Q:
-    case ft::Quarterly:
-        return "Quarterly";
-    case ft::B:
-    case ft::Bimonthly:
-        return "Bimonthly";
-    case ft::M:
-    case ft::Monthly:
-        return "Monthly";
-    case ft::L:
-    case ft::Lunarmonth:
-        return "Lunarmonth";
-    case ft::W:
-    case ft::Weekly:
-        return "Weekly";
-    case ft::D:
-    case ft::Daily:
-        return "Daily";
-    default:
-        throw std::runtime_error("Unknown frequency type enum value");
+        case ft::Z:
+        case ft::Once:
+            return "Once";
+        case ft::A:
+        case ft::Annual:
+            return "Annual";
+        case ft::S:
+        case ft::Semiannual:
+            return "Semiannual";
+        case ft::Q:
+        case ft::Quarterly:
+            return "Quarterly";
+        case ft::B:
+        case ft::Bimonthly:
+            return "Bimonthly";
+        case ft::M:
+        case ft::Monthly:
+            return "Monthly";
+        case ft::L:
+        case ft::Lunarmonth:
+            return "Lunarmonth";
+        case ft::W:
+        case ft::Weekly:
+            return "Weekly";
+        case ft::D:
+        case ft::Daily:
+            return "Daily";
+        default:
+            throw std::runtime_error("Unknown frequency type enum value");
     }
 }
 
 std::string conventions_mapper::normalize_compounding(domain::compounding v) {
     using cm = domain::compounding;
     switch (v) {
-    case cm::Simple:             return "Simple";
-    case cm::Compounded:         return "Compounded";
-    case cm::Continuous:         return "Continuous";
-    case cm::SimpleThenCompounded: return "SimpleThenCompounded";
-    case cm::_:
-    default:
-        throw std::runtime_error("Unknown compounding enum value");
+        case cm::Simple:
+            return "Simple";
+        case cm::Compounded:
+            return "Compounded";
+        case cm::Continuous:
+            return "Continuous";
+        case cm::SimpleThenCompounded:
+            return "SimpleThenCompounded";
+        case cm::_:
+        default:
+            throw std::runtime_error("Unknown compounding enum value");
     }
 }
 
 std::string conventions_mapper::normalize_date_rule(domain::dateRule v) {
     using dr = domain::dateRule;
     switch (v) {
-    case dr::Backward:               return "Backward";
-    case dr::Forward:                return "Forward";
-    case dr::Zero:                   return "Zero";
-    case dr::ThirdWednesday:         return "ThirdWednesday";
-    case dr::Twentieth:              return "Twentieth";
-    case dr::TwentiethIMM:           return "TwentiethIMM";
-    case dr::OldCDS:                 return "OldCDS";
-    case dr::CDS:                    return "CDS";
-    case dr::CDS2015:                return "CDS2015";
-    case dr::ThirdThursday:          return "ThirdThursday";
-    case dr::ThirdFriday:            return "ThirdFriday";
-    case dr::MondayAfterThirdFriday: return "MondayAfterThirdFriday";
-    case dr::TuesdayAfterThirdFriday:return "TuesdayAfterThirdFriday";
-    case dr::LastWednesday:          return "LastWednesday";
-    case dr::EveryThursday:          return "EveryThursday";
-    case dr::_:
-    default:
-        throw std::runtime_error("Unknown date rule enum value");
+        case dr::Backward:
+            return "Backward";
+        case dr::Forward:
+            return "Forward";
+        case dr::Zero:
+            return "Zero";
+        case dr::ThirdWednesday:
+            return "ThirdWednesday";
+        case dr::Twentieth:
+            return "Twentieth";
+        case dr::TwentiethIMM:
+            return "TwentiethIMM";
+        case dr::OldCDS:
+            return "OldCDS";
+        case dr::CDS:
+            return "CDS";
+        case dr::CDS2015:
+            return "CDS2015";
+        case dr::ThirdThursday:
+            return "ThirdThursday";
+        case dr::ThirdFriday:
+            return "ThirdFriday";
+        case dr::MondayAfterThirdFriday:
+            return "MondayAfterThirdFriday";
+        case dr::TuesdayAfterThirdFriday:
+            return "TuesdayAfterThirdFriday";
+        case dr::LastWednesday:
+            return "LastWednesday";
+        case dr::EveryThursday:
+            return "EveryThursday";
+        case dr::_:
+        default:
+            throw std::runtime_error("Unknown date rule enum value");
     }
 }
 
 bool conventions_mapper::parse_bool(domain::bool_ v) {
     using b = domain::bool_;
     switch (v) {
-    case b::Y:
-    case b::YES:
-    case b::TRUE_:
-    case b::True:
-    case b::true_:
-    case b::_1:
-        return true;
-    default:
-        return false;
+        case b::Y:
+        case b::YES:
+        case b::TRUE_:
+        case b::True:
+        case b::true_:
+        case b::_1:
+            return true;
+        default:
+            return false;
     }
 }
 
@@ -616,8 +680,7 @@ bool conventions_mapper::parse_bool(domain::bool_ v) {
 // Individual type mappers
 // ---------------------------------------------------------------------------
 
-refdata::domain::zero_convention
-conventions_mapper::map_zero(const zeroType& v) {
+refdata::domain::zero_convention conventions_mapper::map_zero(const zeroType& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping zero convention: " << std::string(v.Id);
 
     refdata::domain::zero_convention r;
@@ -650,8 +713,7 @@ conventions_mapper::map_zero(const zeroType& v) {
     return r;
 }
 
-refdata::domain::deposit_convention
-conventions_mapper::map_deposit(const depositType& v) {
+refdata::domain::deposit_convention conventions_mapper::map_deposit(const depositType& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping deposit convention: " << std::string(v.Id);
 
     refdata::domain::deposit_convention r;
@@ -680,8 +742,7 @@ conventions_mapper::map_deposit(const depositType& v) {
     return r;
 }
 
-refdata::domain::swap_convention
-conventions_mapper::map_swap(const swapType& v) {
+refdata::domain::swap_convention conventions_mapper::map_swap(const swapType& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping swap convention: " << std::string(v.Id);
 
     refdata::domain::swap_convention r;
@@ -704,10 +765,14 @@ conventions_mapper::map_swap(const swapType& v) {
     if (v.SubPeriodsCouponType) {
         using sp = domain::subPeriodsCouponType;
         switch (*v.SubPeriodsCouponType) {
-        case sp::Compounding: r.sub_periods_coupon_type = "Compounding"; break;
-        case sp::Averaging:   r.sub_periods_coupon_type = "Averaging";   break;
-        default:
-            throw std::runtime_error("Unknown sub-periods coupon type enum value");
+            case sp::Compounding:
+                r.sub_periods_coupon_type = "Compounding";
+                break;
+            case sp::Averaging:
+                r.sub_periods_coupon_type = "Averaging";
+                break;
+            default:
+                throw std::runtime_error("Unknown sub-periods coupon type enum value");
         }
     }
 
@@ -715,8 +780,7 @@ conventions_mapper::map_swap(const swapType& v) {
     return r;
 }
 
-refdata::domain::ois_convention
-conventions_mapper::map_ois(const oisType& v) {
+refdata::domain::ois_convention conventions_mapper::map_ois(const oisType& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping OIS convention: " << std::string(v.Id);
 
     refdata::domain::ois_convention r;
@@ -756,8 +820,7 @@ conventions_mapper::map_ois(const oisType& v) {
     return r;
 }
 
-refdata::domain::fra_convention
-conventions_mapper::map_fra(const fraType& v) {
+refdata::domain::fra_convention conventions_mapper::map_fra(const fraType& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping FRA convention: " << std::string(v.Id);
 
     refdata::domain::fra_convention r;
@@ -767,8 +830,7 @@ conventions_mapper::map_fra(const fraType& v) {
     return r;
 }
 
-refdata::domain::ibor_index_convention
-conventions_mapper::map_ibor_index(const iborIndexType& v) {
+refdata::domain::ibor_index_convention conventions_mapper::map_ibor_index(const iborIndexType& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping IBOR index convention: " << std::string(v.Id);
 
     refdata::domain::ibor_index_convention r;
@@ -784,8 +846,7 @@ conventions_mapper::map_ibor_index(const iborIndexType& v) {
 
 refdata::domain::overnight_index_convention
 conventions_mapper::map_overnight_index(const overnightIndexType& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping overnight index convention: "
-                               << std::string(v.Id);
+    BOOST_LOG_SEV(lg(), trace) << "Mapping overnight index convention: " << std::string(v.Id);
 
     refdata::domain::overnight_index_convention r;
     r.id = std::string(v.Id);
@@ -796,8 +857,7 @@ conventions_mapper::map_overnight_index(const overnightIndexType& v) {
     return r;
 }
 
-refdata::domain::fx_convention
-conventions_mapper::map_fx(const fxType& v) {
+refdata::domain::fx_convention conventions_mapper::map_fx(const fxType& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping FX convention: " << std::string(v.Id);
 
     refdata::domain::fx_convention r;
@@ -823,8 +883,7 @@ conventions_mapper::map_fx(const fxType& v) {
     return r;
 }
 
-refdata::domain::cds_convention
-conventions_mapper::map_cds(const cdsConventionsType& v) {
+refdata::domain::cds_convention conventions_mapper::map_cds(const cdsConventionsType& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping CDS convention: " << std::string(v.Id);
 
     refdata::domain::cds_convention r;
@@ -855,64 +914,57 @@ conventions_mapper::map_cds(const cdsConventionsType& v) {
 
 mapped_conventions conventions_mapper::map(const conventions& v) {
     BOOST_LOG_SEV(lg(), debug) << "Mapping ORE conventions. "
-        << "Zero=" << v.Zero.size()
-        << " Deposit=" << v.Deposit.size()
-        << " Swap=" << v.Swap.size()
-        << " OIS=" << v.OIS.size()
-        << " FRA=" << v.FRA.size()
-        << " IborIndex=" << v.IborIndex.size()
-        << " OvernightIndex=" << v.OvernightIndex.size()
-        << " FX=" << v.FX.size()
-        << " CDS=" << v.CDS.size();
+                               << "Zero=" << v.Zero.size() << " Deposit=" << v.Deposit.size()
+                               << " Swap=" << v.Swap.size() << " OIS=" << v.OIS.size()
+                               << " FRA=" << v.FRA.size() << " IborIndex=" << v.IborIndex.size()
+                               << " OvernightIndex=" << v.OvernightIndex.size()
+                               << " FX=" << v.FX.size() << " CDS=" << v.CDS.size();
 
     mapped_conventions r;
 
     r.zero.reserve(v.Zero.size());
-    std::ranges::transform(v.Zero, std::back_inserter(r.zero),
-        [](const auto& x) { return map_zero(x); });
+    std::ranges::transform(
+        v.Zero, std::back_inserter(r.zero), [](const auto& x) { return map_zero(x); });
 
     r.deposit.reserve(v.Deposit.size());
-    std::ranges::transform(v.Deposit, std::back_inserter(r.deposit),
-        [](const auto& x) { return map_deposit(x); });
+    std::ranges::transform(
+        v.Deposit, std::back_inserter(r.deposit), [](const auto& x) { return map_deposit(x); });
 
     r.swap.reserve(v.Swap.size());
-    std::ranges::transform(v.Swap, std::back_inserter(r.swap),
-        [](const auto& x) { return map_swap(x); });
+    std::ranges::transform(
+        v.Swap, std::back_inserter(r.swap), [](const auto& x) { return map_swap(x); });
 
     r.ois.reserve(v.OIS.size());
-    std::ranges::transform(v.OIS, std::back_inserter(r.ois),
-        [](const auto& x) { return map_ois(x); });
+    std::ranges::transform(
+        v.OIS, std::back_inserter(r.ois), [](const auto& x) { return map_ois(x); });
 
     r.fra.reserve(v.FRA.size());
-    std::ranges::transform(v.FRA, std::back_inserter(r.fra),
-        [](const auto& x) { return map_fra(x); });
+    std::ranges::transform(
+        v.FRA, std::back_inserter(r.fra), [](const auto& x) { return map_fra(x); });
 
     r.ibor_index.reserve(v.IborIndex.size());
-    std::ranges::transform(v.IborIndex, std::back_inserter(r.ibor_index),
-        [](const auto& x) { return map_ibor_index(x); });
+    std::ranges::transform(v.IborIndex, std::back_inserter(r.ibor_index), [](const auto& x) {
+        return map_ibor_index(x);
+    });
 
     r.overnight_index.reserve(v.OvernightIndex.size());
-    std::ranges::transform(v.OvernightIndex, std::back_inserter(r.overnight_index),
-        [](const auto& x) { return map_overnight_index(x); });
+    std::ranges::transform(v.OvernightIndex,
+                           std::back_inserter(r.overnight_index),
+                           [](const auto& x) { return map_overnight_index(x); });
 
     r.fx.reserve(v.FX.size());
-    std::ranges::transform(v.FX, std::back_inserter(r.fx),
-        [](const auto& x) { return map_fx(x); });
+    std::ranges::transform(v.FX, std::back_inserter(r.fx), [](const auto& x) { return map_fx(x); });
 
     r.cds.reserve(v.CDS.size());
-    std::ranges::transform(v.CDS, std::back_inserter(r.cds),
-        [](const auto& x) { return map_cds(x); });
+    std::ranges::transform(
+        v.CDS, std::back_inserter(r.cds), [](const auto& x) { return map_cds(x); });
 
     BOOST_LOG_SEV(lg(), debug) << "Finished mapping conventions. "
-        << "Zero=" << r.zero.size()
-        << " Deposit=" << r.deposit.size()
-        << " Swap=" << r.swap.size()
-        << " OIS=" << r.ois.size()
-        << " FRA=" << r.fra.size()
-        << " IborIndex=" << r.ibor_index.size()
-        << " OvernightIndex=" << r.overnight_index.size()
-        << " FX=" << r.fx.size()
-        << " CDS=" << r.cds.size();
+                               << "Zero=" << r.zero.size() << " Deposit=" << r.deposit.size()
+                               << " Swap=" << r.swap.size() << " OIS=" << r.ois.size()
+                               << " FRA=" << r.fra.size() << " IborIndex=" << r.ibor_index.size()
+                               << " OvernightIndex=" << r.overnight_index.size()
+                               << " FX=" << r.fx.size() << " CDS=" << r.cds.size();
 
     return r;
 }
@@ -923,15 +975,11 @@ mapped_conventions conventions_mapper::map(const conventions& v) {
 
 conventions conventions_mapper::reverse(const mapped_conventions& v) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping conventions. "
-        << "Zero=" << v.zero.size()
-        << " Deposit=" << v.deposit.size()
-        << " Swap=" << v.swap.size()
-        << " OIS=" << v.ois.size()
-        << " FRA=" << v.fra.size()
-        << " IborIndex=" << v.ibor_index.size()
-        << " OvernightIndex=" << v.overnight_index.size()
-        << " FX=" << v.fx.size()
-        << " CDS=" << v.cds.size();
+                               << "Zero=" << v.zero.size() << " Deposit=" << v.deposit.size()
+                               << " Swap=" << v.swap.size() << " OIS=" << v.ois.size()
+                               << " FRA=" << v.fra.size() << " IborIndex=" << v.ibor_index.size()
+                               << " OvernightIndex=" << v.overnight_index.size()
+                               << " FX=" << v.fx.size() << " CDS=" << v.cds.size();
 
     conventions r;
 

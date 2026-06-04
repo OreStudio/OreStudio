@@ -17,15 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.ore.core/domain/domain.hpp"
-#include "ores.ore.core/domain/trade_mapper.hpp"
-#include "ores.ore.core/domain/scripted_instrument_mapper.hpp"
-#include "ores.ore.core/domain/composite_instrument_mapper.hpp"
-
-#include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.ore.core/domain/composite_instrument_mapper.hpp"
+#include "ores.ore.core/domain/domain.hpp"
+#include "ores.ore.core/domain/scripted_instrument_mapper.hpp"
+#include "ores.ore.core/domain/trade_mapper.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/project_root.hpp"
+#include <catch2/catch_test_macros.hpp>
 
 /**
  * @file xml_composite_scripted_mapper_roundtrip_tests.cpp
@@ -41,8 +40,7 @@
 
 namespace {
 
-const std::string_view test_suite(
-    "ores.ore.composite.scripted.mapper.roundtrip.tests");
+const std::string_view test_suite("ores.ore.composite.scripted.mapper.roundtrip.tests");
 const std::string tags("[ore][xml][mapper][roundtrip][composite][scripted]");
 
 using ores::ore::domain::portfolio;
@@ -53,8 +51,8 @@ using ores::trading::domain::composite_instrument_data;
 using namespace ores::logging;
 
 std::filesystem::path example_path(const std::string& filename) {
-    return ores::testing::project_root::resolve(
-        "external/ore/examples/Products/Example_Trades/" + filename);
+    return ores::testing::project_root::resolve("external/ore/examples/Products/Example_Trades/" +
+                                                filename);
 }
 
 scripted_instrument load_and_map_scripted(const std::string& filename) {
@@ -63,8 +61,7 @@ scripted_instrument load_and_map_scripted(const std::string& filename) {
     portfolio p;
     ores::ore::domain::load_data(content, p);
     REQUIRE(!p.Trade.empty());
-    auto r = ores::ore::domain::trade_mapper::map_scripted_instrument(
-        p.Trade.front());
+    auto r = ores::ore::domain::trade_mapper::map_scripted_instrument(p.Trade.front());
     REQUIRE(r.has_value());
     return *r;
 }
@@ -75,8 +72,7 @@ composite_instrument_data load_and_map_composite(const std::string& filename) {
     portfolio p;
     ores::ore::domain::load_data(content, p);
     REQUIRE(!p.Trade.empty());
-    auto r = ores::ore::domain::trade_mapper::map_composite_instrument(
-        p.Trade.front());
+    auto r = ores::ore::domain::trade_mapper::map_composite_instrument(p.Trade.front());
     REQUIRE(r.has_value());
     return *r;
 }
@@ -117,8 +113,7 @@ TEST_CASE("composite_mapper_roundtrip_composite_trade", tags) {
 
     CHECK(r.instrument.trade_type_code == "CompositeTrade");
 
-    const auto rt = composite_instrument_mapper::reverse_composite_trade(
-        r.instrument);
+    const auto rt = composite_instrument_mapper::reverse_composite_trade(r.instrument);
     REQUIRE(rt.CompositeTradeData.operator bool());
 
     BOOST_LOG_SEV(lg, info) << "CompositeTrade roundtrip passed.";
@@ -141,6 +136,5 @@ TEST_CASE("composite_mapper_components_populate_legs", tags) {
         CHECK(leg.change_reason_code == "system.external_data_import");
     }
 
-    BOOST_LOG_SEV(lg, info) << "CompositeTrade legs populated: "
-                            << r.legs.size();
+    BOOST_LOG_SEV(lg, info) << "CompositeTrade legs populated: " << r.legs.size();
 }

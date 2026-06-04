@@ -17,14 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.ore.core/domain/domain.hpp"
-#include "ores.ore.core/domain/bond_instrument_mapper.hpp"
-
-#include <catch2/catch_test_macros.hpp>
-#include <catch2/catch_approx.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.ore.core/domain/bond_instrument_mapper.hpp"
+#include "ores.ore.core/domain/domain.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/project_root.hpp"
+#include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 using Catch::Approx;
 
@@ -43,12 +42,11 @@ using ores::ore::domain::bond_instrument_mapper;
 using namespace ores::logging;
 
 std::filesystem::path example_path(const std::string& filename) {
-    return ores::testing::project_root::resolve(
-        "external/ore/examples/Products/Example_Trades/" + filename);
+    return ores::testing::project_root::resolve("external/ore/examples/Products/Example_Trades/" +
+                                                filename);
 }
 
-ores::ore::domain::trade load_trade(
-        const std::string& filename, std::size_t index = 0) {
+ores::ore::domain::trade load_trade(const std::string& filename, std::size_t index = 0) {
     using ores::platform::filesystem::file;
     const auto path = example_path(filename);
     const std::string content = file::read_content(path);
@@ -87,8 +85,7 @@ TEST_CASE("mapper_roundtrip_bond_reverse", tags) {
     const auto t = load_trade("Cash_Bonds.xml", 0);
     const auto result = bond_instrument_mapper::forward_bond(t);
 
-    const auto reconstructed =
-        bond_instrument_mapper::reverse_bond(result);
+    const auto reconstructed = bond_instrument_mapper::reverse_bond(result);
 
     REQUIRE(reconstructed.BondData.operator bool());
     const auto& bd = *reconstructed.BondData;
@@ -103,15 +100,15 @@ TEST_CASE("mapper_roundtrip_bond_reverse", tags) {
     REQUIRE(!bd.LegData.empty());
     CHECK(std::string(*bd.LegData[0].Currency) == "EUR");
     REQUIRE(bd.LegData[0].Notionals);
-    CHECK(static_cast<float>(bd.LegData[0].Notionals->Notional[0])
-          == Approx(10000000.0f).epsilon(0.001f));
+    CHECK(static_cast<float>(bd.LegData[0].Notionals->Notional[0]) ==
+          Approx(10000000.0f).epsilon(0.001f));
 
     // Coupon rate
     REQUIRE(bd.LegData[0].legDataType);
     REQUIRE(bd.LegData[0].legDataType->FixedLegData);
     REQUIRE(!bd.LegData[0].legDataType->FixedLegData->Rates.Rate.empty());
-    CHECK(static_cast<float>(bd.LegData[0].legDataType->FixedLegData->Rates.Rate[0])
-          == Approx(0.05f).epsilon(0.0001f));
+    CHECK(static_cast<float>(bd.LegData[0].legDataType->FixedLegData->Rates.Rate[0]) ==
+          Approx(0.05f).epsilon(0.0001f));
 
     // Maturity date
     REQUIRE(bd.LegData[0].ScheduleData);
@@ -145,8 +142,7 @@ TEST_CASE("mapper_roundtrip_forward_bond_reverse", tags) {
     const auto t = load_trade("Cash_Bonds.xml", 1);
     const auto result = bond_instrument_mapper::forward_forward_bond(t);
 
-    const auto reconstructed =
-        bond_instrument_mapper::reverse_forward_bond(result);
+    const auto reconstructed = bond_instrument_mapper::reverse_forward_bond(result);
 
     REQUIRE(reconstructed.ForwardBondData.operator bool());
     const auto& fbd = *reconstructed.ForwardBondData;
@@ -168,8 +164,7 @@ TEST_CASE("mapper_roundtrip_convertible_bond_forward", tags) {
 
     CHECK(instr.trade_type_code == "ConvertibleBond");
     BOOST_LOG_SEV(lg, info) << "ConvertibleBond forward-mapper test passed, "
-                            << "issuer=" << instr.issuer
-                            << " currency=" << instr.currency;
+                            << "issuer=" << instr.issuer << " currency=" << instr.currency;
 }
 
 TEST_CASE("mapper_roundtrip_convertible_bond_reverse", tags) {
@@ -178,8 +173,7 @@ TEST_CASE("mapper_roundtrip_convertible_bond_reverse", tags) {
     const auto result = bond_instrument_mapper::forward_convertible_bond(t);
     const auto& instr = result;
 
-    const auto reconstructed =
-        bond_instrument_mapper::reverse_convertible_bond(result);
+    const auto reconstructed = bond_instrument_mapper::reverse_convertible_bond(result);
 
     REQUIRE(reconstructed.ConvertibleBondData.operator bool());
     const auto& cbd = *reconstructed.ConvertibleBondData;

@@ -18,7 +18,6 @@
  *
  */
 #include "ores.ore.core/domain/swap_instrument_mapper.hpp"
-
 #include <map>
 
 namespace ores::ore::domain {
@@ -42,12 +41,14 @@ using ores::trading::domain::swap_leg;
 namespace {
 
 std::string day_counter_string(const xsd::optional<dayCounter>& dc) {
-    if (!dc) return {};
+    if (!dc)
+        return {};
     return to_string(*dc);
 }
 
 std::string bdc_string(const xsd::optional<businessDayConvention>& bdc) {
-    if (!bdc) return {};
+    if (!bdc)
+        return {};
     return to_string(*bdc);
 }
 
@@ -58,21 +59,24 @@ float first_notional(const legData_Notionals_t& notionals) {
 }
 
 std::string first_tenor(const xsd::optional<scheduleData>& sd) {
-    if (!sd) return {};
+    if (!sd)
+        return {};
     if (!sd->Rules.empty())
         return std::string(sd->Rules.front().Tenor);
     return {};
 }
 
 std::string start_date_from_schedule(const xsd::optional<scheduleData>& sd) {
-    if (!sd) return {};
+    if (!sd)
+        return {};
     if (!sd->Rules.empty())
         return std::string(sd->Rules.front().StartDate);
     return {};
 }
 
 std::string end_date_from_schedule(const xsd::optional<scheduleData>& sd) {
-    if (!sd) return {};
+    if (!sd)
+        return {};
     if (!sd->Rules.empty() && sd->Rules.front().EndDate)
         return std::string(*sd->Rules.front().EndDate);
     return {};
@@ -101,8 +105,8 @@ std::string first_tenor(const scheduleData& sd) {
 // Helpers: reverse direction (string → ORE XSD)
 // ---------------------------------------------------------------------------
 
-scheduleData make_schedule(const std::string& start, const std::string& end,
-                           const std::string& tenor) {
+scheduleData
+make_schedule(const std::string& start, const std::string& end, const std::string& tenor) {
     scheduleData sd;
     scheduleData_Rules_t r;
     r.StartDate = start;
@@ -118,23 +122,40 @@ scheduleData make_schedule(const std::string& start, const std::string& end,
 }
 
 std::optional<legType> leg_type_from_string(const std::string& s) {
-    if (s == "Fixed")               return legType::Fixed;
-    if (s == "Floating")            return legType::Floating;
-    if (s == "CPI")                 return legType::CPI;
-    if (s == "YY")                  return legType::YY;
-    if (s == "CMS")                 return legType::CMS;
-    if (s == "CMB")                 return legType::CMB;
-    if (s == "DigitalCMS")          return legType::DigitalCMS;
-    if (s == "CMSSpread")           return legType::CMSSpread;
-    if (s == "DigitalCMSSpread")    return legType::DigitalCMSSpread;
-    if (s == "Cashflow")            return legType::Cashflow;
-    if (s == "Equity")              return legType::Equity;
-    if (s == "FormulaBased")        return legType::FormulaBased;
-    if (s == "ZeroCouponFixed")     return legType::ZeroCouponFixed;
-    if (s == "CommodityFixed")      return legType::CommodityFixed;
-    if (s == "CommodityFloating")   return legType::CommodityFloating;
-    if (s == "EquityMargin")        return legType::EquityMargin;
-    if (s == "DurationAdjustedCMS") return legType::DurationAdjustedCMS;
+    if (s == "Fixed")
+        return legType::Fixed;
+    if (s == "Floating")
+        return legType::Floating;
+    if (s == "CPI")
+        return legType::CPI;
+    if (s == "YY")
+        return legType::YY;
+    if (s == "CMS")
+        return legType::CMS;
+    if (s == "CMB")
+        return legType::CMB;
+    if (s == "DigitalCMS")
+        return legType::DigitalCMS;
+    if (s == "CMSSpread")
+        return legType::CMSSpread;
+    if (s == "DigitalCMSSpread")
+        return legType::DigitalCMSSpread;
+    if (s == "Cashflow")
+        return legType::Cashflow;
+    if (s == "Equity")
+        return legType::Equity;
+    if (s == "FormulaBased")
+        return legType::FormulaBased;
+    if (s == "ZeroCouponFixed")
+        return legType::ZeroCouponFixed;
+    if (s == "CommodityFixed")
+        return legType::CommodityFixed;
+    if (s == "CommodityFloating")
+        return legType::CommodityFloating;
+    if (s == "EquityMargin")
+        return legType::EquityMargin;
+    if (s == "DurationAdjustedCMS")
+        return legType::DurationAdjustedCMS;
     return std::nullopt;
 }
 
@@ -147,110 +168,204 @@ std::optional<legType> leg_type_from_string(const std::string& s) {
  */
 currencyCode parse_currency_code(const std::string& s) {
     static const std::map<std::string, currencyCode> map = {
-        {"AED", currencyCode::AED}, {"AFN", currencyCode::AFN},
-        {"ALL", currencyCode::ALL}, {"AMD", currencyCode::AMD},
-        {"ANG", currencyCode::ANG}, {"AOA", currencyCode::AOA},
-        {"ARS", currencyCode::ARS}, {"AUD", currencyCode::AUD},
-        {"AWG", currencyCode::AWG}, {"AZN", currencyCode::AZN},
-        {"BAM", currencyCode::BAM}, {"BBD", currencyCode::BBD},
-        {"BDT", currencyCode::BDT}, {"BGN", currencyCode::BGN},
-        {"BHD", currencyCode::BHD}, {"BIF", currencyCode::BIF},
-        {"BMD", currencyCode::BMD}, {"BND", currencyCode::BND},
-        {"BOB", currencyCode::BOB}, {"BOV", currencyCode::BOV},
-        {"BRL", currencyCode::BRL}, {"BSD", currencyCode::BSD},
-        {"BTN", currencyCode::BTN}, {"BWP", currencyCode::BWP},
-        {"BYN", currencyCode::BYN}, {"BZD", currencyCode::BZD},
-        {"CAD", currencyCode::CAD}, {"CDF", currencyCode::CDF},
-        {"CHE", currencyCode::CHE}, {"CHF", currencyCode::CHF},
-        {"CHW", currencyCode::CHW}, {"CLF", currencyCode::CLF},
-        {"CLP", currencyCode::CLP}, {"CNH", currencyCode::CNH},
-        {"CNT", currencyCode::CNT}, {"CNY", currencyCode::CNY},
-        {"COP", currencyCode::COP}, {"COU", currencyCode::COU},
-        {"CRC", currencyCode::CRC}, {"CUC", currencyCode::CUC},
-        {"CUP", currencyCode::CUP}, {"CVE", currencyCode::CVE},
-        {"CYP", currencyCode::CYP}, {"CZK", currencyCode::CZK},
-        {"DJF", currencyCode::DJF}, {"DKK", currencyCode::DKK},
-        {"DOP", currencyCode::DOP}, {"DZD", currencyCode::DZD},
-        {"EGP", currencyCode::EGP}, {"ERN", currencyCode::ERN},
-        {"ETB", currencyCode::ETB}, {"EUR", currencyCode::EUR},
-        {"FJD", currencyCode::FJD}, {"FKP", currencyCode::FKP},
-        {"GBP", currencyCode::GBP}, {"GEL", currencyCode::GEL},
-        {"GGP", currencyCode::GGP}, {"GHS", currencyCode::GHS},
-        {"GIP", currencyCode::GIP}, {"GMD", currencyCode::GMD},
-        {"GNF", currencyCode::GNF}, {"GTQ", currencyCode::GTQ},
-        {"GYD", currencyCode::GYD}, {"HKD", currencyCode::HKD},
-        {"HNL", currencyCode::HNL}, {"HRK", currencyCode::HRK},
-        {"HTG", currencyCode::HTG}, {"HUF", currencyCode::HUF},
-        {"IDR", currencyCode::IDR}, {"ILS", currencyCode::ILS},
-        {"IMP", currencyCode::IMP}, {"INR", currencyCode::INR},
-        {"IQD", currencyCode::IQD}, {"IRR", currencyCode::IRR},
-        {"ISK", currencyCode::ISK}, {"JEP", currencyCode::JEP},
-        {"JMD", currencyCode::JMD}, {"JOD", currencyCode::JOD},
-        {"JPY", currencyCode::JPY}, {"KES", currencyCode::KES},
-        {"KGS", currencyCode::KGS}, {"KHR", currencyCode::KHR},
-        {"KID", currencyCode::KID}, {"KMF", currencyCode::KMF},
-        {"KPW", currencyCode::KPW}, {"KRW", currencyCode::KRW},
-        {"KWD", currencyCode::KWD}, {"KYD", currencyCode::KYD},
-        {"KZT", currencyCode::KZT}, {"LAK", currencyCode::LAK},
-        {"LBP", currencyCode::LBP}, {"LKR", currencyCode::LKR},
-        {"LRD", currencyCode::LRD}, {"LSL", currencyCode::LSL},
-        {"LTL", currencyCode::LTL}, {"LVL", currencyCode::LVL},
-        {"LYD", currencyCode::LYD}, {"MAD", currencyCode::MAD},
-        {"MDL", currencyCode::MDL}, {"MGA", currencyCode::MGA},
-        {"MKD", currencyCode::MKD}, {"MMK", currencyCode::MMK},
-        {"MNT", currencyCode::MNT}, {"MOP", currencyCode::MOP},
-        {"MRU", currencyCode::MRU}, {"MUR", currencyCode::MUR},
-        {"MVR", currencyCode::MVR}, {"MWK", currencyCode::MWK},
-        {"MXN", currencyCode::MXN}, {"MXV", currencyCode::MXV},
-        {"MYR", currencyCode::MYR}, {"MZN", currencyCode::MZN},
-        {"NAD", currencyCode::NAD}, {"NGN", currencyCode::NGN},
-        {"NIO", currencyCode::NIO}, {"NOK", currencyCode::NOK},
-        {"NPR", currencyCode::NPR}, {"NZD", currencyCode::NZD},
-        {"OMR", currencyCode::OMR}, {"PAB", currencyCode::PAB},
-        {"PEN", currencyCode::PEN}, {"PGK", currencyCode::PGK},
-        {"PHP", currencyCode::PHP}, {"PKR", currencyCode::PKR},
-        {"PLN", currencyCode::PLN}, {"PYG", currencyCode::PYG},
-        {"QAR", currencyCode::QAR}, {"RON", currencyCode::RON},
-        {"RSD", currencyCode::RSD}, {"RUB", currencyCode::RUB},
-        {"RWF", currencyCode::RWF}, {"SAR", currencyCode::SAR},
-        {"SBD", currencyCode::SBD}, {"SCR", currencyCode::SCR},
-        {"SDG", currencyCode::SDG}, {"SEK", currencyCode::SEK},
-        {"SGD", currencyCode::SGD}, {"SHP", currencyCode::SHP},
-        {"SLL", currencyCode::SLL}, {"SKK", currencyCode::SKK},
-        {"SOS", currencyCode::SOS}, {"SRD", currencyCode::SRD},
-        {"SSP", currencyCode::SSP}, {"STN", currencyCode::STN},
-        {"SVC", currencyCode::SVC}, {"SYP", currencyCode::SYP},
-        {"SZL", currencyCode::SZL}, {"THB", currencyCode::THB},
-        {"TJS", currencyCode::TJS}, {"TMT", currencyCode::TMT},
-        {"TND", currencyCode::TND}, {"TOP", currencyCode::TOP},
-        {"TRY", currencyCode::TRY}, {"TTD", currencyCode::TTD},
-        {"TWD", currencyCode::TWD}, {"TZS", currencyCode::TZS},
-        {"UAH", currencyCode::UAH}, {"UGX", currencyCode::UGX},
-        {"USD", currencyCode::USD}, {"USN", currencyCode::USN},
-        {"UYI", currencyCode::UYI}, {"UYU", currencyCode::UYU},
-        {"UYW", currencyCode::UYW}, {"UZS", currencyCode::UZS},
-        {"VES", currencyCode::VES}, {"VND", currencyCode::VND},
-        {"VUV", currencyCode::VUV}, {"WST", currencyCode::WST},
-        {"XAF", currencyCode::XAF}, {"XAG", currencyCode::XAG},
-        {"XAU", currencyCode::XAU}, {"XBT", currencyCode::XBT},
-        {"XCD", currencyCode::XCD}, {"XOF", currencyCode::XOF},
-        {"XPD", currencyCode::XPD}, {"XPF", currencyCode::XPF},
-        {"XPT", currencyCode::XPT}, {"XRP", currencyCode::XRP},
-        {"XSU", currencyCode::XSU}, {"XUA", currencyCode::XUA},
-        {"YER", currencyCode::YER}, {"ZAR", currencyCode::ZAR},
-        {"ZMW", currencyCode::ZMW}, {"ZWL", currencyCode::ZWL},
+        {"AED", currencyCode::AED},
+        {"AFN", currencyCode::AFN},
+        {"ALL", currencyCode::ALL},
+        {"AMD", currencyCode::AMD},
+        {"ANG", currencyCode::ANG},
+        {"AOA", currencyCode::AOA},
+        {"ARS", currencyCode::ARS},
+        {"AUD", currencyCode::AUD},
+        {"AWG", currencyCode::AWG},
+        {"AZN", currencyCode::AZN},
+        {"BAM", currencyCode::BAM},
+        {"BBD", currencyCode::BBD},
+        {"BDT", currencyCode::BDT},
+        {"BGN", currencyCode::BGN},
+        {"BHD", currencyCode::BHD},
+        {"BIF", currencyCode::BIF},
+        {"BMD", currencyCode::BMD},
+        {"BND", currencyCode::BND},
+        {"BOB", currencyCode::BOB},
+        {"BOV", currencyCode::BOV},
+        {"BRL", currencyCode::BRL},
+        {"BSD", currencyCode::BSD},
+        {"BTN", currencyCode::BTN},
+        {"BWP", currencyCode::BWP},
+        {"BYN", currencyCode::BYN},
+        {"BZD", currencyCode::BZD},
+        {"CAD", currencyCode::CAD},
+        {"CDF", currencyCode::CDF},
+        {"CHE", currencyCode::CHE},
+        {"CHF", currencyCode::CHF},
+        {"CHW", currencyCode::CHW},
+        {"CLF", currencyCode::CLF},
+        {"CLP", currencyCode::CLP},
+        {"CNH", currencyCode::CNH},
+        {"CNT", currencyCode::CNT},
+        {"CNY", currencyCode::CNY},
+        {"COP", currencyCode::COP},
+        {"COU", currencyCode::COU},
+        {"CRC", currencyCode::CRC},
+        {"CUC", currencyCode::CUC},
+        {"CUP", currencyCode::CUP},
+        {"CVE", currencyCode::CVE},
+        {"CYP", currencyCode::CYP},
+        {"CZK", currencyCode::CZK},
+        {"DJF", currencyCode::DJF},
+        {"DKK", currencyCode::DKK},
+        {"DOP", currencyCode::DOP},
+        {"DZD", currencyCode::DZD},
+        {"EGP", currencyCode::EGP},
+        {"ERN", currencyCode::ERN},
+        {"ETB", currencyCode::ETB},
+        {"EUR", currencyCode::EUR},
+        {"FJD", currencyCode::FJD},
+        {"FKP", currencyCode::FKP},
+        {"GBP", currencyCode::GBP},
+        {"GEL", currencyCode::GEL},
+        {"GGP", currencyCode::GGP},
+        {"GHS", currencyCode::GHS},
+        {"GIP", currencyCode::GIP},
+        {"GMD", currencyCode::GMD},
+        {"GNF", currencyCode::GNF},
+        {"GTQ", currencyCode::GTQ},
+        {"GYD", currencyCode::GYD},
+        {"HKD", currencyCode::HKD},
+        {"HNL", currencyCode::HNL},
+        {"HRK", currencyCode::HRK},
+        {"HTG", currencyCode::HTG},
+        {"HUF", currencyCode::HUF},
+        {"IDR", currencyCode::IDR},
+        {"ILS", currencyCode::ILS},
+        {"IMP", currencyCode::IMP},
+        {"INR", currencyCode::INR},
+        {"IQD", currencyCode::IQD},
+        {"IRR", currencyCode::IRR},
+        {"ISK", currencyCode::ISK},
+        {"JEP", currencyCode::JEP},
+        {"JMD", currencyCode::JMD},
+        {"JOD", currencyCode::JOD},
+        {"JPY", currencyCode::JPY},
+        {"KES", currencyCode::KES},
+        {"KGS", currencyCode::KGS},
+        {"KHR", currencyCode::KHR},
+        {"KID", currencyCode::KID},
+        {"KMF", currencyCode::KMF},
+        {"KPW", currencyCode::KPW},
+        {"KRW", currencyCode::KRW},
+        {"KWD", currencyCode::KWD},
+        {"KYD", currencyCode::KYD},
+        {"KZT", currencyCode::KZT},
+        {"LAK", currencyCode::LAK},
+        {"LBP", currencyCode::LBP},
+        {"LKR", currencyCode::LKR},
+        {"LRD", currencyCode::LRD},
+        {"LSL", currencyCode::LSL},
+        {"LTL", currencyCode::LTL},
+        {"LVL", currencyCode::LVL},
+        {"LYD", currencyCode::LYD},
+        {"MAD", currencyCode::MAD},
+        {"MDL", currencyCode::MDL},
+        {"MGA", currencyCode::MGA},
+        {"MKD", currencyCode::MKD},
+        {"MMK", currencyCode::MMK},
+        {"MNT", currencyCode::MNT},
+        {"MOP", currencyCode::MOP},
+        {"MRU", currencyCode::MRU},
+        {"MUR", currencyCode::MUR},
+        {"MVR", currencyCode::MVR},
+        {"MWK", currencyCode::MWK},
+        {"MXN", currencyCode::MXN},
+        {"MXV", currencyCode::MXV},
+        {"MYR", currencyCode::MYR},
+        {"MZN", currencyCode::MZN},
+        {"NAD", currencyCode::NAD},
+        {"NGN", currencyCode::NGN},
+        {"NIO", currencyCode::NIO},
+        {"NOK", currencyCode::NOK},
+        {"NPR", currencyCode::NPR},
+        {"NZD", currencyCode::NZD},
+        {"OMR", currencyCode::OMR},
+        {"PAB", currencyCode::PAB},
+        {"PEN", currencyCode::PEN},
+        {"PGK", currencyCode::PGK},
+        {"PHP", currencyCode::PHP},
+        {"PKR", currencyCode::PKR},
+        {"PLN", currencyCode::PLN},
+        {"PYG", currencyCode::PYG},
+        {"QAR", currencyCode::QAR},
+        {"RON", currencyCode::RON},
+        {"RSD", currencyCode::RSD},
+        {"RUB", currencyCode::RUB},
+        {"RWF", currencyCode::RWF},
+        {"SAR", currencyCode::SAR},
+        {"SBD", currencyCode::SBD},
+        {"SCR", currencyCode::SCR},
+        {"SDG", currencyCode::SDG},
+        {"SEK", currencyCode::SEK},
+        {"SGD", currencyCode::SGD},
+        {"SHP", currencyCode::SHP},
+        {"SLL", currencyCode::SLL},
+        {"SKK", currencyCode::SKK},
+        {"SOS", currencyCode::SOS},
+        {"SRD", currencyCode::SRD},
+        {"SSP", currencyCode::SSP},
+        {"STN", currencyCode::STN},
+        {"SVC", currencyCode::SVC},
+        {"SYP", currencyCode::SYP},
+        {"SZL", currencyCode::SZL},
+        {"THB", currencyCode::THB},
+        {"TJS", currencyCode::TJS},
+        {"TMT", currencyCode::TMT},
+        {"TND", currencyCode::TND},
+        {"TOP", currencyCode::TOP},
+        {"TRY", currencyCode::TRY},
+        {"TTD", currencyCode::TTD},
+        {"TWD", currencyCode::TWD},
+        {"TZS", currencyCode::TZS},
+        {"UAH", currencyCode::UAH},
+        {"UGX", currencyCode::UGX},
+        {"USD", currencyCode::USD},
+        {"USN", currencyCode::USN},
+        {"UYI", currencyCode::UYI},
+        {"UYU", currencyCode::UYU},
+        {"UYW", currencyCode::UYW},
+        {"UZS", currencyCode::UZS},
+        {"VES", currencyCode::VES},
+        {"VND", currencyCode::VND},
+        {"VUV", currencyCode::VUV},
+        {"WST", currencyCode::WST},
+        {"XAF", currencyCode::XAF},
+        {"XAG", currencyCode::XAG},
+        {"XAU", currencyCode::XAU},
+        {"XBT", currencyCode::XBT},
+        {"XCD", currencyCode::XCD},
+        {"XOF", currencyCode::XOF},
+        {"XPD", currencyCode::XPD},
+        {"XPF", currencyCode::XPF},
+        {"XPT", currencyCode::XPT},
+        {"XRP", currencyCode::XRP},
+        {"XSU", currencyCode::XSU},
+        {"XUA", currencyCode::XUA},
+        {"YER", currencyCode::YER},
+        {"ZAR", currencyCode::ZAR},
+        {"ZMW", currencyCode::ZMW},
+        {"ZWL", currencyCode::ZWL},
         // Crypto codes recognised by ORE
-        {"BTC", currencyCode::BTC}, {"ETH", currencyCode::ETH},
-        {"ETC", currencyCode::ETC}, {"BCH", currencyCode::BCH},
+        {"BTC", currencyCode::BTC},
+        {"ETH", currencyCode::ETH},
+        {"ETC", currencyCode::ETC},
+        {"BCH", currencyCode::BCH},
         {"LTC", currencyCode::LTC},
         // ORE internal synthetic codes
-        {"ZUR", currencyCode::ZUR}, {"ZUG", currencyCode::ZUG},
+        {"ZUR", currencyCode::ZUR},
+        {"ZUG", currencyCode::ZUG},
     };
     const auto it = map.find(s);
     if (it == map.end())
-        throw std::runtime_error(
-            "parse_currency_code: unrecognised currency code '" + s +
-            "' — cannot produce valid ORE XML");
+        throw std::runtime_error("parse_currency_code: unrecognised currency code '" + s +
+                                 "' — cannot produce valid ORE XML");
     return it->second;
 }
 
@@ -280,14 +395,11 @@ swap_leg swap_instrument_mapper::map_leg(const legData& ld, int leg_number) {
     if (ld.legDataType) {
         const auto& ldt = *ld.legDataType;
         if (ldt.FixedLegData && !ldt.FixedLegData->Rates.Rate.empty())
-            tm.fixed_rate = static_cast<double>(
-                ldt.FixedLegData->Rates.Rate.front());
+            tm.fixed_rate = static_cast<double>(ldt.FixedLegData->Rates.Rate.front());
         if (ldt.FloatingLegData) {
             tm.floating_index_code = std::string(ldt.FloatingLegData->Index);
-            if (ldt.FloatingLegData->Spreads &&
-                    !ldt.FloatingLegData->Spreads->Spread.empty())
-                tm.spread = static_cast<double>(
-                    ldt.FloatingLegData->Spreads->Spread.front());
+            if (ldt.FloatingLegData->Spreads && !ldt.FloatingLegData->Spreads->Spread.empty())
+                tm.spread = static_cast<double>(ldt.FloatingLegData->Spreads->Spread.front());
         }
     }
 
@@ -321,15 +433,14 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_swap(const
     trading::domain::swap_instrument_data result;
     result.instrument = std::move(instr);
 
-    if (!sd) return result;
+    if (!sd)
+        return result;
 
     auto& vi = std::get<vanilla_swap_instrument>(result.instrument);
 
     if (!sd->LegData.empty()) {
-        vi.start_date =
-            start_date_from_schedule(sd->LegData.front().ScheduleData);
-        vi.maturity_date =
-            end_date_from_schedule(sd->LegData.front().ScheduleData);
+        vi.start_date = start_date_from_schedule(sd->LegData.front().ScheduleData);
+        vi.maturity_date = end_date_from_schedule(sd->LegData.front().ScheduleData);
     }
 
     int leg_num = 1;
@@ -345,8 +456,7 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_swap(const
 
 trading::domain::swap_instrument_data
 swap_instrument_mapper::forward_inflation_swap(const trade& t) {
-    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping InflationSwap: "
-                               << std::string(t.id);
+    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping InflationSwap: " << std::string(t.id);
 
     inflation_swap_instrument instr;
     instr.audit.modified_by = "ores";
@@ -357,16 +467,15 @@ swap_instrument_mapper::forward_inflation_swap(const trade& t) {
     trading::domain::swap_instrument_data result;
     result.instrument = std::move(instr);
 
-    if (!t.InflationSwapData) return result;
+    if (!t.InflationSwapData)
+        return result;
     const auto& sd = *t.InflationSwapData;
 
     auto& ii = std::get<inflation_swap_instrument>(result.instrument);
 
     if (!sd.LegData.empty()) {
-        ii.start_date =
-            start_date_from_schedule(sd.LegData.front().ScheduleData);
-        ii.maturity_date =
-            end_date_from_schedule(sd.LegData.front().ScheduleData);
+        ii.start_date = start_date_from_schedule(sd.LegData.front().ScheduleData);
+        ii.maturity_date = end_date_from_schedule(sd.LegData.front().ScheduleData);
     }
 
     int leg_num = 1;
@@ -392,7 +501,8 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_fra(const 
     trading::domain::swap_instrument_data result;
     result.instrument = std::move(instr);
 
-    if (!t.ForwardRateAgreementData) return result;
+    if (!t.ForwardRateAgreementData)
+        return result;
 
     const auto& fra = *t.ForwardRateAgreementData;
     auto& fi = std::get<fra_instrument>(result.instrument);
@@ -428,8 +538,7 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_fra(const 
 // ---------------------------------------------------------------------------
 
 trading::domain::swap_instrument_data swap_instrument_mapper::forward_capfloor(const trade& t) {
-    BOOST_LOG_SEV(lg(), debug)
-        << "Forward-mapping capfloor: " << std::string(t.id);
+    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping capfloor: " << std::string(t.id);
 
     cap_floor_instrument instr;
     instr.audit.modified_by = "ores";
@@ -440,7 +549,8 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_capfloor(c
     trading::domain::swap_instrument_data result;
     result.instrument = std::move(instr);
 
-    if (!t.CapFloorData) return result;
+    if (!t.CapFloorData)
+        return result;
 
     const auto& cf = *t.CapFloorData;
     auto& ci = std::get<cap_floor_instrument>(result.instrument);
@@ -461,10 +571,9 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_capfloor(c
         tm.notional = static_cast<double>(cf.LegData.Notionals.Notional.front());
 
     if (cf.LegData.legDataType.FloatingLegData) {
-        tm.floating_index_code = std::string(
-            cf.LegData.legDataType.FloatingLegData->Index);
+        tm.floating_index_code = std::string(cf.LegData.legDataType.FloatingLegData->Index);
         if (cf.LegData.legDataType.FloatingLegData->Spreads &&
-                !cf.LegData.legDataType.FloatingLegData->Spreads->Spread.empty())
+            !cf.LegData.legDataType.FloatingLegData->Spreads->Spread.empty())
             tm.spread = static_cast<double>(
                 cf.LegData.legDataType.FloatingLegData->Spreads->Spread.front());
     }
@@ -483,26 +592,23 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_capfloor(c
 // Reverse: swap_leg → legData
 // ---------------------------------------------------------------------------
 
-legData swap_instrument_mapper::reverse_leg(
-        const std::string& start_date,
-        const std::string& maturity_date,
-        const swap_leg& sl) {
+legData swap_instrument_mapper::reverse_leg(const std::string& start_date,
+                                            const std::string& maturity_date,
+                                            const swap_leg& sl) {
     legData ld;
 
     const auto& tm = sl.terms;
     const auto leg_type = leg_type_from_string(tm.leg_type_code);
     if (!leg_type)
-        throw std::runtime_error(
-            "reverse_leg: unrecognised leg type '" + tm.leg_type_code +
-            "' — cannot produce valid ORE XML");
+        throw std::runtime_error("reverse_leg: unrecognised leg type '" + tm.leg_type_code +
+                                 "' — cannot produce valid ORE XML");
     ld.LegType = *leg_type;
     ld.Currency = tm.currency;
 
     if (tm.notional != 0.0)
         ld.Notionals = make_notionals(tm.notional);
 
-    ld.ScheduleData = make_schedule(start_date, maturity_date,
-                                    tm.payment_frequency_code);
+    ld.ScheduleData = make_schedule(start_date, maturity_date, tm.payment_frequency_code);
 
     legDataType_group_t ldt;
     if (ld.LegType == legType::Fixed && tm.fixed_rate != 0.0) {
@@ -540,9 +646,8 @@ legData_Notionals_t swap_instrument_mapper::make_notionals(double notional) {
 // Reverse: Swap
 // ---------------------------------------------------------------------------
 
-trade swap_instrument_mapper::reverse_swap(
-        const vanilla_swap_instrument& instr,
-        const std::vector<swap_leg>& legs) {
+trade swap_instrument_mapper::reverse_swap(const vanilla_swap_instrument& instr,
+                                           const std::vector<swap_leg>& legs) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping swap";
 
     trade t;
@@ -550,8 +655,7 @@ trade swap_instrument_mapper::reverse_swap(
 
     swapData sd;
     for (const auto& sl : legs)
-        sd.LegData.push_back(
-            reverse_leg(instr.start_date, instr.maturity_date, sl));
+        sd.LegData.push_back(reverse_leg(instr.start_date, instr.maturity_date, sl));
 
     t.SwapData = std::move(sd);
     return t;
@@ -561,9 +665,8 @@ trade swap_instrument_mapper::reverse_swap(
 // Reverse: ForwardRateAgreement
 // ---------------------------------------------------------------------------
 
-trade swap_instrument_mapper::reverse_fra(
-        const fra_instrument& instr,
-        const std::vector<swap_leg>& legs) {
+trade swap_instrument_mapper::reverse_fra(const fra_instrument& instr,
+                                          const std::vector<swap_leg>& legs) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping FRA";
 
     trade t;
@@ -590,9 +693,8 @@ trade swap_instrument_mapper::reverse_fra(
 // Reverse: CapFloor
 // ---------------------------------------------------------------------------
 
-trade swap_instrument_mapper::reverse_capfloor(
-        const cap_floor_instrument& instr,
-        const std::vector<swap_leg>& legs) {
+trade swap_instrument_mapper::reverse_capfloor(const cap_floor_instrument& instr,
+                                               const std::vector<swap_leg>& legs) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping capfloor";
 
     trade t;
@@ -605,15 +707,13 @@ trade swap_instrument_mapper::reverse_capfloor(
         const auto& sl = legs.front();
 
         const auto& tm = sl.terms;
-        cf.LegData.LegType = leg_type_from_string(tm.leg_type_code)
-                                 .value_or(legType::Floating);
+        cf.LegData.LegType = leg_type_from_string(tm.leg_type_code).value_or(legType::Floating);
 
         cf.LegData.Currency = parse_currency_code(tm.currency);
 
         cf.LegData.DayCounter = dayCounter::ACT_365;
-        cf.LegData.ScheduleData = make_schedule(instr.start_date,
-                                                instr.maturity_date,
-                                                tm.payment_frequency_code);
+        cf.LegData.ScheduleData =
+            make_schedule(instr.start_date, instr.maturity_date, tm.payment_frequency_code);
         if (tm.notional != 0.0) {
             legData_capfloor_Notionals_t_Notional_t nv;
             static_cast<float&>(nv) = static_cast<float>(tm.notional);
@@ -643,8 +743,7 @@ trade swap_instrument_mapper::reverse_capfloor(
 // ---------------------------------------------------------------------------
 
 trading::domain::swap_instrument_data swap_instrument_mapper::forward_swaption(const trade& t) {
-    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping Swaption: "
-                               << std::string(t.id);
+    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping Swaption: " << std::string(t.id);
 
     swaption_instrument instr;
     instr.audit.modified_by = "ores";
@@ -655,7 +754,8 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_swaption(c
     trading::domain::swap_instrument_data result;
     result.instrument = std::move(instr);
 
-    if (!t.SwaptionData) return result;
+    if (!t.SwaptionData)
+        return result;
     const auto& sd = *t.SwaptionData;
 
     auto& si = std::get<swaption_instrument>(result.instrument);
@@ -664,11 +764,10 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_swaption(c
         const auto& od = *sd.OptionData;
         if (od.Style)
             si.exercise_type = std::string(*od.Style);
-        if (od.exerciseDatesGroup &&
-                od.exerciseDatesGroup->ExerciseDates &&
-                !od.exerciseDatesGroup->ExerciseDates->ExerciseDate.empty())
-            si.expiry_date = std::string(
-                od.exerciseDatesGroup->ExerciseDates->ExerciseDate.front());
+        if (od.exerciseDatesGroup && od.exerciseDatesGroup->ExerciseDates &&
+            !od.exerciseDatesGroup->ExerciseDates->ExerciseDate.empty())
+            si.expiry_date =
+                std::string(od.exerciseDatesGroup->ExerciseDates->ExerciseDate.front());
     }
 
     int leg_num = 1;
@@ -677,11 +776,9 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_swaption(c
 
     if (!result.legs.empty()) {
         if (si.maturity_date.empty())
-            si.maturity_date =
-                end_date_from_schedule(sd.LegData.front().ScheduleData);
+            si.maturity_date = end_date_from_schedule(sd.LegData.front().ScheduleData);
         if (si.start_date.empty())
-            si.start_date =
-                start_date_from_schedule(sd.LegData.front().ScheduleData);
+            si.start_date = start_date_from_schedule(sd.LegData.front().ScheduleData);
     }
 
     return result;
@@ -691,9 +788,8 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_swaption(c
 // Reverse: Swaption
 // ---------------------------------------------------------------------------
 
-trade swap_instrument_mapper::reverse_swaption(
-        const swaption_instrument& instr,
-        const std::vector<swap_leg>& legs) {
+trade swap_instrument_mapper::reverse_swaption(const swaption_instrument& instr,
+                                               const std::vector<swap_leg>& legs) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping Swaption";
 
     trade t;
@@ -720,8 +816,7 @@ trade swap_instrument_mapper::reverse_swaption(
     sd.OptionData = std::move(od);
 
     for (const auto& sl : legs)
-        sd.LegData.push_back(
-            reverse_leg(instr.start_date, instr.maturity_date, sl));
+        sd.LegData.push_back(reverse_leg(instr.start_date, instr.maturity_date, sl));
 
     t.SwaptionData = std::move(sd);
     return t;
@@ -731,10 +826,9 @@ trade swap_instrument_mapper::reverse_swaption(
 // Forward: CallableSwap
 // ---------------------------------------------------------------------------
 
-trading::domain::swap_instrument_data swap_instrument_mapper::forward_callable_swap(
-        const trade& t) {
-    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping CallableSwap: "
-                               << std::string(t.id);
+trading::domain::swap_instrument_data
+swap_instrument_mapper::forward_callable_swap(const trade& t) {
+    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping CallableSwap: " << std::string(t.id);
 
     callable_swap_instrument instr;
     instr.audit.modified_by = "ores";
@@ -745,23 +839,23 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_callable_s
     trading::domain::swap_instrument_data result;
     result.instrument = std::move(instr);
 
-    if (!t.CallableSwapData) return result;
+    if (!t.CallableSwapData)
+        return result;
     const auto& cd = *t.CallableSwapData;
 
     auto& ci = std::get<callable_swap_instrument>(result.instrument);
 
-    if (cd.OptionData &&
-            cd.OptionData->exerciseDatesGroup &&
-            cd.OptionData->exerciseDatesGroup->ExerciseDates) {
+    if (cd.OptionData && cd.OptionData->exerciseDatesGroup &&
+        cd.OptionData->exerciseDatesGroup->ExerciseDates) {
         // Manual JSON array construction is intentional: exercise dates are
         // ISO-8601 strings (YYYY-MM-DD) containing only ASCII alphanumerics
         // and hyphens, so no escaping is ever needed. Adding a JSON library
         // dependency to ores.ore purely for this would be disproportionate.
         std::string json = "[";
         bool first = true;
-        for (const auto& d :
-                cd.OptionData->exerciseDatesGroup->ExerciseDates->ExerciseDate) {
-            if (!first) json += ",";
+        for (const auto& d : cd.OptionData->exerciseDatesGroup->ExerciseDates->ExerciseDate) {
+            if (!first)
+                json += ",";
             json += "\"" + std::string(d) + "\"";
             first = false;
         }
@@ -774,10 +868,8 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_callable_s
         result.legs.push_back(map_leg(ld, leg_num++));
 
     if (!result.legs.empty()) {
-        ci.start_date =
-            start_date_from_schedule(cd.LegData.front().ScheduleData);
-        ci.maturity_date =
-            end_date_from_schedule(cd.LegData.front().ScheduleData);
+        ci.start_date = start_date_from_schedule(cd.LegData.front().ScheduleData);
+        ci.maturity_date = end_date_from_schedule(cd.LegData.front().ScheduleData);
     }
 
     return result;
@@ -787,9 +879,8 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_callable_s
 // Reverse: CallableSwap
 // ---------------------------------------------------------------------------
 
-trade swap_instrument_mapper::reverse_callable_swap(
-        const callable_swap_instrument& instr,
-        const std::vector<swap_leg>& legs) {
+trade swap_instrument_mapper::reverse_callable_swap(const callable_swap_instrument& instr,
+                                                    const std::vector<swap_leg>& legs) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping CallableSwap";
 
     trade t;
@@ -806,8 +897,7 @@ trade swap_instrument_mapper::reverse_callable_swap(
     }
 
     for (const auto& sl : legs)
-        cd.LegData.push_back(
-            reverse_leg(instr.start_date, instr.maturity_date, sl));
+        cd.LegData.push_back(reverse_leg(instr.start_date, instr.maturity_date, sl));
 
     t.CallableSwapData = std::move(cd);
     return t;
@@ -817,10 +907,8 @@ trade swap_instrument_mapper::reverse_callable_swap(
 // Forward: FlexiSwap (leg economics only)
 // ---------------------------------------------------------------------------
 
-trading::domain::swap_instrument_data swap_instrument_mapper::forward_flexi_swap(
-        const trade& t) {
-    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FlexiSwap: "
-                               << std::string(t.id);
+trading::domain::swap_instrument_data swap_instrument_mapper::forward_flexi_swap(const trade& t) {
+    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FlexiSwap: " << std::string(t.id);
 
     vanilla_swap_instrument instr;
     instr.audit.modified_by = "ores";
@@ -831,7 +919,8 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_flexi_swap
     trading::domain::swap_instrument_data result;
     result.instrument = std::move(instr);
 
-    if (!t.FlexiSwapData) return result;
+    if (!t.FlexiSwapData)
+        return result;
     const auto& fd = *t.FlexiSwapData;
 
     auto& vi = std::get<vanilla_swap_instrument>(result.instrument);
@@ -841,10 +930,8 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_flexi_swap
         result.legs.push_back(map_leg(ld, leg_num++));
 
     if (!result.legs.empty()) {
-        vi.start_date =
-            start_date_from_schedule(fd.LegData.front().ScheduleData);
-        vi.maturity_date =
-            end_date_from_schedule(fd.LegData.front().ScheduleData);
+        vi.start_date = start_date_from_schedule(fd.LegData.front().ScheduleData);
+        vi.maturity_date = end_date_from_schedule(fd.LegData.front().ScheduleData);
     }
 
     return result;
@@ -854,10 +941,9 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_flexi_swap
 // Forward: BalanceGuaranteedSwap (leg economics only)
 // ---------------------------------------------------------------------------
 
-trading::domain::swap_instrument_data swap_instrument_mapper::forward_balance_guaranteed_swap(
-        const trade& t) {
-    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping BalanceGuaranteedSwap: "
-                               << std::string(t.id);
+trading::domain::swap_instrument_data
+swap_instrument_mapper::forward_balance_guaranteed_swap(const trade& t) {
+    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping BalanceGuaranteedSwap: " << std::string(t.id);
 
     balance_guaranteed_swap_instrument instr;
     instr.audit.modified_by = "ores";
@@ -868,7 +954,8 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_balance_gu
     trading::domain::swap_instrument_data result;
     result.instrument = std::move(instr);
 
-    if (!t.BalanceGuaranteedSwapData) return result;
+    if (!t.BalanceGuaranteedSwapData)
+        return result;
     const auto& bd = *t.BalanceGuaranteedSwapData;
 
     auto& bi = std::get<balance_guaranteed_swap_instrument>(result.instrument);
@@ -878,10 +965,8 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_balance_gu
         result.legs.push_back(map_leg(ld, leg_num++));
 
     if (!result.legs.empty()) {
-        bi.start_date =
-            start_date_from_schedule(bd.LegData.front().ScheduleData);
-        bi.maturity_date =
-            end_date_from_schedule(bd.LegData.front().ScheduleData);
+        bi.start_date = start_date_from_schedule(bd.LegData.front().ScheduleData);
+        bi.maturity_date = end_date_from_schedule(bd.LegData.front().ScheduleData);
     }
 
     return result;

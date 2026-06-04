@@ -17,13 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.ore.core/domain/domain.hpp"
-
-#include <filesystem>
-#include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.ore.core/domain/domain.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/project_root.hpp"
+#include <catch2/catch_test_macros.hpp>
+#include <filesystem>
 
 namespace {
 
@@ -40,19 +39,15 @@ using namespace ores::logging;
 /**
  * @brief Compare two simulation objects by checking optional section presence.
  */
-void require_simulation_equal(const simulation& original,
-                               const simulation& roundtripped) {
-    CHECK(static_cast<bool>(roundtripped.Parameters) ==
-          static_cast<bool>(original.Parameters));
+void require_simulation_equal(const simulation& original, const simulation& roundtripped) {
+    CHECK(static_cast<bool>(roundtripped.Parameters) == static_cast<bool>(original.Parameters));
     CHECK(static_cast<bool>(roundtripped.CrossAssetModel) ==
           static_cast<bool>(original.CrossAssetModel));
-    CHECK(static_cast<bool>(roundtripped.Market) ==
-          static_cast<bool>(original.Market));
+    CHECK(static_cast<bool>(roundtripped.Market) == static_cast<bool>(original.Market));
 
     // Check Parameters details if present
     if (original.Parameters && roundtripped.Parameters) {
-        CHECK(std::string(roundtripped.Parameters->Grid) ==
-              std::string(original.Parameters->Grid));
+        CHECK(std::string(roundtripped.Parameters->Grid) == std::string(original.Parameters->Grid));
         CHECK(std::string(roundtripped.Parameters->Calendar) ==
               std::string(original.Parameters->Calendar));
         CHECK(roundtripped.Parameters->Seed == original.Parameters->Seed);
@@ -61,8 +56,7 @@ void require_simulation_equal(const simulation& original,
 
     // Check CrossAssetModel details if present
     if (original.CrossAssetModel && roundtripped.CrossAssetModel) {
-        CHECK(roundtripped.CrossAssetModel->DomesticCcy ==
-              original.CrossAssetModel->DomesticCcy);
+        CHECK(roundtripped.CrossAssetModel->DomesticCcy == original.CrossAssetModel->DomesticCcy);
 
         // Check InterestRateModels LGM count
         CHECK(roundtripped.CrossAssetModel->InterestRateModels.LGM.size() ==
@@ -73,8 +67,7 @@ void require_simulation_equal(const simulation& original,
 /**
  * @brief Perform a structural roundtrip test on simulation.
  */
-void test_simulation_roundtrip(const std::string& xml_content,
-                                const std::string& source_name) {
+void test_simulation_roundtrip(const std::string& xml_content, const std::string& source_name) {
     auto lg(make_logger(test_suite));
 
     // Step 1: Parse original XML
@@ -84,10 +77,8 @@ void test_simulation_roundtrip(const std::string& xml_content,
 
     BOOST_LOG_SEV(lg, debug) << "Parsed simulation with Parameters: "
                              << static_cast<bool>(original.Parameters)
-                             << ", CrossAssetModel: "
-                             << static_cast<bool>(original.CrossAssetModel)
-                             << ", Market: "
-                             << static_cast<bool>(original.Market);
+                             << ", CrossAssetModel: " << static_cast<bool>(original.CrossAssetModel)
+                             << ", Market: " << static_cast<bool>(original.Market);
 
     // Step 2: Serialize back to XML
     BOOST_LOG_SEV(lg, debug) << "Serializing to XML";
@@ -133,4 +124,3 @@ TEST_CASE("simulation_roundtrip_american_mc", tags) {
 TEST_CASE("simulation_roundtrip_xva_risk", tags) {
     test_simulation_roundtrip_from_file("examples/XvaRisk/Input/simulation.xml");
 }
-

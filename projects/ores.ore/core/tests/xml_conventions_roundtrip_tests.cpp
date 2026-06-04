@@ -17,13 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.ore.core/domain/domain.hpp"
-
-#include <filesystem>
-#include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.ore.core/domain/domain.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/project_root.hpp"
+#include <catch2/catch_test_macros.hpp>
+#include <filesystem>
 
 namespace {
 
@@ -44,8 +43,7 @@ using namespace ores::logging;
  * the same size after roundtrip. Detailed field comparison would be
  * extremely verbose given the number of convention types.
  */
-void require_conventions_equal(const conventions& original,
-                               const conventions& roundtripped) {
+void require_conventions_equal(const conventions& original, const conventions& roundtripped) {
     CHECK(roundtripped.Zero.size() == original.Zero.size());
     CHECK(roundtripped.CDS.size() == original.CDS.size());
     CHECK(roundtripped.Deposit.size() == original.Deposit.size());
@@ -94,8 +92,7 @@ void require_conventions_equal(const conventions& original,
 /**
  * @brief Perform a structural roundtrip test on conventions.
  */
-void test_conventions_roundtrip(const std::string& xml_content,
-                                const std::string& source_name) {
+void test_conventions_roundtrip(const std::string& xml_content, const std::string& source_name) {
     auto lg(make_logger(test_suite));
 
     // Step 1: Parse original XML
@@ -105,17 +102,15 @@ void test_conventions_roundtrip(const std::string& xml_content,
 
     const std::size_t total_count =
         original.Zero.size() + original.CDS.size() + original.Deposit.size() +
-        original.Future.size() + original.FRA.size() + original.OIS.size() +
-        original.Swap.size() + original.AverageOIS.size() +
-        original.TenorBasisSwap.size() + original.TenorBasisTwoSwap.size() +
-        original.BMABasisSwap.size() + original.FX.size() +
+        original.Future.size() + original.FRA.size() + original.OIS.size() + original.Swap.size() +
+        original.AverageOIS.size() + original.TenorBasisSwap.size() +
+        original.TenorBasisTwoSwap.size() + original.BMABasisSwap.size() + original.FX.size() +
         original.CrossCurrencyBasis.size() + original.CrossCurrencyFixFloat.size() +
-        original.IborIndex.size() + original.OvernightIndex.size() +
-        original.SwapIndex.size() + original.InflationSwap.size() +
-        original.CmsSpreadOption.size() + original.CommodityForward.size() +
-        original.CommodityFuture.size() + original.FxOption.size() +
-        original.FxOptionTimeWeighting.size() + original.ZeroInflationIndex.size() +
-        original.BondYield.size();
+        original.IborIndex.size() + original.OvernightIndex.size() + original.SwapIndex.size() +
+        original.InflationSwap.size() + original.CmsSpreadOption.size() +
+        original.CommodityForward.size() + original.CommodityFuture.size() +
+        original.FxOption.size() + original.FxOptionTimeWeighting.size() +
+        original.ZeroInflationIndex.size() + original.BondYield.size();
 
     BOOST_LOG_SEV(lg, debug) << "Parsed " << total_count << " total conventions";
 

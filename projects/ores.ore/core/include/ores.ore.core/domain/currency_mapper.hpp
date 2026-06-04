@@ -20,10 +20,10 @@
 #ifndef ORES_ORE_CORE_DOMAIN_CURRENCY_MAPPER_HPP
 #define ORES_ORE_CORE_DOMAIN_CURRENCY_MAPPER_HPP
 
-#include "ores.ore.core/export.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata.api/domain/currency.hpp"
 #include "ores.ore.core/domain/domain.hpp"
+#include "ores.ore.core/export.hpp"
+#include "ores.refdata.api/domain/currency.hpp"
 
 namespace ores::ore::domain {
 
@@ -44,8 +44,7 @@ public:
     static refdata::domain::currency map(const currencyDefinition& v);
     static currencyDefinition map(const refdata::domain::currency& v);
 
-    static std::vector<refdata::domain::currency>
-    map(const currencyConfig& v);
+    static std::vector<refdata::domain::currency> map(const currencyConfig& v);
     static currencyConfig map(const std::vector<refdata::domain::currency>& v);
 };
 

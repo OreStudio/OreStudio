@@ -23,7 +23,9 @@
 /**
  * @brief ORE import API types and protocol
  *
- * Protocol types and bucket helpers for server-side ORE import. Contains the ore_import_request/response/item_error structs and the ore_storage bucket helper that mirrors compute_storage.
+ * Protocol types and bucket helpers for server-side ORE import. Contains the
+ * ore_import_request/response/item_error structs and the ore_storage bucket helper that mirrors
+ * compute_storage.
  */
 namespace ores::ore.api {}
 

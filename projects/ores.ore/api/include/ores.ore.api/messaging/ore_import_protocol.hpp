@@ -21,8 +21,8 @@
 #define ORES_ORE_API_MESSAGING_ORE_IMPORT_PROTOCOL_HPP
 
 #include <string>
-#include <vector>
 #include <string_view>
+#include <vector>
 
 namespace ores::ore::messaging {
 
@@ -34,9 +34,9 @@ namespace ores::ore::messaging {
  * trade-0042").
  */
 struct ore_import_item_error {
-    std::string source_file;  ///< Relative path within the unpacked ORE directory
-    std::string item_id;      ///< Trade ID, ISO code, series key, etc.
-    std::string message;      ///< Human-readable error from the downstream service
+    std::string source_file; ///< Relative path within the unpacked ORE directory
+    std::string item_id;     ///< Trade ID, ISO code, series key, etc.
+    std::string message;     ///< Human-readable error from the downstream service
 };
 
 /**
@@ -49,9 +49,9 @@ struct ore_import_request {
     using response_type = struct ore_import_response;
     static constexpr std::string_view nats_subject = "workflow.v1.ore.import";
 
-    std::string request_id;           ///< UUID; also the storage key root
-    std::string import_choices_json;  ///< JSON-serialised import_choices
-    std::string correlation_id;       ///< Propagated from the Qt client for log correlation
+    std::string request_id;          ///< UUID; also the storage key root
+    std::string import_choices_json; ///< JSON-serialised import_choices
+    std::string correlation_id;      ///< Propagated from the Qt client for log correlation
 };
 
 /**
@@ -65,7 +65,7 @@ struct ore_import_response {
     bool success = false;
     std::string message;
     std::vector<ore_import_item_error> item_errors;
-    std::string correlation_id;  ///< Echoed back for display and log lookup
+    std::string correlation_id; ///< Echoed back for display and log lookup
     /**
      * @brief Workflow instance UUID, non-empty when the import was dispatched
      *        asynchronously via the workflow engine.

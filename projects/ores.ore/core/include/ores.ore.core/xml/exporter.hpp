@@ -21,30 +21,30 @@
 #ifndef ORES_ORE_CORE_XML_EXPORTER_HPP
 #define ORES_ORE_CORE_XML_EXPORTER_HPP
 
+#include "ores.logging/make_logger.hpp"
+#include "ores.ore.core/domain/conventions_mapper.hpp"
+#include "ores.ore.core/export.hpp"
+#include "ores.refdata.api/domain/calendar_adjustment.hpp"
+#include "ores.refdata.api/domain/currency.hpp"
+#include "ores.trading.api/messaging/trade_protocol.hpp"
+#include <filesystem>
 #include <string>
 #include <vector>
-#include <filesystem>
-#include "ores.ore.core/export.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.refdata.api/domain/currency.hpp"
-#include "ores.refdata.api/domain/calendar_adjustment.hpp"
-#include "ores.trading.api/messaging/trade_protocol.hpp"
-#include "ores.ore.core/domain/conventions_mapper.hpp"
 
 namespace ores::ore::xml {
 
 struct roundtrip_summary {
-    int       total_xml_files      = 0;
-    int       skipped              = 0;
-    int       output_files_written = 0;
-    int       trades_mapped        = 0;
-    int       trades_passthrough   = 0;
-    int       currency_files       = 0;
-    int       calendar_files       = 0;
-    int       convention_files     = 0;
-    long long import_ms            = 0;  ///< wall time inside importer calls
-    long long export_ms            = 0;  ///< wall time inside exporter calls
-    long long total_ms             = 0;  ///< wall time for the full roundtrip
+    int total_xml_files = 0;
+    int skipped = 0;
+    int output_files_written = 0;
+    int trades_mapped = 0;
+    int trades_passthrough = 0;
+    int currency_files = 0;
+    int calendar_files = 0;
+    int convention_files = 0;
+    long long import_ms = 0; ///< wall time inside importer calls
+    long long export_ms = 0; ///< wall time inside exporter calls
+    long long total_ms = 0;  ///< wall time for the full roundtrip
 };
 
 /**
@@ -61,14 +61,12 @@ private:
     }
 
 public:
+    static std::string export_currency_config(const std::vector<refdata::domain::currency>& v);
+
     static std::string
-    export_currency_config(const std::vector<refdata::domain::currency>& v);
+    export_calendar_adjustments(const std::vector<refdata::domain::calendar_adjustment>& v);
 
-    static std::string export_calendar_adjustments(
-        const std::vector<refdata::domain::calendar_adjustment>& v);
-
-    static std::string export_conventions(
-        const domain::mapped_conventions& mc);
+    static std::string export_conventions(const domain::mapped_conventions& mc);
 
     /**
      * @brief Reconstructs an ORE portfolio XML from a vector of
@@ -77,8 +75,8 @@ public:
      * Each item is reverse-mapped through the appropriate instrument mapper.
      * Items with monostate instruments (unmapped trade types) are skipped.
      */
-    static std::string export_portfolio(
-        const std::vector<trading::messaging::trade_export_item>& items);
+    static std::string
+    export_portfolio(const std::vector<trading::messaging::trade_export_item>& items);
 
     /**
      * @brief Walks input_dir recursively, roundtrips every supported ORE XML
@@ -87,9 +85,8 @@ public:
      * Conventions files by inspecting the first 4 KiB of each file.
      * No DB or network access; purely file-level.
      */
-    static roundtrip_summary roundtrip(
-        const std::filesystem::path& input_dir,
-        const std::filesystem::path& output_dir);
+    static roundtrip_summary roundtrip(const std::filesystem::path& input_dir,
+                                       const std::filesystem::path& output_dir);
 };
 
 }

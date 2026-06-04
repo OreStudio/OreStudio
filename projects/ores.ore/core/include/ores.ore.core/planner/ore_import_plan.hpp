@@ -20,11 +20,11 @@
 #ifndef ORES_ORE_CORE_PLANNER_ORE_IMPORT_PLAN_HPP
 #define ORES_ORE_CORE_PLANNER_ORE_IMPORT_PLAN_HPP
 
-#include <vector>
 #include "ores.ore.core/xml/importer.hpp"
+#include "ores.refdata.api/domain/book.hpp"
 #include "ores.refdata.api/domain/currency.hpp"
 #include "ores.refdata.api/domain/portfolio.hpp"
-#include "ores.refdata.api/domain/book.hpp"
+#include <vector>
 
 namespace ores::ore::planner {
 
@@ -38,7 +38,7 @@ struct ore_import_plan {
     /**
      * @brief Currencies to save (filtered by import_choices::currency_mode).
      */
-    std::vector<refdata::domain::currency>  currencies;
+    std::vector<refdata::domain::currency> currencies;
 
     /**
      * @brief Portfolios to save (in dependency order — parents before children).
@@ -48,12 +48,12 @@ struct ore_import_plan {
     /**
      * @brief Books to save.
      */
-    std::vector<refdata::domain::book>      books;
+    std::vector<refdata::domain::book> books;
 
     /**
      * @brief Trades to save, each paired with its raw ORE counterparty name.
      */
-    std::vector<xml::trade_import_item>     trades;
+    std::vector<xml::trade_import_item> trades;
 };
 
 }

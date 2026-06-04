@@ -17,13 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.ore.core/domain/domain.hpp"
-
-#include <filesystem>
-#include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.ore.core/domain/domain.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/project_root.hpp"
+#include <catch2/catch_test_macros.hpp>
+#include <filesystem>
 
 namespace {
 
@@ -40,8 +39,7 @@ using namespace ores::logging;
 /**
  * @brief Compare two todaysmarket objects by checking collection sizes.
  */
-void require_todaysmarket_equal(const todaysmarket& original,
-                                 const todaysmarket& roundtripped) {
+void require_todaysmarket_equal(const todaysmarket& original, const todaysmarket& roundtripped) {
     CHECK(roundtripped.Configuration.size() == original.Configuration.size());
     CHECK(roundtripped.YieldCurves.size() == original.YieldCurves.size());
     CHECK(roundtripped.DiscountingCurves.size() == original.DiscountingCurves.size());
@@ -56,8 +54,10 @@ void require_todaysmarket_equal(const todaysmarket& original,
     CHECK(roundtripped.CapFloorVolatilities.size() == original.CapFloorVolatilities.size());
     CHECK(roundtripped.CDSVolatilities.size() == original.CDSVolatilities.size());
     CHECK(roundtripped.DefaultCurves.size() == original.DefaultCurves.size());
-    CHECK(roundtripped.YYInflationCapFloorVolatilities.size() == original.YYInflationCapFloorVolatilities.size());
-    CHECK(roundtripped.ZeroInflationCapFloorVolatilities.size() == original.ZeroInflationCapFloorVolatilities.size());
+    CHECK(roundtripped.YYInflationCapFloorVolatilities.size() ==
+          original.YYInflationCapFloorVolatilities.size());
+    CHECK(roundtripped.ZeroInflationCapFloorVolatilities.size() ==
+          original.ZeroInflationCapFloorVolatilities.size());
     CHECK(roundtripped.EquityCurves.size() == original.EquityCurves.size());
     CHECK(roundtripped.EquityVolatilities.size() == original.EquityVolatilities.size());
     CHECK(roundtripped.Securities.size() == original.Securities.size());
@@ -77,8 +77,7 @@ void require_todaysmarket_equal(const todaysmarket& original,
 /**
  * @brief Perform a structural roundtrip test on todaysmarket.
  */
-void test_todaysmarket_roundtrip(const std::string& xml_content,
-                                  const std::string& source_name) {
+void test_todaysmarket_roundtrip(const std::string& xml_content, const std::string& source_name) {
     auto lg(make_logger(test_suite));
 
     // Step 1: Parse original XML
@@ -89,9 +88,9 @@ void test_todaysmarket_roundtrip(const std::string& xml_content,
     const std::size_t total_count =
         original.Configuration.size() + original.YieldCurves.size() +
         original.DiscountingCurves.size() + original.IndexForwardingCurves.size() +
-        original.SwapIndexCurves.size() + original.FxSpots.size() +
-        original.FxVolatilities.size() + original.SwaptionVolatilities.size() +
-        original.DefaultCurves.size() + original.EquityCurves.size();
+        original.SwapIndexCurves.size() + original.FxSpots.size() + original.FxVolatilities.size() +
+        original.SwaptionVolatilities.size() + original.DefaultCurves.size() +
+        original.EquityCurves.size();
 
     BOOST_LOG_SEV(lg, debug) << "Parsed " << total_count << " total todaysmarket elements";
 
@@ -135,4 +134,3 @@ TEST_CASE("todaysmarket_roundtrip_ore_api", tags) {
 TEST_CASE("todaysmarket_roundtrip_minimal_setup", tags) {
     test_todaysmarket_roundtrip_from_file("examples/MinimalSetup/Input/todaysmarket.xml");
 }
-

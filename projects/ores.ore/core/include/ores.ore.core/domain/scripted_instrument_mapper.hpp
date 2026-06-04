@@ -20,9 +20,9 @@
 #ifndef ORES_ORE_CORE_DOMAIN_SCRIPTED_INSTRUMENT_MAPPER_HPP
 #define ORES_ORE_CORE_DOMAIN_SCRIPTED_INSTRUMENT_MAPPER_HPP
 
-#include "ores.ore.core/export.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/domain/domain.hpp"
+#include "ores.ore.core/export.hpp"
 #include "ores.trading.api/domain/scripted_instrument.hpp"
 
 namespace ores::ore::domain {
@@ -40,8 +40,7 @@ namespace ores::ore::domain {
  */
 class ORES_ORE_CORE_EXPORT scripted_instrument_mapper {
 private:
-    inline static std::string_view logger_name =
-        "ores.ore.domain.scripted_instrument_mapper";
+    inline static std::string_view logger_name = "ores.ore.domain.scripted_instrument_mapper";
 
     static auto& lg() {
         using namespace ores::logging;
@@ -55,14 +54,12 @@ public:
     static trading::domain::scripted_instrument forward_performance_option_01(const trade& t);
     static trading::domain::scripted_instrument forward_knock_out_swap(const trade& t);
 
-    static trade reverse_scripted_trade(
-        const ores::trading::domain::scripted_instrument& instr);
-    static trade reverse_double_digital_option(
-        const ores::trading::domain::scripted_instrument& instr);
-    static trade reverse_performance_option_01(
-        const ores::trading::domain::scripted_instrument& instr);
-    static trade reverse_knock_out_swap(
-        const ores::trading::domain::scripted_instrument& instr);
+    static trade reverse_scripted_trade(const ores::trading::domain::scripted_instrument& instr);
+    static trade
+    reverse_double_digital_option(const ores::trading::domain::scripted_instrument& instr);
+    static trade
+    reverse_performance_option_01(const ores::trading::domain::scripted_instrument& instr);
+    static trade reverse_knock_out_swap(const ores::trading::domain::scripted_instrument& instr);
 };
 
 }

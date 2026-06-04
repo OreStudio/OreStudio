@@ -17,11 +17,10 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/hierarchy/ore_hierarchy_builder.hpp"
-
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
-#include "ores.logging/make_logger.hpp"
 
 namespace {
 
@@ -32,8 +31,7 @@ using nt = ores::ore::hierarchy::import_node::node_type;
 
 // Helper: find node by name and type
 const ores::ore::hierarchy::import_node* find_node(
-    const std::vector<ores::ore::hierarchy::import_node>& nodes,
-    const std::string& name, nt type) {
+    const std::vector<ores::ore::hierarchy::import_node>& nodes, const std::string& name, nt type) {
     for (const auto& n : nodes) {
         if (n.name == name && n.type == type)
             return &n;
@@ -41,14 +39,14 @@ const ores::ore::hierarchy::import_node* find_node(
     return nullptr;
 }
 
-std::size_t find_index(
-    const std::vector<ores::ore::hierarchy::import_node>& nodes,
-    const std::string& name, nt type) {
+std::size_t find_index(const std::vector<ores::ore::hierarchy::import_node>& nodes,
+                       const std::string& name,
+                       nt type) {
     for (std::size_t i = 0; i < nodes.size(); ++i) {
         if (nodes[i].name == name && nodes[i].type == type)
             return i;
     }
-    return nodes.size();  // sentinel
+    return nodes.size(); // sentinel
 }
 
 }
@@ -65,9 +63,7 @@ TEST_CASE("build_single_flat_file_produces_one_book", tags) {
     auto lg(make_logger(test_suite));
 
     const std::filesystem::path root = "/data/ore";
-    const std::vector<std::filesystem::path> files = {
-        root / "portfolio.xml"
-    };
+    const std::vector<std::filesystem::path> files = {root / "portfolio.xml"};
 
     ore_hierarchy_builder builder(files, root);
     const auto nodes = builder.build();
@@ -86,10 +82,8 @@ TEST_CASE("build_multiple_flat_files_produce_multiple_books", tags) {
     auto lg(make_logger(test_suite));
 
     const std::filesystem::path root = "/data/ore";
-    const std::vector<std::filesystem::path> files = {
-        root / "portfolio_swaps.xml",
-        root / "portfolio_options.xml"
-    };
+    const std::vector<std::filesystem::path> files = {root / "portfolio_swaps.xml",
+                                                      root / "portfolio_options.xml"};
 
     ore_hierarchy_builder builder(files, root);
     const auto nodes = builder.build();
@@ -114,9 +108,7 @@ TEST_CASE("build_one_level_subdirectory_creates_portfolio_and_book", tags) {
     auto lg(make_logger(test_suite));
 
     const std::filesystem::path root = "/data/ore";
-    const std::vector<std::filesystem::path> files = {
-        root / "Rates" / "portfolio_irs.xml"
-    };
+    const std::vector<std::filesystem::path> files = {root / "Rates" / "portfolio_irs.xml"};
 
     ore_hierarchy_builder builder(files, root);
     const auto nodes = builder.build();
@@ -139,9 +131,8 @@ TEST_CASE("build_two_level_subdirectory_creates_nested_portfolios", tags) {
     auto lg(make_logger(test_suite));
 
     const std::filesystem::path root = "/data/ore";
-    const std::vector<std::filesystem::path> files = {
-        root / "Rates" / "Linear" / "portfolio_irs.xml"
-    };
+    const std::vector<std::filesystem::path> files = {root / "Rates" / "Linear" /
+                                                      "portfolio_irs.xml"};
 
     ore_hierarchy_builder builder(files, root);
     const auto nodes = builder.build();
@@ -175,10 +166,8 @@ TEST_CASE("build_deduplicates_shared_portfolio_parent", tags) {
     auto lg(make_logger(test_suite));
 
     const std::filesystem::path root = "/data/ore";
-    const std::vector<std::filesystem::path> files = {
-        root / "Rates" / "portfolio_irs.xml",
-        root / "Rates" / "portfolio_ccs.xml"
-    };
+    const std::vector<std::filesystem::path> files = {root / "Rates" / "portfolio_irs.xml",
+                                                      root / "Rates" / "portfolio_ccs.xml"};
 
     ore_hierarchy_builder builder(files, root);
     const auto nodes = builder.build();
@@ -188,12 +177,12 @@ TEST_CASE("build_deduplicates_shared_portfolio_parent", tags) {
     // 1 portfolio (Rates) + 2 books
     REQUIRE(nodes.size() == 3);
 
-    long portfolio_count = std::count_if(nodes.begin(), nodes.end(),
-        [](const auto& n){ return n.type == nt::portfolio; });
+    long portfolio_count = std::count_if(
+        nodes.begin(), nodes.end(), [](const auto& n) { return n.type == nt::portfolio; });
     CHECK(portfolio_count == 1);
 
-    long book_count = std::count_if(nodes.begin(), nodes.end(),
-        [](const auto& n){ return n.type == nt::book; });
+    long book_count =
+        std::count_if(nodes.begin(), nodes.end(), [](const auto& n) { return n.type == nt::book; });
     CHECK(book_count == 2);
 }
 
@@ -205,9 +194,7 @@ TEST_CASE("build_strips_excluded_path_components", tags) {
     auto lg(make_logger(test_suite));
 
     const std::filesystem::path root = "/data/ore";
-    const std::vector<std::filesystem::path> files = {
-        root / "Input" / "portfolio.xml"
-    };
+    const std::vector<std::filesystem::path> files = {root / "Input" / "portfolio.xml"};
 
     ore_hierarchy_builder builder(files, root, {"Input"});
     const auto nodes = builder.build();
@@ -225,9 +212,8 @@ TEST_CASE("build_strips_excluded_intermediate_segment", tags) {
     auto lg(make_logger(test_suite));
 
     const std::filesystem::path root = "/data/ore";
-    const std::vector<std::filesystem::path> files = {
-        root / "Rates" / "Input" / "portfolio_irs.xml"
-    };
+    const std::vector<std::filesystem::path> files = {root / "Rates" / "Input" /
+                                                      "portfolio_irs.xml"};
 
     ore_hierarchy_builder builder(files, root, {"Input"});
     const auto nodes = builder.build();

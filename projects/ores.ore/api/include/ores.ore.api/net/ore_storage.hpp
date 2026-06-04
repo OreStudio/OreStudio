@@ -20,9 +20,9 @@
 #ifndef ORES_ORE_API_NET_ORE_STORAGE_HPP
 #define ORES_ORE_API_NET_ORE_STORAGE_HPP
 
+#include "ores.storage/net/storage_paths.hpp"
 #include <string>
 #include <string_view>
-#include "ores.storage/net/storage_paths.hpp"
 
 namespace ores::ore::net {
 
@@ -54,8 +54,7 @@ struct ore_storage {
      * @return            e.g. "/api/v1/storage/ore-imports/{id}.tar.gz"
      */
     static std::string import_path(std::string_view request_id) {
-        return ores::storage::net::storage_paths::make_object_path(
-            bucket, import_key(request_id));
+        return ores::storage::net::storage_paths::make_object_path(bucket, import_key(request_id));
     }
 };
 

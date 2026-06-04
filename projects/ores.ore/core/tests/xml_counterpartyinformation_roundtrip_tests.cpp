@@ -17,12 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.ore.core/domain/domain.hpp"
-
-#include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.ore.core/domain/domain.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/project_root.hpp"
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 
@@ -37,7 +36,7 @@ using ores::ore::domain::counterpartyInformation;
 using namespace ores::logging;
 
 void require_counterpartyinfo_equal(const counterpartyInformation& original,
-                                     const counterpartyInformation& roundtripped) {
+                                    const counterpartyInformation& roundtripped) {
     REQUIRE(static_cast<bool>(roundtripped.Counterparties) ==
             static_cast<bool>(original.Counterparties));
     if (original.Counterparties && roundtripped.Counterparties) {
@@ -48,15 +47,13 @@ void require_counterpartyinfo_equal(const counterpartyInformation& original,
             const auto& rt = roundtripped.Counterparties->Counterparty.at(i);
             CHECK(rt.CounterpartyId == orig.CounterpartyId);
             CHECK(rt.ClearingCounterparty == orig.ClearingCounterparty);
-            CHECK(static_cast<bool>(rt.CreditQuality) ==
-                  static_cast<bool>(orig.CreditQuality));
+            CHECK(static_cast<bool>(rt.CreditQuality) == static_cast<bool>(orig.CreditQuality));
             CHECK(rt.BaCvaRiskWeight == orig.BaCvaRiskWeight);
             CHECK(rt.SaCcrRiskWeight == orig.SaCcrRiskWeight);
             CHECK(rt.SaCvaRiskBucket == orig.SaCvaRiskBucket);
         }
     }
-    CHECK(static_cast<bool>(roundtripped.Correlations) ==
-          static_cast<bool>(original.Correlations));
+    CHECK(static_cast<bool>(roundtripped.Correlations) == static_cast<bool>(original.Correlations));
 }
 
 void test_roundtrip_from_file(const std::string& relative_path) {
@@ -84,8 +81,7 @@ void test_roundtrip_from_file(const std::string& relative_path) {
 }
 
 TEST_CASE("counterpartyinformation_roundtrip_sa_ccr", tags) {
-    test_roundtrip_from_file(
-        "examples/CreditRisk/Input/SA-CCR/counterparty.xml");
+    test_roundtrip_from_file("examples/CreditRisk/Input/SA-CCR/counterparty.xml");
 }
 
 TEST_CASE("counterpartyinformation_roundtrip_market_risk", tags) {

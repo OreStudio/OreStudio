@@ -20,8 +20,8 @@
 #ifndef ORES_ORE_CORE_SCANNER_SCAN_RESULT_HPP
 #define ORES_ORE_CORE_SCANNER_SCAN_RESULT_HPP
 
-#include <vector>
 #include <filesystem>
+#include <vector>
 
 namespace ores::ore::scanner {
 

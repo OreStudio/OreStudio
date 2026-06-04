@@ -17,12 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.ore.core/domain/domain.hpp"
-
-#include <filesystem>
-#include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.ore.core/domain/domain.hpp"
 #include "ores.testing/project_root.hpp"
+#include <catch2/catch_test_macros.hpp>
+#include <filesystem>
 
 namespace {
 
@@ -78,8 +77,7 @@ TEST_CASE("simulation_load_file_save_file_roundtrip", tags) {
     simulation reloaded;
     ores::ore::domain::load_data(serialised, reloaded);
 
-    CHECK(static_cast<bool>(reloaded.Parameters) ==
-          static_cast<bool>(original.Parameters));
+    CHECK(static_cast<bool>(reloaded.Parameters) == static_cast<bool>(original.Parameters));
     CHECK(static_cast<bool>(reloaded.CrossAssetModel) ==
           static_cast<bool>(original.CrossAssetModel));
 

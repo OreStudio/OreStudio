@@ -17,16 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/scanner/ore_directory_scanner.hpp"
-
+#include "ores.testing/project_root.hpp"
+#include <algorithm>
 #include <atomic>
+#include <catch2/catch_test_macros.hpp>
+#include <filesystem>
 #include <fstream>
 #include <string>
-#include <filesystem>
-#include <algorithm>
-#include <catch2/catch_test_macros.hpp>
-#include "ores.logging/make_logger.hpp"
-#include "ores.testing/project_root.hpp"
 
 namespace {
 
@@ -38,9 +37,9 @@ const std::string tags("[ore][scanner][directory_scanner]");
 // ---------------------------------------------------------------------------
 
 // Minimal XML snippets that the scanner recognises by their root element.
-const std::string_view portfolio_xml  = "<Portfolio>\n</Portfolio>\n";
-const std::string_view currency_xml   = "<CurrencyConfig>\n</CurrencyConfig>\n";
-const std::string_view unrelated_xml  = "<Simulation>\n</Simulation>\n";
+const std::string_view portfolio_xml = "<Portfolio>\n</Portfolio>\n";
+const std::string_view currency_xml = "<CurrencyConfig>\n</CurrencyConfig>\n";
+const std::string_view unrelated_xml = "<Simulation>\n</Simulation>\n";
 
 // Returns a writable base directory for temporary test files. Uses the project's
 // build/test_tmp directory so tests work in sandboxed environments where the
@@ -54,8 +53,7 @@ struct temp_dir {
 
     temp_dir() {
         static std::atomic<int> counter{0};
-        path = test_tmp_base() /
-               ("ores_scanner_test_" + std::to_string(++counter));
+        path = test_tmp_base() / ("ores_scanner_test_" + std::to_string(++counter));
         std::filesystem::create_directories(path);
     }
 
@@ -72,16 +70,14 @@ struct temp_dir {
     }
 
     // Create a file with explicit content.
-    void write(const std::filesystem::path& rel,
-               std::string_view content) const {
+    void write(const std::filesystem::path& rel, std::string_view content) const {
         const auto full = path / rel;
         std::filesystem::create_directories(full.parent_path());
         std::ofstream{full} << content;
     }
 };
 
-bool contains(const std::vector<std::filesystem::path>& v,
-              const std::filesystem::path& p) {
+bool contains(const std::vector<std::filesystem::path>& v, const std::filesystem::path& p) {
     return std::find(v.begin(), v.end(), p) != v.end();
 }
 
@@ -101,8 +97,7 @@ TEST_CASE("scan_empty_directory_produces_empty_results", tags) {
     ore_directory_scanner scanner(d.path);
     const auto result = scanner.scan();
 
-    BOOST_LOG_SEV(lg, debug) << "Empty scan: "
-                             << result.currency_files.size() << " currency, "
+    BOOST_LOG_SEV(lg, debug) << "Empty scan: " << result.currency_files.size() << " currency, "
                              << result.portfolio_files.size() << " portfolio";
 
     CHECK(result.currency_files.empty());
@@ -116,8 +111,8 @@ TEST_CASE("scan_classifies_currency_config_by_root_element", tags) {
 
     temp_dir d;
     // Any filename works — classification is by root element content.
-    d.write("currencies.xml",    currency_xml);
-    d.write("my_currency.xml",   currency_xml);
+    d.write("currencies.xml", currency_xml);
+    d.write("my_currency.xml", currency_xml);
 
     ore_directory_scanner scanner(d.path);
     const auto result = scanner.scan();
@@ -135,9 +130,9 @@ TEST_CASE("scan_classifies_portfolio_xml_by_root_element", tags) {
 
     temp_dir d;
     // Arbitrary filenames — all recognised by <Portfolio> root element.
-    d.write("portfolio.xml",    portfolio_xml);
-    d.write("fxoption.xml",     portfolio_xml);
-    d.write("swap_usd.xml",     portfolio_xml);
+    d.write("portfolio.xml", portfolio_xml);
+    d.write("fxoption.xml", portfolio_xml);
+    d.write("swap_usd.xml", portfolio_xml);
 
     ore_directory_scanner scanner(d.path);
     const auto result = scanner.scan();
@@ -155,7 +150,7 @@ TEST_CASE("scan_ignores_unrecognised_xml_files", tags) {
     auto lg(make_logger(test_suite));
 
     temp_dir d;
-    d.write("ore.xml",    unrelated_xml);
+    d.write("ore.xml", unrelated_xml);
     d.write("config.xml", unrelated_xml);
     d.touch("readme.txt");
 
@@ -171,8 +166,8 @@ TEST_CASE("scan_recurses_into_subdirectories", tags) {
     auto lg(make_logger(test_suite));
 
     temp_dir d;
-    d.write("Rates/irs.xml",       portfolio_xml);
-    d.write("Credit/cds.xml",      portfolio_xml);
+    d.write("Rates/irs.xml", portfolio_xml);
+    d.write("Credit/cds.xml", portfolio_xml);
     d.write("Input/currencies.xml", currency_xml);
 
     ore_directory_scanner scanner(d.path);
@@ -193,7 +188,7 @@ TEST_CASE("scan_excludes_files_in_excluded_directory", tags) {
     auto lg(make_logger(test_suite));
 
     temp_dir d;
-    d.touch("Input/trades.xml");           // excluded — content never read
+    d.touch("Input/trades.xml");             // excluded — content never read
     d.write("Rates/irs.xml", portfolio_xml); // should be found
 
     ore_directory_scanner scanner(d.path, {"Input"});

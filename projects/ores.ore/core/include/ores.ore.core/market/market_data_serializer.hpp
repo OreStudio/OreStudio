@@ -20,11 +20,11 @@
 #ifndef ORES_ORE_CORE_MARKET_MARKET_DATA_SERIALIZER_HPP
 #define ORES_ORE_CORE_MARKET_MARKET_DATA_SERIALIZER_HPP
 
-#include <iosfwd>
-#include <vector>
 #include "ores.ore.core/export.hpp"
 #include "ores.ore.core/market/fixing.hpp"
 #include "ores.ore.core/market/market_datum.hpp"
+#include <iosfwd>
+#include <vector>
 
 namespace ores::ore::market {
 
@@ -40,7 +40,7 @@ namespace ores::ore::market {
  * @param data The market data entries to write.
  */
 ORES_ORE_CORE_EXPORT void serialize_market_data(std::ostream& out,
-                           const std::vector<market_datum>& data);
+                                                const std::vector<market_datum>& data);
 
 /**
  * @brief Serializes fixings to ORE text format.
@@ -53,8 +53,7 @@ ORES_ORE_CORE_EXPORT void serialize_market_data(std::ostream& out,
  * @param out Output stream.
  * @param fixings The fixings to write.
  */
-ORES_ORE_CORE_EXPORT void serialize_fixings(std::ostream& out,
-                       const std::vector<fixing>& fixings);
+ORES_ORE_CORE_EXPORT void serialize_fixings(std::ostream& out, const std::vector<fixing>& fixings);
 
 } // namespace ores::ore::market
 

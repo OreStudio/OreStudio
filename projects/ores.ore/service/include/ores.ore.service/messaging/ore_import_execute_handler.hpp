@@ -20,12 +20,12 @@
 #ifndef ORES_ORE_SERVICE_MESSAGING_ORE_IMPORT_EXECUTE_HANDLER_HPP
 #define ORES_ORE_SERVICE_MESSAGING_ORE_IMPORT_EXECUTE_HANDLER_HPP
 
-#include <string>
-#include <filesystem>
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
+#include <filesystem>
+#include <string>
 
 namespace ores::ore::service::messaging {
 
@@ -57,9 +57,9 @@ private:
 
 public:
     ore_import_execute_handler(ores::nats::service::client& nats,
-        ores::nats::service::nats_client outbound_nats,
-        std::string http_base_url,
-        std::string work_dir);
+                               ores::nats::service::nats_client outbound_nats,
+                               std::string http_base_url,
+                               std::string work_dir);
 
     /**
      * @brief Handles ore.v1.ore.import.execute.

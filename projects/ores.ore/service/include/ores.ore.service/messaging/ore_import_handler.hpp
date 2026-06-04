@@ -20,12 +20,12 @@
 #ifndef ORES_ORE_SERVICE_MESSAGING_ORE_IMPORT_HANDLER_HPP
 #define ORES_ORE_SERVICE_MESSAGING_ORE_IMPORT_HANDLER_HPP
 
-#include <string>
+#include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.database/domain/context.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
+#include <string>
 
 namespace ores::ore::service::messaging {
 
@@ -39,8 +39,7 @@ namespace ores::ore::service::messaging {
  */
 class ore_import_handler {
 private:
-    inline static std::string_view logger_name =
-        "ores.ore.service.messaging.ore_import_handler";
+    inline static std::string_view logger_name = "ores.ore.service.messaging.ore_import_handler";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -50,8 +49,8 @@ private:
 
 public:
     ore_import_handler(ores::nats::service::client& nats,
-        ores::database::context ctx,
-        ores::security::jwt::jwt_authenticator signer);
+                       ores::database::context ctx,
+                       ores::security::jwt::jwt_authenticator signer);
 
     /**
      * @brief Handles a workflow.v1.ore.import NATS request.

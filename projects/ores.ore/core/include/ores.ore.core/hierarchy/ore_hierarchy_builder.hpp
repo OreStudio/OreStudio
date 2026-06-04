@@ -20,14 +20,14 @@
 #ifndef ORES_ORE_CORE_HIERARCHY_ORE_HIERARCHY_BUILDER_HPP
 #define ORES_ORE_CORE_HIERARCHY_ORE_HIERARCHY_BUILDER_HPP
 
+#include "ores.logging/make_logger.hpp"
+#include "ores.ore.core/export.hpp"
+#include "ores.ore.core/hierarchy/import_node.hpp"
 #include <filesystem>
 #include <optional>
 #include <string>
 #include <unordered_set>
 #include <vector>
-#include "ores.ore.core/export.hpp"
-#include "ores.ore.core/hierarchy/import_node.hpp"
-#include "ores.logging/make_logger.hpp"
 
 namespace ores::ore::hierarchy {
 
@@ -43,8 +43,7 @@ namespace ores::ore::hierarchy {
  */
 class ORES_ORE_CORE_EXPORT ore_hierarchy_builder {
 private:
-    inline static std::string_view logger_name =
-        "ores.ore.hierarchy.ore_hierarchy_builder";
+    inline static std::string_view logger_name = "ores.ore.hierarchy.ore_hierarchy_builder";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -60,10 +59,9 @@ public:
      * @param root            Root directory used for computing relative paths.
      * @param exclusions      Directory name segments to strip (e.g. {"Input"}).
      */
-    explicit ore_hierarchy_builder(
-        std::vector<std::filesystem::path> portfolio_files,
-        std::filesystem::path root,
-        std::unordered_set<std::string> exclusions = {});
+    explicit ore_hierarchy_builder(std::vector<std::filesystem::path> portfolio_files,
+                                   std::filesystem::path root,
+                                   std::unordered_set<std::string> exclusions = {});
 
     /**
      * @brief Builds the hierarchy nodes.
@@ -77,13 +75,11 @@ public:
     std::vector<import_node> build();
 
 private:
-    std::vector<std::string> filtered_components(
-        const std::filesystem::path& relative) const;
+    std::vector<std::string> filtered_components(const std::filesystem::path& relative) const;
 
-    std::size_t find_or_add_portfolio(
-        const std::string& name,
-        std::optional<std::size_t> parent,
-        std::vector<import_node>& nodes) const;
+    std::size_t find_or_add_portfolio(const std::string& name,
+                                      std::optional<std::size_t> parent,
+                                      std::vector<import_node>& nodes) const;
 
     std::vector<std::filesystem::path> portfolio_files_;
     std::filesystem::path root_;

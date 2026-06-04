@@ -17,14 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.ore.core/xml/exporter.hpp"
-
-#include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
-#include "ores.ore.core/xml/importer.hpp"
 #include "ores.ore.core/domain/trade_mapper.hpp"
+#include "ores.ore.core/xml/exporter.hpp"
+#include "ores.ore.core/xml/importer.hpp"
 #include "ores.testing/project_root.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 
@@ -36,8 +35,8 @@ std::filesystem::path ore_path(const std::string& relative) {
 }
 
 std::filesystem::path example_path(const std::string& filename) {
-    return ores::testing::project_root::resolve(
-        "external/ore/examples/Products/Example_Trades/" + filename);
+    return ores::testing::project_root::resolve("external/ore/examples/Products/Example_Trades/" +
+                                                filename);
 }
 
 }
@@ -157,8 +156,8 @@ TEST_CASE("import_export_roundtrip_preserves_currency_fields", tags) {
     // Re-import by parsing the exported XML through domain layer
     // Since import_currency_config takes a file path, we verify via field checks
     // on a known currency from the original import.
-    const auto& usd = *std::ranges::find_if(imported,
-        [](const auto& c) { return c.iso_code == "USD"; });
+    const auto& usd =
+        *std::ranges::find_if(imported, [](const auto& c) { return c.iso_code == "USD"; });
 
     CHECK(xml.contains("<ISOCode>USD</ISOCode>"));
     CHECK(xml.contains("<Name>" + usd.name + "</Name>"));
@@ -168,8 +167,7 @@ TEST_CASE("import_export_roundtrip_preserves_currency_fields", tags) {
 TEST_CASE("export_all_rounding_types", tags) {
     auto lg(make_logger(test_suite));
 
-    const std::vector<std::string> rounding_types =
-        {"Up", "Down", "Closest", "Floor", "Ceiling"};
+    const std::vector<std::string> rounding_types = {"Up", "Down", "Closest", "Floor", "Ceiling"};
 
     std::vector<currency> currencies;
     for (const auto& rt : rounding_types) {

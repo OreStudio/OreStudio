@@ -17,12 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.ore.core/domain/domain.hpp"
-
-#include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.ore.core/domain/domain.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/project_root.hpp"
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 
@@ -37,7 +36,7 @@ using ores::ore::domain::creditsimulation;
 using namespace ores::logging;
 
 void require_creditsimulation_equal(const creditsimulation& original,
-                                     const creditsimulation& roundtripped) {
+                                    const creditsimulation& roundtripped) {
     REQUIRE(roundtripped.TransitionMatrices.TransitionMatrix.size() ==
             original.TransitionMatrices.TransitionMatrix.size());
     for (size_t i = 0; i < original.TransitionMatrices.TransitionMatrix.size(); ++i) {
@@ -45,8 +44,7 @@ void require_creditsimulation_equal(const creditsimulation& original,
               original.TransitionMatrices.TransitionMatrix.at(i).Name);
     }
 
-    REQUIRE(roundtripped.Entities.Entity.size() ==
-            original.Entities.Entity.size());
+    REQUIRE(roundtripped.Entities.Entity.size() == original.Entities.Entity.size());
     for (size_t i = 0; i < original.Entities.Entity.size(); ++i) {
         const auto& orig = original.Entities.Entity.at(i);
         const auto& rt = roundtripped.Entities.Entity.at(i);
@@ -86,6 +84,5 @@ void test_roundtrip_from_file(const std::string& relative_path) {
 }
 
 TEST_CASE("creditsimulation_roundtrip_credit_portfolio_model", tags) {
-    test_roundtrip_from_file(
-        "examples/CreditRisk/Input/CreditPortfolioModel/creditsimulation.xml");
+    test_roundtrip_from_file("examples/CreditRisk/Input/CreditPortfolioModel/creditsimulation.xml");
 }

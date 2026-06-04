@@ -20,9 +20,9 @@
 #ifndef ORES_ORE_CORE_PLANNER_ORE_IMPORT_RESULT_HPP
 #define ORES_ORE_CORE_PLANNER_ORE_IMPORT_RESULT_HPP
 
+#include "ores.ore.core/planner/ore_instrument_error.hpp"
 #include <string>
 #include <vector>
-#include "ores.ore.core/planner/ore_instrument_error.hpp"
 
 namespace ores::ore::planner {
 
@@ -46,10 +46,10 @@ struct ore_import_result {
      */
     std::string error;
 
-    int currencies  = 0;
-    int portfolios  = 0;
-    int books       = 0;
-    int trades      = 0;
+    int currencies = 0;
+    int portfolios = 0;
+    int books = 0;
+    int trades = 0;
     int instruments = 0;
 
     /**

@@ -20,11 +20,11 @@
 #ifndef ORES_ORE_CORE_DOMAIN_CALENDAR_ADJUSTMENT_MAPPER_HPP
 #define ORES_ORE_CORE_DOMAIN_CALENDAR_ADJUSTMENT_MAPPER_HPP
 
-#include <vector>
-#include "ores.ore.core/export.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata.api/domain/calendar_adjustment.hpp"
 #include "ores.ore.core/domain/domain.hpp"
+#include "ores.ore.core/export.hpp"
+#include "ores.refdata.api/domain/calendar_adjustment.hpp"
+#include <vector>
 
 namespace ores::ore::domain {
 
@@ -33,8 +33,7 @@ namespace ores::ore::domain {
  */
 class ORES_ORE_CORE_EXPORT calendar_adjustment_mapper {
 private:
-    inline static std::string_view logger_name =
-        "ores.ore.domain.calendar_adjustment_mapper";
+    inline static std::string_view logger_name = "ores.ore.domain.calendar_adjustment_mapper";
 
     static auto& lg() {
         using namespace ores::logging;
@@ -44,12 +43,10 @@ private:
 
 public:
     static refdata::domain::calendar_adjustment map(const newcalendar& v);
-    static std::vector<refdata::domain::calendar_adjustment>
-    map(const calendaradjustment& v);
+    static std::vector<refdata::domain::calendar_adjustment> map(const calendaradjustment& v);
 
     static newcalendar reverse(const refdata::domain::calendar_adjustment& v);
-    static calendaradjustment
-    reverse(const std::vector<refdata::domain::calendar_adjustment>& v);
+    static calendaradjustment reverse(const std::vector<refdata::domain::calendar_adjustment>& v);
 };
 
 }

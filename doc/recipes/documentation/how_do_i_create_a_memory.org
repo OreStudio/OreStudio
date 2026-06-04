@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :documentation:memory:recipe:
 #+created: 2026-05-21
-#+updated: 2026-05-21
+#+updated: 2026-06-04
 
 For background on what project memory /is/ and what does and does not
 belong in it, see the [[id:DC0BBA22-9D4F-4FDD-B011-E30B02B4B82F][project memory inventory]]. For the LLM-side
@@ -41,14 +41,15 @@ frontmatter.
    #+begin_src sh :results verbatim
    projects/ores.compass/compass.sh add memory \
      --slug do_not_re_export_env_vars \
-     --parent-dir doc/llm/memory \
      --title "Do not re-export ORES_* env vars in Bash tool calls" \
      --description "The user has already exported ORES_* env vars in their shell session — don't prepend them." \
      --memory-subtype feedback
    #+end_src
 
-   The =memory= tag and the chosen subtype are auto-added to
-   =#+filetags= so the whole catalogue is greppable in one shot.
+   =--parent-dir= defaults to =doc/llm/memory=; only pass it to land
+   the file somewhere else. The =memory= tag and the chosen subtype
+   are auto-added to =#+filetags= so the whole catalogue is greppable
+   in one shot.
 
 4. /Fill in the body/. The scaffold gives you a one-paragraph
    placeholder plus =*Why:*= and =*How to apply:*= bold lines.

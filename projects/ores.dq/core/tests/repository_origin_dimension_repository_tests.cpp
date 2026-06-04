@@ -17,19 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.dq.core/repository/origin_dimension_repository.hpp"
-
-#include <catch2/catch_test_macros.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.logging/make_logger.hpp"
-#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.dq.api/domain/origin_dimension_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.api/generators/origin_dimension_generator.hpp"
+#include "ores.dq.core/repository/origin_dimension_repository.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
+#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
 
 namespace {
 
@@ -54,7 +53,8 @@ TEST_CASE("write_single_origin_dimension", tags) {
     origin_dimension_repository repo(h.context());
     auto origin_dimension = generate_synthetic_origin_dimension(ctx);
     origin_dimension.tenant_id = h.tenant_id().to_string();
-    origin_dimension.code = origin_dimension.code + "_" + std::string(faker::string::alphanumeric(8));
+    origin_dimension.code =
+        origin_dimension.code + "_" + std::string(faker::string::alphanumeric(8));
 
     BOOST_LOG_SEV(lg, debug) << "Origin dimension: " << origin_dimension;
     CHECK_NOTHROW(repo.write(origin_dimension));

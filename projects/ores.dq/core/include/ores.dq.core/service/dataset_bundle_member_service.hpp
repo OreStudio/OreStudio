@@ -20,13 +20,13 @@
 #ifndef ORES_DQ_CORE_SERVICE_DATASET_BUNDLE_MEMBER_SERVICE_HPP
 #define ORES_DQ_CORE_SERVICE_DATASET_BUNDLE_MEMBER_SERVICE_HPP
 
-#include <string>
-#include <vector>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/domain/dataset_bundle_member.hpp"
-#include "ores.dq.core/repository/dataset_bundle_member_repository.hpp"
 #include "ores.dq.core/export.hpp"
+#include "ores.dq.core/repository/dataset_bundle_member_repository.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <string>
+#include <vector>
 
 namespace ores::dq::service {
 
@@ -38,8 +38,7 @@ namespace ores::dq::service {
  */
 class ORES_DQ_CORE_EXPORT dataset_bundle_member_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.dq.service.dataset_bundle_member_service";
+    inline static std::string_view logger_name = "ores.dq.service.dataset_bundle_member_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -90,8 +89,7 @@ public:
      * @param bundle_code The bundle
      * @param dataset_code The dataset
      */
-    void remove_member(const std::string& bundle_code,
-        const std::string& dataset_code);
+    void remove_member(const std::string& bundle_code, const std::string& dataset_code);
 
 private:
     repository::dataset_bundle_member_repository repo_;

@@ -20,13 +20,13 @@
 #ifndef ORES_DQ_CORE_REPOSITORY_CATALOG_REPOSITORY_HPP
 #define ORES_DQ_CORE_REPOSITORY_CATALOG_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/domain/catalog.hpp"
 #include "ores.dq.core/export.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::dq::repository {
 
@@ -35,8 +35,7 @@ namespace ores::dq::repository {
  */
 class ORES_DQ_CORE_EXPORT catalog_repository {
 private:
-    inline static std::string_view logger_name =
-        "ores.dq.repository.catalog_repository";
+    inline static std::string_view logger_name = "ores.dq.repository.catalog_repository";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -76,8 +75,7 @@ public:
      * @param limit Maximum number of records to return
      * @return Vector of catalogs within the specified range
      */
-    std::vector<domain::catalog>
-    read_latest(std::uint32_t offset, std::uint32_t limit);
+    std::vector<domain::catalog> read_latest(std::uint32_t offset, std::uint32_t limit);
 
     /**
      * @brief Gets the total count of active catalogs.

@@ -18,13 +18,12 @@
  *
  */
 #include "ores.dq.core/repository/dataset_dependency_repository.hpp"
-
-#include <sqlgen/postgres.hpp>
-#include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
 #include "ores.dq.api/domain/dataset_dependency_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.core/repository/dataset_dependency_entity.hpp"
 #include "ores.dq.core/repository/dataset_dependency_mapper.hpp"
+#include <sqlgen/postgres.hpp>
 
 namespace ores::dq::repository {
 
@@ -36,33 +35,35 @@ using namespace ores::database::repository;
 dataset_dependency_repository::dataset_dependency_repository(context ctx)
     : ctx_(std::move(ctx)) {}
 
-std::vector<domain::dataset_dependency>
-dataset_dependency_repository::read_latest() {
+std::vector<domain::dataset_dependency> dataset_dependency_repository::read_latest() {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<dataset_dependency_entity>> |
-        where("valid_to"_c == max.value()) |
-        order_by("dataset_code"_c, "dependency_code"_c);
+                       where("valid_to"_c == max.value()) |
+                       order_by("dataset_code"_c, "dependency_code"_c);
 
     return execute_read_query<dataset_dependency_entity, domain::dataset_dependency>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return dataset_dependency_mapper::map(entities); },
-        lg(), "Reading latest dataset dependencies");
+        lg(),
+        "Reading latest dataset dependencies");
 }
 
 std::vector<domain::dataset_dependency>
 dataset_dependency_repository::read_latest_by_dataset(const std::string& dataset_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest dependencies for dataset: "
-                               << dataset_code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest dependencies for dataset: " << dataset_code;
 
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<dataset_dependency_entity>> |
-        where("dataset_code"_c == dataset_code && "valid_to"_c == max.value()) |
-        order_by("dependency_code"_c);
+                       where("dataset_code"_c == dataset_code && "valid_to"_c == max.value()) |
+                       order_by("dependency_code"_c);
 
     return execute_read_query<dataset_dependency_entity, domain::dataset_dependency>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return dataset_dependency_mapper::map(entities); },
-        lg(), "Reading latest dataset dependencies by dataset");
+        lg(),
+        "Reading latest dataset dependencies by dataset");
 }
 
 }

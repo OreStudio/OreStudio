@@ -20,17 +20,17 @@
 #ifndef ORES_DQ_CORE_MESSAGING_DIMENSION_HANDLER_HPP
 #define ORES_DQ_CORE_MESSAGING_DIMENSION_HANDLER_HPP
 
-#include <optional>
-#include <stdexcept>
-#include "ores.nats/domain/message.hpp"
-#include "ores.nats/service/client.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.security/jwt/jwt_authenticator.hpp"
-#include "ores.service/messaging/handler_helpers.hpp"
-#include "ores.service/service/request_context.hpp"
 #include "ores.dq.api/messaging/data_organization_protocol.hpp"
 #include "ores.dq.core/service/dimension_service.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/message.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.service/service/request_context.hpp"
+#include <optional>
+#include <stdexcept>
 
 namespace ores::dq::messaging {
 
@@ -50,11 +50,12 @@ inline auto& dimension_handler_lg() {
 
 class dimension_handler {
 public:
-    dimension_handler(
-        ores::nats::service::client& nats,
-        ores::database::context ctx,
-        std::optional<ores::security::jwt::jwt_authenticator> verifier)
-        : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier)) {}
+    dimension_handler(ores::nats::service::client& nats,
+                      ores::database::context ctx,
+                      std::optional<ores::security::jwt::jwt_authenticator> verifier)
+        : nats_(nats)
+        , ctx_(std::move(ctx))
+        , verifier_(std::move(verifier)) {}
 
     // =========================================================================
     // Nature Dimensions
@@ -67,8 +68,7 @@ public:
             BOOST_LOG_SEV(dimension_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -97,8 +97,7 @@ public:
             BOOST_LOG_SEV(dimension_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -127,8 +126,7 @@ public:
             BOOST_LOG_SEV(dimension_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -145,8 +143,7 @@ public:
             reply(nats_, msg, delete_nature_dimension_response{true, {}});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(dimension_handler_lg(), error) << msg.subject << " failed: " << e.what();
-            reply(nats_, msg,
-                delete_nature_dimension_response{false, e.what()});
+            reply(nats_, msg, delete_nature_dimension_response{false, e.what()});
         }
     }
 
@@ -157,8 +154,7 @@ public:
             BOOST_LOG_SEV(dimension_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -192,8 +188,7 @@ public:
             BOOST_LOG_SEV(dimension_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -222,8 +217,7 @@ public:
             BOOST_LOG_SEV(dimension_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -252,8 +246,7 @@ public:
             BOOST_LOG_SEV(dimension_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -270,8 +263,7 @@ public:
             reply(nats_, msg, delete_origin_dimension_response{true, {}});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(dimension_handler_lg(), error) << msg.subject << " failed: " << e.what();
-            reply(nats_, msg,
-                delete_origin_dimension_response{false, e.what()});
+            reply(nats_, msg, delete_origin_dimension_response{false, e.what()});
         }
     }
 
@@ -282,8 +274,7 @@ public:
             BOOST_LOG_SEV(dimension_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -317,8 +308,7 @@ public:
             BOOST_LOG_SEV(dimension_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -347,8 +337,7 @@ public:
             BOOST_LOG_SEV(dimension_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -366,8 +355,7 @@ public:
             reply(nats_, msg, save_treatment_dimension_response{true, {}});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(dimension_handler_lg(), error) << msg.subject << " failed: " << e.what();
-            reply(nats_, msg,
-                save_treatment_dimension_response{false, e.what()});
+            reply(nats_, msg, save_treatment_dimension_response{false, e.what()});
         }
     }
 
@@ -378,8 +366,7 @@ public:
             BOOST_LOG_SEV(dimension_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -396,8 +383,7 @@ public:
             reply(nats_, msg, delete_treatment_dimension_response{true, {}});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(dimension_handler_lg(), error) << msg.subject << " failed: " << e.what();
-            reply(nats_, msg,
-                delete_treatment_dimension_response{false, e.what()});
+            reply(nats_, msg, delete_treatment_dimension_response{false, e.what()});
         }
     }
 
@@ -408,8 +394,7 @@ public:
             BOOST_LOG_SEV(dimension_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -417,8 +402,7 @@ public:
         const auto& ctx = *ctx_expected;
         service::dimension_service svc(ctx);
         try {
-            const auto history =
-                svc.get_treatment_dimension_history(req->code);
+            const auto history = svc.get_treatment_dimension_history(req->code);
             get_treatment_dimension_history_response resp;
             resp.success = true;
             resp.history = history;
@@ -434,7 +418,6 @@ public:
     }
 
 private:
-
     ores::nats::service::client& nats_;
     ores::database::context ctx_;
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;

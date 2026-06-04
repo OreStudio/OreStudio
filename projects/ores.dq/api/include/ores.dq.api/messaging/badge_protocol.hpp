@@ -20,12 +20,12 @@
 #ifndef ORES_DQ_API_MESSAGING_BADGE_PROTOCOL_HPP
 #define ORES_DQ_API_MESSAGING_BADGE_PROTOCOL_HPP
 
+#include "ores.dq.api/domain/badge_definition.hpp"
+#include "ores.dq.api/domain/badge_severity.hpp"
+#include "ores.dq.api/domain/code_domain.hpp"
 #include <string>
 #include <string_view>
 #include <vector>
-#include "ores.dq.api/domain/badge_severity.hpp"
-#include "ores.dq.api/domain/badge_definition.hpp"
-#include "ores.dq.api/domain/code_domain.hpp"
 
 namespace ores::dq::messaging {
 

@@ -20,13 +20,13 @@
 #ifndef ORES_DQ_CORE_REPOSITORY_SUBJECT_AREA_REPOSITORY_HPP
 #define ORES_DQ_CORE_REPOSITORY_SUBJECT_AREA_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/domain/subject_area.hpp"
 #include "ores.dq.core/export.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::dq::repository {
 
@@ -35,8 +35,7 @@ namespace ores::dq::repository {
  */
 class ORES_DQ_CORE_EXPORT subject_area_repository {
 private:
-    inline static std::string_view logger_name =
-        "ores.dq.repository.subject_area_repository";
+    inline static std::string_view logger_name = "ores.dq.repository.subject_area_repository";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -70,20 +69,18 @@ public:
     /**
      * @brief Reads latest subject_area by composite key.
      */
-    std::vector<domain::subject_area>
-    read_latest(const std::string& name, const std::string& domain_name);
+    std::vector<domain::subject_area> read_latest(const std::string& name,
+                                                  const std::string& domain_name);
 
     /**
      * @brief Reads latest subject_areas by domain name.
      */
-    std::vector<domain::subject_area>
-    read_latest_by_domain(const std::string& domain_name);
+    std::vector<domain::subject_area> read_latest_by_domain(const std::string& domain_name);
 
     /**
      * @brief Reads latest subject_areas with pagination support.
      */
-    std::vector<domain::subject_area>
-    read_latest(std::uint32_t offset, std::uint32_t limit);
+    std::vector<domain::subject_area> read_latest(std::uint32_t offset, std::uint32_t limit);
 
     /**
      * @brief Gets the total count of active subject_areas.
@@ -93,8 +90,8 @@ public:
     /**
      * @brief Reads all historical versions of a subject_area by composite key.
      */
-    std::vector<domain::subject_area>
-    read_all(const std::string& name, const std::string& domain_name);
+    std::vector<domain::subject_area> read_all(const std::string& name,
+                                               const std::string& domain_name);
 
     /**
      * @brief Deletes a subject_area by closing its temporal validity.

@@ -18,7 +18,6 @@
  *
  */
 #include "ores.dq.core/repository/code_domain_mapper.hpp"
-
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.dq.api/domain/code_domain_json_io.hpp" // IWYU pragma: keep.
 
@@ -27,8 +26,7 @@ namespace ores::dq::repository {
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::code_domain
-code_domain_mapper::map(const code_domain_entity& v) {
+domain::code_domain code_domain_mapper::map(const code_domain_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::code_domain r;
@@ -48,8 +46,7 @@ code_domain_mapper::map(const code_domain_entity& v) {
     return r;
 }
 
-code_domain_entity
-code_domain_mapper::map(const domain::code_domain& v) {
+code_domain_entity code_domain_mapper::map(const domain::code_domain& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     code_domain_entity r;
@@ -68,22 +65,14 @@ code_domain_mapper::map(const domain::code_domain& v) {
     return r;
 }
 
-std::vector<domain::code_domain>
-code_domain_mapper::map(const std::vector<code_domain_entity>& v) {
+std::vector<domain::code_domain> code_domain_mapper::map(const std::vector<code_domain_entity>& v) {
     return map_vector<code_domain_entity, domain::code_domain>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
-std::vector<code_domain_entity>
-code_domain_mapper::map(const std::vector<domain::code_domain>& v) {
+std::vector<code_domain_entity> code_domain_mapper::map(const std::vector<domain::code_domain>& v) {
     return map_vector<domain::code_domain, code_domain_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

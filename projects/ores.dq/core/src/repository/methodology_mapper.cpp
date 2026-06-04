@@ -18,19 +18,17 @@
  *
  */
 #include "ores.dq.core/repository/methodology_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.dq.api/domain/methodology_json_io.hpp" // IWYU pragma: keep.
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::dq::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::methodology
-methodology_mapper::map(const methodology_entity& v) {
+domain::methodology methodology_mapper::map(const methodology_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::methodology r;
@@ -41,7 +39,7 @@ methodology_mapper::map(const methodology_entity& v) {
     r.description = v.description;
     r.logic_reference = v.logic_reference;
     r.implementation_details = v.implementation_details;
-r.modified_by = v.modified_by;
+    r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_commentary = v.change_commentary;
     r.recorded_at = timestamp_to_timepoint(v.valid_from);
@@ -50,8 +48,7 @@ r.modified_by = v.modified_by;
     return r;
 }
 
-methodology_entity
-methodology_mapper::map(const domain::methodology& v) {
+methodology_entity methodology_mapper::map(const domain::methodology& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     methodology_entity r;
@@ -62,7 +59,7 @@ methodology_mapper::map(const domain::methodology& v) {
     r.description = v.description;
     r.logic_reference = v.logic_reference;
     r.implementation_details = v.implementation_details;
-r.modified_by = v.modified_by;
+    r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_commentary = v.change_commentary;
 
@@ -70,22 +67,14 @@ r.modified_by = v.modified_by;
     return r;
 }
 
-std::vector<domain::methodology>
-methodology_mapper::map(const std::vector<methodology_entity>& v) {
+std::vector<domain::methodology> methodology_mapper::map(const std::vector<methodology_entity>& v) {
     return map_vector<methodology_entity, domain::methodology>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
-std::vector<methodology_entity>
-methodology_mapper::map(const std::vector<domain::methodology>& v) {
+std::vector<methodology_entity> methodology_mapper::map(const std::vector<domain::methodology>& v) {
     return map_vector<domain::methodology, methodology_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

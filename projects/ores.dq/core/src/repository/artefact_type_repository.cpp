@@ -18,13 +18,12 @@
  *
  */
 #include "ores.dq.core/repository/artefact_type_repository.hpp"
-
-#include <sqlgen/postgres.hpp>
-#include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
 #include "ores.dq.api/domain/artefact_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.core/repository/artefact_type_entity.hpp"
 #include "ores.dq.core/repository/artefact_type_mapper.hpp"
+#include <sqlgen/postgres.hpp>
 
 namespace ores::dq::repository {
 
@@ -40,30 +39,32 @@ std::string artefact_type_repository::sql() {
 artefact_type_repository::artefact_type_repository(context ctx)
     : ctx_(std::move(ctx)) {}
 
-std::vector<domain::artefact_type>
-artefact_type_repository::read_all() {
+std::vector<domain::artefact_type> artefact_type_repository::read_all() {
     BOOST_LOG_SEV(lg(), debug) << "Reading all artefact_types";
 
-    const auto query = sqlgen::read<std::vector<artefact_type_entity>> |
-        order_by("display_order"_c);
+    const auto query =
+        sqlgen::read<std::vector<artefact_type_entity>> | order_by("display_order"_c);
 
     return execute_read_query<artefact_type_entity, domain::artefact_type>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return artefact_type_mapper::map(entities); },
-        lg(), "Reading all artefact_types");
+        lg(),
+        "Reading all artefact_types");
 }
 
 std::optional<domain::artefact_type>
 artefact_type_repository::read_by_code(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading artefact_type by code: " << code;
 
-    const auto query = sqlgen::read<std::vector<artefact_type_entity>> |
-        where("code"_c == code);
+    const auto query = sqlgen::read<std::vector<artefact_type_entity>> | where("code"_c == code);
 
     auto results = execute_read_query<artefact_type_entity, domain::artefact_type>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return artefact_type_mapper::map(entities); },
-        lg(), "Reading artefact_type by code");
+        lg(),
+        "Reading artefact_type by code");
 
     if (results.empty()) {
         BOOST_LOG_SEV(lg(), debug) << "No artefact_type found for code: " << code;

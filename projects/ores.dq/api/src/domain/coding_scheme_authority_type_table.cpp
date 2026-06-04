@@ -18,7 +18,6 @@
  *
  */
 #include "ores.dq.api/domain/coding_scheme_authority_type_table.hpp"
-
 #include <fort.hpp>
 
 namespace ores::dq::domain {
@@ -31,8 +30,7 @@ std::string convert_to_table(const std::vector<coding_scheme_authority_type>& v)
           << "Modified By" << "Version" << fort::endr;
 
     for (const auto& a : v) {
-        table << a.code << a.name << a.description
-              << a.modified_by << a.version << fort::endr;
+        table << a.code << a.name << a.description << a.modified_by << a.version << fort::endr;
     }
     return table.to_string();
 }

@@ -18,9 +18,8 @@
  *
  */
 #include "ores.dq.api/domain/badge_severity_table_io.hpp"
-
-#include <ostream>
 #include "ores.dq.api/domain/badge_severity_table.hpp"
+#include <ostream>
 
 namespace ores::dq::domain {
 

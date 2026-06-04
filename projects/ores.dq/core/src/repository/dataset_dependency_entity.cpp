@@ -18,7 +18,6 @@
  *
  */
 #include "ores.dq.core/repository/dataset_dependency_entity.hpp"
-
 #include <rfl.hpp>
 #include <rfl/json.hpp>
 

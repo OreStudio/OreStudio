@@ -18,16 +18,14 @@
  *
  */
 #include "ores.dq.api/domain/dataset_dependency_table_io.hpp"
-
-#include <ostream>
 #include "ores.dq.api/domain/dataset_dependency_table.hpp"
+#include <ostream>
 
 namespace ores::dq::domain {
 
 namespace {
 
-void print_dataset_dependency_table(std::ostream& s,
-    const std::vector<dataset_dependency>& v) {
+void print_dataset_dependency_table(std::ostream& s, const std::vector<dataset_dependency>& v) {
     s << std::endl << convert_to_table(v) << std::endl;
 }
 

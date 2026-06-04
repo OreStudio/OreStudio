@@ -18,18 +18,15 @@
  *
  */
 #include "ores.dq.api/generators/data_domain_generator.hpp"
-
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/generation/generation_keys.hpp"
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
 
 namespace ores::dq::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::data_domain generate_synthetic_data_domain(
-    utility::generation::generation_context& ctx) {
-    const auto modified_by = ctx.env().get_or(
-        generation_keys::modified_by, "system");
+domain::data_domain generate_synthetic_data_domain(utility::generation::generation_context& ctx) {
+    const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
 
     domain::data_domain r;
     r.version = 1;
@@ -42,8 +39,7 @@ domain::data_domain generate_synthetic_data_domain(
 }
 
 std::vector<domain::data_domain>
-generate_synthetic_data_domains(std::size_t n,
-    utility::generation::generation_context& ctx) {
+generate_synthetic_data_domains(std::size_t n, utility::generation::generation_context& ctx) {
     std::vector<domain::data_domain> r;
     r.reserve(n);
     while (r.size() < n)

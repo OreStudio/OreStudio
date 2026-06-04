@@ -20,17 +20,16 @@
 #ifndef ORES_DQ_API_MESSAGING_DATASET_BUNDLE_MEMBER_PROTOCOL_HPP
 #define ORES_DQ_API_MESSAGING_DATASET_BUNDLE_MEMBER_PROTOCOL_HPP
 
+#include "ores.dq.api/domain/dataset_bundle_member.hpp"
 #include <string>
 #include <string_view>
 #include <vector>
-#include "ores.dq.api/domain/dataset_bundle_member.hpp"
 
 namespace ores::dq::messaging {
 
 struct get_dataset_bundle_members_request {
     using response_type = struct get_dataset_bundle_members_response;
-    static constexpr std::string_view nats_subject =
-        "dq.v1.dataset-bundle-members.list";
+    static constexpr std::string_view nats_subject = "dq.v1.dataset-bundle-members.list";
     int offset = 0;
     int limit = 100;
 };
@@ -42,8 +41,7 @@ struct get_dataset_bundle_members_response {
 
 struct get_dataset_bundle_members_by_bundle_request {
     using response_type = struct get_dataset_bundle_members_by_bundle_response;
-    static constexpr std::string_view nats_subject =
-        "dq.v1.dataset-bundle-members.by-bundle";
+    static constexpr std::string_view nats_subject = "dq.v1.dataset-bundle-members.by-bundle";
     std::string bundle_code;
 };
 

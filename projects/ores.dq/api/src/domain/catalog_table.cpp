@@ -18,7 +18,6 @@
  *
  */
 #include "ores.dq.api/domain/catalog_table.hpp"
-
 #include <fort.hpp>
 
 namespace ores::dq::domain {
@@ -31,8 +30,8 @@ std::string convert_to_table(const std::vector<catalog>& v) {
           << "Modified By" << "Version" << fort::endr;
 
     for (const auto& c : v) {
-        table << c.name << c.description << c.owner.value_or("")
-              << c.modified_by << c.version << fort::endr;
+        table << c.name << c.description << c.owner.value_or("") << c.modified_by << c.version
+              << fort::endr;
     }
     return table.to_string();
 }

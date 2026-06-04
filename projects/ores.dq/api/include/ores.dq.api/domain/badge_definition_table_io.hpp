@@ -20,17 +20,18 @@
 #ifndef ORES_DQ_API_DOMAIN_BADGE_DEFINITION_TABLE_IO_HPP
 #define ORES_DQ_API_DOMAIN_BADGE_DEFINITION_TABLE_IO_HPP
 
-#include <iosfwd>
-#include <vector>
 #include "ores.dq.api/domain/badge_definition.hpp"
 #include "ores.dq.api/export.hpp"
+#include <iosfwd>
+#include <vector>
 
 namespace ores::dq::domain {
 
 /**
  * @brief Dumps the badge_definition objects to a stream in table format.
  */
-ORES_DQ_API_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<badge_definition>& v);
+ORES_DQ_API_EXPORT std::ostream& operator<<(std::ostream& s,
+                                            const std::vector<badge_definition>& v);
 
 }
 

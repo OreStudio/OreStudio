@@ -18,18 +18,17 @@
  *
  */
 #include "ores.dq.core/service/change_management_service.hpp"
-
-#include <stdexcept>
 #include "ores.dq.api/domain/change_reason_category_json_io.hpp" // IWYU pragma: keep.
-#include "ores.dq.api/domain/change_reason_json_io.hpp" // IWYU pragma: keep.
+#include "ores.dq.api/domain/change_reason_json_io.hpp"          // IWYU pragma: keep.
+#include <stdexcept>
 
 namespace ores::dq::service {
 
 using namespace ores::logging;
 
 change_management_service::change_management_service(context ctx)
-    : category_repo_(ctx),
-      reason_repo_(ctx) {
+    : category_repo_(ctx)
+    , reason_repo_(ctx) {
     BOOST_LOG_SEV(lg(), info) << "Change management service initialized.";
 }
 
@@ -37,17 +36,15 @@ change_management_service::change_management_service(context ctx)
 // Category Management
 // ============================================================================
 
-std::vector<domain::change_reason_category>
-change_management_service::list_categories() {
+std::vector<domain::change_reason_category> change_management_service::list_categories() {
     BOOST_LOG_SEV(lg(), debug) << "Listing all change reason categories.";
     return category_repo_.read_latest();
 }
 
 std::vector<domain::change_reason_category>
-change_management_service::list_categories(std::uint32_t offset,
-                                            std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing change reason categories with offset: "
-                               << offset << " limit: " << limit;
+change_management_service::list_categories(std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing change reason categories with offset: " << offset
+                               << " limit: " << limit;
     return category_repo_.read_latest(offset, limit);
 }
 
@@ -66,16 +63,13 @@ change_management_service::find_category(const std::string& code) {
     return categories.front();
 }
 
-void change_management_service::save_category(
-    const domain::change_reason_category& category) {
+void change_management_service::save_category(const domain::change_reason_category& category) {
     if (category.code.empty()) {
         throw std::invalid_argument("Category code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving change reason category: "
-                               << category.code;
+    BOOST_LOG_SEV(lg(), debug) << "Saving change reason category: " << category.code;
     category_repo_.write(category);
-    BOOST_LOG_SEV(lg(), info) << "Saved change reason category: "
-                              << category.code;
+    BOOST_LOG_SEV(lg(), info) << "Saved change reason category: " << category.code;
 }
 
 void change_management_service::save_categories(
@@ -85,8 +79,7 @@ void change_management_service::save_categories(
             throw std::invalid_argument("Category code cannot be empty.");
         }
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << categories.size()
-                               << " change reason categories.";
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << categories.size() << " change reason categories.";
     category_repo_.write(categories);
 }
 
@@ -96,9 +89,8 @@ void change_management_service::remove_category(const std::string& code) {
     // Check if any reasons are using this category
     auto reasons = list_reasons_by_category(code);
     if (!reasons.empty()) {
-        throw std::runtime_error("Cannot remove category '" + code +
-            "' because " + std::to_string(reasons.size()) +
-            " reasons are using it.");
+        throw std::runtime_error("Cannot remove category '" + code + "' because " +
+                                 std::to_string(reasons.size()) + " reasons are using it.");
     }
 
     category_repo_.remove(code);
@@ -120,25 +112,21 @@ change_management_service::get_category_history(const std::string& code) {
 // Reason Management
 // ============================================================================
 
-std::vector<domain::change_reason>
-change_management_service::list_reasons() {
+std::vector<domain::change_reason> change_management_service::list_reasons() {
     BOOST_LOG_SEV(lg(), debug) << "Listing all change reasons.";
     return reason_repo_.read_latest();
 }
 
-std::vector<domain::change_reason>
-change_management_service::list_reasons(std::uint32_t offset,
-                                         std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing change reasons with offset: "
-                               << offset << " limit: " << limit;
+std::vector<domain::change_reason> change_management_service::list_reasons(std::uint32_t offset,
+                                                                           std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing change reasons with offset: " << offset
+                               << " limit: " << limit;
     return reason_repo_.read_latest(offset, limit);
 }
 
 std::vector<domain::change_reason>
-change_management_service::list_reasons_by_category(
-    const std::string& category_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing change reasons by category: "
-                               << category_code;
+change_management_service::list_reasons_by_category(const std::string& category_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing change reasons by category: " << category_code;
     return reason_repo_.read_latest_by_category(category_code);
 }
 
@@ -157,8 +145,7 @@ change_management_service::find_reason(const std::string& code) {
     return reasons.front();
 }
 
-void change_management_service::save_reason(
-    const domain::change_reason& reason) {
+void change_management_service::save_reason(const domain::change_reason& reason) {
     if (reason.code.empty()) {
         throw std::invalid_argument("Reason code cannot be empty.");
     }
@@ -167,15 +154,13 @@ void change_management_service::save_reason(
     BOOST_LOG_SEV(lg(), info) << "Saved change reason: " << reason.code;
 }
 
-void change_management_service::save_reasons(
-    const std::vector<domain::change_reason>& reasons) {
+void change_management_service::save_reasons(const std::vector<domain::change_reason>& reasons) {
     for (const auto& r : reasons) {
         if (r.code.empty()) {
             throw std::invalid_argument("Reason code cannot be empty.");
         }
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << reasons.size()
-                               << " change reasons.";
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << reasons.size() << " change reasons.";
     reason_repo_.write(reasons);
 }
 

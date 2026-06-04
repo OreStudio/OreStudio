@@ -20,10 +20,10 @@
 #ifndef ORES_DQ_API_MESSAGING_DATASET_BUNDLE_PROTOCOL_HPP
 #define ORES_DQ_API_MESSAGING_DATASET_BUNDLE_PROTOCOL_HPP
 
+#include "ores.dq.api/domain/dataset_bundle.hpp"
 #include <string>
 #include <string_view>
 #include <vector>
-#include "ores.dq.api/domain/dataset_bundle.hpp"
 
 namespace ores::dq::messaging {
 

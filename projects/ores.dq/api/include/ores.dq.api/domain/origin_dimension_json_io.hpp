@@ -20,9 +20,9 @@
 #ifndef ORES_DQ_API_DOMAIN_ORIGIN_DIMENSION_JSON_IO_HPP
 #define ORES_DQ_API_DOMAIN_ORIGIN_DIMENSION_JSON_IO_HPP
 
-#include <iosfwd>
 #include "ores.dq.api/domain/origin_dimension.hpp"
 #include "ores.dq.api/export.hpp"
+#include <iosfwd>
 
 namespace ores::dq::domain {
 

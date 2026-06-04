@@ -18,7 +18,6 @@
  *
  */
 #include "ores.dq.core/repository/catalog_mapper.hpp"
-
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.dq.api/domain/catalog_json_io.hpp" // IWYU pragma: keep.
 
@@ -27,8 +26,7 @@ namespace ores::dq::repository {
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::catalog
-catalog_mapper::map(const catalog_entity& v) {
+domain::catalog catalog_mapper::map(const catalog_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::catalog r;
@@ -37,7 +35,7 @@ catalog_mapper::map(const catalog_entity& v) {
     r.name = v.name.value();
     r.description = v.description;
     r.owner = v.owner;
-r.modified_by = v.modified_by;
+    r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_commentary = v.change_commentary;
     r.recorded_at = timestamp_to_timepoint(v.valid_from);
@@ -46,8 +44,7 @@ r.modified_by = v.modified_by;
     return r;
 }
 
-catalog_entity
-catalog_mapper::map(const domain::catalog& v) {
+catalog_entity catalog_mapper::map(const domain::catalog& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     catalog_entity r;
@@ -56,7 +53,7 @@ catalog_mapper::map(const domain::catalog& v) {
     r.version = v.version;
     r.description = v.description;
     r.owner = v.owner;
-r.modified_by = v.modified_by;
+    r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_commentary = v.change_commentary;
 
@@ -64,22 +61,14 @@ r.modified_by = v.modified_by;
     return r;
 }
 
-std::vector<domain::catalog>
-catalog_mapper::map(const std::vector<catalog_entity>& v) {
+std::vector<domain::catalog> catalog_mapper::map(const std::vector<catalog_entity>& v) {
     return map_vector<catalog_entity, domain::catalog>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
-std::vector<catalog_entity>
-catalog_mapper::map(const std::vector<domain::catalog>& v) {
+std::vector<catalog_entity> catalog_mapper::map(const std::vector<domain::catalog>& v) {
     return map_vector<domain::catalog, catalog_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

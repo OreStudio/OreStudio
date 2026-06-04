@@ -39,6 +39,7 @@ private:
         static auto instance = make_logger(logger_name);
         return instance;
     }
+
 public:
     static domain::coding_scheme_authority_type map(const coding_scheme_authority_type_entity& v);
     static coding_scheme_authority_type_entity map(const domain::coding_scheme_authority_type& v);

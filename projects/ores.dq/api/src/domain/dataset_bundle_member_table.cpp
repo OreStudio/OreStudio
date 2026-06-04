@@ -18,7 +18,6 @@
  *
  */
 #include "ores.dq.api/domain/dataset_bundle_member_table.hpp"
-
 #include <fort.hpp>
 
 namespace ores::dq::domain {
@@ -31,8 +30,8 @@ std::string convert_to_table(const std::vector<dataset_bundle_member>& v) {
           << "Modified By" << "Version" << fort::endr;
 
     for (const auto& m : v) {
-        table << m.bundle_code << m.dataset_code << m.display_order
-              << m.modified_by << m.version << fort::endr;
+        table << m.bundle_code << m.dataset_code << m.display_order << m.modified_by << m.version
+              << fort::endr;
     }
     return table.to_string();
 }

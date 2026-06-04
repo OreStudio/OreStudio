@@ -20,15 +20,15 @@
 #ifndef ORES_DQ_CORE_REPOSITORY_FSM_TRANSITION_REPOSITORY_HPP
 #define ORES_DQ_CORE_REPOSITORY_FSM_TRANSITION_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include <optional>
-#include <boost/uuid/uuid.hpp>
-#include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/domain/fsm_transition.hpp"
 #include "ores.dq.core/export.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <optional>
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::dq::repository {
 
@@ -37,8 +37,7 @@ namespace ores::dq::repository {
  */
 class ORES_DQ_CORE_EXPORT fsm_transition_repository {
 private:
-    inline static std::string_view logger_name =
-        "ores.dq.repository.fsm_transition_repository";
+    inline static std::string_view logger_name = "ores.dq.repository.fsm_transition_repository";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -58,8 +57,7 @@ public:
     std::vector<domain::fsm_transition>
     read_latest_by_machine(context ctx, const boost::uuids::uuid& machine_id);
 
-    std::optional<domain::fsm_transition>
-    find_by_id(context ctx, const boost::uuids::uuid& id);
+    std::optional<domain::fsm_transition> find_by_id(context ctx, const boost::uuids::uuid& id);
 
     void remove(context ctx, const boost::uuids::uuid& id);
 };

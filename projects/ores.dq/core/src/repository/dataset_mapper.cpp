@@ -18,11 +18,10 @@
  *
  */
 #include "ores.dq.core/repository/dataset_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.dq.api/domain/dataset_json_io.hpp" // IWYU pragma: keep.
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::dq::repository {
 
@@ -32,15 +31,13 @@ using ores::platform::time::datetime;
 
 namespace {
 
-std::optional<boost::uuids::uuid>
-string_to_optional_uuid(const std::optional<std::string>& s) {
+std::optional<boost::uuids::uuid> string_to_optional_uuid(const std::optional<std::string>& s) {
     if (!s.has_value())
         return std::nullopt;
     return boost::lexical_cast<boost::uuids::uuid>(*s);
 }
 
-std::optional<std::string>
-optional_uuid_to_string(const std::optional<boost::uuids::uuid>& u) {
+std::optional<std::string> optional_uuid_to_string(const std::optional<boost::uuids::uuid>& u) {
     if (!u.has_value())
         return std::nullopt;
     return boost::uuids::to_string(*u);
@@ -48,8 +45,7 @@ optional_uuid_to_string(const std::optional<boost::uuids::uuid>& u) {
 
 }
 
-domain::dataset
-dataset_mapper::map(const dataset_entity& v) {
+domain::dataset dataset_mapper::map(const dataset_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::dataset r;
@@ -75,7 +71,7 @@ dataset_mapper::map(const dataset_entity& v) {
     r.ingestion_timestamp = timestamp_to_timepoint(v.ingestion_timestamp);
     r.license_info = v.license_info;
     r.artefact_type = v.artefact_type;
-r.modified_by = v.modified_by;
+    r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_commentary = v.change_commentary;
     r.recorded_at = timestamp_to_timepoint(v.valid_from);
@@ -84,8 +80,7 @@ r.modified_by = v.modified_by;
     return r;
 }
 
-dataset_entity
-dataset_mapper::map(const domain::dataset& v) {
+dataset_entity dataset_mapper::map(const domain::dataset& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     dataset_entity r;
@@ -111,7 +106,7 @@ dataset_mapper::map(const domain::dataset& v) {
     r.ingestion_timestamp = datetime::to_db_string(v.ingestion_timestamp);
     r.license_info = v.license_info;
     r.artefact_type = v.artefact_type;
-r.modified_by = v.modified_by;
+    r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_commentary = v.change_commentary;
 
@@ -119,22 +114,14 @@ r.modified_by = v.modified_by;
     return r;
 }
 
-std::vector<domain::dataset>
-dataset_mapper::map(const std::vector<dataset_entity>& v) {
+std::vector<domain::dataset> dataset_mapper::map(const std::vector<dataset_entity>& v) {
     return map_vector<dataset_entity, domain::dataset>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
-std::vector<dataset_entity>
-dataset_mapper::map(const std::vector<domain::dataset>& v) {
+std::vector<dataset_entity> dataset_mapper::map(const std::vector<domain::dataset>& v) {
     return map_vector<domain::dataset, dataset_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

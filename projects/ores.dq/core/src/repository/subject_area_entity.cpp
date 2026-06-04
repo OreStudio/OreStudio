@@ -18,7 +18,6 @@
  *
  */
 #include "ores.dq.core/repository/subject_area_entity.hpp"
-
 #include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>

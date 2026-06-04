@@ -20,9 +20,9 @@
 #ifndef ORES_DQ_CORE_REPOSITORY_ARTEFACT_TYPE_ENTITY_HPP
 #define ORES_DQ_CORE_REPOSITORY_ARTEFACT_TYPE_ENTITY_HPP
 
-#include <string>
-#include <optional>
 #include "sqlgen/PrimaryKey.hpp"
+#include <optional>
+#include <string>
 
 namespace ores::dq::repository {
 

@@ -18,19 +18,17 @@
  *
  */
 #include "ores.dq.core/repository/dataset_bundle_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.dq.api/domain/dataset_bundle_json_io.hpp" // IWYU pragma: keep.
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::dq::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::dataset_bundle
-dataset_bundle_mapper::map(const dataset_bundle_entity& v) {
+domain::dataset_bundle dataset_bundle_mapper::map(const dataset_bundle_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::dataset_bundle r;
@@ -40,7 +38,7 @@ dataset_bundle_mapper::map(const dataset_bundle_entity& v) {
     r.code = v.code;
     r.name = v.name;
     r.description = v.description;
-r.modified_by = v.modified_by;
+    r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
@@ -50,8 +48,7 @@ r.modified_by = v.modified_by;
     return r;
 }
 
-dataset_bundle_entity
-dataset_bundle_mapper::map(const domain::dataset_bundle& v) {
+dataset_bundle_entity dataset_bundle_mapper::map(const domain::dataset_bundle& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     dataset_bundle_entity r;
@@ -61,7 +58,7 @@ dataset_bundle_mapper::map(const domain::dataset_bundle& v) {
     r.code = v.code;
     r.name = v.name;
     r.description = v.description;
-r.modified_by = v.modified_by;
+    r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
@@ -73,19 +70,13 @@ r.modified_by = v.modified_by;
 std::vector<domain::dataset_bundle>
 dataset_bundle_mapper::map(const std::vector<dataset_bundle_entity>& v) {
     return map_vector<dataset_bundle_entity, domain::dataset_bundle>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<dataset_bundle_entity>
 dataset_bundle_mapper::map(const std::vector<domain::dataset_bundle>& v) {
     return map_vector<domain::dataset_bundle, dataset_bundle_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

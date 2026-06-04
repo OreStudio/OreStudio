@@ -20,25 +20,24 @@
 #ifndef ORES_DQ_API_GENERATORS_DATA_DOMAIN_GENERATOR_HPP
 #define ORES_DQ_API_GENERATORS_DATA_DOMAIN_GENERATOR_HPP
 
-#include <vector>
 #include "ores.dq.api/domain/data_domain.hpp"
-#include "ores.utility/generation/generation_context.hpp"
 #include "ores.dq.api/export.hpp"
+#include "ores.utility/generation/generation_context.hpp"
+#include <vector>
 
 namespace ores::dq::generators {
 
 /**
  * @brief Generates a synthetic data_domain.
  */
-ORES_DQ_API_EXPORT domain::data_domain generate_synthetic_data_domain(
-    utility::generation::generation_context& ctx);
+ORES_DQ_API_EXPORT domain::data_domain
+generate_synthetic_data_domain(utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic data_domains.
  */
 ORES_DQ_API_EXPORT std::vector<domain::data_domain>
-generate_synthetic_data_domains(std::size_t n,
-    utility::generation::generation_context& ctx);
+generate_synthetic_data_domains(std::size_t n, utility::generation::generation_context& ctx);
 
 }
 

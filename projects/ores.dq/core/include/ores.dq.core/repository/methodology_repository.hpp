@@ -20,14 +20,14 @@
 #ifndef ORES_DQ_CORE_REPOSITORY_METHODOLOGY_REPOSITORY_HPP
 #define ORES_DQ_CORE_REPOSITORY_METHODOLOGY_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include <sqlgen/postgres.hpp>
-#include <boost/uuid/uuid.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/domain/methodology.hpp"
 #include "ores.dq.core/export.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::dq::repository {
 
@@ -36,8 +36,7 @@ namespace ores::dq::repository {
  */
 class ORES_DQ_CORE_EXPORT methodology_repository {
 private:
-    inline static std::string_view logger_name =
-        "ores.dq.repository.methodology_repository";
+    inline static std::string_view logger_name = "ores.dq.repository.methodology_repository";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -57,8 +56,7 @@ public:
 
     std::vector<domain::methodology> read_latest();
     std::vector<domain::methodology> read_latest(const boost::uuids::uuid& id);
-    std::vector<domain::methodology>
-    read_latest(std::uint32_t offset, std::uint32_t limit);
+    std::vector<domain::methodology> read_latest(std::uint32_t offset, std::uint32_t limit);
 
     std::uint32_t get_total_count();
     std::vector<domain::methodology> read_all(const boost::uuids::uuid& id);

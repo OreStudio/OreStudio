@@ -20,11 +20,11 @@
 #ifndef ORES_DQ_API_MESSAGING_PUBLISH_BUNDLE_PROTOCOL_HPP
 #define ORES_DQ_API_MESSAGING_PUBLISH_BUNDLE_PROTOCOL_HPP
 
-#include <string>
-#include <vector>
+#include "ores.dq.api/domain/publication_mode.hpp"
 #include <optional>
 #include <rfl/json.hpp>
-#include "ores.dq.api/domain/publication_mode.hpp"
+#include <string>
+#include <vector>
 
 namespace ores::dq::messaging {
 
@@ -46,8 +46,7 @@ struct publish_bundle_request {
     using response_type = struct publish_bundle_response;
     static constexpr std::string_view nats_subject = "dq.v1.bundles.publish";
     std::string bundle_code;
-    ores::dq::domain::publication_mode mode =
-        ores::dq::domain::publication_mode::upsert;
+    ores::dq::domain::publication_mode mode = ores::dq::domain::publication_mode::upsert;
     std::string published_by;
     bool atomic = false;
     std::string params_json;

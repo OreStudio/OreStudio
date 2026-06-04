@@ -18,14 +18,13 @@
  *
  */
 #include "ores.dq.core/repository/dataset_repository.hpp"
-
-#include <sqlgen/postgres.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
 #include "ores.dq.api/domain/dataset_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.core/repository/dataset_entity.hpp"
 #include "ores.dq.core/repository/dataset_mapper.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <sqlgen/postgres.hpp>
 
 namespace ores::dq::repository {
 
@@ -42,116 +41,114 @@ dataset_repository::dataset_repository(context ctx)
     : ctx_(std::move(ctx)) {}
 
 void dataset_repository::write(const domain::dataset& dataset) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing dataset to database: "
-                               << dataset.id;
-    execute_write_query(ctx_, dataset_mapper::map(dataset),
-        lg(), "writing dataset to database");
+    BOOST_LOG_SEV(lg(), debug) << "Writing dataset to database: " << dataset.id;
+    execute_write_query(ctx_, dataset_mapper::map(dataset), lg(), "writing dataset to database");
 }
 
-void dataset_repository::write(
-    const std::vector<domain::dataset>& datasets) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing datasets to database. Count: "
-                               << datasets.size();
-    execute_write_query(ctx_, dataset_mapper::map(datasets),
-        lg(), "writing datasets to database");
+void dataset_repository::write(const std::vector<domain::dataset>& datasets) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing datasets to database. Count: " << datasets.size();
+    execute_write_query(ctx_, dataset_mapper::map(datasets), lg(), "writing datasets to database");
 }
 
-std::vector<domain::dataset>
-dataset_repository::read_latest() {
+std::vector<domain::dataset> dataset_repository::read_latest() {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<dataset_entity>> |
-        where("valid_to"_c == max.value()) |
-        order_by("name"_c);
+                       where("valid_to"_c == max.value()) | order_by("name"_c);
 
     return execute_read_query<dataset_entity, domain::dataset>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return dataset_mapper::map(entities); },
-        lg(), "Reading latest datasets");
+        lg(),
+        "Reading latest datasets");
 }
 
-std::vector<domain::dataset>
-dataset_repository::read_latest(const boost::uuids::uuid& id) {
+std::vector<domain::dataset> dataset_repository::read_latest(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest dataset. Id: " << id;
 
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto id_str = boost::uuids::to_string(id);
     const auto query = sqlgen::read<std::vector<dataset_entity>> |
-        where("id"_c == id_str && "valid_to"_c == max.value());
+                       where("id"_c == id_str && "valid_to"_c == max.value());
 
     return execute_read_query<dataset_entity, domain::dataset>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return dataset_mapper::map(entities); },
-        lg(), "Reading latest dataset by id.");
+        lg(),
+        "Reading latest dataset by id.");
 }
 
-std::vector<domain::dataset>
-dataset_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest datasets with offset: "
-                               << offset << " and limit: " << limit;
+std::vector<domain::dataset> dataset_repository::read_latest(std::uint32_t offset,
+                                                             std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest datasets with offset: " << offset
+                               << " and limit: " << limit;
 
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<dataset_entity>> |
-        where("valid_to"_c == max.value()) |
-        order_by("name"_c) |
-        sqlgen::offset(offset) |
-        sqlgen::limit(limit);
+                       where("valid_to"_c == max.value()) | order_by("name"_c) |
+                       sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_read_query<dataset_entity, domain::dataset>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return dataset_mapper::map(entities); },
-        lg(), "Reading latest datasets with pagination.");
+        lg(),
+        "Reading latest datasets with pagination.");
 }
 
 std::vector<domain::dataset>
 dataset_repository::read_latest_by_catalog(const std::string& catalog_name) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest datasets by catalog: "
-                               << catalog_name;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest datasets by catalog: " << catalog_name;
 
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<dataset_entity>> |
-        where("catalog_name"_c == catalog_name && "valid_to"_c == max.value()) |
-        order_by("name"_c);
+                       where("catalog_name"_c == catalog_name && "valid_to"_c == max.value()) |
+                       order_by("name"_c);
 
     return execute_read_query<dataset_entity, domain::dataset>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return dataset_mapper::map(entities); },
-        lg(), "Reading latest datasets by catalog.");
+        lg(),
+        "Reading latest datasets by catalog.");
 }
 
 std::vector<domain::dataset>
-dataset_repository::read_latest_by_subject_area(
-    const std::string& subject_area_name,
-    const std::string& domain_name) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest datasets by subject_area: "
-                               << subject_area_name << "/" << domain_name;
+dataset_repository::read_latest_by_subject_area(const std::string& subject_area_name,
+                                                const std::string& domain_name) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest datasets by subject_area: " << subject_area_name
+                               << "/" << domain_name;
 
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<dataset_entity>> |
-        where("subject_area_name"_c == subject_area_name &&
-              "domain_name"_c == domain_name &&
-              "valid_to"_c == max.value()) |
-        order_by("name"_c);
+                       where("subject_area_name"_c == subject_area_name &&
+                             "domain_name"_c == domain_name && "valid_to"_c == max.value()) |
+                       order_by("name"_c);
 
     return execute_read_query<dataset_entity, domain::dataset>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return dataset_mapper::map(entities); },
-        lg(), "Reading latest datasets by subject_area.");
+        lg(),
+        "Reading latest datasets by subject_area.");
 }
 
 std::vector<domain::dataset>
 dataset_repository::read_latest_by_origin(const std::string& origin_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest datasets by origin: "
-                               << origin_code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest datasets by origin: " << origin_code;
 
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<dataset_entity>> |
-        where("origin_code"_c == origin_code && "valid_to"_c == max.value()) |
-        order_by("name"_c);
+                       where("origin_code"_c == origin_code && "valid_to"_c == max.value()) |
+                       order_by("name"_c);
 
     return execute_read_query<dataset_entity, domain::dataset>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return dataset_mapper::map(entities); },
-        lg(), "Reading latest datasets by origin.");
+        lg(),
+        "Reading latest datasets by origin.");
 }
 
 std::uint32_t dataset_repository::get_total_count() {
@@ -163,10 +160,8 @@ std::uint32_t dataset_repository::get_total_count() {
         long long count;
     };
 
-    const auto query = sqlgen::select_from<dataset_entity>(
-        sqlgen::count().as<"count">()) |
-        where("valid_to"_c == max.value()) |
-        sqlgen::to<count_result>;
+    const auto query = sqlgen::select_from<dataset_entity>(sqlgen::count().as<"count">()) |
+                       where("valid_to"_c == max.value()) | sqlgen::to<count_result>;
 
     const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
     ensure_success(r, lg());
@@ -176,27 +171,26 @@ std::uint32_t dataset_repository::get_total_count() {
     return count;
 }
 
-std::vector<domain::dataset>
-dataset_repository::read_all(const boost::uuids::uuid& id) {
+std::vector<domain::dataset> dataset_repository::read_all(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all dataset versions. Id: " << id;
 
     const auto id_str = boost::uuids::to_string(id);
-    const auto query = sqlgen::read<std::vector<dataset_entity>> |
-        where("id"_c == id_str) |
-        order_by("version"_c.desc());
+    const auto query = sqlgen::read<std::vector<dataset_entity>> | where("id"_c == id_str) |
+                       order_by("version"_c.desc());
 
     return execute_read_query<dataset_entity, domain::dataset>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return dataset_mapper::map(entities); },
-        lg(), "Reading all dataset versions by id.");
+        lg(),
+        "Reading all dataset versions by id.");
 }
 
 void dataset_repository::remove(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing dataset from database: " << id;
 
     const auto id_str = boost::uuids::to_string(id);
-    const auto query = sqlgen::delete_from<dataset_entity> |
-        where("id"_c == id_str);
+    const auto query = sqlgen::delete_from<dataset_entity> | where("id"_c == id_str);
 
     execute_delete_query(ctx_, query, lg(), "removing dataset from database");
 }

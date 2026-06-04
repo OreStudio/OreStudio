@@ -18,13 +18,12 @@
  *
  */
 #include "ores.dq.core/repository/fsm_transition_repository.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <sqlgen/postgres.hpp>
-#include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
 #include "ores.dq.core/repository/fsm_transition_entity.hpp"
 #include "ores.dq.core/repository/fsm_transition_mapper.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <sqlgen/postgres.hpp>
 
 namespace ores::dq::repository {
 
@@ -39,64 +38,68 @@ std::string fsm_transition_repository::sql() {
 
 void fsm_transition_repository::write(context ctx, const domain::fsm_transition& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing FSM transition: " << v.name;
-    execute_write_query(ctx, fsm_transition_mapper::map(v),
-        lg(), "Writing FSM transition to database.");
+    execute_write_query(
+        ctx, fsm_transition_mapper::map(v), lg(), "Writing FSM transition to database.");
 }
 
-void fsm_transition_repository::write(
-    context ctx, const std::vector<domain::fsm_transition>& v) {
+void fsm_transition_repository::write(context ctx, const std::vector<domain::fsm_transition>& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing FSM transitions. Count: " << v.size();
-    execute_write_query(ctx, fsm_transition_mapper::map(v),
-        lg(), "Writing FSM transitions to database.");
+    execute_write_query(
+        ctx, fsm_transition_mapper::map(v), lg(), "Writing FSM transitions to database.");
 }
 
-std::vector<domain::fsm_transition>
-fsm_transition_repository::read_latest(context ctx) {
+std::vector<domain::fsm_transition> fsm_transition_repository::read_latest(context ctx) {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<fsm_transition_entity>> |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-        order_by("name"_c);
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("name"_c);
 
     return execute_read_query<fsm_transition_entity, domain::fsm_transition>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return fsm_transition_mapper::map(entities); },
-        lg(), "Reading latest FSM transitions.");
+        lg(),
+        "Reading latest FSM transitions.");
 }
 
 std::vector<domain::fsm_transition>
-fsm_transition_repository::read_latest_by_machine(
-    context ctx, const boost::uuids::uuid& machine_id) {
+fsm_transition_repository::read_latest_by_machine(context ctx,
+                                                  const boost::uuids::uuid& machine_id) {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto mid = boost::uuids::to_string(machine_id);
-    const auto query = sqlgen::read<std::vector<fsm_transition_entity>> |
-        where("tenant_id"_c == tid && "machine_id"_c == mid &&
-              "valid_to"_c == max.value()) |
+    const auto query =
+        sqlgen::read<std::vector<fsm_transition_entity>> |
+        where("tenant_id"_c == tid && "machine_id"_c == mid && "valid_to"_c == max.value()) |
         order_by("name"_c);
 
     return execute_read_query<fsm_transition_entity, domain::fsm_transition>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return fsm_transition_mapper::map(entities); },
-        lg(), "Reading latest FSM transitions by machine.");
+        lg(),
+        "Reading latest FSM transitions by machine.");
 }
 
 std::optional<domain::fsm_transition>
-fsm_transition_repository::find_by_id(
-    context ctx, const boost::uuids::uuid& id) {
+fsm_transition_repository::find_by_id(context ctx, const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Finding FSM transition by id.";
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto id_str = boost::uuids::to_string(id);
-    const auto query = sqlgen::read<std::vector<fsm_transition_entity>> |
-        where("tenant_id"_c == tid && "id"_c == id_str &&
-              "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::read<std::vector<fsm_transition_entity>> |
+        where("tenant_id"_c == tid && "id"_c == id_str && "valid_to"_c == max.value());
 
     auto results = execute_read_query<fsm_transition_entity, domain::fsm_transition>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return fsm_transition_mapper::map(entities); },
-        lg(), "Finding FSM transition by id.");
-    if (results.empty()) return std::nullopt;
+        lg(),
+        "Finding FSM transition by id.");
+    if (results.empty())
+        return std::nullopt;
     return results.front();
 }
 
@@ -106,8 +109,7 @@ void fsm_transition_repository::remove(context ctx, const boost::uuids::uuid& id
     const auto tid = ctx.tenant_id().to_string();
     const auto sid = boost::uuids::to_string(id);
     const auto query = sqlgen::delete_from<fsm_transition_entity> |
-        where("tenant_id"_c == tid && "id"_c == sid &&
-              "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "id"_c == sid && "valid_to"_c == max.value());
 
     execute_delete_query(ctx, query, lg(), "Removing FSM transition from database.");
 }

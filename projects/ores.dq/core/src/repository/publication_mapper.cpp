@@ -18,10 +18,9 @@
  *
  */
 #include "ores.dq.core/repository/publication_mapper.hpp"
-
+#include "ores.database/repository/mapper_helpers.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include "ores.database/repository/mapper_helpers.hpp"
 
 namespace ores::dq::repository {
 
@@ -30,8 +29,7 @@ using namespace ores::database::repository;
 using ores::platform::time::datetime;
 
 std::ostream& operator<<(std::ostream& s, const publication_entity& v) {
-    s << "publication_entity{id=" << v.id.value()
-      << ", dataset_code=" << v.dataset_code << "}";
+    s << "publication_entity{id=" << v.id.value() << ", dataset_code=" << v.dataset_code << "}";
     return s;
 }
 
@@ -46,7 +44,7 @@ domain::publication publication_mapper::map(const publication_entity& entity) {
     result.dataset_id = gen(entity.dataset_id);
     result.dataset_code = entity.dataset_code;
     result.mode = domain::publication_mode_from_string(entity.mode)
-        .value_or(domain::publication_mode::upsert);
+                      .value_or(domain::publication_mode::upsert);
     result.target_table = entity.target_table;
     result.records_inserted = static_cast<std::uint64_t>(entity.records_inserted);
     result.records_updated = static_cast<std::uint64_t>(entity.records_updated);
@@ -63,10 +61,7 @@ domain::publication publication_mapper::map(const publication_entity& entity) {
 std::vector<domain::publication>
 publication_mapper::map(const std::vector<publication_entity>& entities) {
     return map_vector<publication_entity, domain::publication>(
-        entities,
-        [](const auto& e) { return map(e); },
-        lg(),
-        "publication entities");
+        entities, [](const auto& e) { return map(e); }, lg(), "publication entities");
 }
 
 publication_entity publication_mapper::to_entity(const domain::publication& domain) {

@@ -20,10 +20,10 @@
 #ifndef ORES_DQ_API_DOMAIN_BADGE_DEFINITION_TABLE_HPP
 #define ORES_DQ_API_DOMAIN_BADGE_DEFINITION_TABLE_HPP
 
-#include <string>
-#include <vector>
 #include "ores.dq.api/domain/badge_definition.hpp"
 #include "ores.dq.api/export.hpp"
+#include <string>
+#include <vector>
 
 namespace ores::dq::domain {
 

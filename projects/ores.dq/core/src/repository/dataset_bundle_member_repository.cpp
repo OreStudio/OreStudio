@@ -18,13 +18,12 @@
  *
  */
 #include "ores.dq.core/repository/dataset_bundle_member_repository.hpp"
-
-#include <sqlgen/postgres.hpp>
-#include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
 #include "ores.dq.api/domain/dataset_bundle_member_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.core/repository/dataset_bundle_member_entity.hpp"
 #include "ores.dq.core/repository/dataset_bundle_member_mapper.hpp"
+#include <sqlgen/postgres.hpp>
 
 namespace ores::dq::repository {
 
@@ -40,49 +39,54 @@ std::string dataset_bundle_member_repository::sql() {
 dataset_bundle_member_repository::dataset_bundle_member_repository(context ctx)
     : ctx_(std::move(ctx)) {}
 
-void dataset_bundle_member_repository::write(
-    const domain::dataset_bundle_member& member) {
+void dataset_bundle_member_repository::write(const domain::dataset_bundle_member& member) {
     BOOST_LOG_SEV(lg(), debug) << "Writing dataset bundle member to database: "
                                << member.bundle_code << "/" << member.dataset_code;
-    execute_write_query(ctx_, dataset_bundle_member_mapper::map(member),
-        lg(), "writing dataset bundle member to database");
+    execute_write_query(ctx_,
+                        dataset_bundle_member_mapper::map(member),
+                        lg(),
+                        "writing dataset bundle member to database");
 }
 
 void dataset_bundle_member_repository::write(
     const std::vector<domain::dataset_bundle_member>& members) {
     BOOST_LOG_SEV(lg(), debug) << "Writing dataset bundle members to database. Count: "
                                << members.size();
-    execute_write_query(ctx_, dataset_bundle_member_mapper::map(members),
-        lg(), "writing dataset bundle members to database");
+    execute_write_query(ctx_,
+                        dataset_bundle_member_mapper::map(members),
+                        lg(),
+                        "writing dataset bundle members to database");
 }
 
-std::vector<domain::dataset_bundle_member>
-dataset_bundle_member_repository::read_latest() {
+std::vector<domain::dataset_bundle_member> dataset_bundle_member_repository::read_latest() {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<dataset_bundle_member_entity>> |
-        where("valid_to"_c == max.value()) |
-        order_by("bundle_code"_c, "display_order"_c);
+                       where("valid_to"_c == max.value()) |
+                       order_by("bundle_code"_c, "display_order"_c);
 
     return execute_read_query<dataset_bundle_member_entity, domain::dataset_bundle_member>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return dataset_bundle_member_mapper::map(entities); },
-        lg(), "Reading latest dataset bundle members");
+        lg(),
+        "Reading latest dataset bundle members");
 }
 
 std::vector<domain::dataset_bundle_member>
 dataset_bundle_member_repository::read_latest_by_bundle(const std::string& bundle_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest dataset bundle members. Bundle: "
-                               << bundle_code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest dataset bundle members. Bundle: " << bundle_code;
 
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<dataset_bundle_member_entity>> |
-        where("bundle_code"_c == bundle_code && "valid_to"_c == max.value()) |
-        order_by("display_order"_c);
+                       where("bundle_code"_c == bundle_code && "valid_to"_c == max.value()) |
+                       order_by("display_order"_c);
 
     return execute_read_query<dataset_bundle_member_entity, domain::dataset_bundle_member>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return dataset_bundle_member_mapper::map(entities); },
-        lg(), "Reading latest dataset bundle members by bundle.");
+        lg(),
+        "Reading latest dataset bundle members by bundle.");
 }
 
 std::vector<domain::dataset_bundle_member>
@@ -92,36 +96,36 @@ dataset_bundle_member_repository::read_latest_by_dataset(const std::string& data
 
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<dataset_bundle_member_entity>> |
-        where("dataset_code"_c == dataset_code && "valid_to"_c == max.value()) |
-        order_by("bundle_code"_c);
+                       where("dataset_code"_c == dataset_code && "valid_to"_c == max.value()) |
+                       order_by("bundle_code"_c);
 
     return execute_read_query<dataset_bundle_member_entity, domain::dataset_bundle_member>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return dataset_bundle_member_mapper::map(entities); },
-        lg(), "Reading latest dataset bundle members by dataset.");
+        lg(),
+        "Reading latest dataset bundle members by dataset.");
 }
 
-void dataset_bundle_member_repository::remove(
-    const std::string& bundle_code, const std::string& dataset_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing dataset bundle member from database: "
-                               << bundle_code << "/" << dataset_code;
+void dataset_bundle_member_repository::remove(const std::string& bundle_code,
+                                              const std::string& dataset_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing dataset bundle member from database: " << bundle_code
+                               << "/" << dataset_code;
 
     const auto query = sqlgen::delete_from<dataset_bundle_member_entity> |
-        where("bundle_code"_c == bundle_code && "dataset_code"_c == dataset_code);
+                       where("bundle_code"_c == bundle_code && "dataset_code"_c == dataset_code);
 
-    execute_delete_query(ctx_, query, lg(),
-        "removing dataset bundle member from database");
+    execute_delete_query(ctx_, query, lg(), "removing dataset bundle member from database");
 }
 
 void dataset_bundle_member_repository::remove_by_bundle(const std::string& bundle_code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing all dataset bundle members from database: "
                                << bundle_code;
 
-    const auto query = sqlgen::delete_from<dataset_bundle_member_entity> |
-        where("bundle_code"_c == bundle_code);
+    const auto query =
+        sqlgen::delete_from<dataset_bundle_member_entity> | where("bundle_code"_c == bundle_code);
 
-    execute_delete_query(ctx_, query, lg(),
-        "removing all dataset bundle members from database");
+    execute_delete_query(ctx_, query, lg(), "removing all dataset bundle members from database");
 }
 
 }

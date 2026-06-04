@@ -18,9 +18,8 @@
  *
  */
 #include "ores.dq.api/domain/publication_mode.hpp"
-
-#include <sstream>
 #include <catch2/catch_test_macros.hpp>
+#include <sstream>
 
 namespace {
 
@@ -59,10 +58,7 @@ TEST_CASE("publication_mode_from_string_returns_nullopt_for_invalid", tags) {
 
 TEST_CASE("publication_mode_round_trips_through_string", tags) {
     auto modes = {
-        publication_mode::upsert,
-        publication_mode::insert_only,
-        publication_mode::replace_all
-    };
+        publication_mode::upsert, publication_mode::insert_only, publication_mode::replace_all};
 
     for (auto mode : modes) {
         auto str = to_string(mode);
@@ -74,10 +70,7 @@ TEST_CASE("publication_mode_round_trips_through_string", tags) {
 
 TEST_CASE("publication_mode_stream_insertion_matches_to_string", tags) {
     auto modes = {
-        publication_mode::upsert,
-        publication_mode::insert_only,
-        publication_mode::replace_all
-    };
+        publication_mode::upsert, publication_mode::insert_only, publication_mode::replace_all};
 
     for (auto mode : modes) {
         std::ostringstream ss;

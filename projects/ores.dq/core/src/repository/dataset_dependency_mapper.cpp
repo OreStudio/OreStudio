@@ -18,7 +18,6 @@
  *
  */
 #include "ores.dq.core/repository/dataset_dependency_mapper.hpp"
-
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.dq.api/domain/dataset_dependency_json_io.hpp" // IWYU pragma: keep.
 
@@ -27,8 +26,7 @@ namespace ores::dq::repository {
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::dataset_dependency
-dataset_dependency_mapper::map(const dataset_dependency_entity& v) {
+domain::dataset_dependency dataset_dependency_mapper::map(const dataset_dependency_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::dataset_dependency r;
@@ -36,7 +34,7 @@ dataset_dependency_mapper::map(const dataset_dependency_entity& v) {
     r.dataset_code = v.dataset_code.value();
     r.dependency_code = v.dependency_code;
     r.role = v.role;
-r.modified_by = v.modified_by;
+    r.modified_by = v.modified_by;
     r.recorded_at = timestamp_to_timepoint(v.valid_from);
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
@@ -46,10 +44,7 @@ r.modified_by = v.modified_by;
 std::vector<domain::dataset_dependency>
 dataset_dependency_mapper::map(const std::vector<dataset_dependency_entity>& v) {
     return map_vector<dataset_dependency_entity, domain::dataset_dependency>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 }

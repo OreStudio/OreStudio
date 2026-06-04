@@ -18,13 +18,12 @@
  *
  */
 #include "ores.dq.api/domain/dataset.hpp"
-
-#include <catch2/catch_test_macros.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include "ores.logging/make_logger.hpp"
-#include "ores.utility/faker/datetime.hpp"
 #include "ores.dq.api/domain/dataset_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.api/domain/dataset_table.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.utility/faker/datetime.hpp"
+#include <boost/uuid/uuid_generators.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 

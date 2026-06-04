@@ -31,22 +31,20 @@ namespace ores::dq::repository {
  */
 class badge_severity_mapper {
 private:
-    inline static std::string_view logger_name =
-        "ores.dq.repository.badge_severity_mapper";
+    inline static std::string_view logger_name = "ores.dq.repository.badge_severity_mapper";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }
+
 public:
     static domain::badge_severity map(const badge_severity_entity& v);
     static badge_severity_entity map(const domain::badge_severity& v);
 
-    static std::vector<domain::badge_severity>
-    map(const std::vector<badge_severity_entity>& v);
-    static std::vector<badge_severity_entity>
-    map(const std::vector<domain::badge_severity>& v);
+    static std::vector<domain::badge_severity> map(const std::vector<badge_severity_entity>& v);
+    static std::vector<badge_severity_entity> map(const std::vector<domain::badge_severity>& v);
 };
 
 }

@@ -18,27 +18,26 @@
  *
  */
 #include "ores.dq.api/generators/dataset_bundle_generator.hpp"
-
+#include "ores.utility/generation/generation_keys.hpp"
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::dq::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::dataset_bundle generate_synthetic_dataset_bundle(
-    utility::generation::generation_context& ctx) {
+domain::dataset_bundle
+generate_synthetic_dataset_bundle(utility::generation::generation_context& ctx) {
     static std::atomic<int> counter{0};
     const auto idx = ++counter;
-    const auto modified_by = ctx.env().get_or(
-        generation_keys::modified_by, "system");
+    const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
 
     domain::dataset_bundle r;
     r.version = 1;
     r.id = ctx.generate_uuid();
     r.code = std::string(faker::word::noun()) + "_bundle_" + std::to_string(idx);
-    r.name = std::string(faker::word::adjective()) + " " + std::string(faker::word::noun()) + " Bundle " + std::to_string(idx);
+    r.name = std::string(faker::word::adjective()) + " " + std::string(faker::word::noun()) +
+             " Bundle " + std::to_string(idx);
     r.description = std::string(faker::lorem::sentence());
     r.modified_by = modified_by;
     r.change_reason_code = "system.test";
@@ -48,8 +47,7 @@ domain::dataset_bundle generate_synthetic_dataset_bundle(
 }
 
 std::vector<domain::dataset_bundle>
-generate_synthetic_dataset_bundles(std::size_t n,
-    utility::generation::generation_context& ctx) {
+generate_synthetic_dataset_bundles(std::size_t n, utility::generation::generation_context& ctx) {
     std::vector<domain::dataset_bundle> r;
     r.reserve(n);
     while (r.size() < n)

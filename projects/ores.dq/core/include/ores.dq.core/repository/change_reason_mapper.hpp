@@ -31,22 +31,20 @@ namespace ores::dq::repository {
  */
 class change_reason_mapper {
 private:
-    inline static std::string_view logger_name =
-        "ores.iam.repository.change_reason_mapper";
+    inline static std::string_view logger_name = "ores.iam.repository.change_reason_mapper";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }
+
 public:
     static domain::change_reason map(const change_reason_entity& v);
     static change_reason_entity map(const domain::change_reason& v);
 
-    static std::vector<domain::change_reason>
-    map(const std::vector<change_reason_entity>& v);
-    static std::vector<change_reason_entity>
-    map(const std::vector<domain::change_reason>& v);
+    static std::vector<domain::change_reason> map(const std::vector<change_reason_entity>& v);
+    static std::vector<change_reason_entity> map(const std::vector<domain::change_reason>& v);
 };
 
 }

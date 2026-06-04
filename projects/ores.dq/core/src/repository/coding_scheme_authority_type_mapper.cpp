@@ -18,7 +18,6 @@
  *
  */
 #include "ores.dq.core/repository/coding_scheme_authority_type_mapper.hpp"
-
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.dq.api/domain/coding_scheme_authority_type_json_io.hpp" // IWYU pragma: keep.
 
@@ -37,7 +36,7 @@ coding_scheme_authority_type_mapper::map(const coding_scheme_authority_type_enti
     r.code = v.code.value();
     r.name = v.name;
     r.description = v.description;
-r.modified_by = v.modified_by;
+    r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_commentary = v.change_commentary;
     r.recorded_at = timestamp_to_timepoint(v.valid_from);
@@ -56,7 +55,7 @@ coding_scheme_authority_type_mapper::map(const domain::coding_scheme_authority_t
     r.version = v.version;
     r.name = v.name;
     r.description = v.description;
-r.modified_by = v.modified_by;
+    r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_commentary = v.change_commentary;
 
@@ -64,22 +63,16 @@ r.modified_by = v.modified_by;
     return r;
 }
 
-std::vector<domain::coding_scheme_authority_type>
-coding_scheme_authority_type_mapper::map(const std::vector<coding_scheme_authority_type_entity>& v) {
+std::vector<domain::coding_scheme_authority_type> coding_scheme_authority_type_mapper::map(
+    const std::vector<coding_scheme_authority_type_entity>& v) {
     return map_vector<coding_scheme_authority_type_entity, domain::coding_scheme_authority_type>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
-std::vector<coding_scheme_authority_type_entity>
-coding_scheme_authority_type_mapper::map(const std::vector<domain::coding_scheme_authority_type>& v) {
+std::vector<coding_scheme_authority_type_entity> coding_scheme_authority_type_mapper::map(
+    const std::vector<domain::coding_scheme_authority_type>& v) {
     return map_vector<domain::coding_scheme_authority_type, coding_scheme_authority_type_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

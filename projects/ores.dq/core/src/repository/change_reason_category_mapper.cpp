@@ -18,7 +18,6 @@
  *
  */
 #include "ores.dq.core/repository/change_reason_category_mapper.hpp"
-
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.dq.api/domain/change_reason_category_json_io.hpp" // IWYU pragma: keep.
 
@@ -36,7 +35,7 @@ change_reason_category_mapper::map(const change_reason_category_entity& v) {
     r.tenant_id = v.tenant_id;
     r.code = v.code.value();
     r.description = v.description;
-r.modified_by = v.modified_by;
+    r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_commentary = v.change_commentary;
     r.recorded_at = timestamp_to_timepoint(v.valid_from);
@@ -54,7 +53,7 @@ change_reason_category_mapper::map(const domain::change_reason_category& v) {
     r.tenant_id = v.tenant_id;
     r.version = v.version;
     r.description = v.description;
-r.modified_by = v.modified_by;
+    r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_commentary = v.change_commentary;
 
@@ -65,19 +64,13 @@ r.modified_by = v.modified_by;
 std::vector<domain::change_reason_category>
 change_reason_category_mapper::map(const std::vector<change_reason_category_entity>& v) {
     return map_vector<change_reason_category_entity, domain::change_reason_category>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<change_reason_category_entity>
 change_reason_category_mapper::map(const std::vector<domain::change_reason_category>& v) {
     return map_vector<domain::change_reason_category, change_reason_category_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

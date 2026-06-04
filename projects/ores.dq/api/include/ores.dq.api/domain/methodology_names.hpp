@@ -35,46 +35,39 @@ namespace ores::dq::domain::methodology_names {
 /**
  * @brief Wikipedia ISO 3166 country data extraction methodology.
  */
-inline constexpr std::string_view wikipedia_iso_3166 =
-    "Wikipedia ISO 3166 Extraction";
+inline constexpr std::string_view wikipedia_iso_3166 = "Wikipedia ISO 3166 Extraction";
 
 /**
  * @brief GitHub flag icons download methodology.
  */
-inline constexpr std::string_view github_flag_icons =
-    "GitHub Flag Icons Download";
+inline constexpr std::string_view github_flag_icons = "GitHub Flag Icons Download";
 
 /**
  * @brief GitHub cryptocurrency icons download methodology.
  */
-inline constexpr std::string_view github_crypto_icons =
-    "GitHub Cryptocurrency Icons Download";
+inline constexpr std::string_view github_crypto_icons = "GitHub Cryptocurrency Icons Download";
 
 /**
  * @brief Wikipedia ISO 4217 currency data extraction methodology.
  */
-inline constexpr std::string_view wikipedia_iso_4217 =
-    "Wikipedia ISO 4217 Extraction";
+inline constexpr std::string_view wikipedia_iso_4217 = "Wikipedia ISO 4217 Extraction";
 
 /**
  * @brief GitHub cryptocurrencies JSON download methodology.
  */
-inline constexpr std::string_view github_cryptocurrencies =
-    "GitHub Cryptocurrencies JSON Download";
+inline constexpr std::string_view github_cryptocurrencies = "GitHub Cryptocurrencies JSON Download";
 
 /**
  * @brief FpML Genericode download methodology.
  */
-inline constexpr std::string_view fpml_genericode =
-    "FpML Genericode Download";
+inline constexpr std::string_view fpml_genericode = "FpML Genericode Download";
 
 /**
  * @brief Synthetic data generation methodology.
  *
  * Used for all programmatically generated test data via ores.synthetic.
  */
-inline constexpr std::string_view synthetic_data_generation =
-    "Synthetic Data Generation";
+inline constexpr std::string_view synthetic_data_generation = "Synthetic Data Generation";
 
 }
 

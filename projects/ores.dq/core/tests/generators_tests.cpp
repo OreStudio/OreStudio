@@ -29,10 +29,9 @@
 #include "ores.dq.api/generators/origin_dimension_generator.hpp"
 #include "ores.dq.api/generators/subject_area_generator.hpp"
 #include "ores.dq.api/generators/treatment_dimension_generator.hpp"
-
-#include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 

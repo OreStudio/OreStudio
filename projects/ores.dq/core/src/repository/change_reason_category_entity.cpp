@@ -18,7 +18,6 @@
  *
  */
 #include "ores.dq.core/repository/change_reason_category_entity.hpp"
-
 #include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>

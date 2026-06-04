@@ -20,12 +20,12 @@
 #ifndef ORES_DQ_SERVICE_CONFIG_PARSER_HPP
 #define ORES_DQ_SERVICE_CONFIG_PARSER_HPP
 
-#include <iosfwd>
-#include <vector>
-#include <string>
-#include <optional>
-#include "ores.dq.service/export.hpp"
 #include "ores.dq.service/config/options.hpp"
+#include "ores.dq.service/export.hpp"
+#include <iosfwd>
+#include <optional>
+#include <string>
+#include <vector>
 
 namespace ores::dq::service::config {
 
@@ -38,8 +38,7 @@ namespace ores::dq::service::config {
 class ORES_DQ_SERVICE_EXPORT parser final {
 public:
     std::optional<options>
-    parse(const std::vector<std::string>& arguments, std::ostream& info,
-        std::ostream& error) const;
+    parse(const std::vector<std::string>& arguments, std::ostream& info, std::ostream& error) const;
 };
 
 }

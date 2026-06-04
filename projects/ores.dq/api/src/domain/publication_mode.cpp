@@ -23,12 +23,12 @@ namespace ores::dq::domain {
 
 std::string to_string(publication_mode mode) {
     switch (mode) {
-    case publication_mode::upsert:
-        return "upsert";
-    case publication_mode::insert_only:
-        return "insert_only";
-    case publication_mode::replace_all:
-        return "replace_all";
+        case publication_mode::upsert:
+            return "upsert";
+        case publication_mode::insert_only:
+            return "insert_only";
+        case publication_mode::replace_all:
+            return "replace_all";
     }
     return "unknown";
 }

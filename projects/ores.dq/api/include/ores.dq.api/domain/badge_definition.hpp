@@ -20,10 +20,10 @@
 #ifndef ORES_DQ_API_DOMAIN_BADGE_DEFINITION_HPP
 #define ORES_DQ_API_DOMAIN_BADGE_DEFINITION_HPP
 
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <chrono>
 #include <optional>
 #include <string>
-#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::dq::domain {
 
@@ -33,7 +33,7 @@ namespace ores::dq::domain {
  * The badge catalogue. Each entry defines the complete visual presentation
  * of a badge: display label, tooltip, background colour, text colour,
  * severity level, and an optional Bootstrap CSS class hint for Wt.
- * 
+ *
  * Badge definitions are the single source of truth for all badge visual
  * metadata across Qt and Wt. They are loaded at client startup as
  * reference data and looked up at render time via BadgeCache.
@@ -83,14 +83,16 @@ struct badge_definition final {
     /**
      * @brief Severity classification for this badge.
      *
-     * Soft FK to ores_dq_badge_severities_tbl. Bootstrap-aligned codes: secondary, info, success, warning, danger, primary.
+     * Soft FK to ores_dq_badge_severities_tbl. Bootstrap-aligned codes: secondary, info, success,
+     * warning, danger, primary.
      */
     std::string severity_code;
 
     /**
      * @brief Optional Bootstrap CSS class hint for Wt rendering.
      *
-     * Example: 'badge bg-success'. Qt ignores this field. Nullable — Wt falls back to inline style from background_colour/text_colour when absent.
+     * Example: 'badge bg-success'. Qt ignores this field. Nullable — Wt falls back to inline style
+     * from background_colour/text_colour when absent.
      */
     std::string css_class;
 

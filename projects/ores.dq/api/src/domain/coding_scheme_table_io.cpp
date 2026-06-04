@@ -18,16 +18,14 @@
  *
  */
 #include "ores.dq.api/domain/coding_scheme_table_io.hpp"
-
-#include <ostream>
 #include "ores.dq.api/domain/coding_scheme_table.hpp"
+#include <ostream>
 
 namespace ores::dq::domain {
 
 namespace {
 
-void print_coding_scheme_table(std::ostream& s,
-    const std::vector<coding_scheme>& v) {
+void print_coding_scheme_table(std::ostream& s, const std::vector<coding_scheme>& v) {
     s << std::endl << convert_to_table(v) << std::endl;
 }
 

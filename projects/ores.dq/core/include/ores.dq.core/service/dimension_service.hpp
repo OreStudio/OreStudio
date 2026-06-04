@@ -20,18 +20,18 @@
 #ifndef ORES_DQ_CORE_SERVICE_DIMENSION_SERVICE_HPP
 #define ORES_DQ_CORE_SERVICE_DIMENSION_SERVICE_HPP
 
-#include <string>
-#include <vector>
-#include <optional>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/domain/nature_dimension.hpp"
 #include "ores.dq.api/domain/origin_dimension.hpp"
 #include "ores.dq.api/domain/treatment_dimension.hpp"
-#include "ores.dq.core/repository/nature_dimension_repository.hpp"
 #include "ores.dq.core/export.hpp"
+#include "ores.dq.core/repository/nature_dimension_repository.hpp"
 #include "ores.dq.core/repository/origin_dimension_repository.hpp"
 #include "ores.dq.core/repository/treatment_dimension_repository.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <optional>
+#include <string>
+#include <vector>
 
 namespace ores::dq::service {
 
@@ -45,8 +45,7 @@ namespace ores::dq::service {
  */
 class ORES_DQ_CORE_EXPORT dimension_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.dq.service.dimension_service";
+    inline static std::string_view logger_name = "ores.dq.service.dimension_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -76,8 +75,7 @@ public:
     /**
      * @brief Finds a nature dimension by its code.
      */
-    std::optional<domain::nature_dimension>
-    find_nature_dimension(const std::string& code);
+    std::optional<domain::nature_dimension> find_nature_dimension(const std::string& code);
 
     /**
      * @brief Saves a nature dimension (creates or updates).
@@ -111,8 +109,7 @@ public:
      * @param code The dimension code
      * @return Vector of all versions, newest first
      */
-    std::vector<domain::nature_dimension>
-    get_nature_dimension_history(const std::string& code);
+    std::vector<domain::nature_dimension> get_nature_dimension_history(const std::string& code);
 
     // ========================================================================
     // Origin Dimension Management
@@ -126,8 +123,7 @@ public:
     /**
      * @brief Finds an origin dimension by its code.
      */
-    std::optional<domain::origin_dimension>
-    find_origin_dimension(const std::string& code);
+    std::optional<domain::origin_dimension> find_origin_dimension(const std::string& code);
 
     /**
      * @brief Saves an origin dimension (creates or updates).
@@ -161,8 +157,7 @@ public:
      * @param code The dimension code
      * @return Vector of all versions, newest first
      */
-    std::vector<domain::origin_dimension>
-    get_origin_dimension_history(const std::string& code);
+    std::vector<domain::origin_dimension> get_origin_dimension_history(const std::string& code);
 
     // ========================================================================
     // Treatment Dimension Management
@@ -176,8 +171,7 @@ public:
     /**
      * @brief Finds a treatment dimension by its code.
      */
-    std::optional<domain::treatment_dimension>
-    find_treatment_dimension(const std::string& code);
+    std::optional<domain::treatment_dimension> find_treatment_dimension(const std::string& code);
 
     /**
      * @brief Saves a treatment dimension (creates or updates).

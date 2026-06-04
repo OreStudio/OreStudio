@@ -18,16 +18,15 @@
  *
  */
 #include "ores.dq.api/domain/change_reason_category_table_io.hpp"
-
-#include <ostream>
 #include "ores.dq.api/domain/change_reason_category_table.hpp"
+#include <ostream>
 
 namespace ores::dq::domain {
 
 namespace {
 
 void print_change_reason_category_table(std::ostream& s,
-    const std::vector<change_reason_category>& v) {
+                                        const std::vector<change_reason_category>& v) {
     s << std::endl << convert_to_table(v) << std::endl;
 }
 

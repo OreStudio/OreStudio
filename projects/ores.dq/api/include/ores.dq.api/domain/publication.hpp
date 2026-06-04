@@ -20,11 +20,11 @@
 #ifndef ORES_DQ_API_DOMAIN_PUBLICATION_HPP
 #define ORES_DQ_API_DOMAIN_PUBLICATION_HPP
 
+#include "ores.dq.api/domain/publication_mode.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <cstdint>
 #include <string>
-#include <boost/uuid/uuid.hpp>
-#include "ores.dq.api/domain/publication_mode.hpp"
 
 namespace ores::dq::domain {
 

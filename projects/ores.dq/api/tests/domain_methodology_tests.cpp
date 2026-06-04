@@ -18,12 +18,11 @@
  *
  */
 #include "ores.dq.api/domain/methodology.hpp"
-
-#include <catch2/catch_test_macros.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.dq.api/domain/methodology_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.api/domain/methodology_table.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <boost/uuid/uuid_generators.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 

@@ -18,15 +18,14 @@
  *
  */
 #include "ores.dq.core/service/publication_service.hpp"
-
-#include <map>
-#include <set>
-#include <format>
-#include <algorithm>
-#include <boost/uuid/uuid_io.hpp>
+#include "ores.database/repository/bitemporal_operations.hpp"
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/topological_sort.hpp>
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
+#include <format>
+#include <map>
+#include <set>
 
 namespace ores::dq::service {
 
@@ -34,24 +33,24 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 publication_service::publication_service(context ctx)
-    : ctx_(std::move(ctx)),
-      dataset_repo_(ctx_),
-      dependency_repo_(ctx_),
-      publication_repo_(ctx_),
-      artefact_type_repo_(ctx_) {
+    : ctx_(std::move(ctx))
+    , dataset_repo_(ctx_)
+    , dependency_repo_(ctx_)
+    , publication_repo_(ctx_)
+    , artefact_type_repo_(ctx_) {
     BOOST_LOG_SEV(lg(), debug) << "publication_service initialized";
 }
 
-std::vector<domain::publication_result> publication_service::publish(
-    const std::vector<boost::uuids::uuid>& dataset_ids,
-    domain::publication_mode mode,
-    const std::string& published_by,
-    bool resolve_dependencies) {
+std::vector<domain::publication_result>
+publication_service::publish(const std::vector<boost::uuids::uuid>& dataset_ids,
+                             domain::publication_mode mode,
+                             const std::string& published_by,
+                             bool resolve_dependencies) {
 
     BOOST_LOG_SEV(lg(), info) << "Publishing " << dataset_ids.size()
-        << " datasets with mode: " << mode
-        << ", resolve_dependencies: " << resolve_dependencies
-        << ", published_by: " << published_by;
+                              << " datasets with mode: " << mode
+                              << ", resolve_dependencies: " << resolve_dependencies
+                              << ", published_by: " << published_by;
 
     if (dataset_ids.empty()) {
         BOOST_LOG_SEV(lg(), warn) << "No datasets specified for publication";
@@ -74,51 +73,51 @@ std::vector<domain::publication_result> publication_service::publish(
         }
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Publication order resolved: "
-        << ordered_datasets.size() << " datasets";
+    BOOST_LOG_SEV(lg(), info) << "Publication order resolved: " << ordered_datasets.size()
+                              << " datasets";
 
     // Build artefact type cache to avoid redundant DB queries
     auto artefact_type_cache = build_artefact_type_cache(ordered_datasets);
-    BOOST_LOG_SEV(lg(), debug) << "Built artefact type cache with "
-        << artefact_type_cache.size() << " entries";
+    BOOST_LOG_SEV(lg(), debug) << "Built artefact type cache with " << artefact_type_cache.size()
+                               << " entries";
 
     // Publish each dataset in order
     std::vector<domain::publication_result> results;
     results.reserve(ordered_datasets.size());
 
     for (const auto& dataset : ordered_datasets) {
-        BOOST_LOG_SEV(lg(), info) << "Publishing dataset: "
-            << dataset.code << " (" << dataset.name << ")";
+        BOOST_LOG_SEV(lg(), info) << "Publishing dataset: " << dataset.code << " (" << dataset.name
+                                  << ")";
 
         auto result = publish_dataset(dataset, mode, published_by, artefact_type_cache);
         results.push_back(result);
 
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Successfully published " << dataset.code
-                << " - inserted: " << result.records_inserted
-                << ", updated: " << result.records_updated
-                << ", skipped: " << result.records_skipped
-                << ", deleted: " << result.records_deleted;
+                                      << " - inserted: " << result.records_inserted
+                                      << ", updated: " << result.records_updated
+                                      << ", skipped: " << result.records_skipped
+                                      << ", deleted: " << result.records_deleted;
 
             // Record in audit table
             record_publication(result, mode, published_by);
         } else {
-            BOOST_LOG_SEV(lg(), error) << "Failed to publish " << dataset.code
-                << ": " << result.error_message;
+            BOOST_LOG_SEV(lg(), error)
+                << "Failed to publish " << dataset.code << ": " << result.error_message;
         }
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Publication complete: "
-        << results.size() << " datasets processed";
+    BOOST_LOG_SEV(lg(), info) << "Publication complete: " << results.size()
+                              << " datasets processed";
 
     return results;
 }
 
-std::vector<domain::dataset> publication_service::resolve_publication_order(
-    const std::vector<boost::uuids::uuid>& dataset_ids) {
+std::vector<domain::dataset>
+publication_service::resolve_publication_order(const std::vector<boost::uuids::uuid>& dataset_ids) {
 
-    BOOST_LOG_SEV(lg(), debug) << "Resolving publication order for "
-        << dataset_ids.size() << " datasets";
+    BOOST_LOG_SEV(lg(), debug) << "Resolving publication order for " << dataset_ids.size()
+                               << " datasets";
 
     // Fetch all datasets
     std::map<std::string, domain::dataset> datasets_by_code;
@@ -139,8 +138,7 @@ std::vector<domain::dataset> publication_service::resolve_publication_order(
 
     // Fetch all dependencies
     auto all_dependencies = dependency_repo_.read_latest();
-    BOOST_LOG_SEV(lg(), debug) << "Found " << all_dependencies.size()
-        << " total dependencies";
+    BOOST_LOG_SEV(lg(), debug) << "Found " << all_dependencies.size() << " total dependencies";
 
     // Find all datasets that need to be included (requested + their dependencies)
     std::set<std::string> all_codes = requested_codes;
@@ -159,24 +157,23 @@ std::vector<domain::dataset> publication_service::resolve_publication_order(
 
     // Fetch any additional datasets we need
     if (all_codes.size() > datasets_by_code.size()) {
-        BOOST_LOG_SEV(lg(), debug) << "Fetching "
-            << (all_codes.size() - datasets_by_code.size())
-            << " additional dependency datasets";
+        BOOST_LOG_SEV(lg(), debug) << "Fetching " << (all_codes.size() - datasets_by_code.size())
+                                   << " additional dependency datasets";
 
         auto all_datasets = dataset_repo_.read_latest();
         for (const auto& ds : all_datasets) {
-            if (all_codes.count(ds.code) > 0 &&
-                datasets_by_code.count(ds.code) == 0) {
+            if (all_codes.count(ds.code) > 0 && datasets_by_code.count(ds.code) == 0) {
                 datasets_by_code[ds.code] = ds;
             }
         }
     }
 
     // Build the dependency graph using boost.graph
-    using graph_t = boost::adjacency_list<
-        boost::vecS, boost::vecS, boost::directedS,
-        std::string  // vertex property = dataset code
-    >;
+    using graph_t = boost::adjacency_list<boost::vecS,
+                                          boost::vecS,
+                                          boost::directedS,
+                                          std::string // vertex property = dataset code
+                                          >;
 
     graph_t g;
     std::map<std::string, graph_t::vertex_descriptor> code_to_vertex;
@@ -193,9 +190,7 @@ std::vector<domain::dataset> publication_service::resolve_publication_order(
         if (code_to_vertex.count(dep.dataset_code) > 0 &&
             code_to_vertex.count(dep.dependency_code) > 0) {
             boost::add_edge(
-                code_to_vertex[dep.dependency_code],
-                code_to_vertex[dep.dataset_code],
-                g);
+                code_to_vertex[dep.dependency_code], code_to_vertex[dep.dataset_code], g);
         }
     }
 
@@ -220,23 +215,20 @@ std::vector<domain::dataset> publication_service::resolve_publication_order(
         }
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Publication order resolved: "
-        << result.size() << " datasets";
+    BOOST_LOG_SEV(lg(), debug) << "Publication order resolved: " << result.size() << " datasets";
 
     return result;
 }
 
-std::vector<domain::publication> publication_service::get_publication_history(
-    const boost::uuids::uuid& dataset_id) {
+std::vector<domain::publication>
+publication_service::get_publication_history(const boost::uuids::uuid& dataset_id) {
 
-    BOOST_LOG_SEV(lg(), debug) << "Getting publication history for dataset: "
-        << dataset_id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting publication history for dataset: " << dataset_id;
 
     return publication_repo_.read_by_dataset(dataset_id);
 }
 
-std::vector<domain::publication> publication_service::get_recent_publications(
-    std::uint32_t limit) {
+std::vector<domain::publication> publication_service::get_recent_publications(std::uint32_t limit) {
 
     BOOST_LOG_SEV(lg(), debug) << "Getting recent publications, limit: " << limit;
 
@@ -244,11 +236,10 @@ std::vector<domain::publication> publication_service::get_recent_publications(
 }
 
 std::map<std::string, domain::artefact_type>
-publication_service::build_artefact_type_cache(
-    const std::vector<domain::dataset>& datasets) {
+publication_service::build_artefact_type_cache(const std::vector<domain::dataset>& datasets) {
 
-    BOOST_LOG_SEV(lg(), debug) << "Building artefact type cache for "
-        << datasets.size() << " datasets";
+    BOOST_LOG_SEV(lg(), debug) << "Building artefact type cache for " << datasets.size()
+                               << " datasets";
 
     // Collect unique artefact type codes
     std::set<std::string> artefact_type_codes;
@@ -279,7 +270,7 @@ domain::publication_result publication_service::publish_dataset(
     const std::map<std::string, domain::artefact_type>& artefact_type_cache) {
 
     BOOST_LOG_SEV(lg(), debug) << "Publishing dataset: " << dataset.code
-        << " with artefact_type: " << dataset.artefact_type.value_or("none");
+                               << " with artefact_type: " << dataset.artefact_type.value_or("none");
 
     domain::publication_result result;
     result.dataset_id = dataset.id;
@@ -289,8 +280,7 @@ domain::publication_result publication_service::publish_dataset(
     if (!dataset.artefact_type.has_value() || dataset.artefact_type->empty()) {
         result.success = false;
         result.error_message = "Dataset has no artefact_type specified";
-        BOOST_LOG_SEV(lg(), warn) << result.error_message
-            << " for dataset: " << dataset.code;
+        BOOST_LOG_SEV(lg(), warn) << result.error_message << " for dataset: " << dataset.code;
         return result;
     }
 
@@ -299,8 +289,7 @@ domain::publication_result publication_service::publish_dataset(
     if (it == artefact_type_cache.end()) {
         result.success = false;
         result.error_message = "Unknown artefact_type: " + *dataset.artefact_type;
-        BOOST_LOG_SEV(lg(), warn) << result.error_message
-            << " for dataset: " << dataset.code;
+        BOOST_LOG_SEV(lg(), warn) << result.error_message << " for dataset: " << dataset.code;
         return result;
     }
 
@@ -309,16 +298,14 @@ domain::publication_result publication_service::publish_dataset(
     if (!artefact_type.target_table.has_value() || artefact_type.target_table->empty()) {
         result.success = false;
         result.error_message = "Artefact type has no target_table: " + *dataset.artefact_type;
-        BOOST_LOG_SEV(lg(), warn) << result.error_message
-            << " for dataset: " << dataset.code;
+        BOOST_LOG_SEV(lg(), warn) << result.error_message << " for dataset: " << dataset.code;
         return result;
     }
 
     if (!artefact_type.target_subject.has_value() || artefact_type.target_subject->empty()) {
         result.success = false;
         result.error_message = "Artefact type has no target_subject: " + *dataset.artefact_type;
-        BOOST_LOG_SEV(lg(), warn) << result.error_message
-            << " for dataset: " << dataset.code;
+        BOOST_LOG_SEV(lg(), warn) << result.error_message << " for dataset: " << dataset.code;
         return result;
     }
 
@@ -326,13 +313,11 @@ domain::publication_result publication_service::publish_dataset(
     return call_populate_function(dataset, artefact_type, mode, published_by);
 }
 
-void publication_service::record_publication(
-    const domain::publication_result& result,
-    domain::publication_mode mode,
-    const std::string& published_by) {
+void publication_service::record_publication(const domain::publication_result& result,
+                                             domain::publication_mode mode,
+                                             const std::string& published_by) {
 
-    BOOST_LOG_SEV(lg(), debug) << "Recording publication for dataset: "
-        << result.dataset_code;
+    BOOST_LOG_SEV(lg(), debug) << "Recording publication for dataset: " << result.dataset_code;
 
     // Build the INSERT query
     const auto sql = std::format(
@@ -359,11 +344,11 @@ void publication_service::record_publication(
     }
 }
 
-domain::publication_result publication_service::call_populate_function(
-    const domain::dataset& dataset,
-    const domain::artefact_type& artefact_type,
-    domain::publication_mode mode,
-    const std::string& published_by) {
+domain::publication_result
+publication_service::call_populate_function(const domain::dataset& dataset,
+                                            const domain::artefact_type& artefact_type,
+                                            domain::publication_mode mode,
+                                            const std::string& published_by) {
 
     domain::publication_result result;
     result.dataset_id = dataset.id;
@@ -375,24 +360,25 @@ domain::publication_result publication_service::call_populate_function(
     const std::string function_name = *artefact_type.target_subject;
     const std::string dataset_id_str = boost::uuids::to_string(dataset.id);
 
-    BOOST_LOG_SEV(lg(), debug) << "Calling populate function: "
-        << function_name << ", mode: " << mode_str;
+    BOOST_LOG_SEV(lg(), debug) << "Calling populate function: " << function_name
+                               << ", mode: " << mode_str;
 
-    const auto sql = std::format(
-        "SELECT * FROM {}('{}'::uuid, '{}'::uuid, '{}'::text)",
-        function_name, dataset_id_str, ctx_.tenant_id().to_string(), mode_str);
+    const auto sql = std::format("SELECT * FROM {}('{}'::uuid, '{}'::uuid, '{}'::text)",
+                                 function_name,
+                                 dataset_id_str,
+                                 ctx_.tenant_id().to_string(),
+                                 mode_str);
 
     try {
-        auto rows = execute_raw_multi_column_query(ctx_, sql, lg(),
-            std::format("Calling {}", function_name));
+        auto rows = execute_raw_multi_column_query(
+            ctx_, sql, lg(), std::format("Calling {}", function_name));
 
         // Aggregate results from the function
         // The function returns (action, record_count) rows
         for (const auto& row : rows) {
             if (row.size() >= 2 && row[0].has_value() && row[1].has_value()) {
                 const std::string action = *row[0];
-                const auto count = static_cast<std::uint64_t>(
-                    std::stoll(*row[1]));
+                const auto count = static_cast<std::uint64_t>(std::stoll(*row[1]));
 
                 if (action == "inserted") {
                     result.records_inserted += count;
@@ -408,11 +394,10 @@ domain::publication_result publication_service::call_populate_function(
 
         result.success = true;
 
-        BOOST_LOG_SEV(lg(), debug) << "Populate function completed: "
-            << "inserted=" << result.records_inserted
-            << ", updated=" << result.records_updated
-            << ", skipped=" << result.records_skipped
-            << ", deleted=" << result.records_deleted;
+        BOOST_LOG_SEV(lg(), debug)
+            << "Populate function completed: "
+            << "inserted=" << result.records_inserted << ", updated=" << result.records_updated
+            << ", skipped=" << result.records_skipped << ", deleted=" << result.records_deleted;
 
     } catch (const std::exception& e) {
         result.success = false;
@@ -424,12 +409,11 @@ domain::publication_result publication_service::call_populate_function(
 }
 
 std::vector<bundle_publishable_dataset>
-publication_service::list_publishable_datasets(
-    const std::vector<boost::uuids::uuid>& dataset_ids,
-    bool resolve_dependencies) {
+publication_service::list_publishable_datasets(const std::vector<boost::uuids::uuid>& dataset_ids,
+                                               bool resolve_dependencies) {
 
-    BOOST_LOG_SEV(lg(), debug) << "Resolving publishable datasets for "
-        << dataset_ids.size() << " IDs, resolve_dependencies=" << resolve_dependencies;
+    BOOST_LOG_SEV(lg(), debug) << "Resolving publishable datasets for " << dataset_ids.size()
+                               << " IDs, resolve_dependencies=" << resolve_dependencies;
 
     std::vector<domain::dataset> ordered_datasets;
     if (resolve_dependencies) {
@@ -450,66 +434,57 @@ publication_service::list_publishable_datasets(
     result.reserve(ordered_datasets.size());
     for (const auto& ds : ordered_datasets) {
         if (!ds.artefact_type.has_value() || ds.artefact_type->empty()) {
-            BOOST_LOG_SEV(lg(), warn)
-                << "Skipping dataset without artefact_type: " << ds.code;
+            BOOST_LOG_SEV(lg(), warn) << "Skipping dataset without artefact_type: " << ds.code;
             continue;
         }
         auto it = cache.find(*ds.artefact_type);
         if (it == cache.end()) {
-            BOOST_LOG_SEV(lg(), warn)
-                << "Artefact type not found for dataset: " << ds.code;
+            BOOST_LOG_SEV(lg(), warn) << "Artefact type not found for dataset: " << ds.code;
             continue;
         }
         if (!it->second.target_subject.has_value() || it->second.target_subject->empty()) {
-            BOOST_LOG_SEV(lg(), warn)
-                << "No target_subject for dataset: " << ds.code;
+            BOOST_LOG_SEV(lg(), warn) << "No target_subject for dataset: " << ds.code;
             continue;
         }
         bundle_publishable_dataset entry;
-        entry.dataset_id     = boost::uuids::to_string(ds.id);
-        entry.dataset_code   = ds.code;
+        entry.dataset_id = boost::uuids::to_string(ds.id);
+        entry.dataset_code = ds.code;
         entry.target_subject = *it->second.target_subject;
         result.push_back(std::move(entry));
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Resolved " << result.size()
-        << " publishable datasets";
+    BOOST_LOG_SEV(lg(), debug) << "Resolved " << result.size() << " publishable datasets";
     return result;
 }
 
 std::vector<bundle_publishable_dataset>
-publication_service::list_bundle_publishable_datasets(
-    const std::string& bundle_code) {
+publication_service::list_bundle_publishable_datasets(const std::string& bundle_code) {
 
-    BOOST_LOG_SEV(lg(), debug) << "Listing publishable datasets for bundle: "
-        << bundle_code;
+    BOOST_LOG_SEV(lg(), debug) << "Listing publishable datasets for bundle: " << bundle_code;
 
-    const auto sql =
-        "SELECT dataset_id, dataset_code, target_subject "
-        "FROM ores_dq_bundle_datasets_list_fn($1) "
-        "WHERE is_publishable = true "
-        "ORDER BY display_order";
+    const auto sql = "SELECT dataset_id, dataset_code, target_subject "
+                     "FROM ores_dq_bundle_datasets_list_fn($1) "
+                     "WHERE is_publishable = true "
+                     "ORDER BY display_order";
 
-    auto rows = execute_parameterized_multi_column_query(ctx_, sql,
-        {bundle_code}, lg(),
-        std::format("Listing bundle datasets for {}", bundle_code));
+    auto rows = execute_parameterized_multi_column_query(
+        ctx_, sql, {bundle_code}, lg(), std::format("Listing bundle datasets for {}", bundle_code));
 
     std::vector<bundle_publishable_dataset> result;
     result.reserve(rows.size());
 
     for (const auto& row : rows) {
-        if (row.size() >= 3 && row[0].has_value() && row[1].has_value() &&
-            row[2].has_value()) {
+        if (row.size() >= 3 && row[0].has_value() && row[1].has_value() && row[2].has_value()) {
             bundle_publishable_dataset entry;
-            entry.dataset_id     = *row[0];
-            entry.dataset_code   = *row[1];
+            entry.dataset_id = *row[0];
+            entry.dataset_code = *row[1];
             entry.target_subject = *row[2];
             result.push_back(std::move(entry));
         }
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Found " << result.size()
-        << " publishable datasets in bundle " << bundle_code;
+    BOOST_LOG_SEV(lg(), debug) << "Found " << result.size() << " publishable datasets in bundle "
+                               << bundle_code;
 
     return result;
 }

@@ -18,13 +18,12 @@
  *
  */
 #include "ores.dq.core/repository/treatment_dimension_repository.hpp"
-
-#include <sqlgen/postgres.hpp>
-#include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
 #include "ores.dq.api/domain/treatment_dimension_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.core/repository/treatment_dimension_entity.hpp"
 #include "ores.dq.core/repository/treatment_dimension_mapper.hpp"
+#include <sqlgen/postgres.hpp>
 
 namespace ores::dq::repository {
 
@@ -41,31 +40,34 @@ treatment_dimension_repository::treatment_dimension_repository(context ctx)
     : ctx_(std::move(ctx)) {}
 
 void treatment_dimension_repository::write(const domain::treatment_dimension& dimension) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing treatment_dimension to database: "
-                               << dimension.code;
-    execute_write_query(ctx_, treatment_dimension_mapper::map(dimension),
-        lg(), "writing treatment_dimension to database");
+    BOOST_LOG_SEV(lg(), debug) << "Writing treatment_dimension to database: " << dimension.code;
+    execute_write_query(ctx_,
+                        treatment_dimension_mapper::map(dimension),
+                        lg(),
+                        "writing treatment_dimension to database");
 }
 
 void treatment_dimension_repository::write(
     const std::vector<domain::treatment_dimension>& dimensions) {
     BOOST_LOG_SEV(lg(), debug) << "Writing treatment_dimensions to database. Count: "
                                << dimensions.size();
-    execute_write_query(ctx_, treatment_dimension_mapper::map(dimensions),
-        lg(), "writing treatment_dimensions to database");
+    execute_write_query(ctx_,
+                        treatment_dimension_mapper::map(dimensions),
+                        lg(),
+                        "writing treatment_dimensions to database");
 }
 
-std::vector<domain::treatment_dimension>
-treatment_dimension_repository::read_latest() {
+std::vector<domain::treatment_dimension> treatment_dimension_repository::read_latest() {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<treatment_dimension_entity>> |
-        where("valid_to"_c == max.value()) |
-        order_by("code"_c);
+                       where("valid_to"_c == max.value()) | order_by("code"_c);
 
     return execute_read_query<treatment_dimension_entity, domain::treatment_dimension>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return treatment_dimension_mapper::map(entities); },
-        lg(), "Reading latest treatment_dimensions");
+        lg(),
+        "Reading latest treatment_dimensions");
 }
 
 std::vector<domain::treatment_dimension>
@@ -74,30 +76,32 @@ treatment_dimension_repository::read_latest(const std::string& code) {
 
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<treatment_dimension_entity>> |
-        where("code"_c == code && "valid_to"_c == max.value());
+                       where("code"_c == code && "valid_to"_c == max.value());
 
     return execute_read_query<treatment_dimension_entity, domain::treatment_dimension>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return treatment_dimension_mapper::map(entities); },
-        lg(), "Reading latest treatment_dimension by code.");
+        lg(),
+        "Reading latest treatment_dimension by code.");
 }
 
 std::vector<domain::treatment_dimension>
 treatment_dimension_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest treatment_dimensions with offset: "
-                               << offset << " and limit: " << limit;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest treatment_dimensions with offset: " << offset
+                               << " and limit: " << limit;
 
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<treatment_dimension_entity>> |
-        where("valid_to"_c == max.value()) |
-        order_by("code"_c) |
-        sqlgen::offset(offset) |
-        sqlgen::limit(limit);
+                       where("valid_to"_c == max.value()) | order_by("code"_c) |
+                       sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_read_query<treatment_dimension_entity, domain::treatment_dimension>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return treatment_dimension_mapper::map(entities); },
-        lg(), "Reading latest treatment_dimensions with pagination.");
+        lg(),
+        "Reading latest treatment_dimensions with pagination.");
 }
 
 std::uint32_t treatment_dimension_repository::get_total_count() {
@@ -109,10 +113,9 @@ std::uint32_t treatment_dimension_repository::get_total_count() {
         long long count;
     };
 
-    const auto query = sqlgen::select_from<treatment_dimension_entity>(
-        sqlgen::count().as<"count">()) |
-        where("valid_to"_c == max.value()) |
-        sqlgen::to<count_result>;
+    const auto query =
+        sqlgen::select_from<treatment_dimension_entity>(sqlgen::count().as<"count">()) |
+        where("valid_to"_c == max.value()) | sqlgen::to<count_result>;
 
     const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
     ensure_success(r, lg());
@@ -127,27 +130,26 @@ treatment_dimension_repository::read_all(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all treatment_dimension versions. Code: " << code;
 
     const auto query = sqlgen::read<std::vector<treatment_dimension_entity>> |
-        where("code"_c == code) |
-        order_by("version"_c.desc());
+                       where("code"_c == code) | order_by("version"_c.desc());
 
     return execute_read_query<treatment_dimension_entity, domain::treatment_dimension>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return treatment_dimension_mapper::map(entities); },
-        lg(), "Reading all treatment_dimension versions by code.");
+        lg(),
+        "Reading all treatment_dimension versions by code.");
 }
 
 void treatment_dimension_repository::remove(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing treatment_dimension from database: " << code;
 
-    const auto query = sqlgen::delete_from<treatment_dimension_entity> |
-        where("code"_c == code);
+    const auto query = sqlgen::delete_from<treatment_dimension_entity> | where("code"_c == code);
 
     execute_delete_query(ctx_, query, lg(), "removing treatment_dimension from database");
 }
 
 void treatment_dimension_repository::remove(const std::vector<std::string>& codes) {
-    const auto query = sqlgen::delete_from<treatment_dimension_entity> |
-        where("code"_c.in(codes));
+    const auto query = sqlgen::delete_from<treatment_dimension_entity> | where("code"_c.in(codes));
     execute_delete_query(ctx_, query, lg(), "batch removing treatment_dimensions");
 }
 

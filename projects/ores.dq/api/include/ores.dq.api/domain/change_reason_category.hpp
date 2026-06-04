@@ -92,10 +92,10 @@ struct change_reason_category final {
  * @brief Well-known category codes used throughout the system.
  */
 namespace change_reason_categories {
-    constexpr auto system = "system";
-    constexpr auto static_data = "static_data";
-    constexpr auto trade = "trade";
-    constexpr auto market_data = "market_data";
+constexpr auto system = "system";
+constexpr auto static_data = "static_data";
+constexpr auto trade = "trade";
+constexpr auto market_data = "market_data";
 }
 
 }

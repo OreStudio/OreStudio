@@ -20,9 +20,9 @@
 #ifndef ORES_DQ_API_DOMAIN_CODE_DOMAIN_HPP
 #define ORES_DQ_API_DOMAIN_CODE_DOMAIN_HPP
 
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <chrono>
 #include <string>
-#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::dq::domain {
 
@@ -33,7 +33,7 @@ namespace ores::dq::domain {
  * which a code value exists. It disambiguates identical codes used in
  * different entity types — e.g. 'ACTIVE' in party_status vs 'ACTIVE'
  * in book_status.
- * 
+ *
  * Code domains are reusable beyond badges: any future system needing
  * to namespace code values (validation rules, audit customisation, etc.)
  * can reference this table.

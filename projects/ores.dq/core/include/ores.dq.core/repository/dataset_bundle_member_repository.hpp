@@ -20,13 +20,13 @@
 #ifndef ORES_DQ_CORE_REPOSITORY_DATASET_BUNDLE_MEMBER_REPOSITORY_HPP
 #define ORES_DQ_CORE_REPOSITORY_DATASET_BUNDLE_MEMBER_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/domain/dataset_bundle_member.hpp"
 #include "ores.dq.core/export.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::dq::repository {
 

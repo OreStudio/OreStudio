@@ -20,18 +20,18 @@
 #ifndef ORES_DQ_API_GENERATORS_CHANGE_REASON_CATEGORY_GENERATOR_HPP
 #define ORES_DQ_API_GENERATORS_CHANGE_REASON_CATEGORY_GENERATOR_HPP
 
-#include <vector>
 #include "ores.dq.api/domain/change_reason_category.hpp"
-#include "ores.utility/generation/generation_context.hpp"
 #include "ores.dq.api/export.hpp"
+#include "ores.utility/generation/generation_context.hpp"
+#include <vector>
 
 namespace ores::dq::generators {
 
 /**
  * @brief Generates a synthetic change_reason_category.
  */
-ORES_DQ_API_EXPORT domain::change_reason_category generate_synthetic_change_reason_category(
-    utility::generation::generation_context& ctx);
+ORES_DQ_API_EXPORT domain::change_reason_category
+generate_synthetic_change_reason_category(utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic change_reason_categories.
@@ -40,7 +40,7 @@ ORES_DQ_API_EXPORT domain::change_reason_category generate_synthetic_change_reas
  */
 ORES_DQ_API_EXPORT std::vector<domain::change_reason_category>
 generate_synthetic_change_reason_categories(std::size_t n,
-    utility::generation::generation_context& ctx);
+                                            utility::generation::generation_context& ctx);
 
 }
 

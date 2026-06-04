@@ -18,7 +18,6 @@
  *
  */
 #include "ores.dq.core/repository/coding_scheme_mapper.hpp"
-
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.dq.api/domain/coding_scheme_json_io.hpp" // IWYU pragma: keep.
 
@@ -27,8 +26,7 @@ namespace ores::dq::repository {
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::coding_scheme
-coding_scheme_mapper::map(const coding_scheme_entity& v) {
+domain::coding_scheme coding_scheme_mapper::map(const coding_scheme_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::coding_scheme r;
@@ -41,7 +39,7 @@ coding_scheme_mapper::map(const coding_scheme_entity& v) {
     r.domain_name = v.domain_name;
     r.uri = v.uri;
     r.description = v.description;
-r.modified_by = v.modified_by;
+    r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_commentary = v.change_commentary;
     r.recorded_at = timestamp_to_timepoint(v.valid_from);
@@ -50,8 +48,7 @@ r.modified_by = v.modified_by;
     return r;
 }
 
-coding_scheme_entity
-coding_scheme_mapper::map(const domain::coding_scheme& v) {
+coding_scheme_entity coding_scheme_mapper::map(const domain::coding_scheme& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     coding_scheme_entity r;
@@ -64,7 +61,7 @@ coding_scheme_mapper::map(const domain::coding_scheme& v) {
     r.domain_name = v.domain_name;
     r.uri = v.uri;
     r.description = v.description;
-r.modified_by = v.modified_by;
+    r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_commentary = v.change_commentary;
 
@@ -75,19 +72,13 @@ r.modified_by = v.modified_by;
 std::vector<domain::coding_scheme>
 coding_scheme_mapper::map(const std::vector<coding_scheme_entity>& v) {
     return map_vector<coding_scheme_entity, domain::coding_scheme>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<coding_scheme_entity>
 coding_scheme_mapper::map(const std::vector<domain::coding_scheme>& v) {
     return map_vector<domain::coding_scheme, coding_scheme_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

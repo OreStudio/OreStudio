@@ -18,7 +18,6 @@
  *
  */
 #include "ores.dq.api/domain/badge_definition_table.hpp"
-
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
 
@@ -28,10 +27,12 @@ std::string convert_to_table(const std::vector<badge_definition>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Code" << "Name" << "Background" << "Text" << "Severity" << "Order" << "Modified By" << "Version" << fort::endr;
+    table << fort::header << "Code" << "Name" << "Background" << "Text" << "Severity" << "Order"
+          << "Modified By" << "Version" << fort::endr;
 
     for (const auto& bd : v) {
-        table << bd.code << bd.name << bd.background_colour << bd.text_colour << bd.severity_code << bd.display_order << bd.modified_by << bd.version << fort::endr;
+        table << bd.code << bd.name << bd.background_colour << bd.text_colour << bd.severity_code
+              << bd.display_order << bd.modified_by << bd.version << fort::endr;
     }
     return table.to_string();
 }

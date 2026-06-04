@@ -20,13 +20,13 @@
 #ifndef ORES_DQ_CORE_REPOSITORY_CHANGE_REASON_REPOSITORY_HPP
 #define ORES_DQ_CORE_REPOSITORY_CHANGE_REASON_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/domain/change_reason.hpp"
 #include "ores.dq.core/export.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::dq::repository {
 
@@ -35,8 +35,7 @@ namespace ores::dq::repository {
  */
 class ORES_DQ_CORE_EXPORT change_reason_repository {
 private:
-    inline static std::string_view logger_name =
-        "ores.iam.repository.change_reason_repository";
+    inline static std::string_view logger_name = "ores.iam.repository.change_reason_repository";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -76,14 +75,12 @@ public:
      * @param limit Maximum number of records to return
      * @return Vector of reasons within the specified range
      */
-    std::vector<domain::change_reason>
-    read_latest(std::uint32_t offset, std::uint32_t limit);
+    std::vector<domain::change_reason> read_latest(std::uint32_t offset, std::uint32_t limit);
 
     /**
      * @brief Reads latest change_reasons by category code.
      */
-    std::vector<domain::change_reason>
-    read_latest_by_category(const std::string& category_code);
+    std::vector<domain::change_reason> read_latest_by_category(const std::string& category_code);
 
     /**
      * @brief Gets the total count of active change_reasons.

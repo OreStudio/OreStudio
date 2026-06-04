@@ -18,18 +18,16 @@
  *
  */
 #include "ores.dq.core/repository/fsm_state_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::dq::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::fsm_state
-fsm_state_mapper::map(const fsm_state_entity& v) {
+domain::fsm_state fsm_state_mapper::map(const fsm_state_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::fsm_state r;
@@ -50,8 +48,7 @@ fsm_state_mapper::map(const fsm_state_entity& v) {
     return r;
 }
 
-fsm_state_entity
-fsm_state_mapper::map(const domain::fsm_state& v) {
+fsm_state_entity fsm_state_mapper::map(const domain::fsm_state& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v.name;
 
     fsm_state_entity r;
@@ -71,22 +68,14 @@ fsm_state_mapper::map(const domain::fsm_state& v) {
     return r;
 }
 
-std::vector<domain::fsm_state>
-fsm_state_mapper::map(const std::vector<fsm_state_entity>& v) {
+std::vector<domain::fsm_state> fsm_state_mapper::map(const std::vector<fsm_state_entity>& v) {
     return map_vector<fsm_state_entity, domain::fsm_state>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
-std::vector<fsm_state_entity>
-fsm_state_mapper::map(const std::vector<domain::fsm_state>& v) {
+std::vector<fsm_state_entity> fsm_state_mapper::map(const std::vector<domain::fsm_state>& v) {
     return map_vector<domain::fsm_state, fsm_state_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

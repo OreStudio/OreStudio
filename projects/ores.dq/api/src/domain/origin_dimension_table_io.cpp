@@ -18,16 +18,14 @@
  *
  */
 #include "ores.dq.api/domain/origin_dimension_table_io.hpp"
-
-#include <ostream>
 #include "ores.dq.api/domain/origin_dimension_table.hpp"
+#include <ostream>
 
 namespace ores::dq::domain {
 
 namespace {
 
-void print_origin_dimension_table(std::ostream& s,
-    const std::vector<origin_dimension>& v) {
+void print_origin_dimension_table(std::ostream& s, const std::vector<origin_dimension>& v) {
     s << std::endl << convert_to_table(v) << std::endl;
 }
 

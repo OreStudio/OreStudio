@@ -20,13 +20,13 @@
 #ifndef ORES_DQ_CORE_REPOSITORY_CODING_SCHEME_AUTHORITY_TYPE_REPOSITORY_HPP
 #define ORES_DQ_CORE_REPOSITORY_CODING_SCHEME_AUTHORITY_TYPE_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/domain/coding_scheme_authority_type.hpp"
 #include "ores.dq.core/export.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::dq::repository {
 
@@ -73,8 +73,8 @@ public:
     /**
      * @brief Reads latest coding_scheme_authority_types with pagination support.
      */
-    std::vector<domain::coding_scheme_authority_type>
-    read_latest(std::uint32_t offset, std::uint32_t limit);
+    std::vector<domain::coding_scheme_authority_type> read_latest(std::uint32_t offset,
+                                                                  std::uint32_t limit);
 
     /**
      * @brief Gets the total count of active coding_scheme_authority_types.

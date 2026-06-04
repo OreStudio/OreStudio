@@ -20,13 +20,13 @@
 #ifndef ORES_DQ_CORE_REPOSITORY_CODE_DOMAIN_REPOSITORY_HPP
 #define ORES_DQ_CORE_REPOSITORY_CODE_DOMAIN_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/domain/code_domain.hpp"
 #include "ores.dq.core/export.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::dq::repository {
 
@@ -35,8 +35,7 @@ namespace ores::dq::repository {
  */
 class ORES_DQ_CORE_EXPORT code_domain_repository {
 private:
-    inline static std::string_view logger_name =
-        "ores.dq.repository.code_domain_repository";
+    inline static std::string_view logger_name = "ores.dq.repository.code_domain_repository";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -53,10 +52,8 @@ public:
     void write(context ctx, const std::vector<domain::code_domain>& v);
 
     std::vector<domain::code_domain> read_latest(context ctx);
-    std::vector<domain::code_domain>
-    read_latest(context ctx, const std::string& code);
-    std::vector<domain::code_domain>
-    read_all(context ctx, const std::string& code);
+    std::vector<domain::code_domain> read_latest(context ctx, const std::string& code);
+    std::vector<domain::code_domain> read_all(context ctx, const std::string& code);
 
     void remove(context ctx, const std::string& code);
 };

@@ -20,17 +20,18 @@
 #ifndef ORES_DQ_API_DOMAIN_NATURE_DIMENSION_TABLE_IO_HPP
 #define ORES_DQ_API_DOMAIN_NATURE_DIMENSION_TABLE_IO_HPP
 
-#include <iosfwd>
-#include <vector>
 #include "ores.dq.api/domain/nature_dimension.hpp"
 #include "ores.dq.api/export.hpp"
+#include <iosfwd>
+#include <vector>
 
 namespace ores::dq::domain {
 
 /**
  * @brief Dumps the nature_dimension objects to a stream in table format.
  */
-ORES_DQ_API_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<nature_dimension>& v);
+ORES_DQ_API_EXPORT std::ostream& operator<<(std::ostream& s,
+                                            const std::vector<nature_dimension>& v);
 
 }
 

@@ -18,7 +18,6 @@
  *
  */
 #include "ores.dq.core/service/coding_scheme_service.hpp"
-
 #include <stdexcept>
 
 namespace ores::dq::service {
@@ -26,7 +25,8 @@ namespace ores::dq::service {
 using namespace ores::logging;
 
 coding_scheme_service::coding_scheme_service(context ctx)
-    : coding_scheme_repo_(ctx), authority_type_repo_(ctx) {}
+    : coding_scheme_repo_(ctx)
+    , authority_type_repo_(ctx) {}
 
 // ============================================================================
 // Coding Scheme Management
@@ -37,19 +37,16 @@ std::vector<domain::coding_scheme> coding_scheme_service::list_coding_schemes() 
     return coding_scheme_repo_.read_latest();
 }
 
-std::vector<domain::coding_scheme>
-coding_scheme_service::list_coding_schemes(std::uint32_t offset,
-                                            std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing coding schemes with pagination: offset="
-                               << offset << ", limit=" << limit;
+std::vector<domain::coding_scheme> coding_scheme_service::list_coding_schemes(std::uint32_t offset,
+                                                                              std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing coding schemes with pagination: offset=" << offset
+                               << ", limit=" << limit;
     return coding_scheme_repo_.read_latest(offset, limit);
 }
 
 std::vector<domain::coding_scheme>
-coding_scheme_service::list_coding_schemes_by_authority_type(
-    const std::string& authority_type) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing coding schemes for authority type: "
-                               << authority_type;
+coding_scheme_service::list_coding_schemes_by_authority_type(const std::string& authority_type) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing coding schemes for authority type: " << authority_type;
     return coding_scheme_repo_.read_latest_by_authority_type(authority_type);
 }
 
@@ -76,8 +73,7 @@ void coding_scheme_service::save_coding_scheme(const domain::coding_scheme& sche
     BOOST_LOG_SEV(lg(), info) << "Saved coding scheme: " << scheme.code;
 }
 
-void coding_scheme_service::save_coding_schemes(
-    const std::vector<domain::coding_scheme>& schemes) {
+void coding_scheme_service::save_coding_schemes(const std::vector<domain::coding_scheme>& schemes) {
     for (const auto& s : schemes) {
         if (s.code.empty()) {
             throw std::invalid_argument("Coding scheme code cannot be empty.");
@@ -107,8 +103,7 @@ coding_scheme_service::get_coding_scheme_history(const std::string& code) {
 // Coding Scheme Authority Type Management
 // ============================================================================
 
-std::vector<domain::coding_scheme_authority_type>
-coding_scheme_service::list_authority_types() {
+std::vector<domain::coding_scheme_authority_type> coding_scheme_service::list_authority_types() {
     BOOST_LOG_SEV(lg(), debug) << "Listing all coding scheme authority types";
     return authority_type_repo_.read_latest();
 }
@@ -128,11 +123,9 @@ void coding_scheme_service::save_authority_type(
     if (authority_type.code.empty()) {
         throw std::invalid_argument("Authority type code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving coding scheme authority type: "
-                               << authority_type.code;
+    BOOST_LOG_SEV(lg(), debug) << "Saving coding scheme authority type: " << authority_type.code;
     authority_type_repo_.write(authority_type);
-    BOOST_LOG_SEV(lg(), info) << "Saved coding scheme authority type: "
-                              << authority_type.code;
+    BOOST_LOG_SEV(lg(), info) << "Saved coding scheme authority type: " << authority_type.code;
 }
 
 void coding_scheme_service::save_authority_types(
@@ -159,8 +152,7 @@ void coding_scheme_service::remove_authority_types(const std::vector<std::string
 
 std::vector<domain::coding_scheme_authority_type>
 coding_scheme_service::get_authority_type_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for coding scheme authority type: "
-                               << code;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for coding scheme authority type: " << code;
     return authority_type_repo_.read_all(code);
 }
 

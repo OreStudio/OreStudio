@@ -18,7 +18,6 @@
  *
  */
 #include "ores.dq.core/service/dataset_bundle_member_service.hpp"
-
 #include <stdexcept>
 
 namespace ores::dq::service {
@@ -46,11 +45,11 @@ void dataset_bundle_member_service::save_member(const domain::dataset_bundle_mem
     if (member.dataset_code.empty()) {
         throw std::invalid_argument("Dataset cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving dataset bundle member: " << member.bundle_code
-                               << "/" << member.dataset_code;
+    BOOST_LOG_SEV(lg(), debug) << "Saving dataset bundle member: " << member.bundle_code << "/"
+                               << member.dataset_code;
     repo_.write(member);
-    BOOST_LOG_SEV(lg(), info) << "Saved dataset bundle member: " << member.bundle_code
-                              << "/" << member.dataset_code;
+    BOOST_LOG_SEV(lg(), info) << "Saved dataset bundle member: " << member.bundle_code << "/"
+                              << member.dataset_code;
 }
 
 void dataset_bundle_member_service::save_members(
@@ -68,12 +67,12 @@ void dataset_bundle_member_service::save_members(
 }
 
 void dataset_bundle_member_service::remove_member(const std::string& bundle_code,
-    const std::string& dataset_code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing dataset bundle member: " << bundle_code
-                               << "/" << dataset_code;
+                                                  const std::string& dataset_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing dataset bundle member: " << bundle_code << "/"
+                               << dataset_code;
     repo_.remove(bundle_code, dataset_code);
-    BOOST_LOG_SEV(lg(), info) << "Removed dataset bundle member: " << bundle_code
-                              << "/" << dataset_code;
+    BOOST_LOG_SEV(lg(), info) << "Removed dataset bundle member: " << bundle_code << "/"
+                              << dataset_code;
 }
 
 }

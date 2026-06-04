@@ -18,7 +18,6 @@
  *
  */
 #include "ores.dq.core/repository/origin_dimension_mapper.hpp"
-
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.dq.api/domain/origin_dimension_json_io.hpp" // IWYU pragma: keep.
 
@@ -27,8 +26,7 @@ namespace ores::dq::repository {
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::origin_dimension
-origin_dimension_mapper::map(const origin_dimension_entity& v) {
+domain::origin_dimension origin_dimension_mapper::map(const origin_dimension_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::origin_dimension r;
@@ -37,7 +35,7 @@ origin_dimension_mapper::map(const origin_dimension_entity& v) {
     r.code = v.code.value();
     r.name = v.name;
     r.description = v.description;
-r.modified_by = v.modified_by;
+    r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_commentary = v.change_commentary;
     r.recorded_at = timestamp_to_timepoint(v.valid_from);
@@ -46,8 +44,7 @@ r.modified_by = v.modified_by;
     return r;
 }
 
-origin_dimension_entity
-origin_dimension_mapper::map(const domain::origin_dimension& v) {
+origin_dimension_entity origin_dimension_mapper::map(const domain::origin_dimension& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     origin_dimension_entity r;
@@ -56,7 +53,7 @@ origin_dimension_mapper::map(const domain::origin_dimension& v) {
     r.version = v.version;
     r.name = v.name;
     r.description = v.description;
-r.modified_by = v.modified_by;
+    r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_commentary = v.change_commentary;
 
@@ -67,19 +64,13 @@ r.modified_by = v.modified_by;
 std::vector<domain::origin_dimension>
 origin_dimension_mapper::map(const std::vector<origin_dimension_entity>& v) {
     return map_vector<origin_dimension_entity, domain::origin_dimension>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<origin_dimension_entity>
 origin_dimension_mapper::map(const std::vector<domain::origin_dimension>& v) {
     return map_vector<domain::origin_dimension, origin_dimension_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

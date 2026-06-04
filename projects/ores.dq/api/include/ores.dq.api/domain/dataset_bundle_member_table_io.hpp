@@ -20,17 +20,18 @@
 #ifndef ORES_DQ_API_DOMAIN_DATASET_BUNDLE_MEMBER_TABLE_IO_HPP
 #define ORES_DQ_API_DOMAIN_DATASET_BUNDLE_MEMBER_TABLE_IO_HPP
 
-#include <iosfwd>
-#include <vector>
 #include "ores.dq.api/domain/dataset_bundle_member.hpp"
 #include "ores.dq.api/export.hpp"
+#include <iosfwd>
+#include <vector>
 
 namespace ores::dq::domain {
 
 /**
  * @brief Dumps the dataset_bundle_member objects to a stream in table format.
  */
-ORES_DQ_API_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<dataset_bundle_member>& v);
+ORES_DQ_API_EXPORT std::ostream& operator<<(std::ostream& s,
+                                            const std::vector<dataset_bundle_member>& v);
 
 }
 

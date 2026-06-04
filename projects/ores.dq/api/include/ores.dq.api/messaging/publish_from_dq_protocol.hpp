@@ -33,10 +33,10 @@ namespace ores::dq::messaging {
  * DQ artefact table for dataset_id and writes to the target service's tables.
  */
 struct publish_from_dq_command {
-    std::string dataset_id;    // UUID of the DQ dataset to publish
-    std::string tenant_id;     // UUID of the target tenant
-    std::string mode;          // "upsert" | "replace_all" | "insert_only"
-    std::string params_json;   // extra per-artefact parameters (may be "{}")
+    std::string dataset_id;  // UUID of the DQ dataset to publish
+    std::string tenant_id;   // UUID of the target tenant
+    std::string mode;        // "upsert" | "replace_all" | "insert_only"
+    std::string params_json; // extra per-artefact parameters (may be "{}")
 };
 
 /**
@@ -49,9 +49,9 @@ struct publish_from_dq_result {
     bool success = false;
     std::string error_message;
     std::uint64_t records_inserted = 0;
-    std::uint64_t records_updated  = 0;
-    std::uint64_t records_skipped  = 0;
-    std::uint64_t records_deleted  = 0;
+    std::uint64_t records_updated = 0;
+    std::uint64_t records_skipped = 0;
+    std::uint64_t records_deleted = 0;
 };
 
 }

@@ -18,7 +18,6 @@
  *
  */
 #include "ores.dq.api/domain/code_domain_table.hpp"
-
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
 
@@ -28,10 +27,12 @@ std::string convert_to_table(const std::vector<code_domain>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Code" << "Name" << "Description" << "Order" << "Modified By" << "Version" << fort::endr;
+    table << fort::header << "Code" << "Name" << "Description" << "Order" << "Modified By"
+          << "Version" << fort::endr;
 
     for (const auto& cd : v) {
-        table << cd.code << cd.name << cd.description << cd.display_order << cd.modified_by << cd.version << fort::endr;
+        table << cd.code << cd.name << cd.description << cd.display_order << cd.modified_by
+              << cd.version << fort::endr;
     }
     return table.to_string();
 }

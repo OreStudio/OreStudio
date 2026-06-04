@@ -20,10 +20,10 @@
 #ifndef ORES_DQ_API_EVENTING_DATASET_CHANGED_EVENT_HPP
 #define ORES_DQ_API_EVENTING_DATASET_CHANGED_EVENT_HPP
 
-#include <chrono>
-#include <vector>
-#include <string>
 #include "ores.eventing/domain/event_traits.hpp"
+#include <chrono>
+#include <string>
+#include <vector>
 
 namespace ores::dq::eventing {
 
@@ -64,7 +64,7 @@ namespace ores::eventing::domain {
 /**
  * @brief Event traits specialization for dataset_changed_event.
  */
-template<>
+template <>
 struct event_traits<ores::dq::eventing::dataset_changed_event> {
     static constexpr std::string_view name = "ores.dq.dataset_changed";
 };

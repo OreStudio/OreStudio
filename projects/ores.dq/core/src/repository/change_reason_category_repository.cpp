@@ -18,13 +18,12 @@
  *
  */
 #include "ores.dq.core/repository/change_reason_category_repository.hpp"
-
-#include <sqlgen/postgres.hpp>
-#include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
 #include "ores.dq.api/domain/change_reason_category_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.core/repository/change_reason_category_entity.hpp"
 #include "ores.dq.core/repository/change_reason_category_mapper.hpp"
+#include <sqlgen/postgres.hpp>
 
 namespace ores::dq::repository {
 
@@ -40,13 +39,13 @@ std::string change_reason_category_repository::sql() {
 change_reason_category_repository::change_reason_category_repository(context ctx)
     : ctx_(std::move(ctx)) {}
 
-void change_reason_category_repository::write(
-    const domain::change_reason_category& category) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing change_reason_category to database: "
-                               << category.code;
+void change_reason_category_repository::write(const domain::change_reason_category& category) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing change_reason_category to database: " << category.code;
 
-    execute_write_query(ctx_, change_reason_category_mapper::map(category),
-        lg(), "writing change_reason_category to database");
+    execute_write_query(ctx_,
+                        change_reason_category_mapper::map(category),
+                        lg(),
+                        "writing change_reason_category to database");
 }
 
 void change_reason_category_repository::write(
@@ -54,64 +53,62 @@ void change_reason_category_repository::write(
     BOOST_LOG_SEV(lg(), debug) << "Writing change_reason_categories to database. Count: "
                                << categories.size();
 
-    execute_write_query(ctx_, change_reason_category_mapper::map(categories),
-        lg(), "writing change_reason_categories to database");
+    execute_write_query(ctx_,
+                        change_reason_category_mapper::map(categories),
+                        lg(),
+                        "writing change_reason_categories to database");
 }
 
-std::vector<domain::change_reason_category>
-change_reason_category_repository::read_latest() {
+std::vector<domain::change_reason_category> change_reason_category_repository::read_latest() {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<change_reason_category_entity>> |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-        order_by("code"_c);
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("code"_c);
 
-    return execute_read_query<change_reason_category_entity,
-                              domain::change_reason_category>(ctx_, query,
-        [](const auto& entities) {
-            return change_reason_category_mapper::map(entities);
-        },
-        lg(), "Reading latest change_reason_categories");
+    return execute_read_query<change_reason_category_entity, domain::change_reason_category>(
+        ctx_,
+        query,
+        [](const auto& entities) { return change_reason_category_mapper::map(entities); },
+        lg(),
+        "Reading latest change_reason_categories");
 }
 
 std::vector<domain::change_reason_category>
 change_reason_category_repository::read_latest(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest change_reason_category. Code: "
-                               << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest change_reason_category. Code: " << code;
 
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<change_reason_category_entity>> |
+    const auto query =
+        sqlgen::read<std::vector<change_reason_category_entity>> |
         where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max.value());
 
-    return execute_read_query<change_reason_category_entity,
-                              domain::change_reason_category>(ctx_, query,
-        [](const auto& entities) {
-            return change_reason_category_mapper::map(entities);
-        },
-        lg(), "Reading latest change_reason_category by code.");
+    return execute_read_query<change_reason_category_entity, domain::change_reason_category>(
+        ctx_,
+        query,
+        [](const auto& entities) { return change_reason_category_mapper::map(entities); },
+        lg(),
+        "Reading latest change_reason_category by code.");
 }
 
 std::vector<domain::change_reason_category>
-change_reason_category_repository::read_latest(std::uint32_t offset,
-                                                std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest change_reason_categories with offset: "
-                               << offset << " and limit: " << limit;
+change_reason_category_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest change_reason_categories with offset: " << offset
+                               << " and limit: " << limit;
 
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<change_reason_category_entity>> |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-        order_by("code"_c) |
-        sqlgen::offset(offset) |
-        sqlgen::limit(limit);
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("code"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
-    return execute_read_query<change_reason_category_entity,
-                              domain::change_reason_category>(ctx_, query,
-        [](const auto& entities) {
-            return change_reason_category_mapper::map(entities);
-        },
-        lg(), "Reading latest change_reason_categories with pagination.");
+    return execute_read_query<change_reason_category_entity, domain::change_reason_category>(
+        ctx_,
+        query,
+        [](const auto& entities) { return change_reason_category_mapper::map(entities); },
+        lg(),
+        "Reading latest change_reason_categories with pagination.");
 }
 
 std::uint32_t change_reason_category_repository::get_total_count() {
@@ -124,10 +121,9 @@ std::uint32_t change_reason_category_repository::get_total_count() {
     };
 
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::select_from<change_reason_category_entity>(
-        sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-        sqlgen::to<count_result>;
+    const auto query =
+        sqlgen::select_from<change_reason_category_entity>(sqlgen::count().as<"count">()) |
+        where("tenant_id"_c == tid && "valid_to"_c == max.value()) | sqlgen::to<count_result>;
 
     const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
     ensure_success(r, lg());
@@ -139,40 +135,37 @@ std::uint32_t change_reason_category_repository::get_total_count() {
 
 std::vector<domain::change_reason_category>
 change_reason_category_repository::read_all(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all change_reason_category versions. Code: "
-                               << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all change_reason_category versions. Code: " << code;
 
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<change_reason_category_entity>> |
-        where("tenant_id"_c == tid && "code"_c == code) |
-        order_by("version"_c.desc());
+                       where("tenant_id"_c == tid && "code"_c == code) |
+                       order_by("version"_c.desc());
 
-    return execute_read_query<change_reason_category_entity,
-                              domain::change_reason_category>(ctx_, query,
-        [](const auto& entities) {
-            return change_reason_category_mapper::map(entities);
-        },
-        lg(), "Reading all change_reason_category versions by code.");
+    return execute_read_query<change_reason_category_entity, domain::change_reason_category>(
+        ctx_,
+        query,
+        [](const auto& entities) { return change_reason_category_mapper::map(entities); },
+        lg(),
+        "Reading all change_reason_category versions by code.");
 }
 
 void change_reason_category_repository::remove(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing change_reason_category from database: "
-                               << code;
+    BOOST_LOG_SEV(lg(), debug) << "Removing change_reason_category from database: " << code;
 
     // Delete the category - the database rule will close the temporal record
     // instead of actually deleting it (sets valid_to = current_timestamp)
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::delete_from<change_reason_category_entity> |
-        where("tenant_id"_c == tid && "code"_c == code);
+                       where("tenant_id"_c == tid && "code"_c == code);
 
-    execute_delete_query(ctx_, query, lg(),
-        "removing change_reason_category from database");
+    execute_delete_query(ctx_, query, lg(), "removing change_reason_category from database");
 }
 
 void change_reason_category_repository::remove(const std::vector<std::string>& codes) {
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::delete_from<change_reason_category_entity> |
-        where("tenant_id"_c == tid && "code"_c.in(codes));
+                       where("tenant_id"_c == tid && "code"_c.in(codes));
     execute_delete_query(ctx_, query, lg(), "batch removing change_reason_categories");
 }
 

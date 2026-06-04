@@ -20,10 +20,10 @@
 #ifndef ORES_DQ_API_DOMAIN_DATASET_TABLE_HPP
 #define ORES_DQ_API_DOMAIN_DATASET_TABLE_HPP
 
-#include <string>
-#include <vector>
 #include "ores.dq.api/domain/dataset.hpp"
 #include "ores.dq.api/export.hpp"
+#include <string>
+#include <vector>
 
 namespace ores::dq::domain {
 

@@ -18,16 +18,14 @@
  *
  */
 #include "ores.dq.api/domain/methodology_table_io.hpp"
-
-#include <ostream>
 #include "ores.dq.api/domain/methodology_table.hpp"
+#include <ostream>
 
 namespace ores::dq::domain {
 
 namespace {
 
-void print_methodology_table(std::ostream& s,
-    const std::vector<methodology>& v) {
+void print_methodology_table(std::ostream& s, const std::vector<methodology>& v) {
     s << std::endl << convert_to_table(v) << std::endl;
 }
 

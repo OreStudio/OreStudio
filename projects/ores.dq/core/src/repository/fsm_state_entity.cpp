@@ -18,7 +18,6 @@
  *
  */
 #include "ores.dq.core/repository/fsm_state_entity.hpp"
-
 #include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>

@@ -18,14 +18,13 @@
  *
  */
 #include "ores.dq.api/messaging/badge_definition_protocol.hpp"
-
-#include <expected>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
 #include "ores.platform/time/datetime.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/serialization/reader.hpp"
 #include "ores.utility/serialization/writer.hpp"
+#include <expected>
+#include <rfl.hpp>
+#include <rfl/json.hpp>
 
 namespace ores::dq::messaging {
 
@@ -39,8 +38,7 @@ namespace {
 // Badge Definition helpers
 // ============================================================================
 
-void write_badge_definition(std::vector<std::byte>& buffer,
-    const domain::badge_definition& bd) {
+void write_badge_definition(std::vector<std::byte>& buffer, const domain::badge_definition& bd) {
     writer::write_uint32(buffer, static_cast<std::uint32_t>(bd.version));
     writer::write_string(buffer, bd.code);
     writer::write_string(buffer, bd.name);
@@ -54,8 +52,7 @@ void write_badge_definition(std::vector<std::byte>& buffer,
     writer::write_string(buffer, bd.performed_by);
     writer::write_string(buffer, bd.change_reason_code);
     writer::write_string(buffer, bd.change_commentary);
-    writer::write_string(buffer,
-        ores::platform::time::datetime::to_iso8601_utc(bd.recorded_at));
+    writer::write_string(buffer, ores::platform::time::datetime::to_iso8601_utc(bd.recorded_at));
 }
 
 std::expected<domain::badge_definition, error_code>
@@ -63,59 +60,73 @@ read_badge_definition(std::span<const std::byte>& data) {
     domain::badge_definition bd;
 
     auto version_result = reader::read_uint32(data);
-    if (!version_result) return std::unexpected(version_result.error());
+    if (!version_result)
+        return std::unexpected(version_result.error());
     bd.version = static_cast<int>(*version_result);
 
     auto code_result = reader::read_string(data);
-    if (!code_result) return std::unexpected(code_result.error());
+    if (!code_result)
+        return std::unexpected(code_result.error());
     bd.code = *code_result;
 
     auto name_result = reader::read_string(data);
-    if (!name_result) return std::unexpected(name_result.error());
+    if (!name_result)
+        return std::unexpected(name_result.error());
     bd.name = *name_result;
 
     auto description_result = reader::read_string(data);
-    if (!description_result) return std::unexpected(description_result.error());
+    if (!description_result)
+        return std::unexpected(description_result.error());
     bd.description = *description_result;
 
     auto background_colour_result = reader::read_string(data);
-    if (!background_colour_result) return std::unexpected(background_colour_result.error());
+    if (!background_colour_result)
+        return std::unexpected(background_colour_result.error());
     bd.background_colour = *background_colour_result;
 
     auto text_colour_result = reader::read_string(data);
-    if (!text_colour_result) return std::unexpected(text_colour_result.error());
+    if (!text_colour_result)
+        return std::unexpected(text_colour_result.error());
     bd.text_colour = *text_colour_result;
 
     auto severity_code_result = reader::read_string(data);
-    if (!severity_code_result) return std::unexpected(severity_code_result.error());
+    if (!severity_code_result)
+        return std::unexpected(severity_code_result.error());
     bd.severity_code = *severity_code_result;
 
     auto css_class_result = reader::read_string(data);
-    if (!css_class_result) return std::unexpected(css_class_result.error());
+    if (!css_class_result)
+        return std::unexpected(css_class_result.error());
     bd.css_class = *css_class_result;
 
     auto display_order_result = reader::read_uint32(data);
-    if (!display_order_result) return std::unexpected(display_order_result.error());
+    if (!display_order_result)
+        return std::unexpected(display_order_result.error());
     bd.display_order = static_cast<int>(*display_order_result);
 
     auto modified_by_result = reader::read_string(data);
-    if (!modified_by_result) return std::unexpected(modified_by_result.error());
+    if (!modified_by_result)
+        return std::unexpected(modified_by_result.error());
     bd.modified_by = *modified_by_result;
 
     auto performed_by_result = reader::read_string(data);
-    if (!performed_by_result) return std::unexpected(performed_by_result.error());
+    if (!performed_by_result)
+        return std::unexpected(performed_by_result.error());
     bd.performed_by = *performed_by_result;
 
     auto change_reason_code_result = reader::read_string(data);
-    if (!change_reason_code_result) return std::unexpected(change_reason_code_result.error());
+    if (!change_reason_code_result)
+        return std::unexpected(change_reason_code_result.error());
     bd.change_reason_code = *change_reason_code_result;
 
     auto change_commentary_result = reader::read_string(data);
-    if (!change_commentary_result) return std::unexpected(change_commentary_result.error());
+    if (!change_commentary_result)
+        return std::unexpected(change_commentary_result.error());
     bd.change_commentary = *change_commentary_result;
 
     auto recorded_at_result = reader::read_string(data);
-    if (!recorded_at_result) return std::unexpected(recorded_at_result.error());
+    if (!recorded_at_result)
+        return std::unexpected(recorded_at_result.error());
     try {
         bd.recorded_at = ores::platform::time::datetime::from_iso8601_utc(*recorded_at_result);
     } catch (const std::invalid_argument&) {
@@ -162,13 +173,15 @@ get_badge_definitions_response::deserialize(std::span<const std::byte> data) {
     get_badge_definitions_response response;
 
     auto count_result = reader::read_count(data);
-    if (!count_result) return std::unexpected(count_result.error());
+    if (!count_result)
+        return std::unexpected(count_result.error());
     auto count = *count_result;
 
     response.definitions.reserve(count);
     for (std::uint32_t i = 0; i < count; ++i) {
         auto result = read_badge_definition(data);
-        if (!result) return std::unexpected(result.error());
+        if (!result)
+            return std::unexpected(result.error());
         response.definitions.push_back(std::move(*result));
     }
 
@@ -191,7 +204,8 @@ save_badge_definition_request::deserialize(std::span<const std::byte> data) {
     save_badge_definition_request request;
 
     auto result = read_badge_definition(data);
-    if (!result) return std::unexpected(result.error());
+    if (!result)
+        return std::unexpected(result.error());
     request.definition = std::move(*result);
 
     return request;
@@ -214,11 +228,13 @@ save_badge_definition_response::deserialize(std::span<const std::byte> data) {
     save_badge_definition_response response;
 
     auto success_result = reader::read_bool(data);
-    if (!success_result) return std::unexpected(success_result.error());
+    if (!success_result)
+        return std::unexpected(success_result.error());
     response.success = *success_result;
 
     auto message_result = reader::read_string(data);
-    if (!message_result) return std::unexpected(message_result.error());
+    if (!message_result)
+        return std::unexpected(message_result.error());
     response.message = *message_result;
 
     return response;
@@ -248,13 +264,15 @@ delete_badge_definition_request::deserialize(std::span<const std::byte> data) {
     delete_badge_definition_request request;
 
     auto count_result = reader::read_count(data);
-    if (!count_result) return std::unexpected(count_result.error());
+    if (!count_result)
+        return std::unexpected(count_result.error());
     auto count = *count_result;
 
     request.codes.reserve(count);
     for (std::uint32_t i = 0; i < count; ++i) {
         auto code_result = reader::read_string(data);
-        if (!code_result) return std::unexpected(code_result.error());
+        if (!code_result)
+            return std::unexpected(code_result.error());
         request.codes.push_back(*code_result);
     }
 
@@ -282,7 +300,8 @@ delete_badge_definition_response::deserialize(std::span<const std::byte> data) {
     delete_badge_definition_response response;
 
     auto count_result = reader::read_count(data);
-    if (!count_result) return std::unexpected(count_result.error());
+    if (!count_result)
+        return std::unexpected(count_result.error());
     auto count = *count_result;
 
     response.results.reserve(count);
@@ -290,15 +309,18 @@ delete_badge_definition_response::deserialize(std::span<const std::byte> data) {
         delete_badge_definition_result r;
 
         auto code_result = reader::read_string(data);
-        if (!code_result) return std::unexpected(code_result.error());
+        if (!code_result)
+            return std::unexpected(code_result.error());
         r.code = *code_result;
 
         auto success_result = reader::read_bool(data);
-        if (!success_result) return std::unexpected(success_result.error());
+        if (!success_result)
+            return std::unexpected(success_result.error());
         r.success = *success_result;
 
         auto message_result = reader::read_string(data);
-        if (!message_result) return std::unexpected(message_result.error());
+        if (!message_result)
+            return std::unexpected(message_result.error());
         r.message = *message_result;
 
         response.results.push_back(std::move(r));
@@ -323,7 +345,8 @@ get_badge_definition_history_request::deserialize(std::span<const std::byte> dat
     get_badge_definition_history_request request;
 
     auto code_result = reader::read_string(data);
-    if (!code_result) return std::unexpected(code_result.error());
+    if (!code_result)
+        return std::unexpected(code_result.error());
     request.code = *code_result;
 
     return request;
@@ -350,21 +373,25 @@ get_badge_definition_history_response::deserialize(std::span<const std::byte> da
     get_badge_definition_history_response response;
 
     auto success_result = reader::read_bool(data);
-    if (!success_result) return std::unexpected(success_result.error());
+    if (!success_result)
+        return std::unexpected(success_result.error());
     response.success = *success_result;
 
     auto message_result = reader::read_string(data);
-    if (!message_result) return std::unexpected(message_result.error());
+    if (!message_result)
+        return std::unexpected(message_result.error());
     response.message = *message_result;
 
     auto count_result = reader::read_count(data);
-    if (!count_result) return std::unexpected(count_result.error());
+    if (!count_result)
+        return std::unexpected(count_result.error());
     auto count = *count_result;
 
     response.versions.reserve(count);
     for (std::uint32_t i = 0; i < count; ++i) {
         auto result = read_badge_definition(data);
-        if (!result) return std::unexpected(result.error());
+        if (!result)
+            return std::unexpected(result.error());
         response.versions.push_back(std::move(*result));
     }
 

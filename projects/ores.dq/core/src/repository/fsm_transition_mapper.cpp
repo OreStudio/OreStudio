@@ -18,18 +18,16 @@
  *
  */
 #include "ores.dq.core/repository/fsm_transition_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::dq::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::fsm_transition
-fsm_transition_mapper::map(const fsm_transition_entity& v) {
+domain::fsm_transition fsm_transition_mapper::map(const fsm_transition_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::fsm_transition r;
@@ -37,9 +35,9 @@ fsm_transition_mapper::map(const fsm_transition_entity& v) {
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.machine_id = boost::lexical_cast<boost::uuids::uuid>(v.machine_id);
-    r.from_state_id = v.from_state_id.has_value()
-        ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.from_state_id))
-        : std::nullopt;
+    r.from_state_id = v.from_state_id.has_value() ?
+                          std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.from_state_id)) :
+                          std::nullopt;
     r.to_state_id = boost::lexical_cast<boost::uuids::uuid>(v.to_state_id);
     r.name = v.name;
     r.guard_function = v.guard_function.value_or("");
@@ -53,8 +51,7 @@ fsm_transition_mapper::map(const fsm_transition_entity& v) {
     return r;
 }
 
-fsm_transition_entity
-fsm_transition_mapper::map(const domain::fsm_transition& v) {
+fsm_transition_entity fsm_transition_mapper::map(const domain::fsm_transition& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v.name;
 
     fsm_transition_entity r;
@@ -62,13 +59,12 @@ fsm_transition_mapper::map(const domain::fsm_transition& v) {
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
     r.machine_id = boost::uuids::to_string(v.machine_id);
-    r.from_state_id = v.from_state_id.has_value()
-        ? std::optional(boost::uuids::to_string(*v.from_state_id))
-        : std::nullopt;
+    r.from_state_id = v.from_state_id.has_value() ?
+                          std::optional(boost::uuids::to_string(*v.from_state_id)) :
+                          std::nullopt;
     r.to_state_id = boost::uuids::to_string(v.to_state_id);
     r.name = v.name;
-    r.guard_function = v.guard_function.empty()
-        ? std::nullopt : std::optional(v.guard_function);
+    r.guard_function = v.guard_function.empty() ? std::nullopt : std::optional(v.guard_function);
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -81,19 +77,13 @@ fsm_transition_mapper::map(const domain::fsm_transition& v) {
 std::vector<domain::fsm_transition>
 fsm_transition_mapper::map(const std::vector<fsm_transition_entity>& v) {
     return map_vector<fsm_transition_entity, domain::fsm_transition>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<fsm_transition_entity>
 fsm_transition_mapper::map(const std::vector<domain::fsm_transition>& v) {
     return map_vector<domain::fsm_transition, fsm_transition_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

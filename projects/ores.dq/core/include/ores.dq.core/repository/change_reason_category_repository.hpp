@@ -20,13 +20,13 @@
 #ifndef ORES_DQ_CORE_REPOSITORY_CHANGE_REASON_CATEGORY_REPOSITORY_HPP
 #define ORES_DQ_CORE_REPOSITORY_CHANGE_REASON_CATEGORY_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/domain/change_reason_category.hpp"
 #include "ores.dq.core/export.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::dq::repository {
 
@@ -76,8 +76,8 @@ public:
      * @param limit Maximum number of records to return
      * @return Vector of categories within the specified range
      */
-    std::vector<domain::change_reason_category>
-    read_latest(std::uint32_t offset, std::uint32_t limit);
+    std::vector<domain::change_reason_category> read_latest(std::uint32_t offset,
+                                                            std::uint32_t limit);
 
     /**
      * @brief Gets the total count of active change_reason_categories.

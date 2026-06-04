@@ -74,6 +74,6 @@ task closes. Plans do not outlive their task.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | qt.api must link ores.dq.api.lib PUBLIC after dropping database | projects/ores.qt/api/src/CMakeLists.txt | Declined | Already linked PUBLIC in the same list since before the PR; premise false. |
 
 * Result

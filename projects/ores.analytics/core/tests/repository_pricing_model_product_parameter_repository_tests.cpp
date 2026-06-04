@@ -17,22 +17,21 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.analytics.core/repository/pricing_model_product_parameter_repository.hpp"
-
-#include <catch2/catch_test_macros.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.logging/make_logger.hpp"
-#include "ores.testing/scoped_database_helper.hpp"
-#include "ores.testing/make_generation_context.hpp"
-#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.analytics.api/domain/pricing_model_product_parameter.hpp" // IWYU pragma: keep.
 #include "ores.analytics.api/domain/pricing_model_product_parameter_json_io.hpp" // IWYU pragma: keep.
 #include "ores.analytics.api/generators/pricing_model_config_generator.hpp"
 #include "ores.analytics.api/generators/pricing_model_product_generator.hpp"
 #include "ores.analytics.api/generators/pricing_model_product_parameter_generator.hpp"
 #include "ores.analytics.core/repository/pricing_model_config_repository.hpp"
+#include "ores.analytics.core/repository/pricing_model_product_parameter_repository.hpp"
 #include "ores.analytics.core/repository/pricing_model_product_repository.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.testing/make_generation_context.hpp"
+#include "ores.testing/scoped_database_helper.hpp"
+#include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
+#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <boost/uuid/uuid_io.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 
@@ -55,9 +54,8 @@ namespace {
  * @brief Writes the prerequisite engine types, config, and product.
  * Returns the config_id and product_id for use in tests.
  */
-std::pair<boost::uuids::uuid, boost::uuids::uuid> write_prerequisites(
-    scoped_database_helper& h,
-    ores::utility::generation::generation_context& ctx) {
+std::pair<boost::uuids::uuid, boost::uuids::uuid>
+write_prerequisites(scoped_database_helper& h, ores::utility::generation::generation_context& ctx) {
     auto configs = generate_fictional_pricing_model_configs(1, ctx);
     pricing_model_config_repository cfg_repo;
     cfg_repo.write(h.context(), configs[0]);
@@ -78,8 +76,8 @@ TEST_CASE("write_single_pricing_model_product_parameter", tags) {
     auto ctx = ores::testing::make_generation_context(h);
     auto [config_id, product_id] = write_prerequisites(h, ctx);
 
-    auto params = generate_fictional_pricing_model_product_parameters(
-        1, config_id, product_id, ctx);
+    auto params =
+        generate_fictional_pricing_model_product_parameters(1, config_id, product_id, ctx);
     REQUIRE(!params.empty());
     BOOST_LOG_SEV(lg, debug) << "Parameter: " << params[0];
 
@@ -94,8 +92,8 @@ TEST_CASE("write_multiple_pricing_model_product_parameters", tags) {
     auto ctx = ores::testing::make_generation_context(h);
     auto [config_id, product_id] = write_prerequisites(h, ctx);
 
-    auto params = generate_fictional_pricing_model_product_parameters(
-        5, config_id, product_id, ctx);
+    auto params =
+        generate_fictional_pricing_model_product_parameters(5, config_id, product_id, ctx);
     BOOST_LOG_SEV(lg, debug) << "Parameters: " << params;
 
     pricing_model_product_parameter_repository repo;
@@ -109,8 +107,8 @@ TEST_CASE("read_latest_pricing_model_product_parameters_for_config", tags) {
     auto ctx = ores::testing::make_generation_context(h);
     auto [config_id, product_id] = write_prerequisites(h, ctx);
 
-    auto written = generate_fictional_pricing_model_product_parameters(
-        5, config_id, product_id, ctx);
+    auto written =
+        generate_fictional_pricing_model_product_parameters(5, config_id, product_id, ctx);
     pricing_model_product_parameter_repository repo;
     repo.write(h.context(), written);
 
@@ -128,8 +126,8 @@ TEST_CASE("read_latest_pricing_model_product_parameters_for_product", tags) {
     auto ctx = ores::testing::make_generation_context(h);
     auto [config_id, product_id] = write_prerequisites(h, ctx);
 
-    auto written = generate_fictional_pricing_model_product_parameters(
-        5, config_id, product_id, ctx);
+    auto written =
+        generate_fictional_pricing_model_product_parameters(5, config_id, product_id, ctx);
     pricing_model_product_parameter_repository repo;
     repo.write(h.context(), written);
 
@@ -148,8 +146,8 @@ TEST_CASE("read_latest_pricing_model_product_parameter_by_id", tags) {
     auto ctx = ores::testing::make_generation_context(h);
     auto [config_id, product_id] = write_prerequisites(h, ctx);
 
-    auto params = generate_fictional_pricing_model_product_parameters(
-        1, config_id, product_id, ctx);
+    auto params =
+        generate_fictional_pricing_model_product_parameters(1, config_id, product_id, ctx);
     REQUIRE(!params.empty());
     auto p = params[0];
     const auto param_id_str = boost::uuids::to_string(p.id);
@@ -172,8 +170,8 @@ TEST_CASE("read_all_pricing_model_product_parameter_history", tags) {
     auto ctx = ores::testing::make_generation_context(h);
     auto [config_id, product_id] = write_prerequisites(h, ctx);
 
-    auto params = generate_fictional_pricing_model_product_parameters(
-        1, config_id, product_id, ctx);
+    auto params =
+        generate_fictional_pricing_model_product_parameters(1, config_id, product_id, ctx);
     REQUIRE(!params.empty());
     auto p = params[0];
     const auto param_id_str = boost::uuids::to_string(p.id);
@@ -198,8 +196,8 @@ TEST_CASE("remove_pricing_model_product_parameter", tags) {
     auto ctx = ores::testing::make_generation_context(h);
     auto [config_id, product_id] = write_prerequisites(h, ctx);
 
-    auto params = generate_fictional_pricing_model_product_parameters(
-        1, config_id, product_id, ctx);
+    auto params =
+        generate_fictional_pricing_model_product_parameters(1, config_id, product_id, ctx);
     REQUIRE(!params.empty());
     auto p = params[0];
     const auto param_id_str = boost::uuids::to_string(p.id);
@@ -220,8 +218,8 @@ TEST_CASE("remove_pricing_model_product_parameters_for_config", tags) {
     auto ctx = ores::testing::make_generation_context(h);
     auto [config_id, product_id] = write_prerequisites(h, ctx);
 
-    auto params = generate_fictional_pricing_model_product_parameters(
-        5, config_id, product_id, ctx);
+    auto params =
+        generate_fictional_pricing_model_product_parameters(5, config_id, product_id, ctx);
     pricing_model_product_parameter_repository repo;
     repo.write(h.context(), params);
 

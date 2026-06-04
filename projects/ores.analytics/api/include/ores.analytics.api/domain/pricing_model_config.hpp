@@ -20,11 +20,11 @@
 #ifndef ORES_ANALYTICS_DOMAIN_PRICING_MODEL_CONFIG_HPP
 #define ORES_ANALYTICS_DOMAIN_PRICING_MODEL_CONFIG_HPP
 
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <optional>
 #include <string>
-#include <boost/uuid/uuid.hpp>
-#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::analytics::domain {
 

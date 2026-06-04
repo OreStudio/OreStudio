@@ -20,17 +20,18 @@
 #ifndef ORES_SCHEDULER_DOMAIN_JOB_DEFINITION_TABLE_IO_HPP
 #define ORES_SCHEDULER_DOMAIN_JOB_DEFINITION_TABLE_IO_HPP
 
+#include "ores.scheduler.api/domain/job_definition.hpp"
+#include "ores.scheduler.api/export.hpp"
 #include <iosfwd>
 #include <vector>
-#include "ores.scheduler.api/export.hpp"
-#include "ores.scheduler.api/domain/job_definition.hpp"
 
 namespace ores::scheduler::domain {
 
 /**
  * @brief Dumps the job_definition objects to a stream in table format.
  */
-ORES_SCHEDULER_API_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<job_definition>& v);
+ORES_SCHEDULER_API_EXPORT std::ostream& operator<<(std::ostream& s,
+                                                   const std::vector<job_definition>& v);
 
 }
 

@@ -18,7 +18,6 @@
  *
  */
 #include "ores.scheduler.api/domain/job_definition_table.hpp"
-
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
 

@@ -18,9 +18,8 @@
  *
  */
 #include "ores.scheduler.api/domain/job_definition_table_io.hpp"
-
-#include <ostream>
 #include "ores.scheduler.api/domain/job_definition_table.hpp"
+#include <ostream>
 
 namespace ores::scheduler::domain {
 

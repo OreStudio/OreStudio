@@ -20,11 +20,11 @@
 #ifndef ORES_ANALYTICS_GENERATORS_PRICING_MODEL_PRODUCT_PARAMETER_GENERATOR_HPP
 #define ORES_ANALYTICS_GENERATORS_PRICING_MODEL_PRODUCT_PARAMETER_GENERATOR_HPP
 
-#include <vector>
-#include <boost/uuid/uuid.hpp>
 #include "ores.analytics.api/domain/pricing_model_product_parameter.hpp"
 #include "ores.analytics.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <vector>
 
 namespace ores::analytics::generators {
 
@@ -40,11 +40,10 @@ namespace ores::analytics::generators {
  * @param product_id UUID of the pricing model product for scoped parameters.
  */
 ORES_ANALYTICS_API_EXPORT std::vector<domain::pricing_model_product_parameter>
-generate_fictional_pricing_model_product_parameters(
-    std::size_t n,
-    const boost::uuids::uuid& config_id,
-    const boost::uuids::uuid& product_id,
-    utility::generation::generation_context& ctx);
+generate_fictional_pricing_model_product_parameters(std::size_t n,
+                                                    const boost::uuids::uuid& config_id,
+                                                    const boost::uuids::uuid& product_id,
+                                                    utility::generation::generation_context& ctx);
 
 }
 

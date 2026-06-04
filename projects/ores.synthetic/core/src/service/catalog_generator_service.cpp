@@ -19,7 +19,6 @@
  */
 #include "ores.synthetic.core/service/catalog_generator_service.hpp"
 #include "ores.utility/generation/generation_context.hpp"
-
 #include <array>
 #include <sstream>
 
@@ -31,118 +30,97 @@ namespace {
 
 // Predefined realistic data for high-quality generation
 
-const std::array<std::pair<std::string, std::string>, 10> account_data = {{
-    {"jsmith", "john.smith@example.com"},
-    {"mjohnson", "mary.johnson@example.com"},
-    {"rwilliams", "robert.williams@example.com"},
-    {"sbrown", "sarah.brown@example.com"},
-    {"dlee", "david.lee@example.com"},
-    {"ewilson", "emma.wilson@example.com"},
-    {"mgarcia", "michael.garcia@example.com"},
-    {"jmartinez", "jennifer.martinez@example.com"},
-    {"canderson", "christopher.anderson@example.com"},
-    {"lthomas", "lisa.thomas@example.com"}
-}};
+const std::array<std::pair<std::string, std::string>, 10> account_data = {
+    {{"jsmith", "john.smith@example.com"},
+     {"mjohnson", "mary.johnson@example.com"},
+     {"rwilliams", "robert.williams@example.com"},
+     {"sbrown", "sarah.brown@example.com"},
+     {"dlee", "david.lee@example.com"},
+     {"ewilson", "emma.wilson@example.com"},
+     {"mgarcia", "michael.garcia@example.com"},
+     {"jmartinez", "jennifer.martinez@example.com"},
+     {"canderson", "christopher.anderson@example.com"},
+     {"lthomas", "lisa.thomas@example.com"}}};
 
-const std::array<std::pair<std::string, std::string>, 8> catalog_data = {{
-    {"ISO Standards", "International Organization for Standardization reference data"},
-    {"Market Data", "Real-time and historical market pricing data"},
-    {"Reference Data", "Static reference data for financial instruments"},
-    {"Regulatory", "Data required for regulatory compliance and reporting"},
-    {"Risk Analytics", "Risk calculation and analytics datasets"},
-    {"Trade Data", "Transaction and trade execution data"},
-    {"Client Data", "Client and counterparty information"},
-    {"Corporate Actions", "Corporate action events and announcements"}
-}};
+const std::array<std::pair<std::string, std::string>, 8> catalog_data = {
+    {{"ISO Standards", "International Organization for Standardization reference data"},
+     {"Market Data", "Real-time and historical market pricing data"},
+     {"Reference Data", "Static reference data for financial instruments"},
+     {"Regulatory", "Data required for regulatory compliance and reporting"},
+     {"Risk Analytics", "Risk calculation and analytics datasets"},
+     {"Trade Data", "Transaction and trade execution data"},
+     {"Client Data", "Client and counterparty information"},
+     {"Corporate Actions", "Corporate action events and announcements"}}};
 
-const std::array<std::pair<std::string, std::string>, 6> domain_data = {{
-    {"Reference Data", "Static reference data including securities, parties, and classifications"},
-    {"Market Data", "Real-time and historical pricing, quotes, and market indicators"},
-    {"Trade Data", "Transaction records, executions, and settlement information"},
-    {"Risk Data", "Risk metrics, exposures, and limit calculations"},
-    {"Regulatory Data", "Compliance, reporting, and regulatory submissions"},
-    {"Analytics Data", "Derived analytics, models, and computed metrics"}
-}};
+const std::array<std::pair<std::string, std::string>, 6> domain_data = {
+    {{"Reference Data", "Static reference data including securities, parties, and classifications"},
+     {"Market Data", "Real-time and historical pricing, quotes, and market indicators"},
+     {"Trade Data", "Transaction records, executions, and settlement information"},
+     {"Risk Data", "Risk metrics, exposures, and limit calculations"},
+     {"Regulatory Data", "Compliance, reporting, and regulatory submissions"},
+     {"Analytics Data", "Derived analytics, models, and computed metrics"}}};
 
-const std::array<std::pair<std::string, std::string>, 12> subject_area_data = {{
-    {"Currencies", "Currency codes and exchange rate data"},
-    {"Countries", "Country codes and geographic classifications"},
-    {"Securities", "Financial instruments and their characteristics"},
-    {"Parties", "Counterparties, issuers, and legal entities"},
-    {"Prices", "Asset prices and valuations"},
-    {"Quotes", "Bid/ask quotes and market depth"},
-    {"Trades", "Executed transactions"},
-    {"Positions", "Holdings and portfolio positions"},
-    {"Exposures", "Risk exposures and sensitivities"},
-    {"Reports", "Regulatory and compliance reports"},
-    {"Models", "Quantitative models and analytics"},
-    {"Events", "Corporate actions and market events"}
-}};
+const std::array<std::pair<std::string, std::string>, 12> subject_area_data = {
+    {{"Currencies", "Currency codes and exchange rate data"},
+     {"Countries", "Country codes and geographic classifications"},
+     {"Securities", "Financial instruments and their characteristics"},
+     {"Parties", "Counterparties, issuers, and legal entities"},
+     {"Prices", "Asset prices and valuations"},
+     {"Quotes", "Bid/ask quotes and market depth"},
+     {"Trades", "Executed transactions"},
+     {"Positions", "Holdings and portfolio positions"},
+     {"Exposures", "Risk exposures and sensitivities"},
+     {"Reports", "Regulatory and compliance reports"},
+     {"Models", "Quantitative models and analytics"},
+     {"Events", "Corporate actions and market events"}}};
 
-const std::array<std::pair<std::string, std::string>, 5> origin_data = {{
-    {"SOURCE", "Primary authoritative source data"},
-    {"DERIVED", "Calculated or transformed from other datasets"},
-    {"EXTERNAL", "Data obtained from external vendors"},
-    {"INTERNAL", "Internally generated data"},
-    {"AGGREGATED", "Consolidated from multiple sources"}
-}};
+const std::array<std::pair<std::string, std::string>, 5> origin_data = {
+    {{"SOURCE", "Primary authoritative source data"},
+     {"DERIVED", "Calculated or transformed from other datasets"},
+     {"EXTERNAL", "Data obtained from external vendors"},
+     {"INTERNAL", "Internally generated data"},
+     {"AGGREGATED", "Consolidated from multiple sources"}}};
 
-const std::array<std::pair<std::string, std::string>, 4> nature_data = {{
-    {"ACTUAL", "Real production data from live systems"},
-    {"SYNTHETIC", "Generated test data for development"},
-    {"HISTORICAL", "Archived data from past periods"},
-    {"SIMULATED", "Scenario-based simulation data"}
-}};
+const std::array<std::pair<std::string, std::string>, 4> nature_data = {
+    {{"ACTUAL", "Real production data from live systems"},
+     {"SYNTHETIC", "Generated test data for development"},
+     {"HISTORICAL", "Archived data from past periods"},
+     {"SIMULATED", "Scenario-based simulation data"}}};
 
-const std::array<std::pair<std::string, std::string>, 4> treatment_data = {{
-    {"RAW", "Unprocessed data as received from source"},
-    {"CLEANSED", "Validated and cleaned data"},
-    {"ENRICHED", "Data augmented with derived fields"},
-    {"AGGREGATED", "Summarized or rolled-up data"}
-}};
+const std::array<std::pair<std::string, std::string>, 4> treatment_data = {
+    {{"RAW", "Unprocessed data as received from source"},
+     {"CLEANSED", "Validated and cleaned data"},
+     {"ENRICHED", "Data augmented with derived fields"},
+     {"AGGREGATED", "Summarized or rolled-up data"}}};
 
-const std::array<std::string, 20> dataset_names = {{
-    "Currency Reference Data",
-    "Country Master File",
-    "Security Master",
-    "Counterparty Registry",
-    "Daily Price Feed",
-    "Intraday Quotes",
-    "Trade Executions",
-    "Position Snapshot",
-    "Risk Exposures Daily",
-    "Regulatory Report Extract",
-    "Model Parameters",
-    "Corporate Actions Feed",
-    "FX Rates Daily",
-    "Bond Yields Curve",
-    "Equity Indices",
-    "Credit Spreads",
-    "Volatility Surface",
-    "Swap Curves",
-    "Client Positions",
-    "Margin Calculations"
-}};
+const std::array<std::string, 20> dataset_names = {
+    {"Currency Reference Data", "Country Master File",
+     "Security Master",         "Counterparty Registry",
+     "Daily Price Feed",        "Intraday Quotes",
+     "Trade Executions",        "Position Snapshot",
+     "Risk Exposures Daily",    "Regulatory Report Extract",
+     "Model Parameters",        "Corporate Actions Feed",
+     "FX Rates Daily",          "Bond Yields Curve",
+     "Equity Indices",          "Credit Spreads",
+     "Volatility Surface",      "Swap Curves",
+     "Client Positions",        "Margin Calculations"}};
 
-const std::array<std::string, 10> source_systems = {{
-    "BLOOMBERG",
-    "REFINITIV",
-    "INTERNAL_CALC",
-    "TRADE_CAPTURE",
-    "RISK_ENGINE",
-    "SETTLEMENT_SYS",
-    "PRICING_SVC",
-    "DATA_WAREHOUSE",
-    "REG_REPORTING",
-    "ANALYTICS_PLATFORM"
-}};
+const std::array<std::string, 10> source_systems = {{"BLOOMBERG",
+                                                     "REFINITIV",
+                                                     "INTERNAL_CALC",
+                                                     "TRADE_CAPTURE",
+                                                     "RISK_ENGINE",
+                                                     "SETTLEMENT_SYS",
+                                                     "PRICING_SVC",
+                                                     "DATA_WAREHOUSE",
+                                                     "REG_REPORTING",
+                                                     "ANALYTICS_PLATFORM"}};
 
 }
 
 domain::synthetic_catalog
 catalog_generator_service::generate(const domain::generation_options& options) {
-    generation_context ctx(
-        options.seed.value_or(std::random_device{}()));
+    generation_context ctx(options.seed.value_or(std::random_device{}()));
 
     domain::synthetic_catalog result;
     result.seed = ctx.seed();
@@ -198,8 +176,9 @@ catalog_generator_service::generate(const domain::generation_options& options) {
     // Generate subject areas (linked to domains)
     std::size_t sa_idx = 0;
     for (const auto& dom : result.data_domains) {
-        for (std::size_t j = 0; j < options.subject_areas_per_domain &&
-             sa_idx < subject_area_data.size(); ++j, ++sa_idx) {
+        for (std::size_t j = 0;
+             j < options.subject_areas_per_domain && sa_idx < subject_area_data.size();
+             ++j, ++sa_idx) {
             dq::domain::subject_area sa;
             sa.version = 1;
             sa.name = subject_area_data[sa_idx].first;
@@ -239,7 +218,8 @@ catalog_generator_service::generate(const domain::generation_options& options) {
     }
 
     // Generate treatment dimensions
-    for (std::size_t i = 0; i < options.treatment_dimension_count && i < treatment_data.size(); ++i) {
+    for (std::size_t i = 0; i < options.treatment_dimension_count && i < treatment_data.size();
+         ++i) {
         dq::domain::treatment_dimension td;
         td.version = 1;
         td.code = treatment_data[i].first;

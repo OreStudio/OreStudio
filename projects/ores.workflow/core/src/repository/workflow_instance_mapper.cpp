@@ -18,11 +18,10 @@
  *
  */
 #include "ores.workflow.core/repository/workflow_instance_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.workflow.core/domain/workflow_instance_json_io.hpp" // IWYU pragma: keep.
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::workflow::repository {
 
@@ -30,8 +29,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 using ores::platform::time::datetime;
 
-domain::workflow_instance
-workflow_instance_mapper::map(const workflow_instance_entity& v) {
+domain::workflow_instance workflow_instance_mapper::map(const workflow_instance_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::workflow_instance r;
@@ -60,14 +58,10 @@ workflow_instance_mapper::map(const workflow_instance_entity& v) {
 std::vector<domain::workflow_instance>
 workflow_instance_mapper::map(const std::vector<workflow_instance_entity>& v) {
     return map_vector<workflow_instance_entity, domain::workflow_instance>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
-workflow_instance_entity
-workflow_instance_mapper::to_entity(const domain::workflow_instance& v) {
+workflow_instance_entity workflow_instance_mapper::to_entity(const domain::workflow_instance& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain object to entity.";
 
     workflow_instance_entity r;
@@ -76,12 +70,11 @@ workflow_instance_mapper::to_entity(const domain::workflow_instance& v) {
     r.type = v.type;
     r.state_id = boost::uuids::to_string(v.state_id);
     r.request_json = v.request_json;
-    r.result_json = v.result_json.empty()
-        ? std::nullopt : std::optional<std::string>(v.result_json);
-    r.error = v.error.empty()
-        ? std::nullopt : std::optional<std::string>(v.error);
-    r.correlation_id = v.correlation_id.empty()
-        ? std::nullopt : std::optional<std::string>(v.correlation_id);
+    r.result_json =
+        v.result_json.empty() ? std::nullopt : std::optional<std::string>(v.result_json);
+    r.error = v.error.empty() ? std::nullopt : std::optional<std::string>(v.error);
+    r.correlation_id =
+        v.correlation_id.empty() ? std::nullopt : std::optional<std::string>(v.correlation_id);
     r.created_by = v.created_by;
     r.current_step_index = v.current_step_index;
     r.step_count = v.step_count;

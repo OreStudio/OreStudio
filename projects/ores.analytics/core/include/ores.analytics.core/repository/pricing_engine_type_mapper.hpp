@@ -21,9 +21,9 @@
 #define ORES_ANALYTICS_REPOSITORY_PRICING_ENGINE_TYPE_MAPPER_HPP
 
 #include "ores.analytics.api/domain/pricing_engine_type.hpp"
+#include "ores.analytics.core/export.hpp"
 #include "ores.analytics.core/repository/pricing_engine_type_entity.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.analytics.core/export.hpp"
 
 namespace ores::analytics::repository {
 
@@ -40,6 +40,7 @@ private:
         static auto instance = make_logger(logger_name);
         return instance;
     }
+
 public:
     static domain::pricing_engine_type map(const pricing_engine_type_entity& v);
     static pricing_engine_type_entity map(const domain::pricing_engine_type& v);

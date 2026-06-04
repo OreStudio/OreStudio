@@ -18,7 +18,6 @@
  *
  */
 #include "ores.analytics.api/domain/pricing_model_product_parameter_table.hpp"
-
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
 
@@ -28,19 +27,17 @@ std::string convert_to_table(const std::vector<pricing_model_product_parameter>&
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header
-          << "version" << "id" << "pricing_model_config_id"
+    table << fort::header << "version" << "id" << "pricing_model_config_id"
           << "pricing_model_product_id" << "parameter_scope"
-          << "parameter_name" << "parameter_value" << "modified_by"
-          << fort::endr;
+          << "parameter_name" << "parameter_value" << "modified_by" << fort::endr;
 
     for (const auto& p : v) {
         table << p.version << boost::uuids::to_string(p.id)
               << boost::uuids::to_string(p.pricing_model_config_id)
-              << (p.pricing_model_product_id
-                      ? boost::uuids::to_string(*p.pricing_model_product_id) : "")
-              << p.parameter_scope << p.parameter_name << p.parameter_value
-              << p.modified_by
+              << (p.pricing_model_product_id ?
+                      boost::uuids::to_string(*p.pricing_model_product_id) :
+                      "")
+              << p.parameter_scope << p.parameter_name << p.parameter_value << p.modified_by
               << fort::endr;
     }
     return table.to_string();

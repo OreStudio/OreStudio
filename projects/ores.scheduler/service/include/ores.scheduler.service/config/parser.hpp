@@ -20,12 +20,12 @@
 #ifndef ORES_SCHEDULER_SERVICE_CONFIG_PARSER_HPP
 #define ORES_SCHEDULER_SERVICE_CONFIG_PARSER_HPP
 
-#include <iosfwd>
-#include <vector>
-#include <string>
-#include <optional>
-#include "ores.scheduler.service/export.hpp"
 #include "ores.scheduler.service/config/options.hpp"
+#include "ores.scheduler.service/export.hpp"
+#include <iosfwd>
+#include <optional>
+#include <string>
+#include <vector>
 
 namespace ores::scheduler::service::config {
 
@@ -38,8 +38,7 @@ namespace ores::scheduler::service::config {
 class ORES_SCHEDULER_SERVICE_EXPORT parser final {
 public:
     std::optional<options>
-    parse(const std::vector<std::string>& arguments, std::ostream& info,
-        std::ostream& error) const;
+    parse(const std::vector<std::string>& arguments, std::ostream& info, std::ostream& error) const;
 };
 
 }

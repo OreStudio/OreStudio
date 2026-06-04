@@ -18,36 +18,33 @@
  *
  */
 #include "ores.synthetic.core/service/organisation_publisher_service.hpp"
-#include <algorithm>
-#include <unordered_map>
-#include <sqlgen/postgres.hpp>
-#include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
-
-#include "ores.refdata.core/repository/party_mapper.hpp"
-#include "ores.refdata.core/repository/party_contact_information_mapper.hpp"
-#include "ores.refdata.core/repository/party_identifier_mapper.hpp"
-#include "ores.refdata.core/repository/counterparty_mapper.hpp"
+#include "ores.database/repository/helpers.hpp"
+#include "ores.refdata.core/repository/book_mapper.hpp"
+#include "ores.refdata.core/repository/business_unit_mapper.hpp"
+#include "ores.refdata.core/repository/business_unit_type_mapper.hpp"
 #include "ores.refdata.core/repository/counterparty_contact_information_mapper.hpp"
 #include "ores.refdata.core/repository/counterparty_identifier_mapper.hpp"
+#include "ores.refdata.core/repository/counterparty_mapper.hpp"
+#include "ores.refdata.core/repository/party_contact_information_mapper.hpp"
 #include "ores.refdata.core/repository/party_counterparty_mapper.hpp"
-#include "ores.refdata.core/repository/business_unit_type_mapper.hpp"
-#include "ores.refdata.core/repository/business_unit_mapper.hpp"
+#include "ores.refdata.core/repository/party_identifier_mapper.hpp"
+#include "ores.refdata.core/repository/party_mapper.hpp"
 #include "ores.refdata.core/repository/portfolio_mapper.hpp"
-#include "ores.refdata.core/repository/book_mapper.hpp"
+#include <algorithm>
+#include <sqlgen/postgres.hpp>
+#include <unordered_map>
 
 namespace ores::synthetic::service {
 
 using namespace ores::logging;
 using namespace refdata::repository;
 
-organisation_publisher_service::organisation_publisher_service(
-    database::context ctx)
+organisation_publisher_service::organisation_publisher_service(database::context ctx)
     : ctx_(std::move(ctx)) {}
 
 generate_organisation_result
-organisation_publisher_service::publish(
-    const domain::generated_organisation& org) {
+organisation_publisher_service::publish(const domain::generated_organisation& org) {
 
     generate_organisation_result response;
 
@@ -57,16 +54,12 @@ organisation_publisher_service::publish(
 
         // Map all domain objects to entities before starting the transaction.
         auto parties = party_mapper::map(org.parties);
-        auto party_contacts =
-            party_contact_information_mapper::map(org.party_contacts);
+        auto party_contacts = party_contact_information_mapper::map(org.party_contacts);
         auto party_ids = party_identifier_mapper::map(org.party_identifiers);
         auto counterparties = counterparty_mapper::map(org.counterparties);
-        auto cp_contacts =
-            counterparty_contact_information_mapper::map(org.counterparty_contacts);
-        auto cp_ids =
-            counterparty_identifier_mapper::map(org.counterparty_identifiers);
-        auto party_cps =
-            party_counterparty_mapper::map(org.party_counterparties);
+        auto cp_contacts = counterparty_contact_information_mapper::map(org.counterparty_contacts);
+        auto cp_ids = counterparty_identifier_mapper::map(org.counterparty_identifiers);
+        auto party_cps = party_counterparty_mapper::map(org.party_counterparties);
         auto bu_types = business_unit_type_mapper::map(org.business_unit_types);
         auto bus_units = business_unit_mapper::map(org.business_units);
         auto portfolios = portfolio_mapper::map(org.portfolios);
@@ -80,10 +73,11 @@ organisation_publisher_service::publish(
         // valid.
         if (!bu_types.empty()) {
             const auto& tid = bu_types[0].tenant_id;
-            const auto sql =
-                "SELECT code, id FROM ores_refdata_business_unit_types_tbl "
-                "WHERE tenant_id = '" + tid + "'::uuid "
-                "AND valid_to = ores_utility_infinity_timestamp_fn()";
+            const auto sql = "SELECT code, id FROM ores_refdata_business_unit_types_tbl "
+                             "WHERE tenant_id = '" +
+                             tid +
+                             "'::uuid "
+                             "AND valid_to = ores_utility_infinity_timestamp_fn()";
             const auto rows = database::repository::execute_raw_multi_column_query(
                 ctx_, sql, lg(), "checking existing BU types");
 
@@ -117,8 +111,7 @@ organisation_publisher_service::publish(
                         bu.unit_type_id = it->second;
                 }
             }
-            BOOST_LOG_SEV(lg(), debug) << "BU types to insert after dedup: "
-                                       << bu_types.size();
+            BOOST_LOG_SEV(lg(), debug) << "BU types to insert after dedup: " << bu_types.size();
         }
 
         BOOST_LOG_SEV(lg(), info) << "Mapped all entities, inserting in a "
@@ -131,64 +124,54 @@ organisation_publisher_service::publish(
         // inserted first (no party-isolation on the parties table itself),
         // then party context is set for the root org party before the
         // remaining inserts.
-        const auto set_party_sql = bus_units.empty()
-            ? std::string("SELECT 1")
-            : "SELECT ores_iam_set_party_context_fn('" +
-                bus_units[0].tenant_id + "'::uuid, '" +
-                bus_units[0].party_id + "'::uuid)";
+        const auto set_party_sql = bus_units.empty() ? std::string("SELECT 1") :
+                                                       "SELECT ores_iam_set_party_context_fn('" +
+                                                           bus_units[0].tenant_id + "'::uuid, '" +
+                                                           bus_units[0].party_id + "'::uuid)";
 
         // Insert all entities atomically in FK order within a single
         // transaction. If any insert fails, the entire transaction rolls back.
         using namespace sqlgen;
         const auto r = session(ctx_.connection_pool())
-            .and_then(begin_transaction)
-            .and_then(insert(parties))
-            .and_then(insert(party_contacts))
-            .and_then(insert(party_ids))
-            .and_then(insert(counterparties))
-            .and_then(insert(cp_contacts))
-            .and_then(insert(cp_ids))
-            .and_then(insert(party_cps))
-            .and_then(insert(bu_types))
-            .and_then(sqlgen::exec(set_party_sql))
-            .and_then(insert(bus_units))
-            .and_then(insert(portfolios))
-            .and_then(insert(books))
-            .and_then(commit);
+                           .and_then(begin_transaction)
+                           .and_then(insert(parties))
+                           .and_then(insert(party_contacts))
+                           .and_then(insert(party_ids))
+                           .and_then(insert(counterparties))
+                           .and_then(insert(cp_contacts))
+                           .and_then(insert(cp_ids))
+                           .and_then(insert(party_cps))
+                           .and_then(insert(bu_types))
+                           .and_then(sqlgen::exec(set_party_sql))
+                           .and_then(insert(bus_units))
+                           .and_then(insert(portfolios))
+                           .and_then(insert(books))
+                           .and_then(commit);
         database::repository::ensure_success(r, lg());
 
         BOOST_LOG_SEV(lg(), info) << "Wrote " << parties.size() << " parties, "
-            << counterparties.size() << " counterparties, "
-            << bu_types.size() << " business unit types, "
-            << bus_units.size() << " business units, "
-            << portfolios.size() << " portfolios, "
-            << books.size() << " books";
+                                  << counterparties.size() << " counterparties, " << bu_types.size()
+                                  << " business unit types, " << bus_units.size()
+                                  << " business units, " << portfolios.size() << " portfolios, "
+                                  << books.size() << " books";
 
         response.success = true;
-        response.parties_count =
-            static_cast<std::uint32_t>(org.parties.size());
-        response.counterparties_count =
-            static_cast<std::uint32_t>(org.counterparties.size());
-        response.portfolios_count =
-            static_cast<std::uint32_t>(org.portfolios.size());
-        response.books_count =
-            static_cast<std::uint32_t>(org.books.size());
+        response.parties_count = static_cast<std::uint32_t>(org.parties.size());
+        response.counterparties_count = static_cast<std::uint32_t>(org.counterparties.size());
+        response.portfolios_count = static_cast<std::uint32_t>(org.portfolios.size());
+        response.books_count = static_cast<std::uint32_t>(org.books.size());
         response.business_unit_types_count =
             static_cast<std::uint32_t>(org.business_unit_types.size());
-        response.business_units_count =
-            static_cast<std::uint32_t>(org.business_units.size());
-        response.contacts_count =
-            static_cast<std::uint32_t>(
-                org.party_contacts.size() + org.counterparty_contacts.size());
-        response.identifiers_count =
-            static_cast<std::uint32_t>(
-                org.party_identifiers.size() + org.counterparty_identifiers.size());
+        response.business_units_count = static_cast<std::uint32_t>(org.business_units.size());
+        response.contacts_count = static_cast<std::uint32_t>(org.party_contacts.size() +
+                                                             org.counterparty_contacts.size());
+        response.identifiers_count = static_cast<std::uint32_t>(
+            org.party_identifiers.size() + org.counterparty_identifiers.size());
 
         BOOST_LOG_SEV(lg(), info) << "Organisation publication complete";
 
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Organisation publication failed: "
-                                   << e.what();
+        BOOST_LOG_SEV(lg(), error) << "Organisation publication failed: " << e.what();
         response.success = false;
         response.error_message = e.what();
     }

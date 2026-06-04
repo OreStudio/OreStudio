@@ -20,13 +20,13 @@
 #ifndef ORES_SCHEDULER_SERVICE_JOB_DEFINITION_SERVICE_HPP
 #define ORES_SCHEDULER_SERVICE_JOB_DEFINITION_SERVICE_HPP
 
-#include <string>
-#include <vector>
-#include <optional>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.scheduler.api/domain/job_definition.hpp"
 #include "ores.scheduler.core/repository/job_definition_repository.hpp"
+#include <optional>
+#include <string>
+#include <vector>
 
 namespace ores::scheduler::service {
 
@@ -35,8 +35,7 @@ namespace ores::scheduler::service {
  */
 class job_definition_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.scheduler.service.job_definition_service";
+    inline static std::string_view logger_name = "ores.scheduler.service.job_definition_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -51,15 +50,13 @@ public:
 
     std::vector<domain::job_definition> list_definitions();
 
-    std::optional<domain::job_definition>
-    find_definition(const std::string& id);
+    std::optional<domain::job_definition> find_definition(const std::string& id);
 
     void save_definition(domain::job_definition v);
 
     void remove_definition(const std::string& id);
 
-    std::vector<domain::job_definition>
-    get_definition_history(const std::string& id);
+    std::vector<domain::job_definition> get_definition_history(const std::string& id);
 
 private:
     context ctx_;

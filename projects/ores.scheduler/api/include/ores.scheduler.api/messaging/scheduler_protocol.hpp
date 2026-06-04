@@ -20,20 +20,19 @@
 #ifndef ORES_SCHEDULER_MESSAGING_SCHEDULER_PROTOCOL_HPP
 #define ORES_SCHEDULER_MESSAGING_SCHEDULER_PROTOCOL_HPP
 
+#include "ores.scheduler.api/domain/job_definition.hpp"
+#include "ores.scheduler.api/domain/job_instance.hpp"
 #include <cstdint>
 #include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
-#include "ores.scheduler.api/domain/job_definition.hpp"
-#include "ores.scheduler.api/domain/job_instance.hpp"
 
 namespace ores::scheduler::messaging {
 
 struct get_job_definitions_request {
     using response_type = struct get_job_definitions_response;
-    static constexpr std::string_view nats_subject =
-        "scheduler.v1.job-definitions.list";
+    static constexpr std::string_view nats_subject = "scheduler.v1.job-definitions.list";
     int offset = 0;
     int limit = 100;
 };
@@ -45,8 +44,7 @@ struct get_job_definitions_response {
 
 struct schedule_job_request {
     using response_type = struct schedule_job_response;
-    static constexpr std::string_view nats_subject =
-        "scheduler.v1.job-definitions.schedule";
+    static constexpr std::string_view nats_subject = "scheduler.v1.job-definitions.schedule";
     ores::scheduler::domain::job_definition definition;
     std::string change_reason_code;
     std::string change_commentary;
@@ -59,8 +57,7 @@ struct schedule_job_response {
 
 struct unschedule_job_request {
     using response_type = struct unschedule_job_response;
-    static constexpr std::string_view nats_subject =
-        "scheduler.v1.job-definitions.unschedule";
+    static constexpr std::string_view nats_subject = "scheduler.v1.job-definitions.unschedule";
     std::string job_definition_id;
     std::string change_reason_code;
     std::string change_commentary;
@@ -73,8 +70,7 @@ struct unschedule_job_response {
 
 struct schedule_jobs_batch_request {
     using response_type = struct schedule_jobs_batch_response;
-    static constexpr std::string_view nats_subject =
-        "scheduler.v1.job-definitions.schedule-batch";
+    static constexpr std::string_view nats_subject = "scheduler.v1.job-definitions.schedule-batch";
     std::vector<ores::scheduler::domain::job_definition> definitions;
     std::string change_reason_code;
     std::string change_commentary;
@@ -89,8 +85,7 @@ struct schedule_jobs_batch_response {
 
 struct get_job_history_request {
     using response_type = struct get_job_history_response;
-    static constexpr std::string_view nats_subject =
-        "scheduler.v1.job-definitions.history";
+    static constexpr std::string_view nats_subject = "scheduler.v1.job-definitions.history";
     std::string job_definition_id;
     int limit = 0;
 };
@@ -107,8 +102,7 @@ struct get_job_history_response {
 
 struct get_job_instances_request {
     using response_type = struct get_job_instances_response;
-    static constexpr std::string_view nats_subject =
-        "scheduler.v1.job-instances.list";
+    static constexpr std::string_view nats_subject = "scheduler.v1.job-instances.list";
     int offset = 0;
     int limit = 100;
 };
@@ -124,9 +118,9 @@ struct job_instance_summary {
     std::string job_definition_id;
     std::string job_name;
     std::string action_type;
-    std::string status;          ///< "starting" | "succeeded" | "failed"
-    std::string triggered_at;    ///< ISO-8601 UTC
-    std::string started_at;      ///< ISO-8601 UTC
+    std::string status;       ///< "starting" | "succeeded" | "failed"
+    std::string triggered_at; ///< ISO-8601 UTC
+    std::string started_at;   ///< ISO-8601 UTC
     std::optional<std::string> completed_at;
     std::optional<std::int64_t> duration_ms;
     std::string error_message;
@@ -145,8 +139,7 @@ struct get_job_instances_response {
 
 struct get_scheduler_status_request {
     using response_type = struct get_scheduler_status_response;
-    static constexpr std::string_view nats_subject =
-        "scheduler.v1.status";
+    static constexpr std::string_view nats_subject = "scheduler.v1.status";
 };
 
 /**

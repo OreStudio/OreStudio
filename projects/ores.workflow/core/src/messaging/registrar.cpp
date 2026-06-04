@@ -18,22 +18,21 @@
  *
  */
 #include "ores.workflow.core/messaging/registrar.hpp"
-
-#include <memory>
+#include "ores.dq.api/workflow/bundle_publish_workflow.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.ore.api/workflow/ore_import_workflow.hpp"
+#include "ores.refdata.api/workflow/provision_parties_workflow.hpp"
+#include "ores.reporting.api/workflow/report_execution_workflow.hpp"
+#include "ores.workflow.api/messaging/steps_query_protocol.hpp"
 #include "ores.workflow.api/messaging/workflow_events.hpp"
-#include "ores.workflow.core/messaging/workflow_handler.hpp"
-#include "ores.workflow.core/messaging/workflow_query_handler.hpp"
 #include "ores.workflow.api/messaging/workflow_protocol.hpp"
 #include "ores.workflow.api/messaging/workflow_query_protocol.hpp"
-#include "ores.workflow.api/messaging/steps_query_protocol.hpp"
+#include "ores.workflow.api/service/workflow_registry.hpp"
+#include "ores.workflow.core/messaging/workflow_handler.hpp"
+#include "ores.workflow.core/messaging/workflow_query_handler.hpp"
 #include "ores.workflow.core/service/fsm_state_map.hpp"
 #include "ores.workflow.core/service/workflow_engine.hpp"
-#include "ores.workflow.api/service/workflow_registry.hpp"
-#include "ores.refdata.api/workflow/provision_parties_workflow.hpp"
-#include "ores.ore.api/workflow/ore_import_workflow.hpp"
-#include "ores.reporting.api/workflow/report_execution_workflow.hpp"
-#include "ores.dq.api/workflow/bundle_publish_workflow.hpp"
+#include <memory>
 
 namespace ores::workflow::messaging {
 
@@ -50,9 +49,9 @@ static auto& lg() {
 
 std::vector<ores::nats::service::subscription>
 registrar::register_handlers(ores::nats::service::client& nats,
-    ores::database::context ctx,
-    ores::security::jwt::jwt_authenticator signer,
-    ores::nats::service::nats_client outbound_nats) {
+                             ores::database::context ctx,
+                             ores::security::jwt::jwt_authenticator signer,
+                             ores::nats::service::nats_client outbound_nats) {
 
     std::vector<ores::nats::service::subscription> subs;
     constexpr auto qg = "ores.workflow.service";
@@ -60,10 +59,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // ----------------------------------------------------------------
     // Load FSM state maps once at startup (one NATS round-trip each).
     // ----------------------------------------------------------------
-    const auto instance_states =
-        service::load_fsm_states(outbound_nats, "workflow_instance");
-    const auto step_states =
-        service::load_fsm_states(outbound_nats, "workflow_step");
+    const auto instance_states = service::load_fsm_states(outbound_nats, "workflow_instance");
+    const auto step_states = service::load_fsm_states(outbound_nats, "workflow_step");
 
     // ----------------------------------------------------------------
     // Build workflow registry (one entry per known workflow type).
@@ -85,17 +82,15 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // ----------------------------------------------------------------
     subs.push_back(nats.js_queue_subscribe(
         messaging::step_completed_event::nats_subject,
-        "workflow-engine-step-completed", qg,
-        [engine](ores::nats::message msg) {
-            engine->on_step_completed(std::move(msg));
-        }));
+        "workflow-engine-step-completed",
+        qg,
+        [engine](ores::nats::message msg) { engine->on_step_completed(std::move(msg)); }));
 
     subs.push_back(nats.js_queue_subscribe(
         messaging::start_workflow_message::nats_subject,
-        "workflow-engine-start", qg,
-        [engine](ores::nats::message msg) {
-            engine->on_start_workflow(std::move(msg));
-        }));
+        "workflow-engine-start",
+        qg,
+        [engine](ores::nats::message msg) { engine->on_start_workflow(std::move(msg)); }));
 
     // ----------------------------------------------------------------
     // Query handler (list instances, get steps).
@@ -105,26 +100,22 @@ registrar::register_handlers(ores::nats::service::client& nats,
         nats, ctx, signer, instance_states, step_states, registry);
 
     subs.push_back(nats.queue_subscribe(
-        list_workflow_instances_request::nats_subject, qg,
-        [qh](ores::nats::message msg) {
+        list_workflow_instances_request::nats_subject, qg, [qh](ores::nats::message msg) {
             qh->list_instances(std::move(msg));
         }));
 
     subs.push_back(nats.queue_subscribe(
-        get_workflow_steps_request::nats_subject, qg,
-        [qh](ores::nats::message msg) {
+        get_workflow_steps_request::nats_subject, qg, [qh](ores::nats::message msg) {
             qh->get_steps(std::move(msg));
         }));
 
     subs.push_back(nats.queue_subscribe(
-        list_workflow_definitions_request::nats_subject, qg,
-        [qh](ores::nats::message msg) {
+        list_workflow_definitions_request::nats_subject, qg, [qh](ores::nats::message msg) {
             qh->list_definitions(std::move(msg));
         }));
 
     subs.push_back(nats.queue_subscribe(
-        get_step_result_request::nats_subject, qg,
-        [qh](ores::nats::message msg) {
+        get_step_result_request::nats_subject, qg, [qh](ores::nats::message msg) {
             qh->get_step_result(std::move(msg));
         }));
 
@@ -133,12 +124,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // Validates JWT, pre-generates party UUIDs, and dispatches one
     // start_workflow_message per party (fire-and-forget).
     // ----------------------------------------------------------------
-    auto wh = std::make_shared<workflow_handler>(
-        nats, std::move(ctx), std::move(signer));
+    auto wh = std::make_shared<workflow_handler>(nats, std::move(ctx), std::move(signer));
 
     subs.push_back(nats.queue_subscribe(
-        provision_parties_request::nats_subject, qg,
-        [wh](ores::nats::message msg) {
+        provision_parties_request::nats_subject, qg, [wh](ores::nats::message msg) {
             wh->provision_parties(std::move(msg));
         }));
 
@@ -148,12 +137,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
     try {
         engine->recover_in_progress();
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error)
-            << "Workflow recovery failed: " << e.what();
+        BOOST_LOG_SEV(lg(), error) << "Workflow recovery failed: " << e.what();
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Registered " << subs.size()
-                               << " workflow message handlers.";
+    BOOST_LOG_SEV(lg(), debug) << "Registered " << subs.size() << " workflow message handlers.";
     return subs;
 }
 

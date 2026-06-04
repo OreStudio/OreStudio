@@ -20,25 +20,25 @@
 #ifndef ORES_ANALYTICS_MESSAGING_PRICING_ENGINE_TYPE_HANDLER_HPP
 #define ORES_ANALYTICS_MESSAGING_PRICING_ENGINE_TYPE_HANDLER_HPP
 
-#include <optional>
+#include "ores.analytics.api/messaging/pricing_engine_type_protocol.hpp"
+#include "ores.analytics.core/export.hpp"
+#include "ores.analytics.core/service/pricing_engine_type_service.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.database/domain/context.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include "ores.analytics.api/messaging/pricing_engine_type_protocol.hpp"
-#include "ores.analytics.core/service/pricing_engine_type_service.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
-#include "ores.analytics.core/export.hpp"
+#include <optional>
 
 namespace ores::analytics::messaging {
 
 namespace {
 inline auto& pricing_engine_type_handler_lg() {
-    static auto instance = ores::logging::make_logger(
-        "ores.analytics.messaging.pricing_engine_type_handler");
+    static auto instance =
+        ores::logging::make_logger("ores.analytics.messaging.pricing_engine_type_handler");
     return instance;
 }
 } // namespace
@@ -58,22 +58,22 @@ using namespace ores::logging;
 class ORES_ANALYTICS_CORE_EXPORT pricing_engine_type_handler {
 public:
     pricing_engine_type_handler(ores::nats::service::client& nats,
-        ores::database::context ctx,
-        std::optional<ores::security::jwt::jwt_authenticator> verifier)
-        : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier)) {}
+                                ores::database::context ctx,
+                                std::optional<ores::security::jwt::jwt_authenticator> verifier)
+        : nats_(nats)
+        , ctx_(std::move(ctx))
+        , verifier_(std::move(verifier)) {}
 
     void list(ores::nats::message msg) {
-        BOOST_LOG_SEV(pricing_engine_type_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        BOOST_LOG_SEV(pricing_engine_type_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        const auto sys_ctx = req_ctx.with_tenant(
-            ores::utility::uuid::tenant_id::system(), req_ctx.actor());
+        const auto sys_ctx =
+            req_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), req_ctx.actor());
         service::pricing_engine_type_service svc(sys_ctx);
         get_pricing_engine_types_response resp;
         try {
@@ -85,16 +85,13 @@ public:
             resp.success = false;
             resp.message = e.what();
         }
-        BOOST_LOG_SEV(pricing_engine_type_handler_lg(), debug)
-            << "Completed " << msg.subject;
+        BOOST_LOG_SEV(pricing_engine_type_handler_lg(), debug) << "Completed " << msg.subject;
         reply(nats_, msg, resp);
     }
 
     void save(ores::nats::message msg) {
-        BOOST_LOG_SEV(pricing_engine_type_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        BOOST_LOG_SEV(pricing_engine_type_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
             return;
@@ -110,13 +107,13 @@ public:
                 svc.save_type(req->data);
                 BOOST_LOG_SEV(pricing_engine_type_handler_lg(), debug)
                     << "Completed " << msg.subject;
-                reply(nats_, msg,
-                    save_pricing_engine_type_response{.success = true});
+                reply(nats_, msg, save_pricing_engine_type_response{.success = true});
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(pricing_engine_type_handler_lg(), error)
                     << msg.subject << " failed: " << e.what();
-                reply(nats_, msg, save_pricing_engine_type_response{
-                    .success = false, .message = e.what()});
+                reply(nats_,
+                      msg,
+                      save_pricing_engine_type_response{.success = false, .message = e.what()});
             }
         } else {
             BOOST_LOG_SEV(pricing_engine_type_handler_lg(), warn)
@@ -126,30 +123,32 @@ public:
     }
 
     void history(ores::nats::message msg) {
-        BOOST_LOG_SEV(pricing_engine_type_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        BOOST_LOG_SEV(pricing_engine_type_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        const auto sys_ctx = req_ctx.with_tenant(
-            ores::utility::uuid::tenant_id::system(), req_ctx.actor());
+        const auto sys_ctx =
+            req_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), req_ctx.actor());
         service::pricing_engine_type_service svc(sys_ctx);
         if (auto req = decode<get_pricing_engine_type_history_request>(msg)) {
             try {
                 auto hist = svc.get_type_history(req->code);
                 BOOST_LOG_SEV(pricing_engine_type_handler_lg(), debug)
                     << "Completed " << msg.subject;
-                reply(nats_, msg, get_pricing_engine_type_history_response{
-                    .types = std::move(hist), .success = true});
+                reply(nats_,
+                      msg,
+                      get_pricing_engine_type_history_response{.types = std::move(hist),
+                                                               .success = true});
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(pricing_engine_type_handler_lg(), error)
                     << msg.subject << " failed: " << e.what();
-                reply(nats_, msg, get_pricing_engine_type_history_response{
-                    .success = false, .message = e.what()});
+                reply(nats_,
+                      msg,
+                      get_pricing_engine_type_history_response{.success = false,
+                                                               .message = e.what()});
             }
         } else {
             BOOST_LOG_SEV(pricing_engine_type_handler_lg(), warn)
@@ -159,10 +158,8 @@ public:
     }
 
     void remove(ores::nats::message msg) {
-        BOOST_LOG_SEV(pricing_engine_type_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        BOOST_LOG_SEV(pricing_engine_type_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
             return;
@@ -179,13 +176,13 @@ public:
                     svc.remove_type(code);
                 BOOST_LOG_SEV(pricing_engine_type_handler_lg(), debug)
                     << "Completed " << msg.subject;
-                reply(nats_, msg,
-                    delete_pricing_engine_type_response{.success = true});
+                reply(nats_, msg, delete_pricing_engine_type_response{.success = true});
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(pricing_engine_type_handler_lg(), error)
                     << msg.subject << " failed: " << e.what();
-                reply(nats_, msg, delete_pricing_engine_type_response{
-                    .success = false, .message = e.what()});
+                reply(nats_,
+                      msg,
+                      delete_pricing_engine_type_response{.success = false, .message = e.what()});
             }
         } else {
             BOOST_LOG_SEV(pricing_engine_type_handler_lg(), warn)

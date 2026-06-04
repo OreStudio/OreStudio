@@ -18,10 +18,9 @@
  *
  */
 #include "ores.synthetic.core/service/organisation_generator_service.hpp"
-
+#include <catch2/catch_test_macros.hpp>
 #include <set>
 #include <unordered_set>
-#include <catch2/catch_test_macros.hpp>
 
 namespace {
 
@@ -88,8 +87,7 @@ TEST_CASE("generate_with_seed_is_reproducible", tags) {
     }
 
     for (std::size_t i = 0; i < result1.counterparties.size(); ++i) {
-        CHECK(result1.counterparties[i].full_name ==
-            result2.counterparties[i].full_name);
+        CHECK(result1.counterparties[i].full_name == result2.counterparties[i].full_name);
     }
 }
 
@@ -166,8 +164,7 @@ TEST_CASE("generate_party_contacts_reference_existing_parties", tags) {
     }
 }
 
-TEST_CASE("generate_counterparty_contacts_reference_existing_counterparties",
-    tags) {
+TEST_CASE("generate_counterparty_contacts_reference_existing_counterparties", tags) {
 
     organisation_generator_service svc;
     organisation_generation_options opts;
@@ -386,10 +383,8 @@ TEST_CASE("generate_us_produces_distinct_names_from_gb", tags) {
     CHECK(!gb_result.parties.empty());
     CHECK(!us_result.parties.empty());
     // At minimum, the web domains should differ.
-    if (!gb_result.party_contacts.empty() &&
-        !us_result.party_contacts.empty()) {
-        CHECK(gb_result.party_contacts[0].web_page !=
-            us_result.party_contacts[0].web_page);
+    if (!gb_result.party_contacts.empty() && !us_result.party_contacts.empty()) {
+        CHECK(gb_result.party_contacts[0].web_page != us_result.party_contacts[0].web_page);
     }
 }
 

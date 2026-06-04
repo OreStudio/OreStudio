@@ -20,12 +20,12 @@
 #ifndef ORES_ANALYTICS_SERVICE_APP_HOST_HPP
 #define ORES_ANALYTICS_SERVICE_APP_HOST_HPP
 
-#include <vector>
-#include <string>
-#include <ostream>
-#include <boost/asio/awaitable.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.analytics.service/export.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <boost/asio/awaitable.hpp>
+#include <ostream>
+#include <string>
+#include <vector>
 
 namespace ores::analytics::service::app {
 
@@ -47,8 +47,9 @@ public:
      * @brief Executes the console workflow.
      */
     static boost::asio::awaitable<int> execute(const std::vector<std::string>& args,
-        std::ostream& std_output, std::ostream& error_output,
-        boost::asio::io_context& io_ctx);
+                                               std::ostream& std_output,
+                                               std::ostream& error_output,
+                                               boost::asio::io_context& io_ctx);
 };
 
 }

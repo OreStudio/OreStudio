@@ -20,10 +20,10 @@
 #ifndef ORES_ANALYTICS_DOMAIN_PRICING_ENGINE_TYPE_TABLE_HPP
 #define ORES_ANALYTICS_DOMAIN_PRICING_ENGINE_TYPE_TABLE_HPP
 
-#include <string>
-#include <vector>
 #include "ores.analytics.api/domain/pricing_engine_type.hpp"
 #include "ores.analytics.api/export.hpp"
+#include <string>
+#include <vector>
 
 namespace ores::analytics::domain {
 

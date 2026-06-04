@@ -27,9 +27,9 @@ namespace ores::scheduler::domain {
  * Maps directly to the string values stored in cron.job_run_details.status.
  */
 enum class job_status {
-    starting,   ///< pg_cron has started the job but it has not yet completed.
-    succeeded,  ///< The job ran to completion without error.
-    failed      ///< The job encountered an error during execution.
+    starting,  ///< pg_cron has started the job but it has not yet completed.
+    succeeded, ///< The job ran to completion without error.
+    failed     ///< The job encountered an error during execution.
 };
 
 } // namespace ores::scheduler::domain

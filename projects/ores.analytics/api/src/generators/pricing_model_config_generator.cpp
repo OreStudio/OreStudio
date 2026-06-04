@@ -18,19 +18,18 @@
  *
  */
 #include "ores.analytics.api/generators/pricing_model_config_generator.hpp"
-
+#include "ores.utility/generation/generation_keys.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::analytics::generators {
 
 using ores::utility::generation::generation_keys;
 
-std::vector<domain::pricing_model_config> generate_fictional_pricing_model_configs(
-    std::size_t n, utility::generation::generation_context& ctx) {
-    const auto modified_by = ctx.env().get_or(
-        generation_keys::modified_by, "system");
+std::vector<domain::pricing_model_config>
+generate_fictional_pricing_model_configs(std::size_t n,
+                                         utility::generation::generation_context& ctx) {
+    const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
     const auto now = ctx.past_timepoint();
     boost::uuids::random_generator gen;
 
@@ -44,31 +43,29 @@ std::vector<domain::pricing_model_config> generate_fictional_pricing_model_confi
                            std::optional<std::string> variant) {
         const auto id = gen();
         const auto suffix = boost::uuids::to_string(id).substr(0, 8);
-        return domain::pricing_model_config{
-            .id = id,
-            .name = base_name + "." + suffix,
-            .description = description,
-            .config_variant = variant,
-            .modified_by = modified_by,
-            .change_reason_code = "system.test",
-            .change_commentary = "Synthetic test data",
-            .recorded_at = now
-        };
+        return domain::pricing_model_config{.id = id,
+                                            .name = base_name + "." + suffix,
+                                            .description = description,
+                                            .config_variant = variant,
+                                            .modified_by = modified_by,
+                                            .change_reason_code = "system.test",
+                                            .change_commentary = "Synthetic test data",
+                                            .recorded_at = now};
     };
 
-    all.push_back(make_config("test.base.vanilla",
-        "Fictional base vanilla pricing configuration", std::nullopt));
+    all.push_back(make_config(
+        "test.base.vanilla", "Fictional base vanilla pricing configuration", std::nullopt));
     all.push_back(make_config("test.amc.monte.carlo",
-        "Fictional AMC Monte Carlo pricing configuration",
-        std::optional<std::string>("amc")));
+                              "Fictional AMC Monte Carlo pricing configuration",
+                              std::optional<std::string>("amc")));
     all.push_back(make_config("test.dynamic.grid",
-        "Fictional dynamic grid pricing configuration",
-        std::optional<std::string>("dg")));
+                              "Fictional dynamic grid pricing configuration",
+                              std::optional<std::string>("dg")));
     all.push_back(make_config("test.standard.rates",
-        "Fictional standard rates pricing configuration",
-        std::optional<std::string>("standard")));
-    all.push_back(make_config("test.equity.vol",
-        "Fictional equity volatility pricing configuration", std::nullopt));
+                              "Fictional standard rates pricing configuration",
+                              std::optional<std::string>("standard")));
+    all.push_back(make_config(
+        "test.equity.vol", "Fictional equity volatility pricing configuration", std::nullopt));
 
     if (n == 0 || n >= all.size())
         return all;

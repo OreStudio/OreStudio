@@ -18,7 +18,6 @@
  *
  */
 #include "ores.analytics.core/service/pricing_model_product_service.hpp"
-
 #include <stdexcept>
 
 namespace ores::analytics::service {
@@ -30,8 +29,7 @@ pricing_model_product_service::pricing_model_product_service(context ctx)
 
 std::vector<domain::pricing_model_product>
 pricing_model_product_service::list_products(const std::string& config_id) {
-    BOOST_LOG_SEV(lg(), debug)
-        << "Listing pricing model products for config: " << config_id;
+    BOOST_LOG_SEV(lg(), debug) << "Listing pricing model products for config: " << config_id;
     return repo_.read_latest(ctx_, config_id);
 }
 
@@ -39,15 +37,14 @@ std::optional<domain::pricing_model_product>
 pricing_model_product_service::find_product(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Finding pricing model product: " << id;
     auto results = repo_.read_latest_by_id(ctx_, id);
-    if (results.empty()) return std::nullopt;
+    if (results.empty())
+        return std::nullopt;
     return results.front();
 }
 
-void pricing_model_product_service::save_product(
-    const domain::pricing_model_product& v) {
+void pricing_model_product_service::save_product(const domain::pricing_model_product& v) {
     if (v.id.is_nil())
-        throw std::invalid_argument(
-            "Pricing model product id cannot be nil.");
+        throw std::invalid_argument("Pricing model product id cannot be nil.");
     BOOST_LOG_SEV(lg(), debug) << "Saving pricing model product: " << v.id;
     repo_.write(ctx_, v);
     BOOST_LOG_SEV(lg(), info) << "Saved pricing model product: " << v.id;
@@ -57,11 +54,9 @@ void pricing_model_product_service::save_products(
     const std::vector<domain::pricing_model_product>& v) {
     for (const auto& e : v) {
         if (e.id.is_nil())
-            throw std::invalid_argument(
-                "Pricing model product id cannot be nil.");
+            throw std::invalid_argument("Pricing model product id cannot be nil.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << v.size()
-        << " pricing model products";
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << v.size() << " pricing model products";
     repo_.write(ctx_, v);
 }
 
@@ -71,19 +66,15 @@ void pricing_model_product_service::remove_product(const std::string& id) {
     BOOST_LOG_SEV(lg(), info) << "Removed pricing model product: " << id;
 }
 
-void pricing_model_product_service::remove_products_for_config(
-    const std::string& config_id) {
-    BOOST_LOG_SEV(lg(), debug)
-        << "Removing pricing model products for config: " << config_id;
+void pricing_model_product_service::remove_products_for_config(const std::string& config_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing pricing model products for config: " << config_id;
     repo_.remove_for_config(ctx_, config_id);
-    BOOST_LOG_SEV(lg(), info)
-        << "Removed pricing model products for config: " << config_id;
+    BOOST_LOG_SEV(lg(), info) << "Removed pricing model products for config: " << config_id;
 }
 
 std::vector<domain::pricing_model_product>
 pricing_model_product_service::get_product_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug)
-        << "Getting history for pricing model product: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for pricing model product: " << id;
     return repo_.read_all(ctx_, id);
 }
 

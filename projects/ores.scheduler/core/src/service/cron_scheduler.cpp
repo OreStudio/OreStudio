@@ -18,11 +18,10 @@
  *
  */
 #include "ores.scheduler.core/service/cron_scheduler.hpp"
-
-#include <stdexcept>
-#include <boost/uuid/uuid_io.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <stdexcept>
 
 namespace ores::scheduler::service {
 
@@ -41,10 +40,9 @@ auto& lg() {
 cron_scheduler::cron_scheduler(context ctx)
     : ctx_(std::move(ctx)) {}
 
-domain::job_definition
-cron_scheduler::schedule(domain::job_definition def,
-                         const std::string& /*change_reason_code*/,
-                         const std::string& /*change_commentary*/) {
+domain::job_definition cron_scheduler::schedule(domain::job_definition def,
+                                                const std::string& /*change_reason_code*/,
+                                                const std::string& /*change_commentary*/) {
     BOOST_LOG_SEV(lg(), info) << "Scheduling job: " << def.job_name;
 
     def.is_active = true;
@@ -63,34 +61,30 @@ void cron_scheduler::unschedule(const boost::uuids::uuid& job_definition_id,
     const auto def = repo_.find_by_id(ctx_, job_definition_id);
     if (!def) {
         BOOST_LOG_SEV(lg(), warn) << "Job not found: " << job_definition_id;
-        throw std::runtime_error("Job definition not found: "
-                                 + boost::uuids::to_string(job_definition_id));
+        throw std::runtime_error("Job definition not found: " +
+                                 boost::uuids::to_string(job_definition_id));
     }
 
     // Mark is_active = 0 on the current active record without creating a new
     // bitemporal version.
     const auto id_str = boost::uuids::to_string(job_definition_id);
 
-    const std::string sql =
-        "UPDATE ores_scheduler_job_definitions_tbl "
-        "SET is_active = 0 "
-        "WHERE id = $1::uuid "
-        "AND valid_to = ores_utility_infinity_timestamp_fn()";
+    const std::string sql = "UPDATE ores_scheduler_job_definitions_tbl "
+                            "SET is_active = 0 "
+                            "WHERE id = $1::uuid "
+                            "AND valid_to = ores_utility_infinity_timestamp_fn()";
 
-    execute_parameterized_command(ctx_, sql, {id_str},
-        lg(), "Marking job definition as inactive.");
+    execute_parameterized_command(ctx_, sql, {id_str}, lg(), "Marking job definition as inactive.");
 
     BOOST_LOG_SEV(lg(), info) << "Job marked inactive: " << job_definition_id;
 }
 
-std::vector<domain::job_definition>
-cron_scheduler::get_all_definitions() {
+std::vector<domain::job_definition> cron_scheduler::get_all_definitions() {
     return repo_.read_latest(ctx_);
 }
 
 std::vector<domain::job_instance>
-cron_scheduler::get_job_history(const boost::uuids::uuid& job_definition_id,
-                                std::size_t limit) {
+cron_scheduler::get_job_history(const boost::uuids::uuid& job_definition_id, std::size_t limit) {
     return inst_repo_.read_latest(ctx_, job_definition_id, limit);
 }
 

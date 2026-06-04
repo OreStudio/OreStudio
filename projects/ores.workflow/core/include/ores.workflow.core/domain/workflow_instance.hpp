@@ -20,10 +20,10 @@
 #ifndef ORES_WORKFLOW_CORE_DOMAIN_WORKFLOW_INSTANCE_HPP
 #define ORES_WORKFLOW_CORE_DOMAIN_WORKFLOW_INSTANCE_HPP
 
+#include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <optional>
 #include <string>
-#include <boost/uuid/uuid.hpp>
 
 namespace ores::workflow::domain {
 

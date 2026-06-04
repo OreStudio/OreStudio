@@ -20,16 +20,15 @@
 #ifndef ORES_WORKFLOW_SERVICE_CONFIG_PARSER_EXCEPTION_HPP
 #define ORES_WORKFLOW_SERVICE_CONFIG_PARSER_EXCEPTION_HPP
 
-#include <string>
 #include <boost/exception/info.hpp>
+#include <string>
 
 namespace ores::workflow::service::config {
 
 /**
  * @brief A fatal error has occurred during option parsing.
  */
-class parser_exception : public virtual std::exception,
-                         public virtual boost::exception {
+class parser_exception : public virtual std::exception, public virtual boost::exception {
 public:
     explicit parser_exception(std::string_view message = "")
         : message_(message) {}

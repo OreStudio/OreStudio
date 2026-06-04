@@ -18,18 +18,15 @@
  *
  */
 #include "ores.synthetic.core/generators/catalog_generator.hpp"
-
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/generation/generation_keys.hpp"
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
 
 namespace ores::synthetic::generators {
 
 using ores::utility::generation::generation_keys;
 
-dq::domain::catalog generate_synthetic_catalog(
-    utility::generation::generation_context& ctx) {
-    const auto modified_by = ctx.env().get_or(
-        generation_keys::modified_by, "system");
+dq::domain::catalog generate_synthetic_catalog(utility::generation::generation_context& ctx) {
+    const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
 
     dq::domain::catalog r;
     r.version = 1;
@@ -45,8 +42,7 @@ dq::domain::catalog generate_synthetic_catalog(
 }
 
 std::vector<dq::domain::catalog>
-generate_synthetic_catalogs(std::size_t n,
-    utility::generation::generation_context& ctx) {
+generate_synthetic_catalogs(std::size_t n, utility::generation::generation_context& ctx) {
     std::vector<dq::domain::catalog> r;
     r.reserve(n);
     while (r.size() < n)

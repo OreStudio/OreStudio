@@ -20,10 +20,10 @@
 #ifndef ORES_WORKFLOW_API_MESSAGING_WORKFLOW_PROTOCOL_HPP
 #define ORES_WORKFLOW_API_MESSAGING_WORKFLOW_PROTOCOL_HPP
 
-#include <string>
-#include <vector>
 #include <optional>
+#include <string>
 #include <string_view>
+#include <vector>
 
 namespace ores::workflow::messaging {
 
@@ -104,15 +104,15 @@ struct provision_parties_response {
  * NATS command payload.
  */
 struct provision_party_workflow_request {
-    std::string party_id;            ///< Pre-generated UUID for the party.
+    std::string party_id; ///< Pre-generated UUID for the party.
     std::string full_name;
     std::string short_code;
     std::string party_category;
     std::string party_type;
     std::string business_center_code;
     std::optional<std::string> parent_party_id;
-    std::string status;              ///< Initial party status (e.g. "Inactive").
-    std::string principal;           ///< IAM account login name (username@hostname).
+    std::string status;    ///< Initial party status (e.g. "Inactive").
+    std::string principal; ///< IAM account login name (username@hostname).
     std::string password;
     std::string totp_secret;
     std::string email;

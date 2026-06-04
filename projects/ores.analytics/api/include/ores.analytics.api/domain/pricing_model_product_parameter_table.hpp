@@ -20,17 +20,18 @@
 #ifndef ORES_ANALYTICS_DOMAIN_PRICING_MODEL_PRODUCT_PARAMETER_TABLE_HPP
 #define ORES_ANALYTICS_DOMAIN_PRICING_MODEL_PRODUCT_PARAMETER_TABLE_HPP
 
-#include <string>
-#include <vector>
 #include "ores.analytics.api/domain/pricing_model_product_parameter.hpp"
 #include "ores.analytics.api/export.hpp"
+#include <string>
+#include <vector>
 
 namespace ores::analytics::domain {
 
 /**
  * @brief Converts pricing_model_product_parameters to the table format.
  */
-ORES_ANALYTICS_API_EXPORT std::string convert_to_table(const std::vector<pricing_model_product_parameter>& v);
+ORES_ANALYTICS_API_EXPORT std::string
+convert_to_table(const std::vector<pricing_model_product_parameter>& v);
 
 }
 

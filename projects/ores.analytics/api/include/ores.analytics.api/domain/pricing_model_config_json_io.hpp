@@ -20,9 +20,9 @@
 #ifndef ORES_ANALYTICS_DOMAIN_PRICING_MODEL_CONFIG_JSON_IO_HPP
 #define ORES_ANALYTICS_DOMAIN_PRICING_MODEL_CONFIG_JSON_IO_HPP
 
-#include <iosfwd>
 #include "ores.analytics.api/domain/pricing_model_config.hpp"
 #include "ores.analytics.api/export.hpp"
+#include <iosfwd>
 
 namespace ores::analytics::domain {
 

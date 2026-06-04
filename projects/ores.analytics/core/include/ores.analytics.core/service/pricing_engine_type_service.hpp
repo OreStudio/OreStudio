@@ -20,14 +20,14 @@
 #ifndef ORES_ANALYTICS_SERVICE_PRICING_ENGINE_TYPE_SERVICE_HPP
 #define ORES_ANALYTICS_SERVICE_PRICING_ENGINE_TYPE_SERVICE_HPP
 
+#include "ores.analytics.api/domain/pricing_engine_type.hpp"
+#include "ores.analytics.core/export.hpp"
+#include "ores.analytics.core/repository/pricing_engine_type_repository.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <optional>
 #include <string>
 #include <vector>
-#include <optional>
-#include "ores.logging/make_logger.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.analytics.api/domain/pricing_engine_type.hpp"
-#include "ores.analytics.core/repository/pricing_engine_type_repository.hpp"
-#include "ores.analytics.core/export.hpp"
 
 namespace ores::analytics::service {
 
@@ -52,8 +52,7 @@ public:
 
     std::vector<domain::pricing_engine_type> list_types();
 
-    std::optional<domain::pricing_engine_type>
-    find_type(const std::string& code);
+    std::optional<domain::pricing_engine_type> find_type(const std::string& code);
 
     void save_type(const domain::pricing_engine_type& v);
 
@@ -61,8 +60,7 @@ public:
 
     void remove_type(const std::string& code);
 
-    std::vector<domain::pricing_engine_type>
-    get_type_history(const std::string& code);
+    std::vector<domain::pricing_engine_type> get_type_history(const std::string& code);
 
 private:
     context ctx_;

@@ -20,10 +20,10 @@
 #ifndef ORES_ANALYTICS_MESSAGING_PRICING_MODEL_PRODUCT_PARAMETER_PROTOCOL_HPP
 #define ORES_ANALYTICS_MESSAGING_PRICING_MODEL_PRODUCT_PARAMETER_PROTOCOL_HPP
 
+#include "ores.analytics.api/domain/pricing_model_product_parameter.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <string>
 #include <vector>
-#include <boost/uuid/uuid.hpp>
-#include "ores.analytics.api/domain/pricing_model_product_parameter.hpp"
 
 namespace ores::analytics::messaging {
 

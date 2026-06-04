@@ -18,11 +18,10 @@
  *
  */
 #include "ores.scheduler.core/service/nats_publish_action_handler.hpp"
-
-#include <span>
+#include "ores.logging/make_logger.hpp"
 #include <rfl.hpp>
 #include <rfl/json.hpp>
-#include "ores.logging/make_logger.hpp"
+#include <span>
 
 namespace ores::scheduler::service {
 
@@ -31,8 +30,7 @@ using namespace ores::logging;
 namespace {
 
 auto& lg() {
-    static auto instance = make_logger(
-        "ores.scheduler.service.nats_publish_action_handler");
+    static auto instance = make_logger("ores.scheduler.service.nats_publish_action_handler");
     return instance;
 }
 
@@ -52,47 +50,41 @@ struct nats_trigger_body {
 
 } // anonymous namespace
 
-nats_publish_action_handler::nats_publish_action_handler(
-    ores::nats::service::client& nats) : nats_(nats) {}
+nats_publish_action_handler::nats_publish_action_handler(ores::nats::service::client& nats)
+    : nats_(nats) {}
 
 boost::asio::awaitable<std::expected<void, std::string>>
 nats_publish_action_handler::execute(const action_context& ctx) {
-    BOOST_LOG_SEV(lg(), debug) << "Executing NATS publish action for job: "
-                               << ctx.job.job_name;
+    BOOST_LOG_SEV(lg(), debug) << "Executing NATS publish action for job: " << ctx.job.job_name;
     try {
-        auto parsed = rfl::json::read<nats_publish_payload>(
-            ctx.job.action_payload);
+        auto parsed = rfl::json::read<nats_publish_payload>(ctx.job.action_payload);
         if (!parsed) {
-            const auto msg = "Failed to parse action_payload for job '"
-                + ctx.job.job_name + "': " + parsed.error().what();
+            const auto msg = "Failed to parse action_payload for job '" + ctx.job.job_name +
+                             "': " + parsed.error().what();
             BOOST_LOG_SEV(lg(), error) << msg;
             co_return std::unexpected(msg);
         }
 
         const auto& subject = parsed->subject;
         if (subject.empty()) {
-            const auto msg = std::string(
-                "action_payload missing subject for job '")
-                + ctx.job.job_name + "'";
+            const auto msg =
+                std::string("action_payload missing subject for job '") + ctx.job.job_name + "'";
             BOOST_LOG_SEV(lg(), error) << msg;
             co_return std::unexpected(msg);
         }
 
-        const nats_trigger_body body{
-            .job_instance_id = ctx.inst_id,
-            .report_definition_id = parsed->report_definition_id,
-            .tenant_id = parsed->tenant_id
-        };
+        const nats_trigger_body body{.job_instance_id = ctx.inst_id,
+                                     .report_definition_id = parsed->report_definition_id,
+                                     .tenant_id = parsed->tenant_id};
         const auto body_json = rfl::json::write(body);
         const auto* p = reinterpret_cast<const std::byte*>(body_json.data());
         nats_.publish(subject, std::span<const std::byte>(p, body_json.size()));
-        BOOST_LOG_SEV(lg(), info) << "NATS publish action succeeded for job: "
-                                  << ctx.job.job_name
+        BOOST_LOG_SEV(lg(), info) << "NATS publish action succeeded for job: " << ctx.job.job_name
                                   << " (subject: " << subject << ")";
         co_return std::expected<void, std::string>{};
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "NATS publish action failed for job: "
-                                   << ctx.job.job_name << ": " << e.what();
+        BOOST_LOG_SEV(lg(), error)
+            << "NATS publish action failed for job: " << ctx.job.job_name << ": " << e.what();
         co_return std::unexpected(std::string(e.what()));
     }
 }

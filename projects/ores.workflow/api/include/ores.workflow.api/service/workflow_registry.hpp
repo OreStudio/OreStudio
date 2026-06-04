@@ -20,10 +20,10 @@
 #ifndef ORES_WORKFLOW_API_SERVICE_WORKFLOW_REGISTRY_HPP
 #define ORES_WORKFLOW_API_SERVICE_WORKFLOW_REGISTRY_HPP
 
-#include <string>
-#include <unordered_map>
 #include "ores.workflow.api/export.hpp"
 #include "ores.workflow.api/service/workflow_definition.hpp"
+#include <string>
+#include <unordered_map>
 
 namespace ores::workflow::service {
 
@@ -49,8 +49,7 @@ public:
      *
      * @return Pointer to the definition, or nullptr if not registered.
      */
-    [[nodiscard]] const workflow_definition*
-    find(const std::string& type_name) const {
+    [[nodiscard]] const workflow_definition* find(const std::string& type_name) const {
         const auto it = definitions_.find(type_name);
         return it != definitions_.end() ? &it->second : nullptr;
     }
@@ -58,8 +57,9 @@ public:
     /**
      * @brief Returns all registered workflow definitions.
      */
-    [[nodiscard]] const std::unordered_map<std::string, workflow_definition>&
-    all() const { return definitions_; }
+    [[nodiscard]] const std::unordered_map<std::string, workflow_definition>& all() const {
+        return definitions_;
+    }
 
 private:
     std::unordered_map<std::string, workflow_definition> definitions_;

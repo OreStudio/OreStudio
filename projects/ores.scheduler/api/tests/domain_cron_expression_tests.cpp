@@ -17,20 +17,20 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <catch2/catch_test_macros.hpp>
 #include "ores.scheduler.api/domain/cron_expression.hpp"
+#include <catch2/catch_test_macros.hpp>
 
 using namespace ores::scheduler::domain;
 
 TEST_CASE("cron_expression::from_string accepts valid standard expressions",
           "[domain][cron_expression]") {
     const std::vector<std::string> valid_exprs = {
-        "* * * * *",       // every minute
-        "0 0 * * *",       // midnight daily
-        "0 12 * * 1",      // noon every Monday
-        "*/5 * * * *",     // every 5 minutes
-        "0 0 1 * *",       // first of every month
-        "30 6 * * 1-5",    // 06:30 on weekdays
+        "* * * * *",    // every minute
+        "0 0 * * *",    // midnight daily
+        "0 12 * * 1",   // noon every Monday
+        "*/5 * * * *",  // every 5 minutes
+        "0 0 1 * *",    // first of every month
+        "30 6 * * 1-5", // 06:30 on weekdays
     };
 
     for (const auto& expr : valid_exprs) {
@@ -41,13 +41,12 @@ TEST_CASE("cron_expression::from_string accepts valid standard expressions",
     }
 }
 
-TEST_CASE("cron_expression::from_string rejects invalid expressions",
-          "[domain][cron_expression]") {
+TEST_CASE("cron_expression::from_string rejects invalid expressions", "[domain][cron_expression]") {
     const std::vector<std::string> invalid_exprs = {
-        "",                // empty
-        "not a cron",     // garbage
-        "99 * * * *",     // minute > 59
-        "* * * * * *",    // 6 fields (croncpp uses 5)
+        "",            // empty
+        "not a cron",  // garbage
+        "99 * * * *",  // minute > 59
+        "* * * * * *", // 6 fields (croncpp uses 5)
     };
 
     for (const auto& expr : invalid_exprs) {
@@ -59,8 +58,7 @@ TEST_CASE("cron_expression::from_string rejects invalid expressions",
     }
 }
 
-TEST_CASE("cron_expression::to_string round-trips the input",
-          "[domain][cron_expression]") {
+TEST_CASE("cron_expression::to_string round-trips the input", "[domain][cron_expression]") {
     const std::string expr = "0 6 * * 1-5";
     auto sut = cron_expression::from_string(expr);
     REQUIRE(sut.has_value());
@@ -77,8 +75,7 @@ TEST_CASE("cron_expression::next_occurrence returns a future time point",
     CHECK(next > now);
 }
 
-TEST_CASE("cron_expression equality operator",
-          "[domain][cron_expression]") {
+TEST_CASE("cron_expression equality operator", "[domain][cron_expression]") {
     auto a = cron_expression::from_string("0 0 * * *");
     auto b = cron_expression::from_string("0 0 * * *");
     auto c = cron_expression::from_string("*/5 * * * *");

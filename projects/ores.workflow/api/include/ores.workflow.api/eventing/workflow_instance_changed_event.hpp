@@ -20,10 +20,10 @@
 #ifndef ORES_WORKFLOW_API_EVENTING_WORKFLOW_INSTANCE_CHANGED_EVENT_HPP
 #define ORES_WORKFLOW_API_EVENTING_WORKFLOW_INSTANCE_CHANGED_EVENT_HPP
 
+#include "ores.eventing/domain/event_traits.hpp"
 #include <chrono>
 #include <string>
 #include <vector>
-#include "ores.eventing/domain/event_traits.hpp"
 
 namespace ores::workflow::eventing {
 
@@ -54,16 +54,15 @@ struct workflow_instance_changed_event final {
     std::string tenant_id;
 };
 
-}  // namespace ores::workflow::eventing
+} // namespace ores::workflow::eventing
 
 namespace ores::eventing::domain {
 
-template<>
+template <>
 struct event_traits<ores::workflow::eventing::workflow_instance_changed_event> {
-    static constexpr std::string_view name =
-        "ores.workflow.workflow_instance_changed";
+    static constexpr std::string_view name = "ores.workflow.workflow_instance_changed";
 };
 
-}  // namespace ores::eventing::domain
+} // namespace ores::eventing::domain
 
 #endif

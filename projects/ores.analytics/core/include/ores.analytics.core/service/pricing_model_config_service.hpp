@@ -20,14 +20,14 @@
 #ifndef ORES_ANALYTICS_SERVICE_PRICING_MODEL_CONFIG_SERVICE_HPP
 #define ORES_ANALYTICS_SERVICE_PRICING_MODEL_CONFIG_SERVICE_HPP
 
+#include "ores.analytics.api/domain/pricing_model_config.hpp"
+#include "ores.analytics.core/export.hpp"
+#include "ores.analytics.core/repository/pricing_model_config_repository.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <optional>
 #include <string>
 #include <vector>
-#include <optional>
-#include "ores.logging/make_logger.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.analytics.api/domain/pricing_model_config.hpp"
-#include "ores.analytics.core/repository/pricing_model_config_repository.hpp"
-#include "ores.analytics.core/export.hpp"
 
 namespace ores::analytics::service {
 
@@ -52,18 +52,15 @@ public:
 
     std::vector<domain::pricing_model_config> list_configs();
 
-    std::optional<domain::pricing_model_config>
-    find_config(const std::string& id);
+    std::optional<domain::pricing_model_config> find_config(const std::string& id);
 
-    std::optional<domain::pricing_model_config>
-    find_config_by_name(const std::string& name);
+    std::optional<domain::pricing_model_config> find_config_by_name(const std::string& name);
 
     void save_config(const domain::pricing_model_config& v);
 
     void remove_config(const std::string& id);
 
-    std::vector<domain::pricing_model_config>
-    get_config_history(const std::string& id);
+    std::vector<domain::pricing_model_config> get_config_history(const std::string& id);
 
 private:
     context ctx_;

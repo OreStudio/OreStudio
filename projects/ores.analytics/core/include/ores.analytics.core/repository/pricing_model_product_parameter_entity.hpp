@@ -20,11 +20,11 @@
 #ifndef ORES_ANALYTICS_REPOSITORY_PRICING_MODEL_PRODUCT_PARAMETER_ENTITY_HPP
 #define ORES_ANALYTICS_REPOSITORY_PRICING_MODEL_PRODUCT_PARAMETER_ENTITY_HPP
 
-#include <string>
-#include <optional>
-#include <ostream>
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
+#include <optional>
+#include <ostream>
+#include <string>
 
 namespace ores::analytics::repository {
 
@@ -35,8 +35,7 @@ using db_timestamp = ores::database::repository::db_timestamp;
  */
 struct pricing_model_product_parameter_entity {
     constexpr static const char* schema = "public";
-    constexpr static const char* tablename =
-        "ores_analytics_pricing_model_product_parameters_tbl";
+    constexpr static const char* tablename = "ores_analytics_pricing_model_product_parameters_tbl";
 
     sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;
@@ -54,8 +53,7 @@ struct pricing_model_product_parameter_entity {
     db_timestamp valid_to = "9999-12-31 23:59:59";
 };
 
-std::ostream& operator<<(std::ostream& s,
-    const pricing_model_product_parameter_entity& v);
+std::ostream& operator<<(std::ostream& s, const pricing_model_product_parameter_entity& v);
 
 }
 

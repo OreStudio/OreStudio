@@ -20,19 +20,19 @@
 #ifndef ORES_SYNTHETIC_DOMAIN_GENERATED_ORGANISATION_HPP
 #define ORES_SYNTHETIC_DOMAIN_GENERATED_ORGANISATION_HPP
 
-#include <cstdint>
-#include <vector>
-#include "ores.refdata.api/domain/party.hpp"
-#include "ores.refdata.api/domain/party_contact_information.hpp"
-#include "ores.refdata.api/domain/party_identifier.hpp"
+#include "ores.refdata.api/domain/book.hpp"
+#include "ores.refdata.api/domain/business_unit.hpp"
+#include "ores.refdata.api/domain/business_unit_type.hpp"
 #include "ores.refdata.api/domain/counterparty.hpp"
 #include "ores.refdata.api/domain/counterparty_contact_information.hpp"
 #include "ores.refdata.api/domain/counterparty_identifier.hpp"
+#include "ores.refdata.api/domain/party.hpp"
+#include "ores.refdata.api/domain/party_contact_information.hpp"
 #include "ores.refdata.api/domain/party_counterparty.hpp"
-#include "ores.refdata.api/domain/business_unit_type.hpp"
-#include "ores.refdata.api/domain/business_unit.hpp"
+#include "ores.refdata.api/domain/party_identifier.hpp"
 #include "ores.refdata.api/domain/portfolio.hpp"
-#include "ores.refdata.api/domain/book.hpp"
+#include <cstdint>
+#include <vector>
 
 namespace ores::synthetic::domain {
 
@@ -87,14 +87,12 @@ struct generated_organisation final {
     /**
      * @brief Contact information (addresses) for counterparties.
      */
-    std::vector<refdata::domain::counterparty_contact_information>
-        counterparty_contacts;
+    std::vector<refdata::domain::counterparty_contact_information> counterparty_contacts;
 
     /**
      * @brief External identifiers (LEI, BIC) for counterparties.
      */
-    std::vector<refdata::domain::counterparty_identifier>
-        counterparty_identifiers;
+    std::vector<refdata::domain::counterparty_identifier> counterparty_identifiers;
 
     /**
      * @brief Links between the root party and counterparties.

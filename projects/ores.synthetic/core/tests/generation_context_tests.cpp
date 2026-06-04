@@ -18,10 +18,9 @@
  *
  */
 #include "ores.utility/generation/generation_context.hpp"
-
-#include <set>
-#include <catch2/catch_test_macros.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <set>
 
 namespace {
 
@@ -126,8 +125,7 @@ TEST_CASE("alphanumeric_produces_correct_length", tags) {
 
 TEST_CASE("alphanumeric_contains_only_valid_characters", tags) {
     generation_context ctx(42);
-    const std::string valid =
-        "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    const std::string valid = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
     auto result = ctx.alphanumeric(200);
     for (char c : result) {
         REQUIRE(valid.find(c) != std::string::npos);

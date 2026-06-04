@@ -20,17 +20,16 @@
 #ifndef ORES_ANALYTICS_MESSAGING_PRICING_MODEL_CONFIG_PROTOCOL_HPP
 #define ORES_ANALYTICS_MESSAGING_PRICING_MODEL_CONFIG_PROTOCOL_HPP
 
+#include "ores.analytics.api/domain/pricing_model_config.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <string>
 #include <vector>
-#include <boost/uuid/uuid.hpp>
-#include "ores.analytics.api/domain/pricing_model_config.hpp"
 
 namespace ores::analytics::messaging {
 
 struct get_pricing_model_configs_request {
     using response_type = struct get_pricing_model_configs_response;
-    static constexpr std::string_view nats_subject =
-        "analytics.v1.pricing_model_configs.list";
+    static constexpr std::string_view nats_subject = "analytics.v1.pricing_model_configs.list";
 };
 
 struct get_pricing_model_configs_response {
@@ -42,8 +41,7 @@ struct get_pricing_model_configs_response {
 
 struct save_pricing_model_config_request {
     using response_type = struct save_pricing_model_config_response;
-    static constexpr std::string_view nats_subject =
-        "analytics.v1.pricing_model_configs.save";
+    static constexpr std::string_view nats_subject = "analytics.v1.pricing_model_configs.save";
     ores::analytics::domain::pricing_model_config data;
 };
 
@@ -54,8 +52,7 @@ struct save_pricing_model_config_response {
 
 struct delete_pricing_model_config_request {
     using response_type = struct delete_pricing_model_config_response;
-    static constexpr std::string_view nats_subject =
-        "analytics.v1.pricing_model_configs.delete";
+    static constexpr std::string_view nats_subject = "analytics.v1.pricing_model_configs.delete";
     std::vector<boost::uuids::uuid> ids;
 };
 
@@ -66,8 +63,7 @@ struct delete_pricing_model_config_response {
 
 struct get_pricing_model_config_history_request {
     using response_type = struct get_pricing_model_config_history_response;
-    static constexpr std::string_view nats_subject =
-        "analytics.v1.pricing_model_configs.history";
+    static constexpr std::string_view nats_subject = "analytics.v1.pricing_model_configs.history";
     boost::uuids::uuid id;
 };
 

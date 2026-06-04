@@ -20,22 +20,22 @@
 #ifndef ORES_WORKFLOW_CORE_REPOSITORY_WORKFLOW_STEP_REPOSITORY_HPP
 #define ORES_WORKFLOW_CORE_REPOSITORY_WORKFLOW_STEP_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include <optional>
-#include <sqlgen/postgres.hpp>
-#include <boost/uuid/uuid.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.workflow.core/domain/workflow_step.hpp"
 #include "ores.workflow.core/export.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <optional>
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::workflow::repository {
 
 /**
  * @brief Repository for workflow steps (non-temporal, append-mostly).
  */
-class ORES_WORKFLOW_CORE_EXPORT workflow_step_repository  {
+class ORES_WORKFLOW_CORE_EXPORT workflow_step_repository {
 private:
     inline static std::string_view logger_name =
         "ores.workflow.repository.workflow_step_repository";
@@ -57,16 +57,15 @@ public:
      * Used by the engine which processes step-completed events cross-tenant.
      * Returns nullopt if no record with @p id exists.
      */
-    std::optional<domain::workflow_step>
-    find_by_id(context ctx, const boost::uuids::uuid& id);
+    std::optional<domain::workflow_step> find_by_id(context ctx, const boost::uuids::uuid& id);
 
     /**
      * @brief Returns all steps belonging to a workflow instance.
      *
      * Results are returned in step_index ascending order.
      */
-    std::vector<domain::workflow_step>
-    find_by_workflow_id(context ctx, const boost::uuids::uuid& workflow_id);
+    std::vector<domain::workflow_step> find_by_workflow_id(context ctx,
+                                                           const boost::uuids::uuid& workflow_id);
 
     /**
      * @brief Inserts a new workflow step record.
@@ -80,11 +79,12 @@ public:
      * stamps completed_at to now.  Pass an empty string for @p step_log_json
      * when the step produces no log entries.
      */
-    void update_state(context ctx, const boost::uuids::uuid& id,
-        const boost::uuids::uuid& state_id,
-        const std::string& response_json,
-        const std::string& error,
-        const std::string& step_log_json = {});
+    void update_state(context ctx,
+                      const boost::uuids::uuid& id,
+                      const boost::uuids::uuid& state_id,
+                      const std::string& response_json,
+                      const std::string& error,
+                      const std::string& step_log_json = {});
 
     /**
      * @brief Records that the step command was successfully published.

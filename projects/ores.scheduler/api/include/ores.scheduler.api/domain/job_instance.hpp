@@ -19,12 +19,12 @@
  */
 #pragma once
 
+#include "ores.scheduler.api/domain/job_status.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <cstdint>
 #include <optional>
 #include <string>
-#include <boost/uuid/uuid.hpp>
-#include "ores.scheduler.api/domain/job_status.hpp"
 
 namespace ores::scheduler::domain {
 
@@ -51,7 +51,8 @@ struct job_instance final {
      * @brief Wall-clock duration of the execution, if it has completed.
      */
     [[nodiscard]] std::optional<std::chrono::milliseconds> duration() const noexcept {
-        if (!duration_ms) return std::nullopt;
+        if (!duration_ms)
+            return std::nullopt;
         return std::chrono::milliseconds(*duration_ms);
     }
 };

@@ -18,11 +18,10 @@
  *
  */
 #include "ores.analytics.core/repository/pricing_model_product_parameter_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
-#include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.analytics.api/domain/pricing_model_product_parameter_json_io.hpp" // IWYU pragma: keep.
+#include "ores.database/repository/mapper_helpers.hpp"
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::analytics::repository {
 
@@ -30,20 +29,18 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 
 domain::pricing_model_product_parameter
-pricing_model_product_parameter_mapper::map(
-    const pricing_model_product_parameter_entity& v) {
+pricing_model_product_parameter_mapper::map(const pricing_model_product_parameter_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::pricing_model_product_parameter r;
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
-    r.pricing_model_config_id =
-        boost::lexical_cast<boost::uuids::uuid>(v.pricing_model_config_id);
-    r.pricing_model_product_id = v.pricing_model_product_id.has_value()
-        ? std::optional(boost::lexical_cast<boost::uuids::uuid>(
-            *v.pricing_model_product_id))
-        : std::nullopt;
+    r.pricing_model_config_id = boost::lexical_cast<boost::uuids::uuid>(v.pricing_model_config_id);
+    r.pricing_model_product_id =
+        v.pricing_model_product_id.has_value() ?
+            std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.pricing_model_product_id)) :
+            std::nullopt;
     r.parameter_scope = v.parameter_scope;
     r.parameter_name = v.parameter_name;
     r.parameter_value = v.parameter_value;
@@ -58,8 +55,7 @@ pricing_model_product_parameter_mapper::map(
 }
 
 pricing_model_product_parameter_entity
-pricing_model_product_parameter_mapper::map(
-    const domain::pricing_model_product_parameter& v) {
+pricing_model_product_parameter_mapper::map(const domain::pricing_model_product_parameter& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     pricing_model_product_parameter_entity r;
@@ -67,9 +63,10 @@ pricing_model_product_parameter_mapper::map(
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
     r.pricing_model_config_id = boost::uuids::to_string(v.pricing_model_config_id);
-    r.pricing_model_product_id = v.pricing_model_product_id.has_value()
-        ? std::optional(boost::uuids::to_string(*v.pricing_model_product_id))
-        : std::nullopt;
+    r.pricing_model_product_id =
+        v.pricing_model_product_id.has_value() ?
+            std::optional(boost::uuids::to_string(*v.pricing_model_product_id)) :
+            std::nullopt;
     r.parameter_scope = v.parameter_scope;
     r.parameter_name = v.parameter_name;
     r.parameter_value = v.parameter_value;
@@ -81,28 +78,18 @@ pricing_model_product_parameter_mapper::map(
     return r;
 }
 
-std::vector<domain::pricing_model_product_parameter>
-pricing_model_product_parameter_mapper::map(
+std::vector<domain::pricing_model_product_parameter> pricing_model_product_parameter_mapper::map(
     const std::vector<pricing_model_product_parameter_entity>& v) {
-    return map_vector<
-        pricing_model_product_parameter_entity,
-        domain::pricing_model_product_parameter>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+    return map_vector<pricing_model_product_parameter_entity,
+                      domain::pricing_model_product_parameter>(
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
-std::vector<pricing_model_product_parameter_entity>
-pricing_model_product_parameter_mapper::map(
+std::vector<pricing_model_product_parameter_entity> pricing_model_product_parameter_mapper::map(
     const std::vector<domain::pricing_model_product_parameter>& v) {
-    return map_vector<
-        domain::pricing_model_product_parameter,
-        pricing_model_product_parameter_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+    return map_vector<domain::pricing_model_product_parameter,
+                      pricing_model_product_parameter_entity>(
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

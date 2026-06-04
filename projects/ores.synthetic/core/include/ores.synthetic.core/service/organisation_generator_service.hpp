@@ -20,8 +20,8 @@
 #ifndef ORES_SYNTHETIC_SERVICE_ORGANISATION_GENERATOR_SERVICE_HPP
 #define ORES_SYNTHETIC_SERVICE_ORGANISATION_GENERATOR_SERVICE_HPP
 
-#include "ores.synthetic.api/domain/organisation_generation_options.hpp"
 #include "ores.synthetic.api/domain/generated_organisation.hpp"
+#include "ores.synthetic.api/domain/organisation_generation_options.hpp"
 #include "ores.synthetic.core/export.hpp"
 
 namespace ores::synthetic::service {
@@ -69,8 +69,7 @@ public:
      * @param options Configuration for the generation process.
      * @return A complete organisation with proper cross-references.
      */
-    domain::generated_organisation generate(
-        const domain::organisation_generation_options& options);
+    domain::generated_organisation generate(const domain::organisation_generation_options& options);
 
     /**
      * @brief Generates an organisation with default options.

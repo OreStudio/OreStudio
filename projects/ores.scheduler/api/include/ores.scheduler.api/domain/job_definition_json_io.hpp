@@ -20,9 +20,9 @@
 #ifndef ORES_SCHEDULER_DOMAIN_JOB_DEFINITION_JSON_IO_HPP
 #define ORES_SCHEDULER_DOMAIN_JOB_DEFINITION_JSON_IO_HPP
 
-#include <iosfwd>
-#include "ores.scheduler.api/export.hpp"
 #include "ores.scheduler.api/domain/job_definition.hpp"
+#include "ores.scheduler.api/export.hpp"
+#include <iosfwd>
 
 namespace ores::scheduler::domain {
 

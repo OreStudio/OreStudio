@@ -18,9 +18,8 @@
  *
  */
 #include "ores.scheduler.core/service/job_definition_service.hpp"
-
-#include <stdexcept>
 #include <boost/uuid/uuid_io.hpp>
+#include <stdexcept>
 
 namespace ores::scheduler::service {
 
@@ -38,7 +37,8 @@ std::optional<domain::job_definition>
 job_definition_service::find_definition(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Finding job definition: " << id;
     auto results = repo_.read_latest(ctx_, id);
-    if (results.empty()) return std::nullopt;
+    if (results.empty())
+        return std::nullopt;
     return results.front();
 }
 
@@ -51,14 +51,12 @@ void job_definition_service::save_definition(domain::job_definition v) {
     // old row) rather than a new insert that would violate the name+tenant
     // unique constraint.
     if (!v.job_name.empty()) {
-        const auto lookup_tid = v.tenant_id
-            ? boost::uuids::to_string(*v.tenant_id)
-            : ctx_.tenant_id().to_string();
+        const auto lookup_tid =
+            v.tenant_id ? boost::uuids::to_string(*v.tenant_id) : ctx_.tenant_id().to_string();
         auto existing = repo_.find_by_name(ctx_, lookup_tid, v.job_name);
         if (existing && existing->id != v.id) {
             BOOST_LOG_SEV(lg(), debug)
-                << "Job name '" << v.job_name
-                << "' already exists with id " << existing->id
+                << "Job name '" << v.job_name << "' already exists with id " << existing->id
                 << "; adopting existing id for version update";
             v.id = existing->id;
         }

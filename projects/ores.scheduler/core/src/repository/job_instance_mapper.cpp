@@ -18,19 +18,20 @@
  *
  */
 #include "ores.scheduler.core/repository/job_instance_mapper.hpp"
-
-#include <boost/lexical_cast.hpp>
-#include <boost/uuid/uuid_io.hpp>
 #include "ores.platform/time/datetime.hpp"
 #include "ores.scheduler.api/domain/job_status.hpp"
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::scheduler::repository {
 
 namespace {
 
 domain::job_status status_from_string(const std::string& s) {
-    if (s == "succeeded") return domain::job_status::succeeded;
-    if (s == "failed")    return domain::job_status::failed;
+    if (s == "succeeded")
+        return domain::job_status::succeeded;
+    if (s == "failed")
+        return domain::job_status::failed;
     return domain::job_status::starting;
 }
 
@@ -46,29 +47,28 @@ domain::job_instance job_instance_mapper::map(const job_instance_entity& e) {
     if (e.party_id)
         inst.party_id = boost::lexical_cast<boost::uuids::uuid>(*e.party_id);
     if (e.job_definition_id)
-        inst.job_definition_id =
-            boost::lexical_cast<boost::uuids::uuid>(*e.job_definition_id);
+        inst.job_definition_id = boost::lexical_cast<boost::uuids::uuid>(*e.job_definition_id);
     if (e.action_type)
         inst.action_type = *e.action_type;
     if (e.status)
         inst.status = status_from_string(*e.status);
     if (e.triggered_at) {
         try {
-            inst.triggered_at =
-                ores::platform::time::datetime::from_iso8601_utc(*e.triggered_at);
-        } catch (...) {}
+            inst.triggered_at = ores::platform::time::datetime::from_iso8601_utc(*e.triggered_at);
+        } catch (...) {
+        }
     }
     if (e.started_at) {
         try {
-            inst.started_at =
-                ores::platform::time::datetime::from_iso8601_utc(*e.started_at);
-        } catch (...) {}
+            inst.started_at = ores::platform::time::datetime::from_iso8601_utc(*e.started_at);
+        } catch (...) {
+        }
     }
     if (e.completed_at) {
         try {
-            inst.completed_at =
-                ores::platform::time::datetime::from_iso8601_utc(*e.completed_at);
-        } catch (...) {}
+            inst.completed_at = ores::platform::time::datetime::from_iso8601_utc(*e.completed_at);
+        } catch (...) {
+        }
     }
     if (e.duration_ms)
         inst.duration_ms = std::stoll(*e.duration_ms);

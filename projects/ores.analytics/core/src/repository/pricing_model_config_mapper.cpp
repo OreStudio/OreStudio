@@ -18,11 +18,10 @@
  *
  */
 #include "ores.analytics.core/repository/pricing_model_config_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
-#include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.analytics.api/domain/pricing_model_config_json_io.hpp" // IWYU pragma: keep.
+#include "ores.database/repository/mapper_helpers.hpp"
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::analytics::repository {
 
@@ -70,23 +69,15 @@ pricing_model_config_mapper::map(const domain::pricing_model_config& v) {
 }
 
 std::vector<domain::pricing_model_config>
-pricing_model_config_mapper::map(
-    const std::vector<pricing_model_config_entity>& v) {
+pricing_model_config_mapper::map(const std::vector<pricing_model_config_entity>& v) {
     return map_vector<pricing_model_config_entity, domain::pricing_model_config>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<pricing_model_config_entity>
-pricing_model_config_mapper::map(
-    const std::vector<domain::pricing_model_config>& v) {
+pricing_model_config_mapper::map(const std::vector<domain::pricing_model_config>& v) {
     return map_vector<domain::pricing_model_config, pricing_model_config_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

@@ -17,9 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <catch2/catch_test_macros.hpp>
-#include <boost/uuid/uuid_generators.hpp>
 #include "ores.scheduler.core/builder/job_definition_builder.hpp"
+#include <boost/uuid/uuid_generators.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 using namespace ores::scheduler::builder;
 using namespace ores::scheduler::domain;
@@ -27,21 +27,21 @@ using namespace ores::scheduler::domain;
 namespace {
 
 const auto test_tenant = boost::uuids::random_generator{}();
-const auto test_party  = boost::uuids::random_generator{}();
+const auto test_party = boost::uuids::random_generator{}();
 
 } // anonymous namespace
 
 TEST_CASE("job_definition_builder produces a valid definition from all fields",
           "[builder][job_definition_builder]") {
     auto result = job_definition_builder{}
-        .with_name("test_job")
-        .with_description("A test job")
-        .with_command("SELECT 1")
-        .with_cron_schedule("0 0 * * *")
-        .with_tenant(test_tenant)
-        .with_party(test_party)
-        .with_modified_by("test_user")
-        .build();
+                      .with_name("test_job")
+                      .with_description("A test job")
+                      .with_command("SELECT 1")
+                      .with_cron_schedule("0 0 * * *")
+                      .with_tenant(test_tenant)
+                      .with_party(test_party)
+                      .with_modified_by("test_user")
+                      .build();
 
     REQUIRE(result.has_value());
 
@@ -62,11 +62,11 @@ TEST_CASE("job_definition_builder produces a valid definition from all fields",
 TEST_CASE("job_definition_builder produces a system job when tenant omitted",
           "[builder][job_definition_builder]") {
     auto result = job_definition_builder{}
-        .with_name("system_job")
-        .with_command("SELECT 1")
-        .with_cron_schedule("* * * * *")
-        .with_modified_by("system")
-        .build();
+                      .with_name("system_job")
+                      .with_command("SELECT 1")
+                      .with_cron_schedule("* * * * *")
+                      .with_modified_by("system")
+                      .build();
 
     REQUIRE(result.has_value());
     CHECK(!result->tenant_id.has_value());
@@ -76,12 +76,12 @@ TEST_CASE("job_definition_builder produces a system job when tenant omitted",
 TEST_CASE("job_definition_builder fails when name is missing",
           "[builder][job_definition_builder]") {
     auto result = job_definition_builder{}
-        .with_command("SELECT 1")
-        .with_cron_schedule("0 0 * * *")
-        .with_tenant(test_tenant)
-        .with_party(test_party)
-        .with_modified_by("test_user")
-        .build();
+                      .with_command("SELECT 1")
+                      .with_cron_schedule("0 0 * * *")
+                      .with_tenant(test_tenant)
+                      .with_party(test_party)
+                      .with_modified_by("test_user")
+                      .build();
 
     REQUIRE_FALSE(result.has_value());
     CHECK(!result.error().empty());
@@ -90,12 +90,12 @@ TEST_CASE("job_definition_builder fails when name is missing",
 TEST_CASE("job_definition_builder fails when command is missing",
           "[builder][job_definition_builder]") {
     auto result = job_definition_builder{}
-        .with_name("test_job")
-        .with_cron_schedule("0 0 * * *")
-        .with_tenant(test_tenant)
-        .with_party(test_party)
-        .with_modified_by("test_user")
-        .build();
+                      .with_name("test_job")
+                      .with_cron_schedule("0 0 * * *")
+                      .with_tenant(test_tenant)
+                      .with_party(test_party)
+                      .with_modified_by("test_user")
+                      .build();
 
     REQUIRE_FALSE(result.has_value());
 }
@@ -103,13 +103,13 @@ TEST_CASE("job_definition_builder fails when command is missing",
 TEST_CASE("job_definition_builder fails for invalid cron expression",
           "[builder][job_definition_builder]") {
     auto result = job_definition_builder{}
-        .with_name("test_job")
-        .with_command("SELECT 1")
-        .with_cron_schedule("not a cron")
-        .with_tenant(test_tenant)
-        .with_party(test_party)
-        .with_modified_by("test_user")
-        .build();
+                      .with_name("test_job")
+                      .with_command("SELECT 1")
+                      .with_cron_schedule("not a cron")
+                      .with_tenant(test_tenant)
+                      .with_party(test_party)
+                      .with_modified_by("test_user")
+                      .build();
 
     REQUIRE_FALSE(result.has_value());
     CHECK(!result.error().empty());
@@ -125,13 +125,13 @@ TEST_CASE("job_definition_builder accepts various valid cron expressions",
 
     for (const auto& sched : schedules) {
         auto result = job_definition_builder{}
-            .with_name("job_for_" + sched)
-            .with_command("SELECT 1")
-            .with_cron_schedule(sched)
-            .with_tenant(test_tenant)
-            .with_party(test_party)
-            .with_modified_by("test_user")
-            .build();
+                          .with_name("job_for_" + sched)
+                          .with_command("SELECT 1")
+                          .with_cron_schedule(sched)
+                          .with_tenant(test_tenant)
+                          .with_party(test_party)
+                          .with_modified_by("test_user")
+                          .build();
 
         INFO("Testing schedule: " << sched);
         REQUIRE(result.has_value());

@@ -20,26 +20,26 @@
 #ifndef ORES_SYNTHETIC_MESSAGING_ORGANISATION_HANDLER_HPP
 #define ORES_SYNTHETIC_MESSAGING_ORGANISATION_HANDLER_HPP
 
-#include <optional>
+#include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.database/domain/context.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include "ores.synthetic.api/domain/organisation_generation_options.hpp"
 #include "ores.synthetic.api/messaging/generate_organisation_protocol.hpp"
+#include "ores.synthetic.core/export.hpp"
 #include "ores.synthetic.core/service/organisation_generator_service.hpp"
 #include "ores.synthetic.core/service/organisation_publisher_service.hpp"
-#include "ores.synthetic.core/export.hpp"
+#include <optional>
 
 namespace ores::synthetic::messaging {
 
 namespace {
 inline auto& organisation_handler_lg() {
-    static auto instance = ores::logging::make_logger(
-        "ores.synthetic.messaging.organisation_handler");
+    static auto instance =
+        ores::logging::make_logger("ores.synthetic.messaging.organisation_handler");
     return instance;
 }
 } // namespace
@@ -53,21 +53,20 @@ using namespace ores::logging;
 class ORES_SYNTHETIC_CORE_EXPORT organisation_handler {
 public:
     organisation_handler(ores::nats::service::client& nats,
-        ores::database::context ctx,
-        std::optional<ores::security::jwt::jwt_authenticator> verifier)
-        : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier)) {}
+                         ores::database::context ctx,
+                         std::optional<ores::security::jwt::jwt_authenticator> verifier)
+        : nats_(nats)
+        , ctx_(std::move(ctx))
+        , verifier_(std::move(verifier)) {}
 
     void generate(ores::nats::message msg) {
-        BOOST_LOG_SEV(organisation_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        BOOST_LOG_SEV(organisation_handler_lg(), debug) << "Handling " << msg.subject;
         auto req = decode<generate_organisation_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(organisation_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(organisation_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -79,21 +78,21 @@ public:
         }
         try {
             domain::organisation_generation_options opts;
-            opts.seed                    = req->seed;
-            opts.country                 = req->country;
-            opts.party_count             = req->party_count;
-            opts.party_max_depth         = req->party_max_depth;
-            opts.counterparty_count      = req->counterparty_count;
-            opts.counterparty_max_depth  = req->counterparty_max_depth;
-            opts.portfolio_leaf_count    = req->portfolio_leaf_count;
-            opts.portfolio_max_depth     = req->portfolio_max_depth;
+            opts.seed = req->seed;
+            opts.country = req->country;
+            opts.party_count = req->party_count;
+            opts.party_max_depth = req->party_max_depth;
+            opts.counterparty_count = req->counterparty_count;
+            opts.counterparty_max_depth = req->counterparty_max_depth;
+            opts.portfolio_leaf_count = req->portfolio_leaf_count;
+            opts.portfolio_max_depth = req->portfolio_max_depth;
             opts.books_per_leaf_portfolio = req->books_per_leaf_portfolio;
-            opts.business_unit_count     = req->business_unit_count;
+            opts.business_unit_count = req->business_unit_count;
             opts.business_unit_max_depth = req->business_unit_max_depth;
-            opts.generate_addresses      = req->generate_addresses;
-            opts.contacts_per_party      = req->contacts_per_party;
+            opts.generate_addresses = req->generate_addresses;
+            opts.contacts_per_party = req->contacts_per_party;
             opts.contacts_per_counterparty = req->contacts_per_counterparty;
-            opts.generate_identifiers    = req->generate_identifiers;
+            opts.generate_identifiers = req->generate_identifiers;
 
             service::organisation_generator_service gen;
             const auto org = gen.generate(opts);
@@ -106,27 +105,23 @@ public:
             resp.error_message = result.error_message;
             resp.seed = org.seed;
             resp.parties_count = static_cast<int>(result.parties_count);
-            resp.counterparties_count =
-                static_cast<int>(result.counterparties_count);
-            resp.business_unit_types_count =
-                static_cast<int>(result.business_unit_types_count);
-            resp.business_units_count =
-                static_cast<int>(result.business_units_count);
+            resp.counterparties_count = static_cast<int>(result.counterparties_count);
+            resp.business_unit_types_count = static_cast<int>(result.business_unit_types_count);
+            resp.business_units_count = static_cast<int>(result.business_units_count);
             resp.portfolios_count = static_cast<int>(result.portfolios_count);
             resp.books_count = static_cast<int>(result.books_count);
             resp.contacts_count = static_cast<int>(result.contacts_count);
-            resp.identifiers_count =
-                static_cast<int>(result.identifiers_count);
+            resp.identifiers_count = static_cast<int>(result.identifiers_count);
 
             BOOST_LOG_SEV(organisation_handler_lg(), debug)
-                << "Completed " << msg.subject
-                << " (seed: " << org.seed << ")";
+                << "Completed " << msg.subject << " (seed: " << org.seed << ")";
             reply(nats_, msg, resp);
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(organisation_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, generate_organisation_response{
-                .success = false, .error_message = e.what()});
+            reply(nats_,
+                  msg,
+                  generate_organisation_response{.success = false, .error_message = e.what()});
         }
     }
 

@@ -18,18 +18,17 @@
  *
  */
 #include "ores.workflow.core/repository/workflow_step_repository.hpp"
-
+#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
+#include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.workflow.core/domain/workflow_step_json_io.hpp" // IWYU pragma: keep.
+#include "ores.workflow.core/repository/workflow_step_entity.hpp"
+#include "ores.workflow.core/repository/workflow_step_mapper.hpp"
+#include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <chrono>
 #include <optional>
 #include <sqlgen/postgres.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include "ores.database/repository/helpers.hpp"
-#include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
-#include "ores.workflow.core/domain/workflow_step_json_io.hpp" // IWYU pragma: keep.
-#include "ores.workflow.core/repository/workflow_step_entity.hpp"
-#include "ores.workflow.core/repository/workflow_step_mapper.hpp"
 
 namespace ores::workflow::repository {
 
@@ -40,113 +39,104 @@ using namespace ores::database::repository;
 using ores::platform::time::datetime;
 
 std::optional<domain::workflow_step>
-workflow_step_repository::find_by_id(
-    context ctx, const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding workflow step by id: "
-                               << boost::uuids::to_string(id);
+workflow_step_repository::find_by_id(context ctx, const boost::uuids::uuid& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Finding workflow step by id: " << boost::uuids::to_string(id);
 
     const auto id_str = boost::uuids::to_string(id);
-    const auto query = sqlgen::read<std::vector<workflow_step_entity>> |
-        where("id"_c == id_str);
+    const auto query = sqlgen::read<std::vector<workflow_step_entity>> | where("id"_c == id_str);
 
     auto results = execute_read_query<workflow_step_entity, domain::workflow_step>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return workflow_step_mapper::map(entities); },
-        lg(), "Finding workflow step by id");
+        lg(),
+        "Finding workflow step by id");
 
-    if (results.empty()) return std::nullopt;
+    if (results.empty())
+        return std::nullopt;
     return results.front();
 }
 
 std::vector<domain::workflow_step>
-workflow_step_repository::find_by_workflow_id(
-    context ctx, const boost::uuids::uuid& workflow_id) {
+workflow_step_repository::find_by_workflow_id(context ctx, const boost::uuids::uuid& workflow_id) {
     BOOST_LOG_SEV(lg(), debug) << "Finding workflow steps for workflow: "
                                << boost::uuids::to_string(workflow_id);
 
     const auto wf_id_str = boost::uuids::to_string(workflow_id);
-    const auto query = sqlgen::read<std::vector<workflow_step_entity>> |
-        where("workflow_id"_c == wf_id_str);
+    const auto query =
+        sqlgen::read<std::vector<workflow_step_entity>> | where("workflow_id"_c == wf_id_str);
 
     auto results = execute_read_query<workflow_step_entity, domain::workflow_step>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return workflow_step_mapper::map(entities); },
-        lg(), "Finding workflow steps by workflow id");
+        lg(),
+        "Finding workflow steps by workflow id");
 
     // Sort by step_index ascending so callers get steps in execution order.
-    std::ranges::sort(results, [](const auto& a, const auto& b) {
-        return a.step_index < b.step_index;
-    });
+    std::ranges::sort(results,
+                      [](const auto& a, const auto& b) { return a.step_index < b.step_index; });
     return results;
 }
 
-std::vector<domain::workflow_step>
-workflow_step_repository::read(context ctx) {
+std::vector<domain::workflow_step> workflow_step_repository::read(context ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Reading workflow steps.";
 
     const auto query = sqlgen::read<std::vector<workflow_step_entity>>;
 
     return execute_read_query<workflow_step_entity, domain::workflow_step>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return workflow_step_mapper::map(entities); },
-        lg(), "Reading workflow steps");
+        lg(),
+        "Reading workflow steps");
 }
 
-void workflow_step_repository::create(
-    context ctx, const domain::workflow_step& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Creating workflow step: "
-                               << boost::uuids::to_string(v.id);
+void workflow_step_repository::create(context ctx, const domain::workflow_step& v) {
+    BOOST_LOG_SEV(lg(), debug) << "Creating workflow step: " << boost::uuids::to_string(v.id);
 
     const auto entity = workflow_step_mapper::to_entity(v);
-    const auto r = sqlgen::session(ctx.connection_pool())
-        .and_then(insert(entity));
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(insert(entity));
     ensure_success(r, lg());
 
     BOOST_LOG_SEV(lg(), debug) << "Workflow step created.";
 }
 
-void workflow_step_repository::update_state(
-    context ctx, const boost::uuids::uuid& id,
-    const boost::uuids::uuid& state_id,
-    const std::string& response_json,
-    const std::string& error,
-    const std::string& step_log_json) {
-    BOOST_LOG_SEV(lg(), debug) << "Updating workflow step state: "
-                               << boost::uuids::to_string(id)
+void workflow_step_repository::update_state(context ctx,
+                                            const boost::uuids::uuid& id,
+                                            const boost::uuids::uuid& state_id,
+                                            const std::string& response_json,
+                                            const std::string& error,
+                                            const std::string& step_log_json) {
+    BOOST_LOG_SEV(lg(), debug) << "Updating workflow step state: " << boost::uuids::to_string(id)
                                << " -> " << boost::uuids::to_string(state_id);
 
     const auto id_str = boost::uuids::to_string(id);
     const auto state_id_str = boost::uuids::to_string(state_id);
     const auto now = datetime::to_db_string(std::chrono::system_clock::now());
-    const auto opt_response = response_json.empty()
-        ? std::optional<std::string>{}
-        : std::optional<std::string>(response_json);
-    const auto opt_error = error.empty()
-        ? std::optional<std::string>{}
-        : std::optional<std::string>(error);
-    const auto opt_log = step_log_json.empty()
-        ? std::optional<std::string>{}
-        : std::optional<std::string>(step_log_json);
+    const auto opt_response = response_json.empty() ? std::optional<std::string>{} :
+                                                      std::optional<std::string>(response_json);
+    const auto opt_error =
+        error.empty() ? std::optional<std::string>{} : std::optional<std::string>(error);
+    const auto opt_log = step_log_json.empty() ? std::optional<std::string>{} :
+                                                 std::optional<std::string>(step_log_json);
     using ts_t = ores::database::repository::db_timestamp;
     const auto opt_now = std::optional<ts_t>(now);
 
-    const auto query = sqlgen::update<workflow_step_entity>(
-        "state_id"_c.set(state_id_str),
-        "response_json"_c.set(opt_response),
-        "error"_c.set(opt_error),
-        "step_log_json"_c.set(opt_log),
-        "completed_at"_c.set(opt_now)
-    ) | where("id"_c == id_str);
+    const auto query = sqlgen::update<workflow_step_entity>("state_id"_c.set(state_id_str),
+                                                            "response_json"_c.set(opt_response),
+                                                            "error"_c.set(opt_error),
+                                                            "step_log_json"_c.set(opt_log),
+                                                            "completed_at"_c.set(opt_now)) |
+                       where("id"_c == id_str);
 
-    const auto r = sqlgen::session(ctx.connection_pool())
-        .and_then(query);
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
     ensure_success(r, lg());
 
     BOOST_LOG_SEV(lg(), debug) << "Workflow step state updated.";
 }
 
-void workflow_step_repository::mark_command_published(
-    context ctx, const boost::uuids::uuid& id) {
+void workflow_step_repository::mark_command_published(context ctx, const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Marking command published for step: "
                                << boost::uuids::to_string(id);
 
@@ -155,13 +145,11 @@ void workflow_step_repository::mark_command_published(
     using ts_t = ores::database::repository::db_timestamp;
     const auto opt_now = std::optional<ts_t>(now);
 
-    const auto query = sqlgen::update<workflow_step_entity>(
-        "command_published_at"_c.set(opt_now),
-        "started_at"_c.set(opt_now)
-    ) | where("id"_c == id_str);
+    const auto query = sqlgen::update<workflow_step_entity>("command_published_at"_c.set(opt_now),
+                                                            "started_at"_c.set(opt_now)) |
+                       where("id"_c == id_str);
 
-    const auto r = sqlgen::session(ctx.connection_pool())
-        .and_then(query);
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
     ensure_success(r, lg());
 
     BOOST_LOG_SEV(lg(), debug) << "Command published timestamp recorded.";

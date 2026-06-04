@@ -38,13 +38,13 @@ domain::fra_instrument generate_synthetic_fra_instrument(
         std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::fra_instrument r;
-    r.version = 1;
-    r.tenant_id = utility::uuid::tenant_id::from_string(tid_str)
+    r.identity.version = 1;
+    r.identity.tenant_id = utility::uuid::tenant_id::from_string(tid_str)
         .value_or(utility::uuid::tenant_id::system());
-    r.workspace_id = utility::uuid::live_workspace_id();
-    r.instrument_id = ctx.generate_uuid();
-    r.trade_type_code = std::string("FRA");
-    r.party_id = ctx.generate_uuid();
+    r.identity.workspace_id = utility::uuid::live_workspace_id();
+    r.identity.instrument_id = ctx.generate_uuid();
+    r.identity.trade_type_code = std::string("FRA");
+    r.identity.party_id = ctx.generate_uuid();
     r.start_date = std::string("2024-01-15");
     r.end_date = std::string("2025-01-15");
     r.currency = std::string("USD");
@@ -52,11 +52,11 @@ domain::fra_instrument generate_synthetic_fra_instrument(
     r.long_short = std::string("Long");
     r.strike = 0.05;
     r.notional = 1000000.0;
-    r.modified_by = modified_by;
-    r.performed_by = modified_by;
-    r.change_reason_code = "system.test";
-    r.change_commentary = "Synthetic test data";
-    r.recorded_at = ctx.past_timepoint();
+    r.audit.modified_by = modified_by;
+    r.audit.performed_by = modified_by;
+    r.audit.change_reason_code = "system.test";
+    r.audit.change_commentary = "Synthetic test data";
+    r.audit.recorded_at = ctx.past_timepoint();
     return r;
 }
 

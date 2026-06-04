@@ -38,7 +38,7 @@ std::string swaption_instrument_repository::sql() {
 }
 
 void swaption_instrument_repository::write(context ctx, const domain::swaption_instrument& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing swaption instrument: " << v.instrument_id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing swaption instrument: " << v.identity.instrument_id;
     execute_write_query(ctx, swaption_instrument_mapper::map(v),
         lg(), "Writing swaption instrument to database.");
 }

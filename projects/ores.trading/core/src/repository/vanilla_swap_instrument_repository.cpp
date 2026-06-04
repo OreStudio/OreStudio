@@ -38,7 +38,7 @@ std::string vanilla_swap_instrument_repository::sql() {
 }
 
 void vanilla_swap_instrument_repository::write(context ctx, const domain::vanilla_swap_instrument& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing vanilla swap instrument: " << v.instrument_id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing vanilla swap instrument: " << v.identity.instrument_id;
     execute_write_query(ctx, vanilla_swap_instrument_mapper::map(v),
         lg(), "Writing vanilla swap instrument to database.");
 }

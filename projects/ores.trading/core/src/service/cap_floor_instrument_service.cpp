@@ -65,15 +65,15 @@ cap_floor_instrument_service::get_cap_floor_instrument(
 
 void cap_floor_instrument_service::save_cap_floor_instrument(
     const domain::cap_floor_instrument& v) {
-    if (v.instrument_id.is_nil())
+    if (v.identity.instrument_id.is_nil())
         throw std::invalid_argument("Cap/floor instrument id cannot be empty.");
     BOOST_LOG_SEV(lg(), debug) << "Saving cap_floor_instrument: "
-                               << v.instrument_id;
+                               << v.identity.instrument_id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
     BOOST_LOG_SEV(lg(), info) << "Saved cap_floor_instrument: "
-                              << t.instrument_id;
+                              << t.identity.instrument_id;
 }
 
 void cap_floor_instrument_service::remove_cap_floor_instrument(

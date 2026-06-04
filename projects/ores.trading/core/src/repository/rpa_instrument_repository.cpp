@@ -38,7 +38,7 @@ std::string rpa_instrument_repository::sql() {
 }
 
 void rpa_instrument_repository::write(context ctx, const domain::rpa_instrument& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing RPA instrument: " << v.instrument_id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing RPA instrument: " << v.identity.instrument_id;
     execute_write_query(ctx, rpa_instrument_mapper::map(v),
         lg(), "Writing RPA instrument to database.");
 }

@@ -64,15 +64,15 @@ swaption_instrument_service::get_swaption_instrument(const std::string& id) {
 
 void swaption_instrument_service::save_swaption_instrument(
     const domain::swaption_instrument& v) {
-    if (v.instrument_id.is_nil())
+    if (v.identity.instrument_id.is_nil())
         throw std::invalid_argument("Swaption instrument id cannot be empty.");
     BOOST_LOG_SEV(lg(), debug) << "Saving swaption_instrument: "
-                               << v.instrument_id;
+                               << v.identity.instrument_id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
     BOOST_LOG_SEV(lg(), info) << "Saved swaption_instrument: "
-                              << t.instrument_id;
+                              << t.identity.instrument_id;
 }
 
 void swaption_instrument_service::remove_swaption_instrument(

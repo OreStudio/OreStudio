@@ -38,7 +38,7 @@ std::string callable_swap_instrument_repository::sql() {
 }
 
 void callable_swap_instrument_repository::write(context ctx, const domain::callable_swap_instrument& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing callable swap instrument: " << v.instrument_id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing callable swap instrument: " << v.identity.instrument_id;
     execute_write_query(ctx, callable_swap_instrument_mapper::map(v),
         lg(), "Writing callable swap instrument to database.");
 }

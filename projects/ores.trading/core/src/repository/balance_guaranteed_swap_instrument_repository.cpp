@@ -38,7 +38,7 @@ std::string balance_guaranteed_swap_instrument_repository::sql() {
 }
 
 void balance_guaranteed_swap_instrument_repository::write(context ctx, const domain::balance_guaranteed_swap_instrument& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing balance guaranteed swap instrument: " << v.instrument_id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing balance guaranteed swap instrument: " << v.identity.instrument_id;
     execute_write_query(ctx, balance_guaranteed_swap_instrument_mapper::map(v),
         lg(), "Writing balance guaranteed swap instrument to database.");
 }

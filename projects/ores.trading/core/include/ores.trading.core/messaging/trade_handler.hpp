@@ -250,7 +250,7 @@ private:
         // Rates / swap types (9 sub-types, all share swap_legs table)
         auto add_swap = [&](auto&& results) {
             for (auto& v : results) {
-                const auto id = boost::uuids::to_string(v.instrument_id);
+                const auto id = boost::uuids::to_string(v.identity.instrument_id);
                 swap_instrument_data data;
                 data.instrument = std::move(v);
                 data.legs = take_legs(id);

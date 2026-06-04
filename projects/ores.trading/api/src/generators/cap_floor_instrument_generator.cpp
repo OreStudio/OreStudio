@@ -38,20 +38,20 @@ domain::cap_floor_instrument generate_synthetic_cap_floor_instrument(
         std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::cap_floor_instrument r;
-    r.version = 1;
-    r.tenant_id = utility::uuid::tenant_id::from_string(tid_str)
+    r.identity.version = 1;
+    r.identity.tenant_id = utility::uuid::tenant_id::from_string(tid_str)
         .value_or(utility::uuid::tenant_id::system());
-    r.workspace_id = utility::uuid::live_workspace_id();
-    r.instrument_id = ctx.generate_uuid();
-    r.trade_type_code = std::string("CapFloor");
-    r.party_id = ctx.generate_uuid();
+    r.identity.workspace_id = utility::uuid::live_workspace_id();
+    r.identity.instrument_id = ctx.generate_uuid();
+    r.identity.trade_type_code = std::string("CapFloor");
+    r.identity.party_id = ctx.generate_uuid();
     r.start_date = std::string("2024-01-15");
     r.maturity_date = std::string("2026-01-15");
-    r.modified_by = modified_by;
-    r.performed_by = modified_by;
-    r.change_reason_code = "system.test";
-    r.change_commentary = "Synthetic test data";
-    r.recorded_at = ctx.past_timepoint();
+    r.audit.modified_by = modified_by;
+    r.audit.performed_by = modified_by;
+    r.audit.change_reason_code = "system.test";
+    r.audit.change_commentary = "Synthetic test data";
+    r.audit.recorded_at = ctx.past_timepoint();
     return r;
 }
 

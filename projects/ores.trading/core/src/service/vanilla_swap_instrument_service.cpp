@@ -66,16 +66,16 @@ vanilla_swap_instrument_service::get_vanilla_swap_instrument(
 
 void vanilla_swap_instrument_service::save_vanilla_swap_instrument(
     const domain::vanilla_swap_instrument& v) {
-    if (v.instrument_id.is_nil())
+    if (v.identity.instrument_id.is_nil())
         throw std::invalid_argument(
             "Vanilla swap instrument id cannot be empty.");
     BOOST_LOG_SEV(lg(), debug) << "Saving vanilla_swap_instrument: "
-                               << v.instrument_id;
+                               << v.identity.instrument_id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
     BOOST_LOG_SEV(lg(), info) << "Saved vanilla_swap_instrument: "
-                              << t.instrument_id;
+                              << t.identity.instrument_id;
 }
 
 void vanilla_swap_instrument_service::remove_vanilla_swap_instrument(

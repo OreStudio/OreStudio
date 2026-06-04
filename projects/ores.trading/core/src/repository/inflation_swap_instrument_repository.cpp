@@ -38,7 +38,7 @@ std::string inflation_swap_instrument_repository::sql() {
 }
 
 void inflation_swap_instrument_repository::write(context ctx, const domain::inflation_swap_instrument& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing inflation swap instrument: " << v.instrument_id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing inflation swap instrument: " << v.identity.instrument_id;
     execute_write_query(ctx, inflation_swap_instrument_mapper::map(v),
         lg(), "Writing inflation swap instrument to database.");
 }

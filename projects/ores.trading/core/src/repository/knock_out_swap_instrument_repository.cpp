@@ -38,7 +38,7 @@ std::string knock_out_swap_instrument_repository::sql() {
 }
 
 void knock_out_swap_instrument_repository::write(context ctx, const domain::knock_out_swap_instrument& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing knock-out swap instrument: " << v.instrument_id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing knock-out swap instrument: " << v.identity.instrument_id;
     execute_write_query(ctx, knock_out_swap_instrument_mapper::map(v),
         lg(), "Writing knock-out swap instrument to database.");
 }

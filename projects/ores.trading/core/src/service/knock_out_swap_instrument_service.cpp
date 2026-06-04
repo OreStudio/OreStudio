@@ -68,16 +68,16 @@ knock_out_swap_instrument_service::get_knock_out_swap_instrument(
 
 void knock_out_swap_instrument_service::save_knock_out_swap_instrument(
     const domain::knock_out_swap_instrument& v) {
-    if (v.instrument_id.is_nil())
+    if (v.identity.instrument_id.is_nil())
         throw std::invalid_argument(
             "Knock-out swap instrument id cannot be empty.");
     BOOST_LOG_SEV(lg(), debug) << "Saving knock_out_swap_instrument: "
-                               << v.instrument_id;
+                               << v.identity.instrument_id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
     BOOST_LOG_SEV(lg(), info) << "Saved knock_out_swap_instrument: "
-                              << t.instrument_id;
+                              << t.identity.instrument_id;
 }
 
 void knock_out_swap_instrument_service::remove_knock_out_swap_instrument(

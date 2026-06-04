@@ -17,47 +17,30 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_DOMAIN_CAP_FLOOR_INSTRUMENT_HPP
-#define ORES_TRADING_DOMAIN_CAP_FLOOR_INSTRUMENT_HPP
+#ifndef ORES_TRADING_DOMAIN_INSTRUMENT_IDENTITY_HPP
+#define ORES_TRADING_DOMAIN_INSTRUMENT_IDENTITY_HPP
 
-#include <chrono>
+#include <optional>
 #include <string>
-#include "ores.trading.api/domain/instrument_identity.hpp"
-#include "ores.utility/domain/audit_record.hpp"
+#include <boost/uuid/uuid.hpp>
+#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::trading::domain {
 
 /**
- * @brief Interest rate cap or floor instrument.
+ * @brief Common identity fields shared by all instrument types.
  *
- * Represents an interest rate cap or floor instrument.
- * Legs are defined separately in the swap_legs table.
+ * Extracted as a plain nested sub-struct to keep each rfl::Literal below
+ * the MSVC C1202 threshold. See doc/investigations/msvc_c1202_rfl_complexity.org.
  */
-struct cap_floor_instrument final {
-    instrument_identity identity;
-
-    /**
-     * @brief Cap/floor effective start date.
-     *
-     * ISO 8601 date string (YYYY-MM-DD).
-     */
-    std::string start_date;
-
-    /**
-     * @brief Cap/floor maturity date.
-     *
-     * Must be after start_date.
-     */
-    std::string maturity_date;
-
-    /**
-     * @brief Optional free-text description.
-     *
-     * Human-readable notes about this instrument.
-     */
-    std::string description;
-
-    utility::domain::audit_record audit;
+struct instrument_identity final {
+    int version = 0;
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
+    boost::uuids::uuid workspace_id = utility::uuid::live_workspace_id();
+    boost::uuids::uuid instrument_id;
+    std::string trade_type_code;
+    boost::uuids::uuid party_id;
+    std::optional<boost::uuids::uuid> trade_id;
 };
 
 }

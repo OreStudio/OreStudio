@@ -276,9 +276,9 @@ TEST_CASE("import_portfolio_with_context_swap_has_instrument", tags) {
 
     const auto& r = std::get<swap_instrument_data>(item.instrument);
     const auto instr_id = std::visit(
-        [](const auto& instr) { return instr.instrument_id; }, r.instrument);
+        [](const auto& instr) { return instr.identity.instrument_id; }, r.instrument);
     const auto trade_id_opt = std::visit(
-        [](const auto& instr) { return instr.trade_id; }, r.instrument);
+        [](const auto& instr) { return instr.identity.trade_id; }, r.instrument);
     CHECK(instr_id != item.trade.identity.id);
     REQUIRE(trade_id_opt.has_value());
     CHECK(*trade_id_opt == item.trade.identity.id);

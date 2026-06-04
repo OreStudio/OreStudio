@@ -33,9 +33,9 @@ the variant from the Qt UI boundary as well, since the variant serves no purpose
 |---------------+-----------------------------------------------------------------------------------------------|
 | State         | STARTED                                                                                       |
 | Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                                       |
-| Now           | Task 9 (Flatten) proven ineffective; task 10 scaffolded to replace with plain nested structs. |
-| Waiting on    | Nothing.                                                                                      |
-| Next          | Implement task 10: remove rfl::Flatten from swap_leg; update all callers.                     |
+| Now           | Task 10 (swap_leg) in PR #1041. Tasks 11–15 scaffolded for full instrument decomposition sweep. |
+| Waiting on    | PR #1041 merge.                                                                                 |
+| Next          | Extract shared sub-structs (task 11); then rates (task 12, blocking CI), FX, equity, complex.  |
 | Last touched  | 2026-06-04                                                                                    |
 
 * Acceptance
@@ -65,6 +65,11 @@ the variant from the Qt UI boundary as well, since the variant serves no purpose
 | [[id:A10ACBA5-BABD-4B60-8CF3-79108BA9DA92][Investigate and fix ClientManager template C1202 for complex response types]]  | DONE    | 2026-06-02 | 2026-06-03 | process_authenticated_request<T> injects rfl in caller's TU; fix by concrete method for export_portfolio. |
 | [[id:C19E28EF-FA66-4A53-8958-7F3D7A093F46][Fix C1202 in ClientManagerExportPortfolio.cpp (swap_leg 19-field Literal)]]    | DONE       | 2026-06-03 | 2026-06-03 | swap_leg's 19-field rfl::Literal triggers no_duplicate_field_names C1202; rfl::Flatten applied but proven ineffective — rfl still sees 19 fields. |
 | [[id:CE1217C9-82FB-45DB-AEEB-D7B5EEA64B70][Replace rfl::Flatten with plain nested structs in swap_leg to fix C1202]]      | STARTED    | 2026-06-04 |            | rfl::Flatten does not reduce Literal size; use plain nested sub-structs so each is reflected independently (≤9 fields). Wire format changes to nested JSON. |
+| [[id:AE9AB01A-4BE1-4DE0-B8B8-83C87ED8F928][Extract shared instrument_identity and instrument_audit sub-structs]]           | BACKLOG    | |            | Prerequisite for all instrument decomposition tasks. Gates tasks below. |
+| [[id:F6D9FC71-A9B7-445B-80DE-3F7091682029][Decompose rates instrument types into nested structs (9 types, 15–20 fields)]]  | STARTED    | 2026-06-04 |            | fra, vanilla_swap, cap_floor, swaption, bgs, callable, knock_out, inflation, rpa. Blocks CI. |
+| [[id:6B1C74CD-4827-4D5A-8B2F-D34C398C5BFC][Decompose FX instrument types into nested structs (7 types, 18–23 fields)]]     | BACKLOG    | |            | fx_forward, fx_vanilla_option, fx_barrier_option, fx_digital_option, fx_asian_forward, fx_accumulator, fx_variance_swap. |
+| [[id:78D1D87A-D1E4-4E6A-81A4-622D0C3C4683][Decompose equity instrument types into nested structs (9 types, 17–25 fields)]] | BACKLOG    | |            | equity_option, equity_forward, equity_digital_option, equity_asian_option, equity_barrier_option, equity_accumulator, equity_variance_swap, equity_swap, equity_position. |
+| [[id:86DE9203-1C84-46AA-A3DF-EFDD9B49390B][Decompose bond, credit, and commodity instrument types (31–38 fields)]]        | BACKLOG    | |            | Very large structs needing internal sub-grouping beyond identity/audit split. |
 
 * Decisions
 

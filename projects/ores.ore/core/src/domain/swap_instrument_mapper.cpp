@@ -313,10 +313,10 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_swap(const
         sd = &*t.CrossCurrencySwapData;
 
     vanilla_swap_instrument instr;
-    instr.modified_by = "ores";
-    instr.performed_by = "ores";
-    instr.change_reason_code = "system.external_data_import";
-    instr.change_commentary = "Imported from ORE XML";
+    instr.audit.modified_by = "ores";
+    instr.audit.performed_by = "ores";
+    instr.audit.change_reason_code = "system.external_data_import";
+    instr.audit.change_commentary = "Imported from ORE XML";
 
     trading::domain::swap_instrument_data result;
     result.instrument = std::move(instr);
@@ -349,10 +349,10 @@ swap_instrument_mapper::forward_inflation_swap(const trade& t) {
                                << std::string(t.id);
 
     inflation_swap_instrument instr;
-    instr.modified_by = "ores";
-    instr.performed_by = "ores";
-    instr.change_reason_code = "system.external_data_import";
-    instr.change_commentary = "Imported from ORE XML";
+    instr.audit.modified_by = "ores";
+    instr.audit.performed_by = "ores";
+    instr.audit.change_reason_code = "system.external_data_import";
+    instr.audit.change_commentary = "Imported from ORE XML";
 
     trading::domain::swap_instrument_data result;
     result.instrument = std::move(instr);
@@ -384,10 +384,10 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_fra(const 
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FRA: " << std::string(t.id);
 
     fra_instrument instr;
-    instr.modified_by = "ores";
-    instr.performed_by = "ores";
-    instr.change_reason_code = "system.external_data_import";
-    instr.change_commentary = "Imported from ORE XML";
+    instr.audit.modified_by = "ores";
+    instr.audit.performed_by = "ores";
+    instr.audit.change_reason_code = "system.external_data_import";
+    instr.audit.change_commentary = "Imported from ORE XML";
 
     trading::domain::swap_instrument_data result;
     result.instrument = std::move(instr);
@@ -432,10 +432,10 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_capfloor(c
         << "Forward-mapping capfloor: " << std::string(t.id);
 
     cap_floor_instrument instr;
-    instr.modified_by = "ores";
-    instr.performed_by = "ores";
-    instr.change_reason_code = "system.external_data_import";
-    instr.change_commentary = "Imported from ORE XML";
+    instr.audit.modified_by = "ores";
+    instr.audit.performed_by = "ores";
+    instr.audit.change_reason_code = "system.external_data_import";
+    instr.audit.change_commentary = "Imported from ORE XML";
 
     trading::domain::swap_instrument_data result;
     result.instrument = std::move(instr);
@@ -647,10 +647,10 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_swaption(c
                                << std::string(t.id);
 
     swaption_instrument instr;
-    instr.modified_by = "ores";
-    instr.performed_by = "ores";
-    instr.change_reason_code = "system.external_data_import";
-    instr.change_commentary = "Imported from ORE XML";
+    instr.audit.modified_by = "ores";
+    instr.audit.performed_by = "ores";
+    instr.audit.change_reason_code = "system.external_data_import";
+    instr.audit.change_commentary = "Imported from ORE XML";
 
     trading::domain::swap_instrument_data result;
     result.instrument = std::move(instr);
@@ -737,10 +737,10 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_callable_s
                                << std::string(t.id);
 
     callable_swap_instrument instr;
-    instr.modified_by = "ores";
-    instr.performed_by = "ores";
-    instr.change_reason_code = "system.external_data_import";
-    instr.change_commentary = "Imported from ORE XML";
+    instr.audit.modified_by = "ores";
+    instr.audit.performed_by = "ores";
+    instr.audit.change_reason_code = "system.external_data_import";
+    instr.audit.change_commentary = "Imported from ORE XML";
 
     trading::domain::swap_instrument_data result;
     result.instrument = std::move(instr);
@@ -823,10 +823,10 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_flexi_swap
                                << std::string(t.id);
 
     vanilla_swap_instrument instr;
-    instr.modified_by = "ores";
-    instr.performed_by = "ores";
-    instr.change_reason_code = "system.external_data_import";
-    instr.change_commentary = "Imported from ORE XML";
+    instr.audit.modified_by = "ores";
+    instr.audit.performed_by = "ores";
+    instr.audit.change_reason_code = "system.external_data_import";
+    instr.audit.change_commentary = "Imported from ORE XML";
 
     trading::domain::swap_instrument_data result;
     result.instrument = std::move(instr);
@@ -860,10 +860,10 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_balance_gu
                                << std::string(t.id);
 
     balance_guaranteed_swap_instrument instr;
-    instr.modified_by = "ores";
-    instr.performed_by = "ores";
-    instr.change_reason_code = "system.external_data_import";
-    instr.change_commentary = "Imported from ORE XML";
+    instr.audit.modified_by = "ores";
+    instr.audit.performed_by = "ores";
+    instr.audit.change_reason_code = "system.external_data_import";
+    instr.audit.change_commentary = "Imported from ORE XML";
 
     trading::domain::swap_instrument_data result;
     result.instrument = std::move(instr);

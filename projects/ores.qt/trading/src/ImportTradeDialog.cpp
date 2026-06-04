@@ -616,8 +616,8 @@ void ImportTradeDialog::onImportClicked() {
                 using trading::domain::composite_instrument_data;
                 if constexpr (std::is_same_v<T, swap_instrument_data>) {
                     std::visit([&](auto& instr) {
-                        instr.instrument_id = instr_id;
-                        instr.trade_id = tti.trade.identity.id;
+                        instr.identity.instrument_id = instr_id;
+                        instr.identity.trade_id = tti.trade.identity.id;
                     }, r.instrument);
                     for (auto& leg : r.legs)
                         leg.identity.instrument_id = instr_id;

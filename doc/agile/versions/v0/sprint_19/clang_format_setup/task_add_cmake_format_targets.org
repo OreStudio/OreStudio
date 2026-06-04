@@ -58,3 +58,15 @@ Added to =CMakeLists.txt= inside the =if (CLANG_FORMAT_FOUND)= block:
 
 Both use the =CLANG_FORMAT_BIN= path discovered by =FindClangTools= so
 they work with any installed version.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |

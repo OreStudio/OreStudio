@@ -299,9 +299,9 @@ if (CLANG_FORMAT_FOUND)
     #
     add_custom_target(format
         COMMENT "Formatting C++ sources with clang-format (in-place)"
-        COMMAND find ${CMAKE_SOURCE_DIR}/projects -type f
+        COMMAND find "${CMAKE_SOURCE_DIR}/projects" -type f
                     \( -name "*.cpp" -o -name "*.hpp" -o -name "*.h" \)
-                | xargs ${CLANG_FORMAT_BIN} -i
+                    -exec ${CLANG_FORMAT_BIN} -i {} +
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
         VERBATIM)
 
@@ -312,9 +312,9 @@ if (CLANG_FORMAT_FOUND)
     #
     add_custom_target(check-format
         COMMENT "Checking C++ formatting with clang-format (dry run)"
-        COMMAND find ${CMAKE_SOURCE_DIR}/projects -type f
+        COMMAND find "${CMAKE_SOURCE_DIR}/projects" -type f
                     \( -name "*.cpp" -o -name "*.hpp" -o -name "*.h" \)
-                | xargs ${CLANG_FORMAT_BIN} --dry-run --Werror
+                    -exec ${CLANG_FORMAT_BIN} --dry-run --Werror {} +
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
         VERBATIM)
 else()

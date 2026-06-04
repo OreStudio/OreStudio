@@ -20,12 +20,12 @@
 #ifndef ORES_WT_SERVICE_CONFIG_PARSER_HPP
 #define ORES_WT_SERVICE_CONFIG_PARSER_HPP
 
-#include <iosfwd>
-#include <vector>
-#include <string>
-#include <optional>
-#include "ores.wt.service/export.hpp"
 #include "ores.wt.service/config/options.hpp"
+#include "ores.wt.service/export.hpp"
+#include <iosfwd>
+#include <optional>
+#include <string>
+#include <vector>
 
 namespace ores::wt::service::config {
 
@@ -42,8 +42,8 @@ public:
         std::vector<std::string> wt_args;
     };
 
-    parse_result parse(const std::vector<std::string>& arguments,
-        std::ostream& info, std::ostream& error) const;
+    parse_result
+    parse(const std::vector<std::string>& arguments, std::ostream& info, std::ostream& error) const;
 };
 
 }

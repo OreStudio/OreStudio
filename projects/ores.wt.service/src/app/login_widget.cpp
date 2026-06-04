@@ -53,9 +53,7 @@ login_widget::login_widget() {
     status_text_->setStyleClass("login-status");
 
     password_edit_->enterPressed().connect(this, &login_widget::on_login_clicked);
-    username_edit_->enterPressed().connect([this] {
-        password_edit_->setFocus();
-    });
+    username_edit_->enterPressed().connect([this] { password_edit_->setFocus(); });
 }
 
 void login_widget::on_login_clicked() {

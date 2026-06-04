@@ -18,15 +18,15 @@
  *
  */
 #include "ores.wt.service/app/currency_dialog.hpp"
-#include <Wt/WLabel.h>
 #include <Wt/WBreak.h>
+#include <Wt/WLabel.h>
 #include <Wt/WTemplate.h>
 
 namespace ores::wt::service::app {
 
 currency_dialog::currency_dialog(mode m)
-    : Wt::WDialog(m == mode::add ? "Add Currency" : "Edit Currency"),
-      mode_(m) {
+    : Wt::WDialog(m == mode::add ? "Add Currency" : "Edit Currency")
+    , mode_(m) {
     setModal(true);
     setResizable(true);
     setClosable(true);
@@ -53,44 +53,35 @@ void currency_dialog::setup_form() {
         return ptr;
     };
 
-    iso_code_edit_ = add_field("ISO Code",
-        std::make_unique<Wt::WLineEdit>());
+    iso_code_edit_ = add_field("ISO Code", std::make_unique<Wt::WLineEdit>());
     iso_code_edit_->setPlaceholderText("e.g., USD");
     iso_code_edit_->setMaxLength(3);
     if (mode_ == mode::edit) {
         iso_code_edit_->setReadOnly(true);
     }
 
-    name_edit_ = add_field("Name",
-        std::make_unique<Wt::WLineEdit>());
+    name_edit_ = add_field("Name", std::make_unique<Wt::WLineEdit>());
     name_edit_->setPlaceholderText("e.g., United States Dollar");
 
-    numeric_code_edit_ = add_field("Numeric Code",
-        std::make_unique<Wt::WLineEdit>());
+    numeric_code_edit_ = add_field("Numeric Code", std::make_unique<Wt::WLineEdit>());
     numeric_code_edit_->setPlaceholderText("e.g., 840");
     numeric_code_edit_->setMaxLength(3);
 
-    symbol_edit_ = add_field("Symbol",
-        std::make_unique<Wt::WLineEdit>());
+    symbol_edit_ = add_field("Symbol", std::make_unique<Wt::WLineEdit>());
     symbol_edit_->setPlaceholderText("e.g., $");
 
-    fraction_symbol_edit_ = add_field("Fraction Symbol",
-        std::make_unique<Wt::WLineEdit>());
+    fraction_symbol_edit_ = add_field("Fraction Symbol", std::make_unique<Wt::WLineEdit>());
     fraction_symbol_edit_->setPlaceholderText("e.g., ¢");
 
-    fractions_spinbox_ = add_field("Fractions Per Unit",
-        std::make_unique<Wt::WSpinBox>());
+    fractions_spinbox_ = add_field("Fractions Per Unit", std::make_unique<Wt::WSpinBox>());
     fractions_spinbox_->setRange(1, 10000);
     fractions_spinbox_->setValue(100);
 
-    auto rounding_row = content->addWidget(
-        std::make_unique<Wt::WContainerWidget>());
+    auto rounding_row = content->addWidget(std::make_unique<Wt::WContainerWidget>());
     rounding_row->setStyleClass("mb-3");
-    auto rounding_lbl = rounding_row->addWidget(
-        std::make_unique<Wt::WLabel>("Rounding Type"));
+    auto rounding_lbl = rounding_row->addWidget(std::make_unique<Wt::WLabel>("Rounding Type"));
     rounding_lbl->setStyleClass("form-label");
-    rounding_type_combo_ = rounding_row->addWidget(
-        std::make_unique<Wt::WComboBox>());
+    rounding_type_combo_ = rounding_row->addWidget(std::make_unique<Wt::WComboBox>());
     rounding_type_combo_->setStyleClass("form-select");
     rounding_type_combo_->addItem("Closest");
     rounding_type_combo_->addItem("Up");
@@ -99,23 +90,19 @@ void currency_dialog::setup_form() {
     rounding_type_combo_->addItem("Ceiling");
     rounding_lbl->setBuddy(rounding_type_combo_);
 
-    precision_spinbox_ = add_field("Rounding Precision",
-        std::make_unique<Wt::WSpinBox>());
+    precision_spinbox_ = add_field("Rounding Precision", std::make_unique<Wt::WSpinBox>());
     precision_spinbox_->setRange(0, 10);
     precision_spinbox_->setValue(2);
 
-    format_edit_ = add_field("Format",
-        std::make_unique<Wt::WLineEdit>());
+    format_edit_ = add_field("Format", std::make_unique<Wt::WLineEdit>());
     format_edit_->setPlaceholderText("e.g., #,##0.00");
 
-    auto monetary_nature_row = content->addWidget(
-        std::make_unique<Wt::WContainerWidget>());
+    auto monetary_nature_row = content->addWidget(std::make_unique<Wt::WContainerWidget>());
     monetary_nature_row->setStyleClass("mb-3");
-    auto monetary_nature_lbl = monetary_nature_row->addWidget(
-        std::make_unique<Wt::WLabel>("Monetary Nature"));
+    auto monetary_nature_lbl =
+        monetary_nature_row->addWidget(std::make_unique<Wt::WLabel>("Monetary Nature"));
     monetary_nature_lbl->setStyleClass("form-label");
-    monetary_nature_combo_ = monetary_nature_row->addWidget(
-        std::make_unique<Wt::WComboBox>());
+    monetary_nature_combo_ = monetary_nature_row->addWidget(std::make_unique<Wt::WComboBox>());
     monetary_nature_combo_->setStyleClass("form-select");
     monetary_nature_combo_->addItem("Fiat");
     monetary_nature_combo_->addItem("Crypto");
@@ -123,14 +110,11 @@ void currency_dialog::setup_form() {
     monetary_nature_combo_->addItem("Other");
     monetary_nature_lbl->setBuddy(monetary_nature_combo_);
 
-    auto market_tier_row = content->addWidget(
-        std::make_unique<Wt::WContainerWidget>());
+    auto market_tier_row = content->addWidget(std::make_unique<Wt::WContainerWidget>());
     market_tier_row->setStyleClass("mb-3");
-    auto market_tier_lbl = market_tier_row->addWidget(
-        std::make_unique<Wt::WLabel>("Market Tier"));
+    auto market_tier_lbl = market_tier_row->addWidget(std::make_unique<Wt::WLabel>("Market Tier"));
     market_tier_lbl->setStyleClass("form-label");
-    market_tier_combo_ = market_tier_row->addWidget(
-        std::make_unique<Wt::WComboBox>());
+    market_tier_combo_ = market_tier_row->addWidget(std::make_unique<Wt::WComboBox>());
     market_tier_combo_->setStyleClass("form-select");
     market_tier_combo_->addItem("G10");
     market_tier_combo_->addItem("Major");
@@ -144,13 +128,11 @@ void currency_dialog::setup_form() {
 }
 
 void currency_dialog::setup_buttons() {
-    auto save_btn = footer()->addWidget(
-        std::make_unique<Wt::WPushButton>("Save"));
+    auto save_btn = footer()->addWidget(std::make_unique<Wt::WPushButton>("Save"));
     save_btn->setStyleClass("btn btn-primary");
     save_btn->clicked().connect(this, &currency_dialog::validate_and_save);
 
-    auto cancel_btn = footer()->addWidget(
-        std::make_unique<Wt::WPushButton>("Cancel"));
+    auto cancel_btn = footer()->addWidget(std::make_unique<Wt::WPushButton>("Cancel"));
     cancel_btn->setStyleClass("btn btn-secondary ms-2");
     cancel_btn->clicked().connect([this] { reject(); });
 }

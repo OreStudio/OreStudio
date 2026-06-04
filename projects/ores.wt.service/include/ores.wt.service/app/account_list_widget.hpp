@@ -20,14 +20,14 @@
 #ifndef ORES_WT_SERVICE_APP_ACCOUNT_LIST_WIDGET_HPP
 #define ORES_WT_SERVICE_APP_ACCOUNT_LIST_WIDGET_HPP
 
-#include <Wt/WContainerWidget.h>
-#include <Wt/WTable.h>
-#include <Wt/WPushButton.h>
-#include <Wt/WText.h>
-#include <Wt/WSignal.h>
-#include <vector>
-#include <string>
 #include <boost/uuid/uuid.hpp>
+#include <Wt/WContainerWidget.h>
+#include <Wt/WPushButton.h>
+#include <Wt/WSignal.h>
+#include <Wt/WTable.h>
+#include <Wt/WText.h>
+#include <string>
+#include <vector>
 
 namespace ores::wt::service::app {
 
@@ -51,11 +51,21 @@ class account_list_widget : public Wt::WContainerWidget {
 public:
     account_list_widget();
 
-    Wt::Signal<>& add_requested() { return add_requested_; }
-    Wt::Signal<boost::uuids::uuid>& edit_requested() { return edit_requested_; }
-    Wt::Signal<boost::uuids::uuid>& delete_requested() { return delete_requested_; }
-    Wt::Signal<boost::uuids::uuid>& lock_requested() { return lock_requested_; }
-    Wt::Signal<boost::uuids::uuid>& unlock_requested() { return unlock_requested_; }
+    Wt::Signal<>& add_requested() {
+        return add_requested_;
+    }
+    Wt::Signal<boost::uuids::uuid>& edit_requested() {
+        return edit_requested_;
+    }
+    Wt::Signal<boost::uuids::uuid>& delete_requested() {
+        return delete_requested_;
+    }
+    Wt::Signal<boost::uuids::uuid>& lock_requested() {
+        return lock_requested_;
+    }
+    Wt::Signal<boost::uuids::uuid>& unlock_requested() {
+        return unlock_requested_;
+    }
 
     void refresh();
     void set_accounts(const std::vector<account_row>& accounts);

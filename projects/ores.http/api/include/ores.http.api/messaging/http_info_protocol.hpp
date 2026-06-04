@@ -34,8 +34,7 @@ namespace ores::http::messaging {
  */
 struct get_http_info_request {
     using response_type = struct get_http_info_response;
-    static constexpr std::string_view nats_subject =
-        "http-server.v1.info.get";
+    static constexpr std::string_view nats_subject = "http-server.v1.info.get";
 };
 
 /**

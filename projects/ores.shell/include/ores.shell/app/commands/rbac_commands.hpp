@@ -20,10 +20,10 @@
 #ifndef ORES_SHELL_APP_COMMANDS_RBAC_COMMANDS_HPP
 #define ORES_SHELL_APP_COMMANDS_RBAC_COMMANDS_HPP
 
-#include <string>
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/pagination_context.hpp"
+#include <string>
 
 namespace cli {
 
@@ -41,8 +41,7 @@ namespace ores::shell::app::commands {
  */
 class rbac_commands {
 private:
-    inline static std::string_view logger_name =
-        "ores.shell.app.commands.rbac_commands";
+    inline static std::string_view logger_name = "ores.shell.app.commands.rbac_commands";
 
     static auto& lg() {
         using namespace ores::logging;
@@ -61,8 +60,8 @@ public:
      * yet, but the pagination_context is passed for consistency.
      */
     static void register_commands(cli::Menu& root_menu,
-        ores::nats::service::nats_client& session,
-        pagination_context& pagination);
+                                  ores::nats::service::nats_client& session,
+                                  pagination_context& pagination);
 
     // =========================================================================
     // Permissions Commands
@@ -77,7 +76,7 @@ public:
      * @param session Client session for connectivity.
      */
     static void process_list_permissions(std::ostream& out,
-        ores::nats::service::nats_client& session);
+                                         ores::nats::service::nats_client& session);
 
     // =========================================================================
     // Roles Commands
@@ -91,8 +90,7 @@ public:
      * @param out Output stream for results
      * @param session Client session for connectivity.
      */
-    static void process_list_roles(std::ostream& out,
-        ores::nats::service::nats_client& session);
+    static void process_list_roles(std::ostream& out, ores::nats::service::nats_client& session);
 
     /**
      * @brief Process a get role request.
@@ -105,8 +103,8 @@ public:
      * @param role_identifier Role name or UUID
      */
     static void process_get_role(std::ostream& out,
-        ores::nats::service::nats_client& session,
-        std::string role_identifier);
+                                 ores::nats::service::nats_client& session,
+                                 std::string role_identifier);
 
     // =========================================================================
     // Account-Role Assignment Commands
@@ -123,8 +121,9 @@ public:
      * @param role_id Role ID UUID as a string.
      */
     static void process_assign_role(std::ostream& out,
-        ores::nats::service::nats_client& session,
-        std::string account_id, std::string role_id);
+                                    ores::nats::service::nats_client& session,
+                                    std::string account_id,
+                                    std::string role_id);
 
     /**
      * @brief Process a revoke role request.
@@ -137,8 +136,9 @@ public:
      * @param role_id Role ID UUID as a string.
      */
     static void process_revoke_role(std::ostream& out,
-        ores::nats::service::nats_client& session,
-        std::string account_id, std::string role_id);
+                                    ores::nats::service::nats_client& session,
+                                    std::string account_id,
+                                    std::string role_id);
 
     /**
      * @brief Process a get account roles request.
@@ -150,8 +150,8 @@ public:
      * @param account_id Account ID UUID as a string.
      */
     static void process_get_account_roles(std::ostream& out,
-        ores::nats::service::nats_client& session,
-        std::string account_id);
+                                          ores::nats::service::nats_client& session,
+                                          std::string account_id);
 
     /**
      * @brief Process a get account permissions request.
@@ -163,8 +163,8 @@ public:
      * @param account_id Account ID UUID as a string.
      */
     static void process_get_account_permissions(std::ostream& out,
-        ores::nats::service::nats_client& session,
-        std::string account_id);
+                                                ores::nats::service::nats_client& session,
+                                                std::string account_id);
 
     /**
      * @brief Process a suggest role commands request.
@@ -178,8 +178,9 @@ public:
      * @param identifier Either a hostname or tenant_id UUID.
      */
     static void process_suggest_role_commands(std::ostream& out,
-        ores::nats::service::nats_client& session,
-        std::string username, std::string identifier);
+                                              ores::nats::service::nats_client& session,
+                                              std::string username,
+                                              std::string identifier);
 };
 
 }

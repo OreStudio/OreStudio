@@ -20,11 +20,11 @@
 #ifndef ORES_HTTP_SERVER_CONFIG_PARSER_HPP
 #define ORES_HTTP_SERVER_CONFIG_PARSER_HPP
 
-#include <vector>
-#include <string>
+#include "ores.http.server/config/options.hpp"
 #include <optional>
 #include <ostream>
-#include "ores.http.server/config/options.hpp"
+#include <string>
+#include <vector>
 
 namespace ores::http_server::config {
 
@@ -37,8 +37,8 @@ public:
      * @brief Parses the command line arguments.
      * @return Configuration options if successful, empty optional if help/version shown.
      */
-    std::optional<options> parse(const std::vector<std::string>& arguments,
-        std::ostream& info, std::ostream& err) const;
+    std::optional<options>
+    parse(const std::vector<std::string>& arguments, std::ostream& info, std::ostream& err) const;
 };
 
 }

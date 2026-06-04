@@ -20,18 +20,18 @@
 #ifndef ORES_HTTP_NET_HTTP_SERVER_HPP
 #define ORES_HTTP_NET_HTTP_SERVER_HPP
 
-#include <memory>
-#include <atomic>
-#include <boost/asio/io_context.hpp>
-#include <boost/asio/ip/tcp.hpp>
-#include <boost/asio/awaitable.hpp>
-#include "ores.http.api/net/router.hpp"
-#include "ores.http.api/net/http_session.hpp"
+#include "ores.http.api/export.hpp"
 #include "ores.http.api/net/http_server_options.hpp"
-#include "ores.security/jwt/jwt_authenticator.hpp"
+#include "ores.http.api/net/http_session.hpp"
+#include "ores.http.api/net/router.hpp"
 #include "ores.http.api/openapi/endpoint_registry.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.http.api/export.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include <boost/asio/awaitable.hpp>
+#include <boost/asio/io_context.hpp>
+#include <boost/asio/ip/tcp.hpp>
+#include <atomic>
+#include <memory>
 
 namespace ores::http::net {
 
@@ -40,23 +40,28 @@ namespace ores::http::net {
  */
 class ORES_HTTP_API_EXPORT http_server final {
 public:
-    explicit http_server(boost::asio::io_context& io_ctx,
-        const http_server_options& options);
+    explicit http_server(boost::asio::io_context& io_ctx, const http_server_options& options);
 
     /**
      * @brief Returns the router for registering endpoints.
      */
-    std::shared_ptr<router> get_router() { return router_; }
+    std::shared_ptr<router> get_router() {
+        return router_;
+    }
 
     /**
      * @brief Returns the endpoint registry for OpenAPI generation.
      */
-    std::shared_ptr<openapi::endpoint_registry> get_registry() { return registry_; }
+    std::shared_ptr<openapi::endpoint_registry> get_registry() {
+        return registry_;
+    }
 
     /**
      * @brief Returns the JWT authenticator for token generation/validation.
      */
-    std::shared_ptr<ores::security::jwt::jwt_authenticator> get_authenticator() { return authenticator_; }
+    std::shared_ptr<ores::security::jwt::jwt_authenticator> get_authenticator() {
+        return authenticator_;
+    }
 
     /**
      * @brief Sets the session bytes callback for tracking request/response sizes.
@@ -81,7 +86,9 @@ public:
     /**
      * @brief Returns whether the server is running.
      */
-    bool is_running() const { return running_.load(); }
+    bool is_running() const {
+        return running_.load();
+    }
 
 private:
     inline static std::string_view logger_name = "ores.http.net.http_server";

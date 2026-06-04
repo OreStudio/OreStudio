@@ -18,25 +18,22 @@
  *
  */
 #include "ores.shell/app/application.hpp"
-
-#include <iostream>
-#include <rfl/json.hpp>
-#include "ores.utility/version/version.hpp"
 #include "ores.iam.api/messaging/bootstrap_protocol.hpp"
 #include "ores.iam.api/messaging/login_protocol.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/repl.hpp"
+#include "ores.utility/version/version.hpp"
+#include <iostream>
+#include <rfl/json.hpp>
 
 namespace ores::shell::app {
 
 using namespace ores::logging;
 
-application::application(
-    std::optional<nats::config::nats_options> connection_config,
-    std::optional<config::login_options> login_config)
+application::application(std::optional<nats::config::nats_options> connection_config,
+                         std::optional<config::login_options> login_config)
     : connection_config_(std::move(connection_config))
-    , login_config_(std::move(login_config)) {
-}
+    , login_config_(std::move(login_config)) {}
 
 namespace {
 
@@ -47,10 +44,12 @@ auto& anon_lg() {
     return instance;
 }
 
-bool auto_connect(ores::nats::service::nats_client& session, std::ostream& out,
-    const std::optional<nats::config::nats_options>& cfg) {
+bool auto_connect(ores::nats::service::nats_client& session,
+                  std::ostream& out,
+                  const std::optional<nats::config::nats_options>& cfg) {
     nats::config::nats_options opts;
-    if (cfg) opts = *cfg;
+    if (cfg)
+        opts = *cfg;
     const auto& url = opts.url;
     try {
         session.connect(opts);
@@ -65,11 +64,12 @@ bool auto_connect(ores::nats::service::nats_client& session, std::ostream& out,
 void check_bootstrap_status(ores::nats::service::nats_client& session, std::ostream& out) {
     try {
         auto reply = session.request(iam::messaging::bootstrap_status_request::nats_subject,
-            rfl::json::write(iam::messaging::bootstrap_status_request{}));
-        auto data_str = std::string(
-            reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
+                                     rfl::json::write(iam::messaging::bootstrap_status_request{}));
+        auto data_str =
+            std::string(reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
         auto result = rfl::json::read<iam::messaging::bootstrap_status_response>(data_str);
-        if (!result) return;
+        if (!result)
+            return;
         if (result->is_in_bootstrap_mode) {
             out << "\n⚠ WARNING: System is in BOOTSTRAP MODE\n"
                 << "  " << result->message << "\n"
@@ -80,19 +80,20 @@ void check_bootstrap_status(ores::nats::service::nats_client& session, std::ostr
     }
 }
 
-bool auto_login(ores::nats::service::nats_client& session, std::ostream& out,
-    const config::login_options& login_config) {
+bool auto_login(ores::nats::service::nats_client& session,
+                std::ostream& out,
+                const config::login_options& login_config) {
     try {
         iam::messaging::login_request req;
         req.principal = login_config.username;
         req.password = login_config.password;
         auto reply = session.request("iam.v1.auth.login", rfl::json::write(req));
-        auto data_str = std::string(
-            reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
+        auto data_str =
+            std::string(reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
         auto result = rfl::json::read<iam::messaging::login_response>(data_str);
         if (!result || !result->success) {
-            out << "✗ Auto-login failed: "
-                << (result ? result->message : "parse error") << std::endl;
+            out << "✗ Auto-login failed: " << (result ? result->message : "parse error")
+                << std::endl;
             return false;
         }
         ores::nats::service::nats_client::login_info info;
@@ -102,8 +103,7 @@ bool auto_login(ores::nats::service::nats_client& session, std::ostream& out,
         info.tenant_name = result->tenant_name;
         session.set_auth(std::move(info));
         out << "✓ Logged in as: " << result->username << std::endl;
-        out << "  Tenant: " << result->tenant_name
-            << " (" << result->tenant_id << ")" << std::endl;
+        out << "  Tenant: " << result->tenant_name << " (" << result->tenant_id << ")" << std::endl;
         return true;
     } catch (const std::exception& e) {
         out << "✗ Auto-login failed: " << e.what() << std::endl;
@@ -114,8 +114,7 @@ bool auto_login(ores::nats::service::nats_client& session, std::ostream& out,
 } // anonymous namespace
 
 void application::run() {
-    BOOST_LOG_SEV(lg(), info) << utility::version::format_startup_message(
-        "ORE Studio Shell");
+    BOOST_LOG_SEV(lg(), info) << utility::version::format_startup_message("ORE Studio Shell");
 
     try {
         ores::nats::service::nats_client session;

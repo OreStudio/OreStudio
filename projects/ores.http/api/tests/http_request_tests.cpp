@@ -18,9 +18,8 @@
  *
  */
 #include "ores.http.api/domain/http_request.hpp"
-
-#include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 
@@ -119,7 +118,8 @@ TEST_CASE("http_request_get_bearer_token_returns_token", tags) {
 
 TEST_CASE("http_request_get_bearer_token_returns_nullopt_for_missing_header", tags) {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing get_bearer_token returns nullopt when Authorization missing";
+    BOOST_LOG_SEV(lg, info)
+        << "Testing get_bearer_token returns nullopt when Authorization missing";
 
     http_request sut;
 

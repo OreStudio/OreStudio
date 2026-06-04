@@ -44,8 +44,7 @@ public:
      * @param active_session Pointer to the active CLI session, set
      *        by repl::run() before the session loop starts.
      */
-    static void register_commands(cli::Menu& root,
-        cli::CliSession*& active_session);
+    static void register_commands(cli::Menu& root, cli::CliSession*& active_session);
 };
 
 }

@@ -18,19 +18,18 @@
  *
  */
 #include "ores.shell/app/commands/rbac_commands.hpp"
-
-#include <optional>
-#include <ostream>
-#include <string_view>
-#include <functional>
-#include <rfl/json.hpp>
-#include <boost/lexical_cast.hpp>
+#include "ores.iam.api/domain/permission_table_io.hpp" // IWYU pragma: keep.
+#include "ores.iam.api/domain/role_table_io.hpp"       // IWYU pragma: keep.
+#include "ores.iam.api/messaging/authorization_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <cli/cli.h>
-#include "ores.iam.api/messaging/authorization_protocol.hpp"
-#include "ores.iam.api/domain/role_table_io.hpp"  // IWYU pragma: keep.
-#include "ores.iam.api/domain/permission_table_io.hpp"  // IWYU pragma: keep.
+#include <functional>
+#include <optional>
+#include <ostream>
+#include <rfl/json.hpp>
+#include <string_view>
 
 namespace ores::shell::app::commands {
 
@@ -44,13 +43,12 @@ auto& parse_uuid_lg() {
     return instance;
 }
 
-std::optional<boost::uuids::uuid> parse_uuid(std::ostream& out,
-    const std::string& id_str, std::string_view id_name) {
+std::optional<boost::uuids::uuid>
+parse_uuid(std::ostream& out, const std::string& id_str, std::string_view id_name) {
     try {
         return boost::lexical_cast<boost::uuids::uuid>(id_str);
     } catch (const boost::bad_lexical_cast&) {
-        BOOST_LOG_SEV(parse_uuid_lg(), error) << "Invalid " << id_name
-                                              << " format: " << id_str;
+        BOOST_LOG_SEV(parse_uuid_lg(), error) << "Invalid " << id_name << " format: " << id_str;
         out << "X Invalid " << id_name << " format. Expected UUID." << std::endl;
         return std::nullopt;
     }
@@ -64,8 +62,10 @@ std::optional<boost::uuids::uuid> parse_uuid_quiet(const std::string& id_str) {
     }
 }
 
-void format_string_list(std::ostream& out, std::string_view title,
-    const std::vector<std::string>& items, std::string_view empty_message) {
+void format_string_list(std::ostream& out,
+                        std::string_view title,
+                        const std::vector<std::string>& items,
+                        std::string_view empty_message) {
     out << std::endl;
     out << title << std::endl;
     out << std::string(title.size(), '=') << std::endl;
@@ -82,13 +82,15 @@ void format_string_list(std::ostream& out, std::string_view title,
     out << "Total: " << items.size() << " item(s)" << std::endl;
 }
 
-template<typename Response>
-std::optional<Response> do_auth_request(std::ostream& out, nats_client& session,
-    const std::string& subject, const std::string& body) {
+template <typename Response>
+std::optional<Response> do_auth_request(std::ostream& out,
+                                        nats_client& session,
+                                        const std::string& subject,
+                                        const std::string& body) {
     try {
         auto reply = session.authenticated_request(subject, body);
-        auto data_str = std::string(
-            reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
+        auto data_str =
+            std::string(reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
         auto result = rfl::json::read<Response>(data_str);
         if (!result) {
             out << "✗ Failed to parse response" << std::endl;
@@ -103,23 +105,28 @@ std::optional<Response> do_auth_request(std::ostream& out, nats_client& session,
 
 } // anonymous namespace
 
-void rbac_commands::
-register_commands(cli::Menu& root_menu, nats_client& session,
-                  pagination_context& /*pagination*/) {
+void rbac_commands::register_commands(cli::Menu& root_menu,
+                                      nats_client& session,
+                                      pagination_context& /*pagination*/) {
     // =========================================================================
     // Permissions submenu
     // =========================================================================
     auto permissions_menu = std::make_unique<cli::Menu>("permissions");
 
-    permissions_menu->Insert("list", [&session](std::ostream& out) {
-        process_list_permissions(std::ref(out), std::ref(session));
-    }, "List all permissions in the system");
+    permissions_menu->Insert(
+        "list",
+        [&session](std::ostream& out) {
+            process_list_permissions(std::ref(out), std::ref(session));
+        },
+        "List all permissions in the system");
 
-    permissions_menu->Insert("suggest", [&session](std::ostream& out,
-            std::string username, std::string identifier) {
-        process_suggest_role_commands(std::ref(out), std::ref(session),
-            std::move(username), std::move(identifier));
-    }, "Generate role assignment commands (username hostname_or_tenant_id)");
+    permissions_menu->Insert(
+        "suggest",
+        [&session](std::ostream& out, std::string username, std::string identifier) {
+            process_suggest_role_commands(
+                std::ref(out), std::ref(session), std::move(username), std::move(identifier));
+        },
+        "Generate role assignment commands (username hostname_or_tenant_id)");
 
     root_menu.Insert(std::move(permissions_menu));
 
@@ -128,59 +135,61 @@ register_commands(cli::Menu& root_menu, nats_client& session,
     // =========================================================================
     auto roles_menu = std::make_unique<cli::Menu>("roles");
 
-    roles_menu->Insert("list", [&session](std::ostream& out) {
-        process_list_roles(std::ref(out), std::ref(session));
-    }, "List all roles in the system");
+    roles_menu->Insert(
+        "list",
+        [&session](std::ostream& out) { process_list_roles(std::ref(out), std::ref(session)); },
+        "List all roles in the system");
 
-    roles_menu->Insert("get", [&session](std::ostream& out,
-            std::string role_identifier) {
-        process_get_role(std::ref(out), std::ref(session),
-            std::move(role_identifier));
-    }, "Get role details (role_name or role_id)");
+    roles_menu->Insert(
+        "get",
+        [&session](std::ostream& out, std::string role_identifier) {
+            process_get_role(std::ref(out), std::ref(session), std::move(role_identifier));
+        },
+        "Get role details (role_name or role_id)");
 
     root_menu.Insert(std::move(roles_menu));
 }
 
-void rbac_commands::
-process_list_permissions(std::ostream& out, nats_client& session) {
+void rbac_commands::process_list_permissions(std::ostream& out, nats_client& session) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating list permissions request.";
 
     auto result = do_auth_request<iam::messaging::list_permissions_response>(
-        out, session, "iam.v1.permissions.list",
+        out,
+        session,
+        "iam.v1.permissions.list",
         rfl::json::write(iam::messaging::list_permissions_request{}));
-    if (!result) return;
+    if (!result)
+        return;
 
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
-                              << result->permissions.size() << " permissions.";
+    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->permissions.size()
+                              << " permissions.";
     out << result->permissions << std::endl;
 }
 
-void rbac_commands::
-process_list_roles(std::ostream& out, nats_client& session) {
+void rbac_commands::process_list_roles(std::ostream& out, nats_client& session) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating list roles request.";
 
     auto result = do_auth_request<iam::messaging::list_roles_response>(
-        out, session, "iam.v1.roles.list",
-        rfl::json::write(iam::messaging::list_roles_request{}));
-    if (!result) return;
+        out, session, "iam.v1.roles.list", rfl::json::write(iam::messaging::list_roles_request{}));
+    if (!result)
+        return;
 
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
-                              << result->roles.size() << " roles.";
+    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->roles.size() << " roles.";
     out << result->roles << std::endl;
 }
 
-void rbac_commands::
-process_get_role(std::ostream& out, nats_client& session,
-    std::string role_identifier) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get role request for: "
-                               << role_identifier;
+void rbac_commands::process_get_role(std::ostream& out,
+                                     nats_client& session,
+                                     std::string role_identifier) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating get role request for: " << role_identifier;
 
     iam::messaging::get_role_request req;
     req.identifier = role_identifier;
 
     auto result = do_auth_request<iam::messaging::get_role_response>(
         out, session, "iam.v1.roles.get", rfl::json::write(req));
-    if (!result) return;
+    if (!result)
+        return;
 
     if (!result->found || !result->role) {
         out << "X " << result->error_message << std::endl;
@@ -211,16 +220,16 @@ process_get_role(std::ostream& out, nats_client& session,
     out << std::endl;
 }
 
-void rbac_commands::
-process_assign_role(std::ostream& out, nats_client& session,
-    std::string account_id_or_principal, std::string role_id_or_name) {
+void rbac_commands::process_assign_role(std::ostream& out,
+                                        nats_client& session,
+                                        std::string account_id_or_principal,
+                                        std::string role_id_or_name) {
     auto parsed_account_id = parse_uuid_quiet(account_id_or_principal);
     auto parsed_role_id = parse_uuid_quiet(role_id_or_name);
 
     if (parsed_account_id && parsed_role_id) {
-        BOOST_LOG_SEV(lg(), debug) << "Assign role (UUID): "
-                                   << role_id_or_name << " / "
-                                   << account_id_or_principal;
+        BOOST_LOG_SEV(lg(), debug)
+            << "Assign role (UUID): " << role_id_or_name << " / " << account_id_or_principal;
 
         iam::messaging::assign_role_request req;
         req.account_id = account_id_or_principal;
@@ -228,7 +237,8 @@ process_assign_role(std::ostream& out, nats_client& session,
 
         auto result = do_auth_request<iam::messaging::assign_role_response>(
             out, session, "iam.v1.roles.assign", rfl::json::write(req));
-        if (!result) return;
+        if (!result)
+            return;
 
         if (result->success) {
             out << "✓ Role assigned successfully!" << std::endl;
@@ -238,9 +248,8 @@ process_assign_role(std::ostream& out, nats_client& session,
             out << "X Failed to assign role: " << result->error_message << std::endl;
         }
     } else {
-        BOOST_LOG_SEV(lg(), debug) << "Assign role (name): "
-                                   << role_id_or_name << " / "
-                                   << account_id_or_principal;
+        BOOST_LOG_SEV(lg(), debug)
+            << "Assign role (name): " << role_id_or_name << " / " << account_id_or_principal;
 
         iam::messaging::assign_role_by_name_request req;
         req.principal = account_id_or_principal;
@@ -248,7 +257,8 @@ process_assign_role(std::ostream& out, nats_client& session,
 
         auto result = do_auth_request<iam::messaging::assign_role_response>(
             out, session, "iam.v1.roles.assign-by-name", rfl::json::write(req));
-        if (!result) return;
+        if (!result)
+            return;
 
         if (result->success) {
             out << "✓ Role assigned successfully!" << std::endl;
@@ -260,16 +270,16 @@ process_assign_role(std::ostream& out, nats_client& session,
     }
 }
 
-void rbac_commands::
-process_revoke_role(std::ostream& out, nats_client& session,
-    std::string account_id_or_principal, std::string role_id_or_name) {
+void rbac_commands::process_revoke_role(std::ostream& out,
+                                        nats_client& session,
+                                        std::string account_id_or_principal,
+                                        std::string role_id_or_name) {
     auto parsed_account_id = parse_uuid_quiet(account_id_or_principal);
     auto parsed_role_id = parse_uuid_quiet(role_id_or_name);
 
     if (parsed_account_id && parsed_role_id) {
-        BOOST_LOG_SEV(lg(), debug) << "Revoke role (UUID): "
-                                   << role_id_or_name << " / "
-                                   << account_id_or_principal;
+        BOOST_LOG_SEV(lg(), debug)
+            << "Revoke role (UUID): " << role_id_or_name << " / " << account_id_or_principal;
 
         iam::messaging::revoke_role_request req;
         req.account_id = account_id_or_principal;
@@ -277,7 +287,8 @@ process_revoke_role(std::ostream& out, nats_client& session,
 
         auto result = do_auth_request<iam::messaging::revoke_role_response>(
             out, session, "iam.v1.roles.revoke", rfl::json::write(req));
-        if (!result) return;
+        if (!result)
+            return;
 
         if (result->success) {
             out << "✓ Role revoked successfully!" << std::endl;
@@ -287,9 +298,8 @@ process_revoke_role(std::ostream& out, nats_client& session,
             out << "X Failed to revoke role: " << result->error_message << std::endl;
         }
     } else {
-        BOOST_LOG_SEV(lg(), debug) << "Revoke role (name): "
-                                   << role_id_or_name << " / "
-                                   << account_id_or_principal;
+        BOOST_LOG_SEV(lg(), debug)
+            << "Revoke role (name): " << role_id_or_name << " / " << account_id_or_principal;
 
         iam::messaging::revoke_role_by_name_request req;
         req.principal = account_id_or_principal;
@@ -297,7 +307,8 @@ process_revoke_role(std::ostream& out, nats_client& session,
 
         auto result = do_auth_request<iam::messaging::revoke_role_response>(
             out, session, "iam.v1.roles.revoke-by-name", rfl::json::write(req));
-        if (!result) return;
+        if (!result)
+            return;
 
         if (result->success) {
             out << "✓ Role revoked successfully!" << std::endl;
@@ -309,9 +320,9 @@ process_revoke_role(std::ostream& out, nats_client& session,
     }
 }
 
-void rbac_commands::
-process_get_account_roles(std::ostream& out, nats_client& session,
-    std::string account_id) {
+void rbac_commands::process_get_account_roles(std::ostream& out,
+                                              nats_client& session,
+                                              std::string account_id) {
     auto parsed_account_id = parse_uuid(out, account_id, "account ID");
     if (!parsed_account_id) {
         return;
@@ -324,20 +335,20 @@ process_get_account_roles(std::ostream& out, nats_client& session,
 
     auto result = do_auth_request<iam::messaging::get_account_roles_response>(
         out, session, "iam.v1.roles.for-account", rfl::json::write(req));
-    if (!result) return;
+    if (!result)
+        return;
 
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
-                              << result->roles.size() << " roles for account "
-                              << account_id;
+    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->roles.size()
+                              << " roles for account " << account_id;
 
     out << std::endl;
     out << "Roles for Account: " << account_id << std::endl;
     out << result->roles << std::endl;
 }
 
-void rbac_commands::
-process_get_account_permissions(std::ostream& out, nats_client& session,
-    std::string account_id) {
+void rbac_commands::process_get_account_permissions(std::ostream& out,
+                                                    nats_client& session,
+                                                    std::string account_id) {
     auto parsed_account_id = parse_uuid(out, account_id, "account ID");
     if (!parsed_account_id) {
         return;
@@ -350,21 +361,21 @@ process_get_account_permissions(std::ostream& out, nats_client& session,
 
     auto result = do_auth_request<iam::messaging::get_account_permissions_response>(
         out, session, "iam.v1.permissions.for-account", rfl::json::write(req));
-    if (!result) return;
+    if (!result)
+        return;
 
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
-                              << result->permission_codes.size()
+    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->permission_codes.size()
                               << " permissions for account " << account_id;
 
     std::string title = "Effective Permissions for Account: " + account_id;
     format_string_list(out, title, result->permission_codes, "(no permissions)");
 }
 
-void rbac_commands::
-process_suggest_role_commands(std::ostream& out, nats_client& session,
-    std::string username, std::string identifier) {
-    BOOST_LOG_SEV(lg(), debug) << "Generating role commands for: "
-                               << username << "@" << identifier;
+void rbac_commands::process_suggest_role_commands(std::ostream& out,
+                                                  nats_client& session,
+                                                  std::string username,
+                                                  std::string identifier) {
+    BOOST_LOG_SEV(lg(), debug) << "Generating role commands for: " << username << "@" << identifier;
 
     iam::messaging::suggest_role_commands_request req;
     req.username = username;
@@ -381,10 +392,10 @@ process_suggest_role_commands(std::ostream& out, nats_client& session,
 
     auto result = do_auth_request<iam::messaging::suggest_role_commands_response>(
         out, session, "iam.v1.roles.suggest-commands", rfl::json::write(req));
-    if (!result) return;
+    if (!result)
+        return;
 
-    BOOST_LOG_SEV(lg(), info) << "Generated " << result->commands.size()
-                              << " role commands.";
+    BOOST_LOG_SEV(lg(), info) << "Generated " << result->commands.size() << " role commands.";
 
     for (const auto& command : result->commands) {
         out << command << std::endl;

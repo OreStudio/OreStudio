@@ -20,11 +20,11 @@
 #ifndef ORES_SHELL_CONFIG_PARSER_HPP
 #define ORES_SHELL_CONFIG_PARSER_HPP
 
-#include <iosfwd>
-#include <vector>
-#include <string>
-#include <optional>
 #include "ores.shell/config/options.hpp"
+#include <iosfwd>
+#include <optional>
+#include <string>
+#include <vector>
 
 namespace ores::shell::config {
 
@@ -40,8 +40,7 @@ namespace ores::shell::config {
 class parser final {
 public:
     std::optional<options>
-    parse(const std::vector<std::string>& arguments, std::ostream& info,
-        std::ostream& error) const;
+    parse(const std::vector<std::string>& arguments, std::ostream& info, std::ostream& error) const;
 };
 
 }

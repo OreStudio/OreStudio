@@ -18,7 +18,6 @@
  *
  */
 #include "ores.http.api/net/router.hpp"
-
 #include <sstream>
 
 namespace ores::http::net {
@@ -30,8 +29,7 @@ namespace {
 /**
  * @brief Converts a path pattern like "/users/{id}" to a regex and extracts param names.
  */
-std::pair<std::regex, std::vector<std::string>> compile_pattern(
-    const std::string& pattern) {
+std::pair<std::regex, std::vector<std::string>> compile_pattern(const std::string& pattern) {
 
     std::vector<std::string> param_names;
     std::ostringstream regex_str;
@@ -56,10 +54,8 @@ std::pair<std::regex, std::vector<std::string>> compile_pattern(
         }
         // Escape regex special characters
         char c = pattern[pos];
-        if (c == '.' || c == '+' || c == '*' || c == '?' ||
-            c == '(' || c == ')' || c == '[' || c == ']' ||
-            c == '{' || c == '}' || c == '$' || c == '^' ||
-            c == '|' || c == '\\') {
+        if (c == '.' || c == '+' || c == '*' || c == '?' || c == '(' || c == ')' || c == '[' ||
+            c == ']' || c == '{' || c == '}' || c == '$' || c == '^' || c == '|' || c == '\\') {
             regex_str << '\\';
         }
         regex_str << c;
@@ -75,8 +71,8 @@ std::pair<std::regex, std::vector<std::string>> compile_pattern(
 // route_builder implementation
 
 route_builder::route_builder(domain::http_method method, const std::string& pattern)
-    : method_(method), pattern_(pattern) {
-}
+    : method_(method)
+    , pattern_(pattern) {}
 
 route_builder& route_builder::handler(domain::request_handler h) {
     handler_ = std::move(h);
@@ -90,7 +86,7 @@ route_builder& route_builder::auth_required() {
 
 route_builder& route_builder::roles(std::vector<std::string> r) {
     required_roles_ = std::move(r);
-    requires_auth_ = true;  // Roles imply auth required
+    requires_auth_ = true; // Roles imply auth required
     return *this;
 }
 
@@ -110,11 +106,11 @@ route_builder& route_builder::tags(std::vector<std::string> t) {
 }
 
 route_builder& route_builder::query_param(const std::string& name,
-    const std::string& type,
-    const std::string& format,
-    bool required,
-    const std::string& desc,
-    const std::optional<std::string>& default_value) {
+                                          const std::string& type,
+                                          const std::string& format,
+                                          bool required,
+                                          const std::string& desc,
+                                          const std::optional<std::string>& default_value) {
 
     domain::query_param param;
     param.name = name;
@@ -174,17 +170,18 @@ route_builder router::delete_(const std::string& pattern) {
 }
 
 void router::add_route(const domain::route& route) {
-    BOOST_LOG_SEV(lg(), info) << "Registered route: "
-        << static_cast<int>(route.method) << " " << route.pattern;
+    BOOST_LOG_SEV(lg(), info) << "Registered route: " << static_cast<int>(route.method) << " "
+                              << route.pattern;
     routes_.push_back(route);
 }
 
-std::optional<domain::route> router::match(domain::http_method method,
-    const std::string& path,
-    std::unordered_map<std::string, std::string>& path_params) const {
+std::optional<domain::route>
+router::match(domain::http_method method,
+              const std::string& path,
+              std::unordered_map<std::string, std::string>& path_params) const {
 
     BOOST_LOG_SEV(lg(), trace) << "Matching path: " << path
-        << " method: " << static_cast<int>(method);
+                               << " method: " << static_cast<int>(method);
 
     for (const auto& route : routes_) {
         if (route.method != method) {

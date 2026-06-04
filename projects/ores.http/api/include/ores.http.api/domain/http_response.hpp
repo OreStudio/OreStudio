@@ -20,10 +20,10 @@
 #ifndef ORES_HTTP_DOMAIN_HTTP_RESPONSE_HPP
 #define ORES_HTTP_DOMAIN_HTTP_RESPONSE_HPP
 
-#include <string>
-#include <unordered_map>
 #include "ores.http.api/domain/http_status.hpp"
 #include "ores.http.api/export.hpp"
+#include <string>
+#include <unordered_map>
 
 namespace ores::http::domain {
 
@@ -54,8 +54,7 @@ struct ORES_HTTP_API_EXPORT http_response final {
     /**
      * @brief Creates a successful JSON response.
      */
-    static http_response json(const std::string& body,
-        http_status status = http_status::ok);
+    static http_response json(const std::string& body, http_status status = http_status::ok);
 
     /**
      * @brief Creates an error response.

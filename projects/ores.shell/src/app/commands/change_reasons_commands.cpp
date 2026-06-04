@@ -18,14 +18,13 @@
  *
  */
 #include "ores.shell/app/commands/change_reasons_commands.hpp"
-
-#include <ostream>
-#include <functional>
-#include <rfl/json.hpp>
+#include "ores.dq.api/domain/change_reason_table_io.hpp" // IWYU pragma: keep.
+#include "ores.dq.api/messaging/change_management_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <cli/cli.h>
-#include "ores.dq.api/messaging/change_management_protocol.hpp"
-#include "ores.dq.api/domain/change_reason_table_io.hpp" // IWYU pragma: keep.
+#include <functional>
+#include <ostream>
+#include <rfl/json.hpp>
 
 namespace ores::shell::app::commands {
 
@@ -34,13 +33,15 @@ using ores::nats::service::nats_client;
 
 namespace {
 
-template<typename Response>
-std::optional<Response> do_request(std::ostream& out, nats_client& session,
-    const std::string& subject, const std::string& body) {
+template <typename Response>
+std::optional<Response> do_request(std::ostream& out,
+                                   nats_client& session,
+                                   const std::string& subject,
+                                   const std::string& body) {
     try {
         auto reply = session.request(subject, body);
-        auto data_str = std::string(
-            reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
+        auto data_str =
+            std::string(reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
         auto result = rfl::json::read<Response>(data_str);
         if (!result) {
             out << "✗ Failed to parse response" << std::endl;
@@ -53,13 +54,15 @@ std::optional<Response> do_request(std::ostream& out, nats_client& session,
     }
 }
 
-template<typename Response>
-std::optional<Response> do_auth_request(std::ostream& out, nats_client& session,
-    const std::string& subject, const std::string& body) {
+template <typename Response>
+std::optional<Response> do_auth_request(std::ostream& out,
+                                        nats_client& session,
+                                        const std::string& subject,
+                                        const std::string& body) {
     try {
         auto reply = session.authenticated_request(subject, body);
-        auto data_str = std::string(
-            reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
+        auto data_str =
+            std::string(reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
         auto result = rfl::json::read<Response>(data_str);
         if (!result) {
             out << "✗ Failed to parse response" << std::endl;
@@ -74,56 +77,74 @@ std::optional<Response> do_auth_request(std::ostream& out, nats_client& session,
 
 } // anonymous namespace
 
-void change_reasons_commands::
-register_commands(cli::Menu& root_menu, nats_client& session,
-                  pagination_context& /*pagination*/) {
+void change_reasons_commands::register_commands(cli::Menu& root_menu,
+                                                nats_client& session,
+                                                pagination_context& /*pagination*/) {
     auto menu = std::make_unique<cli::Menu>("change-reasons");
 
-    menu->Insert("get", [&session](std::ostream& out) {
-        process_get_change_reasons(std::ref(out), std::ref(session));
-    }, "Retrieve all change reasons from the server");
+    menu->Insert(
+        "get",
+        [&session](std::ostream& out) {
+            process_get_change_reasons(std::ref(out), std::ref(session));
+        },
+        "Retrieve all change reasons from the server");
 
-    menu->Insert("add", [&session](std::ostream& out,
-            std::string code, std::string description,
-            std::string category_code, std::string change_commentary) {
-        process_add_change_reason(std::ref(out), std::ref(session),
-            std::move(code), std::move(description),
-            std::move(category_code), std::move(change_commentary));
-    }, "Add a change reason (code description category_code \"commentary\")");
+    menu->Insert(
+        "add",
+        [&session](std::ostream& out,
+                   std::string code,
+                   std::string description,
+                   std::string category_code,
+                   std::string change_commentary) {
+            process_add_change_reason(std::ref(out),
+                                      std::ref(session),
+                                      std::move(code),
+                                      std::move(description),
+                                      std::move(category_code),
+                                      std::move(change_commentary));
+        },
+        "Add a change reason (code description category_code \"commentary\")");
 
-    menu->Insert("delete", [&session](std::ostream& out, std::string code) {
-        process_delete_change_reason(std::ref(out), std::ref(session),
-            std::move(code));
-    }, "Delete a change reason by code");
+    menu->Insert(
+        "delete",
+        [&session](std::ostream& out, std::string code) {
+            process_delete_change_reason(std::ref(out), std::ref(session), std::move(code));
+        },
+        "Delete a change reason by code");
 
-    menu->Insert("history", [&session](std::ostream& out, std::string code) {
-        process_get_change_reason_history(std::ref(out), std::ref(session),
-            std::move(code));
-    }, "Get version history for a change reason by code");
+    menu->Insert(
+        "history",
+        [&session](std::ostream& out, std::string code) {
+            process_get_change_reason_history(std::ref(out), std::ref(session), std::move(code));
+        },
+        "Get version history for a change reason by code");
 
     root_menu.Insert(std::move(menu));
 }
 
-void change_reasons_commands::
-process_get_change_reasons(std::ostream& out, nats_client& session) {
+void change_reasons_commands::process_get_change_reasons(std::ostream& out, nats_client& session) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating get change reasons request.";
 
     auto result = do_request<dq::messaging::get_change_reasons_response>(
-        out, session, "dq.v1.change-reasons.list",
+        out,
+        session,
+        "dq.v1.change-reasons.list",
         rfl::json::write(dq::messaging::get_change_reasons_request{}));
-    if (!result) return;
+    if (!result)
+        return;
 
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
-                              << result->reasons.size() << " change reasons.";
+    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->reasons.size()
+                              << " change reasons.";
     out << result->reasons << std::endl;
 }
 
-void change_reasons_commands::
-process_add_change_reason(std::ostream& out, nats_client& session,
-    std::string code, std::string description,
-    std::string category_code, std::string change_commentary) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating add change reason request for: "
-                               << code;
+void change_reasons_commands::process_add_change_reason(std::ostream& out,
+                                                        nats_client& session,
+                                                        std::string code,
+                                                        std::string description,
+                                                        std::string category_code,
+                                                        std::string change_commentary) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating add change reason request for: " << code;
 
     // Check if logged in
     if (!session.is_logged_in()) {
@@ -133,23 +154,22 @@ process_add_change_reason(std::ostream& out, nats_client& session,
     const auto& modified_by = session.auth().username;
 
     auto req = dq::messaging::save_change_reason_request::from(
-        dq::domain::change_reason{
-            .version = 0,
-            .code = std::move(code),
-            .description = std::move(description),
-            .category_code = std::move(category_code),
-            .applies_to_amend = true,
-            .applies_to_delete = true,
-            .requires_commentary = false,
-            .display_order = 0,
-            .modified_by = modified_by,
-            .change_commentary = std::move(change_commentary),
-            .recorded_at = std::chrono::system_clock::now()
-        });
+        dq::domain::change_reason{.version = 0,
+                                  .code = std::move(code),
+                                  .description = std::move(description),
+                                  .category_code = std::move(category_code),
+                                  .applies_to_amend = true,
+                                  .applies_to_delete = true,
+                                  .requires_commentary = false,
+                                  .display_order = 0,
+                                  .modified_by = modified_by,
+                                  .change_commentary = std::move(change_commentary),
+                                  .recorded_at = std::chrono::system_clock::now()});
 
     auto result = do_auth_request<dq::messaging::save_change_reason_response>(
         out, session, "dq.v1.change-reasons.save", rfl::json::write(req));
-    if (!result) return;
+    if (!result)
+        return;
 
     if (result->success) {
         BOOST_LOG_SEV(lg(), info) << "Successfully added change reason.";
@@ -161,11 +181,10 @@ process_add_change_reason(std::ostream& out, nats_client& session,
     }
 }
 
-void change_reasons_commands::
-process_delete_change_reason(std::ostream& out, nats_client& session,
-    std::string code) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating delete change reason request for: "
-                               << code;
+void change_reasons_commands::process_delete_change_reason(std::ostream& out,
+                                                           nats_client& session,
+                                                           std::string code) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating delete change reason request for: " << code;
 
     // Check if logged in
     if (!session.is_logged_in()) {
@@ -178,7 +197,8 @@ process_delete_change_reason(std::ostream& out, nats_client& session,
 
     auto result = do_auth_request<dq::messaging::delete_change_reason_response>(
         out, session, "dq.v1.change-reasons.delete", rfl::json::write(req));
-    if (!result) return;
+    if (!result)
+        return;
 
     if (result->success) {
         BOOST_LOG_SEV(lg(), info) << "Successfully deleted change reason: " << code;
@@ -189,16 +209,14 @@ process_delete_change_reason(std::ostream& out, nats_client& session,
     }
 }
 
-void change_reasons_commands::
-process_get_change_reason_history(std::ostream& out, nats_client& session,
-    std::string code) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get change reason history for: "
-                               << code;
+void change_reasons_commands::process_get_change_reason_history(std::ostream& out,
+                                                                nats_client& session,
+                                                                std::string code) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating get change reason history for: " << code;
 
     // Check if logged in
     if (!session.is_logged_in()) {
-        out << "✗ You must be logged in to get change reason history."
-            << std::endl;
+        out << "✗ You must be logged in to get change reason history." << std::endl;
         return;
     }
 
@@ -207,11 +225,11 @@ process_get_change_reason_history(std::ostream& out, nats_client& session,
 
     auto result = do_auth_request<dq::messaging::get_change_reason_history_response>(
         out, session, "dq.v1.change-reasons.history", rfl::json::write(req));
-    if (!result) return;
+    if (!result)
+        return;
 
     if (!result->success) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to get change reason history: "
-                                  << result->message;
+        BOOST_LOG_SEV(lg(), warn) << "Failed to get change reason history: " << result->message;
         out << "✗ " << result->message << std::endl;
         return;
     }
@@ -221,8 +239,8 @@ process_get_change_reason_history(std::ostream& out, nats_client& session,
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
-                              << result->versions.size() << " history records.";
+    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->versions.size()
+                              << " history records.";
     out << result->versions << std::endl;
 }
 

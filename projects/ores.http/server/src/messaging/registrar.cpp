@@ -18,14 +18,13 @@
  *
  */
 #include "ores.http.server/messaging/registrar.hpp"
-#include "ores.http.server/messaging/http_info_handler.hpp"
 #include "ores.http.api/messaging/http_info_protocol.hpp"
+#include "ores.http.server/messaging/http_info_handler.hpp"
 #include "ores.logging/make_logger.hpp"
 
 namespace {
 inline auto& registrar_lg() {
-    static auto instance = ores::logging::make_logger(
-        "ores.http.server.messaging.registrar");
+    static auto instance = ores::logging::make_logger("ores.http.server.messaging.registrar");
     return instance;
 }
 } // namespace
@@ -36,21 +35,17 @@ using namespace ores::logging;
 
 std::vector<ores::nats::service::subscription>
 registrar::register_handlers(ores::nats::service::client& nats,
-                              ores::security::jwt::jwt_authenticator verifier,
-                              const std::string& base_url) {
-    auto handler = std::make_shared<http_info_handler>(
-        nats, std::move(verifier), base_url);
+                             ores::security::jwt::jwt_authenticator verifier,
+                             const std::string& base_url) {
+    auto handler = std::make_shared<http_info_handler>(nats, std::move(verifier), base_url);
 
     std::vector<ores::nats::service::subscription> subs;
-    subs.push_back(nats.subscribe(
-        std::string(http::messaging::get_http_info_request::nats_subject),
-        [handler](ores::nats::message msg) {
-            handler->get(std::move(msg));
-        }));
+    subs.push_back(
+        nats.subscribe(std::string(http::messaging::get_http_info_request::nats_subject),
+                       [handler](ores::nats::message msg) { handler->get(std::move(msg)); }));
 
     BOOST_LOG_SEV(registrar_lg(), info)
-        << "Registered NATS handler for "
-        << http::messaging::get_http_info_request::nats_subject
+        << "Registered NATS handler for " << http::messaging::get_http_info_request::nats_subject
         << " (base_url=" << base_url << ")";
 
     return subs;

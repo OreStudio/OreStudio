@@ -18,13 +18,12 @@
  *
  */
 #include "ores.http.api/openapi/endpoint_registry.hpp"
-
-#include <map>
-#include <set>
-#include <sstream>
 #include <algorithm>
+#include <map>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
+#include <set>
+#include <sstream>
 
 namespace ores::http::openapi {
 
@@ -121,8 +120,8 @@ namespace {
 
 // Forward declaration
 rfl::Generic resolve_refs_recursive(const rfl::Generic& schema,
-    const rfl::Object<rfl::Generic>& defs,
-    std::set<std::string>& visited);
+                                    const rfl::Object<rfl::Generic>& defs,
+                                    std::set<std::string>& visited);
 
 /**
  * @brief Recursively resolves all $ref values in a schema by inlining them.
@@ -137,8 +136,8 @@ rfl::Generic resolve_refs_recursive(const rfl::Generic& schema,
  * @return A new schema with all $refs resolved
  */
 rfl::Generic resolve_refs_recursive(const rfl::Generic& schema,
-    const rfl::Object<rfl::Generic>& defs,
-    std::set<std::string>& visited) {
+                                    const rfl::Object<rfl::Generic>& defs,
+                                    std::set<std::string>& visited) {
 
     auto* obj = std::get_if<rfl::Object<rfl::Generic>>(&schema.get());
     if (!obj) {
@@ -179,7 +178,8 @@ rfl::Generic resolve_refs_recursive(const rfl::Generic& schema,
                 // Find the type in $defs
                 for (const auto& [def_name, def_val] : defs) {
                     if (def_name == type_name) {
-                        if (auto* def_obj = std::get_if<rfl::Object<rfl::Generic>>(&def_val.get())) {
+                        if (auto* def_obj =
+                                std::get_if<rfl::Object<rfl::Generic>>(&def_val.get())) {
                             // Mark as being visited
                             visited.insert(type_name);
 
@@ -204,7 +204,8 @@ rfl::Generic resolve_refs_recursive(const rfl::Generic& schema,
     // No $ref - recursively process all values in this object
     rfl::Object<rfl::Generic> result;
     for (const auto& [key, val] : *obj) {
-        if (key == "$defs" || key == "$schema") continue;  // Skip these
+        if (key == "$defs" || key == "$schema")
+            continue; // Skip these
         result[key] = resolve_refs_recursive(val, defs, visited);
     }
     return rfl::Generic{result};
@@ -218,7 +219,8 @@ rfl::Generic resolve_refs_recursive(const rfl::Generic& schema,
  */
 rfl::Generic process_schema(const rfl::Generic& schema) {
     auto* obj = std::get_if<rfl::Object<rfl::Generic>>(&schema.get());
-    if (!obj) return schema;
+    if (!obj)
+        return schema;
 
     // Find $defs if present
     const rfl::Object<rfl::Generic>* defs_ptr = nullptr;
@@ -229,7 +231,8 @@ rfl::Generic process_schema(const rfl::Generic& schema) {
         }
     }
 
-    if (!defs_ptr) return schema;  // No $defs to resolve
+    if (!defs_ptr)
+        return schema; // No $defs to resolve
 
     // Use the recursive resolver which handles everything
     std::set<std::string> visited;
@@ -254,26 +257,34 @@ void endpoint_registry::add_server(const server_info& server) {
 
 void endpoint_registry::register_route(const domain::route& route) {
     routes_.push_back(route);
-    BOOST_LOG_SEV(lg(), debug) << "Route registered: "
-        << method_to_string(route.method) << " " << route.pattern;
+    BOOST_LOG_SEV(lg(), debug) << "Route registered: " << method_to_string(route.method) << " "
+                               << route.pattern;
 }
 
 std::string endpoint_registry::method_to_string(domain::http_method method) const {
     switch (method) {
-        case domain::http_method::get: return "get";
-        case domain::http_method::post: return "post";
-        case domain::http_method::put: return "put";
-        case domain::http_method::patch: return "patch";
-        case domain::http_method::delete_: return "delete";
-        case domain::http_method::head: return "head";
-        case domain::http_method::options: return "options";
-        default: return "get";
+        case domain::http_method::get:
+            return "get";
+        case domain::http_method::post:
+            return "post";
+        case domain::http_method::put:
+            return "put";
+        case domain::http_method::patch:
+            return "patch";
+        case domain::http_method::delete_:
+            return "delete";
+        case domain::http_method::head:
+            return "head";
+        case domain::http_method::options:
+            return "options";
+        default:
+            return "get";
     }
 }
 
 std::string endpoint_registry::generate_openapi_json() const {
-    BOOST_LOG_SEV(lg(), debug) << "Generating OpenAPI JSON spec with "
-        << routes_.size() << " routes";
+    BOOST_LOG_SEV(lg(), debug) << "Generating OpenAPI JSON spec with " << routes_.size()
+                               << " routes";
 
     openapi_spec spec;
     spec.openapi = "3.0.3";
@@ -314,10 +325,7 @@ std::string endpoint_registry::generate_openapi_json() const {
 
     // Build components section
     spec.components = openapi_components{
-        openapi_security_schemes{
-            openapi_security_scheme{"http", "bearer", "JWT"}
-        }
-    };
+        openapi_security_schemes{openapi_security_scheme{"http", "bearer", "JWT"}}};
 
     // Build paths section
     for (const auto& route : routes_) {
@@ -376,8 +384,8 @@ std::string endpoint_registry::generate_openapi_json() const {
             if (schema_result) {
                 media_type.schema = process_schema(*schema_result);
             } else {
-                BOOST_LOG_SEV(lg(), warn) << "Failed to parse JSON schema for route: "
-                    << route.pattern;
+                BOOST_LOG_SEV(lg(), warn)
+                    << "Failed to parse JSON schema for route: " << route.pattern;
                 media_type.schema = rfl::Generic{rfl::Object<rfl::Generic>{}};
             }
 
@@ -415,8 +423,8 @@ std::string endpoint_registry::generate_openapi_json() const {
             if (schema_result) {
                 media_type.schema = process_schema(*schema_result);
             } else {
-                BOOST_LOG_SEV(lg(), warn) << "Failed to parse response JSON schema for route: "
-                    << route.pattern;
+                BOOST_LOG_SEV(lg(), warn)
+                    << "Failed to parse response JSON schema for route: " << route.pattern;
                 media_type.schema = rfl::Generic{rfl::Object<rfl::Generic>{}};
             }
 
@@ -458,7 +466,8 @@ std::string endpoint_registry::generate_swagger_ui_html(const std::string& spec_
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>)" << info_.title << R"( - API Documentation</title>
+    <title>)"
+        << info_.title << R"( - API Documentation</title>
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.29.1/swagger-ui.css"
           integrity="sha512-eZpfl9qlKnbDvlJ2brfdx3nhlP1FMsA23w65motxKdYsUcfMcdO2bcLPr7mXhvyzmDZwuzYCJKrl/sEo1ditVQ=="
@@ -482,7 +491,8 @@ std::string endpoint_registry::generate_swagger_ui_html(const std::string& spec_
     <script>
         window.onload = function() {
             SwaggerUIBundle({
-                url: ")" << spec_url << R"(",
+                url: ")"
+        << spec_url << R"(",
                 dom_id: '#swagger-ui',
                 presets: [
                     SwaggerUIBundle.presets.apis,

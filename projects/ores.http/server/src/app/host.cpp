@@ -18,14 +18,13 @@
  *
  */
 #include "ores.http.server/app/host.hpp"
-
-#include <cstdlib>
-#include <boost/exception/diagnostic_information.hpp>
+#include "ores.http.server/app/application.hpp"
+#include "ores.http.server/config/parser.hpp"
 #include "ores.telemetry.core/log/lifecycle_manager.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.utility/version/version.hpp"
-#include "ores.http.server/app/application.hpp"
-#include "ores.http.server/config/parser.hpp"
+#include <boost/exception/diagnostic_information.hpp>
+#include <cstdlib>
 
 namespace ores::http_server::app {
 
@@ -33,9 +32,10 @@ using namespace ores::logging;
 using ores::http_server::config::parser;
 using ores::telemetry::log::lifecycle_manager;
 
-boost::asio::awaitable<int>
-host::execute(const std::vector<std::string>& args, std::ostream& std_output,
-    std::ostream& error_output, boost::asio::io_context& io_ctx) {
+boost::asio::awaitable<int> host::execute(const std::vector<std::string>& args,
+                                          std::ostream& std_output,
+                                          std::ostream& error_output,
+                                          boost::asio::io_context& io_ctx) {
     /*
      * Create the configuration from command line options.
      */
@@ -61,8 +61,8 @@ host::execute(const std::vector<std::string>& args, std::ostream& std_output,
     /*
      * Log the configuration and command line arguments.
      */
-    BOOST_LOG_SEV(lg(), info) << "ORES HTTP Server v" << ORES_VERSION
-                              << " starting (" << ores::utility::version::build_info() << ")...";
+    BOOST_LOG_SEV(lg(), info) << "ORES HTTP Server v" << ORES_VERSION << " starting ("
+                              << ores::utility::version::build_info() << ")...";
     BOOST_LOG_SEV(lg(), info) << "Command line arguments: " << args;
     BOOST_LOG_SEV(lg(), debug) << "Configuration: " << cfg;
 
@@ -82,7 +82,7 @@ host::execute(const std::vector<std::string>& args, std::ostream& std_output,
          * boost exception, we would not have access to the what() method and
          * thus could not provide the exception message to the console.
          */
-        const auto *const be(dynamic_cast<const boost::exception* const>(&e));
+        const auto* const be(dynamic_cast<const boost::exception* const>(&e));
         if (be != nullptr) {
             using boost::diagnostic_information;
             BOOST_LOG_SEV(lg(), error) << "Error: " << diagnostic_information(*be);

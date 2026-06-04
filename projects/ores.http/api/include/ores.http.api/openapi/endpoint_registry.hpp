@@ -20,11 +20,11 @@
 #ifndef ORES_HTTP_OPENAPI_ENDPOINT_REGISTRY_HPP
 #define ORES_HTTP_OPENAPI_ENDPOINT_REGISTRY_HPP
 
+#include "ores.http.api/domain/route.hpp"
+#include "ores.http.api/export.hpp"
+#include "ores.logging/make_logger.hpp"
 #include <string>
 #include <vector>
-#include "ores.http.api/domain/route.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.http.api/export.hpp"
 
 namespace ores::http::openapi {
 

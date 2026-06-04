@@ -18,13 +18,12 @@
  *
  */
 #include "ores.http.core/routes/risk_routes.hpp"
-
-#include <rfl/json.hpp>
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/domain/currency_json.hpp"
-#include "ores.refdata.api/messaging/currency_protocol.hpp"
 #include "ores.refdata.api/messaging/currency_history_protocol.hpp"
+#include "ores.refdata.api/messaging/currency_protocol.hpp"
 #include "ores.refdata.core/service/currency_service.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include <rfl/json.hpp>
 
 namespace ores::http_server::routes {
 
@@ -33,60 +32,64 @@ using namespace ores::http::domain;
 namespace asio = boost::asio;
 
 risk_routes::risk_routes(database::context ctx,
-    std::shared_ptr<iam::service::auth_session_service> sessions)
+                         std::shared_ptr<iam::service::auth_session_service> sessions)
     : ctx_(std::move(ctx))
     , sessions_(std::move(sessions)) {
     BOOST_LOG_SEV(lg(), debug) << "Risk routes initialized";
 }
 
 void risk_routes::register_routes(std::shared_ptr<http::net::router> router,
-    std::shared_ptr<http::openapi::endpoint_registry> registry) {
+                                  std::shared_ptr<http::openapi::endpoint_registry> registry) {
 
     BOOST_LOG_SEV(lg(), info) << "Registering Risk routes";
 
-    auto get_currencies = router->get("/api/v1/currencies")
-        .summary("Get currencies")
-        .description("Retrieve currencies with pagination")
-        .tags({"currencies"})
-        .auth_required()
-        .query_param("offset", "integer", "", false, "Pagination offset", "0")
-        .query_param("limit", "integer", "", false, "Maximum number of results", "100")
-        .response<refdata::messaging::get_currencies_response>()
-        .handler([this](const http_request& req) { return handle_get_currencies(req); });
+    auto get_currencies =
+        router->get("/api/v1/currencies")
+            .summary("Get currencies")
+            .description("Retrieve currencies with pagination")
+            .tags({"currencies"})
+            .auth_required()
+            .query_param("offset", "integer", "", false, "Pagination offset", "0")
+            .query_param("limit", "integer", "", false, "Maximum number of results", "100")
+            .response<refdata::messaging::get_currencies_response>()
+            .handler([this](const http_request& req) { return handle_get_currencies(req); });
     router->add_route(get_currencies.build());
     registry->register_route(get_currencies.build());
 
-    auto save_currency = router->post("/api/v1/currencies")
-        .summary("Save currency")
-        .description("Create or update a currency")
-        .tags({"currencies"})
-        .auth_required()
-        .roles({"TenantAdmin", "SuperAdmin"})
-        .body<refdata::messaging::save_currency_request>()
-        .response<refdata::messaging::save_currency_response>()
-        .handler([this](const http_request& req) { return handle_save_currency(req); });
+    auto save_currency =
+        router->post("/api/v1/currencies")
+            .summary("Save currency")
+            .description("Create or update a currency")
+            .tags({"currencies"})
+            .auth_required()
+            .roles({"TenantAdmin", "SuperAdmin"})
+            .body<refdata::messaging::save_currency_request>()
+            .response<refdata::messaging::save_currency_response>()
+            .handler([this](const http_request& req) { return handle_save_currency(req); });
     router->add_route(save_currency.build());
     registry->register_route(save_currency.build());
 
-    auto delete_currencies = router->delete_("/api/v1/currencies")
-        .summary("Delete currencies")
-        .description("Delete one or more currencies")
-        .tags({"currencies"})
-        .auth_required()
-        .roles({"TenantAdmin", "SuperAdmin"})
-        .body<refdata::messaging::delete_currency_request>()
-        .response<refdata::messaging::delete_currency_response>()
-        .handler([this](const http_request& req) { return handle_delete_currencies(req); });
+    auto delete_currencies =
+        router->delete_("/api/v1/currencies")
+            .summary("Delete currencies")
+            .description("Delete one or more currencies")
+            .tags({"currencies"})
+            .auth_required()
+            .roles({"TenantAdmin", "SuperAdmin"})
+            .body<refdata::messaging::delete_currency_request>()
+            .response<refdata::messaging::delete_currency_response>()
+            .handler([this](const http_request& req) { return handle_delete_currencies(req); });
     router->add_route(delete_currencies.build());
     registry->register_route(delete_currencies.build());
 
-    auto currency_history = router->get("/api/v1/currencies/{code}/history")
-        .summary("Get currency history")
-        .description("Retrieve version history for a currency")
-        .tags({"currencies"})
-        .auth_required()
-        .response<refdata::messaging::get_currency_history_response>()
-        .handler([this](const http_request& req) { return handle_get_currency_history(req); });
+    auto currency_history =
+        router->get("/api/v1/currencies/{code}/history")
+            .summary("Get currency history")
+            .description("Retrieve version history for a currency")
+            .tags({"currencies"})
+            .auth_required()
+            .response<refdata::messaging::get_currency_history_response>()
+            .handler([this](const http_request& req) { return handle_get_currency_history(req); });
     router->add_route(currency_history.build());
     registry->register_route(currency_history.build());
 
@@ -103,8 +106,10 @@ asio::awaitable<http_response> risk_routes::handle_get_currencies(const http_req
         auto offset_str = req.get_query_param("offset");
         auto limit_str = req.get_query_param("limit");
 
-        if (!offset_str.empty()) offset = std::stoul(offset_str);
-        if (!limit_str.empty()) limit = std::stoul(limit_str);
+        if (!offset_str.empty())
+            offset = std::stoul(offset_str);
+        if (!limit_str.empty())
+            limit = std::stoul(limit_str);
 
         refdata::service::currency_service service(ctx_);
         auto currencies = service.list_currencies(offset, limit);

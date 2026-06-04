@@ -20,10 +20,10 @@
 #ifndef ORES_SHELL_APP_COMMANDS_ACCOUNTS_COMMANDS_HPP
 #define ORES_SHELL_APP_COMMANDS_ACCOUNTS_COMMANDS_HPP
 
-#include <string>
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/pagination_context.hpp"
+#include <string>
 
 namespace cli {
 
@@ -38,8 +38,7 @@ namespace ores::shell::app::commands {
  */
 class accounts_commands {
 private:
-    inline static std::string_view logger_name =
-        "ores.shell.app.commands.accounts_commands";
+    inline static std::string_view logger_name = "ores.shell.app.commands.accounts_commands";
 
     static auto& lg() {
         using namespace ores::logging;
@@ -54,8 +53,8 @@ public:
      * Creates the accounts submenu and adds account operations.
      */
     static void register_commands(cli::Menu& root_menu,
-        ores::nats::service::nats_client& session,
-        pagination_context& pagination);
+                                  ores::nats::service::nats_client& session,
+                                  pagination_context& pagination);
 
     /**
      * @brief Process a create account request.
@@ -71,9 +70,11 @@ public:
      * @param email Account email
      */
     static void process_create_account(std::ostream& out,
-        ores::nats::service::nats_client& session,
-        std::string principal, std::string password, std::string totp_secret,
-        std::string email);
+                                       ores::nats::service::nats_client& session,
+                                       std::string principal,
+                                       std::string password,
+                                       std::string totp_secret,
+                                       std::string email);
 
     /**
      * @brief Process a list accounts request.
@@ -85,8 +86,8 @@ public:
      * @param pagination Pagination context for state management.
      */
     static void process_list_accounts(std::ostream& out,
-        ores::nats::service::nats_client& session,
-        pagination_context& pagination);
+                                      ores::nats::service::nats_client& session,
+                                      pagination_context& pagination);
 
     /**
      * @brief Process a login request.
@@ -100,8 +101,9 @@ public:
      * @param password Account password
      */
     static void process_login(std::ostream& out,
-        ores::nats::service::nats_client& session,
-        std::string principal, std::string password);
+                              ores::nats::service::nats_client& session,
+                              std::string principal,
+                              std::string password);
 
     /**
      * @brief Process a lock account request.
@@ -113,8 +115,8 @@ public:
      * @param account_id Account ID UUID as a string.
      */
     static void process_lock_account(std::ostream& out,
-        ores::nats::service::nats_client& session,
-        std::string account_id);
+                                     ores::nats::service::nats_client& session,
+                                     std::string account_id);
 
     /**
      * @brief Process an unlock account request.
@@ -126,8 +128,8 @@ public:
      * @param account_id Account ID UUID as a string.
      */
     static void process_unlock_account(std::ostream& out,
-        ores::nats::service::nats_client& session,
-        std::string account_id);
+                                       ores::nats::service::nats_client& session,
+                                       std::string account_id);
 
     /**
      * @brief Process a list login info request.
@@ -138,7 +140,7 @@ public:
      * @param session Client session for connectivity.
      */
     static void process_list_login_info(std::ostream& out,
-        ores::nats::service::nats_client& session);
+                                        ores::nats::service::nats_client& session);
 
     /**
      * @brief Process a logout request.
@@ -148,8 +150,7 @@ public:
      * @param out Output stream for results
      * @param session Client session for connectivity.
      */
-    static void process_logout(std::ostream& out,
-        ores::nats::service::nats_client& session);
+    static void process_logout(std::ostream& out, ores::nats::service::nats_client& session);
 
     /**
      * @brief Process a bootstrap request.
@@ -165,8 +166,10 @@ public:
      * @param email Admin account email
      */
     static void process_bootstrap(std::ostream& out,
-        ores::nats::service::nats_client& session,
-        std::string principal, std::string password, std::string email);
+                                  ores::nats::service::nats_client& session,
+                                  std::string principal,
+                                  std::string password,
+                                  std::string email);
 
     /**
      * @brief Process a list sessions request.
@@ -178,8 +181,8 @@ public:
      * @param account_id Optional account ID (empty for own sessions)
      */
     static void process_list_sessions(std::ostream& out,
-        ores::nats::service::nats_client& session,
-        std::string account_id = "");
+                                      ores::nats::service::nats_client& session,
+                                      std::string account_id = "");
 
     /**
      * @brief Process an active sessions request.
@@ -190,7 +193,7 @@ public:
      * @param session Client session for connectivity.
      */
     static void process_active_sessions(std::ostream& out,
-        ores::nats::service::nats_client& session);
+                                        ores::nats::service::nats_client& session);
 
     /**
      * @brief Process a session statistics request.
@@ -202,8 +205,8 @@ public:
      * @param days Number of days to retrieve statistics for (default 30)
      */
     static void process_session_stats(std::ostream& out,
-        ores::nats::service::nats_client& session,
-        int days = 30);
+                                      ores::nats::service::nats_client& session,
+                                      int days = 30);
 
     /**
      * @brief Process a get account history request.
@@ -215,8 +218,8 @@ public:
      * @param username Username of the account
      */
     static void process_get_account_history(std::ostream& out,
-        ores::nats::service::nats_client& session,
-        std::string username);
+                                            ores::nats::service::nats_client& session,
+                                            std::string username);
 
     /**
      * @brief Process an account info request.
@@ -231,8 +234,8 @@ public:
      * @param username Username of the account to display
      */
     static void process_account_info(std::ostream& out,
-        ores::nats::service::nats_client& session,
-        std::string username);
+                                     ores::nats::service::nats_client& session,
+                                     std::string username);
 };
 
 }

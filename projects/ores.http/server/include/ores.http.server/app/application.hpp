@@ -20,10 +20,10 @@
 #ifndef ORES_HTTP_SERVER_APP_APPLICATION_HPP
 #define ORES_HTTP_SERVER_APP_APPLICATION_HPP
 
-#include <boost/asio/io_context.hpp>
-#include <boost/asio/awaitable.hpp>
 #include "ores.http.server/config/options.hpp"
 #include "ores.logging/make_logger.hpp"
+#include <boost/asio/awaitable.hpp>
+#include <boost/asio/io_context.hpp>
 
 namespace ores::http_server::app {
 
@@ -35,8 +35,7 @@ public:
     /**
      * @brief Runs the HTTP server application.
      */
-    boost::asio::awaitable<void> run(boost::asio::io_context& io_ctx,
-        const config::options& cfg);
+    boost::asio::awaitable<void> run(boost::asio::io_context& io_ctx, const config::options& cfg);
 
 private:
     inline static std::string_view logger_name = "ores.http.server.app.application";

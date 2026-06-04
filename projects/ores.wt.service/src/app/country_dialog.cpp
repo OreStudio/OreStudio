@@ -18,15 +18,15 @@
  *
  */
 #include "ores.wt.service/app/country_dialog.hpp"
-#include <Wt/WLabel.h>
 #include <Wt/WBreak.h>
+#include <Wt/WLabel.h>
 #include <Wt/WTemplate.h>
 
 namespace ores::wt::service::app {
 
 country_dialog::country_dialog(mode m)
-    : Wt::WDialog(m == mode::add ? "Add Country" : "Edit Country"),
-      mode_(m) {
+    : Wt::WDialog(m == mode::add ? "Add Country" : "Edit Country")
+    , mode_(m) {
     setModal(true);
     setResizable(true);
     setClosable(true);
@@ -53,30 +53,25 @@ void country_dialog::setup_form() {
         return ptr;
     };
 
-    alpha2_code_edit_ = add_field("Alpha-2 Code",
-        std::make_unique<Wt::WLineEdit>());
+    alpha2_code_edit_ = add_field("Alpha-2 Code", std::make_unique<Wt::WLineEdit>());
     alpha2_code_edit_->setPlaceholderText("e.g., US");
     alpha2_code_edit_->setMaxLength(2);
     if (mode_ == mode::edit) {
         alpha2_code_edit_->setReadOnly(true);
     }
 
-    alpha3_code_edit_ = add_field("Alpha-3 Code",
-        std::make_unique<Wt::WLineEdit>());
+    alpha3_code_edit_ = add_field("Alpha-3 Code", std::make_unique<Wt::WLineEdit>());
     alpha3_code_edit_->setPlaceholderText("e.g., USA");
     alpha3_code_edit_->setMaxLength(3);
 
-    numeric_code_edit_ = add_field("Numeric Code",
-        std::make_unique<Wt::WLineEdit>());
+    numeric_code_edit_ = add_field("Numeric Code", std::make_unique<Wt::WLineEdit>());
     numeric_code_edit_->setPlaceholderText("e.g., 840");
     numeric_code_edit_->setMaxLength(3);
 
-    name_edit_ = add_field("Name",
-        std::make_unique<Wt::WLineEdit>());
+    name_edit_ = add_field("Name", std::make_unique<Wt::WLineEdit>());
     name_edit_->setPlaceholderText("e.g., United States");
 
-    official_name_edit_ = add_field("Official Name",
-        std::make_unique<Wt::WLineEdit>());
+    official_name_edit_ = add_field("Official Name", std::make_unique<Wt::WLineEdit>());
     official_name_edit_->setPlaceholderText("e.g., United States of America");
 
     status_text_ = content->addWidget(std::make_unique<Wt::WText>());
@@ -84,13 +79,11 @@ void country_dialog::setup_form() {
 }
 
 void country_dialog::setup_buttons() {
-    auto save_btn = footer()->addWidget(
-        std::make_unique<Wt::WPushButton>("Save"));
+    auto save_btn = footer()->addWidget(std::make_unique<Wt::WPushButton>("Save"));
     save_btn->setStyleClass("btn btn-primary");
     save_btn->clicked().connect(this, &country_dialog::validate_and_save);
 
-    auto cancel_btn = footer()->addWidget(
-        std::make_unique<Wt::WPushButton>("Cancel"));
+    auto cancel_btn = footer()->addWidget(std::make_unique<Wt::WPushButton>("Cancel"));
     cancel_btn->setStyleClass("btn btn-secondary ms-2");
     cancel_btn->clicked().connect([this] { reject(); });
 }

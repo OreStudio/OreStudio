@@ -20,13 +20,13 @@
 #ifndef ORES_HTTP_SERVER_CONFIG_OPTIONS_HPP
 #define ORES_HTTP_SERVER_CONFIG_OPTIONS_HPP
 
-#include <iosfwd>
-#include <string>
-#include <optional>
-#include "ores.logging/logging_options.hpp"
 #include "ores.database/domain/database_options.hpp"
 #include "ores.http.api/net/http_server_options.hpp"
+#include "ores.logging/logging_options.hpp"
 #include "ores.nats/config/nats_options.hpp"
+#include <iosfwd>
+#include <optional>
+#include <string>
 
 namespace ores::http_server::config {
 

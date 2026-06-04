@@ -17,21 +17,20 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <iostream>
-#include <boost/asio/io_context.hpp>
-#include <boost/asio/co_spawn.hpp>
-#include <boost/asio/awaitable.hpp>
-#include <boost/asio/detached.hpp>
-#include <openssl/crypto.h>
+#include "ores.database/domain/exceptions.hpp"
 #include "ores.http.server/app/host.hpp"
 #include "ores.http.server/config/parser_exception.hpp"
-#include "ores.database/domain/exceptions.hpp"
 #include "ores.service/service/exit_codes.hpp"
+#include <boost/asio/awaitable.hpp>
+#include <boost/asio/co_spawn.hpp>
+#include <boost/asio/detached.hpp>
+#include <boost/asio/io_context.hpp>
+#include <iostream>
+#include <openssl/crypto.h>
 
 namespace {
 
-boost::asio::awaitable<int>
-async_main(int argc, char** argv, boost::asio::io_context& io_ctx) {
+boost::asio::awaitable<int> async_main(int argc, char** argv, boost::asio::io_context& io_ctx) {
     using ores::http_server::app::host;
     using ores::http_server::config::parser_exception;
 
@@ -45,8 +44,7 @@ async_main(int argc, char** argv, boost::asio::io_context& io_ctx) {
          */
         co_return EXIT_FAILURE;
     } catch (const ores::database::db_connection_exception&) {
-        co_return static_cast<int>(
-            ores::service::service::exit_code::db_connection_failed);
+        co_return static_cast<int>(ores::service::service::exit_code::db_connection_failed);
     } catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;
         std::cerr << "Failed to execute HTTP server." << std::endl;
@@ -63,11 +61,14 @@ int main(int argc, char** argv) {
     boost::asio::io_context io_ctx;
 
     int result = EXIT_FAILURE;
-    boost::asio::co_spawn(io_ctx, [&]() -> boost::asio::awaitable<void> {
+    boost::asio::co_spawn(
+        io_ctx,
+        [&]() -> boost::asio::awaitable<void> {
             result = co_await async_main(argc, argv, io_ctx);
             // Stop io_context when application completes (success or error)
             io_ctx.stop();
-        }, boost::asio::detached);
+        },
+        boost::asio::detached);
 
     io_ctx.run();
 

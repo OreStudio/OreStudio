@@ -18,17 +18,16 @@
  *
  */
 #include "ores.shell/config/parser.hpp"
-
-#include <ostream>
-#include <boost/program_options.hpp>
-#include <boost/throw_exception.hpp>
-#include "ores.shell/config/parser_exception.hpp"
+#include "ores.logging/logging_configuration.hpp"
 #include "ores.nats/config/nats_configuration.hpp"
 #include "ores.nats/config/nats_options.hpp"
-#include "ores.utility/version/version.hpp"
-#include "ores.logging/logging_configuration.hpp"
+#include "ores.shell/config/parser_exception.hpp"
 #include "ores.telemetry.core/exporting/telemetry_configuration.hpp"
 #include "ores.utility/program_options/environment_mapper_factory.hpp"
+#include "ores.utility/version/version.hpp"
+#include <boost/program_options.hpp>
+#include <boost/throw_exception.hpp>
+#include <ostream>
 
 namespace {
 
@@ -60,24 +59,19 @@ options_description make_options_description() {
     using ores::telemetry::exporting::telemetry_configuration;
 
     options_description god("General");
-    god.add_options()
-        ("help,h", "Display usage and exit.")
-        ("version,v", "Output version information and exit.");
+    god.add_options()("help,h", "Display usage and exit.")("version,v",
+                                                           "Output version information and exit.");
 
-    const auto lod(logging_configuration::make_options_description(
-            "ores.shell.log"));
+    const auto lod(logging_configuration::make_options_description("ores.shell.log"));
 
-    const auto tod(telemetry_configuration::make_options_description(
-            "ores-shell", ORES_VERSION));
+    const auto tod(telemetry_configuration::make_options_description("ores-shell", ORES_VERSION));
 
     const auto cod(nats_configuration::make_options_description());
 
     options_description lod2("Login");
-    lod2.add_options()
-        (login_username_arg.c_str(), value<std::string>(),
-            "Username for authentication")
-        (login_password_arg.c_str(), value<std::string>(),
-            "Password for authentication");
+    lod2.add_options()(
+        login_username_arg.c_str(), value<std::string>(), "Username for authentication")(
+        login_password_arg.c_str(), value<std::string>(), "Password for authentication");
 
     options_description r;
     r.add(god).add(lod).add(tod).add(cod).add(lod2);
@@ -88,12 +82,13 @@ options_description make_options_description() {
  * @brief Print help text.
  */
 void print_help(const options_description& od, std::ostream& info) {
-    info << "ORE Studio Shell is an interactive REPL for ORE Studio."
+    info << "ORE Studio Shell is an interactive REPL for ORE Studio." << std::endl
+         << "It provides a command-line interface for connecting to and interacting with "
+            "ores.comms.service."
          << std::endl
-         << "It provides a command-line interface for connecting to and interacting with ores.comms.service."
-         << std::endl << std::endl
-         << "Usage: ores.shell [options]"
-         << std::endl << std::endl
+         << std::endl
+         << "Usage: ores.shell [options]" << std::endl
+         << std::endl
          << od << std::endl;
 }
 
@@ -105,14 +100,12 @@ void version(std::ostream& info) {
          << "Copyright (C) 2025 Marco Craveiro." << std::endl
          << "License GPLv3: GNU GPL version 3 or later "
          << "<http://gnu.org/licenses/gpl.html>." << std::endl
-         << "This is free software: you are free to change and redistribute it."
-         << std::endl << "There is NO WARRANTY, to the extent permitted by law."
-         << std::endl;
+         << "This is free software: you are free to change and redistribute it." << std::endl
+         << "There is NO WARRANTY, to the extent permitted by law." << std::endl;
 
     if (!build_info.empty()) {
         info << build_info << std::endl;
-        info << "IMPORTANT: build details are NOT for security purposes."
-             << std::endl;
+        info << "IMPORTANT: build details are NOT for security purposes." << std::endl;
     }
 }
 
@@ -122,8 +115,7 @@ void version(std::ostream& info) {
  * Returns empty if subject_prefix is not set — the shell should not
  * auto-connect unless a complete configuration is provided.
  */
-std::optional<nats_options>
-read_connection_configuration(const variables_map& vm) {
+std::optional<nats_options> read_connection_configuration(const variables_map& vm) {
     auto opts = nats_configuration::read_options(vm);
     if (opts.subject_prefix.empty())
         return {};
@@ -133,8 +125,7 @@ read_connection_configuration(const variables_map& vm) {
 /**
  * @brief Reads the login configuration from the variables map.
  */
-std::optional<login_options>
-read_login_configuration(const variables_map& vm) {
+std::optional<login_options> read_login_configuration(const variables_map& vm) {
     // Check if both username and password are provided
     const bool has_username = vm.count(login_username_arg) != 0;
     const bool has_password = vm.count(login_password_arg) != 0;
@@ -144,11 +135,11 @@ read_login_configuration(const variables_map& vm) {
 
     if (has_username != has_password) {
         if (!has_username) {
-            BOOST_THROW_EXCEPTION(parser_exception(
-                    "Login password provided but username is missing!"));
+            BOOST_THROW_EXCEPTION(
+                parser_exception("Login password provided but username is missing!"));
         } else {
-            BOOST_THROW_EXCEPTION(parser_exception(
-                    "Login username provided but password is missing!"));
+            BOOST_THROW_EXCEPTION(
+                parser_exception("Login username provided but password is missing!"));
         }
     }
 
@@ -163,8 +154,8 @@ read_login_configuration(const variables_map& vm) {
  * @brief Parses the arguments supplied in the command line and converts them
  * into a configuration object.
  */
-std::optional<options>
-parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
+std::optional<options> parse_arguments(const std::vector<std::string>& arguments,
+                                       std::ostream& info) {
     using ores::logging::logging_configuration;
     using ores::telemetry::exporting::telemetry_configuration;
     using ores::utility::program_options::environment_mapper_factory;
@@ -174,10 +165,8 @@ parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
 
     variables_map vm;
     boost::program_options::store(
-        boost::program_options::command_line_parser(arguments).
-        options(od).run(), vm);
-    boost::program_options::store(
-        boost::program_options::parse_environment(od, name_mapper), vm);
+        boost::program_options::command_line_parser(arguments).options(od).run(), vm);
+    boost::program_options::store(boost::program_options::parse_environment(od, name_mapper), vm);
 
     const bool has_version(vm.count(version_arg) != 0);
     const bool has_help(vm.count(help_arg) != 0);
@@ -206,19 +195,17 @@ parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
 
 namespace ores::shell::config {
 
-std::optional<options>
-parser::parse(const std::vector<std::string>& arguments,
-    std::ostream& info, std::ostream& err) const {
+std::optional<options> parser::parse(const std::vector<std::string>& arguments,
+                                     std::ostream& info,
+                                     std::ostream& err) const {
 
     try {
         return parse_arguments(arguments, info);
-    } catch(const parser_exception& e) {
-        err << usage_error_msg << e.what() << std::endl
-            << more_information << std::endl;
+    } catch (const parser_exception& e) {
+        err << usage_error_msg << e.what() << std::endl << more_information << std::endl;
         BOOST_THROW_EXCEPTION(e);
     } catch (const boost::program_options::error& e) {
-        err << usage_error_msg << e.what() << std::endl
-            << more_information << std::endl;
+        err << usage_error_msg << e.what() << std::endl << more_information << std::endl;
         BOOST_THROW_EXCEPTION(parser_exception(e.what()));
     }
 }

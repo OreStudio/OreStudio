@@ -50,8 +50,7 @@ void pagination_context::register_list_callback(const std::string& entity_name,
     list_callbacks_[entity_name] = std::move(callback);
 }
 
-const list_callback*
-pagination_context::get_list_callback(const std::string& entity_name) const {
+const list_callback* pagination_context::get_list_callback(const std::string& entity_name) const {
     auto it = list_callbacks_.find(entity_name);
     if (it != list_callbacks_.end()) {
         return &it->second;

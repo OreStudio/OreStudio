@@ -39,8 +39,7 @@ namespace ores::shell::app::commands {
  */
 class variability_commands {
 private:
-    inline static std::string_view logger_name =
-        "ores.shell.app.commands.variability";
+    inline static std::string_view logger_name = "ores.shell.app.commands.variability";
 
     static auto& lg() {
         using namespace ores::logging;
@@ -54,8 +53,7 @@ public:
      *
      * Creates the variability submenu and adds variability operations.
      */
-    static void register_commands(cli::Menu& root_menu,
-        ores::nats::service::nats_client& session);
+    static void register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session);
 
     /**
      * @brief Process a list settings request.
@@ -65,8 +63,7 @@ public:
      * @param out Output stream for results
      * @param session Client session for connectivity.
      */
-    static void process_list_settings(std::ostream& out,
-        ores::nats::service::nats_client& session);
+    static void process_list_settings(std::ostream& out, ores::nats::service::nats_client& session);
 
     /**
      * @brief Process a save setting request.
@@ -83,10 +80,13 @@ public:
      * @param change_commentary Free-text commentary
      */
     static void process_save_setting(std::ostream& out,
-        ores::nats::service::nats_client& session,
-        std::string name, std::string value, std::string data_type,
-        std::string description,
-        std::string change_reason_code, std::string change_commentary);
+                                     ores::nats::service::nats_client& session,
+                                     std::string name,
+                                     std::string value,
+                                     std::string data_type,
+                                     std::string description,
+                                     std::string change_reason_code,
+                                     std::string change_commentary);
 
     /**
      * @brief Process a delete setting request.
@@ -98,8 +98,8 @@ public:
      * @param name Name of the setting to delete
      */
     static void process_delete_setting(std::ostream& out,
-        ores::nats::service::nats_client& session,
-        std::string name);
+                                       ores::nats::service::nats_client& session,
+                                       std::string name);
 
     /**
      * @brief Process a get setting history request.
@@ -111,8 +111,8 @@ public:
      * @param name Name of the setting
      */
     static void process_get_setting_history(std::ostream& out,
-        ores::nats::service::nats_client& session,
-        std::string name);
+                                            ores::nats::service::nats_client& session,
+                                            std::string name);
 };
 
 }

@@ -20,12 +20,12 @@
 #ifndef ORES_HTTP_SERVER_ROUTES_STORAGE_ROUTES_HPP
 #define ORES_HTTP_SERVER_ROUTES_STORAGE_ROUTES_HPP
 
-#include <memory>
-#include <string>
 #include "ores.http.api/net/router.hpp"
 #include "ores.http.api/openapi/endpoint_registry.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.http.core/export.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <memory>
+#include <string>
 
 namespace ores::http_server::routes {
 
@@ -53,11 +53,10 @@ public:
      * @brief Registers all storage routes with the router.
      */
     void register_routes(std::shared_ptr<http::net::router> router,
-        std::shared_ptr<http::openapi::endpoint_registry> registry);
+                         std::shared_ptr<http::openapi::endpoint_registry> registry);
 
 private:
-    inline static std::string_view logger_name =
-        "ores.http.server.routes.storage_routes";
+    inline static std::string_view logger_name = "ores.http.server.routes.storage_routes";
 
     static auto& lg() {
         using namespace ores::logging;
@@ -81,8 +80,7 @@ private:
      * Returns an empty string if the bucket is unknown (caller should
      * respond with 404).
      */
-    std::string resolve_path(const std::string& bucket,
-        const std::string& key) const;
+    std::string resolve_path(const std::string& bucket, const std::string& key) const;
 
     static std::string read_file(const std::string& path);
     static void write_file(const std::string& path, const std::string& data);

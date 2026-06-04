@@ -20,11 +20,11 @@
 #ifndef ORES_WT_SERVICE_MESSAGING_REGISTRAR_HPP
 #define ORES_WT_SERVICE_MESSAGING_REGISTRAR_HPP
 
-#include <optional>
-#include <vector>
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
+#include <optional>
+#include <vector>
 
 namespace ores::wt::service::messaging {
 
@@ -38,8 +38,8 @@ public:
      * once the Wt UI is implemented in terms of NATS messages.
      * When handlers need DB access, use application_context::instance().
      */
-    static std::vector<ores::nats::service::subscription>
-    register_handlers(ores::nats::service::client& nats,
+    static std::vector<ores::nats::service::subscription> register_handlers(
+        ores::nats::service::client& nats,
         std::optional<ores::security::jwt::jwt_authenticator> verifier = std::nullopt);
 };
 

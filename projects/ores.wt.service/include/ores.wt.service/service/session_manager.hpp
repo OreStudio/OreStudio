@@ -20,10 +20,10 @@
 #ifndef ORES_WT_SERVICE_SESSION_MANAGER_HPP
 #define ORES_WT_SERVICE_SESSION_MANAGER_HPP
 
-#include <string>
-#include <optional>
-#include <boost/uuid/uuid.hpp>
 #include <boost/asio/ip/address.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <optional>
+#include <string>
 
 namespace ores::wt::service {
 
@@ -58,14 +58,18 @@ class session_manager {
 public:
     session_manager();
 
-    login_result login(const std::string& username, const std::string& password,
-                       const std::string& client_ip);
+    login_result
+    login(const std::string& username, const std::string& password, const std::string& client_ip);
 
     void logout();
 
-    bool is_logged_in() const { return session_.has_value(); }
+    bool is_logged_in() const {
+        return session_.has_value();
+    }
 
-    const std::optional<session_data>& session() const { return session_; }
+    const std::optional<session_data>& session() const {
+        return session_;
+    }
 
     bool has_permission(const std::string& permission) const;
 

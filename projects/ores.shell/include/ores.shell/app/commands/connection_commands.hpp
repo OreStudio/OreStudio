@@ -20,9 +20,9 @@
 #ifndef ORES_SHELL_APP_COMMANDS_CONNECTION_COMMANDS_HPP
 #define ORES_SHELL_APP_COMMANDS_CONNECTION_COMMANDS_HPP
 
-#include <string>
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
+#include <string>
 
 namespace cli {
 
@@ -37,8 +37,7 @@ namespace ores::shell::app::commands {
  */
 class connection_commands {
 private:
-    inline static std::string_view logger_name =
-        "ores.shell.app.commands.connection";
+    inline static std::string_view logger_name = "ores.shell.app.commands.connection";
 
     auto& lg() {
         using namespace ores::logging;
@@ -55,8 +54,7 @@ public:
      * @param root The root menu to add commands to
      * @param session Client session for connectivity.
      */
-    static void register_commands(cli::Menu& root,
-        ores::nats::service::nats_client& session);
+    static void register_commands(cli::Menu& root, ores::nats::service::nats_client& session);
 
     /**
      * @brief Process a connection request.
@@ -71,8 +69,10 @@ public:
      * @param identifier New client identifier (empty to keep current).
      */
     static void process_connect(std::ostream& out,
-        ores::nats::service::nats_client& session,
-        std::string host, std::string port, std::string identifier);
+                                ores::nats::service::nats_client& session,
+                                std::string host,
+                                std::string port,
+                                std::string identifier);
 
     /**
      * @brief Process a disconnect request.
@@ -82,8 +82,7 @@ public:
      * @param out Output stream for user feedback.
      * @param session Client session for connectivity.
      */
-    static void process_disconnect(std::ostream& out,
-        ores::nats::service::nats_client& session);
+    static void process_disconnect(std::ostream& out, ores::nats::service::nats_client& session);
 };
 
 }

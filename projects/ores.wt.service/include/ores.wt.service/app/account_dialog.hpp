@@ -20,13 +20,13 @@
 #ifndef ORES_WT_SERVICE_APP_ACCOUNT_DIALOG_HPP
 #define ORES_WT_SERVICE_APP_ACCOUNT_DIALOG_HPP
 
+#include <boost/uuid/uuid.hpp>
 #include <Wt/WDialog.h>
 #include <Wt/WLineEdit.h>
 #include <Wt/WPasswordEdit.h>
 #include <Wt/WPushButton.h>
-#include <Wt/WText.h>
 #include <Wt/WSignal.h>
-#include <boost/uuid/uuid.hpp>
+#include <Wt/WText.h>
 
 namespace ores::wt::service::app {
 
@@ -54,7 +54,9 @@ public:
     void set_account(const account_data& data);
     account_data get_account() const;
 
-    Wt::Signal<account_data>& saved() { return saved_; }
+    Wt::Signal<account_data>& saved() {
+        return saved_;
+    }
 
 private:
     void setup_form();

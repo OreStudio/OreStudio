@@ -20,7 +20,7 @@
 #ifndef ORES_HTTP_SERVER_MESSAGING_HTTP_INFO_HANDLER_HPP
 #define ORES_HTTP_SERVER_MESSAGING_HTTP_INFO_HANDLER_HPP
 
-#include <string>
+#include "ores.http.api/messaging/http_info_protocol.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -29,14 +29,14 @@
 #include "ores.security/jwt/jwt_error.hpp"
 #include "ores.service/error_code.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
-#include "ores.http.api/messaging/http_info_protocol.hpp"
+#include <string>
 
 namespace ores::http_server::messaging {
 
 namespace {
 inline auto& http_info_handler_lg() {
-    static auto instance = ores::logging::make_logger(
-        "ores.http.server.messaging.http_info_handler");
+    static auto instance =
+        ores::logging::make_logger("ores.http.server.messaging.http_info_handler");
     return instance;
 }
 } // namespace
@@ -61,25 +61,21 @@ public:
         , base_url_(std::move(base_url)) {}
 
     void get(ores::nats::message msg) {
-        BOOST_LOG_SEV(http_info_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        BOOST_LOG_SEV(http_info_handler_lg(), debug) << "Handling " << msg.subject;
 
-        const auto auth_it = msg.headers.find(
-            std::string(ores::nats::headers::authorization));
-        if (auth_it == msg.headers.end()
-            || !auth_it->second.starts_with(ores::nats::headers::bearer_prefix)) {
+        const auto auth_it = msg.headers.find(std::string(ores::nats::headers::authorization));
+        if (auth_it == msg.headers.end() ||
+            !auth_it->second.starts_with(ores::nats::headers::bearer_prefix)) {
             error_reply(nats_, msg, ores::service::error_code::unauthorized);
             return;
         }
 
-        const auto token = auth_it->second.substr(
-            ores::nats::headers::bearer_prefix.size());
+        const auto token = auth_it->second.substr(ores::nats::headers::bearer_prefix.size());
         auto claims = verifier_.validate(token);
         if (!claims) {
-            const auto code = (claims.error()
-                == ores::security::jwt::jwt_error::expired_token)
-                ? ores::service::error_code::token_expired
-                : ores::service::error_code::unauthorized;
+            const auto code = (claims.error() == ores::security::jwt::jwt_error::expired_token) ?
+                                  ores::service::error_code::token_expired :
+                                  ores::service::error_code::unauthorized;
             error_reply(nats_, msg, code);
             return;
         }
@@ -89,8 +85,7 @@ public:
         resp.success = true;
         reply(nats_, msg, resp);
 
-        BOOST_LOG_SEV(http_info_handler_lg(), debug)
-            << "Replied with base_url: " << base_url_;
+        BOOST_LOG_SEV(http_info_handler_lg(), debug) << "Replied with base_url: " << base_url_;
     }
 
 private:

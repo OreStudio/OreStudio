@@ -24,8 +24,8 @@
 #include <Wt/WLineEdit.h>
 #include <Wt/WPasswordEdit.h>
 #include <Wt/WPushButton.h>
-#include <Wt/WText.h>
 #include <Wt/WSignal.h>
+#include <Wt/WText.h>
 
 namespace ores::wt::service::app {
 

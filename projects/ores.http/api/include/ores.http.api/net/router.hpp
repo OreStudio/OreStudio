@@ -20,14 +20,14 @@
 #ifndef ORES_HTTP_NET_ROUTER_HPP
 #define ORES_HTTP_NET_ROUTER_HPP
 
-#include <vector>
+#include "ores.http.api/domain/route.hpp"
+#include "ores.http.api/export.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <functional>
 #include <memory>
 #include <optional>
-#include <functional>
 #include <rfl/json.hpp>
-#include "ores.http.api/domain/route.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.http.api/export.hpp"
+#include <vector>
 
 namespace ores::http::net {
 
@@ -72,11 +72,11 @@ public:
      * @brief Adds a query parameter for OpenAPI documentation.
      */
     route_builder& query_param(const std::string& name,
-        const std::string& type = "string",
-        const std::string& format = "",
-        bool required = false,
-        const std::string& desc = "",
-        const std::optional<std::string>& default_value = std::nullopt);
+                               const std::string& type = "string",
+                               const std::string& format = "",
+                               bool required = false,
+                               const std::string& desc = "",
+                               const std::optional<std::string>& default_value = std::nullopt);
 
     /**
      * @brief Sets the request body schema from a C++ type using reflection.
@@ -89,11 +89,10 @@ public:
      * @param required Whether the body is required (default: true)
      * @param content_type Content type (default: application/json)
      */
-    template<typename T>
-    route_builder& body(
-        std::function<T()> example_generator = nullptr,
-        bool required = true,
-        const std::string& content_type = "application/json") {
+    template <typename T>
+    route_builder& body(std::function<T()> example_generator = nullptr,
+                        bool required = true,
+                        const std::string& content_type = "application/json") {
 
         domain::request_body_schema schema;
         schema.content_type = content_type;
@@ -119,11 +118,10 @@ public:
      * @param description Description of the response (default: "Successful response")
      * @param content_type Content type (default: application/json)
      */
-    template<typename T>
-    route_builder& response(
-        std::function<T()> example_generator = nullptr,
-        const std::string& desc = "Successful response",
-        const std::string& content_type = "application/json") {
+    template <typename T>
+    route_builder& response(std::function<T()> example_generator = nullptr,
+                            const std::string& desc = "Successful response",
+                            const std::string& content_type = "application/json") {
 
         domain::response_schema schema;
         schema.status_code = "200";
@@ -198,14 +196,17 @@ public:
     /**
      * @brief Attempts to match a request and returns the matching route.
      */
-    std::optional<domain::route> match(domain::http_method method,
-        const std::string& path,
-        std::unordered_map<std::string, std::string>& path_params) const;
+    std::optional<domain::route>
+    match(domain::http_method method,
+          const std::string& path,
+          std::unordered_map<std::string, std::string>& path_params) const;
 
     /**
      * @brief Returns all registered routes (for OpenAPI generation).
      */
-    const std::vector<domain::route>& routes() const { return routes_; }
+    const std::vector<domain::route>& routes() const {
+        return routes_;
+    }
 
 private:
     inline static std::string_view logger_name = "ores.http.net.router";

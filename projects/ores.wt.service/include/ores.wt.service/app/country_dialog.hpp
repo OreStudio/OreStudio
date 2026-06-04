@@ -23,8 +23,8 @@
 #include <Wt/WDialog.h>
 #include <Wt/WLineEdit.h>
 #include <Wt/WPushButton.h>
-#include <Wt/WText.h>
 #include <Wt/WSignal.h>
+#include <Wt/WText.h>
 
 namespace ores::wt::service::app {
 
@@ -52,7 +52,9 @@ public:
     void set_country(const country_data& data);
     country_data get_country() const;
 
-    Wt::Signal<country_data>& saved() { return saved_; }
+    Wt::Signal<country_data>& saved() {
+        return saved_;
+    }
 
 private:
     void setup_form();

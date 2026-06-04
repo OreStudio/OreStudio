@@ -18,17 +18,16 @@
  *
  */
 #include "ores.http.server/config/parser.hpp"
-
-#include <ostream>
-#include <cstdint>
-#include <boost/program_options.hpp>
-#include <boost/throw_exception.hpp>
-#include "ores.http.server/config/parser_exception.hpp"
-#include "ores.utility/version/version.hpp"
-#include "ores.logging/logging_configuration.hpp"
 #include "ores.database/config/database_configuration.hpp"
+#include "ores.http.server/config/parser_exception.hpp"
+#include "ores.logging/logging_configuration.hpp"
 #include "ores.nats/config/nats_configuration.hpp"
 #include "ores.utility/program_options/environment_mapper_factory.hpp"
+#include "ores.utility/version/version.hpp"
+#include <boost/program_options.hpp>
+#include <boost/throw_exception.hpp>
+#include <cstdint>
+#include <ostream>
 
 namespace {
 
@@ -70,46 +69,47 @@ options_description make_options_description() {
     using ores::nats::config::nats_configuration;
 
     options_description god("General");
-    god.add_options()
-        ("help,h", "Display usage and exit.")
-        ("version,v", "Output version information and exit.");
+    god.add_options()("help,h", "Display usage and exit.")("version,v",
+                                                           "Output version information and exit.");
 
-    const auto lod(logging_configuration::make_options_description(
-            "ores.http.server.log"));
+    const auto lod(logging_configuration::make_options_description("ores.http.server.log"));
 
     options_description sod("HTTP Server");
-    sod.add_options()
-        ("address,a", value<std::string>()->default_value("0.0.0.0"),
-            "Address to bind to. Defaults to '0.0.0.0'.")
-        ("port,p", value<std::uint16_t>()->default_value(8080),
-            "Port to listen on. Defaults to 8080.")
-        ("max-connections,m", value<std::uint32_t>()->default_value(100),
-            "Maximum number of concurrent connections. Defaults to 100.")
-        ("jwt-secret", value<std::string>()->default_value(""),
-            "JWT secret for HS256 authentication. Required.")
-        ("jwt-issuer", value<std::string>()->default_value("ores"),
-            "JWT issuer for token validation.")
-        ("jwt-audience", value<std::string>()->default_value("ores-api"),
-            "JWT audience for token validation.")
-        ("disable-cors",
-            "Disable CORS support. Enabled by default.")
-        ("cors-origins", value<std::string>()->default_value("*"),
-            "Allowed CORS origins. Defaults to '*'.")
-        ("identifier,i", value<std::string>()->default_value("ores-http-server-v1"),
-            "Server identifier for responses.");
+    sod.add_options()("address,a",
+                      value<std::string>()->default_value("0.0.0.0"),
+                      "Address to bind to. Defaults to '0.0.0.0'.")(
+        "port,p",
+        value<std::uint16_t>()->default_value(8080),
+        "Port to listen on. Defaults to 8080.")(
+        "max-connections,m",
+        value<std::uint32_t>()->default_value(100),
+        "Maximum number of concurrent connections. Defaults to 100.")(
+        "jwt-secret",
+        value<std::string>()->default_value(""),
+        "JWT secret for HS256 authentication. Required.")(
+        "jwt-issuer",
+        value<std::string>()->default_value("ores"),
+        "JWT issuer for token validation.")("jwt-audience",
+                                            value<std::string>()->default_value("ores-api"),
+                                            "JWT audience for token validation.")(
+        "disable-cors",
+        "Disable CORS support. Enabled by default.")("cors-origins",
+                                                     value<std::string>()->default_value("*"),
+                                                     "Allowed CORS origins. Defaults to '*'.")(
+        "identifier,i",
+        value<std::string>()->default_value("ores-http-server-v1"),
+        "Server identifier for responses.");
 
     options_description cod("Object Storage");
-    cod.add_options()
-        (storage_dir_arg.c_str(),
-            value<std::string>()->default_value("/var/ores/http-server/storage"),
-            "Root directory for object storage (all buckets live under this path).");
+    cod.add_options()(storage_dir_arg.c_str(),
+                      value<std::string>()->default_value("/var/ores/http-server/storage"),
+                      "Root directory for object storage (all buckets live under this path).");
 
     options_description nod("HTTP service discovery");
-    nod.add_options()
-        (http_base_url_arg.c_str(),
-            value<std::string>()->default_value(""),
-            "HTTP base URL advertised via service discovery. "
-            "Defaults to 'http://localhost:{port}'.");
+    nod.add_options()(http_base_url_arg.c_str(),
+                      value<std::string>()->default_value(""),
+                      "HTTP base URL advertised via service discovery. "
+                      "Defaults to 'http://localhost:{port}'.");
 
     const auto natsd(nats_configuration::make_options_description());
     const auto dod(database_configuration::make_options_description());
@@ -123,12 +123,11 @@ options_description make_options_description() {
  * @brief Print help text.
  */
 void print_help(const options_description& od, std::ostream& info) {
-    info << "ORES HTTP Server is the REST API backend for OreStudio."
+    info << "ORES HTTP Server is the REST API backend for OreStudio." << std::endl
+         << "Provides HTTP/REST endpoints with JWT authentication and OpenAPI support." << std::endl
          << std::endl
-         << "Provides HTTP/REST endpoints with JWT authentication and OpenAPI support."
-         << std::endl << std::endl
-         << "Usage: ores.http.server [options]"
-         << std::endl << std::endl
+         << "Usage: ores.http.server [options]" << std::endl
+         << std::endl
          << od << std::endl;
 }
 
@@ -140,14 +139,12 @@ void version(std::ostream& info) {
          << "Copyright (C) 2025 Marco Craveiro." << std::endl
          << "License GPLv3: GNU GPL version 3 or later "
          << "<http://gnu.org/licenses/gpl.html>." << std::endl
-         << "This is free software: you are free to change and redistribute it."
-         << std::endl << "There is NO WARRANTY, to the extent permitted by law."
-         << std::endl;
+         << "This is free software: you are free to change and redistribute it." << std::endl
+         << "There is NO WARRANTY, to the extent permitted by law." << std::endl;
 
     if (!build_info.empty()) {
         info << build_info << std::endl;
-        info << "IMPORTANT: build details are NOT for security purposes."
-             << std::endl;
+        info << "IMPORTANT: build details are NOT for security purposes." << std::endl;
     }
 }
 
@@ -174,8 +171,8 @@ http_server_options read_server_configuration(const variables_map& vm) {
  * @brief Parses the arguments supplied in the command line and converts them
  * into a configuration object.
  */
-std::optional<options>
-parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
+std::optional<options> parse_arguments(const std::vector<std::string>& arguments,
+                                       std::ostream& info) {
     using ores::database::database_configuration;
 
     const auto od(make_options_description());
@@ -184,10 +181,8 @@ parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
 
     variables_map vm;
     boost::program_options::store(
-        boost::program_options::command_line_parser(arguments).
-        options(od).run(), vm);
-    boost::program_options::store(
-        boost::program_options::parse_environment(od, name_mapper), vm);
+        boost::program_options::command_line_parser(arguments).options(od).run(), vm);
+    boost::program_options::store(boost::program_options::parse_environment(od, name_mapper), vm);
 
     const bool has_version(vm.count(version_arg) != 0);
     const bool has_help(vm.count(help_arg) != 0);
@@ -228,19 +223,17 @@ parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
 
 namespace ores::http_server::config {
 
-std::optional<options>
-parser::parse(const std::vector<std::string>& arguments,
-    std::ostream& info, std::ostream& err) const {
+std::optional<options> parser::parse(const std::vector<std::string>& arguments,
+                                     std::ostream& info,
+                                     std::ostream& err) const {
 
     try {
         return parse_arguments(arguments, info);
-    } catch(const parser_exception& e) {
-        err << usage_error_msg << e.what() << std::endl
-            << more_information << std::endl;
+    } catch (const parser_exception& e) {
+        err << usage_error_msg << e.what() << std::endl << more_information << std::endl;
         BOOST_THROW_EXCEPTION(e);
     } catch (const boost::program_options::error& e) {
-        err << usage_error_msg << e.what() << std::endl
-            << more_information << std::endl;
+        err << usage_error_msg << e.what() << std::endl << more_information << std::endl;
         BOOST_THROW_EXCEPTION(parser_exception(e.what()));
     }
 }

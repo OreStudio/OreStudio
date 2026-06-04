@@ -20,8 +20,8 @@
 #ifndef ORES_HTTP_SERVER_CONFIG_PARSER_EXCEPTION_HPP
 #define ORES_HTTP_SERVER_CONFIG_PARSER_EXCEPTION_HPP
 
-#include <string>
 #include <boost/exception/all.hpp>
+#include <string>
 
 namespace ores::http_server::config {
 
@@ -30,8 +30,11 @@ namespace ores::http_server::config {
  */
 class parser_exception : public virtual std::exception, public virtual boost::exception {
 public:
-    explicit parser_exception(std::string message) : message_(std::move(message)) {}
-    const char* what() const noexcept override { return message_.c_str(); }
+    explicit parser_exception(std::string message)
+        : message_(std::move(message)) {}
+    const char* what() const noexcept override {
+        return message_.c_str();
+    }
 
 private:
     std::string message_;

@@ -20,8 +20,8 @@
 #ifndef ORES_SHELL_APP_COMMANDS_SUBSCRIPTION_COMMANDS_HPP
 #define ORES_SHELL_APP_COMMANDS_SUBSCRIPTION_COMMANDS_HPP
 
-#include <string>
 #include "ores.nats/service/nats_client.hpp"
+#include <string>
 
 namespace cli {
 
@@ -52,8 +52,7 @@ public:
      * @param root The root menu to add the events submenu to
      * @param session Client session for server communication
      */
-    static void register_commands(cli::Menu& root,
-        ores::nats::service::nats_client& session);
+    static void register_commands(cli::Menu& root, ores::nats::service::nats_client& session);
 
     /**
      * @brief List available event channels.
@@ -64,8 +63,7 @@ public:
      * @param out Output stream for user feedback
      * @param session Client session for server communication
      */
-    static void process_channels(std::ostream& out,
-        ores::nats::service::nats_client& session);
+    static void process_channels(std::ostream& out, ores::nats::service::nats_client& session);
 
     /**
      * @brief Process a listen (subscribe) request.
@@ -75,8 +73,8 @@ public:
      * @param event_type The event type to subscribe to
      */
     static void process_listen(std::ostream& out,
-        ores::nats::service::nats_client& session,
-        std::string event_type);
+                               ores::nats::service::nats_client& session,
+                               std::string event_type);
 
     /**
      * @brief Process an unlisten (unsubscribe) request.
@@ -86,8 +84,8 @@ public:
      * @param event_type The event type to unsubscribe from (empty = all)
      */
     static void process_unlisten(std::ostream& out,
-        ores::nats::service::nats_client& session,
-        std::string event_type);
+                                 ores::nats::service::nats_client& session,
+                                 std::string event_type);
 
     /**
      * @brief Display current subscriptions.
@@ -95,8 +93,7 @@ public:
      * @param out Output stream for user feedback
      * @param session Client session for server communication
      */
-    static void process_subscriptions(std::ostream& out,
-        ores::nats::service::nats_client& session);
+    static void process_subscriptions(std::ostream& out, ores::nats::service::nats_client& session);
 
     /**
      * @brief Display and clear pending notifications.
@@ -104,8 +101,7 @@ public:
      * @param out Output stream for user feedback
      * @param session Client session for server communication
      */
-    static void process_notifications(std::ostream& out,
-        ores::nats::service::nats_client& session);
+    static void process_notifications(std::ostream& out, ores::nats::service::nats_client& session);
 
     /**
      * @brief Display pending notifications without clearing them.
@@ -118,7 +114,7 @@ public:
      * @return Number of notifications displayed
      */
     static std::size_t display_pending_notifications(std::ostream& out,
-        ores::nats::service::nats_client& session);
+                                                     ores::nats::service::nats_client& session);
 };
 
 }

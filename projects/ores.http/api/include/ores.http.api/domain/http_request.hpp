@@ -20,13 +20,13 @@
 #ifndef ORES_HTTP_DOMAIN_HTTP_REQUEST_HPP
 #define ORES_HTTP_DOMAIN_HTTP_REQUEST_HPP
 
-#include <string>
+#include "ores.http.api/domain/http_method.hpp"
+#include "ores.http.api/export.hpp"
+#include "ores.security/jwt/jwt_claims.hpp"
 #include <cstdint>
 #include <optional>
+#include <string>
 #include <unordered_map>
-#include "ores.http.api/domain/http_method.hpp"
-#include "ores.security/jwt/jwt_claims.hpp"
-#include "ores.http.api/export.hpp"
 
 namespace ores::http::domain {
 

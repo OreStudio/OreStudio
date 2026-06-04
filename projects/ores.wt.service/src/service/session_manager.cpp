@@ -18,8 +18,8 @@
  *
  */
 #include "ores.wt.service/service/session_manager.hpp"
-#include "ores.wt.service/service/application_context.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.wt.service/service/application_context.hpp"
 #include <boost/asio/ip/address.hpp>
 
 namespace {
@@ -76,13 +76,11 @@ login_result session_manager::login(const std::string& username,
         result.email = account.email;
         result.password_reset_required = login_info.password_reset_required;
 
-        BOOST_LOG_SEV(lg(), info) << "User '" << username << "' logged in from "
-                                  << client_ip;
+        BOOST_LOG_SEV(lg(), info) << "User '" << username << "' logged in from " << client_ip;
 
     } catch (const std::runtime_error& e) {
         result.error_message = e.what();
-        BOOST_LOG_SEV(lg(), warn) << "Login failed for '" << username << "': "
-                                  << e.what();
+        BOOST_LOG_SEV(lg(), warn) << "Login failed for '" << username << "': " << e.what();
     }
 
     return result;
@@ -100,8 +98,7 @@ void session_manager::logout() {
                 BOOST_LOG_SEV(lg(), warn) << "Logout error: " << e.what();
             }
         }
-        BOOST_LOG_SEV(lg(), info) << "User '" << session_->username
-                                  << "' logged out";
+        BOOST_LOG_SEV(lg(), info) << "User '" << session_->username << "' logged out";
         session_.reset();
     }
 }
@@ -116,14 +113,12 @@ bool session_manager::has_permission(const std::string& permission) const {
         return false;
     }
 
-    return ctx.authorization_service().has_permission(
-        session_->account_id, permission);
+    return ctx.authorization_service().has_permission(session_->account_id, permission);
 }
 
-login_result session_manager::create_bootstrap_admin(
-    const std::string& username,
-    const std::string& email,
-    const std::string& password) {
+login_result session_manager::create_bootstrap_admin(const std::string& username,
+                                                     const std::string& email,
+                                                     const std::string& password) {
     using namespace ores::logging;
 
     login_result result;
@@ -141,14 +136,18 @@ login_result session_manager::create_bootstrap_admin(
 
     try {
         auto account = ctx.account_setup_service().create_account(
-            username, email, password, "bootstrap",
+            username,
+            email,
+            password,
+            "bootstrap",
             "Initial admin account created during system bootstrap");
 
         auto admin_role = ctx.authorization_service().find_role_by_name("SuperAdmin");
         if (admin_role) {
-            ctx.authorization_service().assign_role(
-                account.id, admin_role->id, "bootstrap",
-                "Admin role assigned during system bootstrap");
+            ctx.authorization_service().assign_role(account.id,
+                                                    admin_role->id,
+                                                    "bootstrap",
+                                                    "Admin role assigned during system bootstrap");
         }
 
         session_data session;
@@ -162,13 +161,11 @@ login_result session_manager::create_bootstrap_admin(
         result.username = account.username;
         result.email = account.email;
 
-        BOOST_LOG_SEV(lg(), info) << "Bootstrap admin '" << username
-                                  << "' created successfully";
+        BOOST_LOG_SEV(lg(), info) << "Bootstrap admin '" << username << "' created successfully";
 
     } catch (const std::exception& e) {
         result.error_message = e.what();
-        BOOST_LOG_SEV(lg(), error) << "Failed to create bootstrap admin: "
-                                   << e.what();
+        BOOST_LOG_SEV(lg(), error) << "Failed to create bootstrap admin: " << e.what();
     }
 
     return result;

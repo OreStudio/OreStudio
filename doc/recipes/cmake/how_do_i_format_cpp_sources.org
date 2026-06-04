@@ -1,0 +1,70 @@
+:PROPERTIES:
+:ID: 4CEC17FA-CB28-4B21-B139-AD8F30E02C43
+:END:
+#+title: How do I format C++ sources with clang-format?
+#+description: Run the format or check-format CMake target to reformat or verify all C++ sources under projects/ against the canonical .clang-format style.
+#+type: recipe
+#+level: cross
+#+filetags: :cmake:cpp:formatting:clang-format:recipe:
+#+created: 2026-06-04
+#+updated: 2026-06-04
+
+Style settings, rationale, and examples are in
+[[id:2BE1DCB1-6F10-4568-9945-E1AFA079FC7B][C++ code style: clang-format configuration]].
+
+* Question
+
+How do I reformat C++ source files, or check whether they are already
+correctly formatted?
+
+* Answer
+
+** Reformat in-place
+
+Runs =clang-format -i= on all =.cpp=, =.hpp=, and =.h= files under
+=projects/=. Use before opening a PR or after pulling a config change.
+
+#+begin_src sh :results verbatim
+cmake --build --preset linux-clang-debug-make --target format
+#+end_src
+
+** Check for drift (dry run)
+
+Reports files that differ from the canonical style and exits non-zero
+if any file would change. Does not modify files.
+
+#+begin_src sh :results verbatim
+cmake --build --preset linux-clang-debug-make --target check-format
+#+end_src
+
+** Run clang-format directly on one file
+
+Useful for inspecting what the formatter would do to a single file
+before committing to a full pass:
+
+#+begin_src sh :results verbatim
+clang-format --dry-run --Werror projects/ores.iam/api/include/ores.iam.api/domain/account.hpp
+#+end_src
+
+Replace =--dry-run --Werror= with =-i= to reformat in-place.
+
+* Script
+
+Both =format= and =check-format= are CMake custom targets defined in
+the top-level =CMakeLists.txt= inside the =if (CLANG_FORMAT_FOUND)=
+block. They use =find -exec {} += to collect files and pass them to
+=CLANG_FORMAT_BIN= (resolved by =FindClangTools.cmake=, which searches
+versions 20 down to 5.0). If clang-format is not installed, both
+targets are absent and CMake prints a warning at configure time.
+
+* Tested by
+
+The nightly [[https://github.com/OreStudio/OreStudio/actions/workflows/nightly-format.yml][nightly-format]] GitHub Actions workflow runs
+=clang-format-18= on Ubuntu 24.04 every night at 02:00 UTC and raises
+a PR if any file drifts. A clean nightly pass (no PR raised) confirms
+the tree is in sync.
+
+* See also
+
+- [[id:2BE1DCB1-6F10-4568-9945-E1AFA079FC7B][C++ code style: clang-format configuration]] — every setting with rationale and examples.
+- [[id:5720A0FB-E510-4F25-99CB-410D42062799][CMake recipes]] — full list of CMake targets.

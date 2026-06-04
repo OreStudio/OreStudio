@@ -354,6 +354,11 @@ add_custom_target(deploy_manual
     COMMAND emacs -Q --script projects/ores.lisp/src/ores-build-manual.el
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
+add_custom_target(tangle_clang_format
+    COMMENT "Tangling .clang-format from doc/knowledge/architecture/clang_format_config.org" VERBATIM
+    COMMAND emacs -Q --script projects/ores.lisp/src/ores-build-clang-format.el 2>&1
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
 set(ORES_SKILLS_DIRECTORY ".claude/skills")
 add_custom_target(deploy_skills
     COMMENT "Deploying ORE Studio Claude Code Skills to ${ORES_SIRE_DIRECTORY}" VERBATIM

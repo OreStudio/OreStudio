@@ -1,7 +1,12 @@
 # -*- mode: yaml; yaml-tab-width: 4; indent-tabs-mode: nil -*-
+# Generated from doc/knowledge/architecture/clang_format_config.org.
+# Do not edit directly — run: cmake --build --preset <preset> --target tangle_clang_format
 ---
 Language: Cpp
-Standard: c++23
+# "Latest" means the most recent C++ standard the installed clang-format
+# understands — effectively c++23 on current toolchains.
+# The string "c++23" is not yet a valid enum value in clang-format 21.
+Standard: Latest
 
 # ORE Studio clang-format configuration.
 # Tuned to match the project's actual code conventions.
@@ -77,15 +82,19 @@ AllowShortLoopsOnASingleLine: false
 #   4. All other angle-bracket headers (std, rfl, openssl, ...)
 
 SortIncludes: CaseSensitive
-IncludeBlocks: Regroup
+IncludeBlocks: Merge
 IncludeCategories:
-  - Regex: '^"'
-    Priority: 1
-  - Regex: '^<Q[A-Z]'
-    Priority: 2
-  - Regex: '^<boost/'
-    Priority: 3
+  # Standard library and other angle-bracket headers first
   - Regex: '^<'
+    Priority: 1
+  # Boost headers
+  - Regex: '^<boost/'
+    Priority: 2
+  # Qt headers
+  - Regex: '^<Q[A-Z]'
+    Priority: 3
+  # Local project headers (quoted: ores.*, ui_*, etc.)
+  - Regex: '^"'
     Priority: 4
 
 # ── Misc ──────────────────────────────────────────────────────────────────────

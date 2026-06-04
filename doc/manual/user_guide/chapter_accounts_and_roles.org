@@ -162,6 +162,14 @@ at login:
 #+caption[The No Party Assigned warning]: The confirmation shown when saving an account with no party assignment.
 [[../../../assets/images/account_missing_party.png]]
 
+#+begin_note
+At present there is no equivalent warning for /roles/: OreStudio
+lets you save a new account with no role assignment and stays silent.
+Such an account can log in but holds no permissions, so almost every
+operation will be denied. Until a warning is added, double-check the
+Roles tab before saving a new account.
+#+end_note
+
 ** Roles and permissions
 
 Open the Roles window from /System ▸ Administration ▸ Roles/. A role

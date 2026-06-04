@@ -20,12 +20,12 @@
 #ifndef ORES_TELEMETRY_SERVICE_APP_NATS_POLLER_HPP
 #define ORES_TELEMETRY_SERVICE_APP_NATS_POLLER_HPP
 
-#include <string>
-#include <cstdint>
-#include <boost/asio/awaitable.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.telemetry.database/repository/telemetry_repository.hpp"
+#include <boost/asio/awaitable.hpp>
+#include <cstdint>
+#include <string>
 
 namespace ores::telemetry::service::app {
 
@@ -40,8 +40,7 @@ namespace ores::telemetry::service::app {
  */
 class nats_poller {
 private:
-    inline static std::string_view logger_name =
-        "ores.telemetry.service.app.nats_poller";
+    inline static std::string_view logger_name = "ores.telemetry.service.app.nats_poller";
 
     static auto& lg() {
         using namespace ores::logging;

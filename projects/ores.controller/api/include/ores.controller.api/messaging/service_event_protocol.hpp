@@ -20,11 +20,11 @@
 #ifndef ORES_CONTROLLER_API_MESSAGING_SERVICE_EVENT_PROTOCOL_HPP
 #define ORES_CONTROLLER_API_MESSAGING_SERVICE_EVENT_PROTOCOL_HPP
 
+#include "ores.controller.api/domain/service_event.hpp"
+#include <cstdint>
 #include <string>
 #include <string_view>
-#include <cstdint>
 #include <vector>
-#include "ores.controller.api/domain/service_event.hpp"
 
 namespace ores::controller::api::messaging {
 
@@ -34,8 +34,7 @@ namespace ores::controller::api::messaging {
 
 struct list_service_events_request {
     using response_type = struct list_service_events_response;
-    static constexpr std::string_view nats_subject =
-        "controller.v1.service_events.list";
+    static constexpr std::string_view nats_subject = "controller.v1.service_events.list";
     /**
      * @brief Filter by service name. Empty means return events for all
      * services.

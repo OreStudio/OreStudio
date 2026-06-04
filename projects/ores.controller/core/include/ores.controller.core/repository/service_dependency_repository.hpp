@@ -20,12 +20,12 @@
 #ifndef ORES_CONTROLLER_CORE_REPOSITORY_SERVICE_DEPENDENCY_REPOSITORY_HPP
 #define ORES_CONTROLLER_CORE_REPOSITORY_SERVICE_DEPENDENCY_REPOSITORY_HPP
 
+#include "ores.controller.core/export.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include <string>
 #include <utility>
 #include <vector>
-#include "ores.logging/make_logger.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.controller.core/export.hpp"
 
 namespace ores::controller::repository {
 
@@ -49,8 +49,7 @@ public:
     /**
      * @brief Returns all rows as (service_name, depends_on) pairs.
      */
-    std::vector<std::pair<std::string, std::string>>
-    read_all(context ctx);
+    std::vector<std::pair<std::string, std::string>> read_all(context ctx);
 };
 
 }

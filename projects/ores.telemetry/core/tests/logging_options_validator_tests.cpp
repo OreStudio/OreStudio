@@ -17,9 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.logging/logging_options_validator.hpp"
 #include "ores.logging/logging_exception.hpp"
-
+#include "ores.logging/logging_options_validator.hpp"
 #include <catch2/catch_test_macros.hpp>
 
 namespace {
@@ -63,8 +62,7 @@ TEST_CASE("validate_throws_when_no_logging_destination", tags) {
     opts.severity = "debug";
     opts.output_to_console = false;
 
-    REQUIRE_THROWS_AS(logging_options_validator::validate(opts),
-        logging_exception);
+    REQUIRE_THROWS_AS(logging_options_validator::validate(opts), logging_exception);
 }
 
 TEST_CASE("validate_throws_when_directory_without_filename", tags) {
@@ -73,8 +71,7 @@ TEST_CASE("validate_throws_when_directory_without_filename", tags) {
     opts.output_to_console = true;
     opts.output_directory = "/tmp";
 
-    REQUIRE_THROWS_AS(logging_options_validator::validate(opts),
-        logging_exception);
+    REQUIRE_THROWS_AS(logging_options_validator::validate(opts), logging_exception);
 }
 
 TEST_CASE("validate_throws_on_invalid_severity", tags) {
@@ -86,9 +83,7 @@ TEST_CASE("validate_throws_on_invalid_severity", tags) {
 }
 
 TEST_CASE("validate_accepts_all_valid_severity_levels", tags) {
-    const std::vector<std::string> levels = {
-        "trace", "debug", "info", "warn", "error"
-    };
+    const std::vector<std::string> levels = {"trace", "debug", "info", "warn", "error"};
 
     for (const auto& level : levels) {
         logging_options opts;

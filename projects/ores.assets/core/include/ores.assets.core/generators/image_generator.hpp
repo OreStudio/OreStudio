@@ -20,30 +20,30 @@
 #ifndef ORES_ASSETS_GENERATORS_IMAGE_GENERATOR_HPP
 #define ORES_ASSETS_GENERATORS_IMAGE_GENERATOR_HPP
 
-#include <vector>
 #include "ores.assets.api/domain/image.hpp"
-#include "ores.utility/generation/generation_context.hpp"
 #include "ores.assets.core/export.hpp"
+#include "ores.utility/generation/generation_context.hpp"
+#include <vector>
 
 namespace ores::assets::generators {
 
 /**
  * @brief Generates a synthetic image.
  */
-ORES_ASSETS_CORE_EXPORT domain::image generate_synthetic_image(
-    utility::generation::generation_context& ctx);
+ORES_ASSETS_CORE_EXPORT domain::image
+generate_synthetic_image(utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic images. May contain duplicates.
  */
-ORES_ASSETS_CORE_EXPORT std::vector<domain::image> generate_synthetic_images(std::size_t n,
-    utility::generation::generation_context& ctx);
+ORES_ASSETS_CORE_EXPORT std::vector<domain::image>
+generate_synthetic_images(std::size_t n, utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic images with unique keys.
  */
-ORES_ASSETS_CORE_EXPORT std::vector<domain::image> generate_unique_synthetic_images(std::size_t n,
-    utility::generation::generation_context& ctx);
+ORES_ASSETS_CORE_EXPORT std::vector<domain::image>
+generate_unique_synthetic_images(std::size_t n, utility::generation::generation_context& ctx);
 
 }
 

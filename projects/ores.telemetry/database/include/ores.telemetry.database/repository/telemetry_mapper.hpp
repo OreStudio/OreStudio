@@ -20,11 +20,11 @@
 #ifndef ORES_TELEMETRY_REPOSITORY_TELEMETRY_MAPPER_HPP
 #define ORES_TELEMETRY_REPOSITORY_TELEMETRY_MAPPER_HPP
 
-#include "ores.telemetry.core/domain/telemetry_log_entry.hpp"
-#include "ores.telemetry.core/domain/telemetry_stats.hpp"
 #include "ores.telemetry.core/domain/nats_server_sample.hpp"
 #include "ores.telemetry.core/domain/nats_stream_sample.hpp"
 #include "ores.telemetry.core/domain/service_sample.hpp"
+#include "ores.telemetry.core/domain/telemetry_log_entry.hpp"
+#include "ores.telemetry.core/domain/telemetry_stats.hpp"
 #include "ores.telemetry.database/repository/telemetry_entity.hpp"
 
 namespace ores::telemetry::database::repository {
@@ -40,9 +40,8 @@ public:
      * @param entry The domain entry to convert.
      * @param tenant_id The tenant ID to associate with the entry.
      */
-    static telemetry_entity to_entity(
-        const domain::telemetry_log_entry& entry,
-        const std::string& tenant_id);
+    static telemetry_entity to_entity(const domain::telemetry_log_entry& entry,
+                                      const std::string& tenant_id);
 
     /**
      * @brief Converts a database entity to a domain log entry.
@@ -52,34 +51,26 @@ public:
     /**
      * @brief Converts an hourly stats entity to a domain stats object.
      */
-    static domain::telemetry_stats to_domain(
-        const telemetry_stats_hourly_entity& entity);
+    static domain::telemetry_stats to_domain(const telemetry_stats_hourly_entity& entity);
 
     /**
      * @brief Converts a daily stats entity to a domain stats object.
      */
-    static domain::telemetry_stats to_domain(
-        const telemetry_stats_daily_entity& entity);
+    static domain::telemetry_stats to_domain(const telemetry_stats_daily_entity& entity);
 
-    static nats_server_sample_entity to_entity(
-        const domain::nats_server_sample& sample,
-        const std::string& tenant_id);
+    static nats_server_sample_entity to_entity(const domain::nats_server_sample& sample,
+                                               const std::string& tenant_id);
 
-    static domain::nats_server_sample to_domain(
-        const nats_server_sample_entity& entity);
+    static domain::nats_server_sample to_domain(const nats_server_sample_entity& entity);
 
-    static nats_stream_sample_entity to_entity(
-        const domain::nats_stream_sample& sample,
-        const std::string& tenant_id);
+    static nats_stream_sample_entity to_entity(const domain::nats_stream_sample& sample,
+                                               const std::string& tenant_id);
 
-    static domain::nats_stream_sample to_domain(
-        const nats_stream_sample_entity& entity);
+    static domain::nats_stream_sample to_domain(const nats_stream_sample_entity& entity);
 
-    static service_sample_entity to_entity(
-        const domain::service_sample& sample);
+    static service_sample_entity to_entity(const domain::service_sample& sample);
 
-    static domain::service_sample to_domain(
-        const service_sample_entity& entity);
+    static domain::service_sample to_domain(const service_sample_entity& entity);
 };
 
 }

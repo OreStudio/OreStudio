@@ -20,8 +20,8 @@
 #ifndef ORES_CONTROLLER_CORE_REPOSITORY_SERVICE_DEPENDENCY_ENTITY_HPP
 #define ORES_CONTROLLER_CORE_REPOSITORY_SERVICE_DEPENDENCY_ENTITY_HPP
 
-#include <string>
 #include "sqlgen/PrimaryKey.hpp"
+#include <string>
 
 namespace ores::controller::repository {
 
@@ -34,8 +34,7 @@ namespace ores::controller::repository {
  */
 struct service_dependency_entity {
     constexpr static const char* schema = "public";
-    constexpr static const char* tablename =
-        "ores_controller_service_dependencies_tbl";
+    constexpr static const char* tablename = "ores_controller_service_dependencies_tbl";
 
     sqlgen::PrimaryKey<std::string> service_name;
     sqlgen::PrimaryKey<std::string> depends_on;

@@ -20,11 +20,11 @@
 #ifndef ORES_MARKETDATA_CORE_SERVICE_IMPORT_SERVICE_HPP
 #define ORES_MARKETDATA_CORE_SERVICE_IMPORT_SERVICE_HPP
 
-#include <string>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/messaging/import_protocol.hpp"
 #include "ores.marketdata.core/export.hpp"
+#include <string>
 
 namespace ores::marketdata::service {
 
@@ -37,8 +37,7 @@ namespace ores::marketdata::service {
  */
 class ORES_MARKETDATA_CORE_EXPORT import_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.marketdata.service.import_service";
+    inline static std::string_view logger_name = "ores.marketdata.service.import_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -51,8 +50,7 @@ public:
 
     explicit import_service(context ctx);
 
-    messaging::import_market_data_response
-    import(const messaging::import_market_data_request& req);
+    messaging::import_market_data_response import(const messaging::import_market_data_request& req);
 
 private:
     context ctx_;

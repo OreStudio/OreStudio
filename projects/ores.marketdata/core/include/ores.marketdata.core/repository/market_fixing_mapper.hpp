@@ -20,11 +20,11 @@
 #ifndef ORES_MARKETDATA_CORE_REPOSITORY_MARKET_FIXING_MAPPER_HPP
 #define ORES_MARKETDATA_CORE_REPOSITORY_MARKET_FIXING_MAPPER_HPP
 
-#include <vector>
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/market_fixing.hpp"
-#include "ores.marketdata.core/repository/market_fixing_entity.hpp"
 #include "ores.marketdata.core/export.hpp"
+#include "ores.marketdata.core/repository/market_fixing_entity.hpp"
+#include <vector>
 
 namespace ores::marketdata::repository {
 
@@ -33,8 +33,7 @@ namespace ores::marketdata::repository {
  */
 class ORES_MARKETDATA_CORE_EXPORT market_fixing_mapper {
 private:
-    inline static std::string_view logger_name =
-        "ores.marketdata.repository.market_fixing_mapper";
+    inline static std::string_view logger_name = "ores.marketdata.repository.market_fixing_mapper";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -46,10 +45,8 @@ public:
     static domain::market_fixing map(const market_fixing_entity& v);
     static market_fixing_entity map(const domain::market_fixing& v);
 
-    static std::vector<domain::market_fixing>
-    map(const std::vector<market_fixing_entity>& v);
-    static std::vector<market_fixing_entity>
-    map(const std::vector<domain::market_fixing>& v);
+    static std::vector<domain::market_fixing> map(const std::vector<market_fixing_entity>& v);
+    static std::vector<market_fixing_entity> map(const std::vector<domain::market_fixing>& v);
 };
 
 }

@@ -18,12 +18,11 @@
  *
  */
 #include "ores.controller.core/repository/service_event_repository.hpp"
-
-#include <sqlgen/postgres.hpp>
-#include "ores.database/repository/helpers.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.controller.core/repository/service_event_entity.hpp"
 #include "ores.controller.core/repository/service_event_mapper.hpp"
+#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
+#include <sqlgen/postgres.hpp>
 
 namespace ores::controller::repository {
 
@@ -32,42 +31,38 @@ using namespace sqlgen::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-std::vector<api::domain::service_event>
-service_event_repository::read_latest(context ctx,
-    const std::string& service_name_filter, int limit) {
+std::vector<api::domain::service_event> service_event_repository::read_latest(
+    context ctx, const std::string& service_name_filter, int limit) {
 
-    BOOST_LOG_SEV(lg(), debug) << "Reading service events. Filter: '"
-                               << service_name_filter
+    BOOST_LOG_SEV(lg(), debug) << "Reading service events. Filter: '" << service_name_filter
                                << "' limit=" << limit;
 
     if (!service_name_filter.empty()) {
-        const auto query =
-            sqlgen::read<std::vector<service_event_entity>> |
-            where("service_name"_c == service_name_filter) |
-            order_by("occurred_at"_c.desc()) |
-            sqlgen::limit(limit);
+        const auto query = sqlgen::read<std::vector<service_event_entity>> |
+                           where("service_name"_c == service_name_filter) |
+                           order_by("occurred_at"_c.desc()) | sqlgen::limit(limit);
         return execute_read_query<service_event_entity, api::domain::service_event>(
-            ctx, query,
+            ctx,
+            query,
             [](const auto& e) { return service_event_mapper::map(e); },
-            lg(), "Reading service events by service.");
+            lg(),
+            "Reading service events by service.");
     }
 
     const auto query = sqlgen::read<std::vector<service_event_entity>> |
-        order_by("occurred_at"_c.desc()) |
-        sqlgen::limit(limit);
+                       order_by("occurred_at"_c.desc()) | sqlgen::limit(limit);
     return execute_read_query<service_event_entity, api::domain::service_event>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& e) { return service_event_mapper::map(e); },
-        lg(), "Reading recent service events.");
+        lg(),
+        "Reading recent service events.");
 }
 
-void service_event_repository::insert(context ctx,
-    const api::domain::service_event& ev) {
+void service_event_repository::insert(context ctx, const api::domain::service_event& ev) {
 
-    BOOST_LOG_SEV(lg(), debug) << "Inserting event: "
-                               << ev.service_name << " / " << ev.event_type;
-    execute_write_query(ctx, service_event_mapper::map(ev), lg(),
-        "Inserting service event.");
+    BOOST_LOG_SEV(lg(), debug) << "Inserting event: " << ev.service_name << " / " << ev.event_type;
+    execute_write_query(ctx, service_event_mapper::map(ev), lg(), "Inserting service event.");
 }
 
 }

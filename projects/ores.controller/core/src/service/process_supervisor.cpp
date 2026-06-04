@@ -18,35 +18,34 @@
  *
  */
 #include "ores.controller.core/service/process_supervisor.hpp"
-
-#include <map>
-#include <set>
-#include <deque>
-#include <fstream>
-#include <sstream>
-#include <chrono>
-#include <cstdio>
+#include "ores.controller.core/repository/service_definition_repository.hpp"
+#include "ores.controller.core/repository/service_dependency_repository.hpp"
+#include "ores.controller.core/repository/service_event_repository.hpp"
+#include "ores.controller.core/repository/service_instance_repository.hpp"
+#include "ores.logging/boost_severity.hpp"
+#include "ores.platform/filesystem/file.hpp"
+#include "ores.platform/process/executable.hpp"
+#include "ores.service/service/exit_codes.hpp"
 #include <boost/asio/bind_executor.hpp>
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 #include <boost/asio/steady_timer.hpp>
 #include <boost/asio/this_coro.hpp>
 #include <boost/asio/use_awaitable.hpp>
-#include <boost/process/v2/start_dir.hpp>
-#include <boost/process/v2/stdio.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include <boost/uuid/name_generator.hpp>
-#include <boost/uuid/uuid_io.hpp>
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/topological_sort.hpp>
-#include "ores.platform/filesystem/file.hpp"
-#include "ores.platform/process/executable.hpp"
-#include "ores.logging/boost_severity.hpp"
-#include "ores.service/service/exit_codes.hpp"
-#include "ores.controller.core/repository/service_definition_repository.hpp"
-#include "ores.controller.core/repository/service_dependency_repository.hpp"
-#include "ores.controller.core/repository/service_instance_repository.hpp"
-#include "ores.controller.core/repository/service_event_repository.hpp"
+#include <boost/process/v2/start_dir.hpp>
+#include <boost/process/v2/stdio.hpp>
+#include <boost/uuid/name_generator.hpp>
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <chrono>
+#include <cstdio>
+#include <deque>
+#include <fstream>
+#include <map>
+#include <set>
+#include <sstream>
 
 namespace ores::controller::service {
 
@@ -82,7 +81,8 @@ constexpr int log_tail_lines = 20;
 // Returns an empty string if the file does not exist or cannot be read.
 std::string tail_log(const std::filesystem::path& path, int n) {
     std::ifstream f(path, std::ios::binary);
-    if (!f) return {};
+    if (!f)
+        return {};
 
     // Seek to a window near the end large enough to contain n lines.
     constexpr std::streamoff window = 8192;
@@ -104,7 +104,8 @@ std::string tail_log(const std::filesystem::path& path, int n) {
 
     std::string result;
     for (const auto& l : lines) {
-        if (!result.empty()) result += '\n';
+        if (!result.empty())
+            result += '\n';
         result += l;
     }
     return result;
@@ -113,12 +114,12 @@ std::string tail_log(const std::filesystem::path& path, int n) {
 } // namespace
 
 process_supervisor::process_supervisor(boost::asio::io_context& ioc,
-    std::filesystem::path bin_dir,
-    ores::nats::config::nats_options nats,
-    std::string log_level,
-    ores::database::context db_ctx,
-    int http_port,
-    int wt_port)
+                                       std::filesystem::path bin_dir,
+                                       ores::nats::config::nats_options nats,
+                                       std::string log_level,
+                                       ores::database::context db_ctx,
+                                       int http_port,
+                                       int wt_port)
     : ioc_(ioc)
     , bin_dir_(std::move(bin_dir))
     , nats_(std::move(nats))
@@ -127,33 +128,34 @@ process_supervisor::process_supervisor(boost::asio::io_context& ioc,
     , http_port_(http_port)
     , wt_port_(wt_port) {}
 
-std::filesystem::path process_supervisor::log_path_for(
-    const std::string& service_name, int replica_index) const {
+std::filesystem::path process_supervisor::log_path_for(const std::string& service_name,
+                                                       int replica_index) const {
     const auto log_dir = bin_dir_ / ".." / "log";
     const auto filename = service_name + "." + std::to_string(replica_index) + ".log";
     return log_dir / filename;
 }
 
-std::filesystem::path process_supervisor::stderr_path_for(
-    const std::string& service_name, int replica_index) const {
+std::filesystem::path process_supervisor::stderr_path_for(const std::string& service_name,
+                                                          int replica_index) const {
     const auto log_dir = bin_dir_ / ".." / "log";
     const auto filename = service_name + "." + std::to_string(replica_index) + ".err";
     return log_dir / filename;
 }
 
-std::filesystem::path process_supervisor::pid_path_for(
-    const std::string& service_name, int replica_index) const {
+std::filesystem::path process_supervisor::pid_path_for(const std::string& service_name,
+                                                       int replica_index) const {
     const auto run_dir = bin_dir_ / ".." / "run";
     // Replica 0 uses the bare service name (matches status-services.sh convention).
     // Higher replicas append the index so multiple replicas don't overwrite each other.
-    const auto filename = replica_index == 0
-        ? service_name + ".pid"
-        : service_name + "." + std::to_string(replica_index) + ".pid";
+    const auto filename = replica_index == 0 ?
+                              service_name + ".pid" :
+                              service_name + "." + std::to_string(replica_index) + ".pid";
     return run_dir / filename;
 }
 
 void process_supervisor::write_pid_file(const std::string& service_name,
-    int replica_index, bp2::pid_type pid) const {
+                                        int replica_index,
+                                        bp2::pid_type pid) const {
     const auto path = pid_path_for(service_name, replica_index);
     std::error_code ec;
     std::filesystem::create_directories(path.parent_path(), ec);
@@ -164,41 +166,38 @@ void process_supervisor::write_pid_file(const std::string& service_name,
         BOOST_LOG_SEV(lg(), warn) << "Could not write PID file: " << path;
 }
 
-void process_supervisor::remove_pid_file(const std::string& service_name,
-    int replica_index) const {
+void process_supervisor::remove_pid_file(const std::string& service_name, int replica_index) const {
     const auto path = pid_path_for(service_name, replica_index);
     std::error_code ec;
     std::filesystem::remove(path, ec);
 }
 
-std::vector<std::string> process_supervisor::build_args(
-    const api::domain::service_definition& def, int replica_index) const {
+std::vector<std::string> process_supervisor::build_args(const api::domain::service_definition& def,
+                                                        int replica_index) const {
 
     std::string tmpl = def.args_template.value_or(std::string(default_args_template));
 
-    replace_all(tmpl, "{nats_url}",       nats_.url);
-    replace_all(tmpl, "{nats_prefix}",    nats_.subject_prefix);
-    replace_all(tmpl, "{tenant_id}",      nats_.subject_prefix);
-    replace_all(tmpl, "{log_level}",      log_level_);
-    replace_all(tmpl, "{log_dir}",        "../log");
-    replace_all(tmpl, "{replica_index}",  std::to_string(replica_index));
+    replace_all(tmpl, "{nats_url}", nats_.url);
+    replace_all(tmpl, "{nats_prefix}", nats_.subject_prefix);
+    replace_all(tmpl, "{tenant_id}", nats_.subject_prefix);
+    replace_all(tmpl, "{log_level}", log_level_);
+    replace_all(tmpl, "{log_dir}", "../log");
+    replace_all(tmpl, "{replica_index}", std::to_string(replica_index));
 
     // {nats_tls_args}: derive per-service certs from controller's own cert directory.
     std::string tls_args;
     if (!nats_.tls_ca_cert.empty()) {
-        const auto keys_dir =
-            std::filesystem::path(nats_.tls_client_cert).parent_path();
+        const auto keys_dir = std::filesystem::path(nats_.tls_client_cert).parent_path();
         const auto cert = keys_dir / (def.service_name + ".crt");
-        const auto key  = keys_dir / (def.service_name + ".key");
-        tls_args = "--nats-tls-ca " + nats_.tls_ca_cert
-                 + " --nats-tls-cert " + cert.string()
-                 + " --nats-tls-key "  + key.string();
+        const auto key = keys_dir / (def.service_name + ".key");
+        tls_args = "--nats-tls-ca " + nats_.tls_ca_cert + " --nats-tls-cert " + cert.string() +
+                   " --nats-tls-key " + key.string();
     }
     replace_all(tmpl, "{nats_tls_args}", tls_args);
 
     // {http_port} / {wt_port}: read from controller config, set via env/CLI.
     replace_all(tmpl, "{http_port}", std::to_string(http_port_));
-    replace_all(tmpl, "{wt_port}",   std::to_string(wt_port_));
+    replace_all(tmpl, "{wt_port}", std::to_string(wt_port_));
 
     // {host_id}: stable UUID for compute wrapper nodes (hostname:replica_index).
     const std::string host_key =
@@ -206,17 +205,17 @@ std::vector<std::string> process_supervisor::build_args(
     static const auto ns_uuid =
         boost::uuids::string_generator()("6ba7b810-9dad-11d1-80b4-00c04fd430c8");
     boost::uuids::name_generator name_gen(ns_uuid);
-    replace_all(tmpl, "{host_id}",   boost::uuids::to_string(name_gen(host_key)));
+    replace_all(tmpl, "{host_id}", boost::uuids::to_string(name_gen(host_key)));
 
     // {work_dir}: per-replica working directory for compute wrapper nodes.
-    replace_all(tmpl, "{work_dir}",  "../run/wrappers/node_" + std::to_string(replica_index));
+    replace_all(tmpl, "{work_dir}", "../run/wrappers/node_" + std::to_string(replica_index));
 
     return tokenise(tmpl);
 }
 
-boost::asio::awaitable<bool> process_supervisor::wait_for_log_ready(
-    std::filesystem::path log_path, std::chrono::seconds timeout,
-    std::uintmax_t start_offset) {
+boost::asio::awaitable<bool> process_supervisor::wait_for_log_ready(std::filesystem::path log_path,
+                                                                    std::chrono::seconds timeout,
+                                                                    std::uintmax_t start_offset) {
 
     const auto deadline = std::chrono::steady_clock::now() + timeout;
     auto executor = co_await boost::asio::this_coro::executor;
@@ -231,8 +230,9 @@ boost::asio::awaitable<bool> process_supervisor::wait_for_log_ready(
                 // back to reading from the beginning.
                 std::error_code ec;
                 const auto cur_size = std::filesystem::file_size(log_path, ec);
-                const auto seek_pos = (!ec && cur_size >= start_offset)
-                    ? static_cast<std::streamoff>(start_offset) : 0;
+                const auto seek_pos = (!ec && cur_size >= start_offset) ?
+                                          static_cast<std::streamoff>(start_offset) :
+                                          0;
                 f.seekg(seek_pos);
             }
             std::string line;
@@ -264,14 +264,14 @@ boost::asio::awaitable<void> process_supervisor::start_all() {
     std::vector<std::string> names;
     std::map<std::string, std::size_t> name_to_v;
     for (const auto& def : defs) {
-        if (!def.enabled) continue;
+        if (!def.enabled)
+            continue;
         name_to_v[def.service_name] = names.size();
         names.push_back(def.service_name);
     }
 
     // Directed graph: edge (A → B) means A must start before B.
-    using Graph = boost::adjacency_list<boost::vecS, boost::vecS,
-        boost::directedS>;
+    using Graph = boost::adjacency_list<boost::vecS, boost::vecS, boost::directedS>;
     Graph g(names.size());
 
     // Services that other services depend on must be waited for.
@@ -280,7 +280,8 @@ boost::asio::awaitable<void> process_supervisor::start_all() {
     for (const auto& [svc, dep] : deps) {
         auto it_svc = name_to_v.find(svc);
         auto it_dep = name_to_v.find(dep);
-        if (it_svc == name_to_v.end() || it_dep == name_to_v.end()) continue;
+        if (it_svc == name_to_v.end() || it_dep == name_to_v.end())
+            continue;
         boost::add_edge(it_dep->second, it_svc->second, g);
         has_dependents.insert(dep);
     }
@@ -303,9 +304,13 @@ boost::asio::awaitable<void> process_supervisor::start_all() {
         // Find the definition.
         const api::domain::service_definition* def_ptr = nullptr;
         for (const auto& d : defs) {
-            if (d.service_name == svc_name) { def_ptr = &d; break; }
+            if (d.service_name == svc_name) {
+                def_ptr = &d;
+                break;
+            }
         }
-        if (!def_ptr || !def_ptr->enabled) continue;
+        if (!def_ptr || !def_ptr->enabled)
+            continue;
 
         // Snapshot the log file size BEFORE launching so wait_for_log_ready
         // only reads content written by the new process, ignoring any
@@ -315,7 +320,8 @@ boost::asio::awaitable<void> process_supervisor::start_all() {
             const auto log = log_path_for(svc_name, 0);
             std::error_code ec;
             const auto sz = std::filesystem::file_size(log, ec);
-            if (!ec) log_start_offset = sz;
+            if (!ec)
+                log_start_offset = sz;
         }
 
         // Launch all replicas.
@@ -335,24 +341,24 @@ boost::asio::awaitable<void> process_supervisor::start_all() {
             BOOST_LOG_SEV(lg(), info)
                 << "Waiting for " << svc_name << " ready (log: " << log << ")";
             const bool ready =
-                co_await wait_for_log_ready(log, service_ready_timeout,
-                    log_start_offset);
+                co_await wait_for_log_ready(log, service_ready_timeout, log_start_offset);
             if (ready)
                 BOOST_LOG_SEV(lg(), info) << svc_name << " is ready";
             else
                 BOOST_LOG_SEV(lg(), warn)
-                    << svc_name << " did not become ready within "
-                    << service_ready_timeout.count() << "s — proceeding anyway";
+                    << svc_name << " did not become ready within " << service_ready_timeout.count()
+                    << "s — proceeding anyway";
         }
     }
 
     const auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(
-        std::chrono::steady_clock::now() - start_ts).count();
+                             std::chrono::steady_clock::now() - start_ts)
+                             .count();
     BOOST_LOG_SEV(lg(), info) << "All services started in " << elapsed << "s.";
 }
 
-boost::asio::awaitable<void> process_supervisor::do_launch(
-    std::string service_name, int replica_index) {
+boost::asio::awaitable<void> process_supervisor::do_launch(std::string service_name,
+                                                           int replica_index) {
 
     const auto key = std::make_pair(service_name, replica_index);
 
@@ -360,32 +366,34 @@ boost::asio::awaitable<void> process_supervisor::do_launch(
     const auto defs = def_repo.read_latest(db_ctx_);
     const api::domain::service_definition* def_ptr = nullptr;
     for (const auto& d : defs) {
-        if (d.service_name == service_name) { def_ptr = &d; break; }
+        if (d.service_name == service_name) {
+            def_ptr = &d;
+            break;
+        }
     }
     if (!def_ptr) {
-        BOOST_LOG_SEV(lg(), error)
-            << "No service definition found for: " << service_name;
+        BOOST_LOG_SEV(lg(), error) << "No service definition found for: " << service_name;
         co_return;
     }
     const auto def = *def_ptr;
 
     const auto exe = bin_dir_ / def.binary_name;
     if (!std::filesystem::exists(exe)) {
-        BOOST_LOG_SEV(lg(), error)
-            << "Binary not found: " << exe << " for " << service_name;
+        BOOST_LOG_SEV(lg(), error) << "Binary not found: " << exe << " for " << service_name;
         co_return;
     }
 
     const auto args = build_args(def, replica_index);
 
-    BOOST_LOG_SEV(lg(), info)
-        << "Starting service " << service_name << "[" << replica_index << "]...";
+    BOOST_LOG_SEV(lg(), info) << "Starting service " << service_name << "[" << replica_index
+                              << "]...";
 
     std::string command_line;
     {
         std::ostringstream cmd;
         cmd << exe.string();
-        for (const auto& a : args) cmd << ' ' << a;
+        for (const auto& a : args)
+            cmd << ' ' << a;
         command_line = cmd.str();
         BOOST_LOG_SEV(lg(), debug) << "Command: " << command_line;
     }
@@ -403,11 +411,9 @@ boost::asio::awaitable<void> process_supervisor::do_launch(
         std::error_code dir_ec;
         std::filesystem::create_directories(stderr_path.parent_path(), dir_ec);
     }
-    FILE* const stderr_file =
-        ores::platform::filesystem::file::open_c_file(stderr_path, "a");
+    FILE* const stderr_file = ores::platform::filesystem::file::open_c_file(stderr_path, "a");
     if (!stderr_file)
-        BOOST_LOG_SEV(lg(), warn)
-            << "Could not open stderr capture file: " << stderr_path;
+        BOOST_LOG_SEV(lg(), warn) << "Could not open stderr capture file: " << stderr_path;
 
     try {
         // cd into bin_dir then exec with a relative name (like the shell would
@@ -419,27 +425,32 @@ boost::asio::awaitable<void> process_supervisor::do_launch(
         bp2::filesystem::path bp_exe("./" + def.binary_name);
         bp2::filesystem::path bp_dir(bin_dir_.string());
         if (stderr_file) {
-            entry->proc.emplace(executor, bp_exe, args,
+            entry->proc.emplace(
+                executor,
+                bp_exe,
+                args,
                 bp2::process_start_dir(bp_dir),
                 bp2::process_stdio{.in = nullptr, .out = nullptr, .err = stderr_file});
         } else {
-            entry->proc.emplace(executor, bp_exe, args,
-                bp2::process_start_dir(bp_dir),
-                bp2::process_stdio{.in = nullptr, .out = nullptr, .err = nullptr});
+            entry->proc.emplace(executor,
+                                bp_exe,
+                                args,
+                                bp2::process_start_dir(bp_dir),
+                                bp2::process_stdio{.in = nullptr, .out = nullptr, .err = nullptr});
         }
     } catch (const std::exception& e) {
-        if (stderr_file) std::fclose(stderr_file);
+        if (stderr_file)
+            std::fclose(stderr_file);
         BOOST_LOG_SEV(lg(), error)
-            << "Failed to launch " << service_name << "[" << replica_index
-            << "]: " << e.what();
+            << "Failed to launch " << service_name << "[" << replica_index << "]: " << e.what();
         co_return;
     }
-    if (stderr_file) std::fclose(stderr_file);
+    if (stderr_file)
+        std::fclose(stderr_file);
 
     const auto pid = entry->proc->id();
-    BOOST_LOG_SEV(lg(), info)
-        << "Started service " << service_name << "[" << replica_index
-        << "]. PID=" << pid;
+    BOOST_LOG_SEV(lg(), info) << "Started service " << service_name << "[" << replica_index
+                              << "]. PID=" << pid;
 
     write_pid_file(service_name, replica_index, pid);
 
@@ -453,8 +464,7 @@ boost::asio::awaitable<void> process_supervisor::do_launch(
     // Switch to the DB thread pool for the post-launch DB writes so the
     // io_context is not blocked while the connection pool rebuilds or writes.
     co_await boost::asio::post(
-        boost::asio::bind_executor(db_pool_.get_executor(),
-            boost::asio::use_awaitable));
+        boost::asio::bind_executor(db_pool_.get_executor(), boost::asio::use_awaitable));
 
     try {
         const auto now = std::chrono::system_clock::now();
@@ -490,49 +500,44 @@ boost::asio::awaitable<void> process_supervisor::do_launch(
         ev.message = "Process launched by supervisor, PID=" + std::to_string(pid);
         ev_repo.insert(db_ctx_, ev);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn)
-            << "DB update failed after launch of " << service_name
-            << "[" << replica_index << "]: " << e.what();
+        BOOST_LOG_SEV(lg(), warn) << "DB update failed after launch of " << service_name << "["
+                                  << replica_index << "]: " << e.what();
     }
     // do_launch ends here on the db_pool thread — that is fine since the
     // coroutine is detached and no shared state is accessed after this point.
 }
 
-boost::asio::awaitable<void> process_supervisor::do_stop(
-    std::string service_name, int replica_index) {
+boost::asio::awaitable<void> process_supervisor::do_stop(std::string service_name,
+                                                         int replica_index) {
 
     const auto key = std::make_pair(service_name, replica_index);
     auto it = processes_.find(key);
     if (it == processes_.end()) {
-        BOOST_LOG_SEV(lg(), warn)
-            << "stop: no running process for "
-            << service_name << "[" << replica_index << "]";
+        BOOST_LOG_SEV(lg(), warn) << "stop: no running process for " << service_name << "["
+                                  << replica_index << "]";
         co_return;
     }
 
     auto& entry = *it->second;
     entry.stop_requested = true;
 
-    BOOST_LOG_SEV(lg(), info)
-        << "Stopping service " << service_name << "[" << replica_index
-        << "]... PID=" << entry.proc->id();
+    BOOST_LOG_SEV(lg(), info) << "Stopping service " << service_name << "[" << replica_index
+                              << "]... PID=" << entry.proc->id();
     boost::system::error_code ec;
     entry.proc->request_exit(ec);
     if (ec)
-        BOOST_LOG_SEV(lg(), warn)
-            << "request_exit failed: " << ec.message();
+        BOOST_LOG_SEV(lg(), warn) << "request_exit failed: " << ec.message();
 }
 
-boost::asio::awaitable<void> process_supervisor::monitor_process(
-    std::shared_ptr<process_entry> entry) {
+boost::asio::awaitable<void>
+process_supervisor::monitor_process(std::shared_ptr<process_entry> entry) {
 
     const auto& service_name = entry->def.service_name;
     const auto replica_index = entry->replica_index;
     const auto key = std::make_pair(service_name, replica_index);
 
-    BOOST_LOG_SEV(lg(), debug)
-        << "Monitoring " << service_name << "[" << replica_index
-        << "] PID=" << entry->proc->id();
+    BOOST_LOG_SEV(lg(), debug) << "Monitoring " << service_name << "[" << replica_index
+                               << "] PID=" << entry->proc->id();
 
     boost::system::error_code ec;
     int exit_code = 0;
@@ -546,14 +551,12 @@ boost::asio::awaitable<void> process_supervisor::monitor_process(
     remove_pid_file(service_name, replica_index);
 
     if (entry->stop_requested) {
-        BOOST_LOG_SEV(lg(), info)
-            << "Stopped service " << service_name << "[" << replica_index
-            << "]. Exit code=" << exit_code;
+        BOOST_LOG_SEV(lg(), info) << "Stopped service " << service_name << "[" << replica_index
+                                  << "]. Exit code=" << exit_code;
     } else {
         const auto lvl = (exit_code != 0) ? error : warn;
-        BOOST_LOG_SEV(lg(), lvl)
-            << "Service " << service_name << "[" << replica_index
-            << "] exited unexpectedly. Exit code=" << exit_code;
+        BOOST_LOG_SEV(lg(), lvl) << "Service " << service_name << "[" << replica_index
+                                 << "] exited unexpectedly. Exit code=" << exit_code;
     }
 
     // If the process exited unexpectedly, log any pre-logging stderr output
@@ -570,8 +573,7 @@ boost::asio::awaitable<void> process_supervisor::monitor_process(
     // Switch to the DB thread pool so the io_context is not blocked while
     // waiting for the connection pool to rebuild or for the write to complete.
     co_await boost::asio::post(
-        boost::asio::bind_executor(db_pool_.get_executor(),
-            boost::asio::use_awaitable));
+        boost::asio::bind_executor(db_pool_.get_executor(), boost::asio::use_awaitable));
 
     try {
         const auto now = std::chrono::system_clock::now();
@@ -594,15 +596,14 @@ boost::asio::awaitable<void> process_supervisor::monitor_process(
         {
             using ores::service::service::exit_code_name;
             using ores::service::service::to_exit_code;
-            ev.message = "Process exited, code=" + std::to_string(exit_code)
-                + " (" + std::string(exit_code_name(to_exit_code(exit_code))) + ")"
-                + (entry->stop_requested ? " [stop requested]" : " [unexpected]");
+            ev.message = "Process exited, code=" + std::to_string(exit_code) + " (" +
+                         std::string(exit_code_name(to_exit_code(exit_code))) + ")" +
+                         (entry->stop_requested ? " [stop requested]" : " [unexpected]");
         }
         ev_repo.insert(db_ctx_, ev);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn)
-            << "DB update failed after exit of " << service_name
-            << "[" << replica_index << "]: " << e.what();
+        BOOST_LOG_SEV(lg(), warn) << "DB update failed after exit of " << service_name << "["
+                                  << replica_index << "]: " << e.what();
     }
 
     if (entry->stop_requested)
@@ -610,20 +611,15 @@ boost::asio::awaitable<void> process_supervisor::monitor_process(
 
     // Switch back to the io_context before accessing processes_ for restart.
     co_await boost::asio::post(
-        boost::asio::bind_executor(ioc_.get_executor(),
-            boost::asio::use_awaitable));
+        boost::asio::bind_executor(ioc_.get_executor(), boost::asio::use_awaitable));
 
     // Apply restart policy.
     const auto& policy = entry->def.restart_policy;
-    const bool should_restart =
-        (policy == "always") ||
-        (policy == "on-failure" && exit_code != 0);
+    const bool should_restart = (policy == "always") || (policy == "on-failure" && exit_code != 0);
 
     if (!should_restart) {
-        BOOST_LOG_SEV(lg(), info)
-            << "Restart policy '" << policy
-            << "' — not restarting " << service_name
-            << "[" << replica_index << "]";
+        BOOST_LOG_SEV(lg(), info) << "Restart policy '" << policy << "' — not restarting "
+                                  << service_name << "[" << replica_index << "]";
         co_return;
     }
 
@@ -643,15 +639,13 @@ boost::asio::awaitable<void> process_supervisor::monitor_process(
         const auto err_path = stderr_path_for(service_name, replica_index);
         const auto err_snippet = tail_log(err_path, log_tail_lines);
 
-        const std::string error_summary =
-            std::string(ec_name) +
-            " (failed after " + std::to_string(max_restarts) + " restart" +
-            (max_restarts == 1 ? "" : "s") + ")";
+        const std::string error_summary = std::string(ec_name) + " (failed after " +
+                                          std::to_string(max_restarts) + " restart" +
+                                          (max_restarts == 1 ? "" : "s") + ")";
 
-        BOOST_LOG_SEV(lg(), error)
-            << service_name << "[" << replica_index << "]"
-            << " exceeded max_restart_count=" << max_restarts
-            << " (" << ec_name << ") — marking failed, will keep retrying";
+        BOOST_LOG_SEV(lg(), error) << service_name << "[" << replica_index << "]"
+                                   << " exceeded max_restart_count=" << max_restarts << " ("
+                                   << ec_name << ") — marking failed, will keep retrying";
 
         try {
             const auto now = std::chrono::system_clock::now();
@@ -660,12 +654,10 @@ boost::asio::awaitable<void> process_supervisor::monitor_process(
             if (inst) {
                 inst->phase = "failed";
                 inst->last_error = error_summary;
-                inst->last_log_snippet = log_snippet.empty()
-                    ? std::nullopt
-                    : std::optional<std::string>(log_snippet);
-                inst->last_stderr_snippet = err_snippet.empty()
-                    ? std::nullopt
-                    : std::optional<std::string>(err_snippet);
+                inst->last_log_snippet =
+                    log_snippet.empty() ? std::nullopt : std::optional<std::string>(log_snippet);
+                inst->last_stderr_snippet =
+                    err_snippet.empty() ? std::nullopt : std::optional<std::string>(err_snippet);
                 inst_repo.update_phase(db_ctx_, *inst);
             }
 
@@ -679,9 +671,8 @@ boost::asio::awaitable<void> process_supervisor::monitor_process(
             fail_ev.message = error_summary;
             ev_repo.insert(db_ctx_, fail_ev);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), warn)
-                << "Failed to record failure state for " << service_name
-                << "[" << replica_index << "]: " << e.what();
+            BOOST_LOG_SEV(lg(), warn) << "Failed to record failure state for " << service_name
+                                      << "[" << replica_index << "]: " << e.what();
         }
         // Do NOT return — fall through and keep retrying at the capped interval.
     }
@@ -692,9 +683,9 @@ boost::asio::awaitable<void> process_supervisor::monitor_process(
     const auto delay = entry->retry.on_failure();
     const int next_count = entry->retry.failure_count();
 
-    BOOST_LOG_SEV(lg(), info)
-        << "Starting service " << service_name << "[" << replica_index
-        << "]... (restart attempt " << next_count << ", delay " << delay.count() << "s)";
+    BOOST_LOG_SEV(lg(), info) << "Starting service " << service_name << "[" << replica_index
+                              << "]... (restart attempt " << next_count << ", delay "
+                              << delay.count() << "s)";
 
     auto executor = co_await boost::asio::this_coro::executor;
     boost::asio::steady_timer t(executor);
@@ -719,15 +710,13 @@ boost::asio::awaitable<void> process_supervisor::monitor_process(
             inst_repo.update_phase(db_ctx_, *inst);
         }
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn)
-            << "Failed to persist restart_count for " << service_name
-            << "[" << replica_index << "]: " << e.what();
+        BOOST_LOG_SEV(lg(), warn) << "Failed to persist restart_count for " << service_name << "["
+                                  << replica_index << "]: " << e.what();
     }
 }
 
 boost::asio::awaitable<void> process_supervisor::stop_all() {
-    BOOST_LOG_SEV(lg(), info)
-        << "Stopping all services... (" << processes_.size() << " running)";
+    BOOST_LOG_SEV(lg(), info) << "Stopping all services... (" << processes_.size() << " running)";
 
     auto executor = co_await boost::asio::this_coro::executor;
 
@@ -738,13 +727,11 @@ boost::asio::awaitable<void> process_supervisor::stop_all() {
             boost::system::error_code ec;
             entry->proc->request_exit(ec);
             if (ec)
-                BOOST_LOG_SEV(lg(), warn)
-                    << "request_exit (SIGTERM) failed for " << key.first
-                    << "[" << key.second << "]: " << ec.message();
+                BOOST_LOG_SEV(lg(), warn) << "request_exit (SIGTERM) failed for " << key.first
+                                          << "[" << key.second << "]: " << ec.message();
             else
-                BOOST_LOG_SEV(lg(), info)
-                    << "Stopping service " << key.first
-                    << "[" << key.second << "]... PID=" << entry->proc->id();
+                BOOST_LOG_SEV(lg(), info) << "Stopping service " << key.first << "[" << key.second
+                                          << "]... PID=" << entry->proc->id();
         }
     }
 
@@ -769,9 +756,8 @@ boost::asio::awaitable<void> process_supervisor::stop_all() {
             if (entry->proc) {
                 boost::system::error_code ec;
                 entry->proc->request_exit(ec);
-                BOOST_LOG_SEV(lg(), warn)
-                    << "Stopping service " << key.first
-                    << "[" << key.second << "]... (second attempt) PID=" << entry->proc->id();
+                BOOST_LOG_SEV(lg(), warn) << "Stopping service " << key.first << "[" << key.second
+                                          << "]... (second attempt) PID=" << entry->proc->id();
             }
         }
 
@@ -794,9 +780,8 @@ boost::asio::awaitable<void> process_supervisor::stop_all() {
             if (entry->proc) {
                 boost::system::error_code ec;
                 entry->proc->terminate(ec);
-                BOOST_LOG_SEV(lg(), warn)
-                    << "SIGKILL sent to " << key.first
-                    << "[" << key.second << "] PID=" << entry->proc->id();
+                BOOST_LOG_SEV(lg(), warn) << "SIGKILL sent to " << key.first << "[" << key.second
+                                          << "] PID=" << entry->proc->id();
             }
         }
     }
@@ -804,28 +789,21 @@ boost::asio::awaitable<void> process_supervisor::stop_all() {
     BOOST_LOG_SEV(lg(), info) << "All services stopped.";
 }
 
-void process_supervisor::request_launch(
-    const std::string& service_name, int replica_index) {
+void process_supervisor::request_launch(const std::string& service_name, int replica_index) {
 
-    boost::asio::co_spawn(ioc_,
-        do_launch(service_name, replica_index),
-        boost::asio::detached);
+    boost::asio::co_spawn(ioc_, do_launch(service_name, replica_index), boost::asio::detached);
 }
 
-void process_supervisor::request_stop(
-    const std::string& service_name, int replica_index) {
+void process_supervisor::request_stop(const std::string& service_name, int replica_index) {
 
-    boost::asio::co_spawn(ioc_,
-        do_stop(service_name, replica_index),
-        boost::asio::detached);
+    boost::asio::co_spawn(ioc_, do_stop(service_name, replica_index), boost::asio::detached);
 }
 
-void process_supervisor::request_restart(
-    const std::string& service_name, int replica_index) {
+void process_supervisor::request_restart(const std::string& service_name, int replica_index) {
 
-    boost::asio::co_spawn(ioc_,
-        [this, service_name, replica_index]()
-                -> boost::asio::awaitable<void> {
+    boost::asio::co_spawn(
+        ioc_,
+        [this, service_name, replica_index]() -> boost::asio::awaitable<void> {
             co_await do_stop(service_name, replica_index);
             // Give the process a moment to exit before relaunching.
             auto executor = co_await boost::asio::this_coro::executor;

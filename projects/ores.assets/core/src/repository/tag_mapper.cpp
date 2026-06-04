@@ -18,7 +18,6 @@
  *
  */
 #include "ores.assets.core/repository/tag_mapper.hpp"
-
 #include "ores.database/repository/mapper_helpers.hpp"
 
 namespace ores::assets::repository {
@@ -35,7 +34,7 @@ domain::tag tag_mapper::map(const tag_entity& v) {
     r.tag_id = v.tag_id.value();
     r.name = v.name;
     r.description = v.description;
-r.modified_by = v.modified_by;
+    r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
@@ -54,7 +53,7 @@ tag_entity tag_mapper::map(const domain::tag& v) {
     r.version = v.version;
     r.name = v.name;
     r.description = v.description;
-r.modified_by = v.modified_by;
+    r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
@@ -64,22 +63,14 @@ r.modified_by = v.modified_by;
     return r;
 }
 
-std::vector<domain::tag>
-tag_mapper::map(const std::vector<tag_entity>& v) {
+std::vector<domain::tag> tag_mapper::map(const std::vector<tag_entity>& v) {
     return map_vector<tag_entity, domain::tag>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
-std::vector<tag_entity>
-tag_mapper::map(const std::vector<domain::tag>& v) {
+std::vector<tag_entity> tag_mapper::map(const std::vector<domain::tag>& v) {
     return map_vector<domain::tag, tag_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

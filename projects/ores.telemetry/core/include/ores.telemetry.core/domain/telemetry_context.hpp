@@ -20,13 +20,13 @@
 #ifndef ORES_TELEMETRY_CORE_DOMAIN_TELEMETRY_CONTEXT_HPP
 #define ORES_TELEMETRY_CORE_DOMAIN_TELEMETRY_CONTEXT_HPP
 
-#include <memory>
-#include <string_view>
+#include "ores.telemetry.core/domain/resource.hpp"
+#include "ores.telemetry.core/domain/span.hpp"
 #include "ores.telemetry.core/domain/span_context.hpp"
 #include "ores.telemetry.core/domain/span_kind.hpp"
-#include "ores.telemetry.core/domain/span.hpp"
-#include "ores.telemetry.core/domain/resource.hpp"
 #include "ores.telemetry.core/export.hpp"
+#include <memory>
+#include <string_view>
 
 namespace ores::telemetry::domain {
 
@@ -56,8 +56,7 @@ public:
      * @param ctx The span context identifying the current span.
      * @param res The resource describing the entity producing telemetry.
      */
-    explicit telemetry_context(span_context ctx,
-                               std::shared_ptr<resource> res);
+    explicit telemetry_context(span_context ctx, std::shared_ptr<resource> res);
 
     /**
      * @brief Creates a root telemetry context for a new trace.
@@ -104,9 +103,8 @@ public:
      * @param kind The kind of span (default: internal).
      * @return A pair of the new child context and the span to be recorded.
      */
-    std::pair<telemetry_context, span> start_span(
-        std::string_view name,
-        span_kind kind = span_kind::internal) const;
+    std::pair<telemetry_context, span> start_span(std::string_view name,
+                                                  span_kind kind = span_kind::internal) const;
 
     /**
      * @brief Creates a new trace linked to the current span.
@@ -119,9 +117,8 @@ public:
      * @param kind The kind of span (default: internal).
      * @return A pair of the new context (with new trace_id) and the span.
      */
-    std::pair<telemetry_context, span> start_linked_trace(
-        std::string_view name,
-        span_kind kind = span_kind::internal) const;
+    std::pair<telemetry_context, span>
+    start_linked_trace(std::string_view name, span_kind kind = span_kind::internal) const;
 
     /**
      * @brief Checks if this context is valid.

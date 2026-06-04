@@ -20,9 +20,9 @@
 #ifndef ORES_MARKETDATA_API_DOMAIN_MARKET_SERIES_JSON_IO_HPP
 #define ORES_MARKETDATA_API_DOMAIN_MARKET_SERIES_JSON_IO_HPP
 
-#include <iosfwd>
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.api/export.hpp"
+#include <iosfwd>
 
 namespace ores::marketdata::domain {
 

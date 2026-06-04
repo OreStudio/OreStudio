@@ -20,11 +20,11 @@
 #ifndef ORES_TELEMETRY_CORE_EXPORTING_TELEMETRY_CONFIGURATION_HPP
 #define ORES_TELEMETRY_CORE_EXPORTING_TELEMETRY_CONFIGURATION_HPP
 
-#include <string>
-#include <optional>
-#include <boost/program_options.hpp>
-#include "ores.telemetry.core/exporting/telemetry_options.hpp"
 #include "ores.telemetry.core/export.hpp"
+#include "ores.telemetry.core/exporting/telemetry_options.hpp"
+#include <boost/program_options.hpp>
+#include <optional>
+#include <string>
 
 namespace ores::telemetry::exporting {
 

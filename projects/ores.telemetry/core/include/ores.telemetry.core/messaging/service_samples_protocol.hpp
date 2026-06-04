@@ -20,10 +20,10 @@
 #ifndef ORES_TELEMETRY_CORE_MESSAGING_SERVICE_SAMPLES_PROTOCOL_HPP
 #define ORES_TELEMETRY_CORE_MESSAGING_SERVICE_SAMPLES_PROTOCOL_HPP
 
+#include "ores.telemetry.core/domain/service_sample.hpp"
 #include <string>
 #include <string_view>
 #include <vector>
-#include "ores.telemetry.core/domain/service_sample.hpp"
 
 namespace ores::telemetry::messaging {
 
@@ -38,8 +38,7 @@ namespace ores::telemetry::messaging {
  * There is no response type — this is a one-way publish, not a request.
  */
 struct service_heartbeat_message {
-    static constexpr std::string_view nats_subject =
-        "telemetry.v1.services.heartbeat";
+    static constexpr std::string_view nats_subject = "telemetry.v1.services.heartbeat";
 
     /** @brief Canonical service name (e.g. "ores.compute.service"). */
     std::string service_name;
@@ -63,8 +62,7 @@ struct service_heartbeat_message {
  */
 struct get_service_samples_request {
     using response_type = struct get_service_samples_response;
-    static constexpr std::string_view nats_subject =
-        "telemetry.v1.services.list";
+    static constexpr std::string_view nats_subject = "telemetry.v1.services.list";
 };
 
 struct get_service_samples_response {

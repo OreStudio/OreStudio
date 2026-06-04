@@ -20,11 +20,11 @@
 #ifndef ORES_MARKETDATA_API_DOMAIN_MARKET_FIXING_HPP
 #define ORES_MARKETDATA_API_DOMAIN_MARKET_FIXING_HPP
 
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <optional>
 #include <string>
-#include <boost/uuid/uuid.hpp>
-#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::marketdata::domain {
 

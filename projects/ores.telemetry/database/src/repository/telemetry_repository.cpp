@@ -17,19 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.platform/time/datetime.hpp"
 #include "ores.telemetry.database/repository/telemetry_repository.hpp"
-
-#include <format>
-#include <map>
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
+#include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.telemetry.core/log/skip_telemetry_guard.hpp"
-#include "ores.telemetry.database/repository/telemetry_mapper.hpp"
 #include "ores.telemetry.database/repository/telemetry_entity.hpp"
+#include "ores.telemetry.database/repository/telemetry_mapper.hpp"
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <format>
+#include <map>
 
 namespace ores::telemetry::database::repository {
 
@@ -43,21 +42,20 @@ std::string telemetry_repository::sql() {
     return generate_create_table_sql<telemetry_entity>(lg());
 }
 
-void telemetry_repository::create(context ctx,
-    const domain::telemetry_log_entry& entry) {
+void telemetry_repository::create(context ctx, const domain::telemetry_log_entry& entry) {
     ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), trace) << "Creating telemetry log entry: "
                                << boost::uuids::to_string(entry.id);
 
-    const auto r = sqlgen::session(ctx.connection_pool())
-        .and_then(begin_transaction)
-        .and_then(insert(telemetry_mapper::to_entity(entry, ctx.tenant_id().to_string())))
-        .and_then(commit);
+    const auto r =
+        sqlgen::session(ctx.connection_pool())
+            .and_then(begin_transaction)
+            .and_then(insert(telemetry_mapper::to_entity(entry, ctx.tenant_id().to_string())))
+            .and_then(commit);
     ensure_success(r, lg());
 }
 
-std::size_t telemetry_repository::create_batch(context ctx,
-    const domain::telemetry_batch& batch) {
+std::size_t telemetry_repository::create_batch(context ctx, const domain::telemetry_batch& batch) {
     ores::telemetry::log::skip_telemetry_guard guard;
 
     if (batch.empty()) {
@@ -66,8 +64,7 @@ std::size_t telemetry_repository::create_batch(context ctx,
     }
 
     BOOST_LOG_SEV(lg(), debug) << "Creating batch of " << batch.size()
-                               << " telemetry log entries from "
-                               << batch.source_name;
+                               << " telemetry log entries from " << batch.source_name;
 
     const auto tenant_id_str = ctx.tenant_id().to_string();
     std::vector<telemetry_entity> entities;
@@ -81,9 +78,9 @@ std::size_t telemetry_repository::create_batch(context ctx,
     }
 
     const auto r = sqlgen::session(ctx.connection_pool())
-        .and_then(begin_transaction)
-        .and_then(insert(entities))
-        .and_then(commit);
+                       .and_then(begin_transaction)
+                       .and_then(insert(entities))
+                       .and_then(commit);
     ensure_success(r, lg());
 
     BOOST_LOG_SEV(lg(), debug) << "Batch inserted successfully";
@@ -115,64 +112,60 @@ std::string escape_sql_string(const std::string& s) {
  * with LIMIT/OFFSET pagination.
  */
 std::string build_where_clause(const domain::telemetry_query& q,
-    const std::string& start_ts, const std::string& end_ts) {
+                               const std::string& start_ts,
+                               const std::string& end_ts) {
 
-    std::string where_clause = std::format(
-        "timestamp >= '{}' AND timestamp < '{}'", start_ts, end_ts);
+    std::string where_clause =
+        std::format("timestamp >= '{}' AND timestamp < '{}'", start_ts, end_ts);
 
     if (q.source.has_value()) {
         where_clause += std::format(" AND source = '{}'",
-            escape_sql_string(std::string(domain::to_string(*q.source))));
+                                    escape_sql_string(std::string(domain::to_string(*q.source))));
     }
     if (q.source_name.has_value()) {
-        where_clause += std::format(" AND source_name = '{}'",
-            escape_sql_string(*q.source_name));
+        where_clause += std::format(" AND source_name = '{}'", escape_sql_string(*q.source_name));
     }
     if (q.session_id.has_value()) {
-        where_clause += std::format(" AND session_id = '{}'",
-            boost::lexical_cast<std::string>(*q.session_id));
+        where_clause +=
+            std::format(" AND session_id = '{}'", boost::lexical_cast<std::string>(*q.session_id));
     }
     if (q.account_id.has_value()) {
-        where_clause += std::format(" AND account_id = '{}'",
-            boost::lexical_cast<std::string>(*q.account_id));
+        where_clause +=
+            std::format(" AND account_id = '{}'", boost::lexical_cast<std::string>(*q.account_id));
     }
     if (q.level.has_value()) {
-        where_clause += std::format(" AND level = '{}'",
-            escape_sql_string(*q.level));
+        where_clause += std::format(" AND level = '{}'", escape_sql_string(*q.level));
     }
     if (q.min_level.has_value()) {
         // Severity ordering: error > warn > info > debug > trace
         // Use CASE expression for proper ordering
-        where_clause += std::format(
-            " AND CASE level "
-            "WHEN 'error' THEN 5 "
-            "WHEN 'warn' THEN 4 "
-            "WHEN 'info' THEN 3 "
-            "WHEN 'debug' THEN 2 "
-            "WHEN 'trace' THEN 1 "
-            "ELSE 0 END >= "
-            "CASE '{}' "
-            "WHEN 'error' THEN 5 "
-            "WHEN 'warn' THEN 4 "
-            "WHEN 'info' THEN 3 "
-            "WHEN 'debug' THEN 2 "
-            "WHEN 'trace' THEN 1 "
-            "ELSE 0 END",
-            escape_sql_string(*q.min_level));
+        where_clause += std::format(" AND CASE level "
+                                    "WHEN 'error' THEN 5 "
+                                    "WHEN 'warn' THEN 4 "
+                                    "WHEN 'info' THEN 3 "
+                                    "WHEN 'debug' THEN 2 "
+                                    "WHEN 'trace' THEN 1 "
+                                    "ELSE 0 END >= "
+                                    "CASE '{}' "
+                                    "WHEN 'error' THEN 5 "
+                                    "WHEN 'warn' THEN 4 "
+                                    "WHEN 'info' THEN 3 "
+                                    "WHEN 'debug' THEN 2 "
+                                    "WHEN 'trace' THEN 1 "
+                                    "ELSE 0 END",
+                                    escape_sql_string(*q.min_level));
     }
     if (q.component.has_value()) {
         // Support prefix matching for component
-        where_clause += std::format(" AND component LIKE '{}%'",
-            escape_sql_string(*q.component));
+        where_clause += std::format(" AND component LIKE '{}%'", escape_sql_string(*q.component));
     }
     if (q.tag.has_value()) {
-        where_clause += std::format(" AND tag = '{}'",
-            escape_sql_string(*q.tag));
+        where_clause += std::format(" AND tag = '{}'", escape_sql_string(*q.tag));
     }
     if (q.message_contains.has_value()) {
         // Case-insensitive substring search
-        where_clause += std::format(" AND message ILIKE '%{}%'",
-            escape_sql_string(*q.message_contains));
+        where_clause +=
+            std::format(" AND message ILIKE '%{}%'", escape_sql_string(*q.message_contains));
     }
 
     return where_clause;
@@ -193,14 +186,16 @@ telemetry_repository::query(context ctx, const domain::telemetry_query& q) {
     const auto effective_limit = q.limit > 0 ? q.limit : default_limit;
 
     // Build complete SQL query with all filters applied at database level
-    const auto sql = std::format(
-        "SELECT id, timestamp, source, source_name, session_id, account_id, "
-        "level, component, message, tag, recorded_at "
-        "FROM ores_telemetry_logs_tbl "
-        "WHERE {} "
-        "ORDER BY timestamp DESC "
-        "LIMIT {} OFFSET {}",
-        where_clause, effective_limit, q.offset);
+    const auto sql =
+        std::format("SELECT id, timestamp, source, source_name, session_id, account_id, "
+                    "level, component, message, tag, recorded_at "
+                    "FROM ores_telemetry_logs_tbl "
+                    "WHERE {} "
+                    "ORDER BY timestamp DESC "
+                    "LIMIT {} OFFSET {}",
+                    where_clause,
+                    effective_limit,
+                    q.offset);
 
     BOOST_LOG_SEV(lg(), trace) << "Executing query: " << sql;
 
@@ -213,19 +208,20 @@ telemetry_repository::query(context ctx, const domain::telemetry_query& q) {
     // Column indices: 0=id, 1=timestamp, 2=source, 3=source_name, 4=session_id,
     //                 5=account_id, 6=level, 7=component, 8=message, 9=tag, 10=recorded_at
     for (const auto& row : rows) {
-        if (row.size() < 11) continue;
+        if (row.size() < 11)
+            continue;
 
         telemetry_entity entity;
         entity.id = row[0].value_or("");
         entity.timestamp = row[1].value_or("");
         entity.source = row[2].value_or("");
         entity.source_name = row[3].value_or("");
-        entity.session_id = row[4].has_value() && !row[4]->empty()
-            ? std::optional<std::string>(*row[4])
-            : std::nullopt;
-        entity.account_id = row[5].has_value() && !row[5]->empty()
-            ? std::optional<std::string>(*row[5])
-            : std::nullopt;
+        entity.session_id = row[4].has_value() && !row[4]->empty() ?
+                                std::optional<std::string>(*row[4]) :
+                                std::nullopt;
+        entity.account_id = row[5].has_value() && !row[5]->empty() ?
+                                std::optional<std::string>(*row[5]) :
+                                std::nullopt;
         entity.level = row[6].value_or("");
         entity.component = row[7].value_or("");
         entity.message = row[8].value_or("");
@@ -239,8 +235,7 @@ telemetry_repository::query(context ctx, const domain::telemetry_query& q) {
     return entries;
 }
 
-std::uint64_t telemetry_repository::count(context ctx,
-    const domain::telemetry_query& q) {
+std::uint64_t telemetry_repository::count(context ctx, const domain::telemetry_query& q) {
     ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), debug) << "Counting telemetry logs";
 
@@ -249,9 +244,8 @@ std::uint64_t telemetry_repository::count(context ctx,
     const auto where_clause = build_where_clause(q, start_ts, end_ts);
 
     // Build count query with same filters as query() for accurate pagination
-    const auto sql = std::format(
-        "SELECT COUNT(*) FROM ores_telemetry_logs_tbl WHERE {}",
-        where_clause);
+    const auto sql =
+        std::format("SELECT COUNT(*) FROM ores_telemetry_logs_tbl WHERE {}", where_clause);
 
     BOOST_LOG_SEV(lg(), trace) << "Executing count: " << sql;
 
@@ -268,10 +262,8 @@ std::uint64_t telemetry_repository::count(context ctx,
     return count;
 }
 
-std::vector<domain::telemetry_log_entry>
-telemetry_repository::read_by_session(context ctx,
-    const boost::uuids::uuid& session_id,
-    std::uint32_t limit_count) {
+std::vector<domain::telemetry_log_entry> telemetry_repository::read_by_session(
+    context ctx, const boost::uuids::uuid& session_id, std::uint32_t limit_count) {
     ores::telemetry::log::skip_telemetry_guard guard;
 
     BOOST_LOG_SEV(lg(), debug) << "Reading telemetry for session: "
@@ -279,9 +271,8 @@ telemetry_repository::read_by_session(context ctx,
 
     const auto session_str = boost::lexical_cast<std::string>(session_id);
     const auto query = sqlgen::read<std::vector<telemetry_entity>> |
-        where("session_id"_c == session_str) |
-        order_by("timestamp"_c.desc()) |
-        sqlgen::limit(static_cast<std::size_t>(limit_count));
+                       where("session_id"_c == session_str) | order_by("timestamp"_c.desc()) |
+                       sqlgen::limit(static_cast<std::size_t>(limit_count));
 
     const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
     ensure_success(r, lg());
@@ -298,10 +289,10 @@ telemetry_repository::read_by_session(context ctx,
 
 std::vector<domain::telemetry_log_entry>
 telemetry_repository::read_by_account(context ctx,
-    const boost::uuids::uuid& account_id,
-    const std::chrono::system_clock::time_point& start,
-    const std::chrono::system_clock::time_point& end,
-    std::uint32_t limit_count) {
+                                      const boost::uuids::uuid& account_id,
+                                      const std::chrono::system_clock::time_point& start,
+                                      const std::chrono::system_clock::time_point& end,
+                                      std::uint32_t limit_count) {
     ores::telemetry::log::skip_telemetry_guard guard;
 
     BOOST_LOG_SEV(lg(), debug) << "Reading telemetry for account: "
@@ -312,10 +303,10 @@ telemetry_repository::read_by_account(context ctx,
     const auto end_ts = db_timestamp{datetime::to_db_string(end)};
 
     const auto query = sqlgen::read<std::vector<telemetry_entity>> |
-        where("account_id"_c == account_str &&
-              "timestamp"_c >= start_ts && "timestamp"_c < end_ts) |
-        order_by("timestamp"_c.desc()) |
-        sqlgen::limit(static_cast<std::size_t>(limit_count));
+                       where("account_id"_c == account_str && "timestamp"_c >= start_ts &&
+                             "timestamp"_c < end_ts) |
+                       order_by("timestamp"_c.desc()) |
+                       sqlgen::limit(static_cast<std::size_t>(limit_count));
 
     const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
     ensure_success(r, lg());
@@ -331,8 +322,7 @@ telemetry_repository::read_by_account(context ctx,
 }
 
 std::vector<domain::telemetry_stats>
-telemetry_repository::read_hourly_stats(context ctx,
-    const domain::telemetry_stats_query& q) {
+telemetry_repository::read_hourly_stats(context ctx, const domain::telemetry_stats_query& q) {
     ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), debug) << "Reading hourly telemetry stats";
 
@@ -342,8 +332,8 @@ telemetry_repository::read_hourly_stats(context ctx,
     // NOTE: sqlgen doesn't support dynamically adding where() clauses.
     // Query by time range only, apply optional filters in memory.
     const auto query = sqlgen::read<std::vector<telemetry_stats_hourly_entity>> |
-        where("hour"_c >= start_str && "hour"_c < end_str) |
-        order_by("hour"_c.desc());
+                       where("hour"_c >= start_str && "hour"_c < end_str) |
+                       order_by("hour"_c.desc());
 
     const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
     ensure_success(r, lg());
@@ -354,7 +344,8 @@ telemetry_repository::read_hourly_stats(context ctx,
     for (const auto& entity : *r) {
         if (q.source.has_value()) {
             const auto source_str = std::string(domain::to_string(*q.source));
-            if (entity.source != source_str) continue;
+            if (entity.source != source_str)
+                continue;
         }
         if (q.source_name.has_value() && entity.source_name != *q.source_name) {
             continue;
@@ -371,8 +362,7 @@ telemetry_repository::read_hourly_stats(context ctx,
 }
 
 std::vector<domain::telemetry_stats>
-telemetry_repository::read_daily_stats(context ctx,
-    const domain::telemetry_stats_query& q) {
+telemetry_repository::read_daily_stats(context ctx, const domain::telemetry_stats_query& q) {
     ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), debug) << "Reading daily telemetry stats";
 
@@ -382,8 +372,7 @@ telemetry_repository::read_daily_stats(context ctx,
     // NOTE: sqlgen doesn't support dynamically adding where() clauses.
     // Query by time range only, apply optional filters in memory.
     const auto query = sqlgen::read<std::vector<telemetry_stats_daily_entity>> |
-        where("day"_c >= start_str && "day"_c < end_str) |
-        order_by("day"_c.desc());
+                       where("day"_c >= start_str && "day"_c < end_str) | order_by("day"_c.desc());
 
     const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
     ensure_success(r, lg());
@@ -394,7 +383,8 @@ telemetry_repository::read_daily_stats(context ctx,
     for (const auto& entity : *r) {
         if (q.source.has_value()) {
             const auto source_str = std::string(domain::to_string(*q.source));
-            if (entity.source != source_str) continue;
+            if (entity.source != source_str)
+                continue;
         }
         if (q.source_name.has_value() && entity.source_name != *q.source_name) {
             continue;
@@ -413,11 +403,9 @@ telemetry_repository::read_daily_stats(context ctx,
     return result;
 }
 
-domain::telemetry_summary
-telemetry_repository::get_summary(context ctx, std::uint32_t hours) {
+domain::telemetry_summary telemetry_repository::get_summary(context ctx, std::uint32_t hours) {
     ores::telemetry::log::skip_telemetry_guard guard;
-    BOOST_LOG_SEV(lg(), debug) << "Getting telemetry summary for last "
-                               << hours << " hours";
+    BOOST_LOG_SEV(lg(), debug) << "Getting telemetry summary for last " << hours << " hours";
 
     domain::telemetry_summary summary;
     summary.end_time = std::chrono::system_clock::now();
@@ -430,10 +418,9 @@ telemetry_repository::get_summary(context ctx, std::uint32_t hours) {
         long long count;
     };
 
-    auto total_query = sqlgen::select_from<telemetry_entity>(
-        sqlgen::count().as<"count">()) |
-        where("timestamp"_c >= start_ts && "timestamp"_c <= end_ts) |
-        sqlgen::to<count_result>;
+    auto total_query = sqlgen::select_from<telemetry_entity>(sqlgen::count().as<"count">()) |
+                       where("timestamp"_c >= start_ts && "timestamp"_c <= end_ts) |
+                       sqlgen::to<count_result>;
 
     auto total_r = sqlgen::session(ctx.connection_pool()).and_then(total_query);
     if (total_r) {
@@ -446,14 +433,12 @@ telemetry_repository::get_summary(context ctx, std::uint32_t hours) {
         {"warn", &summary.warn_count},
         {"info", &summary.info_count},
         {"debug", &summary.debug_count},
-        {"trace", &summary.trace_count}
-    };
+        {"trace", &summary.trace_count}};
 
     for (const auto& [level, target] : level_targets) {
-        auto level_query = sqlgen::select_from<telemetry_entity>(
-            sqlgen::count().as<"count">()) |
-            where("timestamp"_c >= start_ts && "timestamp"_c <= end_ts &&
-                  "level"_c == level) |
+        auto level_query =
+            sqlgen::select_from<telemetry_entity>(sqlgen::count().as<"count">()) |
+            where("timestamp"_c >= start_ts && "timestamp"_c <= end_ts && "level"_c == level) |
             sqlgen::to<count_result>;
 
         auto level_r = sqlgen::session(ctx.connection_pool()).and_then(level_query);
@@ -462,17 +447,18 @@ telemetry_repository::get_summary(context ctx, std::uint32_t hours) {
         }
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Summary: " << summary.total_logs
-                               << " total, " << summary.error_count << " errors";
+    BOOST_LOG_SEV(lg(), debug) << "Summary: " << summary.total_logs << " total, "
+                               << summary.error_count << " errors";
     return summary;
 }
 
 std::uint64_t telemetry_repository::count_errors(context ctx,
-    const std::string& source_name, std::uint32_t hours) {
+                                                 const std::string& source_name,
+                                                 std::uint32_t hours) {
     ores::telemetry::log::skip_telemetry_guard guard;
 
-    BOOST_LOG_SEV(lg(), debug) << "Counting errors for " << source_name
-                               << " in last " << hours << " hours";
+    BOOST_LOG_SEV(lg(), debug) << "Counting errors for " << source_name << " in last " << hours
+                               << " hours";
 
     const auto end_time = std::chrono::system_clock::now();
     const auto start_time = end_time - std::chrono::hours(hours);
@@ -483,11 +469,10 @@ std::uint64_t telemetry_repository::count_errors(context ctx,
         long long count;
     };
 
-    auto query = sqlgen::select_from<telemetry_entity>(
-        sqlgen::count().as<"count">()) |
-        where("timestamp"_c >= start_ts && "timestamp"_c < end_ts &&
-              "source_name"_c == source_name && "level"_c == "error") |
-        sqlgen::to<count_result>;
+    auto query = sqlgen::select_from<telemetry_entity>(sqlgen::count().as<"count">()) |
+                 where("timestamp"_c >= start_ts && "timestamp"_c < end_ts &&
+                       "source_name"_c == source_name && "level"_c == "error") |
+                 sqlgen::to<count_result>;
 
     const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
     ensure_success(r, lg());
@@ -496,15 +481,15 @@ std::uint64_t telemetry_repository::count_errors(context ctx,
     return static_cast<std::uint64_t>(r->count);
 }
 
-std::uint64_t telemetry_repository::delete_old_logs(context ctx,
-    const std::chrono::system_clock::time_point& older_than) {
+std::uint64_t
+telemetry_repository::delete_old_logs(context ctx,
+                                      const std::chrono::system_clock::time_point& older_than) {
     ores::telemetry::log::skip_telemetry_guard guard;
 
     BOOST_LOG_SEV(lg(), info) << "Deleting telemetry logs older than cutoff";
 
     const auto older_ts = db_timestamp{datetime::to_db_string(older_than)};
-    const auto query = sqlgen::delete_from<telemetry_entity> |
-        where("timestamp"_c < older_ts);
+    const auto query = sqlgen::delete_from<telemetry_entity> | where("timestamp"_c < older_ts);
 
     execute_delete_query(ctx, query, lg(), "deleting old telemetry logs");
 
@@ -514,27 +499,27 @@ std::uint64_t telemetry_repository::delete_old_logs(context ctx,
 }
 
 void telemetry_repository::insert_server_sample(context ctx,
-    const domain::nats_server_sample& sample) {
+                                                const domain::nats_server_sample& sample) {
     ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), trace) << "Inserting NATS server sample";
 
-    const auto r = sqlgen::session(ctx.connection_pool())
-        .and_then(begin_transaction)
-        .and_then(insert(telemetry_mapper::to_entity(sample, ctx.tenant_id().to_string())))
-        .and_then(commit);
+    const auto r =
+        sqlgen::session(ctx.connection_pool())
+            .and_then(begin_transaction)
+            .and_then(insert(telemetry_mapper::to_entity(sample, ctx.tenant_id().to_string())))
+            .and_then(commit);
     ensure_success(r, lg());
 }
 
-void telemetry_repository::insert_stream_samples(context ctx,
-    const std::vector<domain::nats_stream_sample>& samples) {
+void telemetry_repository::insert_stream_samples(
+    context ctx, const std::vector<domain::nats_stream_sample>& samples) {
     ores::telemetry::log::skip_telemetry_guard guard;
 
     if (samples.empty()) {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), trace) << "Inserting " << samples.size()
-                               << " NATS stream sample(s)";
+    BOOST_LOG_SEV(lg(), trace) << "Inserting " << samples.size() << " NATS stream sample(s)";
 
     const auto tenant_id_str = ctx.tenant_id().to_string();
     std::vector<nats_stream_sample_entity> entities;
@@ -544,15 +529,15 @@ void telemetry_repository::insert_stream_samples(context ctx,
     }
 
     const auto r = sqlgen::session(ctx.connection_pool())
-        .and_then(begin_transaction)
-        .and_then(insert(entities))
-        .and_then(commit);
+                       .and_then(begin_transaction)
+                       .and_then(insert(entities))
+                       .and_then(commit);
     ensure_success(r, lg());
 }
 
 std::vector<domain::nats_server_sample>
 telemetry_repository::query_server_samples(context ctx,
-    const domain::nats_server_samples_query& q) {
+                                           const domain::nats_server_samples_query& q) {
     ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), debug) << "Querying NATS server samples";
 
@@ -560,9 +545,9 @@ telemetry_repository::query_server_samples(context ctx,
     const auto end_ts = db_timestamp{datetime::to_db_string(q.end_time)};
 
     const auto qry = sqlgen::read<std::vector<nats_server_sample_entity>> |
-        where("sampled_at"_c >= start_ts && "sampled_at"_c < end_ts) |
-        order_by("sampled_at"_c.desc()) |
-        sqlgen::limit(static_cast<std::size_t>(q.limit));
+                     where("sampled_at"_c >= start_ts && "sampled_at"_c < end_ts) |
+                     order_by("sampled_at"_c.desc()) |
+                     sqlgen::limit(static_cast<std::size_t>(q.limit));
 
     const auto r = sqlgen::session(ctx.connection_pool()).and_then(qry);
     ensure_success(r, lg());
@@ -573,26 +558,24 @@ telemetry_repository::query_server_samples(context ctx,
         result.push_back(telemetry_mapper::to_domain(entity));
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Query returned " << result.size()
-                               << " server sample(s)";
+    BOOST_LOG_SEV(lg(), debug) << "Query returned " << result.size() << " server sample(s)";
     return result;
 }
 
 std::vector<domain::nats_stream_sample>
 telemetry_repository::query_stream_samples(context ctx,
-    const domain::nats_stream_samples_query& q) {
+                                           const domain::nats_stream_samples_query& q) {
     ores::telemetry::log::skip_telemetry_guard guard;
-    BOOST_LOG_SEV(lg(), debug) << "Querying NATS stream samples for: "
-                               << q.stream_name;
+    BOOST_LOG_SEV(lg(), debug) << "Querying NATS stream samples for: " << q.stream_name;
 
     const auto start_ts = db_timestamp{datetime::to_db_string(q.start_time)};
     const auto end_ts = db_timestamp{datetime::to_db_string(q.end_time)};
 
     const auto qry = sqlgen::read<std::vector<nats_stream_sample_entity>> |
-        where("sampled_at"_c >= start_ts && "sampled_at"_c < end_ts &&
-              "stream_name"_c == q.stream_name) |
-        order_by("sampled_at"_c.desc()) |
-        sqlgen::limit(static_cast<std::size_t>(q.limit));
+                     where("sampled_at"_c >= start_ts && "sampled_at"_c < end_ts &&
+                           "stream_name"_c == q.stream_name) |
+                     order_by("sampled_at"_c.desc()) |
+                     sqlgen::limit(static_cast<std::size_t>(q.limit));
 
     const auto r = sqlgen::session(ctx.connection_pool()).and_then(qry);
     ensure_success(r, lg());
@@ -603,40 +586,35 @@ telemetry_repository::query_stream_samples(context ctx,
         result.push_back(telemetry_mapper::to_domain(entity));
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Query returned " << result.size()
-                               << " stream sample(s)";
+    BOOST_LOG_SEV(lg(), debug) << "Query returned " << result.size() << " stream sample(s)";
     return result;
 }
 
 void telemetry_repository::insert_service_sample(context ctx,
-    const domain::service_sample& sample) {
+                                                 const domain::service_sample& sample) {
     ores::telemetry::log::skip_telemetry_guard guard;
-    BOOST_LOG_SEV(lg(), trace) << "Inserting service heartbeat: "
-                               << sample.service_name
+    BOOST_LOG_SEV(lg(), trace) << "Inserting service heartbeat: " << sample.service_name
                                << " instance=" << sample.instance_id;
 
     const auto r = sqlgen::session(ctx.connection_pool())
-        .and_then(begin_transaction)
-        .and_then(insert(telemetry_mapper::to_entity(sample)))
-        .and_then(commit);
+                       .and_then(begin_transaction)
+                       .and_then(insert(telemetry_mapper::to_entity(sample)))
+                       .and_then(commit);
     ensure_success(r, lg());
 }
 
-std::vector<domain::service_sample>
-telemetry_repository::list_service_samples(context ctx) {
+std::vector<domain::service_sample> telemetry_repository::list_service_samples(context ctx) {
     ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), debug) << "Listing latest service heartbeat samples";
 
     // Fetch all rows from the last 5 minutes so we can pick
     // the most recent per (service_name, instance_id) in C++.
     // This avoids a DISTINCT ON which sqlgen doesn't model directly.
-    const auto cutoff = std::chrono::system_clock::now()
-        - std::chrono::minutes(5);
+    const auto cutoff = std::chrono::system_clock::now() - std::chrono::minutes(5);
     const auto cutoff_ts = db_timestamp{datetime::to_db_string(cutoff)};
 
     const auto qry = sqlgen::read<std::vector<service_sample_entity>> |
-        where("sampled_at"_c >= cutoff_ts) |
-        order_by("sampled_at"_c.desc());
+                     where("sampled_at"_c >= cutoff_ts) | order_by("sampled_at"_c.desc());
 
     const auto r = sqlgen::session(ctx.connection_pool()).and_then(qry);
     ensure_success(r, lg());
@@ -645,9 +623,8 @@ telemetry_repository::list_service_samples(context ctx) {
     // Rows are ordered by sampled_at desc so try_emplace keeps the first seen.
     std::map<std::pair<std::string, std::string>, domain::service_sample> latest;
     for (const auto& entity : *r) {
-        latest.try_emplace(
-            {entity.service_name.value(), entity.instance_id.value()},
-            telemetry_mapper::to_domain(entity));
+        latest.try_emplace({entity.service_name.value(), entity.instance_id.value()},
+                           telemetry_mapper::to_domain(entity));
     }
 
     std::vector<domain::service_sample> result;
@@ -655,8 +632,7 @@ telemetry_repository::list_service_samples(context ctx) {
     for (auto& [_, sample] : latest)
         result.push_back(std::move(sample));
 
-    BOOST_LOG_SEV(lg(), debug) << "Found " << result.size()
-                               << " active service instance(s)";
+    BOOST_LOG_SEV(lg(), debug) << "Found " << result.size() << " active service instance(s)";
     return result;
 }
 

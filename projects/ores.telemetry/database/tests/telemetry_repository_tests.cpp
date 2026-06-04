@@ -17,14 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.telemetry.database/repository/telemetry_repository.hpp"
-
-#include <catch2/catch_test_macros.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/uuid/random_generator.hpp>
 #include "ores.logging/make_logger.hpp"
-#include "ores.testing/scoped_database_helper.hpp"
 #include "ores.telemetry.core/domain/telemetry_log_entry.hpp"
+#include "ores.telemetry.database/repository/telemetry_repository.hpp"
+#include "ores.testing/scoped_database_helper.hpp"
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 
@@ -83,8 +82,7 @@ TEST_CASE("create_and_query_telemetry_entry", tags) {
     auto entry = make_test_entry();
     entry.message = "Unique query test message";
     entry.tag = "query-test";
-    BOOST_LOG_SEV(lg, debug) << "Creating entry with ID: "
-                             << boost::uuids::to_string(entry.id);
+    BOOST_LOG_SEV(lg, debug) << "Creating entry with ID: " << boost::uuids::to_string(entry.id);
 
     repo.create(h.context(), entry);
 
@@ -101,10 +99,9 @@ TEST_CASE("create_and_query_telemetry_entry", tags) {
     REQUIRE(results.size() >= 1);
 
     // Find our specific entry
-    auto it = std::find_if(results.begin(), results.end(),
-        [&entry](const telemetry_log_entry& e) {
-            return e.id == entry.id;
-        });
+    auto it = std::find_if(results.begin(), results.end(), [&entry](const telemetry_log_entry& e) {
+        return e.id == entry.id;
+    });
 
     REQUIRE(it != results.end());
     CHECK(it->message == "Unique query test message");

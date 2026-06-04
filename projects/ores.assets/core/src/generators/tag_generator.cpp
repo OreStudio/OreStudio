@@ -18,25 +18,21 @@
  *
  */
 #include "ores.assets.core/generators/tag_generator.hpp"
-
-#include <unordered_set>
+#include "ores.utility/faker/datetime.hpp"
+#include "ores.utility/generation/generation_keys.hpp"
+#include <boost/uuid/uuid_io.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include <faker-cxx/lorem.h>
 #include <faker-cxx/word.h>
-#include <boost/uuid/uuid_io.hpp>
-#include "ores.utility/faker/datetime.hpp"
-#include "ores.utility/generation/generation_keys.hpp"
+#include <unordered_set>
 
 namespace ores::assets::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::tag generate_synthetic_tag(
-    utility::generation::generation_context& ctx) {
-    const auto modified_by = ctx.env().get_or(
-        generation_keys::modified_by, "system");
-    const auto tenant_id = ctx.env().get_or(
-        generation_keys::tenant_id, "system");
+domain::tag generate_synthetic_tag(utility::generation::generation_context& ctx) {
+    const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
+    const auto tenant_id = ctx.env().get_or(generation_keys::tenant_id, "system");
 
     domain::tag r;
     r.tenant_id = tenant_id;
@@ -44,8 +40,7 @@ domain::tag generate_synthetic_tag(
     // Use UUID suffix to ensure global uniqueness across tests.
     // Take the last 12 chars (random part of UUID v7, avoiding timestamp prefix).
     const auto uuid = boost::uuids::to_string(ctx.generate_uuid());
-    r.name = "test_" + std::string(faker::word::noun()) + "_"
-        + uuid.substr(uuid.size() - 12);
+    r.name = "test_" + std::string(faker::word::noun()) + "_" + uuid.substr(uuid.size() - 12);
     r.description = std::string(faker::lorem::sentence());
     r.modified_by = modified_by;
     r.change_reason_code = "system.test";
@@ -56,7 +51,7 @@ domain::tag generate_synthetic_tag(
 }
 
 std::vector<domain::tag> generate_synthetic_tags(std::size_t n,
-    utility::generation::generation_context& ctx) {
+                                                 utility::generation::generation_context& ctx) {
     std::vector<domain::tag> r;
     r.reserve(n);
     while (r.size() < n)
@@ -65,8 +60,8 @@ std::vector<domain::tag> generate_synthetic_tags(std::size_t n,
     return r;
 }
 
-std::vector<domain::tag> generate_unique_synthetic_tags(std::size_t n,
-    utility::generation::generation_context& ctx) {
+std::vector<domain::tag>
+generate_unique_synthetic_tags(std::size_t n, utility::generation::generation_context& ctx) {
     std::unordered_set<std::string> seen;
     seen.reserve(n);
 

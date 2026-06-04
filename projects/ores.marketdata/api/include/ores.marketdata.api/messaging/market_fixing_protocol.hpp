@@ -20,10 +20,10 @@
 #ifndef ORES_MARKETDATA_API_MESSAGING_MARKET_FIXING_PROTOCOL_HPP
 #define ORES_MARKETDATA_API_MESSAGING_MARKET_FIXING_PROTOCOL_HPP
 
+#include "ores.marketdata.api/domain/market_fixing.hpp"
 #include <string>
 #include <string_view>
 #include <vector>
-#include "ores.marketdata.api/domain/market_fixing.hpp"
 
 namespace ores::marketdata::messaging {
 
@@ -31,8 +31,8 @@ struct get_market_fixings_request {
     using response_type = struct get_market_fixings_response;
     static constexpr std::string_view nats_subject = "marketdata.v1.fixings.list";
     std::string series_id;
-    std::string from_date;  // ISO "YYYY-MM-DD", empty = no lower bound
-    std::string to_date;    // ISO "YYYY-MM-DD", empty = no upper bound
+    std::string from_date; // ISO "YYYY-MM-DD", empty = no lower bound
+    std::string to_date;   // ISO "YYYY-MM-DD", empty = no upper bound
 };
 
 struct get_market_fixings_response {

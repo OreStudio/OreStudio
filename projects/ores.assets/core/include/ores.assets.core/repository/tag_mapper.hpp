@@ -20,11 +20,11 @@
 #ifndef ORES_ASSETS_REPOSITORY_TAG_MAPPER_HPP
 #define ORES_ASSETS_REPOSITORY_TAG_MAPPER_HPP
 
-#include <vector>
-#include "ores.logging/make_logger.hpp"
 #include "ores.assets.api/domain/tag.hpp"
-#include "ores.assets.core/repository/tag_entity.hpp"
 #include "ores.assets.core/export.hpp"
+#include "ores.assets.core/repository/tag_entity.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <vector>
 
 namespace ores::assets::repository {
 
@@ -33,8 +33,7 @@ namespace ores::assets::repository {
  */
 class ORES_ASSETS_CORE_EXPORT tag_mapper {
 private:
-    inline static std::string_view logger_name =
-        "ores.assets.repository.tag_mapper";
+    inline static std::string_view logger_name = "ores.assets.repository.tag_mapper";
 
     static auto& lg() {
         using namespace ores::logging;
@@ -46,10 +45,8 @@ public:
     static domain::tag map(const tag_entity& v);
     static tag_entity map(const domain::tag& v);
 
-    static std::vector<domain::tag>
-    map(const std::vector<tag_entity>& v);
-    static std::vector<tag_entity>
-    map(const std::vector<domain::tag>& v);
+    static std::vector<domain::tag> map(const std::vector<tag_entity>& v);
+    static std::vector<tag_entity> map(const std::vector<domain::tag>& v);
 };
 
 }

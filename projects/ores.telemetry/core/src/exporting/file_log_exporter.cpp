@@ -18,11 +18,10 @@
  *
  */
 #include "ores.telemetry.core/exporting/file_log_exporter.hpp"
-
-#include <format>
-#include <chrono>
-#include <stdexcept>
 #include "ores.platform/time/time_utils.hpp"
+#include <chrono>
+#include <format>
+#include <stdexcept>
 
 namespace ores::telemetry::exporting {
 
@@ -33,32 +32,42 @@ namespace {
  */
 std::string_view severity_to_string(logging::severity_level level) {
     switch (level) {
-    case logging::severity_level::trace: return "TRACE";
-    case logging::severity_level::debug: return "DEBUG";
-    case logging::severity_level::info:  return "INFO";
-    case logging::severity_level::warn:  return "WARN";
-    case logging::severity_level::error: return "ERROR";
-    case logging::severity_level::fatal: return "FATAL";
-    default: return "UNKNOWN";
+        case logging::severity_level::trace:
+            return "TRACE";
+        case logging::severity_level::debug:
+            return "DEBUG";
+        case logging::severity_level::info:
+            return "INFO";
+        case logging::severity_level::warn:
+            return "WARN";
+        case logging::severity_level::error:
+            return "ERROR";
+        case logging::severity_level::fatal:
+            return "FATAL";
+        default:
+            return "UNKNOWN";
     }
 }
 
 /**
  * @brief Formats a time_point as ISO 8601 string.
  */
-std::string format_timestamp(
-    const std::chrono::system_clock::time_point& tp) {
+std::string format_timestamp(const std::chrono::system_clock::time_point& tp) {
     const auto time_t_val = std::chrono::system_clock::to_time_t(tp);
-    const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
-        tp.time_since_epoch()) % 1000;
+    const auto ms =
+        std::chrono::duration_cast<std::chrono::milliseconds>(tp.time_since_epoch()) % 1000;
 
     std::tm tm_val{};
     platform::time::time_utils::gmtime_safe(&time_t_val, &tm_val);
 
     return std::format("{:04d}-{:02d}-{:02d}T{:02d}:{:02d}:{:02d}.{:03d}Z",
-        tm_val.tm_year + 1900, tm_val.tm_mon + 1, tm_val.tm_mday,
-        tm_val.tm_hour, tm_val.tm_min, tm_val.tm_sec,
-        static_cast<int>(ms.count()));
+                       tm_val.tm_year + 1900,
+                       tm_val.tm_mon + 1,
+                       tm_val.tm_mday,
+                       tm_val.tm_hour,
+                       tm_val.tm_min,
+                       tm_val.tm_sec,
+                       static_cast<int>(ms.count()));
 }
 
 /**
@@ -70,19 +79,33 @@ std::string escape_json(const std::string& s) {
 
     for (char c : s) {
         switch (c) {
-        case '"':  result += "\\\""; break;
-        case '\\': result += "\\\\"; break;
-        case '\b': result += "\\b"; break;
-        case '\f': result += "\\f"; break;
-        case '\n': result += "\\n"; break;
-        case '\r': result += "\\r"; break;
-        case '\t': result += "\\t"; break;
-        default:
-            if (static_cast<unsigned char>(c) < 0x20) {
-                result += std::format("\\u{:04x}", static_cast<unsigned int>(c));
-            } else {
-                result += c;
-            }
+            case '"':
+                result += "\\\"";
+                break;
+            case '\\':
+                result += "\\\\";
+                break;
+            case '\b':
+                result += "\\b";
+                break;
+            case '\f':
+                result += "\\f";
+                break;
+            case '\n':
+                result += "\\n";
+                break;
+            case '\r':
+                result += "\\r";
+                break;
+            case '\t':
+                result += "\\t";
+                break;
+            default:
+                if (static_cast<unsigned char>(c) < 0x20) {
+                    result += std::format("\\u{:04x}", static_cast<unsigned int>(c));
+                } else {
+                    result += c;
+                }
         }
     }
     return result;

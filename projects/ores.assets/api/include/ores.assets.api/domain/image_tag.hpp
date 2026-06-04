@@ -20,10 +20,10 @@
 #ifndef ORES_ASSETS_DOMAIN_IMAGE_TAG_HPP
 #define ORES_ASSETS_DOMAIN_IMAGE_TAG_HPP
 
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <string>
-#include <boost/uuid/uuid.hpp>
-#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::assets::domain {
 

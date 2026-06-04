@@ -18,10 +18,8 @@
  *
  */
 #include "ores.telemetry.service/app/nats_poller.hpp"
-
-#include <chrono>
-#include <optional>
-#include <stdexcept>
+#include "ores.utility/rfl/reflectors.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/steady_timer.hpp>
@@ -36,9 +34,10 @@
 #include <boost/beast/http/verb.hpp>
 #include <boost/beast/http/write.hpp>
 #include <boost/system/system_error.hpp>
+#include <chrono>
+#include <optional>
 #include <rfl/json.hpp>
-#include "ores.utility/rfl/reflectors.hpp"
-#include "ores.utility/uuid/tenant_id.hpp"
+#include <stdexcept>
 
 namespace ores::telemetry::service::app {
 
@@ -99,9 +98,7 @@ nats_poller::nats_poller(const std::string& monitor_url,
 
     // Parse "http://host:port" or "http://host" → host + port
     auto pos = monitor_url.find("://");
-    const auto authority = (pos != std::string::npos)
-        ? monitor_url.substr(pos + 3)
-        : monitor_url;
+    const auto authority = (pos != std::string::npos) ? monitor_url.substr(pos + 3) : monitor_url;
 
     const auto colon = authority.rfind(':');
     if (colon != std::string::npos) {
@@ -129,13 +126,11 @@ std::string nats_poller::http_get(const std::string& target) const {
 
     stream.expires_after(std::chrono::seconds(5));
 
-    const auto results = resolver.resolve(
-        monitor_host_, std::to_string(monitor_port_));
+    const auto results = resolver.resolve(monitor_host_, std::to_string(monitor_port_));
     stream.connect(results);
 
     http::request<http::empty_body> req{http::verb::get, target, 11};
-    req.set(http::field::host,
-        monitor_host_ + ":" + std::to_string(monitor_port_));
+    req.set(http::field::host, monitor_host_ + ":" + std::to_string(monitor_port_));
     req.set(http::field::connection, "close");
     http::write(stream, req);
 
@@ -172,9 +167,8 @@ void nats_poller::poll_server() {
     sample.slow_consumers = parsed->slow_consumers;
 
     repo_.insert_server_sample(ctx_, sample);
-    BOOST_LOG_SEV(lg(), trace) << "Stored NATS server sample: "
-                               << sample.connections << " connection(s), "
-                               << sample.in_msgs << " in_msgs";
+    BOOST_LOG_SEV(lg(), trace) << "Stored NATS server sample: " << sample.connections
+                               << " connection(s), " << sample.in_msgs << " in_msgs";
 }
 
 void nats_poller::poll_streams() {
@@ -205,8 +199,7 @@ void nats_poller::poll_streams() {
     }
 
     repo_.insert_stream_samples(ctx_, samples);
-    BOOST_LOG_SEV(lg(), trace) << "Stored " << samples.size()
-                               << " NATS stream sample(s)";
+    BOOST_LOG_SEV(lg(), trace) << "Stored " << samples.size() << " NATS stream sample(s)";
 }
 
 void nats_poller::poll_once() {
@@ -243,9 +236,8 @@ void nats_poller::poll_once() {
 // ============================================================================
 
 boost::asio::awaitable<void> nats_poller::run() {
-    BOOST_LOG_SEV(lg(), info) << "NATS poller started. Monitoring "
-                              << monitor_host_ << ":" << monitor_port_
-                              << " every " << interval_seconds_ << "s";
+    BOOST_LOG_SEV(lg(), info) << "NATS poller started. Monitoring " << monitor_host_ << ":"
+                              << monitor_port_ << " every " << interval_seconds_ << "s";
 
     auto executor = co_await boost::asio::this_coro::executor;
     boost::asio::steady_timer timer(executor);

@@ -20,10 +20,10 @@
 #ifndef ORES_ASSETS_EVENTING_ASSETS_CHANGED_EVENT_HPP
 #define ORES_ASSETS_EVENTING_ASSETS_CHANGED_EVENT_HPP
 
-#include <chrono>
-#include <vector>
-#include <string>
 #include "ores.eventing/domain/event_traits.hpp"
+#include <chrono>
+#include <string>
+#include <vector>
 
 namespace ores::assets::eventing {
 
@@ -64,7 +64,7 @@ namespace ores::eventing::domain {
 /**
  * @brief Event traits specialization for assets_changed_event.
  */
-template<>
+template <>
 struct event_traits<ores::assets::eventing::assets_changed_event> {
     static constexpr std::string_view name = "ores.assets.assets_changed";
 };

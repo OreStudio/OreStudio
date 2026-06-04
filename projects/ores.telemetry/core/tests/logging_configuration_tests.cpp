@@ -18,9 +18,8 @@
  *
  */
 #include "ores.logging/logging_configuration.hpp"
-
-#include <vector>
 #include <catch2/catch_test_macros.hpp>
+#include <vector>
 
 namespace {
 
@@ -32,8 +31,7 @@ using namespace ores::logging;
 po::variables_map parse_args(const po::options_description& desc,
                              const std::vector<const char*>& args) {
     po::variables_map vm;
-    po::store(po::parse_command_line(
-        static_cast<int>(args.size()), args.data(), desc), vm);
+    po::store(po::parse_command_line(static_cast<int>(args.size()), args.data(), desc), vm);
     po::notify(vm);
     return vm;
 }
@@ -202,15 +200,16 @@ TEST_CASE("logging_read_options_throws_on_invalid_level", tags) {
 
 TEST_CASE("logging_read_options_parses_all_options", tags) {
     auto desc = logging_configuration::make_options_description("default.log");
-    std::vector<const char*> args = {
-        "test",
-        "--log-enabled",
-        "--log-level", "trace",
-        "--log-to-console",
-        "--log-directory", "/tmp/logs",
-        "--log-filename", "myapp.log",
-        "--log-include-pid"
-    };
+    std::vector<const char*> args = {"test",
+                                     "--log-enabled",
+                                     "--log-level",
+                                     "trace",
+                                     "--log-to-console",
+                                     "--log-directory",
+                                     "/tmp/logs",
+                                     "--log-filename",
+                                     "myapp.log",
+                                     "--log-include-pid"};
     auto vm = parse_args(desc, args);
 
     auto opts = logging_configuration::read_options(vm);

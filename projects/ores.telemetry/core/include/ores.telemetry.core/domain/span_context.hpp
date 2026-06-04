@@ -20,10 +20,10 @@
 #ifndef ORES_TELEMETRY_CORE_DOMAIN_SPAN_CONTEXT_HPP
 #define ORES_TELEMETRY_CORE_DOMAIN_SPAN_CONTEXT_HPP
 
-#include <cstdint>
-#include "ores.telemetry.core/domain/trace_id.hpp"
 #include "ores.telemetry.core/domain/span_id.hpp"
+#include "ores.telemetry.core/domain/trace_id.hpp"
 #include "ores.telemetry.core/export.hpp"
+#include <cstdint>
 
 namespace ores::telemetry::domain {
 

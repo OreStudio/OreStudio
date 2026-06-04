@@ -20,11 +20,11 @@
 #ifndef ORES_CONTROLLER_API_MESSAGING_SERVICE_INSTANCE_PROTOCOL_HPP
 #define ORES_CONTROLLER_API_MESSAGING_SERVICE_INSTANCE_PROTOCOL_HPP
 
+#include "ores.controller.api/domain/service_instance.hpp"
+#include <optional>
 #include <string>
 #include <string_view>
-#include <optional>
 #include <vector>
-#include "ores.controller.api/domain/service_instance.hpp"
 
 namespace ores::controller::api::messaging {
 
@@ -34,8 +34,7 @@ namespace ores::controller::api::messaging {
 
 struct list_service_instances_request {
     using response_type = struct list_service_instances_response;
-    static constexpr std::string_view nats_subject =
-        "controller.v1.service_instances.list";
+    static constexpr std::string_view nats_subject = "controller.v1.service_instances.list";
     /**
      * @brief Filter by service name. Empty means return all instances.
      */
@@ -54,8 +53,7 @@ struct list_service_instances_response {
 
 struct start_service_request {
     using response_type = struct start_service_response;
-    static constexpr std::string_view nats_subject =
-        "controller.v1.service_instances.start";
+    static constexpr std::string_view nats_subject = "controller.v1.service_instances.start";
     std::string service_name;
     /**
      * @brief Replica index to start. Absent means start all replicas for
@@ -75,8 +73,7 @@ struct start_service_response {
 
 struct stop_service_request {
     using response_type = struct stop_service_response;
-    static constexpr std::string_view nats_subject =
-        "controller.v1.service_instances.stop";
+    static constexpr std::string_view nats_subject = "controller.v1.service_instances.stop";
     std::string service_name;
     /**
      * @brief Replica index to stop. Absent means stop all replicas for
@@ -96,8 +93,7 @@ struct stop_service_response {
 
 struct restart_service_request {
     using response_type = struct restart_service_response;
-    static constexpr std::string_view nats_subject =
-        "controller.v1.service_instances.restart";
+    static constexpr std::string_view nats_subject = "controller.v1.service_instances.restart";
     std::string service_name;
     /**
      * @brief Replica index to restart. Absent means restart all replicas

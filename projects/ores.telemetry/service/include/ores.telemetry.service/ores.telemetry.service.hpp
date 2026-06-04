@@ -23,7 +23,8 @@
 /**
  * @brief Telemetry and metrics streaming service
  *
- * Standalone NATS microservice hosting telemetry handlers: system metrics collection, distributed tracing, and log record streaming to clients.
+ * Standalone NATS microservice hosting telemetry handlers: system metrics collection, distributed
+ * tracing, and log record streaming to clients.
  */
 namespace ores::telemetry.service {}
 

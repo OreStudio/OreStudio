@@ -20,12 +20,12 @@
 #ifndef ORES_MARKETDATA_API_DOMAIN_MARKET_SERIES_HPP
 #define ORES_MARKETDATA_API_DOMAIN_MARKET_SERIES_HPP
 
-#include <chrono>
-#include <string>
-#include <boost/uuid/uuid.hpp>
-#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.marketdata.api/domain/asset_class.hpp"
 #include "ores.marketdata.api/domain/series_subclass.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <string>
 
 namespace ores::marketdata::domain {
 

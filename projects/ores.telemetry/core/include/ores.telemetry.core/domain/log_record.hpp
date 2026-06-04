@@ -20,15 +20,15 @@
 #ifndef ORES_TELEMETRY_CORE_DOMAIN_LOG_RECORD_HPP
 #define ORES_TELEMETRY_CORE_DOMAIN_LOG_RECORD_HPP
 
+#include "ores.logging/severity_level.hpp"
+#include "ores.telemetry.core/domain/attribute_value.hpp"
+#include "ores.telemetry.core/domain/resource.hpp"
+#include "ores.telemetry.core/domain/span_id.hpp"
+#include "ores.telemetry.core/domain/trace_id.hpp"
 #include <chrono>
 #include <memory>
 #include <optional>
 #include <string>
-#include "ores.telemetry.core/domain/trace_id.hpp"
-#include "ores.telemetry.core/domain/span_id.hpp"
-#include "ores.logging/severity_level.hpp"
-#include "ores.telemetry.core/domain/attribute_value.hpp"
-#include "ores.telemetry.core/domain/resource.hpp"
 
 namespace ores::telemetry::domain {
 

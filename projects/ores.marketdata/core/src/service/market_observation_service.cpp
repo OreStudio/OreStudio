@@ -31,8 +31,8 @@ market_observation_service::list(const boost::uuids::uuid& series_id) {
 
 std::vector<domain::market_observation>
 market_observation_service::list(const boost::uuids::uuid& series_id,
-    const std::chrono::year_month_day& from_date,
-    const std::chrono::year_month_day& to_date) {
+                                 const std::chrono::year_month_day& from_date,
+                                 const std::chrono::year_month_day& to_date) {
     return repo_.read_latest(ctx_, series_id, from_date, to_date);
 }
 
@@ -40,8 +40,7 @@ void market_observation_service::save(const domain::market_observation& v) {
     repo_.write(ctx_, v);
 }
 
-void market_observation_service::save(
-    const std::vector<domain::market_observation>& v) {
+void market_observation_service::save(const std::vector<domain::market_observation>& v) {
     repo_.write(ctx_, v);
 }
 

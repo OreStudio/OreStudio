@@ -20,28 +20,28 @@
 #ifndef ORES_MARKETDATA_CORE_MESSAGING_MARKET_FIXING_HANDLER_HPP
 #define ORES_MARKETDATA_CORE_MESSAGING_MARKET_FIXING_HANDLER_HPP
 
-#include <optional>
-#include <boost/lexical_cast.hpp>
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_io.hpp>
+#include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.marketdata.api/messaging/market_fixing_protocol.hpp"
+#include "ores.marketdata.core/export.hpp"
+#include "ores.marketdata.core/service/market_fixing_service.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.database/domain/context.hpp"
+#include "ores.platform/time/time_utils.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include "ores.platform/time/time_utils.hpp"
-#include "ores.marketdata.api/messaging/market_fixing_protocol.hpp"
-#include "ores.marketdata.core/service/market_fixing_service.hpp"
-#include "ores.marketdata.core/export.hpp"
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <optional>
 
 namespace ores::marketdata::messaging {
 
 namespace {
 inline auto& market_fixing_handler_lg() {
-    static auto instance = ores::logging::make_logger(
-        "ores.marketdata.messaging.market_fixing_handler");
+    static auto instance =
+        ores::logging::make_logger("ores.marketdata.messaging.market_fixing_handler");
     return instance;
 }
 } // namespace
@@ -56,15 +56,16 @@ using namespace ores::logging;
 class ORES_MARKETDATA_CORE_EXPORT market_fixing_handler {
 public:
     market_fixing_handler(ores::nats::service::client& nats,
-        ores::database::context ctx,
-        std::optional<ores::security::jwt::jwt_authenticator> verifier)
-        : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier)) {}
+                          ores::database::context ctx,
+                          std::optional<ores::security::jwt::jwt_authenticator> verifier)
+        : nats_(nats)
+        , ctx_(std::move(ctx))
+        , verifier_(std::move(verifier)) {}
 
     void list(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id =
             log_handler_entry(market_fixing_handler_lg(), msg);
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -72,28 +73,22 @@ public:
         const auto& ctx = *ctx_expected;
         auto req = decode<get_market_fixings_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(market_fixing_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(market_fixing_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         service::market_fixing_service svc(ctx);
         get_market_fixings_response resp;
         try {
-            const auto sid =
-                boost::lexical_cast<boost::uuids::uuid>(req->series_id);
+            const auto sid = boost::lexical_cast<boost::uuids::uuid>(req->series_id);
             if (!req->from_date.empty() && !req->to_date.empty()) {
-                const auto from =
-                    ores::platform::time::time_utils::parse_date(req->from_date);
-                const auto to =
-                    ores::platform::time::time_utils::parse_date(req->to_date);
+                const auto from = ores::platform::time::time_utils::parse_date(req->from_date);
+                const auto to = ores::platform::time::time_utils::parse_date(req->to_date);
                 resp.fixings = svc.list(sid, from, to);
             } else {
                 resp.fixings = svc.list(sid);
             }
-            resp.total_available_count =
-                static_cast<int>(resp.fixings.size());
-            BOOST_LOG_SEV(market_fixing_handler_lg(), debug)
-                << "Completed " << msg.subject;
+            resp.total_available_count = static_cast<int>(resp.fixings.size());
+            BOOST_LOG_SEV(market_fixing_handler_lg(), debug) << "Completed " << msg.subject;
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(market_fixing_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
@@ -104,8 +99,7 @@ public:
     void save(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id =
             log_handler_entry(market_fixing_handler_lg(), msg);
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -117,31 +111,28 @@ public:
         }
         auto req = decode<save_market_fixings_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(market_fixing_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(market_fixing_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         service::market_fixing_service svc(ctx);
         try {
             svc.save(req->fixings);
-            BOOST_LOG_SEV(market_fixing_handler_lg(), debug)
-                << "Completed " << msg.subject;
-            reply(nats_, msg, save_market_fixings_response{
-                .success = true,
-                .saved_count = static_cast<int>(req->fixings.size())});
+            BOOST_LOG_SEV(market_fixing_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_,
+                  msg,
+                  save_market_fixings_response{
+                      .success = true, .saved_count = static_cast<int>(req->fixings.size())});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(market_fixing_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, save_market_fixings_response{
-                .success = false, .message = e.what()});
+            reply(nats_, msg, save_market_fixings_response{.success = false, .message = e.what()});
         }
     }
 
     void remove(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id =
             log_handler_entry(market_fixing_handler_lg(), msg);
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -153,24 +144,20 @@ public:
         }
         auto req = decode<delete_market_fixings_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(market_fixing_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(market_fixing_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         service::market_fixing_service svc(ctx);
         try {
-            const auto sid =
-                boost::lexical_cast<boost::uuids::uuid>(req->series_id);
+            const auto sid = boost::lexical_cast<boost::uuids::uuid>(req->series_id);
             svc.remove(sid);
-            BOOST_LOG_SEV(market_fixing_handler_lg(), debug)
-                << "Completed " << msg.subject;
-            reply(nats_, msg,
-                delete_market_fixings_response{.success = true});
+            BOOST_LOG_SEV(market_fixing_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, delete_market_fixings_response{.success = true});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(market_fixing_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, delete_market_fixings_response{
-                .success = false, .message = e.what()});
+            reply(
+                nats_, msg, delete_market_fixings_response{.success = false, .message = e.what()});
         }
     }
 

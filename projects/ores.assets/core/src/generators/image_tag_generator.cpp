@@ -18,17 +18,14 @@
  *
  */
 #include "ores.assets.core/generators/image_tag_generator.hpp"
-
 #include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::assets::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::image_tag generate_synthetic_image_tag(
-    utility::generation::generation_context& ctx) {
-    const auto modified_by = ctx.env().get_or(
-        generation_keys::modified_by, "system");
+domain::image_tag generate_synthetic_image_tag(utility::generation::generation_context& ctx) {
+    const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
 
     domain::image_tag r;
     r.image_id = ctx.generate_uuid();
@@ -39,12 +36,10 @@ domain::image_tag generate_synthetic_image_tag(
     return r;
 }
 
-domain::image_tag generate_synthetic_image_tag(
-    utility::generation::generation_context& ctx,
-    const boost::uuids::uuid& image_id,
-    const boost::uuids::uuid& tag_id) {
-    const auto modified_by = ctx.env().get_or(
-        generation_keys::modified_by, "system");
+domain::image_tag generate_synthetic_image_tag(utility::generation::generation_context& ctx,
+                                               const boost::uuids::uuid& image_id,
+                                               const boost::uuids::uuid& tag_id) {
+    const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
 
     domain::image_tag r;
     r.image_id = image_id;
@@ -55,8 +50,8 @@ domain::image_tag generate_synthetic_image_tag(
     return r;
 }
 
-std::vector<domain::image_tag> generate_synthetic_image_tags(std::size_t n,
-    utility::generation::generation_context& ctx) {
+std::vector<domain::image_tag>
+generate_synthetic_image_tags(std::size_t n, utility::generation::generation_context& ctx) {
     std::vector<domain::image_tag> r;
     r.reserve(n);
     while (r.size() < n)

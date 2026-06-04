@@ -18,10 +18,9 @@
  *
  */
 #include "ores.controller.core/repository/service_instance_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::controller::repository {
 
@@ -29,8 +28,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 using ores::platform::time::datetime;
 
-api::domain::service_instance
-service_instance_mapper::map(const service_instance_entity& v) {
+api::domain::service_instance service_instance_mapper::map(const service_instance_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity.";
 
     api::domain::service_instance r;
@@ -54,8 +52,7 @@ service_instance_mapper::map(const service_instance_entity& v) {
     return r;
 }
 
-service_instance_entity
-service_instance_mapper::map(const api::domain::service_instance& v) {
+service_instance_entity service_instance_mapper::map(const api::domain::service_instance& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity.";
 
     service_instance_entity r;
@@ -82,10 +79,7 @@ service_instance_mapper::map(const api::domain::service_instance& v) {
 std::vector<api::domain::service_instance>
 service_instance_mapper::map(const std::vector<service_instance_entity>& v) {
     return map_vector<service_instance_entity, api::domain::service_instance>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 }

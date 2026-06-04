@@ -20,6 +20,10 @@
 #ifndef ORES_TELEMETRY_CORE_EXPORTING_HYBRID_LOG_EXPORTER_HPP
 #define ORES_TELEMETRY_CORE_EXPORTING_HYBRID_LOG_EXPORTER_HPP
 
+#include "ores.telemetry.core/export.hpp"
+#include "ores.telemetry.core/exporting/log_exporter.hpp"
+#include "ores.telemetry.core/exporting/telemetry_options.hpp"
+#include "ores.telemetry.core/exporting/upload_position_tracker.hpp"
 #include <atomic>
 #include <chrono>
 #include <condition_variable>
@@ -31,10 +35,6 @@
 #include <mutex>
 #include <thread>
 #include <vector>
-#include "ores.telemetry.core/exporting/log_exporter.hpp"
-#include "ores.telemetry.core/exporting/telemetry_options.hpp"
-#include "ores.telemetry.core/exporting/upload_position_tracker.hpp"
-#include "ores.telemetry.core/export.hpp"
 
 namespace ores::telemetry::exporting {
 
@@ -48,8 +48,7 @@ namespace ores::telemetry::exporting {
  * The callback is expected to be non-blocking. The actual send may happen
  * asynchronously.
  */
-using send_records_callback =
-    std::function<bool(std::vector<domain::log_record>)>;
+using send_records_callback = std::function<bool(std::vector<domain::log_record>)>;
 
 /**
  * @brief Hybrid exporter that writes to file and optionally streams to server.

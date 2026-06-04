@@ -18,22 +18,20 @@
  *
  */
 #include "ores.marketdata.core/repository/market_fixing_mapper.hpp"
-
-#include <format>
-#include <stdexcept>
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
-#include "ores.platform/time/time_utils.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.marketdata.api/domain/market_fixing_json_io.hpp" // IWYU pragma: keep.
+#include "ores.platform/time/time_utils.hpp"
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <format>
+#include <stdexcept>
 
 namespace ores::marketdata::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::market_fixing
-market_fixing_mapper::map(const market_fixing_entity& v) {
+domain::market_fixing market_fixing_mapper::map(const market_fixing_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::market_fixing r;
@@ -49,8 +47,7 @@ market_fixing_mapper::map(const market_fixing_entity& v) {
     return r;
 }
 
-market_fixing_entity
-market_fixing_mapper::map(const domain::market_fixing& v) {
+market_fixing_entity market_fixing_mapper::map(const domain::market_fixing& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     market_fixing_entity r;
@@ -68,19 +65,13 @@ market_fixing_mapper::map(const domain::market_fixing& v) {
 std::vector<domain::market_fixing>
 market_fixing_mapper::map(const std::vector<market_fixing_entity>& v) {
     return map_vector<market_fixing_entity, domain::market_fixing>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<market_fixing_entity>
 market_fixing_mapper::map(const std::vector<domain::market_fixing>& v) {
     return map_vector<domain::market_fixing, market_fixing_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

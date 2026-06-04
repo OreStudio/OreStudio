@@ -20,14 +20,14 @@
 #ifndef ORES_ASSETS_REPOSITORY_IMAGE_REPOSITORY_HPP
 #define ORES_ASSETS_REPOSITORY_IMAGE_REPOSITORY_HPP
 
-#include <chrono>
-#include <string>
-#include <vector>
-#include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
-#include "ores.database/domain/context.hpp"
 #include "ores.assets.api/domain/image.hpp"
 #include "ores.assets.core/export.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <chrono>
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::assets::repository {
 
@@ -36,8 +36,7 @@ namespace ores::assets::repository {
  */
 class ORES_ASSETS_CORE_EXPORT image_repository {
 private:
-    inline static std::string_view logger_name =
-        "ores.assets.repository.image_repository";
+    inline static std::string_view logger_name = "ores.assets.repository.image_repository";
 
     static auto& lg() {
         using namespace ores::logging;
@@ -66,12 +65,10 @@ public:
      */
     /**@{*/
     std::vector<domain::image> read_latest(context ctx);
-    std::vector<domain::image>
-    read_latest_by_id(context ctx, const std::string& image_id);
-    std::vector<domain::image>
-    read_latest_by_ids(context ctx, const std::vector<std::string>& image_ids);
-    std::vector<domain::image>
-    read_latest_by_key(context ctx, const std::string& key);
+    std::vector<domain::image> read_latest_by_id(context ctx, const std::string& image_id);
+    std::vector<domain::image> read_latest_by_ids(context ctx,
+                                                  const std::vector<std::string>& image_ids);
+    std::vector<domain::image> read_latest_by_key(context ctx, const std::string& key);
     /**@}*/
 
     /**
@@ -81,9 +78,7 @@ public:
      * @param limit Maximum number of records to return
      * @return Vector of images within the specified range
      */
-    std::vector<domain::image> read_latest(context ctx,
-                                           std::uint32_t offset,
-                                           std::uint32_t limit);
+    std::vector<domain::image> read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
 
     /**
      * @brief Reads latest images modified since a given timestamp.
@@ -91,8 +86,8 @@ public:
      * @param modified_since Only return images with recorded_at >= this time
      * @return Vector of images modified since the given timestamp
      */
-    std::vector<domain::image> read_latest_since(context ctx,
-        std::chrono::system_clock::time_point modified_since);
+    std::vector<domain::image>
+    read_latest_since(context ctx, std::chrono::system_clock::time_point modified_since);
 
     /**
      * @brief Gets the total count of active images.

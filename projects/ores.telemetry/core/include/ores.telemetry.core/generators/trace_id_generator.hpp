@@ -20,11 +20,11 @@
 #ifndef ORES_TELEMETRY_CORE_GENERATORS_TRACE_ID_GENERATOR_HPP
 #define ORES_TELEMETRY_CORE_GENERATORS_TRACE_ID_GENERATOR_HPP
 
+#include "ores.telemetry.core/domain/trace_id.hpp"
+#include "ores.telemetry.core/export.hpp"
 #include <cstdint>
 #include <mutex>
 #include <random>
-#include "ores.telemetry.core/domain/trace_id.hpp"
-#include "ores.telemetry.core/export.hpp"
 
 namespace ores::telemetry::generators {
 

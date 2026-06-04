@@ -18,30 +18,27 @@
  *
  */
 #include "ores.marketdata.core/repository/market_observation_mapper.hpp"
-
-#include <format>
-#include <stdexcept>
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
-#include "ores.platform/time/time_utils.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.marketdata.api/domain/market_observation_json_io.hpp" // IWYU pragma: keep.
+#include "ores.platform/time/time_utils.hpp"
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <format>
+#include <stdexcept>
 
 namespace ores::marketdata::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::market_observation
-market_observation_mapper::map(const market_observation_entity& v) {
+domain::market_observation market_observation_mapper::map(const market_observation_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::market_observation r;
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.series_id = boost::lexical_cast<boost::uuids::uuid>(v.series_id);
-    r.observation_date =
-        ores::platform::time::time_utils::parse_date(v.observation_date);
+    r.observation_date = ores::platform::time::time_utils::parse_date(v.observation_date);
     r.point_id = v.point_id;
     r.value = v.value;
     r.source = v.source;
@@ -51,8 +48,7 @@ market_observation_mapper::map(const market_observation_entity& v) {
     return r;
 }
 
-market_observation_entity
-market_observation_mapper::map(const domain::market_observation& v) {
+market_observation_entity market_observation_mapper::map(const domain::market_observation& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     market_observation_entity r;
@@ -71,19 +67,13 @@ market_observation_mapper::map(const domain::market_observation& v) {
 std::vector<domain::market_observation>
 market_observation_mapper::map(const std::vector<market_observation_entity>& v) {
     return map_vector<market_observation_entity, domain::market_observation>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<market_observation_entity>
 market_observation_mapper::map(const std::vector<domain::market_observation>& v) {
     return map_vector<domain::market_observation, market_observation_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

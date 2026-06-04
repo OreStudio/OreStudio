@@ -18,7 +18,6 @@
  *
  */
 #include "ores.telemetry.core/exporting/telemetry_options.hpp"
-
 #include <rfl.hpp>
 #include <rfl/json.hpp>
 

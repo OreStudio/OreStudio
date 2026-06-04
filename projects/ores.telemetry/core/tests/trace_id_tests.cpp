@@ -17,14 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.logging/make_logger.hpp"
 #include "ores.telemetry.core/domain/trace_id.hpp"
 #include "ores.telemetry.core/generators/trace_id_generator.hpp"
-
 #include <catch2/catch_test_macros.hpp>
 #include <set>
 #include <thread>
 #include <vector>
-#include "ores.logging/make_logger.hpp"
 
 namespace {
 
@@ -106,8 +105,8 @@ TEST_CASE("trace_id_generator_uses_machine_id", tags) {
     // Machine ID is in bytes 6-7
     const auto machine_high = static_cast<std::uint8_t>(id.bytes[6]);
     const auto machine_low = static_cast<std::uint8_t>(id.bytes[7]);
-    const auto machine_id = (static_cast<std::uint16_t>(machine_high) << 8) |
-                            static_cast<std::uint16_t>(machine_low);
+    const auto machine_id =
+        (static_cast<std::uint16_t>(machine_high) << 8) | static_cast<std::uint16_t>(machine_low);
 
     REQUIRE(machine_id == 0x1234);
     BOOST_LOG_SEV(lg, debug) << "Trace ID with machine 0x1234: " << id.to_hex();

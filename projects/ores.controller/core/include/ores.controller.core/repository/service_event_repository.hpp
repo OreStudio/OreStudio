@@ -20,13 +20,13 @@
 #ifndef ORES_CONTROLLER_CORE_REPOSITORY_SERVICE_EVENT_REPOSITORY_HPP
 #define ORES_CONTROLLER_CORE_REPOSITORY_SERVICE_EVENT_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
-#include "ores.database/domain/context.hpp"
 #include "ores.controller.api/domain/service_event.hpp"
 #include "ores.controller.core/export.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::controller::repository {
 
@@ -49,8 +49,7 @@ public:
      * filtered by service name. Returns at most @p limit events.
      */
     std::vector<api::domain::service_event>
-    read_latest(context ctx, const std::string& service_name_filter = "",
-        int limit = 100);
+    read_latest(context ctx, const std::string& service_name_filter = "", int limit = 100);
 
     /**
      * @brief Inserts a new service lifecycle event.

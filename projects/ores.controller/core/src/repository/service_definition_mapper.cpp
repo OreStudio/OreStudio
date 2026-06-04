@@ -18,19 +18,17 @@
  *
  */
 #include "ores.controller.core/repository/service_definition_mapper.hpp"
-
-#include <stdexcept>
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <stdexcept>
 
 namespace ores::controller::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-api::domain::service_definition
-service_definition_mapper::map(const service_definition_entity& v) {
+api::domain::service_definition service_definition_mapper::map(const service_definition_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity.";
 
     api::domain::service_definition r;
@@ -54,8 +52,7 @@ service_definition_mapper::map(const service_definition_entity& v) {
     return r;
 }
 
-service_definition_entity
-service_definition_mapper::map(const api::domain::service_definition& v) {
+service_definition_entity service_definition_mapper::map(const api::domain::service_definition& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity.";
 
     service_definition_entity r;
@@ -81,10 +78,7 @@ service_definition_mapper::map(const api::domain::service_definition& v) {
 std::vector<api::domain::service_definition>
 service_definition_mapper::map(const std::vector<service_definition_entity>& v) {
     return map_vector<service_definition_entity, api::domain::service_definition>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 }

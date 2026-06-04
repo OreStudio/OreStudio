@@ -26,8 +26,7 @@
 namespace ores::telemetry::domain {
 
 bool span_id::is_valid() const {
-    return std::any_of(bytes.begin(), bytes.end(),
-                       [](std::byte b) { return b != std::byte{0}; });
+    return std::any_of(bytes.begin(), bytes.end(), [](std::byte b) { return b != std::byte{0}; });
 }
 
 std::string span_id::to_hex() const {

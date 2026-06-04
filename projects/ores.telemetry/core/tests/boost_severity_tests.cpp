@@ -18,9 +18,8 @@
  *
  */
 #include "ores.logging/boost_severity.hpp"
-
-#include <sstream>
 #include <catch2/catch_test_macros.hpp>
+#include <sstream>
 
 namespace {
 

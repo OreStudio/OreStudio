@@ -17,44 +17,45 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <memory>
-#include <optional>
-#include <vector>
+#include "ores.assets.core/messaging/registrar.hpp"
 #include "ores.assets.api/messaging/assets_protocol.hpp"
 #include "ores.assets.core/messaging/image_handler.hpp"
 #include "ores.assets.core/messaging/publish_from_dq_handler.hpp"
-#include "ores.assets.core/messaging/registrar.hpp"
+#include <memory>
+#include <optional>
+#include <vector>
 
 namespace ores::assets::messaging {
 
 std::vector<ores::nats::service::subscription>
 registrar::register_handlers(ores::nats::service::client& nats,
-    ores::database::context ctx,
-    std::optional<ores::security::jwt::jwt_authenticator> verifier) {
+                             ores::database::context ctx,
+                             std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
 
     auto h = std::make_shared<image_handler>(nats, ctx, std::move(verifier));
 
-    subs.push_back(nats.queue_subscribe(
-        get_images_request::nats_subject, "ores.assets.service",
-        [h](ores::nats::message msg) { h->get(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(get_images_request::nats_subject,
+                                        "ores.assets.service",
+                                        [h](ores::nats::message msg) { h->get(std::move(msg)); }));
 
-    subs.push_back(nats.queue_subscribe(
-        list_images_request::nats_subject, "ores.assets.service",
-        [h](ores::nats::message msg) { h->list(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(list_images_request::nats_subject,
+                                        "ores.assets.service",
+                                        [h](ores::nats::message msg) { h->list(std::move(msg)); }));
 
-    subs.push_back(nats.queue_subscribe(
-        save_image_request::nats_subject, "ores.assets.service",
-        [h](ores::nats::message msg) { h->save(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(save_image_request::nats_subject,
+                                        "ores.assets.service",
+                                        [h](ores::nats::message msg) { h->save(std::move(msg)); }));
 
     // ----------------------------------------------------------------
     // Publish-from-DQ workflow step handler
     // ----------------------------------------------------------------
     {
         auto pdq = std::make_shared<publish_from_dq_handler>(nats, std::move(ctx));
-        subs.push_back(nats.queue_subscribe(
-            "assets.v1.images.publish-from-dq", "ores.assets.service",
-            [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); }));
+        subs.push_back(
+            nats.queue_subscribe("assets.v1.images.publish-from-dq",
+                                 "ores.assets.service",
+                                 [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); }));
     }
 
     return subs;

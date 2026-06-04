@@ -18,7 +18,6 @@
  *
  */
 #include "ores.controller.core/repository/service_definition_entity.hpp"
-
 #include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>

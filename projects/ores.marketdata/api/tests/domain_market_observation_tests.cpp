@@ -17,13 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.marketdata.api/domain/market_observation.hpp"
-
-#include <sstream>
-#include <catch2/catch_test_macros.hpp>
-#include <boost/uuid/uuid_generators.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.marketdata.api/domain/market_observation.hpp"
 #include "ores.marketdata.api/domain/market_observation_json_io.hpp" // IWYU pragma: keep.
+#include <boost/uuid/uuid_generators.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <sstream>
 
 namespace {
 
@@ -32,16 +31,14 @@ using ores::marketdata::domain::market_observation;
 const std::string_view test_suite("ores.marketdata.api.tests");
 const std::string tags("[domain]");
 
-market_observation make_curve_observation(
-    const std::string& point_id = "1Y",
-    const std::string& value = "0.034567") {
+market_observation make_curve_observation(const std::string& point_id = "1Y",
+                                          const std::string& value = "0.034567") {
 
     static boost::uuids::random_generator gen;
     market_observation o;
     o.id = gen();
     o.series_id = gen();
-    o.observation_date = std::chrono::year{2024} / std::chrono::month{3} /
-                         std::chrono::day{20};
+    o.observation_date = std::chrono::year{2024} / std::chrono::month{3} / std::chrono::day{20};
     o.point_id = point_id;
     o.value = value;
     o.source = "BLOOMBERG";
@@ -61,8 +58,8 @@ TEST_CASE("create_curve_observation_with_tenor", tags) {
 
     CHECK(!sut.id.is_nil());
     CHECK(!sut.series_id.is_nil());
-    CHECK(sut.observation_date == (std::chrono::year{2024} / std::chrono::month{3} /
-                                   std::chrono::day{20}));
+    CHECK(sut.observation_date ==
+          (std::chrono::year{2024} / std::chrono::month{3} / std::chrono::day{20}));
     CHECK(sut.point_id.has_value());
     CHECK(sut.point_id.value() == "1Y");
     CHECK(sut.value == "0.034567");
@@ -77,8 +74,7 @@ TEST_CASE("create_scalar_observation_without_point_id", tags) {
     market_observation sut;
     sut.id = gen();
     sut.series_id = gen();
-    sut.observation_date = std::chrono::year{2024} / std::chrono::month{6} /
-                           std::chrono::day{1};
+    sut.observation_date = std::chrono::year{2024} / std::chrono::month{6} / std::chrono::day{1};
     sut.value = "1.08450";
     // point_id is null for scalar series (FX spot, equity spot)
     sut.recorded_at = std::chrono::system_clock::now();

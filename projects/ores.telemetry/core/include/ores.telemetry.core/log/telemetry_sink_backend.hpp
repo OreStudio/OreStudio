@@ -20,13 +20,13 @@
 #ifndef ORES_TELEMETRY_CORE_LOG_TELEMETRY_SINK_BACKEND_HPP
 #define ORES_TELEMETRY_CORE_LOG_TELEMETRY_SINK_BACKEND_HPP
 
-#include <memory>
-#include <functional>
-#include <boost/log/sinks/basic_sink_backend.hpp>
-#include <boost/log/sinks/frontend_requirements.hpp>
 #include "ores.telemetry.core/domain/log_record.hpp"
 #include "ores.telemetry.core/domain/resource.hpp"
 #include "ores.telemetry.core/export.hpp"
+#include <boost/log/sinks/basic_sink_backend.hpp>
+#include <boost/log/sinks/frontend_requirements.hpp>
+#include <functional>
+#include <memory>
 
 namespace ores::telemetry::log {
 
@@ -50,9 +50,8 @@ namespace ores::telemetry::log {
  * boost::log::core::get()->add_sink(sink);
  * @endcode
  */
-class ORES_TELEMETRY_CORE_EXPORT telemetry_sink_backend :
-    public boost::log::sinks::basic_sink_backend<
-        boost::log::sinks::synchronized_feeding> {
+class ORES_TELEMETRY_CORE_EXPORT telemetry_sink_backend
+    : public boost::log::sinks::basic_sink_backend<boost::log::sinks::synchronized_feeding> {
 public:
     /**
      * @brief Handler function type for processing log records.
@@ -71,7 +70,7 @@ public:
      * @param handler Function called for each converted log record.
      */
     explicit telemetry_sink_backend(std::shared_ptr<domain::resource> res,
-                                     log_record_handler handler);
+                                    log_record_handler handler);
 
     /**
      * @brief Processes a Boost.Log record and converts it to telemetry format.

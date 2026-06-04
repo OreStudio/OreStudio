@@ -20,13 +20,13 @@
 #ifndef ORES_ASSETS_MESSAGING_ASSETS_PROTOCOL_HPP
 #define ORES_ASSETS_MESSAGING_ASSETS_PROTOCOL_HPP
 
+#include "ores.assets.api/domain/image.hpp"
 #include <chrono>
 #include <cstddef>
 #include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
-#include "ores.assets.api/domain/image.hpp"
 
 namespace ores::assets::messaging {
 

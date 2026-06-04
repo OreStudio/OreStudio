@@ -20,11 +20,11 @@
 #ifndef ORES_CONTROLLER_CORE_REPOSITORY_SERVICE_EVENT_ENTITY_HPP
 #define ORES_CONTROLLER_CORE_REPOSITORY_SERVICE_EVENT_ENTITY_HPP
 
-#include <string>
-#include <optional>
-#include <ostream>
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
+#include <optional>
+#include <ostream>
+#include <string>
 
 namespace ores::controller::repository {
 
@@ -38,8 +38,7 @@ using db_timestamp = ores::database::repository::db_timestamp;
  */
 struct service_event_entity {
     constexpr static const char* schema = "public";
-    constexpr static const char* tablename =
-        "ores_controller_service_events_tbl";
+    constexpr static const char* tablename = "ores_controller_service_events_tbl";
 
     sqlgen::PrimaryKey<db_timestamp> occurred_at;
     sqlgen::PrimaryKey<std::string> event_id;

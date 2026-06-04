@@ -18,20 +18,18 @@
  *
  */
 #include "ores.marketdata.api/generators/market_series_generator.hpp"
-
-#include <atomic>
 #include "ores.utility/generation/generation_keys.hpp"
+#include <atomic>
 
 namespace ores::marketdata::generator {
 
 using ores::utility::generation::generation_keys;
 
-domain::market_series generate_synthetic_market_series(
-    utility::generation::generation_context& ctx) {
+domain::market_series
+generate_synthetic_market_series(utility::generation::generation_context& ctx) {
     static std::atomic<int> counter{0};
 
-    const auto modified_by = ctx.env().get_or(
-        std::string(generation_keys::modified_by), "system");
+    const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
 
     domain::market_series r;
     r.id = ctx.generate_uuid();
@@ -51,8 +49,7 @@ domain::market_series generate_synthetic_market_series(
 }
 
 std::vector<domain::market_series>
-generate_synthetic_market_series(std::size_t n,
-    utility::generation::generation_context& ctx) {
+generate_synthetic_market_series(std::size_t n, utility::generation::generation_context& ctx) {
     std::vector<domain::market_series> r;
     r.reserve(n);
     while (r.size() < n)

@@ -29,8 +29,7 @@ std::vector<domain::market_series> market_series_service::list() {
 }
 
 std::vector<domain::market_series> market_series_service::find_by_type(
-    const std::string& series_type, const std::string& metric,
-    const std::string& qualifier) {
+    const std::string& series_type, const std::string& metric, const std::string& qualifier) {
     return repo_.read_latest_by_type(ctx_, series_type, metric, qualifier);
 }
 

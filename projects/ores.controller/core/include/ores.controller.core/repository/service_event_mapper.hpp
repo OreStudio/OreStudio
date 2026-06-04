@@ -20,18 +20,17 @@
 #ifndef ORES_CONTROLLER_CORE_REPOSITORY_SERVICE_EVENT_MAPPER_HPP
 #define ORES_CONTROLLER_CORE_REPOSITORY_SERVICE_EVENT_MAPPER_HPP
 
-#include <vector>
-#include "ores.logging/make_logger.hpp"
 #include "ores.controller.api/domain/service_event.hpp"
-#include "ores.controller.core/repository/service_event_entity.hpp"
 #include "ores.controller.core/export.hpp"
+#include "ores.controller.core/repository/service_event_entity.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <vector>
 
 namespace ores::controller::repository {
 
 class ORES_CONTROLLER_CORE_EXPORT service_event_mapper {
 private:
-    inline static std::string_view logger_name =
-        "ores.controller.repository.service_event_mapper";
+    inline static std::string_view logger_name = "ores.controller.repository.service_event_mapper";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -43,8 +42,7 @@ public:
     static api::domain::service_event map(const service_event_entity& v);
     static service_event_entity map(const api::domain::service_event& v);
 
-    static std::vector<api::domain::service_event>
-    map(const std::vector<service_event_entity>& v);
+    static std::vector<api::domain::service_event> map(const std::vector<service_event_entity>& v);
 };
 
 }

@@ -20,9 +20,9 @@
 #ifndef ORES_ASSETS_DOMAIN_TAG_JSON_IO_HPP
 #define ORES_ASSETS_DOMAIN_TAG_JSON_IO_HPP
 
-#include <iosfwd>
 #include "ores.assets.api/domain/tag.hpp"
 #include "ores.assets.api/export.hpp"
+#include <iosfwd>
 
 namespace ores::assets::domain {
 

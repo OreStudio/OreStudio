@@ -18,10 +18,9 @@
  *
  */
 #include "ores.assets.core/repository/image_mapper.hpp"
-
+#include "ores.database/repository/mapper_helpers.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include "ores.database/repository/mapper_helpers.hpp"
 
 namespace ores::assets::repository {
 
@@ -38,7 +37,7 @@ domain::image image_mapper::map(const image_entity& v) {
     r.key = v.key;
     r.description = v.description;
     r.svg_data = v.svg_data;
-r.modified_by = v.modified_by;
+    r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
@@ -58,7 +57,7 @@ image_entity image_mapper::map(const domain::image& v) {
     r.key = v.key;
     r.description = v.description;
     r.svg_data = v.svg_data;
-r.modified_by = v.modified_by;
+    r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
@@ -68,22 +67,14 @@ r.modified_by = v.modified_by;
     return r;
 }
 
-std::vector<domain::image>
-image_mapper::map(const std::vector<image_entity>& v) {
+std::vector<domain::image> image_mapper::map(const std::vector<image_entity>& v) {
     return map_vector<image_entity, domain::image>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
-std::vector<image_entity>
-image_mapper::map(const std::vector<domain::image>& v) {
+std::vector<image_entity> image_mapper::map(const std::vector<domain::image>& v) {
     return map_vector<domain::image, image_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

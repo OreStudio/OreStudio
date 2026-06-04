@@ -17,13 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.marketdata.api/domain/market_fixing.hpp"
-
-#include <sstream>
-#include <catch2/catch_test_macros.hpp>
-#include <boost/uuid/uuid_generators.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.marketdata.api/domain/market_fixing.hpp"
 #include "ores.marketdata.api/domain/market_fixing_json_io.hpp" // IWYU pragma: keep.
+#include <boost/uuid/uuid_generators.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <sstream>
 
 namespace {
 
@@ -37,8 +36,7 @@ market_fixing make_euribor_fixing(const std::string& value = "0.038940") {
     market_fixing f;
     f.id = gen();
     f.series_id = gen();
-    f.fixing_date = std::chrono::year{2024} / std::chrono::month{3} /
-                    std::chrono::day{20};
+    f.fixing_date = std::chrono::year{2024} / std::chrono::month{3} / std::chrono::day{20};
     f.value = value;
     f.source = "ECB";
     f.recorded_at = std::chrono::system_clock::now();
@@ -57,8 +55,8 @@ TEST_CASE("create_fixing_with_valid_fields", tags) {
 
     CHECK(!sut.id.is_nil());
     CHECK(!sut.series_id.is_nil());
-    CHECK(sut.fixing_date == (std::chrono::year{2024} / std::chrono::month{3} /
-                              std::chrono::day{20}));
+    CHECK(sut.fixing_date ==
+          (std::chrono::year{2024} / std::chrono::month{3} / std::chrono::day{20}));
     CHECK(sut.value == "0.038940");
     CHECK(sut.source.has_value());
     CHECK(sut.source.value() == "ECB");
@@ -71,8 +69,7 @@ TEST_CASE("create_fixing_without_source", tags) {
     market_fixing sut;
     sut.id = gen();
     sut.series_id = gen();
-    sut.fixing_date = std::chrono::year{2024} / std::chrono::month{1} /
-                      std::chrono::day{15};
+    sut.fixing_date = std::chrono::year{2024} / std::chrono::month{1} / std::chrono::day{15};
     sut.value = "0.052300";
     sut.recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Fixing without source: " << sut;

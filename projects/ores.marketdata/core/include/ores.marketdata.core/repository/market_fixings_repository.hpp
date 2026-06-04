@@ -20,15 +20,15 @@
 #ifndef ORES_MARKETDATA_CORE_REPOSITORY_MARKET_FIXINGS_REPOSITORY_HPP
 #define ORES_MARKETDATA_CORE_REPOSITORY_MARKET_FIXINGS_REPOSITORY_HPP
 
-#include <chrono>
-#include <string>
-#include <vector>
-#include <boost/uuid/uuid.hpp>
-#include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/market_fixing.hpp"
 #include "ores.marketdata.core/export.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::marketdata::repository {
 
@@ -56,13 +56,13 @@ public:
     void write(context ctx, const domain::market_fixing& v);
     void write(context ctx, const std::vector<domain::market_fixing>& v);
 
-    std::vector<domain::market_fixing>
-    read_latest(context ctx, const boost::uuids::uuid& series_id);
+    std::vector<domain::market_fixing> read_latest(context ctx,
+                                                   const boost::uuids::uuid& series_id);
 
-    std::vector<domain::market_fixing>
-    read_latest(context ctx, const boost::uuids::uuid& series_id,
-        const std::chrono::year_month_day& from_date,
-        const std::chrono::year_month_day& to_date);
+    std::vector<domain::market_fixing> read_latest(context ctx,
+                                                   const boost::uuids::uuid& series_id,
+                                                   const std::chrono::year_month_day& from_date,
+                                                   const std::chrono::year_month_day& to_date);
 
     void remove(context ctx, const boost::uuids::uuid& series_id);
 };

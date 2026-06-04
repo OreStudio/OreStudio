@@ -20,27 +20,26 @@
 #ifndef ORES_ASSETS_MESSAGING_IMAGE_HANDLER_HPP
 #define ORES_ASSETS_MESSAGING_IMAGE_HANDLER_HPP
 
-#include <optional>
-#include <vector>
-#include <boost/uuid/uuid_io.hpp>
+#include "ores.assets.api/messaging/assets_protocol.hpp"
+#include "ores.assets.core/export.hpp"
+#include "ores.assets.core/repository/image_repository.hpp"
+#include "ores.assets.core/service/assets_service.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.database/domain/context.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
-#include "ores.assets.api/messaging/assets_protocol.hpp"
-#include "ores.assets.core/repository/image_repository.hpp"
-#include "ores.assets.core/service/assets_service.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include "ores.assets.core/export.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <optional>
+#include <vector>
 
 namespace ores::assets::messaging {
 
 namespace {
 inline auto& image_handler_lg() {
-    static auto instance = ores::logging::make_logger(
-        "ores.assets.messaging.image_handler");
+    static auto instance = ores::logging::make_logger("ores.assets.messaging.image_handler");
     return instance;
 }
 } // namespace
@@ -55,9 +54,11 @@ using namespace ores::logging;
 class ORES_ASSETS_CORE_EXPORT image_handler {
 public:
     image_handler(ores::nats::service::client& nats,
-        ores::database::context ctx,
-        std::optional<ores::security::jwt::jwt_authenticator> verifier)
-        : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier)) {}
+                  ores::database::context ctx,
+                  std::optional<ores::security::jwt::jwt_authenticator> verifier)
+        : nats_(nats)
+        , ctx_(std::move(ctx))
+        , verifier_(std::move(verifier)) {}
 
     void get(ores::nats::message msg) {
         BOOST_LOG_SEV(image_handler_lg(), debug) << "Handling " << msg.subject;
@@ -66,8 +67,7 @@ public:
             BOOST_LOG_SEV(image_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -91,8 +91,7 @@ public:
             BOOST_LOG_SEV(image_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -130,8 +129,7 @@ public:
             BOOST_LOG_SEV(image_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;

@@ -20,8 +20,8 @@
 #ifndef ORES_TELEMETRY_CORE_LOG_SKIP_TELEMETRY_GUARD_HPP
 #define ORES_TELEMETRY_CORE_LOG_SKIP_TELEMETRY_GUARD_HPP
 
-#include <boost/log/attributes/value_extraction.hpp>
 #include "ores.logging/scoped_attribute.hpp"
+#include <boost/log/attributes/value_extraction.hpp>
 
 namespace ores::telemetry::log {
 
@@ -67,7 +67,7 @@ public:
  * @param rec The log record to check.
  * @return true if the record has the SkipTelemetry attribute set to true.
  */
-template<typename RecordView>
+template <typename RecordView>
 bool should_skip_telemetry(const RecordView& rec) {
     auto skip_attr = boost::log::extract<bool>(skip_telemetry_attribute, rec);
     return skip_attr && skip_attr.get();

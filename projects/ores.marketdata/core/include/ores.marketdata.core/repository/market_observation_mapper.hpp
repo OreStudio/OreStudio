@@ -20,11 +20,11 @@
 #ifndef ORES_MARKETDATA_CORE_REPOSITORY_MARKET_OBSERVATION_MAPPER_HPP
 #define ORES_MARKETDATA_CORE_REPOSITORY_MARKET_OBSERVATION_MAPPER_HPP
 
-#include <vector>
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/market_observation.hpp"
-#include "ores.marketdata.core/repository/market_observation_entity.hpp"
 #include "ores.marketdata.core/export.hpp"
+#include "ores.marketdata.core/repository/market_observation_entity.hpp"
+#include <vector>
 
 namespace ores::marketdata::repository {
 

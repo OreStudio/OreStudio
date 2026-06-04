@@ -18,16 +18,15 @@
  *
  */
 #include "ores.assets.core/repository/image_repository.hpp"
-
+#include "ores.assets.core/repository/image_entity.hpp"
+#include "ores.assets.core/repository/image_mapper.hpp"
+#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include <charconv>
-#include <sstream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
-#include "ores.platform/time/datetime.hpp"
-#include "ores.database/repository/helpers.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
-#include "ores.assets.core/repository/image_mapper.hpp"
-#include "ores.assets.core/repository/image_entity.hpp"
+#include <sstream>
 
 namespace ores::assets::repository {
 
@@ -43,48 +42,48 @@ std::string image_repository::sql() {
 void image_repository::write(context ctx, const domain::image& image) {
     BOOST_LOG_SEV(lg(), debug) << "Writing image to database. Key: " << image.key;
 
-    execute_write_query(ctx, image_mapper::map(image),
-        lg(), "Writing image to database.");
+    execute_write_query(ctx, image_mapper::map(image), lg(), "Writing image to database.");
 }
 
 void image_repository::write(context ctx, const std::vector<domain::image>& images) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing images to database. Count: "
-                               << images.size();
+    BOOST_LOG_SEV(lg(), debug) << "Writing images to database. Count: " << images.size();
 
-    execute_write_query(ctx, image_mapper::map(images),
-        lg(), "Writing images to database.");
+    execute_write_query(ctx, image_mapper::map(images), lg(), "Writing images to database.");
 }
 
 std::vector<domain::image> image_repository::read_latest(context ctx) {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<image_entity>> |
-        where("valid_to"_c == max.value()) |
-        order_by("valid_from"_c.desc());
+                       where("valid_to"_c == max.value()) | order_by("valid_from"_c.desc());
 
-    return execute_read_query<image_entity, domain::image>(ctx, query,
+    return execute_read_query<image_entity, domain::image>(
+        ctx,
+        query,
         [](const auto& entities) { return image_mapper::map(entities); },
-        lg(), "Reading latest images");
+        lg(),
+        "Reading latest images");
 }
 
-std::vector<domain::image>
-image_repository::read_latest_by_id(context ctx, const std::string& image_id) {
+std::vector<domain::image> image_repository::read_latest_by_id(context ctx,
+                                                               const std::string& image_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest images by ID: " << image_id;
 
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<image_entity>> |
-        where("image_id"_c == image_id && "valid_to"_c == max.value()) |
-        order_by("valid_from"_c.desc());
+                       where("image_id"_c == image_id && "valid_to"_c == max.value()) |
+                       order_by("valid_from"_c.desc());
 
-    return execute_read_query<image_entity, domain::image>(ctx, query,
+    return execute_read_query<image_entity, domain::image>(
+        ctx,
+        query,
         [](const auto& entities) { return image_mapper::map(entities); },
-        lg(), "Reading latest images by ID.");
+        lg(),
+        "Reading latest images by ID.");
 }
 
 std::vector<domain::image>
-image_repository::read_latest_by_ids(context ctx,
-    const std::vector<std::string>& image_ids) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest images by IDs. Count: "
-                               << image_ids.size();
+image_repository::read_latest_by_ids(context ctx, const std::vector<std::string>& image_ids) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest images by IDs. Count: " << image_ids.size();
 
     if (image_ids.empty()) {
         return {};
@@ -93,12 +92,15 @@ image_repository::read_latest_by_ids(context ctx,
     // Build IN clause with properly escaped values
     std::ostringstream in_clause;
     for (size_t i = 0; i < image_ids.size(); ++i) {
-        if (i > 0) in_clause << ", ";
+        if (i > 0)
+            in_clause << ", ";
         // Escape single quotes by doubling them
         std::string escaped_id;
         for (char c : image_ids[i]) {
-            if (c == '\'') escaped_id += "''";
-            else escaped_id += c;
+            if (c == '\'')
+                escaped_id += "''";
+            else
+                escaped_id += c;
         }
         in_clause << "'" << escaped_id << "'";
     }
@@ -113,15 +115,16 @@ image_repository::read_latest_by_ids(context ctx,
         << "AND valid_to = '9999-12-31 23:59:59' "
         << "ORDER BY valid_from DESC";
 
-    auto rows = execute_raw_multi_column_query(ctx, sql.str(), lg(),
-        "Reading latest images by IDs");
+    auto rows =
+        execute_raw_multi_column_query(ctx, sql.str(), lg(), "Reading latest images by IDs");
 
     // Convert raw results to domain objects
     std::vector<domain::image> results;
     results.reserve(rows.size());
 
     for (const auto& row : rows) {
-        if (row.size() < 12) continue;
+        if (row.size() < 12)
+            continue;
 
         image_entity entity;
         entity.image_id = row[0].value_or("");
@@ -150,60 +153,64 @@ image_repository::read_latest_by_ids(context ctx,
     return results;
 }
 
-std::vector<domain::image>
-image_repository::read_latest_by_key(context ctx, const std::string& key) {
+std::vector<domain::image> image_repository::read_latest_by_key(context ctx,
+                                                                const std::string& key) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest images by key: " << key;
 
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<image_entity>> |
-        where("key"_c == key && "valid_to"_c == max.value()) |
-        order_by("valid_from"_c.desc());
+                       where("key"_c == key && "valid_to"_c == max.value()) |
+                       order_by("valid_from"_c.desc());
 
-    return execute_read_query<image_entity, domain::image>(ctx, query,
+    return execute_read_query<image_entity, domain::image>(
+        ctx,
+        query,
         [](const auto& entities) { return image_mapper::map(entities); },
-        lg(), "Reading latest images by key.");
+        lg(),
+        "Reading latest images by key.");
 }
 
 std::vector<domain::image>
-image_repository::read_latest(context ctx, std::uint32_t offset,
-                              std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest images with offset: "
-                               << offset << " and limit: " << limit;
+image_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest images with offset: " << offset
+                               << " and limit: " << limit;
 
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<image_entity>> |
-        where("valid_to"_c == max.value()) |
-        order_by("valid_from"_c.desc()) |
-        sqlgen::offset(offset) |
-        sqlgen::limit(limit);
+                       where("valid_to"_c == max.value()) | order_by("valid_from"_c.desc()) |
+                       sqlgen::offset(offset) | sqlgen::limit(limit);
 
-    return execute_read_query<image_entity, domain::image>(ctx, query,
+    return execute_read_query<image_entity, domain::image>(
+        ctx,
+        query,
         [](const auto& entities) { return image_mapper::map(entities); },
-        lg(), "Reading latest images with pagination.");
+        lg(),
+        "Reading latest images with pagination.");
 }
 
 std::vector<domain::image>
 image_repository::read_latest_since(context ctx,
-    std::chrono::system_clock::time_point modified_since) {
+                                    std::chrono::system_clock::time_point modified_since) {
 
     // Format timestamp for sqlgen query (thread-safe)
-    const auto timestamp_str =
-        platform::time::datetime::to_iso8601_utc(modified_since);
+    const auto timestamp_str = platform::time::datetime::to_iso8601_utc(modified_since);
 
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest images modified since: "
-                               << timestamp_str;
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest images modified since: " << timestamp_str;
 
     // Use sqlgen query with timestamp comparison
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto since_ts = make_timestamp(timestamp_str, lg());
 
     const auto query = sqlgen::read<std::vector<image_entity>> |
-        where("valid_to"_c == max.value() && "valid_from"_c >= since_ts.value()) |
-        order_by("valid_from"_c.desc());
+                       where("valid_to"_c == max.value() && "valid_from"_c >= since_ts.value()) |
+                       order_by("valid_from"_c.desc());
 
-    return execute_read_query<image_entity, domain::image>(ctx, query,
+    return execute_read_query<image_entity, domain::image>(
+        ctx,
+        query,
         [](const auto& entities) { return image_mapper::map(entities); },
-        lg(), "Reading latest images since timestamp");
+        lg(),
+        "Reading latest images since timestamp");
 }
 
 std::uint32_t image_repository::get_total_image_count(context ctx) {
@@ -215,10 +222,8 @@ std::uint32_t image_repository::get_total_image_count(context ctx) {
         long long count;
     };
 
-    const auto query = sqlgen::select_from<image_entity>(
-        sqlgen::count().as<"count">()) |
-        where("valid_to"_c == max.value()) |
-        sqlgen::to<count_result>;
+    const auto query = sqlgen::select_from<image_entity>(sqlgen::count().as<"count">()) |
+                       where("valid_to"_c == max.value()) | sqlgen::to<count_result>;
 
     const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
     ensure_success(r, lg());
@@ -229,19 +234,20 @@ std::uint32_t image_repository::get_total_image_count(context ctx) {
 }
 
 std::vector<domain::image> image_repository::read_all(context ctx) {
-    const auto query = sqlgen::read<std::vector<image_entity>> |
-        order_by("valid_from"_c.desc());
+    const auto query = sqlgen::read<std::vector<image_entity>> | order_by("valid_from"_c.desc());
 
-    return execute_read_query<image_entity, domain::image>(ctx, query,
+    return execute_read_query<image_entity, domain::image>(
+        ctx,
+        query,
         [](const auto& entities) { return image_mapper::map(entities); },
-        lg(), "Reading all images.");
+        lg(),
+        "Reading all images.");
 }
 
 void image_repository::remove(context ctx, const std::string& image_id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing image from database: " << image_id;
 
-    const auto query = sqlgen::delete_from<image_entity> |
-        where("image_id"_c == image_id);
+    const auto query = sqlgen::delete_from<image_entity> | where("image_id"_c == image_id);
 
     execute_delete_query(ctx, query, lg(), "Removing image from database.");
 }

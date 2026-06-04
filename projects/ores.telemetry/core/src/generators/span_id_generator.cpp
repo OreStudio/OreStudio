@@ -23,9 +23,9 @@
 namespace ores::telemetry::generators {
 
 span_id_generator::span_id_generator()
-    : sequence_(0),
-      last_timestamp_ms_(0),
-      random_engine_(std::random_device{}()) {}
+    : sequence_(0)
+    , last_timestamp_ms_(0)
+    , random_engine_(std::random_device{}()) {}
 
 domain::span_id span_id_generator::operator()() {
     std::lock_guard<std::mutex> lock(mutex_);
@@ -35,8 +35,7 @@ domain::span_id span_id_generator::operator()() {
     // Get current timestamp in milliseconds
     const auto now = std::chrono::system_clock::now();
     const auto ms = static_cast<std::uint64_t>(
-        std::chrono::duration_cast<std::chrono::milliseconds>(
-            now.time_since_epoch()).count());
+        std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count());
 
     // Manage sequence: reset if timestamp changed, increment otherwise
     std::uint16_t seq;
@@ -45,7 +44,7 @@ domain::span_id span_id_generator::operator()() {
         // Add some randomness to the initial sequence to avoid
         // collisions across processes starting at the same millisecond
         seq = static_cast<std::uint16_t>(random_engine_() & 0x0FFF);
-        sequence_.store(seq + 1);  // Store next value to avoid duplicate on next call
+        sequence_.store(seq + 1); // Store next value to avoid duplicate on next call
     } else {
         seq = sequence_.fetch_add(1);
         // If we overflow the sequence in a single millisecond, add random bits

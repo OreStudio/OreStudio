@@ -18,12 +18,11 @@
  *
  */
 #include "ores.telemetry.core/exporting/hybrid_log_exporter.hpp"
-
-#include <fstream>
+#include "ores.platform/time/time_utils.hpp"
 #include <format>
+#include <fstream>
 #include <sstream>
 #include <stdexcept>
-#include "ores.platform/time/time_utils.hpp"
 
 namespace ores::telemetry::exporting {
 
@@ -31,29 +30,39 @@ namespace {
 
 std::string_view severity_to_string(logging::severity_level level) {
     switch (level) {
-    case logging::severity_level::trace: return "TRACE";
-    case logging::severity_level::debug: return "DEBUG";
-    case logging::severity_level::info:  return "INFO";
-    case logging::severity_level::warn:  return "WARN";
-    case logging::severity_level::error: return "ERROR";
-    case logging::severity_level::fatal: return "FATAL";
-    default: return "UNKNOWN";
+        case logging::severity_level::trace:
+            return "TRACE";
+        case logging::severity_level::debug:
+            return "DEBUG";
+        case logging::severity_level::info:
+            return "INFO";
+        case logging::severity_level::warn:
+            return "WARN";
+        case logging::severity_level::error:
+            return "ERROR";
+        case logging::severity_level::fatal:
+            return "FATAL";
+        default:
+            return "UNKNOWN";
     }
 }
 
-std::string format_timestamp(
-    const std::chrono::system_clock::time_point& tp) {
+std::string format_timestamp(const std::chrono::system_clock::time_point& tp) {
     const auto time_t_val = std::chrono::system_clock::to_time_t(tp);
-    const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
-        tp.time_since_epoch()) % 1000;
+    const auto ms =
+        std::chrono::duration_cast<std::chrono::milliseconds>(tp.time_since_epoch()) % 1000;
 
     std::tm tm_val{};
     platform::time::time_utils::gmtime_safe(&time_t_val, &tm_val);
 
     return std::format("{:04d}-{:02d}-{:02d}T{:02d}:{:02d}:{:02d}.{:03d}Z",
-        tm_val.tm_year + 1900, tm_val.tm_mon + 1, tm_val.tm_mday,
-        tm_val.tm_hour, tm_val.tm_min, tm_val.tm_sec,
-        static_cast<int>(ms.count()));
+                       tm_val.tm_year + 1900,
+                       tm_val.tm_mon + 1,
+                       tm_val.tm_mday,
+                       tm_val.tm_hour,
+                       tm_val.tm_min,
+                       tm_val.tm_sec,
+                       static_cast<int>(ms.count()));
 }
 
 std::string escape_json(const std::string& s) {
@@ -62,19 +71,33 @@ std::string escape_json(const std::string& s) {
 
     for (char c : s) {
         switch (c) {
-        case '"':  result += "\\\""; break;
-        case '\\': result += "\\\\"; break;
-        case '\b': result += "\\b"; break;
-        case '\f': result += "\\f"; break;
-        case '\n': result += "\\n"; break;
-        case '\r': result += "\\r"; break;
-        case '\t': result += "\\t"; break;
-        default:
-            if (static_cast<unsigned char>(c) < 0x20) {
-                result += std::format("\\u{:04x}", static_cast<unsigned int>(c));
-            } else {
-                result += c;
-            }
+            case '"':
+                result += "\\\"";
+                break;
+            case '\\':
+                result += "\\\\";
+                break;
+            case '\b':
+                result += "\\b";
+                break;
+            case '\f':
+                result += "\\f";
+                break;
+            case '\n':
+                result += "\\n";
+                break;
+            case '\r':
+                result += "\\r";
+                break;
+            case '\t':
+                result += "\\t";
+                break;
+            default:
+                if (static_cast<unsigned char>(c) < 0x20) {
+                    result += std::format("\\u{:04x}", static_cast<unsigned int>(c));
+                } else {
+                    result += c;
+                }
         }
     }
     return result;
@@ -82,10 +105,9 @@ std::string escape_json(const std::string& s) {
 
 }
 
-hybrid_log_exporter::hybrid_log_exporter(
-    const std::filesystem::path& file_path,
-    telemetry_options options,
-    send_records_callback send_callback)
+hybrid_log_exporter::hybrid_log_exporter(const std::filesystem::path& file_path,
+                                         telemetry_options options,
+                                         send_records_callback send_callback)
     : file_(file_path, std::ios::out | std::ios::app)
     , file_path_(file_path)
     , options_(std::move(options))
@@ -257,9 +279,8 @@ void hybrid_log_exporter::flush_thread_func() {
         std::unique_lock<std::mutex> lock(batch_mutex_);
 
         // Wait for the flush interval, or until notified for shutdown.
-        flush_cv_.wait_for(lock, options_.flush_interval, [this] {
-            return shutdown_requested_.load();
-        });
+        flush_cv_.wait_for(
+            lock, options_.flush_interval, [this] { return shutdown_requested_.load(); });
 
         if (shutdown_requested_) {
             break;

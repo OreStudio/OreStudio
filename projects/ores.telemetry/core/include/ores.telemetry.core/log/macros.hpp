@@ -20,10 +20,10 @@
 #ifndef ORES_TELEMETRY_CORE_LOG_MACROS_HPP
 #define ORES_TELEMETRY_CORE_LOG_MACROS_HPP
 
-#include <boost/log/sources/record_ostream.hpp>
-#include <boost/log/attributes/constant.hpp>
 #include "ores.logging/boost_severity.hpp"
 #include "ores.telemetry.core/domain/telemetry_context.hpp"
+#include <boost/log/attributes/constant.hpp>
+#include <boost/log/sources/record_ostream.hpp>
 
 namespace ores::telemetry::log {
 
@@ -43,12 +43,10 @@ struct trace_context_injector {
 /**
  * @brief Stream operator to inject trace context into Boost.Log record.
  */
-template<typename StreamT>
+template <typename StreamT>
 inline StreamT& operator<<(StreamT& strm, const trace_context_injector& injector) {
-    strm << boost::log::add_value("trace_id",
-        injector.ctx.get_trace_id().to_hex());
-    strm << boost::log::add_value("span_id",
-        injector.ctx.get_span_id().to_hex());
+    strm << boost::log::add_value("trace_id", injector.ctx.get_trace_id().to_hex());
+    strm << boost::log::add_value("span_id", injector.ctx.get_span_id().to_hex());
     return strm;
 }
 
@@ -70,7 +68,7 @@ inline StreamT& operator<<(StreamT& strm, const trace_context_injector& injector
  * @param ctx The telemetry_context containing trace/span information.
  * @param sev The severity level (trace, debug, info, warn, error).
  */
-#define TLOG_SEV(logger, ctx, sev) \
+#define TLOG_SEV(logger, ctx, sev)                              \
     BOOST_LOG_SEV(logger, ::ores::logging::boost_severity::sev) \
         << ::ores::logging::trace_context_injector(ctx)
 

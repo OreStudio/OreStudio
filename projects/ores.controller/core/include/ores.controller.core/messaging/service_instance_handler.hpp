@@ -20,28 +20,28 @@
 #ifndef ORES_CONTROLLER_CORE_MESSAGING_SERVICE_INSTANCE_HANDLER_HPP
 #define ORES_CONTROLLER_CORE_MESSAGING_SERVICE_INSTANCE_HANDLER_HPP
 
-#include <optional>
-#include <chrono>
-#include <boost/uuid/uuid_generators.hpp>
+#include "ores.controller.api/messaging/service_instance_protocol.hpp"
+#include "ores.controller.core/export.hpp"
+#include "ores.controller.core/repository/service_event_repository.hpp"
+#include "ores.controller.core/repository/service_instance_repository.hpp"
+#include "ores.controller.core/service/process_supervisor.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.database/domain/context.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include "ores.controller.api/messaging/service_instance_protocol.hpp"
-#include "ores.controller.core/repository/service_instance_repository.hpp"
-#include "ores.controller.core/repository/service_event_repository.hpp"
-#include "ores.controller.core/service/process_supervisor.hpp"
-#include "ores.controller.core/export.hpp"
+#include <boost/uuid/uuid_generators.hpp>
+#include <chrono>
+#include <optional>
 
 namespace ores::controller::messaging {
 
 namespace {
 inline auto& service_instance_handler_lg() {
-    static auto instance = ores::logging::make_logger(
-        "ores.controller.messaging.service_instance_handler");
+    static auto instance =
+        ores::logging::make_logger("ores.controller.messaging.service_instance_handler");
     return instance;
 }
 } // namespace
@@ -56,17 +56,17 @@ using namespace ores::logging;
 class ORES_CONTROLLER_CORE_EXPORT service_instance_handler {
 public:
     service_instance_handler(ores::nats::service::client& nats,
-        ores::database::context ctx,
-        std::optional<ores::security::jwt::jwt_authenticator> verifier,
-        service::process_supervisor* supervisor = nullptr)
-        : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier))
+                             ores::database::context ctx,
+                             std::optional<ores::security::jwt::jwt_authenticator> verifier,
+                             service::process_supervisor* supervisor = nullptr)
+        : nats_(nats)
+        , ctx_(std::move(ctx))
+        , verifier_(std::move(verifier))
         , supervisor_(supervisor) {}
 
     void list(ores::nats::message msg) {
-        [[maybe_unused]] const auto cid =
-            log_handler_entry(service_instance_handler_lg(), msg);
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        [[maybe_unused]] const auto cid = log_handler_entry(service_instance_handler_lg(), msg);
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -91,62 +91,53 @@ public:
     }
 
     void start(ores::nats::message msg) {
-        [[maybe_unused]] const auto cid =
-            log_handler_entry(service_instance_handler_lg(), msg);
+        [[maybe_unused]] const auto cid = log_handler_entry(service_instance_handler_lg(), msg);
         if (supervisor_) {
             dispatch_to_supervisor<api::messaging::start_service_request,
-                api::messaging::start_service_response>(
+                                   api::messaging::start_service_response>(
                 std::move(msg),
-                [this](const std::string& svc, int r) {
-                    supervisor_->request_launch(svc, r);
-                });
+                [this](const std::string& svc, int r) { supervisor_->request_launch(svc, r); });
         } else {
             handle_lifecycle<api::messaging::start_service_request,
-                api::messaging::start_service_response>(
+                             api::messaging::start_service_response>(
                 std::move(msg), "running", "started");
         }
     }
 
     void stop(ores::nats::message msg) {
-        [[maybe_unused]] const auto cid =
-            log_handler_entry(service_instance_handler_lg(), msg);
+        [[maybe_unused]] const auto cid = log_handler_entry(service_instance_handler_lg(), msg);
         if (supervisor_) {
             dispatch_to_supervisor<api::messaging::stop_service_request,
-                api::messaging::stop_service_response>(
+                                   api::messaging::stop_service_response>(
                 std::move(msg),
-                [this](const std::string& svc, int r) {
-                    supervisor_->request_stop(svc, r);
-                });
+                [this](const std::string& svc, int r) { supervisor_->request_stop(svc, r); });
         } else {
             handle_lifecycle<api::messaging::stop_service_request,
-                api::messaging::stop_service_response>(
+                             api::messaging::stop_service_response>(
                 std::move(msg), "stopped", "stopped");
         }
     }
 
     void restart(ores::nats::message msg) {
-        [[maybe_unused]] const auto cid =
-            log_handler_entry(service_instance_handler_lg(), msg);
+        [[maybe_unused]] const auto cid = log_handler_entry(service_instance_handler_lg(), msg);
         if (supervisor_) {
             dispatch_to_supervisor<api::messaging::restart_service_request,
-                api::messaging::restart_service_response>(
+                                   api::messaging::restart_service_response>(
                 std::move(msg),
-                [this](const std::string& svc, int r) {
-                    supervisor_->request_restart(svc, r);
-                });
+                [this](const std::string& svc, int r) { supervisor_->request_restart(svc, r); });
         } else {
             handle_lifecycle<api::messaging::restart_service_request,
-                api::messaging::restart_service_response>(
+                             api::messaging::restart_service_response>(
                 std::move(msg), "running", "restarted");
         }
     }
 
 private:
-    template<typename Req, typename Resp>
+    template <typename Req, typename Resp>
     void handle_lifecycle(ores::nats::message msg,
-        const std::string& new_phase, const std::string& event_type) {
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+                          const std::string& new_phase,
+                          const std::string& event_type) {
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -166,8 +157,12 @@ private:
         repository::service_event_repository event_repo;
         Resp resp;
         try {
-            apply_phase(inst_repo, event_repo, req->service_name,
-                req->replica_index, new_phase, event_type);
+            apply_phase(inst_repo,
+                        event_repo,
+                        req->service_name,
+                        req->replica_index,
+                        new_phase,
+                        event_type);
             resp.success = true;
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(service_instance_handler_lg(), error)
@@ -178,30 +173,33 @@ private:
     }
 
     void apply_phase(repository::service_instance_repository& inst_repo,
-        repository::service_event_repository& event_repo,
-        const std::string& service_name,
-        std::optional<int> replica_index_filter,
-        const std::string& new_phase,
-        const std::string& event_type) {
+                     repository::service_event_repository& event_repo,
+                     const std::string& service_name,
+                     std::optional<int> replica_index_filter,
+                     const std::string& new_phase,
+                     const std::string& event_type) {
 
         if (replica_index_filter) {
-            transition_instance(inst_repo, event_repo, service_name,
-                *replica_index_filter, new_phase, event_type);
+            transition_instance(
+                inst_repo, event_repo, service_name, *replica_index_filter, new_phase, event_type);
         } else {
             auto instances = inst_repo.read_all(ctx_, service_name);
             if (instances.empty()) {
                 // No instances yet — create replica 0.
-                transition_instance(inst_repo, event_repo, service_name,
-                    0, new_phase, event_type);
+                transition_instance(inst_repo, event_repo, service_name, 0, new_phase, event_type);
             } else {
                 for (auto& inst : instances) {
                     try {
-                        transition_instance(inst_repo, event_repo, service_name,
-                            inst.replica_index, new_phase, event_type);
+                        transition_instance(inst_repo,
+                                            event_repo,
+                                            service_name,
+                                            inst.replica_index,
+                                            new_phase,
+                                            event_type);
                     } catch (const std::exception& e) {
                         BOOST_LOG_SEV(service_instance_handler_lg(), error)
-                            << "Failed to transition instance "
-                            << inst.replica_index << ": " << e.what();
+                            << "Failed to transition instance " << inst.replica_index << ": "
+                            << e.what();
                     }
                 }
             }
@@ -209,15 +207,18 @@ private:
     }
 
     void transition_instance(repository::service_instance_repository& inst_repo,
-        repository::service_event_repository& event_repo,
-        const std::string& service_name, int replica_index,
-        const std::string& new_phase, const std::string& event_type) {
+                             repository::service_event_repository& event_repo,
+                             const std::string& service_name,
+                             int replica_index,
+                             const std::string& new_phase,
+                             const std::string& event_type) {
 
         const auto now = std::chrono::system_clock::now();
         auto existing = inst_repo.read(ctx_, service_name, replica_index);
         if (existing) {
             existing->phase = new_phase;
-            if (new_phase == "running") existing->started_at = now;
+            if (new_phase == "running")
+                existing->started_at = now;
             else if (new_phase == "stopped" || new_phase == "failed")
                 existing->stopped_at = now;
             inst_repo.update_phase(ctx_, *existing);
@@ -228,7 +229,8 @@ private:
             inst.replica_index = replica_index;
             inst.phase = new_phase;
             inst.created_at = now;
-            if (new_phase == "running") inst.started_at = now;
+            if (new_phase == "running")
+                inst.started_at = now;
             inst_repo.insert(ctx_, inst);
         }
 
@@ -242,10 +244,9 @@ private:
         event_repo.insert(ctx_, ev);
     }
 
-    template<typename Req, typename Resp, typename Fn>
+    template <typename Req, typename Resp, typename Fn>
     void dispatch_to_supervisor(ores::nats::message msg, Fn&& action) {
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;

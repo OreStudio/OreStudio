@@ -33,8 +33,7 @@ std::optional<std::chrono::nanoseconds> span::duration() const {
     if (!end_time.has_value()) {
         return std::nullopt;
     }
-    return std::chrono::duration_cast<std::chrono::nanoseconds>(
-        end_time.value() - start_time);
+    return std::chrono::duration_cast<std::chrono::nanoseconds>(end_time.value() - start_time);
 }
 
 }

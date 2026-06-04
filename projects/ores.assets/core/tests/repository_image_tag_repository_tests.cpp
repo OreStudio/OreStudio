@@ -17,20 +17,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.assets.api/domain/image_tag.hpp"         // IWYU pragma: keep.
+#include "ores.assets.api/domain/image_tag_json_io.hpp" // IWYU pragma: keep.
+#include "ores.assets.core/generators/image_tag_generator.hpp"
 #include "ores.assets.core/repository/image_tag_repository.hpp"
-
+#include "ores.logging/make_logger.hpp"
+#include "ores.testing/make_generation_context.hpp"
+#include "ores.testing/scoped_database_helper.hpp"
+#include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
+#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include <boost/uuid/uuid_io.hpp>
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.logging/make_logger.hpp"
-#include "ores.testing/scoped_database_helper.hpp"
-#include "ores.testing/make_generation_context.hpp"
-#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
-#include "ores.assets.api/domain/image_tag.hpp" // IWYU pragma: keep.
-#include "ores.assets.api/domain/image_tag_json_io.hpp" // IWYU pragma: keep.
-#include "ores.assets.core/generators/image_tag_generator.hpp"
 
 namespace {
 
@@ -86,10 +85,9 @@ TEST_CASE("read_latest_image_tags", tags) {
     // Verify all written image-tags can be found (other tests may have added more)
     CHECK(read_image_tags.size() >= written_image_tags.size());
     for (const auto& written : written_image_tags) {
-        auto it = std::ranges::find_if(read_image_tags,
-            [&written](const image_tag& it) {
-                return it.image_id == written.image_id && it.tag_id == written.tag_id;
-            });
+        auto it = std::ranges::find_if(read_image_tags, [&written](const image_tag& it) {
+            return it.image_id == written.image_id && it.tag_id == written.tag_id;
+        });
         CHECK(it != read_image_tags.end());
     }
 }
@@ -105,8 +103,8 @@ TEST_CASE("read_latest_image_tags_by_image", tags) {
     image_tag_repository repo;
     repo.write(h.context(), it);
 
-    auto read_image_tags = repo.read_latest_by_image(h.context(),
-        boost::uuids::to_string(it.image_id));
+    auto read_image_tags =
+        repo.read_latest_by_image(h.context(), boost::uuids::to_string(it.image_id));
     BOOST_LOG_SEV(lg, debug) << "Read image-tags: " << read_image_tags;
 
     REQUIRE(read_image_tags.size() == 1);
@@ -125,8 +123,7 @@ TEST_CASE("read_latest_image_tags_by_tag", tags) {
     image_tag_repository repo;
     repo.write(h.context(), it);
 
-    auto read_image_tags = repo.read_latest_by_tag(h.context(),
-        boost::uuids::to_string(it.tag_id));
+    auto read_image_tags = repo.read_latest_by_tag(h.context(), boost::uuids::to_string(it.tag_id));
     BOOST_LOG_SEV(lg, debug) << "Read image-tags: " << read_image_tags;
 
     REQUIRE(read_image_tags.size() == 1);
@@ -167,8 +164,8 @@ TEST_CASE("update_image_tag", tags) {
 
     CHECK_NOTHROW(repo.write(h.context(), updated_it));
 
-    auto read_image_tags = repo.read_latest_by_image(h.context(),
-        boost::uuids::to_string(it.image_id));
+    auto read_image_tags =
+        repo.read_latest_by_image(h.context(), boost::uuids::to_string(it.image_id));
     BOOST_LOG_SEV(lg, debug) << "Read image-tags: " << read_image_tags;
 
     REQUIRE(read_image_tags.size() == 1);

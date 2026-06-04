@@ -18,10 +18,9 @@
  *
  */
 #include "ores.telemetry.core/exporting/upload_position_tracker.hpp"
-
-#include <fstream>
 #include "ores.logging/make_logger.hpp"
 #include "ores.telemetry.core/log/skip_telemetry_guard.hpp"
+#include <fstream>
 
 namespace ores::telemetry::exporting {
 
@@ -35,12 +34,10 @@ auto& lg() {
 
 }
 
-upload_position_tracker::upload_position_tracker(
-    std::filesystem::path log_file_path)
-    : log_file_path_(std::move(log_file_path)),
-      marker_file_path_(log_file_path_.string() + ".uploaded"),
-      position_(load_position_from_file()) {
-}
+upload_position_tracker::upload_position_tracker(std::filesystem::path log_file_path)
+    : log_file_path_(std::move(log_file_path))
+    , marker_file_path_(log_file_path_.string() + ".uploaded")
+    , position_(load_position_from_file()) {}
 
 std::uint64_t upload_position_tracker::get_position() const {
     std::lock_guard<std::mutex> lock(mutex_);
@@ -82,19 +79,16 @@ std::uint64_t upload_position_tracker::load_position_from_file() const {
     return position;
 }
 
-void upload_position_tracker::save_position_to_file(
-    std::uint64_t position) const {
+void upload_position_tracker::save_position_to_file(std::uint64_t position) const {
     using namespace ores::logging;
     ores::telemetry::log::skip_telemetry_guard guard;
 
-    std::ofstream file(marker_file_path_,
-        std::ios::binary | std::ios::trunc);
+    std::ofstream file(marker_file_path_, std::ios::binary | std::ios::trunc);
 
     if (!file) {
-        BOOST_LOG_SEV(lg(), warn)
-            << "Failed to save upload position to marker file: "
-            << marker_file_path_
-            << ". Telemetry records may be re-uploaded on restart.";
+        BOOST_LOG_SEV(lg(), warn) << "Failed to save upload position to marker file: "
+                                  << marker_file_path_
+                                  << ". Telemetry records may be re-uploaded on restart.";
         return;
     }
 

@@ -20,9 +20,9 @@
 #ifndef ORES_TELEMETRY_CORE_DOMAIN_ATTRIBUTE_VALUE_HPP
 #define ORES_TELEMETRY_CORE_DOMAIN_ATTRIBUTE_VALUE_HPP
 
+#include <cstdint>
 #include <map>
 #include <string>
-#include <cstdint>
 #include <variant>
 #include <vector>
 
@@ -35,16 +35,14 @@ namespace ores::telemetry::domain {
  * logs, and resources. The value can be one of several primitive types or
  * arrays of those types, following the OpenTelemetry specification.
  */
-using attribute_value = std::variant<
-    std::string,
-    bool,
-    std::int64_t,
-    double,
-    std::vector<std::string>,
-    std::vector<bool>,
-    std::vector<std::int64_t>,
-    std::vector<double>
->;
+using attribute_value = std::variant<std::string,
+                                     bool,
+                                     std::int64_t,
+                                     double,
+                                     std::vector<std::string>,
+                                     std::vector<bool>,
+                                     std::vector<std::int64_t>,
+                                     std::vector<double>>;
 
 /**
  * @brief A collection of attributes as key-value pairs.

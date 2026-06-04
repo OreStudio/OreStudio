@@ -20,9 +20,9 @@
 #ifndef ORES_CONTROLLER_API_DOMAIN_SERVICE_INSTANCE_JSON_IO_HPP
 #define ORES_CONTROLLER_API_DOMAIN_SERVICE_INSTANCE_JSON_IO_HPP
 
-#include <iosfwd>
 #include "ores.controller.api/domain/service_instance.hpp"
 #include "ores.controller.api/export.hpp"
+#include <iosfwd>
 
 namespace ores::controller::api::domain {
 

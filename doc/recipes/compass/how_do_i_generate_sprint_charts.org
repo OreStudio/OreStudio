@@ -71,9 +71,12 @@ How do I generate the sprint health charts (PRs & Commits, Line Churn, PR Cycle 
 
 =compass sprint charts= (lives in =projects/ores.compass/src/compass.py=)
 handles both CSV extraction and gnuplot rendering in one step. The four
-gnuplot scripts (=scripts/sprint_*.gnuplot=) are still standalone files;
-compass invokes them internally. The CMake =sprint_charts= target in
-=CMakeLists.txt= is a thin wrapper that calls =compass sprint charts=.
+gnuplot scripts (=scripts/sprint_*.gnuplot=) are generated files,
+tangled from the literate sources in [[id:A64F482F-8A57-406D-98B2-53476F095E8C][Sprint health charts]]; compass
+invokes them internally. Edit the org source blocks and re-tangle —
+never edit the =.gnuplot= files directly. The CMake =sprint_charts=
+target in =CMakeLists.txt= is a thin wrapper that calls =compass
+sprint charts=.
 
 * Tested by
 

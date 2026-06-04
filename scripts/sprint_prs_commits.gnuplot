@@ -1,3 +1,6 @@
+# GENERATED FILE — tangled from doc/agile/sprint_charts.org.
+# Edit the source block there and re-tangle; do not edit directly.
+#
 # PRs & Commits per Day — standalone chart
 sprint_str = sprintf("%02d", sprint)
 

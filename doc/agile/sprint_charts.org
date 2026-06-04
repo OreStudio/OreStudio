@@ -1,0 +1,249 @@
+:PROPERTIES:
+:ID: A64F482F-8A57-406D-98B2-53476F095E8C
+:END:
+#+title: Sprint health charts
+#+description: The four sprint health charts: what each chart measures, why it is generated, how to read it, and the literate gnuplot sources that render them.
+#+type: knowledge
+#+level: cross
+#+filetags: :agile:sprint:charts:gnuplot:
+#+created: 2026-06-04
+#+updated: 2026-06-04
+
+* Summary
+
+Every [[id:0820B7FD-147C-4832-AC25-C043D38D5B61][sprint]] page carries four charts — /PRs & Commits per Day/,
+/Daily Line Churn/, /PR Cycle Time/, and /Cumulative Stories Done/ —
+rendered by =compass sprint charts= from git history, the GitHub API,
+and the sprint's own =* Stories= tables. They are activity
+instruments: each measures one observable facet of sprint execution
+so that drift (stalls, review bottlenecks, batched closures, scope
+creep) becomes visible mid-sprint rather than at the retrospective.
+This page defines each chart, what it measures, why we generate it,
+and the patterns to read it by — and it is the literate home of the
+gnuplot sources, which tangle to =scripts/sprint_*.gnuplot= where
+=compass sprint charts= expects them.
+
+* Detail
+
+** The pipeline
+
+=compass sprint charts= (see [[id:6F3D9B1A-5C7E-4A2D-8F1B-3C9D7E5F2A1B][How do I generate sprint health
+charts?]]) does everything in one step:
+
+1. /Extract metrics/ into tab-separated CSVs under
+   =build/output/sprint_NN/=:
+   - =sprint_activity.csv= — =day=, =merges=, =commits=, =added=,
+     =deleted=. One row per calendar day in the sprint window, from
+     =git log= on =origin/main=: =merges= counts merge commits (one
+     per merged PR), =commits= counts all commits, =added= /
+     =deleted= sum the =--numstat= line counts.
+   - =pr_cycle_times.csv= — =pr_number=, =title=, =day=,
+     =cycle_hours=. From the GitHub API (=gh pr list --state
+     merged=): hours from PR creation to merge, the twenty longest
+     cycles with non-zero duration.
+   - =sprint_progress.csv= — =day=, =cumulative_done=. Parsed from
+     the sprint page's own =* Stories= tables: each row whose /End/
+     date falls inside the sprint counts as one story transitioning
+     to =DONE= (see [[id:8A246D60-6A87-4B54-A023-564EC1965C61][TODO state]]).
+2. /Render/ each CSV through the four gnuplot scripts below, writing
+   the PNGs into the sprint directory
+   (=doc/agile/versions/v0/sprint_NN/=), where the sprint page's
+   =* Charts= section displays them.
+
+The PNGs are committed with the sprint page; every sprint follows
+this convention.
+
+** Reading the charts
+
+The charts measure /activity/, not /value/ — they are proxies. A
+quiet day may be a blocker or a design day; a churn spike may be
+progress or vendored code. They earn their keep by making questions
+specific ("why did nothing merge for three days?"), not by answering
+them. Interpretation belongs to the [[id:30FE3C0F-ECCB-46AD-AC1F-75C6CE05F0E7][sprint health review]], which
+reads them alongside goal alignment and the [[id:198DA730-D9FB-4BDE-B1C0-B930CD019917][sprint mission]].
+
+*** PRs & Commits per Day
+
+- Measures :: Delivery cadence. PRs merged into =main= per day (bars,
+  left axis) against commits landing per day (line, right axis).
+- Purpose :: Shows the rhythm and batch size of [[id:227958A5-0F78-4CC6-A116-B83988592B68][sprint execution]] —
+  whether work is flowing to =main= in small, regular increments.
+- How to read it :: Healthy is a steady drumbeat of PRs across the
+  sprint with a modest commits-to-PR ratio. A high ratio means large
+  batches — many commits accumulating per merge — which often
+  signals scope creep inside a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]]. Consecutive zero-PR days
+  mean work in progress is piling up unmerged: a blocker, an
+  oversized task, or review starvation.
+
+*** Daily Line Churn
+
+- Measures :: Lines added (green) and deleted (red) per day, from
+  =git log --numstat= on =main=.
+- Purpose :: Characterises the /kind/ of work the sprint is doing,
+  not just its volume.
+- How to read it :: Building work produces mostly additions;
+  refactoring produces balanced add/delete; cleanup is
+  deletion-heavy (deletions are usually good news — see the
+  simplification themes in the [[id:46DFE47F-967B-4C24-95BF-3E21F97CFD20][agile process]]). Days with no churn
+  at all may indicate blockers. Outsized spikes deserve a question:
+  generated code, vendored dependencies, or a genuinely big landing?
+
+*** PR Cycle Time
+
+- Measures :: Hours from PR open to merge, one bar per PR — the
+  twenty longest non-zero cycles in the sprint.
+- Purpose :: Surfaces review latency. In this project's loop, review
+  is where System 2 checks System 1 output (see [[id:227958A5-0F78-4CC6-A116-B83988592B68][sprint execution]]),
+  so long cycles mean the checking function is the constraint.
+- How to read it :: Most PRs should merge within hours. Long bars are
+  review bottlenecks: a PR too large to review comfortably, a
+  contentious design, or a PR parked while other work took priority.
+  A few long bars among short ones is normal; a wall of long bars
+  means the sprint is queueing on review. The chart only renders
+  when PR data is available from the GitHub API.
+
+*** Cumulative Stories Done
+
+- Measures :: Running total of [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][stories]] transitioning to =DONE=
+  during the sprint, by the /End/ date recorded in the sprint's
+  =* Stories= tables.
+- Purpose :: The sprint's burn-up: story-level throughput against
+  time, the closest thing to "are we going to land the mission?".
+- How to read it :: A steady upward slope is healthy. A plateau
+  signals a stall — stories too large, a blocker, or effort spread
+  across many stories none of which is finishing. A hockey stick at
+  sprint end means closures were batched — stories were really done
+  earlier but only marked =DONE= at closure, which makes the chart
+  (and mid-sprint health reviews) lie; record /End/ dates when the
+  story's acceptance is actually met.
+
+** Chart sources
+
+The gnuplot sources live here and tangle to
+=scripts/sprint_*.gnuplot=, which is where =compass sprint charts=
+invokes them. To regenerate the scripts after editing a block:
+
+#+begin_src sh :results verbatim
+emacs -Q --batch -l org --eval '(org-babel-tangle-file "doc/agile/sprint_charts.org")'
+#+end_src
+
+Each script receives the sprint number via =gnuplot -e "sprint=NN"=
+and derives its input CSV and output PNG paths from it. All four
+share the same conventions: =pngcairo= at 800×400, tab-separated
+input, solid fill, light y-grid, legend outside right.
+
+*** PRs & Commits per Day
+
+#+begin_src gnuplot :tangle ../../scripts/sprint_prs_commits.gnuplot
+# GENERATED FILE — tangled from doc/agile/sprint_charts.org.
+# Edit the source block there and re-tangle; do not edit directly.
+#
+# PRs & Commits per Day — standalone chart
+sprint_str = sprintf("%02d", sprint)
+
+set terminal pngcairo size 800, 400 font "sans,11"
+set output sprintf("doc/agile/versions/v0/sprint_%s/prs_commits.png", sprint_str)
+set datafile separator "\t"
+set style fill solid 0.7
+set grid ytics lc rgb "#cccccc" lw 1
+set border 3
+set tics nomirror
+set key outside right
+set xlabel "Day"
+set ylabel "PRs"
+set y2label "Commits"
+set ytics nomirror
+set y2tics
+set title sprintf("Sprint %d — PRs & Commits per Day", sprint)
+
+infile_act = sprintf("build/output/sprint_%s/sprint_activity.csv", sprint_str)
+plot infile_act using 2 every ::1 title "PRs" with boxes lc rgb "#4A90D9", \
+     "" using 3 every ::1 axes x1y2 title "Commits" with linespoints lc rgb "#E67E22" lw 2 pt 7
+#+end_src
+
+*** Daily Line Churn
+
+#+begin_src gnuplot :tangle ../../scripts/sprint_line_churn.gnuplot
+# GENERATED FILE — tangled from doc/agile/sprint_charts.org.
+# Edit the source block there and re-tangle; do not edit directly.
+#
+# Line Churn — standalone chart
+sprint_str = sprintf("%02d", sprint)
+
+set terminal pngcairo size 800, 400 font "sans,11"
+set output sprintf("doc/agile/versions/v0/sprint_%s/line_churn.png", sprint_str)
+set datafile separator "\t"
+set style fill solid 0.7
+set grid ytics lc rgb "#cccccc" lw 1
+set border 3
+set tics nomirror
+set key outside right
+set xlabel "Day"
+set ylabel "Lines"
+set title sprintf("Sprint %d — Daily Line Churn", sprint)
+
+infile_act = sprintf("build/output/sprint_%s/sprint_activity.csv", sprint_str)
+plot infile_act using 4 every ::1 with boxes lc rgb "#27AE60" title "Added", \
+     "" using 5 every ::1 with boxes lc rgb "#E74C3C" title "Deleted"
+#+end_src
+
+*** PR Cycle Time
+
+#+begin_src gnuplot :tangle ../../scripts/sprint_pr_cycle.gnuplot
+# GENERATED FILE — tangled from doc/agile/sprint_charts.org.
+# Edit the source block there and re-tangle; do not edit directly.
+#
+# PR Cycle Time — standalone chart, only run when PR data exists
+sprint_str = sprintf("%02d", sprint)
+
+set terminal pngcairo size 800, 400 font "sans,10"
+set output sprintf("doc/agile/versions/v0/sprint_%s/pr_cycle.png", sprint_str)
+set datafile separator "\t"
+set style fill solid 0.7
+set grid ytics lc rgb "#cccccc" lw 1
+set border 3
+set tics nomirror
+set key outside right
+set xlabel "PR number"
+set ylabel "Hours"
+set title sprintf("Sprint %d — PR Cycle Time (open → close)", sprint)
+set xtics rotate by -45 font "sans,8"
+
+infile_cycle = sprintf("build/output/sprint_%s/pr_cycle_times.csv", sprint_str)
+plot infile_cycle using 0:4:xticlabels(stringcolumn(1)) every ::1 with boxes lc rgb "#E74C3C" title "Cycle Hrs"
+#+end_src
+
+*** Cumulative Stories Done
+
+#+begin_src gnuplot :tangle ../../scripts/sprint_stories_done.gnuplot
+# GENERATED FILE — tangled from doc/agile/sprint_charts.org.
+# Edit the source block there and re-tangle; do not edit directly.
+#
+# Cumulative Stories Done — standalone chart, only run when story data exists
+sprint_str = sprintf("%02d", sprint)
+
+set terminal pngcairo size 800, 400 font "sans,11"
+set output sprintf("doc/agile/versions/v0/sprint_%s/stories_done.png", sprint_str)
+set datafile separator "\t"
+set style fill solid 0.7
+set grid ytics lc rgb "#cccccc" lw 1
+set border 3
+set tics nomirror
+set key outside right
+set xlabel "Day"
+set ylabel "Stories"
+set title sprintf("Sprint %d — Cumulative Stories Done", sprint)
+
+infile_prog = sprintf("build/output/sprint_%s/sprint_progress.csv", sprint_str)
+plot infile_prog using 0:2 every ::1 with linespoints lc rgb "#2C3E50" lw 3 pt 9 title "Done"
+#+end_src
+
+* See also
+
+- [[id:6F3D9B1A-5C7E-4A2D-8F1B-3C9D7E5F2A1B][How do I generate sprint health charts?]] — the compass recipe;
+  one command extracts the CSVs and renders all four PNGs.
+- [[id:30FE3C0F-ECCB-46AD-AC1F-75C6CE05F0E7][Run a sprint health review]] — the runbook that interprets these
+  charts as part of the System 2 health check.
+- [[id:A7B3C241-D8E9-4F0A-B1C2-D3E4F5061728][Sprint Reviewer]] — the skill the health review runs.
+- [[id:46DFE47F-967B-4C24-95BF-3E21F97CFD20][Agile process]] — the loop these instruments observe.
+- [[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][Glossary]] — definitions of sprint, story, task, and TODO state.

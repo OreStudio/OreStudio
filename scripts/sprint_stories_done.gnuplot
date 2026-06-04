@@ -1,3 +1,6 @@
+# GENERATED FILE — tangled from doc/agile/sprint_charts.org.
+# Edit the source block there and re-tangle; do not edit directly.
+#
 # Cumulative Stories Done — standalone chart, only run when story data exists
 sprint_str = sprintf("%02d", sprint)
 

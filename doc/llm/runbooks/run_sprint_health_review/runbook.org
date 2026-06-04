@@ -177,6 +177,8 @@ In execution order:
 
 - [[id:A7B3C241-D8E9-4F0A-B1C2-D3E4F5061728][Sprint Reviewer]] — the skill that drives steps 5–7.
 - [[id:6F3D9B1A-5C7E-4A2D-8F1B-3C9D7E5F2A1B][How do I generate sprint health charts?]] — cmake recipe for step 2.
+- [[id:A64F482F-8A57-406D-98B2-53476F095E8C][Sprint health charts]] — what each chart measures and how to read
+  it when forming the verdict.
 - [[id:A99F288C-9E89-45C9-9AA9-085E2A585392][How do I deduplicate two documents?]] — step 9; resolves duplicate or near-duplicate stories.
 - [[id:5373A4E5-172B-44FD-BAE0-07E25BBD3292][Handle a PR review round]] — step 14.
 - [[id:D1125E49-3C4E-48D4-B7F9-15CAA45B3ADD][Runbooks catalogue]] — all runbooks.

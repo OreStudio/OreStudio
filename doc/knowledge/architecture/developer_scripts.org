@@ -57,21 +57,6 @@ General-purpose helper scripts not tied to a specific workflow.
 |--------+---------+-------|
 | =convert_to_unix.sh= | Converts text files in a given project root from DOS to Unix line endings using =dos2unix=. | Accepts an optional path argument; defaults to =.=. Excludes =vcpkg/= and =output/=. |
 
-* NATS certificate management
-
-NATS setup is handled by two =compass nats= subcommands
-(see [[id:280432C1-EE5D-4409-9DC6-372CCD3E2789][How do I generate NATS certificates with compass?]]):
-
-- =compass nats init= — renders =build/config/nats.conf.template= into a
-  per-environment =build/config/nats-<label>.conf= and creates the JetStream
-  store directory. Implementation: =projects/ores.compass/src/nats_init.py=.
-- =compass nats certs= — generates the CA and per-service mTLS certificates
-  under =build/keys/nats/=. Implementation: =projects/ores.compass/src/nats_certs.py=.
-
-Both are called automatically by =compass env init= and can also be run
-standalone. To add a certificate for a new service, add its name to the
-=_SERVICES= list in =nats_certs.py= and re-run =compass nats certs=.
-
 * See also
 
 - [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][ores.compass]] — repository compass tool with its own script family (=compass.sh=, =compass.py=), documented in the component overview.

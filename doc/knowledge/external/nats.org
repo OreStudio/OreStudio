@@ -107,6 +107,21 @@ The canonical client is [[https://github.com/nats-io/nats.c][nats.c]] (C), which
 [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]. Other official clients exist for Go, Rust, Python, Java,
 and JavaScript — see [[https://github.com/nats-io][github.com/nats-io]].
 
+* Tooling
+
+ORE Studio manages NATS setup through two =compass nats= subcommands
+(see [[id:280432C1-EE5D-4409-9DC6-372CCD3E2789][How do I generate NATS certificates with compass?]]):
+
+- =compass nats init= — renders =build/config/nats.conf.template= into a
+  per-environment =build/config/nats-<label>.conf= and creates the JetStream
+  store directory. Both are called automatically by =compass env init=.
+- =compass nats certs= — generates the internal CA, the NATS server
+  certificate, and one mTLS client certificate per service under
+  =build/keys/nats/=. Idempotent; use =--force= to rotate.
+
+To add a certificate for a new service, add its name to the =_SERVICES= list
+in =projects/ores.compass/src/nats_certs.py= and re-run =compass nats certs=.
+
 * See also
 
 - [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] — the ORE Studio C++ transport library wrapping =nats.c=.

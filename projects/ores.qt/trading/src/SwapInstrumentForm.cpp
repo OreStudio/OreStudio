@@ -56,14 +56,14 @@ using State = SwapInstrumentForm::SwapFormState;
 // Common provenance fields shared by all per-type domain structs.
 template<typename T>
 void copy_provenance(State& s, const T& i) {
-    s.instrument_id = i.instrument_id;
-    s.trade_id = i.trade_id;
-    s.version = i.version;
-    s.modified_by = i.modified_by;
-    s.performed_by = i.performed_by;
-    s.recorded_at = i.recorded_at;
-    s.change_reason_code = i.change_reason_code;
-    s.change_commentary = i.change_commentary;
+    s.instrument_id = i.identity.instrument_id;
+    s.trade_id = i.identity.trade_id;
+    s.version = i.identity.version;
+    s.modified_by = i.audit.modified_by;
+    s.performed_by = i.audit.performed_by;
+    s.recorded_at = i.audit.recorded_at;
+    s.change_reason_code = i.audit.change_reason_code;
+    s.change_commentary = i.audit.change_commentary;
 }
 
 State from_fra(const trading::domain::fra_instrument& i) {
@@ -170,13 +170,13 @@ State from_rpa(const trading::domain::rpa_instrument& i) {
 
 template<typename T>
 void apply_provenance(T& instr, const State& s, const std::string& username) {
-    instr.instrument_id = s.instrument_id;
-    instr.trade_id = s.trade_id;
-    instr.version = s.version;
-    instr.modified_by = username;
-    instr.performed_by = username;
-    instr.change_reason_code = s.change_reason_code;
-    instr.change_commentary = s.change_commentary;
+    instr.identity.instrument_id = s.instrument_id;
+    instr.identity.trade_id = s.trade_id;
+    instr.identity.version = s.version;
+    instr.audit.modified_by = username;
+    instr.audit.performed_by = username;
+    instr.audit.change_reason_code = s.change_reason_code;
+    instr.audit.change_commentary = s.change_commentary;
 }
 
 trading::domain::fra_instrument build_fra(const State& s,

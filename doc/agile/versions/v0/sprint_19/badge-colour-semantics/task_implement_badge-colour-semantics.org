@@ -76,6 +76,7 @@ task closes. Plans do not outlive their task.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | :with-sub-superscript should be plural | ores-build-site.el | Declined | Verified against org in Emacs 30.2: property is singular; plural is only the variable name. |
+| 2 | Validate DB colours before building stylesheet | BadgeLabelUtils.cpp | Fixed in 04c0aa7af | Invalid colour now keeps the orange fallback. |
 
 * Result

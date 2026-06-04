@@ -18,10 +18,9 @@
  *
  */
 #include "ores.trading.core/service/composite_instrument_service.hpp"
-
+#include "ores.service/messaging/handler_helpers.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include "ores.service/messaging/handler_helpers.hpp"
 
 using ores::service::messaging::stamp;
 
@@ -40,9 +39,9 @@ composite_instrument_service::list_composite_instruments() {
 
 std::vector<domain::composite_instrument>
 composite_instrument_service::list_composite_instruments(std::uint32_t offset,
-    std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing composite_instruments with offset="
-                               << offset << ", limit=" << limit;
+                                                         std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing composite_instruments with offset=" << offset
+                               << ", limit=" << limit;
     return repo_.read_latest(ctx_, offset, limit);
 }
 
@@ -55,28 +54,27 @@ std::optional<domain::composite_instrument>
 composite_instrument_service::get_composite_instrument(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting composite_instrument: " << id;
     auto results = repo_.read_latest(ctx_, id);
-    if (results.empty()) return std::nullopt;
+    if (results.empty())
+        return std::nullopt;
     return results.front();
 }
 
 std::vector<domain::composite_leg>
 composite_instrument_service::get_legs(const std::string& instrument_id) {
-    BOOST_LOG_SEV(lg(), debug)
-        << "Getting legs for composite instrument: " << instrument_id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting legs for composite instrument: " << instrument_id;
     return leg_repo_.read_by_instrument(ctx_, instrument_id);
 }
 
 void composite_instrument_service::save_composite_instrument(
-    const domain::composite_instrument& v,
-    const std::vector<domain::composite_leg>& legs) {
+    const domain::composite_instrument& v, const std::vector<domain::composite_leg>& legs) {
     auto t = v;
     if (t.instrument_id.is_nil()) {
         static boost::uuids::random_generator gen;
         t.instrument_id = gen();
     }
     const auto id_str = boost::uuids::to_string(t.instrument_id);
-    BOOST_LOG_SEV(lg(), debug) << "Saving composite_instrument: " << t.instrument_id
-                               << " with " << legs.size() << " legs";
+    BOOST_LOG_SEV(lg(), debug) << "Saving composite_instrument: " << t.instrument_id << " with "
+                               << legs.size() << " legs";
     stamp(t, ctx_);
     // Replace-on-save: remove the existing leg set before writing the new
     // one so that updates do not accumulate stale legs.
@@ -99,22 +97,19 @@ void composite_instrument_service::remove_composite_instrument(const std::string
 
 std::vector<domain::composite_instrument>
 composite_instrument_service::get_composite_instrument_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug)
-        << "Getting history for composite_instrument: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for composite_instrument: " << id;
     return repo_.read_all(ctx_, id);
 }
 
 
 std::vector<domain::composite_instrument>
-composite_instrument_service::get_composite_instruments(
-    const std::vector<std::string>& ids) {
+composite_instrument_service::get_composite_instruments(const std::vector<std::string>& ids) {
     return repo_.read_latest(ctx_, ids);
 }
 
 
 std::vector<domain::composite_leg>
-composite_instrument_service::get_legs_batch(
-    const std::vector<std::string>& instrument_ids) {
+composite_instrument_service::get_legs_batch(const std::vector<std::string>& instrument_ids) {
     return leg_repo_.read_by_instruments_batch(ctx_, instrument_ids);
 }
 

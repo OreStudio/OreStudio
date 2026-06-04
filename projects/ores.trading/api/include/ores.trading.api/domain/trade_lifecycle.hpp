@@ -31,7 +31,7 @@ namespace ores::trading::domain {
  * One of five field-groups that compose trading::domain::trade via
  * rfl::Flatten<T>.  See trade_identity_field_group.json for the
  * rationale behind the sub-struct decomposition.
- * 
+ *
  * This group carries the temporal dimension fields (trade date,
  * effective date, termination date, and execution timestamp).
  * All are optional because not every trade type requires all dates
@@ -57,7 +57,6 @@ struct trade_lifecycle {
      * @brief Exact moment the trade was executed (ISO-8601 timestamp string).
      */
     std::optional<std::string> execution_timestamp;
-
 };
 
 }

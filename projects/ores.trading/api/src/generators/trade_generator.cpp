@@ -18,21 +18,18 @@
  *
  */
 #include "ores.trading.api/generators/trade_generator.hpp"
-
+#include "ores.utility/generation/generation_keys.hpp"
+#include <boost/uuid/nil_generator.hpp>
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include <boost/uuid/nil_generator.hpp>
-#include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::trading::generator {
 
 using ores::utility::generation::generation_keys;
 
-domain::trade generate_synthetic_trade(
-    utility::generation::generation_context& ctx) {
+domain::trade generate_synthetic_trade(utility::generation::generation_context& ctx) {
     static std::atomic<int> counter{0};
-    const auto modified_by = ctx.env().get_or(
-        std::string(generation_keys::modified_by), "system");
+    const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
 
     domain::trade r;
     r.identity.version = 1;
@@ -57,9 +54,8 @@ domain::trade generate_synthetic_trade(
     return r;
 }
 
-std::vector<domain::trade>
-generate_synthetic_trades(std::size_t n,
-    utility::generation::generation_context& ctx) {
+std::vector<domain::trade> generate_synthetic_trades(std::size_t n,
+                                                     utility::generation::generation_context& ctx) {
     std::vector<domain::trade> r;
     r.reserve(n);
     while (r.size() < n)

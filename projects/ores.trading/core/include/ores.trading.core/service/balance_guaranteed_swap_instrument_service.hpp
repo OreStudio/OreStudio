@@ -20,14 +20,14 @@
 #ifndef ORES_TRADING_SERVICE_BALANCE_GUARANTEED_SWAP_INSTRUMENT_SERVICE_HPP
 #define ORES_TRADING_SERVICE_BALANCE_GUARANTEED_SWAP_INSTRUMENT_SERVICE_HPP
 
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.trading.api/domain/balance_guaranteed_swap_instrument.hpp"
+#include "ores.trading.core/export.hpp"
+#include "ores.trading.core/repository/balance_guaranteed_swap_instrument_repository.hpp"
+#include <optional>
 #include <string>
 #include <vector>
-#include <optional>
-#include "ores.logging/make_logger.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.trading.api/domain/balance_guaranteed_swap_instrument.hpp"
-#include "ores.trading.core/repository/balance_guaranteed_swap_instrument_repository.hpp"
-#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::service {
 
@@ -54,16 +54,15 @@ public:
     list_balance_guaranteed_swap_instruments();
 
     std::vector<domain::balance_guaranteed_swap_instrument>
-    list_balance_guaranteed_swap_instruments(std::uint32_t offset,
-        std::uint32_t limit);
+    list_balance_guaranteed_swap_instruments(std::uint32_t offset, std::uint32_t limit);
 
     std::uint32_t count_balance_guaranteed_swap_instruments();
 
     std::optional<domain::balance_guaranteed_swap_instrument>
     get_balance_guaranteed_swap_instrument(const std::string& id);
 
-    void save_balance_guaranteed_swap_instrument(
-        const domain::balance_guaranteed_swap_instrument& v);
+    void
+    save_balance_guaranteed_swap_instrument(const domain::balance_guaranteed_swap_instrument& v);
 
     void remove_balance_guaranteed_swap_instrument(const std::string& id);
 

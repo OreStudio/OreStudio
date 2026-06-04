@@ -18,10 +18,9 @@
  *
  */
 #include "ores.trading.core/service/cap_floor_instrument_service.hpp"
-
+#include "ores.service/messaging/handler_helpers.hpp"
 #include <algorithm>
 #include <stdexcept>
-#include "ores.service/messaging/handler_helpers.hpp"
 
 using ores::service::messaging::stamp;
 
@@ -40,9 +39,9 @@ cap_floor_instrument_service::list_cap_floor_instruments() {
 
 std::vector<domain::cap_floor_instrument>
 cap_floor_instrument_service::list_cap_floor_instruments(std::uint32_t offset,
-    std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing cap_floor_instruments with offset="
-                               << offset << ", limit=" << limit;
+                                                         std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing cap_floor_instruments with offset=" << offset
+                               << ", limit=" << limit;
     auto all = repo_.read_latest(ctx_);
     const auto begin = std::min(static_cast<std::size_t>(offset), all.size());
     const auto end = std::min(begin + static_cast<std::size_t>(limit), all.size());
@@ -55,11 +54,11 @@ std::uint32_t cap_floor_instrument_service::count_cap_floor_instruments() {
 }
 
 std::optional<domain::cap_floor_instrument>
-cap_floor_instrument_service::get_cap_floor_instrument(
-    const std::string& id) {
+cap_floor_instrument_service::get_cap_floor_instrument(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting cap_floor_instrument: " << id;
     auto results = repo_.read_latest(ctx_, id);
-    if (results.empty()) return std::nullopt;
+    if (results.empty())
+        return std::nullopt;
     return results.front();
 }
 
@@ -67,34 +66,28 @@ void cap_floor_instrument_service::save_cap_floor_instrument(
     const domain::cap_floor_instrument& v) {
     if (v.identity.instrument_id.is_nil())
         throw std::invalid_argument("Cap/floor instrument id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving cap_floor_instrument: "
-                               << v.identity.instrument_id;
+    BOOST_LOG_SEV(lg(), debug) << "Saving cap_floor_instrument: " << v.identity.instrument_id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved cap_floor_instrument: "
-                              << t.identity.instrument_id;
+    BOOST_LOG_SEV(lg(), info) << "Saved cap_floor_instrument: " << t.identity.instrument_id;
 }
 
-void cap_floor_instrument_service::remove_cap_floor_instrument(
-    const std::string& id) {
+void cap_floor_instrument_service::remove_cap_floor_instrument(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing cap_floor_instrument: " << id;
     repo_.remove(ctx_, id);
     BOOST_LOG_SEV(lg(), info) << "Removed cap_floor_instrument: " << id;
 }
 
 std::vector<domain::cap_floor_instrument>
-cap_floor_instrument_service::get_cap_floor_instrument_history(
-    const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug)
-        << "Getting history for cap_floor_instrument: " << id;
+cap_floor_instrument_service::get_cap_floor_instrument_history(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for cap_floor_instrument: " << id;
     return repo_.read_all(ctx_, id);
 }
 
 
 std::vector<domain::cap_floor_instrument>
-cap_floor_instrument_service::get_cap_floor_instruments(
-    const std::vector<std::string>& ids) {
+cap_floor_instrument_service::get_cap_floor_instruments(const std::vector<std::string>& ids) {
     return repo_.read_latest(ctx_, ids);
 }
 

@@ -20,10 +20,10 @@
 #ifndef ORES_TRADING_DOMAIN_LEG_TYPE_TABLE_IO_HPP
 #define ORES_TRADING_DOMAIN_LEG_TYPE_TABLE_IO_HPP
 
-#include <iosfwd>
-#include <vector>
 #include "ores.trading.api/domain/leg_type.hpp"
 #include "ores.trading.api/export.hpp"
+#include <iosfwd>
+#include <vector>
 
 namespace ores::trading::domain {
 

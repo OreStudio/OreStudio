@@ -18,7 +18,6 @@
  *
  */
 #include "ores.trading.core/service/party_role_type_service.hpp"
-
 #include <stdexcept>
 
 namespace ores::trading::service {
@@ -37,7 +36,8 @@ std::optional<domain::party_role_type>
 party_role_type_service::find_role_type(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Finding party role type: " << code;
     auto results = repo_.read_latest(ctx_, code);
-    if (results.empty()) return std::nullopt;
+    if (results.empty())
+        return std::nullopt;
     return results.front();
 }
 

@@ -20,17 +20,18 @@
 #ifndef ORES_TRADING_DOMAIN_INFLATION_SWAP_INSTRUMENT_TABLE_HPP
 #define ORES_TRADING_DOMAIN_INFLATION_SWAP_INSTRUMENT_TABLE_HPP
 
-#include <string>
-#include <vector>
 #include "ores.trading.api/domain/inflation_swap_instrument.hpp"
 #include "ores.trading.api/export.hpp"
+#include <string>
+#include <vector>
 
 namespace ores::trading::domain {
 
 /**
  * @brief Converts inflation_swap_instruments to the table format.
  */
-ORES_TRADING_API_EXPORT std::string convert_to_table(const std::vector<inflation_swap_instrument>& v);
+ORES_TRADING_API_EXPORT std::string
+convert_to_table(const std::vector<inflation_swap_instrument>& v);
 
 }
 

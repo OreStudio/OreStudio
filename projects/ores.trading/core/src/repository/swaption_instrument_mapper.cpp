@@ -18,19 +18,17 @@
  *
  */
 #include "ores.trading.core/repository/swaption_instrument_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.trading.api/domain/swaption_instrument_json_io.hpp" // IWYU pragma: keep.
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::trading::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::swaption_instrument
-swaption_instrument_mapper::map(const swaption_instrument_entity& v) {
+domain::swaption_instrument swaption_instrument_mapper::map(const swaption_instrument_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::swaption_instrument r;
@@ -40,7 +38,9 @@ swaption_instrument_mapper::map(const swaption_instrument_entity& v) {
     r.identity.instrument_id = boost::lexical_cast<boost::uuids::uuid>(v.instrument_id.value());
     r.identity.trade_type_code = v.trade_type_code;
     r.identity.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
-    r.identity.trade_id = v.trade_id.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.trade_id)) : std::nullopt;
+    r.identity.trade_id = v.trade_id.has_value() ?
+                              std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.trade_id)) :
+                              std::nullopt;
     r.expiry_date = v.expiry_date;
     r.exercise_type = v.exercise_type;
     r.settlement_type = v.settlement_type;
@@ -58,8 +58,7 @@ swaption_instrument_mapper::map(const swaption_instrument_entity& v) {
     return r;
 }
 
-swaption_instrument_entity
-swaption_instrument_mapper::map(const domain::swaption_instrument& v) {
+swaption_instrument_entity swaption_instrument_mapper::map(const domain::swaption_instrument& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     swaption_instrument_entity r;
@@ -69,7 +68,9 @@ swaption_instrument_mapper::map(const domain::swaption_instrument& v) {
     r.version = v.identity.version;
     r.trade_type_code = v.identity.trade_type_code;
     r.party_id = boost::uuids::to_string(v.identity.party_id);
-    r.trade_id = v.identity.trade_id.has_value() ? std::optional(boost::uuids::to_string(*v.identity.trade_id)) : std::nullopt;
+    r.trade_id = v.identity.trade_id.has_value() ?
+                     std::optional(boost::uuids::to_string(*v.identity.trade_id)) :
+                     std::nullopt;
     r.expiry_date = v.expiry_date;
     r.exercise_type = v.exercise_type;
     r.settlement_type = v.settlement_type;
@@ -89,19 +90,13 @@ swaption_instrument_mapper::map(const domain::swaption_instrument& v) {
 std::vector<domain::swaption_instrument>
 swaption_instrument_mapper::map(const std::vector<swaption_instrument_entity>& v) {
     return map_vector<swaption_instrument_entity, domain::swaption_instrument>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<swaption_instrument_entity>
 swaption_instrument_mapper::map(const std::vector<domain::swaption_instrument>& v) {
     return map_vector<domain::swaption_instrument, swaption_instrument_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

@@ -20,13 +20,13 @@
 #ifndef ORES_TRADING_REPOSITORY_TRADE_ID_TYPE_REPOSITORY_HPP
 #define ORES_TRADING_REPOSITORY_TRADE_ID_TYPE_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/trade_id_type.hpp"
 #include "ores.trading.core/export.hpp"
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::trading::repository {
 
@@ -35,8 +35,7 @@ namespace ores::trading::repository {
  */
 class ORES_TRADING_CORE_EXPORT trade_id_type_repository {
 private:
-    inline static std::string_view logger_name =
-        "ores.trading.repository.trade_id_type_repository";
+    inline static std::string_view logger_name = "ores.trading.repository.trade_id_type_repository";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -53,10 +52,8 @@ public:
     void write(context ctx, const std::vector<domain::trade_id_type>& v);
 
     std::vector<domain::trade_id_type> read_latest(context ctx);
-    std::vector<domain::trade_id_type>
-    read_latest(context ctx, const std::string& code);
-    std::vector<domain::trade_id_type>
-    read_all(context ctx, const std::string& code);
+    std::vector<domain::trade_id_type> read_latest(context ctx, const std::string& code);
+    std::vector<domain::trade_id_type> read_all(context ctx, const std::string& code);
 
     void remove(context ctx, const std::string& code);
 

@@ -20,30 +20,28 @@
 #ifndef ORES_TRADING_DOMAIN_EQUITY_INSTRUMENT_VARIANT_HPP
 #define ORES_TRADING_DOMAIN_EQUITY_INSTRUMENT_VARIANT_HPP
 
-#include <variant>
-#include "ores.trading.api/domain/equity_option_instrument.hpp"
-#include "ores.trading.api/domain/equity_digital_option_instrument.hpp"
-#include "ores.trading.api/domain/equity_barrier_option_instrument.hpp"
-#include "ores.trading.api/domain/equity_asian_option_instrument.hpp"
-#include "ores.trading.api/domain/equity_forward_instrument.hpp"
-#include "ores.trading.api/domain/equity_variance_swap_instrument.hpp"
-#include "ores.trading.api/domain/equity_swap_instrument.hpp"
 #include "ores.trading.api/domain/equity_accumulator_instrument.hpp"
+#include "ores.trading.api/domain/equity_asian_option_instrument.hpp"
+#include "ores.trading.api/domain/equity_barrier_option_instrument.hpp"
+#include "ores.trading.api/domain/equity_digital_option_instrument.hpp"
+#include "ores.trading.api/domain/equity_forward_instrument.hpp"
+#include "ores.trading.api/domain/equity_option_instrument.hpp"
 #include "ores.trading.api/domain/equity_position_instrument.hpp"
+#include "ores.trading.api/domain/equity_swap_instrument.hpp"
+#include "ores.trading.api/domain/equity_variance_swap_instrument.hpp"
+#include <variant>
 
 namespace ores::trading::domain {
 
-using equity_instrument_variant = std::variant<
-    equity_option_instrument,
-    equity_digital_option_instrument,
-    equity_barrier_option_instrument,
-    equity_asian_option_instrument,
-    equity_forward_instrument,
-    equity_variance_swap_instrument,
-    equity_swap_instrument,
-    equity_accumulator_instrument,
-    equity_position_instrument
->;
+using equity_instrument_variant = std::variant<equity_option_instrument,
+                                               equity_digital_option_instrument,
+                                               equity_barrier_option_instrument,
+                                               equity_asian_option_instrument,
+                                               equity_forward_instrument,
+                                               equity_variance_swap_instrument,
+                                               equity_swap_instrument,
+                                               equity_accumulator_instrument,
+                                               equity_position_instrument>;
 
 } // namespace ores::trading::domain
 

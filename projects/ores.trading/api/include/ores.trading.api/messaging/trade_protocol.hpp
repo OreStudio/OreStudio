@@ -20,13 +20,13 @@
 #ifndef ORES_TRADING_MESSAGING_TRADE_PROTOCOL_HPP
 #define ORES_TRADING_MESSAGING_TRADE_PROTOCOL_HPP
 
-#include <string>
-#include <string_view>
-#include <vector>
 #include "ores.trading.api/domain/activity_type.hpp"
 #include "ores.trading.api/domain/trade.hpp"
 #include "ores.trading.api/domain/trade_instrument.hpp"
 #include "ores.trading.api/messaging/instrument_protocol.hpp"
+#include <string>
+#include <string_view>
+#include <vector>
 
 namespace ores::trading::messaging {
 
@@ -94,7 +94,7 @@ struct save_trade_request {
     std::vector<ores::trading::domain::trade> trades;
 
     static save_trade_request from(std::vector<ores::trading::domain::trade> trades) {
-        return { .trades = std::move(trades) };
+        return {.trades = std::move(trades)};
     }
 };
 
@@ -137,8 +137,7 @@ struct get_trade_history_response {
  */
 struct export_portfolio_request {
     using response_type = struct export_portfolio_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.trades.portfolio.export";
+    static constexpr std::string_view nats_subject = "trading.v1.trades.portfolio.export";
     std::string node_id;
     int offset = 0;
     int limit = 10000;
@@ -162,19 +161,18 @@ struct export_portfolio_response {
  */
 struct export_trades_to_storage_request {
     using response_type = struct export_trades_to_storage_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.trades.export-to-storage";
+    static constexpr std::string_view nats_subject = "trading.v1.trades.export-to-storage";
 
     std::vector<std::string> book_ids;
-    std::string storage_bucket;  ///< Target bucket (e.g. "report-data")
-    std::string storage_key;     ///< Target key (e.g. "{instance_id}/trades.msgpack")
+    std::string storage_bucket; ///< Target bucket (e.g. "report-data")
+    std::string storage_key;    ///< Target key (e.g. "{instance_id}/trades.msgpack")
 };
 
 struct export_trades_to_storage_response {
     bool success = false;
     std::string message;
     int trade_count = 0;
-    std::string storage_key;    ///< Echoed back for confirmation
+    std::string storage_key; ///< Echoed back for confirmation
 };
 
 }

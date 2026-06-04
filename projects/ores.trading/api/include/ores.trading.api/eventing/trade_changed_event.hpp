@@ -20,10 +20,10 @@
 #ifndef ORES_TRADING_EVENTING_TRADE_CHANGED_EVENT_HPP
 #define ORES_TRADING_EVENTING_TRADE_CHANGED_EVENT_HPP
 
-#include <chrono>
-#include <vector>
-#include <string>
 #include "ores.eventing/domain/event_traits.hpp"
+#include <chrono>
+#include <string>
+#include <vector>
 
 namespace ores::trading::eventing {
 
@@ -57,7 +57,7 @@ namespace ores::eventing::domain {
 /**
  * @brief Event traits specialization for trade_changed_event.
  */
-template<>
+template <>
 struct event_traits<ores::trading::eventing::trade_changed_event> {
     static constexpr std::string_view name = "ores.trading.trade_changed";
 };

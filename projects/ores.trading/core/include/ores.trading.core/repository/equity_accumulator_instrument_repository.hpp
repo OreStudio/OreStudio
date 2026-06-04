@@ -20,13 +20,13 @@
 #ifndef ORES_TRADING_REPOSITORY_EQUITY_ACCUMULATOR_INSTRUMENT_REPOSITORY_HPP
 #define ORES_TRADING_REPOSITORY_EQUITY_ACCUMULATOR_INSTRUMENT_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/equity_accumulator_instrument.hpp"
 #include "ores.trading.core/export.hpp"
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::trading::repository {
 
@@ -55,8 +55,8 @@ public:
     std::vector<domain::equity_accumulator_instrument> read_latest(context ctx);
     std::vector<domain::equity_accumulator_instrument>
     read_latest(context ctx, const std::string& instrument_id);
-    std::vector<domain::equity_accumulator_instrument>
-    read_all(context ctx, const std::string& instrument_id);
+    std::vector<domain::equity_accumulator_instrument> read_all(context ctx,
+                                                                const std::string& instrument_id);
 
     std::vector<domain::equity_accumulator_instrument>
     read_latest(context ctx, const std::vector<std::string>& ids);

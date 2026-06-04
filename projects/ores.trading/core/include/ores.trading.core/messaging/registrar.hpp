@@ -20,14 +20,14 @@
 #ifndef ORES_TRADING_MESSAGING_REGISTRAR_HPP
 #define ORES_TRADING_MESSAGING_REGISTRAR_HPP
 
+#include "ores.database/domain/context.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.nats/service/subscription.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include "ores.trading.core/export.hpp"
 #include <optional>
 #include <string>
 #include <vector>
-#include "ores.nats/service/client.hpp"
-#include "ores.nats/service/subscription.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.security/jwt/jwt_authenticator.hpp"
-#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::messaging {
 
@@ -35,9 +35,9 @@ class ORES_TRADING_CORE_EXPORT registrar {
 public:
     static std::vector<ores::nats::service::subscription>
     register_handlers(ores::nats::service::client& nats,
-        ores::database::context ctx,
-        std::optional<ores::security::jwt::jwt_authenticator> verifier = std::nullopt,
-        std::string http_base_url = {});
+                      ores::database::context ctx,
+                      std::optional<ores::security::jwt::jwt_authenticator> verifier = std::nullopt,
+                      std::string http_base_url = {});
 };
 
 }

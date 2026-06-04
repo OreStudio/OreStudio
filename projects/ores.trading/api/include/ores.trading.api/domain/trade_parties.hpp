@@ -20,8 +20,8 @@
 #ifndef ORES_TRADING_API_DOMAIN_TRADE_PARTIES_HPP
 #define ORES_TRADING_API_DOMAIN_TRADE_PARTIES_HPP
 
-#include <optional>
 #include <boost/uuid/uuid.hpp>
+#include <optional>
 
 namespace ores::trading::domain {
 
@@ -31,7 +31,7 @@ namespace ores::trading::domain {
  * One of five field-groups that compose trading::domain::trade via
  * rfl::Flatten<T>.  See trade_identity_field_group.json for the
  * rationale behind the sub-struct decomposition.
- * 
+ *
  * This group carries the party relationship fields (book, portfolio,
  * counterparty, and optional successor trade).
  */
@@ -52,10 +52,10 @@ struct trade_parties {
     std::optional<boost::uuids::uuid> counterparty_id;
 
     /**
-     * @brief UUID of the trade that replaced this one (e.g. after novation). Absent for active trades.
+     * @brief UUID of the trade that replaced this one (e.g. after novation). Absent for active
+     * trades.
      */
     std::optional<boost::uuids::uuid> successor_trade_id;
-
 };
 
 }

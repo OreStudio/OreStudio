@@ -20,14 +20,14 @@
 #ifndef ORES_TRADING_SERVICE_INFLATION_SWAP_INSTRUMENT_SERVICE_HPP
 #define ORES_TRADING_SERVICE_INFLATION_SWAP_INSTRUMENT_SERVICE_HPP
 
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.trading.api/domain/inflation_swap_instrument.hpp"
+#include "ores.trading.core/export.hpp"
+#include "ores.trading.core/repository/inflation_swap_instrument_repository.hpp"
+#include <optional>
 #include <string>
 #include <vector>
-#include <optional>
-#include "ores.logging/make_logger.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.trading.api/domain/inflation_swap_instrument.hpp"
-#include "ores.trading.core/repository/inflation_swap_instrument_repository.hpp"
-#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::service {
 
@@ -50,8 +50,7 @@ public:
 
     explicit inflation_swap_instrument_service(context ctx);
 
-    std::vector<domain::inflation_swap_instrument>
-    list_inflation_swap_instruments();
+    std::vector<domain::inflation_swap_instrument> list_inflation_swap_instruments();
 
     std::vector<domain::inflation_swap_instrument>
     list_inflation_swap_instruments(std::uint32_t offset, std::uint32_t limit);
@@ -61,8 +60,7 @@ public:
     std::optional<domain::inflation_swap_instrument>
     get_inflation_swap_instrument(const std::string& id);
 
-    void save_inflation_swap_instrument(
-        const domain::inflation_swap_instrument& v);
+    void save_inflation_swap_instrument(const domain::inflation_swap_instrument& v);
 
     void remove_inflation_swap_instrument(const std::string& id);
 

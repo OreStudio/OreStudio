@@ -24,60 +24,67 @@ namespace ores::trading::messaging::detail {
 
 std::vector<ores::nats::service::subscription>
 register_fx_handlers(ores::nats::service::client& nats,
-    ores::database::context ctx,
-    std::optional<ores::security::jwt::jwt_authenticator> verifier) {
+                     ores::database::context ctx,
+                     std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
     constexpr auto queue = queue_name;
 
     // Typed FX instruments
-    subs.push_back(nats.queue_subscribe(
-        std::string(save_fx_forward_instrument_request::nats_subject), queue,
-        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-            typed_fx_instrument_handler h(nats, ctx, verifier);
-            h.save_forward(std::move(msg));
-        }));
+    subs.push_back(
+        nats.queue_subscribe(std::string(save_fx_forward_instrument_request::nats_subject),
+                             queue,
+                             [&nats, ctx, verifier](ores::nats::message msg) mutable {
+                                 typed_fx_instrument_handler h(nats, ctx, verifier);
+                                 h.save_forward(std::move(msg));
+                             }));
 
-    subs.push_back(nats.queue_subscribe(
-        std::string(save_fx_vanilla_option_instrument_request::nats_subject), queue,
-        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-            typed_fx_instrument_handler h(nats, ctx, verifier);
-            h.save_vanilla_option(std::move(msg));
-        }));
+    subs.push_back(
+        nats.queue_subscribe(std::string(save_fx_vanilla_option_instrument_request::nats_subject),
+                             queue,
+                             [&nats, ctx, verifier](ores::nats::message msg) mutable {
+                                 typed_fx_instrument_handler h(nats, ctx, verifier);
+                                 h.save_vanilla_option(std::move(msg));
+                             }));
 
-    subs.push_back(nats.queue_subscribe(
-        std::string(save_fx_barrier_option_instrument_request::nats_subject), queue,
-        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-            typed_fx_instrument_handler h(nats, ctx, verifier);
-            h.save_barrier_option(std::move(msg));
-        }));
+    subs.push_back(
+        nats.queue_subscribe(std::string(save_fx_barrier_option_instrument_request::nats_subject),
+                             queue,
+                             [&nats, ctx, verifier](ores::nats::message msg) mutable {
+                                 typed_fx_instrument_handler h(nats, ctx, verifier);
+                                 h.save_barrier_option(std::move(msg));
+                             }));
 
-    subs.push_back(nats.queue_subscribe(
-        std::string(save_fx_digital_option_instrument_request::nats_subject), queue,
-        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-            typed_fx_instrument_handler h(nats, ctx, verifier);
-            h.save_digital_option(std::move(msg));
-        }));
+    subs.push_back(
+        nats.queue_subscribe(std::string(save_fx_digital_option_instrument_request::nats_subject),
+                             queue,
+                             [&nats, ctx, verifier](ores::nats::message msg) mutable {
+                                 typed_fx_instrument_handler h(nats, ctx, verifier);
+                                 h.save_digital_option(std::move(msg));
+                             }));
 
-    subs.push_back(nats.queue_subscribe(
-        std::string(save_fx_asian_forward_instrument_request::nats_subject), queue,
-        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-            typed_fx_instrument_handler h(nats, ctx, verifier);
-            h.save_asian_forward(std::move(msg));
-        }));
+    subs.push_back(
+        nats.queue_subscribe(std::string(save_fx_asian_forward_instrument_request::nats_subject),
+                             queue,
+                             [&nats, ctx, verifier](ores::nats::message msg) mutable {
+                                 typed_fx_instrument_handler h(nats, ctx, verifier);
+                                 h.save_asian_forward(std::move(msg));
+                             }));
 
-    subs.push_back(nats.queue_subscribe(
-        std::string(save_fx_accumulator_instrument_request::nats_subject), queue,
-        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-            typed_fx_instrument_handler h(nats, ctx, verifier);
-            h.save_accumulator(std::move(msg));
-        }));
+    subs.push_back(
+        nats.queue_subscribe(std::string(save_fx_accumulator_instrument_request::nats_subject),
+                             queue,
+                             [&nats, ctx, verifier](ores::nats::message msg) mutable {
+                                 typed_fx_instrument_handler h(nats, ctx, verifier);
+                                 h.save_accumulator(std::move(msg));
+                             }));
 
-    subs.push_back(nats.queue_subscribe(
-        std::string(save_fx_variance_swap_instrument_request::nats_subject), queue,
-        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-            typed_fx_instrument_handler h(nats, ctx, verifier);
-            h.save_variance_swap(std::move(msg));
-        }));
+    subs.push_back(
+        nats.queue_subscribe(std::string(save_fx_variance_swap_instrument_request::nats_subject),
+                             queue,
+                             [&nats, ctx, verifier](ores::nats::message msg) mutable {
+                                 typed_fx_instrument_handler h(nats, ctx, verifier);
+                                 h.save_variance_swap(std::move(msg));
+                             }));
 
     return subs;
 }

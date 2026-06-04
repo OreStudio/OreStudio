@@ -18,7 +18,6 @@
  *
  */
 #include "ores.trading.api/domain/swap_leg_table.hpp"
-
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
 
@@ -28,22 +27,14 @@ std::string convert_to_table(const std::vector<swap_leg>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header
-          << "ID" << "Leg#" << "Type" << "Index"
-          << "Fixed Rate" << "Spread" << "Notional" << "CCY"
-          << fort::endr;
+    table << fort::header << "ID" << "Leg#" << "Type" << "Index"
+          << "Fixed Rate" << "Spread" << "Notional" << "CCY" << fort::endr;
 
     for (const auto& t : v) {
         const auto& id = t.identity;
         const auto& tm = t.terms;
-        table << boost::uuids::to_string(id.id)
-              << id.leg_number
-              << tm.leg_type_code
-              << tm.floating_index_code
-              << tm.fixed_rate
-              << tm.spread
-              << tm.notional
-              << tm.currency
+        table << boost::uuids::to_string(id.id) << id.leg_number << tm.leg_type_code
+              << tm.floating_index_code << tm.fixed_rate << tm.spread << tm.notional << tm.currency
               << fort::endr;
     }
     return table.to_string();

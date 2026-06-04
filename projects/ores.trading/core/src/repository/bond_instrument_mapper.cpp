@@ -18,19 +18,17 @@
  *
  */
 #include "ores.trading.core/repository/bond_instrument_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.trading.api/domain/bond_instrument_json_io.hpp" // IWYU pragma: keep.
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::trading::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::bond_instrument
-bond_instrument_mapper::map(const bond_instrument_entity& v) {
+domain::bond_instrument bond_instrument_mapper::map(const bond_instrument_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::bond_instrument r;
@@ -38,7 +36,9 @@ bond_instrument_mapper::map(const bond_instrument_entity& v) {
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.version = v.version;
-    r.trade_id = v.trade_id.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.trade_id)) : std::nullopt;
+    r.trade_id = v.trade_id.has_value() ?
+                     std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.trade_id)) :
+                     std::nullopt;
     r.trade_type_code = v.trade_type_code;
     r.issuer = v.issuer;
     r.currency = v.currency;
@@ -69,8 +69,7 @@ bond_instrument_mapper::map(const bond_instrument_entity& v) {
     return r;
 }
 
-bond_instrument_entity
-bond_instrument_mapper::map(const domain::bond_instrument& v) {
+bond_instrument_entity bond_instrument_mapper::map(const domain::bond_instrument& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     bond_instrument_entity r;
@@ -78,7 +77,8 @@ bond_instrument_mapper::map(const domain::bond_instrument& v) {
     r.tenant_id = v.tenant_id.to_string();
     r.party_id = boost::uuids::to_string(v.party_id);
     r.version = v.version;
-    r.trade_id = v.trade_id.has_value() ? std::optional(boost::uuids::to_string(*v.trade_id)) : std::nullopt;
+    r.trade_id =
+        v.trade_id.has_value() ? std::optional(boost::uuids::to_string(*v.trade_id)) : std::nullopt;
     r.trade_type_code = v.trade_type_code;
     r.issuer = v.issuer;
     r.currency = v.currency;
@@ -88,27 +88,22 @@ bond_instrument_mapper::map(const domain::bond_instrument& v) {
     r.day_count_code = v.day_count_code;
     r.issue_date = v.issue_date;
     r.maturity_date = v.maturity_date;
-    r.settlement_days = v.settlement_days == 0
-        ? std::nullopt : std::optional(v.settlement_days);
-    r.call_date = v.call_date.empty()
-        ? std::nullopt : std::optional(v.call_date);
-    r.conversion_ratio = v.conversion_ratio == 0.0
-        ? std::nullopt : std::optional(v.conversion_ratio);
-    r.description = v.description.empty()
-        ? std::nullopt : std::optional(v.description);
-    r.future_expiry_date = v.future_expiry_date.empty()
-        ? std::nullopt : std::optional(v.future_expiry_date);
-    r.option_type = v.option_type.empty()
-        ? std::nullopt : std::optional(v.option_type);
-    r.option_expiry_date = v.option_expiry_date.empty()
-        ? std::nullopt : std::optional(v.option_expiry_date);
+    r.settlement_days = v.settlement_days == 0 ? std::nullopt : std::optional(v.settlement_days);
+    r.call_date = v.call_date.empty() ? std::nullopt : std::optional(v.call_date);
+    r.conversion_ratio =
+        v.conversion_ratio == 0.0 ? std::nullopt : std::optional(v.conversion_ratio);
+    r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
+    r.future_expiry_date =
+        v.future_expiry_date.empty() ? std::nullopt : std::optional(v.future_expiry_date);
+    r.option_type = v.option_type.empty() ? std::nullopt : std::optional(v.option_type);
+    r.option_expiry_date =
+        v.option_expiry_date.empty() ? std::nullopt : std::optional(v.option_expiry_date);
     r.option_strike = v.option_strike;
-    r.trs_return_type = v.trs_return_type.empty()
-        ? std::nullopt : std::optional(v.trs_return_type);
-    r.trs_funding_leg_code = v.trs_funding_leg_code.empty()
-        ? std::nullopt : std::optional(v.trs_funding_leg_code);
-    r.ascot_option_type = v.ascot_option_type.empty()
-        ? std::nullopt : std::optional(v.ascot_option_type);
+    r.trs_return_type = v.trs_return_type.empty() ? std::nullopt : std::optional(v.trs_return_type);
+    r.trs_funding_leg_code =
+        v.trs_funding_leg_code.empty() ? std::nullopt : std::optional(v.trs_funding_leg_code);
+    r.ascot_option_type =
+        v.ascot_option_type.empty() ? std::nullopt : std::optional(v.ascot_option_type);
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -121,19 +116,13 @@ bond_instrument_mapper::map(const domain::bond_instrument& v) {
 std::vector<domain::bond_instrument>
 bond_instrument_mapper::map(const std::vector<bond_instrument_entity>& v) {
     return map_vector<bond_instrument_entity, domain::bond_instrument>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<bond_instrument_entity>
 bond_instrument_mapper::map(const std::vector<domain::bond_instrument>& v) {
     return map_vector<domain::bond_instrument, bond_instrument_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

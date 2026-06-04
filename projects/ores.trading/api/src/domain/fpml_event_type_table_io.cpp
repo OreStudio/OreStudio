@@ -18,9 +18,8 @@
  *
  */
 #include "ores.trading.api/domain/fpml_event_type_table_io.hpp"
-
-#include <ostream>
 #include "ores.trading.api/domain/fpml_event_type_table.hpp"
+#include <ostream>
 
 namespace ores::trading::domain {
 

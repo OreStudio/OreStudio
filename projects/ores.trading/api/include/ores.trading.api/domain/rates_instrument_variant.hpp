@@ -20,30 +20,28 @@
 #ifndef ORES_TRADING_DOMAIN_RATES_INSTRUMENT_VARIANT_HPP
 #define ORES_TRADING_DOMAIN_RATES_INSTRUMENT_VARIANT_HPP
 
-#include <variant>
-#include "ores.trading.api/domain/fra_instrument.hpp"
-#include "ores.trading.api/domain/vanilla_swap_instrument.hpp"
-#include "ores.trading.api/domain/cap_floor_instrument.hpp"
-#include "ores.trading.api/domain/swaption_instrument.hpp"
 #include "ores.trading.api/domain/balance_guaranteed_swap_instrument.hpp"
 #include "ores.trading.api/domain/callable_swap_instrument.hpp"
-#include "ores.trading.api/domain/knock_out_swap_instrument.hpp"
+#include "ores.trading.api/domain/cap_floor_instrument.hpp"
+#include "ores.trading.api/domain/fra_instrument.hpp"
 #include "ores.trading.api/domain/inflation_swap_instrument.hpp"
+#include "ores.trading.api/domain/knock_out_swap_instrument.hpp"
 #include "ores.trading.api/domain/rpa_instrument.hpp"
+#include "ores.trading.api/domain/swaption_instrument.hpp"
+#include "ores.trading.api/domain/vanilla_swap_instrument.hpp"
+#include <variant>
 
 namespace ores::trading::domain {
 
-using rates_instrument_variant = std::variant<
-    fra_instrument,
-    vanilla_swap_instrument,
-    cap_floor_instrument,
-    swaption_instrument,
-    balance_guaranteed_swap_instrument,
-    callable_swap_instrument,
-    knock_out_swap_instrument,
-    inflation_swap_instrument,
-    rpa_instrument
->;
+using rates_instrument_variant = std::variant<fra_instrument,
+                                              vanilla_swap_instrument,
+                                              cap_floor_instrument,
+                                              swaption_instrument,
+                                              balance_guaranteed_swap_instrument,
+                                              callable_swap_instrument,
+                                              knock_out_swap_instrument,
+                                              inflation_swap_instrument,
+                                              rpa_instrument>;
 
 } // namespace ores::trading::domain
 

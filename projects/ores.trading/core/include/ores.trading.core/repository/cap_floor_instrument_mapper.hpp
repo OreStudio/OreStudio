@@ -20,10 +20,10 @@
 #ifndef ORES_TRADING_REPOSITORY_CAP_FLOOR_INSTRUMENT_MAPPER_HPP
 #define ORES_TRADING_REPOSITORY_CAP_FLOOR_INSTRUMENT_MAPPER_HPP
 
-#include "ores.trading.api/domain/cap_floor_instrument.hpp"
-#include "ores.trading.core/repository/cap_floor_instrument_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.trading.api/domain/cap_floor_instrument.hpp"
 #include "ores.trading.core/export.hpp"
+#include "ores.trading.core/repository/cap_floor_instrument_entity.hpp"
 
 namespace ores::trading::repository {
 
@@ -40,6 +40,7 @@ private:
         static auto instance = make_logger(logger_name);
         return instance;
     }
+
 public:
     static domain::cap_floor_instrument map(const cap_floor_instrument_entity& v);
     static cap_floor_instrument_entity map(const domain::cap_floor_instrument& v);

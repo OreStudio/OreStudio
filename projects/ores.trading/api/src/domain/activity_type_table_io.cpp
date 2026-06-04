@@ -18,9 +18,8 @@
  *
  */
 #include "ores.trading.api/domain/activity_type_table_io.hpp"
-
-#include <ostream>
 #include "ores.trading.api/domain/activity_type_table.hpp"
+#include <ostream>
 
 namespace ores::trading::domain {
 

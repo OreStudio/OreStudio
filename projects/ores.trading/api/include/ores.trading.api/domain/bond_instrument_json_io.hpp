@@ -20,9 +20,9 @@
 #ifndef ORES_TRADING_DOMAIN_BOND_INSTRUMENT_JSON_IO_HPP
 #define ORES_TRADING_DOMAIN_BOND_INSTRUMENT_JSON_IO_HPP
 
-#include <iosfwd>
 #include "ores.trading.api/domain/bond_instrument.hpp"
 #include "ores.trading.api/export.hpp"
+#include <iosfwd>
 
 namespace ores::trading::domain {
 

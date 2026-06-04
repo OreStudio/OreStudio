@@ -20,16 +20,16 @@
 #ifndef ORES_TRADING_SERVICE_TRADE_SERVICE_HPP
 #define ORES_TRADING_SERVICE_TRADE_SERVICE_HPP
 
-#include <string>
-#include <vector>
-#include <optional>
-#include <boost/uuid/uuid.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/trade.hpp"
+#include "ores.trading.core/export.hpp"
 #include "ores.trading.core/repository/trade_repository.hpp"
 #include "ores.trading.core/service/trade_status_service.hpp"
-#include "ores.trading.core/export.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <optional>
+#include <string>
+#include <vector>
 
 namespace ores::trading::service {
 
@@ -38,8 +38,7 @@ namespace ores::trading::service {
  */
 class ORES_TRADING_CORE_EXPORT trade_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.trading.service.trade_service";
+    inline static std::string_view logger_name = "ores.trading.service.trade_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -54,8 +53,7 @@ public:
 
     std::vector<domain::trade> list_trades();
 
-    std::vector<domain::trade>
-    list_trades(std::uint32_t offset, std::uint32_t limit);
+    std::vector<domain::trade> list_trades(std::uint32_t offset, std::uint32_t limit);
 
     /**
      * @brief List trades under a taxonomy node.
@@ -64,28 +62,24 @@ public:
      * resolves it to the book-id set. An absent @p node_id lists all trades
      * in the tenant.
      */
-    std::vector<domain::trade>
-    list_trades_by_node(std::uint32_t offset, std::uint32_t limit,
-        std::optional<boost::uuids::uuid> node_id);
+    std::vector<domain::trade> list_trades_by_node(std::uint32_t offset,
+                                                   std::uint32_t limit,
+                                                   std::optional<boost::uuids::uuid> node_id);
 
     std::uint32_t count_trades();
 
-    std::uint32_t count_trades_by_node(
-        std::optional<boost::uuids::uuid> node_id);
+    std::uint32_t count_trades_by_node(std::optional<boost::uuids::uuid> node_id);
 
-    std::optional<domain::trade>
-    find_trade(const std::string& id);
+    std::optional<domain::trade> find_trade(const std::string& id);
 
-    void save_trade(const domain::trade& v,
-        const fsm_transition_map& transitions);
+    void save_trade(const domain::trade& v, const fsm_transition_map& transitions);
 
     void save_trades(const std::vector<domain::trade>& trades,
-        const fsm_transition_map& transitions);
+                     const fsm_transition_map& transitions);
 
     void remove_trade(const std::string& id);
 
-    std::vector<domain::trade>
-    get_trade_history(const std::string& id);
+    std::vector<domain::trade> get_trade_history(const std::string& id);
 
 private:
     context ctx_;

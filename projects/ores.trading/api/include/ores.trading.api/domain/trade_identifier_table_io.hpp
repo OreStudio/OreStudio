@@ -20,17 +20,18 @@
 #ifndef ORES_TRADING_DOMAIN_TRADE_IDENTIFIER_TABLE_IO_HPP
 #define ORES_TRADING_DOMAIN_TRADE_IDENTIFIER_TABLE_IO_HPP
 
-#include <iosfwd>
-#include <vector>
 #include "ores.trading.api/domain/trade_identifier.hpp"
 #include "ores.trading.api/export.hpp"
+#include <iosfwd>
+#include <vector>
 
 namespace ores::trading::domain {
 
 /**
  * @brief Dumps the trade_identifier objects to a stream in table format.
  */
-ORES_TRADING_API_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<trade_identifier>& v);
+ORES_TRADING_API_EXPORT std::ostream& operator<<(std::ostream& s,
+                                                 const std::vector<trade_identifier>& v);
 
 }
 

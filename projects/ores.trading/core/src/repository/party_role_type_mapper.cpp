@@ -18,7 +18,6 @@
  *
  */
 #include "ores.trading.core/repository/party_role_type_mapper.hpp"
-
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.trading.api/domain/party_role_type_json_io.hpp" // IWYU pragma: keep.
 
@@ -27,8 +26,7 @@ namespace ores::trading::repository {
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::party_role_type
-party_role_type_mapper::map(const party_role_type_entity& v) {
+domain::party_role_type party_role_type_mapper::map(const party_role_type_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::party_role_type r;
@@ -46,8 +44,7 @@ party_role_type_mapper::map(const party_role_type_entity& v) {
     return r;
 }
 
-party_role_type_entity
-party_role_type_mapper::map(const domain::party_role_type& v) {
+party_role_type_entity party_role_type_mapper::map(const domain::party_role_type& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     party_role_type_entity r;
@@ -67,19 +64,13 @@ party_role_type_mapper::map(const domain::party_role_type& v) {
 std::vector<domain::party_role_type>
 party_role_type_mapper::map(const std::vector<party_role_type_entity>& v) {
     return map_vector<party_role_type_entity, domain::party_role_type>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<party_role_type_entity>
 party_role_type_mapper::map(const std::vector<domain::party_role_type>& v) {
     return map_vector<domain::party_role_type, party_role_type_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

@@ -20,10 +20,10 @@
 #ifndef ORES_TRADING_DOMAIN_FRA_INSTRUMENT_HPP
 #define ORES_TRADING_DOMAIN_FRA_INSTRUMENT_HPP
 
-#include <chrono>
-#include <string>
 #include "ores.trading.api/domain/instrument_identity.hpp"
 #include "ores.utility/domain/audit_record.hpp"
+#include <chrono>
+#include <string>
 
 namespace ores::trading::domain {
 

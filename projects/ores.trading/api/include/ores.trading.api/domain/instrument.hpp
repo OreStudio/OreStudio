@@ -20,68 +20,64 @@
 #ifndef ORES_TRADING_DOMAIN_INSTRUMENT_HPP
 #define ORES_TRADING_DOMAIN_INSTRUMENT_HPP
 
-#include <concepts>
-#include <type_traits>
-#include <vector>
-#include <variant>
-#include <boost/uuid/uuid.hpp>
-#include "ores.trading.api/domain/rates_instrument_variant.hpp"
-#include "ores.trading.api/domain/swap_leg.hpp"
 #include "ores.trading.api/domain/composite_instrument.hpp"
 #include "ores.trading.api/domain/composite_leg.hpp"
+#include "ores.trading.api/domain/rates_instrument_variant.hpp"
+#include "ores.trading.api/domain/swap_leg.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <concepts>
+#include <type_traits>
+#include <variant>
+#include <vector>
 
 namespace ores::trading::domain {
 
 // Instruments decomposed with instrument_identity (rates types after task 12).
-template<typename T>
+template <typename T>
 concept NestedInstrument = requires(T t) {
     { t.identity.instrument_id } -> std::convertible_to<boost::uuids::uuid>;
-    { t.identity.trade_id }      -> std::convertible_to<std::optional<boost::uuids::uuid>>;
+    { t.identity.trade_id } -> std::convertible_to<std::optional<boost::uuids::uuid>>;
 };
 
 // Instruments still using flat fields (FX, equity, bond — tasks 13-15 pending).
-template<typename T>
+template <typename T>
 concept FlatInstrument = requires(T t) {
     { t.instrument_id } -> std::convertible_to<boost::uuids::uuid>;
-    { t.trade_id }      -> std::convertible_to<std::optional<boost::uuids::uuid>>;
+    { t.trade_id } -> std::convertible_to<std::optional<boost::uuids::uuid>>;
 };
 
-template<typename T>
+template <typename T>
 concept Instrument = NestedInstrument<T> || FlatInstrument<T>;
 
-template<typename T, typename Leg>
+template <typename T, typename Leg>
 struct with_legs {
     T instrument;
     std::vector<Leg> legs;
 };
 
-using swap_instrument_data      = with_legs<rates_instrument_variant, swap_leg>;
+using swap_instrument_data = with_legs<rates_instrument_variant, swap_leg>;
 using composite_instrument_data = with_legs<composite_instrument, composite_leg>;
 
-template<Instrument T>
-void stamp_ids(T& instr,
-               boost::uuids::uuid instrument_id,
-               boost::uuids::uuid trade_id) {
+template <Instrument T>
+void stamp_ids(T& instr, boost::uuids::uuid instrument_id, boost::uuids::uuid trade_id) {
     if constexpr (NestedInstrument<T>) {
         instr.identity.instrument_id = instrument_id;
-        instr.identity.trade_id      = trade_id;
+        instr.identity.trade_id = trade_id;
     } else {
         instr.instrument_id = instrument_id;
-        instr.trade_id      = trade_id;
+        instr.trade_id = trade_id;
     }
 }
 
-template<typename... Ts>
-    requires (Instrument<Ts> && ...)
+template <typename... Ts>
+    requires(Instrument<Ts> && ...)
 void stamp_ids(std::variant<Ts...>& v,
                boost::uuids::uuid instrument_id,
                boost::uuids::uuid trade_id) {
-    std::visit([&](auto& instr) {
-        stamp_ids(instr, instrument_id, trade_id);
-    }, v);
+    std::visit([&](auto& instr) { stamp_ids(instr, instrument_id, trade_id); }, v);
 }
 
-template<typename T, typename Leg>
+template <typename T, typename Leg>
 void stamp_ids(with_legs<T, Leg>& data,
                boost::uuids::uuid instrument_id,
                boost::uuids::uuid trade_id) {

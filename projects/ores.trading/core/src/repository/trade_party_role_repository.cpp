@@ -18,13 +18,12 @@
  *
  */
 #include "ores.trading.core/repository/trade_party_role_repository.hpp"
-
-#include <sqlgen/postgres.hpp>
-#include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
 #include "ores.trading.api/domain/trade_party_role_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/trade_party_role_entity.hpp"
 #include "ores.trading.core/repository/trade_party_role_mapper.hpp"
+#include <sqlgen/postgres.hpp>
 
 namespace ores::trading::repository {
 
@@ -39,29 +38,30 @@ std::string trade_party_role_repository::sql() {
 
 void trade_party_role_repository::write(context ctx, const domain::trade_party_role& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing trade party role: " << v.id;
-    execute_write_query(ctx, trade_party_role_mapper::map(v),
-        lg(), "Writing trade party role to database.");
+    execute_write_query(
+        ctx, trade_party_role_mapper::map(v), lg(), "Writing trade party role to database.");
 }
 
-void trade_party_role_repository::write(
-    context ctx, const std::vector<domain::trade_party_role>& v) {
+void trade_party_role_repository::write(context ctx,
+                                        const std::vector<domain::trade_party_role>& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing trade party roles. Count: " << v.size();
-    execute_write_query(ctx, trade_party_role_mapper::map(v),
-        lg(), "Writing trade party roles to database.");
+    execute_write_query(
+        ctx, trade_party_role_mapper::map(v), lg(), "Writing trade party roles to database.");
 }
 
-std::vector<domain::trade_party_role>
-trade_party_role_repository::read_latest(context ctx) {
+std::vector<domain::trade_party_role> trade_party_role_repository::read_latest(context ctx) {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<trade_party_role_entity>> |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-        order_by("id"_c);
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("id"_c);
 
     return execute_read_query<trade_party_role_entity, domain::trade_party_role>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return trade_party_role_mapper::map(entities); },
-        lg(), "Reading latest trade party roles");
+        lg(),
+        "Reading latest trade party roles");
 }
 
 std::vector<domain::trade_party_role>
@@ -70,26 +70,29 @@ trade_party_role_repository::read_latest(context ctx, const std::string& id) {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<trade_party_role_entity>> |
-        where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
     return execute_read_query<trade_party_role_entity, domain::trade_party_role>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return trade_party_role_mapper::map(entities); },
-        lg(), "Reading latest trade party role by id.");
+        lg(),
+        "Reading latest trade party role by id.");
 }
 
-std::vector<domain::trade_party_role>
-trade_party_role_repository::read_all(context ctx, const std::string& id) {
+std::vector<domain::trade_party_role> trade_party_role_repository::read_all(context ctx,
+                                                                            const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all trade party role versions. id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<trade_party_role_entity>> |
-        where("tenant_id"_c == tid && "id"_c == id) |
-        order_by("version"_c.desc());
+                       where("tenant_id"_c == tid && "id"_c == id) | order_by("version"_c.desc());
 
     return execute_read_query<trade_party_role_entity, domain::trade_party_role>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return trade_party_role_mapper::map(entities); },
-        lg(), "Reading all trade party role versions by id.");
+        lg(),
+        "Reading all trade party role versions by id.");
 }
 
 void trade_party_role_repository::remove(context ctx, const std::string& id) {
@@ -97,7 +100,7 @@ void trade_party_role_repository::remove(context ctx, const std::string& id) {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<trade_party_role_entity> |
-        where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
     execute_delete_query(ctx, query, lg(), "Removing trade party role from database.");
 }

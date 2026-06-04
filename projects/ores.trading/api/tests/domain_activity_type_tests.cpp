@@ -17,16 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.trading.api/domain/activity_type.hpp"
-
-#include <sstream>
-#include <catch2/catch_test_macros.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
+#include "ores.trading.api/domain/activity_type.hpp"
 #include "ores.trading.api/domain/activity_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.api/domain/activity_type_table.hpp"
 #include "ores.trading.api/domain/activity_type_table_io.hpp" // IWYU pragma: keep.
+#include <boost/uuid/uuid_generators.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <sstream>
 
 namespace {
 
@@ -36,7 +35,7 @@ const std::string_view test_suite("ores.trading.tests");
 const std::string tags("[domain]");
 
 activity_type make_activity_type(const std::string& code,
-    const std::string& category = "lifecycle_event") {
+                                 const std::string& category = "lifecycle_event") {
     activity_type at;
     at.version = 1;
     at.code = code;
@@ -159,8 +158,7 @@ TEST_CASE("create_activity_type_with_faker", tags) {
 TEST_CASE("create_multiple_random_activity_types", tags) {
     auto lg(make_logger(test_suite));
 
-    const std::vector<std::string> codes = {"new_booking", "amendment",
-        "novation", "cancellation"};
+    const std::vector<std::string> codes = {"new_booking", "amendment", "novation", "cancellation"};
     for (const auto& code : codes) {
         auto sut = make_activity_type(code);
         BOOST_LOG_SEV(lg, info) << "Activity type: " << sut;
@@ -172,8 +170,7 @@ TEST_CASE("create_multiple_random_activity_types", tags) {
 TEST_CASE("activity_type_convert_single_to_table", tags) {
     auto lg(make_logger(test_suite));
 
-    std::vector<activity_type> items = {
-        make_activity_type("cancellation", "cancellation")};
+    std::vector<activity_type> items = {make_activity_type("cancellation", "cancellation")};
     auto table = convert_to_table(items);
 
     BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;

@@ -18,9 +18,8 @@
  *
  */
 #include "ores.trading.core/service/bond_instrument_service.hpp"
-
-#include <stdexcept>
 #include "ores.service/messaging/handler_helpers.hpp"
+#include <stdexcept>
 
 using ores::service::messaging::stamp;
 
@@ -31,17 +30,15 @@ using namespace ores::logging;
 bond_instrument_service::bond_instrument_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
-std::vector<domain::bond_instrument>
-bond_instrument_service::list_bond_instruments() {
+std::vector<domain::bond_instrument> bond_instrument_service::list_bond_instruments() {
     BOOST_LOG_SEV(lg(), debug) << "Listing all bond_instruments";
     return repo_.read_latest(ctx_);
 }
 
 std::vector<domain::bond_instrument>
-bond_instrument_service::list_bond_instruments(std::uint32_t offset,
-    std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing bond_instruments with offset="
-                               << offset << ", limit=" << limit;
+bond_instrument_service::list_bond_instruments(std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing bond_instruments with offset=" << offset
+                               << ", limit=" << limit;
     return repo_.read_latest(ctx_, offset, limit);
 }
 
@@ -54,7 +51,8 @@ std::optional<domain::bond_instrument>
 bond_instrument_service::get_bond_instrument(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting bond_instrument: " << id;
     auto results = repo_.read_latest(ctx_, id);
-    if (results.empty()) return std::nullopt;
+    if (results.empty())
+        return std::nullopt;
     return results.front();
 }
 
@@ -82,8 +80,7 @@ bond_instrument_service::get_bond_instrument_history(const std::string& id) {
 
 
 std::vector<domain::bond_instrument>
-bond_instrument_service::get_bond_instruments(
-    const std::vector<std::string>& ids) {
+bond_instrument_service::get_bond_instruments(const std::vector<std::string>& ids) {
     return repo_.read_latest(ctx_, ids);
 }
 

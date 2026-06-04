@@ -18,20 +18,17 @@
  *
  */
 #include "ores.trading.api/generators/swap_leg_generator.hpp"
-
-#include <boost/uuid/uuid_generators.hpp>
 #include "ores.utility/generation/generation_keys.hpp"
+#include <boost/uuid/uuid_generators.hpp>
 
 namespace ores::trading::generator {
 
 using ores::utility::generation::generation_keys;
 
-domain::swap_leg generate_synthetic_swap_leg(
-    const boost::uuids::uuid& instrument_id,
-    int leg_number,
-    utility::generation::generation_context& ctx) {
-    const auto modified_by = ctx.env().get_or(
-        std::string(generation_keys::modified_by), "system");
+domain::swap_leg generate_synthetic_swap_leg(const boost::uuids::uuid& instrument_id,
+                                             int leg_number,
+                                             utility::generation::generation_context& ctx) {
+    const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
 
     domain::swap_leg r;
     auto& id = r.identity;
@@ -65,7 +62,7 @@ domain::swap_leg generate_synthetic_swap_leg(
 
 std::vector<domain::swap_leg>
 generate_synthetic_swap_legs(const boost::uuids::uuid& instrument_id,
-    utility::generation::generation_context& ctx) {
+                             utility::generation::generation_context& ctx) {
     std::vector<domain::swap_leg> r;
     r.push_back(generate_synthetic_swap_leg(instrument_id, 1, ctx));
     r.push_back(generate_synthetic_swap_leg(instrument_id, 2, ctx));

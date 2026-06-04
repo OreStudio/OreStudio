@@ -18,87 +18,77 @@
  *
  */
 #include "ores.trading.core/service/trade_status_service.hpp"
-
-#include <stdexcept>
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/uuid/nil_generator.hpp>
 #include "ores.trading.core/repository/activity_type_repository.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/nil_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <stdexcept>
 
 namespace ores::trading::service {
 
 using namespace ores::logging;
 
-boost::uuids::uuid trade_status_service::resolve_status(
-    context ctx,
-    const std::string& activity_type_code,
-    std::optional<boost::uuids::uuid> current_status_id,
-    const fsm_transition_map& transitions) {
+boost::uuids::uuid
+trade_status_service::resolve_status(context ctx,
+                                     const std::string& activity_type_code,
+                                     std::optional<boost::uuids::uuid> current_status_id,
+                                     const fsm_transition_map& transitions) {
 
-    BOOST_LOG_SEV(lg(), debug)
-        << "Resolving trade status for activity type: " << activity_type_code;
+    BOOST_LOG_SEV(lg(), debug) << "Resolving trade status for activity type: "
+                               << activity_type_code;
 
     // Activity types and FSM transitions are system-level configuration seeded
     // under the system tenant; use a system context for both lookups.
-    const auto sys_ctx = ctx.with_tenant(
-        utility::uuid::tenant_id::system(), ctx.actor());
+    const auto sys_ctx = ctx.with_tenant(utility::uuid::tenant_id::system(), ctx.actor());
 
     // Step 1: Load the activity type to find the linked FSM transition.
     repository::activity_type_repository at_repo;
     const auto at_results = at_repo.read_latest(sys_ctx, activity_type_code);
     if (at_results.empty()) {
-        throw std::invalid_argument(
-            "Unknown activity type code: " + activity_type_code);
+        throw std::invalid_argument("Unknown activity type code: " + activity_type_code);
     }
     const auto& at = at_results.front();
 
     // Step 2: If no FSM transition is linked, status is unchanged.
     if (!at.fsm_transition_id.has_value()) {
-        BOOST_LOG_SEV(lg(), debug)
-            << "Activity type has no FSM transition; status unchanged.";
+        BOOST_LOG_SEV(lg(), debug) << "Activity type has no FSM transition; status unchanged.";
         return current_status_id.value_or(boost::uuids::nil_uuid());
     }
 
     // Step 3: Load the FSM transition from the pre-fetched map.
     const auto it = transitions.find(*at.fsm_transition_id);
     if (it == transitions.end()) {
-        throw std::logic_error(
-            "FSM transition not found for id: "
-            + boost::uuids::to_string(*at.fsm_transition_id));
+        throw std::logic_error("FSM transition not found for id: " +
+                               boost::uuids::to_string(*at.fsm_transition_id));
     }
     const auto& transition_ref = it->second;
 
     // Step 4: Validate that the current status matches the transition's
     // from_state_id.  A null from_state_id means this is the initial booking
     // transition: the trade must not yet have a status (nil UUID or nullopt).
-    const auto current_id =
-        current_status_id.value_or(boost::uuids::nil_uuid());
+    const auto current_id = current_status_id.value_or(boost::uuids::nil_uuid());
 
     if (!transition_ref.from_state_id.has_value()) {
         // Initial transition: current status must be nil (new trade).
         if (!boost::uuids::uuid(current_id).is_nil()) {
-            throw std::logic_error(
-                "Invalid FSM transition '" + transition_ref.name
-                + "': initial booking requires nil current status, but got "
-                + boost::uuids::to_string(current_id));
+            throw std::logic_error("Invalid FSM transition '" + transition_ref.name +
+                                   "': initial booking requires nil current status, but got " +
+                                   boost::uuids::to_string(current_id));
         }
     } else {
         // Non-initial transition: current status must match from_state_id.
         if (current_id != *transition_ref.from_state_id) {
-            throw std::logic_error(
-                "Invalid FSM transition '" + transition_ref.name
-                + "': expected from_state_id "
-                + boost::uuids::to_string(*transition_ref.from_state_id)
-                + " but current status is "
-                + boost::uuids::to_string(current_id));
+            throw std::logic_error("Invalid FSM transition '" + transition_ref.name +
+                                   "': expected from_state_id " +
+                                   boost::uuids::to_string(*transition_ref.from_state_id) +
+                                   " but current status is " + boost::uuids::to_string(current_id));
         }
     }
 
     // Step 5: Return the target state.
-    BOOST_LOG_SEV(lg(), debug)
-        << "FSM transition '" << transition_ref.name
-        << "' applied: new status_id = "
-        << boost::uuids::to_string(transition_ref.to_state_id);
+    BOOST_LOG_SEV(lg(), debug) << "FSM transition '" << transition_ref.name
+                               << "' applied: new status_id = "
+                               << boost::uuids::to_string(transition_ref.to_state_id);
     return transition_ref.to_state_id;
 }
 

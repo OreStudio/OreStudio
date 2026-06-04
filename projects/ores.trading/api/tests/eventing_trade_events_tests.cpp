@@ -17,16 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.trading.api/eventing/trade_changed_event.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
 #include "ores.eventing/service/event_bus.hpp"
-
-#include <sstream>
-#include <catch2/catch_test_macros.hpp>
+#include "ores.logging/make_logger.hpp"
+#include "ores.trading.api/eventing/trade_changed_event.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.logging/make_logger.hpp"
+#include <sstream>
 
 namespace {
 
@@ -58,7 +57,7 @@ TEST_CASE("create_trade_changed_event", tags) {
     sut.tenant_id = "system";
 
     BOOST_LOG_SEV(lg, info) << "Trade changed event - tenant: " << sut.tenant_id
-        << ", trades: " << sut.trade_ids.size();
+                            << ", trades: " << sut.trade_ids.size();
 
     CHECK(!sut.trade_ids.empty());
     CHECK(sut.trade_ids.size() == 2);
@@ -71,8 +70,8 @@ TEST_CASE("create_trade_changed_event_with_faker", tags) {
 
     for (int i = 0; i < 3; ++i) {
         trade_changed_event sut;
-        sut.timestamp = std::chrono::system_clock::now() -
-            std::chrono::hours(faker::number::integer(0, 168));
+        sut.timestamp =
+            std::chrono::system_clock::now() - std::chrono::hours(faker::number::integer(0, 168));
         sut.tenant_id = "system";
 
         const int num_ids = faker::number::integer(1, 5);
@@ -83,7 +82,7 @@ TEST_CASE("create_trade_changed_event_with_faker", tags) {
         }
 
         BOOST_LOG_SEV(lg, info) << "Trade changed event " << i
-            << " - trades: " << sut.trade_ids.size();
+                                << " - trades: " << sut.trade_ids.size();
 
         CHECK(!sut.trade_ids.empty());
         CHECK(!sut.tenant_id.empty());
@@ -121,9 +120,8 @@ TEST_CASE("event_bus_trade_changed_isolation", tags) {
     ores::eventing::service::event_bus bus;
     bool trade_changed_received = false;
 
-    auto sub = bus.subscribe<trade_changed_event>([&](const trade_changed_event&) {
-        trade_changed_received = true;
-    });
+    auto sub = bus.subscribe<trade_changed_event>(
+        [&](const trade_changed_event&) { trade_changed_received = true; });
 
     // Publish but check no cross-contamination with other event types
     trade_changed_event event;

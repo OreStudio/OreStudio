@@ -20,9 +20,9 @@
 #ifndef ORES_TRADING_DOMAIN_COMPOSITE_LEG_JSON_IO_HPP
 #define ORES_TRADING_DOMAIN_COMPOSITE_LEG_JSON_IO_HPP
 
-#include <iosfwd>
 #include "ores.trading.api/domain/composite_leg.hpp"
 #include "ores.trading.api/export.hpp"
+#include <iosfwd>
 
 namespace ores::trading::domain {
 

@@ -18,7 +18,6 @@
  *
  */
 #include "ores.trading.core/repository/trade_party_role_entity.hpp"
-
 #include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>

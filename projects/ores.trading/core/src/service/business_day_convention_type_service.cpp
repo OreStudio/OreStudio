@@ -18,7 +18,6 @@
  *
  */
 #include "ores.trading.core/service/business_day_convention_type_service.hpp"
-
 #include <stdexcept>
 
 namespace ores::trading::service {
@@ -28,7 +27,8 @@ using namespace ores::logging;
 business_day_convention_type_service::business_day_convention_type_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
-std::vector<domain::business_day_convention_type> business_day_convention_type_service::list_types() {
+std::vector<domain::business_day_convention_type>
+business_day_convention_type_service::list_types() {
     BOOST_LOG_SEV(lg(), debug) << "Listing all business day convention types";
     return repo_.read_latest(ctx_);
 }
@@ -37,11 +37,13 @@ std::optional<domain::business_day_convention_type>
 business_day_convention_type_service::find_type(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Finding business day convention type: " << code;
     auto results = repo_.read_latest(ctx_, code);
-    if (results.empty()) return std::nullopt;
+    if (results.empty())
+        return std::nullopt;
     return results.front();
 }
 
-void business_day_convention_type_service::save_type(const domain::business_day_convention_type& v) {
+void business_day_convention_type_service::save_type(
+    const domain::business_day_convention_type& v) {
     if (v.code.empty())
         throw std::invalid_argument("business day convention type code cannot be empty.");
     BOOST_LOG_SEV(lg(), debug) << "Saving business day convention type: " << v.code;
@@ -49,7 +51,8 @@ void business_day_convention_type_service::save_type(const domain::business_day_
     BOOST_LOG_SEV(lg(), info) << "Saved business day convention type: " << v.code;
 }
 
-void business_day_convention_type_service::save_types(const std::vector<domain::business_day_convention_type>& v) {
+void business_day_convention_type_service::save_types(
+    const std::vector<domain::business_day_convention_type>& v) {
     for (const auto& e : v) {
         if (e.code.empty())
             throw std::invalid_argument("business day convention type code cannot be empty.");

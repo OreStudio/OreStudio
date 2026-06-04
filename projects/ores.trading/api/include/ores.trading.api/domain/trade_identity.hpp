@@ -20,9 +20,9 @@
 #ifndef ORES_TRADING_API_DOMAIN_TRADE_IDENTITY_HPP
 #define ORES_TRADING_API_DOMAIN_TRADE_IDENTITY_HPP
 
-#include <string>
-#include <boost/uuid/uuid.hpp>
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <string>
 
 namespace ores::trading::domain {
 
@@ -33,7 +33,7 @@ namespace ores::trading::domain {
  * rfl::Flatten<T>.  Splitting trade into small sub-structs keeps each
  * per-struct rfl field-uniqueness check (O(n²)) shallow enough to avoid
  * the MSVC C1202 recursive-template-depth error.
- * 
+ *
  * This group carries the identity / surrogate-key fields that
  * uniquely identify the trade record within a tenant.
  */
@@ -69,7 +69,6 @@ struct trade_identity {
      * @brief Optional external trade identifier (e.g. UTI prefix or legacy system ID).
      */
     std::string external_id;
-
 };
 
 }

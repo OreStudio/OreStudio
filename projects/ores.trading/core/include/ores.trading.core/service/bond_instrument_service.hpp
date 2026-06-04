@@ -20,14 +20,14 @@
 #ifndef ORES_TRADING_SERVICE_BOND_INSTRUMENT_SERVICE_HPP
 #define ORES_TRADING_SERVICE_BOND_INSTRUMENT_SERVICE_HPP
 
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.trading.api/domain/bond_instrument.hpp"
+#include "ores.trading.core/export.hpp"
+#include "ores.trading.core/repository/bond_instrument_repository.hpp"
+#include <optional>
 #include <string>
 #include <vector>
-#include <optional>
-#include "ores.logging/make_logger.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.trading.api/domain/bond_instrument.hpp"
-#include "ores.trading.core/repository/bond_instrument_repository.hpp"
-#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::service {
 
@@ -36,8 +36,7 @@ namespace ores::trading::service {
  */
 class ORES_TRADING_CORE_EXPORT bond_instrument_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.trading.service.bond_instrument_service";
+    inline static std::string_view logger_name = "ores.trading.service.bond_instrument_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -52,23 +51,20 @@ public:
 
     std::vector<domain::bond_instrument> list_bond_instruments();
 
-    std::vector<domain::bond_instrument>
-    list_bond_instruments(std::uint32_t offset, std::uint32_t limit);
+    std::vector<domain::bond_instrument> list_bond_instruments(std::uint32_t offset,
+                                                               std::uint32_t limit);
 
     std::uint32_t count_bond_instruments();
 
-    std::optional<domain::bond_instrument>
-    get_bond_instrument(const std::string& id);
+    std::optional<domain::bond_instrument> get_bond_instrument(const std::string& id);
 
     void save_bond_instrument(const domain::bond_instrument& v);
 
     void remove_bond_instrument(const std::string& id);
 
-    std::vector<domain::bond_instrument>
-    get_bond_instrument_history(const std::string& id);
+    std::vector<domain::bond_instrument> get_bond_instrument_history(const std::string& id);
 
-    std::vector<domain::bond_instrument>
-    get_bond_instruments(const std::vector<std::string>& ids);
+    std::vector<domain::bond_instrument> get_bond_instruments(const std::vector<std::string>& ids);
 
 private:
     context ctx_;

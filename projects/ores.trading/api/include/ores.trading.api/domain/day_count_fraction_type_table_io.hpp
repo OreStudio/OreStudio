@@ -20,17 +20,18 @@
 #ifndef ORES_TRADING_DOMAIN_DAY_COUNT_FRACTION_TYPE_TABLE_IO_HPP
 #define ORES_TRADING_DOMAIN_DAY_COUNT_FRACTION_TYPE_TABLE_IO_HPP
 
-#include <iosfwd>
-#include <vector>
 #include "ores.trading.api/domain/day_count_fraction_type.hpp"
 #include "ores.trading.api/export.hpp"
+#include <iosfwd>
+#include <vector>
 
 namespace ores::trading::domain {
 
 /**
  * @brief Dumps the day_count_fraction_type objects to a stream in table format.
  */
-ORES_TRADING_API_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<day_count_fraction_type>& v);
+ORES_TRADING_API_EXPORT std::ostream& operator<<(std::ostream& s,
+                                                 const std::vector<day_count_fraction_type>& v);
 
 }
 

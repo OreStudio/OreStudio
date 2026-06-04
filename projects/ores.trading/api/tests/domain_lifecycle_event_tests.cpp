@@ -17,15 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.trading.api/domain/lifecycle_event.hpp"
-
-#include <sstream>
-#include <catch2/catch_test_macros.hpp>
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
+#include "ores.trading.api/domain/lifecycle_event.hpp"
 #include "ores.trading.api/domain/lifecycle_event_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.api/domain/lifecycle_event_table.hpp"
 #include "ores.trading.api/domain/lifecycle_event_table_io.hpp" // IWYU pragma: keep.
+#include <catch2/catch_test_macros.hpp>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <sstream>
 
 namespace {
 
@@ -34,8 +33,7 @@ using ores::trading::domain::lifecycle_event;
 const std::string_view test_suite("ores.trading.tests");
 const std::string tags("[domain]");
 
-lifecycle_event make_lifecycle_event(const std::string& code,
-    const std::string& description = "") {
+lifecycle_event make_lifecycle_event(const std::string& code, const std::string& description = "") {
     lifecycle_event le;
     le.version = 1;
     le.code = code;
@@ -104,8 +102,8 @@ TEST_CASE("create_lifecycle_event_with_faker", tags) {
 TEST_CASE("create_multiple_random_lifecycle_events", tags) {
     auto lg(make_logger(test_suite));
 
-    const std::vector<std::string> codes = {"New", "Amendment", "Novation",
-        "PartialTermination", "FullTermination"};
+    const std::vector<std::string> codes = {
+        "New", "Amendment", "Novation", "PartialTermination", "FullTermination"};
     for (const auto& code : codes) {
         auto sut = make_lifecycle_event(code);
         BOOST_LOG_SEV(lg, info) << "Lifecycle event: " << sut;

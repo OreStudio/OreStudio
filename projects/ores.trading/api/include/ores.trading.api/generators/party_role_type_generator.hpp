@@ -20,25 +20,24 @@
 #ifndef ORES_TRADING_GENERATOR_PARTY_ROLE_TYPE_GENERATOR_HPP
 #define ORES_TRADING_GENERATOR_PARTY_ROLE_TYPE_GENERATOR_HPP
 
-#include <vector>
 #include "ores.trading.api/domain/party_role_type.hpp"
-#include "ores.utility/generation/generation_context.hpp"
 #include "ores.trading.api/export.hpp"
+#include "ores.utility/generation/generation_context.hpp"
+#include <vector>
 
 namespace ores::trading::generator {
 
 /**
  * @brief Generates a synthetic party_role_type.
  */
-ORES_TRADING_API_EXPORT domain::party_role_type generate_synthetic_party_role_type(
-    utility::generation::generation_context& ctx);
+ORES_TRADING_API_EXPORT domain::party_role_type
+generate_synthetic_party_role_type(utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic party_role_types.
  */
 ORES_TRADING_API_EXPORT std::vector<domain::party_role_type>
-generate_synthetic_party_role_types(std::size_t n,
-    utility::generation::generation_context& ctx);
+generate_synthetic_party_role_types(std::size_t n, utility::generation::generation_context& ctx);
 
 }
 

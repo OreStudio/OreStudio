@@ -18,10 +18,9 @@
  *
  */
 #include "ores.trading.core/service/swaption_instrument_service.hpp"
-
+#include "ores.service/messaging/handler_helpers.hpp"
 #include <algorithm>
 #include <stdexcept>
-#include "ores.service/messaging/handler_helpers.hpp"
 
 using ores::service::messaging::stamp;
 
@@ -32,17 +31,15 @@ using namespace ores::logging;
 swaption_instrument_service::swaption_instrument_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
-std::vector<domain::swaption_instrument>
-swaption_instrument_service::list_swaption_instruments() {
+std::vector<domain::swaption_instrument> swaption_instrument_service::list_swaption_instruments() {
     BOOST_LOG_SEV(lg(), debug) << "Listing all swaption_instruments";
     return repo_.read_latest(ctx_);
 }
 
 std::vector<domain::swaption_instrument>
-swaption_instrument_service::list_swaption_instruments(std::uint32_t offset,
-    std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing swaption_instruments with offset="
-                               << offset << ", limit=" << limit;
+swaption_instrument_service::list_swaption_instruments(std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing swaption_instruments with offset=" << offset
+                               << ", limit=" << limit;
     auto all = repo_.read_latest(ctx_);
     const auto begin = std::min(static_cast<std::size_t>(offset), all.size());
     const auto end = std::min(begin + static_cast<std::size_t>(limit), all.size());
@@ -58,42 +55,36 @@ std::optional<domain::swaption_instrument>
 swaption_instrument_service::get_swaption_instrument(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting swaption_instrument: " << id;
     auto results = repo_.read_latest(ctx_, id);
-    if (results.empty()) return std::nullopt;
+    if (results.empty())
+        return std::nullopt;
     return results.front();
 }
 
-void swaption_instrument_service::save_swaption_instrument(
-    const domain::swaption_instrument& v) {
+void swaption_instrument_service::save_swaption_instrument(const domain::swaption_instrument& v) {
     if (v.identity.instrument_id.is_nil())
         throw std::invalid_argument("Swaption instrument id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving swaption_instrument: "
-                               << v.identity.instrument_id;
+    BOOST_LOG_SEV(lg(), debug) << "Saving swaption_instrument: " << v.identity.instrument_id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved swaption_instrument: "
-                              << t.identity.instrument_id;
+    BOOST_LOG_SEV(lg(), info) << "Saved swaption_instrument: " << t.identity.instrument_id;
 }
 
-void swaption_instrument_service::remove_swaption_instrument(
-    const std::string& id) {
+void swaption_instrument_service::remove_swaption_instrument(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing swaption_instrument: " << id;
     repo_.remove(ctx_, id);
     BOOST_LOG_SEV(lg(), info) << "Removed swaption_instrument: " << id;
 }
 
 std::vector<domain::swaption_instrument>
-swaption_instrument_service::get_swaption_instrument_history(
-    const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug)
-        << "Getting history for swaption_instrument: " << id;
+swaption_instrument_service::get_swaption_instrument_history(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for swaption_instrument: " << id;
     return repo_.read_all(ctx_, id);
 }
 
 
 std::vector<domain::swaption_instrument>
-swaption_instrument_service::get_swaption_instruments(
-    const std::vector<std::string>& ids) {
+swaption_instrument_service::get_swaption_instruments(const std::vector<std::string>& ids) {
     return repo_.read_latest(ctx_, ids);
 }
 

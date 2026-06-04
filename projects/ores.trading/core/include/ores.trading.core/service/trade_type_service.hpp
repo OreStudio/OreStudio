@@ -20,14 +20,14 @@
 #ifndef ORES_TRADING_SERVICE_TRADE_TYPE_SERVICE_HPP
 #define ORES_TRADING_SERVICE_TRADE_TYPE_SERVICE_HPP
 
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.trading.api/domain/trade_type.hpp"
+#include "ores.trading.core/export.hpp"
+#include "ores.trading.core/repository/trade_type_repository.hpp"
+#include <optional>
 #include <string>
 #include <vector>
-#include <optional>
-#include "ores.logging/make_logger.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.trading.api/domain/trade_type.hpp"
-#include "ores.trading.core/repository/trade_type_repository.hpp"
-#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::service {
 
@@ -36,8 +36,7 @@ namespace ores::trading::service {
  */
 class ORES_TRADING_CORE_EXPORT trade_type_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.trading.service.trade_type_service";
+    inline static std::string_view logger_name = "ores.trading.service.trade_type_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -52,8 +51,7 @@ public:
 
     std::vector<domain::trade_type> list_types();
 
-    std::optional<domain::trade_type>
-    find_type(const std::string& code);
+    std::optional<domain::trade_type> find_type(const std::string& code);
 
     void save_type(const domain::trade_type& v);
 
@@ -66,8 +64,7 @@ public:
      */
     void remove_types(const std::vector<std::string>& codes);
 
-    std::vector<domain::trade_type>
-    get_type_history(const std::string& code);
+    std::vector<domain::trade_type> get_type_history(const std::string& code);
 
 private:
     context ctx_;

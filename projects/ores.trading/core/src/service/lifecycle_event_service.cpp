@@ -18,7 +18,6 @@
  *
  */
 #include "ores.trading.core/service/lifecycle_event_service.hpp"
-
 #include <stdexcept>
 
 namespace ores::trading::service {
@@ -37,7 +36,8 @@ std::optional<domain::lifecycle_event>
 lifecycle_event_service::find_event(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Finding lifecycle event: " << code;
     auto results = repo_.read_latest(ctx_, code);
-    if (results.empty()) return std::nullopt;
+    if (results.empty())
+        return std::nullopt;
     return results.front();
 }
 
@@ -49,8 +49,7 @@ void lifecycle_event_service::save_event(const domain::lifecycle_event& v) {
     BOOST_LOG_SEV(lg(), info) << "Saved lifecycle event: " << v.code;
 }
 
-void lifecycle_event_service::save_events(
-    const std::vector<domain::lifecycle_event>& events) {
+void lifecycle_event_service::save_events(const std::vector<domain::lifecycle_event>& events) {
     for (const auto& e : events) {
         if (e.code.empty())
             throw std::invalid_argument("Lifecycle Event code cannot be empty.");

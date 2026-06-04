@@ -24,9 +24,9 @@ namespace ores::trading::messaging {
 
 std::vector<ores::nats::service::subscription>
 registrar::register_handlers(ores::nats::service::client& nats,
-    ores::database::context ctx,
-    std::optional<ores::security::jwt::jwt_authenticator> verifier,
-    std::string http_base_url) {
+                             ores::database::context ctx,
+                             std::optional<ores::security::jwt::jwt_authenticator> verifier,
+                             std::string http_base_url) {
 
     // trades=32, rates=36, fx=7, bond=4, credit=4, equity=9,
     // commodity=4, composite=5, scripted=4 → 105 total
@@ -34,9 +34,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
     subs.reserve(105);
 
     const auto append = [&subs](auto vec) {
-        subs.insert(subs.end(),
-            std::make_move_iterator(vec.begin()),
-            std::make_move_iterator(vec.end()));
+        subs.insert(
+            subs.end(), std::make_move_iterator(vec.begin()), std::make_move_iterator(vec.end()));
     };
 
     append(detail::register_rates_handlers(nats, ctx, verifier));

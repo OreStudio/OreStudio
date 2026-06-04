@@ -18,7 +18,6 @@
  *
  */
 #include "ores.trading.api/domain/composite_leg_table.hpp"
-
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
 
@@ -28,18 +27,12 @@ std::string convert_to_table(const std::vector<composite_leg>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header
-          << "ID" << "Instrument ID" << "Sequence" << "Constituent Trade ID"
-          << "Modified By" << "Version"
-          << fort::endr;
+    table << fort::header << "ID" << "Instrument ID" << "Sequence" << "Constituent Trade ID"
+          << "Modified By" << "Version" << fort::endr;
 
     for (const auto& t : v) {
-        table << boost::uuids::to_string(t.id)
-              << boost::uuids::to_string(t.instrument_id)
-              << t.leg_sequence
-              << t.constituent_trade_id
-              << t.modified_by
-              << t.version
+        table << boost::uuids::to_string(t.id) << boost::uuids::to_string(t.instrument_id)
+              << t.leg_sequence << t.constituent_trade_id << t.modified_by << t.version
               << fort::endr;
     }
     return table.to_string();

@@ -20,14 +20,14 @@
 #ifndef ORES_TRADING_SERVICE_BUSINESS_DAY_CONVENTION_TYPE_SERVICE_HPP
 #define ORES_TRADING_SERVICE_BUSINESS_DAY_CONVENTION_TYPE_SERVICE_HPP
 
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.trading.api/domain/business_day_convention_type.hpp"
+#include "ores.trading.core/export.hpp"
+#include "ores.trading.core/repository/business_day_convention_type_repository.hpp"
+#include <optional>
 #include <string>
 #include <vector>
-#include <optional>
-#include "ores.logging/make_logger.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.trading.api/domain/business_day_convention_type.hpp"
-#include "ores.trading.core/repository/business_day_convention_type_repository.hpp"
-#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::service {
 
@@ -52,8 +52,7 @@ public:
 
     std::vector<domain::business_day_convention_type> list_types();
 
-    std::optional<domain::business_day_convention_type>
-    find_type(const std::string& code);
+    std::optional<domain::business_day_convention_type> find_type(const std::string& code);
 
     void save_type(const domain::business_day_convention_type& v);
 
@@ -66,8 +65,7 @@ public:
      */
     void remove_types(const std::vector<std::string>& codes);
 
-    std::vector<domain::business_day_convention_type>
-    get_type_history(const std::string& code);
+    std::vector<domain::business_day_convention_type> get_type_history(const std::string& code);
 
 private:
     context ctx_;

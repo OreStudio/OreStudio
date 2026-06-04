@@ -18,19 +18,17 @@
  *
  */
 #include "ores.trading.core/repository/lifecycle_event_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.trading.api/domain/lifecycle_event_json_io.hpp" // IWYU pragma: keep.
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::trading::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::lifecycle_event
-lifecycle_event_mapper::map(const lifecycle_event_entity& v) {
+domain::lifecycle_event lifecycle_event_mapper::map(const lifecycle_event_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::lifecycle_event r;
@@ -39,7 +37,9 @@ lifecycle_event_mapper::map(const lifecycle_event_entity& v) {
     r.workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
     r.code = v.code.value();
     r.description = v.description.value_or("");
-    r.fsm_state_id = v.fsm_state_id.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.fsm_state_id)) : std::nullopt;
+    r.fsm_state_id = v.fsm_state_id.has_value() ?
+                         std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.fsm_state_id)) :
+                         std::nullopt;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -50,8 +50,7 @@ lifecycle_event_mapper::map(const lifecycle_event_entity& v) {
     return r;
 }
 
-lifecycle_event_entity
-lifecycle_event_mapper::map(const domain::lifecycle_event& v) {
+lifecycle_event_entity lifecycle_event_mapper::map(const domain::lifecycle_event& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     lifecycle_event_entity r;
@@ -60,7 +59,9 @@ lifecycle_event_mapper::map(const domain::lifecycle_event& v) {
     r.workspace_id = boost::uuids::to_string(v.workspace_id);
     r.version = v.version;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
-    r.fsm_state_id = v.fsm_state_id.has_value() ? std::optional(boost::uuids::to_string(*v.fsm_state_id)) : std::nullopt;
+    r.fsm_state_id = v.fsm_state_id.has_value() ?
+                         std::optional(boost::uuids::to_string(*v.fsm_state_id)) :
+                         std::nullopt;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -73,19 +74,13 @@ lifecycle_event_mapper::map(const domain::lifecycle_event& v) {
 std::vector<domain::lifecycle_event>
 lifecycle_event_mapper::map(const std::vector<lifecycle_event_entity>& v) {
     return map_vector<lifecycle_event_entity, domain::lifecycle_event>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<lifecycle_event_entity>
 lifecycle_event_mapper::map(const std::vector<domain::lifecycle_event>& v) {
     return map_vector<domain::lifecycle_event, lifecycle_event_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

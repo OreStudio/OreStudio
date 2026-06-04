@@ -20,11 +20,11 @@
 #ifndef ORES_TRADING_REPOSITORY_FX_BARRIER_OPTION_INSTRUMENT_MAPPER_HPP
 #define ORES_TRADING_REPOSITORY_FX_BARRIER_OPTION_INSTRUMENT_MAPPER_HPP
 
-#include <vector>
-#include "ores.trading.api/domain/fx_barrier_option_instrument.hpp"
-#include "ores.trading.core/repository/fx_barrier_option_instrument_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.trading.api/domain/fx_barrier_option_instrument.hpp"
 #include "ores.trading.core/export.hpp"
+#include "ores.trading.core/repository/fx_barrier_option_instrument_entity.hpp"
+#include <vector>
 
 namespace ores::trading::repository {
 
@@ -41,6 +41,7 @@ private:
         static auto instance = make_logger(logger_name);
         return instance;
     }
+
 public:
     static domain::fx_barrier_option_instrument map(const fx_barrier_option_instrument_entity& v);
     static fx_barrier_option_instrument_entity map(const domain::fx_barrier_option_instrument& v);

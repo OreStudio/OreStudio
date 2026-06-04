@@ -18,10 +18,9 @@
  *
  */
 #include "ores.trading.core/service/fra_instrument_service.hpp"
-
+#include "ores.service/messaging/handler_helpers.hpp"
 #include <algorithm>
 #include <stdexcept>
-#include "ores.service/messaging/handler_helpers.hpp"
 
 using ores::service::messaging::stamp;
 
@@ -32,17 +31,15 @@ using namespace ores::logging;
 fra_instrument_service::fra_instrument_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
-std::vector<domain::fra_instrument>
-fra_instrument_service::list_fra_instruments() {
+std::vector<domain::fra_instrument> fra_instrument_service::list_fra_instruments() {
     BOOST_LOG_SEV(lg(), debug) << "Listing all fra_instruments";
     return repo_.read_latest(ctx_);
 }
 
 std::vector<domain::fra_instrument>
-fra_instrument_service::list_fra_instruments(std::uint32_t offset,
-    std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing fra_instruments with offset="
-                               << offset << ", limit=" << limit;
+fra_instrument_service::list_fra_instruments(std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing fra_instruments with offset=" << offset
+                               << ", limit=" << limit;
     auto all = repo_.read_latest(ctx_);
     const auto begin = std::min(static_cast<std::size_t>(offset), all.size());
     const auto end = std::min(begin + static_cast<std::size_t>(limit), all.size());
@@ -58,12 +55,12 @@ std::optional<domain::fra_instrument>
 fra_instrument_service::get_fra_instrument(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting fra_instrument: " << id;
     auto results = repo_.read_latest(ctx_, id);
-    if (results.empty()) return std::nullopt;
+    if (results.empty())
+        return std::nullopt;
     return results.front();
 }
 
-void fra_instrument_service::save_fra_instrument(
-    const domain::fra_instrument& v) {
+void fra_instrument_service::save_fra_instrument(const domain::fra_instrument& v) {
     if (v.identity.instrument_id.is_nil())
         throw std::invalid_argument("FRA instrument id cannot be empty.");
     BOOST_LOG_SEV(lg(), debug) << "Saving fra_instrument: " << v.identity.instrument_id;
@@ -93,15 +90,13 @@ fra_instrument_service::get_swap_legs(const std::string& instrument_id) {
 
 
 std::vector<domain::fra_instrument>
-fra_instrument_service::get_fra_instruments(
-    const std::vector<std::string>& ids) {
+fra_instrument_service::get_fra_instruments(const std::vector<std::string>& ids) {
     return repo_.read_latest(ctx_, ids);
 }
 
 
 std::vector<domain::swap_leg>
-fra_instrument_service::get_swap_legs_batch(
-    const std::vector<std::string>& instrument_ids) {
+fra_instrument_service::get_swap_legs_batch(const std::vector<std::string>& instrument_ids) {
     return leg_repo_.read_by_instruments_batch(ctx_, instrument_ids);
 }
 

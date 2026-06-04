@@ -20,9 +20,9 @@
 #ifndef ORES_TRADING_MESSAGING_DAY_COUNT_FRACTION_TYPE_PROTOCOL_HPP
 #define ORES_TRADING_MESSAGING_DAY_COUNT_FRACTION_TYPE_PROTOCOL_HPP
 
+#include "ores.trading.api/domain/day_count_fraction_type.hpp"
 #include <string>
 #include <vector>
-#include "ores.trading.api/domain/day_count_fraction_type.hpp"
 
 namespace ores::trading::messaging {
 

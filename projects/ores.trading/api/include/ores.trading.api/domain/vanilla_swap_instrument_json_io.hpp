@@ -20,9 +20,9 @@
 #ifndef ORES_TRADING_DOMAIN_VANILLA_SWAP_INSTRUMENT_JSON_IO_HPP
 #define ORES_TRADING_DOMAIN_VANILLA_SWAP_INSTRUMENT_JSON_IO_HPP
 
-#include <iosfwd>
 #include "ores.trading.api/domain/vanilla_swap_instrument.hpp"
 #include "ores.trading.api/export.hpp"
+#include <iosfwd>
 
 namespace ores::trading::domain {
 

@@ -20,14 +20,14 @@
 #ifndef ORES_TRADING_SERVICE_RPA_INSTRUMENT_SERVICE_HPP
 #define ORES_TRADING_SERVICE_RPA_INSTRUMENT_SERVICE_HPP
 
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.trading.api/domain/rpa_instrument.hpp"
+#include "ores.trading.core/export.hpp"
+#include "ores.trading.core/repository/rpa_instrument_repository.hpp"
+#include <optional>
 #include <string>
 #include <vector>
-#include <optional>
-#include "ores.logging/make_logger.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.trading.api/domain/rpa_instrument.hpp"
-#include "ores.trading.core/repository/rpa_instrument_repository.hpp"
-#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::service {
 
@@ -36,8 +36,7 @@ namespace ores::trading::service {
  */
 class ORES_TRADING_CORE_EXPORT rpa_instrument_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.trading.service.rpa_instrument_service";
+    inline static std::string_view logger_name = "ores.trading.service.rpa_instrument_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -52,23 +51,20 @@ public:
 
     std::vector<domain::rpa_instrument> list_rpa_instruments();
 
-    std::vector<domain::rpa_instrument>
-    list_rpa_instruments(std::uint32_t offset, std::uint32_t limit);
+    std::vector<domain::rpa_instrument> list_rpa_instruments(std::uint32_t offset,
+                                                             std::uint32_t limit);
 
     std::uint32_t count_rpa_instruments();
 
-    std::optional<domain::rpa_instrument>
-    get_rpa_instrument(const std::string& id);
+    std::optional<domain::rpa_instrument> get_rpa_instrument(const std::string& id);
 
     void save_rpa_instrument(const domain::rpa_instrument& v);
 
     void remove_rpa_instrument(const std::string& id);
 
-    std::vector<domain::rpa_instrument>
-    get_rpa_instrument_history(const std::string& id);
+    std::vector<domain::rpa_instrument> get_rpa_instrument_history(const std::string& id);
 
-    std::vector<domain::rpa_instrument>
-    get_rpa_instruments(const std::vector<std::string>& ids);
+    std::vector<domain::rpa_instrument> get_rpa_instruments(const std::vector<std::string>& ids);
 
 private:
     context ctx_;

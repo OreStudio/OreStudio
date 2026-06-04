@@ -17,16 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.trading.api/domain/trade_party_role.hpp"
-
-#include <sstream>
-#include <catch2/catch_test_macros.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
+#include "ores.trading.api/domain/trade_party_role.hpp"
 #include "ores.trading.api/domain/trade_party_role_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.api/domain/trade_party_role_table.hpp"
 #include "ores.trading.api/domain/trade_party_role_table_io.hpp" // IWYU pragma: keep.
+#include <boost/uuid/uuid_generators.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <sstream>
 
 namespace {
 
@@ -128,8 +127,8 @@ TEST_CASE("create_trade_party_role_with_faker", tags) {
 TEST_CASE("create_multiple_random_trade_party_roles", tags) {
     auto lg(make_logger(test_suite));
 
-    const std::vector<std::string> roles = {"Counterparty", "CalculationAgent",
-        "ExecutingBroker", "NovationTransferee"};
+    const std::vector<std::string> roles = {
+        "Counterparty", "CalculationAgent", "ExecutingBroker", "NovationTransferee"};
     for (const auto& role : roles) {
         auto sut = make_trade_party_role(role);
         BOOST_LOG_SEV(lg, info) << "Trade party role: " << sut;

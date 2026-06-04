@@ -20,11 +20,11 @@
 #ifndef ORES_TRADING_DOMAIN_CREDIT_INSTRUMENT_HPP
 #define ORES_TRADING_DOMAIN_CREDIT_INSTRUMENT_HPP
 
-#include <chrono>
-#include <string>
-#include <optional>
-#include <boost/uuid/uuid.hpp>
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <optional>
+#include <string>
 
 namespace ores::trading::domain {
 

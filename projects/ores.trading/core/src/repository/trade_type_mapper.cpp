@@ -18,7 +18,6 @@
  *
  */
 #include "ores.trading.core/repository/trade_type_mapper.hpp"
-
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.trading.api/domain/trade_type_json_io.hpp" // IWYU pragma: keep.
 
@@ -27,8 +26,7 @@ namespace ores::trading::repository {
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::trade_type
-trade_type_mapper::map(const trade_type_entity& v) {
+domain::trade_type trade_type_mapper::map(const trade_type_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::trade_type r;
@@ -38,8 +36,8 @@ trade_type_mapper::map(const trade_type_entity& v) {
     r.description = v.description.value_or("");
     auto pt = domain::product_type_from_string(v.product_type);
     if (!pt || *pt == domain::product_type::unknown) {
-        throw std::logic_error(
-            "Invalid product_type in trade_type entity: '" + v.product_type + "'");
+        throw std::logic_error("Invalid product_type in trade_type entity: '" + v.product_type +
+                               "'");
     }
     r.product_type = *pt;
     r.has_options = v.has_options;
@@ -54,14 +52,12 @@ trade_type_mapper::map(const trade_type_entity& v) {
     return r;
 }
 
-trade_type_entity
-trade_type_mapper::map(const domain::trade_type& v) {
+trade_type_entity trade_type_mapper::map(const domain::trade_type& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     if (v.product_type == domain::product_type::unknown) {
-        throw std::logic_error(
-            "Cannot persist trade_type with product_type=unknown (code: "
-            + v.code + "). The trade_types table requires a real family.");
+        throw std::logic_error("Cannot persist trade_type with product_type=unknown (code: " +
+                               v.code + "). The trade_types table requires a real family.");
     }
     trade_type_entity r;
     r.code = v.code;
@@ -80,22 +76,14 @@ trade_type_mapper::map(const domain::trade_type& v) {
     return r;
 }
 
-std::vector<domain::trade_type>
-trade_type_mapper::map(const std::vector<trade_type_entity>& v) {
+std::vector<domain::trade_type> trade_type_mapper::map(const std::vector<trade_type_entity>& v) {
     return map_vector<trade_type_entity, domain::trade_type>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
-std::vector<trade_type_entity>
-trade_type_mapper::map(const std::vector<domain::trade_type>& v) {
+std::vector<trade_type_entity> trade_type_mapper::map(const std::vector<domain::trade_type>& v) {
     return map_vector<domain::trade_type, trade_type_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

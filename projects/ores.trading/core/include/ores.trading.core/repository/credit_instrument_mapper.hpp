@@ -20,10 +20,10 @@
 #ifndef ORES_TRADING_REPOSITORY_CREDIT_INSTRUMENT_MAPPER_HPP
 #define ORES_TRADING_REPOSITORY_CREDIT_INSTRUMENT_MAPPER_HPP
 
-#include "ores.trading.api/domain/credit_instrument.hpp"
-#include "ores.trading.core/repository/credit_instrument_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.trading.api/domain/credit_instrument.hpp"
 #include "ores.trading.core/export.hpp"
+#include "ores.trading.core/repository/credit_instrument_entity.hpp"
 
 namespace ores::trading::repository {
 
@@ -32,14 +32,14 @@ namespace ores::trading::repository {
  */
 class ORES_TRADING_CORE_EXPORT credit_instrument_mapper {
 private:
-    inline static std::string_view logger_name =
-        "ores.trading.repository.credit_instrument_mapper";
+    inline static std::string_view logger_name = "ores.trading.repository.credit_instrument_mapper";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }
+
 public:
     static domain::credit_instrument map(const credit_instrument_entity& v);
     static credit_instrument_entity map(const domain::credit_instrument& v);

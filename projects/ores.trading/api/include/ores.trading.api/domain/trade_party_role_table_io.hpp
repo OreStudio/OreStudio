@@ -20,9 +20,9 @@
 #ifndef ORES_TRADING_DOMAIN_TRADE_PARTY_ROLE_TABLE_IO_HPP
 #define ORES_TRADING_DOMAIN_TRADE_PARTY_ROLE_TABLE_IO_HPP
 
+#include "ores.trading.api/domain/trade_party_role.hpp"
 #include <iosfwd>
 #include <vector>
-#include "ores.trading.api/domain/trade_party_role.hpp"
 
 namespace ores::trading::domain {
 

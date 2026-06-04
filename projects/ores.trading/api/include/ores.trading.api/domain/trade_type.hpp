@@ -20,10 +20,10 @@
 #ifndef ORES_TRADING_DOMAIN_TRADE_TYPE_HPP
 #define ORES_TRADING_DOMAIN_TRADE_TYPE_HPP
 
+#include "ores.trading.api/domain/product_type.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <chrono>
 #include <string>
-#include "ores.utility/uuid/tenant_id.hpp"
-#include "ores.trading.api/domain/product_type.hpp"
 
 namespace ores::trading::domain {
 

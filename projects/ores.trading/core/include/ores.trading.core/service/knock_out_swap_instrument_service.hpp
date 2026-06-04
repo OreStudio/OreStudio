@@ -20,14 +20,14 @@
 #ifndef ORES_TRADING_SERVICE_KNOCK_OUT_SWAP_INSTRUMENT_SERVICE_HPP
 #define ORES_TRADING_SERVICE_KNOCK_OUT_SWAP_INSTRUMENT_SERVICE_HPP
 
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.trading.api/domain/knock_out_swap_instrument.hpp"
+#include "ores.trading.core/export.hpp"
+#include "ores.trading.core/repository/knock_out_swap_instrument_repository.hpp"
+#include <optional>
 #include <string>
 #include <vector>
-#include <optional>
-#include "ores.logging/make_logger.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.trading.api/domain/knock_out_swap_instrument.hpp"
-#include "ores.trading.core/repository/knock_out_swap_instrument_repository.hpp"
-#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::service {
 
@@ -50,8 +50,7 @@ public:
 
     explicit knock_out_swap_instrument_service(context ctx);
 
-    std::vector<domain::knock_out_swap_instrument>
-    list_knock_out_swap_instruments();
+    std::vector<domain::knock_out_swap_instrument> list_knock_out_swap_instruments();
 
     std::vector<domain::knock_out_swap_instrument>
     list_knock_out_swap_instruments(std::uint32_t offset, std::uint32_t limit);
@@ -61,8 +60,7 @@ public:
     std::optional<domain::knock_out_swap_instrument>
     get_knock_out_swap_instrument(const std::string& id);
 
-    void save_knock_out_swap_instrument(
-        const domain::knock_out_swap_instrument& v);
+    void save_knock_out_swap_instrument(const domain::knock_out_swap_instrument& v);
 
     void remove_knock_out_swap_instrument(const std::string& id);
 

@@ -20,14 +20,14 @@
 #ifndef ORES_TRADING_SERVICE_LIFECYCLE_EVENT_SERVICE_HPP
 #define ORES_TRADING_SERVICE_LIFECYCLE_EVENT_SERVICE_HPP
 
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.trading.api/domain/lifecycle_event.hpp"
+#include "ores.trading.core/export.hpp"
+#include "ores.trading.core/repository/lifecycle_event_repository.hpp"
+#include <optional>
 #include <string>
 #include <vector>
-#include <optional>
-#include "ores.logging/make_logger.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.trading.api/domain/lifecycle_event.hpp"
-#include "ores.trading.core/repository/lifecycle_event_repository.hpp"
-#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::service {
 
@@ -36,8 +36,7 @@ namespace ores::trading::service {
  */
 class ORES_TRADING_CORE_EXPORT lifecycle_event_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.trading.service.lifecycle_event_service";
+    inline static std::string_view logger_name = "ores.trading.service.lifecycle_event_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -52,8 +51,7 @@ public:
 
     std::vector<domain::lifecycle_event> list_events();
 
-    std::optional<domain::lifecycle_event>
-    find_event(const std::string& code);
+    std::optional<domain::lifecycle_event> find_event(const std::string& code);
 
     void save_event(const domain::lifecycle_event& v);
 
@@ -66,8 +64,7 @@ public:
      */
     void remove_events(const std::vector<std::string>& codes);
 
-    std::vector<domain::lifecycle_event>
-    get_event_history(const std::string& code);
+    std::vector<domain::lifecycle_event> get_event_history(const std::string& code);
 
 private:
     context ctx_;

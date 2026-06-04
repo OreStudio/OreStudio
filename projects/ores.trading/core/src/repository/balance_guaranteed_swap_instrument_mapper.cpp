@@ -18,11 +18,10 @@
  *
  */
 #include "ores.trading.core/repository/balance_guaranteed_swap_instrument_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.trading.api/domain/balance_guaranteed_swap_instrument_json_io.hpp" // IWYU pragma: keep.
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::trading::repository {
 
@@ -40,7 +39,9 @@ balance_guaranteed_swap_instrument_mapper::map(const balance_guaranteed_swap_ins
     r.identity.instrument_id = boost::lexical_cast<boost::uuids::uuid>(v.instrument_id.value());
     r.identity.trade_type_code = v.trade_type_code;
     r.identity.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
-    r.identity.trade_id = v.trade_id.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.trade_id)) : std::nullopt;
+    r.identity.trade_id = v.trade_id.has_value() ?
+                              std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.trade_id)) :
+                              std::nullopt;
     r.start_date = v.start_date;
     r.maturity_date = v.maturity_date;
     r.lockout_days = v.lockout_days;
@@ -55,8 +56,8 @@ balance_guaranteed_swap_instrument_mapper::map(const balance_guaranteed_swap_ins
     return r;
 }
 
-balance_guaranteed_swap_instrument_entity
-balance_guaranteed_swap_instrument_mapper::map(const domain::balance_guaranteed_swap_instrument& v) {
+balance_guaranteed_swap_instrument_entity balance_guaranteed_swap_instrument_mapper::map(
+    const domain::balance_guaranteed_swap_instrument& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     balance_guaranteed_swap_instrument_entity r;
@@ -66,7 +67,9 @@ balance_guaranteed_swap_instrument_mapper::map(const domain::balance_guaranteed_
     r.version = v.identity.version;
     r.trade_type_code = v.identity.trade_type_code;
     r.party_id = boost::uuids::to_string(v.identity.party_id);
-    r.trade_id = v.identity.trade_id.has_value() ? std::optional(boost::uuids::to_string(*v.identity.trade_id)) : std::nullopt;
+    r.trade_id = v.identity.trade_id.has_value() ?
+                     std::optional(boost::uuids::to_string(*v.identity.trade_id)) :
+                     std::nullopt;
     r.start_date = v.start_date;
     r.maturity_date = v.maturity_date;
     r.lockout_days = v.lockout_days;
@@ -81,21 +84,19 @@ balance_guaranteed_swap_instrument_mapper::map(const domain::balance_guaranteed_
 }
 
 std::vector<domain::balance_guaranteed_swap_instrument>
-balance_guaranteed_swap_instrument_mapper::map(const std::vector<balance_guaranteed_swap_instrument_entity>& v) {
-    return map_vector<balance_guaranteed_swap_instrument_entity, domain::balance_guaranteed_swap_instrument>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+balance_guaranteed_swap_instrument_mapper::map(
+    const std::vector<balance_guaranteed_swap_instrument_entity>& v) {
+    return map_vector<balance_guaranteed_swap_instrument_entity,
+                      domain::balance_guaranteed_swap_instrument>(
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<balance_guaranteed_swap_instrument_entity>
-balance_guaranteed_swap_instrument_mapper::map(const std::vector<domain::balance_guaranteed_swap_instrument>& v) {
-    return map_vector<domain::balance_guaranteed_swap_instrument, balance_guaranteed_swap_instrument_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+balance_guaranteed_swap_instrument_mapper::map(
+    const std::vector<domain::balance_guaranteed_swap_instrument>& v) {
+    return map_vector<domain::balance_guaranteed_swap_instrument,
+                      balance_guaranteed_swap_instrument_entity>(
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

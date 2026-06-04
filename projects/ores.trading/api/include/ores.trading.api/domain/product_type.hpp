@@ -22,10 +22,10 @@
 
 #include <cstdint>
 #include <optional>
+#include <rfl.hpp>
+#include <stdexcept>
 #include <string>
 #include <string_view>
-#include <stdexcept>
-#include <rfl.hpp>
 
 namespace ores::trading::domain {
 
@@ -68,15 +68,24 @@ enum class product_type : std::uint8_t {
  */
 [[nodiscard]] inline std::string_view to_string(product_type pt) {
     switch (pt) {
-    case product_type::unknown:   return "";
-    case product_type::swap:      return "swap";
-    case product_type::fx:        return "fx";
-    case product_type::bond:      return "bond";
-    case product_type::credit:    return "credit";
-    case product_type::equity:    return "equity";
-    case product_type::commodity: return "commodity";
-    case product_type::composite: return "composite";
-    case product_type::scripted:  return "scripted";
+        case product_type::unknown:
+            return "";
+        case product_type::swap:
+            return "swap";
+        case product_type::fx:
+            return "fx";
+        case product_type::bond:
+            return "bond";
+        case product_type::credit:
+            return "credit";
+        case product_type::equity:
+            return "equity";
+        case product_type::commodity:
+            return "commodity";
+        case product_type::composite:
+            return "composite";
+        case product_type::scripted:
+            return "scripted";
     }
     throw std::invalid_argument("Out-of-range product_type");
 }
@@ -88,17 +97,25 @@ enum class product_type : std::uint8_t {
  * @c std::nullopt for any other unrecognised value so the caller has to
  * decide whether the input is genuinely a parsing error or just absent.
  */
-[[nodiscard]] inline std::optional<product_type>
-product_type_from_string(std::string_view sv) {
-    if (sv.empty())        return product_type::unknown;
-    if (sv == "swap")      return product_type::swap;
-    if (sv == "fx")        return product_type::fx;
-    if (sv == "bond")      return product_type::bond;
-    if (sv == "credit")    return product_type::credit;
-    if (sv == "equity")    return product_type::equity;
-    if (sv == "commodity") return product_type::commodity;
-    if (sv == "composite") return product_type::composite;
-    if (sv == "scripted")  return product_type::scripted;
+[[nodiscard]] inline std::optional<product_type> product_type_from_string(std::string_view sv) {
+    if (sv.empty())
+        return product_type::unknown;
+    if (sv == "swap")
+        return product_type::swap;
+    if (sv == "fx")
+        return product_type::fx;
+    if (sv == "bond")
+        return product_type::bond;
+    if (sv == "credit")
+        return product_type::credit;
+    if (sv == "equity")
+        return product_type::equity;
+    if (sv == "commodity")
+        return product_type::commodity;
+    if (sv == "composite")
+        return product_type::composite;
+    if (sv == "scripted")
+        return product_type::scripted;
     return std::nullopt;
 }
 
@@ -113,7 +130,7 @@ namespace rfl {
  * wire format. Wire shape stays identical to the previous @c std::string
  * field, so no protocol changes are required when consumers migrate.
  */
-template<>
+template <>
 struct Reflector<ores::trading::domain::product_type> {
     using ReflType = std::string;
 

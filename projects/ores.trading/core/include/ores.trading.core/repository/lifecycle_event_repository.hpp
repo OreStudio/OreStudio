@@ -20,13 +20,13 @@
 #ifndef ORES_TRADING_REPOSITORY_LIFECYCLE_EVENT_REPOSITORY_HPP
 #define ORES_TRADING_REPOSITORY_LIFECYCLE_EVENT_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/lifecycle_event.hpp"
 #include "ores.trading.core/export.hpp"
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::trading::repository {
 
@@ -53,10 +53,8 @@ public:
     void write(context ctx, const std::vector<domain::lifecycle_event>& v);
 
     std::vector<domain::lifecycle_event> read_latest(context ctx);
-    std::vector<domain::lifecycle_event>
-    read_latest(context ctx, const std::string& code);
-    std::vector<domain::lifecycle_event>
-    read_all(context ctx, const std::string& code);
+    std::vector<domain::lifecycle_event> read_latest(context ctx, const std::string& code);
+    std::vector<domain::lifecycle_event> read_all(context ctx, const std::string& code);
 
     void remove(context ctx, const std::string& code);
     void remove(context ctx, const std::vector<std::string>& codes);

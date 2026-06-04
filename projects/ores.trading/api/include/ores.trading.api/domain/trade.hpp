@@ -20,11 +20,11 @@
 #ifndef ORES_TRADING_DOMAIN_TRADE_HPP
 #define ORES_TRADING_DOMAIN_TRADE_HPP
 
-#include "ores.trading.api/domain/trade_identity.hpp"
-#include "ores.trading.api/domain/trade_parties.hpp"
-#include "ores.trading.api/domain/trade_classification.hpp"
-#include "ores.trading.api/domain/trade_lifecycle.hpp"
 #include "ores.trading.api/domain/trade_audit.hpp"
+#include "ores.trading.api/domain/trade_classification.hpp"
+#include "ores.trading.api/domain/trade_identity.hpp"
+#include "ores.trading.api/domain/trade_lifecycle.hpp"
+#include "ores.trading.api/domain/trade_parties.hpp"
 
 namespace ores::trading::domain {
 

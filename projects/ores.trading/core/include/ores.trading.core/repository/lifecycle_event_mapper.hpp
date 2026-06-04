@@ -20,10 +20,10 @@
 #ifndef ORES_TRADING_REPOSITORY_LIFECYCLE_EVENT_MAPPER_HPP
 #define ORES_TRADING_REPOSITORY_LIFECYCLE_EVENT_MAPPER_HPP
 
-#include "ores.trading.api/domain/lifecycle_event.hpp"
-#include "ores.trading.core/repository/lifecycle_event_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.trading.api/domain/lifecycle_event.hpp"
 #include "ores.trading.core/export.hpp"
+#include "ores.trading.core/repository/lifecycle_event_entity.hpp"
 
 namespace ores::trading::repository {
 
@@ -32,22 +32,20 @@ namespace ores::trading::repository {
  */
 class ORES_TRADING_CORE_EXPORT lifecycle_event_mapper {
 private:
-    inline static std::string_view logger_name =
-        "ores.trading.repository.lifecycle_event_mapper";
+    inline static std::string_view logger_name = "ores.trading.repository.lifecycle_event_mapper";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }
+
 public:
     static domain::lifecycle_event map(const lifecycle_event_entity& v);
     static lifecycle_event_entity map(const domain::lifecycle_event& v);
 
-    static std::vector<domain::lifecycle_event>
-    map(const std::vector<lifecycle_event_entity>& v);
-    static std::vector<lifecycle_event_entity>
-    map(const std::vector<domain::lifecycle_event>& v);
+    static std::vector<domain::lifecycle_event> map(const std::vector<lifecycle_event_entity>& v);
+    static std::vector<lifecycle_event_entity> map(const std::vector<domain::lifecycle_event>& v);
 };
 
 }

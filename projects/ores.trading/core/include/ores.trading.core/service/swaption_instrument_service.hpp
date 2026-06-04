@@ -20,14 +20,14 @@
 #ifndef ORES_TRADING_SERVICE_SWAPTION_INSTRUMENT_SERVICE_HPP
 #define ORES_TRADING_SERVICE_SWAPTION_INSTRUMENT_SERVICE_HPP
 
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.trading.api/domain/swaption_instrument.hpp"
+#include "ores.trading.core/export.hpp"
+#include "ores.trading.core/repository/swaption_instrument_repository.hpp"
+#include <optional>
 #include <string>
 #include <vector>
-#include <optional>
-#include "ores.logging/make_logger.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.trading.api/domain/swaption_instrument.hpp"
-#include "ores.trading.core/repository/swaption_instrument_repository.hpp"
-#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::service {
 
@@ -36,8 +36,7 @@ namespace ores::trading::service {
  */
 class ORES_TRADING_CORE_EXPORT swaption_instrument_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.trading.service.swaption_instrument_service";
+    inline static std::string_view logger_name = "ores.trading.service.swaption_instrument_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -52,20 +51,18 @@ public:
 
     std::vector<domain::swaption_instrument> list_swaption_instruments();
 
-    std::vector<domain::swaption_instrument>
-    list_swaption_instruments(std::uint32_t offset, std::uint32_t limit);
+    std::vector<domain::swaption_instrument> list_swaption_instruments(std::uint32_t offset,
+                                                                       std::uint32_t limit);
 
     std::uint32_t count_swaption_instruments();
 
-    std::optional<domain::swaption_instrument>
-    get_swaption_instrument(const std::string& id);
+    std::optional<domain::swaption_instrument> get_swaption_instrument(const std::string& id);
 
     void save_swaption_instrument(const domain::swaption_instrument& v);
 
     void remove_swaption_instrument(const std::string& id);
 
-    std::vector<domain::swaption_instrument>
-    get_swaption_instrument_history(const std::string& id);
+    std::vector<domain::swaption_instrument> get_swaption_instrument_history(const std::string& id);
 
     std::vector<domain::swaption_instrument>
     get_swaption_instruments(const std::vector<std::string>& ids);

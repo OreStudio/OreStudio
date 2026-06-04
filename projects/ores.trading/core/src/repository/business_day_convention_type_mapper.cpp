@@ -18,7 +18,6 @@
  *
  */
 #include "ores.trading.core/repository/business_day_convention_type_mapper.hpp"
-
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.trading.api/domain/business_day_convention_type_json_io.hpp" // IWYU pragma: keep.
 
@@ -64,22 +63,16 @@ business_day_convention_type_mapper::map(const domain::business_day_convention_t
     return r;
 }
 
-std::vector<domain::business_day_convention_type>
-business_day_convention_type_mapper::map(const std::vector<business_day_convention_type_entity>& v) {
+std::vector<domain::business_day_convention_type> business_day_convention_type_mapper::map(
+    const std::vector<business_day_convention_type_entity>& v) {
     return map_vector<business_day_convention_type_entity, domain::business_day_convention_type>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
-std::vector<business_day_convention_type_entity>
-business_day_convention_type_mapper::map(const std::vector<domain::business_day_convention_type>& v) {
+std::vector<business_day_convention_type_entity> business_day_convention_type_mapper::map(
+    const std::vector<domain::business_day_convention_type>& v) {
     return map_vector<domain::business_day_convention_type, business_day_convention_type_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

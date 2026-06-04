@@ -18,20 +18,18 @@
  *
  */
 #include "ores.trading.api/generators/trade_party_role_generator.hpp"
-
+#include "ores.utility/generation/generation_keys.hpp"
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::trading::generator {
 
 using ores::utility::generation::generation_keys;
 
-domain::trade_party_role generate_synthetic_trade_party_role(
-    utility::generation::generation_context& ctx) {
+domain::trade_party_role
+generate_synthetic_trade_party_role(utility::generation::generation_context& ctx) {
     static std::atomic<int> counter{0};
-    const auto modified_by = ctx.env().get_or(
-        std::string(generation_keys::modified_by), "system");
+    const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
 
     domain::trade_party_role r;
     r.version = 1;
@@ -48,8 +46,7 @@ domain::trade_party_role generate_synthetic_trade_party_role(
 }
 
 std::vector<domain::trade_party_role>
-generate_synthetic_trade_party_roles(std::size_t n,
-    utility::generation::generation_context& ctx) {
+generate_synthetic_trade_party_roles(std::size_t n, utility::generation::generation_context& ctx) {
     std::vector<domain::trade_party_role> r;
     r.reserve(n);
     while (r.size() < n)

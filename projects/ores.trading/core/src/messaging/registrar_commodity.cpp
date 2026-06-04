@@ -17,45 +17,49 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.trading.core/messaging/registrar_detail.hpp"
 #include "ores.trading.core/messaging/commodity_instrument_handler.hpp"
+#include "ores.trading.core/messaging/registrar_detail.hpp"
 
 namespace ores::trading::messaging::detail {
 
 std::vector<ores::nats::service::subscription>
 register_commodity_handlers(ores::nats::service::client& nats,
-    ores::database::context ctx,
-    std::optional<ores::security::jwt::jwt_authenticator> verifier) {
+                            ores::database::context ctx,
+                            std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
     constexpr auto queue = queue_name;
 
-    subs.push_back(nats.queue_subscribe(
-        std::string(get_commodity_instruments_request::nats_subject), queue,
-        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-            commodity_instrument_handler h(nats, ctx, verifier);
-            h.list(std::move(msg));
-        }));
+    subs.push_back(
+        nats.queue_subscribe(std::string(get_commodity_instruments_request::nats_subject),
+                             queue,
+                             [&nats, ctx, verifier](ores::nats::message msg) mutable {
+                                 commodity_instrument_handler h(nats, ctx, verifier);
+                                 h.list(std::move(msg));
+                             }));
 
-    subs.push_back(nats.queue_subscribe(
-        std::string(save_commodity_instrument_request::nats_subject), queue,
-        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-            commodity_instrument_handler h(nats, ctx, verifier);
-            h.save(std::move(msg));
-        }));
+    subs.push_back(
+        nats.queue_subscribe(std::string(save_commodity_instrument_request::nats_subject),
+                             queue,
+                             [&nats, ctx, verifier](ores::nats::message msg) mutable {
+                                 commodity_instrument_handler h(nats, ctx, verifier);
+                                 h.save(std::move(msg));
+                             }));
 
-    subs.push_back(nats.queue_subscribe(
-        std::string(delete_commodity_instrument_request::nats_subject), queue,
-        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-            commodity_instrument_handler h(nats, ctx, verifier);
-            h.remove(std::move(msg));
-        }));
+    subs.push_back(
+        nats.queue_subscribe(std::string(delete_commodity_instrument_request::nats_subject),
+                             queue,
+                             [&nats, ctx, verifier](ores::nats::message msg) mutable {
+                                 commodity_instrument_handler h(nats, ctx, verifier);
+                                 h.remove(std::move(msg));
+                             }));
 
-    subs.push_back(nats.queue_subscribe(
-        std::string(get_commodity_instrument_history_request::nats_subject), queue,
-        [&nats, ctx, verifier](ores::nats::message msg) mutable {
-            commodity_instrument_handler h(nats, ctx, verifier);
-            h.history(std::move(msg));
-        }));
+    subs.push_back(
+        nats.queue_subscribe(std::string(get_commodity_instrument_history_request::nats_subject),
+                             queue,
+                             [&nats, ctx, verifier](ores::nats::message msg) mutable {
+                                 commodity_instrument_handler h(nats, ctx, verifier);
+                                 h.history(std::move(msg));
+                             }));
 
     return subs;
 }

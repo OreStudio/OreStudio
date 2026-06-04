@@ -20,25 +20,25 @@
 #ifndef ORES_TRADING_GENERATORS_CAP_FLOOR_INSTRUMENT_GENERATOR_HPP
 #define ORES_TRADING_GENERATORS_CAP_FLOOR_INSTRUMENT_GENERATOR_HPP
 
-#include <vector>
-#include "ores.trading.api/export.hpp"
 #include "ores.trading.api/domain/cap_floor_instrument.hpp"
+#include "ores.trading.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include <vector>
 
 namespace ores::trading::generators {
 
 /**
  * @brief Generates a synthetic cap_floor_instrument.
  */
-ORES_TRADING_API_EXPORT domain::cap_floor_instrument generate_synthetic_cap_floor_instrument(
-    utility::generation::generation_context& ctx);
+ORES_TRADING_API_EXPORT domain::cap_floor_instrument
+generate_synthetic_cap_floor_instrument(utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic cap_floor_instruments.
  */
 ORES_TRADING_API_EXPORT std::vector<domain::cap_floor_instrument>
 generate_synthetic_cap_floor_instruments(std::size_t n,
-    utility::generation::generation_context& ctx);
+                                         utility::generation::generation_context& ctx);
 
 }
 

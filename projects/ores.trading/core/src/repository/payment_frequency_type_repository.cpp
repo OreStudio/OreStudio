@@ -18,13 +18,12 @@
  *
  */
 #include "ores.trading.core/repository/payment_frequency_type_repository.hpp"
-
-#include <sqlgen/postgres.hpp>
-#include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
 #include "ores.trading.api/domain/payment_frequency_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/payment_frequency_type_entity.hpp"
 #include "ores.trading.core/repository/payment_frequency_type_mapper.hpp"
+#include <sqlgen/postgres.hpp>
 
 namespace ores::trading::repository {
 
@@ -37,17 +36,22 @@ std::string payment_frequency_type_repository::sql() {
     return generate_create_table_sql<payment_frequency_type_entity>(lg());
 }
 
-void payment_frequency_type_repository::write(context ctx, const domain::payment_frequency_type& v) {
+void payment_frequency_type_repository::write(context ctx,
+                                              const domain::payment_frequency_type& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing payment frequency type: " << v.code;
-    execute_write_query(ctx, payment_frequency_type_mapper::map(v),
-        lg(), "Writing payment frequency type to database.");
+    execute_write_query(ctx,
+                        payment_frequency_type_mapper::map(v),
+                        lg(),
+                        "Writing payment frequency type to database.");
 }
 
 void payment_frequency_type_repository::write(
     context ctx, const std::vector<domain::payment_frequency_type>& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing payment frequency types. Count: " << v.size();
-    execute_write_query(ctx, payment_frequency_type_mapper::map(v),
-        lg(), "Writing payment frequency types to database.");
+    execute_write_query(ctx,
+                        payment_frequency_type_mapper::map(v),
+                        lg(),
+                        "Writing payment frequency types to database.");
 }
 
 std::vector<domain::payment_frequency_type>
@@ -55,13 +59,15 @@ payment_frequency_type_repository::read_latest(context ctx) {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<payment_frequency_type_entity>> |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-        order_by("code"_c);
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("code"_c);
 
     return execute_read_query<payment_frequency_type_entity, domain::payment_frequency_type>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return payment_frequency_type_mapper::map(entities); },
-        lg(), "Reading latest payment frequency types");
+        lg(),
+        "Reading latest payment frequency types");
 }
 
 std::vector<domain::payment_frequency_type>
@@ -69,13 +75,16 @@ payment_frequency_type_repository::read_latest(context ctx, const std::string& c
     BOOST_LOG_SEV(lg(), debug) << "Reading latest payment frequency type. code: " << code;
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<payment_frequency_type_entity>> |
+    const auto query =
+        sqlgen::read<std::vector<payment_frequency_type_entity>> |
         where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max.value());
 
     return execute_read_query<payment_frequency_type_entity, domain::payment_frequency_type>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return payment_frequency_type_mapper::map(entities); },
-        lg(), "Reading latest payment frequency type by code.");
+        lg(),
+        "Reading latest payment frequency type by code.");
 }
 
 std::vector<domain::payment_frequency_type>
@@ -83,29 +92,32 @@ payment_frequency_type_repository::read_all(context ctx, const std::string& code
     BOOST_LOG_SEV(lg(), debug) << "Reading all payment frequency type versions. code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<payment_frequency_type_entity>> |
-        where("tenant_id"_c == tid && "code"_c == code) |
-        order_by("version"_c.desc());
+                       where("tenant_id"_c == tid && "code"_c == code) |
+                       order_by("version"_c.desc());
 
     return execute_read_query<payment_frequency_type_entity, domain::payment_frequency_type>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return payment_frequency_type_mapper::map(entities); },
-        lg(), "Reading all payment frequency type versions by code.");
+        lg(),
+        "Reading all payment frequency type versions by code.");
 }
 
 void payment_frequency_type_repository::remove(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing payment frequency type: " << code;
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<payment_frequency_type_entity> |
+    const auto query =
+        sqlgen::delete_from<payment_frequency_type_entity> |
         where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max.value());
 
     execute_delete_query(ctx, query, lg(), "Removing payment frequency type from database.");
 }
-void payment_frequency_type_repository::remove(
-    context ctx, const std::vector<std::string>& codes) {
+void payment_frequency_type_repository::remove(context ctx, const std::vector<std::string>& codes) {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<payment_frequency_type_entity> |
+    const auto query =
+        sqlgen::delete_from<payment_frequency_type_entity> |
         where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max.value());
 
     execute_delete_query(ctx, query, lg(), "batch removing payment frequency types");

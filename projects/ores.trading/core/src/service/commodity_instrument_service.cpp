@@ -18,9 +18,8 @@
  *
  */
 #include "ores.trading.core/service/commodity_instrument_service.hpp"
-
-#include <boost/uuid/random_generator.hpp>
 #include "ores.service/messaging/handler_helpers.hpp"
+#include <boost/uuid/random_generator.hpp>
 
 using ores::service::messaging::stamp;
 
@@ -39,9 +38,9 @@ commodity_instrument_service::list_commodity_instruments() {
 
 std::vector<domain::commodity_instrument>
 commodity_instrument_service::list_commodity_instruments(std::uint32_t offset,
-    std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing commodity_instruments with offset="
-                               << offset << ", limit=" << limit;
+                                                         std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing commodity_instruments with offset=" << offset
+                               << ", limit=" << limit;
     return repo_.read_latest(ctx_, offset, limit);
 }
 
@@ -54,11 +53,13 @@ std::optional<domain::commodity_instrument>
 commodity_instrument_service::get_commodity_instrument(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting commodity_instrument: " << id;
     auto results = repo_.read_latest(ctx_, id);
-    if (results.empty()) return std::nullopt;
+    if (results.empty())
+        return std::nullopt;
     return results.front();
 }
 
-void commodity_instrument_service::save_commodity_instrument(const domain::commodity_instrument& v) {
+void commodity_instrument_service::save_commodity_instrument(
+    const domain::commodity_instrument& v) {
     auto t = v;
     if (t.instrument_id.is_nil()) {
         boost::uuids::random_generator gen;
@@ -84,8 +85,7 @@ commodity_instrument_service::get_commodity_instrument_history(const std::string
 
 
 std::vector<domain::commodity_instrument>
-commodity_instrument_service::get_commodity_instruments(
-    const std::vector<std::string>& ids) {
+commodity_instrument_service::get_commodity_instruments(const std::vector<std::string>& ids) {
     return repo_.read_latest(ctx_, ids);
 }
 

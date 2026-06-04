@@ -17,15 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.trading.api/domain/party_role_type.hpp"
-
-#include <sstream>
-#include <catch2/catch_test_macros.hpp>
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
+#include "ores.trading.api/domain/party_role_type.hpp"
 #include "ores.trading.api/domain/party_role_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.api/domain/party_role_type_table.hpp"
 #include "ores.trading.api/domain/party_role_type_table_io.hpp" // IWYU pragma: keep.
+#include <catch2/catch_test_macros.hpp>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <sstream>
 
 namespace {
 
@@ -34,8 +33,7 @@ using ores::trading::domain::party_role_type;
 const std::string_view test_suite("ores.trading.tests");
 const std::string tags("[domain]");
 
-party_role_type make_party_role_type(const std::string& code,
-    const std::string& description = "") {
+party_role_type make_party_role_type(const std::string& code, const std::string& description = "") {
     party_role_type prt;
     prt.version = 1;
     prt.code = code;
@@ -104,8 +102,8 @@ TEST_CASE("create_party_role_type_with_faker", tags) {
 TEST_CASE("create_multiple_random_party_role_types", tags) {
     auto lg(make_logger(test_suite));
 
-    const std::vector<std::string> codes = {"Counterparty", "CalculationAgent",
-        "ExecutingBroker", "NovationTransferee"};
+    const std::vector<std::string> codes = {
+        "Counterparty", "CalculationAgent", "ExecutingBroker", "NovationTransferee"};
     for (const auto& code : codes) {
         auto sut = make_party_role_type(code);
         BOOST_LOG_SEV(lg, info) << "Party role type: " << sut;

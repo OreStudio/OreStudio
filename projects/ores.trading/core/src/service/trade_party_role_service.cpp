@@ -18,7 +18,6 @@
  *
  */
 #include "ores.trading.core/service/trade_party_role_service.hpp"
-
 #include <stdexcept>
 
 namespace ores::trading::service {
@@ -33,11 +32,11 @@ std::vector<domain::trade_party_role> trade_party_role_service::list_roles() {
     return repo_.read_latest(ctx_);
 }
 
-std::optional<domain::trade_party_role>
-trade_party_role_service::find_role(const std::string& id) {
+std::optional<domain::trade_party_role> trade_party_role_service::find_role(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Finding trade party role: " << id;
     auto results = repo_.read_latest(ctx_, id);
-    if (results.empty()) return std::nullopt;
+    if (results.empty())
+        return std::nullopt;
     return results.front();
 }
 
@@ -49,8 +48,7 @@ void trade_party_role_service::save_role(const domain::trade_party_role& v) {
     BOOST_LOG_SEV(lg(), info) << "Saved trade party role: " << v.id;
 }
 
-void trade_party_role_service::save_roles(
-    const std::vector<domain::trade_party_role>& roles) {
+void trade_party_role_service::save_roles(const std::vector<domain::trade_party_role>& roles) {
     for (const auto& r : roles) {
         if (r.id.is_nil())
             throw std::invalid_argument("Trade Party Role id cannot be empty.");

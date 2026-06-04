@@ -20,15 +20,15 @@
 #ifndef ORES_TRADING_REPOSITORY_TRADE_REPOSITORY_HPP
 #define ORES_TRADING_REPOSITORY_TRADE_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include <optional>
-#include <sqlgen/postgres.hpp>
-#include <boost/uuid/uuid.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/trade.hpp"
 #include "ores.trading.core/export.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <optional>
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::trading::repository {
 
@@ -37,8 +37,7 @@ namespace ores::trading::repository {
  */
 class ORES_TRADING_CORE_EXPORT trade_repository {
 private:
-    inline static std::string_view logger_name =
-        "ores.trading.repository.trade_repository";
+    inline static std::string_view logger_name = "ores.trading.repository.trade_repository";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -55,12 +54,9 @@ public:
     void write(context ctx, const std::vector<domain::trade>& v);
 
     std::vector<domain::trade> read_latest(context ctx);
-    std::vector<domain::trade>
-    read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
-    std::vector<domain::trade>
-    read_latest(context ctx, const std::string& id);
-    std::vector<domain::trade>
-    read_all(context ctx, const std::string& id);
+    std::vector<domain::trade> read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
+    std::vector<domain::trade> read_latest(context ctx, const std::string& id);
+    std::vector<domain::trade> read_all(context ctx, const std::string& id);
 
     std::uint32_t count_latest(context ctx);
 
@@ -71,14 +67,12 @@ public:
      * expands it to the book-id set and the query joins against it. An empty
      * @p node_id lists all active trades in the tenant.
      */
-    std::vector<domain::trade> read_latest_for_node(
-        context ctx,
-        std::uint32_t offset, std::uint32_t limit,
-        std::optional<boost::uuids::uuid> node_id);
+    std::vector<domain::trade> read_latest_for_node(context ctx,
+                                                    std::uint32_t offset,
+                                                    std::uint32_t limit,
+                                                    std::optional<boost::uuids::uuid> node_id);
 
-    std::uint32_t count_latest_for_node(
-        context ctx,
-        std::optional<boost::uuids::uuid> node_id);
+    std::uint32_t count_latest_for_node(context ctx, std::optional<boost::uuids::uuid> node_id);
 
     void remove(context ctx, const std::string& id);
 };

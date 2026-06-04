@@ -20,9 +20,9 @@
 #ifndef ORES_TRADING_MESSAGING_FLOATING_INDEX_TYPE_PROTOCOL_HPP
 #define ORES_TRADING_MESSAGING_FLOATING_INDEX_TYPE_PROTOCOL_HPP
 
+#include "ores.trading.api/domain/floating_index_type.hpp"
 #include <string>
 #include <vector>
-#include "ores.trading.api/domain/floating_index_type.hpp"
 
 namespace ores::trading::messaging {
 

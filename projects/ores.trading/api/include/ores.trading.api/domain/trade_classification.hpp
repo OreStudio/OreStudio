@@ -20,10 +20,10 @@
 #ifndef ORES_TRADING_API_DOMAIN_TRADE_CLASSIFICATION_HPP
 #define ORES_TRADING_API_DOMAIN_TRADE_CLASSIFICATION_HPP
 
+#include "ores.trading.api/domain/product_type.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <optional>
 #include <string>
-#include <boost/uuid/uuid.hpp>
-#include "ores.trading.api/domain/product_type.hpp"
 
 namespace ores::trading::domain {
 
@@ -33,7 +33,7 @@ namespace ores::trading::domain {
  * One of five field-groups that compose trading::domain::trade via
  * rfl::Flatten<T>.  See trade_identity_field_group.json for the
  * rationale behind the sub-struct decomposition.
- * 
+ *
  * This group carries the product/instrument classification fields
  * (trade type, product type, instrument, asset class, netting set,
  * activity type, and status).
@@ -73,7 +73,6 @@ struct trade_classification {
      * @brief Trade status (soft FK to ores_refdata_trade_statuses_tbl).
      */
     boost::uuids::uuid status_id;
-
 };
 
 }

@@ -20,13 +20,13 @@
 #ifndef ORES_TRADING_REPOSITORY_COMPOSITE_LEG_REPOSITORY_HPP
 #define ORES_TRADING_REPOSITORY_COMPOSITE_LEG_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/composite_leg.hpp"
 #include "ores.trading.core/export.hpp"
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::trading::repository {
 
@@ -35,8 +35,7 @@ namespace ores::trading::repository {
  */
 class ORES_TRADING_CORE_EXPORT composite_leg_repository {
 private:
-    inline static std::string_view logger_name =
-        "ores.trading.repository.composite_leg_repository";
+    inline static std::string_view logger_name = "ores.trading.repository.composite_leg_repository";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -53,16 +52,14 @@ public:
     void write(context ctx, const std::vector<domain::composite_leg>& v);
 
     std::vector<domain::composite_leg> read_latest(context ctx);
-    std::vector<domain::composite_leg>
-    read_by_instrument(context ctx, const std::string& instrument_id);
-    std::vector<domain::composite_leg>
-    read_all(context ctx, const std::string& id);
+    std::vector<domain::composite_leg> read_by_instrument(context ctx,
+                                                          const std::string& instrument_id);
+    std::vector<domain::composite_leg> read_all(context ctx, const std::string& id);
 
     std::uint32_t count_latest(context ctx);
 
     std::vector<domain::composite_leg>
-    read_by_instruments_batch(
-        context ctx, const std::vector<std::string>& instrument_ids);
+    read_by_instruments_batch(context ctx, const std::vector<std::string>& instrument_ids);
 
     void remove(context ctx, const std::string& id);
     void remove_by_instrument(context ctx, const std::string& instrument_id);

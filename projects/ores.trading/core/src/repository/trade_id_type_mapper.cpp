@@ -18,7 +18,6 @@
  *
  */
 #include "ores.trading.core/repository/trade_id_type_mapper.hpp"
-
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.trading.api/domain/trade_id_type_json_io.hpp" // IWYU pragma: keep.
 
@@ -27,8 +26,7 @@ namespace ores::trading::repository {
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::trade_id_type
-trade_id_type_mapper::map(const trade_id_type_entity& v) {
+domain::trade_id_type trade_id_type_mapper::map(const trade_id_type_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::trade_id_type r;
@@ -46,8 +44,7 @@ trade_id_type_mapper::map(const trade_id_type_entity& v) {
     return r;
 }
 
-trade_id_type_entity
-trade_id_type_mapper::map(const domain::trade_id_type& v) {
+trade_id_type_entity trade_id_type_mapper::map(const domain::trade_id_type& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     trade_id_type_entity r;
@@ -67,19 +64,13 @@ trade_id_type_mapper::map(const domain::trade_id_type& v) {
 std::vector<domain::trade_id_type>
 trade_id_type_mapper::map(const std::vector<trade_id_type_entity>& v) {
     return map_vector<trade_id_type_entity, domain::trade_id_type>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<trade_id_type_entity>
 trade_id_type_mapper::map(const std::vector<domain::trade_id_type>& v) {
     return map_vector<domain::trade_id_type, trade_id_type_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

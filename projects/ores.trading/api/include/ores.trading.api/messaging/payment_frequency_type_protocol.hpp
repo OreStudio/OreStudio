@@ -20,9 +20,9 @@
 #ifndef ORES_TRADING_MESSAGING_PAYMENT_FREQUENCY_TYPE_PROTOCOL_HPP
 #define ORES_TRADING_MESSAGING_PAYMENT_FREQUENCY_TYPE_PROTOCOL_HPP
 
+#include "ores.trading.api/domain/payment_frequency_type.hpp"
 #include <string>
 #include <vector>
-#include "ores.trading.api/domain/payment_frequency_type.hpp"
 
 namespace ores::trading::messaging {
 

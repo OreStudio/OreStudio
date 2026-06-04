@@ -20,14 +20,14 @@
 #ifndef ORES_TRADING_SERVICE_VANILLA_SWAP_INSTRUMENT_SERVICE_HPP
 #define ORES_TRADING_SERVICE_VANILLA_SWAP_INSTRUMENT_SERVICE_HPP
 
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.trading.api/domain/vanilla_swap_instrument.hpp"
+#include "ores.trading.core/export.hpp"
+#include "ores.trading.core/repository/vanilla_swap_instrument_repository.hpp"
+#include <optional>
 #include <string>
 #include <vector>
-#include <optional>
-#include "ores.logging/make_logger.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.trading.api/domain/vanilla_swap_instrument.hpp"
-#include "ores.trading.core/repository/vanilla_swap_instrument_repository.hpp"
-#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::service {
 
@@ -52,8 +52,8 @@ public:
 
     std::vector<domain::vanilla_swap_instrument> list_vanilla_swap_instruments();
 
-    std::vector<domain::vanilla_swap_instrument>
-    list_vanilla_swap_instruments(std::uint32_t offset, std::uint32_t limit);
+    std::vector<domain::vanilla_swap_instrument> list_vanilla_swap_instruments(std::uint32_t offset,
+                                                                               std::uint32_t limit);
 
     std::uint32_t count_vanilla_swap_instruments();
 

@@ -18,11 +18,10 @@
  *
  */
 #include "ores.trading.core/repository/fx_asian_forward_instrument_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.trading.api/domain/fx_asian_forward_instrument_json_io.hpp" // IWYU pragma: keep.
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::trading::repository {
 
@@ -38,7 +37,9 @@ fx_asian_forward_instrument_mapper::map(const fx_asian_forward_instrument_entity
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.instrument_id = boost::lexical_cast<boost::uuids::uuid>(v.instrument_id.value());
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
-    r.trade_id = v.trade_id.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.trade_id)) : std::nullopt;
+    r.trade_id = v.trade_id.has_value() ?
+                     std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.trade_id)) :
+                     std::nullopt;
     r.trade_type_code = v.trade_type_code;
     r.fx_index = v.fx_index;
     r.reference_currency = v.reference_currency.value_or("");
@@ -71,12 +72,15 @@ fx_asian_forward_instrument_mapper::map(const domain::fx_asian_forward_instrumen
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
     r.party_id = boost::uuids::to_string(v.party_id);
-    r.trade_id = v.trade_id.has_value() ? std::optional(boost::uuids::to_string(*v.trade_id)) : std::nullopt;
+    r.trade_id =
+        v.trade_id.has_value() ? std::optional(boost::uuids::to_string(*v.trade_id)) : std::nullopt;
     r.trade_type_code = v.trade_type_code;
     r.fx_index = v.fx_index;
-    r.reference_currency = v.reference_currency.empty() ? std::nullopt : std::optional(v.reference_currency);
+    r.reference_currency =
+        v.reference_currency.empty() ? std::nullopt : std::optional(v.reference_currency);
     r.reference_notional = v.reference_notional;
-    r.settlement_currency = v.settlement_currency.empty() ? std::nullopt : std::optional(v.settlement_currency);
+    r.settlement_currency =
+        v.settlement_currency.empty() ? std::nullopt : std::optional(v.settlement_currency);
     r.settlement_notional = v.settlement_notional;
     r.payment_date = v.payment_date.empty() ? std::nullopt : std::optional(v.payment_date);
     r.long_short = v.long_short.empty() ? std::nullopt : std::optional(v.long_short);
@@ -97,19 +101,13 @@ fx_asian_forward_instrument_mapper::map(const domain::fx_asian_forward_instrumen
 std::vector<domain::fx_asian_forward_instrument>
 fx_asian_forward_instrument_mapper::map(const std::vector<fx_asian_forward_instrument_entity>& v) {
     return map_vector<fx_asian_forward_instrument_entity, domain::fx_asian_forward_instrument>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<fx_asian_forward_instrument_entity>
 fx_asian_forward_instrument_mapper::map(const std::vector<domain::fx_asian_forward_instrument>& v) {
     return map_vector<domain::fx_asian_forward_instrument, fx_asian_forward_instrument_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

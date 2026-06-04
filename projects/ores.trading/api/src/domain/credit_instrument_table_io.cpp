@@ -18,9 +18,8 @@
  *
  */
 #include "ores.trading.api/domain/credit_instrument_table_io.hpp"
-
-#include <ostream>
 #include "ores.trading.api/domain/credit_instrument_table.hpp"
+#include <ostream>
 
 namespace ores::trading::domain {
 

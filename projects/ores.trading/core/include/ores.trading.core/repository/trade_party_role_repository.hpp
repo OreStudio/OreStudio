@@ -20,13 +20,13 @@
 #ifndef ORES_TRADING_REPOSITORY_TRADE_PARTY_ROLE_REPOSITORY_HPP
 #define ORES_TRADING_REPOSITORY_TRADE_PARTY_ROLE_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/trade_party_role.hpp"
 #include "ores.trading.core/export.hpp"
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::trading::repository {
 
@@ -53,10 +53,8 @@ public:
     void write(context ctx, const std::vector<domain::trade_party_role>& v);
 
     std::vector<domain::trade_party_role> read_latest(context ctx);
-    std::vector<domain::trade_party_role>
-    read_latest(context ctx, const std::string& id);
-    std::vector<domain::trade_party_role>
-    read_all(context ctx, const std::string& id);
+    std::vector<domain::trade_party_role> read_latest(context ctx, const std::string& id);
+    std::vector<domain::trade_party_role> read_all(context ctx, const std::string& id);
 
     void remove(context ctx, const std::string& id);
 };

@@ -20,13 +20,13 @@
 #ifndef ORES_TRADING_REPOSITORY_CREDIT_INSTRUMENT_REPOSITORY_HPP
 #define ORES_TRADING_REPOSITORY_CREDIT_INSTRUMENT_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/credit_instrument.hpp"
 #include "ores.trading.core/export.hpp"
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::trading::repository {
 
@@ -55,15 +55,13 @@ public:
     std::vector<domain::credit_instrument> read_latest(context ctx);
     std::vector<domain::credit_instrument>
     read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
-    std::vector<domain::credit_instrument>
-    read_latest(context ctx, const std::string& id);
-    std::vector<domain::credit_instrument>
-    read_all(context ctx, const std::string& id);
+    std::vector<domain::credit_instrument> read_latest(context ctx, const std::string& id);
+    std::vector<domain::credit_instrument> read_all(context ctx, const std::string& id);
 
     std::uint32_t count_latest(context ctx);
 
-    std::vector<domain::credit_instrument>
-    read_latest(context ctx, const std::vector<std::string>& ids);
+    std::vector<domain::credit_instrument> read_latest(context ctx,
+                                                       const std::vector<std::string>& ids);
 
     void remove(context ctx, const std::string& id);
 };

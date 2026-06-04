@@ -18,7 +18,6 @@
  *
  */
 #include "ores.trading.core/service/payment_frequency_type_service.hpp"
-
 #include <stdexcept>
 
 namespace ores::trading::service {
@@ -37,7 +36,8 @@ std::optional<domain::payment_frequency_type>
 payment_frequency_type_service::find_type(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Finding payment frequency type: " << code;
     auto results = repo_.read_latest(ctx_, code);
-    if (results.empty()) return std::nullopt;
+    if (results.empty())
+        return std::nullopt;
     return results.front();
 }
 
@@ -49,7 +49,8 @@ void payment_frequency_type_service::save_type(const domain::payment_frequency_t
     BOOST_LOG_SEV(lg(), info) << "Saved payment frequency type: " << v.code;
 }
 
-void payment_frequency_type_service::save_types(const std::vector<domain::payment_frequency_type>& v) {
+void payment_frequency_type_service::save_types(
+    const std::vector<domain::payment_frequency_type>& v) {
     for (const auto& e : v) {
         if (e.code.empty())
             throw std::invalid_argument("payment frequency type code cannot be empty.");

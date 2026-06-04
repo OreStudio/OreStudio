@@ -20,9 +20,9 @@
 #ifndef ORES_TRADING_DOMAIN_DAY_COUNT_FRACTION_TYPE_HPP
 #define ORES_TRADING_DOMAIN_DAY_COUNT_FRACTION_TYPE_HPP
 
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <chrono>
 #include <string>
-#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::trading::domain {
 

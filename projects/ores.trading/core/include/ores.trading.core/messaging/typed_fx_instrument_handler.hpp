@@ -20,30 +20,30 @@
 #ifndef ORES_TRADING_MESSAGING_TYPED_FX_INSTRUMENT_HANDLER_HPP
 #define ORES_TRADING_MESSAGING_TYPED_FX_INSTRUMENT_HANDLER_HPP
 
-#include <optional>
+#include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.database/domain/context.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include "ores.trading.api/messaging/instrument_protocol.hpp"
-#include "ores.trading.core/service/fx_forward_instrument_service.hpp"
-#include "ores.trading.core/service/fx_vanilla_option_instrument_service.hpp"
+#include "ores.trading.core/export.hpp"
+#include "ores.trading.core/service/fx_accumulator_instrument_service.hpp"
+#include "ores.trading.core/service/fx_asian_forward_instrument_service.hpp"
 #include "ores.trading.core/service/fx_barrier_option_instrument_service.hpp"
 #include "ores.trading.core/service/fx_digital_option_instrument_service.hpp"
-#include "ores.trading.core/service/fx_asian_forward_instrument_service.hpp"
-#include "ores.trading.core/service/fx_accumulator_instrument_service.hpp"
+#include "ores.trading.core/service/fx_forward_instrument_service.hpp"
+#include "ores.trading.core/service/fx_vanilla_option_instrument_service.hpp"
 #include "ores.trading.core/service/fx_variance_swap_instrument_service.hpp"
-#include "ores.trading.core/export.hpp"
+#include <optional>
 
 namespace ores::trading::messaging {
 
 namespace {
 inline auto& typed_fx_instrument_handler_lg() {
-    static auto instance = ores::logging::make_logger(
-        "ores.trading.messaging.typed_fx_instrument_handler");
+    static auto instance =
+        ores::logging::make_logger("ores.trading.messaging.typed_fx_instrument_handler");
     return instance;
 }
 } // namespace
@@ -54,17 +54,14 @@ using ores::service::messaging::error_reply;
 using ores::service::messaging::has_permission;
 using namespace ores::logging;
 
-template<typename Request, typename Response, typename Service, typename SaveFn>
-void handle_typed_fx_save(
-    ores::nats::service::client& nats,
-    ores::nats::message msg,
-    ores::database::context ctx,
-    std::optional<ores::security::jwt::jwt_authenticator> verifier,
-    SaveFn save_fn) {
-    BOOST_LOG_SEV(typed_fx_instrument_handler_lg(), debug)
-        << "Handling " << msg.subject;
-    auto ctx_expected = ores::service::service::make_request_context(
-        ctx, msg, verifier);
+template <typename Request, typename Response, typename Service, typename SaveFn>
+void handle_typed_fx_save(ores::nats::service::client& nats,
+                          ores::nats::message msg,
+                          ores::database::context ctx,
+                          std::optional<ores::security::jwt::jwt_authenticator> verifier,
+                          SaveFn save_fn) {
+    BOOST_LOG_SEV(typed_fx_instrument_handler_lg(), debug) << "Handling " << msg.subject;
+    auto ctx_expected = ores::service::service::make_request_context(ctx, msg, verifier);
     if (!ctx_expected) {
         error_reply(nats, msg, ctx_expected.error());
         return;
@@ -78,8 +75,7 @@ void handle_typed_fx_save(
         try {
             Service svc(rctx);
             (svc.*save_fn)(req->data);
-            BOOST_LOG_SEV(typed_fx_instrument_handler_lg(), debug)
-                << "Completed " << msg.subject;
+            BOOST_LOG_SEV(typed_fx_instrument_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats, msg, Response{.success = true});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(typed_fx_instrument_handler_lg(), error)
@@ -95,71 +91,66 @@ void handle_typed_fx_save(
 class ORES_TRADING_CORE_EXPORT typed_fx_instrument_handler {
 public:
     typed_fx_instrument_handler(ores::nats::service::client& nats,
-        ores::database::context ctx,
-        std::optional<ores::security::jwt::jwt_authenticator> verifier)
-        : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier)) {}
+                                ores::database::context ctx,
+                                std::optional<ores::security::jwt::jwt_authenticator> verifier)
+        : nats_(nats)
+        , ctx_(std::move(ctx))
+        , verifier_(std::move(verifier)) {}
 
     void save_forward(ores::nats::message msg) {
         using Svc = service::fx_forward_instrument_service;
-        handle_typed_fx_save<
-            save_fx_forward_instrument_request,
-            save_fx_forward_instrument_response,
-            Svc>(nats_, std::move(msg), ctx_, verifier_,
-                &Svc::save_fx_forward_instrument);
+        handle_typed_fx_save<save_fx_forward_instrument_request,
+                             save_fx_forward_instrument_response,
+                             Svc>(
+            nats_, std::move(msg), ctx_, verifier_, &Svc::save_fx_forward_instrument);
     }
 
     void save_vanilla_option(ores::nats::message msg) {
         using Svc = service::fx_vanilla_option_instrument_service;
-        handle_typed_fx_save<
-            save_fx_vanilla_option_instrument_request,
-            save_fx_vanilla_option_instrument_response,
-            Svc>(nats_, std::move(msg), ctx_, verifier_,
-                &Svc::save_fx_vanilla_option_instrument);
+        handle_typed_fx_save<save_fx_vanilla_option_instrument_request,
+                             save_fx_vanilla_option_instrument_response,
+                             Svc>(
+            nats_, std::move(msg), ctx_, verifier_, &Svc::save_fx_vanilla_option_instrument);
     }
 
     void save_barrier_option(ores::nats::message msg) {
         using Svc = service::fx_barrier_option_instrument_service;
-        handle_typed_fx_save<
-            save_fx_barrier_option_instrument_request,
-            save_fx_barrier_option_instrument_response,
-            Svc>(nats_, std::move(msg), ctx_, verifier_,
-                &Svc::save_fx_barrier_option_instrument);
+        handle_typed_fx_save<save_fx_barrier_option_instrument_request,
+                             save_fx_barrier_option_instrument_response,
+                             Svc>(
+            nats_, std::move(msg), ctx_, verifier_, &Svc::save_fx_barrier_option_instrument);
     }
 
     void save_digital_option(ores::nats::message msg) {
         using Svc = service::fx_digital_option_instrument_service;
-        handle_typed_fx_save<
-            save_fx_digital_option_instrument_request,
-            save_fx_digital_option_instrument_response,
-            Svc>(nats_, std::move(msg), ctx_, verifier_,
-                &Svc::save_fx_digital_option_instrument);
+        handle_typed_fx_save<save_fx_digital_option_instrument_request,
+                             save_fx_digital_option_instrument_response,
+                             Svc>(
+            nats_, std::move(msg), ctx_, verifier_, &Svc::save_fx_digital_option_instrument);
     }
 
     void save_asian_forward(ores::nats::message msg) {
         using Svc = service::fx_asian_forward_instrument_service;
-        handle_typed_fx_save<
-            save_fx_asian_forward_instrument_request,
-            save_fx_asian_forward_instrument_response,
-            Svc>(nats_, std::move(msg), ctx_, verifier_,
-                &Svc::save_fx_asian_forward_instrument);
+        handle_typed_fx_save<save_fx_asian_forward_instrument_request,
+                             save_fx_asian_forward_instrument_response,
+                             Svc>(
+            nats_, std::move(msg), ctx_, verifier_, &Svc::save_fx_asian_forward_instrument);
     }
 
     void save_accumulator(ores::nats::message msg) {
         using Svc = service::fx_accumulator_instrument_service;
-        handle_typed_fx_save<
-            save_fx_accumulator_instrument_request,
-            save_fx_accumulator_instrument_response,
-            Svc>(nats_, std::move(msg), ctx_, verifier_,
-                &Svc::save_fx_accumulator_instrument);
+        handle_typed_fx_save<save_fx_accumulator_instrument_request,
+                             save_fx_accumulator_instrument_response,
+                             Svc>(
+            nats_, std::move(msg), ctx_, verifier_, &Svc::save_fx_accumulator_instrument);
     }
 
     void save_variance_swap(ores::nats::message msg) {
         using Svc = service::fx_variance_swap_instrument_service;
-        handle_typed_fx_save<
-            save_fx_variance_swap_instrument_request,
-            save_fx_variance_swap_instrument_response,
-            Svc>(nats_, std::move(msg), ctx_, verifier_,
-                &Svc::save_fx_variance_swap_instrument);
+        handle_typed_fx_save<save_fx_variance_swap_instrument_request,
+                             save_fx_variance_swap_instrument_response,
+                             Svc>(
+            nats_, std::move(msg), ctx_, verifier_, &Svc::save_fx_variance_swap_instrument);
     }
 
 private:

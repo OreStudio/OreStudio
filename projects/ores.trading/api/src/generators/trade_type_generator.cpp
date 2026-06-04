@@ -18,20 +18,17 @@
  *
  */
 #include "ores.trading.api/generators/trade_type_generator.hpp"
-
+#include "ores.utility/generation/generation_keys.hpp"
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::trading::generator {
 
 using ores::utility::generation::generation_keys;
 
-domain::trade_type generate_synthetic_trade_type(
-    utility::generation::generation_context& ctx) {
+domain::trade_type generate_synthetic_trade_type(utility::generation::generation_context& ctx) {
     static std::atomic<int> counter{0};
-    const auto modified_by = ctx.env().get_or(
-        std::string(generation_keys::modified_by), "system");
+    const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
 
     domain::trade_type r;
     r.version = 1;
@@ -49,8 +46,7 @@ domain::trade_type generate_synthetic_trade_type(
 }
 
 std::vector<domain::trade_type>
-generate_synthetic_trade_types(std::size_t n,
-    utility::generation::generation_context& ctx) {
+generate_synthetic_trade_types(std::size_t n, utility::generation::generation_context& ctx) {
     std::vector<domain::trade_type> r;
     r.reserve(n);
     while (r.size() < n)

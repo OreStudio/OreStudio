@@ -20,14 +20,14 @@
 #ifndef ORES_TRADING_SERVICE_SCRIPTED_INSTRUMENT_SERVICE_HPP
 #define ORES_TRADING_SERVICE_SCRIPTED_INSTRUMENT_SERVICE_HPP
 
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.trading.api/domain/scripted_instrument.hpp"
+#include "ores.trading.core/export.hpp"
+#include "ores.trading.core/repository/scripted_instrument_repository.hpp"
+#include <optional>
 #include <string>
 #include <vector>
-#include <optional>
-#include "ores.logging/make_logger.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.trading.api/domain/scripted_instrument.hpp"
-#include "ores.trading.core/repository/scripted_instrument_repository.hpp"
-#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::service {
 
@@ -36,8 +36,7 @@ namespace ores::trading::service {
  */
 class ORES_TRADING_CORE_EXPORT scripted_instrument_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.trading.service.scripted_instrument_service";
+    inline static std::string_view logger_name = "ores.trading.service.scripted_instrument_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -52,20 +51,18 @@ public:
 
     std::vector<domain::scripted_instrument> list_scripted_instruments();
 
-    std::vector<domain::scripted_instrument>
-    list_scripted_instruments(std::uint32_t offset, std::uint32_t limit);
+    std::vector<domain::scripted_instrument> list_scripted_instruments(std::uint32_t offset,
+                                                                       std::uint32_t limit);
 
     std::uint32_t count_scripted_instruments();
 
-    std::optional<domain::scripted_instrument>
-    get_scripted_instrument(const std::string& id);
+    std::optional<domain::scripted_instrument> get_scripted_instrument(const std::string& id);
 
     void save_scripted_instrument(const domain::scripted_instrument& v);
 
     void remove_scripted_instrument(const std::string& id);
 
-    std::vector<domain::scripted_instrument>
-    get_scripted_instrument_history(const std::string& id);
+    std::vector<domain::scripted_instrument> get_scripted_instrument_history(const std::string& id);
 
     std::vector<domain::scripted_instrument>
     get_scripted_instruments(const std::vector<std::string>& ids);

@@ -20,14 +20,14 @@
 #ifndef ORES_TRADING_SERVICE_FPML_EVENT_TYPE_SERVICE_HPP
 #define ORES_TRADING_SERVICE_FPML_EVENT_TYPE_SERVICE_HPP
 
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.trading.api/domain/fpml_event_type.hpp"
+#include "ores.trading.core/export.hpp"
+#include "ores.trading.core/repository/fpml_event_type_repository.hpp"
+#include <optional>
 #include <string>
 #include <vector>
-#include <optional>
-#include "ores.logging/make_logger.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.trading.api/domain/fpml_event_type.hpp"
-#include "ores.trading.core/repository/fpml_event_type_repository.hpp"
-#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::service {
 
@@ -36,8 +36,7 @@ namespace ores::trading::service {
  */
 class ORES_TRADING_CORE_EXPORT fpml_event_type_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.trading.service.fpml_event_type_service";
+    inline static std::string_view logger_name = "ores.trading.service.fpml_event_type_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -52,8 +51,7 @@ public:
 
     std::vector<domain::fpml_event_type> list_types();
 
-    std::optional<domain::fpml_event_type>
-    find_type(const std::string& code);
+    std::optional<domain::fpml_event_type> find_type(const std::string& code);
 
     void save_type(const domain::fpml_event_type& v);
 
@@ -66,8 +64,7 @@ public:
      */
     void remove_types(const std::vector<std::string>& codes);
 
-    std::vector<domain::fpml_event_type>
-    get_type_history(const std::string& code);
+    std::vector<domain::fpml_event_type> get_type_history(const std::string& code);
 
 private:
     context ctx_;

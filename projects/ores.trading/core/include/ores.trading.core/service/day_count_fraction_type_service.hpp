@@ -20,14 +20,14 @@
 #ifndef ORES_TRADING_SERVICE_DAY_COUNT_FRACTION_TYPE_SERVICE_HPP
 #define ORES_TRADING_SERVICE_DAY_COUNT_FRACTION_TYPE_SERVICE_HPP
 
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.trading.api/domain/day_count_fraction_type.hpp"
+#include "ores.trading.core/export.hpp"
+#include "ores.trading.core/repository/day_count_fraction_type_repository.hpp"
+#include <optional>
 #include <string>
 #include <vector>
-#include <optional>
-#include "ores.logging/make_logger.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.trading.api/domain/day_count_fraction_type.hpp"
-#include "ores.trading.core/repository/day_count_fraction_type_repository.hpp"
-#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::service {
 
@@ -52,8 +52,7 @@ public:
 
     std::vector<domain::day_count_fraction_type> list_types();
 
-    std::optional<domain::day_count_fraction_type>
-    find_type(const std::string& code);
+    std::optional<domain::day_count_fraction_type> find_type(const std::string& code);
 
     void save_type(const domain::day_count_fraction_type& v);
 
@@ -66,8 +65,7 @@ public:
      */
     void remove_types(const std::vector<std::string>& codes);
 
-    std::vector<domain::day_count_fraction_type>
-    get_type_history(const std::string& code);
+    std::vector<domain::day_count_fraction_type> get_type_history(const std::string& code);
 
 private:
     context ctx_;

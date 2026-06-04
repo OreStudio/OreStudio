@@ -31,7 +31,7 @@ namespace ores::trading::domain {
  * One of five field-groups that compose trading::domain::trade via
  * rfl::Flatten<T>.  See trade_identity_field_group.json for the
  * rationale behind the sub-struct decomposition.
- * 
+ *
  * This group carries the provenance/audit fields that record who
  * changed the trade, why, and when.  These mirror the standard
  * ORE audit columns present on all temporal entities.
@@ -61,7 +61,6 @@ struct trade_audit {
      * @brief Wall-clock timestamp at which this version of the trade was persisted.
      */
     std::chrono::system_clock::time_point recorded_at;
-
 };
 
 }

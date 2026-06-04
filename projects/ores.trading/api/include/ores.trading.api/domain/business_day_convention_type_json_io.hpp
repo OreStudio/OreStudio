@@ -20,16 +20,17 @@
 #ifndef ORES_TRADING_DOMAIN_BUSINESS_DAY_CONVENTION_TYPE_JSON_IO_HPP
 #define ORES_TRADING_DOMAIN_BUSINESS_DAY_CONVENTION_TYPE_JSON_IO_HPP
 
-#include <iosfwd>
 #include "ores.trading.api/domain/business_day_convention_type.hpp"
 #include "ores.trading.api/export.hpp"
+#include <iosfwd>
 
 namespace ores::trading::domain {
 
 /**
  * @brief Dumps the business_day_convention_type to a stream in JSON format.
  */
-ORES_TRADING_API_EXPORT std::ostream& operator<<(std::ostream& s, const business_day_convention_type& v);
+ORES_TRADING_API_EXPORT std::ostream& operator<<(std::ostream& s,
+                                                 const business_day_convention_type& v);
 
 }
 

@@ -18,7 +18,6 @@
  *
  */
 #include "ores.trading.api/domain/payment_frequency_type_table.hpp"
-
 #include <fort.hpp>
 
 namespace ores::trading::domain {
@@ -27,13 +26,10 @@ std::string convert_to_table(const std::vector<payment_frequency_type>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header
-          << "Code" << "Description" << "Modified By" << "Version"
-          << fort::endr;
+    table << fort::header << "Code" << "Description" << "Modified By" << "Version" << fort::endr;
 
     for (const auto& t : v) {
-        table << t.code << t.description << t.modified_by << t.version
-              << fort::endr;
+        table << t.code << t.description << t.modified_by << t.version << fort::endr;
     }
     return table.to_string();
 }

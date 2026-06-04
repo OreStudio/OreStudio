@@ -20,16 +20,17 @@
 #ifndef ORES_TRADING_DOMAIN_FX_ACCUMULATOR_INSTRUMENT_JSON_IO_HPP
 #define ORES_TRADING_DOMAIN_FX_ACCUMULATOR_INSTRUMENT_JSON_IO_HPP
 
-#include <iosfwd>
 #include "ores.trading.api/domain/fx_accumulator_instrument.hpp"
 #include "ores.trading.api/export.hpp"
+#include <iosfwd>
 
 namespace ores::trading::domain {
 
 /**
  * @brief Dumps the fx_accumulator_instrument to a stream in JSON format.
  */
-ORES_TRADING_API_EXPORT std::ostream& operator<<(std::ostream& s, const fx_accumulator_instrument& v);
+ORES_TRADING_API_EXPORT std::ostream& operator<<(std::ostream& s,
+                                                 const fx_accumulator_instrument& v);
 
 }
 

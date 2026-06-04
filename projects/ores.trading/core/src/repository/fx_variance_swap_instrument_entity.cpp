@@ -18,7 +18,6 @@
  *
  */
 #include "ores.trading.core/repository/fx_variance_swap_instrument_entity.hpp"
-
 #include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>

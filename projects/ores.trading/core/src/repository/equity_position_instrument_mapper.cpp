@@ -18,11 +18,10 @@
  *
  */
 #include "ores.trading.core/repository/equity_position_instrument_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.trading.api/domain/equity_position_instrument_json_io.hpp" // IWYU pragma: keep.
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::trading::repository {
 
@@ -38,7 +37,9 @@ equity_position_instrument_mapper::map(const equity_position_instrument_entity& 
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.instrument_id = boost::lexical_cast<boost::uuids::uuid>(v.instrument_id.value());
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
-    r.trade_id = v.trade_id.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.trade_id)) : std::nullopt;
+    r.trade_id = v.trade_id.has_value() ?
+                     std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.trade_id)) :
+                     std::nullopt;
     r.trade_type_code = v.trade_type_code;
     r.underlying_name = v.underlying_name;
     r.currency = v.currency;
@@ -65,13 +66,15 @@ equity_position_instrument_mapper::map(const domain::equity_position_instrument&
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
     r.party_id = boost::uuids::to_string(v.party_id);
-    r.trade_id = v.trade_id.has_value() ? std::optional(boost::uuids::to_string(*v.trade_id)) : std::nullopt;
+    r.trade_id =
+        v.trade_id.has_value() ? std::optional(boost::uuids::to_string(*v.trade_id)) : std::nullopt;
     r.trade_type_code = v.trade_type_code;
     r.underlying_name = v.underlying_name;
     r.currency = v.currency;
     r.quantity = v.quantity;
     r.price = v.price;
-    r.option_data_json = v.option_data_json.empty() ? std::nullopt : std::optional(v.option_data_json);
+    r.option_data_json =
+        v.option_data_json.empty() ? std::nullopt : std::optional(v.option_data_json);
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -85,19 +88,13 @@ equity_position_instrument_mapper::map(const domain::equity_position_instrument&
 std::vector<domain::equity_position_instrument>
 equity_position_instrument_mapper::map(const std::vector<equity_position_instrument_entity>& v) {
     return map_vector<equity_position_instrument_entity, domain::equity_position_instrument>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<equity_position_instrument_entity>
 equity_position_instrument_mapper::map(const std::vector<domain::equity_position_instrument>& v) {
     return map_vector<domain::equity_position_instrument, equity_position_instrument_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

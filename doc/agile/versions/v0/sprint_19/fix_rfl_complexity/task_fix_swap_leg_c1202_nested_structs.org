@@ -8,7 +8,7 @@
 #+filetags: :fix_rfl_complexity:sprint_19:v0:
 #+owner: marco
 #+branch: feature/fix-swap-leg-c1202-nested-structs
-#+pr:
+#+pr: 1041
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-04
@@ -50,9 +50,9 @@ A side benefit: callers simplify — =sl.identity.version= replaces
 |--------------+----------------------------------------------------------------------------|
 | State        | STARTED                                                                    |
 | Parent story | [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]]                            |
-| Now          | Root cause confirmed; task 9 Flatten approach proven ineffective; fix planned. |
-| Waiting on   | Nothing.                                                                   |
-| Next         | Update swap_leg.hpp (remove Flatten); update all callers (.get() → direct access); verify CI green. |
+| Now          | Fix implemented and committed; PR #1041 open; awaiting Windows CI.         |
+| Waiting on   | Windows CI green.                                                          |
+| Next         | Merge once CI is green; close task.                                        |
 | Last touched | 2026-06-04                                                                 |
 
 * Acceptance
@@ -109,9 +109,9 @@ task closes. Plans do not outlive their task.)
 
 * PRs
 
-| PR | Title |
-|----+-------|
-|    |       |
+| PR                                                                        | Title                                                                         |
+|---------------------------------------------------------------------------+-------------------------------------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/1041][#1041]] | [swap_leg] Replace rfl::Flatten with plain nested structs to fix MSVC C1202 |
 
 * Review
 

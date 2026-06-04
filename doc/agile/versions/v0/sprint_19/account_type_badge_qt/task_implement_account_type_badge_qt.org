@@ -72,7 +72,8 @@ and =account_locked= do.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Sync partiesWidget_ when accountTypeCombo changes in create mode | AccountDetailDialog.cpp | Accepted | Second currentIndexChanged connection added; 4aafc41 |
+| 2 | Translate badge text in delegate (tr() for user/service/algorithm/llm) | AccountItemDelegate.cpp | Accepted | resolve() still uses raw code as key; 4aafc41 |
 
 * Result
 

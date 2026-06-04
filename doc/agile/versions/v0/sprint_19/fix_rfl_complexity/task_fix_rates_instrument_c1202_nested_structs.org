@@ -66,9 +66,9 @@ internal-only, server and client in same repo).
 |--------------+---------------------------------------------------------------------------|
 | State        | STARTED                                                                   |
 | Parent story | [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]]                           |
-| Now          | Root cause confirmed; field audit complete; design ready.                 |
-| Waiting on   | Nothing.                                                                  |
-| Next         | Extract instrument_identity + instrument_audit; update all 9 structs and callers. |
+| Now          | Implementation complete; PR #1047 open; awaiting Windows CI.              |
+| Waiting on   | Windows CI green.                                                         |
+| Next         | Merge once CI is green; close task.                                       |
 | Last touched | 2026-06-04                                                                |
 
 * Acceptance
@@ -77,3 +77,32 @@ internal-only, server and client in same repo).
 - All 9 =rates_instrument_variant= types use =instrument_identity= and =instrument_audit=.
 - No Literal in the reflection chain exceeds 9 fields.
 - Linux and macOS CI unaffected.
+- =audit_record= created in =ores.utility/domain/= as a shared temporal audit struct.
+- =instrument_identity= created in =ores.trading.api/domain/= as the shared instrument identity struct.
+- =swap_leg= retrospectively uses =audit_record=.
+
+* Plan
+
+See [[id:D75F4921-B431-4E78-99AB-62A47F761D1D][Investigation: MSVC C1202 and rfl complexity]] for the full analysis.
+
+1. Create =ores.utility/domain/audit_record.hpp= (5 audit fields — shared across all temporal entities).
+2. Create =ores.trading.api/domain/instrument_identity.hpp= (7 identity fields).
+3. Update =swap_leg.hpp= to use =audit_record= (retrospective fix for task 10).
+4. Rewrite all 9 rates instrument headers: remove the 12 common fields; add =identity= + type-specific + =audit= members.
+5. Update =instrument.hpp=: dual concept =NestedInstrument || FlatInstrument=; =stamp_ids= dispatches via =if constexpr=.
+6. Update all callers: 9 mappers, 9 generators, 9 services, 9 repositories, =trade_handler.hpp=, =swap_instrument_mapper.cpp=, 3 test files.
+7. Verify Linux build clean; push PR #1047.
+
+* PRs
+
+| PR                                                                         | Title                                                                                         |
+|----------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/1047][#1047]] | [trading] Decompose all 9 rates instruments + extract shared audit_record / instrument_identity |
+
+* Review
+
+| # | Comment summary                                                               | File              | Decision | Notes          |
+|---+-------------------------------------------------------------------------------+-------------------+----------+----------------|
+| 1 | Gemini: task doc missing Plan, PRs, Review, Result sections                   | task_fix_rates*.org | Accept  | Fixed this commit |
+
+* Result

@@ -121,6 +121,15 @@ Regroup and refactor the C++ component layout to align with the product-group mo
 | [[id:FE9BB4DA-FC98-4C08-B784-104DCF3A6687][Move trade-instrument parsing out of ores.qt.api]] | BACKLOG | | | Extract the Qt-free parse logic into ores.trading.api so the dispatch test links a real target instead of hand-listing source files. Removes the stop-gap from the regroup story. |
 | [[id:BD519FC9-6B29-4055-877F-861E46043A06][Investigate the API/core split in components]] | BACKLOG | | | Inventory api vs core across all 17 split components; flag heavy apis (ores.dq.api links ores.database.lib); decide refactor so apis are standard types or other apis only. |
 
+*** Epic: Build Infrastructure
+
+CI and build tooling improvements: code formatting, static analysis, and build hygiene.
+
+#+ATTR_HTML: :class hug-leading
+| Story | State | Start | End | Description |
+|-------+-------+-------+-----+-------------|
+| [[id:78D292E4-EA18-4FDE-9B23-E0F446A1B526][Set up clang-format with CMake targets and CI integration]] | STARTED | 2026-06-04 | | Fix .clang-format (c++23, ORE include ordering); CMake format/check-format targets; nightly GH Actions format PR; initial format pass. |
+
 ** Agile
 
 #+ATTR_HTML: :class hug-leading

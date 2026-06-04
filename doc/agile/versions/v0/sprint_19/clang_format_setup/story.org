@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: 78D292E4-EA18-4FDE-9B23-E0F446A1B526
+:END:
+#+title: Story: Set up clang-format with CMake targets and CI integration
+#+description: Fix the existing .clang-format config for ORE Studio conventions (c++23, correct include ordering), add CMake format/check-format targets, nightly GH Actions format PR, and run the initial format pass across the codebase.
+#+type: story
+#+level: s2
+#+filetags: :cmake:ci:cpp:tooling:formatting:sprint_19:v0:
+#+created: 2026-06-04
+#+updated: 2026-06-04
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The codebase has an existing =.clang-format= file (copied verbatim
+from QuantLib) that is wrong for ORE Studio: =Standard: c++14=
+instead of =c++23=, QuantLib-specific include ordering, and no
+enforcement whatsoever. The goal is a correctly tuned config,
+CMake targets to format locally, and a nightly GitHub Actions
+workflow that raises a format-only PR whenever drift is detected —
+so formatting is corrected continuously without blocking PRs.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                                |
+| Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Start config task.                     |
+| Last touched  | 2026-06-04                             |
+
+* Acceptance
+
+- =.clang-format= uses =Standard: c++23=, ORE Studio include
+  ordering (=ores.*= local → Qt → Boost → std), and settings
+  that match the existing code conventions.
+- CMake =format= target runs clang-format in-place on all
+  =projects/= C++ sources.
+- CMake =check-format= target runs clang-format =--dry-run= and
+  exits non-zero if any file would change.
+- A nightly GH Actions workflow runs =check-format= and — if files
+  differ — commits the formatted result and raises a PR titled
+  =[format] Nightly clang-format run=.
+- An initial format pass PR is merged, cleaning up the existing
+  drift across the codebase.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:1634444D-1E43-4E04-8865-9B50F9335BBC][Fix .clang-format config for ORE Studio conventions]] | BACKLOG | | | Update Standard to c++23, fix include ordering, tune to match actual code style. |
+| [[id:6487BBAC-004A-4040-A6E9-AF3A7CDBF256][Add CMake format and check-format targets]] | BACKLOG | | | format target runs in-place; check-format is a dry-run gate for CI/local use. |
+| [[id:BA1511EE-03E1-4FB3-8439-DFA437B68BA9][Add nightly GH Actions format workflow + initial format pass]] | BACKLOG | | | Nightly workflow raises a PR on drift; run initial pass to clean up the tree. |
+
+* Decisions
+
+* Out of scope
+
+- Per-PR blocking format gate (revisit once nightly PRs go silent).
+- Wt / Python / SQL formatting (C++ only for now).

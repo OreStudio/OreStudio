@@ -602,7 +602,8 @@ ORES_IAM_SERVICE_JWT_PRIVATE_KEY="{jwt_key_oneline}"
 
     # NATS setup — per-environment server config + JetStream store dir.
     print("\n--- NATS setup ---")
-    subprocess.run([str(script_dir / "init-nats.sh")], check=True)
+    import nats_init
+    nats_init.generate(checkout_root, label, nats_port, nats_monitor_port, nats_store_dir)
 
     print(f"\n=== Environment initialised for '{label}' "
           f"(db: {db_name}, NATS port: {nats_port}) ===\n")

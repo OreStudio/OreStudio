@@ -1,9 +1,9 @@
 # NATS server configuration template for ORE Studio.
 #
-# Do not use this file directly — run build/scripts/init-nats.sh to generate
+# Do not use this file directly — run `compass nats init` to generate
 # a per-environment config at build/config/nats-<label>.conf.
 #
-# Variables substituted by init-nats.sh:
+# Variables substituted by compass nats init:
 #   {{LABEL}}             — checkout label (e.g. local1)
 #   {{NATS_PORT}}         — per-env port (e.g. 42221)
 #   {{NATS_MONITOR_PORT}} — per-env HTTP monitoring port (e.g. 8221)

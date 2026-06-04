@@ -8,7 +8,7 @@
 #+filetags: :consolidate_scripts_into_compass:sprint_19:v0:
 #+owner: marco
 #+branch: feature/fix-compass-env-init-windows
-#+pr: 1034
+#+pr: 1037
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-03
@@ -37,10 +37,10 @@ init -y=" exits 1.
 |--------------+--------------------------------------------------------------------|
 | State        | STARTED                                                            |
 | Parent story | [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]]                        |
-| Now          | nats_certs.py ported to Python; compass nats certs exposed; PR #1034 open. |
-| Waiting on   | Windows CI green on PR #1034.                                               |
-| Next         | Merge once CI is green; close task.                                         |
-| Last touched | 2026-06-04                                                                  |
+| Now          | init-nats.sh ported; compass nats init exposed; PR #1037 open.             |
+| Waiting on   | Windows CI green on PR #1037.                                              |
+| Next         | Merge once CI is green; close task.                                        |
+| Last touched | 2026-06-04                                                                 |
 
 * Acceptance
 
@@ -61,7 +61,8 @@ task closes. Plans do not outlive their task.)
 | PR                                                                      | Title                                                                              |
 |-------------------------------------------------------------------------+------------------------------------------------------------------------------------|
 | [[https://github.com/OreStudio/OreStudio/pull/1032][#1032]] | [compass] Fix env init venv activation path on Windows — MERGED                   |
-| [[https://github.com/OreStudio/OreStudio/pull/1034][#1034]] | [compass] Port NATS cert generation to Python; expose as compass nats certs        |
+| [[https://github.com/OreStudio/OreStudio/pull/1034][#1034]] | [compass] Port NATS cert generation to Python; expose as compass nats certs — MERGED |
+| [[https://github.com/OreStudio/OreStudio/pull/1037][#1037]] | [compass] Port init-nats.sh to Python; expose as compass nats init                   |
 
 * Review
 

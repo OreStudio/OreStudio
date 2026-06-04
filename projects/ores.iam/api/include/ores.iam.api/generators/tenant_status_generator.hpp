@@ -20,25 +20,24 @@
 #ifndef ORES_IAM_GENERATORS_TENANT_STATUS_GENERATOR_HPP
 #define ORES_IAM_GENERATORS_TENANT_STATUS_GENERATOR_HPP
 
-#include <vector>
-#include "ores.iam.api/export.hpp"
 #include "ores.iam.api/domain/tenant_status.hpp"
+#include "ores.iam.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include <vector>
 
 namespace ores::iam::generators {
 
 /**
  * @brief Generates a synthetic tenant_status.
  */
-ORES_IAM_API_EXPORT domain::tenant_status generate_synthetic_tenant_status(
-    utility::generation::generation_context& ctx);
+ORES_IAM_API_EXPORT domain::tenant_status
+generate_synthetic_tenant_status(utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic tenant_statuses.
  */
 ORES_IAM_API_EXPORT std::vector<domain::tenant_status>
-generate_synthetic_tenant_statuses(std::size_t n,
-    utility::generation::generation_context& ctx);
+generate_synthetic_tenant_statuses(std::size_t n, utility::generation::generation_context& ctx);
 
 }
 

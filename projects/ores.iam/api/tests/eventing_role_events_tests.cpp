@@ -17,18 +17,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.iam.api/eventing/role_assigned_event.hpp"
-#include "ores.iam.api/eventing/role_revoked_event.hpp"
-#include "ores.iam.api/eventing/account_permissions_changed_event.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
 #include "ores.eventing/service/event_bus.hpp"
-
-#include <catch2/catch_test_macros.hpp>
+#include "ores.iam.api/domain/permission.hpp"
+#include "ores.iam.api/eventing/account_permissions_changed_event.hpp"
+#include "ores.iam.api/eventing/role_assigned_event.hpp"
+#include "ores.iam.api/eventing/role_revoked_event.hpp"
+#include "ores.logging/make_logger.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.logging/make_logger.hpp"
-#include "ores.iam.api/domain/permission.hpp"
 
 namespace {
 
@@ -68,7 +67,8 @@ TEST_CASE("event_traits_account_permissions_changed_event", tags) {
 
     BOOST_LOG_SEV(lg, info) << "Testing account_permissions_changed_event traits";
 
-    REQUIRE(event_traits<account_permissions_changed_event>::name == "ores.iam.account_permissions_changed");
+    REQUIRE(event_traits<account_permissions_changed_event>::name ==
+            "ores.iam.account_permissions_changed");
     STATIC_REQUIRE(has_event_traits<account_permissions_changed_event>);
 }
 
@@ -80,8 +80,8 @@ TEST_CASE("create_role_assigned_event", tags) {
     sut.role_id = boost::uuids::random_generator()();
     sut.timestamp = std::chrono::system_clock::now();
 
-    BOOST_LOG_SEV(lg, info) << "Role assigned event - account_id: "
-        << sut.account_id << ", role_id: " << sut.role_id;
+    BOOST_LOG_SEV(lg, info) << "Role assigned event - account_id: " << sut.account_id
+                            << ", role_id: " << sut.role_id;
 
     CHECK(!sut.account_id.is_nil());
     CHECK(!sut.role_id.is_nil());
@@ -95,8 +95,8 @@ TEST_CASE("create_role_revoked_event", tags) {
     sut.role_id = boost::uuids::random_generator()();
     sut.timestamp = std::chrono::system_clock::now();
 
-    BOOST_LOG_SEV(lg, info) << "Role revoked event - account_id: "
-        << sut.account_id << ", role_id: " << sut.role_id;
+    BOOST_LOG_SEV(lg, info) << "Role revoked event - account_id: " << sut.account_id
+                            << ", role_id: " << sut.role_id;
 
     CHECK(!sut.account_id.is_nil());
     CHECK(!sut.role_id.is_nil());
@@ -110,8 +110,8 @@ TEST_CASE("create_account_permissions_changed_event", tags) {
     sut.permission_codes = {accounts_read, currencies_read, flags_read};
     sut.timestamp = std::chrono::system_clock::now();
 
-    BOOST_LOG_SEV(lg, info) << "Permissions changed event - account_id: "
-        << sut.account_id << ", permission_codes count: " << sut.permission_codes.size();
+    BOOST_LOG_SEV(lg, info) << "Permissions changed event - account_id: " << sut.account_id
+                            << ", permission_codes count: " << sut.permission_codes.size();
 
     CHECK(!sut.account_id.is_nil());
     CHECK(sut.permission_codes.size() == 3);
@@ -126,7 +126,7 @@ TEST_CASE("account_permissions_changed_event_with_wildcard", tags) {
     sut.timestamp = std::chrono::system_clock::now();
 
     BOOST_LOG_SEV(lg, info) << "Permissions changed event with wildcard - account_id: "
-        << sut.account_id;
+                            << sut.account_id;
 
     CHECK(!sut.account_id.is_nil());
     CHECK(sut.permission_codes.size() == 1);
@@ -141,7 +141,7 @@ TEST_CASE("account_permissions_changed_event_empty_permissions", tags) {
     sut.timestamp = std::chrono::system_clock::now();
 
     BOOST_LOG_SEV(lg, info) << "Permissions changed event with no permissions - account_id: "
-        << sut.account_id;
+                            << sut.account_id;
 
     CHECK(!sut.account_id.is_nil());
     CHECK(sut.permission_codes.empty());
@@ -209,11 +209,12 @@ TEST_CASE("event_bus_permissions_changed_subscription", tags) {
     boost::uuids::uuid received_account_id;
     std::vector<std::string> received_permission_codes;
 
-    auto sub = bus.subscribe<account_permissions_changed_event>([&](const account_permissions_changed_event& e) {
-        event_received = true;
-        received_account_id = e.account_id;
-        received_permission_codes = e.permission_codes;
-    });
+    auto sub = bus.subscribe<account_permissions_changed_event>(
+        [&](const account_permissions_changed_event& e) {
+            event_received = true;
+            received_account_id = e.account_id;
+            received_permission_codes = e.permission_codes;
+        });
 
     account_permissions_changed_event event;
     event.account_id = boost::uuids::random_generator()();
@@ -236,17 +237,14 @@ TEST_CASE("event_bus_role_events_isolation", tags) {
     bool revoked_received = false;
     bool permissions_changed_received = false;
 
-    auto sub1 = bus.subscribe<role_assigned_event>([&](const role_assigned_event&) {
-        assigned_received = true;
-    });
+    auto sub1 = bus.subscribe<role_assigned_event>(
+        [&](const role_assigned_event&) { assigned_received = true; });
 
-    auto sub2 = bus.subscribe<role_revoked_event>([&](const role_revoked_event&) {
-        revoked_received = true;
-    });
+    auto sub2 = bus.subscribe<role_revoked_event>(
+        [&](const role_revoked_event&) { revoked_received = true; });
 
-    auto sub3 = bus.subscribe<account_permissions_changed_event>([&](const account_permissions_changed_event&) {
-        permissions_changed_received = true;
-    });
+    auto sub3 = bus.subscribe<account_permissions_changed_event>(
+        [&](const account_permissions_changed_event&) { permissions_changed_received = true; });
 
     role_assigned_event event;
     event.account_id = boost::uuids::random_generator()();
@@ -268,11 +266,12 @@ TEST_CASE("create_role_assigned_event_with_faker", tags) {
         role_assigned_event sut;
         sut.account_id = boost::uuids::random_generator()();
         sut.role_id = boost::uuids::random_generator()();
-        sut.timestamp = std::chrono::system_clock::now() -
-            std::chrono::hours(faker::number::integer(0, 168));
+        sut.timestamp =
+            std::chrono::system_clock::now() - std::chrono::hours(faker::number::integer(0, 168));
 
-        BOOST_LOG_SEV(lg, info) << "Role assigned event " << i << " - account_id: "
-            << sut.account_id << ", role_id: " << sut.role_id;
+        BOOST_LOG_SEV(lg, info) << "Role assigned event " << i
+                                << " - account_id: " << sut.account_id
+                                << ", role_id: " << sut.role_id;
 
         CHECK(!sut.account_id.is_nil());
         CHECK(!sut.role_id.is_nil());
@@ -282,11 +281,18 @@ TEST_CASE("create_role_assigned_event_with_faker", tags) {
 TEST_CASE("create_account_permissions_changed_event_with_faker", tags) {
     auto lg(make_logger(test_suite));
 
-    const std::vector<std::string> available_permissions = {
-        accounts_read, accounts_create, accounts_update, accounts_delete,
-        currencies_read, currencies_create, currencies_update, currencies_delete,
-        flags_read, flags_create, flags_update, flags_delete
-    };
+    const std::vector<std::string> available_permissions = {accounts_read,
+                                                            accounts_create,
+                                                            accounts_update,
+                                                            accounts_delete,
+                                                            currencies_read,
+                                                            currencies_create,
+                                                            currencies_update,
+                                                            currencies_delete,
+                                                            flags_read,
+                                                            flags_create,
+                                                            flags_update,
+                                                            flags_delete};
 
     for (int i = 0; i < 3; ++i) {
         account_permissions_changed_event sut;
@@ -295,14 +301,14 @@ TEST_CASE("create_account_permissions_changed_event_with_faker", tags) {
 
         const int num_permissions = faker::number::integer(1, 5);
         for (int j = 0; j < num_permissions; ++j) {
-            const auto idx = faker::number::integer(0,
-                static_cast<int>(available_permissions.size() - 1));
+            const auto idx =
+                faker::number::integer(0, static_cast<int>(available_permissions.size() - 1));
             sut.permission_codes.push_back(available_permissions[idx]);
         }
 
         BOOST_LOG_SEV(lg, info) << "Permissions changed event " << i
-            << " - account_id: " << sut.account_id
-            << ", permissions count: " << sut.permission_codes.size();
+                                << " - account_id: " << sut.account_id
+                                << ", permissions count: " << sut.permission_codes.size();
 
         CHECK(!sut.account_id.is_nil());
         CHECK(!sut.permission_codes.empty());

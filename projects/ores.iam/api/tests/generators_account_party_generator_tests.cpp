@@ -18,10 +18,9 @@
  *
  */
 #include "ores.iam.api/generators/account_party_generator.hpp"
-
-#include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 

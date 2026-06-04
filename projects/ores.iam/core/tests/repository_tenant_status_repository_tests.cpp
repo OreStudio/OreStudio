@@ -17,18 +17,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.iam.api/domain/tenant_status.hpp"
+#include "ores.iam.api/domain/tenant_status_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.core/repository/tenant_status_repository.hpp"
-
+#include "ores.logging/make_logger.hpp"
+#include "ores.testing/database_helper.hpp"
+#include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
+#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h>
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.utility/uuid/tenant_id.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
-#include "ores.iam.api/domain/tenant_status.hpp"
-#include "ores.iam.api/domain/tenant_status_json_io.hpp" // IWYU pragma: keep.
-#include "ores.testing/database_helper.hpp"
 
 namespace {
 
@@ -65,8 +64,7 @@ TEST_CASE("write_single_tenant_status", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
-    auto sys_ctx = h.context().with_tenant(
-        ores::utility::uuid::tenant_id::system(), "");
+    auto sys_ctx = h.context().with_tenant(ores::utility::uuid::tenant_id::system(), "");
 
     tenant_status_repository repo;
     auto ts = make_tenant_status(h);
@@ -79,8 +77,7 @@ TEST_CASE("write_multiple_tenant_statuses", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
-    auto sys_ctx = h.context().with_tenant(
-        ores::utility::uuid::tenant_id::system(), "");
+    auto sys_ctx = h.context().with_tenant(ores::utility::uuid::tenant_id::system(), "");
 
     tenant_status_repository repo;
     std::vector<tenant_status> statuses;
@@ -95,8 +92,7 @@ TEST_CASE("read_latest_tenant_statuses", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
-    auto sys_ctx = h.context().with_tenant(
-        ores::utility::uuid::tenant_id::system(), "");
+    auto sys_ctx = h.context().with_tenant(ores::utility::uuid::tenant_id::system(), "");
 
     tenant_status_repository repo;
     std::vector<tenant_status> written;
@@ -117,8 +113,7 @@ TEST_CASE("read_latest_tenant_status_by_status", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
-    auto sys_ctx = h.context().with_tenant(
-        ores::utility::uuid::tenant_id::system(), "");
+    auto sys_ctx = h.context().with_tenant(ores::utility::uuid::tenant_id::system(), "");
 
     tenant_status_repository repo;
     auto ts = make_tenant_status(h);
@@ -141,8 +136,7 @@ TEST_CASE("read_nonexistent_tenant_status", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
-    auto sys_ctx = h.context().with_tenant(
-        ores::utility::uuid::tenant_id::system(), "");
+    auto sys_ctx = h.context().with_tenant(ores::utility::uuid::tenant_id::system(), "");
 
     tenant_status_repository repo;
 

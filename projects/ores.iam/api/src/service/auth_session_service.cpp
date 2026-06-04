@@ -18,7 +18,6 @@
  *
  */
 #include "ores.iam.api/service/auth_session_service.hpp"
-
 #include <vector>
 
 namespace ores::iam::service {
@@ -26,18 +25,16 @@ namespace ores::iam::service {
 using namespace ores::logging;
 
 void auth_session_service::add_session(const std::string& token,
-    ores::iam::domain::session session) {
+                                       ores::iam::domain::session session) {
     std::lock_guard<std::mutex> lock(mutex_);
     sessions_.emplace(token, std::move(session));
-    BOOST_LOG_SEV(lg(), debug) << "Session added for token (length "
-                               << token.size() << ")";
+    BOOST_LOG_SEV(lg(), debug) << "Session added for token (length " << token.size() << ")";
 }
 
 void auth_session_service::remove_session(const std::string& token) {
     std::lock_guard<std::mutex> lock(mutex_);
     sessions_.erase(token);
-    BOOST_LOG_SEV(lg(), debug) << "Session removed for token (length "
-                               << token.size() << ")";
+    BOOST_LOG_SEV(lg(), debug) << "Session removed for token (length " << token.size() << ")";
 }
 
 std::optional<ores::iam::domain::session>
@@ -50,8 +47,7 @@ auth_session_service::find_session(const std::string& token) const {
     return it->second;
 }
 
-std::vector<ores::iam::domain::session>
-auth_session_service::get_all_sessions() const {
+std::vector<ores::iam::domain::session> auth_session_service::get_all_sessions() const {
     std::lock_guard<std::mutex> lock(mutex_);
     std::vector<ores::iam::domain::session> result;
     result.reserve(sessions_.size());

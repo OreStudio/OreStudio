@@ -18,9 +18,8 @@
  *
  */
 #include "ores.iam.core/service/account_party_service.hpp"
-
-#include <stdexcept>
 #include <boost/uuid/uuid_io.hpp>
+#include <stdexcept>
 
 namespace ores::iam::service {
 
@@ -47,20 +46,18 @@ void account_party_service::save_account_party(const domain::account_party& acco
     if (account_party.party_id.is_nil()) {
         throw std::invalid_argument("Party cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving account party: " << account_party.account_id
-                               << "/" << account_party.party_id;
+    BOOST_LOG_SEV(lg(), debug) << "Saving account party: " << account_party.account_id << "/"
+                               << account_party.party_id;
     repo_.write(account_party);
-    BOOST_LOG_SEV(lg(), info) << "Saved account party: " << account_party.account_id
-                              << "/" << account_party.party_id;
+    BOOST_LOG_SEV(lg(), info) << "Saved account party: " << account_party.account_id << "/"
+                              << account_party.party_id;
 }
 
 void account_party_service::remove_account_party(const boost::uuids::uuid& account_id,
-    const boost::uuids::uuid& party_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing account party: " << account_id
-                               << "/" << party_id;
+                                                 const boost::uuids::uuid& party_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing account party: " << account_id << "/" << party_id;
     repo_.remove(account_id, party_id);
-    BOOST_LOG_SEV(lg(), info) << "Removed account party: " << account_id
-                              << "/" << party_id;
+    BOOST_LOG_SEV(lg(), info) << "Removed account party: " << account_id << "/" << party_id;
 }
 
 }

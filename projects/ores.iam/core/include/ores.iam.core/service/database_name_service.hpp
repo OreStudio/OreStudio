@@ -20,11 +20,11 @@
 #ifndef ORES_IAM_SERVICE_DATABASE_NAME_SERVICE_HPP
 #define ORES_IAM_SERVICE_DATABASE_NAME_SERVICE_HPP
 
-#include <string>
-#include <vector>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.iam.core/export.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <string>
+#include <vector>
 
 namespace ores::iam::service {
 
@@ -51,8 +51,7 @@ namespace ores::iam::service {
  */
 class ORES_IAM_CORE_EXPORT database_name_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.iam.service.database_name_service";
+    inline static std::string_view logger_name = "ores.iam.service.database_name_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -101,9 +100,9 @@ public:
      * @param max_attempts Maximum attempts before adding suffix (default 10)
      * @return A unique database name not in existing_names
      */
-    [[nodiscard]] std::string generate_unique_database_name(
-        const std::vector<std::string>& existing_names = {},
-        int max_attempts = 10);
+    [[nodiscard]] std::string
+    generate_unique_database_name(const std::vector<std::string>& existing_names = {},
+                                  int max_attempts = 10);
 
     /**
      * @brief Generates a unique database name by checking the server.

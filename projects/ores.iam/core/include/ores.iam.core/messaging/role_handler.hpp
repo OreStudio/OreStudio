@@ -20,30 +20,29 @@
 #ifndef ORES_IAM_MESSAGING_ROLE_HANDLER_HPP
 #define ORES_IAM_MESSAGING_ROLE_HANDLER_HPP
 
-#include <boost/uuid/string_generator.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include "ores.logging/make_logger.hpp"
-#include "ores.nats/domain/message.hpp"
-#include "ores.nats/service/client.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.database/service/tenant_context.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
-#include "ores.security/jwt/jwt_authenticator.hpp"
-#include "ores.service/messaging/handler_helpers.hpp"
-#include "ores.service/service/request_context.hpp"
-#include "ores.iam.api/messaging/authorization_protocol.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.iam.api/domain/permission.hpp"
+#include "ores.iam.api/messaging/authorization_protocol.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.iam.core/repository/tenant_repository.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/message.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.service/service/request_context.hpp"
+#include <boost/uuid/string_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::iam::messaging {
 
 namespace {
 
 inline auto& role_handler_lg() {
-    static auto instance = ores::logging::make_logger(
-        "ores.iam.messaging.role_handler");
+    static auto instance = ores::logging::make_logger("ores.iam.messaging.role_handler");
     return instance;
 }
 
@@ -58,13 +57,14 @@ using ores::service::messaging::error_reply;
 class role_handler {
 public:
     role_handler(ores::nats::service::client& nats,
-        ores::database::context ctx,
-        ores::security::jwt::jwt_authenticator signer)
-        : nats_(nats), ctx_(std::move(ctx)), signer_(std::move(signer)) {}
+                 ores::database::context ctx,
+                 ores::security::jwt::jwt_authenticator signer)
+        : nats_(nats)
+        , ctx_(std::move(ctx))
+        , signer_(std::move(signer)) {}
 
     void list(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(role_handler_lg(), msg);
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(role_handler_lg(), msg);
         try {
             auto ctx_expected = ores::service::service::make_request_context(
                 ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
@@ -75,24 +75,19 @@ public:
             const auto& ctx = *ctx_expected;
             service::authorization_service svc(ctx);
             auto roles = svc.list_roles();
-            BOOST_LOG_SEV(role_handler_lg(), debug)
-                << "Completed " << msg.subject;
-            reply(nats_, msg,
-                list_roles_response{.roles = std::move(roles)});
+            BOOST_LOG_SEV(role_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, list_roles_response{.roles = std::move(roles)});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(role_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
+            BOOST_LOG_SEV(role_handler_lg(), error) << msg.subject << " failed: " << e.what();
             reply(nats_, msg, list_roles_response{});
         }
     }
 
     void assign(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(role_handler_lg(), msg);
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(role_handler_lg(), msg);
         auto req = decode<assign_role_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(role_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(role_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         try {
@@ -105,28 +100,20 @@ public:
             const auto& ctx = *ctx_expected;
             service::authorization_service svc(ctx);
             boost::uuids::string_generator sg;
-            svc.assign_role(sg(req->account_id),
-                sg(req->role_id), ctx.actor());
-            BOOST_LOG_SEV(role_handler_lg(), debug)
-                << "Completed " << msg.subject;
-            reply(nats_, msg,
-                assign_role_response{.success = true});
+            svc.assign_role(sg(req->account_id), sg(req->role_id), ctx.actor());
+            BOOST_LOG_SEV(role_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, assign_role_response{.success = true});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(role_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, assign_role_response{
-                .success = false,
-                .error_message = e.what()});
+            BOOST_LOG_SEV(role_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, assign_role_response{.success = false, .error_message = e.what()});
         }
     }
 
     void revoke(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(role_handler_lg(), msg);
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(role_handler_lg(), msg);
         auto req = decode<revoke_role_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(role_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(role_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         try {
@@ -140,38 +127,30 @@ public:
             boost::uuids::string_generator sg;
             const auto caller_id = sg(ctx.actor());
             service::authorization_service svc(ctx);
-            if (!svc.has_permission(caller_id,
-                    domain::permissions::roles_revoke)) {
+            if (!svc.has_permission(caller_id, domain::permissions::roles_revoke)) {
                 BOOST_LOG_SEV(role_handler_lg(), warn)
-                    << msg.subject
-                    << " denied: caller lacks iam::roles:revoke permission";
-                reply(nats_, msg, revoke_role_response{
-                    .success = false,
-                    .error_message =
-                        "Permission denied: iam::roles:revoke required"});
+                    << msg.subject << " denied: caller lacks iam::roles:revoke permission";
+                reply(nats_,
+                      msg,
+                      revoke_role_response{.success = false,
+                                           .error_message =
+                                               "Permission denied: iam::roles:revoke required"});
                 return;
             }
             svc.revoke_role(sg(req->account_id), sg(req->role_id));
-            BOOST_LOG_SEV(role_handler_lg(), debug)
-                << "Completed " << msg.subject;
-            reply(nats_, msg,
-                revoke_role_response{.success = true});
+            BOOST_LOG_SEV(role_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, revoke_role_response{.success = true});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(role_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, revoke_role_response{
-                .success = false,
-                .error_message = e.what()});
+            BOOST_LOG_SEV(role_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, revoke_role_response{.success = false, .error_message = e.what()});
         }
     }
 
     void by_account(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(role_handler_lg(), msg);
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(role_handler_lg(), msg);
         auto req = decode<get_account_roles_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(role_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(role_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         try {
@@ -184,27 +163,20 @@ public:
             const auto& ctx = *ctx_expected;
             service::authorization_service svc(ctx);
             boost::uuids::string_generator sg;
-            auto roles = svc.get_account_roles(
-                sg(req->account_id));
-            BOOST_LOG_SEV(role_handler_lg(), debug)
-                << "Completed " << msg.subject;
-            reply(nats_, msg,
-                get_account_roles_response{
-                    .roles = std::move(roles)});
+            auto roles = svc.get_account_roles(sg(req->account_id));
+            BOOST_LOG_SEV(role_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, get_account_roles_response{.roles = std::move(roles)});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(role_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
+            BOOST_LOG_SEV(role_handler_lg(), error) << msg.subject << " failed: " << e.what();
             reply(nats_, msg, get_account_roles_response{});
         }
     }
 
     void assign_by_name(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(role_handler_lg(), msg);
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(role_handler_lg(), msg);
         auto req = decode<assign_role_by_name_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(role_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(role_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         try {
@@ -219,10 +191,11 @@ public:
             // Parse principal: username@hostname
             const auto at_pos = req->principal.rfind('@');
             if (at_pos == std::string::npos) {
-                reply(nats_, msg, assign_role_by_name_response{
-                    .success = false,
-                    .error_message =
-                        "Principal must be in username@hostname format"});
+                reply(nats_,
+                      msg,
+                      assign_role_by_name_response{
+                          .success = false,
+                          .error_message = "Principal must be in username@hostname format"});
                 return;
             }
             const auto username = req->principal.substr(0, at_pos);
@@ -232,24 +205,26 @@ public:
             repository::tenant_repository tenant_repo(ctx_);
             auto tenants = tenant_repo.read_latest_by_hostname(hostname);
             if (tenants.empty()) {
-                reply(nats_, msg, assign_role_by_name_response{
-                    .success = false,
-                    .error_message =
-                        "Tenant not found for hostname: " + hostname});
+                reply(nats_,
+                      msg,
+                      assign_role_by_name_response{
+                          .success = false,
+                          .error_message = "Tenant not found for hostname: " + hostname});
                 return;
             }
 
             using ores::database::service::tenant_context;
-            auto tenant_ctx = tenant_context::with_tenant(
-                ctx_, boost::uuids::to_string(tenants.front().id));
+            auto tenant_ctx =
+                tenant_context::with_tenant(ctx_, boost::uuids::to_string(tenants.front().id));
 
             // Look up account by username in the target tenant
             repository::account_repository acct_repo(tenant_ctx);
             auto accounts = acct_repo.read_latest_by_username(username);
             if (accounts.empty()) {
-                reply(nats_, msg, assign_role_by_name_response{
-                    .success = false,
-                    .error_message = "Account not found: " + username});
+                reply(nats_,
+                      msg,
+                      assign_role_by_name_response{
+                          .success = false, .error_message = "Account not found: " + username});
                 return;
             }
 
@@ -257,32 +232,29 @@ public:
             service::authorization_service auth_svc(tenant_ctx);
             auto role = auth_svc.find_role_by_name(req->role_name);
             if (!role) {
-                reply(nats_, msg, assign_role_by_name_response{
-                    .success = false,
-                    .error_message = "Role not found: " + req->role_name});
+                reply(nats_,
+                      msg,
+                      assign_role_by_name_response{
+                          .success = false, .error_message = "Role not found: " + req->role_name});
                 return;
             }
 
             auth_svc.assign_role(accounts.front().id, role->id, ctx.actor());
-            BOOST_LOG_SEV(role_handler_lg(), debug)
-                << "Completed " << msg.subject;
+            BOOST_LOG_SEV(role_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, assign_role_by_name_response{.success = true});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(role_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, assign_role_by_name_response{
-                .success = false,
-                .error_message = e.what()});
+            BOOST_LOG_SEV(role_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            reply(nats_,
+                  msg,
+                  assign_role_by_name_response{.success = false, .error_message = e.what()});
         }
     }
 
     void revoke_by_name(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(role_handler_lg(), msg);
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(role_handler_lg(), msg);
         auto req = decode<revoke_role_by_name_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(role_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(role_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         try {
@@ -297,25 +269,25 @@ public:
             boost::uuids::string_generator sg;
             const auto caller_id = sg(ctx.actor());
             service::authorization_service caller_svc(ctx);
-            if (!caller_svc.has_permission(caller_id,
-                    domain::permissions::roles_revoke)) {
+            if (!caller_svc.has_permission(caller_id, domain::permissions::roles_revoke)) {
                 BOOST_LOG_SEV(role_handler_lg(), warn)
-                    << msg.subject
-                    << " denied: caller lacks iam::roles:revoke permission";
-                reply(nats_, msg, revoke_role_by_name_response{
-                    .success = false,
-                    .error_message =
-                        "Permission denied: iam::roles:revoke required"});
+                    << msg.subject << " denied: caller lacks iam::roles:revoke permission";
+                reply(nats_,
+                      msg,
+                      revoke_role_by_name_response{
+                          .success = false,
+                          .error_message = "Permission denied: iam::roles:revoke required"});
                 return;
             }
 
             // Parse principal: username@hostname
             const auto at_pos = req->principal.rfind('@');
             if (at_pos == std::string::npos) {
-                reply(nats_, msg, revoke_role_by_name_response{
-                    .success = false,
-                    .error_message =
-                        "Principal must be in username@hostname format"});
+                reply(nats_,
+                      msg,
+                      revoke_role_by_name_response{
+                          .success = false,
+                          .error_message = "Principal must be in username@hostname format"});
                 return;
             }
             const auto username = req->principal.substr(0, at_pos);
@@ -325,24 +297,26 @@ public:
             repository::tenant_repository tenant_repo(ctx_);
             auto tenants = tenant_repo.read_latest_by_hostname(hostname);
             if (tenants.empty()) {
-                reply(nats_, msg, revoke_role_by_name_response{
-                    .success = false,
-                    .error_message =
-                        "Tenant not found for hostname: " + hostname});
+                reply(nats_,
+                      msg,
+                      revoke_role_by_name_response{
+                          .success = false,
+                          .error_message = "Tenant not found for hostname: " + hostname});
                 return;
             }
 
             using ores::database::service::tenant_context;
-            auto tenant_ctx = tenant_context::with_tenant(
-                ctx_, boost::uuids::to_string(tenants.front().id));
+            auto tenant_ctx =
+                tenant_context::with_tenant(ctx_, boost::uuids::to_string(tenants.front().id));
 
             // Look up account by username in the target tenant
             repository::account_repository acct_repo(tenant_ctx);
             auto accounts = acct_repo.read_latest_by_username(username);
             if (accounts.empty()) {
-                reply(nats_, msg, revoke_role_by_name_response{
-                    .success = false,
-                    .error_message = "Account not found: " + username});
+                reply(nats_,
+                      msg,
+                      revoke_role_by_name_response{
+                          .success = false, .error_message = "Account not found: " + username});
                 return;
             }
 
@@ -350,60 +324,58 @@ public:
             service::authorization_service auth_svc(tenant_ctx);
             auto role = auth_svc.find_role_by_name(req->role_name);
             if (!role) {
-                reply(nats_, msg, revoke_role_by_name_response{
-                    .success = false,
-                    .error_message = "Role not found: " + req->role_name});
+                reply(nats_,
+                      msg,
+                      revoke_role_by_name_response{
+                          .success = false, .error_message = "Role not found: " + req->role_name});
                 return;
             }
 
             auth_svc.revoke_role(accounts.front().id, role->id);
-            BOOST_LOG_SEV(role_handler_lg(), debug)
-                << "Completed " << msg.subject;
+            BOOST_LOG_SEV(role_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, revoke_role_by_name_response{.success = true});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(role_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, revoke_role_by_name_response{
-                .success = false,
-                .error_message = e.what()});
+            BOOST_LOG_SEV(role_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            reply(nats_,
+                  msg,
+                  revoke_role_by_name_response{.success = false, .error_message = e.what()});
         }
     }
 
     void suggest_commands(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(role_handler_lg(), msg);
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(role_handler_lg(), msg);
         auto req = decode<suggest_role_commands_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(role_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(role_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         try {
             using ores::database::repository::execute_parameterized_string_query;
             std::vector<std::string> results;
             if (!req->tenant_id.empty()) {
-                results = execute_parameterized_string_query(ctx_,
+                results = execute_parameterized_string_query(
+                    ctx_,
                     "SELECT command FROM "
                     "ores_iam_generate_role_commands_fn($1, NULL, $2::uuid)",
                     {req->username, req->tenant_id},
-                    role_handler_lg(), "Suggest role commands by tenant_id");
+                    role_handler_lg(),
+                    "Suggest role commands by tenant_id");
             } else if (!req->hostname.empty()) {
-                results = execute_parameterized_string_query(ctx_,
-                    "SELECT command FROM "
-                    "ores_iam_generate_role_commands_fn($1, $2)",
-                    {req->username, req->hostname},
-                    role_handler_lg(), "Suggest role commands by hostname");
+                results =
+                    execute_parameterized_string_query(ctx_,
+                                                       "SELECT command FROM "
+                                                       "ores_iam_generate_role_commands_fn($1, $2)",
+                                                       {req->username, req->hostname},
+                                                       role_handler_lg(),
+                                                       "Suggest role commands by hostname");
             } else {
                 reply(nats_, msg, suggest_role_commands_response{});
                 return;
             }
-            BOOST_LOG_SEV(role_handler_lg(), debug)
-                << "Completed " << msg.subject;
-            reply(nats_, msg, suggest_role_commands_response{
-                .commands = std::move(results)});
+            BOOST_LOG_SEV(role_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, suggest_role_commands_response{.commands = std::move(results)});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(role_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
+            BOOST_LOG_SEV(role_handler_lg(), error) << msg.subject << " failed: " << e.what();
             reply(nats_, msg, suggest_role_commands_response{});
         }
     }

@@ -20,10 +20,10 @@
 #ifndef ORES_IAM_DOMAIN_TENANT_TYPE_TABLE_HPP
 #define ORES_IAM_DOMAIN_TENANT_TYPE_TABLE_HPP
 
+#include "ores.iam.api/domain/tenant_type.hpp"
+#include "ores.iam.api/export.hpp"
 #include <string>
 #include <vector>
-#include "ores.iam.api/export.hpp"
-#include "ores.iam.api/domain/tenant_type.hpp"
 
 namespace ores::iam::domain {
 

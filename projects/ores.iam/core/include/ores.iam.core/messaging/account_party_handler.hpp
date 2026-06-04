@@ -20,27 +20,26 @@
 #ifndef ORES_IAM_MESSAGING_ACCOUNT_PARTY_HANDLER_HPP
 #define ORES_IAM_MESSAGING_ACCOUNT_PARTY_HANDLER_HPP
 
-#include <stdexcept>
-#include <boost/uuid/string_generator.hpp>
+#include "ores.database/domain/context.hpp"
+#include "ores.database/service/tenant_context.hpp"
+#include "ores.iam.api/messaging/account_party_protocol.hpp"
+#include "ores.iam.core/service/account_party_service.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.database/service/tenant_context.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include "ores.iam.api/messaging/account_party_protocol.hpp"
-#include "ores.iam.core/service/account_party_service.hpp"
+#include <boost/uuid/string_generator.hpp>
+#include <stdexcept>
 
 namespace ores::iam::messaging {
 
 namespace {
 
 inline auto& account_party_handler_lg() {
-    static auto instance = ores::logging::make_logger(
-        "ores.iam.messaging.account_party_handler");
+    static auto instance = ores::logging::make_logger("ores.iam.messaging.account_party_handler");
     return instance;
 }
 
@@ -57,9 +56,11 @@ using namespace ores::logging;
 class account_party_handler {
 public:
     account_party_handler(ores::nats::service::client& nats,
-        ores::database::context ctx,
-        ores::security::jwt::jwt_authenticator signer)
-        : nats_(nats), ctx_(std::move(ctx)), signer_(std::move(signer)) {}
+                          ores::database::context ctx,
+                          ores::security::jwt::jwt_authenticator signer)
+        : nats_(nats)
+        , ctx_(std::move(ctx))
+        , signer_(std::move(signer)) {}
 
     void list(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id =
@@ -68,11 +69,9 @@ public:
             service::account_party_service svc(ctx_);
             auto aps = svc.list_account_parties();
             get_account_parties_response resp;
-            resp.total_available_count =
-                static_cast<int>(aps.size());
+            resp.total_available_count = static_cast<int>(aps.size());
             resp.account_parties = std::move(aps);
-            BOOST_LOG_SEV(account_party_handler_lg(), debug)
-                << "Completed " << msg.subject;
+            BOOST_LOG_SEV(account_party_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, resp);
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(account_party_handler_lg(), error)
@@ -86,25 +85,21 @@ public:
             log_handler_entry(account_party_handler_lg(), msg);
         auto req = decode<get_account_parties_by_account_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(account_party_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(account_party_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         try {
             service::account_party_service svc(ctx_);
             boost::uuids::string_generator sg;
-            auto aps = svc.list_account_parties_by_account(
-                sg(req->account_id));
+            auto aps = svc.list_account_parties_by_account(sg(req->account_id));
             get_account_parties_by_account_response resp;
             resp.account_parties = std::move(aps);
-            BOOST_LOG_SEV(account_party_handler_lg(), debug)
-                << "Completed " << msg.subject;
+            BOOST_LOG_SEV(account_party_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, resp);
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(account_party_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
-            reply(nats_, msg,
-                get_account_parties_by_account_response{});
+            reply(nats_, msg, get_account_parties_by_account_response{});
         }
     }
 
@@ -125,17 +120,24 @@ public:
 
             // Idempotency guard: replay cached result if this step already completed.
             if (auto cached = check_step_idempotency(nats_, step_id)) {
-                publish_step_completion(nats_, step_id, inst_id,
-                    cached->outcome, cached->result_json, cached->error_message,
-                    cached->log);
+                publish_step_completion(nats_,
+                                        step_id,
+                                        inst_id,
+                                        cached->outcome,
+                                        cached->result_json,
+                                        cached->error_message,
+                                        cached->log);
                 return;
             }
 
             auto req = decode<save_account_party_request>(msg);
             if (!req) {
-                publish_step_completion(nats_, step_id, inst_id,
-                    ores::workflow::messaging::step_outcome::failed, "",
-                    "Failed to decode save_account_party_request");
+                publish_step_completion(nats_,
+                                        step_id,
+                                        inst_id,
+                                        ores::workflow::messaging::step_outcome::failed,
+                                        "",
+                                        "Failed to decode save_account_party_request");
                 return;
             }
             try {
@@ -148,15 +150,22 @@ public:
                 }
                 BOOST_LOG_SEV(account_party_handler_lg(), debug)
                     << "Workflow step completed: " << msg.subject;
-                publish_step_completion(nats_, step_id, inst_id,
+                publish_step_completion(
+                    nats_,
+                    step_id,
+                    inst_id,
                     ores::workflow::messaging::step_outcome::completed,
-                    rfl::json::write(save_account_party_response{.success = true}), "");
+                    rfl::json::write(save_account_party_response{.success = true}),
+                    "");
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(account_party_handler_lg(), error)
-                    << "Workflow step failed: " << msg.subject
-                    << " — " << e.what();
-                publish_step_completion(nats_, step_id, inst_id,
-                    ores::workflow::messaging::step_outcome::failed, "", e.what());
+                    << "Workflow step failed: " << msg.subject << " — " << e.what();
+                publish_step_completion(nats_,
+                                        step_id,
+                                        inst_id,
+                                        ores::workflow::messaging::step_outcome::failed,
+                                        "",
+                                        e.what());
             }
             return;
         }
@@ -165,8 +174,7 @@ public:
             log_handler_entry(account_party_handler_lg(), msg);
         auto req = decode<save_account_party_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(account_party_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(account_party_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         try {
@@ -186,15 +194,12 @@ public:
                 stamp(ap, ctx);
                 svc.save_account_party(ap);
             }
-            BOOST_LOG_SEV(account_party_handler_lg(), debug)
-                << "Completed " << msg.subject;
-            reply(nats_, msg,
-                save_account_party_response{.success = true});
+            BOOST_LOG_SEV(account_party_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, save_account_party_response{.success = true});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(account_party_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, save_account_party_response{
-                .success = false, .message = e.what()});
+            reply(nats_, msg, save_account_party_response{.success = false, .message = e.what()});
         }
     }
 
@@ -203,8 +208,7 @@ public:
             log_handler_entry(account_party_handler_lg(), msg);
         auto req = decode<delete_account_party_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(account_party_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(account_party_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         auto ctx_expected = ores::service::service::make_request_context(
@@ -222,17 +226,13 @@ public:
             service::account_party_service svc(ctx);
             boost::uuids::string_generator sg;
             for (const auto& key : req->keys)
-                svc.remove_account_party(
-                    sg(key.account_id), sg(key.party_id));
-            BOOST_LOG_SEV(account_party_handler_lg(), debug)
-                << "Completed " << msg.subject;
-            reply(nats_, msg,
-                delete_account_party_response{.success = true});
+                svc.remove_account_party(sg(key.account_id), sg(key.party_id));
+            BOOST_LOG_SEV(account_party_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, delete_account_party_response{.success = true});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(account_party_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, delete_account_party_response{
-                .success = false, .message = e.what()});
+            reply(nats_, msg, delete_account_party_response{.success = false, .message = e.what()});
         }
     }
 

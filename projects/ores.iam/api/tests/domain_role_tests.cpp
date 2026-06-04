@@ -17,16 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.iam.api/domain/permission.hpp"
 #include "ores.iam.api/domain/role.hpp"
-
-#include <catch2/catch_test_macros.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include <sstream>
+#include "ores.iam.api/domain/role_json_io.hpp" // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/faker/datetime.hpp"
-#include "ores.iam.api/domain/role_json_io.hpp" // IWYU pragma: keep.
-#include "ores.iam.api/domain/permission.hpp"
+#include <boost/uuid/uuid_generators.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <sstream>
 
 namespace {
 
@@ -74,8 +73,7 @@ TEST_CASE("create_trading_role", tags) {
     sut.modified_by = "admin";
     sut.recorded_at = datetime::make_timepoint(2025, 1, 15, 10, 30);
     sut.permission_codes = {
-        currencies_create, currencies_read, currencies_update, currencies_delete
-    };
+        currencies_create, currencies_read, currencies_update, currencies_delete};
     BOOST_LOG_SEV(lg, info) << "Role: " << sut;
 
     CHECK(sut.name == "Trading");
@@ -127,8 +125,7 @@ TEST_CASE("create_support_role", tags) {
     sut.modified_by = "admin";
     sut.recorded_at = datetime::make_timepoint(2025, 1, 15, 12);
     sut.permission_codes = {
-        accounts_read, accounts_unlock, accounts_reset_password, login_info_read
-    };
+        accounts_read, accounts_unlock, accounts_reset_password, login_info_read};
     BOOST_LOG_SEV(lg, info) << "Role: " << sut;
 
     CHECK(sut.name == "Support");
@@ -205,12 +202,10 @@ TEST_CASE("create_role_with_faker", tags) {
     sut.recorded_at = datetime::make_timepoint(2025, 1, faker::number::integer(1, 28));
 
     const std::vector<std::string> available_permissions = {
-        accounts_read, currencies_read, flags_read
-    };
+        accounts_read, currencies_read, flags_read};
     const int num_permissions = faker::number::integer(1, 3);
     for (int i = 0; i < num_permissions; ++i) {
-        sut.permission_codes.push_back(
-            available_permissions[faker::number::integer(0, 2)]);
+        sut.permission_codes.push_back(available_permissions[faker::number::integer(0, 2)]);
     }
     BOOST_LOG_SEV(lg, info) << "Role: " << sut;
 
@@ -233,8 +228,8 @@ TEST_CASE("create_multiple_random_roles", tags) {
         sut.id = boost::uuids::random_generator()();
         sut.name = role_names[faker::number::integer(0, 4)];
         sut.description = std::string(faker::lorem::sentence());
-        sut.modified_by = std::string(faker::person::firstName()) + " " +
-            std::string(faker::person::lastName());
+        sut.modified_by =
+            std::string(faker::person::firstName()) + " " + std::string(faker::person::lastName());
         sut.recorded_at = datetime::make_timepoint(2025, 1, 15, 12);
         sut.permission_codes = {accounts_read};
         BOOST_LOG_SEV(lg, info) << "Role " << i << ":" << sut;

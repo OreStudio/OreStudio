@@ -20,10 +20,10 @@
 #ifndef ORES_IAM_REPOSITORY_TENANT_TYPE_ENTITY_HPP
 #define ORES_IAM_REPOSITORY_TENANT_TYPE_ENTITY_HPP
 
-#include <string>
-#include <optional>
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
+#include <optional>
+#include <string>
 
 namespace ores::iam::repository {
 

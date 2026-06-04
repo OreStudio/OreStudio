@@ -18,23 +18,19 @@
  *
  */
 #include "ores.iam.api/generators/login_info_generator.hpp"
-
-#include <boost/asio/ip/address.hpp>
 #include "ores.utility/generation/generation_keys.hpp"
+#include <boost/asio/ip/address.hpp>
 
 namespace ores::iam::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::login_info generate_synthetic_login_info(
-    utility::generation::generation_context& ctx) {
-    const auto tid = ctx.env().get_or(
-        generation_keys::tenant_id, "system");
+domain::login_info generate_synthetic_login_info(utility::generation::generation_context& ctx) {
+    const auto tid = ctx.env().get_or(generation_keys::tenant_id, "system");
     const auto parsed_tid = utility::uuid::tenant_id::from_string(tid);
 
     domain::login_info r;
-    r.tenant_id = parsed_tid.has_value() ? parsed_tid.value()
-        : utility::uuid::tenant_id::system();
+    r.tenant_id = parsed_tid.has_value() ? parsed_tid.value() : utility::uuid::tenant_id::system();
     r.last_login = ctx.past_timepoint();
     r.account_id = ctx.generate_uuid();
     r.failed_logins = 0;
@@ -47,8 +43,7 @@ domain::login_info generate_synthetic_login_info(
 }
 
 std::vector<domain::login_info>
-generate_synthetic_login_infos(std::size_t n,
-    utility::generation::generation_context& ctx) {
+generate_synthetic_login_infos(std::size_t n, utility::generation::generation_context& ctx) {
     std::vector<domain::login_info> r;
     r.reserve(n);
     for (std::size_t i = 0; i < n; ++i)

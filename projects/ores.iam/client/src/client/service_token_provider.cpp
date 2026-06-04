@@ -18,20 +18,19 @@
  *
  */
 #include "ores.iam.client/client/service_token_provider.hpp"
-
+#include "ores.iam.api/messaging/login_protocol.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/headers.hpp"
+#include "ores.nats/domain/message.hpp"
+#include "ores.nats/service/client.hpp"
 #include <chrono>
 #include <memory>
+#include <rfl/json.hpp>
 #include <span>
 #include <stdexcept>
 #include <string>
 #include <thread>
 #include <unordered_map>
-#include <rfl/json.hpp>
-#include "ores.logging/make_logger.hpp"
-#include "ores.nats/domain/headers.hpp"
-#include "ores.nats/domain/message.hpp"
-#include "ores.nats/service/client.hpp"
-#include "ores.iam.api/messaging/login_protocol.hpp"
 
 namespace ores::iam::client {
 
@@ -39,8 +38,7 @@ namespace {
 
 using namespace ores::logging;
 
-inline static std::string_view logger_name =
-    "ores.iam.client.client.service_token_provider";
+inline static std::string_view logger_name = "ores.iam.client.client.service_token_provider";
 
 [[nodiscard]] auto& lg() {
     static auto instance = make_logger(logger_name);
@@ -69,13 +67,12 @@ struct token_state {
         auto delay = std::chrono::milliseconds(500);
         constexpr auto max_delay = std::chrono::milliseconds(30000);
 
-        for (int attempt = 1; ; ++attempt) {
+        for (int attempt = 1;; ++attempt) {
             try {
-                const auto req_json = rfl::json::write(
-                    ores::iam::messaging::service_login_request{
-                        .username = username, .password = password});
-                const auto reply = nats.request_sync(
-                    service_login_subject, ores::nats::as_bytes(req_json));
+                const auto req_json = rfl::json::write(ores::iam::messaging::service_login_request{
+                    .username = username, .password = password});
+                const auto reply =
+                    nats.request_sync(service_login_subject, ores::nats::as_bytes(req_json));
 
                 auto resp = rfl::json::read<ores::iam::messaging::service_login_response>(
                     ores::nats::as_string_view(reply.data));
@@ -83,21 +80,20 @@ struct token_state {
                     const auto msg = resp ? resp->message : "parse error";
                     BOOST_LOG_SEV(lg(), error)
                         << "Service authentication failed for " << username << ": " << msg;
-                    throw std::runtime_error(
-                        "Service authentication failed for " + username + ": " + msg);
+                    throw std::runtime_error("Service authentication failed for " + username +
+                                             ": " + msg);
                 }
 
                 jwt = std::move(resp->token);
                 access_lifetime_s = resp->access_lifetime_s;
-                expires_at = std::chrono::system_clock::now() +
-                             std::chrono::seconds(access_lifetime_s);
+                expires_at =
+                    std::chrono::system_clock::now() + std::chrono::seconds(access_lifetime_s);
                 // Tune proactive refresh margin to 20% of the actual TTL so
                 // the token is renewed at ~80% of its lifetime.
                 refresh_margin = std::chrono::seconds(access_lifetime_s / 5);
-                BOOST_LOG_SEV(lg(), info)
-                    << "Service authentication successful for " << username
-                    << " (lifetime=" << access_lifetime_s << "s"
-                    << ", refresh_margin=" << refresh_margin.count() << "s)";
+                BOOST_LOG_SEV(lg(), info) << "Service authentication successful for " << username
+                                          << " (lifetime=" << access_lifetime_s << "s"
+                                          << ", refresh_margin=" << refresh_margin.count() << "s)";
                 return;
             } catch (const std::runtime_error& e) {
                 const std::string_view what = e.what();
@@ -118,8 +114,8 @@ struct token_state {
         const std::unordered_map<std::string, std::string> headers{
             {std::string(ores::nats::headers::authorization),
              std::string(ores::nats::headers::bearer_prefix) + jwt}};
-        const auto reply = nats.request_sync(
-            refresh_subject, std::span<const std::byte>{}, headers);
+        const auto reply =
+            nats.request_sync(refresh_subject, std::span<const std::byte>{}, headers);
 
         auto resp = rfl::json::read<ores::iam::messaging::refresh_response>(
             ores::nats::as_string_view(reply.data));
@@ -132,8 +128,7 @@ struct token_state {
 
         jwt = std::move(resp->token);
         access_lifetime_s = resp->access_lifetime_s;
-        expires_at = std::chrono::system_clock::now() +
-                     std::chrono::seconds(access_lifetime_s);
+        expires_at = std::chrono::system_clock::now() + std::chrono::seconds(access_lifetime_s);
         BOOST_LOG_SEV(lg(), debug) << "JWT refreshed for " << username;
     }
 
@@ -147,15 +142,14 @@ struct token_state {
 
 ores::nats::service::nats_client::token_provider
 make_service_token_provider(ores::nats::service::client& nats,
-    std::string username, std::string password,
-    std::chrono::seconds refresh_margin) {
+                            std::string username,
+                            std::string password,
+                            std::chrono::seconds refresh_margin) {
 
-    auto state = std::make_shared<token_state>(token_state{
-        .nats = nats,
-        .username = std::move(username),
-        .password = std::move(password),
-        .refresh_margin = refresh_margin
-    });
+    auto state = std::make_shared<token_state>(token_state{.nats = nats,
+                                                           .username = std::move(username),
+                                                           .password = std::move(password),
+                                                           .refresh_margin = refresh_margin});
 
     // Authenticate eagerly so the first request does not incur a login
     // round-trip and startup failures are surfaced immediately.

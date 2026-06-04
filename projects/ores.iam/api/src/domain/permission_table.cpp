@@ -18,9 +18,8 @@
  *
  */
 #include "ores.iam.api/domain/permission_table.hpp"
-
-#include <fort.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <fort.hpp>
 
 namespace ores::iam::domain {
 
@@ -31,8 +30,7 @@ std::string convert_to_table(const std::vector<permission>& v) {
     table << fort::header << "ID (UUID)" << "Code" << "Description" << fort::endr;
 
     for (const auto& p : v) {
-        table << boost::uuids::to_string(p.id) << p.code
-              << p.description << fort::endr;
+        table << boost::uuids::to_string(p.id) << p.code << p.description << fort::endr;
     }
     return table.to_string();
 }

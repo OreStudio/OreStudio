@@ -18,17 +18,16 @@
  *
  */
 #include "ores.iam.core/service/service_session_service.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
 #include <boost/asio/ip/address.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::iam::service {
 
 using namespace ores::logging;
 
 service_session_service::service_session_service(context ctx)
-    : session_repo_(ctx),
-      account_repo_(ctx) {
+    : session_repo_(ctx)
+    , account_repo_(ctx) {
 
     BOOST_LOG_SEV(lg(), debug) << "Service session service initialized";
 }
@@ -56,13 +55,12 @@ service_session_service::get_service_account(const std::string& username) {
 }
 
 std::optional<domain::session>
-service_session_service::start_service_session(
-    const std::string& username,
-    const std::string& client_identifier,
-    domain::session_protocol protocol) {
+service_session_service::start_service_session(const std::string& username,
+                                               const std::string& client_identifier,
+                                               domain::session_protocol protocol) {
 
-    BOOST_LOG_SEV(lg(), debug) << "Starting service session for username: "
-                               << username << " with client: " << client_identifier;
+    BOOST_LOG_SEV(lg(), debug) << "Starting service session for username: " << username
+                               << " with client: " << client_identifier;
 
     auto account_opt = get_service_account(username);
     if (!account_opt) {
@@ -73,10 +71,9 @@ service_session_service::start_service_session(
 }
 
 std::optional<domain::session>
-service_session_service::start_service_session(
-    const boost::uuids::uuid& account_id,
-    const std::string& client_identifier,
-    domain::session_protocol protocol) {
+service_session_service::start_service_session(const boost::uuids::uuid& account_id,
+                                               const std::string& client_identifier,
+                                               domain::session_protocol protocol) {
 
     BOOST_LOG_SEV(lg(), debug) << "Starting service session for account ID: "
                                << boost::uuids::to_string(account_id);
@@ -84,8 +81,7 @@ service_session_service::start_service_session(
     // Verify account exists and is a service account
     auto accounts = account_repo_.read_latest(account_id);
     if (accounts.empty()) {
-        BOOST_LOG_SEV(lg(), warn) << "Account not found: "
-                                  << boost::uuids::to_string(account_id);
+        BOOST_LOG_SEV(lg(), warn) << "Account not found: " << boost::uuids::to_string(account_id);
         return std::nullopt;
     }
 
@@ -101,27 +97,24 @@ service_session_service::start_service_session(
     auto session_id = uuid_generator_();
     auto now = std::chrono::system_clock::now();
 
-    domain::session session {
-        .tenant_id = account.tenant_id,
-        .id = session_id,
-        .account_id = account_id,
-        .start_time = now,
-        .end_time = std::nullopt,
-        .client_ip = boost::asio::ip::make_address("127.0.0.1"),
-        .client_identifier = client_identifier,
-        .client_version_major = 1,
-        .client_version_minor = 0,
-        .bytes_sent = 0,
-        .bytes_received = 0,
-        .country_code = "",
-        .protocol = protocol,
-        .username = account.username
-    };
+    domain::session session{.tenant_id = account.tenant_id,
+                            .id = session_id,
+                            .account_id = account_id,
+                            .start_time = now,
+                            .end_time = std::nullopt,
+                            .client_ip = boost::asio::ip::make_address("127.0.0.1"),
+                            .client_identifier = client_identifier,
+                            .client_version_major = 1,
+                            .client_version_minor = 0,
+                            .bytes_sent = 0,
+                            .bytes_received = 0,
+                            .country_code = "",
+                            .protocol = protocol,
+                            .username = account.username};
 
     session_repo_.create(session);
 
-    BOOST_LOG_SEV(lg(), info) << "Started service session: "
-                              << boost::uuids::to_string(session_id)
+    BOOST_LOG_SEV(lg(), info) << "Started service session: " << boost::uuids::to_string(session_id)
                               << " for account: " << account.username
                               << " (type: " << account.account_type << ")";
 
@@ -134,15 +127,12 @@ void service_session_service::end_service_session(
     std::uint64_t bytes_sent,
     std::uint64_t bytes_received) {
 
-    BOOST_LOG_SEV(lg(), debug) << "Ending service session: "
-                               << boost::uuids::to_string(session_id);
+    BOOST_LOG_SEV(lg(), debug) << "Ending service session: " << boost::uuids::to_string(session_id);
 
     auto now = std::chrono::system_clock::now();
-    session_repo_.end_session(session_id, start_time, now,
-                              bytes_sent, bytes_received);
+    session_repo_.end_session(session_id, start_time, now, bytes_sent, bytes_received);
 
-    BOOST_LOG_SEV(lg(), info) << "Ended service session: "
-                              << boost::uuids::to_string(session_id);
+    BOOST_LOG_SEV(lg(), info) << "Ended service session: " << boost::uuids::to_string(session_id);
 }
 
 }

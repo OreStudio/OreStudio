@@ -20,11 +20,11 @@
 #ifndef ORES_IAM_EVENTING_ACCOUNT_PERMISSIONS_CHANGED_EVENT_HPP
 #define ORES_IAM_EVENTING_ACCOUNT_PERMISSIONS_CHANGED_EVENT_HPP
 
-#include <chrono>
-#include <vector>
-#include <string>
-#include <boost/uuid/uuid.hpp>
 #include "ores.eventing/domain/event_traits.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <string>
+#include <vector>
 
 namespace ores::iam::eventing {
 
@@ -71,7 +71,7 @@ namespace ores::eventing::domain {
 /**
  * @brief Event traits specialization for account_permissions_changed_event.
  */
-template<>
+template <>
 struct event_traits<ores::iam::eventing::account_permissions_changed_event> {
     static constexpr std::string_view name = "ores.iam.account_permissions_changed";
 };

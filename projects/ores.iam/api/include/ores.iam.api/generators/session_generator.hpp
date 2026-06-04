@@ -20,25 +20,24 @@
 #ifndef ORES_IAM_GENERATORS_SESSION_GENERATOR_HPP
 #define ORES_IAM_GENERATORS_SESSION_GENERATOR_HPP
 
-#include <vector>
-#include "ores.iam.api/export.hpp"
 #include "ores.iam.api/domain/session.hpp"
+#include "ores.iam.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include <vector>
 
 namespace ores::iam::generators {
 
 /**
  * @brief Generates a synthetic session.
  */
-ORES_IAM_API_EXPORT domain::session generate_synthetic_session(
-    utility::generation::generation_context& ctx);
+ORES_IAM_API_EXPORT domain::session
+generate_synthetic_session(utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic sessions.
  */
 ORES_IAM_API_EXPORT std::vector<domain::session>
-generate_synthetic_sessions(std::size_t n,
-    utility::generation::generation_context& ctx);
+generate_synthetic_sessions(std::size_t n, utility::generation::generation_context& ctx);
 
 }
 

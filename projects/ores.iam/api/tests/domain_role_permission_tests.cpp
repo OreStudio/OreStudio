@@ -18,12 +18,11 @@
  *
  */
 #include "ores.iam.api/domain/role_permission.hpp"
-
-#include <catch2/catch_test_macros.hpp>
+#include "ores.logging/make_logger.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.logging/make_logger.hpp"
 
 namespace {
 
@@ -41,8 +40,8 @@ TEST_CASE("create_role_permission_with_valid_uuids", tags) {
     role_permission sut;
     sut.role_id = boost::uuids::random_generator()();
     sut.permission_id = boost::uuids::random_generator()();
-    BOOST_LOG_SEV(lg, info) << "Role permission - role_id: "
-        << sut.role_id << ", permission_id: " << sut.permission_id;
+    BOOST_LOG_SEV(lg, info) << "Role permission - role_id: " << sut.role_id
+                            << ", permission_id: " << sut.permission_id;
 
     CHECK(!sut.role_id.is_nil());
     CHECK(!sut.permission_id.is_nil());
@@ -58,8 +57,8 @@ TEST_CASE("create_role_permission_with_specific_uuids", tags) {
     role_permission sut;
     sut.role_id = role_uuid;
     sut.permission_id = perm_uuid;
-    BOOST_LOG_SEV(lg, info) << "Role permission - role_id: "
-        << sut.role_id << ", permission_id: " << sut.permission_id;
+    BOOST_LOG_SEV(lg, info) << "Role permission - role_id: " << sut.role_id
+                            << ", permission_id: " << sut.permission_id;
 
     CHECK(sut.role_id == role_uuid);
     CHECK(sut.permission_id == perm_uuid);
@@ -76,8 +75,8 @@ TEST_CASE("role_permission_same_role_different_permissions", tags) {
         rp.role_id = role_id;
         rp.permission_id = boost::uuids::random_generator()();
         assignments.push_back(rp);
-        BOOST_LOG_SEV(lg, info) << "Role permission " << i << " - role_id: "
-            << rp.role_id << ", permission_id: " << rp.permission_id;
+        BOOST_LOG_SEV(lg, info) << "Role permission " << i << " - role_id: " << rp.role_id
+                                << ", permission_id: " << rp.permission_id;
     }
 
     CHECK(assignments.size() == 3);
@@ -97,8 +96,8 @@ TEST_CASE("role_permission_same_permission_different_roles", tags) {
         rp.role_id = boost::uuids::random_generator()();
         rp.permission_id = permission_id;
         assignments.push_back(rp);
-        BOOST_LOG_SEV(lg, info) << "Role permission " << i << " - role_id: "
-            << rp.role_id << ", permission_id: " << rp.permission_id;
+        BOOST_LOG_SEV(lg, info) << "Role permission " << i << " - role_id: " << rp.role_id
+                                << ", permission_id: " << rp.permission_id;
     }
 
     CHECK(assignments.size() == 3);
@@ -114,8 +113,8 @@ TEST_CASE("create_multiple_random_role_permissions", tags) {
         role_permission sut;
         sut.role_id = boost::uuids::random_generator()();
         sut.permission_id = boost::uuids::random_generator()();
-        BOOST_LOG_SEV(lg, info) << "Role permission " << i << " - role_id: "
-            << sut.role_id << ", permission_id: " << sut.permission_id;
+        BOOST_LOG_SEV(lg, info) << "Role permission " << i << " - role_id: " << sut.role_id
+                                << ", permission_id: " << sut.permission_id;
 
         CHECK(!sut.role_id.is_nil());
         CHECK(!sut.permission_id.is_nil());
@@ -127,8 +126,8 @@ TEST_CASE("role_permission_default_uuids_are_nil", tags) {
     auto lg(make_logger(test_suite));
 
     role_permission sut;
-    BOOST_LOG_SEV(lg, info) << "Default role permission - role_id: "
-        << sut.role_id << ", permission_id: " << sut.permission_id;
+    BOOST_LOG_SEV(lg, info) << "Default role permission - role_id: " << sut.role_id
+                            << ", permission_id: " << sut.permission_id;
 
     CHECK(sut.role_id.is_nil());
     CHECK(sut.permission_id.is_nil());

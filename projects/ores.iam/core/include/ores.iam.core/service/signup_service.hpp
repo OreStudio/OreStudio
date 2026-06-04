@@ -20,19 +20,19 @@
 #ifndef ORES_IAM_SERVICE_SIGNUP_SERVICE_HPP
 #define ORES_IAM_SERVICE_SIGNUP_SERVICE_HPP
 
-#include <memory>
-#include <string>
-#include <expected>
-#include <boost/uuid/uuid.hpp>
-#include "ores.utility/serialization/error_code.hpp"
 #include "ores.iam.api/domain/account.hpp"
+#include "ores.iam.core/export.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.iam.core/repository/login_info_repository.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
-#include "ores.variability.core/service/system_settings_service.hpp"
-#include "ores.utility/uuid/uuid_v7_generator.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.iam.core/export.hpp"
+#include "ores.utility/serialization/error_code.hpp"
+#include "ores.utility/uuid/uuid_v7_generator.hpp"
+#include "ores.variability.core/service/system_settings_service.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <expected>
+#include <memory>
+#include <string>
 
 namespace ores::iam::service {
 
@@ -42,7 +42,8 @@ namespace ores::iam::service {
 struct signup_result {
     bool success = false;
     std::string error_message;
-    ores::utility::serialization::error_code error_code = ores::utility::serialization::error_code::none;
+    ores::utility::serialization::error_code error_code =
+        ores::utility::serialization::error_code::none;
     boost::uuids::uuid account_id;
     std::string username;
 };
@@ -62,8 +63,7 @@ struct signup_result {
  */
 class ORES_IAM_CORE_EXPORT signup_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.iam.service.signup_service";
+    inline static std::string_view logger_name = "ores.iam.service.signup_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -82,8 +82,8 @@ public:
      * @param auth_service Shared authorization service for role assignment.
      */
     signup_service(database::context ctx,
-        std::shared_ptr<variability::service::system_settings_service> system_flags,
-        std::shared_ptr<authorization_service> auth_service);
+                   std::shared_ptr<variability::service::system_settings_service> system_flags,
+                   std::shared_ptr<authorization_service> auth_service);
 
     /**
      * @brief Registers a new user account.
@@ -102,7 +102,8 @@ public:
      * @return signup_result with success status and account details or error info
      */
     signup_result register_user(const std::string& username,
-        const std::string& email, const std::string& password);
+                                const std::string& email,
+                                const std::string& password);
 
     /**
      * @brief Checks if signups are currently enabled.

@@ -20,10 +20,10 @@
 #ifndef ORES_IAM_DOMAIN_TENANT_HPP
 #define ORES_IAM_DOMAIN_TENANT_HPP
 
-#include <chrono>
-#include <string>
-#include <optional>
 #include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <optional>
+#include <string>
 
 namespace ores::iam::domain {
 
@@ -34,7 +34,7 @@ namespace ores::iam::domain {
  * organisation with its own users, roles, and data. The system tenant (max UUID,
  * ffffffff-ffff-ffff-ffff-ffffffffffff) is a special tenant used for shared
  * reference data and system administration.
- * 
+ *
  * Tenants are identified by:
  * - id: UUID primary key (SQL also has tenant_id = id for self-reference)
  * - code: Unique text code for stable referencing (e.g., 'system', 'acme')

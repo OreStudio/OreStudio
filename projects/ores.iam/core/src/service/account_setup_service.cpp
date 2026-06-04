@@ -19,48 +19,51 @@
  */
 #include "ores.iam.core/service/account_setup_service.hpp"
 #include "ores.iam.api/domain/role.hpp"
-
-#include <stdexcept>
 #include <boost/uuid/uuid_io.hpp>
+#include <stdexcept>
 
 namespace ores::iam::service {
 
 using namespace ores::logging;
 
 account_setup_service::account_setup_service(account_service& account_svc,
-    std::shared_ptr<authorization_service> auth_svc)
-    : account_svc_(account_svc), auth_svc_(std::move(auth_svc)) {}
+                                             std::shared_ptr<authorization_service> auth_svc)
+    : account_svc_(account_svc)
+    , auth_svc_(std::move(auth_svc)) {}
 
 domain::account account_setup_service::create_account(const std::string& username,
-    const std::string& email, const std::string& password,
-    const std::string& modified_by,
-    const std::string& change_commentary) {
+                                                      const std::string& email,
+                                                      const std::string& password,
+                                                      const std::string& modified_by,
+                                                      const std::string& change_commentary) {
 
-    return create_account_with_role(username, email, password, modified_by,
-        domain::roles::viewer, change_commentary);
+    return create_account_with_role(
+        username, email, password, modified_by, domain::roles::viewer, change_commentary);
 }
 
-domain::account account_setup_service::create_account_with_role(
-    const std::string& username, const std::string& email,
-    const std::string& password, const std::string& modified_by,
-    const std::string& role_name,
-    const std::string& change_commentary) {
+domain::account
+account_setup_service::create_account_with_role(const std::string& username,
+                                                const std::string& email,
+                                                const std::string& password,
+                                                const std::string& modified_by,
+                                                const std::string& role_name,
+                                                const std::string& change_commentary) {
 
-    BOOST_LOG_SEV(lg(), info) << "Creating account '" << username
-                              << "' with role '" << role_name << "'";
+    BOOST_LOG_SEV(lg(), info) << "Creating account '" << username << "' with role '" << role_name
+                              << "'";
 
     // Step 1: Look up the role FIRST to fail fast if RBAC isn't seeded
     auto role = auth_svc_->find_role_by_name(role_name);
     if (!role) {
-        BOOST_LOG_SEV(lg(), error) << "Role '" << role_name
-                                   << "' not found - RBAC may not be properly seeded";
+        BOOST_LOG_SEV(lg(), error)
+            << "Role '" << role_name << "' not found - RBAC may not be properly seeded";
         throw std::runtime_error("Role '" + role_name +
-            "' not found. Ensure RBAC is properly seeded.");
+                                 "' not found. Ensure RBAC is properly seeded.");
     }
 
     // Step 2: Create the account (and login_info)
-    domain::account account = account_svc_.create_account(
-        username, email, password, modified_by, change_commentary);
+    domain::account account =
+        account_svc_.create_account(username, email, password, modified_by, change_commentary);
 
     BOOST_LOG_SEV(lg(), debug) << "Account created with ID: "
                                << boost::uuids::to_string(account.id);
@@ -68,8 +71,8 @@ domain::account account_setup_service::create_account_with_role(
     // Step 3: Assign the role to the account
     auth_svc_->assign_role(account.id, role->id, modified_by);
 
-    BOOST_LOG_SEV(lg(), info) << "Assigned role '" << role_name
-                              << "' to account '" << username << "'";
+    BOOST_LOG_SEV(lg(), info) << "Assigned role '" << role_name << "' to account '" << username
+                              << "'";
 
     return account;
 }

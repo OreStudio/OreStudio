@@ -20,9 +20,9 @@
 #ifndef ORES_IAM_DOMAIN_ACCOUNT_PARTY_HPP
 #define ORES_IAM_DOMAIN_ACCOUNT_PARTY_HPP
 
+#include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <string>
-#include <boost/uuid/uuid.hpp>
 
 namespace ores::iam::domain {
 

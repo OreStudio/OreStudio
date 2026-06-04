@@ -20,22 +20,21 @@
 #ifndef ORES_IAM_MESSAGING_SESSION_HANDLER_HPP
 #define ORES_IAM_MESSAGING_SESSION_HANDLER_HPP
 
+#include "ores.database/domain/context.hpp"
+#include "ores.iam.api/messaging/session_protocol.hpp"
+#include "ores.iam.api/messaging/session_samples_protocol.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.database/domain/context.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
-#include "ores.iam.api/messaging/session_protocol.hpp"
-#include "ores.iam.api/messaging/session_samples_protocol.hpp"
 
 namespace ores::iam::messaging {
 
 namespace {
 
 inline auto& session_handler_lg() {
-    static auto instance = ores::logging::make_logger(
-        "ores.iam.messaging.session_handler");
+    static auto instance = ores::logging::make_logger("ores.iam.messaging.session_handler");
     return instance;
 }
 
@@ -49,31 +48,27 @@ using namespace ores::logging;
 class session_handler {
 public:
     session_handler(ores::nats::service::client& nats,
-        ores::database::context ctx,
-        ores::security::jwt::jwt_authenticator signer)
-        : nats_(nats), ctx_(std::move(ctx)), signer_(std::move(signer)) {}
+                    ores::database::context ctx,
+                    ores::security::jwt::jwt_authenticator signer)
+        : nats_(nats)
+        , ctx_(std::move(ctx))
+        , signer_(std::move(signer)) {}
 
     void list(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(session_handler_lg(), msg);
-        BOOST_LOG_SEV(session_handler_lg(), debug)
-            << "Completed " << msg.subject;
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(session_handler_lg(), msg);
+        BOOST_LOG_SEV(session_handler_lg(), debug) << "Completed " << msg.subject;
         reply(nats_, msg, list_sessions_response{});
     }
 
     void active(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(session_handler_lg(), msg);
-        BOOST_LOG_SEV(session_handler_lg(), debug)
-            << "Completed " << msg.subject;
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(session_handler_lg(), msg);
+        BOOST_LOG_SEV(session_handler_lg(), debug) << "Completed " << msg.subject;
         reply(nats_, msg, get_active_sessions_response{});
     }
 
     void samples(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(session_handler_lg(), msg);
-        BOOST_LOG_SEV(session_handler_lg(), debug)
-            << "Completed " << msg.subject;
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(session_handler_lg(), msg);
+        BOOST_LOG_SEV(session_handler_lg(), debug) << "Completed " << msg.subject;
         reply(nats_, msg, get_session_samples_response{});
     }
 

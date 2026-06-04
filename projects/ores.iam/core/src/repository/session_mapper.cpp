@@ -18,13 +18,12 @@
  *
  */
 #include "ores.iam.core/repository/session_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
-#include "sqlgen/Timestamp.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.platform/time/datetime.hpp"
 #include "ores.iam.api/domain/session_json_io.hpp" // IWYU pragma: keep.
+#include "ores.platform/time/datetime.hpp"
+#include "sqlgen/Timestamp.hpp"
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::iam::repository {
 
@@ -37,8 +36,7 @@ namespace {
 /**
  * @brief Parses a timestamp string into a time_point.
  */
-std::optional<std::chrono::system_clock::time_point>
-parse_timestamp(const std::string& str) {
+std::optional<std::chrono::system_clock::time_point> parse_timestamp(const std::string& str) {
     if (str.empty())
         return std::nullopt;
     return platform::time::datetime::from_iso8601_utc(str);
@@ -100,26 +98,17 @@ session_entity session_mapper::map(const domain::session& v) {
     return r;
 }
 
-std::vector<domain::session>
-session_mapper::map(const std::vector<session_entity>& v) {
+std::vector<domain::session> session_mapper::map(const std::vector<session_entity>& v) {
     return map_vector<session_entity, domain::session>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
-std::vector<session_entity>
-session_mapper::map(const std::vector<domain::session>& v) {
+std::vector<session_entity> session_mapper::map(const std::vector<domain::session>& v) {
     return map_vector<domain::session, session_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
-domain::session_statistics
-session_mapper::map(const session_statistics_entity& v) {
+domain::session_statistics session_mapper::map(const session_statistics_entity& v) {
     domain::session_statistics r;
 
     // Parse day as period_start
@@ -140,10 +129,10 @@ session_mapper::map(const session_statistics_entity& v) {
     r.total_bytes_received = static_cast<std::uint64_t>(v.total_bytes_received);
 
     if (r.session_count > 0) {
-        r.avg_bytes_sent = static_cast<double>(r.total_bytes_sent) /
-            static_cast<double>(r.session_count);
-        r.avg_bytes_received = static_cast<double>(r.total_bytes_received) /
-            static_cast<double>(r.session_count);
+        r.avg_bytes_sent =
+            static_cast<double>(r.total_bytes_sent) / static_cast<double>(r.session_count);
+        r.avg_bytes_received =
+            static_cast<double>(r.total_bytes_received) / static_cast<double>(r.session_count);
     }
 
     return r;
@@ -152,10 +141,7 @@ session_mapper::map(const session_statistics_entity& v) {
 std::vector<domain::session_statistics>
 session_mapper::map(const std::vector<session_statistics_entity>& v) {
     return map_vector<session_statistics_entity, domain::session_statistics>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "statistics entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "statistics entities");
 }
 
 }

@@ -18,9 +18,8 @@
  *
  */
 #include "ores.iam.api/domain/account_version_table_io.hpp"
-
-#include <ostream>
 #include "ores.iam.api/domain/account_version_table.hpp"
+#include <ostream>
 
 namespace ores::iam::domain {
 

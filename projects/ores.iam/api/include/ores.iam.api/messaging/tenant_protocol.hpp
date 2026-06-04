@@ -20,10 +20,10 @@
 #ifndef ORES_IAM_MESSAGING_TENANT_PROTOCOL_HPP
 #define ORES_IAM_MESSAGING_TENANT_PROTOCOL_HPP
 
+#include "ores.iam.api/domain/tenant.hpp"
 #include <string>
 #include <string_view>
 #include <vector>
-#include "ores.iam.api/domain/tenant.hpp"
 
 namespace ores::iam::messaging {
 
@@ -43,7 +43,7 @@ struct save_tenant_request {
     ores::iam::domain::tenant data;
 
     static save_tenant_request from(ores::iam::domain::tenant t) {
-        return { .data = std::move(t) };
+        return {.data = std::move(t)};
     }
 };
 
@@ -77,8 +77,7 @@ struct get_tenant_history_response {
 
 struct complete_tenant_provisioning_command {
     using response_type = struct complete_tenant_provisioning_response;
-    static constexpr std::string_view nats_subject =
-        "iam.v1.tenants.complete-provisioning";
+    static constexpr std::string_view nats_subject = "iam.v1.tenants.complete-provisioning";
 };
 
 struct complete_tenant_provisioning_response {

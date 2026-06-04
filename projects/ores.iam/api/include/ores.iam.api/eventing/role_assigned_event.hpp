@@ -20,9 +20,9 @@
 #ifndef ORES_IAM_EVENTING_ROLE_ASSIGNED_EVENT_HPP
 #define ORES_IAM_EVENTING_ROLE_ASSIGNED_EVENT_HPP
 
-#include <chrono>
-#include <boost/uuid/uuid.hpp>
 #include "ores.eventing/domain/event_traits.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
 
 namespace ores::iam::eventing {
 
@@ -57,7 +57,7 @@ namespace ores::eventing::domain {
 /**
  * @brief Event traits specialization for role_assigned_event.
  */
-template<>
+template <>
 struct event_traits<ores::iam::eventing::role_assigned_event> {
     static constexpr std::string_view name = "ores.iam.role_assigned";
 };

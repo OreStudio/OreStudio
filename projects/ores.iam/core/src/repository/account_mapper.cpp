@@ -18,11 +18,10 @@
  *
  */
 #include "ores.iam.core/repository/account_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.iam.api/domain/account_json_io.hpp" // IWYU pragma: keep.
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::iam::repository {
 
@@ -75,22 +74,14 @@ account_entity account_mapper::map(const domain::account& v) {
     return r;
 }
 
-std::vector<domain::account>
-account_mapper::map(const std::vector<account_entity>& v) {
+std::vector<domain::account> account_mapper::map(const std::vector<account_entity>& v) {
     return map_vector<account_entity, domain::account>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
-std::vector<account_entity>
-account_mapper::map(const std::vector<domain::account>& v) {
+std::vector<account_entity> account_mapper::map(const std::vector<domain::account>& v) {
     return map_vector<domain::account, account_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

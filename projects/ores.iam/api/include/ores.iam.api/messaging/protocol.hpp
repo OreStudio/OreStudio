@@ -20,16 +20,16 @@
 #ifndef ORES_IAM_MESSAGING_PROTOCOL_HPP
 #define ORES_IAM_MESSAGING_PROTOCOL_HPP
 
-#include "ores.iam.api/messaging/login_protocol.hpp"
-#include "ores.iam.api/messaging/signup_protocol.hpp"
-#include "ores.iam.api/messaging/bootstrap_protocol.hpp"
-#include "ores.iam.api/messaging/account_protocol.hpp"
 #include "ores.iam.api/messaging/account_history_protocol.hpp"
 #include "ores.iam.api/messaging/account_party_protocol.hpp"
+#include "ores.iam.api/messaging/account_protocol.hpp"
 #include "ores.iam.api/messaging/authorization_protocol.hpp"
+#include "ores.iam.api/messaging/bootstrap_protocol.hpp"
+#include "ores.iam.api/messaging/login_protocol.hpp"
 #include "ores.iam.api/messaging/session_protocol.hpp"
+#include "ores.iam.api/messaging/signup_protocol.hpp"
 #include "ores.iam.api/messaging/tenant_protocol.hpp"
-#include "ores.iam.api/messaging/tenant_type_protocol.hpp"
 #include "ores.iam.api/messaging/tenant_status_protocol.hpp"
+#include "ores.iam.api/messaging/tenant_type_protocol.hpp"
 
 #endif

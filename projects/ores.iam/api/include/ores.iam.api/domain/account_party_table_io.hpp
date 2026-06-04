@@ -20,10 +20,10 @@
 #ifndef ORES_IAM_DOMAIN_ACCOUNT_PARTY_TABLE_IO_HPP
 #define ORES_IAM_DOMAIN_ACCOUNT_PARTY_TABLE_IO_HPP
 
+#include "ores.iam.api/domain/account_party.hpp"
+#include "ores.iam.api/export.hpp"
 #include <iosfwd>
 #include <vector>
-#include "ores.iam.api/export.hpp"
-#include "ores.iam.api/domain/account_party.hpp"
 
 namespace ores::iam::domain {
 

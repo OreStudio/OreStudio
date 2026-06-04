@@ -20,15 +20,15 @@
 #ifndef ORES_IAM_REPOSITORY_SESSION_REPOSITORY_HPP
 #define ORES_IAM_REPOSITORY_SESSION_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include <optional>
-#include <boost/uuid/uuid.hpp>
-#include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.iam.api/domain/session.hpp"
 #include "ores.iam.core/export.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <optional>
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::iam::repository {
 
@@ -40,8 +40,7 @@ namespace ores::iam::repository {
  */
 class ORES_IAM_CORE_EXPORT session_repository {
 private:
-    inline static std::string_view logger_name =
-        "ores.iam.repository.session_repository";
+    inline static std::string_view logger_name = "ores.iam.repository.session_repository";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -79,8 +78,9 @@ public:
      * @param bytes_received New total bytes received
      */
     void update_bytes(const boost::uuids::uuid& session_id,
-        const std::chrono::system_clock::time_point& start_time,
-        std::uint64_t bytes_sent, std::uint64_t bytes_received);
+                      const std::chrono::system_clock::time_point& start_time,
+                      std::uint64_t bytes_sent,
+                      std::uint64_t bytes_received);
 
     /**
      * @brief Ends a session by setting the end_time.
@@ -92,9 +92,10 @@ public:
      * @param bytes_received Final bytes received count
      */
     void end_session(const boost::uuids::uuid& session_id,
-        const std::chrono::system_clock::time_point& start_time,
-        const std::chrono::system_clock::time_point& end_time,
-        std::uint64_t bytes_sent, std::uint64_t bytes_received);
+                     const std::chrono::system_clock::time_point& start_time,
+                     const std::chrono::system_clock::time_point& end_time,
+                     std::uint64_t bytes_sent,
+                     std::uint64_t bytes_received);
 
     /**
      * @brief Reads a session by ID.
@@ -109,15 +110,14 @@ public:
      * @param offset Number of sessions to skip
      * @return Sessions ordered by start_time descending (newest first)
      */
-    std::vector<domain::session> read_by_account(
-        const boost::uuids::uuid& account_id,
-        std::uint32_t limit = 0, std::uint32_t offset = 0);
+    std::vector<domain::session> read_by_account(const boost::uuids::uuid& account_id,
+                                                 std::uint32_t limit = 0,
+                                                 std::uint32_t offset = 0);
 
     /**
      * @brief Reads active (non-ended) sessions for an account.
      */
-    std::vector<domain::session> read_active_by_account(
-        const boost::uuids::uuid& account_id);
+    std::vector<domain::session> read_active_by_account(const boost::uuids::uuid& account_id);
 
     /**
      * @brief Counts active sessions for an account.
@@ -138,10 +138,10 @@ public:
      * @param end End of time range
      * @param limit Maximum number of sessions to return
      */
-    std::vector<domain::session> read_by_time_range(
-        const std::chrono::system_clock::time_point& start,
-        const std::chrono::system_clock::time_point& end,
-        std::uint32_t limit = 1000);
+    std::vector<domain::session>
+    read_by_time_range(const std::chrono::system_clock::time_point& start,
+                       const std::chrono::system_clock::time_point& end,
+                       std::uint32_t limit = 1000);
 
     /**
      * @brief Reads all active sessions across all accounts.
@@ -163,8 +163,7 @@ public:
      *
      * @param closed_at Timestamp to use as the end_time for orphaned sessions.
      */
-    void close_orphaned_sessions(
-        const std::chrono::system_clock::time_point& closed_at);
+    void close_orphaned_sessions(const std::chrono::system_clock::time_point& closed_at);
 
     /**
      * @brief Reads daily session statistics for an account.
@@ -175,17 +174,17 @@ public:
      * @param start Start of time range
      * @param end End of time range
      */
-    std::vector<domain::session_statistics> read_daily_statistics(
-        const boost::uuids::uuid& account_id,
-        const std::chrono::system_clock::time_point& start,
-        const std::chrono::system_clock::time_point& end);
+    std::vector<domain::session_statistics>
+    read_daily_statistics(const boost::uuids::uuid& account_id,
+                          const std::chrono::system_clock::time_point& start,
+                          const std::chrono::system_clock::time_point& end);
 
     /**
      * @brief Reads aggregate daily statistics across all accounts.
      */
-    std::vector<domain::session_statistics> read_aggregate_daily_statistics(
-        const std::chrono::system_clock::time_point& start,
-        const std::chrono::system_clock::time_point& end);
+    std::vector<domain::session_statistics>
+    read_aggregate_daily_statistics(const std::chrono::system_clock::time_point& start,
+                                    const std::chrono::system_clock::time_point& end);
 
     /**
      * @brief Removes all sessions for an account.

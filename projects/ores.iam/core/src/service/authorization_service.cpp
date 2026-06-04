@@ -18,16 +18,15 @@
  *
  */
 #include "ores.iam.core/service/authorization_service.hpp"
-
-#include <algorithm>
-#include <stdexcept>
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.dq.api/domain/change_reason_constants.hpp"
 #include "ores.iam.api/domain/permission.hpp"
+#include "ores.iam.api/eventing/account_permissions_changed_event.hpp"
 #include "ores.iam.api/eventing/role_assigned_event.hpp"
 #include "ores.iam.api/eventing/role_revoked_event.hpp"
-#include "ores.iam.api/eventing/account_permissions_changed_event.hpp"
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
+#include <stdexcept>
 
 namespace ores::iam::service {
 
@@ -35,11 +34,11 @@ using namespace ores::logging;
 namespace reason = ores::dq::domain::change_reason_constants;
 
 authorization_service::authorization_service(context ctx, event_bus* event_bus)
-    : permission_repo_(ctx),
-      role_repo_(ctx),
-      account_role_repo_(ctx),
-      role_permission_repo_(ctx),
-      event_bus_(event_bus) {
+    : permission_repo_(ctx)
+    , role_repo_(ctx)
+    , account_role_repo_(ctx)
+    , role_permission_repo_(ctx)
+    , event_bus_(event_bus) {
     BOOST_LOG_SEV(lg(), info) << "Authorization service initialized.";
 }
 
@@ -62,9 +61,8 @@ authorization_service::find_permission_by_code(const std::string& code) {
     return permissions.front();
 }
 
-domain::permission authorization_service::create_permission(
-    const std::string& code,
-    const std::string& description) {
+domain::permission authorization_service::create_permission(const std::string& code,
+                                                            const std::string& description) {
     BOOST_LOG_SEV(lg(), info) << "Creating permission: " << code;
 
     if (code.empty()) {
@@ -74,8 +72,7 @@ domain::permission authorization_service::create_permission(
     // Check if permission already exists
     auto existing = find_permission_by_code(code);
     if (existing) {
-        throw std::runtime_error("Permission with code '" + code +
-            "' already exists.");
+        throw std::runtime_error("Permission with code '" + code + "' already exists.");
     }
 
     domain::permission perm;
@@ -85,8 +82,7 @@ domain::permission authorization_service::create_permission(
 
     permission_repo_.write(perm);
 
-    BOOST_LOG_SEV(lg(), info) << "Created permission: " << code
-                              << " with ID: " << perm.id;
+    BOOST_LOG_SEV(lg(), info) << "Created permission: " << code << " with ID: " << perm.id;
     return perm;
 }
 
@@ -112,8 +108,7 @@ std::vector<domain::role> authorization_service::list_roles() {
     return roles;
 }
 
-std::optional<domain::role>
-authorization_service::find_role(const boost::uuids::uuid& role_id) {
+std::optional<domain::role> authorization_service::find_role(const boost::uuids::uuid& role_id) {
     BOOST_LOG_SEV(lg(), debug) << "Finding role by ID: " << role_id;
     auto roles = role_repo_.read_latest(role_id);
     if (roles.empty()) {
@@ -124,8 +119,7 @@ authorization_service::find_role(const boost::uuids::uuid& role_id) {
     return role;
 }
 
-std::optional<domain::role>
-authorization_service::find_role_by_name(const std::string& name) {
+std::optional<domain::role> authorization_service::find_role_by_name(const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Finding role by name: " << name;
     auto roles = role_repo_.read_latest_by_name(name);
     if (roles.empty()) {
@@ -136,11 +130,10 @@ authorization_service::find_role_by_name(const std::string& name) {
     return role;
 }
 
-domain::role authorization_service::create_role(
-    const std::string& name,
-    const std::string& description,
-    const std::vector<std::string>& permission_codes,
-    const std::string& modified_by) {
+domain::role authorization_service::create_role(const std::string& name,
+                                                const std::string& description,
+                                                const std::vector<std::string>& permission_codes,
+                                                const std::string& modified_by) {
     BOOST_LOG_SEV(lg(), info) << "Creating role: " << name;
 
     if (name.empty()) {
@@ -183,10 +176,8 @@ domain::role authorization_service::create_role(
         role_permission_repo_.write(rp);
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Created role: " << name
-                              << " with ID: " << role.id
-                              << " and " << permission_codes.size()
-                              << " permissions.";
+    BOOST_LOG_SEV(lg(), info) << "Created role: " << name << " with ID: " << role.id << " and "
+                              << permission_codes.size() << " permissions.";
     return role;
 }
 
@@ -212,25 +203,21 @@ authorization_service::get_role_permissions(const boost::uuids::uuid& role_id) {
 // Role Assignment
 // ============================================================================
 
-void authorization_service::assign_role(
-    const boost::uuids::uuid& account_id,
-    const boost::uuids::uuid& role_id,
-    const std::string& assigned_by,
-    const std::string& change_commentary) {
-    BOOST_LOG_SEV(lg(), info) << "Assigning role " << role_id
-                              << " to account " << account_id;
+void authorization_service::assign_role(const boost::uuids::uuid& account_id,
+                                        const boost::uuids::uuid& role_id,
+                                        const std::string& assigned_by,
+                                        const std::string& change_commentary) {
+    BOOST_LOG_SEV(lg(), info) << "Assigning role " << role_id << " to account " << account_id;
 
     // Verify role exists
     auto role = find_role(role_id);
     if (!role) {
-        throw std::runtime_error("Role not found: " +
-            boost::lexical_cast<std::string>(role_id));
+        throw std::runtime_error("Role not found: " + boost::lexical_cast<std::string>(role_id));
     }
 
     // Check if already assigned
     if (account_role_repo_.exists(account_id, role_id)) {
-        BOOST_LOG_SEV(lg(), warn) << "Role " << role_id
-                                  << " already assigned to account "
+        BOOST_LOG_SEV(lg(), warn) << "Role " << role_id << " already assigned to account "
                                   << account_id;
         return;
     }
@@ -245,8 +232,7 @@ void authorization_service::assign_role(
 
     account_role_repo_.write(ar);
 
-    BOOST_LOG_SEV(lg(), info) << "Role " << role->name
-                              << " assigned to account " << account_id;
+    BOOST_LOG_SEV(lg(), info) << "Role " << role->name << " assigned to account " << account_id;
 
     // Publish events
     if (event_bus_) {
@@ -260,16 +246,13 @@ void authorization_service::assign_role(
     }
 }
 
-void authorization_service::revoke_role(
-    const boost::uuids::uuid& account_id,
-    const boost::uuids::uuid& role_id) {
-    BOOST_LOG_SEV(lg(), info) << "Revoking role " << role_id
-                              << " from account " << account_id;
+void authorization_service::revoke_role(const boost::uuids::uuid& account_id,
+                                        const boost::uuids::uuid& role_id) {
+    BOOST_LOG_SEV(lg(), info) << "Revoking role " << role_id << " from account " << account_id;
 
     account_role_repo_.remove(account_id, role_id);
 
-    BOOST_LOG_SEV(lg(), info) << "Role " << role_id
-                              << " revoked from account " << account_id;
+    BOOST_LOG_SEV(lg(), info) << "Role " << role_id << " revoked from account " << account_id;
 
     // Publish events
     if (event_bus_) {
@@ -296,41 +279,35 @@ authorization_service::get_account_roles(const boost::uuids::uuid& account_id) {
 // ============================================================================
 
 std::vector<std::string>
-authorization_service::get_effective_permissions(
-    const boost::uuids::uuid& account_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Computing effective permissions for account: "
-                               << account_id;
+authorization_service::get_effective_permissions(const boost::uuids::uuid& account_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Computing effective permissions for account: " << account_id;
 
     // Use optimized single-query approach with JOINs
     auto result = account_role_repo_.read_effective_permissions(account_id);
 
-    BOOST_LOG_SEV(lg(), debug) << "Account " << account_id << " has "
-                               << result.size() << " effective permissions.";
+    BOOST_LOG_SEV(lg(), debug) << "Account " << account_id << " has " << result.size()
+                               << " effective permissions.";
     return result;
 }
 
-bool authorization_service::has_permission(
-    const boost::uuids::uuid& account_id,
-    std::string_view permission_code) {
+bool authorization_service::has_permission(const boost::uuids::uuid& account_id,
+                                           std::string_view permission_code) {
     auto permissions = get_effective_permissions(account_id);
     return check_permission(permissions, permission_code);
 }
 
-bool authorization_service::check_permission(
-    const std::vector<std::string>& permissions,
-    std::string_view required_permission) {
+bool authorization_service::check_permission(const std::vector<std::string>& permissions,
+                                             std::string_view required_permission) {
     // Precondition: permissions vector must be sorted (guaranteed by
     // get_effective_permissions which uses ORDER BY in the SQL query)
 
     // Wildcard grants all permissions
-    if (std::binary_search(permissions.begin(), permissions.end(),
-                           domain::permissions::all)) {
+    if (std::binary_search(permissions.begin(), permissions.end(), domain::permissions::all)) {
         return true;
     }
 
     // Check for exact match
-    return std::binary_search(permissions.begin(), permissions.end(),
-                              required_permission);
+    return std::binary_search(permissions.begin(), permissions.end(), required_permission);
 }
 
 void authorization_service::publish_account_permissions_changed(

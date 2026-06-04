@@ -20,14 +20,14 @@
 #ifndef ORES_IAM_REPOSITORY_LOGIN_INFO_REPOSITORY_HPP
 #define ORES_IAM_REPOSITORY_LOGIN_INFO_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include <boost/uuid/uuid.hpp>
-#include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.iam.api/domain/login_info.hpp"
 #include "ores.iam.core/export.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::iam::repository {
 
@@ -36,13 +36,11 @@ namespace ores::iam::repository {
  */
 class ORES_IAM_CORE_EXPORT login_info_repository {
 private:
-    inline static std::string_view logger_name =
-        "ores.iam.repository.login_info_repository";
+    inline static std::string_view logger_name = "ores.iam.repository.login_info_repository";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
-        static auto instance = make_logger(logger_name
-            );
+        static auto instance = make_logger(logger_name);
         return instance;
     }
 
@@ -79,8 +77,7 @@ public:
      * @param limit Maximum number of records to return
      * @return Vector of login info within the specified range
      */
-    std::vector<domain::login_info> read(std::uint32_t offset,
-                                         std::uint32_t limit);
+    std::vector<domain::login_info> read(std::uint32_t offset, std::uint32_t limit);
 
     /**
      * @brief Gets the total count of login info records.

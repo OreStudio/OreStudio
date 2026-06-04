@@ -31,22 +31,20 @@ namespace ores::iam::repository {
  */
 class tenant_status_mapper {
 private:
-    inline static std::string_view logger_name =
-        "ores.iam.repository.tenant_status_mapper";
+    inline static std::string_view logger_name = "ores.iam.repository.tenant_status_mapper";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }
+
 public:
     static domain::tenant_status map(const tenant_status_entity& v);
     static tenant_status_entity map(const domain::tenant_status& v);
 
-    static std::vector<domain::tenant_status>
-    map(const std::vector<tenant_status_entity>& v);
-    static std::vector<tenant_status_entity>
-    map(const std::vector<domain::tenant_status>& v);
+    static std::vector<domain::tenant_status> map(const std::vector<tenant_status_entity>& v);
+    static std::vector<tenant_status_entity> map(const std::vector<domain::tenant_status>& v);
 };
 
 }

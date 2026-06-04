@@ -18,12 +18,11 @@
  *
  */
 #include "ores.iam.core/repository/tenant_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.iam.api/domain/tenant_json_io.hpp" // IWYU pragma: keep.
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::iam::repository {
 
@@ -76,22 +75,14 @@ tenant_entity tenant_mapper::map(const domain::tenant& v) {
     return r;
 }
 
-std::vector<domain::tenant>
-tenant_mapper::map(const std::vector<tenant_entity>& v) {
+std::vector<domain::tenant> tenant_mapper::map(const std::vector<tenant_entity>& v) {
     return map_vector<tenant_entity, domain::tenant>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
-std::vector<tenant_entity>
-tenant_mapper::map(const std::vector<domain::tenant>& v) {
+std::vector<tenant_entity> tenant_mapper::map(const std::vector<domain::tenant>& v) {
     return map_vector<domain::tenant, tenant_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

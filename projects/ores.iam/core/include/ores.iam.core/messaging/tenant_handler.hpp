@@ -20,31 +20,30 @@
 #ifndef ORES_IAM_MESSAGING_TENANT_HANDLER_HPP
 #define ORES_IAM_MESSAGING_TENANT_HANDLER_HPP
 
-#include <stdexcept>
-#include <boost/uuid/nil_generator.hpp>
-#include <boost/uuid/random_generator.hpp>
-#include <boost/uuid/string_generator.hpp>
+#include "ores.database/domain/context.hpp"
+#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/service/tenant_context.hpp"
+#include "ores.dq.api/domain/change_reason_constants.hpp"
+#include "ores.iam.api/messaging/tenant_protocol.hpp"
+#include "ores.iam.core/repository/tenant_repository.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.database/service/tenant_context.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include "ores.iam.api/messaging/tenant_protocol.hpp"
-#include "ores.iam.core/repository/tenant_repository.hpp"
-#include "ores.dq.api/domain/change_reason_constants.hpp"
 #include "ores.variability.core/service/system_settings_service.hpp"
+#include <boost/uuid/nil_generator.hpp>
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/string_generator.hpp>
+#include <stdexcept>
 
 namespace ores::iam::messaging {
 
 namespace {
 
 inline auto& tenant_handler_lg() {
-    static auto instance = ores::logging::make_logger(
-        "ores.iam.messaging.tenant_handler");
+    static auto instance = ores::logging::make_logger("ores.iam.messaging.tenant_handler");
     return instance;
 }
 
@@ -64,34 +63,31 @@ using namespace ores::logging;
 class tenant_handler {
 public:
     tenant_handler(ores::nats::service::client& nats,
-        ores::database::context ctx,
-        ores::security::jwt::jwt_authenticator signer)
-        : nats_(nats), ctx_(std::move(ctx)), signer_(std::move(signer)) {}
+                   ores::database::context ctx,
+                   ores::security::jwt::jwt_authenticator signer)
+        : nats_(nats)
+        , ctx_(std::move(ctx))
+        , signer_(std::move(signer)) {}
 
     void list(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(tenant_handler_lg(), msg);
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(tenant_handler_lg(), msg);
         try {
             repository::tenant_repository repo(ctx_);
             get_tenants_response resp;
             resp.tenants = repo.read_latest();
-            BOOST_LOG_SEV(tenant_handler_lg(), debug)
-                << "Completed " << msg.subject;
+            BOOST_LOG_SEV(tenant_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, resp);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(tenant_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
+            BOOST_LOG_SEV(tenant_handler_lg(), error) << msg.subject << " failed: " << e.what();
             reply(nats_, msg, get_tenants_response{});
         }
     }
 
     void save(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(tenant_handler_lg(), msg);
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(tenant_handler_lg(), msg);
         auto req = decode<save_tenant_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(tenant_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(tenant_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         try {
@@ -111,25 +107,19 @@ public:
             repository::tenant_repository repo(ctx);
             stamp(req->data, ctx);
             repo.write(req->data);
-            BOOST_LOG_SEV(tenant_handler_lg(), debug)
-                << "Completed " << msg.subject;
-            reply(nats_, msg,
-                save_tenant_response{.success = true});
+            BOOST_LOG_SEV(tenant_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, save_tenant_response{.success = true});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(tenant_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, save_tenant_response{
-                .success = false, .message = e.what()});
+            BOOST_LOG_SEV(tenant_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, save_tenant_response{.success = false, .message = e.what()});
         }
     }
 
     void remove(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(tenant_handler_lg(), msg);
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(tenant_handler_lg(), msg);
         auto req = decode<delete_tenant_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(tenant_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(tenant_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         try {
@@ -137,47 +127,37 @@ public:
             boost::uuids::string_generator sg;
             for (const auto& id_str : req->ids)
                 repo.remove(sg(id_str));
-            BOOST_LOG_SEV(tenant_handler_lg(), debug)
-                << "Completed " << msg.subject;
-            reply(nats_, msg,
-                delete_tenant_response{.success = true});
+            BOOST_LOG_SEV(tenant_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, delete_tenant_response{.success = true});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(tenant_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, delete_tenant_response{
-                .success = false, .message = e.what()});
+            BOOST_LOG_SEV(tenant_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, delete_tenant_response{.success = false, .message = e.what()});
         }
     }
 
     void history(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(tenant_handler_lg(), msg);
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(tenant_handler_lg(), msg);
         auto req = decode<get_tenant_history_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(tenant_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(tenant_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         try {
             repository::tenant_repository repo(ctx_);
             boost::uuids::string_generator sg;
             auto hist = repo.read_history(sg(req->id));
-            BOOST_LOG_SEV(tenant_handler_lg(), debug)
-                << "Completed " << msg.subject;
-            reply(nats_, msg, get_tenant_history_response{
-                .success = true,
-                .versions = std::move(hist)});
+            BOOST_LOG_SEV(tenant_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_,
+                  msg,
+                  get_tenant_history_response{.success = true, .versions = std::move(hist)});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(tenant_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, get_tenant_history_response{
-                .success = false, .message = e.what()});
+            BOOST_LOG_SEV(tenant_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, get_tenant_history_response{.success = false, .message = e.what()});
         }
     }
 
     void complete_provisioning(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(tenant_handler_lg(), msg);
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(tenant_handler_lg(), msg);
         try {
             auto ctx_expected = ores::service::service::make_request_context(
                 ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
@@ -187,48 +167,54 @@ public:
             }
 
             const auto actor = ctx_expected->actor();
-            auto ids = execute_parameterized_string_query(*ctx_expected,
-                "SELECT ores_iam_current_tenant_id_fn()::text",
-                {}, tenant_handler_lg(), "complete_provisioning");
+            auto ids =
+                execute_parameterized_string_query(*ctx_expected,
+                                                   "SELECT ores_iam_current_tenant_id_fn()::text",
+                                                   {},
+                                                   tenant_handler_lg(),
+                                                   "complete_provisioning");
             if (ids.empty()) {
                 BOOST_LOG_SEV(tenant_handler_lg(), error)
                     << "complete_provisioning: no tenant ID in context";
-                reply(nats_, msg, complete_tenant_provisioning_response{
-                    .success = false, .message = "No tenant context"});
+                reply(nats_,
+                      msg,
+                      complete_tenant_provisioning_response{.success = false,
+                                                            .message = "No tenant context"});
                 return;
             }
 
             auto sys_ctx = tenant_context::with_system_tenant(ctx_);
             execute_parameterized_command(sys_ctx,
-                "SELECT ores_iam_mark_tenant_active_fn($1::uuid, $2)",
-                {ids.front(), actor},
-                tenant_handler_lg(), "complete_provisioning");
+                                          "SELECT ores_iam_mark_tenant_active_fn($1::uuid, $2)",
+                                          {ids.front(), actor},
+                                          tenant_handler_lg(),
+                                          "complete_provisioning");
 
-            BOOST_LOG_SEV(tenant_handler_lg(), info)
-                << "Tenant marked active: " << ids.front();
+            BOOST_LOG_SEV(tenant_handler_lg(), info) << "Tenant marked active: " << ids.front();
 
             // Clear the bootstrap_mode flag server-side using the service's own
             // credentials — independent of the user having variability::flags:create.
             try {
-                variability::service::system_settings_service vss(
-                    *ctx_expected, ids.front());
-                vss.set_bootstrap_mode(false, ctx_expected->service_account(),
+                variability::service::system_settings_service vss(*ctx_expected, ids.front());
+                vss.set_bootstrap_mode(
+                    false,
+                    ctx_expected->service_account(),
                     std::string(ores::dq::domain::change_reason_constants::codes::new_record),
                     "Bootstrap mode cleared on tenant activation");
                 BOOST_LOG_SEV(tenant_handler_lg(), info)
                     << "Bootstrap mode cleared for tenant: " << ids.front();
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(tenant_handler_lg(), warn)
-                    << "Failed to clear bootstrap mode for tenant "
-                    << ids.front() << ": " << e.what();
+                    << "Failed to clear bootstrap mode for tenant " << ids.front() << ": "
+                    << e.what();
             }
 
             reply(nats_, msg, complete_tenant_provisioning_response{.success = true});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(tenant_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, complete_tenant_provisioning_response{
-                .success = false, .message = e.what()});
+            BOOST_LOG_SEV(tenant_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            reply(nats_,
+                  msg,
+                  complete_tenant_provisioning_response{.success = false, .message = e.what()});
         }
     }
 

@@ -20,9 +20,9 @@
 #ifndef ORES_IAM_DOMAIN_ACCOUNT_VERSION_HISTORY_HPP
 #define ORES_IAM_DOMAIN_ACCOUNT_VERSION_HISTORY_HPP
 
+#include "ores.iam.api/domain/account_version.hpp"
 #include <string>
 #include <vector>
-#include "ores.iam.api/domain/account_version.hpp"
 
 namespace ores::iam::domain {
 

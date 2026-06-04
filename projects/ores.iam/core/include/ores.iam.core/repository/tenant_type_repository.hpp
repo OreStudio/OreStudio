@@ -20,13 +20,13 @@
 #ifndef ORES_IAM_REPOSITORY_TENANT_TYPE_REPOSITORY_HPP
 #define ORES_IAM_REPOSITORY_TENANT_TYPE_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.iam.api/domain/tenant_type.hpp"
 #include "ores.iam.core/export.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::iam::repository {
 
@@ -35,8 +35,7 @@ namespace ores::iam::repository {
  */
 class ORES_IAM_CORE_EXPORT tenant_type_repository {
 private:
-    inline static std::string_view logger_name =
-        "ores.iam.repository.tenant_type_repository";
+    inline static std::string_view logger_name = "ores.iam.repository.tenant_type_repository";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -53,11 +52,9 @@ public:
     void write(context ctx, const std::vector<domain::tenant_type>& types);
 
     std::vector<domain::tenant_type> read_latest(context ctx);
-    std::vector<domain::tenant_type>
-    read_latest(context ctx, const std::string& type);
+    std::vector<domain::tenant_type> read_latest(context ctx, const std::string& type);
 
-    std::vector<domain::tenant_type>
-    read_all(context ctx, const std::string& type);
+    std::vector<domain::tenant_type> read_all(context ctx, const std::string& type);
 
     void remove(context ctx, const std::string& type);
     void remove(context ctx, const std::vector<std::string>& types);

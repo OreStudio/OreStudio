@@ -20,10 +20,10 @@
 #ifndef ORES_IAM_REPOSITORY_LOGIN_INFO_MAPPER_HPP
 #define ORES_IAM_REPOSITORY_LOGIN_INFO_MAPPER_HPP
 
-#include <vector>
-#include "ores.logging/make_logger.hpp"
 #include "ores.iam.api/domain/login_info.hpp"
 #include "ores.iam.core/repository/login_info_entity.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <vector>
 
 namespace ores::iam::repository {
 
@@ -32,8 +32,7 @@ namespace ores::iam::repository {
  */
 class login_info_mapper {
 private:
-    inline static std::string_view logger_name =
-        "ores.iam.repository.login_info_mapper";
+    inline static std::string_view logger_name = "ores.iam.repository.login_info_mapper";
 
     static auto& lg() {
         using namespace ores::logging;
@@ -45,10 +44,8 @@ public:
     static domain::login_info map(const login_info_entity& v);
     static login_info_entity map(const domain::login_info& v);
 
-    static std::vector<domain::login_info>
-    map(const std::vector<login_info_entity>& v);
-    static std::vector<login_info_entity>
-    map(const std::vector<domain::login_info>& v);
+    static std::vector<domain::login_info> map(const std::vector<login_info_entity>& v);
+    static std::vector<login_info_entity> map(const std::vector<domain::login_info>& v);
 };
 
 }

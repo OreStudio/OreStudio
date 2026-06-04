@@ -18,19 +18,17 @@
  *
  */
 #include "ores.iam.core/repository/account_party_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.iam.api/domain/account_party_json_io.hpp" // IWYU pragma: keep.
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::iam::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::account_party
-account_party_mapper::map(const account_party_entity& v) {
+domain::account_party account_party_mapper::map(const account_party_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::account_party r;
@@ -48,8 +46,7 @@ account_party_mapper::map(const account_party_entity& v) {
     return r;
 }
 
-account_party_entity
-account_party_mapper::map(const domain::account_party& v) {
+account_party_entity account_party_mapper::map(const domain::account_party& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     account_party_entity r;
@@ -69,19 +66,13 @@ account_party_mapper::map(const domain::account_party& v) {
 std::vector<domain::account_party>
 account_party_mapper::map(const std::vector<account_party_entity>& v) {
     return map_vector<account_party_entity, domain::account_party>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<account_party_entity>
 account_party_mapper::map(const std::vector<domain::account_party>& v) {
     return map_vector<domain::account_party, account_party_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

@@ -18,15 +18,14 @@
  *
  */
 #include "ores.iam.api/domain/account.hpp"
+#include "ores.iam.api/domain/account_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/domain/account_type.hpp"
-
-#include <catch2/catch_test_macros.hpp>
+#include "ores.logging/make_logger.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
-#include "ores.logging/make_logger.hpp"
-#include "ores.iam.api/domain/account_json_io.hpp" // IWYU pragma: keep.
-#include "ores.utility/uuid/tenant_id.hpp"
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 
@@ -50,7 +49,7 @@ TEST_CASE("create_service_account_with_no_password", tags) {
     sut.tenant_id = tenant_id::system(); // System tenant (max UUID)
     sut.account_type = "service";
     sut.username = "ores.service.binary";
-    sut.password_hash = "";  // Service accounts have no password
+    sut.password_hash = ""; // Service accounts have no password
     sut.password_salt = "";
     sut.totp_secret = "";
     sut.email = "binary@system.ores";
@@ -109,9 +108,8 @@ TEST_CASE("user_account_requires_password", tags) {
     sut.version = 1;
     sut.modified_by = "admin";
     sut.id = boost::uuids::random_generator()();
-    sut.tenant_id = tenant_id::from_uuid(
-        boost::uuids::random_generator()()).value();
-    sut.account_type = "user";  // Default type
+    sut.tenant_id = tenant_id::from_uuid(boost::uuids::random_generator()()).value();
+    sut.account_type = "user"; // Default type
     sut.username = "john.doe";
     sut.password_hash = "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8";
     sut.password_salt = "salt_value";

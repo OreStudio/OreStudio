@@ -18,20 +18,17 @@
  *
  */
 #include "ores.iam.api/generators/tenant_generator.hpp"
-
-#include <atomic>
 #include "ores.utility/generation/generation_keys.hpp"
+#include <atomic>
 
 namespace ores::iam::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::tenant generate_synthetic_tenant(
-    utility::generation::generation_context& ctx) {
+domain::tenant generate_synthetic_tenant(utility::generation::generation_context& ctx) {
     static std::atomic<int> counter{0};
     const auto idx = ++counter;
-    const auto modified_by = ctx.env().get_or(
-        generation_keys::modified_by, "system");
+    const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
 
     domain::tenant r;
     r.version = 1;
@@ -40,8 +37,7 @@ domain::tenant generate_synthetic_tenant(
     r.name = "Test Tenant " + std::to_string(idx);
     r.type = "automation";
     r.description = "Synthetic test tenant";
-    r.hostname = "tenant-" + std::to_string(idx) + "-"
-        + ctx.alphanumeric(6) + ".example.com";
+    r.hostname = "tenant-" + std::to_string(idx) + "-" + ctx.alphanumeric(6) + ".example.com";
     r.status = "active";
     r.modified_by = modified_by;
     r.change_reason_code = "system.test";
@@ -52,8 +48,7 @@ domain::tenant generate_synthetic_tenant(
 }
 
 std::vector<domain::tenant>
-generate_synthetic_tenants(std::size_t n,
-    utility::generation::generation_context& ctx) {
+generate_synthetic_tenants(std::size_t n, utility::generation::generation_context& ctx) {
     std::vector<domain::tenant> r;
     r.reserve(n);
     for (std::size_t i = 0; i < n; ++i)

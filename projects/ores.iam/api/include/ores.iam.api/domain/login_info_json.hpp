@@ -20,10 +20,10 @@
 #ifndef ORES_IAM_DOMAIN_LOGIN_INFO_JSON_HPP
 #define ORES_IAM_DOMAIN_LOGIN_INFO_JSON_HPP
 
-#include <vector>
-#include <string>
-#include "ores.iam.api/export.hpp"
 #include "ores.iam.api/domain/login_info.hpp"
+#include "ores.iam.api/export.hpp"
+#include <string>
+#include <vector>
 
 namespace ores::iam::domain {
 

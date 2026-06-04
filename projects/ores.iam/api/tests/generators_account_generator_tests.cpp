@@ -17,16 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <set>
-#include <catch2/catch_test_macros.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include "ores.logging/make_logger.hpp"
-#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
-#include "ores.utility/uuid/tenant_id.hpp"
-#include "ores.utility/generation/generation_context.hpp"
-#include "ores.iam.api/domain/account.hpp" // IWYU pragma: keep.
+#include "ores.iam.api/domain/account.hpp"         // IWYU pragma: keep.
 #include "ores.iam.api/domain/account_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/generators/account_generator.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.utility/generation/generation_context.hpp"
+#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid_generators.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <set>
 
 namespace {
 
@@ -64,4 +64,3 @@ TEST_CASE("generate_multiple_accounts", tags) {
 
     CHECK(accounts.size() == 3);
 }
-

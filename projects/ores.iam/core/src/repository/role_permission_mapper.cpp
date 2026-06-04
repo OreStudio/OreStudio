@@ -18,10 +18,9 @@
  *
  */
 #include "ores.iam.core/repository/role_permission_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::iam::repository {
 
@@ -55,19 +54,13 @@ role_permission_entity role_permission_mapper::map(const domain::role_permission
 std::vector<domain::role_permission>
 role_permission_mapper::map(const std::vector<role_permission_entity>& v) {
     return map_vector<role_permission_entity, domain::role_permission>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<role_permission_entity>
 role_permission_mapper::map(const std::vector<domain::role_permission>& v) {
     return map_vector<domain::role_permission, role_permission_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

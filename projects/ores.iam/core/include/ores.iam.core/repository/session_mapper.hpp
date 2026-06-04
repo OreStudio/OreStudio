@@ -20,10 +20,10 @@
 #ifndef ORES_IAM_REPOSITORY_SESSION_MAPPER_HPP
 #define ORES_IAM_REPOSITORY_SESSION_MAPPER_HPP
 
-#include <vector>
-#include "ores.logging/make_logger.hpp"
 #include "ores.iam.api/domain/session.hpp"
 #include "ores.iam.core/repository/session_entity.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <vector>
 
 namespace ores::iam::repository {
 
@@ -32,8 +32,7 @@ namespace ores::iam::repository {
  */
 class session_mapper {
 private:
-    inline static std::string_view logger_name =
-        "ores.iam.repository.session_mapper";
+    inline static std::string_view logger_name = "ores.iam.repository.session_mapper";
 
     static auto& lg() {
         using namespace ores::logging;
@@ -45,10 +44,8 @@ public:
     static domain::session map(const session_entity& v);
     static session_entity map(const domain::session& v);
 
-    static std::vector<domain::session>
-    map(const std::vector<session_entity>& v);
-    static std::vector<session_entity>
-    map(const std::vector<domain::session>& v);
+    static std::vector<domain::session> map(const std::vector<session_entity>& v);
+    static std::vector<session_entity> map(const std::vector<domain::session>& v);
 
     static domain::session_statistics map(const session_statistics_entity& v);
     static std::vector<domain::session_statistics>

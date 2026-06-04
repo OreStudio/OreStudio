@@ -20,14 +20,14 @@
 #ifndef ORES_IAM_SERVICE_ACCOUNT_PARTY_SERVICE_HPP
 #define ORES_IAM_SERVICE_ACCOUNT_PARTY_SERVICE_HPP
 
-#include <string>
-#include <vector>
-#include <boost/uuid/uuid.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.iam.api/domain/account_party.hpp"
-#include "ores.iam.core/repository/account_party_repository.hpp"
 #include "ores.iam.core/export.hpp"
+#include "ores.iam.core/repository/account_party_repository.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::iam::service {
 
@@ -39,8 +39,7 @@ namespace ores::iam::service {
  */
 class ORES_IAM_CORE_EXPORT account_party_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.iam.service.account_party_service";
+    inline static std::string_view logger_name = "ores.iam.service.account_party_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -85,7 +84,7 @@ public:
      * @param party_id The party
      */
     void remove_account_party(const boost::uuids::uuid& account_id,
-        const boost::uuids::uuid& party_id);
+                              const boost::uuids::uuid& party_id);
 
 private:
     repository::account_party_repository repo_;

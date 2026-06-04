@@ -17,20 +17,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.iam.core/repository/tenant_repository.hpp"
-
-#include <catch2/catch_test_macros.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.utility/uuid/tenant_id.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/domain/tenant.hpp"
 #include "ores.iam.api/domain/tenant_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/generators/tenant_generator.hpp"
+#include "ores.iam.core/repository/tenant_repository.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
+#include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
+#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 
@@ -49,8 +48,7 @@ TEST_CASE("write_single_tenant", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
-    auto sys_ctx = h.context().with_tenant(
-        ores::utility::uuid::tenant_id::system(), "");
+    auto sys_ctx = h.context().with_tenant(ores::utility::uuid::tenant_id::system(), "");
     auto gen_ctx = ores::testing::make_generation_context(h);
 
     tenant_repository repo(sys_ctx);
@@ -64,8 +62,7 @@ TEST_CASE("write_multiple_tenants", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
-    auto sys_ctx = h.context().with_tenant(
-        ores::utility::uuid::tenant_id::system(), "");
+    auto sys_ctx = h.context().with_tenant(ores::utility::uuid::tenant_id::system(), "");
     auto gen_ctx = ores::testing::make_generation_context(h);
 
     tenant_repository repo(sys_ctx);
@@ -79,8 +76,7 @@ TEST_CASE("read_latest_tenants", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
-    auto sys_ctx = h.context().with_tenant(
-        ores::utility::uuid::tenant_id::system(), "");
+    auto sys_ctx = h.context().with_tenant(ores::utility::uuid::tenant_id::system(), "");
     auto gen_ctx = ores::testing::make_generation_context(h);
 
     tenant_repository repo(sys_ctx);
@@ -100,8 +96,7 @@ TEST_CASE("read_latest_tenant_by_id", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
-    auto sys_ctx = h.context().with_tenant(
-        ores::utility::uuid::tenant_id::system(), "");
+    auto sys_ctx = h.context().with_tenant(ores::utility::uuid::tenant_id::system(), "");
     auto gen_ctx = ores::testing::make_generation_context(h);
 
     tenant_repository repo(sys_ctx);
@@ -126,8 +121,7 @@ TEST_CASE("read_latest_tenant_by_code", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
-    auto sys_ctx = h.context().with_tenant(
-        ores::utility::uuid::tenant_id::system(), "");
+    auto sys_ctx = h.context().with_tenant(ores::utility::uuid::tenant_id::system(), "");
     auto gen_ctx = ores::testing::make_generation_context(h);
 
     tenant_repository repo(sys_ctx);
@@ -151,8 +145,7 @@ TEST_CASE("read_nonexistent_tenant", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
-    auto sys_ctx = h.context().with_tenant(
-        ores::utility::uuid::tenant_id::system(), "");
+    auto sys_ctx = h.context().with_tenant(ores::utility::uuid::tenant_id::system(), "");
 
     tenant_repository repo(sys_ctx);
 

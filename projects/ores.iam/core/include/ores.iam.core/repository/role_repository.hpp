@@ -20,14 +20,14 @@
 #ifndef ORES_IAM_REPOSITORY_ROLE_REPOSITORY_HPP
 #define ORES_IAM_REPOSITORY_ROLE_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include <boost/uuid/uuid.hpp>
-#include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.iam.api/domain/role.hpp"
 #include "ores.iam.core/export.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::iam::repository {
 
@@ -36,8 +36,7 @@ namespace ores::iam::repository {
  */
 class ORES_IAM_CORE_EXPORT role_repository {
 private:
-    inline static std::string_view logger_name =
-        "ores.iam.repository.role_repository";
+    inline static std::string_view logger_name = "ores.iam.repository.role_repository";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -77,8 +76,7 @@ public:
      * @param limit Maximum number of records to return
      * @return Vector of roles within the specified range
      */
-    std::vector<domain::role> read_latest(std::uint32_t offset,
-                                          std::uint32_t limit);
+    std::vector<domain::role> read_latest(std::uint32_t offset, std::uint32_t limit);
 
     /**
      * @brief Gets the total count of active roles.
@@ -97,8 +95,7 @@ public:
      * Uses IN clause to efficiently fetch multiple roles at once,
      * avoiding N+1 query issues.
      */
-    std::vector<domain::role>
-    read_latest_by_ids(const std::vector<boost::uuids::uuid>& ids);
+    std::vector<domain::role> read_latest_by_ids(const std::vector<boost::uuids::uuid>& ids);
 
     /**
      * @brief Deletes a role by closing its temporal validity.

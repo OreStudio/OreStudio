@@ -20,22 +20,22 @@
 #ifndef ORES_IAM_SERVICE_AUTHORIZATION_SERVICE_HPP
 #define ORES_IAM_SERVICE_AUTHORIZATION_SERVICE_HPP
 
-#include <string>
-#include <vector>
-#include <optional>
-#include <boost/uuid/uuid.hpp>
+#include "ores.database/domain/context.hpp"
+#include "ores.eventing/service/event_bus.hpp"
+#include "ores.iam.api/domain/account_role.hpp"
+#include "ores.iam.api/domain/permission.hpp"
+#include "ores.iam.api/domain/role.hpp"
+#include "ores.iam.core/export.hpp"
+#include "ores.iam.core/repository/account_role_repository.hpp"
+#include "ores.iam.core/repository/permission_repository.hpp"
+#include "ores.iam.core/repository/role_permission_repository.hpp"
+#include "ores.iam.core/repository/role_repository.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.iam.api/domain/role.hpp"
-#include "ores.iam.api/domain/permission.hpp"
-#include "ores.iam.api/domain/account_role.hpp"
-#include "ores.iam.core/repository/role_repository.hpp"
-#include "ores.iam.core/repository/permission_repository.hpp"
-#include "ores.iam.core/repository/account_role_repository.hpp"
-#include "ores.iam.core/repository/role_permission_repository.hpp"
-#include "ores.eventing/service/event_bus.hpp"
-#include "ores.iam.core/export.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <optional>
+#include <string>
+#include <vector>
 
 namespace ores::iam::service {
 
@@ -54,8 +54,7 @@ namespace ores::iam::service {
  */
 class ORES_IAM_CORE_EXPORT authorization_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.iam.service.authorization_service";
+    inline static std::string_view logger_name = "ores.iam.service.authorization_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -73,8 +72,7 @@ public:
      * @param ctx The database context.
      * @param event_bus Optional event bus for publishing permission change events.
      */
-    explicit authorization_service(context ctx,
-        event_bus* event_bus = nullptr);
+    explicit authorization_service(context ctx, event_bus* event_bus = nullptr);
 
     // ========================================================================
     // Permission Management
@@ -88,8 +86,7 @@ public:
     /**
      * @brief Finds a permission by its code.
      */
-    std::optional<domain::permission>
-    find_permission_by_code(const std::string& code);
+    std::optional<domain::permission> find_permission_by_code(const std::string& code);
 
     /**
      * @brief Creates a new permission.
@@ -98,8 +95,7 @@ public:
      * @param description Human-readable description
      * @return The created permission
      */
-    domain::permission create_permission(const std::string& code,
-        const std::string& description);
+    domain::permission create_permission(const std::string& code, const std::string& description);
 
     // ========================================================================
     // Role Management
@@ -130,15 +126,14 @@ public:
      * @return The created role
      */
     domain::role create_role(const std::string& name,
-        const std::string& description,
-        const std::vector<std::string>& permission_codes,
-        const std::string& modified_by);
+                             const std::string& description,
+                             const std::vector<std::string>& permission_codes,
+                             const std::string& modified_by);
 
     /**
      * @brief Gets the permission codes assigned to a role.
      */
-    std::vector<std::string>
-    get_role_permissions(const boost::uuids::uuid& role_id);
+    std::vector<std::string> get_role_permissions(const boost::uuids::uuid& role_id);
 
     // ========================================================================
     // Role Assignment
@@ -156,9 +151,9 @@ public:
      * @param change_commentary Optional commentary explaining the role assignment
      */
     void assign_role(const boost::uuids::uuid& account_id,
-        const boost::uuids::uuid& role_id,
-        const std::string& assigned_by,
-        const std::string& change_commentary = "Role assigned to account");
+                     const boost::uuids::uuid& role_id,
+                     const std::string& assigned_by,
+                     const std::string& change_commentary = "Role assigned to account");
 
     /**
      * @brief Revokes a role from an account.
@@ -169,14 +164,12 @@ public:
      * @param account_id The account to remove the role from
      * @param role_id The role to revoke
      */
-    void revoke_role(const boost::uuids::uuid& account_id,
-        const boost::uuids::uuid& role_id);
+    void revoke_role(const boost::uuids::uuid& account_id, const boost::uuids::uuid& role_id);
 
     /**
      * @brief Gets all roles assigned to an account.
      */
-    std::vector<domain::role>
-    get_account_roles(const boost::uuids::uuid& account_id);
+    std::vector<domain::role> get_account_roles(const boost::uuids::uuid& account_id);
 
     // ========================================================================
     // Permission Checking
@@ -190,8 +183,7 @@ public:
      * @param account_id The account to query
      * @return List of permission codes the account has
      */
-    std::vector<std::string>
-    get_effective_permissions(const boost::uuids::uuid& account_id);
+    std::vector<std::string> get_effective_permissions(const boost::uuids::uuid& account_id);
 
     /**
      * @brief Checks if an account has a specific permission.
@@ -202,8 +194,7 @@ public:
      * @param permission_code The permission to check for
      * @return true if the account has the permission, false otherwise
      */
-    bool has_permission(const boost::uuids::uuid& account_id,
-        std::string_view permission_code);
+    bool has_permission(const boost::uuids::uuid& account_id, std::string_view permission_code);
 
     /**
      * @brief Checks if the given permissions list satisfies a permission check.
@@ -215,7 +206,7 @@ public:
      * @return true if the permissions satisfy the requirement
      */
     static bool check_permission(const std::vector<std::string>& permissions,
-        std::string_view required_permission);
+                                 std::string_view required_permission);
 
 private:
     /**

@@ -18,12 +18,11 @@
  *
  */
 #include "ores.iam.core/service/signup_service.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
 #include "ores.iam.api/domain/role.hpp"
 #include "ores.security/crypto/password_hasher.hpp"
-#include "ores.security/validation/password_validator.hpp"
 #include "ores.security/validation/email_validator.hpp"
+#include "ores.security/validation/password_validator.hpp"
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::iam::service {
 
@@ -32,16 +31,18 @@ using error_code = ores::utility::serialization::error_code;
 namespace crypto = ores::security::crypto;
 namespace validation = ores::security::validation;
 
-signup_service::signup_service(database::context ctx,
+signup_service::signup_service(
+    database::context ctx,
     std::shared_ptr<variability::service::system_settings_service> system_flags,
     std::shared_ptr<authorization_service> auth_service)
-    : account_repo_(ctx),
-      login_info_repo_(ctx),
-      system_flags_(std::move(system_flags)),
-      auth_service_(std::move(auth_service)) {}
+    : account_repo_(ctx)
+    , login_info_repo_(ctx)
+    , system_flags_(std::move(system_flags))
+    , auth_service_(std::move(auth_service)) {}
 
 signup_result signup_service::register_user(const std::string& username,
-    const std::string& email, const std::string& password) {
+                                            const std::string& email,
+                                            const std::string& password) {
 
     BOOST_LOG_SEV(lg(), info) << "Signup attempt for username: " << username
                               << ", email: " << email;
@@ -59,10 +60,9 @@ signup_result signup_service::register_user(const std::string& username,
 
     // Check if authorization is required (not yet implemented)
     if (system_flags_->is_signup_requires_authorization_enabled()) {
-        BOOST_LOG_SEV(lg(), warn)
-            << "Signup rejected: authorization workflow not implemented";
+        BOOST_LOG_SEV(lg(), warn) << "Signup rejected: authorization workflow not implemented";
         result.error_message = "Signup authorization workflow is not yet "
-            "implemented. Please contact an administrator to create an account.";
+                               "implemented. Please contact an administrator to create an account.";
         result.error_code = error_code::signup_requires_authorization;
         return result;
     }
@@ -78,8 +78,7 @@ signup_result signup_service::register_user(const std::string& username,
     // Check username uniqueness
     auto existing_by_username = account_repo_.read_latest_by_username(username);
     if (!existing_by_username.empty()) {
-        BOOST_LOG_SEV(lg(), warn) << "Signup rejected: username already taken: "
-                                  << username;
+        BOOST_LOG_SEV(lg(), warn) << "Signup rejected: username already taken: " << username;
         result.error_message = "Username is already taken";
         result.error_code = error_code::username_taken;
         return result;
@@ -88,8 +87,7 @@ signup_result signup_service::register_user(const std::string& username,
     // Validate email format
     auto email_validation = validation::email_validator::validate(email);
     if (!email_validation.is_valid) {
-        BOOST_LOG_SEV(lg(), warn) << "Signup rejected: invalid email format: "
-                                  << email;
+        BOOST_LOG_SEV(lg(), warn) << "Signup rejected: invalid email format: " << email;
         result.error_message = email_validation.error_message;
         result.error_code = error_code::invalid_request;
         return result;
@@ -98,8 +96,7 @@ signup_result signup_service::register_user(const std::string& username,
     // Check email uniqueness
     auto existing_by_email = account_repo_.read_latest_by_email(email);
     if (!existing_by_email.empty()) {
-        BOOST_LOG_SEV(lg(), warn) << "Signup rejected: email already in use: "
-                                  << email;
+        BOOST_LOG_SEV(lg(), warn) << "Signup rejected: email already in use: " << email;
         result.error_message = "Email address is already registered";
         result.error_code = error_code::email_taken;
         return result;
@@ -123,31 +120,27 @@ signup_result signup_service::register_user(const std::string& username,
 
     // Create the account
     // Note: Admin privileges are now managed via RBAC role assignments
-    domain::account new_account {
-        .version = 0,
-        .id = id,
-        .modified_by = username,  // Self-registered
-        .username = username,
-        .password_hash = password_hash,
-        .password_salt = "", // FIXME remove
-        .totp_secret = "",
-        .email = email
-    };
+    domain::account new_account{.version = 0,
+                                .id = id,
+                                .modified_by = username, // Self-registered
+                                .username = username,
+                                .password_hash = password_hash,
+                                .password_salt = "", // FIXME remove
+                                .totp_secret = "",
+                                .email = email};
 
     std::vector<domain::account> accounts{new_account};
     account_repo_.write(accounts);
 
     // Create login tracking entry
-    domain::login_info li {
-        .last_login = {},
-        .account_id = id,
-        .failed_logins = 0,
-        .locked = false,
-        .online = false,
-        .password_reset_required = false,
-        .last_ip = {},
-        .last_attempt_ip = {}
-    };
+    domain::login_info li{.last_login = {},
+                          .account_id = id,
+                          .failed_logins = 0,
+                          .locked = false,
+                          .online = false,
+                          .password_reset_required = false,
+                          .last_ip = {},
+                          .last_attempt_ip = {}};
 
     std::vector<domain::login_info> login_infos{li};
     login_info_repo_.write(login_infos);
@@ -155,12 +148,10 @@ signup_result signup_service::register_user(const std::string& username,
     // Assign the default Viewer role to the new account
     auto viewer_role = auth_service_->find_role_by_name(domain::roles::viewer);
     if (!viewer_role) {
-        BOOST_LOG_SEV(lg(), error)
-            << "Viewer role not found - RBAC may not be properly seeded. "
-            << "Signup failed for account " << id;
-        throw std::runtime_error(
-            "Default 'Viewer' role not found. Cannot create account without "
-            "default permissions.");
+        BOOST_LOG_SEV(lg(), error) << "Viewer role not found - RBAC may not be properly seeded. "
+                                   << "Signup failed for account " << id;
+        throw std::runtime_error("Default 'Viewer' role not found. Cannot create account without "
+                                 "default permissions.");
     }
 
     auth_service_->assign_role(id, viewer_role->id, username);

@@ -18,7 +18,6 @@
  *
  */
 #include "ores.iam.core/service/tenant_type_service.hpp"
-
 #include <stdexcept>
 
 namespace ores::iam::service {
@@ -33,8 +32,7 @@ std::vector<domain::tenant_type> tenant_type_service::list_types() {
     return repo_.read_latest(ctx_);
 }
 
-std::optional<domain::tenant_type>
-tenant_type_service::find_type(const std::string& type) {
+std::optional<domain::tenant_type> tenant_type_service::find_type(const std::string& type) {
     BOOST_LOG_SEV(lg(), debug) << "Finding tenant type: " << type;
     auto results = repo_.read_latest(ctx_, type);
     if (results.empty()) {
@@ -62,8 +60,7 @@ void tenant_type_service::remove_types(const std::vector<std::string>& types) {
     repo_.remove(ctx_, types);
 }
 
-std::vector<domain::tenant_type>
-tenant_type_service::get_type_history(const std::string& type) {
+std::vector<domain::tenant_type> tenant_type_service::get_type_history(const std::string& type) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for tenant type: " << type;
     return repo_.read_all(ctx_, type);
 }

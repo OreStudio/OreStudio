@@ -18,10 +18,9 @@
  *
  */
 #include "ores.iam.core/service/database_name_service.hpp"
-
+#include "ores.database/repository/bitemporal_operations.hpp"
 #include <sstream>
 #include <stdexcept>
-#include "ores.database/repository/bitemporal_operations.hpp"
 
 namespace ores::iam::service {
 
@@ -40,12 +39,15 @@ std::string build_array_literal(const std::vector<std::string>& values) {
     std::ostringstream oss;
     oss << "ARRAY[";
     for (size_t i = 0; i < values.size(); ++i) {
-        if (i > 0) oss << ", ";
+        if (i > 0)
+            oss << ", ";
         // Escape single quotes by doubling them
         std::string escaped;
         for (char c : values[i]) {
-            if (c == '\'') escaped += "''";
-            else escaped += c;
+            if (c == '\'')
+                escaped += "''";
+            else
+                escaped += c;
         }
         oss << "'" << escaped << "'";
     }
@@ -60,8 +62,7 @@ database_name_service::database_name_service(database::context ctx)
     BOOST_LOG_SEV(lg(), debug) << "Constructed database_name_service";
 }
 
-std::string database_name_service::execute_scalar_string_query(
-    const std::string& sql) {
+std::string database_name_service::execute_scalar_string_query(const std::string& sql) {
     BOOST_LOG_SEV(lg(), debug) << "Executing scalar query: " << sql;
 
     auto rows = ores::database::repository::execute_raw_multi_column_query(
@@ -77,31 +78,28 @@ std::string database_name_service::execute_scalar_string_query(
 }
 
 std::string database_name_service::generate_whimsical_name() {
-    return execute_scalar_string_query(
-        "SELECT ores_utility_generate_whimsical_name_fn()");
+    return execute_scalar_string_query("SELECT ores_utility_generate_whimsical_name_fn()");
 }
 
 std::string database_name_service::generate_whimsical_name(bool with_suffix) {
-    const std::string sql = with_suffix
-        ? "SELECT ores_utility_generate_whimsical_name_fn(true)"
-        : "SELECT ores_utility_generate_whimsical_name_fn(false)";
+    const std::string sql = with_suffix ? "SELECT ores_utility_generate_whimsical_name_fn(true)" :
+                                          "SELECT ores_utility_generate_whimsical_name_fn(false)";
     return execute_scalar_string_query(sql);
 }
 
 std::string database_name_service::generate_database_name(bool with_suffix) {
-    const std::string sql = with_suffix
-        ? "SELECT ores_utility_generate_database_name_fn(true)"
-        : "SELECT ores_utility_generate_database_name_fn(false)";
+    const std::string sql = with_suffix ? "SELECT ores_utility_generate_database_name_fn(true)" :
+                                          "SELECT ores_utility_generate_database_name_fn(false)";
     return execute_scalar_string_query(sql);
 }
 
-std::string database_name_service::generate_unique_database_name(
-    const std::vector<std::string>& existing_names, int max_attempts) {
+std::string
+database_name_service::generate_unique_database_name(const std::vector<std::string>& existing_names,
+                                                     int max_attempts) {
 
     const std::string array_literal = build_array_literal(existing_names);
-    const std::string sql =
-        "SELECT ores_utility_generate_unique_database_name_fn(" +
-        array_literal + ", " + std::to_string(max_attempts) + ")";
+    const std::string sql = "SELECT ores_utility_generate_unique_database_name_fn(" +
+                            array_literal + ", " + std::to_string(max_attempts) + ")";
     return execute_scalar_string_query(sql);
 }
 

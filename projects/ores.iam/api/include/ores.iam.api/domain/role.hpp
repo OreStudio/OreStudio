@@ -20,12 +20,12 @@
 #ifndef ORES_IAM_DOMAIN_ROLE_HPP
 #define ORES_IAM_DOMAIN_ROLE_HPP
 
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <optional>
 #include <string>
 #include <vector>
-#include <boost/uuid/uuid.hpp>
-#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::iam::domain {
 
@@ -104,13 +104,13 @@ struct role final {
  * @brief Well-known role names used throughout the system.
  */
 namespace roles {
-    constexpr auto super_admin = "SuperAdmin";
-    constexpr auto tenant_admin = "TenantAdmin";
-    constexpr auto trading = "Trading";
-    constexpr auto sales = "Sales";
-    constexpr auto operations = "Operations";
-    constexpr auto support = "Support";
-    constexpr auto viewer = "Viewer";
+constexpr auto super_admin = "SuperAdmin";
+constexpr auto tenant_admin = "TenantAdmin";
+constexpr auto trading = "Trading";
+constexpr auto sales = "Sales";
+constexpr auto operations = "Operations";
+constexpr auto support = "Support";
+constexpr auto viewer = "Viewer";
 }
 
 }

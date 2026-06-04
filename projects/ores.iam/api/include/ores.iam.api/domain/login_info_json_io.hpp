@@ -20,9 +20,9 @@
 #ifndef ORES_IAM_DOMAIN_LOGIN_INFO_JSON_IO_HPP
 #define ORES_IAM_DOMAIN_LOGIN_INFO_JSON_IO_HPP
 
-#include <iosfwd>
-#include "ores.iam.api/export.hpp"
 #include "ores.iam.api/domain/login_info.hpp"
+#include "ores.iam.api/export.hpp"
+#include <iosfwd>
 
 namespace ores::iam::domain {
 

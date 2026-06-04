@@ -20,9 +20,9 @@
 #ifndef ORES_IAM_MESSAGING_ACCOUNT_PARTY_PROTOCOL_HPP
 #define ORES_IAM_MESSAGING_ACCOUNT_PARTY_PROTOCOL_HPP
 
+#include "ores.iam.api/domain/account_party.hpp"
 #include <string>
 #include <vector>
-#include "ores.iam.api/domain/account_party.hpp"
 
 namespace ores::iam::messaging {
 

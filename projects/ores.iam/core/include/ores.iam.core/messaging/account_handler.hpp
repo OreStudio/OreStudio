@@ -20,43 +20,42 @@
 #ifndef ORES_IAM_MESSAGING_ACCOUNT_HANDLER_HPP
 #define ORES_IAM_MESSAGING_ACCOUNT_HANDLER_HPP
 
-#include <chrono>
-#include <memory>
-#include <stdexcept>
-#include <boost/uuid/string_generator.hpp>
-#include <boost/uuid/uuid_io.hpp>
+#include "ores.database/domain/context.hpp"
+#include "ores.database/service/tenant_context.hpp"
+#include "ores.iam.api/domain/account_version.hpp"
+#include "ores.iam.api/domain/session.hpp"
+#include "ores.iam.api/messaging/account_history_protocol.hpp"
+#include "ores.iam.api/messaging/account_protocol.hpp"
+#include "ores.iam.api/messaging/login_protocol.hpp"
+#include "ores.iam.core/domain/token_settings.hpp"
+#include "ores.iam.core/repository/account_party_repository.hpp"
+#include "ores.iam.core/repository/tenant_repository.hpp"
+#include "ores.iam.core/service/account_service.hpp"
+#include "ores.iam.core/service/account_setup_service.hpp"
+#include "ores.iam.core/service/authorization_service.hpp"
+#include "ores.iam.core/service/party_cache.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.database/domain/context.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.security/jwt/jwt_claims.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
-#include "ores.iam.api/messaging/account_protocol.hpp"
-#include "ores.iam.api/messaging/account_history_protocol.hpp"
-#include "ores.iam.api/messaging/login_protocol.hpp"
-#include "ores.iam.api/domain/account_version.hpp"
-#include "ores.iam.api/domain/session.hpp"
-#include "ores.iam.core/repository/account_party_repository.hpp"
-#include "ores.iam.core/repository/tenant_repository.hpp"
-#include "ores.iam.core/service/party_cache.hpp"
-#include "ores.database/service/tenant_context.hpp"
-#include "ores.iam.core/service/account_service.hpp"
-#include "ores.iam.core/service/authorization_service.hpp"
-#include "ores.iam.core/service/account_setup_service.hpp"
-#include "ores.variability.core/service/system_settings_service.hpp"
-#include "ores.iam.core/domain/token_settings.hpp"
 #include "ores.service/service/request_context.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include "ores.variability.core/service/system_settings_service.hpp"
+#include <boost/uuid/string_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <chrono>
+#include <memory>
+#include <stdexcept>
 
 namespace ores::iam::messaging {
 
 namespace {
 
 inline auto& account_handler_lg() {
-    static auto instance = ores::logging::make_logger(
-        "ores.iam.messaging.account_handler");
+    static auto instance = ores::logging::make_logger("ores.iam.messaging.account_handler");
     return instance;
 }
 
@@ -70,23 +69,21 @@ inline std::string acct_extract_bearer_token(const ores::nats::message& msg) {
     return val.substr(ores::nats::headers::bearer_prefix.size());
 }
 
-inline std::vector<boost::uuids::uuid> acct_compute_visible_party_ids(
-    const service::party_cache& cache,
-    const std::string& tenant_id,
-    const boost::uuids::uuid& party_id) {
+inline std::vector<boost::uuids::uuid>
+acct_compute_visible_party_ids(const service::party_cache& cache,
+                               const std::string& tenant_id,
+                               const boost::uuids::uuid& party_id) {
     return cache.compute_visible_party_ids(tenant_id, party_id);
 }
 
-inline std::optional<refdata::domain::party> acct_lookup_party(
-    const service::party_cache& cache,
-    const std::string& tenant_id,
-    const boost::uuids::uuid& party_id) {
+inline std::optional<refdata::domain::party> acct_lookup_party(const service::party_cache& cache,
+                                                               const std::string& tenant_id,
+                                                               const boost::uuids::uuid& party_id) {
     return cache.lookup_party(tenant_id, party_id);
 }
 
-inline std::string acct_lookup_tenant_name(
-    const ores::database::context& ctx,
-    const boost::uuids::uuid& tenant_id) {
+inline std::string acct_lookup_tenant_name(const ores::database::context& ctx,
+                                           const boost::uuids::uuid& tenant_id) {
     try {
         repository::tenant_repository repo(ctx);
         auto tenants = repo.read_latest(tenant_id);
@@ -94,8 +91,7 @@ inline std::string acct_lookup_tenant_name(
             return tenants.front().name;
     } catch (const std::exception& e) {
         using namespace ores::logging;
-        BOOST_LOG_SEV(account_handler_lg(), warn)
-            << "Failed to look up tenant name: " << e.what();
+        BOOST_LOG_SEV(account_handler_lg(), warn) << "Failed to look up tenant name: " << e.what();
     }
     return {};
 }
@@ -112,11 +108,13 @@ using namespace ores::logging;
 class account_handler {
 public:
     account_handler(ores::nats::service::client& nats,
-        ores::database::context ctx,
-        ores::security::jwt::jwt_authenticator signer,
-        std::shared_ptr<service::party_cache> party_cache)
-        : nats_(nats), ctx_(std::move(ctx)), signer_(std::move(signer)),
-          party_cache_(std::move(party_cache)) {
+                    ores::database::context ctx,
+                    ores::security::jwt::jwt_authenticator signer,
+                    std::shared_ptr<service::party_cache> party_cache)
+        : nats_(nats)
+        , ctx_(std::move(ctx))
+        , signer_(std::move(signer))
+        , party_cache_(std::move(party_cache)) {
         reload_token_settings();
     }
 
@@ -134,8 +132,7 @@ public:
     }
 
     void list(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(account_handler_lg(), msg);
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(account_handler_lg(), msg);
         try {
             auto ctx_expected = ores::service::service::make_request_context(
                 ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
@@ -147,15 +144,12 @@ public:
             service::account_service svc(ctx);
             auto accounts = svc.list_accounts();
             get_accounts_response resp;
-            resp.total_available_count =
-                static_cast<int>(accounts.size());
+            resp.total_available_count = static_cast<int>(accounts.size());
             resp.accounts = std::move(accounts);
-            BOOST_LOG_SEV(account_handler_lg(), debug)
-                << "Completed " << msg.subject;
+            BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, resp);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(account_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
+            BOOST_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
             reply(nats_, msg, get_accounts_response{});
         }
     }
@@ -177,17 +171,24 @@ public:
 
             // Idempotency guard: replay cached result if this step already completed.
             if (auto cached = check_step_idempotency(nats_, step_id)) {
-                publish_step_completion(nats_, step_id, inst_id,
-                    cached->outcome, cached->result_json, cached->error_message,
-                    cached->log);
+                publish_step_completion(nats_,
+                                        step_id,
+                                        inst_id,
+                                        cached->outcome,
+                                        cached->result_json,
+                                        cached->error_message,
+                                        cached->log);
                 return;
             }
 
             auto req = decode<save_account_request>(msg);
             if (!req) {
-                publish_step_completion(nats_, step_id, inst_id,
-                    ores::workflow::messaging::step_outcome::failed, "",
-                    "Failed to decode save_account_request");
+                publish_step_completion(nats_,
+                                        step_id,
+                                        inst_id,
+                                        ores::workflow::messaging::step_outcome::failed,
+                                        "",
+                                        "Failed to decode save_account_request");
                 return;
             }
             try {
@@ -201,37 +202,38 @@ public:
                     username = req->principal.substr(0, at_pos);
 
                 service::account_service acct_svc(wf_ctx);
-                auto auth_svc =
-                    std::make_shared<service::authorization_service>(wf_ctx);
+                auto auth_svc = std::make_shared<service::authorization_service>(wf_ctx);
                 service::account_setup_service setup_svc(acct_svc, auth_svc);
                 auto acct = setup_svc.create_account(
-                    username, req->email, req->password,
-                    ctx_.service_account());
+                    username, req->email, req->password, ctx_.service_account());
 
                 BOOST_LOG_SEV(account_handler_lg(), debug)
                     << "Workflow step completed: " << msg.subject;
                 const auto resp = save_account_response{
-                    .success = true,
-                    .account_id = boost::uuids::to_string(acct.id)};
-                publish_step_completion(nats_, step_id, inst_id,
-                    ores::workflow::messaging::step_outcome::completed,
-                    rfl::json::write(resp), "");
+                    .success = true, .account_id = boost::uuids::to_string(acct.id)};
+                publish_step_completion(nats_,
+                                        step_id,
+                                        inst_id,
+                                        ores::workflow::messaging::step_outcome::completed,
+                                        rfl::json::write(resp),
+                                        "");
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(account_handler_lg(), error)
-                    << "Workflow step failed: " << msg.subject
-                    << " — " << e.what();
-                publish_step_completion(nats_, step_id, inst_id,
-                    ores::workflow::messaging::step_outcome::failed, "", e.what());
+                    << "Workflow step failed: " << msg.subject << " — " << e.what();
+                publish_step_completion(nats_,
+                                        step_id,
+                                        inst_id,
+                                        ores::workflow::messaging::step_outcome::failed,
+                                        "",
+                                        e.what());
             }
             return;
         }
 
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(account_handler_lg(), msg);
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(account_handler_lg(), msg);
         auto req = decode<save_account_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(account_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         try {
@@ -263,38 +265,32 @@ public:
                     op_ctx = tenant_context::with_tenant(
                         ctx_, boost::uuids::to_string(tenants.front().id));
                 } else {
-                    throw std::runtime_error(
-                        "Tenant not found for hostname: " + hostname +
-                        ". Cannot create account in an unknown tenant.");
+                    throw std::runtime_error("Tenant not found for hostname: " + hostname +
+                                             ". Cannot create account in an unknown tenant.");
                 }
             }
 
             service::account_service acct_svc(op_ctx);
-            auto auth_svc =
-                std::make_shared<service::authorization_service>(op_ctx);
+            auto auth_svc = std::make_shared<service::authorization_service>(op_ctx);
             service::account_setup_service setup_svc(acct_svc, auth_svc);
-            auto acct = setup_svc.create_account(
-                username, req->email, req->password, base_ctx.actor());
-            BOOST_LOG_SEV(account_handler_lg(), debug)
-                << "Completed " << msg.subject;
-            reply(nats_, msg, save_account_response{
-                .success = true,
-                .account_id = boost::uuids::to_string(acct.id)});
+            auto acct =
+                setup_svc.create_account(username, req->email, req->password, base_ctx.actor());
+            BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_,
+                  msg,
+                  save_account_response{.success = true,
+                                        .account_id = boost::uuids::to_string(acct.id)});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(account_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, save_account_response{
-                .success = false, .message = e.what()});
+            BOOST_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, save_account_response{.success = false, .message = e.what()});
         }
     }
 
     void remove(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(account_handler_lg(), msg);
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(account_handler_lg(), msg);
         auto req = decode<delete_account_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(account_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         try {
@@ -312,25 +308,19 @@ public:
             service::account_service svc(ctx);
             boost::uuids::string_generator sg;
             svc.delete_account(sg(req->account_id));
-            BOOST_LOG_SEV(account_handler_lg(), debug)
-                << "Completed " << msg.subject;
-            reply(nats_, msg,
-                delete_account_response{.success = true});
+            BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, delete_account_response{.success = true});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(account_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, delete_account_response{
-                .success = false, .message = e.what()});
+            BOOST_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, delete_account_response{.success = false, .message = e.what()});
         }
     }
 
     void lock(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(account_handler_lg(), msg);
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(account_handler_lg(), msg);
         auto req = decode<lock_account_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(account_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         lock_account_response resp;
@@ -354,22 +344,18 @@ public:
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(account_handler_lg(), error)
                     << msg.subject << " failed: " << e.what();
-                resp.results.push_back({
-                    .success = false, .message = e.what()});
+                resp.results.push_back({.success = false, .message = e.what()});
             }
         }
-        BOOST_LOG_SEV(account_handler_lg(), debug)
-            << "Completed " << msg.subject;
+        BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
         reply(nats_, msg, resp);
     }
 
     void unlock(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(account_handler_lg(), msg);
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(account_handler_lg(), msg);
         auto req = decode<unlock_account_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(account_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         unlock_account_response resp;
@@ -393,18 +379,15 @@ public:
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(account_handler_lg(), error)
                     << msg.subject << " failed: " << e.what();
-                resp.results.push_back({
-                    .success = false, .message = e.what()});
+                resp.results.push_back({.success = false, .message = e.what()});
             }
         }
-        BOOST_LOG_SEV(account_handler_lg(), debug)
-            << "Completed " << msg.subject;
+        BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
         reply(nats_, msg, resp);
     }
 
     void login_info(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(account_handler_lg(), msg);
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(account_handler_lg(), msg);
         try {
             auto ctx_expected = ores::service::service::make_request_context(
                 ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
@@ -415,25 +398,19 @@ public:
             const auto& ctx = *ctx_expected;
             service::account_service svc(ctx);
             auto infos = svc.list_login_info();
-            BOOST_LOG_SEV(account_handler_lg(), debug)
-                << "Completed " << msg.subject;
-            reply(nats_, msg,
-                list_login_info_response{
-                    .login_infos = std::move(infos)});
+            BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, list_login_info_response{.login_infos = std::move(infos)});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(account_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
+            BOOST_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
             reply(nats_, msg, list_login_info_response{});
         }
     }
 
     void reset_password(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(account_handler_lg(), msg);
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(account_handler_lg(), msg);
         auto req = decode<reset_password_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(account_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         reset_password_response resp;
@@ -453,49 +430,45 @@ public:
         for (const auto& id_str : req->account_ids) {
             try {
                 auto account_id = sg(id_str);
-                auto err = svc.change_password(
-                    account_id, req->new_password);
+                auto err = svc.change_password(account_id, req->new_password);
                 if (err.empty()) {
                     resp.results.push_back({.success = true});
                 } else {
-                    resp.results.push_back({
-                        .success = false, .message = err});
+                    resp.results.push_back({.success = false, .message = err});
                 }
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(account_handler_lg(), error)
                     << msg.subject << " failed: " << e.what();
-                resp.results.push_back({
-                    .success = false, .message = e.what()});
+                resp.results.push_back({.success = false, .message = e.what()});
             }
         }
         resp.success = true;
-        BOOST_LOG_SEV(account_handler_lg(), debug)
-            << "Completed " << msg.subject;
+        BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
         reply(nats_, msg, resp);
     }
 
     void change_password(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(account_handler_lg(), msg);
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(account_handler_lg(), msg);
         auto req = decode<change_password_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(account_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         try {
             auto token = acct_extract_bearer_token(msg);
             if (token.empty()) {
-                reply(nats_, msg, change_password_response{
-                    .success = false,
-                    .message = "Missing authorization token"});
+                reply(nats_,
+                      msg,
+                      change_password_response{.success = false,
+                                               .message = "Missing authorization token"});
                 return;
             }
             auto claims_result = signer_.validate(token);
             if (!claims_result) {
-                reply(nats_, msg, change_password_response{
-                    .success = false,
-                    .message = "Invalid or expired token"});
+                reply(nats_,
+                      msg,
+                      change_password_response{.success = false,
+                                               .message = "Invalid or expired token"});
                 return;
             }
             boost::uuids::string_generator sg;
@@ -508,32 +481,24 @@ public:
             }
             const auto& ctx = *ctx_expected;
             service::account_service svc(ctx);
-            auto err = svc.change_password(account_id,
-                req->new_password);
+            auto err = svc.change_password(account_id, req->new_password);
             if (err.empty()) {
-                BOOST_LOG_SEV(account_handler_lg(), debug)
-                    << "Completed " << msg.subject;
-                reply(nats_, msg, change_password_response{
-                    .success = true});
+                BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
+                reply(nats_, msg, change_password_response{.success = true});
             } else {
-                reply(nats_, msg, change_password_response{
-                    .success = false, .message = err});
+                reply(nats_, msg, change_password_response{.success = false, .message = err});
             }
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(account_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, change_password_response{
-                .success = false, .message = e.what()});
+            BOOST_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, change_password_response{.success = false, .message = e.what()});
         }
     }
 
     void update(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(account_handler_lg(), msg);
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(account_handler_lg(), msg);
         auto req = decode<update_account_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(account_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         try {
@@ -550,43 +515,41 @@ public:
             }
             service::account_service svc(ctx);
             boost::uuids::string_generator sg;
-            svc.update_account(sg(req->account_id), req->email,
-                ctx.actor(), req->change_reason_code,
-                req->change_commentary);
-            BOOST_LOG_SEV(account_handler_lg(), debug)
-                << "Completed " << msg.subject;
-            reply(nats_, msg,
-                update_account_response{.success = true});
+            svc.update_account(sg(req->account_id),
+                               req->email,
+                               ctx.actor(),
+                               req->change_reason_code,
+                               req->change_commentary);
+            BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, update_account_response{.success = true});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(account_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, update_account_response{
-                .success = false, .message = e.what()});
+            BOOST_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, update_account_response{.success = false, .message = e.what()});
         }
     }
 
     void update_email(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(account_handler_lg(), msg);
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(account_handler_lg(), msg);
         auto req = decode<update_my_email_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(account_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         try {
             auto token = acct_extract_bearer_token(msg);
             if (token.empty()) {
-                reply(nats_, msg, update_my_email_response{
-                    .success = false,
-                    .message = "Missing authorization token"});
+                reply(nats_,
+                      msg,
+                      update_my_email_response{.success = false,
+                                               .message = "Missing authorization token"});
                 return;
             }
             auto claims_result = signer_.validate(token);
             if (!claims_result) {
-                reply(nats_, msg, update_my_email_response{
-                    .success = false,
-                    .message = "Invalid or expired token"});
+                reply(nats_,
+                      msg,
+                      update_my_email_response{.success = false,
+                                               .message = "Invalid or expired token"});
                 return;
             }
             boost::uuids::string_generator sg;
@@ -601,56 +564,50 @@ public:
             service::account_service svc(ctx);
             auto err = svc.update_my_email(account_id, req->email);
             if (err.empty()) {
-                BOOST_LOG_SEV(account_handler_lg(), debug)
-                    << "Completed " << msg.subject;
-                reply(nats_, msg, update_my_email_response{
-                    .success = true});
+                BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
+                reply(nats_, msg, update_my_email_response{.success = true});
             } else {
-                reply(nats_, msg, update_my_email_response{
-                    .success = false, .message = err});
+                reply(nats_, msg, update_my_email_response{.success = false, .message = err});
             }
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(account_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, update_my_email_response{
-                .success = false, .message = e.what()});
+            BOOST_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, update_my_email_response{.success = false, .message = e.what()});
         }
     }
 
     void select_party(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(account_handler_lg(), msg);
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(account_handler_lg(), msg);
         auto req = decode<select_party_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(account_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         try {
             auto token = acct_extract_bearer_token(msg);
             if (token.empty()) {
-                reply(nats_, msg, select_party_response{
-                    .success = false,
-                    .message = "Missing authorization token"});
+                reply(nats_,
+                      msg,
+                      select_party_response{.success = false,
+                                            .message = "Missing authorization token"});
                 return;
             }
 
             auto claims_result = signer_.validate(token);
             if (!claims_result) {
-                BOOST_LOG_SEV(account_handler_lg(), warn)
-                    << "select_party: JWT validation failed";
-                reply(nats_, msg, select_party_response{
-                    .success = false,
-                    .message = "Invalid or expired token"});
+                BOOST_LOG_SEV(account_handler_lg(), warn) << "select_party: JWT validation failed";
+                reply(
+                    nats_,
+                    msg,
+                    select_party_response{.success = false, .message = "Invalid or expired token"});
                 return;
             }
             if (claims_result->audience != "select_party_only") {
                 BOOST_LOG_SEV(account_handler_lg(), warn)
-                    << "select_party: unexpected token audience: "
-                    << claims_result->audience;
-                reply(nats_, msg, select_party_response{
-                    .success = false,
-                    .message = "Invalid or expired token"});
+                    << "select_party: unexpected token audience: " << claims_result->audience;
+                reply(
+                    nats_,
+                    msg,
+                    select_party_response{.success = false, .message = "Invalid or expired token"});
                 return;
             }
 
@@ -666,26 +623,24 @@ public:
             // the "select_party_only" token.
             const auto tenant_id_str = claims_result->tenant_id.value_or("");
             if (tenant_id_str.empty()) {
-                BOOST_LOG_SEV(account_handler_lg(), warn)
-                    << "select_party: token has no tenant_id";
-                reply(nats_, msg, select_party_response{
-                    .success = false,
-                    .message = "Invalid token: missing tenant"});
+                BOOST_LOG_SEV(account_handler_lg(), warn) << "select_party: token has no tenant_id";
+                reply(nats_,
+                      msg,
+                      select_party_response{.success = false,
+                                            .message = "Invalid token: missing tenant"});
                 return;
             }
-            auto tid_result =
-                ores::utility::uuid::tenant_id::from_string(tenant_id_str);
+            auto tid_result = ores::utility::uuid::tenant_id::from_string(tenant_id_str);
             if (!tid_result) {
                 BOOST_LOG_SEV(account_handler_lg(), warn)
-                    << "select_party: invalid tenant_id in token: "
-                    << tenant_id_str;
-                reply(nats_, msg, select_party_response{
-                    .success = false,
-                    .message = "Invalid token: malformed tenant"});
+                    << "select_party: invalid tenant_id in token: " << tenant_id_str;
+                reply(nats_,
+                      msg,
+                      select_party_response{.success = false,
+                                            .message = "Invalid token: malformed tenant"});
                 return;
             }
-            const auto ctx = ctx_.with_tenant(
-                *tid_result, claims_result->username.value_or(""));
+            const auto ctx = ctx_.with_tenant(*tid_result, claims_result->username.value_or(""));
 
             boost::uuids::uuid requested_party_id;
             try {
@@ -693,17 +648,17 @@ public:
             } catch (const std::exception&) {
                 BOOST_LOG_SEV(account_handler_lg(), warn)
                     << "select_party: invalid party_id: " << req->party_id;
-                reply(nats_, msg, select_party_response{
-                    .success = false,
-                    .message = "Invalid party_id format"});
+                reply(
+                    nats_,
+                    msg,
+                    select_party_response{.success = false, .message = "Invalid party_id format"});
                 return;
             }
             repository::account_party_repository ap_repo(ctx);
             auto parties = ap_repo.read_latest_by_account(account_id);
 
             BOOST_LOG_SEV(account_handler_lg(), debug)
-                << "select_party: account has " << parties.size()
-                << " party membership(s)";
+                << "select_party: account has " << parties.size() << " party membership(s)";
 
             bool is_member = false;
             for (const auto& ap : parties) {
@@ -716,38 +671,35 @@ public:
             if (!is_member) {
                 BOOST_LOG_SEV(account_handler_lg(), warn)
                     << "select_party: party " << req->party_id
-                    << " not in account's party list (account has "
-                    << parties.size() << " parties)";
-                reply(nats_, msg, select_party_response{
-                    .success = false,
-                    .message = "User is not a member of requested party"});
+                    << " not in account's party list (account has " << parties.size()
+                    << " parties)";
+                reply(nats_,
+                      msg,
+                      select_party_response{.success = false,
+                                            .message = "User is not a member of requested party"});
                 return;
             }
 
-            auto visible = acct_compute_visible_party_ids(
-                *party_cache_, tenant_id_str, requested_party_id);
+            auto visible =
+                acct_compute_visible_party_ids(*party_cache_, tenant_id_str, requested_party_id);
 
             security::jwt::jwt_claims new_claims;
             new_claims.subject = claims_result->subject;
             new_claims.issued_at = std::chrono::system_clock::now();
             new_claims.expires_at =
-                new_claims.issued_at + std::chrono::seconds(
-                    token_settings_.access_lifetime_s);
+                new_claims.issued_at + std::chrono::seconds(token_settings_.access_lifetime_s);
             new_claims.username = claims_result->username;
             new_claims.email = claims_result->email;
             new_claims.tenant_id = tenant_id_str;
-            new_claims.party_id =
-                boost::uuids::to_string(requested_party_id);
+            new_claims.party_id = boost::uuids::to_string(requested_party_id);
             // Carry the session identifiers forward so logout can end
             // the session record created at login.
             new_claims.session_id = claims_result->session_id;
             new_claims.session_start_time = claims_result->session_start_time;
             for (const auto& vid : visible)
-                new_claims.visible_party_ids.push_back(
-                    boost::uuids::to_string(vid));
+                new_claims.visible_party_ids.push_back(boost::uuids::to_string(vid));
 
-            auto new_token =
-                signer_.create_token(new_claims).value_or("");
+            auto new_token = signer_.create_token(new_claims).value_or("");
 
             std::string t_name;
             std::string p_name;
@@ -755,19 +707,19 @@ public:
                 auto tid = sg(tenant_id_str);
                 t_name = acct_lookup_tenant_name(ctx, tid);
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(account_handler_lg(), warn)
-                    << "Failed to look up tenant name during "
-                       "party selection: " << e.what();
+                BOOST_LOG_SEV(account_handler_lg(), warn) << "Failed to look up tenant name during "
+                                                             "party selection: "
+                                                          << e.what();
             }
             bool party_setup_required = false;
-            if (const auto p = acct_lookup_party(*party_cache_, tenant_id_str, requested_party_id)) {
+            if (const auto p =
+                    acct_lookup_party(*party_cache_, tenant_id_str, requested_party_id)) {
                 p_name = p->full_name;
                 party_setup_required = p->status == "Inactive";
                 if (party_setup_required) {
                     BOOST_LOG_SEV(account_handler_lg(), info)
                         << "select_party: party_setup_required=true for party "
-                        << boost::uuids::to_string(requested_party_id)
-                        << " status=" << p->status;
+                        << boost::uuids::to_string(requested_party_id) << " status=" << p->status;
                 }
             } else {
                 BOOST_LOG_SEV(account_handler_lg(), warn)
@@ -775,32 +727,27 @@ public:
                     << boost::uuids::to_string(requested_party_id);
             }
 
-            BOOST_LOG_SEV(account_handler_lg(), debug)
-                << "Completed " << msg.subject;
-            reply(nats_, msg, select_party_response{
-                .success = true,
-                .message = "Party selected",
-                .token = new_token,
-                .username = claims_result->username.value_or(""),
-                .tenant_name = t_name,
-                .party_name = p_name,
-                .party_setup_required = party_setup_required
-            });
+            BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_,
+                  msg,
+                  select_party_response{.success = true,
+                                        .message = "Party selected",
+                                        .token = new_token,
+                                        .username = claims_result->username.value_or(""),
+                                        .tenant_name = t_name,
+                                        .party_name = p_name,
+                                        .party_setup_required = party_setup_required});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(account_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, select_party_response{
-                .success = false, .message = e.what()});
+            BOOST_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, select_party_response{.success = false, .message = e.what()});
         }
     }
 
     void history(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(account_handler_lg(), msg);
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(account_handler_lg(), msg);
         auto req = decode<get_account_history_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(account_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(account_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         try {
@@ -823,16 +770,13 @@ public:
                 av.recorded_at = a.recorded_at;
                 avh.versions.push_back(std::move(av));
             }
-            BOOST_LOG_SEV(account_handler_lg(), debug)
-                << "Completed " << msg.subject;
-            reply(nats_, msg, get_account_history_response{
-                .success = true,
-                .history = std::move(avh)});
+            BOOST_LOG_SEV(account_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_,
+                  msg,
+                  get_account_history_response{.success = true, .history = std::move(avh)});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(account_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, get_account_history_response{
-                .success = false, .message = e.what()});
+            BOOST_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, get_account_history_response{.success = false, .message = e.what()});
         }
     }
 

@@ -20,17 +20,18 @@
 #ifndef ORES_IAM_DOMAIN_ACCOUNT_VERSION_TABLE_IO_HPP
 #define ORES_IAM_DOMAIN_ACCOUNT_VERSION_TABLE_IO_HPP
 
+#include "ores.iam.api/domain/account_version.hpp"
+#include "ores.iam.api/export.hpp"
 #include <iosfwd>
 #include <vector>
-#include "ores.iam.api/export.hpp"
-#include "ores.iam.api/domain/account_version.hpp"
 
 namespace ores::iam::domain {
 
 /**
  * @brief Dumps the account version objects to a stream in table format.
  */
-ORES_IAM_API_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<account_version>& v);
+ORES_IAM_API_EXPORT std::ostream& operator<<(std::ostream& s,
+                                             const std::vector<account_version>& v);
 
 }
 

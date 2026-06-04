@@ -18,14 +18,13 @@
  *
  */
 #include "ores.iam.api/domain/account.hpp"
-
-#include <catch2/catch_test_macros.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.logging/make_logger.hpp"
-#include "ores.iam.api/domain/account_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/domain/account_json.hpp"
+#include "ores.iam.api/domain/account_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/domain/account_table.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <boost/uuid/uuid_generators.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
 
 namespace {
 
@@ -156,15 +155,15 @@ TEST_CASE("create_multiple_random_accounts", tags) {
     for (int i = 0; i < 3; ++i) {
         account sut;
         sut.version = faker::number::integer(1, 100);
-        sut.modified_by = std::string(faker::person::firstName()) + " " +
-            std::string(faker::person::lastName());
+        sut.modified_by =
+            std::string(faker::person::firstName()) + " " + std::string(faker::person::lastName());
         sut.id = boost::uuids::random_generator()();
         sut.username = std::string(faker::internet::username());
         sut.password_hash = std::string(faker::crypto::sha256());
         sut.password_salt = std::string(faker::crypto::sha256());
         sut.totp_secret = faker::string::alphanumeric(20);
         sut.email = std::string(faker::internet::email());
-        BOOST_LOG_SEV(lg, info) << "Account " << i << ":" <<  sut;
+        BOOST_LOG_SEV(lg, info) << "Account " << i << ":" << sut;
 
         CHECK(sut.version >= 1);
         CHECK(!sut.username.empty());

@@ -31,7 +31,7 @@ namespace ores::iam::domain {
  *
  * Reference data table defining valid tenant lifecycle statuses.
  * Examples: 'active', 'suspended', 'terminated'.
- * 
+ *
  * Tenant statuses are managed by the system tenant and control
  * tenant access and capabilities.
  */

@@ -17,24 +17,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.iam.core/repository/account_role_repository.hpp"
-
-#include <catch2/catch_test_macros.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.logging/make_logger.hpp"
-#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
-#include "ores.iam.api/domain/account_role.hpp"
 #include "ores.iam.api/domain/account.hpp"
+#include "ores.iam.api/domain/account_role.hpp"
 #include "ores.iam.api/domain/role.hpp"
-#include "ores.iam.core/repository/account_repository.hpp"
-#include "ores.iam.core/repository/role_repository.hpp"
 #include "ores.iam.api/generators/account_generator.hpp"
-#include "ores.iam.api/generators/role_generator.hpp"
 #include "ores.iam.api/generators/account_role_generator.hpp"
+#include "ores.iam.api/generators/role_generator.hpp"
+#include "ores.iam.core/repository/account_repository.hpp"
+#include "ores.iam.core/repository/account_role_repository.hpp"
+#include "ores.iam.core/repository/role_repository.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
+#include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
+#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 
@@ -96,8 +95,7 @@ TEST_CASE("read_latest_account_roles", tags) {
     repo.write(ar);
 
     auto read_ars = repo.read_latest();
-    BOOST_LOG_SEV(lg, debug) << "Read account roles count: "
-                             << read_ars.size();
+    BOOST_LOG_SEV(lg, debug) << "Read account roles count: " << read_ars.size();
 
     CHECK(!read_ars.empty());
 }
@@ -131,8 +129,8 @@ TEST_CASE("read_latest_account_roles_by_account", tags) {
     repo.write(ar2);
 
     auto read_ars = repo.read_latest_by_account(acc.id);
-    BOOST_LOG_SEV(lg, debug) << "Read account roles for account "
-                             << acc.id << " count: " << read_ars.size();
+    BOOST_LOG_SEV(lg, debug) << "Read account roles for account " << acc.id
+                             << " count: " << read_ars.size();
 
     CHECK(read_ars.size() >= 2);
     for (const auto& ar : read_ars) {

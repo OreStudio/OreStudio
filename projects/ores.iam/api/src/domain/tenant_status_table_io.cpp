@@ -18,9 +18,8 @@
  *
  */
 #include "ores.iam.api/domain/tenant_status_table_io.hpp"
-
-#include <ostream>
 #include "ores.iam.api/domain/tenant_status_table.hpp"
+#include <ostream>
 
 namespace ores::iam::domain {
 

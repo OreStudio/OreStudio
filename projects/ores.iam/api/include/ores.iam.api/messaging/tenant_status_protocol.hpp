@@ -20,9 +20,9 @@
 #ifndef ORES_IAM_MESSAGING_TENANT_STATUS_PROTOCOL_HPP
 #define ORES_IAM_MESSAGING_TENANT_STATUS_PROTOCOL_HPP
 
+#include "ores.iam.api/domain/tenant_status.hpp"
 #include <string>
 #include <vector>
-#include "ores.iam.api/domain/tenant_status.hpp"
 
 namespace ores::iam::messaging {
 

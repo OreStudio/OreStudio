@@ -17,9 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.iam.core/service/authorization_service.hpp"
 #include "ores.iam.api/domain/permission.hpp"
-
+#include "ores.iam.core/service/authorization_service.hpp"
 #include <catch2/catch_test_macros.hpp>
 
 namespace {
@@ -34,10 +33,7 @@ namespace permissions = ores::iam::domain::permissions;
 TEST_CASE("check_permission_returns_true_for_exact_match", tags) {
     // Sorted list as required by binary_search
     std::vector<std::string> perms = {
-        permissions::accounts_create,
-        permissions::accounts_read,
-        permissions::roles_read
-    };
+        permissions::accounts_create, permissions::accounts_read, permissions::roles_read};
     std::ranges::sort(perms);
 
     CHECK(authorization_service::check_permission(perms, permissions::accounts_read));
@@ -46,10 +42,7 @@ TEST_CASE("check_permission_returns_true_for_exact_match", tags) {
 }
 
 TEST_CASE("check_permission_returns_false_for_missing_permission", tags) {
-    std::vector<std::string> perms = {
-        permissions::accounts_read,
-        permissions::roles_read
-    };
+    std::vector<std::string> perms = {permissions::accounts_read, permissions::roles_read};
     std::ranges::sort(perms);
 
     CHECK_FALSE(authorization_service::check_permission(perms, permissions::accounts_delete));

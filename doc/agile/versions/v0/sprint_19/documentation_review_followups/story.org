@@ -74,8 +74,6 @@ and inventory that links them, and the smaller additions woven in.
 | [[id:FAFFCE73-0AD3-4801-A613-4E6C9BDEF1D5][Split document types into one page per type]] | BACKLOG | | | One document_type_<type>.org per type; document_types.org becomes the index. |
 | [[id:3DA4EDB1-F6E2-42D1-A029-0E8422A05E7A][Link product identity to the user manual]] | BACKLOG | | | "If you are looking for instructions on how to use the product see..." |
 
-* Decisions
-
 * Out of scope
 
 - Changing the agile process itself beyond the additions above — this

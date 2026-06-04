@@ -32,11 +32,6 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 | Next         | Begin implementation.                  |
 | Last touched | 2026-06-04                               |
 
-* Acceptance
-
--
-
-* Plan
 
 (Transient implementation strategy. Written when work starts;
 distilled into the parent story's =* Decisions= and cleared when the

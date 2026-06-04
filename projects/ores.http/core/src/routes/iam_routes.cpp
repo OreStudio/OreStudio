@@ -766,10 +766,14 @@ asio::awaitable<http_response> iam_routes::handle_list_accounts(const http_reque
         auto offset_str = req.get_query_param("offset");
         auto limit_str = req.get_query_param("limit");
 
-        if (!offset_str.empty())
-            offset = std::stoul(offset_str);
-        if (!limit_str.empty())
-            limit = std::stoul(limit_str);
+        try {
+            if (!offset_str.empty())
+                offset = std::stoul(offset_str);
+            if (!limit_str.empty())
+                limit = std::stoul(limit_str);
+        } catch (const std::exception&) {
+            co_return http_response::bad_request("Invalid offset or limit query parameter");
+        }
 
         auto accounts = account_service_.list_accounts(offset, limit);
 
@@ -1288,10 +1292,14 @@ asio::awaitable<http_response> iam_routes::handle_list_sessions(const http_reque
         auto offset_str = req.get_query_param("offset");
         auto limit_str = req.get_query_param("limit");
 
-        if (!offset_str.empty())
-            offset = std::stoul(offset_str);
-        if (!limit_str.empty())
-            limit = std::stoul(limit_str);
+        try {
+            if (!offset_str.empty())
+                offset = std::stoul(offset_str);
+            if (!limit_str.empty())
+                limit = std::stoul(limit_str);
+        } catch (const std::exception&) {
+            co_return http_response::bad_request("Invalid offset or limit query parameter");
+        }
 
         // Determine target account
         boost::uuids::uuid target_account_id = auth->account_id;

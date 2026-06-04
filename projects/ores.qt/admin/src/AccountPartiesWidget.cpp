@@ -161,23 +161,24 @@ void AccountPartiesWidget::load() {
         }
     });
 
-    QFuture<LoadResult> future = QtConcurrent::run([self, accountId, has_account]() -> LoadResult {
+    auto* clientManager = clientManager_;
+    QFuture<LoadResult> future = QtConcurrent::run([self, clientManager, accountId, has_account]() -> LoadResult {
         if (!self)
             return {.success = false};
 
         std::vector<iam::domain::account_party> assigned;
         if (has_account) {
-            auto assignedFuture = std::async(std::launch::async, [&self, &accountId]() {
+            auto assignedFuture = std::async(std::launch::async, [clientManager, accountId]() {
                 iam::messaging::get_account_parties_by_account_request request;
                 request.account_id = boost::uuids::to_string(accountId);
-                return self->clientManager_->process_authenticated_request(std::move(request));
+                return clientManager->process_authenticated_request(std::move(request));
             });
 
-            auto allPartiesFuture = std::async(std::launch::async, [&self]() {
+            auto allPartiesFuture = std::async(std::launch::async, [clientManager]() {
                 refdata::messaging::get_parties_request request;
                 request.offset = 0;
                 request.limit = 1000;
-                return self->clientManager_->process_authenticated_request(std::move(request));
+                return clientManager->process_authenticated_request(std::move(request));
             });
 
             auto assignedResult = assignedFuture.get();
@@ -202,7 +203,7 @@ void AccountPartiesWidget::load() {
         refdata::messaging::get_parties_request request;
         request.offset = 0;
         request.limit = 1000;
-        auto result = self->clientManager_->process_authenticated_request(std::move(request));
+        auto result = clientManager->process_authenticated_request(std::move(request));
 
         if (!result) {
             BOOST_LOG_SEV(lg(), error) << "Failed to fetch parties: " << result.error();

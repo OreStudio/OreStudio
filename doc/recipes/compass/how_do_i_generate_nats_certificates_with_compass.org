@@ -65,5 +65,7 @@ startup.
 
 * See also
 
+- [[id:D9B0988E-D783-43D6-BCCD-CE2F70022B9C][NATS]] — background on the messaging system and ORE Studio's mTLS setup.
 - [[id:13209197-CDBD-4807-A8F9-9653AFA96CBF][How do I manage the checkout environment with compass?]] — =compass env init= calls this automatically.
+- [[id:E7ABCD61-61F0-4709-A042-E4BDE2F9AC29][How do I initialise the NATS server config with compass?]] — the companion command for config + store dir.
 - [[id:DBB7FE01-0C33-4EF9-BB2A-039674E71AB1][Service registry]] — authoritative list of services; drives =_SERVICES= in =nats_certs.py=.

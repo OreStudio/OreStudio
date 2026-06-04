@@ -68,6 +68,8 @@ pillars that fold in the standalone scripts, starting with Provision.
 - [[id:694BFB41-222A-4BC7-BC74-D8B7C6C61644][How do I manage the .env format version with compass?]] — show and
   record the env-format version, and how a stale checkout is caught
   (=env version= / =version new=).
+- [[id:E7ABCD61-61F0-4709-A042-E4BDE2F9AC29][How do I initialise the NATS server config with compass?]] — render the
+  per-environment nats-server config and create the JetStream store dir (=nats init=).
 - [[id:280432C1-EE5D-4409-9DC6-372CCD3E2789][How do I generate NATS certificates with compass?]] — generate the CA
   and per-service mTLS client certs (=nats certs= / =nats certs --force=).
 
@@ -84,4 +86,5 @@ doc navigation); the recipes live under [[id:95FF6AF4-2320-4CB6-A007-B016B7DA16E
 * See also
 
 - [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][ores.compass]] — the component model (pillars, structure, design).
+- [[id:D9B0988E-D783-43D6-BCCD-CE2F70022B9C][NATS]] — background on the messaging system managed by =compass nats=.
 - [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes]] — the full topic index.

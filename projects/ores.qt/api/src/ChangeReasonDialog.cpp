@@ -29,7 +29,7 @@
 
 namespace ores::qt {
 
-namespace reason = database::domain::change_reason_constants;
+namespace reason = ores::database::domain::change_reason_constants;
 
 ChangeReasonDialog::ChangeReasonDialog(
     const std::vector<dq::domain::change_reason>& reasons,

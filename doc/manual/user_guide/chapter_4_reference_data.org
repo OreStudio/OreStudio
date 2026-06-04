@@ -223,57 +223,44 @@ provenance fields. The *Provenance* tab in every detail dialog shows
 them read-only; it is disabled in create mode since no provenance
 exists before the first save.
 
-**** =version= — Version
+The table below is the at-a-glance map from what you see on the tab
+to where each value comes from. Note the split: the two facts that
+must be tamper-proof — the version number and the moment of writing —
+are set by a database trigger and can never be supplied by the
+application; the four that carry business meaning are set by the
+application from your session and your answers to the change reason
+prompt.
 
-| Set by   | DB trigger |
-| UI label | Version    |
+#+caption[Provenance fields]: The six provenance fields, as labelled on the Provenance tab, and where each value originates.
+| UI label      | Field                | Set by      |
+|---------------+----------------------+-------------|
+| Version       | =version=            | DB trigger  |
+| Modified By   | =modified_by=        | Application |
+| Performed By  | =performed_by=       | Application |
+| Recorded At   | =recorded_at=        | DB trigger  |
+| Change Reason | =change_reason_code= | Application |
+| Commentary    | =change_commentary=  | Application |
 
-Monotonically increasing integer starting at 1, incremented by the
-database trigger on every save. Never written by the application.
-
-**** =modified_by= — Modified By
-
-| Set by   | Application |
-| UI label | Modified By |
-
-The username of the account that submitted the save request.
-
-**** =performed_by= — Performed By
-
-| Set by   | Application  |
-| UI label | Performed By |
-
-The username on whose behalf the change was performed. In automated
-workflows, a service account may submit a change on behalf of a human
-operator — in that case =modified_by= identifies the service and
-=performed_by= identifies the human, preserving accountability at both
-layers.
-
-**** =recorded_at= — Recorded At
-
-| Set by   | DB trigger  |
-| UI label | Recorded At |
-
-The UTC wall-clock timestamp at the moment the row was written,
-set by the database trigger. Like all timestamps in OreStudio it is
-stored as UTC and displayed in your local timezone.
-
-**** =change_reason_code= — Change Reason
-
-| Set by   | Application   |
-| UI label | Change Reason |
-
-A structured code drawn from the change reasons table identifying the
-business justification for the change. See [[*Change Reasons][Change Reasons]] below.
-
-**** =change_commentary= — Commentary
-
-| Set by   | Application |
-| UI label | Commentary  |
-
-A free-text note accompanying the change. Mandatory for some reason
-codes, optional for others. Displayed in the history dialog and
-stored permanently with the version.
+- =version= :: Monotonically increasing integer starting at 1,
+  incremented by the database trigger on every save. Never written by
+  the application.
+- =modified_by= :: The username of the account that submitted the
+  save request.
+- =performed_by= :: The username on whose behalf the change was
+  performed. Usually the same as =modified_by=; they differ in
+  automated workflows, where a service account submits a change on
+  behalf of a human operator — =modified_by= then identifies the
+  service and =performed_by= the human, preserving accountability at
+  both layers.
+- =recorded_at= :: The UTC wall-clock timestamp at the moment the row
+  was written. Like all timestamps in OreStudio it is stored as UTC
+  and displayed in your local timezone.
+- =change_reason_code= :: A structured code drawn from the change
+  reasons table identifying the business justification for the
+  change. See [[*Change Reasons][Change Reasons]] below.
+- =change_commentary= :: A free-text note accompanying the change.
+  Mandatory for some reason codes, optional for others. Displayed in
+  the history dialog and stored permanently with the version.
 
 *** Change Reasons
 
@@ -298,62 +285,44 @@ against silent undocumented changes, and they make the audit trail
 machine-readable and regulatorily aligned. The category structure maps
 directly to BCBS 239, FRTB, MiFID II, and FINRA reporting obligations.
 
+Each category below opens with a matrix of its codes: which operations
+each code applies to (create, amend, delete) and whether the code
+demands commentary — codes marked /required/ will not save without a
+note, the rest take "—" as optional. The full code as stored in the
+audit trail is the category-qualified form, =category.code= — for
+example =trade.fat_finger=; the matrices and descriptions omit the
+prefix within each category section.
+
 **** The System Category
 
 System reasons are assigned automatically by the application and
 services. They are not shown in the change reason prompt and cannot
 be selected manually.
 
-***** =system.initial_load=
+#+caption[System change reasons]: The =system= category codes, the operations each applies to, and whether commentary is required.
+| Code                    | Create | Amend | Delete | Commentary |
+|-------------------------+--------+-------+--------+------------|
+| =initial_load=          | x      |       |        | —          |
+| =new_record=            | x      |       |        | —          |
+| =external_data_import=  |        | x     |        | required   |
+| =import=                | x      | x     |        | —          |
+| =test=                  | x      | x     | x      | —          |
+| =tenant_terminated=     |        | x     |        | —          |
+| =admin_reset=           |        | x     |        | —          |
 
-| Applies to  | Create   |
-| Commentary  | Optional |
-
-Initial system provisioning or database migration. Used once during
-deployment.
-
-***** =system.new_record=
-
-| Applies to  | Create   |
-| Commentary  | Optional |
-
-Normal operational record creation by the application or a service.
-
-***** =system.external_data_import=
-
-| Applies to  | Amend        |
-| Commentary  | *Mandatory*  |
-
-Import from an external data source (ISO feed, GLEIF, vendor file).
-Commentary is mandatory — the data lineage source must be recorded.
-
-***** =system.import=
-
-| Applies to  | Create, Amend |
-| Commentary  | Optional      |
-
-Data loaded via the CLI import command.
-
-***** =system.test=
-
-| Applies to  | Create, Amend, Delete |
-| Commentary  | Optional              |
-
-Test data created by automated test suites.
-
-***** =system.tenant_terminated=
-
-| Applies to  | Amend    |
-| Commentary  | Optional |
-
-Applied when a tenant is marked as terminated.
-
-***** =system.admin_reset=
-
-| Applies to  | Amend    |
-| Commentary  | Optional |
-
-Data reset by a system administrator during re-provisioning.
+- =initial_load= :: Initial system provisioning or database
+  migration. Used once during deployment.
+- =new_record= :: Normal operational record creation by the
+  application or a service.
+- =external_data_import= :: Import from an external data source (ISO
+  feed, GLEIF, vendor file). Commentary must record the data lineage
+  source.
+- =import= :: Data loaded via the CLI import command.
+- =test= :: Test data created by automated test suites.
+- =tenant_terminated= :: Applied when a tenant is marked as
+  terminated.
+- =admin_reset= :: Data reset by a system administrator during
+  re-provisioning.
 
 **** The Common Category
 
@@ -361,140 +330,76 @@ Common reasons are the universal data quality reasons, aligned with
 BCBS 239 and FRTB standards. These are the reasons most frequently
 used by operators during day-to-day data maintenance.
 
-***** =common.non_material_update=
+#+caption[Common change reasons]: The =common= category codes, the operations each applies to, and whether commentary is required.
+| Code                  | Create | Amend | Delete | Commentary |
+|-----------------------+--------+-------+--------+------------|
+| =non_material_update= |        | x     |        | —          |
+| =rectification=       |        | x     | x      | —          |
+| =duplicate=           |        |       | x      | —          |
+| =stale_data=          |        | x     | x      | —          |
+| =outlier_correction=  |        | x     | x      | required   |
+| =feed_failure=        |        | x     | x      | required   |
+| =mapping_error=       |        | x     | x      | required   |
+| =judgmental_override= |        | x     | x      | required   |
+| =regulatory=          |        | x     | x      | required   |
+| =other=               |        | x     | x      | required   |
 
-| Applies to  | Amend    |
-| Commentary  | Optional |
-
-A cosmetic or administrative change with no economic impact — a
-"touch" to refresh a timestamp or correct capitalisation.
-
-***** =common.rectification=
-
-| Applies to  | Amend, Delete |
-| Commentary  | Optional      |
-
-Correction of a user or booking error. The most commonly used reason
-for fixing a data-entry mistake.
-
-***** =common.duplicate=
-
-| Applies to  | Delete   |
-| Commentary  | Optional |
-
-Removal of a duplicate record where an equivalent entry already exists.
-
-***** =common.stale_data=
-
-| Applies to  | Amend, Delete |
-| Commentary  | Optional      |
-
-Data not updated within the required liquidity horizon, requiring a
-refresh or removal.
-
-***** =common.outlier_correction=
-
-| Applies to  | Amend, Delete |
-| Commentary  | *Mandatory*   |
-
-Manual override following a plausibility check failure — a value
-outside acceptable bounds overridden by an operator. Commentary must
-identify the plausibility rule that triggered the review.
-
-***** =common.feed_failure=
-
-| Applies to  | Amend, Delete |
-| Commentary  | *Mandatory*   |
-
-Correction caused by an upstream vendor or API data issue. Commentary
-must identify the failed feed.
-
-***** =common.mapping_error=
-
-| Applies to  | Amend, Delete |
-| Commentary  | *Mandatory*   |
-
-Incorrect identifier translation — for example a wrong ISIN-to-FIGI
-mapping. Commentary must describe the mapping error.
-
-***** =common.judgmental_override=
-
-| Applies to  | Amend, Delete |
-| Commentary  | *Mandatory*   |
-
-Expert judgment applied when market prices or reference values are
-unavailable and an operator must supply a value manually.
-
-***** =common.regulatory=
-
-| Applies to  | Amend, Delete |
-| Commentary  | *Mandatory*   |
-
-Mandatory compliance adjustment required by a regulatory obligation
-or instruction.
-
-***** =common.other=
-
-| Applies to  | Amend, Delete |
-| Commentary  | *Mandatory*   |
-
-Exceptional changes that do not fit any other category. The commentary
-must fully explain the reason — this code exists as a last resort and
-should be used sparingly.
+- =non_material_update= :: A cosmetic or administrative change with
+  no economic impact — a "touch" to refresh a timestamp or correct
+  capitalisation.
+- =rectification= :: Correction of a user or booking error. The most
+  commonly used reason for fixing a data-entry mistake.
+- =duplicate= :: Removal of a duplicate record where an equivalent
+  entry already exists.
+- =stale_data= :: Data not updated within the required liquidity
+  horizon, requiring a refresh or removal.
+- =outlier_correction= :: Manual override following a plausibility
+  check failure — a value outside acceptable bounds overridden by an
+  operator. Commentary must identify the plausibility rule that
+  triggered the review.
+- =feed_failure= :: Correction caused by an upstream vendor or API
+  data issue. Commentary must identify the failed feed.
+- =mapping_error= :: Incorrect identifier translation — for example a
+  wrong ISIN-to-FIGI mapping. Commentary must describe the mapping
+  error.
+- =judgmental_override= :: Expert judgment applied when market prices
+  or reference values are unavailable and an operator must supply a
+  value manually.
+- =regulatory= :: Mandatory compliance adjustment required by a
+  regulatory obligation or instruction.
+- =other= :: Exceptional changes that do not fit any other category.
+  The commentary must fully explain the reason — this code exists as
+  a last resort and should be used sparingly.
 
 **** The Trade Category
 
 Trade reasons are aligned with FINRA and MiFID II trade lifecycle
 reporting requirements.
 
-***** =trade.fat_finger=
+#+caption[Trade change reasons]: The =trade= category codes, the operations each applies to, and whether commentary is required.
+| Code                 | Create | Amend | Delete | Commentary |
+|----------------------+--------+-------+--------+------------|
+| =fat_finger=         |        | x     | x      | —          |
+| =system_malfunction= |        | x     | x      | required   |
+| =corporate_action=   |        | x     | x      | —          |
+| =allocation_swap=    |        | x     | x      | —          |
+| =re_booking=         |        | x     | x      | required   |
+| =other=              |        | x     | x      | required   |
 
-| Applies to  | Amend, Delete |
-| Commentary  | Optional      |
-
-Erroneous execution — a trade entered with the wrong quantity, price,
-or instrument due to a keying error.
-
-***** =trade.system_malfunction=
-
-| Applies to  | Amend, Delete |
-| Commentary  | *Mandatory*   |
-
-Change caused by a technical glitch or algorithmic error in an
-execution system. Commentary must identify the system and the nature
-of the malfunction.
-
-***** =trade.corporate_action=
-
-| Applies to  | Amend, Delete |
-| Commentary  | Optional      |
-
-Adjustment following a corporate action such as a stock split,
-dividend reinvestment, or merger.
-
-***** =trade.allocation_swap=
-
-| Applies to  | Amend, Delete |
-| Commentary  | Optional      |
-
-Reallocation between a house account and a client sub-account, or
-between sub-accounts.
-
-***** =trade.re_booking=
-
-| Applies to  | Amend, Delete |
-| Commentary  | *Mandatory*   |
-
-Correction of a wrong legal entity booking — a trade entered under
-the wrong counterparty or book. Commentary must identify the correct
-entity.
-
-***** =trade.other=
-
-| Applies to  | Amend, Delete |
-| Commentary  | *Mandatory*   |
-
-Exceptional trade lifecycle changes that do not fit any other code.
+- =fat_finger= :: Erroneous execution — a trade entered with the
+  wrong quantity, price, or instrument due to a keying error.
+- =system_malfunction= :: Change caused by a technical glitch or
+  algorithmic error in an execution system. Commentary must identify
+  the system and the nature of the malfunction.
+- =corporate_action= :: Adjustment following a corporate action such
+  as a stock split, dividend reinvestment, or merger.
+- =allocation_swap= :: Reallocation between a house account and a
+  client sub-account, or between sub-accounts.
+- =re_booking= :: Correction of a wrong legal entity booking — a
+  trade entered under the wrong counterparty or book. Commentary must
+  identify the correct entity.
+- =other= :: Exceptional trade lifecycle changes that do not fit any
+  other code.
 
 **** Extending Change Reasons
 

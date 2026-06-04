@@ -67,4 +67,5 @@ used across all plugins.
 - [[id:25812E6F-7AD1-36E4-697B-EEC8015C4F1F][ores.qt]] — the application shell (MainWindow) that loads and drives plugins.
 - [[id:E81C7FEA-33E4-400A-839A-9D1618BED211][Qt Plugin Architecture]] — full plugin lifecycle and menu-building sequence.
 - [[id:FC186D19-9421-45A2-BBCC-4355D66AA41F][Entity Controller Pattern]] — detailed description of the base class pattern.
+- [[id:F7DE2705-4D20-4878-A10C-A834F3283683][Badge system wiring]] — how =BadgeCache= fits into the system and how to add new badges.
 - [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] — NATS transport underlying ClientManager.

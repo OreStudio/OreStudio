@@ -32,11 +32,11 @@ task so they reflect actual code:
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                                |
+| State        | DONE                                   |
 | Parent story | [[id:814D4E79-8EB9-4B2B-8A87-DB72F145044D][Display account type as badge in Qt accounts list]] |
-| Now          | Not yet started.                       |
-| Waiting on   | [[id:5433FF26-FF0A-45A4-882A-4A9C41F51CB9][Implement account type badge]] (recipe written after impl). |
-| Next         | Implement badge task first.            |
+| Now          | Nothing.                               |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                               |
 | Last touched | 2026-06-04                             |
 
 * Acceptance
@@ -74,3 +74,14 @@ task closes. Plans do not outlive their task.)
 |   |                 |      |          |       |
 
 * Result
+
+Produced two linked documents using =compass add=:
+
+- =doc/knowledge/architecture/badge_system_wiring.org= (=F7DE2705=)
+  — three-layer architecture (=ores.dq= entities, SQL population,
+  =BadgeCache=/delegate), full =paint()= template, worked example
+  using =account_type=. Wired into =knowledge.org= Architecture section
+  and =ores.qt.api= component overview.
+- =doc/recipes/qt/how_do_i_add_a_badge_in_qt.org= (=5C39026D=) —
+  four-step checklist (code domain, definitions, mappings, delegate)
+  pointing to the knowledge doc for detail.

@@ -344,6 +344,7 @@ void AccountController::showDetailWindow(
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setChangeReasonCache(changeReasonCache_);
+    detailDialog->setBadgeCache(badgeCache_);
 
     if (isCreateMode) {
         iam::domain::account empty_account;
@@ -416,6 +417,7 @@ void AccountController::onOpenAccountVersion(
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setChangeReasonCache(changeReasonCache_);
+    detailDialog->setBadgeCache(badgeCache_);
 
     connect(detailDialog, &AccountDetailDialog::statusMessage,
             this, [self = QPointer<AccountController>(this)](const QString& message) {

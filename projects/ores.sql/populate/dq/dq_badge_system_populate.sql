@@ -186,10 +186,10 @@ BEGIN
         'account_locked', 'Locked', 'Account is locked and cannot be used.',
         '#ef4444', '#ffffff', 'danger', 'badge bg-danger', 11);
 
-    -- Account: Unlocked
+    -- Account: Unlocked (positive state — gray is reserved for inactive/negative)
     PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
         'account_unlocked', 'Unlocked', 'Account is unlocked and accessible.',
-        '#6b7280', '#ffffff', 'secondary', 'badge bg-secondary', 12);
+        '#22c55e', '#ffffff', 'success', 'badge bg-success', 12);
 
     -- Compute task outcome: Success
     PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
@@ -211,10 +211,10 @@ BEGIN
         'state_running', 'Running', 'Task is currently executing.',
         '#0ea5e9', '#ffffff', 'info', 'badge bg-info', 16);
 
-    -- Compute task state: Done / Inactive
+    -- Compute task state: Done (completed — gray is reserved for inactive/negative)
     PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
         'state_done', 'Done', 'Task has completed.',
-        '#6b7280', '#ffffff', 'secondary', 'badge bg-secondary', 17);
+        '#22c55e', '#ffffff', 'success', 'badge bg-success', 17);
 
     -- Concurrency policy: Skip
     PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
@@ -299,10 +299,10 @@ BEGIN
         'account_type_user', 'User', 'Human user account.',
         '#3b82f6', '#ffffff', 'info', 'badge bg-info', 33);
 
-    -- Account Type: Service
+    -- Account Type: Service (teal — gray is reserved for inactive/negative)
     PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
         'account_type_service', 'Service', 'Service account for non-human processes.',
-        '#6b7280', '#ffffff', 'secondary', 'badge bg-secondary', 34);
+        '#14b8a6', '#ffffff', 'info', 'badge bg-info', 34);
 
     -- Account Type: Algorithm
     PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
@@ -325,6 +325,10 @@ BEGIN
     PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
         'account_type', 'Account Type',
         'Classification of account types (user, service, algorithm, llm).', 17);
+
+    PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'account_online', 'Account Online',
+        'Boolean online indicator for accounts (Yes, No).', 18);
 
     -- =============================================================================
     -- Badge Mappings
@@ -395,6 +399,13 @@ BEGIN
         'account_locked', 'Locked', 'account_locked');
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'account_locked', 'Unlocked', 'account_unlocked');
+
+    -- account_online (boolean online indicator in the account detail
+    -- dialog; No reuses 'inactive' — gray is correct for "not online")
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'account_online', 'Yes', 'login_online');
+    PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'account_online', 'No', 'inactive');
 
     -- compute_task_outcome
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),

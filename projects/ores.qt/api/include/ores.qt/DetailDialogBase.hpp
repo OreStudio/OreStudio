@@ -32,6 +32,7 @@ class QTabWidget;
 
 namespace ores::qt {
 
+class BadgeCache;
 class ChangeReasonCache;
 class ProvenanceWidget;
 
@@ -102,6 +103,15 @@ public:
      * the cache explicitly.
      */
     void setChangeReasonCache(ChangeReasonCache* cache) { changeReasonCache_ = cache; }
+
+    /**
+     * @brief Inject the shared badge cache.
+     *
+     * Controllers call this immediately after constructing a detail dialog
+     * that renders badges (via BadgeLabelUtils). May be left unset; badge
+     * rendering then uses the fallback colours.
+     */
+    void setBadgeCache(BadgeCache* cache) { badgeCache_ = cache; }
 
 signals:
     /**
@@ -242,9 +252,13 @@ protected:
                        bool isDirty,
                        std::string_view category = "system");
 
+protected:
+    [[nodiscard]] BadgeCache* badgeCache() const { return badgeCache_; }
+
 private:
     bool closeConfirmed_ = false;
     ChangeReasonCache* changeReasonCache_ = nullptr;
+    BadgeCache* badgeCache_ = nullptr;
 };
 
 }

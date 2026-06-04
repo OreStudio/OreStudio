@@ -20,6 +20,7 @@
 #include "ores.qt/DatasetItemDelegate.hpp"
 #include "ores.qt/BadgeCache.hpp"
 #include "ores.qt/ClientDatasetModel.hpp"
+#include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/DelegatePaintUtils.hpp"
 
 #include <QPainter>
@@ -48,9 +49,6 @@ void DatasetItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
         badgeFont.setPointSize(qRound(badgeFont.pointSize() * 0.8));
         badgeFont.setBold(true);
 
-        static const QColor default_bg(107, 114, 128);
-        static const QColor white(255, 255, 255);
-
         auto resolve = [this](
             const QString& domain, const QString& value) -> std::pair<QColor, QColor> {
             if (badgeCache_ && !value.isEmpty()) {
@@ -60,7 +58,10 @@ void DatasetItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
                     return {QColor(QString::fromStdString(def->background_colour)),
                             QColor(QString::fromStdString(def->text_colour))};
             }
-            return {default_bg, white};
+            // Fallback for unresolved badge definitions — deliberately not
+            // gray, which is reserved for inactive/negative states.
+            return {color_constants::badge_fallback,
+                    color_constants::badge_fallback_text};
         };
 
         // Get the tag values

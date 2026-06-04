@@ -35,6 +35,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include "ui_AccountDetailDialog.h"
+#include "ores.qt/BadgeLabelUtils.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/MdiUtils.hpp"
@@ -298,8 +299,8 @@ void AccountDetailDialog::clearDialog() {
     clearProvenance();
 
     // Clear login status fields
-    ui_->onlineEdit->clear();
-    ui_->lockedEdit->clear();
+    BadgeLabelUtils::clear(ui_->onlineBadge);
+    BadgeLabelUtils::clear(ui_->lockedBadge);
     ui_->failedLoginsEdit->clear();
     ui_->lastLoginEdit->clear();
     ui_->lastIpEdit->clear();
@@ -317,8 +318,11 @@ void AccountDetailDialog::setLoginInfo(
 
     if (loginInfo.has_value()) {
         const auto& li = loginInfo.value();
-        ui_->onlineEdit->setText(li.online ? tr("Yes") : tr("No"));
-        ui_->lockedEdit->setText(li.locked ? tr("Yes") : tr("No"));
+        BadgeLabelUtils::apply(ui_->onlineBadge, badgeCache(), "account_online",
+            li.online ? "Yes" : "No", li.online ? tr("Yes") : tr("No"));
+        BadgeLabelUtils::apply(ui_->lockedBadge, badgeCache(), "account_locked",
+            li.locked ? "Locked" : "Unlocked",
+            li.locked ? tr("Yes") : tr("No"));
         ui_->failedLoginsEdit->setText(QString::number(li.failed_logins));
 
         // Convert time_point to string
@@ -335,8 +339,10 @@ void AccountDetailDialog::setLoginInfo(
         ui_->lastAttemptIpEdit->setText(QString::fromStdString(li.last_attempt_ip.to_string()));
     } else {
         // No login info available
-        ui_->onlineEdit->setText(tr("N/A"));
-        ui_->lockedEdit->setText(tr("N/A"));
+        BadgeLabelUtils::clear(ui_->onlineBadge);
+        ui_->onlineBadge->setText(tr("N/A"));
+        BadgeLabelUtils::clear(ui_->lockedBadge);
+        ui_->lockedBadge->setText(tr("N/A"));
         ui_->failedLoginsEdit->setText(tr("N/A"));
         ui_->lastLoginEdit->setText(tr("N/A"));
         ui_->lastIpEdit->setText(tr("N/A"));

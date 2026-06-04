@@ -165,11 +165,12 @@ void TenantMdiWindow::setupTable() {
         ClientTenantModel::columnStyles(), tableView_);
     delegate->set_badge_color_resolver(ClientTenantModel::Status,
         [cache = badgeCache_](const QString& value) -> badge_color_pair {
-            static const badge_color_pair default_gray{
-                QColor(0x6B, 0x72, 0x80), Qt::white};
-            if (!cache) return default_gray;
+            static const badge_color_pair fallback{
+                color_constants::badge_fallback,
+                color_constants::badge_fallback_text};
+            if (!cache) return fallback;
             auto* def = cache->resolve("tenant_status", value.toStdString());
-            if (!def) return default_gray;
+            if (!def) return fallback;
             return {QColor(QString::fromStdString(def->background_colour)),
                     QColor(QString::fromStdString(def->text_colour))};
         });

@@ -97,6 +97,11 @@
 ;; Developers refresh #+RESULTS: manually via the org-babel-refresh recipe.
 (setq org-export-use-babel nil)
 
+;; Never interpret a_b / a^b as subscript/superscript on export:
+;; snake_case identifiers (is_temporal, valid_from) are pervasive in
+;; prose and tables, and render as nonsense subscripts otherwise.
+(setq org-export-with-sub-superscripts nil)
+
 ;; Customize the HTML output
 (setq org-html-validation-link nil            ;; Don't show validation link
       org-html-head-include-scripts nil       ;; Use our own scripts
@@ -153,6 +158,9 @@
          :with-creator t
          :with-toc t
          :section-numbers nil
+         ;; Never interpret a_b / a^b as subscript/superscript: snake_case
+         ;; identifiers (is_temporal, valid_from) are pervasive in prose.
+         :with-sub-superscript nil
          :time-stamp-file nil)
         ("site:images"
          :recursive t

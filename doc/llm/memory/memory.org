@@ -89,6 +89,9 @@ of these exclusions, push back: the right home is somewhere else.
 - [[id:A5827C19-D0EB-46B7-99C3-4CA2DFE53E93][Plans live inline in tasks, not in doc/plans]] — design/analysis goes
   in the task's =* Plan= / =* Notes= and distils to the story's
   =* Decisions=; =doc/plans/= is archive-only.
+- [[id:30AA95CD-CE4E-4339-A6E3-08169E13CA66][Check runbooks before skills for multi-step procedures]] — for
+  end-to-end procedures (PR review round, release, hotfix), check
+  =doc/llm/runbooks/= first; skills are building blocks, not workflows.
 
 ** User
 

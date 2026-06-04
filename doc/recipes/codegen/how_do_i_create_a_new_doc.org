@@ -222,6 +222,13 @@ folder name and the =name:= field in the skill's markdown frontmatter.
 
 Output: =doc/llm/skills/my_new_skill/SKILL.org=.
 
+After filling in the skill body, rebuild the shipped bundle so Claude
+Code picks up the change — see [[id:B5F231A9-5403-482C-8F2A-12D6917C58CD][How do I deploy the skills?]]:
+
+#+begin_src sh :results verbatim
+cmake --build --preset linux-clang-debug-make --target deploy_skills
+#+end_src
+
 ** New product identity
 :PROPERTIES:
 :ID: F1311596-B8ED-43AD-8C46-76C58C0194C7

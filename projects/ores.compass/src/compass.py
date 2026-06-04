@@ -1771,6 +1771,11 @@ def cmd_add(argv):
     if rc in (None, 0):
         print("ℹ️  Remember to wire the new artefact into its parent "
               "(e.g. the sprint's * Stories table) where needed.", file=sys.stderr)
+        if doc_type == "skill":
+            print("⚠️  Rebuild the skills bundle after filling in the skill body:",
+                  file=sys.stderr)
+            print(f"   {_ycmd('compass show B5F231A9-5403-482C-8F2A-12D6917C58CD')}",
+                  file=sys.stderr)
         if doc_type == "manual":
             print("⚠️  Manual link rule: [[id:UUID]] links to documents outside"
                   " doc/manual/ will break the PDF export.", file=sys.stderr)

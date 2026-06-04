@@ -12,8 +12,8 @@ build/scripts/init-environment.sh; behaviour is preserved:
   the same source that generates projects/ores.sql/service_vars.sh.
 
 Dependencies: python3, openssl.  NATS cert generation is handled by the
-nats_certs module (compass nats certs).  init-nats.sh is still invoked for
-per-environment NATS server config + JetStream store setup.
+nats_certs module (compass nats certs); NATS config + store setup is handled
+by the nats_init module (compass nats init).
 """
 
 import argparse

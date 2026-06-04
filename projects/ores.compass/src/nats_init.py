@@ -10,12 +10,16 @@ env_init calls generate() directly with the already-resolved values.
 
 import argparse
 import os
+import sys
 from pathlib import Path
 
 
 def generate(checkout_root: Path, label: str, nats_port: int,
              nats_monitor_port: int, nats_store_dir: Path) -> None:
     """Render the NATS config template and create the JetStream store dir."""
+    checkout_root = Path(checkout_root)
+    nats_store_dir = Path(nats_store_dir)
+
     template_file = checkout_root / "build" / "config" / "nats.conf.template"
     if not template_file.is_file():
         raise FileNotFoundError(f"NATS config template not found: {template_file}")
@@ -51,7 +55,10 @@ def _load_dotenv(env_file: Path) -> dict:
         if not line or line.startswith("#") or "=" not in line:
             continue
         key, _, val = line.partition("=")
-        env[key.strip()] = val.strip()
+        val = val.strip()
+        if len(val) >= 2 and val[0] == val[-1] and val[0] in ('"', "'"):
+            val = val[1:-1]
+        env[key.strip()] = val
     return env
 
 
@@ -65,8 +72,13 @@ def run(argv, project_root: Path) -> int:
     env.update(os.environ)  # shell env takes precedence
 
     label = env.get("ORES_CHECKOUT_LABEL", project_root.name)
-    nats_port = int(env.get("ORES_NATS_PORT", "4222"))
-    nats_monitor_port = int(env.get("ORES_NATS_MONITOR_PORT", "8222"))
+    try:
+        nats_port = int(env.get("ORES_NATS_PORT", "4222"))
+        nats_monitor_port = int(env.get("ORES_NATS_MONITOR_PORT", "8222"))
+    except ValueError as e:
+        print(f"Error: invalid port in environment: {e}", file=sys.stderr)
+        return 1
+
     nats_store_dir = Path(env.get(
         "ORES_NATS_STORE_DIR",
         str(project_root / "build" / "nats" / label / "jetstream")))
@@ -76,7 +88,11 @@ def run(argv, project_root: Path) -> int:
     print(f"  Monitor port: {nats_monitor_port}")
     print(f"  Store dir:    {nats_store_dir}")
     print()
-    generate(project_root, label, nats_port, nats_monitor_port, nats_store_dir)
+    try:
+        generate(project_root, label, nats_port, nats_monitor_port, nats_store_dir)
+    except FileNotFoundError as e:
+        print(f"Error: {e}", file=sys.stderr)
+        return 1
     print(f"\n=== NATS init complete for '{label}' ===")
     print(f"\nNext: start nats-server with:")
     print(f"  nats-server --config build/config/nats-{label}.conf")

@@ -31,7 +31,7 @@ namespace ores::eventing::domain {
  * @brief Dumps the entity change event objects to a stream in table format.
  */
 ORES_EVENTING_API_EXPORT std::ostream& operator<<(std::ostream& s,
-                                              const std::vector<entity_change_event>& v);
+                                                  const std::vector<entity_change_event>& v);
 
 }
 

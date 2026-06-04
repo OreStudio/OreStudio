@@ -23,8 +23,8 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/service/postgres_listener_service.hpp"
 #include "ores.eventing.api/domain/entity_change_event.hpp"
-#include "ores.eventing.core/export.hpp"
 #include "ores.eventing.api/service/event_bus.hpp"
+#include "ores.eventing.core/export.hpp"
 #include "ores.logging/make_logger.hpp"
 #include <atomic>
 #include <cstdint>

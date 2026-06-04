@@ -36,7 +36,7 @@ ORES_EVENTING_API_EXPORT std::ostream& operator<<(std::ostream& s, const event_c
  * @brief Dumps a vector of event channel info objects to a stream in JSON format.
  */
 ORES_EVENTING_API_EXPORT std::ostream& operator<<(std::ostream& s,
-                                              const std::vector<event_channel_info>& v);
+                                                  const std::vector<event_channel_info>& v);
 
 }
 

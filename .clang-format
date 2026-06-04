@@ -84,17 +84,20 @@ AllowShortLoopsOnASingleLine: false
 SortIncludes: CaseSensitive
 IncludeBlocks: Merge
 IncludeCategories:
-  # Standard library and other angle-bracket headers first
-  - Regex: '^<'
+  # Local project headers first (quoted: ores.*, ui_*, etc.)
+  # Rationale: including local headers first ensures each header is
+  # self-sufficient — missing transitive includes are caught immediately
+  # rather than being silently satisfied by a preceding std/Boost header.
+  - Regex: '^"'
     Priority: 1
-  # Boost headers
-  - Regex: '^<boost/'
-    Priority: 2
   # Qt headers
   - Regex: '^<Q[A-Z]'
+    Priority: 2
+  # Boost headers
+  - Regex: '^<boost/'
     Priority: 3
-  # Local project headers (quoted: ores.*, ui_*, etc.)
-  - Regex: '^"'
+  # Standard library and other angle-bracket headers last
+  - Regex: '^<'
     Priority: 4
 
 # ── Misc ──────────────────────────────────────────────────────────────────────

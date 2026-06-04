@@ -252,14 +252,17 @@ AllowShortLoopsOnASingleLine: false
 ** Include ordering
 
 Includes are merged into a single sorted block (no blank lines
-between groups) and ordered from most stable to least stable:
-standard library first, then Boost, then Qt, then local project
-headers. Within each group, headers are sorted case-sensitively.
+between groups) and ordered local-first: project headers, then Qt,
+then Boost, then the standard library. Within each group, headers
+are sorted case-sensitively.
 
-The ordering rationale: reading from the most stable dependency to
-the least stable mirrors the dependency graph and helps reviewers
-understand which external libraries a file draws on before seeing
-its internal dependencies.
+The ordering rationale: including local headers first is the
+Google and LLVM convention for a reason — it surfaces missing
+transitive includes immediately. If =account.hpp= forgets to include
+=<string>= but the =#include "account.hpp"= line comes after a
+=<string>= include, the bug is hidden. Local-first catches it
+because nothing has yet satisfied =<string>= when the header is
+parsed.
 
 *Before* (unsorted, mixed):
 #+begin_example
@@ -269,30 +272,32 @@ its internal dependencies.
 #include <chrono>
 #+end_example
 
-*After* (std → Boost → Qt → local):
+*After* (local → Qt → Boost → std):
 #+begin_example
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <string>
-#include <boost/uuid/uuid.hpp>
-#include "ores.utility/uuid/tenant_id.hpp"
 #+end_example
 
 #+begin_src yaml
 
 # ── Includes ──────────────────────────────────────────────────────────────────
 # Sorted into one merged block (no blank line separators), ordered:
-#   std / other angle-bracket → Boost → Qt → local "ores.*" / "ui_*"
+#   local "ores.*" / "ui_*" → Qt → Boost → std / other angle-bracket
+# Local-first ensures each header is self-sufficient: a missing transitive
+# include cannot be silently satisfied by a preceding std/Boost header.
 SortIncludes: CaseSensitive
 IncludeBlocks: Merge
 IncludeCategories:
-  - Regex: '^<boost/'
-    Priority: 2
-  - Regex: '^<Q[A-Z]'
-    Priority: 3
   - Regex: '^"'
-    Priority: 4
-  - Regex: '^<'
     Priority: 1
+  - Regex: '^<Q[A-Z]'
+    Priority: 2
+  - Regex: '^<boost/'
+    Priority: 3
+  - Regex: '^<'
+    Priority: 4
 #+end_src
 
 ** Miscellaneous

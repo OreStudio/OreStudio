@@ -29,7 +29,7 @@
 #include "ores.refdata.api/messaging/book_protocol.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
 #include "ores.trading.api/messaging/instrument_protocol.hpp"
-#include "ores.database/domain/change_reason_constants.hpp"
+#include "ores.dq.api/domain/change_reason_constants.hpp"
 
 namespace ores::qt {
 
@@ -336,7 +336,7 @@ ore_import_result OreImporter::execute(
             << num_batches << " batch(es) of up to " << trade_batch_size << " each";
         for (int offset = 0; offset < total_trades; offset += trade_batch_size) {
             const int end = std::min(offset + trade_batch_size, total_trades);
-            namespace reason = ores::database::domain::change_reason_constants;
+            namespace reason = ores::dq::domain::change_reason_constants;
             std::vector<trading::domain::trade> batch;
             batch.reserve(static_cast<std::size_t>(end - offset));
             for (int i = offset; i < end; ++i) {

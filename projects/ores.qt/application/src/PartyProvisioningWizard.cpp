@@ -33,7 +33,7 @@
 #include <QFutureWatcher>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include "ores.database/domain/change_reason_constants.hpp"
+#include "ores.dq.api/domain/change_reason_constants.hpp"
 #include "ores.dq.api/messaging/publish_bundle_protocol.hpp"
 #include "ores.refdata.api/messaging/party_protocol.hpp"
 #include "ores.dq.api/messaging/report_definition_template_protocol.hpp"
@@ -43,7 +43,7 @@
 namespace ores::qt {
 
 using namespace ores::logging;
-namespace reason = ores::database::domain::change_reason_constants;
+namespace reason = ores::dq::domain::change_reason_constants;
 
 // ============================================================================
 // PartyProvisioningWizard

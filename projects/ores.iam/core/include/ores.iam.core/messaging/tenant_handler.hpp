@@ -35,7 +35,7 @@
 #include "ores.service/service/request_context.hpp"
 #include "ores.iam.api/messaging/tenant_protocol.hpp"
 #include "ores.iam.core/repository/tenant_repository.hpp"
-#include "ores.database/domain/change_reason_constants.hpp"
+#include "ores.dq.api/domain/change_reason_constants.hpp"
 #include "ores.variability.core/service/system_settings_service.hpp"
 
 namespace ores::iam::messaging {
@@ -213,7 +213,7 @@ public:
                 variability::service::system_settings_service vss(
                     *ctx_expected, ids.front());
                 vss.set_bootstrap_mode(false, ctx_expected->service_account(),
-                    std::string(database::domain::change_reason_constants::codes::new_record),
+                    std::string(ores::dq::domain::change_reason_constants::codes::new_record),
                     "Bootstrap mode cleared on tenant activation");
                 BOOST_LOG_SEV(tenant_handler_lg(), info)
                     << "Bootstrap mode cleared for tenant: " << ids.front();

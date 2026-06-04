@@ -21,12 +21,12 @@
 #include "ores.iam.core/service/bootstrap_mode_service.hpp"
 
 #include <algorithm>
-#include "ores.database/domain/change_reason_constants.hpp"
+#include "ores.dq.api/domain/change_reason_constants.hpp"
 
 namespace ores::iam::service {
 
 using namespace ores::logging;
-namespace reason = database::domain::change_reason_constants;
+namespace reason = ores::dq::domain::change_reason_constants;
 
 bootstrap_mode_service::bootstrap_mode_service(database::context ctx,
     std::string tenant_id,

@@ -18,19 +18,19 @@
  *
  */
 
-#ifndef ORES_DATABASE_DOMAIN_CHANGE_REASON_CONSTANTS_HPP
-#define ORES_DATABASE_DOMAIN_CHANGE_REASON_CONSTANTS_HPP
+#ifndef ORES_DQ_API_DOMAIN_CHANGE_REASON_CONSTANTS_HPP
+#define ORES_DQ_API_DOMAIN_CHANGE_REASON_CONSTANTS_HPP
 
 #include <string_view>
 
-namespace ores::database::domain::change_reason_constants {
+namespace ores::dq::domain::change_reason_constants {
 
 /**
  * @brief Change reason codes used throughout the system.
  *
  * These codes must match entries in the change_reasons database table.
- * Placed in ores.database as they define database field values used
- * across multiple domain components (IAM, DQ, etc.).
+ * They live in ores.dq.api — change reasons are a data quality domain
+ * concept — and are consumed across components (IAM, refdata, etc.).
  */
 namespace codes {
 
@@ -79,6 +79,6 @@ constexpr std::string_view system = "system";
 
 } // namespace categories
 
-} // namespace ores::database::domain::change_reason_constants
+} // namespace ores::dq::domain::change_reason_constants
 
 #endif

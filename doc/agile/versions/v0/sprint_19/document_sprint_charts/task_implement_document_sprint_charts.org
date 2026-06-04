@@ -65,6 +65,8 @@ task closes. Plans do not outlive their task.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PRs & commits chart: x-axis says Day but plots row index | doc/agile/sprint_charts.org | Accepted | Fixed in eeb0dbaed; xticlabels(stringcolumn(1)), rotated. |
+| 2 | Line churn chart: same x-axis issue | doc/agile/sprint_charts.org | Accepted | Fixed in eeb0dbaed. |
+| 3 | Stories done chart: same x-axis issue | doc/agile/sprint_charts.org | Accepted | Fixed in eeb0dbaed. |
 
 * Result

@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :architecture:components:cpp:eventing:investigate_api_core_split:sprint_19:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/split-eventing-api-core
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -46,7 +46,7 @@ uses. This completes what the dq.api fix started: apis linking
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:BD519FC9-6B29-4055-877F-861E46043A06][Investigate the API/core split in components]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

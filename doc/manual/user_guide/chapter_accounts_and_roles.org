@@ -172,17 +172,79 @@ Roles tab before saving a new account.
 
 ** Roles and permissions
 
-Open the Roles window from /System ▸ Administration ▸ Roles/. A role
-is a named bundle of permissions; accounts acquire permissions only
-through their assigned roles.
+OreStudio implements industry-standard /Role-Based Access Control/
+(RBAC). RBAC separates three concepts that are easy to conflate:
+
+- An /account/ is an *identity* — it answers "who is this?". It
+  carries credentials (a password for users, certificates for
+  services) and is the thing that logs in, appears in provenance
+  records, and gets locked or unlocked. An account grants nothing by
+  itself.
+- A /permission/ is the *atomic unit of capability* — it answers "what
+  single thing may be done?". Permissions are fine-grained strings
+  following a =domain::resource:action= pattern:
+  =refdata::currencies:read= allows reading currency records,
+  =iam::tenants:create= allows creating tenants. A trailing wildcard
+  covers a whole domain — =analytics::*= grants every analytics
+  permission — and the bare wildcard =*= grants everything.
+- A /role/ is a *named bundle of permissions* — it answers "what job
+  does this identity do?". Roles are the only bridge between the two:
+  accounts never hold permissions directly, they hold roles, and every
+  permission an account exercises arrives through one of its roles.
+
+This indirection is what keeps administration tractable: when a new
+permission is needed by everyone in trading, it is added to the
+=Trading= role once rather than to every trader's account, and an
+account's capabilities can be read at a glance from its role list.
+
+Open the Roles window from /System ▸ Administration ▸ Roles/ to see
+the bundles:
 
 #+caption[The Roles window]: The Roles window listing the built-in roles — one per backend domain service plus the administrative and operational roles — with their permission counts and provenance.
 [[../../../assets/images/roles_main_window.png]]
 
-OreStudio seeds a standard set of roles at provisioning time: one
-role per backend domain service (used by the service accounts seen
-earlier), and operational roles such as =Trading= and =SuperAdmin= for
-human users. Roles are inspected through a read-only detail dialog:
+*** Service roles
+
+Every backend component runs under a dedicated service account (the
+teal-badged accounts seen earlier in the system tenant), and each
+service account holds exactly one matching service role —
+=IamService=, =RefdataService=, =AnalyticsService=, =ComputeService=,
+=WorkflowService= and so on, one per component. The bundle gives the
+component full access to its own domain and read access to whatever
+else it legitimately needs: the =AnalyticsService= role seen below
+holds =analytics::*= plus =iam::tenants:read=, because the pricing
+engine owns the analytics domain but only ever reads tenant records.
+This is the principle of least privilege applied to OreStudio's own
+machinery — a compromised or misbehaving component cannot reach beyond
+its role.
+
+*** Domain roles
+
+For human users, OreStudio seeds operational roles modelled on the
+desks and functions of a financial institution:
+
+| Role            | Intended for                  | Capability profile                                                            |
+|-----------------+-------------------------------+-------------------------------------------------------------------------------|
+| =SuperAdmin=    | Platform administrators       | Everything, plus tenant lifecycle: create, suspend, terminate, reset.         |
+| =TenantAdmin=   | Tenant administrators         | Everything within their own tenant.                                           |
+| =Trading=       | Traders                       | Read reference data; create, modify, archive and delete workspaces.           |
+| =Sales=         | Sales desks                   | Read-only reference data.                                                     |
+| =Operations=    | Middle/back office            | Manage reference data (read, write, delete); view accounts.                   |
+| =Support=       | Support staff                 | Read-only across resources and admin screens: accounts, roles, login info.    |
+| =Viewer=        | Auditors, casual consumers    | Basic read-only access to domain data and workspaces.                         |
+| =DataPublisher= | Data stewards                 | Publish curated datasets and bundles to production tables.                    |
+
+The profiles embody a simple gradient: =Viewer= and =Sales= observe,
+=Trading= works within its own workspaces, =Operations= maintains the
+shared data everyone depends on, and =Support= sees administrative
+state without being able to change it. The two administrator roles
+differ in scope rather than degree — =TenantAdmin= is omnipotent
+inside one tenant, while =SuperAdmin= additionally manages the tenants
+themselves from the system tenant.
+
+The seeded roles are a starting point, and their capability profiles
+will grow as more of the system is brought under permission control.
+Roles are inspected through a read-only detail dialog:
 
 #+caption[Role details — General tab]: The =AnalyticsService= role: name and description.
 [[../../../assets/images/roles_details_general.png]]

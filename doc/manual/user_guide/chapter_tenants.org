@@ -1,0 +1,105 @@
+:PROPERTIES:
+:ID: 0D1AA9E2-7556-4B73-8AE5-5E2A0E8FD043
+:END:
+#+title: Tenants
+#+description: Tenant management in OreStudio: the Tenants window, tenant types and lifecycle status, the detail dialog, and how tenant administration relates to the provisioning wizards.
+#+type: manual
+#+level: cross
+#+filetags: :knowledge:manual:tenants:iam:user_guide:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+
+This chapter covers tenant management: the Tenants window, the tenant
+lifecycle, and the detail dialog. Tenant administration is a platform
+concern — the window is available to the platform administrator on the
+system tenant.
+
+** Overview
+
+@@latex:\lettrine[lines=2,nindent=0em]{A}{} \textsc{tenant}@@@@html:A tenant@@ is OreStudio's unit of isolation: each tenant owns
+its accounts, reference data, trades, and analytics, invisible to
+every other tenant. The conceptual model — the system tenant, business
+tenants, and the party hierarchy within each — is introduced in
+[[id:A9F2C3E1-74B5-4D8A-9C6E-3B1F7D2E5A04][Initial Setup]]. That chapter also walks through the Tenant
+Provisioner wizard, which seeds a new tenant with reference data and
+its administrator account. This chapter covers the management view:
+inspecting and maintaining tenants once they exist.
+
+** Tenant types
+
+ORE Studio supports four tenant types, each with different operational
+controls:
+
+- *System* — platform administration; one per deployment; platform-managed.
+- *Production* — real customer organisations with live data; strict controls.
+- *Evaluation* — demos, UAT, training, and exploratory testing; relaxed controls.
+- *Automation* — programmatic test infrastructure; not for human use; no controls.
+
+The *system tenant* is created automatically during system
+provisioning and cannot be deleted. It is the home of the platform
+administrator accounts; all other tenants are created by platform
+administrators working from it.
+
+*Production tenants* are for live operations. They enforce strict
+controls including four-eyes authorisation for sensitive operations and
+KYC-gated counterparty onboarding.
+
+*Evaluation tenants* provide a realistic but relaxed environment for
+demonstrations, user acceptance testing, and training. Bulk data
+import from external sources (such as the GLEIF/LEI registry) is
+available in evaluation tenants but not in production tenants.
+
+*Automation tenants* exist for programmatic test infrastructure. They
+carry no operational controls and are not intended for human use.
+
+** The Tenants window
+
+Open the Tenants window from /System ▸ Administration ▸ Tenants/.
+
+#+caption[The Tenants window]: The Tenants window on a freshly provisioned installation: the =system= root tenant and one business tenant, =barclays_plc=, both /active/. Each row shows the tenant code, display name, type, hostname, lifecycle status, and provenance.
+[[../../../assets/images/tenants_main_window.png]]
+
+Each tenant carries:
+
+- /Code/ — the stable identifier (=system=, =barclays_plc=).
+- /Name/ — the human-readable display name.
+- /Type/ — one of the four tenant types described above; =system=
+  for the root tenant, here =evaluation= for the business tenant.
+- /Hostname/ — the hostname the tenant's users connect through, which
+  is how OreStudio routes a login to its tenant.
+- /Status/ — the lifecycle state, shown as a badge: /bootstrapping/
+  while a newly created tenant awaits its provisioning wizard run,
+  /active/ once it is in service, with /suspended/ and /terminated/
+  closing out the lifecycle.
+
+The toolbar extends the standard entity-window actions with
+/Onboard/ — which creates a tenant and walks it through provisioning —
+and /Reset/, which returns a tenant to its post-provisioning state.
+
+#+begin_note
+Tenant operations are platform-level and far-reaching: deleting or
+resetting a tenant affects every account and every record within it.
+The change-reason dialog applies here as everywhere, so destructive
+operations leave an audit trail — but there is no undo.
+#+end_note
+
+** The tenant detail dialog
+
+Double-click a tenant (or select it and press /Edit/) to open the
+detail dialog.
+
+#+caption[Tenant details — General tab]: The =system= root tenant: code, name, type, hostname, and lifecycle status. The status combo is how an administrator suspends or reactivates a tenant.
+[[../../../assets/images/tenants_details_general.png]]
+
+#+caption[Tenant details — Provenance tab]: The familiar provenance tab: version, modifier, performing service, change reason and commentary — here the =system.initial_load= of the root tenant.
+[[../../../assets/images/tenants_details_provenance.png]]
+
+Tenant records are versioned with full provenance like every other
+entity — see the [[id:F7F8D811-44E7-4EF7-8BFF-2D96C1F580E7][Provenance]] section of the Reference Data
+chapter. The /History/ toolbar action shows a tenant's full version
+history.
+
+** See also
+
+- [[id:A9F2C3E1-74B5-4D8A-9C6E-3B1F7D2E5A04][Initial Setup]] — the tenant model and the provisioning wizards.
+- [[id:3EC089EE-685B-469C-BF15-077951050248][Accounts and Roles]] — the accounts that live inside each tenant.

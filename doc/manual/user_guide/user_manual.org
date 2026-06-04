@@ -76,6 +76,18 @@
 
 #+include: "chapter_3_initial_setup.org" :minlevel 2
 
+#+latex: \part{Administration}
+#+latex: \bigskip
+#+latex: \noindent\textit{Administration covers the ongoing care of an OreStudio installation once the provisioning wizards have done their one-time work: creating and managing the accounts people and processes log in with, the roles and permissions that govern what they may do, and the tenants that keep each organisation's data isolated.}
+
+* Accounts and Roles
+
+#+include: "chapter_accounts_and_roles.org" :minlevel 2
+
+* Tenants
+
+#+include: "chapter_tenants.org" :minlevel 2
+
 #+latex: \part{Reference Data}
 #+latex: \bigskip
 #+latex: \noindent\textit{Reference data is the slowly-changing master data that underpins all financial activity in OreStudio — the currencies, counterparties, books, and market conventions that trades and analytics refer to. This part documents each reference data entity: what it represents, how to manage it through the Qt interface, and how to work with it from the shell and CLI.}

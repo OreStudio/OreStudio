@@ -1,0 +1,195 @@
+:PROPERTIES:
+:ID: 3EC089EE-685B-469C-BF15-077951050248
+:END:
+#+title: Accounts and Roles
+#+description: Day-to-day account management in OreStudio: the Accounts window as system and tenant administrator, the account detail dialog and its tabs, creating accounts, and the role and permission model.
+#+type: manual
+#+level: cross
+#+filetags: :knowledge:manual:accounts:roles:iam:user_guide:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+
+This chapter covers day-to-day account management: the Accounts window
+and how it differs between administrator identities, the account detail
+dialog and each of its tabs, the flow for creating a new account, and
+the roles and permissions that govern what an account may do.
+
+** Overview
+
+@@latex:\lettrine[lines=2,nindent=0em]{E}{very} \textsc{person}@@@@html:Every person@@ and process that talks to OreStudio does so
+through an /account/. The provisioning wizards described in the
+[[id:A9F2C3E1-74B5-4D8A-9C6E-3B1F7D2E5A04][Initial Setup]] chapter create the first accounts for you — the
+platform administrator during system provisioning and the tenant
+administrator during tenant creation. Those wizards are a one-time
+bootstrap: every account after that is created and managed in the
+Accounts window described here.
+
+Accounts come in four types, shown as coloured badges throughout the
+UI: /User/ for people, /Service/ for OreStudio's own backend
+services, /Algorithm/ for automated processes, and /LLM/ for large
+language model agents. What an account is allowed to do is determined
+by the /roles/ assigned to it; which data it can see is determined by
+the /tenant/ it belongs to and the /parties/ it is assigned (see
+[[id:A9F2C3E1-74B5-4D8A-9C6E-3B1F7D2E5A04][Initial Setup]] for the tenant and party model).
+
+** The Accounts window
+
+Open the Accounts window from /System ▸ Administration ▸ Accounts/.
+The Administration menu is only present for accounts that hold
+administrative permissions.
+
+The window lists every account visible to your login identity, one row
+per account. Alongside the username and email, badge columns show the
+account type, the login status (/Online/, /Recent/, /Old/, or /Never/
+for accounts that have never logged in), and whether the account is
+locked. The remaining columns carry the record version and provenance —
+who last modified the record and when.
+
+The toolbar follows the standard entity-window layout (/Reload/,
+/Add/, /Edit/, /Delete/, /History/) and adds four account-specific
+actions: /Lock/ and /Unlock/ to suspend and restore login access,
+/Reset Pwd/ to set a new password, and /Sessions/ to inspect the
+account's login sessions.
+
+*** What you see depends on who you are
+
+Account visibility follows tenant isolation. Logged in as the platform
+administrator on the system tenant, the window shows the full
+machinery of the platform — the =super_admin= account plus the service
+accounts that OreStudio's backend components use to talk to each
+other:
+
+#+caption[The Accounts window as system administrator]: The Accounts window as seen by the platform administrator. Most rows are service accounts — one per backend component — shown with the teal /Service/ type badge. Note the gray /Never/ login-status badges: service accounts authenticate with certificates rather than interactive logins.
+[[../../../assets/images/accounts_as_system_admin.png]]
+
+Logged in as a tenant administrator, the same window shows only the
+accounts belonging to that tenant — a freshly provisioned tenant
+contains exactly one, the tenant administrator itself:
+
+#+caption[The Accounts window as tenant administrator]: The same window as seen by a tenant administrator immediately after tenant provisioning. Only the tenant's own accounts are visible — here just =tenant_admin=, currently /Online/.
+[[../../../assets/images/accounts_main_window_tenant_admin.png]]
+
+*** Live updates
+
+Like all OreStudio entity windows, the Accounts list updates in
+response to changes made elsewhere — another administrator creating an
+account in a different session, for example. When unseen changes are
+pending, the /Reload/ button carries a yellow stale indicator;
+recently changed rows are highlighted until you have seen them.
+
+#+caption[The stale indicator]: The Reload button showing the yellow stale indicator: the account list has changed since it was last loaded.
+[[../../../assets/images/account_main_window_events.png]]
+
+#+caption[Recently changed rows]: Newly created accounts highlighted in the list. The =ana_santos= row was recorded "just now" and remains highlighted until acknowledged.
+[[../../../assets/images/account_new_account_highlighted.png]]
+
+** The account detail dialog
+
+Double-click an account (or select it and press /Edit/) to open the
+detail dialog. The dialog has six tabs; the same dialog serves
+creation, editing, and read-only inspection of historical versions.
+
+#+caption[Account details — General tab]: The General tab for =super_admin=, showing the username, email address, and account type.
+[[../../../assets/images/account_details.png]]
+
+- /General/ — username, email, and the account type. The type is
+  chosen at creation time and is read-only afterwards.
+- /Security/ — set or change the account password (see the
+  new-account flow below).
+- /Login Status/ — read-only login telemetry: whether the account is
+  online, locked, its failed login count, last login time, and last
+  known IP addresses.
+- /Roles/ — the roles assigned to this account (next section).
+- /Parties/ — the parties this account may log in to.
+- /Provenance/ — who changed this record version, when, and why.
+
+*** Roles and parties tabs
+
+#+caption[Account details — Roles tab]: The Roles tab for =super_admin=, holding the single =SuperAdmin= role. The combo box below the list adds further roles; the buttons alongside add and remove the selection.
+[[../../../assets/images/account_details_roles.png]]
+
+#+caption[Account details — Parties tab]: The Parties tab for =super_admin=, assigned to the internal System Party. Party assignment determines which party contexts the account may select at login.
+[[../../../assets/images/account_details_parties.png]]
+
+An account with no party assignment cannot log in to any party
+context — the dialog warns you if you try to save one (see the
+new-account flow below). The party-at-login mechanics are described in
+[[id:A9F2C3E1-74B5-4D8A-9C6E-3B1F7D2E5A04][Initial Setup]].
+
+*** Provenance
+
+#+caption[Account details — Provenance tab]: The Provenance tab for =super_admin= at version 1: modified by =super_admin=, performed by the IAM service, with the =system.initial_load= change reason and the bootstrap commentary.
+[[../../../assets/images/account_details_provenance.png]]
+
+Every account record is versioned and carries full provenance,
+following the same conventions as all OreStudio entities — see the
+[[id:F7F8D811-44E7-4EF7-8BFF-2D96C1F580E7][Provenance]] section of the Reference Data chapter. Note the
+distinction visible in the screenshot: /Modified By/ is the account on
+whose behalf the change was made, while /Performed By/ records the
+backend service that executed it.
+
+** Creating an account
+
+Press /Add/ in the Accounts window toolbar to open the same detail
+dialog in creation mode, titled /New Account/.
+
+#+caption[New Account — General tab]: Creating =john_smith=: username, email, and account type on the General tab.
+[[../../../assets/images/account_new_account.png]]
+
+Passwords are set on the /Security/ tab. The confirmation field
+outlines green once both entries match; tick /Show passwords/ to
+verify what you typed before saving.
+
+#+caption[New Account — Security tab]: Setting the initial password. The green outline on the confirmation field indicates the two entries match.
+[[../../../assets/images/account_new_account_security.png]]
+
+#+caption[New Account — Show passwords]: The same tab with /Show passwords/ ticked, revealing the password text for visual verification.
+[[../../../assets/images/account_new_account_see_password.png]]
+
+Assign at least one role and, for accounts that should log in to a
+party context, at least one party:
+
+#+caption[New Account — Roles tab]: Assigning the =Trading= role to the new account. The combo box offers every role defined in the tenant.
+[[../../../assets/images/account_new_account_roles.png]]
+
+#+caption[New Account — Parties tab]: Assigning the new account to =BARCLAYS PLC=. The combo box lists the tenant's party hierarchy.
+[[../../../assets/images/account_new_account_party.png]]
+
+If you save without assigning a party, OreStudio asks for
+confirmation — such accounts exist but cannot enter any party context
+at login:
+
+#+caption[The No Party Assigned warning]: The confirmation shown when saving an account with no party assignment.
+[[../../../assets/images/account_missing_party.png]]
+
+** Roles and permissions
+
+Open the Roles window from /System ▸ Administration ▸ Roles/. A role
+is a named bundle of permissions; accounts acquire permissions only
+through their assigned roles.
+
+#+caption[The Roles window]: The Roles window listing the built-in roles — one per backend domain service plus the administrative and operational roles — with their permission counts and provenance.
+[[../../../assets/images/roles_main_window.png]]
+
+OreStudio seeds a standard set of roles at provisioning time: one
+role per backend domain service (used by the service accounts seen
+earlier), and operational roles such as =Trading= and =SuperAdmin= for
+human users. Roles are inspected through a read-only detail dialog:
+
+#+caption[Role details — General tab]: The =AnalyticsService= role: name and description.
+[[../../../assets/images/roles_details_general.png]]
+
+#+caption[Role details — Permissions tab]: The role's two permissions. Permission strings follow a =domain::resource:action= pattern; =analytics::*= grants every analytics permission, while =iam::tenants:read= grants read-only access to tenant records.
+[[../../../assets/images/roles_details_permissions.png]]
+
+#+caption[Role details — Provenance tab]: Role records carry the same versioned provenance as every other entity.
+[[../../../assets/images/roles_details_provenance.png]]
+
+** See also
+
+- [[id:A9F2C3E1-74B5-4D8A-9C6E-3B1F7D2E5A04][Initial Setup]] — the tenant and party model, the provisioning
+  wizards that create the first accounts, and party selection at
+  login.
+- [[id:0D1AA9E2-7556-4B73-8AE5-5E2A0E8FD043][Tenants]] — managing the tenants that accounts belong to.
+- [[id:FD54D29E-9309-4AFE-AFE2-50DA9F7BA354][Reference Data]] — the provenance and change-reason conventions
+  shared by all entity windows.

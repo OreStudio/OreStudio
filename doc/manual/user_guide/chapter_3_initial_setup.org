@@ -30,28 +30,15 @@ representing your organisation. A managed-service provider running ORE
 Studio on behalf of multiple clients might create one tenant per
 client.
 
-ORE Studio supports four tenant types, each with different operational
-controls:
-
-- *System* — platform administration; one per deployment; platform-managed.
-- *Production* — real customer organisations with live data; strict controls.
-- *Evaluation* — demos, UAT, training, and exploratory testing; relaxed controls.
-- *Automation* — programmatic test infrastructure; not for human use; no controls.
-
 The *system tenant* is special — it is created automatically during
 system provisioning and cannot be deleted. It is the home of the platform
 administrator accounts. There is exactly one system tenant per
 deployment. All other tenants are created by platform administrators
 working from the system tenant.
 
-*Production tenants* are for live operations. They enforce strict
-controls including four-eyes authorisation for sensitive operations and
-KYC-gated counterparty onboarding.
-
-*Evaluation tenants* provide a realistic but relaxed environment for
-demonstrations, user acceptance testing, and training. Bulk data
-import from external sources (such as the GLEIF/LEI registry) is
-available in evaluation tenants but not in production tenants.
+Tenants come in several types — production, evaluation, automation —
+with different operational controls; the type taxonomy and day-to-day
+tenant management are covered in the [[id:0D1AA9E2-7556-4B73-8AE5-5E2A0E8FD043][Tenants]] chapter.
 
 *** Parties
 

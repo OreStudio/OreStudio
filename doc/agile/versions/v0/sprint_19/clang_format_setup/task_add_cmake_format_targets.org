@@ -19,41 +19,42 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Add =format= and =check-format= CMake targets so developers can
+reformat the tree or verify formatting locally with a single command.
+Also update =FindClangTools.cmake= to search for modern clang-format
+versions (11–20) rather than stopping at 5.0.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                   |
 | Parent story | [[id:78D292E4-EA18-4FDE-9B23-E0F446A1B526][Set up clang-format with CMake targets and CI integration]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-04                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-06-04                             |
 
 * Acceptance
 
--
-
-* Plan
-
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
-
-* Notes
-
-* PRs
-
-| PR | Title |
-|----+-------|
-|    |       |
-
-* Review
-
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+- =cmake --build --preset <preset> --target format= runs
+  =clang-format -i= on all =.cpp=, =.hpp=, =.h= files under =projects/=.
+- =cmake --build --preset <preset> --target check-format= runs
+  =--dry-run --Werror= and exits non-zero if any file would change.
+- Both targets are skipped (with an informational message) when
+  clang-format is not installed.
+- =FindClangTools.cmake= searches clang-format/clang-tidy 20 down
+  to 5.0 and unversioned, newest first.
 
 * Result
+
+Updated =build/cmake/modules/FindClangTools.cmake= to search versions
+20–5.0 (was 5.0–3.6 only) and fixed the typo that set =CLANG_TIDY_FOUND=
+instead of =CLANG_FORMAT_FOUND= in the comment block.
+
+Added to =CMakeLists.txt= inside the =if (CLANG_FORMAT_FOUND)= block:
+- =format= target: =find … | xargs clang-format -i=
+- =check-format= target: =find … | xargs clang-format --dry-run --Werror=
+
+Both use the =CLANG_FORMAT_BIN= path discovered by =FindClangTools= so
+they work with any installed version.

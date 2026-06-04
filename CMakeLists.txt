@@ -292,15 +292,39 @@ message(STATUS "Product version: ${DOGEN_VERSION}")
 #
 find_package(ClangTools)
 if (CLANG_FORMAT_FOUND)
-  message(STATUS "Found clang-format (${CLANG_FORMAT_BIN}).")
+    message(STATUS "Found clang-format (${CLANG_FORMAT_BIN}).")
+    #
+    # format: run clang-format in-place on all C++ sources under projects/.
+    # Usage: cmake --build --preset <preset> --target format
+    #
+    add_custom_target(format
+        COMMENT "Formatting C++ sources with clang-format (in-place)"
+        COMMAND find ${CMAKE_SOURCE_DIR}/projects -type f
+                    \( -name "*.cpp" -o -name "*.hpp" -o -name "*.h" \)
+                | xargs ${CLANG_FORMAT_BIN} -i
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        VERBATIM)
+
+    #
+    # check-format: dry-run clang-format; exits non-zero if any file would change.
+    # Usage: cmake --build --preset <preset> --target check-format
+    #        Used by the nightly format workflow and for local verification.
+    #
+    add_custom_target(check-format
+        COMMENT "Checking C++ formatting with clang-format (dry run)"
+        COMMAND find ${CMAKE_SOURCE_DIR}/projects -type f
+                    \( -name "*.cpp" -o -name "*.hpp" -o -name "*.h" \)
+                | xargs ${CLANG_FORMAT_BIN} --dry-run --Werror
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        VERBATIM)
 else()
-  message(STATUS "Could not find clang-format.")
+    message(STATUS "Could not find clang-format; format and check-format targets unavailable.")
 endif()
 
 if (CLANG_TIDY_FOUND)
-  message(STATUS "Found clang-tidy (${CLANG_FORMAT_BIN}).")
+    message(STATUS "Found clang-tidy (${CLANG_TIDY_BIN}).")
 else()
-  message(STATUS "Could not find clang-tidy.")
+    message(STATUS "Could not find clang-tidy.")
 endif()
 
 #

@@ -66,6 +66,8 @@ How the codebase is put together.
   lifecycle, the two-phase menu-building sequence.
 - [[id:2FDDC2F6-C510-4A86-8C50-D79C83EDDFFF][Qt entity patterns]] — ClientModel, list window, detail dialog,
   history dialog, and async-fetch patterns.
+- [[id:F7DE2705-4D20-4878-A10C-A834F3283683][Badge system wiring]] — DB-driven pill badges: =ores.dq= entities,
+  SQL population, =BadgeCache=, and delegate wiring.
 - [[id:E44891DC-234C-42DB-90E1-9421400ABD1A][Qt menu and toolbar patterns]] — plugin registration,
   =on_login()= menu wiring, and MDI window toolbar construction.
 - [[id:05891220-2503-48A0-ADF5-13EC95B605D7][CLI entity patterns]] — options structs, parser layout, and

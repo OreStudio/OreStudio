@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: 5C39026D-0507-4544-ACF1-5A93EA3C3338
+:END:
+#+title: How do I add a badge to a Qt list view?
+#+description: Checklist for wiring a new field as a DB-driven badge in Qt: SQL population, code domain, badge definitions, badge mappings, delegate paint, and sizeHint.
+#+type: recipe
+#+level: cross
+#+filetags: :qt:badge:recipe:
+#+created: 2026-06-04
+#+updated: 2026-06-04
+
+The badge resolution architecture — how =BadgeCache=, =code_domain=,
+=badge_definition=, and =badge_mapping= fit together — is in
+[[id:F7DE2705-4D20-4878-A10C-A834F3283683][Badge system wiring]].
+
+* Question
+
+How do I render a new field as a DB-driven pill badge in a Qt list view?
+
+* Answer
+
+Four steps; all are required.
+
+*1. Add a code domain* to =dq_badge_system_populate.sql=:
+
+#+begin_src sql
+PERFORM ores_dq_code_domains_upsert_fn(ores_utility_system_tenant_id_fn(),
+    'my_domain', 'My Domain', 'Description of the domain.', <next_display_order>);
+#+end_src
+
+*2. Add badge definitions* — one per distinct visual variant:
+
+#+begin_src sql
+PERFORM ores_dq_badge_definitions_upsert_fn(ores_utility_system_tenant_id_fn(),
+    'my_def_code', 'Label', 'Tooltip description.',
+    '#rrggbb', '#ffffff', 'severity_code', 'badge bg-severity', <next_display_order>);
+#+end_src
+
+Severity codes: =secondary=, =info=, =success=, =warning=, =danger=, =primary=.
+
+*3. Add badge mappings* — one per entity code value:
+
+#+begin_src sql
+PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
+    'my_domain', 'entity_code_value', 'my_def_code');
+#+end_src
+
+The entity code must match exactly what the Qt model returns for
+=Qt::DisplayRole= on that column (raw DB code or translated display string).
+
+*4. Wire the delegate* in the entity's =ItemDelegate=:
+
+- =paint()=: add =Column::MyField= to the badge column guard; call
+  =badgeCache_->resolve("my_domain", text.toStdString())= and apply
+  the returned colours; fall back to default gray on =nullptr=.
+- =sizeHint()=: add the same column guard; set minimum height 24 px
+  and a minimum width appropriate for the longest label.
+
+* Script
+
+No script — changes are to =dq_badge_system_populate.sql= and the
+entity's =ItemDelegate=. See [[id:F7DE2705-4D20-4878-A10C-A834F3283683][Badge system wiring]] for the full
+=paint()= code template.
+
+* Tested by
+
+Manual: re-run the population script against a dev database and open
+the entity list view to confirm badge colours appear.
+
+* See also
+
+- [[id:F7DE2705-4D20-4878-A10C-A834F3283683][Badge system wiring]] — architecture, =BadgeCache= API, and worked example.
+- [[id:FC186D19-9421-45A2-BBCC-4355D66AA41F][Entity controller pattern]] — the delegate's place in the entity UI stack.

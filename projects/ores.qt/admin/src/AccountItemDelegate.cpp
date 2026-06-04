@@ -44,7 +44,8 @@ void AccountItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
 
     // Handle badge columns
     if (index.column() == Column::Status ||
-        index.column() == Column::Locked) {
+        index.column() == Column::Locked ||
+        index.column() == Column::AccountType) {
 
         QStyle* style = QApplication::style();
         style->drawPrimitive(QStyle::PE_PanelItemViewItem, &opt, painter);
@@ -73,6 +74,19 @@ void AccountItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
             badgeText = (text == "Locked") ? tr("Yes") : tr("No");
             if (badgeCache_) {
                 auto* def = badgeCache_->resolve("account_locked", text.toStdString());
+                if (def) {
+                    bgColor = QColor(QString::fromStdString(def->background_colour));
+                    textColor = QColor(QString::fromStdString(def->text_colour));
+                }
+            }
+        } else if (index.column() == Column::AccountType) {
+            if (text == "user")           badgeText = tr("User");
+            else if (text == "service")   badgeText = tr("Service");
+            else if (text == "algorithm") badgeText = tr("Algorithm");
+            else if (text == "llm")       badgeText = tr("LLM");
+            else                          badgeText = text;
+            if (badgeCache_) {
+                auto* def = badgeCache_->resolve("account_type", text.toStdString());
                 if (def) {
                     bgColor = QColor(QString::fromStdString(def->background_colour));
                     textColor = QColor(QString::fromStdString(def->text_colour));
@@ -123,10 +137,13 @@ QSize AccountItemDelegate::sizeHint(const QStyleOptionViewItem& option,
     QSize size = QStyledItemDelegate::sizeHint(option, index);
 
     if (index.column() == Column::Status ||
-        index.column() == Column::Locked) {
+        index.column() == Column::Locked ||
+        index.column() == Column::AccountType) {
         size.setHeight(qMax(size.height(), 24));
         if (index.column() == Column::Status) {
             size.setWidth(qMax(size.width(), 70));
+        } else if (index.column() == Column::AccountType) {
+            size.setWidth(qMax(size.width(), 80));
         } else {
             size.setWidth(qMax(size.width(), 50));
         }

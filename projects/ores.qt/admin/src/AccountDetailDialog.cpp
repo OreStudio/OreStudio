@@ -113,8 +113,23 @@ AccountDetailDialog::AccountDetailDialog(QWidget* parent)
         ui_->confirmPasswordEdit->setEchoMode(mode);
     });
 
-    // Hide isAdminCheckBox - admin privileges are now managed via RBAC role assignments
+    // Admin row hidden — privileges managed via RBAC role assignments
     ui_->isAdminCheckBox->setVisible(false);
+    ui_->labelIsAdmin->setVisible(false);
+
+    // Populate account type combo
+    ui_->accountTypeCombo->addItem(tr("User"),      QString("user"));
+    ui_->accountTypeCombo->addItem(tr("Service"),   QString("service"));
+    ui_->accountTypeCombo->addItem(tr("Algorithm"), QString("algorithm"));
+    ui_->accountTypeCombo->addItem(tr("LLM"),       QString("llm"));
+    connect(ui_->accountTypeCombo, &QComboBox::currentIndexChanged, this,
+        &AccountDetailDialog::onFieldChanged);
+    connect(ui_->accountTypeCombo, &QComboBox::currentIndexChanged, this,
+        [this](int index) {
+            if (partiesWidget_)
+                partiesWidget_->setAccountType(
+                    ui_->accountTypeCombo->itemData(index).toString().toStdString());
+        });
 
     // Create roles widget and add it to the Roles tab layout
     rolesWidget_ = new AccountRolesWidget(this);
@@ -198,6 +213,10 @@ void AccountDetailDialog::setAccount(const iam::domain::account& account) {
     ui_->usernameEdit->setText(QString::fromStdString(account.username));
     ui_->emailEdit->setText(QString::fromStdString(account.email));
 
+    const QString typeCode = QString::fromStdString(account.account_type);
+    const int typeIdx = ui_->accountTypeCombo->findData(typeCode);
+    ui_->accountTypeCombo->setCurrentIndex(typeIdx >= 0 ? typeIdx : 0);
+
     populateProvenance(account.version, account.modified_by, account.performed_by,
         account.recorded_at, account.change_reason_code, account.change_commentary);
 
@@ -244,10 +263,16 @@ void AccountDetailDialog::setCreateMode(bool createMode) {
     if (partiesIdx >= 0) tw->setTabEnabled(partiesIdx, true);
     setProvenanceEnabled(!createMode);
 
-    if (createMode && partiesWidget_) {
-        partiesWidget_->setAccountType("user");
-        partiesWidget_->load();
+    // Account type: editable only on create; read-only display in edit mode
+    ui_->accountTypeCombo->setEnabled(createMode);
+    if (createMode) {
+        ui_->accountTypeCombo->setCurrentIndex(0); // default: user
+        if (partiesWidget_)
+            partiesWidget_->setAccountType("user");
     }
+
+    if (createMode && partiesWidget_)
+        partiesWidget_->load();
     if (createMode && rolesWidget_)
         rolesWidget_->load();
 }
@@ -256,6 +281,8 @@ iam::domain::account AccountDetailDialog::getAccount() const {
     iam::domain::account account = currentAccount_;
     account.username = ui_->usernameEdit->text().toStdString();
     account.email = ui_->emailEdit->text().toStdString();
+    account.account_type =
+        ui_->accountTypeCombo->currentData().toString().toStdString();
     account.modified_by = modifiedByUsername_.empty() ? "qt_user" : modifiedByUsername_;
 
     return account;
@@ -264,6 +291,7 @@ iam::domain::account AccountDetailDialog::getAccount() const {
 void AccountDetailDialog::clearDialog() {
     ui_->usernameEdit->clear();
     ui_->emailEdit->clear();
+    ui_->accountTypeCombo->setCurrentIndex(0);
     ui_->passwordEdit->clear();
     ui_->confirmPasswordEdit->clear();
 
@@ -425,9 +453,11 @@ void AccountDetailDialog::onSaveClicked() {
         const std::string username = ui_->usernameEdit->text().toStdString();
         const std::string password = ui_->passwordEdit->text().toStdString();
         const std::string email = ui_->emailEdit->text().toStdString();
+        const std::string account_type =
+            ui_->accountTypeCombo->currentData().toString().toStdString();
 
         QFuture<std::pair<bool, std::string>> future =
-            QtConcurrent::run([self, username, password, email,
+            QtConcurrent::run([self, username, password, email, account_type,
                                pendingPartyAdds, pendingRoleAdds]()
                 -> std::pair<bool, std::string> {
                 if (!self) return {false, ""};
@@ -439,6 +469,7 @@ void AccountDetailDialog::onSaveClicked() {
                 request.principal = username;
                 request.password = password;
                 request.email = email;
+                request.account_type = account_type;
                 request.totp_secret = "";
 
                 auto response_result =
@@ -848,7 +879,9 @@ void AccountDetailDialog::setReadOnly(bool readOnly, int versionNumber) {
 void AccountDetailDialog::setFieldsReadOnly(bool readOnly) {
     ui_->usernameEdit->setReadOnly(readOnly);
     ui_->emailEdit->setReadOnly(readOnly);
-    // Note: isAdminCheckBox is hidden - admin privileges managed via RBAC
+    // Account type only editable on create; keep disabled in all read-only paths
+    if (readOnly)
+        ui_->accountTypeCombo->setEnabled(false);
 }
 
 void AccountDetailDialog::updateSaveResetButtonState() {

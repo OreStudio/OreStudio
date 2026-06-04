@@ -12,7 +12,7 @@
 
 #+begin_export markdown
 ---
-name: run_runbook
+name: run-runbook
 description: Find the runbook closest to the user's request in the runbooks catalogue and execute it end-to-end.
 license: Complete terms in LICENSE.txt
 ---

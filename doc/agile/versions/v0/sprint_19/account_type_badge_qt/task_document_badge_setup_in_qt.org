@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 36118737-9E05-48F0-889A-E800BA58825C
+:END:
+#+title: Task: Write knowledge doc: badge system wiring
+#+description: Produce an architectural knowledge doc (badge_system_wiring.org) covering the three-layer badge structure, plus a thin recipe that checklists the steps and points to it.
+#+type: task
+#+level: s1
+#+filetags: :account_type_badge_qt:sprint_19:v0:
+#+owner: marco
+#+branch: feature/account-type-badge-qt
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-04
+#+updated: 2026-06-04
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:814D4E79-8EB9-4B2B-8A87-DB72F145044D][Display account type as badge in Qt accounts list]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Produce two linked documents, both written after the implementation
+task so they reflect actual code:
+
+1. A knowledge doc at =doc/knowledge/architecture/badge_system_wiring.org=
+   describing how the DB-driven badge system is structured and why.
+2. A thin recipe at =doc/recipes/qt/how_do_i_add_a_badge_in_qt.org=
+   that checklists the four implementation steps and links to the
+   knowledge doc for architecture and context.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                   |
+| Parent story | [[id:814D4E79-8EB9-4B2B-8A87-DB72F145044D][Display account type as badge in Qt accounts list]] |
+| Now          | Nothing.                               |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-06-04                             |
+
+* Acceptance
+
+- Knowledge doc exists at =doc/knowledge/architecture/badge_system_wiring.org=
+  (type: =knowledge=, tags: =qt=, =architecture=, =badge=) and is indexed by compass.
+- Doc covers the three-layer structure: =ores.dq= domain model,
+  =ores.sql= population (code domain, badge definitions, badge mappings),
+  and =ores.qt.api= runtime (=BadgeCache=, delegate, =sizeHint=).
+- "How to add a new badge" section uses =account_type= wiring as the
+  worked example.
+- Linked from =ores.qt.api= component overview's =* See also= section.
+- Recipe exists at =doc/recipes/qt/how_do_i_add_a_badge_in_qt.org=
+  (type: =recipe=) with four checklist steps pointing to the knowledge
+  doc for detail.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Produced two linked documents using =compass add=:
+
+- =doc/knowledge/architecture/badge_system_wiring.org= (=F7DE2705=)
+  — three-layer architecture (=ores.dq= entities, SQL population,
+  =BadgeCache=/delegate), full =paint()= template, worked example
+  using =account_type=. Wired into =knowledge.org= Architecture section
+  and =ores.qt.api= component overview.
+- =doc/recipes/qt/how_do_i_add_a_badge_in_qt.org= (=5C39026D=) —
+  four-step checklist (code domain, definitions, mappings, delegate)
+  pointing to the knowledge doc for detail.

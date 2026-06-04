@@ -99,14 +99,6 @@ struct swap_leg {
 rfl now creates three separate Literals of size ≤9. =swap_leg= itself has a
 3-field Literal. No Literal exceeds the MSVC threshold.
 
-* Plan
-
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
-
-* Notes
-
 * PRs
 
 | PR                                                                        | Title                                                                         |
@@ -115,8 +107,6 @@ task closes. Plans do not outlive their task.)
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
-
-* Result
+| # | Comment summary                                                              | File          | Decision | Notes          |
+|---+------------------------------------------------------------------------------+---------------+----------+----------------|
+| 1 | Gemini: remove empty Plan/Notes/Result placeholder sections from task doc    | task_fix_*.org | Accept  | Fixed this commit |

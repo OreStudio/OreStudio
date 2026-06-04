@@ -31,12 +31,12 @@ the variant from the Qt UI boundary as well, since the variant serves no purpose
 
 | Field         | Value                                                                                         |
 |---------------+-----------------------------------------------------------------------------------------------|
-| State         | DONE                                                                                          |
+| State         | STARTED                                                                                       |
 | Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                                       |
-| Now           | Nothing.                                                                                      |
+| Now           | Task 9 (Flatten) proven ineffective; task 10 scaffolded to replace with plain nested structs. |
 | Waiting on    | Nothing.                                                                                      |
-| Next          | N/A.                                                                                          |
-| Last touched  | 2026-06-02                                                                                    |
+| Next          | Implement task 10: remove rfl::Flatten from swap_leg; update all callers.                     |
+| Last touched  | 2026-06-04                                                                                    |
 
 * Acceptance
 
@@ -63,7 +63,8 @@ the variant from the Qt UI boundary as well, since the variant serves no purpose
 | [[id:D9E63BBA-82CE-4FD3-9354-47A0A12ED108][Fix missing Windows DLL export macros on service parser classes]]              | DONE    | 2026-06-01 | 2026-06-01 | Add ORES_*_SERVICE_EXPORT to 16 service parser.hpp files; restore Windows CI linker.          |
 | [[id:4BF920B2-CA2B-40EF-B463-DDC13D0C2516][Fix ClientManager AddTagsToVariants and archiver DLL export]]                  | DONE    | 2026-06-01 | 2026-06-03 | Remove AddTagsToVariants from ClientManager reads; add ORES_COMPUTE_WRAPPER_EXPORT to archiver. |
 | [[id:A10ACBA5-BABD-4B60-8CF3-79108BA9DA92][Investigate and fix ClientManager template C1202 for complex response types]]  | DONE    | 2026-06-02 | 2026-06-03 | process_authenticated_request<T> injects rfl in caller's TU; fix by concrete method for export_portfolio. |
-| [[id:C19E28EF-FA66-4A53-8958-7F3D7A093F46][Fix C1202 in ClientManagerExportPortfolio.cpp (swap_leg 19-field Literal)]]    | STARTED    | 2026-06-03 |            | swap_leg's 19-field rfl::Literal triggers no_duplicate_field_names C1202 even in the fresh ExportPortfolio TU; fix via rfl::Flatten. |
+| [[id:C19E28EF-FA66-4A53-8958-7F3D7A093F46][Fix C1202 in ClientManagerExportPortfolio.cpp (swap_leg 19-field Literal)]]    | DONE       | 2026-06-03 | 2026-06-03 | swap_leg's 19-field rfl::Literal triggers no_duplicate_field_names C1202; rfl::Flatten applied but proven ineffective — rfl still sees 19 fields. |
+| [[id:CE1217C9-82FB-45DB-AEEB-D7B5EEA64B70][Replace rfl::Flatten with plain nested structs in swap_leg to fix C1202]]      | STARTED    | 2026-06-04 |            | rfl::Flatten does not reduce Literal size; use plain nested sub-structs so each is reflected independently (≤9 fields). Wire format changes to nested JSON. |
 
 * Decisions
 

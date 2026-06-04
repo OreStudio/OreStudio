@@ -1,0 +1,125 @@
+:PROPERTIES:
+:ID: CE1217C9-82FB-45DB-AEEB-D7B5EEA64B70
+:END:
+#+title: Task: Replace rfl::Flatten with plain nested structs in swap_leg to fix C1202
+#+description: rfl::Flatten (task 9) did not fix C1202 — rfl still computes no_duplicate_field_names on all 19 effective field names combined. Replace with plain nested sub-structs (no Flatten); wire format changes from flat to nested JSON; both server and client updated together.
+#+type: task
+#+level: s1
+#+filetags: :fix_rfl_complexity:sprint_19:v0:
+#+owner: marco
+#+branch: feature/fix-swap-leg-c1202-nested-structs
+#+pr: 1041
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-04
+#+updated: 2026-06-04
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Task 9 applied =rfl::Flatten= to decompose =swap_leg= into three sub-structs,
+expecting that each sub-struct's Literal would be evaluated independently.
+It did not work: rfl still computes =no_duplicate_field_names= on the full
+/effective/ (post-flatten) field list of the parent =swap_leg=, producing a
+19-field =rfl::Literal= that fires MSVC C1202 in =ClientManagerExportPortfolio.cpp=.
+
+Replace =rfl::Flatten= with plain nested structs (no Flatten). =swap_leg= becomes
+a regular three-field struct whose sub-structs are reflected independently:
+each has ≤9 fields, so no =rfl::Literal= exceeds the MSVC threshold.
+
+The JSON wire format changes from flat (19 fields at top level) to nested:
+
+#+begin_example
+{"identity": {"version":1, "id":"...", ...},
+ "terms":    {"leg_type_code":"Fixed", ...},
+ "audit":    {"modified_by":"...", ...}}
+#+end_example
+
+Since both the server (=ores.trading.service=) and client (=ores.qt=) are in the
+same repo and deployed together, the wire-format change is safe. No external
+consumers exist.
+
+A side benefit: callers simplify — =sl.identity.version= replaces
+=sl.identity.get().version= throughout.
+
+* Status
+
+| Field        | Value                                                                      |
+|--------------+----------------------------------------------------------------------------|
+| State        | STARTED                                                                    |
+| Parent story | [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]]                            |
+| Now          | Fix implemented and committed; PR #1041 open; awaiting Windows CI.         |
+| Waiting on   | Windows CI green.                                                          |
+| Next         | Merge once CI is green; close task.                                        |
+| Last touched | 2026-06-04                                                                 |
+
+* Acceptance
+
+- =ClientManagerExportPortfolio.cpp= compiles without C1202 on MSVC (Windows CI green).
+- All callers updated: =.identity.version= / =.terms.leg_type_code= / =.audit.modified_by= etc.
+- Linux and macOS CI unaffected.
+- No =rfl::Flatten= remains in =swap_leg.hpp=.
+
+* Investigation
+
+** Why rfl::Flatten does not help
+
+When rfl serialises/deserialises a struct containing =rfl::Flatten<T>=, it
+collects the /effective/ field name list — the union of all flattened sub-struct
+field names — to check for duplicates via =no_duplicate_field_names=.
+
+With:
+
+#+begin_src cpp
+struct swap_leg {
+    rfl::Flatten<swap_leg_identity> identity;  // 5 fields
+    rfl::Flatten<swap_leg_terms>   terms;       // 9 fields
+    rfl::Flatten<swap_leg_audit>   audit;       // 5 fields
+};
+#+end_src
+
+rfl instantiates =rfl::Literal<"version","tenant_id","id","instrument_id",
+"leg_number","leg_type_code",...(all 19)...>= for the parent =swap_leg=.
+MSVC C1202 fires at the same step (1140/4939) and same TU as before task 9.
+
+** Correct approach
+
+Use plain nested structs. rfl reflects each sub-struct independently:
+
+#+begin_src cpp
+struct swap_leg {
+    swap_leg_identity identity;
+    swap_leg_terms    terms;
+    swap_leg_audit    audit;
+};
+#+end_src
+
+rfl now creates three separate Literals of size ≤9. =swap_leg= itself has a
+3-field Literal. No Literal exceeds the MSVC threshold.
+
+* Plan
+
+Full technical analysis is in [[id:D75F4921-B431-4E78-99AB-62A47F761D1D][Investigation: MSVC C1202 and rfl complexity]].
+
+1. Rewrote the investigation document with the Mode 1 / Mode 2 failure taxonomy,
+   chronological record of all prior approaches, why =rfl::Flatten= works for Mode 1
+   but not Mode 2, architectural impact analysis, and a decision table.
+2. Removed =rfl::Flatten= from =swap_leg.hpp=; kept the three sub-structs as plain
+   nested structs.
+3. Updated all callers (13 files) to remove =.get()= accessors.
+4. Updated =instrument.hpp= =stamp_ids= dispatch accordingly.
+5. Verified Linux build clean; site build clean (fixed two fabricated org-roam IDs).
+
+* PRs
+
+| PR                                                                        | Title                                                                         |
+|---------------------------------------------------------------------------+-------------------------------------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/1041][#1041]] | [swap_leg] Replace rfl::Flatten with plain nested structs to fix MSVC C1202 |
+
+* Review
+
+| # | Comment summary                                                              | File          | Decision | Notes          |
+|---+------------------------------------------------------------------------------+---------------+----------+----------------|
+| 1 | Gemini: remove empty Plan/Notes/Result placeholder sections from task doc    | task_fix_*.org | Accept  | Fixed this commit |

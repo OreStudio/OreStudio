@@ -34,9 +34,9 @@ domain::swap_leg generate_synthetic_swap_leg(
         std::string(generation_keys::modified_by), "system");
 
     domain::swap_leg r;
-    auto& id = r.identity.get();
-    auto& tm = r.terms.get();
-    auto& au = r.audit.get();
+    auto& id = r.identity;
+    auto& tm = r.terms;
+    auto& au = r.audit;
     id.version = 1;
     id.id = boost::uuids::random_generator()();
     id.instrument_id = instrument_id;

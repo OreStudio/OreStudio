@@ -262,9 +262,9 @@ currencyCode parse_currency_code(const std::string& s) {
 
 swap_leg swap_instrument_mapper::map_leg(const legData& ld, int leg_number) {
     swap_leg sl;
-    auto& id = sl.identity.get();
-    auto& tm = sl.terms.get();
-    auto& au = sl.audit.get();
+    auto& id = sl.identity;
+    auto& tm = sl.terms;
+    auto& au = sl.audit;
     id.leg_number = leg_number;
     tm.leg_type_code = to_string(ld.LegType);
 
@@ -406,14 +406,14 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_fra(const 
     fi.long_short = "Long";
 
     swap_leg sl;
-    sl.identity.get().leg_number = 1;
-    auto& tm = sl.terms.get();
+    sl.identity.leg_number = 1;
+    auto& tm = sl.terms;
     tm.leg_type_code = "Fixed";
     tm.currency = to_string(fra.Currency);
     tm.floating_index_code = std::string(fra.Index);
     tm.fixed_rate = static_cast<double>(fra.Strike);
     tm.notional = static_cast<double>(fra.Notional);
-    auto& au = sl.audit.get();
+    auto& au = sl.audit;
     au.modified_by = "ores";
     au.performed_by = "ores";
     au.change_reason_code = "system.external_data_import";
@@ -449,8 +449,8 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_capfloor(c
     ci.maturity_date = end_date_from_schedule(cf.LegData.ScheduleData);
 
     swap_leg sl;
-    sl.identity.get().leg_number = 1;
-    auto& tm = sl.terms.get();
+    sl.identity.leg_number = 1;
+    auto& tm = sl.terms;
     tm.leg_type_code = to_string(cf.LegData.LegType);
     tm.currency = to_string(cf.LegData.Currency);
     tm.day_count_fraction_code = to_string(cf.LegData.DayCounter);
@@ -469,7 +469,7 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_capfloor(c
                 cf.LegData.legDataType.FloatingLegData->Spreads->Spread.front());
     }
 
-    auto& au = sl.audit.get();
+    auto& au = sl.audit;
     au.modified_by = "ores";
     au.performed_by = "ores";
     au.change_reason_code = "system.external_data_import";
@@ -489,7 +489,7 @@ legData swap_instrument_mapper::reverse_leg(
         const swap_leg& sl) {
     legData ld;
 
-    const auto& tm = sl.terms.get();
+    const auto& tm = sl.terms;
     const auto leg_type = leg_type_from_string(tm.leg_type_code);
     if (!leg_type)
         throw std::runtime_error(
@@ -576,7 +576,7 @@ trade swap_instrument_mapper::reverse_fra(
     fra.Notional = static_cast<float>(instr.notional);
 
     if (!legs.empty()) {
-        const auto& tm = legs.front().terms.get();
+        const auto& tm = legs.front().terms;
         static_cast<std::string&>(fra.Index) = tm.floating_index_code;
         fra.Strike = static_cast<float>(tm.fixed_rate);
         fra.LongShort = longShort::Long;
@@ -604,7 +604,7 @@ trade swap_instrument_mapper::reverse_capfloor(
     if (!legs.empty()) {
         const auto& sl = legs.front();
 
-        const auto& tm = sl.terms.get();
+        const auto& tm = sl.terms;
         cf.LegData.LegType = leg_type_from_string(tm.leg_type_code)
                                  .value_or(legType::Floating);
 

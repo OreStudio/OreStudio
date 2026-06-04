@@ -8,7 +8,7 @@
 #+filetags: :ux:documentation:knowledge:badge-colour-semantics:sprint_19:v0:
 #+owner: marco
 #+branch: feature/ux-language-doc
-#+pr:
+#+pr: https://github.com/OreStudio/OreStudio/pull/1051
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-04
@@ -87,7 +87,7 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1051][#1051]] | [doc] UX Language: colour semantics, badge catalogue, entity window anatomy |
 
 * Review
 

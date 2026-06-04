@@ -25,7 +25,7 @@
 #include "ores.security/jwt/jwt_claims.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/domain/account_json.hpp"
-#include "ores.database/domain/change_reason_constants.hpp"
+#include "ores.dq.api/domain/change_reason_constants.hpp"
 #include "ores.iam.api/domain/role_json.hpp"
 #include "ores.iam.api/domain/permission_json.hpp"
 #include "ores.iam.api/domain/permission.hpp"
@@ -81,7 +81,7 @@ parsed_principal parse_principal(const std::string& principal) {
 }
 
 }  // anonymous namespace
-namespace reason = database::domain::change_reason_constants;
+namespace reason = ores::dq::domain::change_reason_constants;
 
 iam_routes::iam_routes(database::context ctx,
     std::shared_ptr<variability::service::system_settings_service> system_flags,

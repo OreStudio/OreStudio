@@ -1483,6 +1483,7 @@ _STATIC_PARENT = {
     "skill": "doc/llm/skills",
     "manual": "doc/manual/user_guide",
     "memory": "doc/llm/memory",
+    "capture": "doc/agile/product_backlog/inbox",
 }
 
 def _default_parent_dir(doc_type):
@@ -1723,8 +1724,9 @@ def cmd_add(argv):
               "         diagram entity_org dataset_overview\n"
               "  --parent-dir defaults to the current sprint (story) or\n"
               "  version (sprint), doc/llm/skills (skill),\n"
-              "  doc/manual/user_guide (manual), or doc/llm/memory (memory);\n"
-              "  required otherwise.\n"
+              "  doc/manual/user_guide (manual), doc/llm/memory (memory),\n"
+              "  or doc/agile/product_backlog/inbox (capture); required\n"
+              "  otherwise.\n"
               "  diagram: scaffolds a .puml file with the standard licence header.\n"
               "  entity_org: scaffolds projects/ores.<component>/modeling/\n"
               "    ores.<component>.<slug>.org; requires --component, --slug,\n"

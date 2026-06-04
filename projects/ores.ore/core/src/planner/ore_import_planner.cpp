@@ -24,13 +24,13 @@
 #include <unordered_set>
 #include "ores.ore.core/xml/importer.hpp"
 #include "ores.ore.core/hierarchy/ore_hierarchy_builder.hpp"
-#include "ores.database/domain/change_reason_constants.hpp"
+#include "ores.dq.api/domain/change_reason_constants.hpp"
 #include "ores.trading.api/domain/trade_instrument.hpp"
 
 namespace ores::ore::planner {
 
 using namespace ores::logging;
-namespace reason = ores::database::domain::change_reason_constants;
+namespace reason = ores::dq::domain::change_reason_constants;
 
 ore_import_planner::ore_import_planner(
     scanner::scan_result scan_result,

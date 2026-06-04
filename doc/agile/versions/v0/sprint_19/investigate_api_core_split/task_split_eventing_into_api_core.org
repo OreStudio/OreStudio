@@ -1,0 +1,92 @@
+:PROPERTIES:
+:ID: 9800051F-8F04-4F2E-A143-4BFE2617816D
+:END:
+#+title: Task: Split ores.eventing into api and core sub-components
+#+description: ores.eventing links ores.database.lib PUBLIC and is itself linked PUBLIC by almost every api, so the database layer leaks transitively into all 'light' apis. Split it: ores.eventing.api keeps the domain event types (and generators) that apis need; ores.eventing.core takes the service machinery with the database and telemetry dependencies. Update all 18 consumers.
+#+type: task
+#+level: s1
+#+filetags: :architecture:components:cpp:eventing:investigate_api_core_split:sprint_19:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-04
+#+updated: 2026-06-04
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BD519FC9-6B29-4055-877F-861E46043A06][Investigate the API/core split in components]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+=ores.eventing= links =ores.database.lib= PUBLIC and is itself linked
+PUBLIC by almost every api in the standard profile — so the database
+layer still leaks transitively into every "light" api, undoing what
+the dq.api cleanup achieved directly. The leak comes from exactly one
+header: =service/postgres_event_source.hpp=. Its consumers are all
+service-layer applications (http, compute, reporting, analytics,
+trading, workspace, refdata, ...) — precisely the layer where
+database dependencies belong.
+
+Split the component following the established api/core pattern:
+
+- =ores.eventing.api= — =domain= (entity change events, channel
+  info, event traits), =generators=, and the interface-level
+  =event_bus= / =event_channel_registry=. Links platform/utility
+  only.
+- =ores.eventing.core= — =postgres_event_source= (and registrar),
+  carrying the =ores.database= and telemetry dependencies.
+
+Mechanical but wide: 18 CMakeLists link =ores.eventing.lib= today;
+each repoints to =.api= or =.core= according to what it actually
+uses. This completes what the dq.api fix started: apis linking
+=eventing.api= become genuinely lightweight.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:BD519FC9-6B29-4055-877F-861E46043A06][Investigate the API/core split in components]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Pick up after the constants move (PR #1052) lands. |
+| Last touched | 2026-06-04                               |
+
+* Acceptance
+
+- =ores.eventing= has api/core sub-components in the standard layout
+  (=api/include/ores.eventing.api/=, =core/...=), with the group
+  parent owning the root CMakeLists.
+- =ores.eventing.api= links only platform/utility (plus the rfl pch);
+  no database, no telemetry.
+- =postgres_event_source= and the registrar live in
+  =ores.eventing.core= with the database/telemetry links.
+- All 18 consumers repointed to =.api= or =.core= per actual usage;
+  no component links =.core= unless it uses the postgres source.
+- Domain-component apis that link =eventing.api= carry no transitive
+  =ores.database= in their public interface (spot-check dq.api,
+  trading.api).
+- Full build and tests green.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

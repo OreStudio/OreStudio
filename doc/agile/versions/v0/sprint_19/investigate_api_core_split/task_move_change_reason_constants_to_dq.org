@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :architecture:components:cpp:dq:investigate_api_core_split:sprint_19:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/move-change-reason-constants-to-dq
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -35,6 +35,17 @@ Deliberately deferred from the inventory task as a post-cleanup
 change — the precondition (light dq.api) had to land and be verified
 first.
 
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:BD519FC9-6B29-4055-877F-861E46043A06][Investigate the API/core split in components]] |
+| Now          | Header moved, all 10 consumers fixed, links updated; full build verifying. |
+| Waiting on   | Nothing.                               |
+| Next         | Commit, push, raise PR.                |
+| Last touched | 2026-06-04                               |
+
 * Acceptance
 
 - =change_reason_constants.hpp= lives in
@@ -57,12 +68,12 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1052][#1052]] | [dq,iam,qt,http,ore] Move change reason constants to ores.dq.api |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | qt.api must link ores.dq.api.lib PUBLIC after dropping database | projects/ores.qt/api/src/CMakeLists.txt | Declined | Already linked PUBLIC in the same list since before the PR; premise false. |
 
 * Result

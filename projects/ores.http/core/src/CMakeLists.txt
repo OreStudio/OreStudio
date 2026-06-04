@@ -52,6 +52,7 @@ target_link_libraries(${lib_target_name}
     PRIVATE
         ores.utility.lib
         ores.security.lib
-        ores.database.lib)
+        ores.database.lib
+        ores.dq.api.lib)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

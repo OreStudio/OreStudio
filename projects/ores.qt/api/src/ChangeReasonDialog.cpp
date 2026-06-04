@@ -25,11 +25,11 @@
 #include <QFormLayout>
 #include <QGroupBox>
 #include <QStandardItemModel>
-#include "ores.database/domain/change_reason_constants.hpp"
+#include "ores.dq.api/domain/change_reason_constants.hpp"
 
 namespace ores::qt {
 
-namespace reason = ores::database::domain::change_reason_constants;
+namespace reason = ores::dq::domain::change_reason_constants;
 
 ChangeReasonDialog::ChangeReasonDialog(
     const std::vector<dq::domain::change_reason>& reasons,

@@ -35,7 +35,7 @@
 #include <QVBoxLayout>
 #include <QtConcurrent>
 #include <QFutureWatcher>
-#include "ores.database/domain/change_reason_constants.hpp"
+#include "ores.dq.api/domain/change_reason_constants.hpp"
 #include "ores.dq.api/messaging/publish_bundle_protocol.hpp"
 #include "ores.iam.api/domain/account_party.hpp"
 #include "ores.iam.api/messaging/account_party_protocol.hpp"
@@ -48,7 +48,7 @@
 namespace ores::qt {
 
 using namespace ores::logging;
-namespace reason = ores::database::domain::change_reason_constants;
+namespace reason = ores::dq::domain::change_reason_constants;
 
 // ============================================================================
 // TenantProvisioningWizard

@@ -1,3 +1,6 @@
+# GENERATED FILE — tangled from doc/agile/sprint_charts.org.
+# Edit the source block there and re-tangle; do not edit directly.
+#
 # PR Cycle Time — standalone chart, only run when PR data exists
 sprint_str = sprintf("%02d", sprint)
 

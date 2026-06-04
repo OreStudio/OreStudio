@@ -1,3 +1,6 @@
+# GENERATED FILE — tangled from doc/agile/sprint_charts.org.
+# Edit the source block there and re-tangle; do not edit directly.
+#
 # PRs & Commits per Day — standalone chart
 sprint_str = sprintf("%02d", sprint)
 
@@ -15,7 +18,8 @@ set y2label "Commits"
 set ytics nomirror
 set y2tics
 set title sprintf("Sprint %d — PRs & Commits per Day", sprint)
+set xtics rotate by -45 font "sans,8"
 
 infile_act = sprintf("build/output/sprint_%s/sprint_activity.csv", sprint_str)
-plot infile_act using 2 every ::1 title "PRs" with boxes lc rgb "#4A90D9", \
-     "" using 3 every ::1 axes x1y2 title "Commits" with linespoints lc rgb "#E67E22" lw 2 pt 7
+plot infile_act using 0:2:xticlabels(stringcolumn(1)) every ::1 title "PRs" with boxes lc rgb "#4A90D9", \
+     "" using 0:3 every ::1 axes x1y2 title "Commits" with linespoints lc rgb "#E67E22" lw 2 pt 7

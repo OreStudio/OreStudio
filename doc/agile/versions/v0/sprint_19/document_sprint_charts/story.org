@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: 95429DF9-B645-4E41-8375-A2A5C84A8E5A
+:END:
+#+title: Story: Document the sprint health charts
+#+description: Create an agile knowledge page documenting the four sprint health charts: what each chart is, what it measures, its purpose, and how to interpret it; move the gnuplot scripts from scripts/ into the page as literate sources; link from the sprint Charts sections and the agile process page.
+#+type: story
+#+level: s2
+#+filetags: :agile:charts:gnuplot:documentation:sprint_19:v0:
+#+created: 2026-06-04
+#+updated: 2026-06-04
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every sprint page carries four health charts (PRs & commits per day,
+daily line churn, PR cycle time, cumulative stories done), but nothing
+documents them as a set: what each chart measures, why we generate it,
+and how to read it. The four gnuplot scripts that render them sit in
+=scripts/= as undocumented developer scripts, disconnected from the
+charts they produce.
+
+This story delivers a single agile knowledge page that documents the
+charts — definition, measure, purpose, and interpretation, phrased in
+the project's agile domain terms — and becomes the literate home of
+the gnuplot sources, tangled back to =scripts/= so =compass sprint
+charts= keeps working unchanged. The sprint Charts sections and the
+agile process page link to it.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] |
+| Now           | Writing the sprint charts knowledge page. |
+| Waiting on    | Nothing.                               |
+| Next          | Tangle gnuplot sources; wire links.    |
+| Last touched  | 2026-06-04                               |
+
+* Acceptance
+
+- A knowledge page exists under =doc/agile/= documenting all four
+  sprint health charts: what each chart is, what it measures, its
+  purpose, and how to interpret it (healthy and unhealthy patterns).
+- The page uses the project's agile domain definitions (story, task,
+  sprint, DONE, PR cycle) with id-links to their sources.
+- The four gnuplot scripts live in the page as org-babel source
+  blocks tangled to =scripts/sprint_*.gnuplot=; the tangled files
+  carry a header marking them as generated from the page.
+- =compass sprint charts= renders all four charts unchanged.
+- The sprint Charts section (current sprint and the codegen sprint
+  template) links to the page.
+- The agile process page links to the page.
+- The page links to the sprint health review runbook and to the
+  compass recipe for generating the charts.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:453D3344-433D-45CA-B082-BC85C39D0CE8][Implement Document the sprint health charts]] | STARTED | 2026-06-04 | | Knowledge page, literate gnuplot sources, links from sprint template, process page, recipe and runbook. |
+
+* Decisions
+
+* Out of scope
+
+- Changing what the charts measure or how =compass sprint charts=
+  extracts the metrics.
+- Adding new chart types.

@@ -17,13 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.logging/make_logger.hpp"
 #include "ores.synthetic.core/generators/account_generator.hpp"
 #include "ores.synthetic.core/generators/catalog_generator.hpp"
 #include "ores.synthetic.core/generators/dataset_generator.hpp"
-
-#include <catch2/catch_test_macros.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 
@@ -51,8 +50,7 @@ TEST_CASE("generate_synthetic_account_creates_valid_account", generators_tags) {
     CHECK(!account.modified_by.empty());
     CHECK(account.change_reason_code == "SYNTHETIC");
 
-    BOOST_LOG_SEV(lg, info) << "Generated account with username: "
-                            << account.username;
+    BOOST_LOG_SEV(lg, info) << "Generated account with username: " << account.username;
 }
 
 TEST_CASE("generate_synthetic_accounts_creates_multiple", generators_tags) {

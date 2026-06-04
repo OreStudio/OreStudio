@@ -18,18 +18,15 @@
  *
  */
 #include "ores.synthetic.core/generators/dataset_generator.hpp"
-
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/generation/generation_keys.hpp"
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
 
 namespace ores::synthetic::generators {
 
 using ores::utility::generation::generation_keys;
 
-dq::domain::dataset generate_synthetic_dataset(
-    utility::generation::generation_context& ctx) {
-    const auto modified_by = ctx.env().get_or(
-        generation_keys::modified_by, "system");
+dq::domain::dataset generate_synthetic_dataset(utility::generation::generation_context& ctx) {
+    const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
 
     dq::domain::dataset r;
     r.version = 1;
@@ -40,8 +37,8 @@ dq::domain::dataset generate_synthetic_dataset(
     r.subject_area_name = std::string(faker::word::noun());
     r.domain_name = std::string(faker::word::noun());
     if (ctx.random_bool()) {
-        r.coding_scheme_code = std::string(faker::word::noun()) + "_" +
-            std::string(faker::word::noun());
+        r.coding_scheme_code =
+            std::string(faker::word::noun()) + "_" + std::string(faker::word::noun());
     }
     r.origin_code = std::string(faker::word::noun());
     r.nature_code = std::string(faker::word::noun());
@@ -49,8 +46,7 @@ dq::domain::dataset generate_synthetic_dataset(
     if (ctx.random_bool()) {
         r.methodology_id = ctx.generate_uuid();
     }
-    r.name = std::string(faker::word::adjective()) + " " +
-        std::string(faker::word::noun());
+    r.name = std::string(faker::word::adjective()) + " " + std::string(faker::word::noun());
     r.description = std::string(faker::lorem::sentence());
     r.source_system_id = std::string(faker::word::noun()) + "_system";
     r.business_context = std::string(faker::lorem::sentence());
@@ -67,8 +63,7 @@ dq::domain::dataset generate_synthetic_dataset(
 }
 
 std::vector<dq::domain::dataset>
-generate_synthetic_datasets(std::size_t n,
-    utility::generation::generation_context& ctx) {
+generate_synthetic_datasets(std::size_t n, utility::generation::generation_context& ctx) {
     std::vector<dq::domain::dataset> r;
     r.reserve(n);
     while (r.size() < n)

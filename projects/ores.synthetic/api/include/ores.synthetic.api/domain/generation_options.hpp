@@ -20,12 +20,12 @@
 #ifndef ORES_SYNTHETIC_DOMAIN_GENERATION_OPTIONS_HPP
 #define ORES_SYNTHETIC_DOMAIN_GENERATION_OPTIONS_HPP
 
+#include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
 #include <optional>
 #include <string>
 #include <vector>
-#include <boost/uuid/uuid.hpp>
 
 namespace ores::synthetic::domain {
 

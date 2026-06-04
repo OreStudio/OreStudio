@@ -20,14 +20,14 @@
 #ifndef ORES_ANALYTICS_SERVICE_PRICING_MODEL_PRODUCT_PARAMETER_SERVICE_HPP
 #define ORES_ANALYTICS_SERVICE_PRICING_MODEL_PRODUCT_PARAMETER_SERVICE_HPP
 
+#include "ores.analytics.api/domain/pricing_model_product_parameter.hpp"
+#include "ores.analytics.core/export.hpp"
+#include "ores.analytics.core/repository/pricing_model_product_parameter_repository.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <optional>
 #include <string>
 #include <vector>
-#include <optional>
-#include "ores.logging/make_logger.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.analytics.api/domain/pricing_model_product_parameter.hpp"
-#include "ores.analytics.core/repository/pricing_model_product_parameter_repository.hpp"
-#include "ores.analytics.core/export.hpp"
 
 namespace ores::analytics::service {
 
@@ -56,13 +56,11 @@ public:
     std::vector<domain::pricing_model_product_parameter>
     list_parameters_for_product(const std::string& product_id);
 
-    std::optional<domain::pricing_model_product_parameter>
-    find_parameter(const std::string& id);
+    std::optional<domain::pricing_model_product_parameter> find_parameter(const std::string& id);
 
     void save_parameter(const domain::pricing_model_product_parameter& v);
 
-    void save_parameters(
-        const std::vector<domain::pricing_model_product_parameter>& v);
+    void save_parameters(const std::vector<domain::pricing_model_product_parameter>& v);
 
     void remove_parameter(const std::string& id);
 

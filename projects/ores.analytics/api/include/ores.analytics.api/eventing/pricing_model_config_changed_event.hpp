@@ -20,10 +20,10 @@
 #ifndef ORES_ANALYTICS_EVENTING_PRICING_MODEL_CONFIG_CHANGED_EVENT_HPP
 #define ORES_ANALYTICS_EVENTING_PRICING_MODEL_CONFIG_CHANGED_EVENT_HPP
 
-#include <chrono>
-#include <vector>
-#include <string>
 #include "ores.eventing/domain/event_traits.hpp"
+#include <chrono>
+#include <string>
+#include <vector>
 
 namespace ores::analytics::eventing {
 
@@ -57,10 +57,9 @@ namespace ores::eventing::domain {
 /**
  * @brief Event traits specialization for pricing_model_config_changed_event.
  */
-template<>
+template <>
 struct event_traits<ores::analytics::eventing::pricing_model_config_changed_event> {
-    static constexpr std::string_view name =
-        "ores.analytics.pricing_model_config_changed";
+    static constexpr std::string_view name = "ores.analytics.pricing_model_config_changed";
 };
 
 }

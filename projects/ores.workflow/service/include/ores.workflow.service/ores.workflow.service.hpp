@@ -23,7 +23,8 @@
 /**
  * @brief Workflow orchestration microservice
  *
- * Standalone NATS microservice hosting workflow saga handlers: party provisioning, compensation logic, and other long-running distributed operations.
+ * Standalone NATS microservice hosting workflow saga handlers: party provisioning, compensation
+ * logic, and other long-running distributed operations.
  */
 namespace ores::workflow::service {}
 

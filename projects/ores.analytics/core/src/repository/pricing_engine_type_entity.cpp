@@ -18,7 +18,6 @@
  *
  */
 #include "ores.analytics.core/repository/pricing_engine_type_entity.hpp"
-
 #include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>

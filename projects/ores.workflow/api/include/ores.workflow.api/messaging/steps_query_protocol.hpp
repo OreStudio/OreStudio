@@ -20,10 +20,10 @@
 #ifndef ORES_WORKFLOW_API_MESSAGING_STEPS_QUERY_PROTOCOL_HPP
 #define ORES_WORKFLOW_API_MESSAGING_STEPS_QUERY_PROTOCOL_HPP
 
+#include "ores.workflow.api/messaging/workflow_events.hpp"
 #include <string>
 #include <string_view>
 #include <vector>
-#include "ores.workflow.api/messaging/workflow_events.hpp"
 
 namespace ores::workflow::messaging {
 
@@ -43,8 +43,7 @@ namespace ores::workflow::messaging {
  */
 struct get_step_result_request {
     using response_type = struct get_step_result_response;
-    static constexpr std::string_view nats_subject =
-        "workflow.v1.steps.get-result";
+    static constexpr std::string_view nats_subject = "workflow.v1.steps.get-result";
 
     /**
      * @brief UUID of the workflow step to look up, echoed from X-Workflow-Step-Id.
@@ -90,6 +89,6 @@ struct get_step_result_response {
     std::vector<step_log_entry> log;
 };
 
-}  // namespace ores::workflow::messaging
+} // namespace ores::workflow::messaging
 
 #endif

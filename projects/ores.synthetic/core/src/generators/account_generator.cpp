@@ -18,18 +18,15 @@
  *
  */
 #include "ores.synthetic.core/generators/account_generator.hpp"
-
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/generation/generation_keys.hpp"
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
 
 namespace ores::synthetic::generators {
 
 using ores::utility::generation::generation_keys;
 
-iam::domain::account generate_synthetic_account(
-    utility::generation::generation_context& ctx) {
-    const auto modified_by = ctx.env().get_or(
-        generation_keys::modified_by, "system");
+iam::domain::account generate_synthetic_account(utility::generation::generation_context& ctx) {
+    const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
 
     iam::domain::account r;
     r.version = 1;
@@ -47,8 +44,7 @@ iam::domain::account generate_synthetic_account(
 }
 
 std::vector<iam::domain::account>
-generate_synthetic_accounts(std::size_t n,
-    utility::generation::generation_context& ctx) {
+generate_synthetic_accounts(std::size_t n, utility::generation::generation_context& ctx) {
     std::vector<iam::domain::account> r;
     r.reserve(n);
     while (r.size() < n)

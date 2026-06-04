@@ -23,7 +23,8 @@
 /**
  * @brief Synthetic data generation service
  *
- * Standalone NATS microservice hosting synthetic data handlers: generation of realistic test data for development and QA purposes.
+ * Standalone NATS microservice hosting synthetic data handlers: generation of realistic test data
+ * for development and QA purposes.
  */
 namespace ores::synthetic.service {}
 

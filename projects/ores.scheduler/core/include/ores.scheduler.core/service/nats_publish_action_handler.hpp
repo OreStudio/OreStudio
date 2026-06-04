@@ -20,8 +20,8 @@
 #pragma once
 
 #include "ores.nats/service/client.hpp"
-#include "ores.scheduler.core/service/action_handler.hpp"
 #include "ores.scheduler.core/export.hpp"
+#include "ores.scheduler.core/service/action_handler.hpp"
 
 namespace ores::scheduler::service {
 

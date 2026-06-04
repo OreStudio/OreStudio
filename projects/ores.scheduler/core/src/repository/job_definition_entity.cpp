@@ -18,7 +18,6 @@
  *
  */
 #include "ores.scheduler.core/repository/job_definition_entity.hpp"
-
 #include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>

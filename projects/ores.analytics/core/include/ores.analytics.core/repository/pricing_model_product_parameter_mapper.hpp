@@ -21,9 +21,9 @@
 #define ORES_ANALYTICS_REPOSITORY_PRICING_MODEL_PRODUCT_PARAMETER_MAPPER_HPP
 
 #include "ores.analytics.api/domain/pricing_model_product_parameter.hpp"
+#include "ores.analytics.core/export.hpp"
 #include "ores.analytics.core/repository/pricing_model_product_parameter_entity.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.analytics.core/export.hpp"
 
 namespace ores::analytics::repository {
 
@@ -41,6 +41,7 @@ private:
         static auto instance = make_logger(logger_name);
         return instance;
     }
+
 public:
     static domain::pricing_model_product_parameter
     map(const pricing_model_product_parameter_entity& v);

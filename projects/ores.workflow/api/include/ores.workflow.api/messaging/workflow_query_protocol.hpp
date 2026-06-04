@@ -20,11 +20,11 @@
 #ifndef ORES_WORKFLOW_API_MESSAGING_WORKFLOW_QUERY_PROTOCOL_HPP
 #define ORES_WORKFLOW_API_MESSAGING_WORKFLOW_QUERY_PROTOCOL_HPP
 
-#include <string>
-#include <vector>
-#include <optional>
-#include <string_view>
 #include "ores.workflow.api/messaging/step_log_types.hpp"
+#include <optional>
+#include <string>
+#include <string_view>
+#include <vector>
 
 namespace ores::workflow::messaging {
 
@@ -60,8 +60,7 @@ struct workflow_instance_summary {
  */
 struct list_workflow_instances_request {
     using response_type = struct list_workflow_instances_response;
-    static constexpr std::string_view nats_subject =
-        "workflow.v1.instances.list";
+    static constexpr std::string_view nats_subject = "workflow.v1.instances.list";
 
     /**
      * @brief Maximum number of instances to return (default 200, max 1000).
@@ -111,8 +110,7 @@ struct workflow_step_summary {
  */
 struct get_workflow_steps_request {
     using response_type = struct get_workflow_steps_response;
-    static constexpr std::string_view nats_subject =
-        "workflow.v1.instances.steps";
+    static constexpr std::string_view nats_subject = "workflow.v1.instances.steps";
 
     std::string workflow_instance_id;
 };
@@ -157,8 +155,7 @@ struct workflow_definition_summary {
  */
 struct list_workflow_definitions_request {
     using response_type = struct list_workflow_definitions_response;
-    static constexpr std::string_view nats_subject =
-        "workflow.v1.definitions.list";
+    static constexpr std::string_view nats_subject = "workflow.v1.definitions.list";
 };
 
 struct list_workflow_definitions_response {
@@ -167,6 +164,6 @@ struct list_workflow_definitions_response {
     std::vector<workflow_definition_summary> definitions;
 };
 
-}  // namespace ores::workflow::messaging
+} // namespace ores::workflow::messaging
 
 #endif

@@ -20,22 +20,22 @@
 #ifndef ORES_WORKFLOW_CORE_REPOSITORY_WORKFLOW_INSTANCE_REPOSITORY_HPP
 #define ORES_WORKFLOW_CORE_REPOSITORY_WORKFLOW_INSTANCE_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include <optional>
-#include <sqlgen/postgres.hpp>
-#include <boost/uuid/uuid.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.workflow.core/domain/workflow_instance.hpp"
 #include "ores.workflow.core/export.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <optional>
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::workflow::repository {
 
 /**
  * @brief Repository for workflow instances (non-temporal, append-mostly).
  */
-class ORES_WORKFLOW_CORE_EXPORT workflow_instance_repository  {
+class ORES_WORKFLOW_CORE_EXPORT workflow_instance_repository {
 private:
     inline static std::string_view logger_name =
         "ores.workflow.repository.workflow_instance_repository";
@@ -57,16 +57,15 @@ public:
      * Used by the engine which operates cross-tenant as the service account.
      * Returns nullopt if no record with @p id exists.
      */
-    std::optional<domain::workflow_instance>
-    find_by_id(context ctx, const boost::uuids::uuid& id);
+    std::optional<domain::workflow_instance> find_by_id(context ctx, const boost::uuids::uuid& id);
 
     /**
      * @brief Returns all workflow instances with state_id == @p state_id.
      *
      * Used at startup to recover in-progress workflows across all tenants.
      */
-    std::vector<domain::workflow_instance>
-    find_by_state(context ctx, const boost::uuids::uuid& state_id);
+    std::vector<domain::workflow_instance> find_by_state(context ctx,
+                                                         const boost::uuids::uuid& state_id);
 
     /**
      * @brief Inserts a new workflow instance record.
@@ -78,10 +77,11 @@ public:
      *
      * Sets @p state_id, @p result_json, @p error, and stamps completed_at to now.
      */
-    void update_state(context ctx, const boost::uuids::uuid& id,
-        const boost::uuids::uuid& state_id,
-        const std::string& result_json,
-        const std::string& error);
+    void update_state(context ctx,
+                      const boost::uuids::uuid& id,
+                      const boost::uuids::uuid& state_id,
+                      const std::string& result_json,
+                      const std::string& error);
 
     /**
      * @brief Advances the current step index and records the event timestamp.
@@ -89,8 +89,7 @@ public:
      * Called by the engine after successfully dispatching the next step command.
      * Sets current_step_index = @p next_index and last_event_at = now().
      */
-    void update_step_progress(context ctx, const boost::uuids::uuid& id,
-        int next_index);
+    void update_step_progress(context ctx, const boost::uuids::uuid& id, int next_index);
 };
 
 }

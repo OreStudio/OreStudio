@@ -18,12 +18,11 @@
  *
  */
 #include "ores.scheduler.api/domain/job_definition_json_io.hpp"
-
+#include "ores.scheduler.api/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.scheduler.api/rfl/reflectors.hpp" // IWYU pragma: keep.
 
 namespace ores::scheduler::domain {
 

@@ -18,11 +18,10 @@
  *
  */
 #include "ores.analytics.core/repository/pricing_model_product_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
-#include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.analytics.api/domain/pricing_model_product_json_io.hpp" // IWYU pragma: keep.
+#include "ores.database/repository/mapper_helpers.hpp"
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::analytics::repository {
 
@@ -37,8 +36,7 @@ pricing_model_product_mapper::map(const pricing_model_product_entity& v) {
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
-    r.pricing_model_config_id =
-        boost::lexical_cast<boost::uuids::uuid>(v.pricing_model_config_id);
+    r.pricing_model_config_id = boost::lexical_cast<boost::uuids::uuid>(v.pricing_model_config_id);
     r.pricing_engine_type_code = v.pricing_engine_type_code;
     r.model = v.model;
     r.engine = v.engine;
@@ -73,23 +71,15 @@ pricing_model_product_mapper::map(const domain::pricing_model_product& v) {
 }
 
 std::vector<domain::pricing_model_product>
-pricing_model_product_mapper::map(
-    const std::vector<pricing_model_product_entity>& v) {
+pricing_model_product_mapper::map(const std::vector<pricing_model_product_entity>& v) {
     return map_vector<pricing_model_product_entity, domain::pricing_model_product>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<pricing_model_product_entity>
-pricing_model_product_mapper::map(
-    const std::vector<domain::pricing_model_product>& v) {
+pricing_model_product_mapper::map(const std::vector<domain::pricing_model_product>& v) {
     return map_vector<domain::pricing_model_product, pricing_model_product_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

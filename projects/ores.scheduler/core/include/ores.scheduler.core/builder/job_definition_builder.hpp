@@ -19,14 +19,14 @@
  */
 #pragma once
 
+#include "ores.scheduler.api/domain/cron_expression.hpp"
+#include "ores.scheduler.api/domain/job_definition.hpp"
+#include "ores.scheduler.core/export.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <expected>
 #include <optional>
 #include <string>
 #include <string_view>
-#include <boost/uuid/uuid.hpp>
-#include "ores.scheduler.api/domain/cron_expression.hpp"
-#include "ores.scheduler.api/domain/job_definition.hpp"
-#include "ores.scheduler.core/export.hpp"
 
 namespace ores::scheduler::builder {
 
@@ -86,8 +86,9 @@ private:
     std::string name_;
     std::string description_;
     std::string command_;
-    std::optional<domain::cron_expression> schedule_expression_; ///< Validated on with_cron_schedule().
-    std::string error_;               ///< First validation error, if any.
+    std::optional<domain::cron_expression>
+        schedule_expression_; ///< Validated on with_cron_schedule().
+    std::string error_;       ///< First validation error, if any.
     std::optional<boost::uuids::uuid> tenant_id_;
     std::optional<boost::uuids::uuid> party_id_;
     std::string modified_by_;

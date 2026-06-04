@@ -17,10 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.synthetic.api/domain/organisation_generation_options.hpp"
-
-#include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.synthetic.api/domain/organisation_generation_options.hpp"
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 
@@ -36,8 +35,7 @@ TEST_CASE("default_constructed_organisation_generation_options_has_expected_valu
     auto lg(make_logger(test_suite));
 
     const organisation_generation_options sut;
-    BOOST_LOG_SEV(lg, info) << "Default organisation_generation_options country: "
-                            << sut.country;
+    BOOST_LOG_SEV(lg, info) << "Default organisation_generation_options country: " << sut.country;
 
     CHECK(!sut.seed.has_value());
     CHECK(sut.country == "GB");
@@ -61,8 +59,7 @@ TEST_CASE("organisation_generation_options_seed_can_be_set", tags) {
 
     organisation_generation_options sut;
     sut.seed = 12345ULL;
-    BOOST_LOG_SEV(lg, info) << "organisation_generation_options seed: "
-                            << *sut.seed;
+    BOOST_LOG_SEV(lg, info) << "organisation_generation_options seed: " << *sut.seed;
 
     CHECK(sut.seed.has_value());
     CHECK(*sut.seed == 12345ULL);
@@ -76,8 +73,7 @@ TEST_CASE("organisation_generation_options_counts_can_be_overridden", tags) {
     sut.counterparty_count = 50;
     sut.portfolio_leaf_count = 16;
     sut.business_unit_count = 30;
-    BOOST_LOG_SEV(lg, info) << "organisation_generation_options party_count: "
-                            << sut.party_count;
+    BOOST_LOG_SEV(lg, info) << "organisation_generation_options party_count: " << sut.party_count;
 
     CHECK(sut.party_count == 20);
     CHECK(sut.counterparty_count == 50);
@@ -90,8 +86,7 @@ TEST_CASE("organisation_generation_options_country_can_be_set_to_us", tags) {
 
     organisation_generation_options sut;
     sut.country = "US";
-    BOOST_LOG_SEV(lg, info) << "organisation_generation_options country: "
-                            << sut.country;
+    BOOST_LOG_SEV(lg, info) << "organisation_generation_options country: " << sut.country;
 
     CHECK(sut.country == "US");
 }

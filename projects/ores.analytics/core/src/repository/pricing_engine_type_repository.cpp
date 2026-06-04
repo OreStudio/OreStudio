@@ -18,13 +18,12 @@
  *
  */
 #include "ores.analytics.core/repository/pricing_engine_type_repository.hpp"
-
-#include <sqlgen/postgres.hpp>
-#include "ores.database/repository/helpers.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.analytics.api/domain/pricing_engine_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.analytics.core/repository/pricing_engine_type_entity.hpp"
 #include "ores.analytics.core/repository/pricing_engine_type_mapper.hpp"
+#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
+#include <sqlgen/postgres.hpp>
 
 namespace ores::analytics::repository {
 
@@ -37,90 +36,86 @@ std::string pricing_engine_type_repository::sql() {
     return generate_create_table_sql<pricing_engine_type_entity>(lg());
 }
 
-void pricing_engine_type_repository::write(
-    context ctx, const domain::pricing_engine_type& v) {
+void pricing_engine_type_repository::write(context ctx, const domain::pricing_engine_type& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing pricing engine type: " << v.code;
-    execute_write_query(ctx, pricing_engine_type_mapper::map(v),
-        lg(), "Writing pricing engine type to database.");
+    execute_write_query(
+        ctx, pricing_engine_type_mapper::map(v), lg(), "Writing pricing engine type to database.");
 }
 
-void pricing_engine_type_repository::write(
-    context ctx, const std::vector<domain::pricing_engine_type>& v) {
+void pricing_engine_type_repository::write(context ctx,
+                                           const std::vector<domain::pricing_engine_type>& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing pricing engine types. Count: " << v.size();
-    execute_write_query(ctx, pricing_engine_type_mapper::map(v),
-        lg(), "Writing pricing engine types to database.");
+    execute_write_query(
+        ctx, pricing_engine_type_mapper::map(v), lg(), "Writing pricing engine types to database.");
 }
 
-std::vector<domain::pricing_engine_type>
-pricing_engine_type_repository::read_latest(context ctx) {
+std::vector<domain::pricing_engine_type> pricing_engine_type_repository::read_latest(context ctx) {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<pricing_engine_type_entity>> |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-        order_by("code"_c);
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("code"_c);
 
     return execute_read_query<pricing_engine_type_entity, domain::pricing_engine_type>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return pricing_engine_type_mapper::map(entities); },
-        lg(), "Reading latest pricing engine types");
+        lg(),
+        "Reading latest pricing engine types");
 }
 
 std::vector<domain::pricing_engine_type>
-pricing_engine_type_repository::read_latest(
-    context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug)
-        << "Reading latest pricing engine type. code: " << code;
+pricing_engine_type_repository::read_latest(context ctx, const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest pricing engine type. code: " << code;
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<pricing_engine_type_entity>> |
-        where("tenant_id"_c == tid && "code"_c == code
-            && "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::read<std::vector<pricing_engine_type_entity>> |
+        where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max.value());
 
     return execute_read_query<pricing_engine_type_entity, domain::pricing_engine_type>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return pricing_engine_type_mapper::map(entities); },
-        lg(), "Reading latest pricing engine type by code.");
+        lg(),
+        "Reading latest pricing engine type by code.");
 }
 
 std::vector<domain::pricing_engine_type>
-pricing_engine_type_repository::read_all(
-    context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug)
-        << "Reading all pricing engine type versions. code: " << code;
+pricing_engine_type_repository::read_all(context ctx, const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading all pricing engine type versions. code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<pricing_engine_type_entity>> |
-        where("tenant_id"_c == tid && "code"_c == code) |
-        order_by("version"_c.desc());
+                       where("tenant_id"_c == tid && "code"_c == code) |
+                       order_by("version"_c.desc());
 
     return execute_read_query<pricing_engine_type_entity, domain::pricing_engine_type>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return pricing_engine_type_mapper::map(entities); },
-        lg(), "Reading all pricing engine type versions by code.");
+        lg(),
+        "Reading all pricing engine type versions by code.");
 }
 
-void pricing_engine_type_repository::remove(
-    context ctx, const std::string& code) {
+void pricing_engine_type_repository::remove(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing pricing engine type: " << code;
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<pricing_engine_type_entity> |
-        where("tenant_id"_c == tid && "code"_c == code
-            && "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::delete_from<pricing_engine_type_entity> |
+        where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max.value());
 
-    execute_delete_query(ctx, query, lg(),
-        "Removing pricing engine type from database.");
+    execute_delete_query(ctx, query, lg(), "Removing pricing engine type from database.");
 }
 
-void pricing_engine_type_repository::remove(
-    context ctx, const std::vector<std::string>& codes) {
+void pricing_engine_type_repository::remove(context ctx, const std::vector<std::string>& codes) {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<pricing_engine_type_entity> |
-        where("tenant_id"_c == tid && "code"_c.in(codes)
-            && "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::delete_from<pricing_engine_type_entity> |
+        where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max.value());
 
-    execute_delete_query(ctx, query, lg(),
-        "Batch removing pricing engine types from database.");
+    execute_delete_query(ctx, query, lg(), "Batch removing pricing engine types from database.");
 }
 
 }

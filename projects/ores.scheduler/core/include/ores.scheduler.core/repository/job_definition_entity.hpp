@@ -20,11 +20,11 @@
 #ifndef ORES_SCHEDULER_REPOSITORY_JOB_DEFINITION_ENTITY_HPP
 #define ORES_SCHEDULER_REPOSITORY_JOB_DEFINITION_ENTITY_HPP
 
-#include <string>
-#include <optional>
-#include <ostream>
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
+#include <optional>
+#include <ostream>
+#include <string>
 
 namespace ores::scheduler::repository {
 

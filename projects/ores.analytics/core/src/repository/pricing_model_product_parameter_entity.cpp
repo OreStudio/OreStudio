@@ -18,15 +18,13 @@
  *
  */
 #include "ores.analytics.core/repository/pricing_model_product_parameter_entity.hpp"
-
 #include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
 
 namespace ores::analytics::repository {
 
-std::ostream& operator<<(std::ostream& s,
-    const pricing_model_product_parameter_entity& v) {
+std::ostream& operator<<(std::ostream& s, const pricing_model_product_parameter_entity& v) {
     rfl::json::write(v, s);
     return s;
 }

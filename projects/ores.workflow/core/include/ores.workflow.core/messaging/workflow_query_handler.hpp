@@ -20,20 +20,20 @@
 #ifndef ORES_WORKFLOW_CORE_MESSAGING_WORKFLOW_QUERY_HANDLER_HPP
 #define ORES_WORKFLOW_CORE_MESSAGING_WORKFLOW_QUERY_HANDLER_HPP
 
-#include <memory>
-#include <string>
-#include <unordered_map>
-#include <boost/uuid/uuid.hpp>
+#include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.database/domain/context.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
-#include "ores.workflow.core/service/fsm_state_map.hpp"
 #include "ores.workflow.api/service/workflow_registry.hpp"
+#include "ores.workflow.core/export.hpp"
 #include "ores.workflow.core/repository/workflow_instance_repository.hpp"
 #include "ores.workflow.core/repository/workflow_step_repository.hpp"
-#include "ores.workflow.core/export.hpp"
+#include "ores.workflow.core/service/fsm_state_map.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <memory>
+#include <string>
+#include <unordered_map>
 
 namespace ores::workflow::messaging {
 
@@ -47,10 +47,9 @@ namespace ores::workflow::messaging {
  * Both handlers validate the Bearer JWT, scope the database query to the
  * authenticated tenant via RLS, and return JSON responses.
  */
-class ORES_WORKFLOW_CORE_EXPORT workflow_query_handler  {
+class ORES_WORKFLOW_CORE_EXPORT workflow_query_handler {
 private:
-    inline static std::string_view logger_name =
-        "ores.workflow.messaging.workflow_query_handler";
+    inline static std::string_view logger_name = "ores.workflow.messaging.workflow_query_handler";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -59,13 +58,12 @@ private:
     }
 
 public:
-    workflow_query_handler(
-        ores::nats::service::client& nats,
-        ores::database::context ctx,
-        ores::security::jwt::jwt_authenticator signer,
-        const service::fsm_state_map& instance_states,
-        const service::fsm_state_map& step_states,
-        std::shared_ptr<const service::workflow_registry> registry);
+    workflow_query_handler(ores::nats::service::client& nats,
+                           ores::database::context ctx,
+                           ores::security::jwt::jwt_authenticator signer,
+                           const service::fsm_state_map& instance_states,
+                           const service::fsm_state_map& step_states,
+                           std::shared_ptr<const service::workflow_registry> registry);
 
     /**
      * @brief Lists workflow instances for the authenticated tenant.
@@ -116,10 +114,10 @@ private:
     ores::security::jwt::jwt_authenticator signer_;
 
     // Reverse maps: state UUID → state name, built from the fsm_state_maps.
-    std::unordered_map<boost::uuids::uuid, std::string,
-        std::hash<boost::uuids::uuid>> instance_state_names_;
-    std::unordered_map<boost::uuids::uuid, std::string,
-        std::hash<boost::uuids::uuid>> step_state_names_;
+    std::unordered_map<boost::uuids::uuid, std::string, std::hash<boost::uuids::uuid>>
+        instance_state_names_;
+    std::unordered_map<boost::uuids::uuid, std::string, std::hash<boost::uuids::uuid>>
+        step_state_names_;
 
     std::shared_ptr<const service::workflow_registry> registry_;
 
@@ -127,6 +125,6 @@ private:
     repository::workflow_step_repository step_repo_;
 };
 
-}  // namespace ores::workflow::messaging
+} // namespace ores::workflow::messaging
 
 #endif

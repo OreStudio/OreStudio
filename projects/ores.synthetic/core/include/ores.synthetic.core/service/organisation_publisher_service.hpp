@@ -20,12 +20,12 @@
 #ifndef ORES_SYNTHETIC_SERVICE_ORGANISATION_PUBLISHER_SERVICE_HPP
 #define ORES_SYNTHETIC_SERVICE_ORGANISATION_PUBLISHER_SERVICE_HPP
 
-#include <cstdint>
-#include <string>
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.synthetic.api/domain/generated_organisation.hpp"
 #include "ores.synthetic.core/export.hpp"
+#include <cstdint>
+#include <string>
 
 namespace ores::synthetic::service {
 
@@ -53,8 +53,7 @@ class ORES_SYNTHETIC_CORE_EXPORT organisation_publisher_service final {
 private:
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
-        static auto instance = make_logger(
-            "ores.synthetic.service.organisation_publisher_service");
+        static auto instance = make_logger("ores.synthetic.service.organisation_publisher_service");
         return instance;
     }
 
@@ -67,8 +66,7 @@ public:
      * @param org The generated organisation to persist.
      * @return Response with success/failure and entity counts.
      */
-    generate_organisation_result publish(
-        const domain::generated_organisation& org);
+    generate_organisation_result publish(const domain::generated_organisation& org);
 
 private:
     database::context ctx_;

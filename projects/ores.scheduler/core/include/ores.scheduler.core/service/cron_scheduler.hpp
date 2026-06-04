@@ -19,15 +19,15 @@
  */
 #pragma once
 
-#include <string>
-#include <vector>
-#include <boost/uuid/uuid.hpp>
 #include "ores.database/domain/context.hpp"
 #include "ores.scheduler.api/domain/job_definition.hpp"
 #include "ores.scheduler.api/domain/job_instance.hpp"
+#include "ores.scheduler.core/export.hpp"
 #include "ores.scheduler.core/repository/job_definition_repository.hpp"
 #include "ores.scheduler.core/repository/job_instance_repository.hpp"
-#include "ores.scheduler.core/export.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::scheduler::service {
 
@@ -93,8 +93,7 @@ public:
      * @param limit Maximum number of instances returned (default: 100).
      */
     [[nodiscard]] std::vector<domain::job_instance>
-    get_job_history(const boost::uuids::uuid& job_definition_id,
-                    std::size_t limit = 100);
+    get_job_history(const boost::uuids::uuid& job_definition_id, std::size_t limit = 100);
 
 private:
     context ctx_;

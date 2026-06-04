@@ -19,12 +19,12 @@
  */
 #pragma once
 
-#include <expected>
-#include <string>
-#include <boost/asio/awaitable.hpp>
 #include "ores.database/domain/context.hpp"
 #include "ores.scheduler.api/domain/job_definition.hpp"
 #include "ores.scheduler.core/export.hpp"
+#include <boost/asio/awaitable.hpp>
+#include <expected>
+#include <string>
 
 namespace ores::scheduler::service {
 

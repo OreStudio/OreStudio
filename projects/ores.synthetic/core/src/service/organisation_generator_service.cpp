@@ -18,20 +18,18 @@
  *
  */
 #include "ores.synthetic.core/service/organisation_generator_service.hpp"
+#include "data/financial_names.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
 #include "ores.utility/generation/tree_builder.hpp"
+#include "ores.utility/string/short_code_generator.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
-
 #include <algorithm>
 #include <array>
 #include <iomanip>
 #include <sstream>
 #include <unordered_map>
 #include <unordered_set>
-
-#include "ores.utility/string/short_code_generator.hpp"
-#include "data/financial_names.hpp"
 
 namespace ores::synthetic::service {
 
@@ -54,8 +52,7 @@ std::string_view phone_prefix_for(const std::string& country) {
 }
 
 const auto& financial_centres_for(const std::string& country) {
-    return country == "US" ? data::us_financial_centres
-        : data::gb_financial_centres;
+    return country == "US" ? data::us_financial_centres : data::gb_financial_centres;
 }
 
 const auto& party_suffixes_for(const std::string& country) {
@@ -63,8 +60,7 @@ const auto& party_suffixes_for(const std::string& country) {
 }
 
 const auto& counterparty_patterns_for(const std::string& country) {
-    return country == "US" ? data::us_counterparty_patterns
-        : data::gb_counterparty_patterns;
+    return country == "US" ? data::us_counterparty_patterns : data::gb_counterparty_patterns;
 }
 
 const auto& surnames_for(const std::string& country) {
@@ -86,8 +82,8 @@ std::string_view bic_country_suffix_for(const std::string& country) {
 /**
  * @brief Applies a name pattern, replacing {0} with surname and {1} with city.
  */
-std::string apply_pattern(std::string_view pattern,
-    const std::string& surname, const std::string& city) {
+std::string
+apply_pattern(std::string_view pattern, const std::string& surname, const std::string& city) {
     std::string result;
     result.reserve(pattern.size() + surname.size() + city.size());
     for (std::size_t i = 0; i < pattern.size(); ++i) {
@@ -114,8 +110,7 @@ std::string make_slug(const std::string& name) {
     std::string slug;
     for (char c : name) {
         if (std::isalpha(static_cast<unsigned char>(c)))
-            slug += static_cast<char>(
-                std::tolower(static_cast<unsigned char>(c)));
+            slug += static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
         else if (c == ' ' && !slug.empty() && slug.back() != '-')
             slug += '-';
     }
@@ -124,20 +119,17 @@ std::string make_slug(const std::string& name) {
     return slug;
 }
 
-std::string make_phone(const std::string& country,
-    generation_context& ctx) {
+std::string make_phone(const std::string& country, generation_context& ctx) {
     const auto prefix = phone_prefix_for(country);
     std::ostringstream os;
-    os << prefix << " " << ctx.random_int(100, 999)
-       << " " << ctx.random_int(1000, 9999);
+    os << prefix << " " << ctx.random_int(100, 999) << " " << ctx.random_int(1000, 9999);
     return os.str();
 }
 
 /**
  * @brief Generates a deterministic street address from curated arrays.
  */
-std::string make_street_address(const std::string& country,
-    generation_context& ctx) {
+std::string make_street_address(const std::string& country, generation_context& ctx) {
     const auto number = ctx.random_int(1, 200);
     const auto& street = ctx.pick(street_names_for(country));
     return std::to_string(number) + " " + std::string(street);
@@ -147,27 +139,24 @@ std::string make_street_address(const std::string& country,
  * @brief Generates a deterministic postal code from the centre's prefix.
  */
 std::string make_postal_code(const std::string& country,
-    const data::financial_centre& centre,
-    generation_context& ctx) {
+                             const data::financial_centre& centre,
+                             generation_context& ctx) {
     if (country == "GB") {
         // UK format: "EC2V 8AS"
-        return std::string(centre.postal_prefix)
-            + std::to_string(ctx.random_int(1, 9))
-            + std::string(1, static_cast<char>('A' + ctx.random_int(0, 25)))
-            + " " + std::to_string(ctx.random_int(1, 9))
-            + std::string(1, static_cast<char>('A' + ctx.random_int(0, 25)))
-            + std::string(1, static_cast<char>('A' + ctx.random_int(0, 25)));
+        return std::string(centre.postal_prefix) + std::to_string(ctx.random_int(1, 9)) +
+               std::string(1, static_cast<char>('A' + ctx.random_int(0, 25))) + " " +
+               std::to_string(ctx.random_int(1, 9)) +
+               std::string(1, static_cast<char>('A' + ctx.random_int(0, 25))) +
+               std::string(1, static_cast<char>('A' + ctx.random_int(0, 25)));
     }
     // US format: "10001"
-    return std::string(centre.postal_prefix)
-        + std::to_string(ctx.random_int(100, 999));
+    return std::string(centre.postal_prefix) + std::to_string(ctx.random_int(100, 999));
 }
 
 /**
  * @brief Generates a deterministic BIC code.
  */
-std::string make_bic(const std::string& country,
-    generation_context& ctx) {
+std::string make_bic(const std::string& country, generation_context& ctx) {
     const auto& prefix = ctx.pick(data::bic_prefixes);
     return std::string(prefix) + std::string(bic_country_suffix_for(country));
 }
@@ -183,30 +172,25 @@ struct audit_fields {
 
 audit_fields get_audit(generation_context& ctx) {
     const auto tid = ctx.env().get_or(generation_keys::tenant_id, "system");
-    return {
-        utility::uuid::tenant_id::from_string(tid)
-            .value_or(utility::uuid::tenant_id::system()),
-        ctx.env().get_or(generation_keys::modified_by, "system")
-    };
+    return {utility::uuid::tenant_id::from_string(tid).value_or(utility::uuid::tenant_id::system()),
+            ctx.env().get_or(generation_keys::modified_by, "system")};
 }
 
 // ============================================================================
 // Party generation
 // ============================================================================
 
-void generate_parties(
-    const domain::organisation_generation_options& options,
-    generation_context& ctx,
-    domain::generated_organisation& result,
-    std::unordered_set<std::string>& used_codes) {
+void generate_parties(const domain::organisation_generation_options& options,
+                      generation_context& ctx,
+                      domain::generated_organisation& result,
+                      std::unordered_set<std::string>& used_codes) {
 
     const auto [tenant_id, modified_by] = get_audit(ctx);
     const auto& centres = financial_centres_for(options.country);
     const auto& suffixes = party_suffixes_for(options.country);
     const auto& surnames = surnames_for(options.country);
 
-    auto nodes = generate_tree(
-        options.party_count, options.party_max_depth, ctx.engine());
+    auto nodes = generate_tree(options.party_count, options.party_max_depth, ctx.engine());
 
     const auto root_surname = std::string(ctx.pick(surnames));
 
@@ -230,20 +214,16 @@ void generate_parties(
             const auto& suffix = ctx.pick(suffixes);
             p.full_name = root_surname + " " + std::string(suffix);
             p.short_code = generate_unique_short_code(p.full_name, used_codes);
-            p.business_center_code =
-                std::string(centres[0].business_centre_code);
+            p.business_center_code = std::string(centres[0].business_centre_code);
             p.parent_party_id = std::nullopt;
         } else if (node.depth == 1) {
-            const auto region_idx =
-                (node.index - 1) % data::region_names.size();
-            p.full_name = root_surname + " "
-                + std::string(data::region_names[region_idx]);
+            const auto region_idx = (node.index - 1) % data::region_names.size();
+            p.full_name = root_surname + " " + std::string(data::region_names[region_idx]);
             p.short_code = generate_unique_short_code(p.full_name, used_codes);
             p.business_center_code = std::string(centre.business_centre_code);
             p.parent_party_id = result.parties[*node.parent_index].id;
         } else {
-            p.full_name = root_surname + " "
-                + std::string(centre.city) + " Branch";
+            p.full_name = root_surname + " " + std::string(centre.city) + " Branch";
             p.short_code = generate_unique_short_code(p.full_name, used_codes);
             p.business_center_code = std::string(centre.business_centre_code);
             p.parent_party_id = result.parties[*node.parent_index].id;
@@ -257,20 +237,18 @@ void generate_parties(
 // Counterparty generation
 // ============================================================================
 
-void generate_counterparties(
-    const domain::organisation_generation_options& options,
-    generation_context& ctx,
-    domain::generated_organisation& result,
-    std::unordered_set<std::string>& used_codes) {
+void generate_counterparties(const domain::organisation_generation_options& options,
+                             generation_context& ctx,
+                             domain::generated_organisation& result,
+                             std::unordered_set<std::string>& used_codes) {
 
     const auto [tenant_id, modified_by] = get_audit(ctx);
     const auto& centres = financial_centres_for(options.country);
     const auto& patterns = counterparty_patterns_for(options.country);
     const auto& surnames = surnames_for(options.country);
 
-    auto nodes = generate_tree(
-        options.counterparty_count, options.counterparty_max_depth,
-        ctx.engine());
+    auto nodes =
+        generate_tree(options.counterparty_count, options.counterparty_max_depth, ctx.engine());
 
     for (const auto& node : nodes) {
         refdata::domain::counterparty c;
@@ -293,18 +271,16 @@ void generate_counterparties(
             const auto& pattern = ctx.pick(patterns);
             c.full_name = apply_pattern(pattern, surname, city);
             c.short_code = generate_unique_short_code(c.full_name, used_codes);
-            c.business_center_code =
-                std::string(centre.business_centre_code);
+            c.business_center_code = std::string(centre.business_centre_code);
             c.parent_counterparty_id = std::nullopt;
         } else {
             const auto& parent = result.counterparties[*node.parent_index];
             auto space_pos = parent.full_name.find(' ');
-            auto prefix = (space_pos != std::string::npos)
-                ? parent.full_name.substr(0, space_pos) : parent.full_name;
+            auto prefix = (space_pos != std::string::npos) ? parent.full_name.substr(0, space_pos) :
+                                                             parent.full_name;
             c.full_name = prefix + " " + std::string(centre.city);
             c.short_code = generate_unique_short_code(c.full_name, used_codes);
-            c.business_center_code =
-                std::string(centre.business_centre_code);
+            c.business_center_code = std::string(centre.business_centre_code);
             c.parent_counterparty_id = parent.id;
         }
 
@@ -316,10 +292,9 @@ void generate_counterparties(
 // Contact information (addresses) generation
 // ============================================================================
 
-void generate_party_contacts(
-    const domain::organisation_generation_options& options,
-    generation_context& ctx,
-    domain::generated_organisation& result) {
+void generate_party_contacts(const domain::organisation_generation_options& options,
+                             generation_context& ctx,
+                             domain::generated_organisation& result) {
 
     if (!options.generate_addresses)
         return;
@@ -339,23 +314,17 @@ void generate_party_contacts(
             pci.tenant_id = tenant_id;
             pci.id = ctx.generate_uuid();
             pci.party_id = party.id;
-            pci.contact_type = std::string(
-                data::contact_types[ci % data::contact_types.size()]);
-            pci.street_line_1 =
-                make_street_address(options.country, ctx);
+            pci.contact_type = std::string(data::contact_types[ci % data::contact_types.size()]);
+            pci.street_line_1 = make_street_address(options.country, ctx);
             pci.street_line_2 =
-                pi == 0 ? std::string("Floor ")
-                    + std::to_string(ctx.random_int(1, 30))
-                : "";
+                pi == 0 ? std::string("Floor ") + std::to_string(ctx.random_int(1, 30)) : "";
             pci.city = std::string(centre.city);
             pci.state = std::string(centre.state);
             pci.country_code = options.country;
-            pci.postal_code =
-                make_postal_code(options.country, centre, ctx);
+            pci.postal_code = make_postal_code(options.country, centre, ctx);
             pci.phone = make_phone(options.country, ctx);
             pci.email = "contact@" + slug + "." + std::string(domain_suffix);
-            pci.web_page = "https://www." + slug + "."
-                + std::string(domain_suffix);
+            pci.web_page = "https://www." + slug + "." + std::string(domain_suffix);
             pci.modified_by = modified_by;
             pci.performed_by = modified_by;
             pci.change_reason_code = "system.new_record";
@@ -367,10 +336,9 @@ void generate_party_contacts(
     }
 }
 
-void generate_counterparty_contacts(
-    const domain::organisation_generation_options& options,
-    generation_context& ctx,
-    domain::generated_organisation& result) {
+void generate_counterparty_contacts(const domain::organisation_generation_options& options,
+                                    generation_context& ctx,
+                                    domain::generated_organisation& result) {
 
     if (!options.generate_addresses)
         return;
@@ -384,27 +352,22 @@ void generate_counterparty_contacts(
         const auto slug = make_slug(cpty.full_name);
         const auto& centre = centres[ci % centres.size()];
 
-        for (std::size_t ti = 0;
-             ti < options.contacts_per_counterparty; ++ti) {
+        for (std::size_t ti = 0; ti < options.contacts_per_counterparty; ++ti) {
             refdata::domain::counterparty_contact_information cci;
             cci.version = 1;
             cci.tenant_id = tenant_id;
             cci.id = ctx.generate_uuid();
             cci.counterparty_id = cpty.id;
-            cci.contact_type = std::string(
-                data::contact_types[ti % data::contact_types.size()]);
-            cci.street_line_1 =
-                make_street_address(options.country, ctx);
+            cci.contact_type = std::string(data::contact_types[ti % data::contact_types.size()]);
+            cci.street_line_1 = make_street_address(options.country, ctx);
             cci.street_line_2 = "";
             cci.city = std::string(centre.city);
             cci.state = std::string(centre.state);
             cci.country_code = options.country;
-            cci.postal_code =
-                make_postal_code(options.country, centre, ctx);
+            cci.postal_code = make_postal_code(options.country, centre, ctx);
             cci.phone = make_phone(options.country, ctx);
             cci.email = "info@" + slug + "." + std::string(domain_suffix);
-            cci.web_page = "https://www." + slug + "."
-                + std::string(domain_suffix);
+            cci.web_page = "https://www." + slug + "." + std::string(domain_suffix);
             cci.modified_by = modified_by;
             cci.performed_by = modified_by;
             cci.change_reason_code = "system.new_record";
@@ -420,10 +383,9 @@ void generate_counterparty_contacts(
 // Identifier generation
 // ============================================================================
 
-void generate_party_identifiers(
-    const domain::organisation_generation_options& options,
-    generation_context& ctx,
-    domain::generated_organisation& result) {
+void generate_party_identifiers(const domain::organisation_generation_options& options,
+                                generation_context& ctx,
+                                domain::generated_organisation& result) {
 
     if (!options.generate_identifiers)
         return;
@@ -468,10 +430,9 @@ void generate_party_identifiers(
     }
 }
 
-void generate_counterparty_identifiers(
-    const domain::organisation_generation_options& options,
-    generation_context& ctx,
-    domain::generated_organisation& result) {
+void generate_counterparty_identifiers(const domain::organisation_generation_options& options,
+                                       generation_context& ctx,
+                                       domain::generated_organisation& result) {
 
     if (!options.generate_identifiers)
         return;
@@ -520,9 +481,8 @@ void generate_counterparty_identifiers(
 // Party-counterparty junction generation
 // ============================================================================
 
-void generate_party_counterparty_links(
-    generation_context& ctx,
-    domain::generated_organisation& result) {
+void generate_party_counterparty_links(generation_context& ctx,
+                                       domain::generated_organisation& result) {
 
     if (result.parties.empty() || result.counterparties.empty())
         return;
@@ -550,9 +510,7 @@ void generate_party_counterparty_links(
 // ============================================================================
 
 std::unordered_map<std::string, boost::uuids::uuid>
-generate_business_unit_types(
-    generation_context& ctx,
-    domain::generated_organisation& result) {
+generate_business_unit_types(generation_context& ctx, domain::generated_organisation& result) {
 
     const auto [tenant_id, modified_by] = get_audit(ctx);
     std::unordered_map<std::string, boost::uuids::uuid> type_by_code;
@@ -564,11 +522,14 @@ generate_business_unit_types(
         int level;
     };
     constexpr std::array<type_def, 5> types{{
-        {"DIVISION",      "Division",      "Top-level functional grouping within a party.",            0},
-        {"BRANCH",        "Branch",        "Top-level geographic grouping within a party.",             0},
-        {"BUSINESS_AREA", "Business Area", "Cohesive set of business activities within a division.",   1},
-        {"DESK",          "Trading Desk",  "Operational trading or risk desk; direct owner of books.", 2},
-        {"COST_CENTRE",   "Cost Centre",   "Finance/accounting unit, leaf of the hierarchy.",          2},
+        {"DIVISION", "Division", "Top-level functional grouping within a party.", 0},
+        {"BRANCH", "Branch", "Top-level geographic grouping within a party.", 0},
+        {"BUSINESS_AREA",
+         "Business Area",
+         "Cohesive set of business activities within a division.",
+         1},
+        {"DESK", "Trading Desk", "Operational trading or risk desk; direct owner of books.", 2},
+        {"COST_CENTRE", "Cost Centre", "Finance/accounting unit, leaf of the hierarchy.", 2},
     }};
 
     for (const auto& td : types) {
@@ -609,9 +570,8 @@ void generate_business_units(
     const auto& centres = financial_centres_for(options.country);
     const auto root_party_id = result.parties[0].id;
 
-    auto nodes = generate_tree(
-        options.business_unit_count, options.business_unit_max_depth,
-        ctx.engine());
+    auto nodes =
+        generate_tree(options.business_unit_count, options.business_unit_max_depth, ctx.engine());
 
     int unit_seq = 0;
     for (const auto& node : nodes) {
@@ -635,42 +595,32 @@ void generate_business_units(
             bu.parent_business_unit_id = std::nullopt;
             bu.unit_type_id = type_by_code.at("DIVISION");
         } else if (node.depth == 1) {
-            const auto region_idx =
-                (node.index - 1) % data::region_names.size();
-            const auto region_round =
-                (node.index - 1) / data::region_names.size();
-            bu.unit_name = std::string(data::region_names[region_idx])
-                + " Trading"
-                + (region_round > 0
-                    ? " " + std::to_string(region_round + 1) : "");
-            bu.unit_code = std::string(
-                data::region_names[region_idx]).substr(0, 4) + "_TRD"
-                + (region_round > 0
-                    ? std::to_string(region_round + 1) : "");
-            std::transform(bu.unit_code.begin(), bu.unit_code.end(),
-                bu.unit_code.begin(), [](unsigned char c) {
-                    return std::toupper(c);
-                });
-            bu.parent_business_unit_id =
-                result.business_units[*node.parent_index].id;
+            const auto region_idx = (node.index - 1) % data::region_names.size();
+            const auto region_round = (node.index - 1) / data::region_names.size();
+            bu.unit_name = std::string(data::region_names[region_idx]) + " Trading" +
+                           (region_round > 0 ? " " + std::to_string(region_round + 1) : "");
+            bu.unit_code = std::string(data::region_names[region_idx]).substr(0, 4) + "_TRD" +
+                           (region_round > 0 ? std::to_string(region_round + 1) : "");
+            std::transform(bu.unit_code.begin(),
+                           bu.unit_code.end(),
+                           bu.unit_code.begin(),
+                           [](unsigned char c) { return std::toupper(c); });
+            bu.parent_business_unit_id = result.business_units[*node.parent_index].id;
             bu.unit_type_id = type_by_code.at("BUSINESS_AREA");
         } else {
             const auto asset_idx = unit_seq % data::asset_classes.size();
             const auto& parent = result.business_units[*node.parent_index];
             auto space_pos = parent.unit_name.find(' ');
-            auto region = (space_pos != std::string::npos)
-                ? parent.unit_name.substr(0, space_pos) : parent.unit_name;
-            bu.unit_name = std::string(data::asset_classes[asset_idx])
-                + " Trading " + region
-                + " " + std::to_string(unit_seq + 1);
-            bu.unit_code = std::string(
-                data::asset_classes[asset_idx]).substr(0, 4) + "_"
-                + region.substr(0, 4)
-                + std::to_string(unit_seq + 1);
-            std::transform(bu.unit_code.begin(), bu.unit_code.end(),
-                bu.unit_code.begin(), [](unsigned char c) {
-                    return std::toupper(c);
-                });
+            auto region = (space_pos != std::string::npos) ? parent.unit_name.substr(0, space_pos) :
+                                                             parent.unit_name;
+            bu.unit_name = std::string(data::asset_classes[asset_idx]) + " Trading " + region +
+                           " " + std::to_string(unit_seq + 1);
+            bu.unit_code = std::string(data::asset_classes[asset_idx]).substr(0, 4) + "_" +
+                           region.substr(0, 4) + std::to_string(unit_seq + 1);
+            std::transform(bu.unit_code.begin(),
+                           bu.unit_code.end(),
+                           bu.unit_code.begin(),
+                           [](unsigned char c) { return std::toupper(c); });
             bu.parent_business_unit_id = parent.id;
             bu.unit_type_id = type_by_code.at("DESK");
             ++unit_seq;
@@ -684,12 +634,12 @@ void generate_business_units(
 // Portfolio tree generation
 // ============================================================================
 
-void generate_portfolios(
-    const domain::organisation_generation_options& options,
-    generation_context& ctx,
-    domain::generated_organisation& result) {
+void generate_portfolios(const domain::organisation_generation_options& options,
+                         generation_context& ctx,
+                         domain::generated_organisation& result) {
 
-    if (result.parties.empty()) return;
+    if (result.parties.empty())
+        return;
 
     const auto [tenant_id, modified_by] = get_audit(ctx);
     const auto root_party_id = result.parties[0].id;
@@ -699,22 +649,22 @@ void generate_portfolios(
     // across different generation runs within the same tenant.
     const auto& root_name = result.parties[0].full_name;
     auto sp = root_name.find(' ');
-    const std::string org_prefix = (sp != std::string::npos)
-        ? root_name.substr(0, sp) : root_name;
+    const std::string org_prefix = (sp != std::string::npos) ? root_name.substr(0, sp) : root_name;
 
-    const auto region_count = options.portfolio_leaf_count >= 8 ? 3u
-        : options.portfolio_leaf_count >= 4 ? 2u : 1u;
+    const auto region_count = options.portfolio_leaf_count >= 8 ? 3u :
+                              options.portfolio_leaf_count >= 4 ? 2u :
+                                                                  1u;
 
     std::vector<std::size_t> leaves_per_region(region_count, 0);
     for (std::size_t i = 0; i < options.portfolio_leaf_count; ++i)
         leaves_per_region[i % region_count]++;
 
     auto make_portfolio = [&](const std::string& name,
-        std::optional<boost::uuids::uuid> parent_id,
-        std::optional<boost::uuids::uuid> owner_unit_id,
-        const std::string& purpose, const std::string& ccy,
-        int is_virtual) -> refdata::domain::portfolio {
-
+                              std::optional<boost::uuids::uuid> parent_id,
+                              std::optional<boost::uuids::uuid> owner_unit_id,
+                              const std::string& purpose,
+                              const std::string& ccy,
+                              int is_virtual) -> refdata::domain::portfolio {
         refdata::domain::portfolio p;
         p.version = 1;
         p.tenant_id = tenant_id;
@@ -734,42 +684,44 @@ void generate_portfolios(
         return p;
     };
 
-    auto find_unit_id = [&](const std::string& region_hint)
-        -> std::optional<boost::uuids::uuid> {
+    auto find_unit_id = [&](const std::string& region_hint) -> std::optional<boost::uuids::uuid> {
         for (const auto& bu : result.business_units) {
             if (bu.unit_name.find(region_hint) != std::string::npos)
                 return bu.id;
         }
-        return result.business_units.empty() ? std::nullopt
-            : std::optional(result.business_units[0].id);
+        return result.business_units.empty() ? std::nullopt :
+                                               std::optional(result.business_units[0].id);
     };
 
-    auto root = make_portfolio(org_prefix + " Global Portfolio", std::nullopt,
-        find_unit_id("Global"), "Risk", root_ccy, 1);
+    auto root = make_portfolio(org_prefix + " Global Portfolio",
+                               std::nullopt,
+                               find_unit_id("Global"),
+                               "Risk",
+                               root_ccy,
+                               1);
     const auto root_id = root.id;
     result.portfolios.push_back(std::move(root));
 
-    const std::array<const std::array<std::string_view, 4>*, 3>
-        leaf_currencies = {{
-            &data::emea_leaf_currencies,
-            &data::americas_leaf_currencies,
-            &data::apac_leaf_currencies
-        }};
+    const std::array<const std::array<std::string_view, 4>*, 3> leaf_currencies = {
+        {&data::emea_leaf_currencies,
+         &data::americas_leaf_currencies,
+         &data::apac_leaf_currencies}};
 
     for (std::size_t ri = 0; ri < region_count; ++ri) {
         const auto& region = data::region_names[ri];
         const auto& region_ccy = data::region_currencies[ri];
 
-        auto regional = make_portfolio(
-            org_prefix + " " + std::string(region) + " Portfolio",
-            root_id, find_unit_id(std::string(region)),
-            "Risk", std::string(region_ccy), 1);
+        auto regional = make_portfolio(org_prefix + " " + std::string(region) + " Portfolio",
+                                       root_id,
+                                       find_unit_id(std::string(region)),
+                                       "Risk",
+                                       std::string(region_ccy),
+                                       1);
         const auto regional_id = regional.id;
         result.portfolios.push_back(std::move(regional));
 
         const auto leaves_in_region = leaves_per_region[ri];
-        const auto ac_count = std::min(
-            data::asset_classes.size(), leaves_in_region);
+        const auto ac_count = std::min(data::asset_classes.size(), leaves_in_region);
 
         std::vector<std::size_t> leaves_per_ac(ac_count, 0);
         for (std::size_t i = 0; i < leaves_in_region; ++i)
@@ -779,21 +731,25 @@ void generate_portfolios(
             const auto& asset_class = data::asset_classes[ai];
             const auto& lc = *leaf_currencies[ri];
 
-            auto ac_portfolio = make_portfolio(
-                org_prefix + " " + std::string(asset_class)
-                    + " " + std::string(region),
-                regional_id, find_unit_id(std::string(asset_class)),
-                "Risk", std::string(lc[ai]), 1);
+            auto ac_portfolio = make_portfolio(org_prefix + " " + std::string(asset_class) + " " +
+                                                   std::string(region),
+                                               regional_id,
+                                               find_unit_id(std::string(asset_class)),
+                                               "Risk",
+                                               std::string(lc[ai]),
+                                               1);
             const auto ac_id = ac_portfolio.id;
             result.portfolios.push_back(std::move(ac_portfolio));
 
             for (std::size_t li = 0; li < leaves_per_ac[ai]; ++li) {
-                auto leaf = make_portfolio(
-                    org_prefix + " " + std::string(lc[ai])
-                        + " " + std::string(asset_class)
-                        + (li > 0 ? " " + std::to_string(li + 1) : ""),
-                    ac_id, find_unit_id(std::string(asset_class)),
-                    "Risk", std::string(lc[ai]), 0);
+                auto leaf = make_portfolio(org_prefix + " " + std::string(lc[ai]) + " " +
+                                               std::string(asset_class) +
+                                               (li > 0 ? " " + std::to_string(li + 1) : ""),
+                                           ac_id,
+                                           find_unit_id(std::string(asset_class)),
+                                           "Risk",
+                                           std::string(lc[ai]),
+                                           0);
                 result.portfolios.push_back(std::move(leaf));
             }
         }
@@ -804,10 +760,9 @@ void generate_portfolios(
 // Book generation
 // ============================================================================
 
-void generate_books(
-    const domain::organisation_generation_options& options,
-    generation_context& ctx,
-    domain::generated_organisation& result) {
+void generate_books(const domain::organisation_generation_options& options,
+                    generation_context& ctx,
+                    domain::generated_organisation& result) {
 
     if (result.parties.empty())
         return;
@@ -816,8 +771,7 @@ void generate_books(
     const auto root_party_id = result.parties[0].id;
 
     // Build lookup for O(1) parent portfolio access.
-    std::unordered_map<boost::uuids::uuid, const refdata::domain::portfolio*>
-        portfolio_by_id;
+    std::unordered_map<boost::uuids::uuid, const refdata::domain::portfolio*> portfolio_by_id;
     portfolio_by_id.reserve(result.portfolios.size());
     for (const auto& p : result.portfolios) {
         portfolio_by_id[p.id] = &p;
@@ -845,13 +799,12 @@ void generate_books(
             bk.change_commentary = "Generated organisation data";
             bk.recorded_at = ctx.past_timepoint();
 
-            const auto& product = data::product_types[
-                book_seq % data::product_types.size()];
+            const auto& product = data::product_types[book_seq % data::product_types.size()];
             bk.name = portfolio.aggregation_ccy + " " + std::string(product);
 
             std::ostringstream gl;
-            gl << "GL-" << portfolio.aggregation_ccy << "-"
-               << std::setfill('0') << std::setw(3) << (book_seq + 1);
+            gl << "GL-" << portfolio.aggregation_ccy << "-" << std::setfill('0') << std::setw(3)
+               << (book_seq + 1);
             bk.gl_account_ref = gl.str();
 
             // Derive cost centre from parent portfolio's region.
@@ -861,14 +814,12 @@ void generate_books(
                 if (it != portfolio_by_id.end()) {
                     const auto& parent_p = *it->second;
                     for (const auto& r : data::region_names) {
-                        if (parent_p.name.find(
-                            std::string(r)) != std::string::npos) {
+                        if (parent_p.name.find(std::string(r)) != std::string::npos) {
                             cc_region = std::string(r).substr(0, 4);
-                            std::transform(
-                                cc_region.begin(), cc_region.end(),
-                                cc_region.begin(), [](unsigned char c) {
-                                    return std::toupper(c);
-                                });
+                            std::transform(cc_region.begin(),
+                                           cc_region.end(),
+                                           cc_region.begin(),
+                                           [](unsigned char c) { return std::toupper(c); });
                             break;
                         }
                     }
@@ -889,11 +840,9 @@ void generate_books(
 // ============================================================================
 
 domain::generated_organisation
-organisation_generator_service::generate(
-    const domain::organisation_generation_options& options) {
+organisation_generator_service::generate(const domain::organisation_generation_options& options) {
 
-    generation_context ctx(
-        options.seed.value_or(std::random_device{}()));
+    generation_context ctx(options.seed.value_or(std::random_device{}()));
 
     domain::generated_organisation result;
     result.seed = ctx.seed();
@@ -920,8 +869,7 @@ organisation_generator_service::generate(
     return result;
 }
 
-domain::generated_organisation
-organisation_generator_service::generate() {
+domain::generated_organisation organisation_generator_service::generate() {
     return generate(domain::organisation_generation_options{});
 }
 

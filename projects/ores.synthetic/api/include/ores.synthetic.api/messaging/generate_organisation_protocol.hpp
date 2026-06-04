@@ -20,17 +20,16 @@
 #ifndef ORES_SYNTHETIC_MESSAGING_GENERATE_ORGANISATION_PROTOCOL_HPP
 #define ORES_SYNTHETIC_MESSAGING_GENERATE_ORGANISATION_PROTOCOL_HPP
 
-#include <string>
-#include <string_view>
 #include <cstdint>
 #include <optional>
+#include <string>
+#include <string_view>
 
 namespace ores::synthetic::messaging {
 
 struct generate_organisation_request {
     using response_type = struct generate_organisation_response;
-    static constexpr std::string_view nats_subject =
-        "synthetic.v1.organisation.generate";
+    static constexpr std::string_view nats_subject = "synthetic.v1.organisation.generate";
 
     /**
      * @brief Country code driving naming conventions and addresses.

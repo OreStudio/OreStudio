@@ -20,8 +20,8 @@
 #ifndef ORES_WORKFLOW_CORE_DOMAIN_WORKFLOW_INSTANCE_JSON_IO_HPP
 #define ORES_WORKFLOW_CORE_DOMAIN_WORKFLOW_INSTANCE_JSON_IO_HPP
 
-#include <iosfwd>
 #include "ores.workflow.core/domain/workflow_instance.hpp"
+#include <iosfwd>
 
 namespace ores::workflow::domain {
 

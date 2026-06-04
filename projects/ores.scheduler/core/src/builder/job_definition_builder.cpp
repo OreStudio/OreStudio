@@ -17,35 +17,31 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.utility/uuid/uuid_v7_generator.hpp"
 #include "ores.scheduler.core/builder/job_definition_builder.hpp"
+#include "ores.utility/uuid/uuid_v7_generator.hpp"
 
 namespace ores::scheduler::builder {
 
-job_definition_builder&
-job_definition_builder::with_name(std::string_view name) {
+job_definition_builder& job_definition_builder::with_name(std::string_view name) {
     if (name.empty() && error_.empty())
         error_ = "job name must not be empty";
     name_ = std::string(name);
     return *this;
 }
 
-job_definition_builder&
-job_definition_builder::with_description(std::string_view description) {
+job_definition_builder& job_definition_builder::with_description(std::string_view description) {
     description_ = std::string(description);
     return *this;
 }
 
-job_definition_builder&
-job_definition_builder::with_command(std::string_view command) {
+job_definition_builder& job_definition_builder::with_command(std::string_view command) {
     if (command.empty() && error_.empty())
         error_ = "command must not be empty";
     command_ = std::string(command);
     return *this;
 }
 
-job_definition_builder&
-job_definition_builder::with_cron_schedule(std::string_view expr) {
+job_definition_builder& job_definition_builder::with_cron_schedule(std::string_view expr) {
     auto result = domain::cron_expression::from_string(expr);
     if (!result) {
         if (error_.empty())
@@ -56,28 +52,24 @@ job_definition_builder::with_cron_schedule(std::string_view expr) {
     return *this;
 }
 
-job_definition_builder&
-job_definition_builder::with_tenant(const boost::uuids::uuid& tenant_id) {
+job_definition_builder& job_definition_builder::with_tenant(const boost::uuids::uuid& tenant_id) {
     tenant_id_ = tenant_id;
     return *this;
 }
 
-job_definition_builder&
-job_definition_builder::with_party(const boost::uuids::uuid& party_id) {
+job_definition_builder& job_definition_builder::with_party(const boost::uuids::uuid& party_id) {
     party_id_ = party_id;
     return *this;
 }
 
-job_definition_builder&
-job_definition_builder::with_modified_by(std::string_view modified_by) {
+job_definition_builder& job_definition_builder::with_modified_by(std::string_view modified_by) {
     if (modified_by.empty() && error_.empty())
         error_ = "modified_by must not be empty";
     modified_by_ = std::string(modified_by);
     return *this;
 }
 
-std::expected<domain::job_definition, std::string>
-job_definition_builder::build() const {
+std::expected<domain::job_definition, std::string> job_definition_builder::build() const {
     if (!error_.empty())
         return std::unexpected(error_);
 

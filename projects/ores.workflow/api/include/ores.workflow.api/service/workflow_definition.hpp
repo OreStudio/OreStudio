@@ -20,10 +20,10 @@
 #ifndef ORES_WORKFLOW_API_SERVICE_WORKFLOW_DEFINITION_HPP
 #define ORES_WORKFLOW_API_SERVICE_WORKFLOW_DEFINITION_HPP
 
+#include "ores.workflow.api/export.hpp"
 #include <functional>
 #include <string>
 #include <vector>
-#include "ores.workflow.api/export.hpp"
 
 namespace ores::workflow::service {
 
@@ -67,9 +67,9 @@ struct ORES_WORKFLOW_API_EXPORT workflow_step_def {
      *                      in step-index order (index 0 = first completed step).
      * @return Serialised JSON to be published as the command body.
      */
-    std::function<std::string(
-        const std::string& request_json,
-        const std::vector<std::string>& step_results)> build_command;
+    std::function<std::string(const std::string& request_json,
+                              const std::vector<std::string>& step_results)>
+        build_command;
 
     /**
      * @brief Builds the compensation command payload.
@@ -80,9 +80,8 @@ struct ORES_WORKFLOW_API_EXPORT workflow_step_def {
      * @param result_json   The result payload received from the domain service.
      * @return Serialised JSON to be published as the compensation command body.
      */
-    std::function<std::string(
-        const std::string& command_json,
-        const std::string& result_json)> build_compensation;
+    std::function<std::string(const std::string& command_json, const std::string& result_json)>
+        build_compensation;
 };
 
 /**
@@ -129,10 +128,10 @@ struct ORES_WORKFLOW_API_EXPORT workflow_definition {
      * @param tenant_id      UUID string of the tenant this instance runs for.
      * @param correlation_id Distributed tracing correlation ID.
      */
-    std::function<std::vector<workflow_step_def>(
-        const std::string& request_json,
-        const std::string& tenant_id,
-        const std::string& correlation_id)> build_steps;
+    std::function<std::vector<workflow_step_def>(const std::string& request_json,
+                                                 const std::string& tenant_id,
+                                                 const std::string& correlation_id)>
+        build_steps;
 };
 
 }

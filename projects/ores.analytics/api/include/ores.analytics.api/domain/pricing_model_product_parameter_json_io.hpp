@@ -20,16 +20,17 @@
 #ifndef ORES_ANALYTICS_DOMAIN_PRICING_MODEL_PRODUCT_PARAMETER_JSON_IO_HPP
 #define ORES_ANALYTICS_DOMAIN_PRICING_MODEL_PRODUCT_PARAMETER_JSON_IO_HPP
 
-#include <iosfwd>
 #include "ores.analytics.api/domain/pricing_model_product_parameter.hpp"
 #include "ores.analytics.api/export.hpp"
+#include <iosfwd>
 
 namespace ores::analytics::domain {
 
 /**
  * @brief Dumps the pricing_model_product_parameter to a stream in JSON format.
  */
-ORES_ANALYTICS_API_EXPORT std::ostream& operator<<(std::ostream& s, const pricing_model_product_parameter& v);
+ORES_ANALYTICS_API_EXPORT std::ostream& operator<<(std::ostream& s,
+                                                   const pricing_model_product_parameter& v);
 
 }
 

@@ -20,10 +20,10 @@
 #ifndef ORES_SCHEDULER_DOMAIN_JOB_DEFINITION_TABLE_HPP
 #define ORES_SCHEDULER_DOMAIN_JOB_DEFINITION_TABLE_HPP
 
+#include "ores.scheduler.api/domain/job_definition.hpp"
+#include "ores.scheduler.api/export.hpp"
 #include <string>
 #include <vector>
-#include "ores.scheduler.api/export.hpp"
-#include "ores.scheduler.api/domain/job_definition.hpp"
 
 namespace ores::scheduler::domain {
 

@@ -17,10 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.synthetic.api/domain/generation_options.hpp"
-
-#include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.synthetic.api/domain/generation_options.hpp"
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 
@@ -36,8 +35,7 @@ TEST_CASE("default_constructed_generation_options_has_expected_counts", tags) {
     auto lg(make_logger(test_suite));
 
     const generation_options sut;
-    BOOST_LOG_SEV(lg, info) << "Default generation_options account_count: "
-                            << sut.account_count;
+    BOOST_LOG_SEV(lg, info) << "Default generation_options account_count: " << sut.account_count;
 
     CHECK(!sut.seed.has_value());
     CHECK(sut.account_count == 5);
@@ -71,8 +69,7 @@ TEST_CASE("generation_options_counts_can_be_overridden", tags) {
     sut.catalog_count = 6;
     sut.data_domain_count = 8;
     sut.dataset_count = 50;
-    BOOST_LOG_SEV(lg, info) << "generation_options account_count: "
-                            << sut.account_count;
+    BOOST_LOG_SEV(lg, info) << "generation_options account_count: " << sut.account_count;
 
     CHECK(sut.account_count == 10);
     CHECK(sut.catalog_count == 6);
@@ -86,8 +83,7 @@ TEST_CASE("generation_options_dependencies_can_be_set", tags) {
     generation_options sut;
     sut.dependencies.push_back("ISO Reference Data");
     sut.dependencies.push_back("Core DQ Dimensions");
-    BOOST_LOG_SEV(lg, info) << "generation_options dependency count: "
-                            << sut.dependencies.size();
+    BOOST_LOG_SEV(lg, info) << "generation_options dependency count: " << sut.dependencies.size();
 
     CHECK(sut.dependencies.size() == 2);
     CHECK(sut.dependencies[0] == "ISO Reference Data");

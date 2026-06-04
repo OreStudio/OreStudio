@@ -20,30 +20,29 @@
 #ifndef ORES_WORKFLOW_CORE_REPOSITORY_WORKFLOW_STEP_MAPPER_HPP
 #define ORES_WORKFLOW_CORE_REPOSITORY_WORKFLOW_STEP_MAPPER_HPP
 
-#include "ores.workflow.core/domain/workflow_step.hpp"
-#include "ores.workflow.core/repository/workflow_step_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.workflow.core/domain/workflow_step.hpp"
 #include "ores.workflow.core/export.hpp"
+#include "ores.workflow.core/repository/workflow_step_entity.hpp"
 
 namespace ores::workflow::repository {
 
 /**
  * @brief Maps workflow_step domain entities to data storage layer and vice-versa.
  */
-class ORES_WORKFLOW_CORE_EXPORT workflow_step_mapper  {
+class ORES_WORKFLOW_CORE_EXPORT workflow_step_mapper {
 private:
-    inline static std::string_view logger_name =
-        "ores.workflow.repository.workflow_step_mapper";
+    inline static std::string_view logger_name = "ores.workflow.repository.workflow_step_mapper";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }
+
 public:
     static domain::workflow_step map(const workflow_step_entity& v);
-    static std::vector<domain::workflow_step>
-    map(const std::vector<workflow_step_entity>& v);
+    static std::vector<domain::workflow_step> map(const std::vector<workflow_step_entity>& v);
     static workflow_step_entity to_entity(const domain::workflow_step& v);
 };
 

@@ -20,13 +20,13 @@
 #ifndef ORES_ANALYTICS_REPOSITORY_PRICING_MODEL_PRODUCT_REPOSITORY_HPP
 #define ORES_ANALYTICS_REPOSITORY_PRICING_MODEL_PRODUCT_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
-#include "ores.database/domain/context.hpp"
 #include "ores.analytics.api/domain/pricing_model_product.hpp"
 #include "ores.analytics.core/export.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::analytics::repository {
 
@@ -52,12 +52,11 @@ public:
     void write(context ctx, const domain::pricing_model_product& v);
     void write(context ctx, const std::vector<domain::pricing_model_product>& v);
 
-    std::vector<domain::pricing_model_product>
-    read_latest(context ctx, const std::string& config_id);
-    std::vector<domain::pricing_model_product>
-    read_latest_by_id(context ctx, const std::string& id);
-    std::vector<domain::pricing_model_product>
-    read_all(context ctx, const std::string& id);
+    std::vector<domain::pricing_model_product> read_latest(context ctx,
+                                                           const std::string& config_id);
+    std::vector<domain::pricing_model_product> read_latest_by_id(context ctx,
+                                                                 const std::string& id);
+    std::vector<domain::pricing_model_product> read_all(context ctx, const std::string& id);
 
     void remove(context ctx, const std::string& id);
     void remove_for_config(context ctx, const std::string& config_id);

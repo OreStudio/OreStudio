@@ -19,19 +19,19 @@
  */
 #pragma once
 
+#include "ores.database/domain/context.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.scheduler.api/domain/job_definition.hpp"
+#include "ores.scheduler.core/export.hpp"
+#include "ores.scheduler.core/service/action_handler.hpp"
+#include <boost/asio.hpp>
+#include <boost/uuid/uuid.hpp>
 #include <atomic>
 #include <chrono>
 #include <map>
 #include <memory>
 #include <string_view>
 #include <vector>
-#include <boost/asio.hpp>
-#include <boost/uuid/uuid.hpp>
-#include "ores.database/domain/context.hpp"
-#include "ores.nats/service/client.hpp"
-#include "ores.scheduler.api/domain/job_definition.hpp"
-#include "ores.scheduler.core/service/action_handler.hpp"
-#include "ores.scheduler.core/export.hpp"
 
 namespace ores::scheduler::service {
 
@@ -51,8 +51,8 @@ public:
         "scheduler.v1.job-instance-events";
 
     scheduler_loop(ores::nats::service::client& nats,
-        database::context system_ctx,
-        std::vector<std::unique_ptr<action_handler>> handlers);
+                   database::context system_ctx,
+                   std::vector<std::unique_ptr<action_handler>> handlers);
 
     /**
      * @brief Run the scheduler loop.
@@ -72,7 +72,8 @@ private:
     boost::asio::awaitable<void> fire_job(const domain::job_definition& job);
     void load_jobs();
     void publish_instance_event(std::string_view change_type,
-        const domain::job_definition& job, std::int64_t inst_id);
+                                const domain::job_definition& job,
+                                std::int64_t inst_id);
 
     ores::nats::service::client& nats_;
     database::context system_ctx_;

@@ -20,14 +20,14 @@
 #ifndef ORES_ANALYTICS_SERVICE_PRICING_MODEL_PRODUCT_SERVICE_HPP
 #define ORES_ANALYTICS_SERVICE_PRICING_MODEL_PRODUCT_SERVICE_HPP
 
+#include "ores.analytics.api/domain/pricing_model_product.hpp"
+#include "ores.analytics.core/export.hpp"
+#include "ores.analytics.core/repository/pricing_model_product_repository.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <optional>
 #include <string>
 #include <vector>
-#include <optional>
-#include "ores.logging/make_logger.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.analytics.api/domain/pricing_model_product.hpp"
-#include "ores.analytics.core/repository/pricing_model_product_repository.hpp"
-#include "ores.analytics.core/export.hpp"
 
 namespace ores::analytics::service {
 
@@ -50,11 +50,9 @@ public:
 
     explicit pricing_model_product_service(context ctx);
 
-    std::vector<domain::pricing_model_product>
-    list_products(const std::string& config_id);
+    std::vector<domain::pricing_model_product> list_products(const std::string& config_id);
 
-    std::optional<domain::pricing_model_product>
-    find_product(const std::string& id);
+    std::optional<domain::pricing_model_product> find_product(const std::string& id);
 
     void save_product(const domain::pricing_model_product& v);
 
@@ -64,8 +62,7 @@ public:
 
     void remove_products_for_config(const std::string& config_id);
 
-    std::vector<domain::pricing_model_product>
-    get_product_history(const std::string& id);
+    std::vector<domain::pricing_model_product> get_product_history(const std::string& id);
 
 private:
     context ctx_;

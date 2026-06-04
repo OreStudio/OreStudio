@@ -20,9 +20,9 @@
 #ifndef ORES_SCHEDULER_REPOSITORY_JOB_DEFINITION_MAPPER_HPP
 #define ORES_SCHEDULER_REPOSITORY_JOB_DEFINITION_MAPPER_HPP
 
+#include "ores.logging/make_logger.hpp"
 #include "ores.scheduler.api/domain/job_definition.hpp"
 #include "ores.scheduler.core/repository/job_definition_entity.hpp"
-#include "ores.logging/make_logger.hpp"
 
 namespace ores::scheduler::repository {
 
@@ -31,22 +31,20 @@ namespace ores::scheduler::repository {
  */
 class job_definition_mapper {
 private:
-    inline static std::string_view logger_name =
-        "ores.scheduler.repository.job_definition_mapper";
+    inline static std::string_view logger_name = "ores.scheduler.repository.job_definition_mapper";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }
+
 public:
     static domain::job_definition map(const job_definition_entity& v);
     static job_definition_entity map(const domain::job_definition& v);
 
-    static std::vector<domain::job_definition>
-    map(const std::vector<job_definition_entity>& v);
-    static std::vector<job_definition_entity>
-    map(const std::vector<domain::job_definition>& v);
+    static std::vector<domain::job_definition> map(const std::vector<job_definition_entity>& v);
+    static std::vector<job_definition_entity> map(const std::vector<domain::job_definition>& v);
 };
 
 }

@@ -20,12 +20,12 @@
 #ifndef ORES_ANALYTICS_SERVICE_CONFIG_PARSER_HPP
 #define ORES_ANALYTICS_SERVICE_CONFIG_PARSER_HPP
 
-#include <iosfwd>
-#include <vector>
-#include <string>
-#include <optional>
-#include "ores.analytics.service/export.hpp"
 #include "ores.analytics.service/config/options.hpp"
+#include "ores.analytics.service/export.hpp"
+#include <iosfwd>
+#include <optional>
+#include <string>
+#include <vector>
 
 namespace ores::analytics::service::config {
 
@@ -38,8 +38,7 @@ namespace ores::analytics::service::config {
 class ORES_ANALYTICS_SERVICE_EXPORT parser final {
 public:
     std::optional<options>
-    parse(const std::vector<std::string>& arguments, std::ostream& info,
-        std::ostream& error) const;
+    parse(const std::vector<std::string>& arguments, std::ostream& info, std::ostream& error) const;
 };
 
 }

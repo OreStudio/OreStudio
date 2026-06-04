@@ -18,11 +18,10 @@
  *
  */
 #include "ores.workflow.core/repository/workflow_step_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.workflow.core/domain/workflow_step_json_io.hpp" // IWYU pragma: keep.
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::workflow::repository {
 
@@ -30,8 +29,7 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 using ores::platform::time::datetime;
 
-domain::workflow_step
-workflow_step_mapper::map(const workflow_step_entity& v) {
+domain::workflow_step workflow_step_mapper::map(const workflow_step_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::workflow_step r;
@@ -64,14 +62,10 @@ workflow_step_mapper::map(const workflow_step_entity& v) {
 std::vector<domain::workflow_step>
 workflow_step_mapper::map(const std::vector<workflow_step_entity>& v) {
     return map_vector<workflow_step_entity, domain::workflow_step>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
-workflow_step_entity
-workflow_step_mapper::to_entity(const domain::workflow_step& v) {
+workflow_step_entity workflow_step_mapper::to_entity(const domain::workflow_step& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain object to entity.";
 
     workflow_step_entity r;
@@ -81,10 +75,9 @@ workflow_step_mapper::to_entity(const domain::workflow_step& v) {
     r.name = v.name;
     r.state_id = boost::uuids::to_string(v.state_id);
     r.request_json = v.request_json;
-    r.response_json = v.response_json.empty()
-        ? std::nullopt : std::optional<std::string>(v.response_json);
-    r.error = v.error.empty()
-        ? std::nullopt : std::optional<std::string>(v.error);
+    r.response_json =
+        v.response_json.empty() ? std::nullopt : std::optional<std::string>(v.response_json);
+    r.error = v.error.empty() ? std::nullopt : std::optional<std::string>(v.error);
     r.command_subject = v.command_subject;
     r.command_json = v.command_json;
     if (v.command_published_at)
@@ -97,8 +90,8 @@ workflow_step_mapper::to_entity(const domain::workflow_step& v) {
     if (v.completed_at)
         r.completed_at = datetime::to_db_string(*v.completed_at);
     r.created_at = datetime::to_db_string(v.created_at);
-    r.step_log_json = v.step_log_json.empty()
-        ? std::nullopt : std::optional<std::string>(v.step_log_json);
+    r.step_log_json =
+        v.step_log_json.empty() ? std::nullopt : std::optional<std::string>(v.step_log_json);
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain object to entity.";
     return r;

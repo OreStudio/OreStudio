@@ -20,13 +20,13 @@
 #ifndef ORES_WORKFLOW_API_MESSAGING_WORKFLOW_EVENTS_HPP
 #define ORES_WORKFLOW_API_MESSAGING_WORKFLOW_EVENTS_HPP
 
+#include "ores.workflow.api/messaging/step_log_types.hpp"
 #include <cstdint>
+#include <rfl.hpp>
 #include <stdexcept>
 #include <string>
 #include <string_view>
 #include <vector>
-#include <rfl.hpp>
-#include "ores.workflow.api/messaging/step_log_types.hpp"
 
 namespace ores::workflow::messaging {
 
@@ -41,25 +41,27 @@ namespace ores::workflow::messaging {
  * Serialises as a lowercase string for the same DB queryability reasons
  * as step_log_level.
  */
-enum class step_outcome : std::uint8_t {
-    completed               = 0,
-    completed_with_warnings = 1,
-    failed                  = 2
-};
+enum class step_outcome : std::uint8_t { completed = 0, completed_with_warnings = 1, failed = 2 };
 
 [[nodiscard]] inline std::string_view to_string(step_outcome v) {
     switch (v) {
-    case step_outcome::completed:               return "completed";
-    case step_outcome::completed_with_warnings: return "completed_with_warnings";
-    case step_outcome::failed:                  return "failed";
+        case step_outcome::completed:
+            return "completed";
+        case step_outcome::completed_with_warnings:
+            return "completed_with_warnings";
+        case step_outcome::failed:
+            return "failed";
     }
     throw std::invalid_argument("Out-of-range step_outcome");
 }
 
 [[nodiscard]] inline step_outcome step_outcome_from_string(std::string_view sv) {
-    if (sv == "completed")               return step_outcome::completed;
-    if (sv == "completed_with_warnings") return step_outcome::completed_with_warnings;
-    if (sv == "failed")                  return step_outcome::failed;
+    if (sv == "completed")
+        return step_outcome::completed;
+    if (sv == "completed_with_warnings")
+        return step_outcome::completed_with_warnings;
+    if (sv == "failed")
+        return step_outcome::failed;
     throw std::invalid_argument("Invalid step_outcome: '" + std::string(sv) + "'");
 }
 
@@ -75,8 +77,7 @@ enum class step_outcome : std::uint8_t {
  * that the referenced workflow_step is still in_progress before acting.
  */
 struct step_completed_event {
-    static constexpr std::string_view nats_subject =
-        "workflow.v1.events.step-completed";
+    static constexpr std::string_view nats_subject = "workflow.v1.events.step-completed";
 
     /**
      * @brief UUID of the parent workflow instance.
@@ -167,7 +168,7 @@ struct start_workflow_message {
 
 namespace rfl {
 
-template<>
+template <>
 struct Reflector<ores::workflow::messaging::step_log_level> {
     using ReflType = std::string;
 
@@ -180,7 +181,7 @@ struct Reflector<ores::workflow::messaging::step_log_level> {
     }
 };
 
-template<>
+template <>
 struct Reflector<ores::workflow::messaging::step_outcome> {
     using ReflType = std::string;
 

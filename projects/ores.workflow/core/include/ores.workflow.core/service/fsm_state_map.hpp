@@ -20,13 +20,13 @@
 #ifndef ORES_WORKFLOW_CORE_SERVICE_FSM_STATE_MAP_HPP
 #define ORES_WORKFLOW_CORE_SERVICE_FSM_STATE_MAP_HPP
 
-#include <string>
-#include <stdexcept>
-#include <string_view>
-#include <unordered_map>
-#include <boost/uuid/uuid.hpp>
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.workflow.core/export.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <stdexcept>
+#include <string>
+#include <string_view>
+#include <unordered_map>
 
 namespace ores::workflow::service {
 
@@ -46,8 +46,7 @@ struct fsm_state_map {
     [[nodiscard]] boost::uuids::uuid require(std::string_view name) const {
         const auto it = states.find(std::string(name));
         if (it == states.end())
-            throw std::runtime_error(
-                "FSM state not found: " + std::string(name));
+            throw std::runtime_error("FSM state not found: " + std::string(name));
         return it->second;
     }
 };
@@ -58,9 +57,8 @@ struct fsm_state_map {
  * Sends a dq.v1.fsm-states.list request and builds the name→UUID map.
  * Throws std::runtime_error on NATS error or if the response indicates failure.
  */
-[[nodiscard]] ORES_WORKFLOW_CORE_EXPORT fsm_state_map load_fsm_states(
-    ores::nats::service::nats_client& nats,
-    const std::string& machine_name);
+[[nodiscard]] ORES_WORKFLOW_CORE_EXPORT fsm_state_map
+load_fsm_states(ores::nats::service::nats_client& nats, const std::string& machine_name);
 
 }
 

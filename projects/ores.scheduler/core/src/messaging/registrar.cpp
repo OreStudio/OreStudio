@@ -18,57 +18,63 @@
  *
  */
 #include "ores.scheduler.core/messaging/registrar.hpp"
-
-#include <memory>
-#include <optional>
 #include "ores.scheduler.api/messaging/scheduler_protocol.hpp"
 #include "ores.scheduler.core/messaging/job_definition_handler.hpp"
 #include "ores.scheduler.core/messaging/job_instance_handler.hpp"
 #include "ores.scheduler.core/messaging/scheduler_status_handler.hpp"
+#include <memory>
+#include <optional>
 
 namespace ores::scheduler::messaging {
 
 std::vector<ores::nats::service::subscription>
 registrar::register_handlers(ores::nats::service::client& nats,
-    ores::database::context ctx,
-    std::optional<ores::security::jwt::jwt_authenticator> verifier) {
+                             ores::database::context ctx,
+                             std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
 
     // ----------------------------------------------------------------
     // Job definitions
     // ----------------------------------------------------------------
     auto jdh = std::make_shared<job_definition_handler>(nats, ctx, verifier);
+    subs.push_back(
+        nats.queue_subscribe(get_job_definitions_request::nats_subject,
+                             "ores.scheduler.service",
+                             [jdh](ores::nats::message msg) { jdh->list(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(schedule_job_request::nats_subject,
+                             "ores.scheduler.service",
+                             [jdh](ores::nats::message msg) { jdh->schedule(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        get_job_definitions_request::nats_subject, "ores.scheduler.service",
-        [jdh](ores::nats::message msg) { jdh->list(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
-        schedule_job_request::nats_subject, "ores.scheduler.service",
-        [jdh](ores::nats::message msg) { jdh->schedule(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
-        schedule_jobs_batch_request::nats_subject, "ores.scheduler.service",
+        schedule_jobs_batch_request::nats_subject,
+        "ores.scheduler.service",
         [jdh](ores::nats::message msg) { jdh->schedule_batch(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
-        unschedule_job_request::nats_subject, "ores.scheduler.service",
-        [jdh](ores::nats::message msg) { jdh->unschedule(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
-        get_job_history_request::nats_subject, "ores.scheduler.service",
-        [jdh](ores::nats::message msg) { jdh->history(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(unschedule_job_request::nats_subject,
+                             "ores.scheduler.service",
+                             [jdh](ores::nats::message msg) { jdh->unschedule(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(get_job_history_request::nats_subject,
+                             "ores.scheduler.service",
+                             [jdh](ores::nats::message msg) { jdh->history(std::move(msg)); }));
 
     // ----------------------------------------------------------------
     // Job instances
     // ----------------------------------------------------------------
     auto jih = std::make_shared<job_instance_handler>(nats, ctx, verifier);
-    subs.push_back(nats.queue_subscribe(
-        get_job_instances_request::nats_subject, "ores.scheduler.service",
-        [jih](ores::nats::message msg) { jih->list(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(get_job_instances_request::nats_subject,
+                             "ores.scheduler.service",
+                             [jih](ores::nats::message msg) { jih->list(std::move(msg)); }));
 
     // ----------------------------------------------------------------
     // Scheduler status (Monitor window)
     // ----------------------------------------------------------------
     auto ssh = std::make_shared<scheduler_status_handler>(nats, ctx, verifier);
-    subs.push_back(nats.queue_subscribe(
-        get_scheduler_status_request::nats_subject, "ores.scheduler.service",
-        [ssh](ores::nats::message msg) { ssh->status(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(get_scheduler_status_request::nats_subject,
+                             "ores.scheduler.service",
+                             [ssh](ores::nats::message msg) { ssh->status(std::move(msg)); }));
 
     return subs;
 }

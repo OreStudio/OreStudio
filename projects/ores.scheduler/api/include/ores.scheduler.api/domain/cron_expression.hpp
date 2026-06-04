@@ -19,11 +19,11 @@
  */
 #pragma once
 
+#include "ores.scheduler.api/export.hpp"
 #include <chrono>
 #include <expected>
 #include <string>
 #include <string_view>
-#include "ores.scheduler.api/export.hpp"
 
 namespace ores::scheduler::domain {
 
@@ -72,9 +72,8 @@ public:
      *
      * Defaults to the current wall-clock time when no argument is supplied.
      */
-    [[nodiscard]] std::chrono::system_clock::time_point
-    next_occurrence(std::chrono::system_clock::time_point after
-                    = std::chrono::system_clock::now()) const;
+    [[nodiscard]] std::chrono::system_clock::time_point next_occurrence(
+        std::chrono::system_clock::time_point after = std::chrono::system_clock::now()) const;
 
     bool operator==(const cron_expression& other) const noexcept = default;
 

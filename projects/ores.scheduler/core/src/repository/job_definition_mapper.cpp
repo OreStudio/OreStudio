@@ -18,20 +18,18 @@
  *
  */
 #include "ores.scheduler.core/repository/job_definition_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.scheduler.api/domain/cron_expression.hpp"
 #include "ores.scheduler.api/domain/job_definition_json_io.hpp" // IWYU pragma: keep.
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::scheduler::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::job_definition
-job_definition_mapper::map(const job_definition_entity& v) {
+domain::job_definition job_definition_mapper::map(const job_definition_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::job_definition r;
@@ -64,8 +62,7 @@ job_definition_mapper::map(const job_definition_entity& v) {
     return r;
 }
 
-job_definition_entity
-job_definition_mapper::map(const domain::job_definition& v) {
+job_definition_entity job_definition_mapper::map(const domain::job_definition& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     job_definition_entity r;
@@ -98,19 +95,13 @@ job_definition_mapper::map(const domain::job_definition& v) {
 std::vector<domain::job_definition>
 job_definition_mapper::map(const std::vector<job_definition_entity>& v) {
     return map_vector<job_definition_entity, domain::job_definition>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<job_definition_entity>
 job_definition_mapper::map(const std::vector<domain::job_definition>& v) {
     return map_vector<domain::job_definition, job_definition_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

@@ -17,15 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.synthetic.core/service/organisation_generator_service.hpp"
 #include "ores.synthetic.core/service/organisation_publisher_service.hpp"
-
-#include <catch2/catch_test_macros.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
-#include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 
@@ -45,19 +44,22 @@ using namespace ores::logging;
  * country codes (GB, US). These must exist in the test tenant before insertion.
  */
 void seed_reference_data(ores::database::context& ctx,
-    const std::string& tenant_id, const std::string& country,
-    logger_t& lg) {
+                         const std::string& tenant_id,
+                         const std::string& country,
+                         logger_t& lg) {
 
-    const auto seed_bc = [&](const std::string& code,
-        const std::string& description) {
-        const auto sql =
-            "INSERT INTO ores_refdata_business_centres_tbl "
-            "(code, tenant_id, version, coding_scheme_code, description, "
-            "modified_by, performed_by, change_reason_code, change_commentary) "
-            "VALUES ('" + code + "', '" + tenant_id + "'::uuid, 0, 'NONE', "
-            "'" + description + "', current_user, current_user, "
-            "'system.new_record', 'Test seed') "
-            "ON CONFLICT DO NOTHING";
+    const auto seed_bc = [&](const std::string& code, const std::string& description) {
+        const auto sql = "INSERT INTO ores_refdata_business_centres_tbl "
+                         "(code, tenant_id, version, coding_scheme_code, description, "
+                         "modified_by, performed_by, change_reason_code, change_commentary) "
+                         "VALUES ('" +
+                         code + "', '" + tenant_id +
+                         "'::uuid, 0, 'NONE', "
+                         "'" +
+                         description +
+                         "', current_user, current_user, "
+                         "'system.new_record', 'Test seed') "
+                         "ON CONFLICT DO NOTHING";
         ores::database::repository::execute_raw_command(
             ctx, sql, lg, "Seeding business centre " + code);
     };
@@ -73,30 +75,37 @@ void seed_reference_data(ores::database::context& ctx,
     }
 
     const auto seed_country = [&](const std::string& alpha2,
-        const std::string& alpha3, const std::string& numeric,
-        const std::string& name, const std::string& official_name) {
-        const auto sql =
-            "INSERT INTO ores_refdata_countries_tbl "
-            "(alpha2_code, tenant_id, version, alpha3_code, numeric_code, "
-            "name, official_name, modified_by, performed_by, "
-            "change_reason_code, change_commentary) "
-            "VALUES ('" + alpha2 + "', '" + tenant_id + "'::uuid, 0, "
-            "'" + alpha3 + "', '" + numeric + "', "
-            "'" + name + "', '" + official_name + "', "
-            "current_user, current_user, "
-            "'system.new_record', 'Test seed') "
-            "ON CONFLICT DO NOTHING";
-        ores::database::repository::execute_raw_command(
-            ctx, sql, lg, "Seeding country " + alpha2);
+                                  const std::string& alpha3,
+                                  const std::string& numeric,
+                                  const std::string& name,
+                                  const std::string& official_name) {
+        const auto sql = "INSERT INTO ores_refdata_countries_tbl "
+                         "(alpha2_code, tenant_id, version, alpha3_code, numeric_code, "
+                         "name, official_name, modified_by, performed_by, "
+                         "change_reason_code, change_commentary) "
+                         "VALUES ('" +
+                         alpha2 + "', '" + tenant_id +
+                         "'::uuid, 0, "
+                         "'" +
+                         alpha3 + "', '" + numeric +
+                         "', "
+                         "'" +
+                         name + "', '" + official_name +
+                         "', "
+                         "current_user, current_user, "
+                         "'system.new_record', 'Test seed') "
+                         "ON CONFLICT DO NOTHING";
+        ores::database::repository::execute_raw_command(ctx, sql, lg, "Seeding country " + alpha2);
     };
 
     if (country == "GB") {
-        seed_country("GB", "GBR", "826",
-            "United Kingdom",
-            "United Kingdom of Great Britain and Northern Ireland");
+        seed_country("GB",
+                     "GBR",
+                     "826",
+                     "United Kingdom",
+                     "United Kingdom of Great Britain and Northern Ireland");
     } else {
-        seed_country("US", "USA", "840",
-            "United States", "United States of America");
+        seed_country("US", "USA", "840", "United States", "United States of America");
     }
 }
 
@@ -105,8 +114,10 @@ void seed_reference_data(ores::database::context& ctx,
  * root party under the system party.
  */
 void prepare_for_publish(generated_organisation& org,
-    const std::string& tenant_id, const std::string& modified_by,
-    boost::uuids::uuid system_party_id, std::uint64_t seed) {
+                         const std::string& tenant_id,
+                         const std::string& modified_by,
+                         boost::uuids::uuid system_party_id,
+                         std::uint64_t seed) {
 
     // Use the seed as a prefix for short codes and names to ensure
     // uniqueness across multiple tests sharing the same tenant.
@@ -179,8 +190,7 @@ TEST_CASE("publish_gb_organisation_succeeds", tags) {
     seed_reference_data(ctx, tid, "GB", lg);
 
     ores::refdata::repository::party_repository repo(ctx);
-    const auto system_party_id =
-        repo.read_system_party(tid).at(0).id;
+    const auto system_party_id = repo.read_system_party(tid).at(0).id;
 
     organisation_generator_service gen_svc;
     organisation_generation_options opts;
@@ -191,8 +201,7 @@ TEST_CASE("publish_gb_organisation_succeeds", tags) {
     opts.contacts_per_party = 1;
     opts.contacts_per_counterparty = 1;
 
-    BOOST_LOG_SEV(lg, info) << "Generating GB organisation (seed "
-                            << *opts.seed << ")";
+    BOOST_LOG_SEV(lg, info) << "Generating GB organisation (seed " << *opts.seed << ")";
     auto org = gen_svc.generate(opts);
     prepare_for_publish(org, tid, db_user, system_party_id, *opts.seed);
 
@@ -201,8 +210,7 @@ TEST_CASE("publish_gb_organisation_succeeds", tags) {
     auto response = pub_svc.publish(org);
 
     if (!response.success) {
-        BOOST_LOG_SEV(lg, error) << "Publisher error: "
-                                 << response.error_message;
+        BOOST_LOG_SEV(lg, error) << "Publisher error: " << response.error_message;
         FAIL("Publisher error: " << response.error_message);
     }
     REQUIRE(response.success);
@@ -226,8 +234,7 @@ TEST_CASE("publish_us_organisation_succeeds", tags) {
     seed_reference_data(ctx, tid, "US", lg);
 
     ores::refdata::repository::party_repository repo(ctx);
-    const auto system_party_id =
-        repo.read_system_party(tid).at(0).id;
+    const auto system_party_id = repo.read_system_party(tid).at(0).id;
 
     organisation_generator_service gen_svc;
     organisation_generation_options opts;
@@ -238,8 +245,7 @@ TEST_CASE("publish_us_organisation_succeeds", tags) {
     opts.contacts_per_party = 2;
     opts.contacts_per_counterparty = 1;
 
-    BOOST_LOG_SEV(lg, info) << "Generating US organisation (seed "
-                            << *opts.seed << ")";
+    BOOST_LOG_SEV(lg, info) << "Generating US organisation (seed " << *opts.seed << ")";
     auto org = gen_svc.generate(opts);
     prepare_for_publish(org, tid, db_user, system_party_id, *opts.seed);
 
@@ -248,8 +254,7 @@ TEST_CASE("publish_us_organisation_succeeds", tags) {
     auto response = pub_svc.publish(org);
 
     if (!response.success) {
-        BOOST_LOG_SEV(lg, error) << "Publisher error: "
-                                 << response.error_message;
+        BOOST_LOG_SEV(lg, error) << "Publisher error: " << response.error_message;
         FAIL("Publisher error: " << response.error_message);
     }
     REQUIRE(response.success);
@@ -268,8 +273,7 @@ TEST_CASE("publish_organisation_without_addresses_succeeds", tags) {
     seed_reference_data(ctx, tid, "GB", lg);
 
     ores::refdata::repository::party_repository repo(ctx);
-    const auto system_party_id =
-        repo.read_system_party(tid).at(0).id;
+    const auto system_party_id = repo.read_system_party(tid).at(0).id;
 
     organisation_generator_service gen_svc;
     organisation_generation_options opts;
@@ -290,8 +294,7 @@ TEST_CASE("publish_organisation_without_addresses_succeeds", tags) {
     auto response = pub_svc.publish(org);
 
     if (!response.success) {
-        BOOST_LOG_SEV(lg, error) << "Publisher error: "
-                                 << response.error_message;
+        BOOST_LOG_SEV(lg, error) << "Publisher error: " << response.error_message;
         FAIL("Publisher error: " << response.error_message);
     }
     REQUIRE(response.success);
@@ -312,8 +315,7 @@ TEST_CASE("publish_large_organisation_with_unique_short_codes", tags) {
     seed_reference_data(ctx, tid, "GB", lg);
 
     ores::refdata::repository::party_repository repo(ctx);
-    const auto system_party_id =
-        repo.read_system_party(tid).at(0).id;
+    const auto system_party_id = repo.read_system_party(tid).at(0).id;
 
     organisation_generator_service gen_svc;
     organisation_generation_options opts;
@@ -324,8 +326,7 @@ TEST_CASE("publish_large_organisation_with_unique_short_codes", tags) {
     opts.contacts_per_party = 2;
     opts.contacts_per_counterparty = 2;
 
-    BOOST_LOG_SEV(lg, info) << "Generating large GB organisation (seed "
-                            << *opts.seed << ")";
+    BOOST_LOG_SEV(lg, info) << "Generating large GB organisation (seed " << *opts.seed << ")";
     auto org = gen_svc.generate(opts);
     prepare_for_publish(org, tid, db_user, system_party_id, *opts.seed);
 
@@ -334,8 +335,7 @@ TEST_CASE("publish_large_organisation_with_unique_short_codes", tags) {
     auto response = pub_svc.publish(org);
 
     if (!response.success) {
-        BOOST_LOG_SEV(lg, error) << "Publisher error: "
-                                 << response.error_message;
+        BOOST_LOG_SEV(lg, error) << "Publisher error: " << response.error_message;
         FAIL("Publisher error: " << response.error_message);
     }
     REQUIRE(response.success);

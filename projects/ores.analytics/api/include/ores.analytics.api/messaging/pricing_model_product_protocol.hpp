@@ -20,17 +20,16 @@
 #ifndef ORES_ANALYTICS_MESSAGING_PRICING_MODEL_PRODUCT_PROTOCOL_HPP
 #define ORES_ANALYTICS_MESSAGING_PRICING_MODEL_PRODUCT_PROTOCOL_HPP
 
+#include "ores.analytics.api/domain/pricing_model_product.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <string>
 #include <vector>
-#include <boost/uuid/uuid.hpp>
-#include "ores.analytics.api/domain/pricing_model_product.hpp"
 
 namespace ores::analytics::messaging {
 
 struct get_pricing_model_products_request {
     using response_type = struct get_pricing_model_products_response;
-    static constexpr std::string_view nats_subject =
-        "analytics.v1.pricing_model_products.list";
+    static constexpr std::string_view nats_subject = "analytics.v1.pricing_model_products.list";
     std::string config_id;
 };
 
@@ -43,8 +42,7 @@ struct get_pricing_model_products_response {
 
 struct save_pricing_model_product_request {
     using response_type = struct save_pricing_model_product_response;
-    static constexpr std::string_view nats_subject =
-        "analytics.v1.pricing_model_products.save";
+    static constexpr std::string_view nats_subject = "analytics.v1.pricing_model_products.save";
     ores::analytics::domain::pricing_model_product data;
 };
 
@@ -55,8 +53,7 @@ struct save_pricing_model_product_response {
 
 struct delete_pricing_model_product_request {
     using response_type = struct delete_pricing_model_product_response;
-    static constexpr std::string_view nats_subject =
-        "analytics.v1.pricing_model_products.delete";
+    static constexpr std::string_view nats_subject = "analytics.v1.pricing_model_products.delete";
     std::vector<boost::uuids::uuid> ids;
 };
 
@@ -67,8 +64,7 @@ struct delete_pricing_model_product_response {
 
 struct get_pricing_model_product_history_request {
     using response_type = struct get_pricing_model_product_history_response;
-    static constexpr std::string_view nats_subject =
-        "analytics.v1.pricing_model_products.history";
+    static constexpr std::string_view nats_subject = "analytics.v1.pricing_model_products.history";
     boost::uuids::uuid id;
 };
 

@@ -20,15 +20,15 @@
 #ifndef ORES_SCHEDULER_REPOSITORY_JOB_DEFINITION_REPOSITORY_HPP
 #define ORES_SCHEDULER_REPOSITORY_JOB_DEFINITION_REPOSITORY_HPP
 
-#include <optional>
-#include <string>
-#include <vector>
-#include <sqlgen/postgres.hpp>
-#include <boost/uuid/uuid.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.scheduler.api/domain/job_definition.hpp"
 #include "ores.scheduler.core/export.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <optional>
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::scheduler::repository {
 
@@ -55,10 +55,8 @@ public:
     void write(context ctx, const std::vector<domain::job_definition>& v);
 
     std::vector<domain::job_definition> read_latest(context ctx);
-    std::vector<domain::job_definition>
-    read_latest(context ctx, const std::string& id);
-    std::vector<domain::job_definition>
-    read_all(context ctx, const std::string& id);
+    std::vector<domain::job_definition> read_latest(context ctx, const std::string& id);
+    std::vector<domain::job_definition> read_all(context ctx, const std::string& id);
 
     /**
      * @brief Returns all active job definitions regardless of tenant.
@@ -67,8 +65,7 @@ public:
      */
     std::vector<domain::job_definition> read_all_active(context ctx);
 
-    std::optional<domain::job_definition>
-    find_by_id(context ctx, const boost::uuids::uuid& id);
+    std::optional<domain::job_definition> find_by_id(context ctx, const boost::uuids::uuid& id);
 
     /**
      * @brief Returns the current job definition with the given name for the
@@ -78,8 +75,7 @@ public:
      * be updated in-place (bitemporal version bump) rather than rejected with a
      * unique-constraint violation.
      */
-    std::optional<domain::job_definition>
-    find_by_name(context ctx, const std::string& job_name);
+    std::optional<domain::job_definition> find_by_name(context ctx, const std::string& job_name);
 
     /**
      * @brief Like find_by_name but uses an explicit tenant_id string rather
@@ -89,8 +85,7 @@ public:
      * batch) but the job row belongs to a user tenant.
      */
     std::optional<domain::job_definition>
-    find_by_name(context ctx, const std::string& tenant_id,
-        const std::string& job_name);
+    find_by_name(context ctx, const std::string& tenant_id, const std::string& job_name);
 
     void remove(context ctx, const std::string& id);
 };

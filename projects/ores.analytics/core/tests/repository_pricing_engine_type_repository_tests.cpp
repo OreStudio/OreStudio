@@ -17,17 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.analytics.core/repository/pricing_engine_type_repository.hpp"
-
-#include <catch2/catch_test_macros.hpp>
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.logging/make_logger.hpp"
-#include "ores.testing/scoped_database_helper.hpp"
-#include "ores.testing/make_generation_context.hpp"
-#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
-#include "ores.analytics.api/domain/pricing_engine_type.hpp" // IWYU pragma: keep.
+#include "ores.analytics.api/domain/pricing_engine_type.hpp"         // IWYU pragma: keep.
 #include "ores.analytics.api/domain/pricing_engine_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.analytics.api/generators/pricing_engine_type_generator.hpp"
+#include "ores.analytics.core/repository/pricing_engine_type_repository.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.testing/make_generation_context.hpp"
+#include "ores.testing/scoped_database_helper.hpp"
+#include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
+#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 

@@ -20,13 +20,13 @@
 #ifndef ORES_ANALYTICS_REPOSITORY_PRICING_MODEL_PRODUCT_PARAMETER_REPOSITORY_HPP
 #define ORES_ANALYTICS_REPOSITORY_PRICING_MODEL_PRODUCT_PARAMETER_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
-#include "ores.database/domain/context.hpp"
 #include "ores.analytics.api/domain/pricing_model_product_parameter.hpp"
 #include "ores.analytics.core/export.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::analytics::repository {
 
@@ -50,17 +50,16 @@ public:
     std::string sql();
 
     void write(context ctx, const domain::pricing_model_product_parameter& v);
-    void write(context ctx,
-        const std::vector<domain::pricing_model_product_parameter>& v);
+    void write(context ctx, const std::vector<domain::pricing_model_product_parameter>& v);
 
-    std::vector<domain::pricing_model_product_parameter>
-    read_latest(context ctx, const std::string& config_id);
+    std::vector<domain::pricing_model_product_parameter> read_latest(context ctx,
+                                                                     const std::string& config_id);
     std::vector<domain::pricing_model_product_parameter>
     read_latest_for_product(context ctx, const std::string& product_id);
-    std::vector<domain::pricing_model_product_parameter>
-    read_latest_by_id(context ctx, const std::string& id);
-    std::vector<domain::pricing_model_product_parameter>
-    read_all(context ctx, const std::string& id);
+    std::vector<domain::pricing_model_product_parameter> read_latest_by_id(context ctx,
+                                                                           const std::string& id);
+    std::vector<domain::pricing_model_product_parameter> read_all(context ctx,
+                                                                  const std::string& id);
 
     void remove(context ctx, const std::string& id);
     void remove_for_config(context ctx, const std::string& config_id);

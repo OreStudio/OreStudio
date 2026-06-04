@@ -18,20 +18,18 @@
  *
  */
 #include "ores.analytics.api/generators/pricing_model_product_generator.hpp"
-
-#include <boost/uuid/random_generator.hpp>
 #include "ores.utility/generation/generation_keys.hpp"
+#include <boost/uuid/random_generator.hpp>
 
 namespace ores::analytics::generators {
 
 using ores::utility::generation::generation_keys;
 
-std::vector<domain::pricing_model_product> generate_fictional_pricing_model_products(
-    std::size_t n,
-    const boost::uuids::uuid& config_id,
-    utility::generation::generation_context& ctx) {
-    const auto modified_by = ctx.env().get_or(
-        generation_keys::modified_by, "system");
+std::vector<domain::pricing_model_product>
+generate_fictional_pricing_model_products(std::size_t n,
+                                          const boost::uuids::uuid& config_id,
+                                          utility::generation::generation_context& ctx) {
+    const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
     const auto now = ctx.past_timepoint();
     boost::uuids::random_generator gen;
 
@@ -40,61 +38,51 @@ std::vector<domain::pricing_model_product> generate_fictional_pricing_model_prod
 
     // Use real ORE engine type codes — the pricing_model_products trigger validates
     // against the seeded ores_analytics_pricing_engine_types_tbl contents.
-    all.push_back({
-        .id = gen(),
-        .pricing_model_config_id = config_id,
-        .pricing_engine_type_code = "EuropeanSwaption",
-        .model = "LGM",
-        .engine = "Grid",
-        .modified_by = modified_by,
-        .change_reason_code = "system.test",
-        .change_commentary = "Synthetic test data",
-        .recorded_at = now
-    });
-    all.push_back({
-        .id = gen(),
-        .pricing_model_config_id = config_id,
-        .pricing_engine_type_code = "BermudanSwaption",
-        .model = "LGM",
-        .engine = "Grid",
-        .modified_by = modified_by,
-        .change_reason_code = "system.test",
-        .change_commentary = "Synthetic test data",
-        .recorded_at = now
-    });
-    all.push_back({
-        .id = gen(),
-        .pricing_model_config_id = config_id,
-        .pricing_engine_type_code = "Swap",
-        .model = "DiscountedCashflows",
-        .engine = "DiscountingSwapEngine",
-        .modified_by = modified_by,
-        .change_reason_code = "system.test",
-        .change_commentary = "Synthetic test data",
-        .recorded_at = now
-    });
-    all.push_back({
-        .id = gen(),
-        .pricing_model_config_id = config_id,
-        .pricing_engine_type_code = "CreditDefaultSwap",
-        .model = "MidPointCds",
-        .engine = "MidPointCdsEngine",
-        .modified_by = modified_by,
-        .change_reason_code = "system.test",
-        .change_commentary = "Synthetic test data",
-        .recorded_at = now
-    });
-    all.push_back({
-        .id = gen(),
-        .pricing_model_config_id = config_id,
-        .pricing_engine_type_code = "FxOption",
-        .model = "GarmanKohlhagen",
-        .engine = "AnalyticEuropeanEngine",
-        .modified_by = modified_by,
-        .change_reason_code = "system.test",
-        .change_commentary = "Synthetic test data",
-        .recorded_at = now
-    });
+    all.push_back({.id = gen(),
+                   .pricing_model_config_id = config_id,
+                   .pricing_engine_type_code = "EuropeanSwaption",
+                   .model = "LGM",
+                   .engine = "Grid",
+                   .modified_by = modified_by,
+                   .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.id = gen(),
+                   .pricing_model_config_id = config_id,
+                   .pricing_engine_type_code = "BermudanSwaption",
+                   .model = "LGM",
+                   .engine = "Grid",
+                   .modified_by = modified_by,
+                   .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.id = gen(),
+                   .pricing_model_config_id = config_id,
+                   .pricing_engine_type_code = "Swap",
+                   .model = "DiscountedCashflows",
+                   .engine = "DiscountingSwapEngine",
+                   .modified_by = modified_by,
+                   .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.id = gen(),
+                   .pricing_model_config_id = config_id,
+                   .pricing_engine_type_code = "CreditDefaultSwap",
+                   .model = "MidPointCds",
+                   .engine = "MidPointCdsEngine",
+                   .modified_by = modified_by,
+                   .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.id = gen(),
+                   .pricing_model_config_id = config_id,
+                   .pricing_engine_type_code = "FxOption",
+                   .model = "GarmanKohlhagen",
+                   .engine = "AnalyticEuropeanEngine",
+                   .modified_by = modified_by,
+                   .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
 
     if (n == 0 || n >= all.size())
         return all;

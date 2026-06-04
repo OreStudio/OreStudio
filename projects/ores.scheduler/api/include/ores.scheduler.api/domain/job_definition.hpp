@@ -20,11 +20,11 @@
 #ifndef ORES_SCHEDULER_DOMAIN_JOB_DEFINITION_HPP
 #define ORES_SCHEDULER_DOMAIN_JOB_DEFINITION_HPP
 
+#include "ores.scheduler.api/domain/cron_expression.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <optional>
 #include <string>
-#include <boost/uuid/uuid.hpp>
-#include "ores.scheduler.api/domain/cron_expression.hpp"
 
 namespace ores::scheduler::domain {
 
@@ -80,7 +80,8 @@ struct job_definition final {
 
     /**
      * @brief JSON payload for the action.
-     * For nats_publish: {"subject":"<nats_subject>","report_definition_id":"<uuid>","tenant_id":"<uuid>"}
+     * For nats_publish:
+     * {"subject":"<nats_subject>","report_definition_id":"<uuid>","tenant_id":"<uuid>"}
      */
     std::string action_payload = "{}";
 

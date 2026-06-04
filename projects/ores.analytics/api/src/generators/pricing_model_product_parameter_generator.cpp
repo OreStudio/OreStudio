@@ -18,22 +18,19 @@
  *
  */
 #include "ores.analytics.api/generators/pricing_model_product_parameter_generator.hpp"
-
-#include <boost/uuid/random_generator.hpp>
 #include "ores.utility/generation/generation_keys.hpp"
+#include <boost/uuid/random_generator.hpp>
 
 namespace ores::analytics::generators {
 
 using ores::utility::generation::generation_keys;
 
 std::vector<domain::pricing_model_product_parameter>
-generate_fictional_pricing_model_product_parameters(
-    std::size_t n,
-    const boost::uuids::uuid& config_id,
-    const boost::uuids::uuid& product_id,
-    utility::generation::generation_context& ctx) {
-    const auto modified_by = ctx.env().get_or(
-        generation_keys::modified_by, "system");
+generate_fictional_pricing_model_product_parameters(std::size_t n,
+                                                    const boost::uuids::uuid& config_id,
+                                                    const boost::uuids::uuid& product_id,
+                                                    utility::generation::generation_context& ctx) {
+    const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
     const auto now = ctx.past_timepoint();
     boost::uuids::random_generator gen;
 
@@ -41,98 +38,83 @@ generate_fictional_pricing_model_product_parameters(
     all.reserve(12);
 
     // model-scoped parameters
-    all.push_back({
-        .id = gen(),
-        .pricing_model_config_id = config_id,
-        .pricing_model_product_id = product_id,
-        .parameter_scope = "model",
-        .parameter_name = "TestCalibration",
-        .parameter_value = "Bootstrap",
-        .modified_by = modified_by,
-        .change_reason_code = "system.test",
-        .change_commentary = "Synthetic test data",
-        .recorded_at = now
-    });
-    all.push_back({
-        .id = gen(),
-        .pricing_model_config_id = config_id,
-        .pricing_model_product_id = product_id,
-        .parameter_scope = "model",
-        .parameter_name = "TestTolerance",
-        .parameter_value = "0.0001",
-        .modified_by = modified_by,
-        .change_reason_code = "system.test",
-        .change_commentary = "Synthetic test data",
-        .recorded_at = now
-    });
-    all.push_back({
-        .id = gen(),
-        .pricing_model_config_id = config_id,
-        .pricing_model_product_id = product_id,
-        .parameter_scope = "model",
-        .parameter_name = "TestReversionSpeed",
-        .parameter_value = "0.03",
-        .modified_by = modified_by,
-        .change_reason_code = "system.test",
-        .change_commentary = "Synthetic test data",
-        .recorded_at = now
-    });
+    all.push_back({.id = gen(),
+                   .pricing_model_config_id = config_id,
+                   .pricing_model_product_id = product_id,
+                   .parameter_scope = "model",
+                   .parameter_name = "TestCalibration",
+                   .parameter_value = "Bootstrap",
+                   .modified_by = modified_by,
+                   .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.id = gen(),
+                   .pricing_model_config_id = config_id,
+                   .pricing_model_product_id = product_id,
+                   .parameter_scope = "model",
+                   .parameter_name = "TestTolerance",
+                   .parameter_value = "0.0001",
+                   .modified_by = modified_by,
+                   .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.id = gen(),
+                   .pricing_model_config_id = config_id,
+                   .pricing_model_product_id = product_id,
+                   .parameter_scope = "model",
+                   .parameter_name = "TestReversionSpeed",
+                   .parameter_value = "0.03",
+                   .modified_by = modified_by,
+                   .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
     // engine-scoped parameters
-    all.push_back({
-        .id = gen(),
-        .pricing_model_config_id = config_id,
-        .pricing_model_product_id = product_id,
-        .parameter_scope = "engine",
-        .parameter_name = "TestGridPoints",
-        .parameter_value = "100",
-        .modified_by = modified_by,
-        .change_reason_code = "system.test",
-        .change_commentary = "Synthetic test data",
-        .recorded_at = now
-    });
-    all.push_back({
-        .id = gen(),
-        .pricing_model_config_id = config_id,
-        .pricing_model_product_id = product_id,
-        .parameter_scope = "engine",
-        .parameter_name = "TestIntegrationScheme",
-        .parameter_value = "Trapezoidal",
-        .modified_by = modified_by,
-        .change_reason_code = "system.test",
-        .change_commentary = "Synthetic test data",
-        .recorded_at = now
-    });
+    all.push_back({.id = gen(),
+                   .pricing_model_config_id = config_id,
+                   .pricing_model_product_id = product_id,
+                   .parameter_scope = "engine",
+                   .parameter_name = "TestGridPoints",
+                   .parameter_value = "100",
+                   .modified_by = modified_by,
+                   .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.id = gen(),
+                   .pricing_model_config_id = config_id,
+                   .pricing_model_product_id = product_id,
+                   .parameter_scope = "engine",
+                   .parameter_name = "TestIntegrationScheme",
+                   .parameter_value = "Trapezoidal",
+                   .modified_by = modified_by,
+                   .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
     // global config-scoped parameters (product_id is null)
-    all.push_back({
-        .id = gen(),
-        .pricing_model_config_id = config_id,
-        .pricing_model_product_id = std::nullopt,
-        .parameter_scope = "global",
-        .parameter_name = "TestDiscountCurve",
-        .parameter_value = "EUR-EONIA",
-        .modified_by = modified_by,
-        .change_reason_code = "system.test",
-        .change_commentary = "Synthetic test data",
-        .recorded_at = now
-    });
-    all.push_back({
-        .id = gen(),
-        .pricing_model_config_id = config_id,
-        .pricing_model_product_id = std::nullopt,
-        .parameter_scope = "global",
-        .parameter_name = "TestCurrency",
-        .parameter_value = "EUR",
-        .modified_by = modified_by,
-        .change_reason_code = "system.test",
-        .change_commentary = "Synthetic test data",
-        .recorded_at = now
-    });
+    all.push_back({.id = gen(),
+                   .pricing_model_config_id = config_id,
+                   .pricing_model_product_id = std::nullopt,
+                   .parameter_scope = "global",
+                   .parameter_name = "TestDiscountCurve",
+                   .parameter_value = "EUR-EONIA",
+                   .modified_by = modified_by,
+                   .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
+    all.push_back({.id = gen(),
+                   .pricing_model_config_id = config_id,
+                   .pricing_model_product_id = std::nullopt,
+                   .parameter_scope = "global",
+                   .parameter_name = "TestCurrency",
+                   .parameter_value = "EUR",
+                   .modified_by = modified_by,
+                   .change_reason_code = "system.test",
+                   .change_commentary = "Synthetic test data",
+                   .recorded_at = now});
 
     if (n == 0 || n >= all.size())
         return all;
 
-    return std::vector<domain::pricing_model_product_parameter>(
-        all.begin(), all.begin() + n);
+    return std::vector<domain::pricing_model_product_parameter>(all.begin(), all.begin() + n);
 }
 
 }

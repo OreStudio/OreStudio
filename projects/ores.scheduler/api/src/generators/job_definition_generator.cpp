@@ -18,15 +18,14 @@
  *
  */
 #include "ores.scheduler.api/generators/job_definition_generator.hpp"
-
-#include <faker-cxx/word.h>
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
+#include <faker-cxx/word.h>
 
 namespace ores::scheduler::generators {
 
-domain::job_definition generate_synthetic_job_definition(
-    const std::optional<boost::uuids::uuid>& tenant_id,
-    const std::optional<boost::uuids::uuid>& party_id) {
+domain::job_definition
+generate_synthetic_job_definition(const std::optional<boost::uuids::uuid>& tenant_id,
+                                  const std::optional<boost::uuids::uuid>& party_id) {
     static int counter = 0;
 
     utility::uuid::uuid_v7_generator gen;

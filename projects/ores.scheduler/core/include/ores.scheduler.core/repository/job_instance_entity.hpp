@@ -20,8 +20,8 @@
 #ifndef ORES_SCHEDULER_REPOSITORY_JOB_INSTANCE_ENTITY_HPP
 #define ORES_SCHEDULER_REPOSITORY_JOB_INSTANCE_ENTITY_HPP
 
-#include <string>
 #include <optional>
+#include <string>
 
 namespace ores::scheduler::repository {
 

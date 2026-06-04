@@ -18,16 +18,15 @@
  *
  */
 #include "ores.workflow.core/messaging/workflow_query_handler.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.platform/time/datetime.hpp"
 #include "ores.service/error_code.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include <rfl/json.hpp>
-#include "ores.workflow.api/messaging/workflow_query_protocol.hpp"
 #include "ores.workflow.api/messaging/steps_query_protocol.hpp"
+#include "ores.workflow.api/messaging/workflow_query_protocol.hpp"
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <rfl/json.hpp>
 
 namespace ores::workflow::messaging {
 
@@ -53,13 +52,10 @@ workflow_query_handler::workflow_query_handler(
         step_state_names_[uuid] = name;
 }
 
-std::string workflow_query_handler::state_name(
-    const boost::uuids::uuid& id) const {
-    if (const auto it = instance_state_names_.find(id);
-        it != instance_state_names_.end())
+std::string workflow_query_handler::state_name(const boost::uuids::uuid& id) const {
+    if (const auto it = instance_state_names_.find(id); it != instance_state_names_.end())
         return it->second;
-    if (const auto it = step_state_names_.find(id);
-        it != step_state_names_.end())
+    if (const auto it = step_state_names_.find(id); it != step_state_names_.end())
         return it->second;
     return "unknown";
 }
@@ -70,13 +66,14 @@ std::string fmt_tp(const std::chrono::system_clock::time_point& tp) {
     return ores::platform::time::datetime::to_iso8601_utc(tp);
 }
 
-std::optional<std::string> fmt_opt_tp(
-    const std::optional<std::chrono::system_clock::time_point>& opt) {
-    if (!opt) return std::nullopt;
+std::optional<std::string>
+fmt_opt_tp(const std::optional<std::chrono::system_clock::time_point>& opt) {
+    if (!opt)
+        return std::nullopt;
     return fmt_tp(*opt);
 }
 
-}  // namespace
+} // namespace
 
 void workflow_query_handler::list_instances(ores::nats::message msg) {
     BOOST_LOG_SEV(lg(), debug) << "list_instances request received";
@@ -92,8 +89,10 @@ void workflow_query_handler::list_instances(ores::nats::message msg) {
 
     auto req = decode<list_workflow_instances_request>(msg);
     if (!req) {
-        reply(nats_, msg, list_workflow_instances_response{
-            .success = false, .message = "Invalid request payload."});
+        reply(nats_,
+              msg,
+              list_workflow_instances_response{.success = false,
+                                               .message = "Invalid request payload."});
         return;
     }
 
@@ -105,16 +104,14 @@ void workflow_query_handler::list_instances(ores::nats::message msg) {
     // Apply optional status filter client-side (avoids a custom repo method).
     if (req->status_filter && !req->status_filter->empty()) {
         const std::string& filter = *req->status_filter;
-        std::erase_if(instances, [&](const auto& inst) {
-            return state_name(inst.state_id) != filter;
-        });
+        std::erase_if(instances,
+                      [&](const auto& inst) { return state_name(inst.state_id) != filter; });
     }
 
     // Sort by created_at descending (most recent first).
-    std::sort(instances.begin(), instances.end(),
-        [](const auto& a, const auto& b) {
-            return a.created_at > b.created_at;
-        });
+    std::sort(instances.begin(), instances.end(), [](const auto& a, const auto& b) {
+        return a.created_at > b.created_at;
+    });
 
     // Trim to limit.
     if (static_cast<int>(instances.size()) > limit)
@@ -126,21 +123,21 @@ void workflow_query_handler::list_instances(ores::nats::message msg) {
 
     for (const auto& inst : instances) {
         workflow_instance_summary s;
-        s.id                 = boost::uuids::to_string(inst.id);
-        s.type               = inst.type;
-        s.status             = state_name(inst.state_id);
+        s.id = boost::uuids::to_string(inst.id);
+        s.type = inst.type;
+        s.status = state_name(inst.state_id);
         s.current_step_index = inst.current_step_index;
-        s.step_count         = inst.step_count;
-        s.correlation_id     = inst.correlation_id;
-        s.created_by         = inst.created_by;
-        s.created_at         = fmt_tp(inst.created_at);
-        s.completed_at       = fmt_opt_tp(inst.completed_at);
-        s.error              = inst.error;
+        s.step_count = inst.step_count;
+        s.correlation_id = inst.correlation_id;
+        s.created_by = inst.created_by;
+        s.created_at = fmt_tp(inst.created_at);
+        s.completed_at = fmt_opt_tp(inst.completed_at);
+        s.error = inst.error;
         resp.instances.push_back(std::move(s));
     }
 
-    BOOST_LOG_SEV(lg(), debug)
-        << "list_instances returning " << resp.instances.size() << " instance(s)";
+    BOOST_LOG_SEV(lg(), debug) << "list_instances returning " << resp.instances.size()
+                               << " instance(s)";
     reply(nats_, msg, resp);
 }
 
@@ -158,40 +155,48 @@ void workflow_query_handler::get_steps(ores::nats::message msg) {
 
     auto req = decode<get_workflow_steps_request>(msg);
     if (!req) {
-        reply(nats_, msg, get_workflow_steps_response{
-            .success = false, .message = "Invalid request payload."});
+        reply(nats_,
+              msg,
+              get_workflow_steps_response{.success = false, .message = "Invalid request payload."});
         return;
     }
 
     if (req->workflow_instance_id.empty()) {
-        reply(nats_, msg, get_workflow_steps_response{
-            .success = false, .message = "workflow_instance_id is required."});
+        reply(nats_,
+              msg,
+              get_workflow_steps_response{.success = false,
+                                          .message = "workflow_instance_id is required."});
         return;
     }
 
     // Parse and validate the instance UUID.
     boost::uuids::uuid instance_id;
     try {
-        instance_id = boost::lexical_cast<boost::uuids::uuid>(
-            req->workflow_instance_id);
+        instance_id = boost::lexical_cast<boost::uuids::uuid>(req->workflow_instance_id);
     } catch (...) {
-        reply(nats_, msg, get_workflow_steps_response{
-            .success = false, .message = "Invalid workflow_instance_id."});
+        reply(nats_,
+              msg,
+              get_workflow_steps_response{.success = false,
+                                          .message = "Invalid workflow_instance_id."});
         return;
     }
 
     // Load the instance (service-account context — no tenant filter).
     auto instance = instance_repo_.find_by_id(ctx_, instance_id);
     if (!instance) {
-        reply(nats_, msg, get_workflow_steps_response{
-            .success = false, .message = "Workflow instance not found."});
+        reply(nats_,
+              msg,
+              get_workflow_steps_response{.success = false,
+                                          .message = "Workflow instance not found."});
         return;
     }
 
     // Tenant isolation guard: verify the instance belongs to the caller.
     if (instance->tenant_id != req_ctx.tenant_id().to_uuid()) {
-        reply(nats_, msg, get_workflow_steps_response{
-            .success = false, .message = "Workflow instance not found."});
+        reply(nats_,
+              msg,
+              get_workflow_steps_response{.success = false,
+                                          .message = "Workflow instance not found."});
         return;
     }
 
@@ -208,26 +213,25 @@ void workflow_query_handler::get_steps(ores::nats::message msg) {
             continue;
 
         workflow_step_summary ws;
-        ws.id         = boost::uuids::to_string(s.id);
-        ws.name       = s.name;
-        ws.status     = state_name(s.state_id);
+        ws.id = boost::uuids::to_string(s.id);
+        ws.name = s.name;
+        ws.status = state_name(s.state_id);
         ws.step_index = s.step_index;
         ws.created_at = fmt_tp(s.created_at);
         ws.started_at = fmt_opt_tp(s.started_at);
         ws.completed_at = fmt_opt_tp(s.completed_at);
-        ws.error      = s.error;
+        ws.error = s.error;
         if (!s.step_log_json.empty()) {
-            auto log = rfl::json::read<
-                std::vector<ores::workflow::messaging::step_log_entry>>(
-                    s.step_log_json);
-            if (log) ws.log = std::move(*log);
+            auto log = rfl::json::read<std::vector<ores::workflow::messaging::step_log_entry>>(
+                s.step_log_json);
+            if (log)
+                ws.log = std::move(*log);
         }
         resp.steps.push_back(std::move(ws));
     }
 
-    BOOST_LOG_SEV(lg(), debug)
-        << "get_steps returning " << resp.steps.size() << " step(s)"
-        << " for workflow=" << req->workflow_instance_id;
+    BOOST_LOG_SEV(lg(), debug) << "get_steps returning " << resp.steps.size() << " step(s)"
+                               << " for workflow=" << req->workflow_instance_id;
     reply(nats_, msg, resp);
 }
 
@@ -240,23 +244,23 @@ void workflow_query_handler::list_definitions(ores::nats::message msg) {
     if (registry_) {
         for (const auto& [type_name, def] : registry_->all()) {
             workflow_definition_summary ds;
-            ds.type_name   = def.type_name;
+            ds.type_name = def.type_name;
             ds.description = def.description;
 
             // Call build_steps with empty inputs to get a representative step
             // list for display. All currently registered workflows are
             // deterministic so this produces the canonical step sequence.
             const auto steps = def.build_steps("", "", "");
-            ds.step_count  = static_cast<int>(steps.size());
+            ds.step_count = static_cast<int>(steps.size());
 
             for (int i = 0; i < static_cast<int>(steps.size()); ++i) {
                 const auto& s = steps[static_cast<std::size_t>(i)];
                 workflow_step_definition_summary ss;
-                ss.step_index       = i;
-                ss.name             = s.name;
-                ss.description      = s.description;
-                ss.command_subject   = s.command_subject;
-                ss.has_compensation  = !s.compensation_subject.empty();
+                ss.step_index = i;
+                ss.name = s.name;
+                ss.description = s.description;
+                ss.command_subject = s.command_subject;
+                ss.has_compensation = !s.compensation_subject.empty();
                 ds.steps.push_back(std::move(ss));
             }
 
@@ -265,14 +269,12 @@ void workflow_query_handler::list_definitions(ores::nats::message msg) {
     }
 
     // Sort by type_name for stable ordering.
-    std::sort(resp.definitions.begin(), resp.definitions.end(),
-        [](const auto& a, const auto& b) {
-            return a.type_name < b.type_name;
-        });
+    std::sort(resp.definitions.begin(), resp.definitions.end(), [](const auto& a, const auto& b) {
+        return a.type_name < b.type_name;
+    });
 
-    BOOST_LOG_SEV(lg(), debug)
-        << "list_definitions returning " << resp.definitions.size()
-        << " definition(s)";
+    BOOST_LOG_SEV(lg(), debug) << "list_definitions returning " << resp.definitions.size()
+                               << " definition(s)";
     reply(nats_, msg, resp);
 }
 
@@ -308,33 +310,30 @@ void workflow_query_handler::get_step_result(ores::nats::message msg) {
     }
 
     using outcome = ores::workflow::messaging::step_outcome;
-    const auto step_outcome = (sname == "completed")
-        ? outcome::completed
-        : (sname == "completed_with_warnings")
-            ? outcome::completed_with_warnings
-            : outcome::failed;
+    const auto step_outcome = (sname == "completed") ? outcome::completed :
+                              (sname == "completed_with_warnings") ?
+                                                       outcome::completed_with_warnings :
+                                                       outcome::failed;
     const bool is_success =
-        step_outcome == outcome::completed ||
-        step_outcome == outcome::completed_with_warnings;
+        step_outcome == outcome::completed || step_outcome == outcome::completed_with_warnings;
 
-    BOOST_LOG_SEV(lg(), debug)
-        << "get_step_result: step=" << req->step_id
-        << " state=" << sname;
+    BOOST_LOG_SEV(lg(), debug) << "get_step_result: step=" << req->step_id << " state=" << sname;
 
     std::vector<ores::workflow::messaging::step_log_entry> log;
     if (!step->step_log_json.empty()) {
-        auto parsed = rfl::json::read<
-            std::vector<ores::workflow::messaging::step_log_entry>>(
-                step->step_log_json);
-        if (parsed) log = std::move(*parsed);
+        auto parsed = rfl::json::read<std::vector<ores::workflow::messaging::step_log_entry>>(
+            step->step_log_json);
+        if (parsed)
+            log = std::move(*parsed);
     }
 
-    reply(nats_, msg, get_step_result_response{
-        .found         = true,
-        .outcome       = step_outcome,
-        .result_json   = is_success ? step->response_json : "",
-        .error_message = is_success ? "" : step->error,
-        .log           = std::move(log)});
+    reply(nats_,
+          msg,
+          get_step_result_response{.found = true,
+                                   .outcome = step_outcome,
+                                   .result_json = is_success ? step->response_json : "",
+                                   .error_message = is_success ? "" : step->error,
+                                   .log = std::move(log)});
 }
 
-}  // namespace ores::workflow::messaging
+} // namespace ores::workflow::messaging

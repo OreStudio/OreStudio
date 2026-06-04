@@ -18,36 +18,31 @@
  *
  */
 #include "ores.workflow.core/service/fsm_state_map.hpp"
-
+#include "ores.dq.api/messaging/fsm_protocol.hpp"
+#include "ores.utility/rfl/reflectors.hpp"
 #include <format>
 #include <rfl/json.hpp>
-#include "ores.utility/rfl/reflectors.hpp"
-#include "ores.dq.api/messaging/fsm_protocol.hpp"
 
 namespace ores::workflow::service {
 
-fsm_state_map load_fsm_states(
-    ores::nats::service::nats_client& nats,
-    const std::string& machine_name) {
+fsm_state_map load_fsm_states(ores::nats::service::nats_client& nats,
+                              const std::string& machine_name) {
     using namespace ores::dq::messaging;
 
-    const auto json = rfl::json::write(
-        get_fsm_states_request{.machine_name = machine_name});
-    const auto msg = nats.authenticated_request(
-        get_fsm_states_request::nats_subject, json);
+    const auto json = rfl::json::write(get_fsm_states_request{.machine_name = machine_name});
+    const auto msg = nats.authenticated_request(get_fsm_states_request::nats_subject, json);
 
-    const std::string_view sv(
-        reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
+    const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
     auto result = rfl::json::read<get_fsm_states_response>(sv);
     if (!result)
-        throw std::runtime_error(std::format(
-            "Failed to parse fsm-states response for machine '{}': {}",
-            machine_name, result.error().what()));
+        throw std::runtime_error(
+            std::format("Failed to parse fsm-states response for machine '{}': {}",
+                        machine_name,
+                        result.error().what()));
 
     if (!result->success)
         throw std::runtime_error(std::format(
-            "fsm-states.list failed for machine '{}': {}",
-            machine_name, result->message));
+            "fsm-states.list failed for machine '{}': {}", machine_name, result->message));
 
     fsm_state_map m;
     for (const auto& s : result->states)

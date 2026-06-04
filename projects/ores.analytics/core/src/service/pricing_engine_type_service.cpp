@@ -18,7 +18,6 @@
  *
  */
 #include "ores.analytics.core/service/pricing_engine_type_service.hpp"
-
 #include <stdexcept>
 
 namespace ores::analytics::service {
@@ -28,8 +27,7 @@ using namespace ores::logging;
 pricing_engine_type_service::pricing_engine_type_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
-std::vector<domain::pricing_engine_type>
-pricing_engine_type_service::list_types() {
+std::vector<domain::pricing_engine_type> pricing_engine_type_service::list_types() {
     BOOST_LOG_SEV(lg(), debug) << "Listing all pricing engine types";
     return repo_.read_latest(ctx_);
 }
@@ -38,12 +36,12 @@ std::optional<domain::pricing_engine_type>
 pricing_engine_type_service::find_type(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Finding pricing engine type: " << code;
     auto results = repo_.read_latest(ctx_, code);
-    if (results.empty()) return std::nullopt;
+    if (results.empty())
+        return std::nullopt;
     return results.front();
 }
 
-void pricing_engine_type_service::save_type(
-    const domain::pricing_engine_type& v) {
+void pricing_engine_type_service::save_type(const domain::pricing_engine_type& v) {
     if (v.code.empty())
         throw std::invalid_argument("Pricing engine type code cannot be empty.");
     BOOST_LOG_SEV(lg(), debug) << "Saving pricing engine type: " << v.code;
@@ -51,15 +49,12 @@ void pricing_engine_type_service::save_type(
     BOOST_LOG_SEV(lg(), info) << "Saved pricing engine type: " << v.code;
 }
 
-void pricing_engine_type_service::save_types(
-    const std::vector<domain::pricing_engine_type>& v) {
+void pricing_engine_type_service::save_types(const std::vector<domain::pricing_engine_type>& v) {
     for (const auto& e : v) {
         if (e.code.empty())
-            throw std::invalid_argument(
-                "Pricing engine type code cannot be empty.");
+            throw std::invalid_argument("Pricing engine type code cannot be empty.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << v.size()
-        << " pricing engine types";
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << v.size() << " pricing engine types";
     repo_.write(ctx_, v);
 }
 
@@ -71,8 +66,7 @@ void pricing_engine_type_service::remove_type(const std::string& code) {
 
 std::vector<domain::pricing_engine_type>
 pricing_engine_type_service::get_type_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug)
-        << "Getting history for pricing engine type: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for pricing engine type: " << code;
     return repo_.read_all(ctx_, code);
 }
 

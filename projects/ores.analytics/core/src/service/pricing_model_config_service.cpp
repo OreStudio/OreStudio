@@ -18,9 +18,8 @@
  *
  */
 #include "ores.analytics.core/service/pricing_model_config_service.hpp"
-
-#include <stdexcept>
 #include <boost/uuid/uuid_io.hpp>
+#include <stdexcept>
 
 namespace ores::analytics::service {
 
@@ -29,8 +28,7 @@ using namespace ores::logging;
 pricing_model_config_service::pricing_model_config_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
-std::vector<domain::pricing_model_config>
-pricing_model_config_service::list_configs() {
+std::vector<domain::pricing_model_config> pricing_model_config_service::list_configs() {
     BOOST_LOG_SEV(lg(), debug) << "Listing all pricing model configs";
     return repo_.read_latest(ctx_);
 }
@@ -39,24 +37,23 @@ std::optional<domain::pricing_model_config>
 pricing_model_config_service::find_config(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Finding pricing model config: " << id;
     auto results = repo_.read_latest(ctx_, id);
-    if (results.empty()) return std::nullopt;
+    if (results.empty())
+        return std::nullopt;
     return results.front();
 }
 
 std::optional<domain::pricing_model_config>
 pricing_model_config_service::find_config_by_name(const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug)
-        << "Finding pricing model config by name: " << name;
+    BOOST_LOG_SEV(lg(), debug) << "Finding pricing model config by name: " << name;
     auto results = repo_.read_latest_by_name(ctx_, name);
-    if (results.empty()) return std::nullopt;
+    if (results.empty())
+        return std::nullopt;
     return results.front();
 }
 
-void pricing_model_config_service::save_config(
-    const domain::pricing_model_config& v) {
+void pricing_model_config_service::save_config(const domain::pricing_model_config& v) {
     if (v.id.is_nil())
-        throw std::invalid_argument(
-            "Pricing model config id cannot be nil.");
+        throw std::invalid_argument("Pricing model config id cannot be nil.");
     BOOST_LOG_SEV(lg(), debug) << "Saving pricing model config: " << v.id;
     repo_.write(ctx_, v);
     BOOST_LOG_SEV(lg(), info) << "Saved pricing model config: " << v.id;
@@ -70,8 +67,7 @@ void pricing_model_config_service::remove_config(const std::string& id) {
 
 std::vector<domain::pricing_model_config>
 pricing_model_config_service::get_config_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug)
-        << "Getting history for pricing model config: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for pricing model config: " << id;
     return repo_.read_all(ctx_, id);
 }
 

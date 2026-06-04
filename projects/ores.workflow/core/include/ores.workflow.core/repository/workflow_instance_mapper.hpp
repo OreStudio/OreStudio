@@ -20,17 +20,17 @@
 #ifndef ORES_WORKFLOW_CORE_REPOSITORY_WORKFLOW_INSTANCE_MAPPER_HPP
 #define ORES_WORKFLOW_CORE_REPOSITORY_WORKFLOW_INSTANCE_MAPPER_HPP
 
-#include "ores.workflow.core/domain/workflow_instance.hpp"
-#include "ores.workflow.core/repository/workflow_instance_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.workflow.core/domain/workflow_instance.hpp"
 #include "ores.workflow.core/export.hpp"
+#include "ores.workflow.core/repository/workflow_instance_entity.hpp"
 
 namespace ores::workflow::repository {
 
 /**
  * @brief Maps workflow_instance domain entities to data storage layer and vice-versa.
  */
-class ORES_WORKFLOW_CORE_EXPORT workflow_instance_mapper  {
+class ORES_WORKFLOW_CORE_EXPORT workflow_instance_mapper {
 private:
     inline static std::string_view logger_name =
         "ores.workflow.repository.workflow_instance_mapper";
@@ -40,6 +40,7 @@ private:
         static auto instance = make_logger(logger_name);
         return instance;
     }
+
 public:
     static domain::workflow_instance map(const workflow_instance_entity& v);
     static std::vector<domain::workflow_instance>

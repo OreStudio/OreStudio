@@ -20,27 +20,27 @@
 #ifndef ORES_SCHEDULER_MESSAGING_JOB_INSTANCE_HANDLER_HPP
 #define ORES_SCHEDULER_MESSAGING_JOB_INSTANCE_HANDLER_HPP
 
-#include <optional>
-#include <rfl/json.hpp>
-#include <boost/uuid/uuid_io.hpp>
+#include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.security/jwt/jwt_authenticator.hpp"
-#include "ores.service/messaging/handler_helpers.hpp"
-#include "ores.service/service/request_context.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.scheduler.api/messaging/scheduler_protocol.hpp"
 #include "ores.scheduler.core/repository/job_definition_repository.hpp"
 #include "ores.scheduler.core/repository/job_instance_repository.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.service/service/request_context.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <optional>
+#include <rfl/json.hpp>
 
 namespace ores::scheduler::messaging {
 
 namespace {
 inline auto& job_instance_handler_lg() {
-    static auto instance = ores::logging::make_logger(
-        "ores.scheduler.messaging.job_instance_handler");
+    static auto instance =
+        ores::logging::make_logger("ores.scheduler.messaging.job_instance_handler");
     return instance;
 }
 } // namespace
@@ -53,16 +53,16 @@ using namespace ores::logging;
 class job_instance_handler {
 public:
     job_instance_handler(ores::nats::service::client& nats,
-        ores::database::context ctx,
-        std::optional<ores::security::jwt::jwt_authenticator> verifier)
-        : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier)) {}
+                         ores::database::context ctx,
+                         std::optional<ores::security::jwt::jwt_authenticator> verifier)
+        : nats_(nats)
+        , ctx_(std::move(ctx))
+        , verifier_(std::move(verifier)) {}
 
     void list(ores::nats::message msg) {
-        BOOST_LOG_SEV(job_instance_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        BOOST_LOG_SEV(job_instance_handler_lg(), debug) << "Handling " << msg.subject;
 
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -73,8 +73,10 @@ public:
         if (!req) {
             BOOST_LOG_SEV(job_instance_handler_lg(), warn)
                 << "Failed to decode get_job_instances_request";
-            reply(nats_, msg, get_job_instances_response{
-                .success = false, .message = "Failed to decode request"});
+            reply(nats_,
+                  msg,
+                  get_job_instances_response{.success = false,
+                                             .message = "Failed to decode request"});
             return;
         }
 
@@ -89,8 +91,7 @@ public:
 
             // Load recent instances across all jobs.
             repository::job_instance_repository inst_repo;
-            const auto limit = static_cast<std::size_t>(
-                req->limit > 0 ? req->limit : 100);
+            const auto limit = static_cast<std::size_t>(req->limit > 0 ? req->limit : 100);
             const auto instances = inst_repo.read_all_latest(ctx, limit);
 
             resp.instances.reserve(instances.size());
@@ -103,15 +104,16 @@ public:
                 s.action_type = inst.action_type;
                 s.status = [&]() -> std::string {
                     switch (inst.status) {
-                    case domain::job_status::succeeded: return "succeeded";
-                    case domain::job_status::failed:    return "failed";
-                    default:                            return "starting";
+                        case domain::job_status::succeeded:
+                            return "succeeded";
+                        case domain::job_status::failed:
+                            return "failed";
+                        default:
+                            return "starting";
                     }
                 }();
-                s.triggered_at =
-                    ores::platform::time::datetime::to_iso8601_utc(inst.triggered_at);
-                s.started_at =
-                    ores::platform::time::datetime::to_iso8601_utc(inst.started_at);
+                s.triggered_at = ores::platform::time::datetime::to_iso8601_utc(inst.triggered_at);
+                s.started_at = ores::platform::time::datetime::to_iso8601_utc(inst.started_at);
                 if (inst.completed_at)
                     s.completed_at =
                         ores::platform::time::datetime::to_iso8601_utc(*inst.completed_at);
@@ -124,14 +126,12 @@ public:
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(job_instance_handler_lg(), error)
                 << "Error listing job instances: " << e.what();
-            reply(nats_, msg, get_job_instances_response{
-                .success = false, .message = e.what()});
+            reply(nats_, msg, get_job_instances_response{.success = false, .message = e.what()});
             return;
         }
 
         reply(nats_, msg, resp);
-        BOOST_LOG_SEV(job_instance_handler_lg(), debug)
-            << "Completed " << msg.subject;
+        BOOST_LOG_SEV(job_instance_handler_lg(), debug) << "Completed " << msg.subject;
     }
 
 private:

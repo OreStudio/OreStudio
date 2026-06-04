@@ -18,7 +18,6 @@
  *
  */
 #include "ores.workflow.core/repository/workflow_instance_entity.hpp"
-
 #include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>

@@ -20,10 +20,10 @@
 #ifndef ORES_WORKFLOW_CORE_MESSAGING_WORKFLOW_HANDLER_HPP
 #define ORES_WORKFLOW_CORE_MESSAGING_WORKFLOW_HANDLER_HPP
 
+#include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.database/domain/context.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.workflow.core/export.hpp"
 
@@ -36,10 +36,9 @@ namespace ores::workflow::messaging {
  * dispatches one start_workflow_message per item to the engine via NATS
  * (fire-and-forget).  Replies immediately with pre-generated IDs.
  */
-class ORES_WORKFLOW_CORE_EXPORT workflow_handler  {
+class ORES_WORKFLOW_CORE_EXPORT workflow_handler {
 private:
-    inline static std::string_view logger_name =
-        "ores.workflow.messaging.workflow_handler";
+    inline static std::string_view logger_name = "ores.workflow.messaging.workflow_handler";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -49,8 +48,8 @@ private:
 
 public:
     workflow_handler(ores::nats::service::client& nats,
-        ores::database::context ctx,
-        ores::security::jwt::jwt_authenticator signer);
+                     ores::database::context ctx,
+                     ores::security::jwt::jwt_authenticator signer);
 
     /**
      * @brief Handles workflow.v1.parties.provision requests.

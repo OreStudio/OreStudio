@@ -20,10 +20,10 @@
 #pragma once
 
 // Domain types
-#include "ores.scheduler.api/domain/job_status.hpp"
 #include "ores.scheduler.api/domain/cron_expression.hpp"
 #include "ores.scheduler.api/domain/job_definition.hpp"
 #include "ores.scheduler.api/domain/job_instance.hpp"
+#include "ores.scheduler.api/domain/job_status.hpp"
 
 // Builder
 #include "ores.scheduler.core/builder/job_definition_builder.hpp"
@@ -33,4 +33,3 @@
 
 // Service
 #include "ores.scheduler.core/service/cron_scheduler.hpp"
-

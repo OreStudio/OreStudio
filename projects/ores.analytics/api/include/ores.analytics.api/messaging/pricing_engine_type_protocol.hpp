@@ -20,16 +20,15 @@
 #ifndef ORES_ANALYTICS_MESSAGING_PRICING_ENGINE_TYPE_PROTOCOL_HPP
 #define ORES_ANALYTICS_MESSAGING_PRICING_ENGINE_TYPE_PROTOCOL_HPP
 
+#include "ores.analytics.api/domain/pricing_engine_type.hpp"
 #include <string>
 #include <vector>
-#include "ores.analytics.api/domain/pricing_engine_type.hpp"
 
 namespace ores::analytics::messaging {
 
 struct get_pricing_engine_types_request {
     using response_type = struct get_pricing_engine_types_response;
-    static constexpr std::string_view nats_subject =
-        "analytics.v1.pricing_engine_types.list";
+    static constexpr std::string_view nats_subject = "analytics.v1.pricing_engine_types.list";
 };
 
 struct get_pricing_engine_types_response {
@@ -41,8 +40,7 @@ struct get_pricing_engine_types_response {
 
 struct save_pricing_engine_type_request {
     using response_type = struct save_pricing_engine_type_response;
-    static constexpr std::string_view nats_subject =
-        "analytics.v1.pricing_engine_types.save";
+    static constexpr std::string_view nats_subject = "analytics.v1.pricing_engine_types.save";
     ores::analytics::domain::pricing_engine_type data;
 };
 
@@ -53,8 +51,7 @@ struct save_pricing_engine_type_response {
 
 struct delete_pricing_engine_type_request {
     using response_type = struct delete_pricing_engine_type_response;
-    static constexpr std::string_view nats_subject =
-        "analytics.v1.pricing_engine_types.delete";
+    static constexpr std::string_view nats_subject = "analytics.v1.pricing_engine_types.delete";
     std::vector<std::string> codes;
 };
 
@@ -65,8 +62,7 @@ struct delete_pricing_engine_type_response {
 
 struct get_pricing_engine_type_history_request {
     using response_type = struct get_pricing_engine_type_history_response;
-    static constexpr std::string_view nats_subject =
-        "analytics.v1.pricing_engine_types.history";
+    static constexpr std::string_view nats_subject = "analytics.v1.pricing_engine_types.history";
     std::string code;
 };
 

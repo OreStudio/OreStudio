@@ -20,17 +20,17 @@
 #ifndef ORES_WORKFLOW_CORE_SERVICE_WORKFLOW_ENGINE_HPP
 #define ORES_WORKFLOW_CORE_SERVICE_WORKFLOW_ENGINE_HPP
 
-#include <memory>
+#include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.database/domain/context.hpp"
+#include "ores.workflow.api/service/workflow_registry.hpp"
 #include "ores.workflow.core/domain/workflow_instance.hpp"
+#include "ores.workflow.core/export.hpp"
 #include "ores.workflow.core/repository/workflow_instance_repository.hpp"
 #include "ores.workflow.core/repository/workflow_step_repository.hpp"
 #include "ores.workflow.core/service/fsm_state_map.hpp"
-#include "ores.workflow.api/service/workflow_registry.hpp"
-#include "ores.workflow.core/export.hpp"
+#include <memory>
 
 namespace ores::workflow::service {
 
@@ -47,10 +47,9 @@ namespace ores::workflow::service {
  * is shared across all queue-group subscribers, protected by the NATS
  * library's serialisation guarantees.
  */
-class ORES_WORKFLOW_CORE_EXPORT workflow_engine  {
+class ORES_WORKFLOW_CORE_EXPORT workflow_engine {
 private:
-    inline static std::string_view logger_name =
-        "ores.workflow.service.workflow_engine";
+    inline static std::string_view logger_name = "ores.workflow.service.workflow_engine";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -69,10 +68,10 @@ public:
      * @param step_states     Pre-loaded FSM state map for workflow_step.
      */
     workflow_engine(ores::nats::service::client& nats,
-        ores::database::context ctx,
-        std::shared_ptr<const workflow_registry> registry,
-        fsm_state_map instance_states,
-        fsm_state_map step_states);
+                    ores::database::context ctx,
+                    std::shared_ptr<const workflow_registry> registry,
+                    fsm_state_map instance_states,
+                    fsm_state_map step_states);
 
     /**
      * @brief Handles a step-completed event from a domain service.
@@ -109,8 +108,8 @@ private:
      * build the correct tenant-scoped database context.
      */
     void publish_command(const domain::workflow_step& step,
-        const boost::uuids::uuid& instance_id,
-        const boost::uuids::uuid& tenant_id);
+                         const boost::uuids::uuid& instance_id,
+                         const boost::uuids::uuid& tenant_id);
 
     /**
      * @brief Publishes a workflow_instance_changed event to the NATS event bus.
@@ -119,7 +118,7 @@ private:
      * markAsStale() and refresh their workflow monitor view.
      */
     void publish_status_event(const boost::uuids::uuid& instance_id,
-        const boost::uuids::uuid& tenant_id);
+                              const boost::uuids::uuid& tenant_id);
 
     /**
      * @brief Dispatches the next step in the workflow after a success.
@@ -128,7 +127,7 @@ private:
      * the command, and advances the instance's current_step_index.
      */
     void dispatch_next_step(domain::workflow_instance& instance,
-        const std::string& last_result_json);
+                            const std::string& last_result_json);
 
     /**
      * @brief Begins saga compensation for a failed workflow instance.
@@ -140,7 +139,7 @@ private:
      * events are received.
      */
     void begin_compensation(const domain::workflow_instance& instance,
-        const std::string& failure_msg);
+                            const std::string& failure_msg);
 
     /**
      * @brief Checks whether all compensation steps have finished.
@@ -149,8 +148,7 @@ private:
      * in-progress compensation steps remain, transitions the instance
      * to the compensated state.
      */
-    void check_compensation_complete(
-        const domain::workflow_instance& instance);
+    void check_compensation_complete(const domain::workflow_instance& instance);
 
     ores::nats::service::client& nats_;
     ores::database::context ctx_;

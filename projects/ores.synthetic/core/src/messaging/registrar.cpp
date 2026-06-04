@@ -18,27 +18,27 @@
  *
  */
 #include "ores.synthetic.core/messaging/registrar.hpp"
-
-#include <memory>
-#include <optional>
 #include "ores.synthetic.api/messaging/generate_organisation_protocol.hpp"
 #include "ores.synthetic.core/messaging/organisation_handler.hpp"
+#include <memory>
+#include <optional>
 
 namespace ores::synthetic::messaging {
 
 std::vector<ores::nats::service::subscription>
 registrar::register_handlers(ores::nats::service::client& nats,
-    ores::database::context ctx,
-    std::optional<ores::security::jwt::jwt_authenticator> verifier) {
+                             ores::database::context ctx,
+                             std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
 
     // ----------------------------------------------------------------
     // Organisation
     // ----------------------------------------------------------------
     auto oh = std::make_shared<organisation_handler>(nats, ctx, verifier);
-    subs.push_back(nats.queue_subscribe(
-        generate_organisation_request::nats_subject, "ores.synthetic.service",
-        [oh](ores::nats::message msg) { oh->generate(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(generate_organisation_request::nats_subject,
+                             "ores.synthetic.service",
+                             [oh](ores::nats::message msg) { oh->generate(std::move(msg)); }));
 
     return subs;
 }

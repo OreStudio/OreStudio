@@ -20,9 +20,9 @@
 #ifndef ORES_SCHEDULER_RFL_REFLECTORS_HPP
 #define ORES_SCHEDULER_RFL_REFLECTORS_HPP
 
-#include <rfl.hpp>
 #include "ores.scheduler.api/domain/cron_expression.hpp"
 #include "ores.scheduler.api/domain/job_status.hpp"
+#include <rfl.hpp>
 
 namespace rfl {
 
@@ -32,7 +32,7 @@ namespace rfl {
  * Serializes cron_expression as its string representation.
  * Deserializes by parsing through cron_expression::from_string().
  */
-template<>
+template <>
 struct Reflector<ores::scheduler::domain::cron_expression> {
     using ReflType = std::string;
 
@@ -54,22 +54,28 @@ struct Reflector<ores::scheduler::domain::cron_expression> {
  *
  * Serializes as string to avoid enum reflection issues.
  */
-template<>
+template <>
 struct Reflector<ores::scheduler::domain::job_status> {
     using ReflType = std::string;
 
     static ores::scheduler::domain::job_status to(const ReflType& str) {
-        if (str == "starting") return ores::scheduler::domain::job_status::starting;
-        if (str == "succeeded") return ores::scheduler::domain::job_status::succeeded;
-        if (str == "failed") return ores::scheduler::domain::job_status::failed;
+        if (str == "starting")
+            return ores::scheduler::domain::job_status::starting;
+        if (str == "succeeded")
+            return ores::scheduler::domain::job_status::succeeded;
+        if (str == "failed")
+            return ores::scheduler::domain::job_status::failed;
         throw std::runtime_error("Invalid job_status: " + str);
     }
 
     static ReflType from(const ores::scheduler::domain::job_status& v) {
         switch (v) {
-        case ores::scheduler::domain::job_status::starting:  return "starting";
-        case ores::scheduler::domain::job_status::succeeded: return "succeeded";
-        case ores::scheduler::domain::job_status::failed:    return "failed";
+            case ores::scheduler::domain::job_status::starting:
+                return "starting";
+            case ores::scheduler::domain::job_status::succeeded:
+                return "succeeded";
+            case ores::scheduler::domain::job_status::failed:
+                return "failed";
         }
         throw std::logic_error("Unhandled ores::scheduler::domain::job_status enum value.");
     }

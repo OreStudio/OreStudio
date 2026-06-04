@@ -17,10 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.synthetic.api/domain/synthetic_catalog.hpp"
-
-#include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.synthetic.api/domain/synthetic_catalog.hpp"
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 
@@ -66,8 +65,7 @@ TEST_CASE("synthetic_catalog_dependency_can_be_added", tags) {
     synthetic_catalog sut;
     sut.dependencies.push_back("ISO Reference Data");
     sut.dependencies.push_back("Core DQ Dimensions");
-    BOOST_LOG_SEV(lg, info) << "synthetic_catalog dependency count: "
-                            << sut.dependencies.size();
+    BOOST_LOG_SEV(lg, info) << "synthetic_catalog dependency count: " << sut.dependencies.size();
 
     CHECK(sut.dependencies.size() == 2);
     CHECK(sut.dependencies[0] == "ISO Reference Data");

@@ -18,19 +18,17 @@
  *
  */
 #include "ores.analytics.core/repository/pricing_engine_type_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
-#include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.analytics.api/domain/pricing_engine_type_json_io.hpp" // IWYU pragma: keep.
+#include "ores.database/repository/mapper_helpers.hpp"
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::analytics::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::pricing_engine_type
-pricing_engine_type_mapper::map(const pricing_engine_type_entity& v) {
+domain::pricing_engine_type pricing_engine_type_mapper::map(const pricing_engine_type_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::pricing_engine_type r;
@@ -49,8 +47,7 @@ pricing_engine_type_mapper::map(const pricing_engine_type_entity& v) {
     return r;
 }
 
-pricing_engine_type_entity
-pricing_engine_type_mapper::map(const domain::pricing_engine_type& v) {
+pricing_engine_type_entity pricing_engine_type_mapper::map(const domain::pricing_engine_type& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     pricing_engine_type_entity r;
@@ -58,8 +55,8 @@ pricing_engine_type_mapper::map(const domain::pricing_engine_type& v) {
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
-    r.instrument_type_code = v.instrument_type_code.empty()
-        ? std::nullopt : std::optional(v.instrument_type_code);
+    r.instrument_type_code =
+        v.instrument_type_code.empty() ? std::nullopt : std::optional(v.instrument_type_code);
     r.modified_by = v.modified_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
@@ -71,19 +68,13 @@ pricing_engine_type_mapper::map(const domain::pricing_engine_type& v) {
 std::vector<domain::pricing_engine_type>
 pricing_engine_type_mapper::map(const std::vector<pricing_engine_type_entity>& v) {
     return map_vector<pricing_engine_type_entity, domain::pricing_engine_type>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<pricing_engine_type_entity>
 pricing_engine_type_mapper::map(const std::vector<domain::pricing_engine_type>& v) {
     return map_vector<domain::pricing_engine_type, pricing_engine_type_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

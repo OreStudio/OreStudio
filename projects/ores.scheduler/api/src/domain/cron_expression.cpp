@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <croncpp.h>
 #include "ores.scheduler.api/domain/cron_expression.hpp"
+#include <croncpp.h>
 
 namespace ores::scheduler::domain {
 
@@ -44,8 +44,7 @@ cron_expression::cron_expression()
 cron_expression::cron_expression(std::string validated_expr)
     : expr_(std::move(validated_expr)) {}
 
-std::expected<cron_expression, std::string>
-cron_expression::from_string(std::string_view expr) {
+std::expected<cron_expression, std::string> cron_expression::from_string(std::string_view expr) {
     // pg_cron uses 5-field cron (minute hour day month weekday).
     // croncpp requires 6 fields (second minute hour day month weekday).
     // We validate by prepending "0 " for the seconds field.
@@ -53,8 +52,8 @@ cron_expression::from_string(std::string_view expr) {
         cron::make_cron(to_croncpp_expr(expr));
         return cron_expression(std::string(expr));
     } catch (const cron::bad_cronexpr& e) {
-        return std::unexpected(std::string("Invalid cron expression '")
-                               + std::string(expr) + "': " + e.what());
+        return std::unexpected(std::string("Invalid cron expression '") + std::string(expr) +
+                               "': " + e.what());
     }
 }
 

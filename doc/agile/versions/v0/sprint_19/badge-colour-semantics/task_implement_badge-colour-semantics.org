@@ -8,7 +8,7 @@
 #+filetags: :badge-colour-semantics:sprint_19:v0:
 #+owner: marco
 #+branch: feature/badge-colour-semantics
-#+pr:
+#+pr: https://github.com/OreStudio/OreStudio/pull/1044
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-04
@@ -70,7 +70,7 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1044][#1044]] | [dq,qt,lisp] Badge colour semantics: gray means inactive; site subscript fix |
 
 * Review
 

@@ -18,7 +18,6 @@
  *
  */
 #include "ores.iam.core/repository/role_permission_entity.hpp"
-
 #include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>

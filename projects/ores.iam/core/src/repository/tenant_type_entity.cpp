@@ -18,7 +18,6 @@
  *
  */
 #include "ores.iam.core/repository/tenant_type_entity.hpp"
-
 #include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>

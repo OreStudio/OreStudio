@@ -20,13 +20,13 @@
 #ifndef ORES_IAM_SERVICE_ACCOUNT_SETUP_SERVICE_HPP
 #define ORES_IAM_SERVICE_ACCOUNT_SETUP_SERVICE_HPP
 
-#include <string>
-#include <memory>
 #include "ores.iam.api/domain/account.hpp"
+#include "ores.iam.core/export.hpp"
 #include "ores.iam.core/service/account_service.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.iam.core/export.hpp"
+#include <memory>
+#include <string>
 
 namespace ores::iam::service {
 
@@ -42,8 +42,7 @@ namespace ores::iam::service {
  */
 class ORES_IAM_CORE_EXPORT account_setup_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.iam.service.account_setup_service";
+    inline static std::string_view logger_name = "ores.iam.service.account_setup_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -59,7 +58,7 @@ public:
      * @param auth_service The service for role assignment
      */
     account_setup_service(account_service& account_svc,
-        std::shared_ptr<authorization_service> auth_svc);
+                          std::shared_ptr<authorization_service> auth_svc);
 
     /**
      * @brief Creates a new account with the default Viewer role.
@@ -78,9 +77,10 @@ public:
      * @throws std::runtime_error If Viewer role is not found (RBAC not seeded)
      */
     domain::account create_account(const std::string& username,
-        const std::string& email, const std::string& password,
-        const std::string& modified_by,
-        const std::string& change_commentary = "Account created");
+                                   const std::string& email,
+                                   const std::string& password,
+                                   const std::string& modified_by,
+                                   const std::string& change_commentary = "Account created");
 
     /**
      * @brief Creates a new account with a specific role.
@@ -98,10 +98,13 @@ public:
      * @return The created account with the specified role assigned
      * @throws std::runtime_error If the specified role is not found
      */
-    domain::account create_account_with_role(const std::string& username,
-        const std::string& email, const std::string& password,
-        const std::string& modified_by, const std::string& role_name,
-        const std::string& change_commentary = "Account created");
+    domain::account
+    create_account_with_role(const std::string& username,
+                             const std::string& email,
+                             const std::string& password,
+                             const std::string& modified_by,
+                             const std::string& role_name,
+                             const std::string& change_commentary = "Account created");
 
 private:
     account_service& account_svc_;

@@ -31,8 +31,7 @@ namespace ores::iam::messaging {
 // Requires: iam::system:reset-tenant permission (SuperAdmin only).
 struct reset_tenant_command {
     using response_type = struct reset_tenant_result;
-    static constexpr std::string_view nats_subject =
-        "iam.v1.system.reset-tenant";
+    static constexpr std::string_view nats_subject = "iam.v1.system.reset-tenant";
     std::string tenant_code;
 };
 

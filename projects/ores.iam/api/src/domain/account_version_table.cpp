@@ -18,7 +18,6 @@
  *
  */
 #include "ores.iam.api/domain/account_version_table.hpp"
-
 #include <fort.hpp>
 
 namespace ores::iam::domain {
@@ -32,8 +31,8 @@ std::string convert_to_table(const std::vector<account_version>& v) {
 
     for (const auto& av : v) {
         table << av.version_number << av.data.username << av.data.email
-              << av.data.change_reason_code << av.modified_by << av.recorded_at
-              << av.change_summary << fort::endr;
+              << av.data.change_reason_code << av.modified_by << av.recorded_at << av.change_summary
+              << fort::endr;
     }
     return table.to_string();
 }

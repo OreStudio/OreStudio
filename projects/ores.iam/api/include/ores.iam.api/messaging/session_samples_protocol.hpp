@@ -19,9 +19,8 @@
  */
 #ifndef ORES_IAM_MESSAGING_SESSION_SAMPLES_PROTOCOL_HPP
 #define ORES_IAM_MESSAGING_SESSION_SAMPLES_PROTOCOL_HPP
-#include <string>
-
 #include <cstdint>
+#include <string>
 #include <vector>
 
 namespace ores::iam::messaging {

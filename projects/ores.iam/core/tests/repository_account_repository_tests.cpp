@@ -17,19 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.iam.core/repository/account_repository.hpp"
-
-#include <catch2/catch_test_macros.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.logging/make_logger.hpp"
-#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/domain/account.hpp"
 #include "ores.iam.api/domain/account_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/generators/account_generator.hpp"
+#include "ores.iam.core/repository/account_repository.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
+#include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
+#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 
@@ -165,8 +164,10 @@ TEST_CASE("read_all_accounts_by_id", tags) {
     // Verify different versions exist
     bool found_v1 = false, found_v2 = false;
     for (const auto& acc : read_accounts) {
-        if (acc.id == test_id && acc.version == 1) found_v1 = true;
-        if (acc.id == test_id && acc.version == 2) found_v2 = true;
+        if (acc.id == test_id && acc.version == 1)
+            found_v1 = true;
+        if (acc.id == test_id && acc.version == 2)
+            found_v2 = true;
     }
 
     CHECK(found_v1);

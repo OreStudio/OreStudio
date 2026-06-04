@@ -18,11 +18,10 @@
  *
  */
 #include "ores.iam.core/repository/login_info_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.iam.api/domain/login_info_json_io.hpp" // IWYU pragma: keep.
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::iam::repository {
 
@@ -68,22 +67,14 @@ login_info_entity login_info_mapper::map(const domain::login_info& v) {
     return r;
 }
 
-std::vector<domain::login_info>
-login_info_mapper::map(const std::vector<login_info_entity>& v) {
+std::vector<domain::login_info> login_info_mapper::map(const std::vector<login_info_entity>& v) {
     return map_vector<login_info_entity, domain::login_info>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
-std::vector<login_info_entity>
-login_info_mapper::map(const std::vector<domain::login_info>& v) {
+std::vector<login_info_entity> login_info_mapper::map(const std::vector<domain::login_info>& v) {
     return map_vector<domain::login_info, login_info_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

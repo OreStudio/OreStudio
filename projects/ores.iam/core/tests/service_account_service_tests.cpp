@@ -17,21 +17,20 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.iam.api/domain/account_json_io.hpp" // IWYU pragma: keep.
+#include "ores.iam.api/generators/account_generator.hpp"
 #include "ores.iam.core/service/account_service.hpp"
-
-#include <catch2/catch_test_macros.hpp>
-#include <faker-cxx/internet.h>
+#include "ores.logging/make_logger.hpp"
+#include "ores.testing/make_generation_context.hpp"
+#include "ores.testing/scoped_database_helper.hpp"
+#include "ores.utility/faker/internet.hpp"
+#include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
+#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include <boost/asio/ip/address.hpp>
 #include <boost/uuid/uuid_generators.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.utility/faker/internet.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
-#include "ores.testing/scoped_database_helper.hpp"
-#include "ores.testing/make_generation_context.hpp"
-#include "ores.iam.api/generators/account_generator.hpp"
-#include "ores.iam.api/domain/account_json_io.hpp" // IWYU pragma: keep.
+#include <faker-cxx/internet.h>
 
 namespace {
 
@@ -58,8 +57,7 @@ TEST_CASE("create_account_with_valid_data", tags) {
 
     const std::string password = faker::internet::password();
     // Note: Admin privileges are now managed via RBAC role assignments
-    const auto a = sut.create_account(e.username, e.email, password,
-            e.modified_by);
+    const auto a = sut.create_account(e.username, e.email, password, e.modified_by);
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 
     CHECK(a.username == e.username);
@@ -83,9 +81,7 @@ TEST_CASE("create_multiple_accounts", tags) {
         BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
         const std::string password = faker::internet::password();
-        const auto a =
-            sut.create_account(e.username, e.email, password,
-            e.modified_by);
+        const auto a = sut.create_account(e.username, e.email, password, e.modified_by);
         BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 
         CHECK(a.username == e.username);
@@ -106,8 +102,8 @@ TEST_CASE("create_account_with_empty_username_throws", tags) {
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const std::string password = faker::internet::password();
-    CHECK_THROWS_AS(sut.create_account(e.username, e.email, password,
-            e.modified_by), std::invalid_argument);
+    CHECK_THROWS_AS(sut.create_account(e.username, e.email, password, e.modified_by),
+                    std::invalid_argument);
 }
 
 TEST_CASE("create_account_with_empty_email_throws", tags) {
@@ -122,8 +118,8 @@ TEST_CASE("create_account_with_empty_email_throws", tags) {
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const std::string password = faker::internet::password();
-    CHECK_THROWS_AS(sut.create_account(e.username, e.email,
-            password, e.modified_by), std::invalid_argument);
+    CHECK_THROWS_AS(sut.create_account(e.username, e.email, password, e.modified_by),
+                    std::invalid_argument);
 }
 
 TEST_CASE("create_account_with_empty_password_throws", tags) {
@@ -137,8 +133,8 @@ TEST_CASE("create_account_with_empty_password_throws", tags) {
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const std::string empty_password;
-    CHECK_THROWS_AS(sut.create_account(e.username, e.email,
-            empty_password, e.modified_by), std::invalid_argument);
+    CHECK_THROWS_AS(sut.create_account(e.username, e.email, empty_password, e.modified_by),
+                    std::invalid_argument);
 }
 
 TEST_CASE("list_accounts_returns_existing_accounts", tags) {
@@ -170,8 +166,7 @@ TEST_CASE("list_accounts_returns_created_accounts", tags) {
     for (const auto& e : expected_list) {
         const std::string password = faker::internet::password();
         BOOST_LOG_SEV(lg, info) << "Creating: " << e;
-        sut.create_account(e.username, e.email, password,
-            e.modified_by);
+        sut.create_account(e.username, e.email, password, e.modified_by);
     }
 
     auto actual_list = sut.list_accounts();
@@ -190,8 +185,7 @@ TEST_CASE("login_with_valid_credentials", tags) {
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const std::string password = faker::internet::password();
-    const auto account = sut.create_account(e.username,
-        e.email, password, e.modified_by);
+    const auto account = sut.create_account(e.username, e.email, password, e.modified_by);
 
     auto ip = internet::ipv4();
     auto a = sut.login(account.username, password, ip);
@@ -211,12 +205,10 @@ TEST_CASE("login_with_invalid_password_throws", tags) {
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const std::string password = faker::internet::password();
-    const auto account = sut.create_account(e.username,
-        e.email, password, e.modified_by);
+    const auto account = sut.create_account(e.username, e.email, password, e.modified_by);
 
     auto ip = internet::ipv4();
-    CHECK_THROWS_AS(sut.login(e.username, "wrong_password", ip),
-        std::runtime_error);
+    CHECK_THROWS_AS(sut.login(e.username, "wrong_password", ip), std::runtime_error);
 }
 
 TEST_CASE("login_with_nonexistent_username_throws", tags) {
@@ -232,8 +224,7 @@ TEST_CASE("login_with_nonexistent_username_throws", tags) {
     BOOST_LOG_SEV(lg, info) << "Creating account: - username: " << username
                             << " password: " << password << " IP: " << ip;
 
-    CHECK_THROWS_AS(sut.login(username, password, ip),
-        std::runtime_error);
+    CHECK_THROWS_AS(sut.login(username, password, ip), std::runtime_error);
 }
 
 TEST_CASE("login_with_empty_username_throws", tags) {
@@ -249,8 +240,7 @@ TEST_CASE("login_with_empty_username_throws", tags) {
     BOOST_LOG_SEV(lg, info) << "Creating account: - username: " << username
                             << " password: " << password << " IP: " << ip;
 
-    CHECK_THROWS_AS(sut.login(username, password, ip),
-        std::invalid_argument);
+    CHECK_THROWS_AS(sut.login(username, password, ip), std::invalid_argument);
 }
 
 TEST_CASE("login_with_empty_password_throws", tags) {
@@ -266,13 +256,11 @@ TEST_CASE("login_with_empty_password_throws", tags) {
     BOOST_LOG_SEV(lg, info) << "Account: " << account;
 
     const std::string password = faker::internet::password();
-    sut.create_account(account.username, account.email, password,
-        account.modified_by);
+    sut.create_account(account.username, account.email, password, account.modified_by);
 
     const std::string empty_password;
     auto ip = internet::ipv4();
-    CHECK_THROWS_AS(sut.login(account.username, empty_password, ip),
-        std::invalid_argument);
+    CHECK_THROWS_AS(sut.login(account.username, empty_password, ip), std::invalid_argument);
 }
 
 TEST_CASE("account_locks_after_multiple_failed_logins", tags) {
@@ -286,8 +274,7 @@ TEST_CASE("account_locks_after_multiple_failed_logins", tags) {
     BOOST_LOG_SEV(lg, info) << "Account: " << account;
 
     const std::string password = faker::internet::password();
-    sut.create_account(account.username, account.email, password,
-        account.modified_by);
+    sut.create_account(account.username, account.email, password, account.modified_by);
 
     BOOST_LOG_SEV(lg, info) << "Attempting 5 failed logins to lock account";
 
@@ -296,8 +283,7 @@ TEST_CASE("account_locks_after_multiple_failed_logins", tags) {
         try {
             sut.login(account.username, "wrong_password", ip);
         } catch (const std::runtime_error& e) {
-            BOOST_LOG_SEV(lg, info) << "Failed login attempt " << (i + 1)
-                                   << ": " << e.what();
+            BOOST_LOG_SEV(lg, info) << "Failed login attempt " << (i + 1) << ": " << e.what();
         }
     }
 
@@ -323,8 +309,7 @@ TEST_CASE("lock_account_successful", tags) {
     const std::string password = faker::internet::password();
 
     const auto generated =
-        sut.create_account(account.username, account.email,
-        password, account.modified_by);
+        sut.create_account(account.username, account.email, password, account.modified_by);
 
     BOOST_LOG_SEV(lg, info) << "Locking account.";
     bool lock_result = sut.lock_account(generated.id);
@@ -343,8 +328,7 @@ TEST_CASE("lock_nonexistent_account_returns_false", tags) {
 
     boost::uuids::random_generator gen;
     const auto non_existent_id = gen();
-    BOOST_LOG_SEV(lg, info) << "Attempting to lock nonexistent account: "
-                            << non_existent_id;
+    BOOST_LOG_SEV(lg, info) << "Attempting to lock nonexistent account: " << non_existent_id;
 
     CHECK(sut.lock_account(non_existent_id) == false);
 }
@@ -361,15 +345,15 @@ TEST_CASE("unlock_account_successful", tags) {
     const std::string password = faker::internet::password();
 
     const auto generated =
-        sut.create_account(account.username, account.email,
-        password, account.modified_by);
+        sut.create_account(account.username, account.email, password, account.modified_by);
 
     BOOST_LOG_SEV(lg, info) << "Locking account by failing 5 login attempts";
     auto ip = internet::ipv4();
     for (int i = 0; i < 5; ++i) {
         try {
             sut.login(account.username, "wrong_password", ip);
-        } catch (...) {}
+        } catch (...) {
+        }
     }
 
     BOOST_LOG_SEV(lg, info) << "Unlocking account.";
@@ -379,8 +363,7 @@ TEST_CASE("unlock_account_successful", tags) {
     BOOST_LOG_SEV(lg, info) << "Attempting login after unlock";
 
     // Should now be able to login successfully
-    auto logged_in_account =
-        sut.login(generated.username, password, ip);
+    auto logged_in_account = sut.login(generated.username, password, ip);
 
     CHECK(logged_in_account.username == account.username);
 }
@@ -393,14 +376,12 @@ TEST_CASE("unlock_nonexistent_account_returns_false", tags) {
 
     boost::uuids::random_generator gen;
     const auto non_existent_id = gen();
-    BOOST_LOG_SEV(lg, info) << "Attempting to unlock nonexistent account: "
-                            << non_existent_id;
+    BOOST_LOG_SEV(lg, info) << "Attempting to unlock nonexistent account: " << non_existent_id;
 
     CHECK(sut.unlock_account(non_existent_id) == false);
 }
 
-TEST_CASE("delete_nonexistent_account_throws",
-    tags) {
+TEST_CASE("delete_nonexistent_account_throws", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
@@ -408,11 +389,9 @@ TEST_CASE("delete_nonexistent_account_throws",
 
     boost::uuids::random_generator gen;
     const auto non_existent_id = gen();
-    BOOST_LOG_SEV(lg, info) << "Attempting to delete nonexistent account: "
-                            << non_existent_id;
+    BOOST_LOG_SEV(lg, info) << "Attempting to delete nonexistent account: " << non_existent_id;
 
-    CHECK_THROWS_AS(sut.delete_account(non_existent_id),
-        std::invalid_argument);
+    CHECK_THROWS_AS(sut.delete_account(non_existent_id), std::invalid_argument);
 }
 
 TEST_CASE("login_with_different_ip_addresses", tags) {
@@ -426,8 +405,7 @@ TEST_CASE("login_with_different_ip_addresses", tags) {
     BOOST_LOG_SEV(lg, info) << "Account: " << account;
 
     const std::string password = faker::internet::password();
-    sut.create_account(account.username, account.email, password,
-        account.modified_by);
+    sut.create_account(account.username, account.email, password, account.modified_by);
 
     BOOST_LOG_SEV(lg, info) << "Testing logins from different IPs.";
     for (int i = 0; i < 3; ++i) {

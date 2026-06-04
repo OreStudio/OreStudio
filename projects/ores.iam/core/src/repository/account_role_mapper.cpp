@@ -18,10 +18,9 @@
  *
  */
 #include "ores.iam.core/repository/account_role_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::iam::repository {
 
@@ -63,19 +62,13 @@ account_role_entity account_role_mapper::map(const domain::account_role& v) {
 std::vector<domain::account_role>
 account_role_mapper::map(const std::vector<account_role_entity>& v) {
     return map_vector<account_role_entity, domain::account_role>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<account_role_entity>
 account_role_mapper::map(const std::vector<domain::account_role>& v) {
     return map_vector<domain::account_role, account_role_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

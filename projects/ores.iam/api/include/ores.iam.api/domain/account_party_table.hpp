@@ -20,9 +20,9 @@
 #ifndef ORES_IAM_DOMAIN_ACCOUNT_PARTY_TABLE_HPP
 #define ORES_IAM_DOMAIN_ACCOUNT_PARTY_TABLE_HPP
 
+#include "ores.iam.api/domain/account_party.hpp"
 #include <string>
 #include <vector>
-#include "ores.iam.api/domain/account_party.hpp"
 
 namespace ores::iam::domain {
 

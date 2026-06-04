@@ -18,10 +18,9 @@
  *
  */
 #include "ores.iam.api/domain/login_info_table.hpp"
-
-#include <fort.hpp>
-#include <boost/uuid/uuid_io.hpp>
 #include "ores.platform/time/datetime.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <fort.hpp>
 
 namespace ores::iam::domain {
 
@@ -40,14 +39,9 @@ std::string convert_to_table(const std::vector<login_info>& v) {
         using platform::time::datetime;
         auto timestamp_str = datetime::to_local_display_string(li.last_login);
 
-        table << boost::uuids::to_string(li.account_id)
-              << li.last_ip.to_string()
-              << li.last_attempt_ip.to_string()
-              << li.failed_logins
-              << locked_status
-              << online_status
-              << timestamp_str
-              << fort::endr;
+        table << boost::uuids::to_string(li.account_id) << li.last_ip.to_string()
+              << li.last_attempt_ip.to_string() << li.failed_logins << locked_status
+              << online_status << timestamp_str << fort::endr;
     }
     return table.to_string();
 }

@@ -18,7 +18,6 @@
  *
  */
 #include "ores.iam.core/repository/tenant_type_mapper.hpp"
-
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.iam.api/domain/tenant_type_json_io.hpp" // IWYU pragma: keep.
 
@@ -27,8 +26,7 @@ namespace ores::iam::repository {
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::tenant_type
-tenant_type_mapper::map(const tenant_type_entity& v) {
+domain::tenant_type tenant_type_mapper::map(const tenant_type_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::tenant_type r;
@@ -47,8 +45,7 @@ tenant_type_mapper::map(const tenant_type_entity& v) {
     return r;
 }
 
-tenant_type_entity
-tenant_type_mapper::map(const domain::tenant_type& v) {
+tenant_type_entity tenant_type_mapper::map(const domain::tenant_type& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     tenant_type_entity r;
@@ -66,22 +63,14 @@ tenant_type_mapper::map(const domain::tenant_type& v) {
     return r;
 }
 
-std::vector<domain::tenant_type>
-tenant_type_mapper::map(const std::vector<tenant_type_entity>& v) {
+std::vector<domain::tenant_type> tenant_type_mapper::map(const std::vector<tenant_type_entity>& v) {
     return map_vector<tenant_type_entity, domain::tenant_type>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
-std::vector<tenant_type_entity>
-tenant_type_mapper::map(const std::vector<domain::tenant_type>& v) {
+std::vector<tenant_type_entity> tenant_type_mapper::map(const std::vector<domain::tenant_type>& v) {
     return map_vector<domain::tenant_type, tenant_type_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

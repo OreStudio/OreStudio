@@ -18,15 +18,14 @@
  *
  */
 #include "ores.iam.core/repository/login_info_repository.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/asio/ip/address.hpp>
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.iam.api/domain/login_info_json_io.hpp" // IWYU pragma: keep.
-#include "ores.iam.core/repository/login_info_mapper.hpp"
 #include "ores.iam.core/repository/login_info_entity.hpp"
+#include "ores.iam.core/repository/login_info_mapper.hpp"
+#include <boost/asio/ip/address.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::iam::repository {
 
@@ -42,40 +41,37 @@ std::string login_info_repository::sql() {
 login_info_repository::login_info_repository(context ctx)
     : ctx_(std::move(ctx)) {}
 
-void login_info_repository::
-write(const std::vector<domain::login_info>& login_infos) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing login_info to database. Count: "
-                               << login_infos.size();
+void login_info_repository::write(const std::vector<domain::login_info>& login_infos) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing login_info to database. Count: " << login_infos.size();
 
     const auto r = session(ctx_.connection_pool())
-        .and_then(begin_transaction)
-        .and_then(insert(login_info_mapper::map(login_infos)))
-        .and_then(commit);
+                       .and_then(begin_transaction)
+                       .and_then(insert(login_info_mapper::map(login_infos)))
+                       .and_then(commit);
     ensure_success(r, lg());
 
     BOOST_LOG_SEV(lg(), debug) << "Finished writing login_info to database.";
 }
 
-void login_info_repository::
-update(const domain::login_info& login_info) {
+void login_info_repository::update(const domain::login_info& login_info) {
     BOOST_LOG_SEV(lg(), debug) << "Updating login_info for account: "
                                << boost::uuids::to_string(login_info.account_id);
 
     auto entity = login_info_mapper::map(login_info);
     const auto query = sqlgen::update<login_info_entity>(
-        "last_ip"_c.set(entity.last_ip),
-        "last_attempt_ip"_c.set(entity.last_attempt_ip),
-        "failed_logins"_c.set(entity.failed_logins),
-        "locked"_c.set(entity.locked),
-        "last_login"_c.set(entity.last_login),
-        "online"_c.set(entity.online),
-        "password_reset_required"_c.set(entity.password_reset_required)
-    ) | where("account_id"_c == entity.account_id);
+                           "last_ip"_c.set(entity.last_ip),
+                           "last_attempt_ip"_c.set(entity.last_attempt_ip),
+                           "failed_logins"_c.set(entity.failed_logins),
+                           "locked"_c.set(entity.locked),
+                           "last_login"_c.set(entity.last_login),
+                           "online"_c.set(entity.online),
+                           "password_reset_required"_c.set(entity.password_reset_required)) |
+                       where("account_id"_c == entity.account_id);
 
     const auto r = session(ctx_.connection_pool())
-        .and_then(begin_transaction)
-        .and_then(query)
-        .and_then(commit);
+                       .and_then(begin_transaction)
+                       .and_then(query)
+                       .and_then(commit);
     ensure_success(r, lg());
 
     BOOST_LOG_SEV(lg(), debug) << "Finished updating login_info.";
@@ -86,22 +82,18 @@ std::vector<domain::login_info> login_info_repository::read() {
 
     const auto query = sqlgen::read<std::vector<login_info_entity>>;
 
-    const auto r = session(ctx_.connection_pool())
-        .and_then(query);
+    const auto r = session(ctx_.connection_pool()).and_then(query);
     ensure_success(r, lg());
     BOOST_LOG_SEV(lg(), debug) << "Read all login_info. Total: " << r->size();
     return login_info_mapper::map(*r);
 }
 
-std::vector<domain::login_info>
-login_info_repository::read(const boost::uuids::uuid& account_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading login_info for account: "
-                               << account_id;
+std::vector<domain::login_info> login_info_repository::read(const boost::uuids::uuid& account_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading login_info for account: " << account_id;
 
-    const auto account_id_str =
-        boost::lexical_cast<std::string>(account_id);
-    const auto query = sqlgen::read<std::vector<login_info_entity>> |
-        where("account_id"_c == account_id_str);
+    const auto account_id_str = boost::lexical_cast<std::string>(account_id);
+    const auto query =
+        sqlgen::read<std::vector<login_info_entity>> | where("account_id"_c == account_id_str);
 
     const auto r = session(ctx_.connection_pool()).and_then(query);
     ensure_success(r, lg());
@@ -109,21 +101,18 @@ login_info_repository::read(const boost::uuids::uuid& account_id) {
     return login_info_mapper::map(*r);
 }
 
-std::vector<domain::login_info>
-login_info_repository::read(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading login_info with offset: "
-                               << offset << " and limit: " << limit;
+std::vector<domain::login_info> login_info_repository::read(std::uint32_t offset,
+                                                            std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading login_info with offset: " << offset
+                               << " and limit: " << limit;
 
-    const auto query = sqlgen::read<std::vector<login_info_entity>> |
-        order_by("account_id"_c) |
-        sqlgen::offset(offset) |
-        sqlgen::limit(limit);
+    const auto query = sqlgen::read<std::vector<login_info_entity>> | order_by("account_id"_c) |
+                       sqlgen::offset(offset) | sqlgen::limit(limit);
 
     const auto r = session(ctx_.connection_pool()).and_then(query);
     ensure_success(r, lg());
 
-    BOOST_LOG_SEV(lg(), debug) << "Read login_info with pagination. Total: "
-                               << r->size();
+    BOOST_LOG_SEV(lg(), debug) << "Read login_info with pagination. Total: " << r->size();
     return login_info_mapper::map(*r);
 }
 
@@ -134,9 +123,8 @@ std::uint32_t login_info_repository::get_total_login_info_count() {
         long long count;
     };
 
-    const auto query = sqlgen::select_from<login_info_entity>(
-        sqlgen::count().as<"count">()) |
-        sqlgen::to<count_result>;
+    const auto query = sqlgen::select_from<login_info_entity>(sqlgen::count().as<"count">()) |
+                       sqlgen::to<count_result>;
 
     const auto r = session(ctx_.connection_pool()).and_then(query);
     ensure_success(r, lg());
@@ -147,13 +135,11 @@ std::uint32_t login_info_repository::get_total_login_info_count() {
 }
 
 void login_info_repository::remove(const boost::uuids::uuid& account_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing login_info for account: "
-                               << account_id;
+    BOOST_LOG_SEV(lg(), debug) << "Removing login_info for account: " << account_id;
 
-    const auto account_id_str =
-        boost::lexical_cast<std::string>(account_id);
-    const auto query = sqlgen::delete_from<login_info_entity> |
-        where("account_id"_c == account_id_str);
+    const auto account_id_str = boost::lexical_cast<std::string>(account_id);
+    const auto query =
+        sqlgen::delete_from<login_info_entity> | where("account_id"_c == account_id_str);
 
     execute_delete_query(ctx_, query, lg(), "removing login_info from database");
 

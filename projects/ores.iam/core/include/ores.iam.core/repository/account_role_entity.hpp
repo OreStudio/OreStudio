@@ -20,8 +20,8 @@
 #ifndef ORES_IAM_REPOSITORY_ACCOUNT_ROLE_ENTITY_HPP
 #define ORES_IAM_REPOSITORY_ACCOUNT_ROLE_ENTITY_HPP
 
-#include <string>
 #include "ores.database/repository/db_types.hpp"
+#include <string>
 
 namespace ores::iam::repository {
 

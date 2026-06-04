@@ -20,8 +20,8 @@
 #ifndef ORES_IAM_DOMAIN_ROLE_PERMISSION_HPP
 #define ORES_IAM_DOMAIN_ROLE_PERMISSION_HPP
 
-#include <boost/uuid/uuid.hpp>
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid.hpp>
 
 namespace ores::iam::domain {
 

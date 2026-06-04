@@ -20,14 +20,14 @@
 #ifndef ORES_IAM_SERVICE_TENANT_STATUS_SERVICE_HPP
 #define ORES_IAM_SERVICE_TENANT_STATUS_SERVICE_HPP
 
-#include <string>
-#include <vector>
-#include <optional>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.iam.api/domain/tenant_status.hpp"
-#include "ores.iam.core/repository/tenant_status_repository.hpp"
 #include "ores.iam.core/export.hpp"
+#include "ores.iam.core/repository/tenant_status_repository.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <optional>
+#include <string>
+#include <vector>
 
 namespace ores::iam::service {
 
@@ -36,8 +36,7 @@ namespace ores::iam::service {
  */
 class ORES_IAM_CORE_EXPORT tenant_status_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.iam.service.tenant_status_service";
+    inline static std::string_view logger_name = "ores.iam.service.tenant_status_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -52,16 +51,14 @@ public:
 
     std::vector<domain::tenant_status> list_statuses();
 
-    std::optional<domain::tenant_status>
-    find_status(const std::string& status);
+    std::optional<domain::tenant_status> find_status(const std::string& status);
 
     void save_status(const domain::tenant_status& status);
 
     void remove_status(const std::string& status);
     void remove_statuses(const std::vector<std::string>& statuses);
 
-    std::vector<domain::tenant_status>
-    get_status_history(const std::string& status);
+    std::vector<domain::tenant_status> get_status_history(const std::string& status);
 
 private:
     context ctx_;

@@ -20,14 +20,14 @@
 #ifndef ORES_IAM_REPOSITORY_ACCOUNT_PARTY_REPOSITORY_HPP
 #define ORES_IAM_REPOSITORY_ACCOUNT_PARTY_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include <sqlgen/postgres.hpp>
-#include <boost/uuid/uuid.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.iam.api/domain/account_party.hpp"
 #include "ores.iam.core/export.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::iam::repository {
 
@@ -36,8 +36,7 @@ namespace ores::iam::repository {
  */
 class ORES_IAM_CORE_EXPORT account_party_repository {
 private:
-    inline static std::string_view logger_name =
-        "ores.iam.repository.account_party_repository";
+    inline static std::string_view logger_name = "ores.iam.repository.account_party_repository";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -56,13 +55,10 @@ public:
     void write(const std::vector<domain::account_party>& account_parties);
 
     std::vector<domain::account_party> read_latest();
-    std::vector<domain::account_party>
-    read_latest_by_account(const boost::uuids::uuid& account_id);
-    std::vector<domain::account_party>
-    read_latest_by_party(const boost::uuids::uuid& party_id);
+    std::vector<domain::account_party> read_latest_by_account(const boost::uuids::uuid& account_id);
+    std::vector<domain::account_party> read_latest_by_party(const boost::uuids::uuid& party_id);
 
-    void remove(const boost::uuids::uuid& account_id,
-                const boost::uuids::uuid& party_id);
+    void remove(const boost::uuids::uuid& account_id, const boost::uuids::uuid& party_id);
     void remove_by_account(const boost::uuids::uuid& account_id);
 
 private:

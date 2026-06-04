@@ -20,12 +20,14 @@
 #ifndef ORES_IAM_CLIENT_CLIENT_SERVICE_TOKEN_PROVIDER_HPP
 #define ORES_IAM_CLIENT_CLIENT_SERVICE_TOKEN_PROVIDER_HPP
 
-#include <chrono>
-#include <string>
 #include "ores.iam.client/export.hpp"
 #include "ores.nats/service/nats_client.hpp"
+#include <chrono>
+#include <string>
 
-namespace ores::nats::service { class client; }
+namespace ores::nats::service {
+class client;
+}
 
 namespace ores::iam::client {
 
@@ -45,11 +47,10 @@ namespace ores::iam::client {
  * @param refresh_margin  Proactively refresh this far before token expiry.
  */
 ORES_IAM_CLIENT_EXPORT ores::nats::service::nats_client::token_provider
-make_service_token_provider(
-    ores::nats::service::client& nats,
-    std::string username,
-    std::string password,
-    std::chrono::seconds refresh_margin = std::chrono::seconds(120));
+make_service_token_provider(ores::nats::service::client& nats,
+                            std::string username,
+                            std::string password,
+                            std::chrono::seconds refresh_margin = std::chrono::seconds(120));
 
 } // namespace ores::iam::client
 

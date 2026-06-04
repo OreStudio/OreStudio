@@ -17,19 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.iam.core/repository/session_repository.hpp"
-
-#include <catch2/catch_test_macros.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.logging/make_logger.hpp"
-#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/domain/session.hpp"
 #include "ores.iam.api/domain/session_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/generators/session_generator.hpp"
+#include "ores.iam.core/repository/session_repository.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
+#include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
+#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 
@@ -73,8 +72,7 @@ TEST_CASE("read_session_by_id", tags) {
     BOOST_LOG_SEV(lg, debug) << "Target ID: " << target_id;
 
     auto read_session = repo.read(target_id);
-    BOOST_LOG_SEV(lg, debug) << "Read session has value: "
-                             << read_session.has_value();
+    BOOST_LOG_SEV(lg, debug) << "Read session has value: " << read_session.has_value();
 
     REQUIRE(read_session.has_value());
     CHECK(read_session->id == target_id);
@@ -92,8 +90,7 @@ TEST_CASE("read_nonexistent_session", tags) {
     BOOST_LOG_SEV(lg, debug) << "Non-existent ID: " << nonexistent_id;
 
     auto read_session = repo.read(nonexistent_id);
-    BOOST_LOG_SEV(lg, debug) << "Read session has value: "
-                             << read_session.has_value();
+    BOOST_LOG_SEV(lg, debug) << "Read session has value: " << read_session.has_value();
 
     CHECK(!read_session.has_value());
 }

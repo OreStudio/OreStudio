@@ -20,9 +20,9 @@
 #ifndef ORES_IAM_DOMAIN_ACCOUNT_VERSION_HPP
 #define ORES_IAM_DOMAIN_ACCOUNT_VERSION_HPP
 
+#include "ores.iam.api/domain/account.hpp"
 #include <chrono>
 #include <string>
-#include "ores.iam.api/domain/account.hpp"
 
 namespace ores::iam::domain {
 

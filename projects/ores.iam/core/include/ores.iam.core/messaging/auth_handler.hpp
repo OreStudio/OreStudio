@@ -20,47 +20,46 @@
 #ifndef ORES_IAM_MESSAGING_AUTH_HANDLER_HPP
 #define ORES_IAM_MESSAGING_AUTH_HANDLER_HPP
 
-#include <chrono>
-#include <memory>
-#include <stdexcept>
+#include "ores.database/domain/context.hpp"
+#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/service/tenant_context.hpp"
+#include "ores.iam.api/domain/session.hpp"
+#include "ores.iam.api/messaging/login_protocol.hpp"
+#include "ores.iam.api/messaging/signup_protocol.hpp"
+#include "ores.iam.core/domain/token_settings.hpp"
+#include "ores.iam.core/repository/account_party_repository.hpp"
+#include "ores.iam.core/repository/account_repository.hpp"
+#include "ores.iam.core/repository/auth_event_repository.hpp"
+#include "ores.iam.core/repository/session_repository.hpp"
+#include "ores.iam.core/repository/tenant_repository.hpp"
+#include "ores.iam.core/service/account_service.hpp"
+#include "ores.iam.core/service/account_setup_service.hpp"
+#include "ores.iam.core/service/authorization_service.hpp"
+#include "ores.iam.core/service/party_cache.hpp"
+#include "ores.iam.core/service/service_session_service.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/message.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include "ores.security/jwt/jwt_claims.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#include "ores.variability.core/service/system_settings_service.hpp"
 #include <boost/asio/ip/address.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include "ores.logging/make_logger.hpp"
-#include "ores.nats/domain/message.hpp"
-#include "ores.nats/service/client.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.database/service/tenant_context.hpp"
-#include "ores.security/jwt/jwt_authenticator.hpp"
-#include "ores.security/jwt/jwt_claims.hpp"
+#include <chrono>
+#include <memory>
 #include <rfl/json.hpp>
-#include "ores.service/messaging/handler_helpers.hpp"
-#include "ores.iam.api/messaging/login_protocol.hpp"
-#include "ores.iam.api/messaging/signup_protocol.hpp"
-#include "ores.iam.api/domain/session.hpp"
-#include "ores.iam.core/repository/account_party_repository.hpp"
-#include "ores.iam.core/repository/account_repository.hpp"
-#include "ores.iam.core/repository/session_repository.hpp"
-#include "ores.iam.core/repository/tenant_repository.hpp"
-#include "ores.iam.core/service/party_cache.hpp"
-#include "ores.iam.core/service/account_service.hpp"
-#include "ores.iam.core/service/authorization_service.hpp"
-#include "ores.iam.core/service/account_setup_service.hpp"
-#include "ores.utility/uuid/tenant_id.hpp"
-#include "ores.variability.core/service/system_settings_service.hpp"
-#include "ores.iam.core/domain/token_settings.hpp"
-#include "ores.iam.core/repository/auth_event_repository.hpp"
-#include "ores.iam.core/service/service_session_service.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include <stdexcept>
 
 namespace ores::iam::messaging {
 
 namespace {
 
 inline auto& auth_handler_lg() {
-    static auto instance = ores::logging::make_logger(
-        "ores.iam.messaging.auth_handler");
+    static auto instance = ores::logging::make_logger("ores.iam.messaging.auth_handler");
     return instance;
 }
 
@@ -74,24 +73,23 @@ inline std::string auth_extract_bearer_token(const ores::nats::message& msg) {
     return val.substr(ores::nats::headers::bearer_prefix.size());
 }
 
-inline std::vector<boost::uuids::uuid> auth_compute_visible_party_ids(
-    const service::party_cache& cache,
-    const std::string& tenant_id,
-    const boost::uuids::uuid& party_id) {
+inline std::vector<boost::uuids::uuid>
+auth_compute_visible_party_ids(const service::party_cache& cache,
+                               const std::string& tenant_id,
+                               const boost::uuids::uuid& party_id) {
     return cache.compute_visible_party_ids(tenant_id, party_id);
 }
 
-inline std::optional<refdata::domain::party> auth_lookup_party(
-    const service::party_cache& cache,
-    const std::string& tenant_id,
-    const boost::uuids::uuid& party_id) {
+inline std::optional<refdata::domain::party> auth_lookup_party(const service::party_cache& cache,
+                                                               const std::string& tenant_id,
+                                                               const boost::uuids::uuid& party_id) {
     return cache.lookup_party(tenant_id, party_id);
 }
 
-inline void auth_ensure_parties_cached(
-    service::party_cache& cache,
-    const std::string& tenant_id,
-    const std::vector<ores::iam::domain::account_party>& account_parties) {
+inline void
+auth_ensure_parties_cached(service::party_cache& cache,
+                           const std::string& tenant_id,
+                           const std::vector<ores::iam::domain::account_party>& account_parties) {
     for (const auto& ap : account_parties) {
         if (!cache.lookup_party(tenant_id, ap.party_id)) {
             // Cache miss: reload from refdata (handles bootstrap and startup race).
@@ -101,9 +99,8 @@ inline void auth_ensure_parties_cached(
     }
 }
 
-inline std::string auth_lookup_tenant_name(
-    const ores::database::context& ctx,
-    const boost::uuids::uuid& tenant_id) {
+inline std::string auth_lookup_tenant_name(const ores::database::context& ctx,
+                                           const boost::uuids::uuid& tenant_id) {
     try {
         repository::tenant_repository repo(ctx);
         auto tenants = repo.read_latest(tenant_id);
@@ -111,14 +108,13 @@ inline std::string auth_lookup_tenant_name(
             return tenants.front().name;
     } catch (const std::exception& e) {
         using namespace ores::logging;
-        BOOST_LOG_SEV(auth_handler_lg(), warn)
-            << "Failed to look up tenant name: " << e.what();
+        BOOST_LOG_SEV(auth_handler_lg(), warn) << "Failed to look up tenant name: " << e.what();
     }
     return {};
 }
 
-inline std::optional<ores::iam::domain::tenant> auth_lookup_tenant_by_hostname(
-    const ores::database::context& ctx, const std::string& hostname) {
+inline std::optional<ores::iam::domain::tenant>
+auth_lookup_tenant_by_hostname(const ores::database::context& ctx, const std::string& hostname) {
     try {
         repository::tenant_repository repo(ctx);
         auto tenants = repo.read_latest_by_hostname(hostname);
@@ -132,12 +128,12 @@ inline std::optional<ores::iam::domain::tenant> auth_lookup_tenant_by_hostname(
     return std::nullopt;
 }
 
-inline bool auth_is_tenant_bootstrap_mode(
-    const ores::database::context& ctx,
-    const std::string& tenant_id_str) {
+inline bool auth_is_tenant_bootstrap_mode(const ores::database::context& ctx,
+                                          const std::string& tenant_id_str) {
     try {
         auto tid_result = ores::utility::uuid::tenant_id::from_string(tenant_id_str);
-        if (!tid_result) return false;
+        if (!tid_result)
+            return false;
         auto tenant_ctx = ctx.with_tenant(*tid_result, "");
         variability::service::system_settings_service sfs(tenant_ctx, tenant_id_str);
         sfs.refresh();
@@ -160,11 +156,13 @@ using namespace ores::logging;
 class auth_handler {
 public:
     auth_handler(ores::nats::service::client& nats,
-        ores::database::context ctx,
-        ores::security::jwt::jwt_authenticator signer,
-        std::shared_ptr<service::party_cache> party_cache)
-        : nats_(nats), ctx_(std::move(ctx)), signer_(std::move(signer)),
-          party_cache_(std::move(party_cache)) {
+                 ores::database::context ctx,
+                 ores::security::jwt::jwt_authenticator signer,
+                 std::shared_ptr<service::party_cache> party_cache)
+        : nats_(nats)
+        , ctx_(std::move(ctx))
+        , signer_(std::move(signer))
+        , party_cache_(std::move(party_cache)) {
         reload_token_settings();
     }
 
@@ -182,53 +180,43 @@ public:
     }
 
     void signup(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(auth_handler_lg(), msg);
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(auth_handler_lg(), msg);
         auto req = decode<signup_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(auth_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(auth_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         try {
             service::account_service acct_svc(ctx_);
-            auto auth_svc =
-                std::make_shared<service::authorization_service>(ctx_);
+            auto auth_svc = std::make_shared<service::authorization_service>(ctx_);
             service::account_setup_service setup_svc(acct_svc, auth_svc);
             auto acct = setup_svc.create_account(
                 req->principal, req->email, req->password, ctx_.service_account());
-            BOOST_LOG_SEV(auth_handler_lg(), debug)
-                << "Completed " << msg.subject;
+            BOOST_LOG_SEV(auth_handler_lg(), debug) << "Completed " << msg.subject;
             record_auth_event(ctx_, "signup_success", [&](auto& ev_repo) {
-                ev_repo.record_signup_success(
-                    std::chrono::system_clock::now(),
-                    acct.tenant_id.to_string(),
-                    boost::uuids::to_string(acct.id),
-                    acct.username);
+                ev_repo.record_signup_success(std::chrono::system_clock::now(),
+                                              acct.tenant_id.to_string(),
+                                              boost::uuids::to_string(acct.id),
+                                              acct.username);
             });
-            reply(nats_, msg, signup_response{
-                .success = true,
-                .account_id = boost::uuids::to_string(acct.id)});
+            reply(nats_,
+                  msg,
+                  signup_response{.success = true, .account_id = boost::uuids::to_string(acct.id)});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(auth_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
+            BOOST_LOG_SEV(auth_handler_lg(), error) << msg.subject << " failed: " << e.what();
             record_auth_event(ctx_, "signup_failure", [&](auto& ev_repo) {
                 ev_repo.record_signup_failure(
-                    std::chrono::system_clock::now(),
-                    "", req->principal, e.what());
+                    std::chrono::system_clock::now(), "", req->principal, e.what());
             });
-            reply(nats_, msg, signup_response{
-                .success = false, .message = e.what()});
+            reply(nats_, msg, signup_response{.success = false, .message = e.what()});
         }
     }
 
     void login(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(auth_handler_lg(), msg);
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(auth_handler_lg(), msg);
         auto req = decode<login_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(auth_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(auth_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         try {
@@ -240,8 +228,7 @@ public:
                 username = req->principal.substr(0, at_pos);
                 const auto hostname = req->principal.substr(at_pos + 1);
                 if (auto t = auth_lookup_tenant_by_hostname(ctx_, hostname)) {
-                    auto tid_result =
-                        ores::utility::uuid::tenant_id::from_uuid(t->id);
+                    auto tid_result = ores::utility::uuid::tenant_id::from_uuid(t->id);
                     if (tid_result)
                         login_ctx = ctx_.with_tenant(*tid_result, "");
                 }
@@ -254,27 +241,22 @@ public:
             // Check if this non-system tenant needs its provisioning wizard
             const bool in_tenant_bootstrap =
                 !acct.tenant_id.is_system() &&
-                auth_is_tenant_bootstrap_mode(
-                    login_ctx, acct.tenant_id.to_string());
+                auth_is_tenant_bootstrap_mode(login_ctx, acct.tenant_id.to_string());
 
             repository::account_party_repository ap_repo(login_ctx);
-            auto account_parties =
-                ap_repo.read_latest_by_account(acct.id);
+            auto account_parties = ap_repo.read_latest_by_account(acct.id);
 
             if (account_parties.empty()) {
                 BOOST_LOG_SEV(auth_handler_lg(), warn)
-                    << "Login rejected for " << username
-                    << ": account has no party assignment";
-                throw std::runtime_error(
-                    "Account has no party assignment. "
-                    "Please contact your administrator.");
+                    << "Login rejected for " << username << ": account has no party assignment";
+                throw std::runtime_error("Account has no party assignment. "
+                                         "Please contact your administrator.");
             }
 
             // Ensure party details are in the cache. Bootstrap parties are
             // created directly via SQL (no NATS event), so the cache may be
             // cold even though the account-party association exists in the DB.
-            auth_ensure_parties_cached(
-                *party_cache_, acct.tenant_id.to_string(), account_parties);
+            auth_ensure_parties_cached(*party_cache_, acct.tenant_id.to_string(), account_parties);
 
             // Create a session record so that analytics, session listings,
             // and logout end-time tracking all work correctly.
@@ -299,16 +281,14 @@ public:
             const auto session_id_str = boost::uuids::to_string(sess.id);
 
             if (account_parties.size() == 1) {
-                const auto& party_id =
-                    account_parties.front().party_id;
+                const auto& party_id = account_parties.front().party_id;
                 auto visible = auth_compute_visible_party_ids(
                     *party_cache_, acct.tenant_id.to_string(), party_id);
 
                 security::jwt::jwt_claims claims;
                 claims.subject = boost::uuids::to_string(acct.id);
                 claims.issued_at = now;
-                claims.expires_at = now + std::chrono::seconds(
-                    token_settings_.access_lifetime_s);
+                claims.expires_at = now + std::chrono::seconds(token_settings_.access_lifetime_s);
                 claims.username = acct.username;
                 claims.email = acct.email;
                 claims.tenant_id = acct.tenant_id.to_string();
@@ -316,8 +296,7 @@ public:
                 claims.session_id = session_id_str;
                 claims.session_start_time = now;
                 for (const auto& vid : visible)
-                    claims.visible_party_ids.push_back(
-                        boost::uuids::to_string(vid));
+                    claims.visible_party_ids.push_back(boost::uuids::to_string(vid));
                 auto token = signer_.create_token(claims).value_or("");
 
                 login_response resp;
@@ -332,11 +311,10 @@ public:
                 resp.access_lifetime_s = token_settings_.access_lifetime_s;
                 resp.session_id = session_id_str;
                 for (const auto& ap : account_parties) {
-                    auto p = auth_lookup_party(
-                        *party_cache_, acct.tenant_id.to_string(), ap.party_id);
+                    auto p =
+                        auth_lookup_party(*party_cache_, acct.tenant_id.to_string(), ap.party_id);
                     if (ap.party_id == party_id) {
-                        resp.party_setup_required =
-                            p && p->status == "Inactive";
+                        resp.party_setup_required = p && p->status == "Inactive";
                         if (resp.party_setup_required) {
                             BOOST_LOG_SEV(auth_handler_lg(), info)
                                 << "login: party_setup_required=true for party "
@@ -347,22 +325,17 @@ public:
                     resp.available_parties.push_back(party_summary{
                         .id = boost::uuids::to_string(ap.party_id),
                         .name = p ? p->full_name : std::string{},
-                        .party_category =
-                            p ? p->party_category : std::string{},
-                        .business_center_code =
-                            p ? p->business_center_code : std::string{}
-                    });
+                        .party_category = p ? p->party_category : std::string{},
+                        .business_center_code = p ? p->business_center_code : std::string{}});
                 }
-                BOOST_LOG_SEV(auth_handler_lg(), debug)
-                    << "Completed " << msg.subject;
+                BOOST_LOG_SEV(auth_handler_lg(), debug) << "Completed " << msg.subject;
                 record_auth_event(login_ctx, "login_success", [&](auto& ev_repo) {
-                    ev_repo.record_login_success(
-                        now,
-                        acct.tenant_id.to_string(),
-                        boost::uuids::to_string(acct.id),
-                        acct.username,
-                        session_id_str,
-                        boost::uuids::to_string(party_id));
+                    ev_repo.record_login_success(now,
+                                                 acct.tenant_id.to_string(),
+                                                 boost::uuids::to_string(acct.id),
+                                                 acct.username,
+                                                 session_id_str,
+                                                 boost::uuids::to_string(party_id));
                 });
                 reply(nats_, msg, resp);
             } else {
@@ -370,8 +343,8 @@ public:
                 security::jwt::jwt_claims claims;
                 claims.subject = boost::uuids::to_string(acct.id);
                 claims.issued_at = now;
-                claims.expires_at = now + std::chrono::seconds(
-                    token_settings_.party_selection_lifetime_s);
+                claims.expires_at =
+                    now + std::chrono::seconds(token_settings_.party_selection_lifetime_s);
                 claims.audience = "select_party_only";
                 claims.username = acct.username;
                 claims.email = acct.email;
@@ -391,29 +364,23 @@ public:
                 resp.access_lifetime_s = token_settings_.party_selection_lifetime_s;
                 resp.session_id = session_id_str;
                 for (const auto& ap : account_parties) {
-                    auto p = auth_lookup_party(
-                        *party_cache_, acct.tenant_id.to_string(), ap.party_id);
+                    auto p =
+                        auth_lookup_party(*party_cache_, acct.tenant_id.to_string(), ap.party_id);
                     resp.available_parties.push_back(party_summary{
                         .id = boost::uuids::to_string(ap.party_id),
                         .name = p ? p->full_name : std::string{},
-                        .party_category =
-                            p ? p->party_category : std::string{},
-                        .business_center_code =
-                            p ? p->business_center_code : std::string{}
-                    });
+                        .party_category = p ? p->party_category : std::string{},
+                        .business_center_code = p ? p->business_center_code : std::string{}});
                 }
-                BOOST_LOG_SEV(auth_handler_lg(), debug)
-                    << "Completed " << msg.subject;
+                BOOST_LOG_SEV(auth_handler_lg(), debug) << "Completed " << msg.subject;
                 // Multi-party: login_success recorded after party selection
                 reply(nats_, msg, resp);
             }
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(auth_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
+            BOOST_LOG_SEV(auth_handler_lg(), error) << msg.subject << " failed: " << e.what();
             record_auth_event(ctx_, "login_failure", [&](auto& ev_repo) {
                 ev_repo.record_login_failure(
-                    std::chrono::system_clock::now(),
-                    "", req->principal, e.what());
+                    std::chrono::system_clock::now(), "", req->principal, e.what());
             });
             login_response resp;
             resp.success = false;
@@ -423,30 +390,25 @@ public:
     }
 
     void public_key(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(auth_handler_lg(), msg);
-        if (msg.reply_subject.empty()) return;
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(auth_handler_lg(), msg);
+        if (msg.reply_subject.empty())
+            return;
         try {
             auto pub_key = signer_.get_public_key_pem();
             if (pub_key.empty())
-                throw std::runtime_error(
-                    "No RSA private key configured for JWT signing. "
-                    "Run generate_keys.sh in publish/bin/ to generate "
-                    "the key, then restart the IAM service.");
-            const auto json =
-                std::string("{\"public_key\":") + rfl::json::write(pub_key) + "}";
+                throw std::runtime_error("No RSA private key configured for JWT signing. "
+                                         "Run generate_keys.sh in publish/bin/ to generate "
+                                         "the key, then restart the IAM service.");
+            const auto json = std::string("{\"public_key\":") + rfl::json::write(pub_key) + "}";
             nats_.publish(msg.reply_subject, ores::nats::as_bytes(json));
-            BOOST_LOG_SEV(auth_handler_lg(), debug)
-                << "Completed " << msg.subject;
+            BOOST_LOG_SEV(auth_handler_lg(), debug) << "Completed " << msg.subject;
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(auth_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
+            BOOST_LOG_SEV(auth_handler_lg(), error) << msg.subject << " failed: " << e.what();
         }
     }
 
     void logout(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(auth_handler_lg(), msg);
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(auth_handler_lg(), msg);
         auto token = auth_extract_bearer_token(msg);
         try {
             if (!token.empty()) {
@@ -464,21 +426,18 @@ public:
                     }
                     // Persist session end time using the IDs embedded in
                     // the JWT at login.
-                    if (claims_result->session_id &&
-                            claims_result->session_start_time) {
+                    if (claims_result->session_id && claims_result->session_start_time) {
                         try {
-                            const auto session_id =
-                                sg(*claims_result->session_id);
+                            const auto session_id = sg(*claims_result->session_id);
                             repository::session_repository sess_repo(ctx_);
-                            sess_repo.end_session(
-                                session_id,
-                                *claims_result->session_start_time,
-                                std::chrono::system_clock::now(),
-                                0, 0);
+                            sess_repo.end_session(session_id,
+                                                  *claims_result->session_start_time,
+                                                  std::chrono::system_clock::now(),
+                                                  0,
+                                                  0);
                         } catch (const std::exception& e) {
                             BOOST_LOG_SEV(auth_handler_lg(), warn)
-                                << "Failed to end session record: "
-                                << e.what();
+                                << "Failed to end session record: " << e.what();
                         }
                     }
                 }
@@ -488,35 +447,30 @@ public:
                 auto claims_result = signer_.validate_allow_expired(token);
                 if (claims_result) {
                     record_auth_event(ctx_, "logout", [&](auto& ev_repo) {
-                        ev_repo.record_logout(
-                            std::chrono::system_clock::now(),
-                            claims_result->tenant_id.value_or(""),
-                            claims_result->subject,
-                            claims_result->username.value_or(""),
-                            claims_result->session_id.value_or(""));
+                        ev_repo.record_logout(std::chrono::system_clock::now(),
+                                              claims_result->tenant_id.value_or(""),
+                                              claims_result->subject,
+                                              claims_result->username.value_or(""),
+                                              claims_result->session_id.value_or(""));
                     });
                 }
             }
-            BOOST_LOG_SEV(auth_handler_lg(), debug)
-                << "Completed " << msg.subject;
-            reply(nats_, msg, logout_response{
-                .success = true, .message = "Logged out"});
+            BOOST_LOG_SEV(auth_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, logout_response{.success = true, .message = "Logged out"});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(auth_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, logout_response{
-                .success = false, .message = e.what()});
+            BOOST_LOG_SEV(auth_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, logout_response{.success = false, .message = e.what()});
         }
     }
 
     void refresh(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(auth_handler_lg(), msg);
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(auth_handler_lg(), msg);
 
         const auto token = auth_extract_bearer_token(msg);
         if (token.empty()) {
-            reply(nats_, msg, refresh_response{
-                .success = false, .message = "Missing Authorization header"});
+            reply(nats_,
+                  msg,
+                  refresh_response{.success = false, .message = "Missing Authorization header"});
             return;
         }
 
@@ -524,8 +478,7 @@ public:
             // Validate token ignoring expiry — we still verify the signature.
             auto claims_result = signer_.validate_allow_expired(token);
             if (!claims_result) {
-                reply(nats_, msg, refresh_response{
-                    .success = false, .message = "Invalid token"});
+                reply(nats_, msg, refresh_response{.success = false, .message = "Invalid token"});
                 return;
             }
 
@@ -534,147 +487,141 @@ public:
             const auto now = std::chrono::system_clock::now();
             if (claims_result->session_start_time) {
                 const auto session_age = now - *claims_result->session_start_time;
-                const auto max_session = std::chrono::seconds(
-                    token_settings_.max_session_s);
+                const auto max_session = std::chrono::seconds(token_settings_.max_session_s);
                 if (session_age >= max_session) {
                     BOOST_LOG_SEV(auth_handler_lg(), info)
-                        << "Max session exceeded for subject: "
-                        << claims_result->subject;
+                        << "Max session exceeded for subject: " << claims_result->subject;
                     record_auth_event(ctx_, "max_session_exceeded", [&](auto& ev_repo) {
-                        ev_repo.record_max_session_exceeded(
-                            now,
-                            claims_result->tenant_id.value_or(""),
-                            claims_result->subject,
-                            claims_result->username.value_or(""),
-                            claims_result->session_id.value_or(""));
+                        ev_repo.record_max_session_exceeded(now,
+                                                            claims_result->tenant_id.value_or(""),
+                                                            claims_result->subject,
+                                                            claims_result->username.value_or(""),
+                                                            claims_result->session_id.value_or(""));
                     });
-                    reply(nats_, msg, refresh_response{
-                        .success = false, .message = "max_session_exceeded"});
+                    reply(nats_,
+                          msg,
+                          refresh_response{.success = false, .message = "max_session_exceeded"});
                     return;
                 }
             }
 
             // Issue a fresh token carrying the same identity claims.
             security::jwt::jwt_claims new_claims;
-            new_claims.subject          = claims_result->subject;
-            new_claims.issued_at        = now;
-            new_claims.expires_at       = now + std::chrono::seconds(
-                                            token_settings_.access_lifetime_s);
-            new_claims.username         = claims_result->username;
-            new_claims.email            = claims_result->email;
-            new_claims.tenant_id        = claims_result->tenant_id;
-            new_claims.party_id         = claims_result->party_id;
-            new_claims.session_id       = claims_result->session_id;
+            new_claims.subject = claims_result->subject;
+            new_claims.issued_at = now;
+            new_claims.expires_at = now + std::chrono::seconds(token_settings_.access_lifetime_s);
+            new_claims.username = claims_result->username;
+            new_claims.email = claims_result->email;
+            new_claims.tenant_id = claims_result->tenant_id;
+            new_claims.party_id = claims_result->party_id;
+            new_claims.session_id = claims_result->session_id;
             new_claims.session_start_time = claims_result->session_start_time;
-            new_claims.roles            = claims_result->roles;
+            new_claims.roles = claims_result->roles;
             new_claims.visible_party_ids = claims_result->visible_party_ids;
 
             const auto new_token = signer_.create_token(new_claims).value_or("");
             if (new_token.empty()) {
-                reply(nats_, msg, refresh_response{
-                    .success = false, .message = "Token creation failed"});
+                reply(nats_,
+                      msg,
+                      refresh_response{.success = false, .message = "Token creation failed"});
                 return;
             }
 
             BOOST_LOG_SEV(auth_handler_lg(), debug)
-                << "Completed " << msg.subject << " for subject: "
-                << claims_result->subject;
+                << "Completed " << msg.subject << " for subject: " << claims_result->subject;
             record_auth_event(ctx_, "token_refresh", [&](auto& ev_repo) {
-                ev_repo.record_token_refresh(
-                    now,
-                    claims_result->tenant_id.value_or(""),
-                    claims_result->subject,
-                    claims_result->username.value_or(""),
-                    claims_result->session_id.value_or(""));
+                ev_repo.record_token_refresh(now,
+                                             claims_result->tenant_id.value_or(""),
+                                             claims_result->subject,
+                                             claims_result->username.value_or(""),
+                                             claims_result->session_id.value_or(""));
             });
-            reply(nats_, msg, refresh_response{
-                .success = true,
-                .token = new_token,
-                .access_lifetime_s = token_settings_.access_lifetime_s});
+            reply(nats_,
+                  msg,
+                  refresh_response{.success = true,
+                                   .token = new_token,
+                                   .access_lifetime_s = token_settings_.access_lifetime_s});
 
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(auth_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, refresh_response{
-                .success = false, .message = e.what()});
+            BOOST_LOG_SEV(auth_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, refresh_response{.success = false, .message = e.what()});
         }
     }
 
     void service_login(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(auth_handler_lg(), msg);
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(auth_handler_lg(), msg);
         auto req = decode<service_login_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(auth_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
-            reply(nats_, msg, service_login_response{
-                .success = false, .message = "Failed to decode request"});
+            BOOST_LOG_SEV(auth_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            reply(nats_,
+                  msg,
+                  service_login_response{.success = false, .message = "Failed to decode request"});
             return;
         }
         try {
             repository::account_repository account_repo(ctx_);
-            const auto account_id = account_repo.check_service_credentials(
-                req->username, req->password);
+            const auto account_id =
+                account_repo.check_service_credentials(req->username, req->password);
             if (!account_id) {
                 BOOST_LOG_SEV(auth_handler_lg(), warn)
                     << "Service login failed: invalid credentials for " << req->username;
-                reply(nats_, msg, service_login_response{
-                    .success = false, .message = "Invalid credentials"});
+                reply(nats_,
+                      msg,
+                      service_login_response{.success = false, .message = "Invalid credentials"});
                 return;
             }
 
             service::service_session_service sess_svc(ctx_);
-            auto sess = sess_svc.start_service_session(
-                req->username, "ores.service.binary");
+            auto sess = sess_svc.start_service_session(req->username, "ores.service.binary");
             if (!sess) {
                 BOOST_LOG_SEV(auth_handler_lg(), error)
                     << "Failed to start service session for " << req->username;
-                reply(nats_, msg, service_login_response{
-                    .success = false, .message = "Failed to create session"});
+                reply(nats_,
+                      msg,
+                      service_login_response{.success = false,
+                                             .message = "Failed to create session"});
                 return;
             }
 
             const auto now = std::chrono::system_clock::now();
             security::jwt::jwt_claims claims;
-            claims.subject          = boost::uuids::to_string(sess->account_id);
-            claims.issued_at        = now;
-            claims.expires_at       = now + std::chrono::seconds(
-                                        token_settings_.access_lifetime_s);
-            claims.username         = req->username;
-            claims.tenant_id        = sess->tenant_id.to_string();
-            claims.session_id       = boost::uuids::to_string(sess->id);
+            claims.subject = boost::uuids::to_string(sess->account_id);
+            claims.issued_at = now;
+            claims.expires_at = now + std::chrono::seconds(token_settings_.access_lifetime_s);
+            claims.username = req->username;
+            claims.tenant_id = sess->tenant_id.to_string();
+            claims.session_id = boost::uuids::to_string(sess->id);
             claims.session_start_time = sess->start_time;
 
             // Embed effective permission codes so handlers can enforce
             // permissions without a round-trip to the database.
             try {
                 service::authorization_service auth_svc(ctx_);
-                claims.roles =
-                    auth_svc.get_effective_permissions(sess->account_id);
+                claims.roles = auth_svc.get_effective_permissions(sess->account_id);
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(auth_handler_lg(), warn)
-                    << "Failed to load permissions for service account "
-                    << req->username << ": " << e.what();
+                    << "Failed to load permissions for service account " << req->username << ": "
+                    << e.what();
             }
 
             auto token = signer_.create_token(claims).value_or("");
             if (token.empty()) {
-                reply(nats_, msg, service_login_response{
-                    .success = false, .message = "Token creation failed"});
+                reply(nats_,
+                      msg,
+                      service_login_response{.success = false, .message = "Token creation failed"});
                 return;
             }
 
             BOOST_LOG_SEV(auth_handler_lg(), info)
                 << "Service login successful for " << req->username;
-            reply(nats_, msg, service_login_response{
-                .success = true,
-                .token = std::move(token),
-                .access_lifetime_s = token_settings_.access_lifetime_s});
+            reply(nats_,
+                  msg,
+                  service_login_response{.success = true,
+                                         .token = std::move(token),
+                                         .access_lifetime_s = token_settings_.access_lifetime_s});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(auth_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, service_login_response{
-                .success = false, .message = e.what()});
+            BOOST_LOG_SEV(auth_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, service_login_response{.success = false, .message = e.what()});
         }
     }
 
@@ -685,16 +632,14 @@ private:
      * Used to avoid boilerplate try/catch around every event recording site.
      */
     template <typename Func>
-    void record_auth_event(const ores::database::context& ctx,
-        const char* event_name, Func&& fn) {
+    void record_auth_event(const ores::database::context& ctx, const char* event_name, Func&& fn) {
         try {
             repository::auth_event_repository ev_repo(ctx);
             fn(ev_repo);
         } catch (const std::exception& ev_err) {
             using namespace ores::logging;
             BOOST_LOG_SEV(auth_handler_lg(), warn)
-                << "Failed to record " << event_name
-                << " event: " << ev_err.what();
+                << "Failed to record " << event_name << " event: " << ev_err.what();
         }
     }
 

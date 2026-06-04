@@ -18,12 +18,11 @@
  *
  */
 #include "ores.iam.api/domain/permission.hpp"
-
-#include <catch2/catch_test_macros.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.logging/make_logger.hpp"
 #include "ores.iam.api/domain/permission_json_io.hpp" // IWYU pragma: keep.
+#include "ores.logging/make_logger.hpp"
+#include <boost/uuid/uuid_generators.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
 
 namespace {
 
@@ -139,8 +138,8 @@ TEST_CASE("create_permission_with_faker", tags) {
 
     permission sut;
     sut.id = boost::uuids::random_generator()();
-    sut.code = resources[faker::number::integer(0, 3)] + ":" +
-               actions[faker::number::integer(0, 3)];
+    sut.code =
+        resources[faker::number::integer(0, 3)] + ":" + actions[faker::number::integer(0, 3)];
     sut.description = std::string(faker::lorem::sentence());
     BOOST_LOG_SEV(lg, info) << "Permission: " << sut;
 
@@ -152,11 +151,18 @@ TEST_CASE("create_permission_with_faker", tags) {
 TEST_CASE("create_multiple_random_permissions", tags) {
     auto lg(make_logger(test_suite));
 
-    const std::vector<std::string> codes = {
-        accounts_create, accounts_read, accounts_update, accounts_delete,
-        currencies_create, currencies_read, currencies_update, currencies_delete,
-        flags_create, flags_read, flags_update, flags_delete
-    };
+    const std::vector<std::string> codes = {accounts_create,
+                                            accounts_read,
+                                            accounts_update,
+                                            accounts_delete,
+                                            currencies_create,
+                                            currencies_read,
+                                            currencies_update,
+                                            currencies_delete,
+                                            flags_create,
+                                            flags_read,
+                                            flags_update,
+                                            flags_delete};
 
     for (int i = 0; i < 3; ++i) {
         permission sut;

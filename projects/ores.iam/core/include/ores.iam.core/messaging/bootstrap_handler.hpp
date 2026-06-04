@@ -20,36 +20,35 @@
 #ifndef ORES_IAM_MESSAGING_BOOTSTRAP_HANDLER_HPP
 #define ORES_IAM_MESSAGING_BOOTSTRAP_HANDLER_HPP
 
-#include <memory>
-#include <stdexcept>
-#include <thread>
-#include "ores.logging/make_logger.hpp"
-#include "ores.nats/domain/message.hpp"
-#include "ores.nats/service/client.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.security/jwt/jwt_authenticator.hpp"
-#include "ores.service/messaging/handler_helpers.hpp"
-#include "ores.iam.api/messaging/bootstrap_protocol.hpp"
+#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.iam.api/domain/account_party.hpp"
-#include "ores.iam.core/service/account_service.hpp"
+#include "ores.iam.api/messaging/bootstrap_protocol.hpp"
 #include "ores.iam.core/service/account_party_service.hpp"
+#include "ores.iam.core/service/account_service.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
 #include "ores.iam.core/service/bootstrap_mode_service.hpp"
 #include "ores.iam.core/service/party_cache.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
-#include "ores.database/service/tenant_context.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/message.hpp"
+#include "ores.nats/service/client.hpp"
 #include "ores.security/crypto/password_hasher.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
-#include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/string_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <memory>
+#include <stdexcept>
+#include <thread>
 
 namespace ores::iam::messaging {
 
 namespace {
 
 inline auto& bootstrap_handler_lg() {
-    static auto instance = ores::logging::make_logger(
-        "ores.iam.messaging.bootstrap_handler");
+    static auto instance = ores::logging::make_logger("ores.iam.messaging.bootstrap_handler");
     return instance;
 }
 
@@ -63,56 +62,52 @@ using namespace ores::logging;
 class bootstrap_handler {
 public:
     bootstrap_handler(ores::nats::service::client& nats,
-        ores::database::context ctx,
-        ores::security::jwt::jwt_authenticator signer,
-        std::shared_ptr<service::party_cache> party_cache)
-        : nats_(nats), ctx_(std::move(ctx)), signer_(std::move(signer)),
-          party_cache_(std::move(party_cache)) {}
+                      ores::database::context ctx,
+                      ores::security::jwt::jwt_authenticator signer,
+                      std::shared_ptr<service::party_cache> party_cache)
+        : nats_(nats)
+        , ctx_(std::move(ctx))
+        , signer_(std::move(signer))
+        , party_cache_(std::move(party_cache)) {}
 
     void status(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(bootstrap_handler_lg(), msg);
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(bootstrap_handler_lg(), msg);
         try {
-            auto auth_svc =
-                std::make_shared<service::authorization_service>(ctx_);
+            auto auth_svc = std::make_shared<service::authorization_service>(ctx_);
             service::bootstrap_mode_service bms(
                 ctx_, database::service::tenant_context::system_tenant_id, auth_svc);
-            BOOST_LOG_SEV(bootstrap_handler_lg(), debug)
-                << "Completed " << msg.subject;
-            reply(nats_, msg, bootstrap_status_response{
-                .is_in_bootstrap_mode = bms.is_in_bootstrap_mode()});
+            BOOST_LOG_SEV(bootstrap_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_,
+                  msg,
+                  bootstrap_status_response{.is_in_bootstrap_mode = bms.is_in_bootstrap_mode()});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(bootstrap_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, bootstrap_status_response{
-                .is_in_bootstrap_mode = false,
-                .message = e.what()});
+            BOOST_LOG_SEV(bootstrap_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            reply(nats_,
+                  msg,
+                  bootstrap_status_response{.is_in_bootstrap_mode = false, .message = e.what()});
         }
     }
 
     void create_admin(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(bootstrap_handler_lg(), msg);
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(bootstrap_handler_lg(), msg);
         auto req = decode<create_initial_admin_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(bootstrap_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(bootstrap_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
 
         // Guard: reject if system is not in bootstrap mode.
         {
-            auto auth_svc =
-                std::make_shared<service::authorization_service>(ctx_);
+            auto auth_svc = std::make_shared<service::authorization_service>(ctx_);
             service::bootstrap_mode_service bms(
                 ctx_, database::service::tenant_context::system_tenant_id, auth_svc);
             if (!bms.is_in_bootstrap_mode()) {
                 BOOST_LOG_SEV(bootstrap_handler_lg(), warn)
-                    << "Rejected " << msg.subject
-                    << ": system is not in bootstrap mode";
-                reply(nats_, msg, create_initial_admin_response{
-                    .success = false,
-                    .error_message = "System is not in bootstrap mode"});
+                    << "Rejected " << msg.subject << ": system is not in bootstrap mode";
+                reply(nats_,
+                      msg,
+                      create_initial_admin_response{
+                          .success = false, .error_message = "System is not in bootstrap mode"});
                 return;
             }
         }
@@ -121,20 +116,22 @@ public:
             using ores::database::repository::execute_parameterized_string_query;
 
             // Hash the password in C++ — pgcrypto is not required in the DB.
-            const auto password_hash =
-                ores::security::crypto::password_hasher::hash(req->password);
+            const auto password_hash = ores::security::crypto::password_hasher::hash(req->password);
 
             // The stored procedure creates the account, assigns SuperAdmin,
             // associates with the system party, and exits bootstrap mode.
-            const auto results = execute_parameterized_string_query(ctx_,
+            const auto results = execute_parameterized_string_query(
+                ctx_,
                 "SELECT ores_iam_create_initial_admin_fn($1, $2, $3, $4)::text",
                 {req->principal, req->email, password_hash, req->principal},
-                bootstrap_handler_lg(), "Creating initial admin");
+                bootstrap_handler_lg(),
+                "Creating initial admin");
 
             if (results.empty()) {
-                reply(nats_, msg, create_initial_admin_response{
-                    .success = false,
-                    .error_message = "Procedure returned no account_id"});
+                reply(nats_,
+                      msg,
+                      create_initial_admin_response{
+                          .success = false, .error_message = "Procedure returned no account_id"});
                 return;
             }
 
@@ -147,27 +144,25 @@ public:
                 pc->load(ores::database::service::tenant_context::system_tenant_id);
             }).detach();
 
-            BOOST_LOG_SEV(bootstrap_handler_lg(), debug)
-                << "Completed " << msg.subject;
-            reply(nats_, msg, create_initial_admin_response{
-                .success = true,
-                .account_id = account_id_str,
-                .tenant_id = ctx_.tenant_id().to_string()});
+            BOOST_LOG_SEV(bootstrap_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_,
+                  msg,
+                  create_initial_admin_response{.success = true,
+                                                .account_id = account_id_str,
+                                                .tenant_id = ctx_.tenant_id().to_string()});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(bootstrap_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, create_initial_admin_response{
-                .success = false, .error_message = e.what()});
+            BOOST_LOG_SEV(bootstrap_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            reply(nats_,
+                  msg,
+                  create_initial_admin_response{.success = false, .error_message = e.what()});
         }
     }
 
     void provision_tenant(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id =
-            log_handler_entry(bootstrap_handler_lg(), msg);
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(bootstrap_handler_lg(), msg);
         auto req = decode<provision_tenant_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(bootstrap_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(bootstrap_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         try {
@@ -185,33 +180,39 @@ public:
             // fail the modified_by validation in the SQL trigger.
             // Use ctx_.service_account() so the name is always env-scoped and
             // matches what iam_service_accounts_populate.sql registered.
-            const auto rows = execute_parameterized_multi_column_query(sys_ctx,
+            const auto rows = execute_parameterized_multi_column_query(
+                sys_ctx,
                 "SELECT tenant_id::text, system_party_id::text"
                 " FROM ores_iam_provision_tenant_fn($1, $2, $3, $4, $5, $6)",
-                {req->type, req->code, req->name, req->hostname,
-                 req->description, ctx_.service_account()},
-                bootstrap_handler_lg(), "Provisioning tenant");
+                {req->type,
+                 req->code,
+                 req->name,
+                 req->hostname,
+                 req->description,
+                 ctx_.service_account()},
+                bootstrap_handler_lg(),
+                "Provisioning tenant");
 
             if (rows.empty() || rows[0].size() < 2 || !rows[0][0] || !rows[0][1]) {
-                reply(nats_, msg, provision_tenant_response{
-                    .success = false,
-                    .error_message = "Provisioner returned incomplete result"});
+                reply(nats_,
+                      msg,
+                      provision_tenant_response{.success = false,
+                                                .error_message =
+                                                    "Provisioner returned incomplete result"});
                 return;
             }
 
             const auto& tenant_id_str = *rows[0][0];
             const auto& system_party_id_str = *rows[0][1];
             BOOST_LOG_SEV(bootstrap_handler_lg(), info)
-                << "Provisioned tenant: " << req->code
-                << " (id: " << tenant_id_str
+                << "Provisioned tenant: " << req->code << " (id: " << tenant_id_str
                 << ", system_party: " << system_party_id_str << ")";
 
             // Create the admin account in the new tenant's context.
             auto tenant_ctx = tenant_context::with_tenant(ctx_, tenant_id_str);
             service::account_service svc(tenant_ctx);
             auto acct = svc.create_account(
-                req->principal, req->email, req->password,
-                ctx_.service_account());
+                req->principal, req->email, req->password, ctx_.service_account());
 
             // Associate the admin account with the system party returned by provisioner.
             domain::account_party ap;
@@ -221,31 +222,26 @@ public:
             ap.modified_by = req->principal;
             ap.performed_by = req->principal;
             ap.change_reason_code = "system.initial_load";
-            ap.change_commentary =
-                "Provision tenant: associate admin with system party";
+            ap.change_commentary = "Provision tenant: associate admin with system party";
             service::account_party_service ap_svc(tenant_ctx);
             ap_svc.save_account_party(ap);
             BOOST_LOG_SEV(bootstrap_handler_lg(), info)
-                << "Associated " << req->principal
-                << " with system party " << system_party_id_str;
+                << "Associated " << req->principal << " with system party " << system_party_id_str;
 
             // Reload the new tenant's party cache: the SQL provisioner created
             // the system party directly, no NATS event is published for it.
-            std::thread([pc = party_cache_, tid = tenant_id_str]() {
-                pc->load(tid);
-            }).detach();
+            std::thread([pc = party_cache_, tid = tenant_id_str]() { pc->load(tid); }).detach();
 
-            BOOST_LOG_SEV(bootstrap_handler_lg(), debug)
-                << "Completed " << msg.subject;
-            reply(nats_, msg, provision_tenant_response{
-                .success = true,
-                .account_id = boost::uuids::to_string(acct.id),
-                .tenant_id = tenant_id_str});
+            BOOST_LOG_SEV(bootstrap_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_,
+                  msg,
+                  provision_tenant_response{.success = true,
+                                            .account_id = boost::uuids::to_string(acct.id),
+                                            .tenant_id = tenant_id_str});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(bootstrap_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, provision_tenant_response{
-                .success = false, .error_message = e.what()});
+            BOOST_LOG_SEV(bootstrap_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            reply(
+                nats_, msg, provision_tenant_response{.success = false, .error_message = e.what()});
         }
     }
 

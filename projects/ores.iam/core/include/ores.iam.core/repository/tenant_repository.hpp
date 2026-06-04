@@ -20,14 +20,14 @@
 #ifndef ORES_IAM_REPOSITORY_TENANT_REPOSITORY_HPP
 #define ORES_IAM_REPOSITORY_TENANT_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include <boost/uuid/uuid.hpp>
-#include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.iam.api/domain/tenant.hpp"
 #include "ores.iam.core/export.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::iam::repository {
 
@@ -36,8 +36,7 @@ namespace ores::iam::repository {
  */
 class ORES_IAM_CORE_EXPORT tenant_repository {
 private:
-    inline static std::string_view logger_name =
-        "ores.iam.repository.tenant_repository";
+    inline static std::string_view logger_name = "ores.iam.repository.tenant_repository";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;

@@ -19,9 +19,8 @@
  */
 
 #include "ores.iam.core/service/bootstrap_mode_service.hpp"
-
-#include <algorithm>
 #include "ores.dq.api/domain/change_reason_constants.hpp"
+#include <algorithm>
 
 namespace ores::iam::service {
 
@@ -29,12 +28,12 @@ using namespace ores::logging;
 namespace reason = ores::dq::domain::change_reason_constants;
 
 bootstrap_mode_service::bootstrap_mode_service(database::context ctx,
-    std::string tenant_id,
-    std::shared_ptr<authorization_service> auth_service)
-    : account_repo_(ctx),
-      system_settings_service_(ctx, std::move(tenant_id)),
-      auth_service_(std::move(auth_service)),
-      ctx_(ctx) {
+                                               std::string tenant_id,
+                                               std::shared_ptr<authorization_service> auth_service)
+    : account_repo_(ctx)
+    , system_settings_service_(ctx, std::move(tenant_id))
+    , auth_service_(std::move(auth_service))
+    , ctx_(ctx) {
     BOOST_LOG_SEV(lg(), debug) << "DML for account: " << account_repo_.sql();
     system_settings_service_.refresh();
 }
@@ -43,8 +42,7 @@ bool bootstrap_mode_service::is_in_bootstrap_mode() {
     BOOST_LOG_SEV(lg(), debug) << "Checking bootstrap mode status";
 
     const bool in_bootstrap = system_settings_service_.is_bootstrap_mode_enabled();
-    BOOST_LOG_SEV(lg(), debug) << "Bootstrap mode: "
-        << (in_bootstrap ? "true" : "false");
+    BOOST_LOG_SEV(lg(), debug) << "Bootstrap mode: " << (in_bootstrap ? "true" : "false");
     return in_bootstrap;
 }
 
@@ -57,35 +55,33 @@ void bootstrap_mode_service::initialize_bootstrap_state() {
     bool super_admin_exists = false;
 
     if (super_admin_role) {
-        super_admin_exists = std::ranges::any_of(accounts,
-            [this, &super_admin_role](const domain::account& acc) {
+        super_admin_exists =
+            std::ranges::any_of(accounts, [this, &super_admin_role](const domain::account& acc) {
                 auto roles = auth_service_->get_account_roles(acc.id);
-                return std::ranges::any_of(roles,
-                    [&super_admin_role](const domain::role& r) {
-                        return r.id == super_admin_role->id;
-                    });
+                return std::ranges::any_of(roles, [&super_admin_role](const domain::role& r) {
+                    return r.id == super_admin_role->id;
+                });
             });
     }
 
     BOOST_LOG_SEV(lg(), debug) << "Total accounts: " << accounts.size();
-    BOOST_LOG_SEV(lg(), debug) << "SuperAdmin exists: "
-        << (super_admin_exists ? "true" : "false");
+    BOOST_LOG_SEV(lg(), debug) << "SuperAdmin exists: " << (super_admin_exists ? "true" : "false");
 
     const bool flag_enabled = system_settings_service_.is_bootstrap_mode_enabled();
-    BOOST_LOG_SEV(lg(), debug) << "Bootstrap flag enabled: "
-        << (flag_enabled ? "true" : "false");
+    BOOST_LOG_SEV(lg(), debug) << "Bootstrap flag enabled: " << (flag_enabled ? "true" : "false");
 
     if (flag_enabled && super_admin_exists) {
-        BOOST_LOG_SEV(lg(), warn)
-            << "Bootstrap flag is enabled but SuperAdmin accounts exist, "
-            << "correcting state";
+        BOOST_LOG_SEV(lg(), warn) << "Bootstrap flag is enabled but SuperAdmin accounts exist, "
+                                  << "correcting state";
         exit_bootstrap_mode();
     } else if (!flag_enabled && !super_admin_exists) {
-        BOOST_LOG_SEV(lg(), warn)
-            << "Bootstrap flag is disabled but no SuperAdmin accounts exist, "
-            << "this is inconsistent. Enabling bootstrap mode";
-        system_settings_service_.set_bootstrap_mode(true, ctx_.service_account(),
-            std::string{reason::codes::new_record}, "Bootstrap mode enabled due to inconsistent state - no admin accounts exist");
+        BOOST_LOG_SEV(lg(), warn) << "Bootstrap flag is disabled but no SuperAdmin accounts exist, "
+                                  << "this is inconsistent. Enabling bootstrap mode";
+        system_settings_service_.set_bootstrap_mode(
+            true,
+            ctx_.service_account(),
+            std::string{reason::codes::new_record},
+            "Bootstrap mode enabled due to inconsistent state - no admin accounts exist");
     }
 }
 
@@ -97,8 +93,11 @@ void bootstrap_mode_service::exit_bootstrap_mode() {
         return;
     }
 
-    system_settings_service_.set_bootstrap_mode(false, ctx_.service_account(),
-        std::string{reason::codes::new_record}, "Bootstrap mode disabled - system now in secure mode");
+    system_settings_service_.set_bootstrap_mode(
+        false,
+        ctx_.service_account(),
+        std::string{reason::codes::new_record},
+        "Bootstrap mode disabled - system now in secure mode");
     BOOST_LOG_SEV(lg(), info) << "Successfully exited bootstrap mode";
 }
 

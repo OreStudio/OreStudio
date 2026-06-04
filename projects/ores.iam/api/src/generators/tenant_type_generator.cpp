@@ -18,20 +18,17 @@
  *
  */
 #include "ores.iam.api/generators/tenant_type_generator.hpp"
-
-#include <atomic>
 #include "ores.utility/generation/generation_keys.hpp"
+#include <atomic>
 
 namespace ores::iam::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::tenant_type generate_synthetic_tenant_type(
-    utility::generation::generation_context& ctx) {
+domain::tenant_type generate_synthetic_tenant_type(utility::generation::generation_context& ctx) {
     static std::atomic<int> counter{0};
     const auto idx = ++counter;
-    const auto modified_by = ctx.env().get_or(
-        generation_keys::modified_by, "system");
+    const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
 
     domain::tenant_type r;
     r.version = 1;
@@ -48,8 +45,7 @@ domain::tenant_type generate_synthetic_tenant_type(
 }
 
 std::vector<domain::tenant_type>
-generate_synthetic_tenant_types(std::size_t n,
-    utility::generation::generation_context& ctx) {
+generate_synthetic_tenant_types(std::size_t n, utility::generation::generation_context& ctx) {
     std::vector<domain::tenant_type> r;
     r.reserve(n);
     for (std::size_t i = 0; i < n; ++i)

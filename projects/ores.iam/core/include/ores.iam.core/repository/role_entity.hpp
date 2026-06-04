@@ -20,9 +20,9 @@
 #ifndef ORES_IAM_REPOSITORY_ROLE_ENTITY_HPP
 #define ORES_IAM_REPOSITORY_ROLE_ENTITY_HPP
 
-#include <string>
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
+#include <string>
 
 namespace ores::iam::repository {
 

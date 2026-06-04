@@ -20,14 +20,14 @@
 #ifndef ORES_IAM_SERVICE_TENANT_TYPE_SERVICE_HPP
 #define ORES_IAM_SERVICE_TENANT_TYPE_SERVICE_HPP
 
-#include <string>
-#include <vector>
-#include <optional>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.iam.api/domain/tenant_type.hpp"
-#include "ores.iam.core/repository/tenant_type_repository.hpp"
 #include "ores.iam.core/export.hpp"
+#include "ores.iam.core/repository/tenant_type_repository.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <optional>
+#include <string>
+#include <vector>
 
 namespace ores::iam::service {
 
@@ -36,8 +36,7 @@ namespace ores::iam::service {
  */
 class ORES_IAM_CORE_EXPORT tenant_type_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.iam.service.tenant_type_service";
+    inline static std::string_view logger_name = "ores.iam.service.tenant_type_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -52,16 +51,14 @@ public:
 
     std::vector<domain::tenant_type> list_types();
 
-    std::optional<domain::tenant_type>
-    find_type(const std::string& type);
+    std::optional<domain::tenant_type> find_type(const std::string& type);
 
     void save_type(const domain::tenant_type& type);
 
     void remove_type(const std::string& type);
     void remove_types(const std::vector<std::string>& types);
 
-    std::vector<domain::tenant_type>
-    get_type_history(const std::string& type);
+    std::vector<domain::tenant_type> get_type_history(const std::string& type);
 
 private:
     context ctx_;

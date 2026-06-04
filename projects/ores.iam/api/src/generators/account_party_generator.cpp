@@ -18,20 +18,17 @@
  *
  */
 #include "ores.iam.api/generators/account_party_generator.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
 #include "ores.utility/generation/generation_keys.hpp"
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::iam::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::account_party generate_synthetic_account_party(
-    utility::generation::generation_context& ctx) {
-    const auto modified_by = ctx.env().get_or(
-        generation_keys::modified_by, "system");
-    const auto tenant_id = ctx.env().get_or(
-        generation_keys::tenant_id, "system");
+domain::account_party
+generate_synthetic_account_party(utility::generation::generation_context& ctx) {
+    const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
+    const auto tenant_id = ctx.env().get_or(generation_keys::tenant_id, "system");
 
     domain::account_party r;
     r.version = 1;
@@ -47,8 +44,7 @@ domain::account_party generate_synthetic_account_party(
 }
 
 std::vector<domain::account_party>
-generate_synthetic_account_parties(std::size_t n,
-    utility::generation::generation_context& ctx) {
+generate_synthetic_account_parties(std::size_t n, utility::generation::generation_context& ctx) {
     std::vector<domain::account_party> r;
     r.reserve(n);
     for (std::size_t i = 0; i < n; ++i)

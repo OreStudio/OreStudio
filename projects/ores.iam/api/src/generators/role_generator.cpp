@@ -18,28 +18,23 @@
  *
  */
 #include "ores.iam.api/generators/role_generator.hpp"
-
-#include <atomic>
 #include "ores.utility/generation/generation_keys.hpp"
+#include <atomic>
 
 namespace ores::iam::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::role generate_synthetic_role(
-    utility::generation::generation_context& ctx) {
+domain::role generate_synthetic_role(utility::generation::generation_context& ctx) {
     static std::atomic<int> counter{0};
     const auto idx = ++counter;
-    const auto modified_by = ctx.env().get_or(
-        generation_keys::modified_by, "system");
-    const auto tid = ctx.env().get_or(
-        generation_keys::tenant_id, "system");
+    const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
+    const auto tid = ctx.env().get_or(generation_keys::tenant_id, "system");
     const auto parsed_tid = utility::uuid::tenant_id::from_string(tid);
 
     domain::role r;
     r.version = 1;
-    r.tenant_id = parsed_tid.has_value() ? parsed_tid.value()
-        : utility::uuid::tenant_id::system();
+    r.tenant_id = parsed_tid.has_value() ? parsed_tid.value() : utility::uuid::tenant_id::system();
     r.id = ctx.generate_uuid();
     r.name = "Role_" + ctx.alphanumeric(6) + "_" + std::to_string(idx);
     r.description = "Synthetic test role";
@@ -51,9 +46,8 @@ domain::role generate_synthetic_role(
     return r;
 }
 
-std::vector<domain::role>
-generate_synthetic_roles(std::size_t n,
-    utility::generation::generation_context& ctx) {
+std::vector<domain::role> generate_synthetic_roles(std::size_t n,
+                                                   utility::generation::generation_context& ctx) {
     std::vector<domain::role> r;
     r.reserve(n);
     for (std::size_t i = 0; i < n; ++i)

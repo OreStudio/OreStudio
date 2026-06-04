@@ -21,18 +21,13 @@
 
 namespace ores::iam::domain {
 
-token_settings token_settings::load(
-    variability::service::system_settings_service& svc) {
+token_settings token_settings::load(variability::service::system_settings_service& svc) {
 
     token_settings result;
-    result.access_lifetime_s =
-        svc.get_int("iam.token.access_lifetime_seconds");
-    result.party_selection_lifetime_s =
-        svc.get_int("iam.token.party_selection_lifetime_seconds");
-    result.max_session_s =
-        svc.get_int("iam.token.max_session_seconds");
-    result.refresh_threshold_pct =
-        svc.get_int("iam.token.refresh_threshold_pct");
+    result.access_lifetime_s = svc.get_int("iam.token.access_lifetime_seconds");
+    result.party_selection_lifetime_s = svc.get_int("iam.token.party_selection_lifetime_seconds");
+    result.max_session_s = svc.get_int("iam.token.max_session_seconds");
+    result.refresh_threshold_pct = svc.get_int("iam.token.refresh_threshold_pct");
     return result;
 }
 

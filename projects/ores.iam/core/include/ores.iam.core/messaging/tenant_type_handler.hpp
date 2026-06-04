@@ -20,24 +20,23 @@
 #ifndef ORES_IAM_MESSAGING_TENANT_TYPE_HANDLER_HPP
 #define ORES_IAM_MESSAGING_TENANT_TYPE_HANDLER_HPP
 
-#include <stdexcept>
+#include "ores.database/domain/context.hpp"
+#include "ores.iam.api/messaging/tenant_type_protocol.hpp"
+#include "ores.iam.core/service/tenant_type_service.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.database/domain/context.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include "ores.iam.api/messaging/tenant_type_protocol.hpp"
-#include "ores.iam.core/service/tenant_type_service.hpp"
+#include <stdexcept>
 
 namespace ores::iam::messaging {
 
 namespace {
 
 inline auto& tenant_type_handler_lg() {
-    static auto instance = ores::logging::make_logger(
-        "ores.iam.messaging.tenant_type_handler");
+    static auto instance = ores::logging::make_logger("ores.iam.messaging.tenant_type_handler");
     return instance;
 }
 
@@ -54,19 +53,19 @@ using namespace ores::logging;
 class tenant_type_handler {
 public:
     tenant_type_handler(ores::nats::service::client& nats,
-        ores::database::context ctx,
-        ores::security::jwt::jwt_authenticator signer)
-        : nats_(nats), ctx_(std::move(ctx)), signer_(std::move(signer)) {}
+                        ores::database::context ctx,
+                        ores::security::jwt::jwt_authenticator signer)
+        : nats_(nats)
+        , ctx_(std::move(ctx))
+        , signer_(std::move(signer)) {}
 
     void list(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id =
             log_handler_entry(tenant_type_handler_lg(), msg);
         try {
             service::tenant_type_service svc(ctx_);
-            BOOST_LOG_SEV(tenant_type_handler_lg(), debug)
-                << "Completed " << msg.subject;
-            reply(nats_, msg, get_tenant_types_response{
-                .types = svc.list_types()});
+            BOOST_LOG_SEV(tenant_type_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, get_tenant_types_response{.types = svc.list_types()});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(tenant_type_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
@@ -79,8 +78,7 @@ public:
             log_handler_entry(tenant_type_handler_lg(), msg);
         auto req = decode<save_tenant_type_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(tenant_type_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(tenant_type_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         try {
@@ -98,15 +96,12 @@ public:
             service::tenant_type_service svc(ctx);
             stamp(req->data, ctx);
             svc.save_type(req->data);
-            BOOST_LOG_SEV(tenant_type_handler_lg(), debug)
-                << "Completed " << msg.subject;
-            reply(nats_, msg,
-                save_tenant_type_response{.success = true});
+            BOOST_LOG_SEV(tenant_type_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, save_tenant_type_response{.success = true});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(tenant_type_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, save_tenant_type_response{
-                .success = false, .message = e.what()});
+            reply(nats_, msg, save_tenant_type_response{.success = false, .message = e.what()});
         }
     }
 
@@ -115,8 +110,7 @@ public:
             log_handler_entry(tenant_type_handler_lg(), msg);
         auto req = decode<delete_tenant_type_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(tenant_type_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(tenant_type_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         auto ctx_expected = ores::service::service::make_request_context(
@@ -133,15 +127,12 @@ public:
         try {
             service::tenant_type_service svc(ctx);
             svc.remove_type(req->type);
-            BOOST_LOG_SEV(tenant_type_handler_lg(), debug)
-                << "Completed " << msg.subject;
-            reply(nats_, msg,
-                delete_tenant_type_response{.success = true});
+            BOOST_LOG_SEV(tenant_type_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, delete_tenant_type_response{.success = true});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(tenant_type_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, delete_tenant_type_response{
-                .success = false, .message = e.what()});
+            reply(nats_, msg, delete_tenant_type_response{.success = false, .message = e.what()});
         }
     }
 
@@ -150,23 +141,22 @@ public:
             log_handler_entry(tenant_type_handler_lg(), msg);
         auto req = decode<get_tenant_type_history_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(tenant_type_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(tenant_type_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
         try {
             service::tenant_type_service svc(ctx_);
             auto hist = svc.get_type_history(req->type);
-            BOOST_LOG_SEV(tenant_type_handler_lg(), debug)
-                << "Completed " << msg.subject;
-            reply(nats_, msg, get_tenant_type_history_response{
-                .success = true,
-                .history = std::move(hist)});
+            BOOST_LOG_SEV(tenant_type_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_,
+                  msg,
+                  get_tenant_type_history_response{.success = true, .history = std::move(hist)});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(tenant_type_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, get_tenant_type_history_response{
-                .success = false, .message = e.what()});
+            reply(nats_,
+                  msg,
+                  get_tenant_type_history_response{.success = false, .message = e.what()});
         }
     }
 

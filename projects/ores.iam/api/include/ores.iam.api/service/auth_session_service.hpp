@@ -20,15 +20,15 @@
 #ifndef ORES_IAM_SERVICE_AUTH_SESSION_SERVICE_HPP
 #define ORES_IAM_SERVICE_AUTH_SESSION_SERVICE_HPP
 
+#include "ores.iam.api/domain/session.hpp"
+#include "ores.iam.api/export.hpp"
+#include "ores.logging/make_logger.hpp"
 #include <mutex>
 #include <optional>
 #include <string>
 #include <string_view>
 #include <unordered_map>
 #include <vector>
-#include "ores.iam.api/export.hpp"
-#include "ores.iam.api/domain/session.hpp"
-#include "ores.logging/make_logger.hpp"
 
 namespace ores::iam::service {
 
@@ -41,13 +41,11 @@ class ORES_IAM_API_EXPORT auth_session_service {
 public:
     void add_session(const std::string& token, ores::iam::domain::session session);
     void remove_session(const std::string& token);
-    std::optional<ores::iam::domain::session>
-    find_session(const std::string& token) const;
+    std::optional<ores::iam::domain::session> find_session(const std::string& token) const;
     std::vector<ores::iam::domain::session> get_all_sessions() const;
 
 private:
-    inline static std::string_view logger_name =
-        "ores.iam.service.auth_session_service";
+    inline static std::string_view logger_name = "ores.iam.service.auth_session_service";
 
     static auto& lg() {
         using namespace ores::logging;

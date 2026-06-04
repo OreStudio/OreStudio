@@ -20,15 +20,15 @@
 #ifndef ORES_IAM_REPOSITORY_ROLE_PERMISSION_REPOSITORY_HPP
 #define ORES_IAM_REPOSITORY_ROLE_PERMISSION_REPOSITORY_HPP
 
-#include <map>
-#include <string>
-#include <vector>
-#include <boost/uuid/uuid.hpp>
-#include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.iam.api/domain/role_permission.hpp"
 #include "ores.iam.core/export.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <map>
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::iam::repository {
 
@@ -37,8 +37,7 @@ namespace ores::iam::repository {
  */
 class ORES_IAM_CORE_EXPORT role_permission_repository {
 private:
-    inline static std::string_view logger_name =
-        "ores.iam.repository.role_permission_repository";
+    inline static std::string_view logger_name = "ores.iam.repository.role_permission_repository";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -72,8 +71,7 @@ public:
     /**
      * @brief Reads all permissions assigned to a specific role.
      */
-    std::vector<domain::role_permission>
-    read_latest_by_role(const boost::uuids::uuid& role_id);
+    std::vector<domain::role_permission> read_latest_by_role(const boost::uuids::uuid& role_id);
 
     /**
      * @brief Reads all roles that have a specific permission.
@@ -84,8 +82,7 @@ public:
     /**
      * @brief Removes a specific role-permission assignment.
      */
-    void remove(const boost::uuids::uuid& role_id,
-                const boost::uuids::uuid& permission_id);
+    void remove(const boost::uuids::uuid& role_id, const boost::uuids::uuid& permission_id);
 
     /**
      * @brief Removes all permission assignments for a role.

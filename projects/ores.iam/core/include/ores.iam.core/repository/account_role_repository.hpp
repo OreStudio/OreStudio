@@ -20,15 +20,15 @@
 #ifndef ORES_IAM_REPOSITORY_ACCOUNT_ROLE_REPOSITORY_HPP
 #define ORES_IAM_REPOSITORY_ACCOUNT_ROLE_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include <boost/uuid/uuid.hpp>
-#include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.iam.api/domain/account_role.hpp"
 #include "ores.iam.api/domain/role.hpp"
 #include "ores.iam.core/export.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::iam::repository {
 
@@ -37,8 +37,7 @@ namespace ores::iam::repository {
  */
 class ORES_IAM_CORE_EXPORT account_role_repository {
 private:
-    inline static std::string_view logger_name =
-        "ores.iam.repository.account_role_repository";
+    inline static std::string_view logger_name = "ores.iam.repository.account_role_repository";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -72,28 +71,24 @@ public:
     /**
      * @brief Reads all roles assigned to a specific account.
      */
-    std::vector<domain::account_role>
-    read_latest_by_account(const boost::uuids::uuid& account_id);
+    std::vector<domain::account_role> read_latest_by_account(const boost::uuids::uuid& account_id);
 
     /**
      * @brief Reads all accounts assigned to a specific role.
      */
-    std::vector<domain::account_role>
-    read_latest_by_role(const boost::uuids::uuid& role_id);
+    std::vector<domain::account_role> read_latest_by_role(const boost::uuids::uuid& role_id);
 
     /**
      * @brief Checks if a specific account-role assignment exists.
      *
      * More efficient than read_latest_by_account when only checking existence.
      */
-    bool exists(const boost::uuids::uuid& account_id,
-                const boost::uuids::uuid& role_id);
+    bool exists(const boost::uuids::uuid& account_id, const boost::uuids::uuid& role_id);
 
     /**
      * @brief Removes a specific account-role assignment.
      */
-    void remove(const boost::uuids::uuid& account_id,
-                const boost::uuids::uuid& role_id);
+    void remove(const boost::uuids::uuid& account_id, const boost::uuids::uuid& role_id);
 
     /**
      * @brief Removes all role assignments for an account.
@@ -106,8 +101,7 @@ public:
      * This method uses JOINs to efficiently fetch all distinct permission codes
      * assigned to an account through its roles, avoiding the N+1 query problem.
      */
-    std::vector<std::string>
-    read_effective_permissions(const boost::uuids::uuid& account_id);
+    std::vector<std::string> read_effective_permissions(const boost::uuids::uuid& account_id);
 
     /**
      * @brief Gets all roles assigned to an account with their permissions.
@@ -115,8 +109,7 @@ public:
      * This method efficiently fetches all roles for an account along with
      * their permission codes in a single database query, avoiding N+1 issues.
      */
-    std::vector<domain::role>
-    read_roles_with_permissions(const boost::uuids::uuid& account_id);
+    std::vector<domain::role> read_roles_with_permissions(const boost::uuids::uuid& account_id);
 
 private:
     context ctx_;

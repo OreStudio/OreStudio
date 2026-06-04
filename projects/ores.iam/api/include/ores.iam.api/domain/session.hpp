@@ -20,14 +20,14 @@
 #ifndef ORES_IAM_DOMAIN_SESSION_HPP
 #define ORES_IAM_DOMAIN_SESSION_HPP
 
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/asio/ip/address.hpp>
+#include <boost/uuid/uuid.hpp>
 #include <chrono>
-#include <string>
-#include <vector>
 #include <cstdint>
 #include <optional>
-#include <boost/uuid/uuid.hpp>
-#include <boost/asio/ip/address.hpp>
-#include "ores.utility/uuid/tenant_id.hpp"
+#include <string>
+#include <vector>
 
 namespace ores::iam::domain {
 
@@ -51,19 +51,23 @@ enum class session_protocol {
  */
 [[nodiscard]] constexpr std::string_view to_string(session_protocol p) {
     switch (p) {
-        case session_protocol::binary: return "binary";
-        case session_protocol::http: return "http";
-        default: return "unknown";
+        case session_protocol::binary:
+            return "binary";
+        case session_protocol::http:
+            return "http";
+        default:
+            return "unknown";
     }
 }
 
 /**
  * @brief Converts a string to session_protocol.
  */
-[[nodiscard]] constexpr session_protocol
-session_protocol_from_string(std::string_view s) {
-    if (s == "binary") return session_protocol::binary;
-    if (s == "http") return session_protocol::http;
+[[nodiscard]] constexpr session_protocol session_protocol_from_string(std::string_view s) {
+    if (s == "binary")
+        return session_protocol::binary;
+    if (s == "http")
+        return session_protocol::http;
     return session_protocol::binary; // Default fallback
 }
 
@@ -176,8 +180,7 @@ struct session final {
         if (!end_time) {
             return std::nullopt;
         }
-        return std::chrono::duration_cast<std::chrono::seconds>(
-            *end_time - start_time);
+        return std::chrono::duration_cast<std::chrono::seconds>(*end_time - start_time);
     }
 
     /**

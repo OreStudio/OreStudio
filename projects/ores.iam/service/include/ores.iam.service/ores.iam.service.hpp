@@ -23,7 +23,9 @@
 /**
  * @brief Identity and access management service
  *
- * Standalone NATS microservice hosting IAM handlers: user authentication, session management, account and tenant lifecycle, role and permission management, bootstrap mode, geolocation, and JWT signing/validation.
+ * Standalone NATS microservice hosting IAM handlers: user authentication, session management,
+ * account and tenant lifecycle, role and permission management, bootstrap mode, geolocation, and
+ * JWT signing/validation.
  */
 namespace ores::iam.service {}
 

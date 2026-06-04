@@ -18,11 +18,10 @@
  *
  */
 #include "ores.iam.core/repository/permission_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.iam.api/domain/permission_json_io.hpp" // IWYU pragma: keep.
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::iam::repository {
 
@@ -55,22 +54,14 @@ permission_entity permission_mapper::map(const domain::permission& v) {
     return r;
 }
 
-std::vector<domain::permission>
-permission_mapper::map(const std::vector<permission_entity>& v) {
+std::vector<domain::permission> permission_mapper::map(const std::vector<permission_entity>& v) {
     return map_vector<permission_entity, domain::permission>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
-std::vector<permission_entity>
-permission_mapper::map(const std::vector<domain::permission>& v) {
+std::vector<permission_entity> permission_mapper::map(const std::vector<domain::permission>& v) {
     return map_vector<domain::permission, permission_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

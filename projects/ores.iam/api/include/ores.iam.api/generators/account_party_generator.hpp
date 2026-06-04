@@ -20,25 +20,24 @@
 #ifndef ORES_IAM_GENERATORS_ACCOUNT_PARTY_GENERATOR_HPP
 #define ORES_IAM_GENERATORS_ACCOUNT_PARTY_GENERATOR_HPP
 
-#include <vector>
-#include "ores.iam.api/export.hpp"
 #include "ores.iam.api/domain/account_party.hpp"
+#include "ores.iam.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include <vector>
 
 namespace ores::iam::generators {
 
 /**
  * @brief Generates a synthetic account_party.
  */
-ORES_IAM_API_EXPORT domain::account_party generate_synthetic_account_party(
-    utility::generation::generation_context& ctx);
+ORES_IAM_API_EXPORT domain::account_party
+generate_synthetic_account_party(utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic account_parties.
  */
 ORES_IAM_API_EXPORT std::vector<domain::account_party>
-generate_synthetic_account_parties(std::size_t n,
-    utility::generation::generation_context& ctx);
+generate_synthetic_account_parties(std::size_t n, utility::generation::generation_context& ctx);
 
 }
 

@@ -18,35 +18,29 @@
  *
  */
 #include "ores.iam.api/generators/permission_generator.hpp"
-
-#include <atomic>
 #include "ores.utility/generation/generation_keys.hpp"
+#include <atomic>
 
 namespace ores::iam::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::permission generate_synthetic_permission(
-    utility::generation::generation_context& ctx) {
+domain::permission generate_synthetic_permission(utility::generation::generation_context& ctx) {
     static std::atomic<int> counter{0};
     const auto idx = ++counter;
-    const auto tid = ctx.env().get_or(
-        generation_keys::tenant_id, "system");
+    const auto tid = ctx.env().get_or(generation_keys::tenant_id, "system");
     const auto parsed_tid = utility::uuid::tenant_id::from_string(tid);
 
     domain::permission r;
-    r.tenant_id = parsed_tid.has_value() ? parsed_tid.value()
-        : utility::uuid::tenant_id::system();
+    r.tenant_id = parsed_tid.has_value() ? parsed_tid.value() : utility::uuid::tenant_id::system();
     r.id = ctx.generate_uuid();
-    r.code = "test::" + ctx.alphanumeric(6) + "_" + std::to_string(idx)
-        + ":read";
+    r.code = "test::" + ctx.alphanumeric(6) + "_" + std::to_string(idx) + ":read";
     r.description = "Synthetic test permission";
     return r;
 }
 
 std::vector<domain::permission>
-generate_synthetic_permissions(std::size_t n,
-    utility::generation::generation_context& ctx) {
+generate_synthetic_permissions(std::size_t n, utility::generation::generation_context& ctx) {
     std::vector<domain::permission> r;
     r.reserve(n);
     for (std::size_t i = 0; i < n; ++i)

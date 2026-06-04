@@ -17,24 +17,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.iam.core/repository/account_party_repository.hpp"
-
-#include <catch2/catch_test_macros.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.logging/make_logger.hpp"
-#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/domain/account_party.hpp"
 #include "ores.iam.api/domain/account_party_json_io.hpp" // IWYU pragma: keep.
-#include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.iam.api/generators/account_generator.hpp"
 #include "ores.iam.api/generators/account_party_generator.hpp"
-#include "ores.refdata.core/repository/party_repository.hpp"
+#include "ores.iam.core/repository/account_party_repository.hpp"
+#include "ores.iam.core/repository/account_repository.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/generators/party_generator.hpp"
+#include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
+#include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
+#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 using namespace ores::logging;
 using namespace ores::iam::generators;
@@ -50,8 +49,8 @@ namespace {
 const std::string_view test_suite("ores.iam.tests");
 const std::string tags("[repository]");
 
-boost::uuids::uuid find_system_party_id(
-    party_repository& repo, const ores::utility::uuid::tenant_id& tid) {
+boost::uuids::uuid find_system_party_id(party_repository& repo,
+                                        const ores::utility::uuid::tenant_id& tid) {
     auto parties = repo.read_latest();
     for (const auto& p : parties)
         if (p.tenant_id == tid && p.party_category == "System")
@@ -70,8 +69,7 @@ TEST_CASE("write_single_account_party", tags) {
     account_repository acc_repo(h.context());
     account_party_repository repo(h.context());
     party_repository party_repo(h.context());
-    const auto party_id = find_system_party_id(
-        party_repo, h.tenant_id());
+    const auto party_id = find_system_party_id(party_repo, h.tenant_id());
 
     auto acc = generate_synthetic_account(ctx);
     acc_repo.write(acc);
@@ -93,8 +91,7 @@ TEST_CASE("write_multiple_account_parties", tags) {
     account_repository acc_repo(h.context());
     account_party_repository repo(h.context());
     party_repository party_repo(h.context());
-    const auto system_party_id = find_system_party_id(
-        party_repo, h.tenant_id());
+    const auto system_party_id = find_system_party_id(party_repo, h.tenant_id());
 
     std::vector<account_party> aps;
     for (int i = 0; i < 3; ++i) {
@@ -124,8 +121,7 @@ TEST_CASE("read_latest_account_parties", tags) {
 
     account_repository acc_repo(h.context());
     party_repository party_repo(h.context());
-    const auto system_party_id = find_system_party_id(
-        party_repo, h.tenant_id());
+    const auto system_party_id = find_system_party_id(party_repo, h.tenant_id());
 
     std::vector<account_party> written;
     for (int i = 0; i < 3; ++i) {
@@ -167,8 +163,7 @@ TEST_CASE("read_latest_account_parties_by_account", tags) {
 
     account_repository acc_repo(h.context());
     party_repository party_repo(h.context());
-    const auto party_id = find_system_party_id(
-        party_repo, h.tenant_id());
+    const auto party_id = find_system_party_id(party_repo, h.tenant_id());
 
     // Construct repo after set_party so its stored context has party IDs.
     h.set_party(party_id);

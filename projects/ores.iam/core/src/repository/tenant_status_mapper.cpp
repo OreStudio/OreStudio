@@ -18,7 +18,6 @@
  *
  */
 #include "ores.iam.core/repository/tenant_status_mapper.hpp"
-
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.iam.api/domain/tenant_status_json_io.hpp" // IWYU pragma: keep.
 
@@ -27,8 +26,7 @@ namespace ores::iam::repository {
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::tenant_status
-tenant_status_mapper::map(const tenant_status_entity& v) {
+domain::tenant_status tenant_status_mapper::map(const tenant_status_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::tenant_status r;
@@ -47,8 +45,7 @@ tenant_status_mapper::map(const tenant_status_entity& v) {
     return r;
 }
 
-tenant_status_entity
-tenant_status_mapper::map(const domain::tenant_status& v) {
+tenant_status_entity tenant_status_mapper::map(const domain::tenant_status& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     tenant_status_entity r;
@@ -69,19 +66,13 @@ tenant_status_mapper::map(const domain::tenant_status& v) {
 std::vector<domain::tenant_status>
 tenant_status_mapper::map(const std::vector<tenant_status_entity>& v) {
     return map_vector<tenant_status_entity, domain::tenant_status>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<tenant_status_entity>
 tenant_status_mapper::map(const std::vector<domain::tenant_status>& v) {
     return map_vector<domain::tenant_status, tenant_status_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

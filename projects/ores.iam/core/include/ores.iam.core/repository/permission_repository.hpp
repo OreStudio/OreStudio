@@ -20,14 +20,14 @@
 #ifndef ORES_IAM_REPOSITORY_PERMISSION_REPOSITORY_HPP
 #define ORES_IAM_REPOSITORY_PERMISSION_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include <boost/uuid/uuid.hpp>
-#include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.iam.api/domain/permission.hpp"
 #include "ores.iam.core/export.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::iam::repository {
 
@@ -36,8 +36,7 @@ namespace ores::iam::repository {
  */
 class ORES_IAM_CORE_EXPORT permission_repository {
 private:
-    inline static std::string_view logger_name =
-        "ores.iam.repository.permission_repository";
+    inline static std::string_view logger_name = "ores.iam.repository.permission_repository";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -77,8 +76,7 @@ public:
      * @param limit Maximum number of records to return
      * @return Vector of permissions within the specified range
      */
-    std::vector<domain::permission> read_latest(std::uint32_t offset,
-                                                std::uint32_t limit);
+    std::vector<domain::permission> read_latest(std::uint32_t offset, std::uint32_t limit);
 
     /**
      * @brief Gets the total count of active permissions.

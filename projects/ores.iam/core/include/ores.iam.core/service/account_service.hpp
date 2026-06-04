@@ -21,16 +21,16 @@
 #ifndef ORES_IAM_SERVICE_ACCOUNT_SERVICE_HPP
 #define ORES_IAM_SERVICE_ACCOUNT_SERVICE_HPP
 
-#include <string>
-#include <boost/uuid/uuid.hpp>
-#include <boost/asio/ip/address.hpp>
 #include "ores.iam.api/domain/account.hpp"
 #include "ores.iam.api/domain/login_info.hpp"
+#include "ores.iam.core/export.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.iam.core/repository/login_info_repository.hpp"
-#include "ores.utility/uuid/uuid_v7_generator.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.iam.core/export.hpp"
+#include "ores.utility/uuid/uuid_v7_generator.hpp"
+#include <boost/asio/ip/address.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <string>
 
 namespace ores::iam::service {
 
@@ -39,8 +39,7 @@ namespace ores::iam::service {
  */
 class ORES_IAM_CORE_EXPORT account_service {
 private:
-   inline static std::string_view logger_name =
-        "ores.iam.service.account_service";
+    inline static std::string_view logger_name = "ores.iam.service.account_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -81,9 +80,10 @@ public:
      * @return The created account with computed fields
      */
     domain::account create_account(const std::string& username,
-        const std::string& email, const std::string& password,
-        const std::string& modified_by,
-        const std::string& change_commentary = "Account created");
+                                   const std::string& email,
+                                   const std::string& password,
+                                   const std::string& modified_by,
+                                   const std::string& change_commentary = "Account created");
 
     /**
      * @brief Creates a new service account for non-human entities.
@@ -99,10 +99,12 @@ public:
      * @return The created service account
      * @throws std::invalid_argument If account_type is 'user' or invalid
      */
-    domain::account create_service_account(const std::string& username,
-        const std::string& email, const std::string& account_type,
-        const std::string& modified_by,
-        const std::string& change_commentary = "Service account created");
+    domain::account
+    create_service_account(const std::string& username,
+                           const std::string& email,
+                           const std::string& account_type,
+                           const std::string& modified_by,
+                           const std::string& change_commentary = "Service account created");
 
     /**
      * @brief Gets a single account by its ID.
@@ -126,8 +128,7 @@ public:
      * @param limit Maximum number of records to return
      * @return Vector of accounts for the requested page
      */
-    std::vector<domain::account> list_accounts(std::uint32_t offset,
-                                                std::uint32_t limit);
+    std::vector<domain::account> list_accounts(std::uint32_t offset, std::uint32_t limit);
 
     /**
      * @brief Gets the total count of active accounts.
@@ -167,7 +168,8 @@ public:
      * @throws std::runtime_error If account is locked or credentials are invalid
      */
     domain::account login(const std::string& username,
-        const std::string& password, const boost::asio::ip::address& ip_address);
+                          const std::string& password,
+                          const boost::asio::ip::address& ip_address);
 
     /**
      * @brief Locks an account, preventing login.
@@ -220,9 +222,10 @@ public:
      * @throws std::invalid_argument If account does not exist
      */
     bool update_account(const boost::uuids::uuid& account_id,
-        const std::string& email, const std::string& modified_by,
-        const std::string& change_reason_code,
-        const std::string& change_commentary);
+                        const std::string& email,
+                        const std::string& modified_by,
+                        const std::string& change_reason_code,
+                        const std::string& change_commentary);
 
     /**
      * @brief Finds an account by username.
@@ -233,8 +236,7 @@ public:
      * @param username The username to search for
      * @return The account if found, std::nullopt otherwise
      */
-    std::optional<domain::account> find_account_by_username(
-        const std::string& username);
+    std::optional<domain::account> find_account_by_username(const std::string& username);
 
     /**
      * @brief Retrieves all historical versions of an account by username.
@@ -269,7 +271,7 @@ public:
      * @return empty string on success, error message on failure
      */
     std::string change_password(const boost::uuids::uuid& account_id,
-        const std::string& new_password);
+                                const std::string& new_password);
 
     /**
      * @brief Retrieves the login_info for a specific account.
@@ -289,8 +291,7 @@ public:
      * @param new_email The new email address
      * @return empty string on success, error message on failure
      */
-    std::string update_my_email(const boost::uuids::uuid& account_id,
-        const std::string& new_email);
+    std::string update_my_email(const boost::uuids::uuid& account_id, const std::string& new_email);
 
 private:
     repository::account_repository account_repo_;

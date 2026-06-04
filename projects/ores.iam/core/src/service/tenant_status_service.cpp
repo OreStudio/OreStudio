@@ -18,7 +18,6 @@
  *
  */
 #include "ores.iam.core/service/tenant_status_service.hpp"
-
 #include <stdexcept>
 
 namespace ores::iam::service {
@@ -33,8 +32,7 @@ std::vector<domain::tenant_status> tenant_status_service::list_statuses() {
     return repo_.read_latest(ctx_);
 }
 
-std::optional<domain::tenant_status>
-tenant_status_service::find_status(const std::string& status) {
+std::optional<domain::tenant_status> tenant_status_service::find_status(const std::string& status) {
     BOOST_LOG_SEV(lg(), debug) << "Finding tenant status: " << status;
     auto results = repo_.read_latest(ctx_, status);
     if (results.empty()) {
@@ -64,8 +62,7 @@ void tenant_status_service::remove_statuses(const std::vector<std::string>& stat
 
 std::vector<domain::tenant_status>
 tenant_status_service::get_status_history(const std::string& status) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for tenant status: "
-                               << status;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for tenant status: " << status;
     return repo_.read_all(ctx_, status);
 }
 

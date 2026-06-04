@@ -18,14 +18,13 @@
  *
  */
 #include "ores.iam.core/repository/role_permission_repository.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
-#include <sqlgen/postgres.hpp>
-#include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
 #include "ores.iam.core/repository/role_permission_entity.hpp"
 #include "ores.iam.core/repository/role_permission_mapper.hpp"
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <sqlgen/postgres.hpp>
 
 namespace ores::iam::repository {
 
@@ -41,12 +40,13 @@ std::string role_permission_repository::sql() {
 role_permission_repository::role_permission_repository(context ctx)
     : ctx_(std::move(ctx)) {}
 
-void role_permission_repository::write(
-    const domain::role_permission& role_permission) {
+void role_permission_repository::write(const domain::role_permission& role_permission) {
     BOOST_LOG_SEV(lg(), debug) << "Writing role-permission assignment to database.";
 
-    execute_write_query(ctx_, role_permission_mapper::map(role_permission),
-        lg(), "writing role-permission assignment to database");
+    execute_write_query(ctx_,
+                        role_permission_mapper::map(role_permission),
+                        lg(),
+                        "writing role-permission assignment to database");
 }
 
 void role_permission_repository::write(
@@ -54,19 +54,23 @@ void role_permission_repository::write(
     BOOST_LOG_SEV(lg(), debug) << "Writing role-permission assignments to database. "
                                << "Count: " << role_permissions.size();
 
-    execute_write_query(ctx_, role_permission_mapper::map(role_permissions),
-        lg(), "writing role-permission assignments to database");
+    execute_write_query(ctx_,
+                        role_permission_mapper::map(role_permissions),
+                        lg(),
+                        "writing role-permission assignments to database");
 }
 
 std::vector<domain::role_permission> role_permission_repository::read_latest() {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto query = sqlgen::read<std::vector<role_permission_entity>> |
-        where("valid_to"_c == max.value());
+    const auto query =
+        sqlgen::read<std::vector<role_permission_entity>> | where("valid_to"_c == max.value());
 
     return execute_read_query<role_permission_entity, domain::role_permission>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return role_permission_mapper::map(entities); },
-        lg(), "Reading latest role-permission assignments");
+        lg(),
+        "Reading latest role-permission assignments");
 }
 
 std::vector<domain::role_permission>
@@ -76,60 +80,58 @@ role_permission_repository::read_latest_by_role(const boost::uuids::uuid& role_i
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto role_id_str = boost::lexical_cast<std::string>(role_id);
     const auto query = sqlgen::read<std::vector<role_permission_entity>> |
-        where("role_id"_c == role_id_str && "valid_to"_c == max.value());
+                       where("role_id"_c == role_id_str && "valid_to"_c == max.value());
 
     return execute_read_query<role_permission_entity, domain::role_permission>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return role_permission_mapper::map(entities); },
-        lg(), "Reading role-permission assignments by role.");
+        lg(),
+        "Reading role-permission assignments by role.");
 }
 
 std::vector<domain::role_permission>
-role_permission_repository::read_latest_by_permission(
-    const boost::uuids::uuid& permission_id) {
+role_permission_repository::read_latest_by_permission(const boost::uuids::uuid& permission_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading roles for permission: " << permission_id;
 
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto permission_id_str = boost::lexical_cast<std::string>(permission_id);
     const auto query = sqlgen::read<std::vector<role_permission_entity>> |
-        where("permission_id"_c == permission_id_str && "valid_to"_c == max.value());
+                       where("permission_id"_c == permission_id_str && "valid_to"_c == max.value());
 
     return execute_read_query<role_permission_entity, domain::role_permission>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return role_permission_mapper::map(entities); },
-        lg(), "Reading role-permission assignments by permission.");
+        lg(),
+        "Reading role-permission assignments by permission.");
 }
 
-void role_permission_repository::remove(
-    const boost::uuids::uuid& role_id,
-    const boost::uuids::uuid& permission_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing role-permission assignment. Role: "
-                               << role_id << ", Permission: " << permission_id;
+void role_permission_repository::remove(const boost::uuids::uuid& role_id,
+                                        const boost::uuids::uuid& permission_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing role-permission assignment. Role: " << role_id
+                               << ", Permission: " << permission_id;
 
     // Delete the assignment - the database rule will close the temporal record
     // instead of actually deleting it (sets valid_to = current_timestamp)
     const auto role_id_str = boost::lexical_cast<std::string>(role_id);
     const auto permission_id_str = boost::lexical_cast<std::string>(permission_id);
     const auto query = sqlgen::delete_from<role_permission_entity> |
-        where("role_id"_c == role_id_str &&
-              "permission_id"_c == permission_id_str);
+                       where("role_id"_c == role_id_str && "permission_id"_c == permission_id_str);
 
-    execute_delete_query(ctx_, query, lg(),
-        "removing role-permission assignment from database");
+    execute_delete_query(ctx_, query, lg(), "removing role-permission assignment from database");
 }
 
-void role_permission_repository::remove_all_for_role(
-    const boost::uuids::uuid& role_id) {
+void role_permission_repository::remove_all_for_role(const boost::uuids::uuid& role_id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing all permissions for role: " << role_id;
 
     // Delete the assignments - the database rule will close the temporal records
     // instead of actually deleting them (sets valid_to = current_timestamp)
     const auto role_id_str = boost::lexical_cast<std::string>(role_id);
-    const auto query = sqlgen::delete_from<role_permission_entity> |
-        where("role_id"_c == role_id_str);
+    const auto query =
+        sqlgen::delete_from<role_permission_entity> | where("role_id"_c == role_id_str);
 
-    execute_delete_query(ctx_, query, lg(),
-        "removing all role-permission assignments for role");
+    execute_delete_query(ctx_, query, lg(), "removing all role-permission assignments for role");
 }
 
 std::map<std::string, std::vector<std::string>>
@@ -137,18 +139,15 @@ role_permission_repository::read_all_role_permission_codes() {
     BOOST_LOG_SEV(lg(), debug) << "Reading all role permission codes.";
 
     // Call the SQL function defined in iam_rbac_functions_create.sql
-    const std::string sql =
-        "SELECT role_id, code FROM ores_iam_get_all_role_permission_codes_fn()";
+    const std::string sql = "SELECT role_id, code FROM ores_iam_get_all_role_permission_codes_fn()";
 
-    return execute_raw_grouped_query(ctx_, sql, lg(),
-        "Reading all role permission codes");
+    return execute_raw_grouped_query(ctx_, sql, lg(), "Reading all role permission codes");
 }
 
 std::map<std::string, std::vector<std::string>>
 role_permission_repository::read_role_permission_codes(
     const std::vector<boost::uuids::uuid>& role_ids) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading permission codes for roles. Count: "
-                               << role_ids.size();
+    BOOST_LOG_SEV(lg(), debug) << "Reading permission codes for roles. Count: " << role_ids.size();
 
     if (role_ids.empty()) {
         return {};
@@ -157,18 +156,18 @@ role_permission_repository::read_role_permission_codes(
     // Build array literal for PostgreSQL
     std::string array_literal = "ARRAY[";
     for (size_t i = 0; i < role_ids.size(); ++i) {
-        if (i > 0) array_literal += ", ";
+        if (i > 0)
+            array_literal += ", ";
         array_literal += "'" + boost::lexical_cast<std::string>(role_ids[i]) + "'::uuid";
     }
     array_literal += "]";
 
     // Call the SQL function defined in iam_rbac_functions_create.sql
     const std::string sql =
-        "SELECT role_id, code FROM ores_iam_get_role_permission_codes_fn(" +
-        array_literal + ")";
+        "SELECT role_id, code FROM ores_iam_get_role_permission_codes_fn(" + array_literal + ")";
 
-    return execute_raw_grouped_query(ctx_, sql, lg(),
-        "Reading permission codes for specific roles");
+    return execute_raw_grouped_query(
+        ctx_, sql, lg(), "Reading permission codes for specific roles");
 }
 
 }

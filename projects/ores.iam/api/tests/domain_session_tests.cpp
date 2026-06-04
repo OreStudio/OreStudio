@@ -18,14 +18,13 @@
  *
  */
 #include "ores.iam.api/domain/session.hpp"
-
-#include <catch2/catch_test_macros.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include <boost/asio/ip/address.hpp>
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include "ores.iam.api/domain/session_json_io.hpp" // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
 #include "ores.platform/time/time_utils.hpp"
-#include "ores.iam.api/domain/session_json_io.hpp" // IWYU pragma: keep.
+#include <boost/asio/ip/address.hpp>
+#include <boost/uuid/uuid_generators.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
 
 namespace {
 
@@ -217,12 +216,11 @@ TEST_CASE("create_multiple_random_sessions", tags) {
         session sut;
         sut.id = boost::uuids::random_generator()();
         sut.account_id = boost::uuids::random_generator()();
-        sut.start_time = std::chrono::system_clock::now() -
-            std::chrono::hours(faker::number::integer(0, 168));
+        sut.start_time =
+            std::chrono::system_clock::now() - std::chrono::hours(faker::number::integer(0, 168));
 
         if (faker::datatype::boolean()) {
-            sut.end_time = sut.start_time +
-                std::chrono::minutes(faker::number::integer(1, 480));
+            sut.end_time = sut.start_time + std::chrono::minutes(faker::number::integer(1, 480));
         }
 
         sut.client_ip = boost::asio::ip::make_address(faker::internet::ipv4());
@@ -298,18 +296,18 @@ TEST_CASE("create_session_statistics_with_faker", tags) {
     auto lg(make_logger(test_suite));
 
     session_statistics sut;
-    sut.period_start = std::chrono::system_clock::now() -
-        std::chrono::hours(faker::number::integer(1, 720));
+    sut.period_start =
+        std::chrono::system_clock::now() - std::chrono::hours(faker::number::integer(1, 720));
     sut.period_end = std::chrono::system_clock::now();
     sut.account_id = boost::uuids::random_generator()();
     sut.session_count = faker::number::integer<uint64_t>(1, 1000);
     sut.avg_duration_seconds = faker::number::decimal(60.0, 7200.0);
     sut.total_bytes_sent = faker::number::integer<uint64_t>(1000, 100000000);
     sut.total_bytes_received = faker::number::integer<uint64_t>(1000, 100000000);
-    sut.avg_bytes_sent = static_cast<double>(sut.total_bytes_sent) /
-        static_cast<double>(sut.session_count);
-    sut.avg_bytes_received = static_cast<double>(sut.total_bytes_received) /
-        static_cast<double>(sut.session_count);
+    sut.avg_bytes_sent =
+        static_cast<double>(sut.total_bytes_sent) / static_cast<double>(sut.session_count);
+    sut.avg_bytes_received =
+        static_cast<double>(sut.total_bytes_received) / static_cast<double>(sut.session_count);
     sut.unique_countries = faker::number::integer<uint32_t>(1, 50);
 
     BOOST_LOG_SEV(lg, info) << "Faker session statistics: " << sut;

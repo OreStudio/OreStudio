@@ -20,12 +20,12 @@
 #ifndef ORES_IAM_REPOSITORY_AUTH_EVENT_REPOSITORY_HPP
 #define ORES_IAM_REPOSITORY_AUTH_EVENT_REPOSITORY_HPP
 
-#include <chrono>
-#include <string>
-#include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.iam.core/export.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <chrono>
+#include <sqlgen/postgres.hpp>
+#include <string>
 
 namespace ores::iam::repository {
 
@@ -40,8 +40,7 @@ namespace ores::iam::repository {
  */
 class ORES_IAM_CORE_EXPORT auth_event_repository {
 private:
-    inline static std::string_view logger_name =
-        "ores.iam.repository.auth_event_repository";
+    inline static std::string_view logger_name = "ores.iam.repository.auth_event_repository";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -63,13 +62,12 @@ public:
      * @param session_id  Session UUID string created at login
      * @param party_id    Selected party UUID string (empty if multi-party)
      */
-    void record_login_success(
-        const std::chrono::system_clock::time_point& event_time,
-        const std::string& tenant_id,
-        const std::string& account_id,
-        const std::string& username,
-        const std::string& session_id,
-        const std::string& party_id);
+    void record_login_success(const std::chrono::system_clock::time_point& event_time,
+                              const std::string& tenant_id,
+                              const std::string& account_id,
+                              const std::string& username,
+                              const std::string& session_id,
+                              const std::string& party_id);
 
     /**
      * @brief Record a login failure event.
@@ -79,11 +77,10 @@ public:
      * @param username     Username that was attempted
      * @param error_detail Error message describing the failure reason
      */
-    void record_login_failure(
-        const std::chrono::system_clock::time_point& event_time,
-        const std::string& tenant_id,
-        const std::string& username,
-        const std::string& error_detail);
+    void record_login_failure(const std::chrono::system_clock::time_point& event_time,
+                              const std::string& tenant_id,
+                              const std::string& username,
+                              const std::string& error_detail);
 
     /**
      * @brief Record a logout event.
@@ -94,12 +91,11 @@ public:
      * @param username    Username of the account
      * @param session_id  Session UUID string being ended
      */
-    void record_logout(
-        const std::chrono::system_clock::time_point& event_time,
-        const std::string& tenant_id,
-        const std::string& account_id,
-        const std::string& username,
-        const std::string& session_id);
+    void record_logout(const std::chrono::system_clock::time_point& event_time,
+                       const std::string& tenant_id,
+                       const std::string& account_id,
+                       const std::string& username,
+                       const std::string& session_id);
 
     /**
      * @brief Record a successful token refresh event.
@@ -110,12 +106,11 @@ public:
      * @param username    Username from the JWT claims
      * @param session_id  Session UUID string from the JWT claims
      */
-    void record_token_refresh(
-        const std::chrono::system_clock::time_point& event_time,
-        const std::string& tenant_id,
-        const std::string& account_id,
-        const std::string& username,
-        const std::string& session_id);
+    void record_token_refresh(const std::chrono::system_clock::time_point& event_time,
+                              const std::string& tenant_id,
+                              const std::string& account_id,
+                              const std::string& username,
+                              const std::string& session_id);
 
     /**
      * @brief Record a max_session_exceeded event.
@@ -129,12 +124,11 @@ public:
      * @param username    Username from the JWT claims
      * @param session_id  Session UUID string from the JWT claims
      */
-    void record_max_session_exceeded(
-        const std::chrono::system_clock::time_point& event_time,
-        const std::string& tenant_id,
-        const std::string& account_id,
-        const std::string& username,
-        const std::string& session_id);
+    void record_max_session_exceeded(const std::chrono::system_clock::time_point& event_time,
+                                     const std::string& tenant_id,
+                                     const std::string& account_id,
+                                     const std::string& username,
+                                     const std::string& session_id);
 
     /**
      * @brief Record a signup success event.
@@ -144,11 +138,10 @@ public:
      * @param account_id  New account UUID string
      * @param username    Username created
      */
-    void record_signup_success(
-        const std::chrono::system_clock::time_point& event_time,
-        const std::string& tenant_id,
-        const std::string& account_id,
-        const std::string& username);
+    void record_signup_success(const std::chrono::system_clock::time_point& event_time,
+                               const std::string& tenant_id,
+                               const std::string& account_id,
+                               const std::string& username);
 
     /**
      * @brief Record a signup failure event.
@@ -158,21 +151,20 @@ public:
      * @param username     Username that was attempted
      * @param error_detail Error message describing the failure reason
      */
-    void record_signup_failure(
-        const std::chrono::system_clock::time_point& event_time,
-        const std::string& tenant_id,
-        const std::string& username,
-        const std::string& error_detail);
+    void record_signup_failure(const std::chrono::system_clock::time_point& event_time,
+                               const std::string& tenant_id,
+                               const std::string& username,
+                               const std::string& error_detail);
 
 private:
     void insert(const std::string& event_type,
-        const std::chrono::system_clock::time_point& event_time,
-        const std::string& tenant_id,
-        const std::string& account_id,
-        const std::string& username,
-        const std::string& session_id,
-        const std::string& party_id,
-        const std::string& error_detail);
+                const std::chrono::system_clock::time_point& event_time,
+                const std::string& tenant_id,
+                const std::string& account_id,
+                const std::string& username,
+                const std::string& session_id,
+                const std::string& party_id,
+                const std::string& error_detail);
 
     context ctx_;
 };

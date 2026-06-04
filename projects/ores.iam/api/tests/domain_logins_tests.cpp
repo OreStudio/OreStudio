@@ -18,14 +18,13 @@
  *
  */
 #include "ores.iam.api/domain/login_info.hpp"
-
-#include <catch2/catch_test_macros.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include <boost/asio/ip/address.hpp>
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.logging/make_logger.hpp"
 #include "ores.iam.api/domain/login_info_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/domain/login_info_table.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <boost/asio/ip/address.hpp>
+#include <boost/uuid/uuid_generators.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
 
 namespace {
 
@@ -166,8 +165,8 @@ TEST_CASE("create_login_info_with_faker", tags) {
     sut.last_attempt_ip = boost::asio::ip::make_address(faker::internet::ipv4());
     sut.failed_logins = faker::number::integer(0, 10);
     sut.locked = faker::datatype::boolean();
-    sut.last_login = std::chrono::system_clock::now() -
-        std::chrono::hours(faker::number::integer(0, 168));
+    sut.last_login =
+        std::chrono::system_clock::now() - std::chrono::hours(faker::number::integer(0, 168));
     sut.online = faker::datatype::boolean();
     BOOST_LOG_SEV(lg, info) << "Login info: " << sut;
 
@@ -194,7 +193,7 @@ TEST_CASE("create_multiple_random_login_infos", tags) {
         sut.failed_logins = faker::number::integer(0, 5);
         sut.locked = sut.failed_logins >= 3;
         sut.last_login = std::chrono::system_clock::now() -
-            std::chrono::minutes(faker::number::integer(0, 1440));
+                         std::chrono::minutes(faker::number::integer(0, 1440));
         sut.online = faker::datatype::boolean();
         BOOST_LOG_SEV(lg, info) << "Login info " << i << ":" << sut;
 

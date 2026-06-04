@@ -65,8 +65,7 @@ struct token_settings {
      * Falls back to the struct defaults (which match the registry defaults)
      * if any setting is absent from the database.
      */
-    [[nodiscard]] static token_settings
-    load(variability::service::system_settings_service& svc);
+    [[nodiscard]] static token_settings load(variability::service::system_settings_service& svc);
 };
 
 }

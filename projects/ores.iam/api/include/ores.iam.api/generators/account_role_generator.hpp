@@ -20,25 +20,24 @@
 #ifndef ORES_IAM_GENERATORS_ACCOUNT_ROLE_GENERATOR_HPP
 #define ORES_IAM_GENERATORS_ACCOUNT_ROLE_GENERATOR_HPP
 
-#include <vector>
-#include "ores.iam.api/export.hpp"
 #include "ores.iam.api/domain/account_role.hpp"
+#include "ores.iam.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include <vector>
 
 namespace ores::iam::generators {
 
 /**
  * @brief Generates a synthetic account_role.
  */
-ORES_IAM_API_EXPORT domain::account_role generate_synthetic_account_role(
-    utility::generation::generation_context& ctx);
+ORES_IAM_API_EXPORT domain::account_role
+generate_synthetic_account_role(utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic account_roles.
  */
 ORES_IAM_API_EXPORT std::vector<domain::account_role>
-generate_synthetic_account_roles(std::size_t n,
-    utility::generation::generation_context& ctx);
+generate_synthetic_account_roles(std::size_t n, utility::generation::generation_context& ctx);
 
 }
 

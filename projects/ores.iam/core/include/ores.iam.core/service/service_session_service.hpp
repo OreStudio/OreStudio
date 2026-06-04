@@ -20,15 +20,15 @@
 #ifndef ORES_IAM_SERVICE_SERVICE_SESSION_SERVICE_HPP
 #define ORES_IAM_SERVICE_SERVICE_SESSION_SERVICE_HPP
 
-#include <string>
-#include <optional>
-#include <boost/uuid/uuid.hpp>
 #include "ores.iam.api/domain/session.hpp"
-#include "ores.iam.core/repository/session_repository.hpp"
-#include "ores.iam.core/repository/account_repository.hpp"
-#include "ores.utility/uuid/uuid_v7_generator.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.iam.core/export.hpp"
+#include "ores.iam.core/repository/account_repository.hpp"
+#include "ores.iam.core/repository/session_repository.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.utility/uuid/uuid_v7_generator.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <optional>
+#include <string>
 
 namespace ores::iam::service {
 
@@ -41,8 +41,7 @@ namespace ores::iam::service {
  */
 class ORES_IAM_CORE_EXPORT service_session_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.iam.service.service_session_service";
+    inline static std::string_view logger_name = "ores.iam.service.service_session_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -73,10 +72,10 @@ public:
      * @return The created session if successful, nullopt if account not found
      *         or account is not a service account.
      */
-    std::optional<domain::session> start_service_session(
-        const std::string& username,
-        const std::string& client_identifier,
-        domain::session_protocol protocol = domain::session_protocol::binary);
+    std::optional<domain::session>
+    start_service_session(const std::string& username,
+                          const std::string& client_identifier,
+                          domain::session_protocol protocol = domain::session_protocol::binary);
 
     /**
      * @brief Starts a session for a service account by account ID.
@@ -87,10 +86,10 @@ public:
      * @return The created session if successful, nullopt if account not found
      *         or account is not a service account.
      */
-    std::optional<domain::session> start_service_session(
-        const boost::uuids::uuid& account_id,
-        const std::string& client_identifier,
-        domain::session_protocol protocol = domain::session_protocol::binary);
+    std::optional<domain::session>
+    start_service_session(const boost::uuids::uuid& account_id,
+                          const std::string& client_identifier,
+                          domain::session_protocol protocol = domain::session_protocol::binary);
 
     /**
      * @brief Ends a service session.
@@ -102,11 +101,10 @@ public:
      * @param bytes_sent Final bytes sent count (default 0).
      * @param bytes_received Final bytes received count (default 0).
      */
-    void end_service_session(
-        const boost::uuids::uuid& session_id,
-        const std::chrono::system_clock::time_point& start_time,
-        std::uint64_t bytes_sent = 0,
-        std::uint64_t bytes_received = 0);
+    void end_service_session(const boost::uuids::uuid& session_id,
+                             const std::chrono::system_clock::time_point& start_time,
+                             std::uint64_t bytes_sent = 0,
+                             std::uint64_t bytes_received = 0);
 
     /**
      * @brief Looks up a service account by username.

@@ -18,13 +18,12 @@
  *
  */
 #include "ores.iam.core/repository/tenant_type_repository.hpp"
-
-#include <sqlgen/postgres.hpp>
-#include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
 #include "ores.iam.api/domain/tenant_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.core/repository/tenant_type_entity.hpp"
 #include "ores.iam.core/repository/tenant_type_mapper.hpp"
+#include <sqlgen/postgres.hpp>
 
 namespace ores::iam::repository {
 
@@ -37,87 +36,80 @@ std::string tenant_type_repository::sql() {
     return generate_create_table_sql<tenant_type_entity>(lg());
 }
 
-void tenant_type_repository::
-write(context ctx, const domain::tenant_type& type) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing tenant type to database: "
-                               << type.type;
+void tenant_type_repository::write(context ctx, const domain::tenant_type& type) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing tenant type to database: " << type.type;
     auto entity = tenant_type_mapper::map(type);
     entity.tenant_id = ctx.tenant_id().to_string();
-    execute_write_query(ctx, entity,
-        lg(), "Writing tenant type to database.");
+    execute_write_query(ctx, entity, lg(), "Writing tenant type to database.");
 }
 
-void tenant_type_repository::
-write(context ctx, const std::vector<domain::tenant_type>& types) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing tenant types to database. Count: "
-                               << types.size();
+void tenant_type_repository::write(context ctx, const std::vector<domain::tenant_type>& types) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing tenant types to database. Count: " << types.size();
     auto entities = tenant_type_mapper::map(types);
     for (auto& entity : entities) {
         entity.tenant_id = ctx.tenant_id().to_string();
     }
-    execute_write_query(ctx, entities,
-        lg(), "Writing tenant types to database.");
+    execute_write_query(ctx, entities, lg(), "Writing tenant types to database.");
 }
 
-std::vector<domain::tenant_type>
-tenant_type_repository::read_latest(context ctx) {
+std::vector<domain::tenant_type> tenant_type_repository::read_latest(context ctx) {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<tenant_type_entity>> |
-        where("valid_to"_c == max.value()) |
-        order_by("name"_c);
+                       where("valid_to"_c == max.value()) | order_by("name"_c);
 
     return execute_read_query<tenant_type_entity, domain::tenant_type>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return tenant_type_mapper::map(entities); },
-        lg(), "Reading latest tenant types");
+        lg(),
+        "Reading latest tenant types");
 }
 
-std::vector<domain::tenant_type>
-tenant_type_repository::read_latest(context ctx, const std::string& type) {
+std::vector<domain::tenant_type> tenant_type_repository::read_latest(context ctx,
+                                                                     const std::string& type) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest tenant type. Type: " << type;
 
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<tenant_type_entity>> |
-        where("type"_c == type && "valid_to"_c == max.value());
+                       where("type"_c == type && "valid_to"_c == max.value());
 
     return execute_read_query<tenant_type_entity, domain::tenant_type>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return tenant_type_mapper::map(entities); },
-        lg(), "Reading latest tenant type by type.");
+        lg(),
+        "Reading latest tenant type by type.");
 }
 
-std::vector<domain::tenant_type>
-tenant_type_repository::read_all(context ctx, const std::string& type) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all tenant type versions. Type: "
-                               << type;
+std::vector<domain::tenant_type> tenant_type_repository::read_all(context ctx,
+                                                                  const std::string& type) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading all tenant type versions. Type: " << type;
 
-    const auto query = sqlgen::read<std::vector<tenant_type_entity>> |
-        where("type"_c == type) |
-        order_by("version"_c.desc());
+    const auto query = sqlgen::read<std::vector<tenant_type_entity>> | where("type"_c == type) |
+                       order_by("version"_c.desc());
 
     return execute_read_query<tenant_type_entity, domain::tenant_type>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return tenant_type_mapper::map(entities); },
-        lg(), "Reading all tenant type versions by type.");
+        lg(),
+        "Reading all tenant type versions by type.");
 }
 
 void tenant_type_repository::remove(context ctx, const std::string& type) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing tenant type from database: "
-                               << type;
+    BOOST_LOG_SEV(lg(), debug) << "Removing tenant type from database: " << type;
 
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::delete_from<tenant_type_entity> |
-        where("type"_c == type && "valid_to"_c == max.value());
+                       where("type"_c == type && "valid_to"_c == max.value());
 
-    execute_delete_query(ctx, query, lg(),
-        "Removing tenant type from database.");
+    execute_delete_query(ctx, query, lg(), "Removing tenant type from database.");
 }
 
-void tenant_type_repository::
-remove(context ctx, const std::vector<std::string>& types) {
+void tenant_type_repository::remove(context ctx, const std::vector<std::string>& types) {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::delete_from<tenant_type_entity> |
-        where("type"_c.in(types) && "valid_to"_c == max.value());
+                       where("type"_c.in(types) && "valid_to"_c == max.value());
     execute_delete_query(ctx, query, lg(), "batch removing tenant_types");
 }
 

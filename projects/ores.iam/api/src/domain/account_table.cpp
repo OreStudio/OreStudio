@@ -18,9 +18,8 @@
  *
  */
 #include "ores.iam.api/domain/account_table.hpp"
-
-#include <fort.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <fort.hpp>
 
 namespace ores::iam::domain {
 
@@ -30,13 +29,11 @@ std::string convert_to_table(const std::vector<account>& v) {
 
     // Note: Admin status is now determined by RBAC roles, not a field on account
     table << fort::header << "ID (UUID)" << "Username" << "Email"
-          << "Change Reason" << "Modified By" << "Recorded At" << "Version"
-          << fort::endr;
+          << "Change Reason" << "Modified By" << "Recorded At" << "Version" << fort::endr;
 
     for (const auto& a : v) {
-        table << boost::uuids::to_string(a.id) << a.username
-              << a.email << a.change_reason_code << a.modified_by
-              << a.recorded_at << a.version << fort::endr;
+        table << boost::uuids::to_string(a.id) << a.username << a.email << a.change_reason_code
+              << a.modified_by << a.recorded_at << a.version << fort::endr;
     }
     return table.to_string();
 }

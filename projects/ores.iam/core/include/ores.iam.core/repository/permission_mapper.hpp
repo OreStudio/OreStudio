@@ -31,22 +31,20 @@ namespace ores::iam::repository {
  */
 class permission_mapper {
 private:
-    inline static std::string_view logger_name =
-        "ores.iam.repository.permission_mapper";
+    inline static std::string_view logger_name = "ores.iam.repository.permission_mapper";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }
+
 public:
     static domain::permission map(const permission_entity& v);
     static permission_entity map(const domain::permission& v);
 
-    static std::vector<domain::permission>
-    map(const std::vector<permission_entity>& v);
-    static std::vector<permission_entity>
-    map(const std::vector<domain::permission>& v);
+    static std::vector<domain::permission> map(const std::vector<permission_entity>& v);
+    static std::vector<permission_entity> map(const std::vector<domain::permission>& v);
 };
 
 }

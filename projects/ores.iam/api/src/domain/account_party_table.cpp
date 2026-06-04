@@ -18,7 +18,6 @@
  *
  */
 #include "ores.iam.api/domain/account_party_table.hpp"
-
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
 
@@ -31,7 +30,8 @@ std::string convert_to_table(const std::vector<account_party>& v) {
     table << fort::header << "Account" << "Party" << "Modified By" << "Version" << fort::endr;
 
     for (const auto& ap : v) {
-        table << boost::uuids::to_string(ap.account_id) << boost::uuids::to_string(ap.party_id) << ap.modified_by << ap.version << fort::endr;
+        table << boost::uuids::to_string(ap.account_id) << boost::uuids::to_string(ap.party_id)
+              << ap.modified_by << ap.version << fort::endr;
     }
     return table.to_string();
 }

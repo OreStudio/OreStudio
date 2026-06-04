@@ -17,23 +17,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.iam.core/repository/role_permission_repository.hpp"
-
-#include <catch2/catch_test_macros.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.logging/make_logger.hpp"
-#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
-#include "ores.iam.api/domain/role_permission.hpp"
-#include "ores.iam.api/domain/role.hpp"
 #include "ores.iam.api/domain/permission.hpp"
-#include "ores.iam.core/repository/role_repository.hpp"
-#include "ores.iam.core/repository/permission_repository.hpp"
-#include "ores.iam.api/generators/role_generator.hpp"
+#include "ores.iam.api/domain/role.hpp"
+#include "ores.iam.api/domain/role_permission.hpp"
 #include "ores.iam.api/generators/permission_generator.hpp"
+#include "ores.iam.api/generators/role_generator.hpp"
+#include "ores.iam.core/repository/permission_repository.hpp"
+#include "ores.iam.core/repository/role_permission_repository.hpp"
+#include "ores.iam.core/repository/role_repository.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
+#include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
+#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 
@@ -99,8 +98,7 @@ TEST_CASE("read_latest_role_permissions", tags) {
     repo.write(rp);
 
     auto read_rps = repo.read_latest();
-    BOOST_LOG_SEV(lg, debug) << "Read role permissions count: "
-                             << read_rps.size();
+    BOOST_LOG_SEV(lg, debug) << "Read role permissions count: " << read_rps.size();
 
     CHECK(!read_rps.empty());
 }
@@ -136,8 +134,8 @@ TEST_CASE("read_latest_role_permissions_by_role", tags) {
     repo.write(rp2);
 
     auto read_rps = repo.read_latest_by_role(r.id);
-    BOOST_LOG_SEV(lg, debug) << "Read role permissions for role "
-                             << r.id << " count: " << read_rps.size();
+    BOOST_LOG_SEV(lg, debug) << "Read role permissions for role " << r.id
+                             << " count: " << read_rps.size();
 
     CHECK(read_rps.size() >= 2);
     for (const auto& rp : read_rps) {

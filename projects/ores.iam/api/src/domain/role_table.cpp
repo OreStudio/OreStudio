@@ -18,11 +18,10 @@
  *
  */
 #include "ores.iam.api/domain/role_table.hpp"
-
-#include <sstream>
-#include <fort.hpp>
-#include <boost/uuid/uuid_io.hpp>
 #include <boost/algorithm/string/join.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <fort.hpp>
+#include <sstream>
 
 namespace ores::iam::domain {
 
@@ -50,17 +49,16 @@ std::string convert_to_table(const std::vector<role>& v) {
         if (r.permission_codes.size() <= max_permissions_to_display) {
             permissions_str = boost::algorithm::join(r.permission_codes, ", ");
         } else {
-            std::vector<std::string> first_n(
-                r.permission_codes.begin(),
-                r.permission_codes.begin() + max_permissions_to_display);
+            std::vector<std::string> first_n(r.permission_codes.begin(),
+                                             r.permission_codes.begin() +
+                                                 max_permissions_to_display);
             std::ostringstream oss;
-            oss << boost::algorithm::join(first_n, ", ")
-                << " (+" << (r.permission_codes.size() - max_permissions_to_display) << " more)";
+            oss << boost::algorithm::join(first_n, ", ") << " (+"
+                << (r.permission_codes.size() - max_permissions_to_display) << " more)";
             permissions_str = oss.str();
         }
 
-        table << boost::uuids::to_string(r.id) << r.name
-              << r.description << permissions_str
+        table << boost::uuids::to_string(r.id) << r.name << r.description << permissions_str
               << r.modified_by << r.version << fort::endr;
     }
     return table.to_string();

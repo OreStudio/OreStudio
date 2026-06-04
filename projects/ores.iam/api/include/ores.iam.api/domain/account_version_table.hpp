@@ -20,9 +20,9 @@
 #ifndef ORES_IAM_DOMAIN_ACCOUNT_VERSION_TABLE_HPP
 #define ORES_IAM_DOMAIN_ACCOUNT_VERSION_TABLE_HPP
 
-#include <vector>
-#include "ores.iam.api/export.hpp"
 #include "ores.iam.api/domain/account_version.hpp"
+#include "ores.iam.api/export.hpp"
+#include <vector>
 
 namespace ores::iam::domain {
 

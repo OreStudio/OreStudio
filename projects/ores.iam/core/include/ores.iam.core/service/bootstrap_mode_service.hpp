@@ -20,14 +20,14 @@
 #ifndef ORES_IAM_SERVICE_BOOTSTRAP_MODE_SERVICE_HPP
 #define ORES_IAM_SERVICE_BOOTSTRAP_MODE_SERVICE_HPP
 
-#include <memory>
-#include <string>
-#include "ores.iam.core/repository/account_repository.hpp"
-#include "ores.iam.core/service/authorization_service.hpp"
-#include "ores.variability.core/service/system_settings_service.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.iam.core/export.hpp"
+#include "ores.iam.core/repository/account_repository.hpp"
+#include "ores.iam.core/service/authorization_service.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.variability.core/service/system_settings_service.hpp"
+#include <memory>
+#include <string>
 
 namespace ores::iam::service {
 
@@ -50,8 +50,7 @@ namespace ores::iam::service {
  */
 class ORES_IAM_CORE_EXPORT bootstrap_mode_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.iam.service.bootstrap_mode_service";
+    inline static std::string_view logger_name = "ores.iam.service.bootstrap_mode_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -69,8 +68,9 @@ public:
      * @param tenant_id The tenant identifier for multi-tenancy isolation
      * @param auth_service The authorization service for RBAC checks
      */
-    bootstrap_mode_service(database::context ctx, std::string tenant_id,
-        std::shared_ptr<authorization_service> auth_service);
+    bootstrap_mode_service(database::context ctx,
+                           std::string tenant_id,
+                           std::shared_ptr<authorization_service> auth_service);
 
     /**
      * @brief Checks if the system is currently in bootstrap mode.
@@ -92,7 +92,8 @@ public:
      * Logic:
      * - If setting doesn't exist and no admin accounts exist: create setting with enabled=true
      * - If setting doesn't exist and admin accounts exist: create setting with enabled=false
-     * - If setting exists: verify it matches reality (admin accounts exist = setting should be false)
+     * - If setting exists: verify it matches reality (admin accounts exist = setting should be
+     * false)
      */
     void initialize_bootstrap_state();
 

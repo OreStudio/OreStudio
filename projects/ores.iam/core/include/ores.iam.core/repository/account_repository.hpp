@@ -20,15 +20,15 @@
 #ifndef ORES_IAM_REPOSITORY_ACCOUNT_REPOSITORY_HPP
 #define ORES_IAM_REPOSITORY_ACCOUNT_REPOSITORY_HPP
 
-#include <optional>
-#include <string>
-#include <vector>
-#include <boost/uuid/uuid.hpp>
-#include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.iam.api/domain/account.hpp"
 #include "ores.iam.core/export.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <optional>
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::iam::repository {
 
@@ -37,8 +37,7 @@ namespace ores::iam::repository {
  */
 class ORES_IAM_CORE_EXPORT account_repository {
 private:
-    inline static std::string_view logger_name =
-        "ores.iam.repository.account_repository";
+    inline static std::string_view logger_name = "ores.iam.repository.account_repository";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -79,8 +78,7 @@ public:
      * @param limit Maximum number of records to return
      * @return Vector of accounts within the specified range
      */
-    std::vector<domain::account> read_latest(std::uint32_t offset,
-                                              std::uint32_t limit);
+    std::vector<domain::account> read_latest(std::uint32_t offset, std::uint32_t limit);
 
     /**
      * @brief Gets the total count of active accounts.
@@ -99,14 +97,12 @@ public:
     /**
      * @brief Reads the latest account by username.
      */
-    std::vector<domain::account>
-    read_latest_by_username(const std::string& username);
+    std::vector<domain::account> read_latest_by_username(const std::string& username);
 
     /**
      * @brief Reads the latest account by email.
      */
-    std::vector<domain::account>
-    read_latest_by_email(const std::string& email);
+    std::vector<domain::account> read_latest_by_email(const std::string& email);
 
     /**
      * @brief Verifies service account credentials.
@@ -116,9 +112,8 @@ public:
      * account UUID on success, or nullopt if the account is not found, is a
      * user account, or the password does not match.
      */
-    std::optional<boost::uuids::uuid>
-    check_service_credentials(const std::string& username,
-                              const std::string& password);
+    std::optional<boost::uuids::uuid> check_service_credentials(const std::string& username,
+                                                                const std::string& password);
 
     /**
      * @brief Deletes an account by closing its temporal validity.

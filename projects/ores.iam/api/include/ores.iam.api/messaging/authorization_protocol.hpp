@@ -20,12 +20,12 @@
 #ifndef ORES_IAM_MESSAGING_AUTHORIZATION_PROTOCOL_HPP
 #define ORES_IAM_MESSAGING_AUTHORIZATION_PROTOCOL_HPP
 
+#include "ores.iam.api/domain/permission.hpp"
+#include "ores.iam.api/domain/role.hpp"
 #include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
-#include "ores.iam.api/domain/role.hpp"
-#include "ores.iam.api/domain/permission.hpp"
 
 namespace ores::iam::messaging {
 

@@ -18,11 +18,10 @@
  *
  */
 #include "ores.iam.core/repository/role_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.iam.api/domain/role_json_io.hpp" // IWYU pragma: keep.
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::iam::repository {
 
@@ -38,7 +37,7 @@ domain::role role_mapper::map(const role_entity& v) {
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.name = v.name;
     r.description = v.description;
-r.modified_by = v.modified_by;
+    r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
@@ -58,7 +57,7 @@ role_entity role_mapper::map(const domain::role& v) {
     r.version = v.version;
     r.name = v.name;
     r.description = v.description;
-r.modified_by = v.modified_by;
+    r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
     r.change_commentary = v.change_commentary;
@@ -68,22 +67,14 @@ r.modified_by = v.modified_by;
     return r;
 }
 
-std::vector<domain::role>
-role_mapper::map(const std::vector<role_entity>& v) {
+std::vector<domain::role> role_mapper::map(const std::vector<role_entity>& v) {
     return map_vector<role_entity, domain::role>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
-std::vector<role_entity>
-role_mapper::map(const std::vector<domain::role>& v) {
+std::vector<role_entity> role_mapper::map(const std::vector<domain::role>& v) {
     return map_vector<domain::role, role_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

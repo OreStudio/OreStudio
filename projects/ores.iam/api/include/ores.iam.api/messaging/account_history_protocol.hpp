@@ -20,10 +20,10 @@
 #ifndef ORES_IAM_MESSAGING_ACCOUNT_HISTORY_PROTOCOL_HPP
 #define ORES_IAM_MESSAGING_ACCOUNT_HISTORY_PROTOCOL_HPP
 
+#include "ores.iam.api/domain/account_version.hpp"
 #include <string>
 #include <string_view>
 #include <vector>
-#include "ores.iam.api/domain/account_version.hpp"
 
 namespace ores::iam::messaging {
 

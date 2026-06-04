@@ -745,9 +745,13 @@ identity.
 - How to create :: =compass add manual --slug chapter_N_<topic> --title "..." --description "..."=
   (=--parent-dir= defaults to =doc/manual/user_guide/=).
 - Links ::
-  - *Within the manual*: =[[id:UUID]]= links to other manual chapter
-    IDs are fine — the PDF exporter resolves them as internal
+  - *Within the manual*: =[[id:UUID]]= links must target a /heading/
+    inside a chapter — give the heading its own =:ID:= property and
+    link to that. The PDF exporter resolves heading IDs as internal
     cross-references and hyperref renders them as clickable jumps.
+    File-level chapter IDs do /not/ resolve: chapters are inlined via
+    =#+include= and the exporter only matches IDs on headlines, so a
+    link to a chapter's file-level =:ID:= aborts the PDF build.
   - *Outside the manual*: org-roam =[[id:UUID]]= links to knowledge
     docs, recipes, or any document outside =doc/manual/= must not be
     used. The PDF cannot follow them; they either break the export or

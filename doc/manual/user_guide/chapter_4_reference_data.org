@@ -214,6 +214,9 @@ at that version. The *Revert* button reinstates a historical version as
 a new current version.
 
 *** Provenance
+:PROPERTIES:
+:ID: F7F8D811-44E7-4EF7-8BFF-2D96C1F580E7
+:END:
 
 Every version of every reference data record carries six standard
 provenance fields. The *Provenance* tab in every detail dialog shows

@@ -124,7 +124,7 @@ in a clean TU), =rfl::Flatten= would not have helped.
 ** Sprint 18 — Investigation and Triple Isolation (addressed trade_instrument)
 
 Task: [[id:D1E4921B-B431-4E78-99AB-62A47F761D1D][Investigate RFL complexity root cause (sprint 18)]]
-Story: [[id:D8B1A670-3B02-11F1-BCE2-4B06F4BBA5D9][Resolve RFL complexity issues (sprint 18)]]
+Story: [[id:D8B1A670-3B02-11F1-BCE2-4B06F4BBA5D8][Resolve RFL complexity issues (sprint 18)]]
 
 Investigation identified =rfl::AddTagsToVariants= on =trade_instrument= (a
 variant of ~30 leaf types totalling 502 field names) as the primary driver of
@@ -339,11 +339,11 @@ field counts against the safety threshold would prevent future surprises.
 
 | Artefact | Link | Notes |
 |----------+------+-------|
-| Sprint 16 story | [[id:B2A3C4D5-E6F7-4A8B-9C0D-1E2F3A4B5C6D][Windows portability fixes]] | Initial TU split |
+| Sprint 16 story | [[id:CEF64A10-082E-447F-8A39-F8F60D984F11][Windows portability fixes]] | Initial TU split |
 | Sprint 17 story | [[id:FBE68713-40C1-4B1D-A228-1C55AB4ABC34][MSVC C1202 constexpr depth fixes]] | trade Flatten + constexpr flags |
 | Sprint 17 task | [[id:CAEA4E7D-A6DB-4716-83E5-6F47ADD7819D][Decompose trade into rfl::Flatten sub-structs]] | Mode 1 fix (correctly applied) |
 | Sprint 17 plan | [[id:5319618A-FEB6-46F4-9588-11495CA8E164][MSVC C1202 — Decompose trade into Sub-Structs]] | Design doc for trade fix |
-| Sprint 18 story | [[id:D8B1A670-3B02-11F1-BCE2-4B06F4BBA5D9][Resolve RFL complexity issues]] | trade_instrument / Triple Isolation |
+| Sprint 18 story | [[id:D8B1A670-3B02-11F1-BCE2-4B06F4BBA5D8][Resolve RFL complexity issues]] | trade_instrument / Triple Isolation |
 | Sprint 18 task | [[id:D1E4921B-B431-4E78-99AB-62A47F761D1D][Investigate RFL complexity root cause]] | Produced original investigation report |
 | Sprint 19 story | [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]] | Current story |
 | Sprint 19 task 9 | [[id:C19E28EF-FA66-4A53-8958-7F3D7A093F46][Fix C1202 in ClientManagerExportPortfolio.cpp (swap_leg Flatten)]] | rfl::Flatten misapplied to Mode 2 |

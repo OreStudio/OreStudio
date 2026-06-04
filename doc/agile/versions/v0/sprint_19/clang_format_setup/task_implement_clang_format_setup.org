@@ -28,11 +28,11 @@ config that reflects ORE Studio's actual conventions and uses
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                                |
+| State        | DONE                                   |
 | Parent story | [[id:78D292E4-EA18-4FDE-9B23-E0F446A1B526][Set up clang-format with CMake targets and CI integration]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing.                               |
 | Last touched | 2026-06-04                             |
 
 * Acceptance
@@ -73,3 +73,22 @@ config that reflects ORE Studio's actual conventions and uses
 |   |                 |      |          |       |
 
 * Result
+
+Replaced the QuantLib-copied =.clang-format= with an ORE Studio-specific
+config. Key changes from the old file:
+
+| Setting | Old | New | Reason |
+|---------+-----+-----+--------|
+| =Standard= | =c++14= | =c++23= | CMakePresets.json sets =CMAKE_CXX_STANDARD=23= |
+| =NamespaceIndentation= | =All= | =None= | Namespace body is never indented in the codebase |
+| =AccessModifierOffset= | (LLVM default −2) | =−4= | =public=/=private:= at class indent level, not further in |
+| =ConstructorInitializerIndentWidth= | =0= | =4= | Initialisers are 4-space indented (leading comma style) |
+| =PackConstructorInitializers= | (absent) | =Never= | One initialiser per line consistently |
+| =BreakConstructorInitializers= | (absent) | =BeforeComma= | Leading comma style matches nats/http/database components |
+| =ReferenceAlignment= | (absent) | =Left= | =T& x= (attached to type) |
+| =IncludeCategories= | QL-specific | ORE-specific | Quoted → Qt → Boost → std/other |
+
+Verification: =clang-format= not installed locally; verification pending
+CMake =check-format= target (task 2) and nightly run (task 3). Spot-checked
+against =AccountDetailDialog.cpp=, =nats_client.cpp=, and
+=database_info_repository.hpp= — config matches observed conventions.

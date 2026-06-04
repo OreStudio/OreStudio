@@ -1,0 +1,70 @@
+:PROPERTIES:
+:ID: 453D3344-433D-45CA-B082-BC85C39D0CE8
+:END:
+#+title: Task: Implement Document the sprint health charts
+#+description: Initial task for: Document the sprint health charts
+#+type: task
+#+level: s1
+#+filetags: :document_sprint_charts:sprint_19:v0:
+#+owner: marco
+#+branch: feature/document-sprint-charts
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-04
+#+updated: 2026-06-04
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:95429DF9-B645-4E41-8375-A2A5C84A8E5A][Document the sprint health charts]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Produce the sprint charts knowledge page and rewire everything around
+it:
+
+1. Knowledge page under =doc/agile/= documenting the four sprint
+   health charts — definition, measure, purpose, interpretation —
+   using the project's agile domain terms.
+2. Move the four gnuplot scripts from =scripts/= into the page as
+   literate org-babel blocks tangled back to =scripts/=, so =compass
+   sprint charts= is unaffected.
+3. Link the page from: the sprint Charts section (sprint 19 + the
+   codegen sprint template), the agile process page, the sprint
+   charts recipe, and the sprint health review runbook.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:95429DF9-B645-4E41-8375-A2A5C84A8E5A][Document the sprint health charts]] |
+| Now          | Writing the knowledge page.            |
+| Waiting on   | Nothing.                               |
+| Next         | Tangle gnuplot sources; wire links.    |
+| Last touched | 2026-06-04                               |
+
+* Acceptance
+
+- Same as the story's acceptance — this is the story's single task.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

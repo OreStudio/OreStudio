@@ -21,10 +21,9 @@
 #define ORES_TRADING_DOMAIN_INFLATION_SWAP_INSTRUMENT_HPP
 
 #include <chrono>
-#include <optional>
 #include <string>
-#include <boost/uuid/uuid.hpp>
-#include "ores.utility/uuid/tenant_id.hpp"
+#include "ores.trading.api/domain/instrument_identity.hpp"
+#include "ores.utility/domain/audit_record.hpp"
 
 namespace ores::trading::domain {
 
@@ -35,48 +34,7 @@ namespace ores::trading::domain {
  * rate and the other is linked to an inflation index (e.g., CPI, RPI).
  */
 struct inflation_swap_instrument final {
-    /**
-     * @brief Version number for optimistic locking and change tracking.
-     */
-    int version = 0;
-
-    /**
-     * @brief Tenant identifier for multi-tenancy isolation.
-     */
-    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
-
-    /**
-     * @brief Workspace this record belongs to.
-     *
-     * Defaults to the Live workspace sentinel.
-     */
-    boost::uuids::uuid workspace_id = utility::uuid::live_workspace_id();
-
-    /**
-     * @brief UUID uniquely identifying this inflation swap instrument.
-     *
-     * Surrogate key for the instrument record.
-     */
-    boost::uuids::uuid instrument_id;
-
-    /**
-     * @brief Trade type code (soft FK to ores_trading_trade_types_tbl).
-     */
-    std::string trade_type_code;
-
-    /**
-     * @brief Party that owns this instrument.
-     *
-     * Set from session variable app.current_party_id.
-     */
-    boost::uuids::uuid party_id;
-
-    /**
-     * @brief Optional soft FK to the parent trade.
-     *
-     * Links instrument to a trade if applicable.
-     */
-    std::optional<boost::uuids::uuid> trade_id;
+    instrument_identity identity;
 
     /**
      * @brief Swap effective start date.
@@ -120,32 +78,7 @@ struct inflation_swap_instrument final {
      */
     std::string description;
 
-    /**
-     * @brief Username of the person who last modified this inflation swap instrument.
-     */
-    std::string modified_by;
-
-    /**
-     * @brief Username of the account that performed this action.
-     */
-    std::string performed_by;
-
-    /**
-     * @brief Code identifying the reason for the change.
-     *
-     * References change_reasons table (soft FK).
-     */
-    std::string change_reason_code;
-
-    /**
-     * @brief Free-text commentary explaining the change.
-     */
-    std::string change_commentary;
-
-    /**
-     * @brief Timestamp when this version of the record was recorded.
-     */
-    std::chrono::system_clock::time_point recorded_at;
+    utility::domain::audit_record audit;
 };
 
 }

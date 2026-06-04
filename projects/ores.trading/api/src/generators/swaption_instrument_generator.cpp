@@ -38,22 +38,22 @@ domain::swaption_instrument generate_synthetic_swaption_instrument(
         std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::swaption_instrument r;
-    r.version = 1;
-    r.tenant_id = utility::uuid::tenant_id::from_string(tid_str)
+    r.identity.version = 1;
+    r.identity.tenant_id = utility::uuid::tenant_id::from_string(tid_str)
         .value_or(utility::uuid::tenant_id::system());
-    r.workspace_id = utility::uuid::live_workspace_id();
-    r.instrument_id = ctx.generate_uuid();
-    r.trade_type_code = std::string("EuropeanSwaption");
-    r.party_id = ctx.generate_uuid();
+    r.identity.workspace_id = utility::uuid::live_workspace_id();
+    r.identity.instrument_id = ctx.generate_uuid();
+    r.identity.trade_type_code = std::string("EuropeanSwaption");
+    r.identity.party_id = ctx.generate_uuid();
     r.expiry_date = std::string("2025-06-15");
     r.exercise_type = std::string("European");
     r.settlement_type = std::string("Physical");
     r.long_short = std::string("Long");
-    r.modified_by = modified_by;
-    r.performed_by = modified_by;
-    r.change_reason_code = "system.test";
-    r.change_commentary = "Synthetic test data";
-    r.recorded_at = ctx.past_timepoint();
+    r.audit.modified_by = modified_by;
+    r.audit.performed_by = modified_by;
+    r.audit.change_reason_code = "system.test";
+    r.audit.change_commentary = "Synthetic test data";
+    r.audit.recorded_at = ctx.past_timepoint();
     return r;
 }
 

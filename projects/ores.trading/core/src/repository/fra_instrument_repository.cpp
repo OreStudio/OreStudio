@@ -38,7 +38,7 @@ std::string fra_instrument_repository::sql() {
 }
 
 void fra_instrument_repository::write(context ctx, const domain::fra_instrument& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing FRA instrument: " << v.instrument_id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing FRA instrument: " << v.identity.instrument_id;
     execute_write_query(ctx, fra_instrument_mapper::map(v),
         lg(), "Writing FRA instrument to database.");
 }

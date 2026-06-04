@@ -38,7 +38,7 @@ std::string cap_floor_instrument_repository::sql() {
 }
 
 void cap_floor_instrument_repository::write(context ctx, const domain::cap_floor_instrument& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing cap/floor instrument: " << v.instrument_id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing cap/floor instrument: " << v.identity.instrument_id;
     execute_write_query(ctx, cap_floor_instrument_mapper::map(v),
         lg(), "Writing cap/floor instrument to database.");
 }

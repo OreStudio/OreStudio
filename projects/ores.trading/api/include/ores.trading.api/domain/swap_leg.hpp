@@ -20,22 +20,16 @@
 #ifndef ORES_TRADING_DOMAIN_SWAP_LEG_HPP
 #define ORES_TRADING_DOMAIN_SWAP_LEG_HPP
 
-#include <chrono>
 #include <string>
 #include <boost/uuid/uuid.hpp>
 #include "ores.utility/uuid/tenant_id.hpp"
+#include "ores.utility/domain/audit_record.hpp"
 
 namespace ores::trading::domain {
 
-// Decomposed into three plain nested sub-structs (≤9 fields each) so that
+// Decomposed into plain nested sub-structs (≤9 fields each) so that
 // rfl::internal::no_duplicate_field_names never sees more than 9 field names
 // at once, staying below MSVC's C1202 template-graph limit.
-//
-// NOTE: rfl::Flatten was tried and rejected — it preserves the flat wire
-// format but rfl still instantiates a 19-field Literal for the parent struct,
-// which fires C1202 in a clean TU (Mode 2 failure). Plain nested structs
-// produce a 3-field parent Literal and reflect each sub-struct independently.
-// The JSON wire format is nested: {"identity":{...},"terms":{...},"audit":{...}}.
 // See doc/investigations/msvc_c1202_rfl_complexity.org for full analysis.
 
 struct swap_leg_identity final {
@@ -58,14 +52,6 @@ struct swap_leg_terms final {
     std::string currency;
 };
 
-struct swap_leg_audit final {
-    std::string modified_by;
-    std::string performed_by;
-    std::string change_reason_code;
-    std::string change_commentary;
-    std::chrono::system_clock::time_point recorded_at;
-};
-
 /**
  * @brief One leg of a rates instrument (Swap, CrossCurrencySwap, CapFloor,
  * Swaption).
@@ -78,9 +64,9 @@ struct swap_leg_audit final {
  * JSON wire format is nested: {"identity":{...},"terms":{...},"audit":{...}}.
  */
 struct swap_leg final {
-    swap_leg_identity identity;
-    swap_leg_terms    terms;
-    swap_leg_audit    audit;
+    swap_leg_identity             identity;
+    swap_leg_terms                terms;
+    utility::domain::audit_record audit;
 };
 
 }

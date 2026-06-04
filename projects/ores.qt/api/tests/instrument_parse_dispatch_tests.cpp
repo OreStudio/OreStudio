@@ -286,8 +286,8 @@ TEST_CASE("parse_trade_instrument_dispatches_fx_vanilla_option", tags) {
 
 TEST_CASE("parse_trade_instrument_dispatches_fra", tags) {
     fra_instrument instr;
-    instr.instrument_id   = boost::uuids::random_generator()();
-    instr.trade_type_code = "ForwardRateAgreement";
+    instr.identity.instrument_id   = boost::uuids::random_generator()();
+    instr.identity.trade_type_code = "ForwardRateAgreement";
 
     swap_leg leg;
     leg.identity.leg_number = 1;
@@ -304,7 +304,7 @@ TEST_CASE("parse_trade_instrument_dispatches_fra", tags) {
     REQUIRE(result.has_value());
     CHECK(result->classification.product_type == product_type::swap);
     REQUIRE(pop.called);
-    CHECK(pop.got.instrument_id == instr.instrument_id);
+    CHECK(pop.got.identity.instrument_id == instr.identity.instrument_id);
     REQUIRE(pop.got_legs.size() == 1);
     CHECK(pop.got_legs[0].identity.leg_number == 1);
 }
@@ -315,8 +315,8 @@ TEST_CASE("parse_trade_instrument_dispatches_fra", tags) {
 
 TEST_CASE("parse_trade_instrument_dispatches_vanilla_swap", tags) {
     vanilla_swap_instrument instr;
-    instr.instrument_id   = boost::uuids::random_generator()();
-    instr.trade_type_code = "Swap";
+    instr.identity.instrument_id   = boost::uuids::random_generator()();
+    instr.identity.trade_type_code = "Swap";
 
     swap_leg leg1;
     leg1.identity.leg_number = 1;
@@ -335,7 +335,7 @@ TEST_CASE("parse_trade_instrument_dispatches_vanilla_swap", tags) {
     REQUIRE(result.has_value());
     CHECK(result->classification.product_type == product_type::swap);
     REQUIRE(pop.called);
-    CHECK(pop.got.instrument_id == instr.instrument_id);
+    CHECK(pop.got.identity.instrument_id == instr.identity.instrument_id);
     REQUIRE(pop.got_legs.size() == 2);
     CHECK(pop.got_legs[0].identity.leg_number == 1);
     CHECK(pop.got_legs[1].identity.leg_number == 2);

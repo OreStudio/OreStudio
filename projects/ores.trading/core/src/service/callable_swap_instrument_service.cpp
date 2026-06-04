@@ -66,16 +66,16 @@ callable_swap_instrument_service::get_callable_swap_instrument(
 
 void callable_swap_instrument_service::save_callable_swap_instrument(
     const domain::callable_swap_instrument& v) {
-    if (v.instrument_id.is_nil())
+    if (v.identity.instrument_id.is_nil())
         throw std::invalid_argument(
             "Callable swap instrument id cannot be empty.");
     BOOST_LOG_SEV(lg(), debug) << "Saving callable_swap_instrument: "
-                               << v.instrument_id;
+                               << v.identity.instrument_id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
     BOOST_LOG_SEV(lg(), info) << "Saved callable_swap_instrument: "
-                              << t.instrument_id;
+                              << t.identity.instrument_id;
 }
 
 void callable_swap_instrument_service::remove_callable_swap_instrument(

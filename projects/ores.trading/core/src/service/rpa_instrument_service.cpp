@@ -64,13 +64,13 @@ rpa_instrument_service::get_rpa_instrument(const std::string& id) {
 
 void rpa_instrument_service::save_rpa_instrument(
     const domain::rpa_instrument& v) {
-    if (v.instrument_id.is_nil())
+    if (v.identity.instrument_id.is_nil())
         throw std::invalid_argument("RPA instrument id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving rpa_instrument: " << v.instrument_id;
+    BOOST_LOG_SEV(lg(), debug) << "Saving rpa_instrument: " << v.identity.instrument_id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved rpa_instrument: " << t.instrument_id;
+    BOOST_LOG_SEV(lg(), info) << "Saved rpa_instrument: " << t.identity.instrument_id;
 }
 
 void rpa_instrument_service::remove_rpa_instrument(const std::string& id) {

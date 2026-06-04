@@ -74,16 +74,16 @@ get_balance_guaranteed_swap_instrument(const std::string& id) {
 void balance_guaranteed_swap_instrument_service::
 save_balance_guaranteed_swap_instrument(
     const domain::balance_guaranteed_swap_instrument& v) {
-    if (v.instrument_id.is_nil())
+    if (v.identity.instrument_id.is_nil())
         throw std::invalid_argument(
             "Balance guaranteed swap instrument id cannot be empty.");
     BOOST_LOG_SEV(lg(), debug) << "Saving balance_guaranteed_swap_instrument: "
-                               << v.instrument_id;
+                               << v.identity.instrument_id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
     BOOST_LOG_SEV(lg(), info) << "Saved balance_guaranteed_swap_instrument: "
-                              << t.instrument_id;
+                              << t.identity.instrument_id;
 }
 
 void balance_guaranteed_swap_instrument_service::

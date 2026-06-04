@@ -34,13 +34,13 @@ fra_instrument_mapper::map(const fra_instrument_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::fra_instrument r;
-    r.version = v.version;
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
-    r.instrument_id = boost::lexical_cast<boost::uuids::uuid>(v.instrument_id.value());
-    r.trade_type_code = v.trade_type_code;
-    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
-    r.trade_id = v.trade_id.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.trade_id)) : std::nullopt;
+    r.identity.version = v.version;
+    r.identity.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
+    r.identity.workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
+    r.identity.instrument_id = boost::lexical_cast<boost::uuids::uuid>(v.instrument_id.value());
+    r.identity.trade_type_code = v.trade_type_code;
+    r.identity.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
+    r.identity.trade_id = v.trade_id.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.trade_id)) : std::nullopt;
     r.start_date = v.start_date;
     r.end_date = v.end_date;
     r.currency = v.currency;
@@ -49,11 +49,11 @@ fra_instrument_mapper::map(const fra_instrument_entity& v) {
     r.strike = v.strike;
     r.notional = v.notional;
     r.description = v.description.value_or("");
-    r.modified_by = v.modified_by;
-    r.performed_by = v.performed_by;
-    r.change_reason_code = v.change_reason_code;
-    r.change_commentary = v.change_commentary;
-    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+    r.audit.modified_by = v.modified_by;
+    r.audit.performed_by = v.performed_by;
+    r.audit.change_reason_code = v.change_reason_code;
+    r.audit.change_commentary = v.change_commentary;
+    r.audit.recorded_at = timestamp_to_timepoint(v.valid_from);
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -64,13 +64,13 @@ fra_instrument_mapper::map(const domain::fra_instrument& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     fra_instrument_entity r;
-    r.instrument_id = boost::uuids::to_string(v.instrument_id);
-    r.tenant_id = v.tenant_id.to_string();
-    r.workspace_id = boost::uuids::to_string(v.workspace_id);
-    r.version = v.version;
-    r.trade_type_code = v.trade_type_code;
-    r.party_id = boost::uuids::to_string(v.party_id);
-    r.trade_id = v.trade_id.has_value() ? std::optional(boost::uuids::to_string(*v.trade_id)) : std::nullopt;
+    r.instrument_id = boost::uuids::to_string(v.identity.instrument_id);
+    r.tenant_id = v.identity.tenant_id.to_string();
+    r.workspace_id = boost::uuids::to_string(v.identity.workspace_id);
+    r.version = v.identity.version;
+    r.trade_type_code = v.identity.trade_type_code;
+    r.party_id = boost::uuids::to_string(v.identity.party_id);
+    r.trade_id = v.identity.trade_id.has_value() ? std::optional(boost::uuids::to_string(*v.identity.trade_id)) : std::nullopt;
     r.start_date = v.start_date;
     r.end_date = v.end_date;
     r.currency = v.currency;
@@ -79,10 +79,10 @@ fra_instrument_mapper::map(const domain::fra_instrument& v) {
     r.strike = v.strike;
     r.notional = v.notional;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
-    r.modified_by = v.modified_by;
-    r.performed_by = v.performed_by;
-    r.change_reason_code = v.change_reason_code;
-    r.change_commentary = v.change_commentary;
+    r.modified_by = v.audit.modified_by;
+    r.performed_by = v.audit.performed_by;
+    r.change_reason_code = v.audit.change_reason_code;
+    r.change_commentary = v.audit.change_commentary;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;

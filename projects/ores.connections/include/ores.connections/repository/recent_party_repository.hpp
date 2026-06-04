@@ -20,12 +20,12 @@
 #ifndef ORES_CONNECTIONS_REPOSITORY_RECENT_PARTY_REPOSITORY_HPP
 #define ORES_CONNECTIONS_REPOSITORY_RECENT_PARTY_REPOSITORY_HPP
 
+#include "ores.connections/domain/recent_party.hpp"
+#include "ores.connections/export.hpp"
+#include "ores.connections/repository/sqlite_context.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <string>
 #include <vector>
-#include <boost/uuid/uuid.hpp>
-#include "ores.connections/domain/recent_party.hpp"
-#include "ores.connections/repository/sqlite_context.hpp"
-#include "ores.connections/export.hpp"
 
 namespace ores::connections::repository {
 

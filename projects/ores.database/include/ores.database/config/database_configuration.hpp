@@ -20,9 +20,9 @@
 #ifndef ORES_DATABASE_DATABASE_CONFIGURATION_HPP
 #define ORES_DATABASE_DATABASE_CONFIGURATION_HPP
 
-#include <boost/program_options.hpp>
 #include "ores.database/domain/database_options.hpp"
 #include "ores.database/export.hpp"
+#include <boost/program_options.hpp>
 
 namespace ores::database {
 
@@ -43,8 +43,7 @@ public:
      *
      * @return options_description for database configuration.
      */
-    static boost::program_options::options_description
-    make_options_description();
+    static boost::program_options::options_description make_options_description();
 
     /**
      * @brief Reads database options from parsed variables map.
@@ -58,8 +57,7 @@ public:
      * @return database_options if any database configuration was provided,
      * std::nullopt otherwise.
      */
-    static database_options
-    read_options(const boost::program_options::variables_map& vm);
+    static database_options read_options(const boost::program_options::variables_map& vm);
 };
 
 }

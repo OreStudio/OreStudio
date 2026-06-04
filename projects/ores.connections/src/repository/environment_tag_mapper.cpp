@@ -18,22 +18,19 @@
  *
  */
 #include "ores.connections/repository/environment_tag_mapper.hpp"
-
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
 namespace ores::connections::repository {
 
-environment_tag_entity environment_tag_mapper::to_entity(
-    const domain::environment_tag& et) {
+environment_tag_entity environment_tag_mapper::to_entity(const domain::environment_tag& et) {
     environment_tag_entity e;
     e.environment_id = boost::uuids::to_string(et.environment_id);
     e.tag_id = boost::uuids::to_string(et.tag_id);
     return e;
 }
 
-domain::environment_tag environment_tag_mapper::to_domain(
-    const environment_tag_entity& e) {
+domain::environment_tag environment_tag_mapper::to_domain(const environment_tag_entity& e) {
     boost::uuids::string_generator gen;
     domain::environment_tag et;
     et.environment_id = gen(e.environment_id);
@@ -41,8 +38,8 @@ domain::environment_tag environment_tag_mapper::to_domain(
     return et;
 }
 
-std::vector<environment_tag_entity> environment_tag_mapper::to_entities(
-    const std::vector<domain::environment_tag>& tags) {
+std::vector<environment_tag_entity>
+environment_tag_mapper::to_entities(const std::vector<domain::environment_tag>& tags) {
     std::vector<environment_tag_entity> entities;
     entities.reserve(tags.size());
     for (const auto& et : tags) {
@@ -51,8 +48,8 @@ std::vector<environment_tag_entity> environment_tag_mapper::to_entities(
     return entities;
 }
 
-std::vector<domain::environment_tag> environment_tag_mapper::to_domain(
-    const std::vector<environment_tag_entity>& entities) {
+std::vector<domain::environment_tag>
+environment_tag_mapper::to_domain(const std::vector<environment_tag_entity>& entities) {
     std::vector<domain::environment_tag> tags;
     tags.reserve(entities.size());
     for (const auto& e : entities) {

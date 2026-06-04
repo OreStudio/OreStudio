@@ -20,11 +20,11 @@
 #ifndef ORES_DATABASE_SERVICE_PARTY_CONTEXT_HPP
 #define ORES_DATABASE_SERVICE_PARTY_CONTEXT_HPP
 
-#include <string>
-#include <boost/uuid/uuid.hpp>
 #include "ores.database/domain/context.hpp"
-#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.database/export.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <string>
 
 namespace ores::database::service {
 
@@ -59,9 +59,9 @@ public:
      * @throws std::runtime_error if the party is not found in the tenant.
      */
     [[nodiscard]] static context with_party(const context& ctx,
-        const utility::uuid::tenant_id& tenant,
-        const boost::uuids::uuid& party,
-        const std::string& actor = "");
+                                            const utility::uuid::tenant_id& tenant,
+                                            const boost::uuids::uuid& party,
+                                            const std::string& actor = "");
 };
 
 }

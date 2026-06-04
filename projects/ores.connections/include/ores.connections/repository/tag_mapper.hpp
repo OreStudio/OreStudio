@@ -20,9 +20,9 @@
 #ifndef ORES_CONNECTIONS_REPOSITORY_TAG_MAPPER_HPP
 #define ORES_CONNECTIONS_REPOSITORY_TAG_MAPPER_HPP
 
-#include <vector>
 #include "ores.connections/domain/tag.hpp"
 #include "ores.connections/repository/tag_entity.hpp"
+#include <vector>
 
 namespace ores::connections::repository {
 

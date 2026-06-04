@@ -18,14 +18,13 @@
  *
  */
 #include "ores.database/repository/bitemporal_operations.hpp"
-
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid_io.hpp>
 #include <array>
 #include <libpq-fe.h>
-#include <stdexcept>
 #include <sstream>
+#include <stdexcept>
 #include <string_view>
-#include <boost/uuid/uuid_io.hpp>
-#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::database::repository {
 
@@ -34,8 +33,7 @@ using namespace ores::logging;
 namespace {
 
 auto& bitemporal_lg() {
-    static auto instance = ores::logging::make_logger(
-        "ores.utility.database.postgres");
+    static auto instance = ores::logging::make_logger("ores.utility.database.postgres");
     return instance;
 }
 
@@ -61,10 +59,15 @@ void pg_notice_to_log(void* /*arg*/, const char* msg) {
  */
 struct pg_connection_guard {
     PGconn* conn;
-    explicit pg_connection_guard(PGconn* c) : conn(c) {
-        if (conn) PQsetNoticeProcessor(conn, &pg_notice_to_log, nullptr);
+    explicit pg_connection_guard(PGconn* c)
+        : conn(c) {
+        if (conn)
+            PQsetNoticeProcessor(conn, &pg_notice_to_log, nullptr);
     }
-    ~pg_connection_guard() { if (conn) PQfinish(conn); }
+    ~pg_connection_guard() {
+        if (conn)
+            PQfinish(conn);
+    }
     pg_connection_guard(const pg_connection_guard&) = delete;
     pg_connection_guard& operator=(const pg_connection_guard&) = delete;
 };
@@ -74,8 +77,12 @@ struct pg_connection_guard {
  */
 struct pg_result_guard {
     PGresult* result;
-    explicit pg_result_guard(PGresult* r) : result(r) {}
-    ~pg_result_guard() { if (result) PQclear(result); }
+    explicit pg_result_guard(PGresult* r)
+        : result(r) {}
+    ~pg_result_guard() {
+        if (result)
+            PQclear(result);
+    }
     pg_result_guard(const pg_result_guard&) = delete;
     pg_result_guard& operator=(const pg_result_guard&) = delete;
 };
@@ -85,11 +92,9 @@ struct pg_result_guard {
  */
 std::string build_connection_string(const sqlgen::postgres::Credentials& creds) {
     std::ostringstream oss;
-    oss << "host=" << creds.host
-        << " port=" << creds.port
-        << " dbname=" << creds.dbname
-        << " user=" << creds.user
-        << " password=" << creds.password
+    oss << "host=" << creds.host << " port=" << creds.port << " dbname=" << creds.dbname
+        << " user=" << creds.user << " password="
+        << creds.password
         // Force UTC at connect time so timestamp values are returned as
         // "YYYY-MM-DD HH:MM:SS+00", which from_iso8601_utc expects.
         // Setting this in the connection string avoids a SET round-trip per call.
@@ -102,10 +107,11 @@ std::string build_connection_string(const sqlgen::postgres::Credentials& creds) 
  *
  * Extracted to avoid repeating the PQexec + error-check pattern.
  */
-void set_pg_config(PGconn* conn, const std::string& key,
-    const std::string& value, logging::logger_t& lg) {
-    const std::string sql =
-        "SELECT set_config('" + key + "', '" + value + "', false)";
+void set_pg_config(PGconn* conn,
+                   const std::string& key,
+                   const std::string& value,
+                   logging::logger_t& lg) {
+    const std::string sql = "SELECT set_config('" + key + "', '" + value + "', false)";
     pg_result_guard r(PQexec(conn, sql.c_str()));
     if (PQresultStatus(r.result) != PGRES_TUPLES_OK) {
         const std::string err = PQerrorMessage(conn);
@@ -121,8 +127,8 @@ void set_pg_config(PGconn* conn, const std::string& key,
  * Must be called after connecting but before executing queries.
  */
 void set_tenant_context(PGconn* conn,
-    const utility::uuid::tenant_id& tenant_id,
-    logging::logger_t& lg) {
+                        const utility::uuid::tenant_id& tenant_id,
+                        logging::logger_t& lg) {
 
     const auto tenant_id_str = tenant_id.to_string();
 
@@ -133,8 +139,14 @@ void set_tenant_context(PGconn* conn,
 
     const std::string sql = "SELECT set_config('app.current_tenant_id', $1, false)";
 
-    pg_result_guard result(PQexecParams(conn, sql.c_str(), 1, nullptr,
-        param_values.data(), param_lengths.data(), param_formats.data(), 0));
+    pg_result_guard result(PQexecParams(conn,
+                                        sql.c_str(),
+                                        1,
+                                        nullptr,
+                                        param_values.data(),
+                                        param_lengths.data(),
+                                        param_formats.data(),
+                                        0));
     if (PQresultStatus(result.result) != PGRES_TUPLES_OK) {
         const std::string err_msg = PQerrorMessage(conn);
         BOOST_LOG_SEV(lg, error) << "Failed to set tenant context: " << err_msg;
@@ -155,15 +167,15 @@ void set_full_context(PGconn* conn, const context& ctx, logging::logger_t& lg) {
     set_tenant_context(conn, ctx.tenant_id(), lg);
 
     if (ctx.party_id().has_value()) {
-        set_pg_config(conn, "app.current_party_id",
-            boost::uuids::to_string(*ctx.party_id()), lg);
+        set_pg_config(conn, "app.current_party_id", boost::uuids::to_string(*ctx.party_id()), lg);
     }
 
     const auto& vpids = ctx.visible_party_ids();
     if (!vpids.empty()) {
         std::string ids = "{";
         for (std::size_t i = 0; i < vpids.size(); ++i) {
-            if (i > 0) ids += ",";
+            if (i > 0)
+                ids += ",";
             ids += boost::uuids::to_string(vpids[i]);
         }
         ids += "}";
@@ -184,8 +196,9 @@ void set_full_context(PGconn* conn, const context& ctx, logging::logger_t& lg) {
 } // anonymous namespace
 
 std::vector<std::string> execute_raw_string_query(context ctx,
-    const std::string& sql, logging::logger_t& lg,
-    const std::string& operation_desc) {
+                                                  const std::string& sql,
+                                                  logging::logger_t& lg,
+                                                  const std::string& operation_desc) {
 
     BOOST_LOG_SEV(lg, debug) << operation_desc << ". SQL: " << sql;
 
@@ -228,8 +241,7 @@ std::vector<std::string> execute_raw_string_query(context ctx,
 }
 
 std::map<std::string, std::vector<std::string>> execute_raw_grouped_query(
-    context ctx, const std::string& sql, logging::logger_t& lg,
-    const std::string& operation_desc) {
+    context ctx, const std::string& sql, logging::logger_t& lg, const std::string& operation_desc) {
 
     BOOST_LOG_SEV(lg, debug) << operation_desc << ". SQL: " << sql;
 
@@ -266,8 +278,7 @@ std::map<std::string, std::vector<std::string>> execute_raw_grouped_query(
     }
 
     for (int i = 0; i < num_rows; ++i) {
-        if (!PQgetisnull(result_guard.result, i, 0) &&
-            !PQgetisnull(result_guard.result, i, 1)) {
+        if (!PQgetisnull(result_guard.result, i, 0) && !PQgetisnull(result_guard.result, i, 1)) {
             const std::string key = PQgetvalue(result_guard.result, i, 0);
             const std::string value = PQgetvalue(result_guard.result, i, 1);
             result[key].push_back(value);
@@ -279,8 +290,7 @@ std::map<std::string, std::vector<std::string>> execute_raw_grouped_query(
 }
 
 std::vector<std::vector<std::optional<std::string>>> execute_raw_multi_column_query(
-    context ctx, const std::string& sql, logging::logger_t& lg,
-    const std::string& operation_desc) {
+    context ctx, const std::string& sql, logging::logger_t& lg, const std::string& operation_desc) {
 
     BOOST_LOG_SEV(lg, debug) << operation_desc << ". SQL: " << sql;
 
@@ -330,8 +340,10 @@ std::vector<std::vector<std::optional<std::string>>> execute_raw_multi_column_qu
     return result;
 }
 
-void execute_raw_command(context ctx, const std::string& sql,
-    logging::logger_t& lg, const std::string& operation_desc) {
+void execute_raw_command(context ctx,
+                         const std::string& sql,
+                         logging::logger_t& lg,
+                         const std::string& operation_desc) {
 
     BOOST_LOG_SEV(lg, debug) << operation_desc << ". SQL: " << sql;
 
@@ -364,9 +376,9 @@ void execute_raw_command(context ctx, const std::string& sql,
         // PQresultErrorMessage(nullptr) returns "" when PQexecParams returns
         // NULL. Fall back to PQerrorMessage(conn) for connection-level errors.
         // Must capture BEFORE rollback, which clears the connection error state.
-        const std::string err_msg = (result_guard.result != nullptr)
-            ? std::string(PQresultErrorMessage(result_guard.result))
-            : std::string(PQerrorMessage(conn_guard.conn));
+        const std::string err_msg = (result_guard.result != nullptr) ?
+                                        std::string(PQresultErrorMessage(result_guard.result)) :
+                                        std::string(PQerrorMessage(conn_guard.conn));
         pg_result_guard rollback_guard(PQexec(conn_guard.conn, "ROLLBACK"));
         BOOST_LOG_SEV(lg, error) << "Command failed: " << err_msg;
         throw std::runtime_error("Command execution failed: " + err_msg);
@@ -384,11 +396,13 @@ void execute_raw_command(context ctx, const std::string& sql,
 }
 
 std::vector<std::string> execute_parameterized_string_query(context ctx,
-    const std::string& sql, const std::vector<std::string>& params,
-    logging::logger_t& lg, const std::string& operation_desc) {
+                                                            const std::string& sql,
+                                                            const std::vector<std::string>& params,
+                                                            logging::logger_t& lg,
+                                                            const std::string& operation_desc) {
 
-    BOOST_LOG_SEV(lg, debug) << operation_desc << ". SQL: " << sql
-                             << " with " << params.size() << " parameters";
+    BOOST_LOG_SEV(lg, debug) << operation_desc << ". SQL: " << sql << " with " << params.size()
+                             << " parameters";
 
     std::vector<std::string> result;
 
@@ -413,16 +427,16 @@ std::vector<std::string> execute_parameterized_string_query(context ctx,
     }
 
     // Execute the parameterized query
-    pg_result_guard result_guard(PQexecParams(
-        conn_guard.conn,
-        sql.c_str(),
-        static_cast<int>(params.size()),
-        nullptr,  // Let the server infer parameter types
-        param_values.data(),
-        nullptr,  // Parameter lengths (null-terminated strings)
-        nullptr,  // Parameter formats (text)
-        0         // Result format (text)
-    ));
+    pg_result_guard result_guard(
+        PQexecParams(conn_guard.conn,
+                     sql.c_str(),
+                     static_cast<int>(params.size()),
+                     nullptr, // Let the server infer parameter types
+                     param_values.data(),
+                     nullptr, // Parameter lengths (null-terminated strings)
+                     nullptr, // Parameter formats (text)
+                     0        // Result format (text)
+                     ));
 
     if (PQresultStatus(result_guard.result) != PGRES_TUPLES_OK) {
         const std::string err_msg = PQerrorMessage(conn_guard.conn);
@@ -444,10 +458,11 @@ std::vector<std::string> execute_parameterized_string_query(context ctx,
     return result;
 }
 
-std::vector<std::vector<std::optional<std::string>>> execute_raw_multi_column_query(
-    const sqlgen::postgres::Credentials& creds,
-    const std::string& sql, logging::logger_t& lg,
-    const std::string& operation_desc) {
+std::vector<std::vector<std::optional<std::string>>>
+execute_raw_multi_column_query(const sqlgen::postgres::Credentials& creds,
+                               const std::string& sql,
+                               logging::logger_t& lg,
+                               const std::string& operation_desc) {
 
     BOOST_LOG_SEV(lg, debug) << operation_desc << ". SQL: " << sql;
 
@@ -495,13 +510,15 @@ std::vector<std::vector<std::optional<std::string>>> execute_raw_multi_column_qu
     return result;
 }
 
-std::vector<std::string> execute_parameterized_string_query(
-    const sqlgen::postgres::Credentials& creds,
-    const std::string& sql, const std::vector<std::string>& params,
-    logging::logger_t& lg, const std::string& operation_desc) {
+std::vector<std::string>
+execute_parameterized_string_query(const sqlgen::postgres::Credentials& creds,
+                                   const std::string& sql,
+                                   const std::vector<std::string>& params,
+                                   logging::logger_t& lg,
+                                   const std::string& operation_desc) {
 
-    BOOST_LOG_SEV(lg, debug) << operation_desc << ". SQL: " << sql
-                             << " with " << params.size() << " parameters";
+    BOOST_LOG_SEV(lg, debug) << operation_desc << ". SQL: " << sql << " with " << params.size()
+                             << " parameters";
 
     std::vector<std::string> result;
 
@@ -524,16 +541,16 @@ std::vector<std::string> execute_parameterized_string_query(
     }
 
     // Execute the parameterized query
-    pg_result_guard result_guard(PQexecParams(
-        conn_guard.conn,
-        sql.c_str(),
-        static_cast<int>(params.size()),
-        nullptr,  // Let the server infer parameter types
-        param_values.data(),
-        nullptr,  // Parameter lengths (null-terminated strings)
-        nullptr,  // Parameter formats (text)
-        0         // Result format (text)
-    ));
+    pg_result_guard result_guard(
+        PQexecParams(conn_guard.conn,
+                     sql.c_str(),
+                     static_cast<int>(params.size()),
+                     nullptr, // Let the server infer parameter types
+                     param_values.data(),
+                     nullptr, // Parameter lengths (null-terminated strings)
+                     nullptr, // Parameter formats (text)
+                     0        // Result format (text)
+                     ));
 
     if (PQresultStatus(result_guard.result) != PGRES_TUPLES_OK) {
         const std::string err_msg = PQerrorMessage(conn_guard.conn);
@@ -555,12 +572,14 @@ std::vector<std::string> execute_parameterized_string_query(
     return result;
 }
 
-void execute_parameterized_command(context ctx, const std::string& sql,
-    const std::vector<std::string>& params, logging::logger_t& lg,
-    const std::string& operation_desc) {
+void execute_parameterized_command(context ctx,
+                                   const std::string& sql,
+                                   const std::vector<std::string>& params,
+                                   logging::logger_t& lg,
+                                   const std::string& operation_desc) {
 
-    BOOST_LOG_SEV(lg, debug) << operation_desc << ". SQL: " << sql
-                             << " with " << params.size() << " parameters";
+    BOOST_LOG_SEV(lg, debug) << operation_desc << ". SQL: " << sql << " with " << params.size()
+                             << " parameters";
 
     // Create direct libpq connection using credentials from context
     const auto conn_str = build_connection_string(ctx.credentials());
@@ -591,25 +610,25 @@ void execute_parameterized_command(context ctx, const std::string& sql,
     }
 
     // Execute the parameterized command
-    pg_result_guard result_guard(PQexecParams(
-        conn_guard.conn,
-        sql.c_str(),
-        static_cast<int>(params.size()),
-        nullptr,  // Let the server infer parameter types
-        param_values.data(),
-        nullptr,  // Parameter lengths (null-terminated strings)
-        nullptr,  // Parameter formats (text)
-        0         // Result format (text)
-    ));
+    pg_result_guard result_guard(
+        PQexecParams(conn_guard.conn,
+                     sql.c_str(),
+                     static_cast<int>(params.size()),
+                     nullptr, // Let the server infer parameter types
+                     param_values.data(),
+                     nullptr, // Parameter lengths (null-terminated strings)
+                     nullptr, // Parameter formats (text)
+                     0        // Result format (text)
+                     ));
 
     if (PQresultStatus(result_guard.result) != PGRES_COMMAND_OK &&
         PQresultStatus(result_guard.result) != PGRES_TUPLES_OK) {
         // PQresultErrorMessage(nullptr) returns "" when PQexecParams returns
         // NULL. Fall back to PQerrorMessage(conn) for connection-level errors.
         // Must capture BEFORE rollback, which clears the connection error state.
-        const std::string err_msg = (result_guard.result != nullptr)
-            ? std::string(PQresultErrorMessage(result_guard.result))
-            : std::string(PQerrorMessage(conn_guard.conn));
+        const std::string err_msg = (result_guard.result != nullptr) ?
+                                        std::string(PQresultErrorMessage(result_guard.result)) :
+                                        std::string(PQerrorMessage(conn_guard.conn));
         pg_result_guard rollback_guard(PQexec(conn_guard.conn, "ROLLBACK"));
         BOOST_LOG_SEV(lg, error) << "Command failed: " << err_msg;
         throw std::runtime_error("Command execution failed: " + err_msg);
@@ -626,12 +645,15 @@ void execute_parameterized_command(context ctx, const std::string& sql,
     BOOST_LOG_SEV(lg, debug) << "Finished " << operation_desc << ".";
 }
 
-std::vector<std::vector<std::optional<std::string>>> execute_parameterized_multi_column_query(
-    context ctx, const std::string& sql, const std::vector<std::string>& params,
-    logging::logger_t& lg, const std::string& operation_desc) {
+std::vector<std::vector<std::optional<std::string>>>
+execute_parameterized_multi_column_query(context ctx,
+                                         const std::string& sql,
+                                         const std::vector<std::string>& params,
+                                         logging::logger_t& lg,
+                                         const std::string& operation_desc) {
 
-    BOOST_LOG_SEV(lg, debug) << operation_desc << ". SQL: " << sql
-                             << " with " << params.size() << " parameters";
+    BOOST_LOG_SEV(lg, debug) << operation_desc << ". SQL: " << sql << " with " << params.size()
+                             << " parameters";
 
     std::vector<std::vector<std::optional<std::string>>> result;
 
@@ -652,16 +674,14 @@ std::vector<std::vector<std::optional<std::string>>> execute_parameterized_multi
         param_values.push_back(p.c_str());
     }
 
-    pg_result_guard result_guard(PQexecParams(
-        conn_guard.conn,
-        sql.c_str(),
-        static_cast<int>(params.size()),
-        nullptr,
-        param_values.data(),
-        nullptr,
-        nullptr,
-        0
-    ));
+    pg_result_guard result_guard(PQexecParams(conn_guard.conn,
+                                              sql.c_str(),
+                                              static_cast<int>(params.size()),
+                                              nullptr,
+                                              param_values.data(),
+                                              nullptr,
+                                              nullptr,
+                                              0));
 
     if (PQresultStatus(result_guard.result) != PGRES_TUPLES_OK) {
         const std::string err_msg = PQerrorMessage(conn_guard.conn);

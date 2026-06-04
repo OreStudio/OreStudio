@@ -21,9 +21,9 @@
 #define ORES_DATABASE_REPOSITORY_DATABASE_INFO_MAPPER_HPP
 
 #include "ores.database/domain/database_info.hpp"
+#include "ores.database/export.hpp"
 #include "ores.database/repository/database_info_entity.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.database/export.hpp"
 
 namespace ores::database::repository {
 
@@ -32,18 +32,17 @@ namespace ores::database::repository {
  */
 class ORES_DATABASE_EXPORT database_info_mapper {
 private:
-    inline static std::string_view logger_name =
-        "ores.database.repository.database_info_mapper";
+    inline static std::string_view logger_name = "ores.database.repository.database_info_mapper";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }
+
 public:
     static domain::database_info map(const database_info_entity& v);
-    static std::vector<domain::database_info>
-    map(const std::vector<database_info_entity>& v);
+    static std::vector<domain::database_info> map(const std::vector<database_info_entity>& v);
 };
 
 }

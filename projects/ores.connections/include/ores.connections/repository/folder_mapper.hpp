@@ -20,9 +20,9 @@
 #ifndef ORES_CONNECTIONS_REPOSITORY_FOLDER_MAPPER_HPP
 #define ORES_CONNECTIONS_REPOSITORY_FOLDER_MAPPER_HPP
 
-#include <vector>
 #include "ores.connections/domain/folder.hpp"
 #include "ores.connections/repository/folder_entity.hpp"
+#include <vector>
 
 namespace ores::connections::repository {
 

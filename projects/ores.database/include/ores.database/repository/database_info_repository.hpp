@@ -20,12 +20,12 @@
 #ifndef ORES_DATABASE_REPOSITORY_DATABASE_INFO_REPOSITORY_HPP
 #define ORES_DATABASE_REPOSITORY_DATABASE_INFO_REPOSITORY_HPP
 
-#include <vector>
-#include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/database_info.hpp"
 #include "ores.database/export.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <sqlgen/postgres.hpp>
+#include <vector>
 
 namespace ores::database::repository {
 

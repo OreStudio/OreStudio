@@ -20,12 +20,12 @@
 #ifndef ORES_DATABASE_CONTEXT_FACTORY_HPP
 #define ORES_DATABASE_CONTEXT_FACTORY_HPP
 
-#include <iosfwd>
-#include <string_view>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/database_options.hpp"
 #include "ores.database/export.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <iosfwd>
+#include <string_view>
 
 namespace ores::database {
 
@@ -34,8 +34,7 @@ namespace ores::database {
  */
 class ORES_DATABASE_EXPORT context_factory {
 private:
-    inline static std::string_view logger_name =
-        "ores.utility.database.context_factory";
+    inline static std::string_view logger_name = "ores.utility.database.context_factory";
 
     static auto& lg() {
         using namespace ores::logging;
@@ -61,8 +60,8 @@ public:
     static context make_context(const configuration& cfg);
 };
 
-ORES_DATABASE_EXPORT std::ostream&
-operator<<(std::ostream& s, const context_factory::configuration& v);
+ORES_DATABASE_EXPORT std::ostream& operator<<(std::ostream& s,
+                                              const context_factory::configuration& v);
 
 }
 

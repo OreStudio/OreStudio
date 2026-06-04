@@ -18,12 +18,11 @@
  *
  */
 #include "ores.database/repository/database_info_repository.hpp"
-
-#include <sqlgen/postgres.hpp>
-#include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/domain/database_info_json_io.hpp" // IWYU pragma: keep.
+#include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/database_info_entity.hpp"
 #include "ores.database/repository/database_info_mapper.hpp"
+#include <sqlgen/postgres.hpp>
 
 namespace ores::database::repository {
 
@@ -32,16 +31,17 @@ using namespace sqlgen::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-std::vector<domain::database_info>
-database_info_repository::read(context ctx) {
+std::vector<domain::database_info> database_info_repository::read(context ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Reading database infos.";
 
     const auto query = sqlgen::read<std::vector<database_info_entity>>;
 
     return execute_read_query<database_info_entity, domain::database_info>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return database_info_mapper::map(entities); },
-        lg(), "Reading database infos");
+        lg(),
+        "Reading database infos");
 }
 
 }

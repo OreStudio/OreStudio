@@ -18,22 +18,19 @@
  *
  */
 #include "ores.connections/repository/connection_tag_mapper.hpp"
-
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
 namespace ores::connections::repository {
 
-connection_tag_entity connection_tag_mapper::to_entity(
-    const domain::connection_tag& ct) {
+connection_tag_entity connection_tag_mapper::to_entity(const domain::connection_tag& ct) {
     connection_tag_entity e;
     e.connection_id = boost::uuids::to_string(ct.connection_id);
     e.tag_id = boost::uuids::to_string(ct.tag_id);
     return e;
 }
 
-domain::connection_tag connection_tag_mapper::to_domain(
-    const connection_tag_entity& e) {
+domain::connection_tag connection_tag_mapper::to_domain(const connection_tag_entity& e) {
     boost::uuids::string_generator gen;
     domain::connection_tag ct;
     ct.connection_id = gen(e.connection_id);
@@ -41,8 +38,8 @@ domain::connection_tag connection_tag_mapper::to_domain(
     return ct;
 }
 
-std::vector<connection_tag_entity> connection_tag_mapper::to_entities(
-    const std::vector<domain::connection_tag>& tags) {
+std::vector<connection_tag_entity>
+connection_tag_mapper::to_entities(const std::vector<domain::connection_tag>& tags) {
     std::vector<connection_tag_entity> entities;
     entities.reserve(tags.size());
     for (const auto& ct : tags) {
@@ -51,8 +48,8 @@ std::vector<connection_tag_entity> connection_tag_mapper::to_entities(
     return entities;
 }
 
-std::vector<domain::connection_tag> connection_tag_mapper::to_domain(
-    const std::vector<connection_tag_entity>& entities) {
+std::vector<domain::connection_tag>
+connection_tag_mapper::to_domain(const std::vector<connection_tag_entity>& entities) {
     std::vector<domain::connection_tag> tags;
     tags.reserve(entities.size());
     for (const auto& e : entities) {

@@ -18,7 +18,6 @@
  *
  */
 #include "ores.workspace.api/domain/workspace_table.hpp"
-
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
 

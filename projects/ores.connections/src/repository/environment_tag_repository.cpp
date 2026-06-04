@@ -18,17 +18,16 @@
  *
  */
 #include "ores.connections/repository/environment_tag_repository.hpp"
-
-#include <format>
-#include <stdexcept>
-#include <boost/uuid/uuid_io.hpp>
-#include <sqlgen/read.hpp>
-#include <sqlgen/insert.hpp>
-#include <sqlgen/delete_from.hpp>
-#include <sqlgen/where.hpp>
-#include <sqlgen/literals.hpp>
 #include "ores.connections/repository/environment_tag_entity.hpp"
 #include "ores.connections/repository/environment_tag_mapper.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <format>
+#include <sqlgen/delete_from.hpp>
+#include <sqlgen/insert.hpp>
+#include <sqlgen/literals.hpp>
+#include <sqlgen/read.hpp>
+#include <sqlgen/where.hpp>
+#include <stdexcept>
 
 namespace ores::connections::repository {
 
@@ -49,14 +48,13 @@ void environment_tag_repository::write(const domain::environment_tag& et) {
     auto result = sqlgen::insert(*c, entity);
     if (!result) {
         (*c)->rollback();
-        throw std::runtime_error(std::format("Failed to write environment tag: {}",
-            result.error().what()));
+        throw std::runtime_error(
+            std::format("Failed to write environment tag: {}", result.error().what()));
     }
     (*c)->commit();
 }
 
-void environment_tag_repository::write(
-    const std::vector<domain::environment_tag>& tags) {
+void environment_tag_repository::write(const std::vector<domain::environment_tag>& tags) {
     auto c = ctx_.connect();
     if (!c) {
         throw std::runtime_error("Failed to connect to database");
@@ -67,52 +65,51 @@ void environment_tag_repository::write(
     auto result = sqlgen::insert(*c, entities);
     if (!result) {
         (*c)->rollback();
-        throw std::runtime_error(std::format("Failed to write environment tags: {}",
-            result.error().what()));
+        throw std::runtime_error(
+            std::format("Failed to write environment tags: {}", result.error().what()));
     }
     (*c)->commit();
 }
 
-std::vector<domain::environment_tag> environment_tag_repository::read_by_environment(
-    const boost::uuids::uuid& environment_id) {
+std::vector<domain::environment_tag>
+environment_tag_repository::read_by_environment(const boost::uuids::uuid& environment_id) {
     auto c = ctx_.connect();
     if (!c) {
         throw std::runtime_error("Failed to connect to database");
     }
 
     const std::string eid_str = boost::uuids::to_string(environment_id);
-    auto query = sqlgen::read<std::vector<environment_tag_entity>> |
-        where("environment_id"_c == eid_str);
+    auto query =
+        sqlgen::read<std::vector<environment_tag_entity>> | where("environment_id"_c == eid_str);
     auto result = query(*c);
     if (!result) {
-        throw std::runtime_error(std::format("Failed to read environment tags: {}",
-            result.error().what()));
+        throw std::runtime_error(
+            std::format("Failed to read environment tags: {}", result.error().what()));
     }
 
     return environment_tag_mapper::to_domain(*result);
 }
 
-std::vector<domain::environment_tag> environment_tag_repository::read_by_tag(
-    const boost::uuids::uuid& tag_id) {
+std::vector<domain::environment_tag>
+environment_tag_repository::read_by_tag(const boost::uuids::uuid& tag_id) {
     auto c = ctx_.connect();
     if (!c) {
         throw std::runtime_error("Failed to connect to database");
     }
 
     const std::string tid_str = boost::uuids::to_string(tag_id);
-    auto query = sqlgen::read<std::vector<environment_tag_entity>> |
-        where("tag_id"_c == tid_str);
+    auto query = sqlgen::read<std::vector<environment_tag_entity>> | where("tag_id"_c == tid_str);
     auto result = query(*c);
     if (!result) {
-        throw std::runtime_error(std::format("Failed to read environment tags by tag: {}",
-            result.error().what()));
+        throw std::runtime_error(
+            std::format("Failed to read environment tags by tag: {}", result.error().what()));
     }
 
     return environment_tag_mapper::to_domain(*result);
 }
 
-void environment_tag_repository::remove(
-    const boost::uuids::uuid& environment_id, const boost::uuids::uuid& tag_id) {
+void environment_tag_repository::remove(const boost::uuids::uuid& environment_id,
+                                        const boost::uuids::uuid& tag_id) {
     auto c = ctx_.connect();
     if (!c) {
         throw std::runtime_error("Failed to connect to database");
@@ -122,18 +119,17 @@ void environment_tag_repository::remove(
     const std::string tid_str = boost::uuids::to_string(tag_id);
     (*c)->begin_transaction();
     auto query = sqlgen::delete_from<environment_tag_entity> |
-        where("environment_id"_c == eid_str && "tag_id"_c == tid_str);
+                 where("environment_id"_c == eid_str && "tag_id"_c == tid_str);
     auto result = query(*c);
     if (!result) {
         (*c)->rollback();
-        throw std::runtime_error(std::format("Failed to delete environment tag: {}",
-            result.error().what()));
+        throw std::runtime_error(
+            std::format("Failed to delete environment tag: {}", result.error().what()));
     }
     (*c)->commit();
 }
 
-void environment_tag_repository::remove_by_environment(
-    const boost::uuids::uuid& environment_id) {
+void environment_tag_repository::remove_by_environment(const boost::uuids::uuid& environment_id) {
     auto c = ctx_.connect();
     if (!c) {
         throw std::runtime_error("Failed to connect to database");
@@ -141,13 +137,12 @@ void environment_tag_repository::remove_by_environment(
 
     const std::string eid_str = boost::uuids::to_string(environment_id);
     (*c)->begin_transaction();
-    auto query = sqlgen::delete_from<environment_tag_entity> |
-        where("environment_id"_c == eid_str);
+    auto query = sqlgen::delete_from<environment_tag_entity> | where("environment_id"_c == eid_str);
     auto result = query(*c);
     if (!result) {
         (*c)->rollback();
-        throw std::runtime_error(std::format("Failed to delete environment tags: {}",
-            result.error().what()));
+        throw std::runtime_error(
+            std::format("Failed to delete environment tags: {}", result.error().what()));
     }
     (*c)->commit();
 }
@@ -160,13 +155,12 @@ void environment_tag_repository::remove_by_tag(const boost::uuids::uuid& tag_id)
 
     const std::string tid_str = boost::uuids::to_string(tag_id);
     (*c)->begin_transaction();
-    auto query = sqlgen::delete_from<environment_tag_entity> |
-        where("tag_id"_c == tid_str);
+    auto query = sqlgen::delete_from<environment_tag_entity> | where("tag_id"_c == tid_str);
     auto result = query(*c);
     if (!result) {
         (*c)->rollback();
-        throw std::runtime_error(std::format("Failed to delete environment tags by tag: {}",
-            result.error().what()));
+        throw std::runtime_error(
+            std::format("Failed to delete environment tags by tag: {}", result.error().what()));
     }
     (*c)->commit();
 }

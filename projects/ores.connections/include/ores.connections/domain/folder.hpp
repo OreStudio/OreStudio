@@ -20,9 +20,9 @@
 #ifndef ORES_CONNECTIONS_DOMAIN_FOLDER_HPP
 #define ORES_CONNECTIONS_DOMAIN_FOLDER_HPP
 
-#include <string>
-#include <optional>
 #include <boost/uuid/uuid.hpp>
+#include <optional>
+#include <string>
 
 namespace ores::connections::domain {
 

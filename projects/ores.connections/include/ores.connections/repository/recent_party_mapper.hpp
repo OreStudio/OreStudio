@@ -20,9 +20,9 @@
 #ifndef ORES_CONNECTIONS_REPOSITORY_RECENT_PARTY_MAPPER_HPP
 #define ORES_CONNECTIONS_REPOSITORY_RECENT_PARTY_MAPPER_HPP
 
-#include <vector>
 #include "ores.connections/domain/recent_party.hpp"
 #include "ores.connections/repository/recent_party_entity.hpp"
+#include <vector>
 
 namespace ores::connections::repository {
 
@@ -30,8 +30,8 @@ class recent_party_mapper final {
 public:
     static recent_party_entity to_entity(const domain::recent_party& rp);
     static domain::recent_party to_domain(const recent_party_entity& e);
-    static std::vector<domain::recent_party> to_domain(
-        const std::vector<recent_party_entity>& entities);
+    static std::vector<domain::recent_party>
+    to_domain(const std::vector<recent_party_entity>& entities);
 };
 
 }

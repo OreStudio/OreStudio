@@ -18,15 +18,14 @@
  *
  */
 #include "ores.database/service/postgres_listener_service.hpp"
-
-#include <catch2/catch_test_macros.hpp>
-#include <sqlgen/postgres.hpp>
-#include <chrono>
-#include <future>
-#include <thread>
-#include <string>
 #include "ores.logging/make_logger.hpp"
 #include "ores.testing/database_helper.hpp"
+#include <catch2/catch_test_macros.hpp>
+#include <chrono>
+#include <future>
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <thread>
 
 namespace {
 
@@ -78,7 +77,8 @@ TEST_CASE("postgres_listener_service_lifecycle", tags) {
 TEST_CASE("postgres_listener_service_notification_reception", tags) {
     auto lg(make_logger(test_suite));
 
-    std::string channel_name = "test_channel_reception_" +
+    std::string channel_name =
+        "test_channel_reception_" +
         std::to_string(std::hash<std::thread::id>{}(std::this_thread::get_id()));
     std::string test_payload = R"({"entity":"ores.database.test_entity", "data":"hello"})";
 
@@ -120,7 +120,8 @@ TEST_CASE("postgres_listener_service_notification_reception", tags) {
 TEST_CASE("postgres_listener_service_no_notification_without_subscribe", tags) {
     auto lg(make_logger(test_suite));
 
-    std::string channel_name = "test_channel_no_subscribe_" +
+    std::string channel_name =
+        "test_channel_no_subscribe_" +
         std::to_string(std::hash<std::thread::id>{}(std::this_thread::get_id()));
     std::string test_payload = R"({"entity":"test_no_subscribe"})";
 
@@ -153,7 +154,8 @@ TEST_CASE("postgres_listener_service_no_notification_without_subscribe", tags) {
 TEST_CASE("postgres_listener_service_subscribe_before_start", tags) {
     auto lg(make_logger(test_suite));
 
-    std::string channel_name = "test_channel_pre_subscribe_" +
+    std::string channel_name =
+        "test_channel_pre_subscribe_" +
         std::to_string(std::hash<std::thread::id>{}(std::this_thread::get_id()));
     std::string test_payload = R"({"entity":"ores.database.pre_subscribe_entity"})";
 
@@ -198,7 +200,8 @@ TEST_CASE("postgres_listener_service_subscribe_before_start", tags) {
 TEST_CASE("postgres_listener_service_notify_method", tags) {
     auto lg(make_logger(test_suite));
 
-    std::string channel_name = "test_channel_notify_method_" +
+    std::string channel_name =
+        "test_channel_notify_method_" +
         std::to_string(std::hash<std::thread::id>{}(std::this_thread::get_id()));
     std::string test_payload = R"({"entity":"ores.database.notify_method_entity"})";
 

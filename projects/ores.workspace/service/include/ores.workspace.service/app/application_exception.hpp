@@ -20,16 +20,15 @@
 #ifndef ORES_WORKSPACE_SERVICE_APP_APPLICATION_EXCEPTION_HPP
 #define ORES_WORKSPACE_SERVICE_APP_APPLICATION_EXCEPTION_HPP
 
-#include <string>
 #include <boost/exception/info.hpp>
+#include <string>
 
 namespace ores::workspace::service::app {
 
 /**
  * @brief A fatal error has occurred whilst the application was running.
  */
-class application_exception : public virtual std::exception,
-                              public virtual boost::exception {
+class application_exception : public virtual std::exception, public virtual boost::exception {
 public:
     explicit application_exception(std::string_view message = "")
         : message_(message) {}

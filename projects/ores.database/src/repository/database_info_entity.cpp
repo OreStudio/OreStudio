@@ -18,7 +18,6 @@
  *
  */
 #include "ores.database/repository/database_info_entity.hpp"
-
 #include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>

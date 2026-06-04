@@ -17,15 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.connections/repository/folder_repository.hpp"
-
-#include <catch2/catch_test_macros.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include "ores.logging/make_logger.hpp"
-#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
-#include "ores.utility/generation/generation_context.hpp"
 #include "ores.connections/domain/folder_json_io.hpp" // IWYU pragma: keep.
 #include "ores.connections/generators/folder_generator.hpp"
+#include "ores.connections/repository/folder_repository.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.utility/generation/generation_context.hpp"
+#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <boost/uuid/uuid_io.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 
@@ -36,8 +35,8 @@ class scoped_sqlite_context {
 public:
     scoped_sqlite_context()
         : db_path_(std::filesystem::temp_directory_path() /
-                   ("ores_test_" + std::to_string(std::rand()) + ".db")),
-          ctx_(db_path_) {
+                   ("ores_test_" + std::to_string(std::rand()) + ".db"))
+        , ctx_(db_path_) {
         ctx_.initialize_schema();
     }
 
@@ -45,7 +44,9 @@ public:
         std::filesystem::remove(db_path_);
     }
 
-    ores::connections::repository::sqlite_context& context() { return ctx_; }
+    ores::connections::repository::sqlite_context& context() {
+        return ctx_;
+    }
 
 private:
     std::filesystem::path db_path_;

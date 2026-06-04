@@ -23,7 +23,8 @@
 /**
  * @brief Feature flags and runtime configuration service
  *
- * Standalone NATS microservice hosting variability handlers: feature flag management and system-wide runtime configuration.
+ * Standalone NATS microservice hosting variability handlers: feature flag management and
+ * system-wide runtime configuration.
  */
 namespace ores::variability.service {}
 

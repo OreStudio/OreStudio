@@ -20,15 +20,15 @@
 #ifndef ORES_VARIABILITY_SERVICE_SYSTEM_SETTINGS_SERVICE_HPP
 #define ORES_VARIABILITY_SERVICE_SYSTEM_SETTINGS_SERVICE_HPP
 
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.variability.api/domain/system_setting.hpp"
+#include "ores.variability.core/export.hpp"
+#include "ores.variability.core/repository/system_settings_repository.hpp"
+#include <optional>
 #include <string>
 #include <string_view>
-#include <optional>
 #include <vector>
-#include "ores.logging/make_logger.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.variability.api/domain/system_setting.hpp"
-#include "ores.variability.core/repository/system_settings_repository.hpp"
-#include "ores.variability.core/export.hpp"
 
 namespace ores::variability::service {
 
@@ -41,8 +41,7 @@ namespace ores::variability::service {
  */
 class ORES_VARIABILITY_CORE_EXPORT system_settings_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.variability.service.system_settings_service";
+    inline static std::string_view logger_name = "ores.variability.service.system_settings_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -58,8 +57,7 @@ public:
      * @param tenant_id The tenant identifier used when creating new settings.
      *        Defaults to empty; must be set for convenience set_* methods to work.
      */
-    explicit system_settings_service(database::context ctx,
-        std::string tenant_id = {});
+    explicit system_settings_service(database::context ctx, std::string tenant_id = {});
 
     // -------------------------------------------------------------------------
     // Raw access
@@ -68,8 +66,7 @@ public:
     /**
      * @brief Retrieves a single setting by name (latest active version).
      */
-    [[nodiscard]] std::optional<domain::system_setting>
-    get(const std::string& name);
+    [[nodiscard]] std::optional<domain::system_setting> get(const std::string& name);
 
     /**
      * @brief Retrieves all currently active settings.
@@ -89,8 +86,7 @@ public:
     /**
      * @brief Retrieves all historical versions of a setting.
      */
-    [[nodiscard]] std::vector<domain::system_setting>
-    get_history(const std::string& name);
+    [[nodiscard]] std::vector<domain::system_setting> get_history(const std::string& name);
 
     // -------------------------------------------------------------------------
     // Typed accessors (return registry default if absent from DB)
@@ -136,28 +132,31 @@ public:
     // -------------------------------------------------------------------------
 
     [[nodiscard]] bool is_bootstrap_mode_enabled() const;
-    void set_bootstrap_mode(bool enabled, std::string_view modified_by,
-        std::string_view change_reason_code,
-        std::string_view change_commentary);
+    void set_bootstrap_mode(bool enabled,
+                            std::string_view modified_by,
+                            std::string_view change_reason_code,
+                            std::string_view change_commentary);
 
     [[nodiscard]] bool is_user_signups_enabled() const;
-    void set_user_signups(bool enabled, std::string_view modified_by,
-        std::string_view change_reason_code,
-        std::string_view change_commentary);
+    void set_user_signups(bool enabled,
+                          std::string_view modified_by,
+                          std::string_view change_reason_code,
+                          std::string_view change_commentary);
 
     [[nodiscard]] bool is_signup_requires_authorization_enabled() const;
     void set_signup_requires_authorization(bool enabled,
-        std::string_view modified_by,
-        std::string_view change_reason_code,
-        std::string_view change_commentary);
+                                           std::string_view modified_by,
+                                           std::string_view change_reason_code,
+                                           std::string_view change_commentary);
 
     [[nodiscard]] bool is_password_validation_disabled() const;
 
 private:
-    void set_bool_setting(std::string_view name, bool value,
-        std::string_view modified_by,
-        std::string_view change_reason_code,
-        std::string_view change_commentary);
+    void set_bool_setting(std::string_view name,
+                          bool value,
+                          std::string_view modified_by,
+                          std::string_view change_reason_code,
+                          std::string_view change_commentary);
 
     // Cache: name → value text, populated by refresh()
     std::unordered_map<std::string, std::string> cache_;

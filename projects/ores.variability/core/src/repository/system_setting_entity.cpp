@@ -18,7 +18,6 @@
  *
  */
 #include "ores.variability.core/repository/system_setting_entity.hpp"
-
 #include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>

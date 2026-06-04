@@ -18,17 +18,16 @@
  *
  */
 #include "ores.connections/repository/tag_repository.hpp"
-
-#include <format>
-#include <stdexcept>
-#include <boost/uuid/uuid_io.hpp>
-#include <sqlgen/read.hpp>
-#include <sqlgen/insert.hpp>
-#include <sqlgen/delete_from.hpp>
-#include <sqlgen/where.hpp>
-#include <sqlgen/literals.hpp>
 #include "ores.connections/repository/tag_entity.hpp"
 #include "ores.connections/repository/tag_mapper.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <format>
+#include <sqlgen/delete_from.hpp>
+#include <sqlgen/insert.hpp>
+#include <sqlgen/literals.hpp>
+#include <sqlgen/read.hpp>
+#include <sqlgen/where.hpp>
+#include <stdexcept>
 
 namespace ores::connections::repository {
 
@@ -49,8 +48,7 @@ void tag_repository::write(const domain::tag& t) {
     auto result = sqlgen::insert_or_replace(*conn, entity);
     if (!result) {
         (*conn)->rollback();
-        throw std::runtime_error(std::format("Failed to write tag: {}",
-            result.error().what()));
+        throw std::runtime_error(std::format("Failed to write tag: {}", result.error().what()));
     }
     (*conn)->commit();
 }
@@ -66,8 +64,7 @@ void tag_repository::write(const std::vector<domain::tag>& tags) {
     auto result = sqlgen::insert_or_replace(*conn, entities);
     if (!result) {
         (*conn)->rollback();
-        throw std::runtime_error(std::format("Failed to write tags: {}",
-            result.error().what()));
+        throw std::runtime_error(std::format("Failed to write tags: {}", result.error().what()));
     }
     (*conn)->commit();
 }
@@ -81,27 +78,24 @@ std::vector<domain::tag> tag_repository::read_all() {
     auto query = sqlgen::read<std::vector<tag_entity>>;
     auto result = query(*conn);
     if (!result) {
-        throw std::runtime_error(std::format("Failed to read tags: {}",
-            result.error().what()));
+        throw std::runtime_error(std::format("Failed to read tags: {}", result.error().what()));
     }
 
     return tag_mapper::to_domain(*result);
 }
 
-std::optional<domain::tag> tag_repository::read_by_id(
-    const boost::uuids::uuid& id) {
+std::optional<domain::tag> tag_repository::read_by_id(const boost::uuids::uuid& id) {
     auto conn = ctx_.connect();
     if (!conn) {
         throw std::runtime_error("Failed to connect to database");
     }
 
     const std::string id_str = boost::uuids::to_string(id);
-    auto query = sqlgen::read<std::vector<tag_entity>> |
-        where("id"_c == id_str);
+    auto query = sqlgen::read<std::vector<tag_entity>> | where("id"_c == id_str);
     auto result = query(*conn);
     if (!result) {
-        throw std::runtime_error(std::format("Failed to read tag by ID: {}",
-            result.error().what()));
+        throw std::runtime_error(
+            std::format("Failed to read tag by ID: {}", result.error().what()));
     }
 
     if (result->empty()) {
@@ -116,12 +110,11 @@ std::optional<domain::tag> tag_repository::read_by_name(const std::string& name)
         throw std::runtime_error("Failed to connect to database");
     }
 
-    auto query = sqlgen::read<std::vector<tag_entity>> |
-        where("name"_c == name);
+    auto query = sqlgen::read<std::vector<tag_entity>> | where("name"_c == name);
     auto result = query(*conn);
     if (!result) {
-        throw std::runtime_error(std::format("Failed to read tag by name: {}",
-            result.error().what()));
+        throw std::runtime_error(
+            std::format("Failed to read tag by name: {}", result.error().what()));
     }
 
     if (result->empty()) {
@@ -142,8 +135,7 @@ void tag_repository::remove(const boost::uuids::uuid& id) {
     auto result = query(*conn);
     if (!result) {
         (*conn)->rollback();
-        throw std::runtime_error(std::format("Failed to delete tag: {}",
-            result.error().what()));
+        throw std::runtime_error(std::format("Failed to delete tag: {}", result.error().what()));
     }
     (*conn)->commit();
 }

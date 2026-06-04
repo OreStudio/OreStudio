@@ -18,28 +18,25 @@
  *
  */
 #include "ores.database/service/health_monitor.hpp"
-
-#include <sqlgen/postgres.hpp>
-#include <boost/asio/steady_timer.hpp>
-#include <boost/asio/bind_cancellation_slot.hpp>
-#include <boost/asio/use_awaitable.hpp>
 #include "ores.database/domain/database_options.hpp"
+#include <boost/asio/bind_cancellation_slot.hpp>
+#include <boost/asio/steady_timer.hpp>
+#include <boost/asio/use_awaitable.hpp>
+#include <sqlgen/postgres.hpp>
 
 namespace ores::database {
 
 namespace {
-    using severity_level = boost::log::trivial::severity_level;
-    constexpr auto info = severity_level::info;
-    constexpr auto debug = severity_level::debug;
-    constexpr auto warn = severity_level::warning;
-    constexpr auto error = severity_level::error;
+using severity_level = boost::log::trivial::severity_level;
+constexpr auto info = severity_level::info;
+constexpr auto debug = severity_level::debug;
+constexpr auto warn = severity_level::warning;
+constexpr auto error = severity_level::error;
 }
 
-health_monitor::health_monitor(database_options options,
-    std::chrono::seconds poll_interval)
-    : options_(std::move(options)),
-      poll_interval_(poll_interval) {
-}
+health_monitor::health_monitor(database_options options, std::chrono::seconds poll_interval)
+    : options_(std::move(options))
+    , poll_interval_(poll_interval) {}
 
 void health_monitor::set_status_change_callback(status_change_callback callback) {
     std::lock_guard lock(mutex_);
@@ -104,8 +101,7 @@ bool health_monitor::check_health() {
             }
 
             if (was_available) {
-                BOOST_LOG_SEV(lg(), error)
-                    << "Database connection lost: " << error_msg;
+                BOOST_LOG_SEV(lg(), error) << "Database connection lost: " << error_msg;
 
                 status_change_callback callback;
                 {
@@ -116,8 +112,7 @@ bool health_monitor::check_health() {
                     callback(false, error_msg);
                 }
             } else {
-                BOOST_LOG_SEV(lg(), warn)
-                    << "Database still unavailable: " << error_msg;
+                BOOST_LOG_SEV(lg(), warn) << "Database still unavailable: " << error_msg;
             }
             return false;
         }
@@ -130,8 +125,7 @@ bool health_monitor::check_health() {
         }
 
         if (was_available) {
-            BOOST_LOG_SEV(lg(), error)
-                << "Database connection lost: " << error_msg;
+            BOOST_LOG_SEV(lg(), error) << "Database connection lost: " << error_msg;
 
             status_change_callback callback;
             {
@@ -142,18 +136,15 @@ bool health_monitor::check_health() {
                 callback(false, error_msg);
             }
         } else {
-            BOOST_LOG_SEV(lg(), warn)
-                << "Database still unavailable: " << error_msg;
+            BOOST_LOG_SEV(lg(), warn) << "Database still unavailable: " << error_msg;
         }
         return false;
     }
 }
 
-boost::asio::awaitable<void>
-health_monitor::run(boost::asio::io_context& io_context) {
-    BOOST_LOG_SEV(lg(), info)
-        << "Starting database health monitor with poll interval of "
-        << poll_interval_.count() << " seconds";
+boost::asio::awaitable<void> health_monitor::run(boost::asio::io_context& io_context) {
+    BOOST_LOG_SEV(lg(), info) << "Starting database health monitor with poll interval of "
+                              << poll_interval_.count() << " seconds";
 
     running_ = true;
 
@@ -174,10 +165,8 @@ health_monitor::run(boost::asio::io_context& io_context) {
     while (running_) {
         try {
             timer.expires_after(poll_interval_);
-            co_await timer.async_wait(
-                boost::asio::bind_cancellation_slot(
-                    stop_signal_.slot(),
-                    boost::asio::use_awaitable));
+            co_await timer.async_wait(boost::asio::bind_cancellation_slot(
+                stop_signal_.slot(), boost::asio::use_awaitable));
 
             if (!running_) {
                 break;
@@ -190,8 +179,7 @@ health_monitor::run(boost::asio::io_context& io_context) {
                 BOOST_LOG_SEV(lg(), debug) << "Health monitor timer cancelled";
                 break;
             }
-            BOOST_LOG_SEV(lg(), error)
-                << "Health monitor error: " << e.what();
+            BOOST_LOG_SEV(lg(), error) << "Health monitor error: " << e.what();
         }
     }
 

@@ -20,16 +20,16 @@
 #ifndef ORES_DATABASE_TENANT_AWARE_POOL_HPP
 #define ORES_DATABASE_TENANT_AWARE_POOL_HPP
 
-#include <mutex>
-#include <optional>
-#include <string>
-#include <vector>
-#include <sqlgen/ConnectionPool.hpp>
-#include <sqlgen/postgres.hpp>
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_io.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <mutex>
+#include <optional>
+#include <sqlgen/ConnectionPool.hpp>
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::database {
 
@@ -48,8 +48,7 @@ namespace ores::database {
 template <class Connection>
 class tenant_aware_pool {
 private:
-    inline static std::string_view logger_name =
-        "ores.database.domain.tenant_aware_pool";
+    inline static std::string_view logger_name = "ores.database.domain.tenant_aware_pool";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -66,12 +65,13 @@ public:
                       utility::uuid::tenant_id tenant_id,
                       std::string actor = "",
                       std::string service_account = "")
-        : pool_(std::move(pool)), credentials_(std::move(credentials)),
-          pool_size_(pool_.size()),
-          reconnect_mutex_(std::make_shared<std::mutex>()),
-          tenant_id_(std::move(tenant_id)),
-          actor_(std::move(actor)),
-          service_account_(std::move(service_account)) {}
+        : pool_(std::move(pool))
+        , credentials_(std::move(credentials))
+        , pool_size_(pool_.size())
+        , reconnect_mutex_(std::make_shared<std::mutex>())
+        , tenant_id_(std::move(tenant_id))
+        , actor_(std::move(actor))
+        , service_account_(std::move(service_account)) {}
 
     /**
      * @brief Constructs a tenant-and-party-aware pool wrapper.
@@ -83,14 +83,15 @@ public:
                       std::vector<boost::uuids::uuid> visible_party_ids,
                       std::string actor = "",
                       std::string service_account = "")
-        : pool_(std::move(pool)), credentials_(std::move(credentials)),
-          pool_size_(pool_.size()),
-          reconnect_mutex_(std::make_shared<std::mutex>()),
-          tenant_id_(std::move(tenant_id)),
-          party_id_(party_id),
-          visible_party_ids_(std::move(visible_party_ids)),
-          actor_(std::move(actor)),
-          service_account_(std::move(service_account)) {}
+        : pool_(std::move(pool))
+        , credentials_(std::move(credentials))
+        , pool_size_(pool_.size())
+        , reconnect_mutex_(std::make_shared<std::mutex>())
+        , tenant_id_(std::move(tenant_id))
+        , party_id_(party_id)
+        , visible_party_ids_(std::move(visible_party_ids))
+        , actor_(std::move(actor))
+        , service_account_(std::move(service_account)) {}
 
     /**
      * @brief Acquires a session and sets the tenant (and party) context.
@@ -122,21 +123,16 @@ public:
         } // session_result still held here intentionally
 
         if (needs_rebuild) {
-            BOOST_LOG_SEV(lg(), warn)
-                << "Pool connection dead (ROLLBACK failed: "
-                << rollback_error << "). Rebuilding pool...";
+            BOOST_LOG_SEV(lg(), warn) << "Pool connection dead (ROLLBACK failed: " << rollback_error
+                                      << "). Rebuilding pool...";
             // Drop session so the connection flag is released before we
             // replace the pool (avoids use-after-free of the old pool entry).
             session_result = pool_.acquire(); // re-acquire to replace below
             {
                 std::lock_guard lock(*reconnect_mutex_);
                 sqlgen::ConnectionPoolConfig cfg{
-                    .size = pool_size_,
-                    .num_attempts = 3,
-                    .wait_time_in_seconds = 1
-                };
-                auto new_pool = sqlgen::make_connection_pool<Connection>(
-                    cfg, credentials_);
+                    .size = pool_size_, .num_attempts = 3, .wait_time_in_seconds = 1};
+                auto new_pool = sqlgen::make_connection_pool<Connection>(cfg, credentials_);
                 if (new_pool) {
                     pool_ = std::move(*new_pool);
                     BOOST_LOG_SEV(lg(), info) << "Pool rebuilt successfully.";
@@ -144,33 +140,32 @@ public:
                     BOOST_LOG_SEV(lg(), error)
                         << "Pool rebuild failed: " << new_pool.error().what();
                     return sqlgen::error("Pool rebuild failed: " +
-                        std::string(new_pool.error().what()));
+                                         std::string(new_pool.error().what()));
                 }
             }
             session_result = pool_.acquire();
-            if (!session_result) return session_result;
+            if (!session_result)
+                return session_result;
             (*session_result)->execute("ROLLBACK"); // best-effort on fresh conn
         }
 
         // Force UTC for all timestamp operations on this connection.
         // PostgreSQL returns timestamptz values as "YYYY-MM-DD HH:MM:SS+00"
         // when the session timezone is UTC, which from_iso8601_utc accepts.
-        auto tz_result = (*session_result)->execute(
-            "SELECT set_config('TimeZone', 'UTC', false)");
+        auto tz_result = (*session_result)->execute("SELECT set_config('TimeZone', 'UTC', false)");
         if (!tz_result) {
             return sqlgen::error("Failed to set session timezone to UTC: " +
-                std::string(tz_result.error().what()));
+                                 std::string(tz_result.error().what()));
         }
 
         const auto tenant_id_str = tenant_id_.to_string();
         const std::string sql =
-            "SELECT set_config('app.current_tenant_id', '" +
-            tenant_id_str + "', false)";
+            "SELECT set_config('app.current_tenant_id', '" + tenant_id_str + "', false)";
 
         auto exec_result = (*session_result)->execute(sql);
         if (!exec_result) {
             return sqlgen::error("Failed to set tenant context: " +
-                std::string(exec_result.error().what()));
+                                 std::string(exec_result.error().what()));
         }
 
         BOOST_LOG_SEV(lg(), debug) << "Set tenant context to: " << tenant_id_str;
@@ -179,53 +174,49 @@ public:
         if (party_id_.has_value()) {
             const auto party_id_str = boost::uuids::to_string(*party_id_);
             const std::string party_sql =
-                "SELECT set_config('app.current_party_id', '" +
-                party_id_str + "', false)";
+                "SELECT set_config('app.current_party_id', '" + party_id_str + "', false)";
 
             auto party_result = (*session_result)->execute(party_sql);
             if (!party_result) {
                 return sqlgen::error("Failed to set party context: " +
-                    std::string(party_result.error().what()));
+                                     std::string(party_result.error().what()));
             }
 
-            BOOST_LOG_SEV(lg(), debug) << "Set party context to: "
-                                       << party_id_str;
+            BOOST_LOG_SEV(lg(), debug) << "Set party context to: " << party_id_str;
         }
 
         // Set visible party IDs if available
         if (!visible_party_ids_.empty()) {
             std::string ids_str = "{";
             for (std::size_t i = 0; i < visible_party_ids_.size(); ++i) {
-                if (i > 0) ids_str += ",";
+                if (i > 0)
+                    ids_str += ",";
                 ids_str += boost::uuids::to_string(visible_party_ids_[i]);
             }
             ids_str += "}";
 
             const std::string vis_sql =
-                "SELECT set_config('app.visible_party_ids', '" +
-                ids_str + "', false)";
+                "SELECT set_config('app.visible_party_ids', '" + ids_str + "', false)";
 
             auto vis_result = (*session_result)->execute(vis_sql);
             if (!vis_result) {
                 return sqlgen::error("Failed to set visible party IDs: " +
-                    std::string(vis_result.error().what()));
+                                     std::string(vis_result.error().what()));
             }
 
-            BOOST_LOG_SEV(lg(), debug) << "Set visible party IDs ("
-                                       << visible_party_ids_.size()
-                                       << " parties)";
+            BOOST_LOG_SEV(lg(), debug)
+                << "Set visible party IDs (" << visible_party_ids_.size() << " parties)";
         }
 
         // Set current actor (username) if available.
         if (!actor_.empty()) {
             const std::string actor_sql =
-                "SELECT set_config('app.current_actor', '" +
-                actor_ + "', false)";
+                "SELECT set_config('app.current_actor', '" + actor_ + "', false)";
 
             auto actor_result = (*session_result)->execute(actor_sql);
             if (!actor_result) {
                 return sqlgen::error("Failed to set actor context: " +
-                    std::string(actor_result.error().what()));
+                                     std::string(actor_result.error().what()));
             }
 
             BOOST_LOG_SEV(lg(), debug) << "Set actor context to: " << actor_;
@@ -235,16 +226,14 @@ public:
         // This is used by DB triggers to stamp performed_by.
         if (!service_account_.empty()) {
             const std::string svc_sql =
-                "SELECT set_config('app.current_service', '" +
-                service_account_ + "', false)";
+                "SELECT set_config('app.current_service', '" + service_account_ + "', false)";
             auto svc_result = (*session_result)->execute(svc_sql);
             if (!svc_result) {
                 return sqlgen::error("Failed to set service context: " +
-                    std::string(svc_result.error().what()));
+                                     std::string(svc_result.error().what()));
             }
 
-            BOOST_LOG_SEV(lg(), debug) << "Set service context to: "
-                                       << service_account_;
+            BOOST_LOG_SEV(lg(), debug) << "Set service context to: " << service_account_;
         }
 
         return session_result;
@@ -253,12 +242,16 @@ public:
     /**
      * @brief Gets the current tenant ID.
      */
-    const utility::uuid::tenant_id& tenant_id() const { return tenant_id_; }
+    const utility::uuid::tenant_id& tenant_id() const {
+        return tenant_id_;
+    }
 
     /**
      * @brief Gets the current party ID, if set.
      */
-    std::optional<boost::uuids::uuid> party_id() const { return party_id_; }
+    std::optional<boost::uuids::uuid> party_id() const {
+        return party_id_;
+    }
 
     /**
      * @brief Gets the visible party IDs.
@@ -270,12 +263,16 @@ public:
     /**
      * @brief Gets the current actor (username), if set.
      */
-    const std::string& actor() const { return actor_; }
+    const std::string& actor() const {
+        return actor_;
+    }
 
     /**
      * @brief Gets the current service account, if set.
      */
-    const std::string& service_account() const { return service_account_; }
+    const std::string& service_account() const {
+        return service_account_;
+    }
 
     /**
      * @brief Gets the underlying connection pool.
@@ -287,12 +284,16 @@ public:
     /**
      * @brief Gets the number of available connections.
      */
-    size_t available() const { return pool_.available(); }
+    size_t available() const {
+        return pool_.available();
+    }
 
     /**
      * @brief Gets the total number of connections in the pool.
      */
-    size_t size() const { return pool_.size(); }
+    size_t size() const {
+        return pool_.size();
+    }
 
 private:
     sqlgen::ConnectionPool<Connection> pool_;
@@ -311,8 +312,8 @@ private:
 namespace sqlgen {
 
 template <class Connection>
-Result<Ref<Session<Connection>>> session(
-    ores::database::tenant_aware_pool<Connection>& pool) noexcept {
+Result<Ref<Session<Connection>>>
+session(ores::database::tenant_aware_pool<Connection>& pool) noexcept {
     return pool.acquire();
 }
 

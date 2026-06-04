@@ -18,10 +18,9 @@
  *
  */
 #include "ores.connections/domain/folder_table_io.hpp"
-
-#include <ostream>
-#include <fort.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <fort.hpp>
+#include <ostream>
 
 namespace ores::connections::domain {
 
@@ -32,14 +31,9 @@ std::ostream& operator<<(std::ostream& s, const std::vector<folder>& v) {
     table << fort::header << "ID" << "Name" << "Parent ID" << "Description" << fort::endr;
 
     for (const auto& f : v) {
-        const auto parent_str = f.parent_id
-            ? boost::uuids::to_string(*f.parent_id)
-            : "(root)";
+        const auto parent_str = f.parent_id ? boost::uuids::to_string(*f.parent_id) : "(root)";
 
-        table << boost::uuids::to_string(f.id)
-              << f.name
-              << parent_str
-              << f.description
+        table << boost::uuids::to_string(f.id) << f.name << parent_str << f.description
               << fort::endr;
     }
 

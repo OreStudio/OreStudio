@@ -18,16 +18,14 @@
  *
  */
 #include "ores.connections/generators/environment_generator.hpp"
-
-#include <faker-cxx/word.h>
 #include <faker-cxx/internet.h>
 #include <faker-cxx/lorem.h>
 #include <faker-cxx/number.h>
+#include <faker-cxx/word.h>
 
 namespace ores::connections::generators {
 
-domain::environment generate_synthetic_environment(
-    utility::generation::generation_context& ctx) {
+domain::environment generate_synthetic_environment(utility::generation::generation_context& ctx) {
 
     domain::environment r;
     r.id = ctx.generate_uuid();
@@ -40,16 +38,15 @@ domain::environment generate_synthetic_environment(
     return r;
 }
 
-domain::environment generate_synthetic_environment(
-    utility::generation::generation_context& ctx,
-    const boost::uuids::uuid& folder_id) {
+domain::environment generate_synthetic_environment(utility::generation::generation_context& ctx,
+                                                   const boost::uuids::uuid& folder_id) {
     auto r = generate_synthetic_environment(ctx);
     r.folder_id = folder_id;
     return r;
 }
 
-std::vector<domain::environment> generate_synthetic_environments(
-    std::size_t n, utility::generation::generation_context& ctx) {
+std::vector<domain::environment>
+generate_synthetic_environments(std::size_t n, utility::generation::generation_context& ctx) {
     std::vector<domain::environment> r;
     r.reserve(n);
     while (r.size() < n)

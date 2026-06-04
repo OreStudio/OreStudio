@@ -18,15 +18,14 @@
  *
  */
 #include "ores.connections/domain/folder.hpp"
-#include "ores.connections/domain/folder_json_io.hpp" // IWYU pragma: keep.
+#include "ores.connections/domain/folder_json_io.hpp"  // IWYU pragma: keep.
 #include "ores.connections/domain/folder_table_io.hpp" // IWYU pragma: keep.
-
-#include <sstream>
-#include <catch2/catch_test_macros.hpp>
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include <boost/uuid/uuid_io.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <sstream>
 
 namespace {
 

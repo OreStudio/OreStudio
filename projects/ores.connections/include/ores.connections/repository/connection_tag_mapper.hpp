@@ -20,9 +20,9 @@
 #ifndef ORES_CONNECTIONS_REPOSITORY_CONNECTION_TAG_MAPPER_HPP
 #define ORES_CONNECTIONS_REPOSITORY_CONNECTION_TAG_MAPPER_HPP
 
-#include <vector>
 #include "ores.connections/domain/connection_tag.hpp"
 #include "ores.connections/repository/connection_tag_entity.hpp"
+#include <vector>
 
 namespace ores::connections::repository {
 
@@ -30,10 +30,10 @@ class connection_tag_mapper final {
 public:
     static connection_tag_entity to_entity(const domain::connection_tag& ct);
     static domain::connection_tag to_domain(const connection_tag_entity& e);
-    static std::vector<connection_tag_entity> to_entities(
-        const std::vector<domain::connection_tag>& tags);
-    static std::vector<domain::connection_tag> to_domain(
-        const std::vector<connection_tag_entity>& entities);
+    static std::vector<connection_tag_entity>
+    to_entities(const std::vector<domain::connection_tag>& tags);
+    static std::vector<domain::connection_tag>
+    to_domain(const std::vector<connection_tag_entity>& entities);
 };
 
 }

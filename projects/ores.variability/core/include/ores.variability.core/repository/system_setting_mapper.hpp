@@ -20,10 +20,10 @@
 #ifndef ORES_VARIABILITY_REPOSITORY_SYSTEM_SETTING_MAPPER_HPP
 #define ORES_VARIABILITY_REPOSITORY_SYSTEM_SETTING_MAPPER_HPP
 
-#include <vector>
 #include "ores.logging/make_logger.hpp"
 #include "ores.variability.api/domain/system_setting.hpp"
 #include "ores.variability.core/repository/system_setting_entity.hpp"
+#include <vector>
 
 namespace ores::variability::repository {
 
@@ -45,10 +45,8 @@ public:
     static domain::system_setting map(const system_setting_entity& v);
     static system_setting_entity map(const domain::system_setting& v);
 
-    static std::vector<domain::system_setting>
-    map(const std::vector<system_setting_entity>& v);
-    static std::vector<system_setting_entity>
-    map(const std::vector<domain::system_setting>& v);
+    static std::vector<domain::system_setting> map(const std::vector<system_setting_entity>& v);
+    static std::vector<system_setting_entity> map(const std::vector<domain::system_setting>& v);
 };
 
 }

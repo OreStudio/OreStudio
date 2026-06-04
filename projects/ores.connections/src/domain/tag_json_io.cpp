@@ -18,11 +18,10 @@
  *
  */
 #include "ores.connections/domain/tag_json_io.hpp"
-
+#include "ores.utility/rfl/reflectors.hpp"
 #include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
-#include "ores.utility/rfl/reflectors.hpp"
 
 namespace ores::connections::domain {
 

@@ -18,12 +18,11 @@
  *
  */
 #include "ores.variability.core/repository/system_settings_repository.hpp"
-
-#include <unordered_map>
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.variability.api/domain/system_setting_json_io.hpp" // IWYU pragma: keep.
 #include "ores.variability.core/repository/system_setting_entity.hpp"
 #include "ores.variability.core/repository/system_setting_mapper.hpp"
+#include <unordered_map>
 
 namespace ores::variability::repository {
 
@@ -36,34 +35,32 @@ std::string system_settings_repository::sql() {
     return generate_create_table_sql<system_setting_entity>(lg());
 }
 
-void system_settings_repository::
-write(context ctx, const domain::system_setting& setting) {
+void system_settings_repository::write(context ctx, const domain::system_setting& setting) {
     BOOST_LOG_SEV(lg(), debug) << "Writing system setting to database: " << setting;
 
-    execute_write_query(ctx, system_setting_mapper::map(setting),
-        lg(), "writing system setting to database");
+    execute_write_query(
+        ctx, system_setting_mapper::map(setting), lg(), "writing system setting to database");
 }
 
-void system_settings_repository::
-write(context ctx, const std::vector<domain::system_setting>& settings) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing system settings to database. Count: "
-                               << settings.size();
+void system_settings_repository::write(context ctx,
+                                       const std::vector<domain::system_setting>& settings) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing system settings to database. Count: " << settings.size();
 
-    execute_write_query(ctx, system_setting_mapper::map(settings),
-        lg(), "writing system settings to database");
+    execute_write_query(
+        ctx, system_setting_mapper::map(settings), lg(), "writing system settings to database");
 }
 
-std::vector<domain::system_setting>
-system_settings_repository::read_latest(context ctx) {
+std::vector<domain::system_setting> system_settings_repository::read_latest(context ctx) {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<system_setting_entity>> |
-        where("valid_to"_c == max.value()) |
-        order_by("valid_from"_c.desc());
+                       where("valid_to"_c == max.value()) | order_by("valid_from"_c.desc());
 
     return execute_read_query<system_setting_entity, domain::system_setting>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return system_setting_mapper::map(entities); },
-        lg(), "Reading latest system settings");
+        lg(),
+        "Reading latest system settings");
 }
 
 std::vector<domain::system_setting>
@@ -72,32 +69,33 @@ system_settings_repository::read_latest(context ctx, const std::string& name) {
 
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<system_setting_entity>> |
-        where("name"_c == name && "valid_to"_c == max.value()) |
-        order_by("valid_from"_c.desc());
+                       where("name"_c == name && "valid_to"_c == max.value()) |
+                       order_by("valid_from"_c.desc());
 
     return execute_read_query<system_setting_entity, domain::system_setting>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return system_setting_mapper::map(entities); },
-        lg(), "Reading latest system setting by name");
+        lg(),
+        "Reading latest system setting by name");
 }
 
 std::vector<domain::system_setting>
-system_settings_repository::read_latest(context ctx,
-    std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest system settings with offset: "
-                               << offset << " limit: " << limit;
+system_settings_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest system settings with offset: " << offset
+                               << " limit: " << limit;
 
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<system_setting_entity>> |
-        where("valid_to"_c == max.value()) |
-        order_by("valid_from"_c.desc()) |
-        sqlgen::offset(offset) |
-        sqlgen::limit(limit);
+                       where("valid_to"_c == max.value()) | order_by("valid_from"_c.desc()) |
+                       sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_read_query<system_setting_entity, domain::system_setting>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return system_setting_mapper::map(entities); },
-        lg(), "Reading latest system settings with pagination");
+        lg(),
+        "Reading latest system settings with pagination");
 }
 
 std::uint32_t system_settings_repository::get_total_count(context ctx) {
@@ -109,10 +107,8 @@ std::uint32_t system_settings_repository::get_total_count(context ctx) {
         long long count;
     };
 
-    const auto query = sqlgen::select_from<system_setting_entity>(
-        sqlgen::count().as<"count">()) |
-        where("valid_to"_c == max.value()) |
-        sqlgen::to<count_result>;
+    const auto query = sqlgen::select_from<system_setting_entity>(sqlgen::count().as<"count">()) |
+                       where("valid_to"_c == max.value()) | sqlgen::to<count_result>;
 
     const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
     ensure_success(r, lg());
@@ -122,41 +118,44 @@ std::uint32_t system_settings_repository::get_total_count(context ctx) {
     return count;
 }
 
-std::vector<domain::system_setting>
-system_settings_repository::read_all(context ctx) {
-    const auto query = sqlgen::read<std::vector<system_setting_entity>> |
-        order_by("valid_from"_c.desc());
+std::vector<domain::system_setting> system_settings_repository::read_all(context ctx) {
+    const auto query =
+        sqlgen::read<std::vector<system_setting_entity>> | order_by("valid_from"_c.desc());
 
     return execute_read_query<system_setting_entity, domain::system_setting>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return system_setting_mapper::map(entities); },
-        lg(), "Reading all system settings");
+        lg(),
+        "Reading all system settings");
 }
 
-std::vector<domain::system_setting>
-system_settings_repository::read_all(context ctx, const std::string& name) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all versions of system setting by name: "
-                               << name;
+std::vector<domain::system_setting> system_settings_repository::read_all(context ctx,
+                                                                         const std::string& name) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading all versions of system setting by name: " << name;
 
-    const auto query = sqlgen::read<std::vector<system_setting_entity>> |
-        where("name"_c == name) |
-        order_by("valid_from"_c.desc());
+    const auto query = sqlgen::read<std::vector<system_setting_entity>> | where("name"_c == name) |
+                       order_by("valid_from"_c.desc());
 
     return execute_read_query<system_setting_entity, domain::system_setting>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return system_setting_mapper::map(entities); },
-        lg(), "Reading all system settings by name");
+        lg(),
+        "Reading all system settings by name");
 }
 
 std::unordered_map<std::string, std::string>
-system_settings_repository::read_for_tenant(
-    context ctx, const std::string& tenant_id) {
+system_settings_repository::read_for_tenant(context ctx, const std::string& tenant_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading system settings for tenant: " << tenant_id;
 
-    const auto rows = execute_parameterized_multi_column_query(ctx,
+    const auto rows = execute_parameterized_multi_column_query(
+        ctx,
         "SELECT setting_name, setting_value"
         " FROM ores_variability_get_system_settings_fn($1)",
-        {tenant_id}, lg(), "Reading system settings for tenant via SECURITY DEFINER");
+        {tenant_id},
+        lg(),
+        "Reading system settings for tenant via SECURITY DEFINER");
 
     std::unordered_map<std::string, std::string> result;
     result.reserve(rows.size());
@@ -165,8 +164,8 @@ system_settings_repository::read_for_tenant(
             result[*row[0]] = *row[1];
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Loaded " << result.size()
-        << " settings for tenant " << tenant_id;
+    BOOST_LOG_SEV(lg(), debug) << "Loaded " << result.size() << " settings for tenant "
+                               << tenant_id;
     return result;
 }
 
@@ -174,11 +173,9 @@ void system_settings_repository::remove(context ctx, const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Removing system setting from database: " << name;
 
     // The database trigger closes the temporal record rather than deleting it.
-    const auto query = sqlgen::delete_from<system_setting_entity> |
-        where("name"_c == name);
+    const auto query = sqlgen::delete_from<system_setting_entity> | where("name"_c == name);
 
-    execute_delete_query(ctx, query, lg(),
-        "Removing system setting from database");
+    execute_delete_query(ctx, query, lg(), "Removing system setting from database");
 }
 
 }

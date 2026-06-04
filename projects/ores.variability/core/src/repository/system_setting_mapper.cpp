@@ -18,10 +18,9 @@
  *
  */
 #include "ores.variability.core/repository/system_setting_mapper.hpp"
-
-#include <algorithm>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.variability.api/domain/system_setting_json_io.hpp" // IWYU pragma: keep.
+#include <algorithm>
 
 namespace ores::variability::repository {
 
@@ -71,19 +70,13 @@ system_setting_entity system_setting_mapper::map(const domain::system_setting& v
 std::vector<domain::system_setting>
 system_setting_mapper::map(const std::vector<system_setting_entity>& v) {
     return map_vector<system_setting_entity, domain::system_setting>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<system_setting_entity>
 system_setting_mapper::map(const std::vector<domain::system_setting>& v) {
     return map_vector<domain::system_setting, system_setting_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

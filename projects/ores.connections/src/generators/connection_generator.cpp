@@ -18,16 +18,14 @@
  *
  */
 #include "ores.connections/generators/connection_generator.hpp"
-
-#include <faker-cxx/word.h>
 #include <faker-cxx/internet.h>
 #include <faker-cxx/lorem.h>
 #include <faker-cxx/number.h>
+#include <faker-cxx/word.h>
 
 namespace ores::connections::generators {
 
-domain::connection generate_synthetic_connection(
-    utility::generation::generation_context& ctx) {
+domain::connection generate_synthetic_connection(utility::generation::generation_context& ctx) {
 
     domain::connection r;
     r.id = ctx.generate_uuid();
@@ -37,22 +35,21 @@ domain::connection generate_synthetic_connection(
     r.host = std::string(faker::internet::domainName());
     r.port = faker::number::integer(1024, 65535);
     r.username = std::string(faker::internet::username());
-    r.encrypted_password = "";  // Not encrypted by generator
+    r.encrypted_password = ""; // Not encrypted by generator
     r.description = std::string(faker::lorem::sentence());
 
     return r;
 }
 
-domain::connection generate_synthetic_connection(
-    utility::generation::generation_context& ctx,
-    const boost::uuids::uuid& folder_id) {
+domain::connection generate_synthetic_connection(utility::generation::generation_context& ctx,
+                                                 const boost::uuids::uuid& folder_id) {
     auto r = generate_synthetic_connection(ctx);
     r.folder_id = folder_id;
     return r;
 }
 
-std::vector<domain::connection> generate_synthetic_connections(
-    std::size_t n, utility::generation::generation_context& ctx) {
+std::vector<domain::connection>
+generate_synthetic_connections(std::size_t n, utility::generation::generation_context& ctx) {
     std::vector<domain::connection> r;
     r.reserve(n);
     while (r.size() < n)

@@ -20,14 +20,14 @@
 #ifndef ORES_DATABASE_REPOSITORY_BITEMPORAL_OPERATIONS_HPP
 #define ORES_DATABASE_REPOSITORY_BITEMPORAL_OPERATIONS_HPP
 
+#include "ores.database/domain/context.hpp"
+#include "ores.database/export.hpp"
+#include "ores.database/repository/helpers.hpp"
+#include "ores.logging/make_logger.hpp"
 #include <map>
 #include <optional>
-#include <vector>
 #include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.database/repository/helpers.hpp"
-#include "ores.database/export.hpp"
+#include <vector>
 
 namespace ores::database::repository {
 
@@ -61,9 +61,12 @@ namespace ores::database::repository {
  *     "ores.iam.repository.account_repository",
  *     "Read latest accounts");
  */
-template<typename EntityType, typename DomainType, typename QueryType, typename MapperFunc>
-std::vector<DomainType> execute_read_query(context ctx, const QueryType& query,
-    MapperFunc&& mapper, logging::logger_t& lg, const std::string& operation_desc) {
+template <typename EntityType, typename DomainType, typename QueryType, typename MapperFunc>
+std::vector<DomainType> execute_read_query(context ctx,
+                                           const QueryType& query,
+                                           MapperFunc&& mapper,
+                                           logging::logger_t& lg,
+                                           const std::string& operation_desc) {
 
     using namespace ores::logging;
     using namespace sqlgen;
@@ -99,9 +102,11 @@ std::vector<DomainType> execute_read_query(context ctx, const QueryType& query,
  *     "ores.iam.repository.account_repository",
  *     "Writing account to database");
  */
-template<typename EntityType>
-void execute_write_query(context ctx, const EntityType& entity,
-    logging::logger_t& lg, const std::string& operation_desc) {
+template <typename EntityType>
+void execute_write_query(context ctx,
+                         const EntityType& entity,
+                         logging::logger_t& lg,
+                         const std::string& operation_desc) {
 
     using namespace ores::logging;
     using namespace sqlgen;
@@ -109,9 +114,9 @@ void execute_write_query(context ctx, const EntityType& entity,
     BOOST_LOG_SEV(lg, debug) << operation_desc << ".";
 
     const auto r = session(ctx.connection_pool())
-        .and_then(begin_transaction)
-        .and_then(insert(entity))
-        .and_then(commit);
+                       .and_then(begin_transaction)
+                       .and_then(insert(entity))
+                       .and_then(commit);
     ensure_success(r, lg);
 
     BOOST_LOG_SEV(lg, debug) << "Finished " << operation_desc << ".";
@@ -136,19 +141,19 @@ void execute_write_query(context ctx, const EntityType& entity,
  *     "ores.iam.repository.account_repository",
  *     "Removing account from database");
  */
-template<typename QueryType>
-void execute_delete_query(context ctx, const QueryType& query,
-    logging::logger_t& lg, const std::string& operation_desc) {
+template <typename QueryType>
+void execute_delete_query(context ctx,
+                          const QueryType& query,
+                          logging::logger_t& lg,
+                          const std::string& operation_desc) {
 
     using namespace ores::logging;
     using namespace sqlgen;
 
     BOOST_LOG_SEV(lg, debug) << operation_desc << ".";
 
-    const auto r = session(ctx.connection_pool())
-        .and_then(begin_transaction)
-        .and_then(query)
-        .and_then(commit);
+    const auto r =
+        session(ctx.connection_pool()).and_then(begin_transaction).and_then(query).and_then(commit);
     ensure_success(r, lg);
 
     BOOST_LOG_SEV(lg, debug) << "Finished " << operation_desc << ".";
@@ -171,9 +176,8 @@ void execute_delete_query(context ctx, const QueryType& query,
  *     "SELECT DISTINCT p.code FROM permissions p JOIN ...",
  *     lg(), "Reading effective permissions");
  */
-ORES_DATABASE_EXPORT std::vector<std::string> execute_raw_string_query(context ctx,
-    const std::string& sql, logging::logger_t& lg,
-    const std::string& operation_desc);
+ORES_DATABASE_EXPORT std::vector<std::string> execute_raw_string_query(
+    context ctx, const std::string& sql, logging::logger_t& lg, const std::string& operation_desc);
 
 /**
  * @brief Executes a raw SQL query that returns a grouped map of strings.
@@ -194,8 +198,7 @@ ORES_DATABASE_EXPORT std::vector<std::string> execute_raw_string_query(context c
  *     lg(), "Reading all role permission codes");
  */
 ORES_DATABASE_EXPORT std::map<std::string, std::vector<std::string>> execute_raw_grouped_query(
-    context ctx, const std::string& sql, logging::logger_t& lg,
-    const std::string& operation_desc);
+    context ctx, const std::string& sql, logging::logger_t& lg, const std::string& operation_desc);
 
 /**
  * @brief Executes a raw SQL query that returns multiple columns per row.
@@ -219,9 +222,11 @@ ORES_DATABASE_EXPORT std::map<std::string, std::vector<std::string>> execute_raw
  *     auto name = row[1].value_or("");
  * }
  */
-ORES_DATABASE_EXPORT std::vector<std::vector<std::optional<std::string>>> execute_raw_multi_column_query(
-    context ctx, const std::string& sql, logging::logger_t& lg,
-    const std::string& operation_desc);
+ORES_DATABASE_EXPORT std::vector<std::vector<std::optional<std::string>>>
+execute_raw_multi_column_query(context ctx,
+                               const std::string& sql,
+                               logging::logger_t& lg,
+                               const std::string& operation_desc);
 
 /**
  * @brief Executes a raw SQL command that doesn't return results.
@@ -239,8 +244,10 @@ ORES_DATABASE_EXPORT std::vector<std::vector<std::optional<std::string>>> execut
  *     "INSERT INTO publications_tbl (dataset_id) VALUES ('...')",
  *     lg(), "Recording publication");
  */
-ORES_DATABASE_EXPORT void execute_raw_command(context ctx, const std::string& sql,
-    logging::logger_t& lg, const std::string& operation_desc);
+ORES_DATABASE_EXPORT void execute_raw_command(context ctx,
+                                              const std::string& sql,
+                                              logging::logger_t& lg,
+                                              const std::string& operation_desc);
 
 /**
  * @brief Executes a parameterized SQL query that returns a single column of strings.
@@ -261,9 +268,12 @@ ORES_DATABASE_EXPORT void execute_raw_command(context ctx, const std::string& sq
  *     {"system"},
  *     lg(), "Looking up tenant by code");
  */
-ORES_DATABASE_EXPORT std::vector<std::string> execute_parameterized_string_query(context ctx,
-    const std::string& sql, const std::vector<std::string>& params,
-    logging::logger_t& lg, const std::string& operation_desc);
+ORES_DATABASE_EXPORT std::vector<std::string>
+execute_parameterized_string_query(context ctx,
+                                   const std::string& sql,
+                                   const std::vector<std::string>& params,
+                                   logging::logger_t& lg,
+                                   const std::string& operation_desc);
 
 /**
  * @brief Executes a parameterized SQL query with explicit credentials, without tenant context.
@@ -288,10 +298,12 @@ ORES_DATABASE_EXPORT std::vector<std::string> execute_parameterized_string_query
  *     {job_name, schedule, command, app_db},
  *     lg(), "Scheduling job via pg_cron");
  */
-ORES_DATABASE_EXPORT std::vector<std::string> execute_parameterized_string_query(
-    const sqlgen::postgres::Credentials& creds,
-    const std::string& sql, const std::vector<std::string>& params,
-    logging::logger_t& lg, const std::string& operation_desc);
+ORES_DATABASE_EXPORT std::vector<std::string>
+execute_parameterized_string_query(const sqlgen::postgres::Credentials& creds,
+                                   const std::string& sql,
+                                   const std::vector<std::string>& params,
+                                   logging::logger_t& lg,
+                                   const std::string& operation_desc);
 
 /**
  * @brief Executes a raw SQL query with explicit credentials, without tenant context.
@@ -313,10 +325,11 @@ ORES_DATABASE_EXPORT std::vector<std::string> execute_parameterized_string_query
  *     "SELECT runid, jobid, status FROM cron.job_run_details WHERE jobid = 42",
  *     lg(), "Reading pg_cron job history");
  */
-ORES_DATABASE_EXPORT std::vector<std::vector<std::optional<std::string>>> execute_raw_multi_column_query(
-    const sqlgen::postgres::Credentials& creds,
-    const std::string& sql, logging::logger_t& lg,
-    const std::string& operation_desc);
+ORES_DATABASE_EXPORT std::vector<std::vector<std::optional<std::string>>>
+execute_raw_multi_column_query(const sqlgen::postgres::Credentials& creds,
+                               const std::string& sql,
+                               logging::logger_t& lg,
+                               const std::string& operation_desc);
 
 /**
  * @brief Executes a parameterized SQL command that doesn't return results.
@@ -337,9 +350,11 @@ ORES_DATABASE_EXPORT std::vector<std::vector<std::optional<std::string>>> execut
  *     {"production", "tenant_code", "tenant_name", "domain", "description"},
  *     lg(), "Provisioning tenant");
  */
-ORES_DATABASE_EXPORT void execute_parameterized_command(context ctx, const std::string& sql,
-    const std::vector<std::string>& params, logging::logger_t& lg,
-    const std::string& operation_desc);
+ORES_DATABASE_EXPORT void execute_parameterized_command(context ctx,
+                                                        const std::string& sql,
+                                                        const std::vector<std::string>& params,
+                                                        logging::logger_t& lg,
+                                                        const std::string& operation_desc);
 
 /**
  * @brief Executes a parameterized SQL query that returns multiple columns per row.
@@ -361,9 +376,12 @@ ORES_DATABASE_EXPORT void execute_parameterized_command(context ctx, const std::
  *     {queue_name, "30", "1"},
  *     lg(), "Reading pgmq messages");
  */
-ORES_DATABASE_EXPORT std::vector<std::vector<std::optional<std::string>>> execute_parameterized_multi_column_query(
-    context ctx, const std::string& sql, const std::vector<std::string>& params,
-    logging::logger_t& lg, const std::string& operation_desc);
+ORES_DATABASE_EXPORT std::vector<std::vector<std::optional<std::string>>>
+execute_parameterized_multi_column_query(context ctx,
+                                         const std::string& sql,
+                                         const std::vector<std::string>& params,
+                                         logging::logger_t& lg,
+                                         const std::string& operation_desc);
 
 }
 

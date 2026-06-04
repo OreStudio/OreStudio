@@ -20,9 +20,9 @@
 #ifndef ORES_CONNECTIONS_DOMAIN_FOLDER_JSON_IO_HPP
 #define ORES_CONNECTIONS_DOMAIN_FOLDER_JSON_IO_HPP
 
-#include <iosfwd>
 #include "ores.connections/domain/folder.hpp"
 #include "ores.connections/export.hpp"
+#include <iosfwd>
 
 namespace ores::connections::domain {
 

@@ -18,17 +18,16 @@
  *
  */
 #include "ores.connections/repository/environment_repository.hpp"
-
-#include <format>
-#include <stdexcept>
-#include <boost/uuid/uuid_io.hpp>
-#include <sqlgen/read.hpp>
-#include <sqlgen/insert.hpp>
-#include <sqlgen/delete_from.hpp>
-#include <sqlgen/where.hpp>
-#include <sqlgen/literals.hpp>
 #include "ores.connections/repository/environment_entity.hpp"
 #include "ores.connections/repository/environment_mapper.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <format>
+#include <sqlgen/delete_from.hpp>
+#include <sqlgen/insert.hpp>
+#include <sqlgen/literals.hpp>
+#include <sqlgen/read.hpp>
+#include <sqlgen/where.hpp>
+#include <stdexcept>
 
 namespace ores::connections::repository {
 
@@ -49,8 +48,8 @@ void environment_repository::write(const domain::environment& env) {
     auto result = sqlgen::insert_or_replace(*c, entity);
     if (!result) {
         (*c)->rollback();
-        throw std::runtime_error(std::format("Failed to write environment: {}",
-            result.error().what()));
+        throw std::runtime_error(
+            std::format("Failed to write environment: {}", result.error().what()));
     }
     (*c)->commit();
 }
@@ -66,8 +65,8 @@ void environment_repository::write(const std::vector<domain::environment>& envs)
     auto result = sqlgen::insert_or_replace(*c, entities);
     if (!result) {
         (*c)->rollback();
-        throw std::runtime_error(std::format("Failed to write environments: {}",
-            result.error().what()));
+        throw std::runtime_error(
+            std::format("Failed to write environments: {}", result.error().what()));
     }
     (*c)->commit();
 }
@@ -81,27 +80,26 @@ std::vector<domain::environment> environment_repository::read_all() {
     auto query = sqlgen::read<std::vector<environment_entity>>;
     auto result = query(*c);
     if (!result) {
-        throw std::runtime_error(std::format("Failed to read environments: {}",
-            result.error().what()));
+        throw std::runtime_error(
+            std::format("Failed to read environments: {}", result.error().what()));
     }
 
     return environment_mapper::to_domain(*result);
 }
 
-std::optional<domain::environment> environment_repository::read_by_id(
-    const boost::uuids::uuid& id) {
+std::optional<domain::environment>
+environment_repository::read_by_id(const boost::uuids::uuid& id) {
     auto c = ctx_.connect();
     if (!c) {
         throw std::runtime_error("Failed to connect to database");
     }
 
     const std::string id_str = boost::uuids::to_string(id);
-    auto query = sqlgen::read<std::vector<environment_entity>> |
-        where("id"_c == id_str);
+    auto query = sqlgen::read<std::vector<environment_entity>> | where("id"_c == id_str);
     auto result = query(*c);
     if (!result) {
-        throw std::runtime_error(std::format("Failed to read environment by ID: {}",
-            result.error().what()));
+        throw std::runtime_error(
+            std::format("Failed to read environment by ID: {}", result.error().what()));
     }
 
     if (result->empty()) {
@@ -110,8 +108,8 @@ std::optional<domain::environment> environment_repository::read_by_id(
     return environment_mapper::to_domain(result->front());
 }
 
-std::vector<domain::environment> environment_repository::read_by_folder(
-    const std::optional<boost::uuids::uuid>& folder_id) {
+std::vector<domain::environment>
+environment_repository::read_by_folder(const std::optional<boost::uuids::uuid>& folder_id) {
     auto c = ctx_.connect();
     if (!c) {
         throw std::runtime_error("Failed to connect to database");
@@ -120,21 +118,20 @@ std::vector<domain::environment> environment_repository::read_by_folder(
     std::vector<environment_entity> entities;
     if (folder_id) {
         const std::string fid_str = boost::uuids::to_string(*folder_id);
-        auto query = sqlgen::read<std::vector<environment_entity>> |
-            where("folder_id"_c == fid_str);
+        auto query =
+            sqlgen::read<std::vector<environment_entity>> | where("folder_id"_c == fid_str);
         auto result = query(*c);
         if (!result) {
-            throw std::runtime_error(std::format("Failed to read environments by folder: {}",
-                result.error().what()));
+            throw std::runtime_error(
+                std::format("Failed to read environments by folder: {}", result.error().what()));
         }
         entities = *result;
     } else {
-        auto query = sqlgen::read<std::vector<environment_entity>> |
-            where("folder_id"_c.is_null());
+        auto query = sqlgen::read<std::vector<environment_entity>> | where("folder_id"_c.is_null());
         auto result = query(*c);
         if (!result) {
-            throw std::runtime_error(std::format("Failed to read root environments: {}",
-                result.error().what()));
+            throw std::runtime_error(
+                std::format("Failed to read root environments: {}", result.error().what()));
         }
         entities = *result;
     }
@@ -154,8 +151,8 @@ void environment_repository::remove(const boost::uuids::uuid& id) {
     auto result = query(*c);
     if (!result) {
         (*c)->rollback();
-        throw std::runtime_error(std::format("Failed to delete environment: {}",
-            result.error().what()));
+        throw std::runtime_error(
+            std::format("Failed to delete environment: {}", result.error().what()));
     }
     (*c)->commit();
 }

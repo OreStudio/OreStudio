@@ -20,10 +20,10 @@
 #ifndef ORES_UTILITY_REPOSITORY_VERSION_CONFLICT_EXCEPTION_HPP
 #define ORES_UTILITY_REPOSITORY_VERSION_CONFLICT_EXCEPTION_HPP
 
-#include <string>
+#include <boost/exception/info.hpp>
 #include <format>
 #include <optional>
-#include <boost/exception/info.hpp>
+#include <string>
 
 namespace ores::utility::repository {
 
@@ -35,8 +35,7 @@ namespace ores::utility::repository {
  * This typically happens when another client has modified the entity between
  * the time it was read and the time the update was attempted.
  */
-class version_conflict_exception : public virtual std::exception,
-                                   public virtual boost::exception {
+class version_conflict_exception : public virtual std::exception, public virtual boost::exception {
 public:
     /**
      * @brief Constructs a version conflict exception with detailed information.
@@ -50,13 +49,16 @@ public:
                                std::string_view entity_id,
                                int expected_version,
                                int actual_version)
-        : entity_type_(entity_type),
-          entity_id_(entity_id),
-          expected_version_(expected_version),
-          actual_version_(actual_version),
-          message_(std::format(
+        : entity_type_(entity_type)
+        , entity_id_(entity_id)
+        , expected_version_(expected_version)
+        , actual_version_(actual_version)
+        , message_(std::format(
               "Version conflict for {} '{}': expected version {}, but current version is {}",
-              entity_type, entity_id, expected_version, actual_version)) {}
+              entity_type,
+              entity_id,
+              expected_version,
+              actual_version)) {}
 
     /**
      * @brief Constructs a version conflict exception with a custom message.

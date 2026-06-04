@@ -18,9 +18,8 @@
  *
  */
 #include "ores.variability.api/domain/system_setting_table_io.hpp"
-
-#include <ostream>
 #include <fort.hpp>
+#include <ostream>
 
 namespace ores::variability::domain {
 
@@ -28,15 +27,12 @@ std::string convert_to_table(const std::vector<system_setting>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header
-          << "Name" << "Type" << "Value" << "Version"
-          << "Description" << "Change Reason" << "Modified By" << "Recorded At"
-          << fort::endr;
+    table << fort::header << "Name" << "Type" << "Value" << "Version"
+          << "Description" << "Change Reason" << "Modified By" << "Recorded At" << fort::endr;
 
     for (const auto& s : v) {
-        table << s.name << s.data_type << s.value << s.version
-              << s.description << s.change_reason_code << s.modified_by
-              << s.recorded_at << fort::endr;
+        table << s.name << s.data_type << s.value << s.version << s.description
+              << s.change_reason_code << s.modified_by << s.recorded_at << fort::endr;
     }
     return table.to_string();
 }

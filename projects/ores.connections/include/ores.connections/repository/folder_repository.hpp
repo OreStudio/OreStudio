@@ -20,12 +20,12 @@
 #ifndef ORES_CONNECTIONS_REPOSITORY_FOLDER_REPOSITORY_HPP
 #define ORES_CONNECTIONS_REPOSITORY_FOLDER_REPOSITORY_HPP
 
-#include <vector>
-#include <optional>
-#include <boost/uuid/uuid.hpp>
 #include "ores.connections/domain/folder.hpp"
-#include "ores.connections/repository/sqlite_context.hpp"
 #include "ores.connections/export.hpp"
+#include "ores.connections/repository/sqlite_context.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <optional>
+#include <vector>
 
 namespace ores::connections::repository {
 
@@ -59,8 +59,7 @@ public:
     /**
      * @brief Read folders by parent ID (null for root folders).
      */
-    std::vector<domain::folder> read_by_parent(
-        const std::optional<boost::uuids::uuid>& parent_id);
+    std::vector<domain::folder> read_by_parent(const std::optional<boost::uuids::uuid>& parent_id);
 
     /**
      * @brief Delete a folder by ID.

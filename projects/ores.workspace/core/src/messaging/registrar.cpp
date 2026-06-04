@@ -18,13 +18,12 @@
  *
  */
 #include "ores.workspace.core/messaging/registrar.hpp"
-
-#include <memory>
-#include <optional>
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
-#include "ores.workspace.core/messaging/workspace_handler.hpp"
 #include "ores.workspace.api/messaging/workspace_protocol.hpp"
+#include "ores.workspace.core/messaging/workspace_handler.hpp"
+#include <memory>
+#include <optional>
 
 namespace ores::workspace::messaging {
 
@@ -34,8 +33,8 @@ static constexpr std::string_view queue_group = "ores.workspace.service";
 
 std::vector<ores::nats::service::subscription>
 registrar::register_handlers(ores::nats::service::client& nats,
-    ores::database::context ctx,
-    std::optional<ores::security::jwt::jwt_authenticator> verifier) {
+                             ores::database::context ctx,
+                             std::optional<ores::security::jwt::jwt_authenticator> verifier) {
 
     std::vector<ores::nats::service::subscription> subs;
 
@@ -45,29 +44,37 @@ registrar::register_handlers(ores::nats::service::client& nats,
     {
         auto h = std::make_shared<workspace_handler>(nats, ctx, verifier);
         subs.push_back(nats.queue_subscribe(
-            list_workspaces_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->list(std::move(msg)); }));
+            list_workspaces_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->list(std::move(msg));
+            }));
         subs.push_back(nats.queue_subscribe(
-            create_workspace_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->create(std::move(msg)); }));
+            create_workspace_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->create(std::move(msg));
+            }));
         subs.push_back(nats.queue_subscribe(
-            archive_workspace_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->archive(std::move(msg)); }));
+            archive_workspace_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->archive(std::move(msg));
+            }));
         subs.push_back(nats.queue_subscribe(
-            remove_workspace_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->remove(std::move(msg)); }));
+            remove_workspace_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->remove(std::move(msg));
+            }));
         subs.push_back(nats.queue_subscribe(
-            resolve_workspace_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->resolve(std::move(msg)); }));
+            resolve_workspace_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->resolve(std::move(msg));
+            }));
         subs.push_back(nats.queue_subscribe(
-            set_trade_scope_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->set_trade_scope(std::move(msg)); }));
+            set_trade_scope_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->set_trade_scope(std::move(msg));
+            }));
         subs.push_back(nats.queue_subscribe(
-            clear_trade_scope_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->clear_trade_scope(std::move(msg)); }));
+            clear_trade_scope_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->clear_trade_scope(std::move(msg));
+            }));
         subs.push_back(nats.queue_subscribe(
-            get_workspace_history_request::nats_subject, queue_group,
-            [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+            get_workspace_history_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->history(std::move(msg));
+            }));
     }
 
     return subs;

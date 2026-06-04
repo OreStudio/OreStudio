@@ -18,21 +18,17 @@
  *
  */
 #include "ores.connections/generators/tag_generator.hpp"
-
-#include <unordered_set>
-#include <faker-cxx/word.h>
 #include "ores.utility/generation/generation_keys.hpp"
+#include <faker-cxx/word.h>
+#include <unordered_set>
 
 namespace ores::connections::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::tag generate_synthetic_tag(
-    utility::generation::generation_context& ctx) {
-    const auto modified_by = ctx.env().get_or(
-        generation_keys::modified_by, "system");
-    const auto tenant_id = ctx.env().get_or(
-        generation_keys::tenant_id, "system");
+domain::tag generate_synthetic_tag(utility::generation::generation_context& ctx) {
+    const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
+    const auto tenant_id = ctx.env().get_or(generation_keys::tenant_id, "system");
 
     domain::tag r;
     r.id = ctx.generate_uuid();
@@ -42,7 +38,7 @@ domain::tag generate_synthetic_tag(
 }
 
 std::vector<domain::tag> generate_synthetic_tags(std::size_t n,
-    utility::generation::generation_context& ctx) {
+                                                 utility::generation::generation_context& ctx) {
     std::vector<domain::tag> r;
     r.reserve(n);
     while (r.size() < n)
@@ -51,8 +47,8 @@ std::vector<domain::tag> generate_synthetic_tags(std::size_t n,
     return r;
 }
 
-std::vector<domain::tag> generate_unique_synthetic_tags(std::size_t n,
-    utility::generation::generation_context& ctx) {
+std::vector<domain::tag>
+generate_unique_synthetic_tags(std::size_t n, utility::generation::generation_context& ctx) {
     std::unordered_set<std::string> seen;
     seen.reserve(n);
 

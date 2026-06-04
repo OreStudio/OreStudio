@@ -20,8 +20,8 @@
 #ifndef ORES_DATABASE_DOMAIN_DATABASE_INFO_JSON_IO_HPP
 #define ORES_DATABASE_DOMAIN_DATABASE_INFO_JSON_IO_HPP
 
-#include <iosfwd>
 #include "ores.database/domain/database_info.hpp"
+#include <iosfwd>
 
 namespace ores::database::domain {
 

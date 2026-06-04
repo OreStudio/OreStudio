@@ -20,18 +20,18 @@
 #ifndef ORES_DATABASE_SERVICE_POSTGRES_LISTENER_SERVICE_HPP
 #define ORES_DATABASE_SERVICE_POSTGRES_LISTENER_SERVICE_HPP
 
-#include <mutex>
+#include "ores.database/domain/context.hpp"
+#include "ores.database/export.hpp"
+#include "ores.logging/make_logger.hpp"
 #include <atomic>
+#include <condition_variable>
+#include <functional>
+#include <mutex>
+#include <optional>
+#include <sqlgen/postgres.hpp>
 #include <string>
 #include <thread>
 #include <vector>
-#include <optional>
-#include <functional>
-#include <condition_variable>
-#include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.database/export.hpp"
 
 namespace ores::database::service {
 
@@ -49,8 +49,7 @@ class ORES_DATABASE_EXPORT postgres_listener_service final {
 private:
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
-        static auto instance = make_logger(
-            "ores.database.service.postgres_listener_service");
+        static auto instance = make_logger("ores.database.service.postgres_listener_service");
         return instance;
     }
 
@@ -77,8 +76,7 @@ public:
      * @param callback The callback function to be invoked when a notification
      *        is received with the channel name and raw payload.
      */
-    explicit postgres_listener_service(context ctx,
-        notification_callback_t callback);
+    explicit postgres_listener_service(context ctx, notification_callback_t callback);
 
     /**
      * @brief Destroys the postgres_listener_service.
@@ -172,15 +170,15 @@ private:
     context ctx_;
     notification_callback_t notification_callback_;
 
-    mutable std::mutex mutex_;              ///< Protects connection and channels
+    mutable std::mutex mutex_; ///< Protects connection and channels
     std::optional<rfl::Ref<sqlgen::postgres::Connection>> connection_;
     std::vector<std::string> subscribed_channels_;
 
     std::thread listener_thread_;
     std::atomic<bool> running_;
 
-    std::condition_variable ready_cv_;      ///< Signaled when listener is ready
-    bool ready_{false};                     ///< True when listener is actively polling
+    std::condition_variable ready_cv_; ///< Signaled when listener is ready
+    bool ready_{false};                ///< True when listener is actively polling
 };
 
 }

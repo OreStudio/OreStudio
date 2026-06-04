@@ -20,8 +20,8 @@
 #ifndef ORES_DATABASE_REPOSITORY_REPOSITORY_EXCEPTION_HPP
 #define ORES_DATABASE_REPOSITORY_REPOSITORY_EXCEPTION_HPP
 
-#include <string>
 #include <boost/exception/info.hpp>
+#include <string>
 
 namespace ores::database::repository {
 
@@ -29,8 +29,7 @@ namespace ores::database::repository {
  * @brief A fatal error has occurred whilst reading or writing to the
  * repository.
  */
-class repository_exception : public virtual std::exception,
-                             public virtual boost::exception {
+class repository_exception : public virtual std::exception, public virtual boost::exception {
 public:
     explicit repository_exception(std::string_view message = "")
         : message_(message) {}

@@ -20,10 +20,10 @@
 #ifndef ORES_VARIABILITY_EVENTING_SYSTEM_SETTING_CHANGED_EVENT_HPP
 #define ORES_VARIABILITY_EVENTING_SYSTEM_SETTING_CHANGED_EVENT_HPP
 
-#include <chrono>
-#include <vector>
-#include <string>
 #include "ores.eventing/domain/event_traits.hpp"
+#include <chrono>
+#include <string>
+#include <vector>
 
 namespace ores::variability::eventing {
 
@@ -58,10 +58,9 @@ namespace ores::eventing::domain {
 /**
  * @brief Event traits specialization for system_setting_changed_event.
  */
-template<>
+template <>
 struct event_traits<ores::variability::eventing::system_setting_changed_event> {
-    static constexpr std::string_view name =
-        "ores.variability.system_setting_changed";
+    static constexpr std::string_view name = "ores.variability.system_setting_changed";
 };
 
 }

@@ -20,10 +20,10 @@
 #ifndef ORES_VARIABILITY_MESSAGING_SYSTEM_SETTINGS_PROTOCOL_HPP
 #define ORES_VARIABILITY_MESSAGING_SYSTEM_SETTINGS_PROTOCOL_HPP
 
+#include "ores.variability.api/domain/system_setting.hpp"
 #include <string>
 #include <string_view>
 #include <vector>
-#include "ores.variability.api/domain/system_setting.hpp"
 
 namespace ores::variability::messaging {
 
@@ -33,8 +33,7 @@ namespace ores::variability::messaging {
 
 struct list_settings_request {
     using response_type = struct list_settings_response;
-    static constexpr std::string_view nats_subject =
-        "variability.v1.settings.list";
+    static constexpr std::string_view nats_subject = "variability.v1.settings.list";
 };
 
 struct list_settings_response {
@@ -47,12 +46,11 @@ struct list_settings_response {
 
 struct save_setting_request {
     using response_type = struct save_setting_response;
-    static constexpr std::string_view nats_subject =
-        "variability.v1.settings.save";
+    static constexpr std::string_view nats_subject = "variability.v1.settings.save";
     ores::variability::domain::system_setting data;
 
     static save_setting_request from(ores::variability::domain::system_setting s) {
-        return { .data = std::move(s) };
+        return {.data = std::move(s)};
     }
 };
 
@@ -67,8 +65,7 @@ struct save_setting_response {
 
 struct delete_setting_request {
     using response_type = struct delete_setting_response;
-    static constexpr std::string_view nats_subject =
-        "variability.v1.settings.delete";
+    static constexpr std::string_view nats_subject = "variability.v1.settings.delete";
     std::string name;
 };
 
@@ -83,8 +80,7 @@ struct delete_setting_response {
 
 struct get_setting_history_request {
     using response_type = struct get_setting_history_response;
-    static constexpr std::string_view nats_subject =
-        "variability.v1.settings.history";
+    static constexpr std::string_view nats_subject = "variability.v1.settings.history";
     std::string name;
 };
 

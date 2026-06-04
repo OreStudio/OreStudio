@@ -18,10 +18,9 @@
  *
  */
 #include "ores.connections/domain/environment_tag_table_io.hpp"
-
-#include <ostream>
-#include <fort.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <fort.hpp>
+#include <ostream>
 
 namespace ores::connections::domain {
 
@@ -32,8 +31,7 @@ std::ostream& operator<<(std::ostream& s, const std::vector<environment_tag>& v)
     table << fort::header << "Environment ID" << "Tag ID" << fort::endr;
 
     for (const auto& et : v) {
-        table << boost::uuids::to_string(et.environment_id)
-              << boost::uuids::to_string(et.tag_id)
+        table << boost::uuids::to_string(et.environment_id) << boost::uuids::to_string(et.tag_id)
               << fort::endr;
     }
 

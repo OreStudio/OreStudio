@@ -17,13 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.variability.api/domain/system_setting.hpp"
-
-#include <sstream>
-#include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
-#include "ores.variability.api/domain/system_setting_json_io.hpp" // IWYU pragma: keep.
+#include "ores.variability.api/domain/system_setting.hpp"
+#include "ores.variability.api/domain/system_setting_json_io.hpp"  // IWYU pragma: keep.
 #include "ores.variability.api/domain/system_setting_table_io.hpp" // IWYU pragma: keep.
+#include <catch2/catch_test_macros.hpp>
+#include <sstream>
 
 namespace {
 

@@ -20,8 +20,8 @@
 #ifndef ORES_CONNECTIONS_REPOSITORY_CONNECTION_TAG_ENTITY_HPP
 #define ORES_CONNECTIONS_REPOSITORY_CONNECTION_TAG_ENTITY_HPP
 
-#include <string>
 #include <sqlgen/sqlite.hpp>
+#include <string>
 
 namespace ores::connections::repository {
 

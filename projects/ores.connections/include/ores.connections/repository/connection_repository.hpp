@@ -20,12 +20,12 @@
 #ifndef ORES_CONNECTIONS_REPOSITORY_CONNECTION_REPOSITORY_HPP
 #define ORES_CONNECTIONS_REPOSITORY_CONNECTION_REPOSITORY_HPP
 
-#include <vector>
-#include <optional>
-#include <boost/uuid/uuid.hpp>
 #include "ores.connections/domain/connection.hpp"
-#include "ores.connections/repository/sqlite_context.hpp"
 #include "ores.connections/export.hpp"
+#include "ores.connections/repository/sqlite_context.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <optional>
+#include <vector>
 
 namespace ores::connections::repository {
 
@@ -37,8 +37,8 @@ public:
     void write(const std::vector<domain::connection>& conns);
     std::vector<domain::connection> read_all();
     std::optional<domain::connection> read_by_id(const boost::uuids::uuid& id);
-    std::vector<domain::connection> read_by_folder(
-        const std::optional<boost::uuids::uuid>& folder_id);
+    std::vector<domain::connection>
+    read_by_folder(const std::optional<boost::uuids::uuid>& folder_id);
     void remove(const boost::uuids::uuid& id);
 
 private:

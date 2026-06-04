@@ -18,16 +18,15 @@
  *
  */
 #include "ores.connections/repository/recent_party_repository.hpp"
-
+#include "ores.connections/repository/recent_party_entity.hpp"
+#include "ores.connections/repository/recent_party_mapper.hpp"
+#include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <chrono>
 #include <format>
-#include <stdexcept>
-#include <boost/uuid/uuid_io.hpp>
-#include <sqlgen/read.hpp>
 #include <sqlgen/insert.hpp>
-#include "ores.connections/repository/recent_party_entity.hpp"
-#include "ores.connections/repository/recent_party_mapper.hpp"
+#include <sqlgen/read.hpp>
+#include <stdexcept>
 
 namespace ores::connections::repository {
 
@@ -36,16 +35,15 @@ using namespace sqlgen;
 recent_party_repository::recent_party_repository(sqlite_context& ctx)
     : ctx_(ctx) {}
 
-void recent_party_repository::record(
-    const boost::uuids::uuid& party_id, const std::string& party_name) {
+void recent_party_repository::record(const boost::uuids::uuid& party_id,
+                                     const std::string& party_name) {
     auto conn_result = ctx_.connect();
     if (!conn_result)
         throw std::runtime_error("Failed to connect to database");
 
     auto& conn = *conn_result;
 
-    const auto now = std::chrono::floor<std::chrono::seconds>(
-        std::chrono::system_clock::now());
+    const auto now = std::chrono::floor<std::chrono::seconds>(std::chrono::system_clock::now());
     const std::string ts = std::format("{:%Y-%m-%d %H:%M:%S}", now);
 
     recent_party_entity e;
@@ -57,16 +55,15 @@ void recent_party_repository::record(
     auto ins = sqlgen::insert_or_replace(conn, e);
     if (!ins) {
         conn->rollback();
-        throw std::runtime_error(std::format("Failed to record recent party: {}",
-            ins.error().what()));
+        throw std::runtime_error(
+            std::format("Failed to record recent party: {}", ins.error().what()));
     }
 
     // Prune entries beyond max_recents, keeping the most recent
-    conn->execute(std::format(
-        "DELETE FROM recent_parties WHERE party_id NOT IN "
-        "(SELECT party_id FROM recent_parties "
-        " ORDER BY last_selected_at DESC LIMIT {})",
-        max_recents));
+    conn->execute(std::format("DELETE FROM recent_parties WHERE party_id NOT IN "
+                              "(SELECT party_id FROM recent_parties "
+                              " ORDER BY last_selected_at DESC LIMIT {})",
+                              max_recents));
 
     conn->commit();
 }
@@ -80,14 +77,15 @@ std::vector<domain::recent_party> recent_party_repository::read_recent() {
     auto query = sqlgen::read<std::vector<recent_party_entity>>;
     auto result = query(conn);
     if (!result)
-        throw std::runtime_error(std::format("Failed to read recent parties: {}",
-            result.error().what()));
+        throw std::runtime_error(
+            std::format("Failed to read recent parties: {}", result.error().what()));
 
     auto parties = recent_party_mapper::to_domain(*result);
-    std::sort(parties.begin(), parties.end(),
-        [](const domain::recent_party& a, const domain::recent_party& b) {
-            return a.last_selected_at > b.last_selected_at;
-        });
+    std::sort(parties.begin(),
+              parties.end(),
+              [](const domain::recent_party& a, const domain::recent_party& b) {
+                  return a.last_selected_at > b.last_selected_at;
+              });
     return parties;
 }
 

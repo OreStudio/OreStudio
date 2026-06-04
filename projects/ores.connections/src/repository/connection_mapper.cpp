@@ -18,7 +18,6 @@
  *
  */
 #include "ores.connections/repository/connection_mapper.hpp"
-
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
@@ -61,8 +60,8 @@ domain::connection connection_mapper::to_domain(const connection_entity& e) {
     return conn;
 }
 
-std::vector<connection_entity> connection_mapper::to_entities(
-    const std::vector<domain::connection>& conns) {
+std::vector<connection_entity>
+connection_mapper::to_entities(const std::vector<domain::connection>& conns) {
     std::vector<connection_entity> entities;
     entities.reserve(conns.size());
     for (const auto& conn : conns) {
@@ -71,8 +70,8 @@ std::vector<connection_entity> connection_mapper::to_entities(
     return entities;
 }
 
-std::vector<domain::connection> connection_mapper::to_domain(
-    const std::vector<connection_entity>& entities) {
+std::vector<domain::connection>
+connection_mapper::to_domain(const std::vector<connection_entity>& entities) {
     std::vector<domain::connection> conns;
     conns.reserve(entities.size());
     for (const auto& e : entities) {

@@ -18,12 +18,11 @@
  *
  */
 #include "ores.database/service/party_context.hpp"
-
-#include <stdexcept>
+#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.logging/make_logger.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include "ores.logging/make_logger.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include <stdexcept>
 
 namespace ores::database::service {
 
@@ -73,36 +72,36 @@ std::vector<boost::uuids::uuid> parse_uuid_array(const std::string& raw) {
 } // anonymous namespace
 
 context party_context::with_party(const context& ctx,
-    const utility::uuid::tenant_id& tenant,
-    const boost::uuids::uuid& party,
-    const std::string& actor) {
+                                  const utility::uuid::tenant_id& tenant,
+                                  const boost::uuids::uuid& party,
+                                  const std::string& actor) {
     using namespace ores::logging;
     using ores::database::repository::execute_parameterized_string_query;
 
     const auto tenant_str = tenant.to_string();
     const auto party_str = boost::uuids::to_string(party);
 
-    BOOST_LOG_SEV(lg(), debug) << "Resolving visible party set for party: "
-                               << party_str << " in tenant: " << tenant_str;
+    BOOST_LOG_SEV(lg(), debug) << "Resolving visible party set for party: " << party_str
+                               << " in tenant: " << tenant_str;
 
-    const auto rows = execute_parameterized_string_query(ctx,
+    const auto rows = execute_parameterized_string_query(
+        ctx,
         "SELECT ores_refdata_visible_party_ids_fn($1::uuid, $2::uuid)::text",
         {tenant_str, party_str},
-        lg(), "Resolving visible party IDs");
+        lg(),
+        "Resolving visible party IDs");
 
     if (rows.empty() || rows[0].empty()) {
-        throw std::runtime_error(
-            "Party not found: " + party_str + " in tenant " + tenant_str);
+        throw std::runtime_error("Party not found: " + party_str + " in tenant " + tenant_str);
     }
 
     const auto visible_ids = parse_uuid_array(rows[0]);
     if (visible_ids.empty()) {
-        throw std::runtime_error(
-            "Party not found: " + party_str + " in tenant " + tenant_str);
+        throw std::runtime_error("Party not found: " + party_str + " in tenant " + tenant_str);
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Party context: " << party_str
-                              << " (" << visible_ids.size() << " visible parties)";
+    BOOST_LOG_SEV(lg(), info) << "Party context: " << party_str << " (" << visible_ids.size()
+                              << " visible parties)";
 
     return ctx.with_party(tenant, party, visible_ids, actor);
 }

@@ -18,26 +18,24 @@
  *
  */
 #include "ores.workspace.api/generators/workspace_generator.hpp"
-
-#include <atomic>
-#include <string>
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/generation/generation_keys.hpp"
+#include <atomic>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <string>
 
 namespace ores::workspace::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::workspace generate_synthetic_workspace(
-    utility::generation::generation_context& ctx) {
+domain::workspace generate_synthetic_workspace(utility::generation::generation_context& ctx) {
     static std::atomic<int> counter{0};
-    const auto modified_by = ctx.env().get_or(
-        std::string(generation_keys::modified_by), "system");
+    const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
 
     domain::workspace r;
     r.version = 1;
     r.id = ctx.generate_uuid();
-    r.name = std::string(faker::word::noun()) + "-" + std::to_string(counter.fetch_add(1, std::memory_order_relaxed));
+    r.name = std::string(faker::word::noun()) + "-" +
+             std::to_string(counter.fetch_add(1, std::memory_order_relaxed));
     r.owner_id = ctx.generate_uuid();
     r.modified_by = modified_by;
     r.performed_by = modified_by;
@@ -48,8 +46,7 @@ domain::workspace generate_synthetic_workspace(
 }
 
 std::vector<domain::workspace>
-generate_synthetic_workspaces(std::size_t n,
-    utility::generation::generation_context& ctx) {
+generate_synthetic_workspaces(std::size_t n, utility::generation::generation_context& ctx) {
     std::vector<domain::workspace> r;
     r.reserve(n);
     while (r.size() < n)

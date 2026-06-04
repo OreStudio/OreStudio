@@ -70,7 +70,7 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1045][#1045]] | [agile] Scaffold API/core split investigation story |
 
 * Review
 

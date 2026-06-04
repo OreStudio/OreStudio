@@ -39,11 +39,11 @@ first.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:BD519FC9-6B29-4055-877F-861E46043A06][Investigate the API/core split in components]] |
-| Now          | Header moved, all 10 consumers fixed, links updated; full build verifying. |
+| Now          | Complete: PR #1052 merged.             |
 | Waiting on   | Nothing.                               |
-| Next         | Commit, push, raise PR.                |
+| Next         | Nothing — see the eventing split task. |
 | Last touched | 2026-06-04                               |
 
 * Acceptance

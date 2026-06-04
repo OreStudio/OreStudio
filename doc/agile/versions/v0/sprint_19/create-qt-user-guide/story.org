@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: 6111FDF8-96E6-4C40-88BD-C756B6841F85
+:END:
+#+title: Story: Create a user guide for ores.qt
+#+description: Build out the user guide for the Qt application chapter by chapter: administration (accounts, roles, tenants), reference data entities as they are commissioned, and the cross-cutting concerns (provenance, change reasons, paging, badges). Gathers the manual-content tasks previously scattered across commissioning and documentation stories.
+#+type: story
+#+level: s2
+#+filetags: :documentation:manual:qt:sprint_19:v0:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Build out the user guide for the Qt application chapter by chapter. The
+manual's delivery infrastructure (PDF build, book class, site publishing)
+landed in sprint 18; the content chapters started this sprint with
+provisioning (chapter 3), reference data (chapter 4) and currencies
+(chapter 5). This story is the single home for manual-content work going
+forward — previously such tasks were scattered across commissioning and
+documentation stories, which made the manual's progress invisible.
+
+Next up: an administration chapter covering the day-to-day IAM windows —
+accounts (list, details with parties/roles/security tabs, new-account
+flow), roles, and tenants — using the screenshot set captured on
+2026-06-04 (=assets/images/account_*=, =roles_*=, =tenants_*=).
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] |
+| Now           | Story scaffolded; accounts/roles/tenants chapter next. |
+| Waiting on    | Nothing.                               |
+| Next          | Write the administration chapter.      |
+| Last touched  | 2026-06-05                               |
+
+* Acceptance
+
+- The user guide gains an administration chapter documenting the
+  accounts, roles and tenants Qt windows, illustrated with the existing
+  screenshots, following the established chapter conventions.
+- Cross-cutting UI behaviour (paging, badges, provenance, change
+  reasons) is described once and referenced, consistent with the
+  [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]] doc.
+- The product identity document links to the user manual.
+- =user_manual.pdf= rebuilt; site builds cleanly.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:CFD59F8D-39C3-4604-9BDE-CA5778161B88][Write accounts, roles and tenants administration chapter]] | BACKLOG | | | New chapter for the IAM admin windows using the 2026-06-04 screenshot set. |
+| [[id:3DA4EDB1-F6E2-42D1-A029-0E8422A05E7A][Link product identity to the user manual]] | BACKLOG | | | Moved from Documentation review follow-ups: "If you are looking for instructions on how to use the product see...". |
+
+* Decisions
+
+- Manual-content tasks live here from now on; commissioning stories link
+  to (rather than own) their documentation tasks.
+- The in-flight [[id:B3788A76-208E-4422-B277-17DF8FF3A78C][Write currency documentation]] task stays in
+  [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] for now — it is STARTED on
+  =feature/currency-write-docs= in another worktree and moving the file
+  would conflict; it (or its successors) migrate here once that PR lands.
+
+* Out of scope
+
+- Shell documentation per chapter — tracked by
+  [[id:40B50055-EB09-4B5B-B26C-24F0F9CD1C5B][Entity manual: shell documentation]].
+- Manual delivery infrastructure (done in sprint 18).

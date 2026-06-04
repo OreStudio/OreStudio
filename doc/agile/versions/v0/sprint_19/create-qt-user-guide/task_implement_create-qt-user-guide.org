@@ -1,0 +1,84 @@
+:PROPERTIES:
+:ID: CFD59F8D-39C3-4604-9BDE-CA5778161B88
+:END:
+#+title: Task: Write accounts, roles and tenants administration chapter
+#+description: Add an administration chapter to the user guide documenting the IAM Qt windows — accounts (list, details with parties/roles/security, new-account flow), roles, and tenants — using the 2026-06-04 screenshot set.
+#+type: task
+#+level: s1
+#+filetags: :create-qt-user-guide:sprint_19:v0:
+#+owner: marco
+#+branch: feature/create-qt-user-guide
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6111FDF8-96E6-4C40-88BD-C756B6841F85][Create a user guide for ores.qt]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add an administration chapter to the user guide covering the day-to-day
+IAM windows in ores.qt:
+
+- /Accounts/ — list window (as system admin and tenant admin), detail
+  dialog with its Parties, Roles and security tabs, login status badges,
+  the new-account flow (including password reveal and party/role
+  assignment), eventing, and the missing-party state.
+- /Roles/ — list window and detail dialog (general, permissions,
+  provenance).
+- /Tenants/ — list window with status badges and detail dialog
+  (general, provenance).
+
+The screenshot set captured on 2026-06-04 covers all of these
+(=assets/images/account_*=, =roles_*=, =tenants_*=). Follow the
+established chapter conventions (see chapters 3-5) and the
+[[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]] doc for the shared vocabulary (badges, paging,
+provenance); describe cross-cutting behaviour by reference, not by
+repetition. Use the [[id:00F85A2F-547A-4F11-99EB-A46A7DE5AB1C][Manual Updater]] skill for the mechanics
+(chapter wiring, PDF rebuild).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:6111FDF8-96E6-4C40-88BD-C756B6841F85][Create a user guide for ores.qt]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-05                               |
+
+* Acceptance
+
+- New chapter in =doc/manual/user_guide/= wired into =user_manual.org=,
+  covering accounts, roles and tenants windows with at least one
+  screenshot per window.
+- Login identity context is explicit (system admin vs tenant admin
+  views differ; see the two accounts list screenshots).
+- Cross-cutting behaviour (paging, badges, provenance, change reasons)
+  referenced once, not repeated per entity.
+- =user_manual.pdf= rebuilt; site builds cleanly.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

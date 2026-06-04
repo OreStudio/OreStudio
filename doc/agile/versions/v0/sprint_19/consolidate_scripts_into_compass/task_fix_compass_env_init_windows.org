@@ -68,6 +68,7 @@ task closes. Plans do not outlive their task.)
 
 | # | Comment summary                                                         | File            | Decision | Notes           |
 |---+-------------------------------------------------------------------------+-----------------+----------+-----------------|
-| 1 | Gemini: wrap temp file creation + openssl in single try/finally to prevent leaks if write fails | nats_certs.py | Accept   | Fixed a82edc832 |
+| 1 | Gemini: wrap temp file creation + openssl in single try/finally to prevent leaks if write fails | nats_certs.py | Accept   | Fixed a82edc832 — PR #1034 |
+| 2 | Gemini: coerce args to Path in generate(); strip quotes in _load_dotenv(); catch ValueError/FileNotFoundError in run() | nats_init.py | Accept | Fixed 02501f0fb — PR #1037 |
 
 * Result

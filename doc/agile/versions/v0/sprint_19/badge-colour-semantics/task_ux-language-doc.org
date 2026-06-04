@@ -93,7 +93,7 @@ task closes. Plans do not outlive their task.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1-4 | Image paths should be ../../ not ../../../ | ux_language.org | Declined | Images live in assets/images/ at repo root; doc/assets does not exist. Verified on disk + green site build. |
 
 * Result
 

@@ -18,7 +18,6 @@
  *
  */
 #include "ores.eventing/domain/event_channel_info_json_io.hpp"
-
 #include <rfl.hpp>
 #include <rfl/json.hpp>
 

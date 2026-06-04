@@ -20,9 +20,9 @@
 #ifndef ORES_PLATFORM_TIME_RELATIVE_TIME_FORMATTER_HPP
 #define ORES_PLATFORM_TIME_RELATIVE_TIME_FORMATTER_HPP
 
+#include "ores.platform/export.hpp"
 #include <chrono>
 #include <string>
-#include "ores.platform/export.hpp"
 
 namespace ores::platform::time {
 
@@ -48,16 +48,7 @@ enum class numeric_style {
  *
  * Based on ECMAScript Intl.RelativeTimeFormat units.
  */
-enum class time_unit {
-    second,
-    minute,
-    hour,
-    day,
-    week,
-    month,
-    quarter,
-    year
-};
+enum class time_unit { second, minute, hour, day, week, month, quarter, year };
 
 /**
  * @brief Formats time points as relative time strings.
@@ -66,7 +57,8 @@ enum class time_unit {
  * human-readable relative time strings like "just now", "5 minutes ago",
  * "in 3 days", etc.
  *
- * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/RelativeTimeFormat
+ * @see
+ * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/RelativeTimeFormat
  */
 class ORES_PLATFORM_EXPORT relative_time_formatter final {
 public:
@@ -92,9 +84,8 @@ public:
      * @param reference The reference time point to compare against.
      * @return Human-readable relative time string.
      */
-    std::string format(
-        const std::chrono::system_clock::time_point& tp,
-        const std::chrono::system_clock::time_point& reference) const;
+    std::string format(const std::chrono::system_clock::time_point& tp,
+                       const std::chrono::system_clock::time_point& reference) const;
 
     /**
      * @brief Formats a numeric value and unit as a relative time string.

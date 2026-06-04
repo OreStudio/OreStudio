@@ -20,11 +20,11 @@
 #ifndef ORES_NATS_SERVICE_JWKS_HPP
 #define ORES_NATS_SERVICE_JWKS_HPP
 
-#include <string>
-#include <chrono>
-#include <boost/asio/awaitable.hpp>
-#include "ores.nats/service/client.hpp"
 #include "ores.nats/export.hpp"
+#include "ores.nats/service/client.hpp"
+#include <boost/asio/awaitable.hpp>
+#include <chrono>
+#include <string>
 
 namespace ores::nats::service {
 
@@ -45,7 +45,7 @@ namespace ores::nats::service {
  */
 ORES_NATS_EXPORT boost::asio::awaitable<std::string>
 fetch_jwks_public_key(client& nats,
-    std::chrono::seconds per_request_timeout = std::chrono::seconds(10));
+                      std::chrono::seconds per_request_timeout = std::chrono::seconds(10));
 
 } // namespace ores::nats::service
 

@@ -20,9 +20,9 @@
 #ifndef ORES_PLATFORM_TIME_DATETIME_HPP
 #define ORES_PLATFORM_TIME_DATETIME_HPP
 
+#include "ores.platform/export.hpp"
 #include <chrono>
 #include <string>
-#include "ores.platform/export.hpp"
 
 namespace ores::platform::time {
 
@@ -52,8 +52,7 @@ public:
      * @param tp Time point to format (treated as UTC per C++20 definition).
      * @return ISO 8601 UTC string, always ending with 'Z'.
      */
-    static std::string to_iso8601_utc(
-        const std::chrono::system_clock::time_point& tp);
+    static std::string to_iso8601_utc(const std::chrono::system_clock::time_point& tp);
 
     /**
      * @brief Parses an ISO 8601 UTC string to a time point.
@@ -68,8 +67,7 @@ public:
      * @throws std::invalid_argument if the string cannot be parsed or has no
      *         UTC designator.
      */
-    static std::chrono::system_clock::time_point from_iso8601_utc(
-        const std::string& str);
+    static std::chrono::system_clock::time_point from_iso8601_utc(const std::string& str);
 
     /**
      * @brief Formats a time point as a UTC database timestamp string.
@@ -82,8 +80,7 @@ public:
      * @param tp Time point to format (treated as UTC per C++20 definition).
      * @return UTC timestamp string without timezone designator.
      */
-    static std::string to_db_string(
-        const std::chrono::system_clock::time_point& tp);
+    static std::string to_db_string(const std::chrono::system_clock::time_point& tp);
 
     /**
      * @brief Formats a time point as a human-readable local-time string.
@@ -95,9 +92,8 @@ public:
      * @param format strftime format string (default: k_timestamp_format).
      * @return Local-time string without timezone designator.
      */
-    static std::string to_local_display_string(
-        const std::chrono::system_clock::time_point& tp,
-        const std::string& format = k_timestamp_format);
+    static std::string to_local_display_string(const std::chrono::system_clock::time_point& tp,
+                                               const std::string& format = k_timestamp_format);
 };
 
 }

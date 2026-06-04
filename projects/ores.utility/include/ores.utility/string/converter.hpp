@@ -20,8 +20,8 @@
 #ifndef ORES_UTILITY_STRING_CONVERTER_HPP
 #define ORES_UTILITY_STRING_CONVERTER_HPP
 
-#include <string>
 #include "ores.utility/export.hpp"
+#include <string>
 
 namespace ores::utility::string {
 

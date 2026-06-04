@@ -19,7 +19,6 @@
  */
 #include "ores.utility/faker/internet.hpp"
 #include <boost/asio/ip/address.hpp>
-
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 
 namespace ores::utility::faker {

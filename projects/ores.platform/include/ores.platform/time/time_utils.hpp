@@ -20,12 +20,12 @@
 #ifndef ORES_PLATFORM_TIME_TIME_UTILS_HPP
 #define ORES_PLATFORM_TIME_TIME_UTILS_HPP
 
-#include <ctime>
+#include "ores.platform/export.hpp"
 #include <chrono>
+#include <ctime>
 #include <filesystem>
 #include <string>
 #include <string_view>
-#include "ores.platform/export.hpp"
 
 namespace ores::platform::time {
 
@@ -81,8 +81,7 @@ public:
      *           because timegm may normalise the fields).
      * @return The corresponding system_clock::time_point.
      */
-    static std::chrono::system_clock::time_point
-    to_time_point_utc(std::tm tm);
+    static std::chrono::system_clock::time_point to_time_point_utc(std::tm tm);
 
     /**
      * @brief Converts a local-time tm struct directly to a
@@ -97,8 +96,7 @@ public:
      *           may normalise DST and other fields).
      * @return The corresponding system_clock::time_point.
      */
-    static std::chrono::system_clock::time_point
-    to_time_point_local(std::tm tm);
+    static std::chrono::system_clock::time_point to_time_point_local(std::tm tm);
 
     /**
      * @brief Parses a calendar date string in YYYYMMDD or YYYY-MM-DD format.

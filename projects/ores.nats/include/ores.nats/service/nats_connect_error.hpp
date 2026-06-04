@@ -56,9 +56,12 @@ enum class nats_error_kind {
 class nats_connect_error : public std::runtime_error {
 public:
     nats_connect_error(nats_error_kind kind, const std::string& msg)
-        : std::runtime_error(msg), kind_(kind) {}
+        : std::runtime_error(msg)
+        , kind_(kind) {}
 
-    [[nodiscard]] nats_error_kind kind() const noexcept { return kind_; }
+    [[nodiscard]] nats_error_kind kind() const noexcept {
+        return kind_;
+    }
 
 private:
     nats_error_kind kind_;

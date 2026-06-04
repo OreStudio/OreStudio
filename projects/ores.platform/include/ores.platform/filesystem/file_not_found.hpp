@@ -20,9 +20,9 @@
 #ifndef ORES_PLATFORM_FILESYSTEM_FILE_NOT_FOUND_HPP
 #define ORES_PLATFORM_FILESYSTEM_FILE_NOT_FOUND_HPP
 
-#include <string>
-#include <boost/exception/info.hpp>
 #include "ores.platform/export.hpp"
+#include <boost/exception/info.hpp>
+#include <string>
 
 namespace ores::platform::filesystem {
 
@@ -30,12 +30,15 @@ namespace ores::platform::filesystem {
  * @brief File was not found.
  */
 class ORES_PLATFORM_EXPORT file_not_found : public virtual std::exception,
-                       public virtual boost::exception {
+                                            public virtual boost::exception {
 public:
     file_not_found() = default;
     ~file_not_found() noexcept override = default;
-    explicit file_not_found(std::string message) : message_(std::move(message)) { }
-    const char* what() const noexcept override { return(message_.c_str()); }
+    explicit file_not_found(std::string message)
+        : message_(std::move(message)) {}
+    const char* what() const noexcept override {
+        return (message_.c_str());
+    }
 
 private:
     std::string message_;

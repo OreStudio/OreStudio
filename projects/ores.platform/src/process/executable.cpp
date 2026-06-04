@@ -17,21 +17,20 @@
  *
  */
 #include "ores.platform/process/executable.hpp"
-
+#include "ores.platform/time/time_utils.hpp"
 #include <array>
 #include <chrono>
 #include <ctime>
 #include <filesystem>
-#include "ores.platform/time/time_utils.hpp"
 
 #if defined(__linux__)
-#include <climits>
-#include <unistd.h>
+#    include <climits>
+#    include <unistd.h>
 #elif defined(__APPLE__)
-#include <mach-o/dyld.h>
-#include <unistd.h>
+#    include <mach-o/dyld.h>
+#    include <unistd.h>
 #elif defined(_WIN32)
-#include <windows.h>
+#    include <windows.h>
 #endif
 
 namespace ores::platform::process {

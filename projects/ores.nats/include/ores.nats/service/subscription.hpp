@@ -20,9 +20,9 @@
 #ifndef ORES_NATS_SERVICE_SUBSCRIPTION_HPP
 #define ORES_NATS_SERVICE_SUBSCRIPTION_HPP
 
+#include "ores.nats/export.hpp"
 #include <memory>
 #include <string>
-#include "ores.nats/export.hpp"
 
 namespace ores::nats::service {
 

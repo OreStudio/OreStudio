@@ -20,9 +20,9 @@
 #ifndef ORES_SECURITY_VALIDATION_PASSWORD_VALIDATOR_HPP
 #define ORES_SECURITY_VALIDATION_PASSWORD_VALIDATOR_HPP
 
-#include <string>
-#include "ores.security/validation/validation_result.hpp"
 #include "ores.security/export.hpp"
+#include "ores.security/validation/validation_result.hpp"
+#include <string>
 
 namespace ores::security::validation {
 
@@ -56,8 +56,7 @@ public:
      * @return validation_result containing is_valid flag and error message if
      * invalid.
      */
-    static validation_result validate(const std::string& password,
-                                      bool enforce_policy = true);
+    static validation_result validate(const std::string& password, bool enforce_policy = true);
 
 private:
     static constexpr std::size_t MIN_LENGTH = 12;

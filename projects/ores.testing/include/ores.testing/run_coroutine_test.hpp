@@ -20,12 +20,12 @@
 #ifndef ORES_TESTING_DATABASE_RUN_COROUTINE_TEST_HPP
 #define ORES_TESTING_DATABASE_RUN_COROUTINE_TEST_HPP
 
-#include <exception>
-#include <string>
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 #include <boost/asio/io_context.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <exception>
+#include <string>
 
 namespace ores::testing {
 
@@ -34,14 +34,17 @@ void run_coroutine_test(boost::asio::io_context& io_context, Awaitable&& awaitab
     bool completed = false;
     std::exception_ptr eptr = nullptr;
 
-    boost::asio::co_spawn(io_context, [&]() -> boost::asio::awaitable<void> {
+    boost::asio::co_spawn(
+        io_context,
+        [&]() -> boost::asio::awaitable<void> {
             try {
                 co_await std::forward<Awaitable>(awaitable)();
                 completed = true;
             } catch (...) {
                 eptr = std::current_exception();
             }
-        }, boost::asio::detached);
+        },
+        boost::asio::detached);
     io_context.run();
 
     if (eptr) {

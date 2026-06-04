@@ -18,16 +18,14 @@
  *
  */
 #include "ores.security/validation/password_validator.hpp"
-
-#include <format>
 #include <cctype>
 #include <cstring>
+#include <format>
 
 namespace ores::security::validation {
 
-validation_result password_validator::
-validate(const std::string& password, bool enforce_policy) {
-    validation_result result { .is_valid = true, .error_message = "" };
+validation_result password_validator::validate(const std::string& password, bool enforce_policy) {
+    validation_result result{.is_valid = true, .error_message = ""};
 
     /*
      * If policy enforcement is disabled - for testing or development for
@@ -49,9 +47,12 @@ validate(const std::string& password, bool enforce_policy) {
     bool has_special = false;
 
     for (char c : password) {
-        if (std::isupper(c)) has_uppercase = true;
-        if (std::islower(c)) has_lowercase = true;
-        if (std::isdigit(c)) has_digit = true;
+        if (std::isupper(c))
+            has_uppercase = true;
+        if (std::islower(c))
+            has_lowercase = true;
+        if (std::isdigit(c))
+            has_digit = true;
         if (std::strchr(SPECIAL_CHARS, c))
             has_special = true;
     }
@@ -77,8 +78,7 @@ validate(const std::string& password, bool enforce_policy) {
     if (!has_special) {
         result.is_valid = false;
         result.error_message =
-            std::format("Password must contain at least one special character ({})",
-                SPECIAL_CHARS);
+            std::format("Password must contain at least one special character ({})", SPECIAL_CHARS);
         return result;
     }
 

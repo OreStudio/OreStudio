@@ -1,8 +1,7 @@
 #include "ores.eventing/generators/entity_change_event_generator.hpp"
-
-#include <faker-cxx/word.h>
-#include <faker-cxx/string.h>
 #include "ores.utility/faker/datetime.hpp"
+#include <faker-cxx/string.h>
+#include <faker-cxx/word.h>
 
 namespace ores::eventing::generators {
 

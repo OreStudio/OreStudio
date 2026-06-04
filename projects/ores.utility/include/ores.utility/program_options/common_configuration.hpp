@@ -20,8 +20,8 @@
 #ifndef ORES_UTILITY_PROGRAM_OPTIONS_COMMON_CONFIGURATION_HPP
 #define ORES_UTILITY_PROGRAM_OPTIONS_COMMON_CONFIGURATION_HPP
 
-#include <boost/program_options.hpp>
 #include "ores.utility/export.hpp"
+#include <boost/program_options.hpp>
 
 namespace ores::utility::program_options {
 
@@ -56,8 +56,7 @@ public:
      *
      * @return options_description containing help, version, and verbose.
      */
-    static boost::program_options::options_description
-    make_options_description();
+    static boost::program_options::options_description make_options_description();
 
     /**
      * @brief Reads common options from parsed variables map.
@@ -65,8 +64,7 @@ public:
      * @param vm Parsed command-line options.
      * @return common_options with verbose flag set appropriately.
      */
-    static common_options
-    read_options(const boost::program_options::variables_map& vm);
+    static common_options read_options(const boost::program_options::variables_map& vm);
 };
 
 }

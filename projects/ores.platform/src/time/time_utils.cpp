@@ -17,13 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.platform/time/time_utils.hpp"
 #include <charconv>
 #include <filesystem>
 #include <format>
 #include <stdexcept>
 #include <string>
 #include <string_view>
-#include "ores.platform/time/time_utils.hpp"
 
 namespace ores::platform::time {
 
@@ -80,24 +80,21 @@ std::chrono::year_month_day time_utils::parse_date(std::string_view s) {
 
     if (s.size() == 8) {
         // YYYYMMDD
-        if (!parse_field(s.substr(0, 4), y) ||
-            !parse_field(s.substr(4, 2), m) ||
+        if (!parse_field(s.substr(0, 4), y) || !parse_field(s.substr(4, 2), m) ||
             !parse_field(s.substr(6, 2), d))
             throw std::invalid_argument("invalid date: " + std::string(s));
     } else if (s.size() == 10 && s[4] == '-' && s[7] == '-') {
         // YYYY-MM-DD
-        if (!parse_field(s.substr(0, 4), y) ||
-            !parse_field(s.substr(5, 2), m) ||
+        if (!parse_field(s.substr(0, 4), y) || !parse_field(s.substr(5, 2), m) ||
             !parse_field(s.substr(8, 2), d))
             throw std::invalid_argument("invalid date: " + std::string(s));
     } else {
         throw std::invalid_argument("unrecognised date format: " + std::string(s));
     }
 
-    const std::chrono::year_month_day ymd{
-        std::chrono::year{y},
-        std::chrono::month{static_cast<unsigned>(m)},
-        std::chrono::day{static_cast<unsigned>(d)}};
+    const std::chrono::year_month_day ymd{std::chrono::year{y},
+                                          std::chrono::month{static_cast<unsigned>(m)},
+                                          std::chrono::day{static_cast<unsigned>(d)}};
     if (!ymd.ok())
         throw std::invalid_argument("invalid date: " + std::string(s));
     return ymd;
@@ -105,16 +102,16 @@ std::chrono::year_month_day time_utils::parse_date(std::string_view s) {
 
 std::string time_utils::format_date_compact(std::chrono::year_month_day date) {
     return std::format("{:04d}{:02d}{:02d}",
-        static_cast<int>(date.year()),
-        static_cast<unsigned>(date.month()),
-        static_cast<unsigned>(date.day()));
+                       static_cast<int>(date.year()),
+                       static_cast<unsigned>(date.month()),
+                       static_cast<unsigned>(date.day()));
 }
 
 std::string time_utils::format_date_iso(std::chrono::year_month_day date) {
     return std::format("{:04d}-{:02d}-{:02d}",
-        static_cast<int>(date.year()),
-        static_cast<unsigned>(date.month()),
-        static_cast<unsigned>(date.day()));
+                       static_cast<int>(date.year()),
+                       static_cast<unsigned>(date.month()),
+                       static_cast<unsigned>(date.day()));
 }
 
 std::chrono::system_clock::time_point
@@ -123,8 +120,8 @@ time_utils::file_time_to_system_clock(std::filesystem::file_time_type ft) {
     // Compute the offset from file_clock::now() and apply it to
     // system_clock::now() — portable across all supported platforms.
     return std::chrono::system_clock::now() +
-        std::chrono::duration_cast<std::chrono::system_clock::duration>(
-            ft - std::filesystem::file_time_type::clock::now());
+           std::chrono::duration_cast<std::chrono::system_clock::duration>(
+               ft - std::filesystem::file_time_type::clock::now());
 }
 
 }

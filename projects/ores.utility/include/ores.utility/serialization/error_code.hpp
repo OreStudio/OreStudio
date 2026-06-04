@@ -20,10 +20,10 @@
 #ifndef ORES_UTILITY_SERIALIZATION_ERROR_CODE_HPP
 #define ORES_UTILITY_SERIALIZATION_ERROR_CODE_HPP
 
-#include <string>
-#include <ostream>
 #include <cstdint>
 #include <magic_enum/magic_enum.hpp>
+#include <ostream>
+#include <string>
 
 namespace ores::utility::serialization {
 
@@ -71,8 +71,8 @@ enum class error_code : std::uint16_t {
  * Example: "version_mismatch (0x0001)" instead of just "0x0001"
  */
 inline std::ostream& operator<<(std::ostream& os, error_code ec) {
-    return os << magic_enum::enum_name(ec)
-              << " (0x" << std::hex << static_cast<std::uint16_t>(ec) << std::dec << ")";
+    return os << magic_enum::enum_name(ec) << " (0x" << std::hex << static_cast<std::uint16_t>(ec)
+              << std::dec << ")";
 }
 
 /**

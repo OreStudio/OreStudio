@@ -18,10 +18,9 @@
  *
  */
 #include "ores.nats/service/nats_client.hpp"
-
+#include "ores.nats/service/client.hpp"
 #include <stdexcept>
 #include <unordered_map>
-#include "ores.nats/service/client.hpp"
 
 namespace ores::nats::service {
 
@@ -33,8 +32,7 @@ nats_client::nats_client(client& nats, token_provider provider)
 
 void nats_client::connect(config::nats_options opts) {
     const std::string url = opts.url;
-    const std::string prefix =
-        opts.subject_prefix.empty() ? "(none)" : opts.subject_prefix;
+    const std::string prefix = opts.subject_prefix.empty() ? "(none)" : opts.subject_prefix;
     owned_client_ = std::make_shared<client>(std::move(opts));
     try {
         owned_client_->connect();
@@ -42,8 +40,8 @@ void nats_client::connect(config::nats_options opts) {
         owned_client_.reset();
         throw;
     }
-    BOOST_LOG_SEV(lg(), info) << "Connected to NATS at " << url
-                              << " (namespace: '" << prefix << "')";
+    BOOST_LOG_SEV(lg(), info) << "Connected to NATS at " << url << " (namespace: '" << prefix
+                              << "')";
 }
 
 void nats_client::disconnect() {
@@ -92,7 +90,8 @@ message nats_client::request(std::string_view subject, std::string_view json_bod
 }
 
 message nats_client::do_authenticated_request(std::string_view subject,
-    std::span<const std::byte> body, std::chrono::milliseconds timeout) {
+                                              std::span<const std::byte> body,
+                                              std::chrono::milliseconds timeout) {
 
     // Service path: token_provider owns acquisition and proactive refresh.
     if (token_provider_) {
@@ -112,7 +111,8 @@ message nats_client::do_authenticated_request(std::string_view subject,
             if (!workspace_resolution_.empty()) {
                 std::string joined;
                 for (const auto& wid : workspace_resolution_) {
-                    if (!joined.empty()) joined += ',';
+                    if (!joined.empty())
+                        joined += ',';
                     joined += wid;
                 }
                 hdrs[std::string(headers::x_workspace_resolution)] = std::move(joined);
@@ -123,14 +123,12 @@ message nats_client::do_authenticated_request(std::string_view subject,
         // force=true so the provider re-authenticates unconditionally,
         // covering extreme clock-skew cases where the client's own expiry
         // timer has not yet fired.
-        auto reply = active_client().request_sync(
-            subject, body, make_headers(), timeout);
+        auto reply = active_client().request_sync(subject, body, make_headers(), timeout);
         const auto x_err = reply.headers.find(std::string(headers::x_error));
         if (x_err != reply.headers.end() && x_err->second == "token_expired") {
             BOOST_LOG_SEV(lg(), info)
                 << "Service token expired on " << subject << "; re-authenticating";
-            reply = active_client().request_sync(
-                subject, body, make_headers(true), timeout);
+            reply = active_client().request_sync(subject, body, make_headers(true), timeout);
         }
         return reply;
     }
@@ -140,8 +138,7 @@ message nats_client::do_authenticated_request(std::string_view subject,
         throw std::runtime_error("Not authenticated");
 
     std::unordered_map<std::string, std::string> hdrs{
-        {std::string(headers::authorization),
-         std::string(headers::bearer_prefix) + auth_->jwt}};
+        {std::string(headers::authorization), std::string(headers::bearer_prefix) + auth_->jwt}};
     if (!delegation_token_.empty())
         hdrs[std::string(headers::delegated_authorization)] =
             std::string(headers::bearer_prefix) + delegation_token_;
@@ -154,7 +151,8 @@ message nats_client::do_authenticated_request(std::string_view subject,
     if (!workspace_resolution_.empty()) {
         std::string joined;
         for (const auto& wid : workspace_resolution_) {
-            if (!joined.empty()) joined += ',';
+            if (!joined.empty())
+                joined += ',';
             joined += wid;
         }
         hdrs[std::string(headers::x_workspace_resolution)] = std::move(joined);
@@ -166,8 +164,7 @@ message nats_client::do_authenticated_request(std::string_view subject,
     if (x_error_it == reply.headers.end())
         return reply;
 
-    if (x_error_it->second == "token_expired" ||
-        x_error_it->second == "max_session_exceeded") {
+    if (x_error_it->second == "token_expired" || x_error_it->second == "max_session_exceeded") {
         throw session_expired_error("Session has expired. Please log in again.");
     }
     return reply;
@@ -214,12 +211,14 @@ std::string extract_bearer(const ores::nats::message& msg) {
 }
 
 message nats_client::authenticated_request(std::string_view subject,
-    std::string_view json_body, std::chrono::milliseconds timeout) {
+                                           std::string_view json_body,
+                                           std::chrono::milliseconds timeout) {
     return do_authenticated_request(subject, as_bytes(json_body), timeout);
 }
 
 message nats_client::authenticated_request(std::string_view subject,
-    std::span<const std::byte> body, std::chrono::milliseconds timeout) {
+                                           std::span<const std::byte> body,
+                                           std::chrono::milliseconds timeout) {
     return do_authenticated_request(subject, body, timeout);
 }
 

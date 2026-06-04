@@ -20,19 +20,19 @@
 #ifndef ORES_NATS_SERVICE_CLIENT_HPP
 #define ORES_NATS_SERVICE_CLIENT_HPP
 
+#include "ores.nats/config/nats_options.hpp"
+#include "ores.nats/domain/message.hpp"
+#include "ores.nats/export.hpp"
+#include "ores.nats/service/jetstream_admin.hpp"
+#include "ores.nats/service/subscription.hpp"
+#include <boost/asio/awaitable.hpp>
 #include <chrono>
+#include <cstddef>
 #include <memory>
 #include <span>
 #include <string>
 #include <string_view>
 #include <unordered_map>
-#include <cstddef>
-#include <boost/asio/awaitable.hpp>
-#include "ores.nats/config/nats_options.hpp"
-#include "ores.nats/domain/message.hpp"
-#include "ores.nats/service/jetstream_admin.hpp"
-#include "ores.nats/service/subscription.hpp"
-#include "ores.nats/export.hpp"
 
 namespace ores::nats::service {
 
@@ -111,8 +111,8 @@ public:
      * header for authenticated publishes.
      */
     void publish(std::string_view subject,
-        std::span<const std::byte> data,
-        std::unordered_map<std::string, std::string> headers = {});
+                 std::span<const std::byte> data,
+                 std::unordered_map<std::string, std::string> headers = {});
 
     /**
      * @brief Synchronous request/reply.
@@ -121,11 +121,11 @@ public:
      * timeout or transport error. Suitable for Qt/shell client code that
      * is not running on an ASIO executor.
      */
-    [[nodiscard]] message request_sync(
-        std::string_view subject,
-        std::span<const std::byte> data,
-        std::unordered_map<std::string, std::string> headers = {},
-        std::chrono::milliseconds timeout = std::chrono::seconds(30));
+    [[nodiscard]] message
+    request_sync(std::string_view subject,
+                 std::span<const std::byte> data,
+                 std::unordered_map<std::string, std::string> headers = {},
+                 std::chrono::milliseconds timeout = std::chrono::seconds(30));
 
     /**
      * @brief Asynchronous request/reply (ASIO coroutine).
@@ -133,11 +133,11 @@ public:
      * Must be called from within a @c boost::asio::awaitable coroutine.
      * The caller's executor is used for callback delivery.
      */
-    [[nodiscard]] boost::asio::awaitable<message> request(
-        std::string_view subject,
-        std::span<const std::byte> data,
-        std::unordered_map<std::string, std::string> headers = {},
-        std::chrono::milliseconds timeout = std::chrono::seconds(30));
+    [[nodiscard]] boost::asio::awaitable<message>
+    request(std::string_view subject,
+            std::span<const std::byte> data,
+            std::unordered_map<std::string, std::string> headers = {},
+            std::chrono::milliseconds timeout = std::chrono::seconds(30));
 
     /**
      * @brief Subscribe to a subject.
@@ -145,8 +145,7 @@ public:
      * All instances receive every message (fan-out). Use @c queue_subscribe
      * for competing-consumer load balancing.
      */
-    [[nodiscard]] subscription subscribe(std::string_view subject,
-        message_handler handler);
+    [[nodiscard]] subscription subscribe(std::string_view subject, message_handler handler);
 
     /**
      * @brief Queue-group subscribe (competing consumers).
@@ -158,8 +157,8 @@ public:
      * Convention: @c queue_group == service name, e.g. @c "ores.iam.service".
      */
     [[nodiscard]] subscription queue_subscribe(std::string_view subject,
-        std::string_view queue_group,
-        message_handler handler);
+                                               std::string_view queue_group,
+                                               message_handler handler);
 
     // -------------------------------------------------------------------------
     // JetStream (durable, persistent)
@@ -173,8 +172,8 @@ public:
      * Throws on failure.
      */
     void js_publish(std::string_view subject,
-        std::span<const std::byte> data,
-        std::unordered_map<std::string, std::string> headers = {});
+                    std::span<const std::byte> data,
+                    std::unordered_map<std::string, std::string> headers = {});
 
     /**
      * @brief Push-subscribe to a JetStream subject with a durable consumer.
@@ -185,9 +184,8 @@ public:
      * Each message is auto-acknowledged after @c handler returns without
      * throwing.
      */
-    [[nodiscard]] subscription js_subscribe(std::string_view subject,
-        std::string_view durable_name,
-        message_handler handler);
+    [[nodiscard]] subscription
+    js_subscribe(std::string_view subject, std::string_view durable_name, message_handler handler);
 
     /**
      * @brief Queue-group push-subscribe to a JetStream subject.
@@ -196,9 +194,9 @@ public:
      * balancing across a queue group.
      */
     [[nodiscard]] subscription js_queue_subscribe(std::string_view subject,
-        std::string_view durable_name,
-        std::string_view queue_group,
-        message_handler handler);
+                                                  std::string_view durable_name,
+                                                  std::string_view queue_group,
+                                                  message_handler handler);
 
     /**
      * @brief Create a JetStream admin handle for managing streams and

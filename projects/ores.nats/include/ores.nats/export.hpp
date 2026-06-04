@@ -23,9 +23,9 @@
 #include <boost/config.hpp>
 
 #ifdef ORES_NATS_LIBRARY
-#  define ORES_NATS_EXPORT BOOST_SYMBOL_EXPORT
+#    define ORES_NATS_EXPORT BOOST_SYMBOL_EXPORT
 #else
-#  define ORES_NATS_EXPORT BOOST_SYMBOL_IMPORT
+#    define ORES_NATS_EXPORT BOOST_SYMBOL_IMPORT
 #endif
 
 #endif

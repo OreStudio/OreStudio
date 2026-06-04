@@ -18,9 +18,8 @@
  *
  */
 #include "ores.utility/faker/totp.hpp"
-
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/convert/base32_converter.hpp"
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
 
 namespace ores::utility::faker {
 

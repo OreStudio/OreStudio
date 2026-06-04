@@ -19,14 +19,14 @@
 #ifndef ORES_UTILITY_UUID_TENANT_ID_HPP
 #define ORES_UTILITY_UUID_TENANT_ID_HPP
 
-#include <string>
-#include <ostream>
-#include <optional>
-#include <expected>
-#include <string_view>
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/string_generator.hpp>
 #include "ores.utility/export.hpp"
+#include <boost/uuid/string_generator.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <expected>
+#include <optional>
+#include <ostream>
+#include <string>
+#include <string_view>
 
 namespace ores::utility::uuid {
 
@@ -72,8 +72,7 @@ inline constexpr char live_workspace_uuid_str[] = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaa
  * Using this function makes the intent explicit.
  */
 inline boost::uuids::uuid live_workspace_id() {
-    static const boost::uuids::uuid id =
-        boost::uuids::string_generator()(live_workspace_uuid_str);
+    static const boost::uuids::uuid id = boost::uuids::string_generator()(live_workspace_uuid_str);
     return id;
 }
 
@@ -116,8 +115,7 @@ public:
      * @param uuid The UUID to create the tenant_id from.
      * @return A tenant_id if successful, or an error message if the UUID is nil.
      */
-    static std::expected<tenant_id, std::string>
-    from_uuid(const boost::uuids::uuid& uuid);
+    static std::expected<tenant_id, std::string> from_uuid(const boost::uuids::uuid& uuid);
 
     /**
      * @brief Creates a tenant_id from a string representation.
@@ -129,8 +127,7 @@ public:
      * @return A tenant_id if successful, or an error message if parsing fails
      *         or the UUID is nil.
      */
-    static std::expected<tenant_id, std::string>
-    from_string(std::string_view str);
+    static std::expected<tenant_id, std::string> from_string(std::string_view str);
 
     /**
      * @brief Checks if this tenant_id represents the system tenant.

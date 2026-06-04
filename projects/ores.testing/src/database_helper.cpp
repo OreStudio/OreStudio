@@ -18,12 +18,11 @@
  *
  */
 #include "ores.testing/database_helper.hpp"
-
-#include <vector>
-#include <boost/uuid/uuid_io.hpp>
-#include "ores.testing/test_database_manager.hpp"
-#include "ores.database/service/tenant_context.hpp"
 #include "ores.database/service/party_context.hpp"
+#include "ores.database/service/tenant_context.hpp"
+#include "ores.testing/test_database_manager.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <vector>
 
 namespace ores::testing {
 
@@ -101,20 +100,17 @@ void database_helper::seed_rbac() {
               SELECT 1 FROM ores_iam_role_permissions_tbl rp
               WHERE rp.role_id = r.id AND rp.permission_id = p.id
                 AND rp.valid_to = '9999-12-31 23:59:59'::timestamptz
-          ))SQL"
-    };
+          ))SQL"};
 
     for (const auto& sql : statements) {
         const auto execute_stmt = [&](auto&& session) {
             return session->execute(sql);
         };
 
-        const auto r = sqlgen::session(context_.connection_pool())
-            .and_then(execute_stmt);
+        const auto r = sqlgen::session(context_.connection_pool()).and_then(execute_stmt);
 
         if (!r) {
-            BOOST_LOG_SEV(lg(), error)
-                << "Failed to seed RBAC data: " << r.error().what();
+            BOOST_LOG_SEV(lg(), error) << "Failed to seed RBAC data: " << r.error().what();
             return;
         }
     }
@@ -123,8 +119,7 @@ void database_helper::seed_rbac() {
 }
 
 void database_helper::set_party(const boost::uuids::uuid& party_id) {
-    BOOST_LOG_SEV(lg(), info) << "Setting party context: "
-                              << boost::uuids::to_string(party_id);
+    BOOST_LOG_SEV(lg(), info) << "Setting party context: " << boost::uuids::to_string(party_id);
     context_ = party_context::with_party(context_, tenant_id(), party_id, db_user());
     BOOST_LOG_SEV(lg(), info) << "Party context set";
 }

@@ -18,35 +18,36 @@
  *
  */
 #include "ores.security/crypto/encryption.hpp"
-
+#include "ores.utility/convert/base64_converter.hpp"
 #include <memory>
-#include <stdexcept>
 #include <openssl/evp.h>
 #include <openssl/rand.h>
-#include "ores.utility/convert/base64_converter.hpp"
+#include <stdexcept>
 
 namespace ores::security::crypto {
 
 using ores::utility::converter::base64_converter;
 
-std::vector<unsigned char> encryption::derive_key(
-    const std::string& password,
-    const std::vector<unsigned char>& salt) {
+std::vector<unsigned char> encryption::derive_key(const std::string& password,
+                                                  const std::vector<unsigned char>& salt) {
 
     std::vector<unsigned char> key(KEY_LEN);
 
-    if (PKCS5_PBKDF2_HMAC(password.c_str(), static_cast<int>(password.length()),
-                          salt.data(), static_cast<int>(salt.size()),
-                          PBKDF2_ITERATIONS, EVP_sha256(),
-                          static_cast<int>(KEY_LEN), key.data()) != 1) {
+    if (PKCS5_PBKDF2_HMAC(password.c_str(),
+                          static_cast<int>(password.length()),
+                          salt.data(),
+                          static_cast<int>(salt.size()),
+                          PBKDF2_ITERATIONS,
+                          EVP_sha256(),
+                          static_cast<int>(KEY_LEN),
+                          key.data()) != 1) {
         throw std::runtime_error("PBKDF2 key derivation failed");
     }
 
     return key;
 }
 
-std::string encryption::encrypt(const std::string& plaintext,
-                                 const std::string& password) {
+std::string encryption::encrypt(const std::string& plaintext, const std::string& password) {
     if (plaintext.empty()) {
         return "";
     }
@@ -55,8 +56,7 @@ std::string encryption::encrypt(const std::string& plaintext,
     std::vector<unsigned char> salt(SALT_LEN);
     std::vector<unsigned char> iv(IV_LEN);
 
-    if (RAND_bytes(salt.data(), SALT_LEN) != 1 ||
-        RAND_bytes(iv.data(), IV_LEN) != 1) {
+    if (RAND_bytes(salt.data(), SALT_LEN) != 1 || RAND_bytes(iv.data(), IV_LEN) != 1) {
         throw std::runtime_error("Failed to generate random bytes");
     }
 
@@ -64,15 +64,14 @@ std::string encryption::encrypt(const std::string& plaintext,
     auto key = derive_key(password, salt);
 
     // Create cipher context with RAII
-    std::unique_ptr<EVP_CIPHER_CTX, decltype(&EVP_CIPHER_CTX_free)> ctx(
-        EVP_CIPHER_CTX_new(), &EVP_CIPHER_CTX_free);
+    std::unique_ptr<EVP_CIPHER_CTX, decltype(&EVP_CIPHER_CTX_free)> ctx(EVP_CIPHER_CTX_new(),
+                                                                        &EVP_CIPHER_CTX_free);
     if (!ctx) {
         throw std::runtime_error("Failed to create cipher context");
     }
 
     // Initialize encryption
-    if (EVP_EncryptInit_ex(ctx.get(), EVP_aes_256_gcm(), nullptr,
-                           key.data(), iv.data()) != 1) {
+    if (EVP_EncryptInit_ex(ctx.get(), EVP_aes_256_gcm(), nullptr, key.data(), iv.data()) != 1) {
         throw std::runtime_error("Failed to initialize encryption");
     }
 
@@ -81,7 +80,9 @@ std::string encryption::encrypt(const std::string& plaintext,
     int len = 0;
     int ciphertext_len = 0;
 
-    if (EVP_EncryptUpdate(ctx.get(), ciphertext.data(), &len,
+    if (EVP_EncryptUpdate(ctx.get(),
+                          ciphertext.data(),
+                          &len,
                           reinterpret_cast<const unsigned char*>(plaintext.data()),
                           static_cast<int>(plaintext.size())) != 1) {
         throw std::runtime_error("Encryption failed");
@@ -111,8 +112,7 @@ std::string encryption::encrypt(const std::string& plaintext,
     return base64_converter::convert(combined);
 }
 
-std::string encryption::decrypt(const std::string& encrypted_data,
-                                 const std::string& password) {
+std::string encryption::decrypt(const std::string& encrypted_data, const std::string& password) {
     if (encrypted_data.empty()) {
         return "";
     }
@@ -126,28 +126,25 @@ std::string encryption::decrypt(const std::string& encrypted_data,
     }
 
     // Extract components
-    std::vector<unsigned char> salt(combined.begin(),
-                                     combined.begin() + SALT_LEN);
+    std::vector<unsigned char> salt(combined.begin(), combined.begin() + SALT_LEN);
     std::vector<unsigned char> iv(combined.begin() + SALT_LEN,
-                                   combined.begin() + SALT_LEN + IV_LEN);
+                                  combined.begin() + SALT_LEN + IV_LEN);
     std::vector<unsigned char> tag(combined.begin() + SALT_LEN + IV_LEN,
-                                    combined.begin() + SALT_LEN + IV_LEN + TAG_LEN);
-    std::vector<unsigned char> ciphertext(combined.begin() + min_len,
-                                           combined.end());
+                                   combined.begin() + SALT_LEN + IV_LEN + TAG_LEN);
+    std::vector<unsigned char> ciphertext(combined.begin() + min_len, combined.end());
 
     // Derive decryption key
     auto key = derive_key(password, salt);
 
     // Create cipher context with RAII
-    std::unique_ptr<EVP_CIPHER_CTX, decltype(&EVP_CIPHER_CTX_free)> ctx(
-        EVP_CIPHER_CTX_new(), &EVP_CIPHER_CTX_free);
+    std::unique_ptr<EVP_CIPHER_CTX, decltype(&EVP_CIPHER_CTX_free)> ctx(EVP_CIPHER_CTX_new(),
+                                                                        &EVP_CIPHER_CTX_free);
     if (!ctx) {
         throw std::runtime_error("Failed to create cipher context");
     }
 
     // Initialize decryption
-    if (EVP_DecryptInit_ex(ctx.get(), EVP_aes_256_gcm(), nullptr,
-                           key.data(), iv.data()) != 1) {
+    if (EVP_DecryptInit_ex(ctx.get(), EVP_aes_256_gcm(), nullptr, key.data(), iv.data()) != 1) {
         throw std::runtime_error("Failed to initialize decryption");
     }
 
@@ -161,7 +158,9 @@ std::string encryption::decrypt(const std::string& encrypted_data,
     int len = 0;
     int plaintext_len = 0;
 
-    if (EVP_DecryptUpdate(ctx.get(), plaintext.data(), &len,
+    if (EVP_DecryptUpdate(ctx.get(),
+                          plaintext.data(),
+                          &len,
                           ciphertext.data(),
                           static_cast<int>(ciphertext.size())) != 1) {
         throw std::runtime_error("Decryption failed");
@@ -178,10 +177,9 @@ std::string encryption::decrypt(const std::string& encrypted_data,
     return {plaintext.begin(), plaintext.end()};
 }
 
-bool encryption::verify_password(const std::string& encrypted_data,
-                                  const std::string& password) {
+bool encryption::verify_password(const std::string& encrypted_data, const std::string& password) {
     if (encrypted_data.empty()) {
-        return true;  // Empty data can be "decrypted" with any password
+        return true; // Empty data can be "decrypted" with any password
     }
 
     try {

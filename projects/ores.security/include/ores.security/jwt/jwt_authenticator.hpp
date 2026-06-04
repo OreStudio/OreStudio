@@ -20,13 +20,13 @@
 #ifndef ORES_SECURITY_JWT_JWT_AUTHENTICATOR_HPP
 #define ORES_SECURITY_JWT_JWT_AUTHENTICATOR_HPP
 
-#include <string>
-#include <optional>
-#include <expected>
-#include "ores.security/jwt/jwt_claims.hpp"
-#include "ores.security/jwt/jwt_error.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.security/export.hpp"
+#include "ores.security/jwt/jwt_claims.hpp"
+#include "ores.security/jwt/jwt_error.hpp"
+#include <expected>
+#include <optional>
+#include <string>
 
 namespace ores::security::jwt {
 
@@ -51,8 +51,8 @@ public:
      * Supports both token creation and validation.
      */
     static jwt_authenticator create_hs256(const std::string& secret,
-        const std::string& issuer = "",
-        const std::string& audience = "");
+                                          const std::string& issuer = "",
+                                          const std::string& audience = "");
 
     /**
      * @brief Creates an RS256 signer using an RSA private key (PEM).
@@ -60,10 +60,9 @@ public:
      * Used by the IAM service to mint tokens. The private key must never
      * leave the IAM service configuration.
      */
-    static jwt_authenticator create_rs256_signer(
-        const std::string& private_key_pem,
-        const std::string& issuer = "",
-        const std::string& audience = "");
+    static jwt_authenticator create_rs256_signer(const std::string& private_key_pem,
+                                                 const std::string& issuer = "",
+                                                 const std::string& audience = "");
 
     /**
      * @brief Creates an RS256 verifier using an RSA public key (PEM).
@@ -71,10 +70,9 @@ public:
      * Used by all services other than IAM to validate tokens. Token creation
      * is not supported on this instance.
      */
-    static jwt_authenticator create_rs256_verifier(
-        const std::string& public_key_pem,
-        const std::string& issuer = "",
-        const std::string& audience = "");
+    static jwt_authenticator create_rs256_verifier(const std::string& public_key_pem,
+                                                   const std::string& issuer = "",
+                                                   const std::string& audience = "");
 
     /**
      * @brief Validates a JWT token and extracts claims.
@@ -87,8 +85,7 @@ public:
      * Used by the refresh handler: the token may be near or just past its
      * expiry time but is still trusted for identity (signature is verified).
      */
-    std::expected<jwt_claims, jwt_error>
-    validate_allow_expired(const std::string& token) const;
+    std::expected<jwt_claims, jwt_error> validate_allow_expired(const std::string& token) const;
 
     /**
      * @brief Creates a new JWT token with the given claims.
@@ -101,7 +98,9 @@ public:
     /**
      * @brief Checks if the authenticator is properly configured.
      */
-    bool is_configured() const { return configured_; }
+    bool is_configured() const {
+        return configured_;
+    }
 
     /**
      * @brief Extracts the RSA public key PEM from the private key.
@@ -116,8 +115,7 @@ private:
 
     jwt_authenticator() = default;
 
-    inline static std::string_view logger_name =
-        "ores.security.jwt.jwt_authenticator";
+    inline static std::string_view logger_name = "ores.security.jwt.jwt_authenticator";
 
     static auto& lg() {
         using namespace ores::logging;
@@ -127,9 +125,9 @@ private:
 
     bool configured_ = false;
     algorithm_type algorithm_ = algorithm_type::hs256;
-    std::string secret_;         // HS256
-    std::string private_key_;    // RS256 signer
-    std::string public_key_;     // RS256 verifier
+    std::string secret_;      // HS256
+    std::string private_key_; // RS256 signer
+    std::string public_key_;  // RS256 verifier
     std::string issuer_;
     std::string audience_;
 };

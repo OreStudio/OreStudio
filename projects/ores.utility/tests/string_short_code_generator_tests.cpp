@@ -18,7 +18,6 @@
  *
  */
 #include "ores.utility/string/short_code_generator.hpp"
-
 #include <catch2/catch_test_macros.hpp>
 
 namespace {
@@ -40,18 +39,15 @@ TEST_CASE("strip_corporate_suffixes_removes_plc", tags) {
 }
 
 TEST_CASE("strip_corporate_suffixes_removes_ltd", tags) {
-    CHECK(strip_corporate_suffixes("Hargreaves Securities Ltd") ==
-        "Hargreaves Securities");
+    CHECK(strip_corporate_suffixes("Hargreaves Securities Ltd") == "Hargreaves Securities");
 }
 
 TEST_CASE("strip_corporate_suffixes_removes_llc", tags) {
-    CHECK(strip_corporate_suffixes("Goldman Capital LLC") ==
-        "Goldman Capital");
+    CHECK(strip_corporate_suffixes("Goldman Capital LLC") == "Goldman Capital");
 }
 
 TEST_CASE("strip_corporate_suffixes_removes_inc", tags) {
-    CHECK(strip_corporate_suffixes("Hamilton Financial Inc") ==
-        "Hamilton Financial");
+    CHECK(strip_corporate_suffixes("Hamilton Financial Inc") == "Hamilton Financial");
 }
 
 TEST_CASE("strip_corporate_suffixes_removes_sa_dotted", tags) {
@@ -68,8 +64,7 @@ TEST_CASE("strip_corporate_suffixes_is_case_insensitive", tags) {
 }
 
 TEST_CASE("strip_corporate_suffixes_preserves_name_without_suffix", tags) {
-    CHECK(strip_corporate_suffixes("Rutherford Brothers") ==
-        "Rutherford Brothers");
+    CHECK(strip_corporate_suffixes("Rutherford Brothers") == "Rutherford Brothers");
 }
 
 // ============================================================================

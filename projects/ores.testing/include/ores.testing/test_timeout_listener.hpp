@@ -20,14 +20,14 @@
 #ifndef ORES_TESTING_TEST_TIMEOUT_LISTENER_HPP
 #define ORES_TESTING_TEST_TIMEOUT_LISTENER_HPP
 
-#include <atomic>
-#include <chrono>
-#include <thread>
-#include <string>
-#include <catch2/catch_test_case_info.hpp>
-#include <catch2/reporters/catch_reporter_event_listener.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.testing/export.hpp"
+#include <atomic>
+#include <catch2/catch_test_case_info.hpp>
+#include <catch2/reporters/catch_reporter_event_listener.hpp>
+#include <chrono>
+#include <string>
+#include <thread>
 
 namespace ores::testing {
 
@@ -44,8 +44,7 @@ namespace ores::testing {
  */
 class ORES_TESTING_EXPORT test_timeout_listener : public Catch::EventListenerBase {
 private:
-    inline static std::string_view logger_name =
-        "ores.testing.test_timeout_listener";
+    inline static std::string_view logger_name = "ores.testing.test_timeout_listener";
 
     static auto& lg() {
         using namespace ores::logging;

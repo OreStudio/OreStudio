@@ -20,11 +20,11 @@
 #ifndef ORES_UTILITY_GENERATION_TREE_BUILDER_HPP
 #define ORES_UTILITY_GENERATION_TREE_BUILDER_HPP
 
+#include "ores.utility/export.hpp"
+#include "ores.utility/generation/generation_engine.hpp"
 #include <cstddef>
 #include <optional>
 #include <vector>
-#include "ores.utility/generation/generation_engine.hpp"
-#include "ores.utility/export.hpp"
 
 namespace ores::utility::generation {
 
@@ -52,10 +52,8 @@ struct tree_node final {
  * @param engine Random engine for controlling distribution.
  * @return Nodes in parent-first order.
  */
-ORES_UTILITY_EXPORT std::vector<tree_node> generate_tree(
-    std::size_t total_count,
-    std::size_t max_depth,
-    generation_engine& engine);
+ORES_UTILITY_EXPORT std::vector<tree_node>
+generate_tree(std::size_t total_count, std::size_t max_depth, generation_engine& engine);
 
 }
 

@@ -17,10 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.security/crypto/password_hasher.hpp"
-
-#include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.security/crypto/password_hasher.hpp"
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 
@@ -94,6 +93,5 @@ TEST_CASE("empty_password_throws", tags) {
     auto lg(make_logger(test_suite));
 
     const std::string empty_password = "";
-    CHECK_THROWS_AS(password_hasher::hash(empty_password),
-        std::invalid_argument);
+    CHECK_THROWS_AS(password_hasher::hash(empty_password), std::invalid_argument);
 }

@@ -18,9 +18,8 @@
  *
  */
 #include "ores.utility/program_options/environment_mapper_factory.hpp"
-
-#include <ranges>
 #include <algorithm>
+#include <ranges>
 
 namespace ores::utility::program_options {
 
@@ -34,9 +33,10 @@ environment_mapper_factory::make_mapper(const std::string app_name) {
         auto env_body = env_var | std::views::drop(prefix.size());
         std::string option_name;
 
-        std::ranges::transform(env_body, std::back_inserter(option_name),
-            [](unsigned char c) -> char {
-                if (c == '_') return '-';
+        std::ranges::transform(
+            env_body, std::back_inserter(option_name), [](unsigned char c) -> char {
+                if (c == '_')
+                    return '-';
                 return std::tolower(c);
             });
 

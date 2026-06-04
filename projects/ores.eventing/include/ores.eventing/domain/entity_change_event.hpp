@@ -20,8 +20,8 @@
 #ifndef ORES_EVENTING_DOMAIN_ENTITY_CHANGE_EVENT_HPP
 #define ORES_EVENTING_DOMAIN_ENTITY_CHANGE_EVENT_HPP
 
-#include <string>
 #include <chrono>
+#include <string>
 #include <vector>
 
 namespace ores::eventing::domain {

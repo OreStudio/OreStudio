@@ -55,5 +55,6 @@ task closes. Plans do not outlive their task.)
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 | 1 | archive_error_string() can return nullptr — UB when appended to std::string | archiver.cpp | Accepted | Added safe_error_string() helper; replaced all 6 call sites; 59fe2c0 |
+| 2 | Tangle scripts exit 0 on error; CMake targets silently succeed on failure | ores-build-clang-format.el, ores-build-settings.el | Accepted | Added (kill-emacs 1) to error branch in both scripts; 2dc9a16 |
 
 * Result

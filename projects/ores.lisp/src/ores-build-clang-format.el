@@ -58,7 +58,8 @@
       (message "Tangled .clang-format to %s"
                (expand-file-name ".clang-format" ores/--clang-format-root)))
   (error
-   (message "clang-format tangle failed: %s" (error-message-string err))))
+   (message "clang-format tangle failed: %s" (error-message-string err))
+   (kill-emacs 1)))
 
 (provide 'ores-build-clang-format)
 ;;; ores-build-clang-format.el ends here

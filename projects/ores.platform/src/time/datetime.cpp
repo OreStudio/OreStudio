@@ -19,7 +19,6 @@
  */
 #include "ores.platform/time/datetime.hpp"
 #include "ores.platform/time/time_utils.hpp"
-
 #include <ctime>
 #include <iomanip>
 #include <sstream>
@@ -27,8 +26,7 @@
 
 namespace ores::platform::time {
 
-std::string datetime::to_iso8601_utc(
-    const std::chrono::system_clock::time_point& tp) {
+std::string datetime::to_iso8601_utc(const std::chrono::system_clock::time_point& tp) {
 
     const auto time = std::chrono::system_clock::to_time_t(tp);
     std::tm tm_buf;
@@ -42,8 +40,7 @@ std::string datetime::to_iso8601_utc(
     return oss.str();
 }
 
-std::chrono::system_clock::time_point datetime::from_iso8601_utc(
-    const std::string& str) {
+std::chrono::system_clock::time_point datetime::from_iso8601_utc(const std::string& str) {
 
     if (str.empty())
         throw std::invalid_argument("from_iso8601_utc: empty string");
@@ -80,16 +77,14 @@ std::chrono::system_clock::time_point datetime::from_iso8601_utc(
     return time_utils::to_time_point_utc(tm);
 }
 
-std::string datetime::to_db_string(
-    const std::chrono::system_clock::time_point& tp) {
+std::string datetime::to_db_string(const std::chrono::system_clock::time_point& tp) {
 
     const auto s = to_iso8601_utc(tp);
     return s.substr(0, s.size() - 1); // strip the Z suffix
 }
 
-std::string datetime::to_local_display_string(
-    const std::chrono::system_clock::time_point& tp,
-    const std::string& format) {
+std::string datetime::to_local_display_string(const std::chrono::system_clock::time_point& tp,
+                                              const std::string& format) {
 
     const auto time = std::chrono::system_clock::to_time_t(tp);
     std::tm tm_buf;

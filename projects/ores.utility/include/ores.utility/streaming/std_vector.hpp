@@ -20,17 +20,17 @@
 #ifndef ORES_UTILITY_STREAMING_STD_VECTOR_HPP
 #define ORES_UTILITY_STREAMING_STD_VECTOR_HPP
 
-#include <vector>
+#include "ores.utility/rfl/time_point_parser.hpp"
+#include "ores.utility/streaming/tenant_id_parser.hpp"
+#include "ores.utility/streaming/uuid_parser.hpp"
 #include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
-#include "ores.utility/rfl/time_point_parser.hpp"
-#include "ores.utility/streaming/uuid_parser.hpp"
-#include "ores.utility/streaming/tenant_id_parser.hpp"
+#include <vector>
 
 namespace std {
 
-template<typename Containee>
+template <typename Containee>
 inline ostream& operator<<(ostream& s, const vector<Containee>& v) {
     rfl::json::write(v, s);
     return s;

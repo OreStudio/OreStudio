@@ -17,10 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.utility/convert/base64_converter.hpp"
-
-#include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.utility/convert/base64_converter.hpp"
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 
@@ -75,8 +74,7 @@ TEST_CASE("base64_decode_hello", tags) {
     auto result = base64_converter::convert(encoded);
 
     std::string result_str(result.begin(), result.end());
-    BOOST_LOG_SEV(lg, info) << "Encoded: '" << encoded
-                            << "', Decoded: '" << result_str << "'";
+    BOOST_LOG_SEV(lg, info) << "Encoded: '" << encoded << "', Decoded: '" << result_str << "'";
 
     CHECK(result_str == "Hello");
 }
@@ -121,10 +119,22 @@ TEST_CASE("base64_encode_binary_data", tags) {
 TEST_CASE("base64_roundtrip_binary_data", tags) {
     auto lg(make_logger(test_suite));
 
-    std::vector<uint8_t> original = {
-        0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
-        0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF
-    };
+    std::vector<uint8_t> original = {0x00,
+                                     0x11,
+                                     0x22,
+                                     0x33,
+                                     0x44,
+                                     0x55,
+                                     0x66,
+                                     0x77,
+                                     0x88,
+                                     0x99,
+                                     0xAA,
+                                     0xBB,
+                                     0xCC,
+                                     0xDD,
+                                     0xEE,
+                                     0xFF};
 
     // Encode
     auto encoded = base64_converter::convert(original);
@@ -154,12 +164,12 @@ TEST_CASE("base64_encode_various_lengths", tags) {
 
     // Test various input lengths to verify padding is correct
     std::vector<std::string> tests = {
-        "a",      // 1 byte
-        "ab",     // 2 bytes
-        "abc",    // 3 bytes (no padding needed)
-        "abcd",   // 4 bytes
-        "abcde",  // 5 bytes
-        "abcdef"  // 6 bytes (no padding needed)
+        "a",     // 1 byte
+        "ab",    // 2 bytes
+        "abc",   // 3 bytes (no padding needed)
+        "abcd",  // 4 bytes
+        "abcde", // 5 bytes
+        "abcdef" // 6 bytes (no padding needed)
     };
 
     for (const auto& test : tests) {
@@ -168,8 +178,7 @@ TEST_CASE("base64_encode_various_lengths", tags) {
         auto decoded = base64_converter::convert(encoded);
         std::string decoded_str(decoded.begin(), decoded.end());
 
-        BOOST_LOG_SEV(lg, info) << "Input: '" << test
-                                << "', Encoded: '" << encoded
+        BOOST_LOG_SEV(lg, info) << "Input: '" << test << "', Encoded: '" << encoded
                                 << "', Decoded: '" << decoded_str << "'";
 
         CHECK(decoded_str == test);
@@ -179,10 +188,9 @@ TEST_CASE("base64_encode_various_lengths", tags) {
 TEST_CASE("base64_encode_long_text", tags) {
     auto lg(make_logger(test_suite));
 
-    std::string original =
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, "
-        "sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. "
-        "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.";
+    std::string original = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, "
+                           "sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. "
+                           "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.";
 
     std::vector<uint8_t> input(original.begin(), original.end());
 

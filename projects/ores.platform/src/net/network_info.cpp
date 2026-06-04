@@ -18,7 +18,7 @@
  *
  */
 #include "ores.platform/net/network_info.hpp"
-
+#include <boost/process/v2/pid.hpp>
 #include <algorithm>
 #include <array>
 #include <functional>
@@ -26,26 +26,24 @@
 #include <sstream>
 #include <vector>
 
-#include <boost/process/v2/pid.hpp>
-
 #if defined(__linux__)
-#include <unistd.h>
-#include <limits.h>
-#include <sys/types.h>
-#include <ifaddrs.h>
-#include <net/if.h>
-#include <netpacket/packet.h>
+#    include <ifaddrs.h>
+#    include <limits.h>
+#    include <net/if.h>
+#    include <netpacket/packet.h>
+#    include <sys/types.h>
+#    include <unistd.h>
 #elif defined(__APPLE__)
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/param.h>
-#include <ifaddrs.h>
-#include <net/if.h>
-#include <net/if_dl.h>
+#    include <ifaddrs.h>
+#    include <net/if.h>
+#    include <net/if_dl.h>
+#    include <sys/param.h>
+#    include <sys/types.h>
+#    include <unistd.h>
 #elif defined(_WIN32)
-#include <windows.h>
-#include <iphlpapi.h>
-#pragma comment(lib, "iphlpapi.lib")
+#    include <iphlpapi.h>
+#    include <windows.h>
+#    pragma comment(lib, "iphlpapi.lib")
 #endif
 
 namespace ores::platform::net {
@@ -90,9 +88,9 @@ std::optional<std::string> get_primary_mac_address() {
                 std::ostringstream oss;
                 oss << std::hex << std::setfill('0');
                 for (int i = 0; i < 6; ++i) {
-                    if (i > 0) oss << ':';
-                    oss << std::setw(2)
-                        << static_cast<unsigned>(s->sll_addr[i]);
+                    if (i > 0)
+                        oss << ':';
+                    oss << std::setw(2) << static_cast<unsigned>(s->sll_addr[i]);
                 }
                 macs.push_back(oss.str());
             }
@@ -123,12 +121,12 @@ std::optional<std::string> get_primary_mac_address() {
         if (ifa->ifa_addr->sa_family == AF_LINK) {
             auto* sdl = reinterpret_cast<struct sockaddr_dl*>(ifa->ifa_addr);
             if (sdl->sdl_alen == 6) {
-                auto* mac_ptr = reinterpret_cast<unsigned char*>(
-                    LLADDR(sdl));
+                auto* mac_ptr = reinterpret_cast<unsigned char*>(LLADDR(sdl));
                 std::ostringstream oss;
                 oss << std::hex << std::setfill('0');
                 for (int i = 0; i < 6; ++i) {
-                    if (i > 0) oss << ':';
+                    if (i > 0)
+                        oss << ':';
                     oss << std::setw(2) << static_cast<unsigned>(mac_ptr[i]);
                 }
                 macs.push_back(oss.str());
@@ -160,15 +158,14 @@ std::optional<std::string> get_primary_mac_address() {
     }
 
     std::vector<std::string> macs;
-    for (auto* adapter = adapter_info; adapter != nullptr;
-         adapter = adapter->Next) {
+    for (auto* adapter = adapter_info; adapter != nullptr; adapter = adapter->Next) {
         if (adapter->AddressLength == 6) {
             std::ostringstream oss;
             oss << std::hex << std::setfill('0');
             for (UINT i = 0; i < adapter->AddressLength; ++i) {
-                if (i > 0) oss << ':';
-                oss << std::setw(2)
-                    << static_cast<unsigned>(adapter->Address[i]);
+                if (i > 0)
+                    oss << ':';
+                oss << std::setw(2) << static_cast<unsigned>(adapter->Address[i]);
             }
             macs.push_back(oss.str());
         }
@@ -270,8 +267,7 @@ std::optional<std::string> get_primary_mac_address_bytes() {
     }
 
     std::vector<std::string> macs;
-    for (auto* adapter = adapter_info; adapter != nullptr;
-         adapter = adapter->Next) {
+    for (auto* adapter = adapter_info; adapter != nullptr; adapter = adapter->Next) {
         if (adapter->AddressLength == 6) {
             std::string mac_bytes;
             mac_bytes.reserve(6);
@@ -316,8 +312,7 @@ std::uint16_t derive_machine_id_hash() {
 }
 
 std::int64_t get_process_id() {
-    return static_cast<std::int64_t>(
-        boost::process::v2::current_pid());
+    return static_cast<std::int64_t>(boost::process::v2::current_pid());
 }
 
 }

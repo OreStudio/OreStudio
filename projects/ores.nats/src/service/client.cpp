@@ -18,41 +18,37 @@
  *
  */
 #include "ores.nats/service/client.hpp"
-
-#include <atomic>
-#include "ores.nats/service/jetstream_admin.hpp"
-#include <cstdlib>
-#include <filesystem>
-#include <iostream>
-#include <memory>
-#include <stdexcept>
-#include <string>
-#include <thread>
-#include <vector>
 #include "ores.logging/make_logger.hpp"
-
-#include <nats/nats.h>
-
+#include "ores.nats/service/jetstream_admin.hpp"
+#include "ores.nats/service/nats_connect_error.hpp"
+#include "ores.nats/service/subscription.hpp"
 #include <boost/asio/any_io_executor.hpp>
 #include <boost/asio/as_tuple.hpp>
 #include <boost/asio/experimental/channel.hpp>
 #include <boost/asio/this_coro.hpp>
 #include <boost/asio/use_awaitable.hpp>
 #include <boost/system/error_code.hpp>
-
-#include "ores.nats/service/subscription.hpp"
-#include "ores.nats/service/nats_connect_error.hpp"
+#include <atomic>
+#include <cstdlib>
+#include <filesystem>
+#include <iostream>
+#include <memory>
+#include <nats/nats.h>
+#include <stdexcept>
+#include <string>
+#include <thread>
+#include <vector>
 
 namespace ores::nats::service {
 
 using namespace ores::logging;
 
 namespace {
-    inline static std::string_view logger_name = "ores.nats.service.client";
-    static auto& lg() {
-        static auto instance = make_logger(logger_name);
-        return instance;
-    }
+inline static std::string_view logger_name = "ores.nats.service.client";
+static auto& lg() {
+    static auto instance = make_logger(logger_name);
+    return instance;
+}
 }
 
 // ---------------------------------------------------------------------------
@@ -92,8 +88,10 @@ namespace {
 // NATS async error handler: forwards connection/subscription errors to
 // Boost.Log instead of the library's default stderr print.
 // NATS_CONNECTION_CLOSED is expected during orderly drain — suppress it.
-void on_conn_error(natsConnection* /*nc*/, natsSubscription* /*sub*/,
-                   natsStatus err, void* /*closure*/) {
+void on_conn_error(natsConnection* /*nc*/,
+                   natsSubscription* /*sub*/,
+                   natsStatus err,
+                   void* /*closure*/) {
     if (err == NATS_CONNECTION_CLOSED)
         return;
     try {
@@ -148,33 +146,30 @@ void on_msg(natsConnection*, natsSubscription*, natsMsg* msg, void* ud) {
     try {
         cl->handler(std::move(m));
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error)
-            << "Unhandled exception in NATS message handler for subject '"
-            << subject << "': " << e.what();
+        BOOST_LOG_SEV(lg(), error) << "Unhandled exception in NATS message handler for subject '"
+                                   << subject << "': " << e.what();
     } catch (...) {
         BOOST_LOG_SEV(lg(), error)
-            << "Unknown exception in NATS message handler for subject '"
-            << subject << "'";
+            << "Unknown exception in NATS message handler for subject '" << subject << "'";
     }
 }
 
 // Build a natsMsg* with data and optional headers.
 // Caller owns the result and must call natsMsg_Destroy.
 natsMsg* make_msg(std::string_view subject,
-    std::span<const std::byte> data,
-    const std::unordered_map<std::string, std::string>& headers,
-    const char* reply = nullptr) {
+                  std::span<const std::byte> data,
+                  const std::unordered_map<std::string, std::string>& headers,
+                  const char* reply = nullptr) {
 
     natsMsg* msg = nullptr;
     const natsStatus s = natsMsg_Create(&msg,
-        std::string(subject).c_str(),
-        reply,
-        reinterpret_cast<const char*>(data.data()),
-        static_cast<int>(data.size()));
+                                        std::string(subject).c_str(),
+                                        reply,
+                                        reinterpret_cast<const char*>(data.data()),
+                                        static_cast<int>(data.size()));
 
     if (s != NATS_OK)
-        throw std::runtime_error(
-            std::string("natsMsg_Create failed: ") + natsStatus_GetText(s));
+        throw std::runtime_error(std::string("natsMsg_Create failed: ") + natsStatus_GetText(s));
 
     for (const auto& [k, v] : headers)
         natsMsgHeader_Set(msg, k.c_str(), v.c_str());
@@ -188,7 +183,8 @@ natsMsg* make_msg(std::string_view subject,
 // subscription — methods defined here because subscription::impl lives here
 // ---------------------------------------------------------------------------
 
-subscription::subscription(std::unique_ptr<impl> i) : impl_(std::move(i)) {}
+subscription::subscription(std::unique_ptr<impl> i)
+    : impl_(std::move(i)) {}
 
 subscription::~subscription() {
     if (!impl_ || !impl_->sub)
@@ -218,7 +214,8 @@ void subscription::drain() {
 // client
 // ---------------------------------------------------------------------------
 
-client::client(config::nats_options opts) : impl_(std::make_unique<impl>()) {
+client::client(config::nats_options opts)
+    : impl_(std::make_unique<impl>()) {
     impl_->opts = std::move(opts);
 }
 
@@ -243,23 +240,18 @@ void client::connect() {
         // a clear diagnostic instead of a cryptic SSL handshake error.
         auto check_file = [](const std::string& path, const char* role) {
             if (!std::filesystem::exists(path))
-                throw std::runtime_error(
-                    std::string("NATS TLS ") + role + " not found: " + path);
+                throw std::runtime_error(std::string("NATS TLS ") + role + " not found: " + path);
         };
-        check_file(impl_->opts.tls_ca_cert,      "CA certificate");
-        check_file(impl_->opts.tls_client_cert,  "client certificate");
-        check_file(impl_->opts.tls_client_key,   "client key");
+        check_file(impl_->opts.tls_ca_cert, "CA certificate");
+        check_file(impl_->opts.tls_client_cert, "client certificate");
+        check_file(impl_->opts.tls_client_key, "client key");
 
         natsOptions_SetSecure(opts, true);
-        natsOptions_LoadCATrustedCertificates(
-            opts, impl_->opts.tls_ca_cert.c_str());
+        natsOptions_LoadCATrustedCertificates(opts, impl_->opts.tls_ca_cert.c_str());
         natsOptions_LoadCertificatesChain(
-            opts,
-            impl_->opts.tls_client_cert.c_str(),
-            impl_->opts.tls_client_key.c_str());
-        BOOST_LOG_SEV(lg(), info)
-            << "mTLS enabled (ca=" << impl_->opts.tls_ca_cert
-            << ", cert=" << impl_->opts.tls_client_cert << ")";
+            opts, impl_->opts.tls_client_cert.c_str(), impl_->opts.tls_client_key.c_str());
+        BOOST_LOG_SEV(lg(), info) << "mTLS enabled (ca=" << impl_->opts.tls_ca_cert
+                                  << ", cert=" << impl_->opts.tls_client_cert << ")";
     }
 
     natsStatus s = natsConnection_Connect(&impl_->conn, opts);
@@ -284,7 +276,7 @@ void client::connect() {
                 break;
         }
         throw nats_connect_error(kind,
-            std::string("NATS connect failed: ") + natsStatus_GetText(s));
+                                 std::string("NATS connect failed: ") + natsStatus_GetText(s));
     }
 
     // Note: natsConnection_JetStream(jsCtx**, natsConnection*, jsOptions*)
@@ -293,8 +285,8 @@ void client::connect() {
         natsConnection_Close(impl_->conn);
         natsConnection_Destroy(impl_->conn);
         impl_->conn = nullptr;
-        throw std::runtime_error(
-            std::string("NATS JetStream init failed: ") + natsStatus_GetText(s));
+        throw std::runtime_error(std::string("NATS JetStream init failed: ") +
+                                 natsStatus_GetText(s));
     }
 
     impl_->connected.store(true, std::memory_order_release);
@@ -341,26 +333,25 @@ std::string client::make_stream_name(std::string_view logical_suffix) const {
 }
 
 void client::publish(std::string_view subject,
-    std::span<const std::byte> data,
-    std::unordered_map<std::string, std::string> headers) {
+                     std::span<const std::byte> data,
+                     std::unordered_map<std::string, std::string> headers) {
 
     natsMsg* msg = make_msg(make_subject(subject), data, headers);
     const natsStatus s = natsConnection_PublishMsg(impl_->conn, msg);
     natsMsg_Destroy(msg);
     if (s != NATS_OK)
-        throw std::runtime_error(
-            std::string("NATS publish failed: ") + natsStatus_GetText(s));
+        throw std::runtime_error(std::string("NATS publish failed: ") + natsStatus_GetText(s));
 }
 
 message client::request_sync(std::string_view subject,
-    std::span<const std::byte> data,
-    std::unordered_map<std::string, std::string> headers,
-    std::chrono::milliseconds timeout) {
+                             std::span<const std::byte> data,
+                             std::unordered_map<std::string, std::string> headers,
+                             std::chrono::milliseconds timeout) {
 
     natsMsg* req = make_msg(make_subject(subject), data, headers);
     natsMsg* reply = nullptr;
-    const natsStatus s = natsConnection_RequestMsg(
-        &reply, impl_->conn, req, static_cast<int64_t>(timeout.count()));
+    const natsStatus s =
+        natsConnection_RequestMsg(&reply, impl_->conn, req, static_cast<int64_t>(timeout.count()));
     natsMsg_Destroy(req);
 
     if (s != NATS_OK) {
@@ -368,10 +359,9 @@ message client::request_sync(std::string_view subject,
             throw std::runtime_error("NATS request timed out");
         if (s == NATS_NO_RESPONDERS)
             throw nats_connect_error(nats_error_kind::services_unavailable,
-                "NATS request failed: no service is handling subject '"
-                + std::string(make_subject(subject)) + "'");
-        throw std::runtime_error(
-            std::string("NATS request failed: ") + natsStatus_GetText(s));
+                                     "NATS request failed: no service is handling subject '" +
+                                         std::string(make_subject(subject)) + "'");
+        throw std::runtime_error(std::string("NATS request failed: ") + natsStatus_GetText(s));
     }
 
     message m = extract_message(reply);
@@ -379,14 +369,14 @@ message client::request_sync(std::string_view subject,
     return m;
 }
 
-boost::asio::awaitable<message> client::request(std::string_view subject,
-    std::span<const std::byte> data,
-    std::unordered_map<std::string, std::string> headers,
-    std::chrono::milliseconds timeout) {
+boost::asio::awaitable<message>
+client::request(std::string_view subject,
+                std::span<const std::byte> data,
+                std::unordered_map<std::string, std::string> headers,
+                std::chrono::milliseconds timeout) {
 
-    using chan_t = boost::asio::experimental::channel<
-        boost::asio::any_io_executor,
-        void(boost::system::error_code, message)>;
+    using chan_t = boost::asio::experimental::channel<boost::asio::any_io_executor,
+                                                      void(boost::system::error_code, message)>;
 
     auto ex = co_await boost::asio::this_coro::executor;
     auto chan = std::make_shared<chan_t>(ex, 1);
@@ -399,14 +389,13 @@ boost::asio::awaitable<message> client::request(std::string_view subject,
             auto result = request_sync(subj, payload, hdrs, timeout);
             chan->try_send(boost::system::error_code{}, std::move(result));
         } catch (const std::exception&) {
-            chan->try_send(
-                boost::system::error_code{boost::asio::error::operation_aborted},
-                message{});
+            chan->try_send(boost::system::error_code{boost::asio::error::operation_aborted},
+                           message{});
         }
     }).detach();
 
-    auto [ec, msg] = co_await chan->async_receive(
-        boost::asio::as_tuple(boost::asio::use_awaitable));
+    auto [ec, msg] =
+        co_await chan->async_receive(boost::asio::as_tuple(boost::asio::use_awaitable));
 
     if (ec)
         throw std::runtime_error("NATS async request failed: " + ec.message());
@@ -423,8 +412,8 @@ subscription client::subscribe(std::string_view subject, message_handler handler
         &sub, impl_->conn, make_subject(subject).c_str(), on_msg, cl.get());
 
     if (s != NATS_OK)
-        throw std::runtime_error(
-            std::string("natsConnection_Subscribe failed: ") + natsStatus_GetText(s));
+        throw std::runtime_error(std::string("natsConnection_Subscribe failed: ") +
+                                 natsStatus_GetText(s));
 
     auto si = std::make_unique<subscription::impl>();
     si->sub = sub;
@@ -433,22 +422,23 @@ subscription client::subscribe(std::string_view subject, message_handler handler
 }
 
 subscription client::queue_subscribe(std::string_view subject,
-    std::string_view queue_group,
-    message_handler handler) {
+                                     std::string_view queue_group,
+                                     message_handler handler) {
 
     auto cl = std::make_unique<sub_closure>();
     cl->handler = std::move(handler);
 
     natsSubscription* sub = nullptr;
-    const natsStatus s = natsConnection_QueueSubscribe(
-        &sub, impl_->conn,
-        make_subject(subject).c_str(),
-        std::string(queue_group).c_str(),
-        on_msg, cl.get());
+    const natsStatus s = natsConnection_QueueSubscribe(&sub,
+                                                       impl_->conn,
+                                                       make_subject(subject).c_str(),
+                                                       std::string(queue_group).c_str(),
+                                                       on_msg,
+                                                       cl.get());
 
     if (s != NATS_OK)
-        throw std::runtime_error(
-            std::string("natsConnection_QueueSubscribe failed: ") + natsStatus_GetText(s));
+        throw std::runtime_error(std::string("natsConnection_QueueSubscribe failed: ") +
+                                 natsStatus_GetText(s));
 
     auto si = std::make_unique<subscription::impl>();
     si->sub = sub;
@@ -457,8 +447,8 @@ subscription client::queue_subscribe(std::string_view subject,
 }
 
 void client::js_publish(std::string_view subject,
-    std::span<const std::byte> data,
-    std::unordered_map<std::string, std::string> headers) {
+                        std::span<const std::byte> data,
+                        std::unordered_map<std::string, std::string> headers) {
 
     natsMsg* msg = make_msg(make_subject(subject), data, headers);
     jsPubAck* ack = nullptr;
@@ -469,13 +459,12 @@ void client::js_publish(std::string_view subject,
         jsPubAck_Destroy(ack);
 
     if (s != NATS_OK)
-        throw std::runtime_error(
-            std::string("JetStream publish failed: ") + natsStatus_GetText(s));
+        throw std::runtime_error(std::string("JetStream publish failed: ") + natsStatus_GetText(s));
 }
 
 subscription client::js_subscribe(std::string_view subject,
-    std::string_view durable_name,
-    message_handler handler) {
+                                  std::string_view durable_name,
+                                  message_handler handler) {
 
     auto cl = std::make_unique<sub_closure>();
     cl->handler = std::move(handler);
@@ -490,12 +479,10 @@ subscription client::js_subscribe(std::string_view subject,
     natsSubscription* sub = nullptr;
     // js_Subscribe(sub, js, subject, cb, closure, jsOptions*, jsSubOptions*, jsErrCode*)
     const natsStatus s = js_Subscribe(
-        &sub, impl_->js, subj_str.c_str(), on_msg, cl.get(),
-        nullptr, &sub_opts, nullptr);
+        &sub, impl_->js, subj_str.c_str(), on_msg, cl.get(), nullptr, &sub_opts, nullptr);
 
     if (s != NATS_OK)
-        throw std::runtime_error(
-            std::string("js_Subscribe failed: ") + natsStatus_GetText(s));
+        throw std::runtime_error(std::string("js_Subscribe failed: ") + natsStatus_GetText(s));
 
     auto si = std::make_unique<subscription::impl>();
     si->sub = sub;
@@ -504,9 +491,9 @@ subscription client::js_subscribe(std::string_view subject,
 }
 
 subscription client::js_queue_subscribe(std::string_view subject,
-    std::string_view durable_name,
-    std::string_view queue_group,
-    message_handler handler) {
+                                        std::string_view durable_name,
+                                        std::string_view queue_group,
+                                        message_handler handler) {
 
     auto cl = std::make_unique<sub_closure>();
     cl->handler = std::move(handler);
@@ -522,12 +509,10 @@ subscription client::js_queue_subscribe(std::string_view subject,
 
     natsSubscription* sub = nullptr;
     const natsStatus s = js_Subscribe(
-        &sub, impl_->js, subj_str.c_str(), on_msg, cl.get(),
-        nullptr, &sub_opts, nullptr);
+        &sub, impl_->js, subj_str.c_str(), on_msg, cl.get(), nullptr, &sub_opts, nullptr);
 
     if (s != NATS_OK)
-        throw std::runtime_error(
-            std::string("js_QueueSubscribe failed: ") + natsStatus_GetText(s));
+        throw std::runtime_error(std::string("js_QueueSubscribe failed: ") + natsStatus_GetText(s));
 
     auto si = std::make_unique<subscription::impl>();
     si->sub = sub;

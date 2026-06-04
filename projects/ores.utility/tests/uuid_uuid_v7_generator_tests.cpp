@@ -17,15 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.logging/make_logger.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
-
+#include <boost/uuid/uuid_io.hpp>
+#include <bitset>
+#include <catch2/catch_test_macros.hpp>
+#include <iomanip>
 #include <set>
 #include <thread>
-#include <bitset>
-#include <iomanip>
-#include <catch2/catch_test_macros.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include "ores.logging/make_logger.hpp"
 
 namespace {
 
@@ -60,8 +59,7 @@ TEST_CASE("generate_multiple_unique_uuids", tags) {
         uuids.insert(uuid);
     }
 
-    BOOST_LOG_SEV(lg, info) << "Generated " << count << " UUIDs, "
-                            << uuids.size() << " unique";
+    BOOST_LOG_SEV(lg, info) << "Generated " << count << " UUIDs, " << uuids.size() << " unique";
 
     CHECK(uuids.size() == count);
 }
@@ -79,8 +77,7 @@ TEST_CASE("uuid_v7_has_correct_version", tags) {
     const unsigned char version_byte = uuid.data[6];
     const unsigned char version = (version_byte >> 4) & 0x0F;
 
-    BOOST_LOG_SEV(lg, info) << "Version byte: 0x" << std::hex
-                            << static_cast<int>(version_byte);
+    BOOST_LOG_SEV(lg, info) << "Version byte: 0x" << std::hex << static_cast<int>(version_byte);
     BOOST_LOG_SEV(lg, info) << "Version: " << static_cast<int>(version);
 
     CHECK(version == 0x7);
@@ -99,8 +96,7 @@ TEST_CASE("uuid_v7_has_correct_variant", tags) {
     const unsigned char variant_byte = uuid.data[8];
     const unsigned char variant = (variant_byte >> 6) & 0x03;
 
-    BOOST_LOG_SEV(lg, info) << "Variant byte: 0x" << std::hex
-                            << static_cast<int>(variant_byte);
+    BOOST_LOG_SEV(lg, info) << "Variant byte: 0x" << std::hex << static_cast<int>(variant_byte);
     BOOST_LOG_SEV(lg, info) << "Variant: 0b" << std::bitset<2>(variant);
 
     CHECK(variant == 0x02); // 0b10
@@ -152,27 +148,23 @@ TEST_CASE("uuid_v7_timestamp_extraction", tags) {
 
     // Extract the 48-bit timestamp from the first 6 bytes
     uint64_t timestamp =
-        (static_cast<uint64_t>(uuid.data[0]) << 40) |
-        (static_cast<uint64_t>(uuid.data[1]) << 32) |
-        (static_cast<uint64_t>(uuid.data[2]) << 24) |
-        (static_cast<uint64_t>(uuid.data[3]) << 16) |
-        (static_cast<uint64_t>(uuid.data[4]) << 8) |
-        (static_cast<uint64_t>(uuid.data[5]));
+        (static_cast<uint64_t>(uuid.data[0]) << 40) | (static_cast<uint64_t>(uuid.data[1]) << 32) |
+        (static_cast<uint64_t>(uuid.data[2]) << 24) | (static_cast<uint64_t>(uuid.data[3]) << 16) |
+        (static_cast<uint64_t>(uuid.data[4]) << 8) | (static_cast<uint64_t>(uuid.data[5]));
 
     BOOST_LOG_SEV(lg, info) << "Extracted timestamp: " << timestamp << " ms";
 
     // Get current time for comparison
     auto now = std::chrono::system_clock::now();
-    auto now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
-        now.time_since_epoch()).count();
+    auto now_ms =
+        std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
 
     BOOST_LOG_SEV(lg, info) << "Current timestamp: " << now_ms << " ms";
 
     // The extracted timestamp should be very close to current time
     // Allow for up to 1 second difference to account for test execution time
     const uint64_t tolerance_ms = 1000;
-    CHECK(std::abs(static_cast<int64_t>(timestamp - now_ms)) <=
-          static_cast<int64_t>(tolerance_ms));
+    CHECK(std::abs(static_cast<int64_t>(timestamp - now_ms)) <= static_cast<int64_t>(tolerance_ms));
 }
 
 TEST_CASE("generate_batch_of_time_ordered_uuids", tags) {
@@ -211,21 +203,19 @@ TEST_CASE("uuid_v7_format_components", tags) {
     BOOST_LOG_SEV(lg, info) << "UUID: " << uuid;
 
     // Log individual components for verification
-    BOOST_LOG_SEV(lg, info) << "Timestamp bytes [0-5]: "
-                            << std::hex << std::setfill('0')
-                            << std::setw(2) << static_cast<int>(uuid.data[0]) << " "
-                            << std::setw(2) << static_cast<int>(uuid.data[1]) << " "
-                            << std::setw(2) << static_cast<int>(uuid.data[2]) << " "
-                            << std::setw(2) << static_cast<int>(uuid.data[3]) << " "
-                            << std::setw(2) << static_cast<int>(uuid.data[4]) << " "
-                            << std::setw(2) << static_cast<int>(uuid.data[5]);
+    BOOST_LOG_SEV(lg, info) << "Timestamp bytes [0-5]: " << std::hex << std::setfill('0')
+                            << std::setw(2) << static_cast<int>(uuid.data[0]) << " " << std::setw(2)
+                            << static_cast<int>(uuid.data[1]) << " " << std::setw(2)
+                            << static_cast<int>(uuid.data[2]) << " " << std::setw(2)
+                            << static_cast<int>(uuid.data[3]) << " " << std::setw(2)
+                            << static_cast<int>(uuid.data[4]) << " " << std::setw(2)
+                            << static_cast<int>(uuid.data[5]);
 
-    BOOST_LOG_SEV(lg, info) << "Version byte [6]: 0x"
-                            << std::setw(2) << static_cast<int>(uuid.data[6])
-                            << " (should be 0x7X)";
+    BOOST_LOG_SEV(lg, info) << "Version byte [6]: 0x" << std::setw(2)
+                            << static_cast<int>(uuid.data[6]) << " (should be 0x7X)";
 
-    BOOST_LOG_SEV(lg, info) << "Variant byte [8]: 0x"
-                            << std::setw(2) << static_cast<int>(uuid.data[8])
+    BOOST_LOG_SEV(lg, info) << "Variant byte [8]: 0x" << std::setw(2)
+                            << static_cast<int>(uuid.data[8])
                             << " (should be 0x8X or 0x9X or 0xAX or 0xBX)";
 
     // Version byte should have 0x7 in upper nibble

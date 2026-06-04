@@ -20,10 +20,10 @@
 #ifndef ORES_EVENTING_DOMAIN_EVENT_CHANNEL_INFO_JSON_IO_HPP
 #define ORES_EVENTING_DOMAIN_EVENT_CHANNEL_INFO_JSON_IO_HPP
 
-#include <iosfwd>
-#include <vector>
 #include "ores.eventing/domain/event_channel_info.hpp"
 #include "ores.eventing/export.hpp"
+#include <iosfwd>
+#include <vector>
 
 namespace ores::eventing::domain {
 
@@ -35,7 +35,8 @@ ORES_EVENTING_EXPORT std::ostream& operator<<(std::ostream& s, const event_chann
 /**
  * @brief Dumps a vector of event channel info objects to a stream in JSON format.
  */
-ORES_EVENTING_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<event_channel_info>& v);
+ORES_EVENTING_EXPORT std::ostream& operator<<(std::ostream& s,
+                                              const std::vector<event_channel_info>& v);
 
 }
 

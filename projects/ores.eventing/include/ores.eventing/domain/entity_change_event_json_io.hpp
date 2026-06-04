@@ -20,9 +20,9 @@
 #ifndef ORES_EVENTING_DOMAIN_ENTITY_CHANGE_EVENT_JSON_IO_HPP
 #define ORES_EVENTING_DOMAIN_ENTITY_CHANGE_EVENT_JSON_IO_HPP
 
-#include <iosfwd>
 #include "ores.eventing/domain/entity_change_event.hpp"
 #include "ores.eventing/export.hpp"
+#include <iosfwd>
 
 namespace ores::eventing::domain {
 

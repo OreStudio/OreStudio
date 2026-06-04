@@ -20,9 +20,9 @@
 #ifndef ORES_PLATFORM_ENVIRONMENT_ENVIRONMENT_HPP
 #define ORES_PLATFORM_ENVIRONMENT_ENVIRONMENT_HPP
 
-#include <string>
-#include <optional>
 #include "ores.platform/export.hpp"
+#include <optional>
+#include <string>
 
 namespace ores::platform::environment {
 
@@ -47,7 +47,7 @@ public:
      * @return The value if found, default_value otherwise.
      */
     static std::string get_value_or_default(const std::string& name,
-        const std::string& default_value);
+                                            const std::string& default_value);
 
     /**
      * @brief Gets an environment variable value as an integer.
@@ -56,8 +56,7 @@ public:
      * @param default_value Default value if not found or not parseable.
      * @return The value if found and parseable, default_value otherwise.
      */
-    static int get_int_value_or_default(const std::string& name,
-        int default_value);
+    static int get_int_value_or_default(const std::string& name, int default_value);
 
     /**
      * @brief Gets an environment variable value, throwing if not set.

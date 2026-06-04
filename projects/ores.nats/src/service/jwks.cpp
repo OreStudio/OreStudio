@@ -18,12 +18,11 @@
  *
  */
 #include "ores.nats/service/jwks.hpp"
-
+#include "ores.nats/service/retry.hpp"
+#include <boost/json.hpp>
 #include <span>
 #include <stdexcept>
 #include <string_view>
-#include <boost/json.hpp>
-#include "ores.nats/service/retry.hpp"
 
 namespace ores::nats::service {
 
@@ -36,35 +35,30 @@ fetch_jwks_public_key(client& nats, std::chrono::seconds per_request_timeout) {
             static constexpr std::string_view body = "{}";
             const auto* p = reinterpret_cast<const std::byte*>(body.data());
 
-            auto reply = co_await nats.request(
-                "iam.v1.auth.public-key",
-                std::span<const std::byte>(p, body.size()),
-                {},
-                per_request_timeout);
+            auto reply = co_await nats.request("iam.v1.auth.public-key",
+                                               std::span<const std::byte>(p, body.size()),
+                                               {},
+                                               per_request_timeout);
 
-            const std::string_view sv(
-                reinterpret_cast<const char*>(reply.data.data()),
-                reply.data.size());
+            const std::string_view sv(reinterpret_cast<const char*>(reply.data.data()),
+                                      reply.data.size());
 
             const auto json = boost::json::parse(sv);
             const auto& obj = json.as_object();
 
             // IAM returns {error_message: "..."} when no key is configured.
             if (obj.contains("error_message")) {
-                throw std::runtime_error(
-                    "IAM JWKS error: " +
-                    std::string(obj.at("error_message").as_string()));
+                throw std::runtime_error("IAM JWKS error: " +
+                                         std::string(obj.at("error_message").as_string()));
             }
 
             auto key = std::string(obj.at("public_key").as_string());
             if (key.empty())
-                throw std::runtime_error(
-                    "IAM JWKS returned empty public key");
+                throw std::runtime_error("IAM JWKS returned empty public key");
 
             pub_key = std::move(key);
         },
-        "JWKS public key fetch from IAM"
-    );
+        "JWKS public key fetch from IAM");
 
     co_return pub_key;
 }

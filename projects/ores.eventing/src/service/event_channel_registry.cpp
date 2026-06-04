@@ -18,7 +18,6 @@
  *
  */
 #include "ores.eventing/service/event_channel_registry.hpp"
-
 #include <algorithm>
 
 namespace ores::eventing::service {

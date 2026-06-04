@@ -17,12 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.utility/string/converter.hpp"
-
-#include <limits>
-#include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/string/conversion_error.hpp"
+#include "ores.utility/string/converter.hpp"
+#include <catch2/catch_test_macros.hpp>
+#include <limits>
 
 namespace {
 
@@ -196,18 +195,18 @@ TEST_CASE("string_to_int_different_bases", tags) {
 
     auto placeholder = "100";
     std::vector<test_case> tests = {{.input = "100", .base = 10, .expected = 100},
-                                    {.input=placeholder, .base=2, .expected=4},
-                                    {.input="100", .base=8, .expected=64},
-                                    {.input="100", .base=16, .expected=256},
-                                    {.input="1A", .base=16, .expected=26},
-                                    {.input="77", .base=8, .expected=63},
-                                    {.input="11111111", .base=2, .expected=255}};
+                                    {.input = placeholder, .base = 2, .expected = 4},
+                                    {.input = "100", .base = 8, .expected = 64},
+                                    {.input = "100", .base = 16, .expected = 256},
+                                    {.input = "1A", .base = 16, .expected = 26},
+                                    {.input = "77", .base = 8, .expected = 63},
+                                    {.input = "11111111", .base = 2, .expected = 255}};
 
     for (const auto& tc : tests) {
         auto result = converter::string_to_int(tc.input, tc.base);
 
-        BOOST_LOG_SEV(lg, info) << "Input: '" << tc.input
-                                << "' (base " << tc.base << ") = " << result;
+        BOOST_LOG_SEV(lg, info) << "Input: '" << tc.input << "' (base " << tc.base
+                                << ") = " << result;
 
         CHECK(result == tc.expected);
     }

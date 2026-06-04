@@ -17,14 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.logging/make_logger.hpp"
 #include "ores.platform/filesystem/file.hpp"
-
+#include "ores.platform/filesystem/file_not_found.hpp"
+#include "ores.platform/filesystem/io_error.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include <fstream>
-#include "ores.logging/make_logger.hpp"
-#include "ores.platform/filesystem/file_not_found.hpp"
-#include "ores.platform/filesystem/io_error.hpp"
 
 namespace {
 
@@ -246,8 +245,8 @@ TEST_CASE("find_file_recursively_upwards_with_absolute_path", tags) {
     auto temp_file = create_temp_file("content");
     BOOST_LOG_SEV(lg, info) << "Finding absolute path: " << temp_file;
 
-    auto result = file::find_file_recursively_upwards(
-        std::filesystem::temp_directory_path(), temp_file);
+    auto result =
+        file::find_file_recursively_upwards(std::filesystem::temp_directory_path(), temp_file);
 
     CHECK(result == temp_file);
 
@@ -297,9 +296,8 @@ TEST_CASE("find_file_recursively_upwards_with_invalid_directory_throws", tags) {
     auto temp_file = create_temp_file("content");
     BOOST_LOG_SEV(lg, info) << "Attempting upward search from file path";
 
-    CHECK_THROWS_AS(
-        file::find_file_recursively_upwards(temp_file, "something.txt"),
-        file_not_found);
+    CHECK_THROWS_AS(file::find_file_recursively_upwards(temp_file, "something.txt"),
+                    file_not_found);
 
     std::filesystem::remove(temp_file);
 }

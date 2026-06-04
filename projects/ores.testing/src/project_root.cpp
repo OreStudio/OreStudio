@@ -17,7 +17,6 @@
  *
  */
 #include "ores.testing/project_root.hpp"
-
 #include <stdexcept>
 
 namespace ores::testing {

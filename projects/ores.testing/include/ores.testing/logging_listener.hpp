@@ -20,10 +20,10 @@
 #ifndef ORES_TESTING_LOGGING_LISTENER_HPP
 #define ORES_TESTING_LOGGING_LISTENER_HPP
 
-#include <catch2/catch_test_case_info.hpp>
-#include <catch2/reporters/catch_reporter_event_listener.hpp>
 #include "ores.telemetry.core/log/lifecycle_manager.hpp"
 #include "ores.testing/export.hpp"
+#include <catch2/catch_test_case_info.hpp>
+#include <catch2/reporters/catch_reporter_event_listener.hpp>
 
 namespace ores::testing {
 

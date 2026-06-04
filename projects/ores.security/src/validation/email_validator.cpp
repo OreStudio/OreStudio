@@ -18,13 +18,12 @@
  *
  */
 #include "ores.security/validation/email_validator.hpp"
-
 #include <algorithm>
 
 namespace ores::security::validation {
 
 validation_result email_validator::validate(const std::string& email) {
-    validation_result result { .is_valid = true, .error_message = "" };
+    validation_result result{.is_valid = true, .error_message = ""};
 
     if (email.empty()) {
         result.is_valid = false;

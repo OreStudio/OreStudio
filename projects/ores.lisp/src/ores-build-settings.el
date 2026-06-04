@@ -65,7 +65,8 @@
       (message "Settings deployed to %s"
                (expand-file-name ".claude/settings.json" ores/--settings-root)))
   (error
-   (message "Settings deployment failed: %s" (error-message-string err))))
+   (message "Settings deployment failed: %s" (error-message-string err))
+   (kill-emacs 1)))
 
 (provide 'ores-build-settings)
 ;;; ores-build-settings.el ends here

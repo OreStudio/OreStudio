@@ -20,12 +20,12 @@
 #ifndef ORES_UTILITY_GENERATION_GENERATION_ENVIRONMENT_HPP
 #define ORES_UTILITY_GENERATION_GENERATION_ENVIRONMENT_HPP
 
+#include "ores.utility/export.hpp"
 #include <memory>
 #include <optional>
 #include <string>
 #include <string_view>
 #include <unordered_map>
-#include "ores.utility/export.hpp"
 
 namespace ores::utility::generation {
 
@@ -47,9 +47,7 @@ public:
     /**
      * @brief Constructs a child environment with overrides.
      */
-    generation_environment(
-        std::shared_ptr<const generation_environment> parent,
-        entries overrides);
+    generation_environment(std::shared_ptr<const generation_environment> parent, entries overrides);
 
     /**
      * @brief Gets a value by key, searching parent chain.
@@ -59,8 +57,7 @@ public:
     /**
      * @brief Gets a value by key, returning default if not found.
      */
-    std::string get_or(std::string_view key,
-        const std::string& default_value) const;
+    std::string get_or(std::string_view key, const std::string& default_value) const;
 
     /**
      * @brief Checks if a key exists in this environment or parents.

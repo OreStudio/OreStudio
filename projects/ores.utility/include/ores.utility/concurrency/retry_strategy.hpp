@@ -50,7 +50,8 @@ public:
     };
 
     retry_strategy() = default;
-    explicit retry_strategy(config cfg) : config_(cfg) {}
+    explicit retry_strategy(config cfg)
+        : config_(cfg) {}
 
     /**
      * @brief Record a successful start.
@@ -87,10 +88,14 @@ public:
      * Call before on_failure() to decide if the threshold has been crossed
      * on this failure, before the counter is incremented.
      */
-    bool exceeded(int max) const { return count_ >= max; }
+    bool exceeded(int max) const {
+        return count_ >= max;
+    }
 
     /** @brief Returns the current consecutive failure count. */
-    int failure_count() const { return count_; }
+    int failure_count() const {
+        return count_;
+    }
 
     /**
      * @brief Restore a previously saved failure count without resetting state.
@@ -98,7 +103,9 @@ public:
      * Used when a new entry must inherit an accumulated count from a prior
      * one (e.g. after a process is relaunched and the entry is replaced).
      */
-    void set_failure_count(int n) { count_ = n; }
+    void set_failure_count(int n) {
+        count_ = n;
+    }
 
     /** @brief Reset the counter and start-time record to initial state. */
     void reset() {
@@ -111,8 +118,7 @@ private:
         // Cap exponent at 6: initial(5) * 2^6 = 320s > max(300s), so the
         // min() clamp always applies from failure 6 onwards.
         const int exp = std::min(count_, 6);
-        const auto delay = std::chrono::seconds(
-            config_.initial_delay.count() * (1 << exp));
+        const auto delay = std::chrono::seconds(config_.initial_delay.count() * (1 << exp));
         return std::min(delay, config_.max_delay);
     }
 

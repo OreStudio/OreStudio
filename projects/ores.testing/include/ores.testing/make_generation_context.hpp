@@ -20,11 +20,11 @@
 #ifndef ORES_TESTING_MAKE_GENERATION_CONTEXT_HPP
 #define ORES_TESTING_MAKE_GENERATION_CONTEXT_HPP
 
-#include <cstdint>
-#include "ores.utility/generation/generation_context.hpp"
 #include "ores.testing/database_helper.hpp"
-#include "ores.testing/scoped_database_helper.hpp"
 #include "ores.testing/export.hpp"
+#include "ores.testing/scoped_database_helper.hpp"
+#include "ores.utility/generation/generation_context.hpp"
+#include <cstdint>
 
 namespace ores::testing {
 

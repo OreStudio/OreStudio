@@ -40,7 +40,7 @@ namespace ores::eventing::domain {
  *
  * @tparam Event The event type.
  */
-template<typename Event>
+template <typename Event>
 struct event_traits {
     // Primary template is intentionally not defined.
     // Each event type must provide its own specialization.
@@ -50,7 +50,7 @@ struct event_traits {
 /**
  * @brief Concept for types that have event_traits specialization.
  */
-template<typename T>
+template <typename T>
 concept has_event_traits = requires {
     { event_traits<T>::name } -> std::convertible_to<std::string_view>;
 };

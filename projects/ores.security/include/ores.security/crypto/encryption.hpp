@@ -20,9 +20,9 @@
 #ifndef ORES_SECURITY_CRYPTO_ENCRYPTION_HPP
 #define ORES_SECURITY_CRYPTO_ENCRYPTION_HPP
 
+#include "ores.security/export.hpp"
 #include <string>
 #include <vector>
-#include "ores.security/export.hpp"
 
 namespace ores::security::crypto {
 
@@ -43,8 +43,8 @@ public:
     static constexpr size_t SALT_LEN = 16;
     static constexpr size_t IV_LEN = 12;
     static constexpr size_t TAG_LEN = 16;
-    static constexpr size_t KEY_LEN = 32;  // AES-256
-    static constexpr int PBKDF2_ITERATIONS = 600000;  // OWASP recommendation
+    static constexpr size_t KEY_LEN = 32;            // AES-256
+    static constexpr int PBKDF2_ITERATIONS = 600000; // OWASP recommendation
 
     /**
      * @brief Encrypt plaintext using a password.
@@ -52,8 +52,7 @@ public:
      * @param password The password used to derive the encryption key.
      * @return Base64-encoded encrypted data.
      */
-    static std::string encrypt(const std::string& plaintext,
-                               const std::string& password);
+    static std::string encrypt(const std::string& plaintext, const std::string& password);
 
     /**
      * @brief Decrypt ciphertext using a password.
@@ -62,8 +61,7 @@ public:
      * @return Decrypted plaintext.
      * @throws std::runtime_error if decryption fails.
      */
-    static std::string decrypt(const std::string& encrypted_data,
-                               const std::string& password);
+    static std::string decrypt(const std::string& encrypted_data, const std::string& password);
 
     /**
      * @brief Verify if a password can decrypt the given data.
@@ -71,13 +69,11 @@ public:
      * @param password The password to verify.
      * @return true if the password is correct.
      */
-    static bool verify_password(const std::string& encrypted_data,
-                                const std::string& password);
+    static bool verify_password(const std::string& encrypted_data, const std::string& password);
 
 private:
-    static std::vector<unsigned char> derive_key(
-        const std::string& password,
-        const std::vector<unsigned char>& salt);
+    static std::vector<unsigned char> derive_key(const std::string& password,
+                                                 const std::vector<unsigned char>& salt);
 };
 
 }

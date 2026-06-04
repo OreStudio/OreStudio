@@ -20,32 +20,30 @@
 #ifndef ORES_UTILITY_RFL_TIME_POINT_PARSER_HPP
 #define ORES_UTILITY_RFL_TIME_POINT_PARSER_HPP
 
-#include <chrono>
-#include <string>
-#include <rfl.hpp>
 #include "ores.platform/time/datetime.hpp"
+#include <chrono>
+#include <rfl.hpp>
+#include <string>
 
 namespace rfl::parsing {
 
 template <class ReaderType, class WriterType, class ProcessorsType>
-struct Parser<ReaderType, WriterType,
-              std::chrono::system_clock::time_point, ProcessorsType> {
+struct Parser<ReaderType, WriterType, std::chrono::system_clock::time_point, ProcessorsType> {
     using InputVarType = typename ReaderType::InputVarType;
     using OutputVarType = typename WriterType::OutputVarType;
 
     // std::chrono::system_clock::time_point is always UTC by definition (C++20).
     // We serialise with a 'Z' suffix and parse with UTC interpretation so that
     // server and client agree regardless of the host machine's local timezone.
-    static Result<std::chrono::system_clock::time_point> read(
-        const ReaderType& _r, const InputVarType& _var) noexcept {
-        const auto str_result = Parser<ReaderType, WriterType,
-            std::string, ProcessorsType>::read(_r, _var);
+    static Result<std::chrono::system_clock::time_point> read(const ReaderType& _r,
+                                                              const InputVarType& _var) noexcept {
+        const auto str_result =
+            Parser<ReaderType, WriterType, std::string, ProcessorsType>::read(_r, _var);
         if (!str_result) {
             return rfl::Unexpected(Error(str_result.error().what()));
         }
         try {
-            return ores::platform::time::datetime::from_iso8601_utc(
-                str_result.value());
+            return ores::platform::time::datetime::from_iso8601_utc(str_result.value());
         } catch (const std::exception& e) {
             return rfl::Unexpected(Error(e.what()));
         }
@@ -56,17 +54,14 @@ struct Parser<ReaderType, WriterType,
                       const std::chrono::system_clock::time_point& _tp,
                       const P& _parent) noexcept {
         const auto str = ores::platform::time::datetime::to_iso8601_utc(_tp);
-        Parser<ReaderType, WriterType, std::string, ProcessorsType>::write(
-            _w, str, _parent);
+        Parser<ReaderType, WriterType, std::string, ProcessorsType>::write(_w, str, _parent);
     }
 
     // time_point serialises as an ISO 8601 UTC string — delegate schema
     // generation to the string parser so rfl::json::to_schema works correctly.
     template <class SchemaType>
-    static SchemaType to_schema(
-        std::map<std::string, SchemaType>* _definitions) {
-        return Parser<ReaderType, WriterType,
-            std::string, ProcessorsType>::to_schema(_definitions);
+    static SchemaType to_schema(std::map<std::string, SchemaType>* _definitions) {
+        return Parser<ReaderType, WriterType, std::string, ProcessorsType>::to_schema(_definitions);
     }
 };
 

@@ -18,13 +18,11 @@
  *
  */
 #include "ores.utility/serialization/reader.hpp"
-
 #include <cstring>
 
 namespace ores::utility::serialization {
 
-std::expected<std::uint8_t, error_code>
-reader::read_uint8(std::span<const std::byte>& data) {
+std::expected<std::uint8_t, error_code> reader::read_uint8(std::span<const std::byte>& data) {
     if (data.size() < 1) {
         return std::unexpected(error_code::payload_incomplete);
     }
@@ -33,32 +31,29 @@ reader::read_uint8(std::span<const std::byte>& data) {
     return value;
 }
 
-std::expected<std::uint16_t, error_code>
-reader::read_uint16(std::span<const std::byte>& data) {
+std::expected<std::uint16_t, error_code> reader::read_uint16(std::span<const std::byte>& data) {
     if (data.size() < 2) {
         return std::unexpected(error_code::payload_incomplete);
     }
-    std::uint16_t value = (static_cast<std::uint16_t>(data[0]) << 8) |
-                          static_cast<std::uint16_t>(data[1]);
+    std::uint16_t value =
+        (static_cast<std::uint16_t>(data[0]) << 8) | static_cast<std::uint16_t>(data[1]);
     data = data.subspan(2);
     return value;
 }
 
-std::expected<std::uint32_t, error_code>
-reader::read_uint32(std::span<const std::byte>& data) {
+std::expected<std::uint32_t, error_code> reader::read_uint32(std::span<const std::byte>& data) {
     if (data.size() < 4) {
         return std::unexpected(error_code::payload_incomplete);
     }
-    std::uint32_t value = (static_cast<std::uint32_t>(data[0]) << 24) |
-                          (static_cast<std::uint32_t>(data[1]) << 16) |
-                          (static_cast<std::uint32_t>(data[2]) << 8) |
-                          static_cast<std::uint32_t>(data[3]);
+    std::uint32_t value =
+        (static_cast<std::uint32_t>(data[0]) << 24) | (static_cast<std::uint32_t>(data[1]) << 16) |
+        (static_cast<std::uint32_t>(data[2]) << 8) | static_cast<std::uint32_t>(data[3]);
     data = data.subspan(4);
     return value;
 }
 
-std::expected<std::uint32_t, error_code>
-reader::read_count(std::span<const std::byte>& data, std::uint32_t max_count) {
+std::expected<std::uint32_t, error_code> reader::read_count(std::span<const std::byte>& data,
+                                                            std::uint32_t max_count) {
     auto count_result = read_uint32(data);
     if (!count_result) {
         return std::unexpected(count_result.error());
@@ -69,42 +64,33 @@ reader::read_count(std::span<const std::byte>& data, std::uint32_t max_count) {
     return *count_result;
 }
 
-std::expected<std::int64_t, error_code>
-reader::read_int64(std::span<const std::byte>& data) {
+std::expected<std::int64_t, error_code> reader::read_int64(std::span<const std::byte>& data) {
     if (data.size() < 8) {
         return std::unexpected(error_code::payload_incomplete);
     }
-    std::int64_t value = (static_cast<std::int64_t>(data[0]) << 56) |
-                         (static_cast<std::int64_t>(data[1]) << 48) |
-                         (static_cast<std::int64_t>(data[2]) << 40) |
-                         (static_cast<std::int64_t>(data[3]) << 32) |
-                         (static_cast<std::int64_t>(data[4]) << 24) |
-                         (static_cast<std::int64_t>(data[5]) << 16) |
-                         (static_cast<std::int64_t>(data[6]) << 8) |
-                         static_cast<std::int64_t>(data[7]);
+    std::int64_t value =
+        (static_cast<std::int64_t>(data[0]) << 56) | (static_cast<std::int64_t>(data[1]) << 48) |
+        (static_cast<std::int64_t>(data[2]) << 40) | (static_cast<std::int64_t>(data[3]) << 32) |
+        (static_cast<std::int64_t>(data[4]) << 24) | (static_cast<std::int64_t>(data[5]) << 16) |
+        (static_cast<std::int64_t>(data[6]) << 8) | static_cast<std::int64_t>(data[7]);
     data = data.subspan(8);
     return value;
 }
 
-std::expected<std::uint64_t, error_code>
-reader::read_uint64(std::span<const std::byte>& data) {
+std::expected<std::uint64_t, error_code> reader::read_uint64(std::span<const std::byte>& data) {
     if (data.size() < 8) {
         return std::unexpected(error_code::payload_incomplete);
     }
-    std::uint64_t value = (static_cast<std::uint64_t>(data[0]) << 56) |
-                          (static_cast<std::uint64_t>(data[1]) << 48) |
-                          (static_cast<std::uint64_t>(data[2]) << 40) |
-                          (static_cast<std::uint64_t>(data[3]) << 32) |
-                          (static_cast<std::uint64_t>(data[4]) << 24) |
-                          (static_cast<std::uint64_t>(data[5]) << 16) |
-                          (static_cast<std::uint64_t>(data[6]) << 8) |
-                          static_cast<std::uint64_t>(data[7]);
+    std::uint64_t value =
+        (static_cast<std::uint64_t>(data[0]) << 56) | (static_cast<std::uint64_t>(data[1]) << 48) |
+        (static_cast<std::uint64_t>(data[2]) << 40) | (static_cast<std::uint64_t>(data[3]) << 32) |
+        (static_cast<std::uint64_t>(data[4]) << 24) | (static_cast<std::uint64_t>(data[5]) << 16) |
+        (static_cast<std::uint64_t>(data[6]) << 8) | static_cast<std::uint64_t>(data[7]);
     data = data.subspan(8);
     return value;
 }
 
-std::expected<std::string, error_code>
-reader::read_string(std::span<const std::byte>& data) {
+std::expected<std::string, error_code> reader::read_string(std::span<const std::byte>& data) {
     auto len_result = read_uint16(data);
     if (!len_result) {
         return std::unexpected(len_result.error());
@@ -118,8 +104,7 @@ reader::read_string(std::span<const std::byte>& data) {
     return str;
 }
 
-std::expected<std::string, error_code>
-reader::read_string32(std::span<const std::byte>& data) {
+std::expected<std::string, error_code> reader::read_string32(std::span<const std::byte>& data) {
     auto len_result = read_uint32(data);
     if (!len_result) {
         return std::unexpected(len_result.error());
@@ -133,24 +118,18 @@ reader::read_string32(std::span<const std::byte>& data) {
     return str;
 }
 
-std::expected<boost::uuids::uuid, error_code>
-reader::read_uuid(std::span<const std::byte>& data) {
+std::expected<boost::uuids::uuid, error_code> reader::read_uuid(std::span<const std::byte>& data) {
     if (data.size() < 16) {
         return std::unexpected(error_code::payload_incomplete);
     }
     boost::uuids::uuid uuid;
-    std::memcpy(
-        uuid.data(),
-        reinterpret_cast<const unsigned char*>(data.data()),
-        16
-    );
+    std::memcpy(uuid.data(), reinterpret_cast<const unsigned char*>(data.data()), 16);
 
     data = data.subspan(16);
     return uuid;
 }
 
-std::expected<bool, error_code>
-reader::read_bool(std::span<const std::byte>& data) {
+std::expected<bool, error_code> reader::read_bool(std::span<const std::byte>& data) {
     if (data.size() < 1) {
         return std::unexpected(error_code::payload_incomplete);
     }

@@ -20,15 +20,13 @@
 #define _CRT_SECURE_NO_WARNINGS // Avoid getenv warnings
 
 #include "ores.platform/environment/environment.hpp"
-
 #include <cstdlib>
 #include <stdexcept>
 #include <string>
 
 namespace ores::platform::environment {
 
-std::optional<std::string>
-environment::get_value(const std::string& name) {
+std::optional<std::string> environment::get_value(const std::string& name) {
     const char* value = std::getenv(name.c_str());
     if (value == nullptr)
         return {};
@@ -36,20 +34,19 @@ environment::get_value(const std::string& name) {
 }
 
 std::string environment::get_value_or_default(const std::string& name,
-    const std::string& default_value) {
+                                              const std::string& default_value) {
     auto value = get_value(name);
     return value.value_or(default_value);
 }
 
-int environment::
-get_int_value_or_default(const std::string& name, int default_value) {
+int environment::get_int_value_or_default(const std::string& name, int default_value) {
     auto value = get_value(name);
     if (!value.has_value())
         return default_value;
 
     try {
         return std::stoi(value.value());
-    } catch(...) {
+    } catch (...) {
         return default_value;
     }
 }

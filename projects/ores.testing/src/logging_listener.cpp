@@ -18,24 +18,23 @@
  *
  */
 #include "ores.testing/logging_listener.hpp"
-
-#include <memory>
-#include <string>
-#include <sstream>
-#include <optional>
-#include <iostream>
-#include <filesystem>
+#include "ores.database/service/tenant_context.hpp"
+#include "ores.logging/logging_options.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.platform/environment/environment.hpp"
+#include "ores.telemetry.core/domain/resource.hpp"
+#include "ores.telemetry.core/log/lifecycle_manager.hpp"
+#include "ores.telemetry.database/repository/telemetry_repository.hpp"
+#include "ores.testing/test_database_manager.hpp"
 #include <catch2/catch_test_case_info.hpp>
 #include <catch2/reporters/catch_reporter_event_listener.hpp>
 #include <catch2/reporters/catch_reporter_registrars.hpp>
-#include "ores.logging/make_logger.hpp"
-#include "ores.telemetry.core/log/lifecycle_manager.hpp"
-#include "ores.telemetry.core/domain/resource.hpp"
-#include "ores.logging/logging_options.hpp"
-#include "ores.platform/environment/environment.hpp"
-#include "ores.database/service/tenant_context.hpp"
-#include "ores.testing/test_database_manager.hpp"
-#include "ores.telemetry.database/repository/telemetry_repository.hpp"
+#include <filesystem>
+#include <iostream>
+#include <memory>
+#include <optional>
+#include <sstream>
+#include <string>
 
 using namespace ores::logging;
 using telemetry_lifecycle_manager = ores::telemetry::log::lifecycle_manager;
@@ -74,8 +73,7 @@ bool is_logging_enabled() {
  * Controlled by ORES_TEST_LOG_LEVEL. Defaults to "trace".
  */
 std::string get_log_level() {
-    static const std::string level =
-        env::get_value_or_default("ORES_TEST_LOG_LEVEL", "trace");
+    static const std::string level = env::get_value_or_default("ORES_TEST_LOG_LEVEL", "trace");
     return level;
 }
 
@@ -112,9 +110,8 @@ bool is_database_output_enabled() {
  */
 inline auto& logger() {
     if (!current_test_context.logger.has_value()) {
-        throw std::runtime_error(
-            "logger() called outside of test case context. "
-            "Ensure logging_listener.hpp is included in your test file.");
+        throw std::runtime_error("logger() called outside of test case context. "
+                                 "Ensure logging_listener.hpp is included in your test file.");
     }
     return current_test_context.logger.value();
 }
@@ -123,8 +120,7 @@ inline auto& logger() {
 
 namespace ores::testing {
 
-std::string logging_listener::
-extract_suite_name(const Catch::TestCaseInfo& testInfo) {
+std::string logging_listener::extract_suite_name(const Catch::TestCaseInfo& testInfo) {
     const auto& tags = testInfo.tags;
     if (!tags.empty()) {
         // Tags in Catch2 are stored with brackets, e.g., "[suite_name]"
@@ -167,8 +163,8 @@ void logging_listener::testRunStarting(Catch::TestRunInfo const& /*testRunInfo*/
     cfg.tag = "TestSuite";
 
     // Initialize logging lifecycle manager with options
-    lifecycle_manager_ = std::make_shared<telemetry_lifecycle_manager>(
-        std::optional<logging_options>{cfg});
+    lifecycle_manager_ =
+        std::make_shared<telemetry_lifecycle_manager>(std::optional<logging_options>{cfg});
 }
 
 void logging_listener::testRunEnded(Catch::TestRunStats const& testRunStats) {
@@ -206,8 +202,8 @@ void logging_listener::testCaseStarting(Catch::TestCaseInfo const& testInfo) {
                     ores::database::service::tenant_context::with_tenant(
                         test_database_manager::make_context(), tenant_id));
 
-                auto repo = std::make_shared<
-                    ores::telemetry::database::repository::telemetry_repository>();
+                auto repo =
+                    std::make_shared<ores::telemetry::database::repository::telemetry_repository>();
 
                 // Create resource for telemetry
                 auto resource = std::make_shared<ores::telemetry::domain::resource>(
@@ -222,16 +218,15 @@ void logging_listener::testCaseStarting(Catch::TestCaseInfo const& testInfo) {
                             repo->create(*ctx, entry);
                         } catch (const std::exception& ex) {
                             // Use cerr, not logging (to avoid recursion)
-                            std::cerr << "[Database Sink] Failed to write log: "
-                                      << ex.what() << std::endl;
+                            std::cerr << "[Database Sink] Failed to write log: " << ex.what()
+                                      << std::endl;
                         }
                     },
                     "test",
                     module + "/" + suite + "/" + test_name);
             } catch (const std::exception& e) {
                 // Log error but don't fail the test
-                std::cerr << "[Logging] Failed to set up database sink: "
-                          << e.what() << std::endl;
+                std::cerr << "[Logging] Failed to set up database sink: " << e.what() << std::endl;
             }
         }
     }
@@ -253,18 +248,19 @@ void logging_listener::testCaseStarting(Catch::TestCaseInfo const& testInfo) {
 }
 
 void logging_listener::testCaseEnded(Catch::TestCaseStats const& testCaseStats) {
-    if (!current_test_context.logger.has_value()) return;
+    if (!current_test_context.logger.has_value())
+        return;
 
     const auto& totals = testCaseStats.totals;
 
     auto log_level = totals.assertions.allOk() ? info : error;
     auto& lg = current_test_context.logger.value();
-    BOOST_LOG_SEV(lg, log_level) << "Test case ended: " << testCaseStats.testInfo->name
-                                 << " - " << (totals.assertions.allOk() ? "PASSED" : "FAILED");
+    BOOST_LOG_SEV(lg, log_level) << "Test case ended: " << testCaseStats.testInfo->name << " - "
+                                 << (totals.assertions.allOk() ? "PASSED" : "FAILED");
 
     BOOST_LOG_SEV(lg, info) << "  Assertions: " << totals.assertions.passed << " passed, "
-                            << totals.assertions.failed << " failed, "
-                            << totals.assertions.total() << " total";
+                            << totals.assertions.failed << " failed, " << totals.assertions.total()
+                            << " total";
 
     if (testCaseStats.stdOut.size() > 0)
         BOOST_LOG_SEV(lg, debug) << "  Standard output:\n" << testCaseStats.stdOut;
@@ -278,7 +274,8 @@ void logging_listener::testCaseEnded(Catch::TestCaseStats const& testCaseStats) 
 }
 
 void logging_listener::assertionEnded(Catch::AssertionStats const& assertionStats) {
-    if (!current_test_context.logger.has_value()) return;
+    if (!current_test_context.logger.has_value())
+        return;
 
     const auto& result = assertionStats.assertionResult;
     auto& lg = current_test_context.logger.value();
@@ -298,14 +295,16 @@ void logging_listener::assertionEnded(Catch::AssertionStats const& assertionStat
 }
 
 void logging_listener::sectionStarting(Catch::SectionInfo const& sectionInfo) {
-    if (!current_test_context.logger.has_value()) return;
+    if (!current_test_context.logger.has_value())
+        return;
 
     auto& lg = current_test_context.logger.value();
     BOOST_LOG_SEV(lg, debug) << "Section starting: " << sectionInfo.name;
 }
 
 void logging_listener::sectionEnded(Catch::SectionStats const& sectionStats) {
-    if (!current_test_context.logger.has_value()) return;
+    if (!current_test_context.logger.has_value())
+        return;
 
     auto& lg = current_test_context.logger.value();
     BOOST_LOG_SEV(lg, debug) << "Section ended: " << sectionStats.sectionInfo.name

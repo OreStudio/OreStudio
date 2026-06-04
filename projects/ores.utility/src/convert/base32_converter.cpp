@@ -18,7 +18,6 @@
  *
  */
 #include "ores.utility/convert/base32_converter.hpp"
-
 #include <array>
 
 namespace {

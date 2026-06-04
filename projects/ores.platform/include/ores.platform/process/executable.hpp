@@ -19,9 +19,9 @@
 #ifndef ORES_PLATFORM_PROCESS_EXECUTABLE_HPP
 #define ORES_PLATFORM_PROCESS_EXECUTABLE_HPP
 
+#include "ores.platform/export.hpp"
 #include <filesystem>
 #include <string>
-#include "ores.platform/export.hpp"
 
 namespace ores::platform::process {
 

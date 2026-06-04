@@ -18,18 +18,16 @@
  *
  */
 #include "ores.testing/database_lifecycle_listener.hpp"
-
-#include <sstream>
-#include <boost/log/attributes/scoped_attribute.hpp>
-#include "ores.utility/version/version.hpp"
 #include "ores.testing/test_database_manager.hpp"
+#include "ores.utility/version/version.hpp"
+#include <boost/log/attributes/scoped_attribute.hpp>
+#include <sstream>
 
 namespace ores::testing {
 
 using namespace ores::logging;
 
-void database_lifecycle_listener::
-testRunStarting(Catch::TestRunInfo const& testRunInfo) {
+void database_lifecycle_listener::testRunStarting(Catch::TestRunInfo const& testRunInfo) {
     BOOST_LOG_SCOPED_LOGGER_TAG(lg(), "Tag", "TestSuite");
 
     BOOST_LOG_SEV(lg(), info) << "Test run starting, provisioning test tenant";
@@ -39,12 +37,10 @@ testRunStarting(Catch::TestRunInfo const& testRunInfo) {
         auto ctx = test_database_manager::make_context();
 
         // Get test suite name from Catch2
-        const std::string test_suite_name(testRunInfo.name.data(),
-                                          testRunInfo.name.size());
+        const std::string test_suite_name(testRunInfo.name.data(), testRunInfo.name.size());
 
         // Generate unique test tenant code for this process
-        const auto tenant_code =
-            test_database_manager::generate_test_tenant_code(test_suite_name);
+        const auto tenant_code = test_database_manager::generate_test_tenant_code(test_suite_name);
 
         // Build human-readable description with version info
         std::ostringstream desc;
@@ -52,38 +48,34 @@ testRunStarting(Catch::TestRunInfo const& testRunInfo) {
         const auto description = desc.str();
 
         // Provision the test tenant (copies refdata from system tenant)
-        test_tenant_id_ = test_database_manager::provision_test_tenant(
-            ctx, tenant_code, description);
+        test_tenant_id_ =
+            test_database_manager::provision_test_tenant(ctx, tenant_code, description);
 
         // Set environment variable so tests use this tenant
         test_database_manager::set_test_tenant_id_env(test_tenant_id_);
 
         BOOST_LOG_SEV(lg(), info) << "Test tenant ready: " << test_tenant_id_;
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error)
-            << "Failed to provision test tenant: " << e.what();
+        BOOST_LOG_SEV(lg(), error) << "Failed to provision test tenant: " << e.what();
         throw;
     }
 }
 
-void database_lifecycle_listener::testRunEnded(
-    Catch::TestRunStats const& /*testRunStats*/) {
+void database_lifecycle_listener::testRunEnded(Catch::TestRunStats const& /*testRunStats*/) {
     BOOST_LOG_SCOPED_LOGGER_TAG(lg(), "Tag", "TestSuite");
 
     if (test_tenant_id_.empty()) {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Test run ended, terminating test tenant: "
-                              << test_tenant_id_;
+    BOOST_LOG_SEV(lg(), info) << "Test run ended, terminating test tenant: " << test_tenant_id_;
 
     try {
         auto ctx = test_database_manager::make_context();
         test_database_manager::terminate_test_tenant(ctx, test_tenant_id_);
         test_tenant_id_.clear();
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn)
-            << "Failed to terminate test tenant: " << e.what();
+        BOOST_LOG_SEV(lg(), warn) << "Failed to terminate test tenant: " << e.what();
         // Don't throw - cleanup should be best-effort
     }
 }

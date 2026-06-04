@@ -19,9 +19,8 @@
  */
 #include "ores.eventing/domain/event_traits.hpp"
 #include "ores.eventing/service/event_bus.hpp"
-#include "ores.refdata.api/eventing/currency_changed_event.hpp"
 #include "ores.iam.api/eventing/account_changed_event.hpp"
-
+#include "ores.refdata.api/eventing/currency_changed_event.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <string>
 
@@ -61,9 +60,8 @@ TEST_CASE("event_bus_with_domain_events", "[event_traits][event_bus]") {
         received_timestamp = e.timestamp;
     });
 
-    auto sub2 = bus.subscribe<account_changed_event>([&](const account_changed_event& e) {
-        account_received = true;
-    });
+    auto sub2 = bus.subscribe<account_changed_event>(
+        [&](const account_changed_event& e) { account_received = true; });
 
     auto now = std::chrono::system_clock::now();
     bus.publish(currency_changed_event{now});

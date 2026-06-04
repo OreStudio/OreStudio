@@ -35,11 +35,11 @@
  * GCC/Clang use [[no_unique_address]]. Falls back to empty on older compilers.
  */
 #if __has_cpp_attribute(msvc::no_unique_address)
-#define ORES_NO_UNIQUE_ADDRESS [[msvc::no_unique_address]]
+#    define ORES_NO_UNIQUE_ADDRESS [[msvc::no_unique_address]]
 #elif __has_cpp_attribute(no_unique_address)
-#define ORES_NO_UNIQUE_ADDRESS [[no_unique_address]]
+#    define ORES_NO_UNIQUE_ADDRESS [[no_unique_address]]
 #else
-#define ORES_NO_UNIQUE_ADDRESS
+#    define ORES_NO_UNIQUE_ADDRESS
 #endif
 
 #endif

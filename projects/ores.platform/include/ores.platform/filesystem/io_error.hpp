@@ -20,9 +20,9 @@
 #ifndef ORES_PLATFORM_FILESYSTEM_IO_ERROR_HPP
 #define ORES_PLATFORM_FILESYSTEM_IO_ERROR_HPP
 
-#include <string>
-#include <boost/exception/info.hpp>
 #include "ores.platform/export.hpp"
+#include <boost/exception/info.hpp>
+#include <string>
 
 namespace ores::platform::filesystem {
 
@@ -30,12 +30,15 @@ namespace ores::platform::filesystem {
  * @brief An error occurred whilst performing an IO operation.
  */
 class ORES_PLATFORM_EXPORT io_error : public virtual std::exception,
-                 public virtual boost::exception {
+                                      public virtual boost::exception {
 public:
     io_error() = default;
     ~io_error() noexcept override = default;
-    explicit io_error(std::string message) : message_(std::move(message)) { }
-    const char* what() const noexcept override { return(message_.c_str()); }
+    explicit io_error(std::string message)
+        : message_(std::move(message)) {}
+    const char* what() const noexcept override {
+        return (message_.c_str());
+    }
 
 private:
     std::string message_;

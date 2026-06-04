@@ -20,10 +20,10 @@
 #ifndef ORES_TESTING_DATABASE_LIFECYCLE_LISTENER_HPP
 #define ORES_TESTING_DATABASE_LIFECYCLE_LISTENER_HPP
 
-#include <string>
-#include <catch2/reporters/catch_reporter_event_listener.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.testing/export.hpp"
+#include <catch2/reporters/catch_reporter_event_listener.hpp>
+#include <string>
 
 namespace ores::testing {
 
@@ -37,8 +37,7 @@ namespace ores::testing {
  */
 class ORES_TESTING_EXPORT database_lifecycle_listener : public Catch::EventListenerBase {
 private:
-    inline static std::string_view logger_name =
-        "ores.testing.database_lifecycle_listener";
+    inline static std::string_view logger_name = "ores.testing.database_lifecycle_listener";
 
     static auto& lg() {
         using namespace ores::logging;

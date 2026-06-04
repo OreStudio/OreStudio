@@ -34,8 +34,8 @@ namespace ores::nats::domain {
 struct consumer_info {
     std::string stream_name;
     std::string name;
-    std::uint64_t num_pending = 0;       // messages not yet delivered
-    std::uint64_t num_ack_pending = 0;   // delivered but not yet acknowledged
+    std::uint64_t num_pending = 0;     // messages not yet delivered
+    std::uint64_t num_ack_pending = 0; // delivered but not yet acknowledged
     std::uint64_t num_redelivered = 0;
     std::uint64_t delivered_count = 0;
     std::chrono::system_clock::time_point created_at;

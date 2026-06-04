@@ -18,14 +18,13 @@
  *
  */
 #include "ores.platform/filesystem/file.hpp"
-
+#include "ores.platform/filesystem/file_not_found.hpp"
+#include "ores.platform/filesystem/io_error.hpp"
+#include <boost/throw_exception.hpp>
 #include <cstdio>
 #include <filesystem>
 #include <string>
 #include <system_error>
-#include <boost/throw_exception.hpp>
-#include "ores.platform/filesystem/io_error.hpp"
-#include "ores.platform/filesystem/file_not_found.hpp"
 
 namespace ores::platform::filesystem {
 
@@ -45,9 +44,7 @@ FILE* file::open_c_file(const std::filesystem::path& p, const char* mode) {
 
 std::string file::read_content(std::istream& s) {
     s.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-    std::string r(
-        (std::istreambuf_iterator<char>(s)),
-        std::istreambuf_iterator<char>());
+    std::string r((std::istreambuf_iterator<char>(s)), std::istreambuf_iterator<char>());
     return r;
 }
 
@@ -62,15 +59,13 @@ std::string file::read_content(const std::filesystem::path& path) {
     return read_content(s);
 }
 
-void file::write_content(const std::filesystem::path& path,
-    const std::string& content) {
+void file::write_content(const std::filesystem::path& path, const std::string& content) {
     std::ofstream stream(path);
     stream.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     stream << content;
 }
 
-std::set<std::filesystem::path>
-file::find_files(const std::filesystem::path& dir) {
+std::set<std::filesystem::path> file::find_files(const std::filesystem::path& dir) {
     using namespace std::filesystem;
     std::set<path> r;
 
@@ -98,8 +93,7 @@ file::find_files(const std::filesystem::path& dir) {
     return r;
 }
 
-std::set<std::filesystem::path>
-file::find_files(const std::vector<std::filesystem::path>& dirs) {
+std::set<std::filesystem::path> file::find_files(const std::vector<std::filesystem::path>& dirs) {
     std::set<std::filesystem::path> r;
 
     for (const auto& d : dirs) {
@@ -110,8 +104,7 @@ file::find_files(const std::vector<std::filesystem::path>& dirs) {
     return r;
 }
 
-std::set<std::filesystem::path>
-file::find_files(const std::list<std::filesystem::path>& dirs) {
+std::set<std::filesystem::path> file::find_files(const std::list<std::filesystem::path>& dirs) {
     std::set<std::filesystem::path> r;
 
     for (const auto& d : dirs) {
@@ -122,9 +115,9 @@ file::find_files(const std::list<std::filesystem::path>& dirs) {
     return r;
 }
 
-std::filesystem::path file::find_file_recursively_upwards(
-    std::filesystem::path starting_directory,
-    const std::filesystem::path& relative_file_path) {
+std::filesystem::path
+file::find_file_recursively_upwards(std::filesystem::path starting_directory,
+                                    const std::filesystem::path& relative_file_path) {
 
     if (relative_file_path.is_absolute()) {
         return relative_file_path;

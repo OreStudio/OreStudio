@@ -18,19 +18,18 @@
  *
  */
 #include "ores.utility/convert/base64_converter.hpp"
-
-#include <stdexcept>
-#include <openssl/evp.h>
-#include <openssl/rand.h>
-#include <openssl/kdf.h>
 #include <openssl/bio.h>
 #include <openssl/buffer.h>
+#include <openssl/evp.h>
+#include <openssl/kdf.h>
+#include <openssl/rand.h>
+#include <stdexcept>
 
 namespace ores::utility::converter {
 
 std::string base64_converter::convert(const std::vector<unsigned char>& data) {
     BIO *bio = nullptr, *b64 = nullptr;
-    BUF_MEM *bufferPtr = nullptr;
+    BUF_MEM* bufferPtr = nullptr;
 
     try {
         b64 = BIO_new(BIO_f_base64());
@@ -56,8 +55,7 @@ std::string base64_converter::convert(const std::vector<unsigned char>& data) {
     }
 }
 
-std::vector<unsigned char>
-base64_converter::convert(const std::string& encoded) {
+std::vector<unsigned char> base64_converter::convert(const std::string& encoded) {
     BIO *bio = nullptr, *b64 = nullptr;
 
     try {

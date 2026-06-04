@@ -17,15 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.logging/make_logger.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
-
-#include <string>
+#include <catch2/catch_test_macros.hpp>
+#include <openssl/bio.h>
 #include <openssl/evp.h>
 #include <openssl/pem.h>
 #include <openssl/rsa.h>
-#include <openssl/bio.h>
-#include <catch2/catch_test_macros.hpp>
-#include "ores.logging/make_logger.hpp"
+#include <string>
 
 namespace {
 
@@ -162,7 +161,8 @@ TEST_CASE("jwt_authenticator_validate_invalid_hs256_signature", tags) {
     BOOST_LOG_SEV(lg, info) << "Testing invalid HS256 signature detection";
 
     auto auth1 = jwt_authenticator::create_hs256(test_secret, test_issuer, test_audience);
-    auto auth2 = jwt_authenticator::create_hs256("different-secret-key-32-bytes!!", test_issuer, test_audience);
+    auto auth2 = jwt_authenticator::create_hs256(
+        "different-secret-key-32-bytes!!", test_issuer, test_audience);
 
     jwt_claims claims;
     claims.subject = "user123";
@@ -244,10 +244,10 @@ TEST_CASE("jwt_authenticator_rs256_round_trip", tags) {
     BOOST_LOG_SEV(lg, info) << "Testing RS256 sign/verify round-trip";
 
     const auto& keys = test_rsa_keys();
-    auto signer = jwt_authenticator::create_rs256_signer(
-        keys.private_key_pem, test_issuer, test_audience);
-    auto verifier = jwt_authenticator::create_rs256_verifier(
-        keys.public_key_pem, test_issuer, test_audience);
+    auto signer =
+        jwt_authenticator::create_rs256_signer(keys.private_key_pem, test_issuer, test_audience);
+    auto verifier =
+        jwt_authenticator::create_rs256_verifier(keys.public_key_pem, test_issuer, test_audience);
 
     jwt_claims claims;
     claims.subject = "account-uuid-123";
@@ -282,10 +282,10 @@ TEST_CASE("jwt_authenticator_rs256_tamper_rejected", tags) {
     BOOST_LOG_SEV(lg, info) << "Testing RS256 tampered token rejected";
 
     const auto& keys = test_rsa_keys();
-    auto signer = jwt_authenticator::create_rs256_signer(
-        keys.private_key_pem, test_issuer, test_audience);
-    auto verifier = jwt_authenticator::create_rs256_verifier(
-        keys.public_key_pem, test_issuer, test_audience);
+    auto signer =
+        jwt_authenticator::create_rs256_signer(keys.private_key_pem, test_issuer, test_audience);
+    auto verifier =
+        jwt_authenticator::create_rs256_verifier(keys.public_key_pem, test_issuer, test_audience);
 
     jwt_claims claims;
     claims.subject = "account-uuid-123";
@@ -311,10 +311,10 @@ TEST_CASE("jwt_authenticator_rs256_expired_token", tags) {
     BOOST_LOG_SEV(lg, info) << "Testing RS256 expired token rejected";
 
     const auto& keys = test_rsa_keys();
-    auto signer = jwt_authenticator::create_rs256_signer(
-        keys.private_key_pem, test_issuer, test_audience);
-    auto verifier = jwt_authenticator::create_rs256_verifier(
-        keys.public_key_pem, test_issuer, test_audience);
+    auto signer =
+        jwt_authenticator::create_rs256_signer(keys.private_key_pem, test_issuer, test_audience);
+    auto verifier =
+        jwt_authenticator::create_rs256_verifier(keys.public_key_pem, test_issuer, test_audience);
 
     jwt_claims claims;
     claims.subject = "account-uuid-123";

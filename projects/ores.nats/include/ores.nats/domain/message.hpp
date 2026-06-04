@@ -20,13 +20,13 @@
 #ifndef ORES_NATS_DOMAIN_MESSAGE_HPP
 #define ORES_NATS_DOMAIN_MESSAGE_HPP
 
+#include <cstddef>
 #include <functional>
 #include <span>
 #include <string>
 #include <string_view>
 #include <unordered_map>
 #include <vector>
-#include <cstddef>
 
 namespace ores::nats {
 

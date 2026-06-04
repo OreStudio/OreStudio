@@ -20,6 +20,8 @@
 #ifndef ORES_UTILITY_GENERATION_GENERATION_ENGINE_HPP
 #define ORES_UTILITY_GENERATION_GENERATION_ENGINE_HPP
 
+#include "ores.utility/export.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <array>
 #include <chrono>
 #include <cstdint>
@@ -27,8 +29,6 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
-#include <boost/uuid/uuid.hpp>
-#include "ores.utility/export.hpp"
 
 namespace ores::utility::generation {
 
@@ -54,7 +54,9 @@ public:
     /**
      * @brief Returns the seed used for this engine.
      */
-    std::uint64_t seed() const { return seed_; }
+    std::uint64_t seed() const {
+        return seed_;
+    }
 
     /**
      * @brief Generates a random integer in [min, max].
@@ -69,7 +71,7 @@ public:
     /**
      * @brief Picks a random element from a vector.
      */
-    template<typename T>
+    template <typename T>
     const T& pick(const std::vector<T>& items) {
         if (items.empty()) {
             throw std::out_of_range("Cannot pick from an empty vector.");
@@ -81,7 +83,7 @@ public:
     /**
      * @brief Picks a random element from an array.
      */
-    template<typename T, std::size_t N>
+    template <typename T, std::size_t N>
     const T& pick(const std::array<T, N>& items) {
         static_assert(N > 0, "Cannot pick from an empty array.");
         std::uniform_int_distribution<std::size_t> dist(0, N - 1);

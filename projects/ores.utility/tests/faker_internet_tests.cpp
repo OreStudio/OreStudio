@@ -17,12 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.utility/faker/internet.hpp"
-
-#include <set>
-#include <regex>
-#include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.utility/faker/internet.hpp"
+#include <catch2/catch_test_macros.hpp>
+#include <regex>
+#include <set>
 
 namespace {
 
@@ -80,8 +79,8 @@ TEST_CASE("internet_endpoint_unique_values", tags) {
         endpoints.insert(internet::endpoint());
     }
 
-    BOOST_LOG_SEV(lg, info) << "Generated " << count << " endpoints, "
-                            << endpoints.size() << " unique";
+    BOOST_LOG_SEV(lg, info) << "Generated " << count << " endpoints, " << endpoints.size()
+                            << " unique";
 
     // Most should be unique (allowing for small collision probability)
     CHECK(endpoints.size() >= count - 5);
@@ -145,8 +144,7 @@ TEST_CASE("internet_ipv4_unique_values", tags) {
         ips.insert(internet::ipv4().to_string());
     }
 
-    BOOST_LOG_SEV(lg, info) << "Generated " << count << " IPs, "
-                            << ips.size() << " unique";
+    BOOST_LOG_SEV(lg, info) << "Generated " << count << " IPs, " << ips.size() << " unique";
 
     // Most should be unique (allowing for small collision probability)
     CHECK(ips.size() >= count - 5);

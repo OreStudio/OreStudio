@@ -39,8 +39,8 @@ struct stream_info {
     std::uint64_t message_count = 0;
     std::uint64_t byte_count = 0;
     std::uint64_t consumer_count = 0;
-    std::uint64_t first_seq = 0;  // sequence of first stored message (0 if empty)
-    std::uint64_t last_seq = 0;   // sequence of last stored message (0 if empty)
+    std::uint64_t first_seq = 0; // sequence of first stored message (0 if empty)
+    std::uint64_t last_seq = 0;  // sequence of last stored message (0 if empty)
     std::chrono::system_clock::time_point created_at;
     std::chrono::system_clock::time_point first_message_at;
     std::chrono::system_clock::time_point last_message_at;

@@ -20,9 +20,9 @@
 #ifndef ORES_SECURITY_VALIDATION_EMAIL_VALIDATOR_HPP
 #define ORES_SECURITY_VALIDATION_EMAIL_VALIDATOR_HPP
 
-#include <string>
-#include "ores.security/validation/validation_result.hpp"
 #include "ores.security/export.hpp"
+#include "ores.security/validation/validation_result.hpp"
+#include <string>
 
 namespace ores::security::validation {
 

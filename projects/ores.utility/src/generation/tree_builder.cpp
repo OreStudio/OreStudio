@@ -18,15 +18,12 @@
  *
  */
 #include "ores.utility/generation/tree_builder.hpp"
-
 #include <algorithm>
 
 namespace ores::utility::generation {
 
-std::vector<tree_node> generate_tree(
-    std::size_t total_count,
-    std::size_t max_depth,
-    generation_engine& engine) {
+std::vector<tree_node>
+generate_tree(std::size_t total_count, std::size_t max_depth, generation_engine& engine) {
 
     if (total_count == 0)
         return {};
@@ -60,12 +57,10 @@ std::vector<tree_node> generate_tree(
             // with some randomness, but at least parent_count children
             // (so every parent gets at least one child).
             const auto min_children = std::min(parent_count, remaining);
-            const auto max_children = std::min(remaining,
-                std::max(min_children, remaining / 2 + 1));
+            const auto max_children =
+                std::min(remaining, std::max(min_children, remaining / 2 + 1));
             children_at_level = static_cast<std::size_t>(
-                engine.random_int(
-                    static_cast<int>(min_children),
-                    static_cast<int>(max_children)));
+                engine.random_int(static_cast<int>(min_children), static_cast<int>(max_children)));
         }
 
         if (children_at_level == 0)

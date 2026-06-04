@@ -18,23 +18,22 @@
  *
  */
 #include "ores.testing/test_database_manager.hpp"
-
+#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/service/context_factory.hpp"
+#include "ores.database/service/tenant_context.hpp"
+#include "ores.platform/environment/environment.hpp"
+#include <boost/log/attributes/scoped_attribute.hpp>
 #include <chrono>
 #include <iomanip>
 #include <random>
 #include <sstream>
 #include <stdexcept>
-#include <boost/log/attributes/scoped_attribute.hpp>
-#include "ores.platform/environment/environment.hpp"
-#include "ores.database/service/context_factory.hpp"
-#include "ores.database/service/tenant_context.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
 
 #ifdef _WIN32
-#include <process.h>
-#define getpid _getpid
+#    include <process.h>
+#    define getpid _getpid
 #else
-#include <unistd.h>
+#    include <unistd.h>
 #endif
 
 namespace {
@@ -52,13 +51,11 @@ using ores::platform::environment::environment;
 
 context test_database_manager::make_context() {
     const auto opts = make_database_options();
-    context_factory::configuration db_cfg{
-        .database_options = opts,
-        .pool_size = 4,
-        .num_attempts = 10,
-        .wait_time_in_seconds = 1,
-        .service_account = opts.user
-    };
+    context_factory::configuration db_cfg{.database_options = opts,
+                                          .pool_size = 4,
+                                          .num_attempts = 10,
+                                          .wait_time_in_seconds = 1,
+                                          .service_account = opts.user};
 
     context ctx = context_factory::make_context(db_cfg);
     BOOST_LOG_SEV(lg(), info) << "Database context created successfully";
@@ -72,18 +69,17 @@ database::database_options test_database_manager::make_database_options() {
         tenant_id = system_tenant_id;
     }
 
-    return database::database_options {
+    return database::database_options{
         .user = environment::environment::get_value_or_throw(prefix + "USER"),
         .password = environment::environment::get_value_or_throw(prefix + "PASSWORD"),
         .host = environment::environment::get_value_or_default(prefix + "HOST", "localhost"),
-        .database = environment::environment::get_value_or_default(prefix + "DATABASE", "ores_default"),
+        .database =
+            environment::environment::get_value_or_default(prefix + "DATABASE", "ores_default"),
         .port = environment::environment::get_int_value_or_default(prefix + "PORT", 5432),
-        .tenant = tenant_id
-    };
+        .tenant = tenant_id};
 }
 
-std::string test_database_manager::generate_test_tenant_code(
-    const std::string& test_suite_name) {
+std::string test_database_manager::generate_test_tenant_code(const std::string& test_suite_name) {
     BOOST_LOG_SCOPED_LOGGER_TAG(lg(), "Tag", "TestSuite");
 
     // Get current timestamp
@@ -106,9 +102,8 @@ std::string test_database_manager::generate_test_tenant_code(
     const auto random_suffix = dis(gen);
 
     std::ostringstream oss;
-    oss << test_suite_name << "_"
-        << std::put_time(&tm_now, "%Y%m%d_%H%M%S")
-        << "_" << pid << "_" << random_suffix;
+    oss << test_suite_name << "_" << std::put_time(&tm_now, "%Y%m%d_%H%M%S") << "_" << pid << "_"
+        << random_suffix;
 
     const auto tenant_code = oss.str();
     BOOST_LOG_SEV(lg(), info) << "Generated test tenant code: " << tenant_code;
@@ -116,25 +111,26 @@ std::string test_database_manager::generate_test_tenant_code(
     return tenant_code;
 }
 
-std::string test_database_manager::provision_test_tenant(
-    database::context& ctx, const std::string& tenant_code,
-    const std::string& description) {
+std::string test_database_manager::provision_test_tenant(database::context& ctx,
+                                                         const std::string& tenant_code,
+                                                         const std::string& description) {
     using database::service::tenant_context;
     using database::repository::execute_parameterized_string_query;
     BOOST_LOG_SCOPED_LOGGER_TAG(lg(), "Tag", "TestSuite");
 
-    BOOST_LOG_SEV(lg(), info) << "Provisioning test tenant: " << tenant_code
-                              << " (" << description << ")";
+    BOOST_LOG_SEV(lg(), info) << "Provisioning test tenant: " << tenant_code << " (" << description
+                              << ")";
 
     ctx = tenant_context::with_system_tenant(ctx);
 
     // Call the provisioner function - extract tenant_id from multi-OUT result
-    const auto results = execute_parameterized_string_query(ctx,
+    const auto results = execute_parameterized_string_query(
+        ctx,
         "SELECT tenant_id::text"
         " FROM ores_iam_provision_tenant_fn($1, $2, $3, $4, $5)",
-        {"automation", tenant_code, tenant_code,
-         tenant_code + ".localhost", description},
-        lg(), "Provisioning test tenant");
+        {"automation", tenant_code, tenant_code, tenant_code + ".localhost", description},
+        lg(),
+        "Provisioning test tenant");
 
     if (results.empty()) {
         const auto error_msg = "Provisioner returned no tenant_id for " + tenant_code;
@@ -143,14 +139,14 @@ std::string test_database_manager::provision_test_tenant(
     }
 
     const auto& tenant_id = results[0];
-    BOOST_LOG_SEV(lg(), info) << "Successfully provisioned test tenant: "
-                              << tenant_code << " (id: " << tenant_id << ")";
+    BOOST_LOG_SEV(lg(), info) << "Successfully provisioned test tenant: " << tenant_code
+                              << " (id: " << tenant_id << ")";
 
     return tenant_id;
 }
 
-void test_database_manager::terminate_test_tenant(
-    database::context& ctx, const std::string& tenant_id) {
+void test_database_manager::terminate_test_tenant(database::context& ctx,
+                                                  const std::string& tenant_id) {
     using database::service::tenant_context;
     using database::repository::execute_parameterized_command;
     BOOST_LOG_SCOPED_LOGGER_TAG(lg(), "Tag", "TestSuite");
@@ -168,15 +164,16 @@ void test_database_manager::terminate_test_tenant(
     // Call terminator - marks tenant as terminated but preserves all data
     try {
         execute_parameterized_command(ctx,
-            "SELECT ores_iam_terminate_tenant_fn($1::uuid)",
-            {tenant_id},
-            lg(), "Terminating test tenant");
+                                      "SELECT ores_iam_terminate_tenant_fn($1::uuid)",
+                                      {tenant_id},
+                                      lg(),
+                                      "Terminating test tenant");
 
-        BOOST_LOG_SEV(lg(), info) << "Successfully terminated test tenant: "
-                                  << tenant_id << ". Data preserved for analysis.";
+        BOOST_LOG_SEV(lg(), info) << "Successfully terminated test tenant: " << tenant_id
+                                  << ". Data preserved for analysis.";
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to terminate test tenant "
-                                  << tenant_id << ": " << e.what();
+        BOOST_LOG_SEV(lg(), warn) << "Failed to terminate test tenant " << tenant_id << ": "
+                                  << e.what();
         // Don't throw - cleanup should be best-effort
     }
 }
@@ -184,8 +181,7 @@ void test_database_manager::terminate_test_tenant(
 void test_database_manager::set_test_tenant_id_env(const std::string& tenant_id) {
     const std::string variable = prefix + "TENANT_ID";
     BOOST_LOG_SEV(lg(), info) << "Setting " << variable
-                              << " environment variable to: "
-                              << tenant_id;
+                              << " environment variable to: " << tenant_id;
 
     environment::set_value(variable, tenant_id);
 }

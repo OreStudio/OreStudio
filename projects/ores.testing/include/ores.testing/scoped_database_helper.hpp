@@ -20,11 +20,11 @@
 #ifndef ORES_TESTING_SCOPED_DATABASE_HELPER_HPP
 #define ORES_TESTING_SCOPED_DATABASE_HELPER_HPP
 
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/string_generator.hpp>
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/test_database_manager.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/string_generator.hpp>
+#include <boost/uuid/uuid.hpp>
 
 namespace ores::testing {
 
@@ -51,25 +51,32 @@ public:
      *
      * Call this if you need RBAC data but didn't pass seed_rbac=true to constructor.
      */
-    void seed_rbac() { helper_.seed_rbac(); }
+    void seed_rbac() {
+        helper_.seed_rbac();
+    }
 
     /**
      * @brief Gets the database context.
      */
-    database::context& context() { return  helper_.context(); }
+    database::context& context() {
+        return helper_.context();
+    }
 
     /**
      * @brief Gets the test tenant ID.
      */
     utility::uuid::tenant_id tenant_id() {
         return utility::uuid::tenant_id::from_string(
-            test_database_manager::get_test_tenant_id_env()).value();
+                   test_database_manager::get_test_tenant_id_env())
+            .value();
     }
 
     /**
      * @brief Gets the database user for the current connection.
      */
-    std::string db_user() { return helper_.db_user(); }
+    std::string db_user() {
+        return helper_.db_user();
+    }
 
     /**
      * @brief Switches the context to party-scoped isolation.

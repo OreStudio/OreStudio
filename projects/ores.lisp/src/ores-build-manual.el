@@ -161,6 +161,32 @@
  (directory-files-recursively
   (expand-file-name "doc" ores/repo-root) "\\.org$"))
 
+;; In the PDF, id links to documents OUTSIDE the manual resolve to the
+;; published website rather than to local file paths (which would be
+;; broken on any reader's machine). Links between manual chapters are
+;; left alone — the chapters are #+include'd into one document, so org
+;; exports them as internal cross-references. Returning nil from the
+;; :export function falls through to org's default handling.
+(defvar ores/site-base-url "https://orestudio.github.io/OreStudio/"
+  "Base URL of the published site, mirroring the repository layout.")
+(defvar ores/manual-dir
+  (expand-file-name "doc/manual/user_guide" ores/repo-root)
+  "Directory whose documents form the manual itself.")
+(defun ores/manual-id-export (id desc backend)
+  "Export non-manual ID links as site URLs in the LaTeX backend."
+  (when (org-export-derived-backend-p backend 'latex)
+    (let ((file (org-id-find-id-file id)))
+      (when (and file
+                 (not (string-prefix-p ores/manual-dir
+                                       (expand-file-name file))))
+        (let ((url (concat ores/site-base-url
+                           (replace-regexp-in-string
+                            "\\.org\\'" ".html"
+                            (file-relative-name (expand-file-name file)
+                                                ores/repo-root)))))
+          (format "\\href{%s}{%s}" url (or desc url)))))))
+(org-link-set-parameters "id" :export #'ores/manual-id-export)
+
 (let ((manual-file (expand-file-name
                     "doc/manual/user_guide/user_manual.org"
                     ores/repo-root)))

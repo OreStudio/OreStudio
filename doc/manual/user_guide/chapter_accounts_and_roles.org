@@ -173,7 +173,7 @@ Roles tab before saving a new account.
 ** Roles and permissions
 
 OreStudio implements industry-standard /Role-Based Access Control/
-(RBAC). RBAC separates three concepts that are easy to conflate:
+([[id:3CAA394F-E84C-3434-331B-6E664F7E84D2][RBAC]]). RBAC separates three concepts that are easy to conflate:
 
 - An /account/ is an *identity* — it answers "who is this?". It
   carries credentials (a password for users, certificates for
@@ -263,3 +263,5 @@ Roles are inspected through a read-only detail dialog:
 - [[id:0D1AA9E2-7556-4B73-8AE5-5E2A0E8FD043][Tenants]] — managing the tenants that accounts belong to.
 - [[id:FD54D29E-9309-4AFE-AFE2-50DA9F7BA354][Reference Data]] — the provenance and change-reason conventions
   shared by all entity windows.
+- [[id:3CAA394F-E84C-3434-331B-6E664F7E84D2][Role-Based Access Control]] — the general RBAC model behind
+  OreStudio's roles and permissions.

@@ -37,8 +37,14 @@ void BadgeLabelUtils::apply(QLabel* label, const BadgeCache* cache,
     QColor fg = color_constants::badge_fallback_text;
     if (cache) {
         if (const auto* def = cache->resolve(domain, value)) {
-            bg = QColor(QString::fromStdString(def->background_colour));
-            fg = QColor(QString::fromStdString(def->text_colour));
+            // An unparseable colour in the definition is treated the same
+            // as a missing definition: keep the orange fallback.
+            const QColor def_bg(QString::fromStdString(def->background_colour));
+            const QColor def_fg(QString::fromStdString(def->text_colour));
+            if (def_bg.isValid() && def_fg.isValid()) {
+                bg = def_bg;
+                fg = def_fg;
+            }
         }
     }
 

@@ -20,12 +20,12 @@
 #ifndef ORES_TESTING_TEST_DATABASE_MANAGER_HPP
 #define ORES_TESTING_TEST_DATABASE_MANAGER_HPP
 
-#include <string>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/database_options.hpp"
 #include "ores.database/service/tenant_context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.testing/export.hpp"
+#include <string>
 
 namespace ores::testing {
 
@@ -41,15 +41,14 @@ namespace ores::testing {
  */
 class ORES_TESTING_EXPORT test_database_manager {
 private:
-    inline static std::string_view logger_name =
-        "ores.testing.test_database_manager";
+    inline static std::string_view logger_name = "ores.testing.test_database_manager";
 
     static auto& lg() {
         static auto instance = ores::logging::make_logger(logger_name);
         return instance;
     }
 
-  public:
+public:
     /**
      * @brief Creates a database context from environment variables.
      */
@@ -100,8 +99,7 @@ private:
      * @param ctx The database context to use
      * @param tenant_id The UUID of the tenant to terminate
      */
-    static void terminate_test_tenant(database::context& ctx,
-                                      const std::string& tenant_id);
+    static void terminate_test_tenant(database::context& ctx, const std::string& tenant_id);
 
     /**
      * @brief Sets the ORES_TEST_DB_TENANT_ID environment variable.

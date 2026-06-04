@@ -21,8 +21,8 @@
 #define ORES_EVENTING_GENERATORS_ENTITY_CHANGE_EVENT_GENERATOR_HPP
 
 #include "ores.eventing/domain/entity_change_event.hpp"
-#include <vector>
 #include "ores.eventing/export.hpp"
+#include <vector>
 
 namespace ores::eventing::generators {
 

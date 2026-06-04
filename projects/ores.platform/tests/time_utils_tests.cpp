@@ -17,13 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.logging/make_logger.hpp"
 #include "ores.platform/time/time_utils.hpp"
-
+#include <catch2/catch_test_macros.hpp>
 #include <ctime>
 #include <iomanip>
 #include <sstream>
-#include <catch2/catch_test_macros.hpp>
-#include "ores.logging/make_logger.hpp"
 
 namespace {
 
@@ -37,8 +36,8 @@ using ores::platform::time::time_utils;
  *
  * Uses timegm so the result is always UTC regardless of the process timezone.
  */
-std::chrono::system_clock::time_point make_utc(
-    int year, int mon, int mday, int hour, int min, int sec) {
+std::chrono::system_clock::time_point
+make_utc(int year, int mon, int mday, int hour, int min, int sec) {
     std::tm tm = {};
     tm.tm_year = year - 1900;
     tm.tm_mon = mon - 1;

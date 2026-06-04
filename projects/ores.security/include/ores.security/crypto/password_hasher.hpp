@@ -20,9 +20,9 @@
 #ifndef ORES_SECURITY_CRYPTO_PASSWORD_HASHER_HPP
 #define ORES_SECURITY_CRYPTO_PASSWORD_HASHER_HPP
 
-#include <string>
 #include "ores.logging/make_logger.hpp"
 #include "ores.security/export.hpp"
+#include <string>
 
 namespace ores::security::crypto {
 
@@ -36,8 +36,7 @@ namespace ores::security::crypto {
  */
 class ORES_SECURITY_EXPORT password_hasher {
 private:
-    inline static std::string_view logger_name =
-        "ores.security.crypto.password_hasher";
+    inline static std::string_view logger_name = "ores.security.crypto.password_hasher";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -90,7 +89,7 @@ public:
      * @throws std::runtime_error If hash generation fails (e.g., due to random
      * salt generation or scrypt errors).
      */
-    static std::string hash(const std::string &password);
+    static std::string hash(const std::string& password);
 
     /**
      * @brief Verifies a password against a stored hash.
@@ -104,7 +103,7 @@ public:
      * "$scrypt$ln=14,r=8,p=1$<salt>$<hash>").
      * @return True if the password matches the hash, false otherwise.
      */
-    static bool verify(const std::string& password, const std::string &hash);
+    static bool verify(const std::string& password, const std::string& hash);
 };
 
 }

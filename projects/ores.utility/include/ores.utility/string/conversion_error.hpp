@@ -20,9 +20,9 @@
 #ifndef ORES_UTILITY_STRING_CONVERSION_ERROR_HPP
 #define ORES_UTILITY_STRING_CONVERSION_ERROR_HPP
 
-#include <string>
-#include <boost/exception/info.hpp>
 #include "ores.utility/export.hpp"
+#include <boost/exception/info.hpp>
+#include <string>
 
 namespace ores::utility::string {
 
@@ -34,10 +34,12 @@ class ORES_UTILITY_EXPORT conversion_error : public virtual std::exception,
                                              public virtual boost::exception {
 public:
     explicit conversion_error(std::string message)
-        : message_(std::move(message)) { }
+        : message_(std::move(message)) {}
     conversion_error() = default;
     ~conversion_error() noexcept override = default;
-    const char* what() const noexcept final { return(message_.c_str()); }
+    const char* what() const noexcept final {
+        return (message_.c_str());
+    }
 
 private:
     std::string message_;

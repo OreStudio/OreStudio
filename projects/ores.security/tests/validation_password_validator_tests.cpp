@@ -17,10 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.security/validation/password_validator.hpp"
-
-#include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.security/validation/password_validator.hpp"
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 

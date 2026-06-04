@@ -17,11 +17,10 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.utility/faker/totp.hpp"
-
-#include <set>
-#include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.utility/faker/totp.hpp"
+#include <catch2/catch_test_macros.hpp>
+#include <set>
 
 namespace {
 
@@ -103,8 +102,7 @@ TEST_CASE("totp_secret_generates_unique_values", tags) {
         secrets.insert(totp::totp_secret());
     }
 
-    BOOST_LOG_SEV(lg, info) << "Generated " << count << " secrets, "
-                            << secrets.size() << " unique";
+    BOOST_LOG_SEV(lg, info) << "Generated " << count << " secrets, " << secrets.size() << " unique";
 
     // All secrets should be unique
     CHECK(secrets.size() == count);

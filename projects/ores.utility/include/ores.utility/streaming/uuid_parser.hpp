@@ -20,11 +20,11 @@
 #ifndef ORES_UTILITY_STREAMING_UUID_PARSER_HPP
 #define ORES_UTILITY_STREAMING_UUID_PARSER_HPP
 
-#include <string>
-#include <rfl.hpp>
+#include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
+#include <rfl.hpp>
+#include <string>
 
 namespace rfl::parsing {
 
@@ -33,10 +33,10 @@ struct Parser<ReaderType, WriterType, boost::uuids::uuid, ProcessorsType> {
     using InputVarType = typename ReaderType::InputVarType;
     using OutputVarType = typename WriterType::OutputVarType;
 
-    static Result<boost::uuids::uuid> read(
-        const ReaderType& _r, const InputVarType& _var) noexcept {
-        const auto str_result = Parser<ReaderType, WriterType,
-            std::string, ProcessorsType>::read(_r, _var);
+    static Result<boost::uuids::uuid> read(const ReaderType& _r,
+                                           const InputVarType& _var) noexcept {
+        const auto str_result =
+            Parser<ReaderType, WriterType, std::string, ProcessorsType>::read(_r, _var);
         if (!str_result) {
             return rfl::Unexpected(Error(str_result.error()->what()));
         }
@@ -48,12 +48,10 @@ struct Parser<ReaderType, WriterType, boost::uuids::uuid, ProcessorsType> {
     }
 
     template <class P>
-    static void write(const WriterType& _w,
-                      const boost::uuids::uuid& _uuid,
-                      const P& _parent) noexcept {
+    static void
+    write(const WriterType& _w, const boost::uuids::uuid& _uuid, const P& _parent) noexcept {
         const auto str = boost::lexical_cast<std::string>(_uuid);
-        Parser<ReaderType, WriterType, std::string, ProcessorsType>::write(
-            _w, str, _parent);
+        Parser<ReaderType, WriterType, std::string, ProcessorsType>::write(_w, str, _parent);
     }
 };
 

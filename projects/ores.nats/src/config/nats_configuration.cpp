@@ -31,44 +31,39 @@ const std::string nats_tls_key_arg("nats-tls-key");
 
 }
 
-boost::program_options::options_description
-nats_configuration::make_options_description() {
+boost::program_options::options_description nats_configuration::make_options_description() {
     using boost::program_options::value;
     using boost::program_options::options_description;
 
     options_description r("NATS");
-    r.add_options()
-        (nats_url_arg.c_str(),
-            value<std::string>()->default_value("nats://localhost:4222"),
-            "NATS server URL.")
-        (nats_subject_prefix_arg.c_str(),
-            value<std::string>()->default_value(""),
-            "Subject prefix prepended to every NATS subject "
-            "(format: ores.{tier}.{instance}, e.g. ores.dev.local1).")
-        (nats_tls_ca_arg.c_str(),
-            value<std::string>()->default_value(""),
-            "Path to CA certificate for mTLS (ca.crt). "
-            "Env: ORES_NATS_TLS_CA.")
-        (nats_tls_cert_arg.c_str(),
-            value<std::string>()->default_value(""),
-            "Path to client certificate for mTLS (<service>.crt). "
-            "Env: ORES_NATS_TLS_CERT.")
-        (nats_tls_key_arg.c_str(),
-            value<std::string>()->default_value(""),
-            "Path to client private key for mTLS (<service>.key). "
-            "Env: ORES_NATS_TLS_KEY.");
+    r.add_options()(nats_url_arg.c_str(),
+                    value<std::string>()->default_value("nats://localhost:4222"),
+                    "NATS server URL.")(nats_subject_prefix_arg.c_str(),
+                                        value<std::string>()->default_value(""),
+                                        "Subject prefix prepended to every NATS subject "
+                                        "(format: ores.{tier}.{instance}, e.g. ores.dev.local1).")(
+        nats_tls_ca_arg.c_str(),
+        value<std::string>()->default_value(""),
+        "Path to CA certificate for mTLS (ca.crt). "
+        "Env: ORES_NATS_TLS_CA.")(nats_tls_cert_arg.c_str(),
+                                  value<std::string>()->default_value(""),
+                                  "Path to client certificate for mTLS (<service>.crt). "
+                                  "Env: ORES_NATS_TLS_CERT.")(
+        nats_tls_key_arg.c_str(),
+        value<std::string>()->default_value(""),
+        "Path to client private key for mTLS (<service>.key). "
+        "Env: ORES_NATS_TLS_KEY.");
 
     return r;
 }
 
-nats_options nats_configuration::read_options(
-    const boost::program_options::variables_map& vm) {
+nats_options nats_configuration::read_options(const boost::program_options::variables_map& vm) {
     nats_options r;
     r.url = vm[nats_url_arg].as<std::string>();
     r.subject_prefix = vm[nats_subject_prefix_arg].as<std::string>();
-    r.tls_ca_cert    = vm[nats_tls_ca_arg].as<std::string>();
+    r.tls_ca_cert = vm[nats_tls_ca_arg].as<std::string>();
     r.tls_client_cert = vm[nats_tls_cert_arg].as<std::string>();
-    r.tls_client_key  = vm[nats_tls_key_arg].as<std::string>();
+    r.tls_client_key = vm[nats_tls_key_arg].as<std::string>();
     return r;
 }
 

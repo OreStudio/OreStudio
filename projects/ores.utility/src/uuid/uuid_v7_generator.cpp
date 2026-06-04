@@ -17,7 +17,6 @@
  *
  */
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
-
 #include <chrono>
 #include <cstdint>
 
@@ -28,8 +27,8 @@ boost::uuids::uuid uuid_v7_generator::operator()() {
 
     // Get the current time as a 48-bit Unix timestamp in milliseconds
     auto now = std::chrono::system_clock::now();
-    auto timestamp_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
-        now.time_since_epoch()).count();
+    auto timestamp_ms =
+        std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
 
     // Ensure timestamp fits in 48 bits (it will until the year 10889)
     uint64_t ts_48 = static_cast<uint64_t>(timestamp_ms) & 0x0000FFFFFFFFFFFF;

@@ -18,10 +18,9 @@
  *
  */
 #include "ores.nats/domain/correlation.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/uuid/uuid_generators.hpp>
 #include "ores.nats/domain/headers.hpp"
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::nats {
 

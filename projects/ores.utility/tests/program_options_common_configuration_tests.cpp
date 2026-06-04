@@ -18,9 +18,8 @@
  *
  */
 #include "ores.utility/program_options/common_configuration.hpp"
-
-#include <vector>
 #include <catch2/catch_test_macros.hpp>
+#include <vector>
 
 namespace {
 
@@ -34,8 +33,7 @@ using ores::utility::program_options::common_options;
 po::variables_map parse_args(const std::vector<const char*>& args) {
     auto desc = common_configuration::make_options_description();
     po::variables_map vm;
-    po::store(po::parse_command_line(
-        static_cast<int>(args.size()), args.data(), desc), vm);
+    po::store(po::parse_command_line(static_cast<int>(args.size()), args.data(), desc), vm);
     po::notify(vm);
     return vm;
 }
@@ -97,8 +95,8 @@ TEST_CASE("parse_help_short_form", tags) {
     po::variables_map vm;
 
     // -h should be recognized (will throw if not)
-    REQUIRE_NOTHROW(po::store(po::parse_command_line(
-        static_cast<int>(args.size()), args.data(), desc), vm));
+    REQUIRE_NOTHROW(
+        po::store(po::parse_command_line(static_cast<int>(args.size()), args.data(), desc), vm));
     REQUIRE(vm.count("help") != 0);
 }
 
@@ -108,8 +106,8 @@ TEST_CASE("parse_version_short_form", tags) {
     po::variables_map vm;
 
     // -v should be recognized
-    REQUIRE_NOTHROW(po::store(po::parse_command_line(
-        static_cast<int>(args.size()), args.data(), desc), vm));
+    REQUIRE_NOTHROW(
+        po::store(po::parse_command_line(static_cast<int>(args.size()), args.data(), desc), vm));
     REQUIRE(vm.count("version") != 0);
 }
 
@@ -118,8 +116,8 @@ TEST_CASE("parse_help_long_form", tags) {
     auto desc = common_configuration::make_options_description();
     po::variables_map vm;
 
-    REQUIRE_NOTHROW(po::store(po::parse_command_line(
-        static_cast<int>(args.size()), args.data(), desc), vm));
+    REQUIRE_NOTHROW(
+        po::store(po::parse_command_line(static_cast<int>(args.size()), args.data(), desc), vm));
     REQUIRE(vm.count("help") != 0);
 }
 
@@ -128,8 +126,8 @@ TEST_CASE("parse_version_long_form", tags) {
     auto desc = common_configuration::make_options_description();
     po::variables_map vm;
 
-    REQUIRE_NOTHROW(po::store(po::parse_command_line(
-        static_cast<int>(args.size()), args.data(), desc), vm));
+    REQUIRE_NOTHROW(
+        po::store(po::parse_command_line(static_cast<int>(args.size()), args.data(), desc), vm));
     REQUIRE(vm.count("version") != 0);
 }
 
@@ -138,7 +136,7 @@ TEST_CASE("parse_verbose_long_form", tags) {
     auto desc = common_configuration::make_options_description();
     po::variables_map vm;
 
-    REQUIRE_NOTHROW(po::store(po::parse_command_line(
-        static_cast<int>(args.size()), args.data(), desc), vm));
+    REQUIRE_NOTHROW(
+        po::store(po::parse_command_line(static_cast<int>(args.size()), args.data(), desc), vm));
     REQUIRE(vm.count("verbose") != 0);
 }

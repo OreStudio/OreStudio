@@ -20,16 +20,15 @@
 #ifndef ORES_UTILITY_STREAMING_STD_OPTIONAL_HPP
 #define ORES_UTILITY_STREAMING_STD_OPTIONAL_HPP
 
-#include <ostream>
 #include <optional>
+#include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
 
 namespace std {
 
 template <typename Containee>
-inline std::ostream&
-operator<<(std::ostream& s, const std::optional<Containee>& v) {
+inline std::ostream& operator<<(std::ostream& s, const std::optional<Containee>& v) {
     rfl::json::write(v, s);
     return s;
 }

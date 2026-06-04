@@ -20,16 +20,16 @@
 #ifndef ORES_EVENTING_SERVICE_EVENT_BUS_HPP
 #define ORES_EVENTING_SERVICE_EVENT_BUS_HPP
 
-#include <any>
-#include <mutex>
-#include <memory>
-#include <vector>
-#include <typeindex>
-#include <functional>
-#include <unordered_map>
-#include <boost/core/demangle.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.eventing/export.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <boost/core/demangle.hpp>
+#include <any>
+#include <functional>
+#include <memory>
+#include <mutex>
+#include <typeindex>
+#include <unordered_map>
+#include <vector>
 
 namespace ores::eventing::service {
 
@@ -44,7 +44,8 @@ public:
     using unsubscribe_fn = std::function<void()>;
 
     subscription() = default;
-    explicit subscription(unsubscribe_fn fn) : unsubscribe_(std::move(fn)) {}
+    explicit subscription(unsubscribe_fn fn)
+        : unsubscribe_(std::move(fn)) {}
 
     ~subscription() {
         if (unsubscribe_) {
@@ -74,7 +75,9 @@ public:
     /**
      * @brief Check if the subscription is active.
      */
-    [[nodiscard]] bool is_active() const { return unsubscribe_ != nullptr; }
+    [[nodiscard]] bool is_active() const {
+        return unsubscribe_ != nullptr;
+    }
 
     /**
      * @brief Manually unsubscribe before destruction.
@@ -154,7 +157,7 @@ public:
      * @note The handler is invoked synchronously during publish(). It should be
      *       non-blocking to avoid holding the bus lock for extended periods.
      */
-    template<typename Event>
+    template <typename Event>
     [[nodiscard]] subscription subscribe(std::function<void(const Event&)> handler) {
         using namespace ores::logging;
         std::lock_guard lock(mutex_);
@@ -166,13 +169,11 @@ public:
         subscribers_[type_idx].push_back({id, std::move(handler)});
 
         const auto count = subscribers_[type_idx].size();
-        BOOST_LOG_SEV(lg(), info)
-            << "Subscriber " << id << " subscribed to event type '"
-            << type_name << "' (total subscribers: " << count << ")";
+        BOOST_LOG_SEV(lg(), info) << "Subscriber " << id << " subscribed to event type '"
+                                  << type_name << "' (total subscribers: " << count << ")";
 
-        return subscription([this, type_idx, id, type_name]() {
-            unsubscribe(type_idx, id, type_name);
-        });
+        return subscription(
+            [this, type_idx, id, type_name]() { unsubscribe(type_idx, id, type_name); });
     }
 
     /**
@@ -185,7 +186,7 @@ public:
      * Exceptions thrown by handlers are caught and logged, but do not prevent
      * other handlers from being called.
      */
-    template<typename Event>
+    template <typename Event>
     void publish(const Event& event) {
         using namespace ores::logging;
         std::vector<std::function<void(const Event&)>> handlers_copy;
@@ -197,9 +198,8 @@ public:
 
             auto it = subscribers_.find(type_idx);
             if (it == subscribers_.end()) {
-                BOOST_LOG_SEV(lg(), debug)
-                    << "No subscribers for event type '" << type_name
-                    << "' - event will not be delivered";
+                BOOST_LOG_SEV(lg(), debug) << "No subscribers for event type '" << type_name
+                                           << "' - event will not be delivered";
                 return;
             }
 
@@ -207,20 +207,18 @@ public:
             for (const auto& entry : it->second) {
                 try {
                     const auto& handler =
-                        std::any_cast<const std::function<void(const Event&)>&>(
-                            entry.handler);
+                        std::any_cast<const std::function<void(const Event&)>&>(entry.handler);
                     handlers_copy.push_back(handler);
                 } catch (const std::bad_any_cast& e) {
                     BOOST_LOG_SEV(lg(), error)
-                        << "Type mismatch for subscriber " << entry.id
-                        << " on event type '" << type_name << "': " << e.what();
+                        << "Type mismatch for subscriber " << entry.id << " on event type '"
+                        << type_name << "': " << e.what();
                 }
             }
         }
 
-        BOOST_LOG_SEV(lg(), info)
-            << "Publishing event type '" << type_name << "' to "
-            << handlers_copy.size() << " subscriber(s)";
+        BOOST_LOG_SEV(lg(), info) << "Publishing event type '" << type_name << "' to "
+                                  << handlers_copy.size() << " subscriber(s)";
 
         std::size_t success_count = 0;
         for (const auto& handler : handlers_copy) {
@@ -229,14 +227,13 @@ public:
                 ++success_count;
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(lg(), error)
-                    << "Exception in event handler for '" << type_name
-                    << "': " << e.what();
+                    << "Exception in event handler for '" << type_name << "': " << e.what();
             }
         }
 
         BOOST_LOG_SEV(lg(), debug)
-            << "Event '" << type_name << "' delivery complete: "
-            << success_count << "/" << handlers_copy.size() << " handlers succeeded";
+            << "Event '" << type_name << "' delivery complete: " << success_count << "/"
+            << handlers_copy.size() << " handlers succeeded";
     }
 
     /**
@@ -245,7 +242,7 @@ public:
      * @tparam Event The event type to query.
      * @return The number of active subscriptions for this event type.
      */
-    template<typename Event>
+    template <typename Event>
     [[nodiscard]] std::size_t subscriber_count() const {
         std::lock_guard lock(mutex_);
 
@@ -258,8 +255,7 @@ public:
     }
 
 private:
-    void unsubscribe(std::type_index type_idx, subscriber_id id,
-                     const std::string& type_name) {
+    void unsubscribe(std::type_index type_idx, subscriber_id id, const std::string& type_name) {
         using namespace ores::logging;
         std::lock_guard lock(mutex_);
 
@@ -272,15 +268,14 @@ private:
         }
 
         auto& list = it->second;
-        auto removed = std::erase_if(list, [id](const subscriber_entry& entry) {
-            return entry.id == id;
-        });
+        auto removed =
+            std::erase_if(list, [id](const subscriber_entry& entry) { return entry.id == id; });
 
         if (removed > 0) {
             const auto remaining = list.size();
             BOOST_LOG_SEV(lg(), info)
-                << "Subscriber " << id << " unsubscribed from event type '"
-                << type_name << "' (remaining subscribers: " << remaining << ")";
+                << "Subscriber " << id << " unsubscribed from event type '" << type_name
+                << "' (remaining subscribers: " << remaining << ")";
         } else {
             BOOST_LOG_SEV(lg(), warn)
                 << "Unsubscribe called for subscriber " << id
@@ -289,8 +284,7 @@ private:
 
         if (list.empty()) {
             BOOST_LOG_SEV(lg(), debug)
-                << "No more subscribers for event type '" << type_name
-                << "' - removing from map";
+                << "No more subscribers for event type '" << type_name << "' - removing from map";
             subscribers_.erase(it);
         }
     }

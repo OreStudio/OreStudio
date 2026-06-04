@@ -22,22 +22,20 @@
 namespace ores::utility::generation {
 
 generation_context::generation_context(std::uint64_t seed, entries initial)
-    : engine_(std::make_shared<generation_engine>(seed)),
-      env_(std::make_shared<generation_environment>(std::move(initial))) {}
+    : engine_(std::make_shared<generation_engine>(seed))
+    , env_(std::make_shared<generation_environment>(std::move(initial))) {}
 
 generation_context::generation_context(entries initial)
-    : engine_(std::make_shared<generation_engine>()),
-      env_(std::make_shared<generation_environment>(std::move(initial))) {}
+    : engine_(std::make_shared<generation_engine>())
+    , env_(std::make_shared<generation_environment>(std::move(initial))) {}
 
-generation_context::generation_context(
-    std::shared_ptr<generation_engine> engine,
-    std::shared_ptr<const generation_environment> env)
-    : engine_(std::move(engine)),
-      env_(std::move(env)) {}
+generation_context::generation_context(std::shared_ptr<generation_engine> engine,
+                                       std::shared_ptr<const generation_environment> env)
+    : engine_(std::move(engine))
+    , env_(std::move(env)) {}
 
 generation_context generation_context::child(entries overrides) const {
-    auto child_env = std::make_shared<generation_environment>(
-        env_, std::move(overrides));
+    auto child_env = std::make_shared<generation_environment>(env_, std::move(overrides));
     return generation_context(engine_, std::move(child_env));
 }
 

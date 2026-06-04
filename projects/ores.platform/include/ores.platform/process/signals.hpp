@@ -30,9 +30,9 @@ namespace ores::platform::process {
 // sequence SIGTERM → SIGQUIT → SIGKILL used by process supervisors.
 // On Windows: SIGINT and SIGTERM only (SIGQUIT is not defined).
 #ifndef _WIN32
-inline constexpr std::array<int, 3> shutdown_signals = { SIGINT, SIGTERM, SIGQUIT };
+inline constexpr std::array<int, 3> shutdown_signals = {SIGINT, SIGTERM, SIGQUIT};
 #else
-inline constexpr std::array<int, 2> shutdown_signals = { SIGINT, SIGTERM };
+inline constexpr std::array<int, 2> shutdown_signals = {SIGINT, SIGTERM};
 #endif
 
 } // namespace ores::platform::process

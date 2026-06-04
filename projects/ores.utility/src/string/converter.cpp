@@ -18,9 +18,8 @@
  *
  */
 #include "ores.utility/string/converter.hpp"
-
-#include <charconv>
 #include "ores.utility/string/conversion_error.hpp"
+#include <charconv>
 
 namespace ores::utility::string {
 
@@ -32,15 +31,15 @@ int converter::string_to_int(std::string s, int base) {
     const std::string out_of_range("Out of range: ");
     const std::string other_conversion_error("Unspecified conversion error: ");
 
-     if (ec == std::errc()) {
+    if (ec == std::errc()) {
         return r;
-     } else if (ec == std::errc::invalid_argument) {
+    } else if (ec == std::errc::invalid_argument) {
         BOOST_THROW_EXCEPTION(conversion_error(invalid_argument + s));
     } else if (ec == std::errc::result_out_of_range) {
         BOOST_THROW_EXCEPTION(conversion_error(out_of_range + s));
-     } else {
-         BOOST_THROW_EXCEPTION(conversion_error(other_conversion_error + s));
-     }
+    } else {
+        BOOST_THROW_EXCEPTION(conversion_error(other_conversion_error + s));
+    }
 }
 
 }

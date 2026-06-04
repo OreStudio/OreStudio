@@ -17,9 +17,8 @@
  *
  */
 #include "ores.utility/uuid/tenant_id.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/string_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::utility::uuid {
 
@@ -43,25 +42,21 @@ tenant_id tenant_id::system() {
     return tenant_id(max_uuid);
 }
 
-std::expected<tenant_id, std::string>
-tenant_id::from_uuid(const boost::uuids::uuid& uuid) {
+std::expected<tenant_id, std::string> tenant_id::from_uuid(const boost::uuids::uuid& uuid) {
     if (uuid.is_nil()) {
-        return std::unexpected(
-            "Cannot create tenant_id from nil UUID. "
-            "Use tenant_id::system() for system tenant.");
+        return std::unexpected("Cannot create tenant_id from nil UUID. "
+                               "Use tenant_id::system() for system tenant.");
     }
     return tenant_id(uuid);
 }
 
-std::expected<tenant_id, std::string>
-tenant_id::from_string(std::string_view str) {
+std::expected<tenant_id, std::string> tenant_id::from_string(std::string_view str) {
     try {
         boost::uuids::string_generator gen;
         auto uuid = gen(str.begin(), str.end());
         return from_uuid(uuid);
     } catch (const std::exception& e) {
-        return std::unexpected(
-            std::string("Failed to parse UUID: ") + e.what());
+        return std::unexpected(std::string("Failed to parse UUID: ") + e.what());
     }
 }
 

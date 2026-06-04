@@ -18,7 +18,6 @@
  *
  */
 #include "ores.utility/string/short_code_generator.hpp"
-
 #include <cctype>
 #include <vector>
 
@@ -27,10 +26,12 @@ namespace ores::utility::string {
 namespace {
 
 bool ends_with_ci(const std::string& s, const std::string& suffix) {
-    if (suffix.size() > s.size()) return false;
+    if (suffix.size() > s.size())
+        return false;
     const auto start = s.size() - suffix.size();
     // Must be preceded by a space (or be the entire string).
-    if (start > 0 && s[start - 1] != ' ') return false;
+    if (start > 0 && s[start - 1] != ' ')
+        return false;
     for (std::size_t i = 0; i < suffix.size(); ++i) {
         if (std::toupper(static_cast<unsigned char>(s[start + i])) !=
             std::toupper(static_cast<unsigned char>(suffix[i])))
@@ -57,16 +58,13 @@ std::string strip_corporate_suffixes(const std::string& name) {
         result.pop_back();
 
     // Dotted abbreviations (longer patterns first).
-    for (const auto& s : {"S.C.A.", "S.R.L.", "S.P.A.", "S.A.",
-             "B.V.", "N.V.", "K.K.", "S.E."})
+    for (const auto& s : {"S.C.A.", "S.R.L.", "S.P.A.", "S.A.", "B.V.", "N.V.", "K.K.", "S.E."})
         strip_suffix(result, s);
 
     // Word suffixes.
-    for (const auto& s : {"AND CO.", "& CO.", "CO.",
-             "PLC", "LLC", "LLP", "LTD", "INC", "CORP",
-             "AG", "NV", "AB", "ASA", "GMBH", "MBH",
-             "BV", "BHD", "SRL", "SPA", "SARL", "KG",
-             "OYJ", "TBK", "LP", "SE", "SA", "AS"})
+    for (const auto& s : {"AND CO.", "& CO.", "CO.", "PLC", "LLC",  "LLP", "LTD", "INC", "CORP",
+                          "AG",      "NV",    "AB",  "ASA", "GMBH", "MBH", "BV",  "BHD", "SRL",
+                          "SPA",     "SARL",  "KG",  "OYJ", "TBK",  "LP",  "SE",  "SA",  "AS"})
         strip_suffix(result, s);
 
     return result;
@@ -81,8 +79,7 @@ std::string generate_short_code(const std::string& name) {
     bool prev_space = false;
     for (char c : input) {
         if (std::isalpha(static_cast<unsigned char>(c))) {
-            clean += static_cast<char>(
-                std::toupper(static_cast<unsigned char>(c)));
+            clean += static_cast<char>(std::toupper(static_cast<unsigned char>(c)));
             prev_space = false;
         } else if (c == ' ' && !clean.empty() && !prev_space) {
             clean += ' ';
@@ -131,8 +128,7 @@ std::string generate_short_code(const std::string& name) {
         result = words[0].substr(0, 3) + words[1].substr(0, 3);
     } else {
         // Three+ words: 2+2+2.
-        result = words[0].substr(0, 2) + words[1].substr(0, 2)
-            + words[2].substr(0, 2);
+        result = words[0].substr(0, 2) + words[1].substr(0, 2) + words[2].substr(0, 2);
     }
 
     // Pad to minimum 3 chars.
@@ -143,7 +139,7 @@ std::string generate_short_code(const std::string& name) {
 }
 
 std::string generate_unique_short_code(const std::string& name,
-    std::unordered_set<std::string>& used_codes) {
+                                       std::unordered_set<std::string>& used_codes) {
 
     const auto base = generate_short_code(name);
 

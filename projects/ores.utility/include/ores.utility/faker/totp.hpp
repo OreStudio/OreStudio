@@ -20,8 +20,8 @@
 #ifndef ORES_UTILITY_FAKER_TOTP_HPP
 #define ORES_UTILITY_FAKER_TOTP_HPP
 
-#include <string>
 #include "ores.utility/export.hpp"
+#include <string>
 
 namespace ores::utility::faker {
 

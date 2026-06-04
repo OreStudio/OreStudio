@@ -18,11 +18,10 @@
  *
  */
 #include "ores.utility/faker/datetime.hpp"
-
+#include "ores.platform/time/datetime.hpp"
 #include <chrono>
 #include <format>
 #include <random>
-#include "ores.platform/time/datetime.hpp"
 
 namespace ores::utility::faker {
 
@@ -30,13 +29,10 @@ std::chrono::system_clock::time_point datetime::past_timepoint() {
     using namespace std::chrono;
     static thread_local std::mt19937_64 rng{std::random_device{}()};
 
-    const auto min_time = sys_days{year{1970}/1/1}.time_since_epoch();
-    const auto max_time = sys_days{year{2039}/1/1}.time_since_epoch() - 1s;
+    const auto min_time = sys_days{year{1970} / 1 / 1}.time_since_epoch();
+    const auto max_time = sys_days{year{2039} / 1 / 1}.time_since_epoch() - 1s;
 
-    std::uniform_int_distribution<std::int64_t> dist(
-        min_time.count(),
-        max_time.count()
-    );
+    std::uniform_int_distribution<std::int64_t> dist(min_time.count(), max_time.count());
 
     return sys_seconds{seconds{dist(rng)}};
 }
@@ -46,12 +42,12 @@ std::string datetime::past_string() {
     return ores::platform::time::datetime::to_db_string(tp);
 }
 
-std::chrono::system_clock::time_point datetime::make_timepoint(
-    int y, int m, int d, int hour, int min, int sec) {
+std::chrono::system_clock::time_point
+datetime::make_timepoint(int y, int m, int d, int hour, int min, int sec) {
     using namespace std::chrono;
-    return sys_days{year_month_day{year{y}, month{static_cast<unsigned>(m)},
-        day{static_cast<unsigned>(d)}}} + hours{hour} + minutes{min} +
-        seconds{sec};
+    return sys_days{year_month_day{
+               year{y}, month{static_cast<unsigned>(m)}, day{static_cast<unsigned>(d)}}} +
+           hours{hour} + minutes{min} + seconds{sec};
 }
 
 }

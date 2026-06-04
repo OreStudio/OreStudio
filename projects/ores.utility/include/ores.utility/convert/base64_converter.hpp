@@ -20,10 +20,10 @@
 #ifndef ORES_UTILITY_CONVERTER_BASE64_CONVERTER_HPP
 #define ORES_UTILITY_CONVERTER_BASE64_CONVERTER_HPP
 
+#include "ores.utility/export.hpp"
+#include <cstdint>
 #include <string>
 #include <vector>
-#include <cstdint>
-#include "ores.utility/export.hpp"
 
 namespace ores::utility::converter {
 

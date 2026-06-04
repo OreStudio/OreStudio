@@ -20,9 +20,9 @@
 #ifndef ORES_NATS_DOMAIN_CORRELATION_HPP
 #define ORES_NATS_DOMAIN_CORRELATION_HPP
 
-#include <string>
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/export.hpp"
+#include <string>
 
 namespace ores::nats {
 
@@ -34,8 +34,7 @@ namespace ores::nats {
  * making this function safe to call at any service entry point regardless
  * of whether the upstream caller populated the header.
  */
-[[nodiscard]] ORES_NATS_EXPORT std::string
-extract_or_generate_correlation_id(const message& msg);
+[[nodiscard]] ORES_NATS_EXPORT std::string extract_or_generate_correlation_id(const message& msg);
 
 } // namespace ores::nats
 

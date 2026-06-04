@@ -20,10 +20,10 @@
 #ifndef ORES_PLATFORM_NET_NETWORK_INFO_HPP
 #define ORES_PLATFORM_NET_NETWORK_INFO_HPP
 
+#include "ores.platform/export.hpp"
 #include <cstdint>
 #include <optional>
 #include <string>
-#include "ores.platform/export.hpp"
 
 namespace ores::platform::net {
 

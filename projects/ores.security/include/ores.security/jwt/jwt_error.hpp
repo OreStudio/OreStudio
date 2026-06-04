@@ -20,8 +20,8 @@
 #ifndef ORES_SECURITY_JWT_JWT_ERROR_HPP
 #define ORES_SECURITY_JWT_JWT_ERROR_HPP
 
-#include <string>
 #include "ores.security/export.hpp"
+#include <string>
 
 namespace ores::security::jwt {
 

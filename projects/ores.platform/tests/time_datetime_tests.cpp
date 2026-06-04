@@ -17,10 +17,10 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <stdexcept>
-#include <catch2/catch_test_macros.hpp>
 #include "ores.platform/time/datetime.hpp"
 #include "ores.platform/time/time_utils.hpp"
+#include <catch2/catch_test_macros.hpp>
+#include <stdexcept>
 
 namespace {
 
@@ -35,15 +35,15 @@ using ores::platform::time::time_utils;
  * Uses time_utils::to_time_point_utc (timegm) so the result is always the
  * correct UTC instant regardless of the process timezone.
  */
-std::chrono::system_clock::time_point make_utc(
-    int year, int mon, int mday, int hour, int min, int sec) {
+std::chrono::system_clock::time_point
+make_utc(int year, int mon, int mday, int hour, int min, int sec) {
     std::tm tm = {};
     tm.tm_year = year - 1900;
-    tm.tm_mon  = mon - 1;
+    tm.tm_mon = mon - 1;
     tm.tm_mday = mday;
     tm.tm_hour = hour;
-    tm.tm_min  = min;
-    tm.tm_sec  = sec;
+    tm.tm_min = min;
+    tm.tm_sec = sec;
     return time_utils::to_time_point_utc(tm);
 }
 
@@ -106,15 +106,15 @@ TEST_CASE("from_iso8601_utc_accepts_space_before_offset", tags) {
 TEST_CASE("to_iso8601_utc_from_iso8601_utc_round_trip", tags) {
     const auto original = make_utc(2026, 4, 8, 10, 30, 45);
     const auto serialised = datetime::to_iso8601_utc(original);
-    const auto recovered  = datetime::from_iso8601_utc(serialised);
+    const auto recovered = datetime::from_iso8601_utc(serialised);
     CHECK(recovered == original);
 }
 
 TEST_CASE("to_iso8601_utc_from_iso8601_utc_round_trip_dst_edge", tags) {
     // DST edge: 2026-03-29 01:00:00 UTC
-    const auto original  = make_utc(2026, 3, 29, 1, 0, 0);
+    const auto original = make_utc(2026, 3, 29, 1, 0, 0);
     const auto serialised = datetime::to_iso8601_utc(original);
-    const auto recovered  = datetime::from_iso8601_utc(serialised);
+    const auto recovered = datetime::from_iso8601_utc(serialised);
     CHECK(recovered == original);
 }
 
@@ -124,33 +124,23 @@ TEST_CASE("to_iso8601_utc_from_iso8601_utc_round_trip_dst_edge", tags) {
 
 TEST_CASE("from_iso8601_utc_throws_on_missing_designator", tags) {
     // Timezone-ambiguous string — must be rejected, not silently assumed UTC
-    CHECK_THROWS_AS(
-        datetime::from_iso8601_utc("2026-04-08 10:30:00"),
-        std::invalid_argument);
+    CHECK_THROWS_AS(datetime::from_iso8601_utc("2026-04-08 10:30:00"), std::invalid_argument);
 }
 
 TEST_CASE("from_iso8601_utc_throws_on_non_utc_positive_offset", tags) {
-    CHECK_THROWS_AS(
-        datetime::from_iso8601_utc("2026-04-08 11:30:00+01"),
-        std::invalid_argument);
+    CHECK_THROWS_AS(datetime::from_iso8601_utc("2026-04-08 11:30:00+01"), std::invalid_argument);
 }
 
 TEST_CASE("from_iso8601_utc_throws_on_non_utc_negative_offset", tags) {
-    CHECK_THROWS_AS(
-        datetime::from_iso8601_utc("2026-04-08 05:30:00-05:00"),
-        std::invalid_argument);
+    CHECK_THROWS_AS(datetime::from_iso8601_utc("2026-04-08 05:30:00-05:00"), std::invalid_argument);
 }
 
 TEST_CASE("from_iso8601_utc_throws_on_empty_string", tags) {
-    CHECK_THROWS_AS(
-        datetime::from_iso8601_utc(""),
-        std::invalid_argument);
+    CHECK_THROWS_AS(datetime::from_iso8601_utc(""), std::invalid_argument);
 }
 
 TEST_CASE("from_iso8601_utc_throws_on_malformed_string", tags) {
-    CHECK_THROWS_AS(
-        datetime::from_iso8601_utc("not-a-dateZ"),
-        std::invalid_argument);
+    CHECK_THROWS_AS(datetime::from_iso8601_utc("not-a-dateZ"), std::invalid_argument);
 }
 
 // ---------------------------------------------------------------------------

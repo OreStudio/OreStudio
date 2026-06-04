@@ -18,9 +18,8 @@
  *
  */
 #include "ores.eventing/domain/entity_change_event_table_io.hpp"
-
-#include <fort.hpp>
 #include "ores.platform/time/datetime.hpp"
+#include <fort.hpp>
 
 namespace ores::eventing::domain {
 
@@ -28,8 +27,7 @@ std::ostream& operator<<(std::ostream& s, const std::vector<entity_change_event>
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header
-          << "Entity" << "Timestamp" << "Tenant ID" << fort::endr;
+    table << fort::header << "Entity" << "Timestamp" << "Tenant ID" << fort::endr;
 
     for (const auto& item : v) {
         using platform::time::datetime;

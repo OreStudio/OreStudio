@@ -20,13 +20,13 @@
 #ifndef ORES_EVENTING_SERVICE_EVENT_CHANNEL_REGISTRY_HPP
 #define ORES_EVENTING_SERVICE_EVENT_CHANNEL_REGISTRY_HPP
 
-#include <mutex>
-#include <vector>
-#include <string>
-#include <unordered_map>
 #include "ores.eventing/domain/event_channel_info.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
 #include "ores.eventing/export.hpp"
+#include <mutex>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 namespace ores::eventing::service {
 
@@ -70,7 +70,7 @@ public:
      * @tparam Event The domain event type (must have event_traits specialization).
      * @param description Human-readable description of the channel.
      */
-    template<domain::has_event_traits Event>
+    template <domain::has_event_traits Event>
     void register_channel(const std::string& description) {
         using traits = domain::event_traits<Event>;
         register_channel(std::string{traits::name}, description);

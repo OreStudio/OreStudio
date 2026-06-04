@@ -17,10 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.platform/time/relative_time_formatter.hpp"
-
-#include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.platform/time/relative_time_formatter.hpp"
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 
@@ -546,10 +545,8 @@ TEST_CASE("format_value_unit_table_driven", tags) {
         auto result_auto = fmt_auto.format(tc.value, tc.unit);
         auto result_always = fmt_always.format(tc.value, tc.unit);
 
-        BOOST_LOG_SEV(lg, info) << "Value: " << tc.value << ", Unit: "
-                                << static_cast<int>(tc.unit)
-                                << ", Auto: " << result_auto
-                                << ", Always: " << result_always;
+        BOOST_LOG_SEV(lg, info) << "Value: " << tc.value << ", Unit: " << static_cast<int>(tc.unit)
+                                << ", Auto: " << result_auto << ", Always: " << result_always;
 
         CHECK(result_auto == tc.expected_auto);
         CHECK(result_always == tc.expected_always);

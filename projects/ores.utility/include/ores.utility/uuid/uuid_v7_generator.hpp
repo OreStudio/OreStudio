@@ -19,10 +19,10 @@
 #ifndef ORES_UTILITY_UUID_UUID_V7_GENERATOR_HPP
 #define ORES_UTILITY_UUID_UUID_V7_GENERATOR_HPP
 
-#include <random>
+#include "ores.utility/export.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
-#include "ores.utility/export.hpp"
+#include <random>
 
 namespace ores::utility::uuid {
 
@@ -57,7 +57,8 @@ public:
      * with a high-entropy seed obtained from `std::random_device`. This ensures
      * that the random components of the generated UUIDs are unpredictable.
      */
-    uuid_v7_generator() : random_engine(std::random_device{}()) {}
+    uuid_v7_generator()
+        : random_engine(std::random_device{}()) {}
 
     /**
      * @brief Generates a new UUID v7.

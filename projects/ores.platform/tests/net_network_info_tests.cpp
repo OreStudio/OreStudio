@@ -17,10 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.platform/net/network_info.hpp"
-
-#include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.platform/net/network_info.hpp"
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 
@@ -112,9 +111,8 @@ TEST_CASE("derive_machine_id_is_hex", tags) {
     REQUIRE(machine_id.size() == 16);
 
     for (const char c : machine_id) {
-        const bool is_hex = (c >= '0' && c <= '9') ||
-                            (c >= 'a' && c <= 'f') ||
-                            (c >= 'A' && c <= 'F');
+        const bool is_hex =
+            (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
         REQUIRE(is_hex);
     }
 }

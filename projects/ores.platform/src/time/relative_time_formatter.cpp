@@ -18,7 +18,6 @@
  *
  */
 #include "ores.platform/time/relative_time_formatter.hpp"
-
 #include <cmath>
 #include <stdexcept>
 
@@ -30,9 +29,9 @@ constexpr long long seconds_per_minute = 60;
 constexpr long long seconds_per_hour = 3600;
 constexpr long long seconds_per_day = 86400;
 constexpr long long seconds_per_week = 604800;
-constexpr long long seconds_per_month = 2629746; // Average month (30.44 days)
+constexpr long long seconds_per_month = 2629746;   // Average month (30.44 days)
 constexpr long long seconds_per_quarter = 7889238; // 3 months
-constexpr long long seconds_per_year = 31556952; // Average year (365.24 days)
+constexpr long long seconds_per_year = 31556952;   // Average year (365.24 days)
 
 struct time_unit_boundary {
     long long threshold;
@@ -51,24 +50,24 @@ constexpr time_unit_boundary boundaries[] = {
 
 std::string unit_to_string(time_unit unit, bool plural) {
     switch (unit) {
-    case time_unit::second:
-        return plural ? "seconds" : "second";
-    case time_unit::minute:
-        return plural ? "minutes" : "minute";
-    case time_unit::hour:
-        return plural ? "hours" : "hour";
-    case time_unit::day:
-        return plural ? "days" : "day";
-    case time_unit::week:
-        return plural ? "weeks" : "week";
-    case time_unit::month:
-        return plural ? "months" : "month";
-    case time_unit::quarter:
-        return plural ? "quarters" : "quarter";
-    case time_unit::year:
-        return plural ? "years" : "year";
-    default:
-        throw std::invalid_argument("Unknown time_unit value");
+        case time_unit::second:
+            return plural ? "seconds" : "second";
+        case time_unit::minute:
+            return plural ? "minutes" : "minute";
+        case time_unit::hour:
+            return plural ? "hours" : "hour";
+        case time_unit::day:
+            return plural ? "days" : "day";
+        case time_unit::week:
+            return plural ? "weeks" : "week";
+        case time_unit::month:
+            return plural ? "months" : "month";
+        case time_unit::quarter:
+            return plural ? "quarters" : "quarter";
+        case time_unit::year:
+            return plural ? "years" : "year";
+        default:
+            throw std::invalid_argument("Unknown time_unit value");
     }
 }
 
@@ -89,64 +88,64 @@ std::string format_automatic(long long value, time_unit unit) {
     // Handle special cases for automatic style
     if (value == 0) {
         switch (unit) {
-        case time_unit::second:
-        case time_unit::minute:
-            return "now";
-        case time_unit::hour:
-            return "this hour";
-        case time_unit::day:
-            return "today";
-        case time_unit::week:
-            return "this week";
-        case time_unit::month:
-            return "this month";
-        case time_unit::quarter:
-            return "this quarter";
-        case time_unit::year:
-            return "this year";
+            case time_unit::second:
+            case time_unit::minute:
+                return "now";
+            case time_unit::hour:
+                return "this hour";
+            case time_unit::day:
+                return "today";
+            case time_unit::week:
+                return "this week";
+            case time_unit::month:
+                return "this month";
+            case time_unit::quarter:
+                return "this quarter";
+            case time_unit::year:
+                return "this year";
         }
     }
 
     // Handle -1 and +1 special cases
     if (value == -1) {
         switch (unit) {
-        case time_unit::second:
-            return "1 second ago";
-        case time_unit::minute:
-            return "1 minute ago";
-        case time_unit::hour:
-            return "1 hour ago";
-        case time_unit::day:
-            return "yesterday";
-        case time_unit::week:
-            return "last week";
-        case time_unit::month:
-            return "last month";
-        case time_unit::quarter:
-            return "last quarter";
-        case time_unit::year:
-            return "last year";
+            case time_unit::second:
+                return "1 second ago";
+            case time_unit::minute:
+                return "1 minute ago";
+            case time_unit::hour:
+                return "1 hour ago";
+            case time_unit::day:
+                return "yesterday";
+            case time_unit::week:
+                return "last week";
+            case time_unit::month:
+                return "last month";
+            case time_unit::quarter:
+                return "last quarter";
+            case time_unit::year:
+                return "last year";
         }
     }
 
     if (value == 1) {
         switch (unit) {
-        case time_unit::second:
-            return "in 1 second";
-        case time_unit::minute:
-            return "in 1 minute";
-        case time_unit::hour:
-            return "in 1 hour";
-        case time_unit::day:
-            return "tomorrow";
-        case time_unit::week:
-            return "next week";
-        case time_unit::month:
-            return "next month";
-        case time_unit::quarter:
-            return "next quarter";
-        case time_unit::year:
-            return "next year";
+            case time_unit::second:
+                return "in 1 second";
+            case time_unit::minute:
+                return "in 1 minute";
+            case time_unit::hour:
+                return "in 1 hour";
+            case time_unit::day:
+                return "tomorrow";
+            case time_unit::week:
+                return "next week";
+            case time_unit::month:
+                return "next month";
+            case time_unit::quarter:
+                return "next quarter";
+            case time_unit::year:
+                return "next year";
         }
     }
 
@@ -159,14 +158,13 @@ std::string format_automatic(long long value, time_unit unit) {
 relative_time_formatter::relative_time_formatter(numeric_style style)
     : style_(style) {}
 
-std::string relative_time_formatter::format(
-    const std::chrono::system_clock::time_point& tp) const {
+std::string relative_time_formatter::format(const std::chrono::system_clock::time_point& tp) const {
     return format(tp, std::chrono::system_clock::now());
 }
 
-std::string relative_time_formatter::format(
-    const std::chrono::system_clock::time_point& tp,
-    const std::chrono::system_clock::time_point& reference) const {
+std::string
+relative_time_formatter::format(const std::chrono::system_clock::time_point& tp,
+                                const std::chrono::system_clock::time_point& reference) const {
     using namespace std::chrono;
 
     const auto diff = tp - reference;

@@ -20,9 +20,9 @@
 #ifndef ORES_UTILITY_STRING_SHORT_CODE_GENERATOR_HPP
 #define ORES_UTILITY_STRING_SHORT_CODE_GENERATOR_HPP
 
+#include "ores.utility/export.hpp"
 #include <string>
 #include <unordered_set>
-#include "ores.utility/export.hpp"
 
 namespace ores::utility::string {
 
@@ -55,8 +55,8 @@ ORES_UTILITY_EXPORT std::string generate_short_code(const std::string& name);
  * If the base code already exists in @p used_codes, appends 2, 3, ... until
  * unique. Inserts the final code into @p used_codes.
  */
-ORES_UTILITY_EXPORT std::string generate_unique_short_code(const std::string& name,
-    std::unordered_set<std::string>& used_codes);
+ORES_UTILITY_EXPORT std::string
+generate_unique_short_code(const std::string& name, std::unordered_set<std::string>& used_codes);
 
 }
 

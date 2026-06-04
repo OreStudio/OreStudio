@@ -20,17 +20,18 @@
 #ifndef ORES_EVENTING_DOMAIN_ENTITY_CHANGE_EVENT_TABLE_IO_HPP
 #define ORES_EVENTING_DOMAIN_ENTITY_CHANGE_EVENT_TABLE_IO_HPP
 
-#include <iosfwd>
-#include <vector>
 #include "ores.eventing/domain/entity_change_event.hpp"
 #include "ores.eventing/export.hpp"
+#include <iosfwd>
+#include <vector>
 
 namespace ores::eventing::domain {
 
 /**
  * @brief Dumps the entity change event objects to a stream in table format.
  */
-ORES_EVENTING_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<entity_change_event>& v);
+ORES_EVENTING_EXPORT std::ostream& operator<<(std::ostream& s,
+                                              const std::vector<entity_change_event>& v);
 
 }
 

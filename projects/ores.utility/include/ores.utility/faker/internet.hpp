@@ -20,9 +20,9 @@
 #ifndef ORES_UTILITY_FAKER_INTERNET_HPP
 #define ORES_UTILITY_FAKER_INTERNET_HPP
 
-#include <string>
-#include <boost/asio/ip/address.hpp>
 #include "ores.utility/export.hpp"
+#include <boost/asio/ip/address.hpp>
+#include <string>
 
 namespace ores::utility::faker {
 

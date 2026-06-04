@@ -20,9 +20,9 @@
 #ifndef ORES_UTILITY_FAKER_DATETIME_HPP
 #define ORES_UTILITY_FAKER_DATETIME_HPP
 
+#include "ores.utility/export.hpp"
 #include <chrono>
 #include <string>
-#include "ores.utility/export.hpp"
 
 namespace ores::utility::faker {
 
@@ -59,8 +59,8 @@ public:
      * @param sec The second (0-59, default 0)
      * @return A time_point representing the specified UTC datetime.
      */
-    static std::chrono::system_clock::time_point make_timepoint(
-        int year, int month, int day, int hour = 0, int min = 0, int sec = 0);
+    static std::chrono::system_clock::time_point
+    make_timepoint(int year, int month, int day, int hour = 0, int min = 0, int sec = 0);
 };
 
 }

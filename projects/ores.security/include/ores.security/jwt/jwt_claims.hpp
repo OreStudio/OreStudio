@@ -20,10 +20,10 @@
 #ifndef ORES_SECURITY_JWT_JWT_CLAIMS_HPP
 #define ORES_SECURITY_JWT_JWT_CLAIMS_HPP
 
-#include <string>
-#include <vector>
 #include <chrono>
 #include <optional>
+#include <string>
+#include <vector>
 
 namespace ores::security::jwt {
 

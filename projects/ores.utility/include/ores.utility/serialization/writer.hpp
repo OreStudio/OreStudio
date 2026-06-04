@@ -20,12 +20,12 @@
 #ifndef ORES_UTILITY_SERIALIZATION_WRITER_HPP
 #define ORES_UTILITY_SERIALIZATION_WRITER_HPP
 
-#include <vector>
-#include <string>
-#include <cstdint>
-#include <boost/uuid/uuid.hpp>
-#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.utility/export.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <cstdint>
+#include <string>
+#include <vector>
 
 namespace ores::utility::serialization {
 
@@ -84,16 +84,14 @@ public:
     /**
      * @brief Write a UUID (16 bytes).
      */
-    static void write_uuid(std::vector<std::byte>& buffer,
-        const boost::uuids::uuid& uuid);
+    static void write_uuid(std::vector<std::byte>& buffer, const boost::uuids::uuid& uuid);
 
     /**
      * @brief Write a tenant_id (16 bytes UUID).
      *
      * Writes the underlying UUID bytes of the tenant_id.
      */
-    static void write_tenant_id(std::vector<std::byte>& buffer,
-        const uuid::tenant_id& tenant_id);
+    static void write_tenant_id(std::vector<std::byte>& buffer, const uuid::tenant_id& tenant_id);
 };
 
 }

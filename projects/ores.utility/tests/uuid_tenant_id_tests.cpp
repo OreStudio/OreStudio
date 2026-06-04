@@ -17,12 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.utility/uuid/tenant_id.hpp"
-
-#include <catch2/catch_test_macros.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/uuid/uuid_generators.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 

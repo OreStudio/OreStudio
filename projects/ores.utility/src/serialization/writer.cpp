@@ -18,7 +18,6 @@
  *
  */
 #include "ores.utility/serialization/writer.hpp"
-
 #include <cstring>
 
 namespace ores::utility::serialization {
@@ -79,8 +78,7 @@ void writer::write_string32(std::vector<std::byte>& buffer, const std::string& s
     std::memcpy(buffer.data() + offset, str.data(), len);
 }
 
-void writer::write_uuid(std::vector<std::byte>& buffer,
-    const boost::uuids::uuid& uuid) {
+void writer::write_uuid(std::vector<std::byte>& buffer, const boost::uuids::uuid& uuid) {
     auto offset = buffer.size();
     buffer.resize(offset + uuid.size());
     std::memcpy(buffer.data() + offset, uuid.data(), uuid.size());
@@ -90,8 +88,7 @@ void writer::write_bool(std::vector<std::byte>& buffer, bool value) {
     buffer.push_back(std::byte{static_cast<uint8_t>(value)});
 }
 
-void writer::write_tenant_id(std::vector<std::byte>& buffer,
-    const uuid::tenant_id& tenant_id) {
+void writer::write_tenant_id(std::vector<std::byte>& buffer, const uuid::tenant_id& tenant_id) {
     write_uuid(buffer, tenant_id.to_uuid());
 }
 

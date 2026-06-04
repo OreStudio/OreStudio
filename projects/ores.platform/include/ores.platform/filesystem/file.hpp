@@ -20,15 +20,15 @@
 #ifndef ORES_PLATFORM_FILESYSTEM_FILE_HPP
 #define ORES_PLATFORM_FILESYSTEM_FILE_HPP
 
-#include <cstdio>
-#include <set>
-#include <list>
-#include <string>
-#include <fstream>
-#include <sstream>
-#include <filesystem>
-#include "ores.platform/filesystem/io_error.hpp"
 #include "ores.platform/export.hpp"
+#include "ores.platform/filesystem/io_error.hpp"
+#include <cstdio>
+#include <filesystem>
+#include <fstream>
+#include <list>
+#include <set>
+#include <sstream>
+#include <string>
 
 namespace ores::platform::filesystem {
 
@@ -47,13 +47,12 @@ public:
     /**
      * @brief Writes the string to a file located at path.
      */
-    static void write_content(const std::filesystem::path& path,
-        const std::string& content);
+    static void write_content(const std::filesystem::path& path, const std::string& content);
 
     /**
      * @brief Dump the object as a stream to the file.
      */
-    template<typename Ioable>
+    template <typename Ioable>
     static void write(const std::filesystem::path& path, const Ioable& target) {
         try {
             std::ofstream os(path);
@@ -61,8 +60,8 @@ public:
             os << target;
         } catch (const std::exception& e) {
             std::ostringstream s;
-            s << "An error occurred whilst trying to write a file. Path: '"
-              << path.generic_string() << "'. Error: " << e.what();
+            s << "An error occurred whilst trying to write a file. Path: '" << path.generic_string()
+              << "'. Error: " << e.what();
             throw io_error(s.str());
         }
     }
@@ -75,21 +74,19 @@ public:
      * on once in the set.
      */
     /**@{*/
-    static std::set<std::filesystem::path>
-    find_files(const std::filesystem::path& dir);
+    static std::set<std::filesystem::path> find_files(const std::filesystem::path& dir);
     static std::set<std::filesystem::path>
     find_files(const std::vector<std::filesystem::path>& dirs);
-    static std::set<std::filesystem::path>
-    find_files(const std::list<std::filesystem::path>& dirs);
+    static std::set<std::filesystem::path> find_files(const std::list<std::filesystem::path>& dirs);
     /**@}*/
 
     /**
      * @brief Finds the relative path, by searching recursively upwards
      * from the starting directory.
      */
-    static std::filesystem::path find_file_recursively_upwards(
-        std::filesystem::path starting_directory,
-        const std::filesystem::path& relative_file_path);
+    static std::filesystem::path
+    find_file_recursively_upwards(std::filesystem::path starting_directory,
+                                  const std::filesystem::path& relative_file_path);
 
     /**
      * @brief Deletes all files in the supplied list.

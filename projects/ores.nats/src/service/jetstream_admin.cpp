@@ -18,13 +18,11 @@
  *
  */
 #include "ores.nats/service/jetstream_admin.hpp"
-
 #include <algorithm>
+#include <nats/nats.h>
 #include <stdexcept>
 #include <string>
 #include <vector>
-
-#include <nats/nats.h>
 
 namespace ores::nats::service {
 
@@ -33,15 +31,13 @@ namespace {
 // Convert a nats_time (nanoseconds since epoch) to system_clock::time_point.
 std::chrono::system_clock::time_point from_nats_time(int64_t nanos) {
     using namespace std::chrono;
-    return system_clock::time_point(
-        duration_cast<system_clock::duration>(nanoseconds(nanos)));
+    return system_clock::time_point(duration_cast<system_clock::duration>(nanoseconds(nanos)));
 }
 
 // Throw a descriptive runtime_error if status is not NATS_OK.
 void check(natsStatus s, const char* context) {
     if (s != NATS_OK)
-        throw std::runtime_error(
-            std::string(context) + ": " + natsStatus_GetText(s));
+        throw std::runtime_error(std::string(context) + ": " + natsStatus_GetText(s));
 }
 
 domain::stream_info fill_stream_info(jsStreamInfo* info) {
@@ -58,17 +54,17 @@ domain::stream_info fill_stream_info(jsStreamInfo* info) {
         }
     }
 
-    si.message_count  = info->State.Msgs;
-    si.byte_count     = info->State.Bytes;
+    si.message_count = info->State.Msgs;
+    si.byte_count = info->State.Bytes;
     si.consumer_count = static_cast<std::uint64_t>(info->State.Consumers);
-    si.first_seq      = info->State.FirstSeq;
-    si.last_seq       = info->State.LastSeq;
-    si.created_at     = from_nats_time(info->Created);
+    si.first_seq = info->State.FirstSeq;
+    si.last_seq = info->State.LastSeq;
+    si.created_at = from_nats_time(info->Created);
 
     if (info->State.FirstSeq > 0)
         si.first_message_at = from_nats_time(info->State.FirstTime);
     if (info->State.LastSeq > 0)
-        si.last_message_at  = from_nats_time(info->State.LastTime);
+        si.last_message_at = from_nats_time(info->State.LastTime);
 
     return si;
 }
@@ -80,11 +76,11 @@ domain::consumer_info fill_consumer_info(jsConsumerInfo* info) {
     if (const char* n = info->Name)
         ci.name = n;
 
-    ci.num_pending      = info->NumPending;
-    ci.num_ack_pending  = static_cast<std::uint64_t>(info->NumAckPending);
-    ci.num_redelivered  = static_cast<std::uint64_t>(info->NumRedelivered);
-    ci.delivered_count  = info->Delivered.Consumer;
-    ci.created_at       = from_nats_time(info->Created);
+    ci.num_pending = info->NumPending;
+    ci.num_ack_pending = static_cast<std::uint64_t>(info->NumAckPending);
+    ci.num_redelivered = static_cast<std::uint64_t>(info->NumRedelivered);
+    ci.delivered_count = info->Delivered.Consumer;
+    ci.created_at = from_nats_time(info->Created);
     return ci;
 }
 
@@ -98,8 +94,8 @@ jetstream_admin::jetstream_admin(void* js_ctx) noexcept
 // ---------------------------------------------------------------------------
 
 void jetstream_admin::ensure_stream(std::string_view name,
-    std::vector<std::string> subjects,
-    int max_age_days) {
+                                    std::vector<std::string> subjects,
+                                    int max_age_days) {
 
     auto* js = static_cast<jsCtx*>(js_ctx_);
     const std::string name_str(name);
@@ -111,15 +107,15 @@ void jetstream_admin::ensure_stream(std::string_view name,
     // Check whether the stream already exists.
     jsStreamInfo* info = nullptr;
     natsStatus s = js_GetStreamInfo(&info, js, name_str.c_str(), &opts, &jerr);
-    if (info) jsStreamInfo_Destroy(info);
+    if (info)
+        jsStreamInfo_Destroy(info);
 
     if (s == NATS_OK)
         return; // stream exists — nothing to do
 
     if (s != NATS_NOT_FOUND && jerr != JSStreamNotFoundErr)
-        throw std::runtime_error(
-            std::string("ensure_stream '") + name_str
-            + "' info check failed: " + natsStatus_GetText(s));
+        throw std::runtime_error(std::string("ensure_stream '") + name_str +
+                                 "' info check failed: " + natsStatus_GetText(s));
 
     // Stream does not exist — create it.
     std::vector<const char*> subject_ptrs;
@@ -127,21 +123,21 @@ void jetstream_admin::ensure_stream(std::string_view name,
     for (const auto& sub : subjects)
         subject_ptrs.push_back(sub.c_str());
 
-    const int64_t max_age_ns =
-        static_cast<int64_t>(max_age_days) * 24LL * 3600LL * 1'000'000'000LL;
+    const int64_t max_age_ns = static_cast<int64_t>(max_age_days) * 24LL * 3600LL * 1'000'000'000LL;
 
     jsStreamConfig cfg;
     jsStreamConfig_Init(&cfg);
-    cfg.Name        = name_str.c_str();
-    cfg.Subjects    = subject_ptrs.data();
+    cfg.Name = name_str.c_str();
+    cfg.Subjects = subject_ptrs.data();
     cfg.SubjectsLen = static_cast<int>(subject_ptrs.size());
-    cfg.Storage     = js_FileStorage;
-    cfg.MaxAge      = max_age_ns;
+    cfg.Storage = js_FileStorage;
+    cfg.MaxAge = max_age_ns;
 
     info = nullptr;
     jerr = jsErrCode(0);
     s = js_AddStream(&info, js, &cfg, &opts, &jerr);
-    if (info) jsStreamInfo_Destroy(info);
+    if (info)
+        jsStreamInfo_Destroy(info);
 
     if (s == NATS_OK)
         return; // created
@@ -150,10 +146,9 @@ void jetstream_admin::ensure_stream(std::string_view name,
     if (jerr == JSStreamNameExistErr)
         return;
 
-    throw std::runtime_error(
-        std::string("ensure_stream '") + name_str
-        + "' create failed: " + natsStatus_GetText(s)
-        + " (js err " + std::to_string(static_cast<int>(jerr)) + ")");
+    throw std::runtime_error(std::string("ensure_stream '") + name_str +
+                             "' create failed: " + natsStatus_GetText(s) + " (js err " +
+                             std::to_string(static_cast<int>(jerr)) + ")");
 }
 
 std::vector<domain::stream_info> jetstream_admin::list_streams() {
@@ -185,8 +180,7 @@ domain::stream_info jetstream_admin::get_stream(std::string_view name) {
     jsOptions_Init(&opts);
 
     auto jerr = jsErrCode(0);
-    const natsStatus s = js_GetStreamInfo(
-        &info, js, std::string(name).c_str(), &opts, &jerr);
+    const natsStatus s = js_GetStreamInfo(&info, js, std::string(name).c_str(), &opts, &jerr);
     check(s, "js_GetStreamInfo");
 
     domain::stream_info result = fill_stream_info(info);
@@ -201,8 +195,7 @@ void jetstream_admin::purge_stream(std::string_view name) {
     jsOptions_Init(&opts);
 
     auto jerr = jsErrCode(0);
-    const natsStatus s = js_PurgeStream(
-        js, std::string(name).c_str(), &opts, &jerr);
+    const natsStatus s = js_PurgeStream(js, std::string(name).c_str(), &opts, &jerr);
     check(s, "js_PurgeStream");
 }
 
@@ -210,8 +203,7 @@ void jetstream_admin::purge_stream(std::string_view name) {
 // Consumers
 // ---------------------------------------------------------------------------
 
-std::vector<domain::consumer_info>
-jetstream_admin::list_consumers(std::string_view stream_name) {
+std::vector<domain::consumer_info> jetstream_admin::list_consumers(std::string_view stream_name) {
     auto* js = static_cast<jsCtx*>(js_ctx_);
 
     jsConsumerInfoList* list = nullptr;
@@ -219,8 +211,7 @@ jetstream_admin::list_consumers(std::string_view stream_name) {
     jsOptions_Init(&opts);
 
     auto jerr = jsErrCode(0);
-    const natsStatus s = js_Consumers(
-        &list, js, std::string(stream_name).c_str(), &opts, &jerr);
+    const natsStatus s = js_Consumers(&list, js, std::string(stream_name).c_str(), &opts, &jerr);
     check(s, "js_Consumers");
 
     std::vector<domain::consumer_info> result;
@@ -237,9 +228,8 @@ jetstream_admin::list_consumers(std::string_view stream_name) {
 // Messages
 // ---------------------------------------------------------------------------
 
-domain::stream_message
-jetstream_admin::peek_message(std::string_view stream_name,
-                              std::uint64_t sequence) {
+domain::stream_message jetstream_admin::peek_message(std::string_view stream_name,
+                                                     std::uint64_t sequence) {
     auto* js = static_cast<jsCtx*>(js_ctx_);
 
     natsMsg* msg = nullptr;
@@ -247,14 +237,14 @@ jetstream_admin::peek_message(std::string_view stream_name,
     jsOptions_Init(&opts);
 
     auto jerr = jsErrCode(0);
-    const natsStatus s = js_GetMsg(
-        &msg, js, std::string(stream_name).c_str(), sequence, &opts, &jerr);
+    const natsStatus s =
+        js_GetMsg(&msg, js, std::string(stream_name).c_str(), sequence, &opts, &jerr);
     check(s, "js_GetMsg");
 
     domain::stream_message result;
     if (const char* subj = natsMsg_GetSubject(msg))
         result.subject = subj;
-    result.sequence  = sequence;
+    result.sequence = sequence;
     result.timestamp = from_nats_time(natsMsg_GetTime(msg));
 
     const int len = natsMsg_GetDataLength(msg);
@@ -267,9 +257,8 @@ jetstream_admin::peek_message(std::string_view stream_name,
     return result;
 }
 
-domain::stream_message
-jetstream_admin::peek_last_message(std::string_view stream_name,
-                                   std::string_view subject) {
+domain::stream_message jetstream_admin::peek_last_message(std::string_view stream_name,
+                                                          std::string_view subject) {
     auto* js = static_cast<jsCtx*>(js_ctx_);
 
     natsMsg* msg = nullptr;
@@ -278,16 +267,13 @@ jetstream_admin::peek_last_message(std::string_view stream_name,
 
     auto jerr = jsErrCode(0);
     const natsStatus s = js_GetLastMsg(
-        &msg, js,
-        std::string(stream_name).c_str(),
-        std::string(subject).c_str(),
-        &opts, &jerr);
+        &msg, js, std::string(stream_name).c_str(), std::string(subject).c_str(), &opts, &jerr);
     check(s, "js_GetLastMsg");
 
     domain::stream_message result;
     if (const char* subj = natsMsg_GetSubject(msg))
         result.subject = subj;
-    result.sequence  = natsMsg_GetSequence(msg);
+    result.sequence = natsMsg_GetSequence(msg);
     result.timestamp = from_nats_time(natsMsg_GetTime(msg));
 
     const int len = natsMsg_GetDataLength(msg);
@@ -300,30 +286,28 @@ jetstream_admin::peek_last_message(std::string_view stream_name,
     return result;
 }
 
-void jetstream_admin::delete_message(std::string_view stream_name,
-                                     std::uint64_t sequence) {
+void jetstream_admin::delete_message(std::string_view stream_name, std::uint64_t sequence) {
     auto* js = static_cast<jsCtx*>(js_ctx_);
 
     jsOptions opts;
     jsOptions_Init(&opts);
 
     auto jerr = jsErrCode(0);
-    const natsStatus s = js_DeleteMsg(
-        js, std::string(stream_name).c_str(), sequence, &opts, &jerr);
+    const natsStatus s = js_DeleteMsg(js, std::string(stream_name).c_str(), sequence, &opts, &jerr);
     check(s, "js_DeleteMsg");
 }
 
-void jetstream_admin::publish(std::string_view subject,
-                              std::string_view payload) {
+void jetstream_admin::publish(std::string_view subject, std::string_view payload) {
     auto* js = static_cast<jsCtx*>(js_ctx_);
 
     auto jerr = jsErrCode(0);
-    const natsStatus s = js_Publish(
-        nullptr, js,
-        std::string(subject).c_str(),
-        payload.data(),
-        static_cast<int>(payload.size()),
-        nullptr, &jerr);
+    const natsStatus s = js_Publish(nullptr,
+                                    js,
+                                    std::string(subject).c_str(),
+                                    payload.data(),
+                                    static_cast<int>(payload.size()),
+                                    nullptr,
+                                    &jerr);
     check(s, "js_Publish");
 }
 

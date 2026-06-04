@@ -20,10 +20,10 @@
 #ifndef ORES_UTILITY_GENERATION_GENERATION_CONTEXT_HPP
 #define ORES_UTILITY_GENERATION_GENERATION_CONTEXT_HPP
 
-#include <memory>
+#include "ores.utility/export.hpp"
 #include "ores.utility/generation/generation_engine.hpp"
 #include "ores.utility/generation/generation_environment.hpp"
-#include "ores.utility/export.hpp"
+#include <memory>
 
 namespace ores::utility::generation {
 
@@ -57,17 +57,27 @@ public:
     /**
      * @brief Returns the generation engine.
      */
-    generation_engine& engine() { return *engine_; }
+    generation_engine& engine() {
+        return *engine_;
+    }
 
     /**
      * @brief Returns the generation environment.
      */
-    const generation_environment& env() const { return *env_; }
+    const generation_environment& env() const {
+        return *env_;
+    }
 
     // Convenience delegations to engine
-    std::uint64_t seed() const { return engine_->seed(); }
-    boost::uuids::uuid generate_uuid() { return engine_->generate_uuid(); }
-    int random_int(int min, int max) { return engine_->random_int(min, max); }
+    std::uint64_t seed() const {
+        return engine_->seed();
+    }
+    boost::uuids::uuid generate_uuid() {
+        return engine_->generate_uuid();
+    }
+    int random_int(int min, int max) {
+        return engine_->random_int(min, max);
+    }
     bool random_bool(double probability = 0.5) {
         return engine_->random_bool(probability);
     }
@@ -78,19 +88,19 @@ public:
         return engine_->alphanumeric(length);
     }
 
-    template<typename T>
+    template <typename T>
     const T& pick(const std::vector<T>& items) {
         return engine_->pick(items);
     }
 
-    template<typename T, std::size_t N>
+    template <typename T, std::size_t N>
     const T& pick(const std::array<T, N>& items) {
         return engine_->pick(items);
     }
 
 private:
     generation_context(std::shared_ptr<generation_engine> engine,
-        std::shared_ptr<const generation_environment> env);
+                       std::shared_ptr<const generation_environment> env);
 
     std::shared_ptr<generation_engine> engine_;
     std::shared_ptr<const generation_environment> env_;

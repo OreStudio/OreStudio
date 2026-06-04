@@ -20,6 +20,12 @@
 #ifndef ORES_NATS_SERVICE_NATS_CLIENT_HPP
 #define ORES_NATS_SERVICE_NATS_CLIENT_HPP
 
+#include "ores.logging/make_logger.hpp"
+#include "ores.nats/config/nats_options.hpp"
+#include "ores.nats/domain/headers.hpp"
+#include "ores.nats/domain/message.hpp"
+#include "ores.nats/export.hpp"
+#include "ores.nats/service/session_expired_error.hpp"
 #include <chrono>
 #include <functional>
 #include <memory>
@@ -28,14 +34,10 @@
 #include <string>
 #include <string_view>
 #include <vector>
-#include "ores.logging/make_logger.hpp"
-#include "ores.nats/config/nats_options.hpp"
-#include "ores.nats/domain/headers.hpp"
-#include "ores.nats/domain/message.hpp"
-#include "ores.nats/service/session_expired_error.hpp"
-#include "ores.nats/export.hpp"
 
-namespace ores::nats::service { class client; }
+namespace ores::nats::service {
+class client;
+}
 
 namespace ores::nats::service {
 
@@ -163,26 +165,27 @@ public:
      *
      * Used for pre-login calls (login itself, JWKS fetch, bootstrap status).
      */
-    [[nodiscard]] message request(std::string_view subject,
-        std::string_view json_body);
+    [[nodiscard]] message request(std::string_view subject, std::string_view json_body);
 
     /**
      * @brief Authenticated synchronous request — string body overload.
      *
      * Convenience for callers that already have the payload as a string.
      */
-    [[nodiscard]] message authenticated_request(std::string_view subject,
-        std::string_view json_body,
-        std::chrono::milliseconds timeout = std::chrono::seconds(30));
+    [[nodiscard]] message
+    authenticated_request(std::string_view subject,
+                          std::string_view json_body,
+                          std::chrono::milliseconds timeout = std::chrono::seconds(30));
 
     /**
      * @brief Authenticated synchronous request — byte-span overload.
      *
      * For callers that work with pre-serialised byte buffers.
      */
-    [[nodiscard]] message authenticated_request(std::string_view subject,
-        std::span<const std::byte> body,
-        std::chrono::milliseconds timeout = std::chrono::seconds(10));
+    [[nodiscard]] message
+    authenticated_request(std::string_view subject,
+                          std::span<const std::byte> body,
+                          std::chrono::milliseconds timeout = std::chrono::seconds(10));
 
     /**
      * @brief Returns a new nats_client that shares this instance's underlying
@@ -244,8 +247,7 @@ public:
      *
      * Thread-safe: the returned value is independent of *this.
      */
-    [[nodiscard]] nats_client with_workspace_resolution(
-        std::vector<std::string> chain) const;
+    [[nodiscard]] nats_client with_workspace_resolution(std::vector<std::string> chain) const;
 
     /**
      * @brief Return the underlying client (interactive path only).
@@ -258,7 +260,8 @@ private:
     [[nodiscard]] client& active_client() const;
 
     [[nodiscard]] message do_authenticated_request(std::string_view subject,
-        std::span<const std::byte> body, std::chrono::milliseconds timeout);
+                                                   std::span<const std::byte> body,
+                                                   std::chrono::milliseconds timeout);
 
     // Interactive path state
     std::shared_ptr<client> owned_client_;

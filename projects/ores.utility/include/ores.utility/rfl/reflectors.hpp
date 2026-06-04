@@ -20,29 +20,29 @@
 #ifndef ORES_UTILITY_RFL_REFLECTORS_HPP
 #define ORES_UTILITY_RFL_REFLECTORS_HPP
 
-#include <string>
-#include <chrono>
-#include <optional>
-#include <sstream>
-#include <cstdint>
-#include <stdexcept>
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/asio/ip/address.hpp>
-#include <rfl.hpp>
 #include "ores.utility/rfl/time_point_parser.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/asio/ip/address.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <chrono>
+#include <cstdint>
+#include <optional>
+#include <rfl.hpp>
+#include <sstream>
+#include <stdexcept>
+#include <string>
 
 // Forward declarations for enum types that need custom reflectors
 // to avoid GCC 15 std::min/max type deduction errors in rfl's
 // internal enum range detection.
 namespace ores::utility::serialization {
-    enum class error_code : std::uint16_t;
+enum class error_code : std::uint16_t;
 }
 namespace ores::comms::messaging {
-    enum class compression_type : std::uint8_t;
-    enum class message_type : std::uint16_t;
+enum class compression_type : std::uint8_t;
+enum class message_type : std::uint16_t;
 }
 
 namespace rfl {
@@ -52,7 +52,7 @@ namespace rfl {
  *
  * Serializes UUID as string representation.
  */
-template<>
+template <>
 struct Reflector<boost::uuids::uuid> {
     using ReflType = std::string;
 
@@ -70,7 +70,7 @@ struct Reflector<boost::uuids::uuid> {
  *
  * Serializes tenant_id as UUID string representation.
  */
-template<>
+template <>
 struct Reflector<ores::utility::uuid::tenant_id> {
     using ReflType = std::string;
 
@@ -93,7 +93,7 @@ struct Reflector<ores::utility::uuid::tenant_id> {
  * Serializes optional UUID as nullable string representation.
  * An empty optional serializes to null, a present value serializes as UUID string.
  */
-template<>
+template <>
 struct Reflector<std::optional<boost::uuids::uuid>> {
     using ReflType = std::optional<std::string>;
 
@@ -117,7 +117,7 @@ struct Reflector<std::optional<boost::uuids::uuid>> {
  *
  * Serializes to and from an ISO 8601 date string ("YYYY-MM-DD").
  */
-template<>
+template <>
 struct Reflector<std::chrono::year_month_day> {
     using ReflType = std::string;
 
@@ -128,8 +128,7 @@ struct Reflector<std::chrono::year_month_day> {
         ss.imbue(std::locale::classic());
         if (!(ss >> y >> sep1 >> m >> sep2 >> d) || sep1 != '-' || sep2 != '-' || !ss.eof())
             throw std::runtime_error("Invalid date format: " + str);
-        auto ymd = std::chrono::year{y} /
-                   std::chrono::month{static_cast<unsigned>(m)} /
+        auto ymd = std::chrono::year{y} / std::chrono::month{static_cast<unsigned>(m)} /
                    std::chrono::day{static_cast<unsigned>(d)};
         if (!ymd.ok())
             throw std::runtime_error("Invalid date value: " + str);
@@ -146,7 +145,7 @@ struct Reflector<std::chrono::year_month_day> {
  *
  * Serializes IP address as string representation (supports both IPv4 and IPv6).
  */
-template<>
+template <>
 struct Reflector<boost::asio::ip::address> {
     using ReflType = std::string;
 
@@ -165,7 +164,7 @@ struct Reflector<boost::asio::ip::address> {
  * Serializes as underlying integer type to avoid GCC 15 compilation errors
  * in rfl's internal enum range detection (std::min/max type mismatch).
  */
-template<>
+template <>
 struct Reflector<ores::comms::messaging::compression_type> {
     using ReflType = std::uint8_t;
 
@@ -189,15 +188,14 @@ struct Reflector<ores::comms::messaging::compression_type> {
  * Serializes as underlying integer type to avoid GCC 15 compilation errors
  * in rfl's internal enum range detection (std::min/max type mismatch).
  */
-template<>
+template <>
 struct Reflector<ores::utility::serialization::error_code> {
     using ReflType = std::uint16_t;
 
     static ores::utility::serialization::error_code to(const ReflType& v) {
         // Valid values: none=0x0000 through payload_incomplete=0x0019
         if (v > 0x0019) {
-            throw std::runtime_error("Invalid value for error_code enum: " +
-                                     std::to_string(v));
+            throw std::runtime_error("Invalid value for error_code enum: " + std::to_string(v));
         }
         return static_cast<ores::utility::serialization::error_code>(v);
     }
@@ -213,7 +211,7 @@ struct Reflector<ores::utility::serialization::error_code> {
  * Serializes as underlying integer type to avoid GCC 15 compilation errors
  * in rfl's internal enum range detection (std::min/max type mismatch).
  */
-template<>
+template <>
 struct Reflector<ores::comms::messaging::message_type> {
     using ReflType = std::uint16_t;
 
@@ -221,8 +219,7 @@ struct Reflector<ores::comms::messaging::message_type> {
         // Valid values: 0x0001 to 0x5FFF (max subsystem range)
         // More specific validation is done at the protocol layer
         if (v == 0 || v > 0x5FFF) {
-            throw std::runtime_error("Invalid value for message_type enum: " +
-                                     std::to_string(v));
+            throw std::runtime_error("Invalid value for message_type enum: " + std::to_string(v));
         }
         return static_cast<ores::comms::messaging::message_type>(v);
     }

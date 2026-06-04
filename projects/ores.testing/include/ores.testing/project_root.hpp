@@ -19,8 +19,8 @@
 #ifndef ORES_TESTING_PROJECT_ROOT_HPP
 #define ORES_TESTING_PROJECT_ROOT_HPP
 
-#include <filesystem>
 #include "ores.testing/export.hpp"
+#include <filesystem>
 
 namespace ores::testing {
 

@@ -22,10 +22,12 @@
 namespace ores::utility::generation {
 
 generation_engine::generation_engine(std::uint64_t seed)
-    : seed_(seed), engine_(seed) {}
+    : seed_(seed)
+    , engine_(seed) {}
 
 generation_engine::generation_engine()
-    : seed_(std::random_device{}()), engine_(seed_) {}
+    : seed_(std::random_device{}())
+    , engine_(seed_) {}
 
 int generation_engine::random_int(int min, int max) {
     std::uniform_int_distribution<int> dist(min, max);
@@ -40,8 +42,7 @@ bool generation_engine::random_bool(double probability) {
 boost::uuids::uuid generation_engine::generate_uuid() {
     boost::uuids::uuid uuid;
     auto now = std::chrono::system_clock::now();
-    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
-        now.time_since_epoch()).count();
+    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
 
     // Set timestamp (48 bits)
     uuid.data[0] = static_cast<uint8_t>((ms >> 40) & 0xFF);
@@ -71,16 +72,14 @@ boost::uuids::uuid generation_engine::generate_uuid() {
     return uuid;
 }
 
-std::chrono::system_clock::time_point
-generation_engine::past_timepoint(int years_back) {
+std::chrono::system_clock::time_point generation_engine::past_timepoint(int years_back) {
     auto now = std::chrono::system_clock::now();
     auto days_back = random_int(1, years_back * 365);
     return now - std::chrono::hours(days_back * 24);
 }
 
 std::string generation_engine::alphanumeric(std::size_t length) {
-    static const char chars[] =
-        "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    static const char chars[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
     std::string result;
     result.reserve(length);
     std::uniform_int_distribution<std::size_t> dist(0, sizeof(chars) - 2);

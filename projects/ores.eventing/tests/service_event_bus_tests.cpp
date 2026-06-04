@@ -18,12 +18,11 @@
  *
  */
 #include "ores.eventing/service/event_bus.hpp"
-
-#include <catch2/catch_test_macros.hpp>
 #include <atomic>
-#include <thread>
+#include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <string>
+#include <thread>
 #include <vector>
 
 namespace {
@@ -101,13 +100,9 @@ TEST_CASE("event_bus_different_event_types", tags) {
     bool a_called = false;
     bool b_called = false;
 
-    auto sub_a = bus.subscribe<test_event_a>([&](const test_event_a&) {
-        a_called = true;
-    });
+    auto sub_a = bus.subscribe<test_event_a>([&](const test_event_a&) { a_called = true; });
 
-    auto sub_b = bus.subscribe<test_event_b>([&](const test_event_b&) {
-        b_called = true;
-    });
+    auto sub_b = bus.subscribe<test_event_b>([&](const test_event_b&) { b_called = true; });
 
     REQUIRE(bus.subscriber_count<test_event_a>() == 1);
     REQUIRE(bus.subscriber_count<test_event_b>() == 1);
@@ -130,9 +125,7 @@ TEST_CASE("event_bus_unsubscribe_on_destruction", tags) {
     int call_count = 0;
 
     {
-        auto sub = bus.subscribe<test_event_a>([&](const test_event_a&) {
-            call_count++;
-        });
+        auto sub = bus.subscribe<test_event_a>([&](const test_event_a&) { call_count++; });
 
         REQUIRE(bus.subscriber_count<test_event_a>() == 1);
 
@@ -152,9 +145,7 @@ TEST_CASE("event_bus_manual_unsubscribe", tags) {
 
     int call_count = 0;
 
-    auto sub = bus.subscribe<test_event_a>([&](const test_event_a&) {
-        call_count++;
-    });
+    auto sub = bus.subscribe<test_event_a>([&](const test_event_a&) { call_count++; });
 
     REQUIRE(sub.is_active());
     REQUIRE(bus.subscriber_count<test_event_a>() == 1);
@@ -176,9 +167,7 @@ TEST_CASE("event_bus_subscription_move", tags) {
 
     int call_count = 0;
 
-    subscription sub1 = bus.subscribe<test_event_a>([&](const test_event_a&) {
-        call_count++;
-    });
+    subscription sub1 = bus.subscribe<test_event_a>([&](const test_event_a&) { call_count++; });
 
     REQUIRE(sub1.is_active());
     REQUIRE(bus.subscriber_count<test_event_a>() == 1);
@@ -212,9 +201,7 @@ TEST_CASE("event_bus_empty_event", tags) {
 
     bool called = false;
 
-    auto sub = bus.subscribe<test_event_empty>([&](const test_event_empty&) {
-        called = true;
-    });
+    auto sub = bus.subscribe<test_event_empty>([&](const test_event_empty&) { called = true; });
 
     bus.publish(test_event_empty{});
 
@@ -231,9 +218,7 @@ TEST_CASE("event_bus_handler_exception_does_not_break_other_handlers", tags) {
         throw std::runtime_error("handler 1 throws");
     });
 
-    auto sub2 = bus.subscribe<test_event_a>([&](const test_event_a&) {
-        call_count++;
-    });
+    auto sub2 = bus.subscribe<test_event_a>([&](const test_event_a&) { call_count++; });
 
     // Publishing should not throw, and second handler should still be called
     REQUIRE_NOTHROW(bus.publish(test_event_a{1, "test"}));
@@ -248,9 +233,8 @@ TEST_CASE("event_bus_thread_safety", tags) {
     constexpr int events_per_thread = 100;
 
     // Create a subscriber that counts events
-    auto sub = bus.subscribe<test_event_a>([&](const test_event_a& e) {
-        total_received += e.value;
-    });
+    auto sub =
+        bus.subscribe<test_event_a>([&](const test_event_a& e) { total_received += e.value; });
 
     // Launch multiple publisher threads
     std::vector<std::thread> threads;

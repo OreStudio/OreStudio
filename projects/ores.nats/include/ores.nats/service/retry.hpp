@@ -20,14 +20,14 @@
 #ifndef ORES_NATS_SERVICE_RETRY_HPP
 #define ORES_NATS_SERVICE_RETRY_HPP
 
-#include <chrono>
-#include <string_view>
+#include "ores.logging/make_logger.hpp"
 #include <boost/asio/awaitable.hpp>
-#include <boost/system/system_error.hpp>
 #include <boost/asio/steady_timer.hpp>
 #include <boost/asio/this_coro.hpp>
 #include <boost/asio/use_awaitable.hpp>
-#include "ores.logging/make_logger.hpp"
+#include <boost/system/system_error.hpp>
+#include <chrono>
+#include <string_view>
 
 namespace ores::nats::service {
 
@@ -44,13 +44,13 @@ namespace ores::nats::service {
  * Logs each failure at WARN level and waits before the next attempt.
  * Throws the last exception if max_retries is exhausted.
  */
-template<typename Fn>
+template <typename Fn>
 boost::asio::awaitable<void>
 retry_with_backoff(Fn&& fn,
-    std::string_view operation_name,
-    std::chrono::milliseconds initial_delay = std::chrono::seconds(1),
-    std::chrono::milliseconds max_delay     = std::chrono::seconds(30),
-    int max_retries = -1) {
+                   std::string_view operation_name,
+                   std::chrono::milliseconds initial_delay = std::chrono::seconds(1),
+                   std::chrono::milliseconds max_delay = std::chrono::seconds(30),
+                   int max_retries = -1) {
 
     using namespace ores::logging;
     static const std::string_view logger_name = "ores.nats.service.retry";
@@ -60,7 +60,7 @@ retry_with_backoff(Fn&& fn,
     }();
 
     auto delay = initial_delay;
-    for (int attempt = 0; ; ++attempt) {
+    for (int attempt = 0;; ++attempt) {
         bool failed = false;
         try {
             co_await fn();
@@ -74,8 +74,7 @@ retry_with_backoff(Fn&& fn,
             if (max_retries >= 0 && attempt >= max_retries)
                 throw;
             BOOST_LOG_SEV(lg, warn)
-                << operation_name << " failed (attempt " << (attempt + 1)
-                << "): " << e.what()
+                << operation_name << " failed (attempt " << (attempt + 1) << "): " << e.what()
                 << ". Retrying in " << delay.count() << " ms.";
             failed = true;
         } catch (const std::exception& e) {
@@ -83,8 +82,7 @@ retry_with_backoff(Fn&& fn,
                 throw;
 
             BOOST_LOG_SEV(lg, warn)
-                << operation_name << " failed (attempt " << (attempt + 1)
-                << "): " << e.what()
+                << operation_name << " failed (attempt " << (attempt + 1) << "): " << e.what()
                 << ". Retrying in " << delay.count() << " ms.";
             failed = true;
         }

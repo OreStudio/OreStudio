@@ -18,19 +18,18 @@
  *
  */
 #include "ores.security/crypto/password_hasher.hpp"
-
+#include "ores.platform/environment/environment.hpp"
+#include "ores.utility/convert/base64_converter.hpp"
 #include <cmath>
-#include <vector>
-#include <sstream>
-#include <stdexcept>
 #include <cstring>
-#include <openssl/evp.h>
-#include <openssl/rand.h>
-#include <openssl/kdf.h>
 #include <openssl/bio.h>
 #include <openssl/buffer.h>
-#include "ores.utility/convert/base64_converter.hpp"
-#include "ores.platform/environment/environment.hpp"
+#include <openssl/evp.h>
+#include <openssl/kdf.h>
+#include <openssl/rand.h>
+#include <sstream>
+#include <stdexcept>
+#include <vector>
 
 namespace ores::security::crypto {
 
@@ -39,8 +38,7 @@ using ores::utility::converter::base64_converter;
 using ores::platform::environment::environment;
 
 std::uint64_t password_hasher::get_n_parameter() {
-    static const bool use_fast =
-        environment::get_value("ORES_TEST_PASSWORD_FAST").has_value();
+    static const bool use_fast = environment::get_value("ORES_TEST_PASSWORD_FAST").has_value();
     if (use_fast) {
         return TEST_N;
     }
@@ -61,17 +59,23 @@ std::string password_hasher::hash(const std::string& password) {
 
     const auto N = get_n_parameter();
     std::vector<unsigned char> hash(HASH_LEN);
-    if (EVP_PBE_scrypt(password.c_str(), password.length(), salt.data(), SALT_LEN,
-                       N, DEFAULT_r, DEFAULT_p, 0, hash.data(), HASH_LEN) != 1) {
+    if (EVP_PBE_scrypt(password.c_str(),
+                       password.length(),
+                       salt.data(),
+                       SALT_LEN,
+                       N,
+                       DEFAULT_r,
+                       DEFAULT_p,
+                       0,
+                       hash.data(),
+                       HASH_LEN) != 1) {
         BOOST_LOG_SEV(lg(), error) << "scrypt hashing failed";
         throw std::runtime_error("scrypt hashing failed");
     }
 
     std::stringstream ss;
-    ss << "$scrypt$ln=" << std::log2(N) << ",r=" << DEFAULT_r
-       << ",p=" << DEFAULT_p << "$"
-       << base64_converter::convert(salt)
-       << "$" << base64_converter::convert(hash);
+    ss << "$scrypt$ln=" << std::log2(N) << ",r=" << DEFAULT_r << ",p=" << DEFAULT_p << "$"
+       << base64_converter::convert(salt) << "$" << base64_converter::convert(hash);
 
     return ss.str();
 }
@@ -148,8 +152,16 @@ bool password_hasher::verify(const std::string& password, const std::string& has
 
     // Compute hash with provided password and parsed parameters
     std::vector<unsigned char> actual_hash(HASH_LEN);
-    if (EVP_PBE_scrypt(password.c_str(), password.length(), salt.data(), salt.size(),
-                       N, r, p, 0, actual_hash.data(), HASH_LEN) != 1) {
+    if (EVP_PBE_scrypt(password.c_str(),
+                       password.length(),
+                       salt.data(),
+                       salt.size(),
+                       N,
+                       r,
+                       p,
+                       0,
+                       actual_hash.data(),
+                       HASH_LEN) != 1) {
         BOOST_LOG_SEV(lg(), warn) << "scrypt verification failed";
         return false;
     }

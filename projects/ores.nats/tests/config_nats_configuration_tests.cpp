@@ -17,11 +17,10 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.nats/config/nats_configuration.hpp"
-
-#include <catch2/catch_test_macros.hpp>
-#include <boost/program_options.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.nats/config/nats_configuration.hpp"
+#include <boost/program_options.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 
@@ -69,9 +68,8 @@ TEST_CASE("nats_configuration_subject_prefix", tags) {
 TEST_CASE("nats_configuration_url_and_prefix_together", tags) {
     auto lg(ores::logging::make_logger(test_suite));
 
-    const auto result = parse({
-        "--nats-url", "nats://cluster:4222",
-        "--nats-subject-prefix", "ores.staging.node2"});
+    const auto result =
+        parse({"--nats-url", "nats://cluster:4222", "--nats-subject-prefix", "ores.staging.node2"});
 
     CHECK(result.url == "nats://cluster:4222");
     CHECK(result.subject_prefix == "ores.staging.node2");

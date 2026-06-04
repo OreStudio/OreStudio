@@ -29,21 +29,17 @@ const std::string verbose_arg("verbose");
 
 }
 
-boost::program_options::options_description
-common_configuration::make_options_description() {
+boost::program_options::options_description common_configuration::make_options_description() {
     using boost::program_options::options_description;
 
     options_description r("General");
-    r.add_options()
-        ("help,h", "Display usage and exit.")
-        ("version,v", "Output version information and exit.")
-        ("verbose", "Enable verbose output.");
+    r.add_options()("help,h", "Display usage and exit.")(
+        "version,v", "Output version information and exit.")("verbose", "Enable verbose output.");
 
     return r;
 }
 
-common_options common_configuration::
-read_options(const boost::program_options::variables_map& vm) {
+common_options common_configuration::read_options(const boost::program_options::variables_map& vm) {
     common_options r;
     r.verbose = vm.count(verbose_arg) != 0;
     return r;

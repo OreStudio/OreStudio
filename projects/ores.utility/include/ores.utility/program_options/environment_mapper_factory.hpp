@@ -20,9 +20,9 @@
 #ifndef ORES_UTILITY_PROGRAM_OPTIONS_ENVIRONMENT_MAPPER_HPP
 #define ORES_UTILITY_PROGRAM_OPTIONS_ENVIRONMENT_MAPPER_HPP
 
-#include <string>
-#include <functional>
 #include "ores.utility/export.hpp"
+#include <functional>
+#include <string>
 
 namespace ores::utility::program_options {
 
@@ -43,8 +43,7 @@ public:
      *
      * @return Function that maps environment variable names to option names.
      */
-    static std::function<std::string(const std::string&)>
-    make_mapper(const std::string app_name);
+    static std::function<std::string(const std::string&)> make_mapper(const std::string app_name);
 };
 
 }

@@ -20,14 +20,14 @@
 #ifndef ORES_NATS_SERVICE_JETSTREAM_ADMIN_HPP
 #define ORES_NATS_SERVICE_JETSTREAM_ADMIN_HPP
 
-#include <cstdint>
-#include <string>
-#include <string_view>
-#include <vector>
 #include "ores.nats/domain/consumer_info.hpp"
 #include "ores.nats/domain/stream_info.hpp"
 #include "ores.nats/domain/stream_message.hpp"
 #include "ores.nats/export.hpp"
+#include <cstdint>
+#include <string>
+#include <string_view>
+#include <vector>
 
 namespace ores::nats::service {
 
@@ -76,9 +76,8 @@ public:
      *                      including any subject prefix).
      * @param max_age_days  How long messages are retained (default: 7 days).
      */
-    void ensure_stream(std::string_view name,
-        std::vector<std::string> subjects,
-        int max_age_days = 7);
+    void
+    ensure_stream(std::string_view name, std::vector<std::string> subjects, int max_age_days = 7);
 
     /**
      * @brief List all streams on the connected NATS server.
@@ -103,8 +102,7 @@ public:
     /**
      * @brief List all consumers for a stream.
      */
-    [[nodiscard]] std::vector<domain::consumer_info>
-    list_consumers(std::string_view stream_name);
+    [[nodiscard]] std::vector<domain::consumer_info> list_consumers(std::string_view stream_name);
 
     // -------------------------------------------------------------------------
     // Messages
@@ -113,15 +111,14 @@ public:
     /**
      * @brief Peek at a message by sequence number (non-destructive).
      */
-    [[nodiscard]] domain::stream_message
-    peek_message(std::string_view stream_name, std::uint64_t sequence);
+    [[nodiscard]] domain::stream_message peek_message(std::string_view stream_name,
+                                                      std::uint64_t sequence);
 
     /**
      * @brief Peek at the last message published to a subject (non-destructive).
      */
-    [[nodiscard]] domain::stream_message
-    peek_last_message(std::string_view stream_name,
-                      std::string_view subject);
+    [[nodiscard]] domain::stream_message peek_last_message(std::string_view stream_name,
+                                                           std::string_view subject);
 
     /**
      * @brief Delete a message by sequence number.

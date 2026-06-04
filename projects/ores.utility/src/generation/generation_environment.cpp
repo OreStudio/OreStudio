@@ -24,14 +24,12 @@ namespace ores::utility::generation {
 generation_environment::generation_environment(entries initial)
     : entries_(std::move(initial)) {}
 
-generation_environment::generation_environment(
-    std::shared_ptr<const generation_environment> parent,
-    entries overrides)
-    : parent_(std::move(parent)),
-      entries_(std::move(overrides)) {}
+generation_environment::generation_environment(std::shared_ptr<const generation_environment> parent,
+                                               entries overrides)
+    : parent_(std::move(parent))
+    , entries_(std::move(overrides)) {}
 
-std::optional<std::string>
-generation_environment::get(std::string_view key) const {
+std::optional<std::string> generation_environment::get(std::string_view key) const {
     const std::string k(key);
     if (auto it = entries_.find(k); it != entries_.end()) {
         return it->second;
@@ -43,7 +41,7 @@ generation_environment::get(std::string_view key) const {
 }
 
 std::string generation_environment::get_or(std::string_view key,
-    const std::string& default_value) const {
+                                           const std::string& default_value) const {
     auto v = get(key);
     return v.value_or(default_value);
 }

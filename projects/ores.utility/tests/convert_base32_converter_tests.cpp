@@ -17,10 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.utility/convert/base32_converter.hpp"
-
-#include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.utility/convert/base32_converter.hpp"
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 
@@ -92,21 +91,18 @@ TEST_CASE("base32_encode_various_lengths", tags) {
         std::string expected;
     };
 
-    std::vector<test_case> tests = {
-        {.input="f", .expected="MY"},
-        {.input="fo", .expected="MZXQ"},
-        {.input="foo", .expected="MZXW6"},
-        {.input="foob", .expected="MZXW6YQ"},
-        {.input="fooba", .expected="MZXW6YTB"},
-        {.input="foobar", .expected="MZXW6YTBOI"}
-    };
+    std::vector<test_case> tests = {{.input = "f", .expected = "MY"},
+                                    {.input = "fo", .expected = "MZXQ"},
+                                    {.input = "foo", .expected = "MZXW6"},
+                                    {.input = "foob", .expected = "MZXW6YQ"},
+                                    {.input = "fooba", .expected = "MZXW6YTB"},
+                                    {.input = "foobar", .expected = "MZXW6YTBOI"}};
 
     for (const auto& tc : tests) {
         std::vector<uint8_t> input(tc.input.begin(), tc.input.end());
         auto result = base32_converter::convert(input);
 
-        BOOST_LOG_SEV(lg, info) << "Input: '" << tc.input
-                                << "', Expected: " << tc.expected
+        BOOST_LOG_SEV(lg, info) << "Input: '" << tc.input << "', Expected: " << tc.expected
                                 << ", Got: " << result;
 
         CHECK(result == tc.expected);
@@ -147,11 +143,8 @@ TEST_CASE("base32_encode_alphabet_coverage", tags) {
     auto lg(make_logger(test_suite));
 
     // Test input that uses the full alphabet
-    std::vector<uint8_t> input = {
-        0x00, 0x44, 0x32, 0x14, 0xC7, 0x42, 0x54, 0xB6,
-        0x35, 0xCF, 0x84, 0x65, 0x3A, 0x56, 0xD7, 0xC6,
-        0x75, 0xBE, 0x77, 0xDF
-    };
+    std::vector<uint8_t> input = {0x00, 0x44, 0x32, 0x14, 0xC7, 0x42, 0x54, 0xB6, 0x35, 0xCF,
+                                  0x84, 0x65, 0x3A, 0x56, 0xD7, 0xC6, 0x75, 0xBE, 0x77, 0xDF};
 
     auto result = base32_converter::convert(input);
 

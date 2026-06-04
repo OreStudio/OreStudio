@@ -21,10 +21,9 @@
 #include "ores.eventing/domain/entity_change_event_json_io.hpp"
 #include "ores.eventing/domain/entity_change_event_table_io.hpp"
 #include "ores.eventing/generators/entity_change_event_generator.hpp"
-
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <catch2/catch_test_macros.hpp>
 #include <rfl/json.hpp>
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <sstream>
 
 namespace {

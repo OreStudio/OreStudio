@@ -20,9 +20,9 @@
 #ifndef ORES_UTILITY_COMPRESSION_GZIP_HPP
 #define ORES_UTILITY_COMPRESSION_GZIP_HPP
 
+#include "ores.utility/export.hpp"
 #include <span>
 #include <vector>
-#include "ores.utility/export.hpp"
 
 namespace ores::utility::compression {
 

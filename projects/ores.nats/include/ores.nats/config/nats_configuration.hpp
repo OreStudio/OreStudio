@@ -20,9 +20,9 @@
 #ifndef ORES_NATS_CONFIG_NATS_CONFIGURATION_HPP
 #define ORES_NATS_CONFIG_NATS_CONFIGURATION_HPP
 
-#include <boost/program_options.hpp>
 #include "ores.nats/config/nats_options.hpp"
 #include "ores.nats/export.hpp"
+#include <boost/program_options.hpp>
 
 namespace ores::nats::config {
 
@@ -46,8 +46,7 @@ public:
      *
      * @return options_description for NATS configuration.
      */
-    static boost::program_options::options_description
-    make_options_description();
+    static boost::program_options::options_description make_options_description();
 
     /**
      * @brief Reads NATS options from parsed variables map.
@@ -55,8 +54,7 @@ public:
      * @param vm Parsed command-line options.
      * @return nats_options populated from the variables map.
      */
-    static nats_options
-    read_options(const boost::program_options::variables_map& vm);
+    static nats_options read_options(const boost::program_options::variables_map& vm);
 };
 
 }

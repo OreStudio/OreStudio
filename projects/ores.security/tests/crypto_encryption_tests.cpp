@@ -17,11 +17,10 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.logging/make_logger.hpp"
 #include "ores.security/crypto/encryption.hpp"
-
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h>
-#include "ores.logging/make_logger.hpp"
 
 namespace {
 
@@ -81,9 +80,7 @@ TEST_CASE("decrypt_with_wrong_password_throws", tags) {
     const auto encrypted = encryption::encrypt(plaintext, correct_password);
     BOOST_LOG_SEV(lg, debug) << "Encrypted: " << encrypted;
 
-    CHECK_THROWS_AS(
-        encryption::decrypt(encrypted, wrong_password),
-        std::runtime_error);
+    CHECK_THROWS_AS(encryption::decrypt(encrypted, wrong_password), std::runtime_error);
 }
 
 TEST_CASE("verify_password_with_correct_password", tags) {

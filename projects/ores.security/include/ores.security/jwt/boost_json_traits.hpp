@@ -42,11 +42,16 @@ struct boost_json {
 
     static jwt::json::type get_type(const value_type& val) {
         using jwt::json::type;
-        if (val.is_bool()) return type::boolean;
-        if (val.is_int64() || val.is_uint64()) return type::integer;
-        if (val.is_double()) return type::number;
-        if (val.is_string()) return type::string;
-        if (val.is_array()) return type::array;
+        if (val.is_bool())
+            return type::boolean;
+        if (val.is_int64() || val.is_uint64())
+            return type::integer;
+        if (val.is_double())
+            return type::number;
+        if (val.is_string())
+            return type::string;
+        if (val.is_array())
+            return type::array;
         return type::object;
     }
 

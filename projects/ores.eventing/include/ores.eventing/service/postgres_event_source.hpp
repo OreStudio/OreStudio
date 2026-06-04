@@ -20,17 +20,17 @@
 #ifndef ORES_EVENTING_SERVICE_POSTGRES_EVENT_SOURCE_HPP
 #define ORES_EVENTING_SERVICE_POSTGRES_EVENT_SOURCE_HPP
 
-#include <atomic>
-#include <memory>
-#include <cstdint>
-#include <functional>
-#include <unordered_map>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.database/service/postgres_listener_service.hpp"
 #include "ores.eventing/domain/entity_change_event.hpp"
-#include "ores.eventing/service/event_bus.hpp"
 #include "ores.eventing/export.hpp"
+#include "ores.eventing/service/event_bus.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <atomic>
+#include <cstdint>
+#include <functional>
+#include <memory>
+#include <unordered_map>
 
 namespace ores::eventing::service {
 
@@ -61,8 +61,7 @@ class ORES_EVENTING_EXPORT postgres_event_source final {
 private:
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
-        static auto instance = make_logger(
-            "ores.eventing.service.postgres_event_source");
+        static auto instance = make_logger("ores.eventing.service.postgres_event_source");
         return instance;
     }
 
@@ -72,10 +71,9 @@ private:
      * Takes a timestamp, entity_ids, and tenant_id, publishes the
      * appropriate typed event.
      */
-    using publisher_fn = std::function<void(
-        std::chrono::system_clock::time_point,
-        const std::vector<std::string>&,
-        const std::string&)>;
+    using publisher_fn = std::function<void(std::chrono::system_clock::time_point,
+                                            const std::vector<std::string>&,
+                                            const std::string&)>;
 
     struct entity_mapping {
         std::string channel_name;
@@ -107,31 +105,26 @@ public:
      * @param entity_name The fully qualified entity name (e.g., "ores.refdata.currency").
      * @param channel_name The PostgreSQL channel to listen on (e.g., "ores_currencies").
      */
-    template<typename Event>
-    void register_mapping(const std::string& entity_name,
-                          const std::string& channel_name) {
+    template <typename Event>
+    void register_mapping(const std::string& entity_name, const std::string& channel_name) {
         using namespace ores::logging;
-        BOOST_LOG_SEV(lg(), info)
-            << "Registering entity-to-event mapping: entity='" << entity_name
-            << "', channel='" << channel_name << "'";
+        BOOST_LOG_SEV(lg(), info) << "Registering entity-to-event mapping: entity='" << entity_name
+                                  << "', channel='" << channel_name << "'";
 
         entity_mappings_[entity_name] = entity_mapping{
             .channel_name = channel_name,
             .publisher = [this, entity_name](std::chrono::system_clock::time_point ts,
-                                              const std::vector<std::string>& entity_ids,
-                                              const std::string& tenant_id) {
+                                             const std::vector<std::string>& entity_ids,
+                                             const std::string& tenant_id) {
                 using namespace ores::logging;
-                BOOST_LOG_SEV(lg(), info)
-                    << "Publishing domain event for entity: " << entity_name
-                    << " with " << entity_ids.size() << " entity IDs"
-                    << " (tenant: " << tenant_id << ")";
+                BOOST_LOG_SEV(lg(), info) << "Publishing domain event for entity: " << entity_name
+                                          << " with " << entity_ids.size() << " entity IDs"
+                                          << " (tenant: " << tenant_id << ")";
                 bus_.publish(Event{ts, entity_ids, tenant_id});
-            }
-        };
+            }};
 
         listener_.subscribe(channel_name);
-        BOOST_LOG_SEV(lg(), debug)
-            << "Subscribed to PostgreSQL channel: " << channel_name;
+        BOOST_LOG_SEV(lg(), debug) << "Subscribed to PostgreSQL channel: " << channel_name;
     }
 
     /**

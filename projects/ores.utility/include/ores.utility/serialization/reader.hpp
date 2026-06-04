@@ -20,15 +20,15 @@
 #ifndef ORES_UTILITY_SERIALIZATION_READER_HPP
 #define ORES_UTILITY_SERIALIZATION_READER_HPP
 
-#include <span>
-#include <vector>
-#include <string>
-#include <cstdint>
-#include <expected>
-#include <boost/uuid/uuid.hpp>
+#include "ores.utility/export.hpp"
 #include "ores.utility/serialization/error_code.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
-#include "ores.utility/export.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <cstdint>
+#include <expected>
+#include <span>
+#include <string>
+#include <vector>
 
 namespace ores::utility::serialization {
 
@@ -52,20 +52,17 @@ public:
     /**
      * @brief Read a single byte.
      */
-    static std::expected<std::uint8_t, error_code>
-    read_uint8(std::span<const std::byte>& data);
+    static std::expected<std::uint8_t, error_code> read_uint8(std::span<const std::byte>& data);
 
     /**
      * @brief Read a 16-bit integer in network byte order.
      */
-    static std::expected<std::uint16_t, error_code>
-    read_uint16(std::span<const std::byte>& data);
+    static std::expected<std::uint16_t, error_code> read_uint16(std::span<const std::byte>& data);
 
     /**
      * @brief Read a 32-bit integer in network byte order.
      */
-    static std::expected<std::uint32_t, error_code>
-    read_uint32(std::span<const std::byte>& data);
+    static std::expected<std::uint32_t, error_code> read_uint32(std::span<const std::byte>& data);
 
     /**
      * @brief Read a 32-bit count with validation against maximum.
@@ -78,36 +75,31 @@ public:
      * @return The count value, or error_code on failure.
      */
     static std::expected<std::uint32_t, error_code>
-    read_count(std::span<const std::byte>& data,
-               std::uint32_t max_count = MAX_ELEMENT_COUNT);
+    read_count(std::span<const std::byte>& data, std::uint32_t max_count = MAX_ELEMENT_COUNT);
 
     /**
      * @brief Read a signed 64-bit integer in network byte order.
      */
-    static std::expected<std::int64_t, error_code>
-    read_int64(std::span<const std::byte>& data);
+    static std::expected<std::int64_t, error_code> read_int64(std::span<const std::byte>& data);
 
     /**
      * @brief Read an unsigned 64-bit integer in network byte order.
      */
-    static std::expected<std::uint64_t, error_code>
-    read_uint64(std::span<const std::byte>& data);
+    static std::expected<std::uint64_t, error_code> read_uint64(std::span<const std::byte>& data);
 
     /**
      * @brief Read a string with 16-bit length prefix.
      *
      * @note Maximum string length is 65535 bytes. For larger strings, use read_string32.
      */
-    static std::expected<std::string, error_code>
-    read_string(std::span<const std::byte>& data);
+    static std::expected<std::string, error_code> read_string(std::span<const std::byte>& data);
 
     /**
      * @brief Read a string with 32-bit length prefix.
      *
      * Use this for strings that may exceed 65535 bytes (e.g., SVG data, large text).
      */
-    static std::expected<std::string, error_code>
-    read_string32(std::span<const std::byte>& data);
+    static std::expected<std::string, error_code> read_string32(std::span<const std::byte>& data);
 
     /**
      * @brief Read a UUID (16 bytes).
@@ -127,8 +119,7 @@ public:
     /**
      * @brief Read a boolean (1 byte).
      */
-    static std::expected<bool, error_code>
-    read_bool(std::span<const std::byte>& data);
+    static std::expected<bool, error_code> read_bool(std::span<const std::byte>& data);
 };
 
 }

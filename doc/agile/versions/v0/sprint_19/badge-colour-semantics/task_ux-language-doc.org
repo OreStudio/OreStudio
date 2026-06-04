@@ -15,7 +15,7 @@
 #+updated: 2026-06-04
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:746A337A-E96D-42E5-BC47-8EB1FCDD6A30][Badge colour semantics: reserve gray for inactive states]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:72E7A7D0-A268-410F-B137-942DC5F16934][Badge colour semantics: reserve gray for inactive states]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -69,15 +69,11 @@ typical entity window looks like, and how the pieces relate.
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:746A337A-E96D-42E5-BC47-8EB1FCDD6A30][Badge colour semantics: reserve gray for inactive states]] |
+| Parent story | [[id:72E7A7D0-A268-410F-B137-942DC5F16934][Badge colour semantics: reserve gray for inactive states]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-06-04                               |
-
-* Acceptance
-
--
 
 * Plan
 

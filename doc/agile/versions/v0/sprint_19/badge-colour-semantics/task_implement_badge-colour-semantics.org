@@ -1,0 +1,81 @@
+:PROPERTIES:
+:ID: 2209A56A-3CBB-43E2-AD4A-188E8098AB81
+:END:
+#+title: Task: Fix gray badge misuses; orange fallback; account detail dialog badges
+#+description: Recolour account_type_service (teal), account_unlocked and state_done (green); replace the gray missing-definition fallback with orange across all badge resolvers; add BadgeLabelUtils and render Online/Locked badges in the account detail dialog.
+#+type: task
+#+level: s1
+#+filetags: :badge-colour-semantics:sprint_19:v0:
+#+owner: marco
+#+branch: feature/badge-colour-semantics
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-04
+#+updated: 2026-06-04
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:72E7A7D0-A268-410F-B137-942DC5F16934][Badge colour semantics: reserve gray for inactive states]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Apply the gray-is-inactive rule across the badge system. Audit findings:
+
+- =account_type_service= shipped gray in PR #1038 — recolour teal =#14b8a6=.
+- =account_unlocked= (positive) and =state_done= (completed) were gray —
+  recolour green =#22c55e=.
+- Every badge resolver fell back to gray when no definition resolves,
+  conflating "definition missing" with "inactive" — introduce
+  =color_constants::badge_fallback= (orange =#f97316=) and use it in the
+  8 MDI-window resolvers, TenantMdiWindow, AccountItemDelegate and
+  DatasetItemDelegate. Semantic grays (No/disabled/Pending/Unsent and the
+  =inactive=/=login_never=/=fsm_draft=/=treatment_raw= definitions) stay.
+- Account detail dialog showed Online/Locked as plain text — add
+  =BadgeLabelUtils= (widget counterpart of the delegate badge painter) and
+  render both as DB-driven badges; new =account_online= code domain reuses
+  =login_online=/=inactive= definitions.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:72E7A7D0-A268-410F-B137-942DC5F16934][Badge colour semantics: reserve gray for inactive states]] |
+| Now          | Implementation done; full build running. |
+| Waiting on   | Nothing.                               |
+| Next         | Build green; commit; PR.               |
+| Last touched | 2026-06-04                               |
+
+* Acceptance
+
+- Recoloured definitions live in =dq_badge_system_populate.sql= with
+  comments stating the rule.
+- =color_constants::badge_fallback= / =badge_fallback_text= defined and
+  used by every fallback site; no =QColor(0x6B, 0x72, 0x80)= fallbacks
+  remain in badge resolvers.
+- Account detail dialog renders Online and Locked as badges via
+  =BadgeLabelUtils= with the badge cache injected through
+  =DetailDialogBase::setBadgeCache=.
+- Full build green.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

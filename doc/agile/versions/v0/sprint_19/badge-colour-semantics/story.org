@@ -1,0 +1,82 @@
+:PROPERTIES:
+:ID: 72E7A7D0-A268-410F-B137-942DC5F16934
+:END:
+#+title: Story: Badge colour semantics: reserve gray for inactive states
+#+description: Establish the badge colour language: gray exclusively means inactive/off/no/negative. Fix gray misuses (account_unlocked, state_done), add an account_type badge domain (user/service/algorithm/llm) so service accounts stop falling back to gray, change the missing-definition fallback to orange, badge the Accounts Type column and detail dialog, and start the UX language documentation linking badges, icons and entity window anatomy.
+#+type: story
+#+level: s2
+#+filetags: :ux:badges:qt:dq:sprint_19:v0:
+#+created: 2026-06-04
+#+updated: 2026-06-04
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Establish and enforce the badge colour language: *gray exclusively means
+inactive, off, "no" or otherwise negative/dormant states*. The Service
+account-type badge (delivered gray by [[id:814D4E79-8EB9-4B2B-8A87-DB72F145044D][Display account type as badge]])
+prompted the rule; an audit found two further violations
+(=account_unlocked=, =state_done=) and a systemic one — the missing-badge-
+definition fallback across all delegates is also gray, making "definition
+missing" indistinguishable from "inactive". Recolour the violations, move
+the fallback to orange (previously unused in the palette), surface badges
+in the account detail dialog, and start the UX language documentation that
+records these rules alongside icons and entity window anatomy.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] |
+| Now           | Implementation task in progress.       |
+| Waiting on    | Nothing.                               |
+| Next          | Build green; then UX language doc task. |
+| Last touched  | 2026-06-04                               |
+
+* Acceptance
+
+- No badge definition in =dq_badge_system_populate.sql= uses gray for a
+  positive or neutral-active state (=account_type_service= → teal,
+  =account_unlocked= → green, =state_done= → green).
+- The unresolved-badge-definition fallback is orange
+  (=color_constants::badge_fallback=, =#f97316=) in every delegate and MDI
+  window badge resolver; gray fallbacks are gone.
+- Semantic grays are untouched (=inactive=, =login_never=, =fsm_draft=,
+  =treatment_raw=, the "No"/disabled badges, "Pending"/"Unsent" result
+  states).
+- Account detail dialog shows Online and Locked as DB-driven badges
+  (=BadgeLabelUtils=), consistent with the list view.
+- UX language doc started per the [[id:81566322-DDC7-46D5-8A36-DEE1557DBF6D][documentation task]].
+- Full build green.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:2209A56A-3CBB-43E2-AD4A-188E8098AB81][Fix gray badge misuses; add account_type badges; orange fallback; detail dialog badges]] | STARTED | 2026-06-04 | | Recolour service/unlocked/done; orange fallback in all badge resolvers; BadgeLabelUtils; account detail dialog badges. |
+| [[id:81566322-DDC7-46D5-8A36-DEE1557DBF6D][Start the UX language documentation: colours, icons, entity window anatomy]] | BACKLOG | | | doc/knowledge/ui/ux_language.org: colour semantics, badge catalogue, icon link, entity window anatomy, links incl. Developer Links. |
+
+* Decisions
+
+- Gray (=#6b7280=) is reserved for inactive/off/no/negative states across
+  the entire UX. Positive ("Unlocked"), completed ("Done") and
+  neutral-classification ("Service") badges must not be gray.
+- The missing-definition fallback must be visually distinct from any
+  semantic state: orange =#f97316=, previously unused in the badge palette.
+  A missing definition is a gap to fix, not an inactive record.
+- =account_type_service= → teal =#14b8a6= (also previously unused),
+  keeping the four account types visually distinct: user blue, service
+  teal, algorithm amber, llm violet.
+- The account detail dialog's boolean Online indicator resolves via a new
+  =account_online= code domain that reuses existing badge definitions
+  (Yes → =login_online= green, No → =inactive= gray — correct semantics).
+
+* Out of scope
+
+- Recolouring semantic grays (they comply with the rule).
+- Wt badge rendering (CSS class hints unchanged).
+- The account type badge wiring itself — delivered by
+  [[id:814D4E79-8EB9-4B2B-8A87-DB72F145044D][Display account type as badge in Qt accounts list]] (PR #1038).

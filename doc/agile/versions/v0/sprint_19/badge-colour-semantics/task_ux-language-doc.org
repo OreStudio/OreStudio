@@ -1,0 +1,102 @@
+:PROPERTIES:
+:ID: 81566322-DDC7-46D5-8A36-DEE1557DBF6D
+:END:
+#+title: Task: Start the UX language documentation: colours, icons, entity window anatomy
+#+description: Create doc/knowledge/ui/ux_language.org as the umbrella UX language knowledge doc: colour semantics (gray reserved for inactive/no/negative; orange = missing badge definition; badge colour catalogue), link the icon guidelines inventory, and document the typical entity window anatomy (MDI list, detail, history dialogs; paging; badges) using the existing screenshots. Link from ui_design_principles, the badge design doc, and the Developer Links page.
+#+type: task
+#+level: s1
+#+filetags: :ux:documentation:knowledge:badge-colour-semantics:sprint_19:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-04
+#+updated: 2026-06-04
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:746A337A-E96D-42E5-BC47-8EB1FCDD6A30][Badge colour semantics: reserve gray for inactive states]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Start the project's UX language documentation: a single umbrella doc that
+states the visual-language rules (colours, icons, window anatomy) and links
+to the existing per-aspect documents. Today the icon inventory lives in
+[[id:2A167638-8B5A-4691-90CB-4A6B55785108][Icon Guidelines]] and badge mechanics in the badge-system design plan, but
+there is no place that documents the /language/: what colours mean, what a
+typical entity window looks like, and how the pieces relate.
+
+* Scope
+
+1. /Create the doc./ =doc/knowledge/ui/ux_language.org=, =#+type: knowledge=,
+   title "UX Language" — sitting alongside =ui_design_principles.org= and
+   =icon_guidelines.org= in =doc/knowledge/ui/=.
+2. /Colour semantics section./ The rules established in this story:
+   - Gray (=#6b7280=) is reserved for inactive, off, "no", never-used or
+     otherwise negative/dormant states. No positive or neutral-active badge
+     may be gray.
+   - Orange (=#f97316=) is the fallback for unresolved badge definitions —
+     a visible "definition missing" signal, never a semantic colour.
+   - A catalogue table of all badge definitions with hex colours and
+     semantics, mirroring =dq_badge_system_populate.sql= (note the populate
+     script is the source of truth; the table documents intent).
+3. /Iconography section./ Link to [[id:2A167638-8B5A-4691-90CB-4A6B55785108][Icon Guidelines]] (which carries the icon
+   inventory); summarise the semantic rules only.
+4. /Entity window anatomy section./ Using the existing screenshots
+   (=tmp/= and =doc/assets/images/=), document the standard windows of a
+   typical entity: MDI list window (toolbar: Reload/Add/Edit/Delete/History;
+   badge columns; "Showing all records (N)" footer; paging controls and
+   page size), detail dialog (form, provenance, badges, change-reason
+   flow), and history dialog. Describe paging behaviour.
+5. /Link it in./
+   - =ui_design_principles.org= → link to UX Language.
+   - Badge design plan doc → note pointing at UX Language for colour rules.
+   - =icon_guidelines.org= → backlink.
+   - [[id:5B271351-399A-4BD7-A096-E5DF1EDAD8F5][Developer Links]] page (=doc/developer.org=) → add a UX Language entry.
+
+* Acceptance
+
+- =doc/knowledge/ui/ux_language.org= exists with the four sections above.
+- Gray and orange rules stated; badge colour catalogue present.
+- Entity window anatomy documented with at least one annotated screenshot
+  per window type, including paging.
+- Links present in ui_design_principles, badge design doc, icon guidelines
+  and the Developer Links page.
+- Site builds cleanly.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:746A337A-E96D-42E5-BC47-8EB1FCDD6A30][Badge colour semantics: reserve gray for inactive states]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-04                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

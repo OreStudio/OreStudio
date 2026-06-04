@@ -104,6 +104,8 @@ Per repository (rounding_type, monetary_nature, currency_market_tier):
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Write log says 'currency asset class' not 'monetary nature' | projects/ores.refdata/core/src/repository/monetary_nature_repository.cpp | Accepted | Fixed in bc07b4ec1; all 11 occurrences in the file corrected, not just the 3 flagged. |
+| 2 | Bulk-write log: same copy-paste | projects/ores.refdata/core/src/repository/monetary_nature_repository.cpp | Accepted | Fixed in bc07b4ec1. |
+| 3 | Delete log: same copy-paste | projects/ores.refdata/core/src/repository/monetary_nature_repository.cpp | Accepted | Fixed in bc07b4ec1. |
 
 * Result

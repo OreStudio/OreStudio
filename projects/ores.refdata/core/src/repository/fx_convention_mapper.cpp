@@ -18,19 +18,17 @@
  *
  */
 #include "ores.refdata.core/repository/fx_convention_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.refdata.api/domain/fx_convention_json_io.hpp" // IWYU pragma: keep.
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::refdata::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::fx_convention
-fx_convention_mapper::map(const fx_convention_entity& v) {
+domain::fx_convention fx_convention_mapper::map(const fx_convention_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::fx_convention r;
@@ -56,8 +54,7 @@ fx_convention_mapper::map(const fx_convention_entity& v) {
     return r;
 }
 
-fx_convention_entity
-fx_convention_mapper::map(const domain::fx_convention& v) {
+fx_convention_entity fx_convention_mapper::map(const domain::fx_convention& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     fx_convention_entity r;
@@ -85,19 +82,13 @@ fx_convention_mapper::map(const domain::fx_convention& v) {
 std::vector<domain::fx_convention>
 fx_convention_mapper::map(const std::vector<fx_convention_entity>& v) {
     return map_vector<fx_convention_entity, domain::fx_convention>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<fx_convention_entity>
 fx_convention_mapper::map(const std::vector<domain::fx_convention>& v) {
     return map_vector<domain::fx_convention, fx_convention_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

@@ -18,7 +18,6 @@
  *
  */
 #include "ores.refdata.api/domain/business_centre_table.hpp"
-
 #include <fort.hpp>
 
 namespace ores::refdata::domain {
@@ -35,10 +34,9 @@ fort::char_table make_business_centre_table() {
 }
 
 void add_business_centre_row(fort::char_table& table, const business_centre& c) {
-    table << c.code << c.version << c.source << c.description
-          << c.coding_scheme_code << c.country_alpha2_code
-          << c.change_reason_code << c.modified_by
-          << c.recorded_at << fort::endr;
+    table << c.code << c.version << c.source << c.description << c.coding_scheme_code
+          << c.country_alpha2_code << c.change_reason_code << c.modified_by << c.recorded_at
+          << fort::endr;
 }
 
 std::string format_table(fort::char_table& table) {

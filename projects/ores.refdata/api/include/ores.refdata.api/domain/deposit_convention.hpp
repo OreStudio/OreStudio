@@ -20,10 +20,10 @@
 #ifndef ORES_REFDATA_DOMAIN_DEPOSIT_CONVENTION_HPP
 #define ORES_REFDATA_DOMAIN_DEPOSIT_CONVENTION_HPP
 
-#include <chrono>
-#include <string>
-#include <optional>
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <chrono>
+#include <optional>
+#include <string>
 
 namespace ores::refdata::domain {
 
@@ -62,7 +62,8 @@ struct deposit_convention final {
     std::string id;
 
     /**
-     * @brief Whether the deposit conventions are derived from an IBOR index. When true, index must be set and the remaining fields are optional.
+     * @brief Whether the deposit conventions are derived from an IBOR index. When true, index must
+     * be set and the remaining fields are optional.
      */
     bool index_based = false;
 

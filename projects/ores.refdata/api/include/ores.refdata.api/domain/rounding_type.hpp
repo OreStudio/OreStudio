@@ -30,7 +30,7 @@ namespace ores::refdata::domain {
  *
  * Reference data table defining valid rounding method classifications.
  * Values match xs:enumeration in ORE's currencyconfig.xsd.
- * 
+ *
  * Rounding types are managed by the system tenant and are used to
  * specify how currency amounts are rounded in financial calculations.
  */

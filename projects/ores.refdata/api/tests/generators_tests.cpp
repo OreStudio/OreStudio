@@ -17,21 +17,20 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.refdata.api/generators/party_generator.hpp"
-#include "ores.refdata.api/generators/counterparty_generator.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/generators/contact_type_generator.hpp"
-#include "ores.refdata.api/generators/party_type_generator.hpp"
-#include "ores.refdata.api/generators/party_status_generator.hpp"
-#include "ores.refdata.api/generators/party_id_scheme_generator.hpp"
-#include "ores.refdata.api/generators/party_identifier_generator.hpp"
+#include "ores.refdata.api/generators/counterparty_contact_information_generator.hpp"
+#include "ores.refdata.api/generators/counterparty_generator.hpp"
 #include "ores.refdata.api/generators/counterparty_identifier_generator.hpp"
 #include "ores.refdata.api/generators/party_contact_information_generator.hpp"
-#include "ores.refdata.api/generators/counterparty_contact_information_generator.hpp"
-
-#include <catch2/catch_test_macros.hpp>
-#include "ores.logging/make_logger.hpp"
+#include "ores.refdata.api/generators/party_generator.hpp"
+#include "ores.refdata.api/generators/party_id_scheme_generator.hpp"
+#include "ores.refdata.api/generators/party_identifier_generator.hpp"
+#include "ores.refdata.api/generators/party_status_generator.hpp"
+#include "ores.refdata.api/generators/party_type_generator.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 

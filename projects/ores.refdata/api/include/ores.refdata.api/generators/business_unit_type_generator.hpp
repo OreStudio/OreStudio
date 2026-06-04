@@ -20,25 +20,24 @@
 #ifndef ORES_REFDATA_CORE_GENERATORS_BUSINESS_UNIT_TYPE_GENERATOR_HPP
 #define ORES_REFDATA_CORE_GENERATORS_BUSINESS_UNIT_TYPE_GENERATOR_HPP
 
-#include <vector>
 #include "ores.refdata.api/domain/business_unit_type.hpp"
 #include "ores.refdata.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include <vector>
 
 namespace ores::refdata::generators {
 
 /**
  * @brief Generates a synthetic business_unit_type.
  */
-ORES_REFDATA_API_EXPORT domain::business_unit_type generate_synthetic_business_unit_type(
-    utility::generation::generation_context& ctx);
+ORES_REFDATA_API_EXPORT domain::business_unit_type
+generate_synthetic_business_unit_type(utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic business_unit_types.
  */
 ORES_REFDATA_API_EXPORT std::vector<domain::business_unit_type>
-generate_synthetic_business_unit_types(std::size_t n,
-    utility::generation::generation_context& ctx);
+generate_synthetic_business_unit_types(std::size_t n, utility::generation::generation_context& ctx);
 
 }
 

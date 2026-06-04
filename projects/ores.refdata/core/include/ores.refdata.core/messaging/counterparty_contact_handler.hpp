@@ -20,24 +20,24 @@
 #ifndef ORES_REFDATA_CORE_MESSAGING_COUNTERPARTY_CONTACT_HANDLER_HPP
 #define ORES_REFDATA_CORE_MESSAGING_COUNTERPARTY_CONTACT_HANDLER_HPP
 
-#include <optional>
-#include <boost/uuid/string_generator.hpp>
+#include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.database/domain/context.hpp"
+#include "ores.refdata.api/messaging/counterparty_contact_information_protocol.hpp"
+#include "ores.refdata.core/service/counterparty_contact_information_service.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include "ores.refdata.api/messaging/counterparty_contact_information_protocol.hpp"
-#include "ores.refdata.core/service/counterparty_contact_information_service.hpp"
+#include <boost/uuid/string_generator.hpp>
+#include <optional>
 
 namespace ores::refdata::messaging {
 
 namespace {
 inline auto& counterparty_contact_handler_lg() {
-    static auto instance = ores::logging::make_logger(
-        "ores.refdata.messaging.counterparty_contact_handler");
+    static auto instance =
+        ores::logging::make_logger("ores.refdata.messaging.counterparty_contact_handler");
     return instance;
 }
 } // namespace
@@ -52,23 +52,23 @@ using namespace ores::logging;
 class counterparty_contact_handler {
 public:
     counterparty_contact_handler(ores::nats::service::client& nats,
-        ores::database::context ctx,
-        std::optional<ores::security::jwt::jwt_authenticator> verifier)
-        : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier)) {}
+                                 ores::database::context ctx,
+                                 std::optional<ores::security::jwt::jwt_authenticator> verifier)
+        : nats_(nats)
+        , ctx_(std::move(ctx))
+        , verifier_(std::move(verifier)) {}
 
     void list(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id =
             log_handler_entry(counterparty_contact_handler_lg(), msg);
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
         }
         const auto& ctx = *ctx_expected;
         service::counterparty_contact_information_service svc(ctx);
-        auto req =
-            decode<get_counterparty_contact_informations_request>(msg);
+        auto req = decode<get_counterparty_contact_informations_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(counterparty_contact_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
@@ -76,27 +76,23 @@ public:
         }
         try {
             boost::uuids::string_generator gen;
-            auto items =
-                svc.list_counterparty_contact_informations_by_counterparty(
-                    gen(req->counterparty_id));
+            auto items = svc.list_counterparty_contact_informations_by_counterparty(
+                gen(req->counterparty_id));
             get_counterparty_contact_informations_response resp;
             resp.contact_informations = std::move(items);
-            BOOST_LOG_SEV(counterparty_contact_handler_lg(), debug)
-                << "Completed " << msg.subject;
+            BOOST_LOG_SEV(counterparty_contact_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, resp);
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(counterparty_contact_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
-            reply(nats_, msg,
-                get_counterparty_contact_informations_response{});
+            reply(nats_, msg, get_counterparty_contact_informations_response{});
         }
     }
 
     void save(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id =
             log_handler_entry(counterparty_contact_handler_lg(), msg);
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -107,8 +103,7 @@ public:
             return;
         }
         service::counterparty_contact_information_service svc(ctx);
-        auto req =
-            decode<save_counterparty_contact_information_request>(msg);
+        auto req = decode<save_counterparty_contact_information_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(counterparty_contact_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
@@ -116,25 +111,22 @@ public:
         }
         try {
             svc.save_counterparty_contact_information(req->data);
-            BOOST_LOG_SEV(counterparty_contact_handler_lg(), debug)
-                << "Completed " << msg.subject;
-            reply(nats_, msg,
-                save_counterparty_contact_information_response{
-                    .success = true});
+            BOOST_LOG_SEV(counterparty_contact_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, save_counterparty_contact_information_response{.success = true});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(counterparty_contact_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
-            reply(nats_, msg,
-                save_counterparty_contact_information_response{
-                    .success = false, .message = e.what()});
+            reply(nats_,
+                  msg,
+                  save_counterparty_contact_information_response{.success = false,
+                                                                 .message = e.what()});
         }
     }
 
     void remove(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id =
             log_handler_entry(counterparty_contact_handler_lg(), msg);
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -145,8 +137,7 @@ public:
             return;
         }
         service::counterparty_contact_information_service svc(ctx);
-        auto req =
-            decode<delete_counterparty_contact_information_request>(msg);
+        auto req = decode<delete_counterparty_contact_information_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(counterparty_contact_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
@@ -156,17 +147,15 @@ public:
             boost::uuids::string_generator gen;
             for (const auto& id_str : req->ids)
                 svc.remove_counterparty_contact_information(gen(id_str));
-            BOOST_LOG_SEV(counterparty_contact_handler_lg(), debug)
-                << "Completed " << msg.subject;
-            reply(nats_, msg,
-                delete_counterparty_contact_information_response{
-                    .success = true});
+            BOOST_LOG_SEV(counterparty_contact_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, delete_counterparty_contact_information_response{.success = true});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(counterparty_contact_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
-            reply(nats_, msg,
-                delete_counterparty_contact_information_response{
-                    .success = false, .message = e.what()});
+            reply(nats_,
+                  msg,
+                  delete_counterparty_contact_information_response{.success = false,
+                                                                   .message = e.what()});
         }
     }
 

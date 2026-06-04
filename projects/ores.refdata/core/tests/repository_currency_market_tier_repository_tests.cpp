@@ -17,19 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.refdata.core/repository/currency_market_tier_repository.hpp"
-
-#include <set>
-#include <catch2/catch_test_macros.hpp>
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
-#include "ores.testing/scoped_database_helper.hpp"
-#include "ores.testing/make_generation_context.hpp"
-#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
-#include "ores.refdata.api/domain/currency_market_tier.hpp" // IWYU pragma: keep.
+#include "ores.refdata.api/domain/currency_market_tier.hpp"         // IWYU pragma: keep.
 #include "ores.refdata.api/domain/currency_market_tier_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/generators/currency_market_tier_generator.hpp"
+#include "ores.refdata.core/repository/currency_market_tier_repository.hpp"
+#include "ores.testing/make_generation_context.hpp"
+#include "ores.testing/scoped_database_helper.hpp"
+#include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
+#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <catch2/catch_test_macros.hpp>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <set>
 
 namespace {
 

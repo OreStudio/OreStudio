@@ -18,14 +18,12 @@
  *
  */
 #include "ores.refdata.api/domain/business_unit_type_table_io.hpp"
-
-#include <ostream>
 #include "ores.refdata.api/domain/business_unit_type_table.hpp"
+#include <ostream>
 
 namespace ores::refdata::domain {
 
-std::ostream& operator<<(std::ostream& s,
-    const std::vector<business_unit_type>& v) {
+std::ostream& operator<<(std::ostream& s, const std::vector<business_unit_type>& v) {
     s << convert_to_table(v);
     return s;
 }

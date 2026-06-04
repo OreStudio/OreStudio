@@ -22,8 +22,8 @@
 
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/business_centre.hpp"
-#include "ores.refdata.core/repository/business_centre_entity.hpp"
 #include "ores.refdata.core/export.hpp"
+#include "ores.refdata.core/repository/business_centre_entity.hpp"
 
 namespace ores::refdata::repository {
 
@@ -32,8 +32,7 @@ namespace ores::refdata::repository {
  */
 class ORES_REFDATA_CORE_EXPORT business_centre_mapper {
 private:
-    inline static std::string_view logger_name =
-        "ores.refdata.repository.business_centre_mapper";
+    inline static std::string_view logger_name = "ores.refdata.repository.business_centre_mapper";
 
     static auto& lg() {
         using namespace ores::logging;
@@ -45,10 +44,8 @@ public:
     static domain::business_centre map(const business_centre_entity& v);
     static business_centre_entity map(const domain::business_centre& v);
 
-    static std::vector<domain::business_centre>
-    map(const std::vector<business_centre_entity>& v);
-    static std::vector<business_centre_entity>
-    map(const std::vector<domain::business_centre>& v);
+    static std::vector<domain::business_centre> map(const std::vector<business_centre_entity>& v);
+    static std::vector<business_centre_entity> map(const std::vector<domain::business_centre>& v);
 };
 
 }

@@ -20,12 +20,12 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_ASSET_CLASS_REPOSITORY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_ASSET_CLASS_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/asset_class_info.hpp"
 #include "ores.refdata.core/export.hpp"
+#include <string>
+#include <vector>
 
 namespace ores::refdata::repository {
 
@@ -34,8 +34,7 @@ namespace ores::refdata::repository {
  */
 class ORES_REFDATA_CORE_EXPORT asset_class_repository {
 private:
-    inline static std::string_view logger_name =
-        "ores.refdata.repository.asset_class_repository";
+    inline static std::string_view logger_name = "ores.refdata.repository.asset_class_repository";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -55,12 +54,11 @@ public:
      * @param limit          Maximum number of rows to return.
      */
     std::vector<domain::asset_class_info> read_latest(context ctx,
-        const std::string& coding_scheme = {},
-        std::uint32_t offset = 0,
-        std::uint32_t limit = 200);
+                                                      const std::string& coding_scheme = {},
+                                                      std::uint32_t offset = 0,
+                                                      std::uint32_t limit = 200);
 
-    std::uint32_t count_latest(context ctx,
-        const std::string& coding_scheme = {});
+    std::uint32_t count_latest(context ctx, const std::string& coding_scheme = {});
 };
 
 }

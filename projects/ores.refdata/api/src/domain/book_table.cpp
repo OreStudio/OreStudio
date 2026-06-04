@@ -18,7 +18,6 @@
  *
  */
 #include "ores.refdata.api/domain/book_table.hpp"
-
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
 
@@ -29,10 +28,12 @@ std::string convert_to_table(const std::vector<book>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Name" << "Party" << "Currency" << "Status" << "Trading Book" << "Modified By" << "Version" << fort::endr;
+    table << fort::header << "Name" << "Party" << "Currency" << "Status" << "Trading Book"
+          << "Modified By" << "Version" << fort::endr;
 
     for (const auto& bk : v) {
-        table << bk.name << boost::uuids::to_string(bk.party_id) << bk.ledger_ccy << bk.book_status << bk.is_trading_book << bk.modified_by << bk.version << fort::endr;
+        table << bk.name << boost::uuids::to_string(bk.party_id) << bk.ledger_ccy << bk.book_status
+              << bk.is_trading_book << bk.modified_by << bk.version << fort::endr;
     }
     return table.to_string();
 }

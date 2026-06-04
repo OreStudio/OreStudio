@@ -20,16 +20,17 @@
 #ifndef ORES_REFDATA_API_DOMAIN_CURRENCY_VERSION_HISTORY_TABLE_HPP
 #define ORES_REFDATA_API_DOMAIN_CURRENCY_VERSION_HISTORY_TABLE_HPP
 
-#include <vector>
 #include "ores.refdata.api/domain/currency_version_history.hpp"
 #include "ores.refdata.api/export.hpp"
+#include <vector>
 
 namespace ores::refdata::domain {
 
 /**
  * @brief Converts currency version history to table format.
  */
-ORES_REFDATA_API_EXPORT std::string convert_to_table(const std::vector<currency_version_history>& v);
+ORES_REFDATA_API_EXPORT std::string
+convert_to_table(const std::vector<currency_version_history>& v);
 
 }
 

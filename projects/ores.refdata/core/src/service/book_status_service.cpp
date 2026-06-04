@@ -18,9 +18,8 @@
  *
  */
 #include "ores.refdata.core/service/book_status_service.hpp"
-
-#include <stdexcept>
 #include "ores.service/messaging/handler_helpers.hpp"
+#include <stdexcept>
 
 using ores::service::messaging::stamp;
 
@@ -36,8 +35,7 @@ std::vector<domain::book_status> book_status_service::list_statuses() {
     return repo_.read_latest(ctx_);
 }
 
-std::optional<domain::book_status>
-book_status_service::find_status(const std::string& code) {
+std::optional<domain::book_status> book_status_service::find_status(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Finding book status: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty()) {
@@ -57,8 +55,7 @@ void book_status_service::save_status(const domain::book_status& status) {
     BOOST_LOG_SEV(lg(), info) << "Saved book status: " << status.code;
 }
 
-void book_status_service::save_statuses(
-    const std::vector<domain::book_status>& statuses) {
+void book_status_service::save_statuses(const std::vector<domain::book_status>& statuses) {
     for (const auto& s : statuses) {
         if (s.code.empty())
             throw std::invalid_argument("Book status code cannot be empty.");
@@ -76,13 +73,11 @@ void book_status_service::remove_status(const std::string& code) {
     BOOST_LOG_SEV(lg(), info) << "Removed book status: " << code;
 }
 
-void book_status_service::remove_statuses(
-    const std::vector<std::string>& codes) {
+void book_status_service::remove_statuses(const std::vector<std::string>& codes) {
     repo_.remove(ctx_, codes);
 }
 
-std::vector<domain::book_status>
-book_status_service::get_status_history(const std::string& code) {
+std::vector<domain::book_status> book_status_service::get_status_history(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for book status: " << code;
     return repo_.read_all(ctx_, code);
 }

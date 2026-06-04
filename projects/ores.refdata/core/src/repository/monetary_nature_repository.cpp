@@ -18,13 +18,12 @@
  *
  */
 #include "ores.refdata.core/repository/monetary_nature_repository.hpp"
-
-#include <sqlgen/postgres.hpp>
-#include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
 #include "ores.refdata.api/domain/monetary_nature_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/monetary_nature_entity.hpp"
 #include "ores.refdata.core/repository/monetary_nature_mapper.hpp"
+#include <sqlgen/postgres.hpp>
 
 namespace ores::refdata::repository {
 
@@ -41,33 +40,31 @@ void monetary_nature_repository::write(context ctx, const domain::monetary_natur
     BOOST_LOG_SEV(lg(), debug) << "Writing monetary nature: " << v.code;
     auto e = monetary_nature_mapper::map(v);
     e.tenant_id = ctx.tenant_id().to_string();
-    execute_write_query(ctx, e,
-        lg(), "Writing monetary nature to database.");
+    execute_write_query(ctx, e, lg(), "Writing monetary nature to database.");
 }
 
-void monetary_nature_repository::write(
-    context ctx, const std::vector<domain::monetary_nature>& v) {
+void monetary_nature_repository::write(context ctx, const std::vector<domain::monetary_nature>& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing monetary natures. Count: " << v.size();
     auto entities = monetary_nature_mapper::map(v);
     const auto tid = ctx.tenant_id().to_string();
     for (auto& e : entities)
         e.tenant_id = tid;
-    execute_write_query(ctx, entities,
-        lg(), "Writing monetary natures to database.");
+    execute_write_query(ctx, entities, lg(), "Writing monetary natures to database.");
 }
 
-std::vector<domain::monetary_nature>
-monetary_nature_repository::read_latest(context ctx) {
+std::vector<domain::monetary_nature> monetary_nature_repository::read_latest(context ctx) {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<monetary_nature_entity>> |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-        order_by("code"_c);
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("code"_c);
 
     return execute_read_query<monetary_nature_entity, domain::monetary_nature>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return monetary_nature_mapper::map(entities); },
-        lg(), "Reading latest monetary natures");
+        lg(),
+        "Reading latest monetary natures");
 }
 
 std::vector<domain::monetary_nature>
@@ -75,46 +72,49 @@ monetary_nature_repository::read_latest(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest monetary nature. code: " << code;
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<monetary_nature_entity>> |
-        where("tenant_id"_c == tid && "code"_c == code &&
-            "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::read<std::vector<monetary_nature_entity>> |
+        where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max.value());
 
     return execute_read_query<monetary_nature_entity, domain::monetary_nature>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return monetary_nature_mapper::map(entities); },
-        lg(), "Reading latest monetary nature by code.");
+        lg(),
+        "Reading latest monetary nature by code.");
 }
 
-std::vector<domain::monetary_nature>
-monetary_nature_repository::read_all(context ctx, const std::string& code) {
+std::vector<domain::monetary_nature> monetary_nature_repository::read_all(context ctx,
+                                                                          const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all monetary nature versions. code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<monetary_nature_entity>> |
-        where("tenant_id"_c == tid && "code"_c == code) |
-        order_by("version"_c.desc());
+                       where("tenant_id"_c == tid && "code"_c == code) |
+                       order_by("version"_c.desc());
 
     return execute_read_query<monetary_nature_entity, domain::monetary_nature>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return monetary_nature_mapper::map(entities); },
-        lg(), "Reading all monetary nature versions by code.");
+        lg(),
+        "Reading all monetary nature versions by code.");
 }
 
 void monetary_nature_repository::remove(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing monetary nature: " << code;
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<monetary_nature_entity> |
-        where("tenant_id"_c == tid && "code"_c == code &&
-            "valid_to"_c == max.value());
+    const auto query =
+        sqlgen::delete_from<monetary_nature_entity> |
+        where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max.value());
 
     execute_delete_query(ctx, query, lg(), "Removing monetary nature from database.");
 }
 
-void monetary_nature_repository::remove(context ctx,
-    const std::vector<std::string>& codes) {
+void monetary_nature_repository::remove(context ctx, const std::vector<std::string>& codes) {
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<monetary_nature_entity> |
-        where("tenant_id"_c == tid && "code"_c.in(codes));
+                       where("tenant_id"_c == tid && "code"_c.in(codes));
     execute_delete_query(ctx, query, lg(), "batch removing monetary_natures");
 }
 

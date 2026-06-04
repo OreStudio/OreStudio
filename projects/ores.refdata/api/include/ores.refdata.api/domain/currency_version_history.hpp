@@ -20,9 +20,9 @@
 #ifndef ORES_REFDATA_API_DOMAIN_CURRENCY_VERSION_HISTORY_HPP
 #define ORES_REFDATA_API_DOMAIN_CURRENCY_VERSION_HISTORY_HPP
 
+#include "ores.refdata.api/domain/currency_version.hpp"
 #include <string>
 #include <vector>
-#include "ores.refdata.api/domain/currency_version.hpp"
 
 namespace ores::refdata::domain {
 

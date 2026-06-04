@@ -20,17 +20,18 @@
 #ifndef ORES_REFDATA_DOMAIN_FX_CONVENTION_TABLE_IO_HPP
 #define ORES_REFDATA_DOMAIN_FX_CONVENTION_TABLE_IO_HPP
 
-#include <iosfwd>
-#include <vector>
 #include "ores.refdata.api/domain/fx_convention.hpp"
 #include "ores.refdata.api/export.hpp"
+#include <iosfwd>
+#include <vector>
 
 namespace ores::refdata::domain {
 
 /**
  * @brief Dumps the fx_convention objects to a stream in table format.
  */
-ORES_REFDATA_API_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<fx_convention>& v);
+ORES_REFDATA_API_EXPORT std::ostream& operator<<(std::ostream& s,
+                                                 const std::vector<fx_convention>& v);
 
 }
 

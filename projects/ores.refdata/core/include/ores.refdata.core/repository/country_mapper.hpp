@@ -22,8 +22,8 @@
 
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/country.hpp"
-#include "ores.refdata.core/repository/country_entity.hpp"
 #include "ores.refdata.core/export.hpp"
+#include "ores.refdata.core/repository/country_entity.hpp"
 
 namespace ores::refdata::repository {
 
@@ -32,8 +32,7 @@ namespace ores::refdata::repository {
  */
 class ORES_REFDATA_CORE_EXPORT country_mapper {
 private:
-    inline static std::string_view logger_name =
-        "ores.refdata.repository.country_mapper";
+    inline static std::string_view logger_name = "ores.refdata.repository.country_mapper";
 
     static auto& lg() {
         using namespace ores::logging;
@@ -45,10 +44,8 @@ public:
     static domain::country map(const country_entity& v);
     static country_entity map(const domain::country& v);
 
-    static std::vector<domain::country>
-    map(const std::vector<country_entity>& v);
-    static std::vector<country_entity>
-    map(const std::vector<domain::country>& v);
+    static std::vector<domain::country> map(const std::vector<country_entity>& v);
+    static std::vector<country_entity> map(const std::vector<domain::country>& v);
 };
 
 }

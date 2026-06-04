@@ -20,14 +20,14 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_PARTY_CONTACT_INFORMATION_REPOSITORY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_PARTY_CONTACT_INFORMATION_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include <sqlgen/postgres.hpp>
-#include <boost/uuid/uuid.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/party_contact_information.hpp"
 #include "ores.refdata.core/export.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::refdata::repository {
 
@@ -58,7 +58,8 @@ public:
     std::vector<domain::party_contact_information> read_latest();
     std::vector<domain::party_contact_information> read_latest(const boost::uuids::uuid& id);
     std::vector<domain::party_contact_information> read_latest_by_code(const std::string& code);
-    std::vector<domain::party_contact_information> read_latest_by_party_id(const boost::uuids::uuid& party_id);
+    std::vector<domain::party_contact_information>
+    read_latest_by_party_id(const boost::uuids::uuid& party_id);
 
     std::vector<domain::party_contact_information> read_all(const boost::uuids::uuid& id);
     void remove(const boost::uuids::uuid& id);

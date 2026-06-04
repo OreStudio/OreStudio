@@ -20,14 +20,14 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_BUSINESS_UNIT_REPOSITORY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_BUSINESS_UNIT_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include <sqlgen/postgres.hpp>
-#include <boost/uuid/uuid.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/business_unit.hpp"
 #include "ores.refdata.core/export.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::refdata::repository {
 
@@ -36,8 +36,7 @@ namespace ores::refdata::repository {
  */
 class ORES_REFDATA_CORE_EXPORT business_unit_repository {
 private:
-    inline static std::string_view logger_name =
-        "ores.refdata.repository.business_unit_repository";
+    inline static std::string_view logger_name = "ores.refdata.repository.business_unit_repository";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;

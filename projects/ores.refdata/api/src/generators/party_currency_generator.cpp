@@ -18,25 +18,22 @@
  *
  */
 #include "ores.refdata.api/generators/party_currency_generator.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
 #include "ores.utility/generation/generation_keys.hpp"
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::refdata::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::party_currency generate_synthetic_party_currency(
-    utility::generation::generation_context& ctx) {
-    const auto modified_by = ctx.env().get_or(
-        generation_keys::modified_by, "system");
-    const auto tenant_id = ctx.env().get_or(
-        generation_keys::tenant_id, "system");
+domain::party_currency
+generate_synthetic_party_currency(utility::generation::generation_context& ctx) {
+    const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
+    const auto tenant_id = ctx.env().get_or(generation_keys::tenant_id, "system");
 
     domain::party_currency r;
     r.version = 1;
-    r.tenant_id = utility::uuid::tenant_id::from_string(tenant_id)
-        .value_or(utility::uuid::tenant_id::system());
+    r.tenant_id = utility::uuid::tenant_id::from_string(tenant_id).value_or(
+        utility::uuid::tenant_id::system());
     r.party_id = ctx.generate_uuid();
     r.currency_iso_code = "USD";
     r.modified_by = modified_by;
@@ -48,8 +45,7 @@ domain::party_currency generate_synthetic_party_currency(
 }
 
 std::vector<domain::party_currency>
-generate_synthetic_party_currencies(std::size_t n,
-    utility::generation::generation_context& ctx) {
+generate_synthetic_party_currencies(std::size_t n, utility::generation::generation_context& ctx) {
     std::vector<domain::party_currency> r;
     r.reserve(n);
     while (r.size() < n)

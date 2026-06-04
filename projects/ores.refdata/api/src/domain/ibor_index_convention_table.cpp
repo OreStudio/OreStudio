@@ -18,7 +18,6 @@
  *
  */
 #include "ores.refdata.api/domain/ibor_index_convention_table.hpp"
-
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
 
@@ -29,10 +28,12 @@ std::string convert_to_table(const std::vector<ibor_index_convention>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Id" << "Fixing Calendar" << "DCF" << "Settlement Days" << "Modified By" << "Version" << fort::endr;
+    table << fort::header << "Id" << "Fixing Calendar" << "DCF" << "Settlement Days"
+          << "Modified By" << "Version" << fort::endr;
 
     for (const auto& ic : v) {
-        table << ic.id << ic.fixing_calendar << ic.day_count_fraction << ic.settlement_days << ic.modified_by << ic.version << fort::endr;
+        table << ic.id << ic.fixing_calendar << ic.day_count_fraction << ic.settlement_days
+              << ic.modified_by << ic.version << fort::endr;
     }
     return table.to_string();
 }

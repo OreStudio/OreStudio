@@ -20,10 +20,10 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_PARTY_ID_SCHEME_MAPPER_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_PARTY_ID_SCHEME_MAPPER_HPP
 
-#include "ores.refdata.api/domain/party_id_scheme.hpp"
-#include "ores.refdata.core/repository/party_id_scheme_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.refdata.api/domain/party_id_scheme.hpp"
 #include "ores.refdata.core/export.hpp"
+#include "ores.refdata.core/repository/party_id_scheme_entity.hpp"
 
 namespace ores::refdata::repository {
 
@@ -32,22 +32,20 @@ namespace ores::refdata::repository {
  */
 class ORES_REFDATA_CORE_EXPORT party_id_scheme_mapper {
 private:
-    inline static std::string_view logger_name =
-        "ores.refdata.repository.party_id_scheme_mapper";
+    inline static std::string_view logger_name = "ores.refdata.repository.party_id_scheme_mapper";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }
+
 public:
     static domain::party_id_scheme map(const party_id_scheme_entity& v);
     static party_id_scheme_entity map(const domain::party_id_scheme& v);
 
-    static std::vector<domain::party_id_scheme>
-    map(const std::vector<party_id_scheme_entity>& v);
-    static std::vector<party_id_scheme_entity>
-    map(const std::vector<domain::party_id_scheme>& v);
+    static std::vector<domain::party_id_scheme> map(const std::vector<party_id_scheme_entity>& v);
+    static std::vector<party_id_scheme_entity> map(const std::vector<domain::party_id_scheme>& v);
 };
 
 }

@@ -20,9 +20,9 @@
 #ifndef ORES_REFDATA_API_MESSAGING_CONTACT_TYPE_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_CONTACT_TYPE_PROTOCOL_HPP
 
+#include "ores.refdata.api/domain/contact_type.hpp"
 #include <string>
 #include <vector>
-#include "ores.refdata.api/domain/contact_type.hpp"
 
 namespace ores::refdata::messaging {
 

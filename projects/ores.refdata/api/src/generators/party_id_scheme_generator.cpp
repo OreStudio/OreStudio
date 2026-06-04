@@ -18,26 +18,30 @@
  *
  */
 #include "ores.refdata.api/generators/party_id_scheme_generator.hpp"
-
+#include "ores.utility/generation/generation_keys.hpp"
 #include <array>
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::refdata::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::party_id_scheme generate_synthetic_party_id_scheme(
-    utility::generation::generation_context& ctx) {
-    static constexpr std::array<const char*, 10> coding_schemes = {
-        "LEI", "BIC", "MIC", "NATIONAL_ID", "CEDB",
-        "NATURAL_PERSON", "ACER", "DTCC_PARTICIPANT_ID", "MPID", "INTERNAL"
-    };
+domain::party_id_scheme
+generate_synthetic_party_id_scheme(utility::generation::generation_context& ctx) {
+    static constexpr std::array<const char*, 10> coding_schemes = {"LEI",
+                                                                   "BIC",
+                                                                   "MIC",
+                                                                   "NATIONAL_ID",
+                                                                   "CEDB",
+                                                                   "NATURAL_PERSON",
+                                                                   "ACER",
+                                                                   "DTCC_PARTICIPANT_ID",
+                                                                   "MPID",
+                                                                   "INTERNAL"};
     static std::atomic<int> counter{0};
     const auto idx = counter++;
-    const auto modified_by = ctx.env().get_or(
-        generation_keys::modified_by, "system");
+    const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
 
     domain::party_id_scheme r;
     r.version = 1;
@@ -55,8 +59,7 @@ domain::party_id_scheme generate_synthetic_party_id_scheme(
 }
 
 std::vector<domain::party_id_scheme>
-generate_synthetic_party_id_schemes(std::size_t n,
-    utility::generation::generation_context& ctx) {
+generate_synthetic_party_id_schemes(std::size_t n, utility::generation::generation_context& ctx) {
     std::vector<domain::party_id_scheme> r;
     r.reserve(n);
     while (r.size() < n)

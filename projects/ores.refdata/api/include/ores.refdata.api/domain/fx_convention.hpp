@@ -20,10 +20,10 @@
 #ifndef ORES_REFDATA_DOMAIN_FX_CONVENTION_HPP
 #define ORES_REFDATA_DOMAIN_FX_CONVENTION_HPP
 
-#include <chrono>
-#include <string>
-#include <optional>
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <chrono>
+#include <optional>
+#include <string>
 
 namespace ores::refdata::domain {
 
@@ -75,7 +75,8 @@ struct fx_convention final {
     std::string target_currency;
 
     /**
-     * @brief Divisor applied to quoted FX points to obtain the rate increment (e.g. 10000.0 for most pairs).
+     * @brief Divisor applied to quoted FX points to obtain the rate increment (e.g. 10000.0 for
+     * most pairs).
      */
     double points_factor;
 

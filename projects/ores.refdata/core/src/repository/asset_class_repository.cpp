@@ -18,7 +18,6 @@
  *
  */
 #include "ores.refdata.core/repository/asset_class_repository.hpp"
-
 #include "ores.database/repository/bitemporal_operations.hpp"
 
 namespace ores::refdata::repository {
@@ -26,22 +25,18 @@ namespace ores::refdata::repository {
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-std::vector<domain::asset_class_info>
-asset_class_repository::read_latest(context ctx,
-    const std::string& coding_scheme,
-    std::uint32_t offset, std::uint32_t limit) {
+std::vector<domain::asset_class_info> asset_class_repository::read_latest(
+    context ctx, const std::string& coding_scheme, std::uint32_t offset, std::uint32_t limit) {
 
-    BOOST_LOG_SEV(lg(), debug)
-        << "Reading asset classes. scheme=" << coding_scheme
-        << " offset=" << offset << " limit=" << limit;
+    BOOST_LOG_SEV(lg(), debug) << "Reading asset classes. scheme=" << coding_scheme
+                               << " offset=" << offset << " limit=" << limit;
 
     const auto tid = ctx.tenant_id().to_string();
 
-    std::string sql =
-        "SELECT code, description, coding_scheme_code "
-        "FROM ores_refdata_asset_classes_tbl "
-        "WHERE tenant_id = $1 "
-        "  AND valid_to = ores_utility_infinity_timestamp_fn()";
+    std::string sql = "SELECT code, description, coding_scheme_code "
+                      "FROM ores_refdata_asset_classes_tbl "
+                      "WHERE tenant_id = $1 "
+                      "  AND valid_to = ores_utility_infinity_timestamp_fn()";
 
     std::vector<std::string> params = {tid};
 
@@ -59,13 +54,14 @@ asset_class_repository::read_latest(context ctx,
         params.push_back(std::to_string(limit));
     }
 
-    const auto rows = execute_parameterized_multi_column_query(
-        ctx, sql, params, lg(), "Reading asset classes");
+    const auto rows =
+        execute_parameterized_multi_column_query(ctx, sql, params, lg(), "Reading asset classes");
 
     std::vector<domain::asset_class_info> result;
     result.reserve(rows.size());
     for (const auto& row : rows) {
-        if (row.size() < 3) continue;
+        if (row.size() < 3)
+            continue;
         domain::asset_class_info info;
         info.code = row[0].value_or("");
         info.description = row[1].value_or("");
@@ -77,16 +73,13 @@ asset_class_repository::read_latest(context ctx,
     return result;
 }
 
-std::uint32_t
-asset_class_repository::count_latest(context ctx,
-    const std::string& coding_scheme) {
+std::uint32_t asset_class_repository::count_latest(context ctx, const std::string& coding_scheme) {
 
     const auto tid = ctx.tenant_id().to_string();
 
-    std::string sql =
-        "SELECT count(*) FROM ores_refdata_asset_classes_tbl "
-        "WHERE tenant_id = $1 "
-        "  AND valid_to = ores_utility_infinity_timestamp_fn()";
+    std::string sql = "SELECT count(*) FROM ores_refdata_asset_classes_tbl "
+                      "WHERE tenant_id = $1 "
+                      "  AND valid_to = ores_utility_infinity_timestamp_fn()";
 
     std::vector<std::string> params = {tid};
     if (!coding_scheme.empty()) {
@@ -94,8 +87,8 @@ asset_class_repository::count_latest(context ctx,
         params.push_back(coding_scheme);
     }
 
-    const auto rows = execute_parameterized_multi_column_query(
-        ctx, sql, params, lg(), "Counting asset classes");
+    const auto rows =
+        execute_parameterized_multi_column_query(ctx, sql, params, lg(), "Counting asset classes");
 
     if (rows.empty() || rows[0].empty() || !rows[0][0].has_value())
         return 0;

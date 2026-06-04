@@ -20,9 +20,9 @@
 #ifndef ORES_REFDATA_API_MESSAGING_BOOK_STATUS_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_BOOK_STATUS_PROTOCOL_HPP
 
+#include "ores.refdata.api/domain/book_status.hpp"
 #include <string>
 #include <vector>
-#include "ores.refdata.api/domain/book_status.hpp"
 
 namespace ores::refdata::messaging {
 

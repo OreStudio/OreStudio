@@ -18,14 +18,13 @@
  *
  */
 #include "ores.refdata.core/repository/party_counterparty_repository.hpp"
-
-#include <sqlgen/postgres.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
 #include "ores.refdata.api/domain/party_counterparty_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/party_counterparty_entity.hpp"
 #include "ores.refdata.core/repository/party_counterparty_mapper.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <sqlgen/postgres.hpp>
 
 namespace ores::refdata::repository {
 
@@ -41,99 +40,100 @@ std::string party_counterparty_repository::sql() {
 party_counterparty_repository::party_counterparty_repository(context ctx)
     : ctx_(std::move(ctx)) {}
 
-void party_counterparty_repository::write(
-    const domain::party_counterparty& party_counterparty) {
+void party_counterparty_repository::write(const domain::party_counterparty& party_counterparty) {
     BOOST_LOG_SEV(lg(), debug) << "Writing party counterparty to database: "
                                << party_counterparty.party_id << "/"
                                << party_counterparty.counterparty_id;
-    execute_write_query(ctx_, party_counterparty_mapper::map(party_counterparty),
-        lg(), "writing party counterparty to database");
+    execute_write_query(ctx_,
+                        party_counterparty_mapper::map(party_counterparty),
+                        lg(),
+                        "writing party counterparty to database");
 }
 
 void party_counterparty_repository::write(
     const std::vector<domain::party_counterparty>& party_counterparties) {
     BOOST_LOG_SEV(lg(), debug) << "Writing party counterparties to database. Count: "
                                << party_counterparties.size();
-    execute_write_query(ctx_, party_counterparty_mapper::map(party_counterparties),
-        lg(), "writing party counterparties to database");
+    execute_write_query(ctx_,
+                        party_counterparty_mapper::map(party_counterparties),
+                        lg(),
+                        "writing party counterparties to database");
 }
 
-std::vector<domain::party_counterparty>
-party_counterparty_repository::read_latest() {
+std::vector<domain::party_counterparty> party_counterparty_repository::read_latest() {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<party_counterparty_entity>> |
-        where("valid_to"_c == max.value()) |
-        order_by("party_id"_c, "counterparty_id"_c);
+                       where("valid_to"_c == max.value()) |
+                       order_by("party_id"_c, "counterparty_id"_c);
 
     return execute_read_query<party_counterparty_entity, domain::party_counterparty>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return party_counterparty_mapper::map(entities); },
-        lg(), "Reading latest party counterparties");
+        lg(),
+        "Reading latest party counterparties");
 }
 
 std::vector<domain::party_counterparty>
-party_counterparty_repository::read_latest_by_party(
-    const boost::uuids::uuid& party_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest party counterparties. Party: "
-                               << party_id;
+party_counterparty_repository::read_latest_by_party(const boost::uuids::uuid& party_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest party counterparties. Party: " << party_id;
 
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto party_id_str = boost::uuids::to_string(party_id);
     const auto query = sqlgen::read<std::vector<party_counterparty_entity>> |
-        where("party_id"_c == party_id_str && "valid_to"_c == max.value()) |
-        order_by("counterparty_id"_c);
+                       where("party_id"_c == party_id_str && "valid_to"_c == max.value()) |
+                       order_by("counterparty_id"_c);
 
     return execute_read_query<party_counterparty_entity, domain::party_counterparty>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return party_counterparty_mapper::map(entities); },
-        lg(), "Reading latest party counterparties by party.");
+        lg(),
+        "Reading latest party counterparties by party.");
 }
 
-std::vector<domain::party_counterparty>
-party_counterparty_repository::read_latest_by_counterparty(
+std::vector<domain::party_counterparty> party_counterparty_repository::read_latest_by_counterparty(
     const boost::uuids::uuid& counterparty_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party counterparties. Counterparty: "
                                << counterparty_id;
 
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto counterparty_id_str = boost::uuids::to_string(counterparty_id);
-    const auto query = sqlgen::read<std::vector<party_counterparty_entity>> |
+    const auto query =
+        sqlgen::read<std::vector<party_counterparty_entity>> |
         where("counterparty_id"_c == counterparty_id_str && "valid_to"_c == max.value()) |
         order_by("party_id"_c);
 
     return execute_read_query<party_counterparty_entity, domain::party_counterparty>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return party_counterparty_mapper::map(entities); },
-        lg(), "Reading latest party counterparties by counterparty.");
+        lg(),
+        "Reading latest party counterparties by counterparty.");
 }
 
-void party_counterparty_repository::remove(
-    const boost::uuids::uuid& party_id,
-    const boost::uuids::uuid& counterparty_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing party counterparty from database: "
-                               << party_id << "/" << counterparty_id;
+void party_counterparty_repository::remove(const boost::uuids::uuid& party_id,
+                                           const boost::uuids::uuid& counterparty_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing party counterparty from database: " << party_id << "/"
+                               << counterparty_id;
 
     const auto party_id_str = boost::uuids::to_string(party_id);
     const auto counterparty_id_str = boost::uuids::to_string(counterparty_id);
-    const auto query = sqlgen::delete_from<party_counterparty_entity> |
-        where("party_id"_c == party_id_str &&
-              "counterparty_id"_c == counterparty_id_str);
+    const auto query =
+        sqlgen::delete_from<party_counterparty_entity> |
+        where("party_id"_c == party_id_str && "counterparty_id"_c == counterparty_id_str);
 
-    execute_delete_query(ctx_, query, lg(),
-        "removing party counterparty from database");
+    execute_delete_query(ctx_, query, lg(), "removing party counterparty from database");
 }
 
-void party_counterparty_repository::remove_by_party(
-    const boost::uuids::uuid& party_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing all party counterparties from database: "
-                               << party_id;
+void party_counterparty_repository::remove_by_party(const boost::uuids::uuid& party_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing all party counterparties from database: " << party_id;
 
     const auto party_id_str = boost::uuids::to_string(party_id);
-    const auto query = sqlgen::delete_from<party_counterparty_entity> |
-        where("party_id"_c == party_id_str);
+    const auto query =
+        sqlgen::delete_from<party_counterparty_entity> | where("party_id"_c == party_id_str);
 
-    execute_delete_query(ctx_, query, lg(),
-        "removing all party counterparties from database");
+    execute_delete_query(ctx_, query, lg(), "removing all party counterparties from database");
 }
 
 }

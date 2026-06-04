@@ -17,19 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.refdata.core/repository/rounding_type_repository.hpp"
-
-#include <set>
-#include <catch2/catch_test_macros.hpp>
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
-#include "ores.testing/scoped_database_helper.hpp"
-#include "ores.testing/make_generation_context.hpp"
-#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
-#include "ores.refdata.api/domain/rounding_type.hpp" // IWYU pragma: keep.
+#include "ores.refdata.api/domain/rounding_type.hpp"         // IWYU pragma: keep.
 #include "ores.refdata.api/domain/rounding_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/generators/rounding_type_generator.hpp"
+#include "ores.refdata.core/repository/rounding_type_repository.hpp"
+#include "ores.testing/make_generation_context.hpp"
+#include "ores.testing/scoped_database_helper.hpp"
+#include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
+#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <catch2/catch_test_macros.hpp>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <set>
 
 namespace {
 
@@ -109,8 +108,7 @@ TEST_CASE("read_nonexistent_rounding_type_code", tags) {
     const std::string nonexistent_code = "NONEXISTENT_CODE_12345";
     BOOST_LOG_SEV(lg, debug) << "Non-existent code: " << nonexistent_code;
 
-    auto read_rounding_types =
-        repo.read_latest(h.context(), nonexistent_code);
+    auto read_rounding_types = repo.read_latest(h.context(), nonexistent_code);
     BOOST_LOG_SEV(lg, debug) << "Read rounding types: " << read_rounding_types;
 
     CHECK(read_rounding_types.size() == 0);

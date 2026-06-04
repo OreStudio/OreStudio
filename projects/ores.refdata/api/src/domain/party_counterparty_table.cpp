@@ -18,7 +18,6 @@
  *
  */
 #include "ores.refdata.api/domain/party_counterparty_table.hpp"
-
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
 
@@ -31,7 +30,8 @@ std::string convert_to_table(const std::vector<party_counterparty>& v) {
     table << fort::header << "Party" << "Counterparty" << "Modified By" << "Version" << fort::endr;
 
     for (const auto& pc : v) {
-        table << boost::uuids::to_string(pc.party_id) << boost::uuids::to_string(pc.counterparty_id) << pc.modified_by << pc.version << fort::endr;
+        table << boost::uuids::to_string(pc.party_id) << boost::uuids::to_string(pc.counterparty_id)
+              << pc.modified_by << pc.version << fort::endr;
     }
     return table.to_string();
 }

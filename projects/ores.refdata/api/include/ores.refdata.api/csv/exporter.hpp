@@ -21,10 +21,10 @@
 #ifndef ORES_REFDATA_API_CSV_EXPORTER_HPP
 #define ORES_REFDATA_API_CSV_EXPORTER_HPP
 
-#include <vector>
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata.api/export.hpp"
 #include "ores.refdata.api/domain/currency.hpp"
+#include "ores.refdata.api/export.hpp"
+#include <vector>
 
 namespace ores::refdata::csv {
 
@@ -47,8 +47,7 @@ private:
     static std::string escape_csv_field(const std::string& field);
 
 public:
-    static std::string
-    export_currency_config(const std::vector<domain::currency>& v);
+    static std::string export_currency_config(const std::vector<domain::currency>& v);
 };
 
 }

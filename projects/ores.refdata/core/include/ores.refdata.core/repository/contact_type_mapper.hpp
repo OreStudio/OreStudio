@@ -20,10 +20,10 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_CONTACT_TYPE_MAPPER_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_CONTACT_TYPE_MAPPER_HPP
 
-#include "ores.refdata.api/domain/contact_type.hpp"
-#include "ores.refdata.core/repository/contact_type_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.refdata.api/domain/contact_type.hpp"
 #include "ores.refdata.core/export.hpp"
+#include "ores.refdata.core/repository/contact_type_entity.hpp"
 
 namespace ores::refdata::repository {
 
@@ -32,22 +32,20 @@ namespace ores::refdata::repository {
  */
 class ORES_REFDATA_CORE_EXPORT contact_type_mapper {
 private:
-    inline static std::string_view logger_name =
-        "ores.refdata.repository.contact_type_mapper";
+    inline static std::string_view logger_name = "ores.refdata.repository.contact_type_mapper";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }
+
 public:
     static domain::contact_type map(const contact_type_entity& v);
     static contact_type_entity map(const domain::contact_type& v);
 
-    static std::vector<domain::contact_type>
-    map(const std::vector<contact_type_entity>& v);
-    static std::vector<contact_type_entity>
-    map(const std::vector<domain::contact_type>& v);
+    static std::vector<domain::contact_type> map(const std::vector<contact_type_entity>& v);
+    static std::vector<contact_type_entity> map(const std::vector<domain::contact_type>& v);
 };
 
 }

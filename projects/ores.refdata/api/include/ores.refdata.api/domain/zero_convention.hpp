@@ -20,10 +20,10 @@
 #ifndef ORES_REFDATA_DOMAIN_ZERO_CONVENTION_HPP
 #define ORES_REFDATA_DOMAIN_ZERO_CONVENTION_HPP
 
-#include <chrono>
-#include <string>
-#include <optional>
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <chrono>
+#include <optional>
+#include <string>
 
 namespace ores::refdata::domain {
 
@@ -70,12 +70,14 @@ struct zero_convention final {
     std::string day_count_fraction;
 
     /**
-     * @brief Compounding method (canonical CDM, e.g. 'Continuous'). Present only when tenor_based is true.
+     * @brief Compounding method (canonical CDM, e.g. 'Continuous'). Present only when tenor_based
+     * is true.
      */
     std::optional<std::string> compounding;
 
     /**
-     * @brief Frequency at which the rate is compounded (canonical CDM). Present only when compounding is 'Compounded'.
+     * @brief Frequency at which the rate is compounded (canonical CDM). Present only when
+     * compounding is 'Compounded'.
      */
     std::optional<std::string> compounding_frequency;
 

@@ -20,14 +20,14 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_PARTY_CURRENCY_REPOSITORY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_PARTY_CURRENCY_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include <sqlgen/postgres.hpp>
-#include <boost/uuid/uuid.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/party_currency.hpp"
 #include "ores.refdata.core/export.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::refdata::repository {
 
@@ -53,10 +53,8 @@ public:
     void write(const std::vector<domain::party_currency>& party_currencies);
 
     std::vector<domain::party_currency> read_latest();
-    std::vector<domain::party_currency>
-    read_latest_by_party(const boost::uuids::uuid& party_id);
-    std::vector<domain::party_currency>
-    read_latest_by_currency(const std::string& iso_code);
+    std::vector<domain::party_currency> read_latest_by_party(const boost::uuids::uuid& party_id);
+    std::vector<domain::party_currency> read_latest_by_currency(const std::string& iso_code);
 
     void remove(const boost::uuids::uuid& party_id, const std::string& iso_code);
     void remove_by_party(const boost::uuids::uuid& party_id);

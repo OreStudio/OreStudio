@@ -18,17 +18,17 @@
  *
  */
 #include "ores.refdata.api/domain/deposit_convention_table.hpp"
-
-#include <sstream>
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
+#include <sstream>
 
 namespace ores::refdata::domain {
 
 namespace {
 template <typename T>
 std::string opt_str(const std::optional<T>& o) {
-    if (!o) return {};
+    if (!o)
+        return {};
     std::ostringstream s;
     if constexpr (std::is_same_v<T, bool>)
         s << std::boolalpha;
@@ -41,10 +41,12 @@ std::string convert_to_table(const std::vector<deposit_convention>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Id" << "Index Based" << "Index" << "Calendar" << "DCF" << "Modified By" << "Version" << fort::endr;
+    table << fort::header << "Id" << "Index Based" << "Index" << "Calendar" << "DCF"
+          << "Modified By" << "Version" << fort::endr;
 
     for (const auto& dc : v) {
-        table << dc.id << dc.index_based << opt_str(dc.index) << opt_str(dc.calendar) << opt_str(dc.day_count_fraction) << dc.modified_by << dc.version << fort::endr;
+        table << dc.id << dc.index_based << opt_str(dc.index) << opt_str(dc.calendar)
+              << opt_str(dc.day_count_fraction) << dc.modified_by << dc.version << fort::endr;
     }
     return table.to_string();
 }

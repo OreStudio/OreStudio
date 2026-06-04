@@ -18,7 +18,6 @@
  *
  */
 #include "ores.refdata.core/service/book_service.hpp"
-
 #include <stdexcept>
 
 namespace ores::refdata::service {
@@ -33,11 +32,11 @@ std::vector<domain::book> book_service::list_books() {
     return repo_.read_latest(ctx_);
 }
 
-std::optional<domain::book>
-book_service::get_book(const std::string& id) {
+std::optional<domain::book> book_service::get_book(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting book: " << id;
     auto results = repo_.read_latest(ctx_, id);
-    if (results.empty()) return std::nullopt;
+    if (results.empty())
+        return std::nullopt;
     return results.front();
 }
 
@@ -55,8 +54,7 @@ void book_service::remove_book(const std::string& id) {
     BOOST_LOG_SEV(lg(), info) << "Removed book: " << id;
 }
 
-std::vector<domain::book>
-book_service::get_book_history(const std::string& id) {
+std::vector<domain::book> book_service::get_book_history(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for book: " << id;
     return repo_.read_all(ctx_, id);
 }

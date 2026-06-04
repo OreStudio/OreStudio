@@ -18,7 +18,6 @@
  *
  */
 #include "ores.refdata.api/domain/currency_version_table.hpp"
-
 #include <fort.hpp>
 
 namespace ores::refdata::domain {
@@ -31,9 +30,8 @@ std::string convert_to_table(const std::vector<currency_version>& v) {
           << "Modified By" << "Recorded At" << "Change Summary" << fort::endr;
 
     for (const auto& cv : v) {
-        table << cv.version_number << cv.data.iso_code << cv.data.name
-              << cv.data.change_reason_code << cv.modified_by << cv.recorded_at
-              << cv.change_summary << fort::endr;
+        table << cv.version_number << cv.data.iso_code << cv.data.name << cv.data.change_reason_code
+              << cv.modified_by << cv.recorded_at << cv.change_summary << fort::endr;
     }
     return table.to_string();
 }

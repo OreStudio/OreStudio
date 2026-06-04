@@ -17,13 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/csv/exporter.hpp"
-
+#include "ores.refdata.api/domain/currency.hpp"
+#include "ores.utility/faker/datetime.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.logging/make_logger.hpp"
-#include "ores.utility/faker/datetime.hpp"
-#include "ores.refdata.api/domain/currency.hpp"
 
 namespace {
 
@@ -254,7 +253,7 @@ TEST_CASE("export_currency_with_faker_data", tags) {
         ccy.rounding_precision = faker::number::integer(0, 5);
         ccy.format = "%3% %1$.2f";
         ccy.monetary_nature = "major";
-    ccy.market_tier = "g10";
+        ccy.market_tier = "g10";
         ccy.modified_by = std::string(faker::internet::username());
         ccy.recorded_at = std::chrono::system_clock::now();
         currencies.push_back(ccy);

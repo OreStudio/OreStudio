@@ -18,11 +18,10 @@
  *
  */
 #include "ores.refdata.core/repository/overnight_index_convention_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.refdata.api/domain/overnight_index_convention_json_io.hpp" // IWYU pragma: keep.
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::refdata::repository {
 
@@ -75,19 +74,13 @@ overnight_index_convention_mapper::map(const domain::overnight_index_convention&
 std::vector<domain::overnight_index_convention>
 overnight_index_convention_mapper::map(const std::vector<overnight_index_convention_entity>& v) {
     return map_vector<overnight_index_convention_entity, domain::overnight_index_convention>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<overnight_index_convention_entity>
 overnight_index_convention_mapper::map(const std::vector<domain::overnight_index_convention>& v) {
     return map_vector<domain::overnight_index_convention, overnight_index_convention_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

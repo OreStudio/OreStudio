@@ -17,17 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.refdata.core/repository/party_id_scheme_repository.hpp"
-
-#include <catch2/catch_test_macros.hpp>
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
-#include "ores.testing/scoped_database_helper.hpp"
-#include "ores.testing/make_generation_context.hpp"
-#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
-#include "ores.refdata.api/domain/party_id_scheme.hpp" // IWYU pragma: keep.
+#include "ores.refdata.api/domain/party_id_scheme.hpp"         // IWYU pragma: keep.
 #include "ores.refdata.api/domain/party_id_scheme_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/generators/party_id_scheme_generator.hpp"
+#include "ores.refdata.core/repository/party_id_scheme_repository.hpp"
+#include "ores.testing/make_generation_context.hpp"
+#include "ores.testing/scoped_database_helper.hpp"
+#include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
+#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 
@@ -79,15 +78,13 @@ TEST_CASE("read_latest_party_id_schemes", tags) {
     for (auto& pis : written_party_id_schemes) {
         pis.change_reason_code = "system.test";
     }
-    BOOST_LOG_SEV(lg, debug) << "Written party ID schemes: "
-                             << written_party_id_schemes;
+    BOOST_LOG_SEV(lg, debug) << "Written party ID schemes: " << written_party_id_schemes;
 
     party_id_scheme_repository repo;
     repo.write(h.context(), written_party_id_schemes);
 
     auto read_party_id_schemes = repo.read_latest(h.context());
-    BOOST_LOG_SEV(lg, debug) << "Read party ID schemes: "
-                             << read_party_id_schemes;
+    BOOST_LOG_SEV(lg, debug) << "Read party ID schemes: " << read_party_id_schemes;
 
     CHECK(read_party_id_schemes.size() >= written_party_id_schemes.size());
 }
@@ -109,8 +106,7 @@ TEST_CASE("read_latest_party_id_scheme_by_code", tags) {
     repo.write(h.context(), pis);
 
     auto read_party_id_schemes = repo.read_latest(h.context(), pis.code);
-    BOOST_LOG_SEV(lg, debug) << "Read party ID schemes: "
-                             << read_party_id_schemes;
+    BOOST_LOG_SEV(lg, debug) << "Read party ID schemes: " << read_party_id_schemes;
 
     REQUIRE(read_party_id_schemes.size() == 1);
     CHECK(read_party_id_schemes[0].code == pis.code);
@@ -126,10 +122,8 @@ TEST_CASE("read_nonexistent_party_id_scheme_code", tags) {
     const std::string nonexistent_code = "NONEXISTENT_CODE_12345";
     BOOST_LOG_SEV(lg, debug) << "Non-existent code: " << nonexistent_code;
 
-    auto read_party_id_schemes =
-        repo.read_latest(h.context(), nonexistent_code);
-    BOOST_LOG_SEV(lg, debug) << "Read party ID schemes: "
-                             << read_party_id_schemes;
+    auto read_party_id_schemes = repo.read_latest(h.context(), nonexistent_code);
+    BOOST_LOG_SEV(lg, debug) << "Read party ID schemes: " << read_party_id_schemes;
 
     CHECK(read_party_id_schemes.size() == 0);
 }

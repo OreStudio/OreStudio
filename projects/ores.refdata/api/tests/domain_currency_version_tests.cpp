@@ -17,15 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/currency_version.hpp"
 #include "ores.refdata.api/domain/currency_version_history.hpp"
-
+#include "ores.refdata.api/domain/currency_version_history_table.hpp"
+#include "ores.refdata.api/domain/currency_version_table.hpp"
+#include "ores.utility/faker/datetime.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.logging/make_logger.hpp"
-#include "ores.utility/faker/datetime.hpp"
-#include "ores.refdata.api/domain/currency_version_table.hpp"
-#include "ores.refdata.api/domain/currency_version_history_table.hpp"
 
 namespace {
 
@@ -92,7 +91,8 @@ TEST_CASE("create_currency_version_with_faker", tags) {
     cv.data.recorded_at = {};
     cv.version_number = faker::number::integer(1, 100);
     cv.modified_by = std::string(faker::internet::username());
-    cv.recorded_at = datetime::make_timepoint(2025, faker::number::integer(1, 12), faker::number::integer(1, 28));
+    cv.recorded_at = datetime::make_timepoint(
+        2025, faker::number::integer(1, 12), faker::number::integer(1, 28));
     cv.change_summary = std::string(faker::lorem::sentence());
 
     BOOST_LOG_SEV(lg, debug) << "Currency version: " << cv.version_number;
@@ -162,7 +162,8 @@ TEST_CASE("currency_version_table_with_faker_data", tags) {
         cv.data.recorded_at = {};
         cv.version_number = i + 1;
         cv.modified_by = std::string(faker::internet::username());
-        cv.recorded_at = datetime::make_timepoint(2025, faker::number::integer(1, 12), faker::number::integer(1, 28));
+        cv.recorded_at = datetime::make_timepoint(
+            2025, faker::number::integer(1, 12), faker::number::integer(1, 28));
         cv.change_summary = std::string(faker::lorem::sentence());
         versions.push_back(cv);
     }
@@ -257,7 +258,8 @@ TEST_CASE("currency_version_history_table_with_faker_data", tags) {
             cv.data.name = fakerCcy.name;
             cv.version_number = j + 1;
             cv.modified_by = std::string(faker::internet::username());
-            cv.recorded_at = datetime::make_timepoint(2025, faker::number::integer(1, 12), faker::number::integer(1, 28));
+            cv.recorded_at = datetime::make_timepoint(
+                2025, faker::number::integer(1, 12), faker::number::integer(1, 28));
             cv.change_summary = std::string(faker::lorem::sentence());
             cvh.versions.push_back(cv);
         }

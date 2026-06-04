@@ -18,7 +18,6 @@
  *
  */
 #include "ores.refdata.core/repository/currency_market_tier_mapper.hpp"
-
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.refdata.api/domain/currency_market_tier_json_io.hpp" // IWYU pragma: keep.
 
@@ -69,19 +68,13 @@ currency_market_tier_mapper::map(const domain::currency_market_tier& v) {
 std::vector<domain::currency_market_tier>
 currency_market_tier_mapper::map(const std::vector<currency_market_tier_entity>& v) {
     return map_vector<currency_market_tier_entity, domain::currency_market_tier>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<currency_market_tier_entity>
 currency_market_tier_mapper::map(const std::vector<domain::currency_market_tier>& v) {
     return map_vector<domain::currency_market_tier, currency_market_tier_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

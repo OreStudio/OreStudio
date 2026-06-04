@@ -20,13 +20,13 @@
 #ifndef ORES_REFDATA_REPOSITORY_OVERNIGHT_INDEX_CONVENTION_REPOSITORY_HPP
 #define ORES_REFDATA_REPOSITORY_OVERNIGHT_INDEX_CONVENTION_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/overnight_index_convention.hpp"
 #include "ores.refdata.core/export.hpp"
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::refdata::repository {
 
@@ -53,10 +53,8 @@ public:
     void write(context ctx, const std::vector<domain::overnight_index_convention>& v);
 
     std::vector<domain::overnight_index_convention> read_latest(context ctx);
-    std::vector<domain::overnight_index_convention>
-    read_latest(context ctx, const std::string& id);
-    std::vector<domain::overnight_index_convention>
-    read_all(context ctx, const std::string& id);
+    std::vector<domain::overnight_index_convention> read_latest(context ctx, const std::string& id);
+    std::vector<domain::overnight_index_convention> read_all(context ctx, const std::string& id);
 
     void remove(context ctx, const std::string& id);
 };

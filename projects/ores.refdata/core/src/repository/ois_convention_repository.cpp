@@ -18,13 +18,12 @@
  *
  */
 #include "ores.refdata.core/repository/ois_convention_repository.hpp"
-
-#include <sqlgen/postgres.hpp>
-#include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
 #include "ores.refdata.api/domain/ois_convention_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/ois_convention_entity.hpp"
 #include "ores.refdata.core/repository/ois_convention_mapper.hpp"
+#include <sqlgen/postgres.hpp>
 
 namespace ores::refdata::repository {
 
@@ -39,60 +38,66 @@ std::string ois_convention_repository::sql() {
 
 void ois_convention_repository::write(context ctx, const domain::ois_convention& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing OIS convention: " << v.id;
-    execute_write_query(ctx, ois_convention_mapper::map(v),
-        lg(), "Writing OIS convention to database.");
+    execute_write_query(
+        ctx, ois_convention_mapper::map(v), lg(), "Writing OIS convention to database.");
 }
 
-void ois_convention_repository::write(
-    context ctx, const std::vector<domain::ois_convention>& v) {
+void ois_convention_repository::write(context ctx, const std::vector<domain::ois_convention>& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing OIS conventions. Count: " << v.size();
-    execute_write_query(ctx, ois_convention_mapper::map(v),
-        lg(), "Writing OIS conventions to database.");
+    execute_write_query(
+        ctx, ois_convention_mapper::map(v), lg(), "Writing OIS conventions to database.");
 }
 
-std::vector<domain::ois_convention>
-ois_convention_repository::read_latest(context ctx) {
+std::vector<domain::ois_convention> ois_convention_repository::read_latest(context ctx) {
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
-    const auto query = sqlgen::read<std::vector<ois_convention_entity>> |
+    const auto query =
+        sqlgen::read<std::vector<ois_convention_entity>> |
         where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
         order_by("id"_c);
 
     return execute_read_query<ois_convention_entity, domain::ois_convention>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return ois_convention_mapper::map(entities); },
-        lg(), "Reading latest OIS conventions");
+        lg(),
+        "Reading latest OIS conventions");
 }
 
-std::vector<domain::ois_convention>
-ois_convention_repository::read_latest(context ctx, const std::string& id) {
+std::vector<domain::ois_convention> ois_convention_repository::read_latest(context ctx,
+                                                                           const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest OIS convention. id: " << id;
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<ois_convention_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id &&
+                             "valid_to"_c == max.value());
 
     return execute_read_query<ois_convention_entity, domain::ois_convention>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return ois_convention_mapper::map(entities); },
-        lg(), "Reading latest OIS convention by id.");
+        lg(),
+        "Reading latest OIS convention by id.");
 }
 
-std::vector<domain::ois_convention>
-ois_convention_repository::read_all(context ctx, const std::string& id) {
+std::vector<domain::ois_convention> ois_convention_repository::read_all(context ctx,
+                                                                        const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all OIS convention versions. id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<ois_convention_entity>> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id) |
-        order_by("version"_c.desc());
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id) |
+                       order_by("version"_c.desc());
 
     return execute_read_query<ois_convention_entity, domain::ois_convention>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return ois_convention_mapper::map(entities); },
-        lg(), "Reading all OIS convention versions by id.");
+        lg(),
+        "Reading all OIS convention versions by id.");
 }
 
 void ois_convention_repository::remove(context ctx, const std::string& id) {
@@ -101,7 +106,8 @@ void ois_convention_repository::remove(context ctx, const std::string& id) {
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::delete_from<ois_convention_entity> |
-        where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id &&
+                             "valid_to"_c == max.value());
 
     execute_delete_query(ctx, query, lg(), "Removing OIS convention from database.");
 }

@@ -18,15 +18,15 @@
  *
  */
 #include "ores.refdata.api/domain/party_contact_information_table_io.hpp"
-
-#include <ostream>
 #include "ores.refdata.api/domain/party_contact_information_table.hpp"
+#include <ostream>
 
 namespace ores::refdata::domain {
 
 namespace {
 
-void print_party_contact_information_table(std::ostream& s, const std::vector<party_contact_information>& v) {
+void print_party_contact_information_table(std::ostream& s,
+                                           const std::vector<party_contact_information>& v) {
     s << std::endl << convert_to_table(v) << std::endl;
 }
 

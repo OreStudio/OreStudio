@@ -20,9 +20,9 @@
 #ifndef ORES_REFDATA_API_DOMAIN_COMPOUNDING_METHOD_HPP
 #define ORES_REFDATA_API_DOMAIN_COMPOUNDING_METHOD_HPP
 
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <chrono>
 #include <string>
-#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::refdata::domain {
 

@@ -18,7 +18,6 @@
  *
  */
 #include "ores.refdata.core/repository/party_status_mapper.hpp"
-
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.refdata.api/domain/party_status_json_io.hpp" // IWYU pragma: keep.
 
@@ -27,8 +26,7 @@ namespace ores::refdata::repository {
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::party_status
-party_status_mapper::map(const party_status_entity& v) {
+domain::party_status party_status_mapper::map(const party_status_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::party_status r;
@@ -48,8 +46,7 @@ party_status_mapper::map(const party_status_entity& v) {
     return r;
 }
 
-party_status_entity
-party_status_mapper::map(const domain::party_status& v) {
+party_status_entity party_status_mapper::map(const domain::party_status& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     party_status_entity r;
@@ -71,19 +68,13 @@ party_status_mapper::map(const domain::party_status& v) {
 std::vector<domain::party_status>
 party_status_mapper::map(const std::vector<party_status_entity>& v) {
     return map_vector<party_status_entity, domain::party_status>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<party_status_entity>
 party_status_mapper::map(const std::vector<domain::party_status>& v) {
     return map_vector<domain::party_status, party_status_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

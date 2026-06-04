@@ -18,9 +18,8 @@
  *
  */
 #include "ores.refdata.core/service/party_type_service.hpp"
-
-#include <stdexcept>
 #include "ores.service/messaging/handler_helpers.hpp"
+#include <stdexcept>
 
 using ores::service::messaging::stamp;
 
@@ -36,8 +35,7 @@ std::vector<domain::party_type> party_type_service::list_types() {
     return repo_.read_latest(ctx_);
 }
 
-std::optional<domain::party_type>
-party_type_service::find_type(const std::string& code) {
+std::optional<domain::party_type> party_type_service::find_type(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Finding party type: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty()) {
@@ -79,8 +77,7 @@ void party_type_service::remove_types(const std::vector<std::string>& codes) {
     repo_.remove(ctx_, codes);
 }
 
-std::vector<domain::party_type>
-party_type_service::get_type_history(const std::string& code) {
+std::vector<domain::party_type> party_type_service::get_type_history(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for party type: " << code;
     return repo_.read_all(ctx_, code);
 }

@@ -18,19 +18,17 @@
  *
  */
 #include "ores.refdata.core/repository/deposit_convention_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.refdata.api/domain/deposit_convention_json_io.hpp" // IWYU pragma: keep.
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::refdata::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::deposit_convention
-deposit_convention_mapper::map(const deposit_convention_entity& v) {
+domain::deposit_convention deposit_convention_mapper::map(const deposit_convention_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::deposit_convention r;
@@ -55,8 +53,7 @@ deposit_convention_mapper::map(const deposit_convention_entity& v) {
     return r;
 }
 
-deposit_convention_entity
-deposit_convention_mapper::map(const domain::deposit_convention& v) {
+deposit_convention_entity deposit_convention_mapper::map(const domain::deposit_convention& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     deposit_convention_entity r;
@@ -83,19 +80,13 @@ deposit_convention_mapper::map(const domain::deposit_convention& v) {
 std::vector<domain::deposit_convention>
 deposit_convention_mapper::map(const std::vector<deposit_convention_entity>& v) {
     return map_vector<deposit_convention_entity, domain::deposit_convention>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<deposit_convention_entity>
 deposit_convention_mapper::map(const std::vector<domain::deposit_convention>& v) {
     return map_vector<domain::deposit_convention, deposit_convention_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

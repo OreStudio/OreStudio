@@ -18,19 +18,17 @@
  *
  */
 #include "ores.refdata.core/repository/party_country_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.refdata.api/domain/party_country_json_io.hpp" // IWYU pragma: keep.
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::refdata::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::party_country
-party_country_mapper::map(const party_country_entity& v) {
+domain::party_country party_country_mapper::map(const party_country_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::party_country r;
@@ -48,8 +46,7 @@ party_country_mapper::map(const party_country_entity& v) {
     return r;
 }
 
-party_country_entity
-party_country_mapper::map(const domain::party_country& v) {
+party_country_entity party_country_mapper::map(const domain::party_country& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     party_country_entity r;
@@ -69,19 +66,13 @@ party_country_mapper::map(const domain::party_country& v) {
 std::vector<domain::party_country>
 party_country_mapper::map(const std::vector<party_country_entity>& v) {
     return map_vector<party_country_entity, domain::party_country>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<party_country_entity>
 party_country_mapper::map(const std::vector<domain::party_country>& v) {
     return map_vector<domain::party_country, party_country_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

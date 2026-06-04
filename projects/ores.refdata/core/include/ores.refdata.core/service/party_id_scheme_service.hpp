@@ -20,13 +20,13 @@
 #ifndef ORES_REFDATA_CORE_SERVICE_PARTY_ID_SCHEME_SERVICE_HPP
 #define ORES_REFDATA_CORE_SERVICE_PARTY_ID_SCHEME_SERVICE_HPP
 
-#include <string>
-#include <vector>
-#include <optional>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/party_id_scheme.hpp"
 #include "ores.refdata.core/repository/party_id_scheme_repository.hpp"
+#include <optional>
+#include <string>
+#include <vector>
 
 namespace ores::refdata::service {
 
@@ -35,8 +35,7 @@ namespace ores::refdata::service {
  */
 class party_id_scheme_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.refdata.service.party_id_scheme_service";
+    inline static std::string_view logger_name = "ores.refdata.service.party_id_scheme_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -51,8 +50,7 @@ public:
 
     std::vector<domain::party_id_scheme> list_schemes();
 
-    std::optional<domain::party_id_scheme>
-    find_scheme(const std::string& code);
+    std::optional<domain::party_id_scheme> find_scheme(const std::string& code);
 
     void save_scheme(const domain::party_id_scheme& scheme);
 
@@ -62,8 +60,7 @@ public:
 
     void remove_schemes(const std::vector<std::string>& codes);
 
-    std::vector<domain::party_id_scheme>
-    get_scheme_history(const std::string& code);
+    std::vector<domain::party_id_scheme> get_scheme_history(const std::string& code);
 
 private:
     context ctx_;

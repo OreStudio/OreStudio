@@ -18,11 +18,10 @@
  *
  */
 #include "ores.refdata.core/repository/currency_mapper.hpp"
-
-#include <boost/lexical_cast.hpp>
-#include <boost/uuid/uuid_io.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.refdata.api/domain/currency_json_io.hpp" // IWYU pragma: keep.
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::refdata::repository {
 
@@ -90,22 +89,14 @@ currency_entity currency_mapper::map(const domain::currency& v) {
     return r;
 }
 
-std::vector<domain::currency>
-currency_mapper::map(const std::vector<currency_entity>& v) {
+std::vector<domain::currency> currency_mapper::map(const std::vector<currency_entity>& v) {
     return map_vector<currency_entity, domain::currency>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
-std::vector<currency_entity>
-currency_mapper::map(const std::vector<domain::currency>& v) {
+std::vector<currency_entity> currency_mapper::map(const std::vector<domain::currency>& v) {
     return map_vector<domain::currency, currency_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

@@ -18,11 +18,10 @@
  *
  */
 #include "ores.refdata.core/repository/counterparty_identifier_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.refdata.api/domain/counterparty_identifier_json_io.hpp" // IWYU pragma: keep.
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::refdata::repository {
 
@@ -75,19 +74,13 @@ counterparty_identifier_mapper::map(const domain::counterparty_identifier& v) {
 std::vector<domain::counterparty_identifier>
 counterparty_identifier_mapper::map(const std::vector<counterparty_identifier_entity>& v) {
     return map_vector<counterparty_identifier_entity, domain::counterparty_identifier>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<counterparty_identifier_entity>
 counterparty_identifier_mapper::map(const std::vector<domain::counterparty_identifier>& v) {
     return map_vector<domain::counterparty_identifier, counterparty_identifier_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

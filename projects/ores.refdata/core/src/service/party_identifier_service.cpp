@@ -18,10 +18,9 @@
  *
  */
 #include "ores.refdata.core/service/party_identifier_service.hpp"
-
-#include <stdexcept>
-#include <boost/uuid/uuid_io.hpp>
 #include "ores.service/messaging/handler_helpers.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <stdexcept>
 
 using ores::service::messaging::stamp;
 
@@ -30,7 +29,8 @@ namespace ores::refdata::service {
 using namespace ores::logging;
 
 party_identifier_service::party_identifier_service(context ctx)
-    : ctx_(ctx), repo_(ctx) {}
+    : ctx_(ctx)
+    , repo_(ctx) {}
 
 std::vector<domain::party_identifier> party_identifier_service::list_party_identifiers() {
     BOOST_LOG_SEV(lg(), debug) << "Listing all party identifiers";
@@ -38,10 +38,8 @@ std::vector<domain::party_identifier> party_identifier_service::list_party_ident
 }
 
 std::vector<domain::party_identifier>
-party_identifier_service::list_party_identifiers_by_party(
-    const boost::uuids::uuid& party_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing party identifiers for party: "
-                               << party_id;
+party_identifier_service::list_party_identifiers_by_party(const boost::uuids::uuid& party_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing party identifiers for party: " << party_id;
     return repo_.read_latest_by_party_id(party_id);
 }
 
@@ -65,7 +63,8 @@ party_identifier_service::find_party_identifier_by_code(const std::string& code)
     return results.front();
 }
 
-void party_identifier_service::save_party_identifier(const domain::party_identifier& party_identifier) {
+void party_identifier_service::save_party_identifier(
+    const domain::party_identifier& party_identifier) {
     if (party_identifier.id.is_nil()) {
         throw std::invalid_argument("Party Identifier ID cannot be nil.");
     }

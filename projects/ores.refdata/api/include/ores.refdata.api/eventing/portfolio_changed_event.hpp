@@ -20,10 +20,10 @@
 #ifndef ORES_REFDATA_API_EVENTING_PORTFOLIO_CHANGED_EVENT_HPP
 #define ORES_REFDATA_API_EVENTING_PORTFOLIO_CHANGED_EVENT_HPP
 
-#include <chrono>
-#include <vector>
-#include <string>
 #include "ores.eventing/domain/event_traits.hpp"
+#include <chrono>
+#include <string>
+#include <vector>
 
 namespace ores::refdata::eventing {
 
@@ -44,7 +44,7 @@ struct portfolio_changed_event final {
 
 namespace ores::eventing::domain {
 
-template<>
+template <>
 struct event_traits<ores::refdata::eventing::portfolio_changed_event> {
     static constexpr std::string_view name = "ores.refdata.portfolio_changed";
 };

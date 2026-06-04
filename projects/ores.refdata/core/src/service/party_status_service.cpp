@@ -18,9 +18,8 @@
  *
  */
 #include "ores.refdata.core/service/party_status_service.hpp"
-
-#include <stdexcept>
 #include "ores.service/messaging/handler_helpers.hpp"
+#include <stdexcept>
 
 using ores::service::messaging::stamp;
 
@@ -36,8 +35,7 @@ std::vector<domain::party_status> party_status_service::list_statuses() {
     return repo_.read_latest(ctx_);
 }
 
-std::optional<domain::party_status>
-party_status_service::find_status(const std::string& code) {
+std::optional<domain::party_status> party_status_service::find_status(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Finding party status: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty()) {
@@ -57,8 +55,7 @@ void party_status_service::save_status(const domain::party_status& status) {
     BOOST_LOG_SEV(lg(), info) << "Saved party status: " << status.code;
 }
 
-void party_status_service::save_statuses(
-    const std::vector<domain::party_status>& statuses) {
+void party_status_service::save_statuses(const std::vector<domain::party_status>& statuses) {
     for (const auto& s : statuses) {
         if (s.code.empty())
             throw std::invalid_argument("Party status code cannot be empty.");
@@ -76,8 +73,7 @@ void party_status_service::remove_status(const std::string& code) {
     BOOST_LOG_SEV(lg(), info) << "Removed party status: " << code;
 }
 
-void party_status_service::remove_statuses(
-    const std::vector<std::string>& codes) {
+void party_status_service::remove_statuses(const std::vector<std::string>& codes) {
     repo_.remove(ctx_, codes);
 }
 

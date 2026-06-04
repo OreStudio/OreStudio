@@ -18,7 +18,6 @@
  *
  */
 #include "ores.refdata.api/domain/business_unit_type_table.hpp"
-
 #include <fort.hpp>
 
 namespace ores::refdata::domain {
@@ -27,15 +26,12 @@ std::string convert_to_table(const std::vector<business_unit_type>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header
-          << "Code" << "Name" << "Level" << "Scheme" << "Description"
-          << "Version" << "ModifiedBy"
-          << fort::endr;
+    table << fort::header << "Code" << "Name" << "Level" << "Scheme" << "Description"
+          << "Version" << "ModifiedBy" << fort::endr;
 
     for (const auto& t : v) {
-        table << t.code << t.name << t.level << t.coding_scheme_code
-              << t.description << t.version << t.modified_by
-              << fort::endr;
+        table << t.code << t.name << t.level << t.coding_scheme_code << t.description << t.version
+              << t.modified_by << fort::endr;
     }
     return table.to_string();
 }

@@ -20,16 +20,15 @@
 #ifndef ORES_REFDATA_MESSAGING_ZERO_CONVENTION_PROTOCOL_HPP
 #define ORES_REFDATA_MESSAGING_ZERO_CONVENTION_PROTOCOL_HPP
 
+#include "ores.refdata.api/domain/zero_convention.hpp"
 #include <string>
 #include <vector>
-#include "ores.refdata.api/domain/zero_convention.hpp"
 
 namespace ores::refdata::messaging {
 
 struct get_zero_conventions_request {
     using response_type = struct get_zero_conventions_response;
-    static constexpr std::string_view nats_subject =
-        "refdata.v1.zero_conventions.list";
+    static constexpr std::string_view nats_subject = "refdata.v1.zero_conventions.list";
 };
 
 struct get_zero_conventions_response {
@@ -41,8 +40,7 @@ struct get_zero_conventions_response {
 
 struct save_zero_convention_request {
     using response_type = struct save_zero_convention_response;
-    static constexpr std::string_view nats_subject =
-        "refdata.v1.zero_conventions.save";
+    static constexpr std::string_view nats_subject = "refdata.v1.zero_conventions.save";
     ores::refdata::domain::zero_convention data;
 };
 
@@ -53,8 +51,7 @@ struct save_zero_convention_response {
 
 struct delete_zero_convention_request {
     using response_type = struct delete_zero_convention_response;
-    static constexpr std::string_view nats_subject =
-        "refdata.v1.zero_conventions.delete";
+    static constexpr std::string_view nats_subject = "refdata.v1.zero_conventions.delete";
     std::vector<std::string> codes;
 };
 
@@ -65,8 +62,7 @@ struct delete_zero_convention_response {
 
 struct get_zero_convention_history_request {
     using response_type = struct get_zero_convention_history_response;
-    static constexpr std::string_view nats_subject =
-        "refdata.v1.zero_conventions.history";
+    static constexpr std::string_view nats_subject = "refdata.v1.zero_conventions.history";
     std::string id;
 };
 

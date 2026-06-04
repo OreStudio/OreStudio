@@ -18,11 +18,10 @@
  *
  */
 #include "ores.refdata.core/repository/ibor_index_convention_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.refdata.api/domain/ibor_index_convention_json_io.hpp" // IWYU pragma: keep.
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::refdata::repository {
 
@@ -79,19 +78,13 @@ ibor_index_convention_mapper::map(const domain::ibor_index_convention& v) {
 std::vector<domain::ibor_index_convention>
 ibor_index_convention_mapper::map(const std::vector<ibor_index_convention_entity>& v) {
     return map_vector<ibor_index_convention_entity, domain::ibor_index_convention>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<ibor_index_convention_entity>
 ibor_index_convention_mapper::map(const std::vector<domain::ibor_index_convention>& v) {
     return map_vector<domain::ibor_index_convention, ibor_index_convention_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

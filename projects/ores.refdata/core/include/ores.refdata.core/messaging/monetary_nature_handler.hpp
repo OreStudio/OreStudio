@@ -20,23 +20,23 @@
 #ifndef ORES_REFDATA_CORE_MESSAGING_MONETARY_NATURE_HANDLER_HPP
 #define ORES_REFDATA_CORE_MESSAGING_MONETARY_NATURE_HANDLER_HPP
 
-#include <optional>
+#include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.database/domain/context.hpp"
+#include "ores.refdata.api/messaging/monetary_nature_protocol.hpp"
+#include "ores.refdata.core/service/monetary_nature_service.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include "ores.refdata.api/messaging/monetary_nature_protocol.hpp"
-#include "ores.refdata.core/service/monetary_nature_service.hpp"
+#include <optional>
 
 namespace ores::refdata::messaging {
 
 namespace {
 inline auto& monetary_nature_handler_lg() {
-    static auto instance = ores::logging::make_logger(
-        "ores.refdata.messaging.monetary_nature_handler");
+    static auto instance =
+        ores::logging::make_logger("ores.refdata.messaging.monetary_nature_handler");
     return instance;
 }
 } // namespace
@@ -51,15 +51,16 @@ using namespace ores::logging;
 class monetary_nature_handler {
 public:
     monetary_nature_handler(ores::nats::service::client& nats,
-        ores::database::context ctx,
-        std::optional<ores::security::jwt::jwt_authenticator> verifier)
-        : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier)) {}
+                            ores::database::context ctx,
+                            std::optional<ores::security::jwt::jwt_authenticator> verifier)
+        : nats_(nats)
+        , ctx_(std::move(ctx))
+        , verifier_(std::move(verifier)) {}
 
     void list(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id =
             log_handler_entry(monetary_nature_handler_lg(), msg);
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -69,10 +70,8 @@ public:
         get_monetary_natures_response resp;
         try {
             resp.monetary_natures = svc.list_types();
-            resp.total_available_count =
-                static_cast<int>(resp.monetary_natures.size());
-            BOOST_LOG_SEV(monetary_nature_handler_lg(), debug)
-                << "Completed " << msg.subject;
+            resp.total_available_count = static_cast<int>(resp.monetary_natures.size());
+            BOOST_LOG_SEV(monetary_nature_handler_lg(), debug) << "Completed " << msg.subject;
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(monetary_nature_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
@@ -83,8 +82,7 @@ public:
     void save(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id =
             log_handler_entry(monetary_nature_handler_lg(), msg);
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -103,23 +101,19 @@ public:
         }
         try {
             svc.save_type(req->data);
-            BOOST_LOG_SEV(monetary_nature_handler_lg(), debug)
-                << "Completed " << msg.subject;
-            reply(nats_, msg,
-                save_monetary_nature_response{.success = true});
+            BOOST_LOG_SEV(monetary_nature_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, save_monetary_nature_response{.success = true});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(monetary_nature_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, save_monetary_nature_response{
-                .success = false, .message = e.what()});
+            reply(nats_, msg, save_monetary_nature_response{.success = false, .message = e.what()});
         }
     }
 
     void remove(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id =
             log_handler_entry(monetary_nature_handler_lg(), msg);
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -138,23 +132,20 @@ public:
         }
         try {
             svc.remove_type(req->nature);
-            BOOST_LOG_SEV(monetary_nature_handler_lg(), debug)
-                << "Completed " << msg.subject;
-            reply(nats_, msg,
-                delete_monetary_nature_response{.success = true});
+            BOOST_LOG_SEV(monetary_nature_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, delete_monetary_nature_response{.success = true});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(monetary_nature_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, delete_monetary_nature_response{
-                .success = false, .message = e.what()});
+            reply(
+                nats_, msg, delete_monetary_nature_response{.success = false, .message = e.what()});
         }
     }
 
     void history(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id =
             log_handler_entry(monetary_nature_handler_lg(), msg);
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -169,15 +160,16 @@ public:
         }
         try {
             auto h = svc.get_type_history(req->nature);
-            BOOST_LOG_SEV(monetary_nature_handler_lg(), debug)
-                << "Completed " << msg.subject;
-            reply(nats_, msg, get_monetary_nature_history_response{
-                .success = true, .history = std::move(h)});
+            BOOST_LOG_SEV(monetary_nature_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_,
+                  msg,
+                  get_monetary_nature_history_response{.success = true, .history = std::move(h)});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(monetary_nature_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, get_monetary_nature_history_response{
-                .success = false, .message = e.what()});
+            reply(nats_,
+                  msg,
+                  get_monetary_nature_history_response{.success = false, .message = e.what()});
         }
     }
 

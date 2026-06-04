@@ -17,19 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.logging/make_logger.hpp"
+#include "ores.refdata.api/domain/currency.hpp"         // IWYU pragma: keep.
+#include "ores.refdata.api/domain/currency_json_io.hpp" // IWYU pragma: keep.
+#include "ores.refdata.api/generators/currency_generator.hpp"
 #include "ores.refdata.core/repository/currency_repository.hpp"
-
+#include "ores.testing/make_generation_context.hpp"
+#include "ores.testing/scoped_database_helper.hpp"
+#include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
+#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.logging/make_logger.hpp"
-#include "ores.testing/scoped_database_helper.hpp"
-#include "ores.testing/make_generation_context.hpp"
-#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
-#include "ores.refdata.api/domain/currency.hpp" // IWYU pragma: keep.
-#include "ores.refdata.api/domain/currency_json_io.hpp" // IWYU pragma: keep.
-#include "ores.refdata.api/generators/currency_generator.hpp"
 
 namespace {
 
@@ -85,8 +84,9 @@ TEST_CASE("read_latest_currencies", tags) {
     // Verify all written currencies can be found (other tests may have added more)
     CHECK(read_currencies.size() >= written_currencies.size());
     for (const auto& written : written_currencies) {
-        auto it = std::ranges::find_if(read_currencies,
-            [&written](const currency& c) { return c.iso_code == written.iso_code; });
+        auto it = std::ranges::find_if(read_currencies, [&written](const currency& c) {
+            return c.iso_code == written.iso_code;
+        });
         CHECK(it != read_currencies.end());
     }
 }
@@ -146,7 +146,8 @@ TEST_CASE("read_all_currencies_multiple_versions", tags) {
 
     // Get initial version count for this ISO code
     const auto initial_count = repo.read_all(h.context(), test_iso_code).size();
-    BOOST_LOG_SEV(lg, debug) << "Initial version count for " << test_iso_code << ": " << initial_count;
+    BOOST_LOG_SEV(lg, debug) << "Initial version count for " << test_iso_code << ": "
+                             << initial_count;
 
     ccy1.name = test_name + " v1";
     BOOST_LOG_SEV(lg, debug) << "Currency 1: " << ccy1;
@@ -217,13 +218,13 @@ TEST_CASE("write_and_read_currency_with_unicode_symbols", tags) {
 
     // Verify each written currency can be found by its ISO code
     for (const auto& written : currencies) {
-        auto it = std::ranges::find_if(read_currencies,
-            [&written](const currency& c) { return c.iso_code == written.iso_code; });
+        auto it = std::ranges::find_if(read_currencies, [&written](const currency& c) {
+            return c.iso_code == written.iso_code;
+        });
 
         REQUIRE(it != read_currencies.end());
         CHECK(it->symbol == written.symbol);
-        BOOST_LOG_SEV(lg, debug) << "Verified: " << written.iso_code
-                                 << " = " << it->symbol;
+        BOOST_LOG_SEV(lg, debug) << "Verified: " << written.iso_code << " = " << it->symbol;
     }
 }
 
@@ -234,9 +235,8 @@ TEST_CASE("write_and_read_currency_with_no_fractions", tags) {
     auto ctx = ores::testing::make_generation_context(h);
     const auto currencies = generate_synthetic_unicode_currencies(ctx);
     // Find the currency with no fractions (Yen-like)
-    const auto it = std::ranges::find_if(currencies, [](const auto& c) {
-        return c.fractions_per_unit == 0;
-    });
+    const auto it =
+        std::ranges::find_if(currencies, [](const auto& c) { return c.fractions_per_unit == 0; });
     REQUIRE(it != currencies.end());
     const auto& no_fractions_currency = *it;
 

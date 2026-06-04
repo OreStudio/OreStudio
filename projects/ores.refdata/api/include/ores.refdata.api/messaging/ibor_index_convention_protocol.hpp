@@ -20,16 +20,15 @@
 #ifndef ORES_REFDATA_MESSAGING_IBOR_INDEX_CONVENTION_PROTOCOL_HPP
 #define ORES_REFDATA_MESSAGING_IBOR_INDEX_CONVENTION_PROTOCOL_HPP
 
+#include "ores.refdata.api/domain/ibor_index_convention.hpp"
 #include <string>
 #include <vector>
-#include "ores.refdata.api/domain/ibor_index_convention.hpp"
 
 namespace ores::refdata::messaging {
 
 struct get_ibor_index_conventions_request {
     using response_type = struct get_ibor_index_conventions_response;
-    static constexpr std::string_view nats_subject =
-        "refdata.v1.ibor_index_conventions.list";
+    static constexpr std::string_view nats_subject = "refdata.v1.ibor_index_conventions.list";
 };
 
 struct get_ibor_index_conventions_response {
@@ -41,8 +40,7 @@ struct get_ibor_index_conventions_response {
 
 struct save_ibor_index_convention_request {
     using response_type = struct save_ibor_index_convention_response;
-    static constexpr std::string_view nats_subject =
-        "refdata.v1.ibor_index_conventions.save";
+    static constexpr std::string_view nats_subject = "refdata.v1.ibor_index_conventions.save";
     ores::refdata::domain::ibor_index_convention data;
 };
 
@@ -53,8 +51,7 @@ struct save_ibor_index_convention_response {
 
 struct delete_ibor_index_convention_request {
     using response_type = struct delete_ibor_index_convention_response;
-    static constexpr std::string_view nats_subject =
-        "refdata.v1.ibor_index_conventions.delete";
+    static constexpr std::string_view nats_subject = "refdata.v1.ibor_index_conventions.delete";
     std::vector<std::string> codes;
 };
 
@@ -65,8 +62,7 @@ struct delete_ibor_index_convention_response {
 
 struct get_ibor_index_convention_history_request {
     using response_type = struct get_ibor_index_convention_history_response;
-    static constexpr std::string_view nats_subject =
-        "refdata.v1.ibor_index_conventions.history";
+    static constexpr std::string_view nats_subject = "refdata.v1.ibor_index_conventions.history";
     std::string id;
 };
 

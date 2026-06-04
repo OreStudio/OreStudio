@@ -18,7 +18,6 @@
  *
  */
 #include "ores.refdata.api/domain/ois_convention_table.hpp"
-
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
 
@@ -29,10 +28,12 @@ std::string convert_to_table(const std::vector<ois_convention>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Id" << "Index" << "Spot Lag" << "Fixed DCF" << "Modified By" << "Version" << fort::endr;
+    table << fort::header << "Id" << "Index" << "Spot Lag" << "Fixed DCF" << "Modified By"
+          << "Version" << fort::endr;
 
     for (const auto& oc : v) {
-        table << oc.id << oc.index << oc.spot_lag << oc.fixed_day_count_fraction << oc.modified_by << oc.version << fort::endr;
+        table << oc.id << oc.index << oc.spot_lag << oc.fixed_day_count_fraction << oc.modified_by
+              << oc.version << fort::endr;
     }
     return table.to_string();
 }

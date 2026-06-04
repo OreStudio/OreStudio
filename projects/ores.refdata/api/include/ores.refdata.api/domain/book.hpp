@@ -20,11 +20,11 @@
 #ifndef ORES_REFDATA_DOMAIN_BOOK_HPP
 #define ORES_REFDATA_DOMAIN_BOOK_HPP
 
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <optional>
 #include <string>
-#include <boost/uuid/uuid.hpp>
-#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::refdata::domain {
 
@@ -89,7 +89,8 @@ struct book final {
     /**
      * @brief Business unit that owns this book.
      *
-     * Optional FK to business_units. Should reference a unit that is an owner_unit_id in the book's portfolio ancestry chain.
+     * Optional FK to business_units. Should reference a unit that is an owner_unit_id in the book's
+     * portfolio ancestry chain.
      */
     std::optional<boost::uuids::uuid> owner_unit_id;
 

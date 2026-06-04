@@ -18,18 +18,12 @@
  *
  */
 #include "ores.refdata.service/app/application.hpp"
-
-#include <algorithm>
-#include <rfl/json.hpp>
 #include "ores.database/service/context_factory.hpp"
-#include "ores.utility/version/version.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.refdata.service/app/application_exception.hpp"
-#include "ores.nats/service/client.hpp"
+#include "ores.eventing/domain/entity_change_event.hpp"
 #include "ores.eventing/service/event_bus.hpp"
 #include "ores.eventing/service/postgres_event_source.hpp"
 #include "ores.eventing/service/registrar.hpp"
-#include "ores.eventing/domain/entity_change_event.hpp"
+#include "ores.nats/service/client.hpp"
 #include "ores.refdata.api/eventing/book_changed_event.hpp"
 #include "ores.refdata.api/eventing/business_centre_changed_event.hpp"
 #include "ores.refdata.api/eventing/business_unit_changed_event.hpp"
@@ -45,28 +39,30 @@
 #include "ores.refdata.api/eventing/party_identifier_changed_event.hpp"
 #include "ores.refdata.api/eventing/portfolio_changed_event.hpp"
 #include "ores.refdata.core/messaging/registrar.hpp"
-#include <boost/asio/co_spawn.hpp>
-#include <boost/asio/detached.hpp>
+#include "ores.refdata.service/app/application_exception.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/version/version.hpp"
+#include <boost/asio/co_spawn.hpp>
+#include <boost/asio/detached.hpp>
+#include <algorithm>
+#include <rfl/json.hpp>
 
 namespace ores::refdata::service::app {
 
 using namespace ores::logging;
-namespace ev  = ores::eventing;
+namespace ev = ores::eventing;
 namespace rdev = ores::refdata::eventing;
 
-ores::database::context application::make_context(
-    const ores::database::database_options& db_opts) {
+ores::database::context application::make_context(const ores::database::database_options& db_opts) {
     using ores::database::context_factory;
 
-    context_factory::configuration cfg {
-        .database_options = db_opts,
-        .pool_size = 4,
-        .num_attempts = 10,
-        .wait_time_in_seconds = 1,
-        .service_account = db_opts.user
-    };
+    context_factory::configuration cfg{.database_options = db_opts,
+                                       .pool_size = 4,
+                                       .num_attempts = 10,
+                                       .wait_time_in_seconds = 1,
+                                       .service_account = db_opts.user};
 
     return context_factory::make_context(cfg);
 }
@@ -89,8 +85,7 @@ void publish_entity_event(ores::nats::service::client& nats,
     try {
         const auto json = rfl::json::write(notif);
         std::vector<std::byte> data(json.size());
-        std::transform(json.begin(), json.end(), data.begin(),
-                       [](char c) { return std::byte(c); });
+        std::transform(json.begin(), json.end(), data.begin(), [](char c) { return std::byte(c); });
         nats.publish(subject, std::move(data), {});
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(pub_lg(), error)
@@ -100,26 +95,24 @@ void publish_entity_event(ores::nats::service::client& nats,
 
 } // namespace
 
-boost::asio::awaitable<void>
-application::run(boost::asio::io_context& io_ctx,
-    const config::options& cfg) const {
+boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
+                                              const config::options& cfg) const {
 
     BOOST_LOG_SEV(lg(), info) << ores::utility::version::format_startup_message(
         "ores.refdata.service", 0, 1);
 
     ores::nats::service::client nats(cfg.nats);
     nats.connect();
-    BOOST_LOG_SEV(lg(), info) << "Connected to NATS: " << cfg.nats.url
-                              << " (namespace: '"
-                              << (cfg.nats.subject_prefix.empty() ? "(none)" : cfg.nats.subject_prefix)
+    BOOST_LOG_SEV(lg(), info) << "Connected to NATS: " << cfg.nats.url << " (namespace: '"
+                              << (cfg.nats.subject_prefix.empty() ? "(none)" :
+                                                                    cfg.nats.subject_prefix)
                               << "')";
 
     // =========================================================================
     // Entity change event pipeline: PostgreSQL LISTEN/NOTIFY → NATS publish
     // =========================================================================
     ev::service::event_bus event_bus;
-    ev::service::postgres_event_source event_source(
-        make_context(cfg.database), event_bus);
+    ev::service::postgres_event_source event_source(make_context(cfg.database), event_bus);
 
     ev::service::registrar::register_mapping<rdev::book_changed_event>(
         event_source, "ores.refdata.book", "ores_books");
@@ -130,7 +123,8 @@ application::run(boost::asio::io_context& io_ctx,
     ev::service::registrar::register_mapping<rdev::counterparty_changed_event>(
         event_source, "ores.refdata.counterparty", "ores_counterparties");
     ev::service::registrar::register_mapping<rdev::counterparty_contact_information_changed_event>(
-        event_source, "ores.refdata.counterparty_contact_information",
+        event_source,
+        "ores.refdata.counterparty_contact_information",
         "ores_counterparty_contact_informations");
     ev::service::registrar::register_mapping<rdev::counterparty_identifier_changed_event>(
         event_source, "ores.refdata.counterparty_identifier", "ores_counterparty_identifiers");
@@ -145,181 +139,180 @@ application::run(boost::asio::io_context& io_ctx,
     ev::service::registrar::register_mapping<rdev::party_changed_event>(
         event_source, "ores.refdata.party", "ores_parties");
     ev::service::registrar::register_mapping<rdev::party_contact_information_changed_event>(
-        event_source, "ores.refdata.party_contact_information",
-        "ores_party_contact_informations");
+        event_source, "ores.refdata.party_contact_information", "ores_party_contact_informations");
     ev::service::registrar::register_mapping<rdev::party_identifier_changed_event>(
         event_source, "ores.refdata.party_identifier", "ores_party_identifiers");
     ev::service::registrar::register_mapping<rdev::portfolio_changed_event>(
         event_source, "ores.refdata.portfolio", "ores_portfolios");
 
-    auto book_sub = event_bus.subscribe<rdev::book_changed_event>(
-        [&nats](const rdev::book_changed_event& e) {
-            publish_entity_event(nats, std::string(ev::domain::event_traits<rdev::book_changed_event>::name),
-                ev::domain::entity_change_event{
-                    .entity     = "ores.refdata.book",
-                    .timestamp  = e.timestamp,
-                    .entity_ids = e.ids,
-                    .tenant_id  = e.tenant_id
-                });
+    auto book_sub =
+        event_bus.subscribe<rdev::book_changed_event>([&nats](const rdev::book_changed_event& e) {
+            publish_entity_event(
+                nats,
+                std::string(ev::domain::event_traits<rdev::book_changed_event>::name),
+                ev::domain::entity_change_event{.entity = "ores.refdata.book",
+                                                .timestamp = e.timestamp,
+                                                .entity_ids = e.ids,
+                                                .tenant_id = e.tenant_id});
         });
 
     auto business_centre_sub = event_bus.subscribe<rdev::business_centre_changed_event>(
         [&nats](const rdev::business_centre_changed_event& e) {
-            publish_entity_event(nats, std::string(ev::domain::event_traits<rdev::business_centre_changed_event>::name),
-                ev::domain::entity_change_event{
-                    .entity     = "ores.refdata.business_centre",
-                    .timestamp  = e.timestamp,
-                    .entity_ids = e.codes,
-                    .tenant_id  = e.tenant_id
-                });
+            publish_entity_event(
+                nats,
+                std::string(ev::domain::event_traits<rdev::business_centre_changed_event>::name),
+                ev::domain::entity_change_event{.entity = "ores.refdata.business_centre",
+                                                .timestamp = e.timestamp,
+                                                .entity_ids = e.codes,
+                                                .tenant_id = e.tenant_id});
         });
 
     auto business_unit_sub = event_bus.subscribe<rdev::business_unit_changed_event>(
         [&nats](const rdev::business_unit_changed_event& e) {
-            publish_entity_event(nats, std::string(ev::domain::event_traits<rdev::business_unit_changed_event>::name),
-                ev::domain::entity_change_event{
-                    .entity     = "ores.refdata.business_unit",
-                    .timestamp  = e.timestamp,
-                    .entity_ids = e.ids,
-                    .tenant_id  = e.tenant_id
-                });
+            publish_entity_event(
+                nats,
+                std::string(ev::domain::event_traits<rdev::business_unit_changed_event>::name),
+                ev::domain::entity_change_event{.entity = "ores.refdata.business_unit",
+                                                .timestamp = e.timestamp,
+                                                .entity_ids = e.ids,
+                                                .tenant_id = e.tenant_id});
         });
 
     auto counterparty_sub = event_bus.subscribe<rdev::counterparty_changed_event>(
         [&nats](const rdev::counterparty_changed_event& e) {
-            publish_entity_event(nats, std::string(ev::domain::event_traits<rdev::counterparty_changed_event>::name),
-                ev::domain::entity_change_event{
-                    .entity     = "ores.refdata.counterparty",
-                    .timestamp  = e.timestamp,
-                    .entity_ids = e.ids,
-                    .tenant_id  = e.tenant_id
-                });
+            publish_entity_event(
+                nats,
+                std::string(ev::domain::event_traits<rdev::counterparty_changed_event>::name),
+                ev::domain::entity_change_event{.entity = "ores.refdata.counterparty",
+                                                .timestamp = e.timestamp,
+                                                .entity_ids = e.ids,
+                                                .tenant_id = e.tenant_id});
         });
 
     auto counterparty_contact_sub =
         event_bus.subscribe<rdev::counterparty_contact_information_changed_event>(
             [&nats](const rdev::counterparty_contact_information_changed_event& e) {
-                publish_entity_event(nats,
-                    std::string(ev::domain::event_traits<rdev::counterparty_contact_information_changed_event>::name),
+                publish_entity_event(
+                    nats,
+                    std::string(ev::domain::event_traits<
+                                rdev::counterparty_contact_information_changed_event>::name),
                     ev::domain::entity_change_event{
-                        .entity     = "ores.refdata.counterparty_contact_information",
-                        .timestamp  = e.timestamp,
+                        .entity = "ores.refdata.counterparty_contact_information",
+                        .timestamp = e.timestamp,
                         .entity_ids = e.ids,
-                        .tenant_id  = e.tenant_id
-                    });
+                        .tenant_id = e.tenant_id});
             });
 
-    auto counterparty_id_sub =
-        event_bus.subscribe<rdev::counterparty_identifier_changed_event>(
-            [&nats](const rdev::counterparty_identifier_changed_event& e) {
-                publish_entity_event(nats,
-                    std::string(ev::domain::event_traits<rdev::counterparty_identifier_changed_event>::name),
-                    ev::domain::entity_change_event{
-                        .entity     = "ores.refdata.counterparty_identifier",
-                        .timestamp  = e.timestamp,
-                        .entity_ids = e.ids,
-                        .tenant_id  = e.tenant_id
-                    });
-            });
+    auto counterparty_id_sub = event_bus.subscribe<rdev::counterparty_identifier_changed_event>(
+        [&nats](const rdev::counterparty_identifier_changed_event& e) {
+            publish_entity_event(
+                nats,
+                std::string(
+                    ev::domain::event_traits<rdev::counterparty_identifier_changed_event>::name),
+                ev::domain::entity_change_event{.entity = "ores.refdata.counterparty_identifier",
+                                                .timestamp = e.timestamp,
+                                                .entity_ids = e.ids,
+                                                .tenant_id = e.tenant_id});
+        });
 
     auto country_sub = event_bus.subscribe<rdev::country_changed_event>(
         [&nats](const rdev::country_changed_event& e) {
-            publish_entity_event(nats, std::string(ev::domain::event_traits<rdev::country_changed_event>::name),
-                ev::domain::entity_change_event{
-                    .entity     = "ores.refdata.country",
-                    .timestamp  = e.timestamp,
-                    .entity_ids = e.alpha2_codes,
-                    .tenant_id  = e.tenant_id
-                });
+            publish_entity_event(
+                nats,
+                std::string(ev::domain::event_traits<rdev::country_changed_event>::name),
+                ev::domain::entity_change_event{.entity = "ores.refdata.country",
+                                                .timestamp = e.timestamp,
+                                                .entity_ids = e.alpha2_codes,
+                                                .tenant_id = e.tenant_id});
         });
 
     auto currency_sub = event_bus.subscribe<rdev::currency_changed_event>(
         [&nats](const rdev::currency_changed_event& e) {
-            publish_entity_event(nats, std::string(ev::domain::event_traits<rdev::currency_changed_event>::name),
-                ev::domain::entity_change_event{
-                    .entity     = "ores.refdata.currency",
-                    .timestamp  = e.timestamp,
-                    .entity_ids = e.iso_codes,
-                    .tenant_id  = e.tenant_id
-                });
+            publish_entity_event(
+                nats,
+                std::string(ev::domain::event_traits<rdev::currency_changed_event>::name),
+                ev::domain::entity_change_event{.entity = "ores.refdata.currency",
+                                                .timestamp = e.timestamp,
+                                                .entity_ids = e.iso_codes,
+                                                .tenant_id = e.tenant_id});
         });
 
-    auto currency_market_tier_sub =
-        event_bus.subscribe<rdev::currency_market_tier_changed_event>(
-            [&nats](const rdev::currency_market_tier_changed_event& e) {
-                publish_entity_event(nats,
-                    std::string(ev::domain::event_traits<rdev::currency_market_tier_changed_event>::name),
-                    ev::domain::entity_change_event{
-                        .entity     = "ores.refdata.currency_market_tier",
-                        .timestamp  = e.timestamp,
-                        .entity_ids = e.codes,
-                        .tenant_id  = e.tenant_id
-                    });
-            });
+    auto currency_market_tier_sub = event_bus.subscribe<rdev::currency_market_tier_changed_event>(
+        [&nats](const rdev::currency_market_tier_changed_event& e) {
+            publish_entity_event(
+                nats,
+                std::string(
+                    ev::domain::event_traits<rdev::currency_market_tier_changed_event>::name),
+                ev::domain::entity_change_event{.entity = "ores.refdata.currency_market_tier",
+                                                .timestamp = e.timestamp,
+                                                .entity_ids = e.codes,
+                                                .tenant_id = e.tenant_id});
+        });
 
     auto monetary_nature_sub = event_bus.subscribe<rdev::monetary_nature_changed_event>(
         [&nats](const rdev::monetary_nature_changed_event& e) {
-            publish_entity_event(nats, std::string(ev::domain::event_traits<rdev::monetary_nature_changed_event>::name),
-                ev::domain::entity_change_event{
-                    .entity     = "ores.refdata.monetary_nature",
-                    .timestamp  = e.timestamp,
-                    .entity_ids = e.codes,
-                    .tenant_id  = e.tenant_id
-                });
+            publish_entity_event(
+                nats,
+                std::string(ev::domain::event_traits<rdev::monetary_nature_changed_event>::name),
+                ev::domain::entity_change_event{.entity = "ores.refdata.monetary_nature",
+                                                .timestamp = e.timestamp,
+                                                .entity_ids = e.codes,
+                                                .tenant_id = e.tenant_id});
         });
 
-    auto party_sub = event_bus.subscribe<rdev::party_changed_event>(
-        [&nats](const rdev::party_changed_event& e) {
-            publish_entity_event(nats, std::string(ev::domain::event_traits<rdev::party_changed_event>::name),
-                ev::domain::entity_change_event{
-                    .entity     = "ores.refdata.party",
-                    .timestamp  = e.timestamp,
-                    .entity_ids = e.ids,
-                    .tenant_id  = e.tenant_id
-                });
+    auto party_sub =
+        event_bus.subscribe<rdev::party_changed_event>([&nats](const rdev::party_changed_event& e) {
+            publish_entity_event(
+                nats,
+                std::string(ev::domain::event_traits<rdev::party_changed_event>::name),
+                ev::domain::entity_change_event{.entity = "ores.refdata.party",
+                                                .timestamp = e.timestamp,
+                                                .entity_ids = e.ids,
+                                                .tenant_id = e.tenant_id});
         });
 
-    auto party_contact_sub =
-        event_bus.subscribe<rdev::party_contact_information_changed_event>(
-            [&nats](const rdev::party_contact_information_changed_event& e) {
-                publish_entity_event(nats,
-                    std::string(ev::domain::event_traits<rdev::party_contact_information_changed_event>::name),
-                    ev::domain::entity_change_event{
-                        .entity     = "ores.refdata.party_contact_information",
-                        .timestamp  = e.timestamp,
-                        .entity_ids = e.ids,
-                        .tenant_id  = e.tenant_id
-                    });
-            });
+    auto party_contact_sub = event_bus.subscribe<rdev::party_contact_information_changed_event>(
+        [&nats](const rdev::party_contact_information_changed_event& e) {
+            publish_entity_event(
+                nats,
+                std::string(
+                    ev::domain::event_traits<rdev::party_contact_information_changed_event>::name),
+                ev::domain::entity_change_event{.entity = "ores.refdata.party_contact_information",
+                                                .timestamp = e.timestamp,
+                                                .entity_ids = e.ids,
+                                                .tenant_id = e.tenant_id});
+        });
 
     auto party_id_sub = event_bus.subscribe<rdev::party_identifier_changed_event>(
         [&nats](const rdev::party_identifier_changed_event& e) {
-            publish_entity_event(nats,
+            publish_entity_event(
+                nats,
                 std::string(ev::domain::event_traits<rdev::party_identifier_changed_event>::name),
-                ev::domain::entity_change_event{
-                    .entity     = "ores.refdata.party_identifier",
-                    .timestamp  = e.timestamp,
-                    .entity_ids = e.ids,
-                    .tenant_id  = e.tenant_id
-                });
+                ev::domain::entity_change_event{.entity = "ores.refdata.party_identifier",
+                                                .timestamp = e.timestamp,
+                                                .entity_ids = e.ids,
+                                                .tenant_id = e.tenant_id});
         });
 
     auto portfolio_sub = event_bus.subscribe<rdev::portfolio_changed_event>(
         [&nats](const rdev::portfolio_changed_event& e) {
-            publish_entity_event(nats, std::string(ev::domain::event_traits<rdev::portfolio_changed_event>::name),
-                ev::domain::entity_change_event{
-                    .entity     = "ores.refdata.portfolio",
-                    .timestamp  = e.timestamp,
-                    .entity_ids = e.ids,
-                    .tenant_id  = e.tenant_id
-                });
+            publish_entity_event(
+                nats,
+                std::string(ev::domain::event_traits<rdev::portfolio_changed_event>::name),
+                ev::domain::entity_change_event{.entity = "ores.refdata.portfolio",
+                                                .timestamp = e.timestamp,
+                                                .entity_ids = e.ids,
+                                                .tenant_id = e.tenant_id});
         });
 
     event_source.start();
     BOOST_LOG_SEV(lg(), info) << "Entity change event pipeline started.";
 
     co_await ores::service::service::run(
-        io_ctx, nats, make_context(cfg.database), "ores.refdata.service",
+        io_ctx,
+        nats,
+        make_context(cfg.database),
+        "ores.refdata.service",
         [](auto& n, auto c, auto v) {
             return ores::refdata::messaging::registrar::register_handlers(
                 n, std::move(c), std::move(v));
@@ -327,9 +320,7 @@ application::run(boost::asio::io_context& io_ctx,
         [&nats](boost::asio::io_context& ioc) {
             auto hb = std::make_shared<ores::service::service::heartbeat_publisher>(
                 std::string(service_name), std::string(service_version), nats);
-            boost::asio::co_spawn(ioc,
-                [hb]() { return hb->run(); },
-                boost::asio::detached);
+            boost::asio::co_spawn(ioc, [hb]() { return hb->run(); }, boost::asio::detached);
         });
 
     event_source.stop();

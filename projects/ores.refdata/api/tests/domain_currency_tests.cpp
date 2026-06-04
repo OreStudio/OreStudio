@@ -17,15 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/currency.hpp"
-
+#include "ores.refdata.api/domain/currency_json_io.hpp" // IWYU pragma: keep.
+#include "ores.refdata.api/domain/currency_table.hpp"
+#include "ores.utility/faker/datetime.hpp"
 #include <array>
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.logging/make_logger.hpp"
-#include "ores.utility/faker/datetime.hpp"
-#include "ores.refdata.api/domain/currency_json_io.hpp" // IWYU pragma: keep.
-#include "ores.refdata.api/domain/currency_table.hpp"
 
 namespace {
 
@@ -116,8 +115,8 @@ TEST_CASE("create_multiple_random_currencies", tags) {
         ccy.format = "%3% %1$.2f";
         ccy.monetary_nature = "";
         ccy.market_tier = "";
-        ccy.modified_by = std::string(faker::person::firstName()) + " " +
-            std::string(faker::person::lastName());
+        ccy.modified_by =
+            std::string(faker::person::firstName()) + " " + std::string(faker::person::lastName());
         ccy.recorded_at = {};
 
         BOOST_LOG_SEV(lg, debug) << "Currency " << i << ": " << ccy;
@@ -207,15 +206,13 @@ TEST_CASE("create_currencies_with_different_symbols", tags) {
     auto lg(make_logger(test_suite));
 
     using Currency = std::tuple<std::string, std::string, std::string>;
-    const std::array<Currency, 7> currencies = {
-        Currency{"USD", "$", "United States Dollar"},
-        Currency{"EUR", "€", "Euro"},
-        Currency{"GBP", "£", "British Pound Sterling"},
-        Currency{"JPY", "¥", "Japanese Yen"},
-        Currency{"INR", "₹", "Indian Rupee"},
-        Currency{"BTC", "₿", "Bitcoin"},
-        Currency{"RUB", "₽", "Russian Rubble"}
-    };
+    const std::array<Currency, 7> currencies = {Currency{"USD", "$", "United States Dollar"},
+                                                Currency{"EUR", "€", "Euro"},
+                                                Currency{"GBP", "£", "British Pound Sterling"},
+                                                Currency{"JPY", "¥", "Japanese Yen"},
+                                                Currency{"INR", "₹", "Indian Rupee"},
+                                                Currency{"BTC", "₿", "Bitcoin"},
+                                                Currency{"RUB", "₽", "Russian Rubble"}};
 
     for (const auto& [code, symbol, name] : currencies) {
         currency ccy;

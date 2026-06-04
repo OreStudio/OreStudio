@@ -20,9 +20,9 @@
 #ifndef ORES_REFDATA_DOMAIN_FRA_CONVENTION_HPP
 #define ORES_REFDATA_DOMAIN_FRA_CONVENTION_HPP
 
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <chrono>
 #include <string>
-#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::refdata::domain {
 
@@ -59,7 +59,8 @@ struct fra_convention final {
     std::string id;
 
     /**
-     * @brief IBOR index identifier (e.g. 'EUR-EURIBOR-6M'). All settlement, calendar, and day count details are inherited from the referenced index convention.
+     * @brief IBOR index identifier (e.g. 'EUR-EURIBOR-6M'). All settlement, calendar, and day count
+     * details are inherited from the referenced index convention.
      */
     std::string index;
 

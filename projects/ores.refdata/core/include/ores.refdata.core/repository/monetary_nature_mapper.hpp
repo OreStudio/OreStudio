@@ -20,10 +20,10 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_MONETARY_NATURE_MAPPER_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_MONETARY_NATURE_MAPPER_HPP
 
-#include "ores.refdata.api/domain/monetary_nature.hpp"
-#include "ores.refdata.core/repository/monetary_nature_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.refdata.api/domain/monetary_nature.hpp"
 #include "ores.refdata.core/export.hpp"
+#include "ores.refdata.core/repository/monetary_nature_entity.hpp"
 
 namespace ores::refdata::repository {
 
@@ -32,22 +32,20 @@ namespace ores::refdata::repository {
  */
 class ORES_REFDATA_CORE_EXPORT monetary_nature_mapper {
 private:
-    inline static std::string_view logger_name =
-        "ores.refdata.repository.monetary_nature_mapper";
+    inline static std::string_view logger_name = "ores.refdata.repository.monetary_nature_mapper";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }
+
 public:
     static domain::monetary_nature map(const monetary_nature_entity& v);
     static monetary_nature_entity map(const domain::monetary_nature& v);
 
-    static std::vector<domain::monetary_nature>
-    map(const std::vector<monetary_nature_entity>& v);
-    static std::vector<monetary_nature_entity>
-    map(const std::vector<domain::monetary_nature>& v);
+    static std::vector<domain::monetary_nature> map(const std::vector<monetary_nature_entity>& v);
+    static std::vector<monetary_nature_entity> map(const std::vector<domain::monetary_nature>& v);
 };
 
 }

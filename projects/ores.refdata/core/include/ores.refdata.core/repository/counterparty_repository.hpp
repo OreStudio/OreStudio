@@ -20,15 +20,15 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_COUNTERPARTY_REPOSITORY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_COUNTERPARTY_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include <cstdint>
-#include <sqlgen/postgres.hpp>
-#include <boost/uuid/uuid.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/counterparty.hpp"
 #include "ores.refdata.core/export.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <cstdint>
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::refdata::repository {
 
@@ -37,8 +37,7 @@ namespace ores::refdata::repository {
  */
 class ORES_REFDATA_CORE_EXPORT counterparty_repository {
 private:
-    inline static std::string_view logger_name =
-        "ores.refdata.repository.counterparty_repository";
+    inline static std::string_view logger_name = "ores.refdata.repository.counterparty_repository";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -57,8 +56,7 @@ public:
     void write(const std::vector<domain::counterparty>& counterparties);
 
     std::vector<domain::counterparty> read_latest();
-    std::vector<domain::counterparty> read_latest(std::uint32_t offset,
-                                                   std::uint32_t limit);
+    std::vector<domain::counterparty> read_latest(std::uint32_t offset, std::uint32_t limit);
     std::vector<domain::counterparty> read_latest(const boost::uuids::uuid& id);
     std::vector<domain::counterparty> read_latest_by_code(const std::string& code);
 

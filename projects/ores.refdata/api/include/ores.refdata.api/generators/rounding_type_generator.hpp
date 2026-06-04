@@ -20,25 +20,24 @@
 #ifndef ORES_REFDATA_CORE_GENERATORS_ROUNDING_TYPE_GENERATOR_HPP
 #define ORES_REFDATA_CORE_GENERATORS_ROUNDING_TYPE_GENERATOR_HPP
 
-#include <vector>
 #include "ores.refdata.api/domain/rounding_type.hpp"
 #include "ores.refdata.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include <vector>
 
 namespace ores::refdata::generators {
 
 /**
  * @brief Generates a synthetic rounding_type.
  */
-ORES_REFDATA_API_EXPORT domain::rounding_type generate_synthetic_rounding_type(
-    utility::generation::generation_context& ctx);
+ORES_REFDATA_API_EXPORT domain::rounding_type
+generate_synthetic_rounding_type(utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic rounding_types.
  */
 ORES_REFDATA_API_EXPORT std::vector<domain::rounding_type>
-generate_synthetic_rounding_types(std::size_t n,
-    utility::generation::generation_context& ctx);
+generate_synthetic_rounding_types(std::size_t n, utility::generation::generation_context& ctx);
 
 }
 

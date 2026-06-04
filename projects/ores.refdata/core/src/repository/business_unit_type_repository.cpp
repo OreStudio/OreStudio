@@ -18,14 +18,13 @@
  *
  */
 #include "ores.refdata.core/repository/business_unit_type_repository.hpp"
-
-#include <sqlgen/postgres.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
 #include "ores.refdata.api/domain/business_unit_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/business_unit_type_entity.hpp"
 #include "ores.refdata.core/repository/business_unit_type_mapper.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <sqlgen/postgres.hpp>
 
 namespace ores::refdata::repository {
 
@@ -41,34 +40,38 @@ std::string business_unit_type_repository::sql() {
 business_unit_type_repository::business_unit_type_repository(context ctx)
     : ctx_(std::move(ctx)) {}
 
-void business_unit_type_repository::write(
-    const domain::business_unit_type& business_unit_type) {
+void business_unit_type_repository::write(const domain::business_unit_type& business_unit_type) {
     BOOST_LOG_SEV(lg(), debug) << "Writing business unit type to database: "
                                << business_unit_type.id;
-    execute_write_query(ctx_, business_unit_type_mapper::map(business_unit_type),
-        lg(), "writing business unit type to database");
+    execute_write_query(ctx_,
+                        business_unit_type_mapper::map(business_unit_type),
+                        lg(),
+                        "writing business unit type to database");
 }
 
 void business_unit_type_repository::write(
     const std::vector<domain::business_unit_type>& business_unit_types) {
     BOOST_LOG_SEV(lg(), debug) << "Writing business unit types to database. Count: "
                                << business_unit_types.size();
-    execute_write_query(ctx_, business_unit_type_mapper::map(business_unit_types),
-        lg(), "writing business unit types to database");
+    execute_write_query(ctx_,
+                        business_unit_type_mapper::map(business_unit_types),
+                        lg(),
+                        "writing business unit types to database");
 }
 
-std::vector<domain::business_unit_type>
-business_unit_type_repository::read_latest() {
+std::vector<domain::business_unit_type> business_unit_type_repository::read_latest() {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<business_unit_type_entity>> |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-        order_by("name"_c);
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("name"_c);
 
     return execute_read_query<business_unit_type_entity, domain::business_unit_type>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return business_unit_type_mapper::map(entities); },
-        lg(), "Reading latest business unit types");
+        lg(),
+        "Reading latest business unit types");
 }
 
 std::vector<domain::business_unit_type>
@@ -78,13 +81,16 @@ business_unit_type_repository::read_latest(const boost::uuids::uuid& id) {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
     const auto id_str = boost::uuids::to_string(id);
-    const auto query = sqlgen::read<std::vector<business_unit_type_entity>> |
+    const auto query =
+        sqlgen::read<std::vector<business_unit_type_entity>> |
         where("tenant_id"_c == tid && "id"_c == id_str && "valid_to"_c == max.value());
 
     return execute_read_query<business_unit_type_entity, domain::business_unit_type>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return business_unit_type_mapper::map(entities); },
-        lg(), "Reading latest business unit type by id.");
+        lg(),
+        "Reading latest business unit type by id.");
 }
 
 std::vector<domain::business_unit_type>
@@ -93,13 +99,16 @@ business_unit_type_repository::read_latest_by_code(const std::string& code) {
 
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<business_unit_type_entity>> |
+    const auto query =
+        sqlgen::read<std::vector<business_unit_type_entity>> |
         where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max.value());
 
     return execute_read_query<business_unit_type_entity, domain::business_unit_type>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return business_unit_type_mapper::map(entities); },
-        lg(), "Reading latest business unit type by code.");
+        lg(),
+        "Reading latest business unit type by code.");
 }
 
 std::vector<domain::business_unit_type>
@@ -109,13 +118,15 @@ business_unit_type_repository::read_all(const boost::uuids::uuid& id) {
     const auto tid = ctx_.tenant_id().to_string();
     const auto id_str = boost::uuids::to_string(id);
     const auto query = sqlgen::read<std::vector<business_unit_type_entity>> |
-        where("tenant_id"_c == tid && "id"_c == id_str) |
-        order_by("version"_c.desc());
+                       where("tenant_id"_c == tid && "id"_c == id_str) |
+                       order_by("version"_c.desc());
 
     return execute_read_query<business_unit_type_entity, domain::business_unit_type>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return business_unit_type_mapper::map(entities); },
-        lg(), "Reading all business unit type versions by id.");
+        lg(),
+        "Reading all business unit type versions by id.");
 }
 
 void business_unit_type_repository::remove(const boost::uuids::uuid& id) {
@@ -124,7 +135,7 @@ void business_unit_type_repository::remove(const boost::uuids::uuid& id) {
     const auto tid = ctx_.tenant_id().to_string();
     const auto id_str = boost::uuids::to_string(id);
     const auto query = sqlgen::delete_from<business_unit_type_entity> |
-        where("tenant_id"_c == tid && "id"_c == id_str);
+                       where("tenant_id"_c == tid && "id"_c == id_str);
 
     execute_delete_query(ctx_, query, lg(), "removing business unit type from database");
 }

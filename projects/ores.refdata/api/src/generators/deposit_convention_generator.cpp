@@ -18,32 +18,30 @@
  *
  */
 #include "ores.refdata.api/generators/deposit_convention_generator.hpp"
-
-#include <atomic>
-#include <string>
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <atomic>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <string>
 
 namespace ores::refdata::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::deposit_convention generate_synthetic_deposit_convention(
-    utility::generation::generation_context& ctx) {
+domain::deposit_convention
+generate_synthetic_deposit_convention(utility::generation::generation_context& ctx) {
     static std::atomic<int> counter{0};
-    const auto modified_by = ctx.env().get_or(
-        std::string(generation_keys::modified_by), "system");
-    const auto tid_str = ctx.env().get_or(
-        std::string(generation_keys::tenant_id), std::string("system"));
+    const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
+    const auto tid_str =
+        ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::deposit_convention r;
     r.version = 1;
-    r.tenant_id = utility::uuid::tenant_id::from_string(tid_str)
-        .value_or(utility::uuid::tenant_id::system());
+    r.tenant_id =
+        utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.workspace_id = utility::uuid::live_workspace_id();
-    r.id = std::string("USD-LIBOR-CONVENTIONS") + "-"
-        + std::to_string(counter.fetch_add(1, std::memory_order_relaxed));
+    r.id = std::string("USD-LIBOR-CONVENTIONS") + "-" +
+           std::to_string(counter.fetch_add(1, std::memory_order_relaxed));
     r.index_based = true;
     r.index = std::string("USD-LIBOR");
     r.calendar = std::nullopt;
@@ -61,7 +59,7 @@ domain::deposit_convention generate_synthetic_deposit_convention(
 
 std::vector<domain::deposit_convention>
 generate_synthetic_deposit_conventions(std::size_t n,
-    utility::generation::generation_context& ctx) {
+                                       utility::generation::generation_context& ctx) {
     std::vector<domain::deposit_convention> r;
     r.reserve(n);
     while (r.size() < n)

@@ -20,25 +20,24 @@
 #ifndef ORES_REFDATA_CORE_GENERATORS_COUNTERPARTY_GENERATOR_HPP
 #define ORES_REFDATA_CORE_GENERATORS_COUNTERPARTY_GENERATOR_HPP
 
-#include <vector>
 #include "ores.refdata.api/domain/counterparty.hpp"
 #include "ores.refdata.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include <vector>
 
 namespace ores::refdata::generators {
 
 /**
  * @brief Generates a synthetic counterparty.
  */
-ORES_REFDATA_API_EXPORT domain::counterparty generate_synthetic_counterparty(
-    utility::generation::generation_context& ctx);
+ORES_REFDATA_API_EXPORT domain::counterparty
+generate_synthetic_counterparty(utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic counterparties.
  */
 ORES_REFDATA_API_EXPORT std::vector<domain::counterparty>
-generate_synthetic_counterparties(std::size_t n,
-    utility::generation::generation_context& ctx);
+generate_synthetic_counterparties(std::size_t n, utility::generation::generation_context& ctx);
 
 }
 

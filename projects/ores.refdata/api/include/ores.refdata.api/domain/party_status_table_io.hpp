@@ -20,17 +20,18 @@
 #ifndef ORES_REFDATA_API_DOMAIN_PARTY_STATUS_TABLE_IO_HPP
 #define ORES_REFDATA_API_DOMAIN_PARTY_STATUS_TABLE_IO_HPP
 
-#include <iosfwd>
-#include <vector>
 #include "ores.refdata.api/domain/party_status.hpp"
 #include "ores.refdata.api/export.hpp"
+#include <iosfwd>
+#include <vector>
 
 namespace ores::refdata::domain {
 
 /**
  * @brief Dumps the party_status objects to a stream in table format.
  */
-ORES_REFDATA_API_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<party_status>& v);
+ORES_REFDATA_API_EXPORT std::ostream& operator<<(std::ostream& s,
+                                                 const std::vector<party_status>& v);
 
 }
 

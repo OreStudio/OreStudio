@@ -20,9 +20,9 @@
 #ifndef ORES_REFDATA_CORE_MESSAGING_PUBLISH_FROM_DQ_HANDLER_HPP
 #define ORES_REFDATA_CORE_MESSAGING_PUBLISH_FROM_DQ_HANDLER_HPP
 
+#include "ores.database/domain/context.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.database/domain/context.hpp"
 #include "ores.refdata.core/export.hpp"
 
 namespace ores::refdata::messaging {
@@ -37,9 +37,7 @@ namespace ores::refdata::messaging {
  */
 class ORES_REFDATA_CORE_EXPORT publish_from_dq_handler {
 public:
-    publish_from_dq_handler(
-        ores::nats::service::client& nats,
-        ores::database::context ctx);
+    publish_from_dq_handler(ores::nats::service::client& nats, ores::database::context ctx);
 
     void handle(ores::nats::message msg);
 

@@ -20,9 +20,9 @@
 #ifndef ORES_REFDATA_API_DOMAIN_PARTY_TYPE_HPP
 #define ORES_REFDATA_API_DOMAIN_PARTY_TYPE_HPP
 
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <chrono>
 #include <string>
-#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::refdata::domain {
 
@@ -31,7 +31,7 @@ namespace ores::refdata::domain {
  *
  * Reference data table defining valid party type classifications.
  * Examples: 'Bank', 'Corporate', 'HedgeFund', 'Government'.
- * 
+ *
  * Party types are managed by the system tenant and are used to
  * categorise parties and counterparties.
  */

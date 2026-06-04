@@ -20,15 +20,15 @@
 #ifndef ORES_REFDATA_CORE_SERVICE_COUNTERPARTY_SERVICE_HPP
 #define ORES_REFDATA_CORE_SERVICE_COUNTERPARTY_SERVICE_HPP
 
-#include <string>
-#include <vector>
-#include <cstdint>
-#include <optional>
-#include <boost/uuid/uuid.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/counterparty.hpp"
 #include "ores.refdata.core/repository/counterparty_repository.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <cstdint>
+#include <optional>
+#include <string>
+#include <vector>
 
 namespace ores::refdata::service {
 
@@ -40,8 +40,7 @@ namespace ores::refdata::service {
  */
 class counterparty_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.refdata.service.counterparty_service";
+    inline static std::string_view logger_name = "ores.refdata.service.counterparty_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -62,8 +61,8 @@ public:
     /**
      * @brief Lists counterparties with pagination.
      */
-    std::vector<domain::counterparty> list_counterparties(
-        std::uint32_t offset = 0, std::uint32_t limit = 100);
+    std::vector<domain::counterparty> list_counterparties(std::uint32_t offset = 0,
+                                                          std::uint32_t limit = 100);
 
     /**
      * @brief Returns total number of active counterparties.
@@ -73,14 +72,12 @@ public:
     /**
      * @brief Finds a counterparty by its ID.
      */
-    std::optional<domain::counterparty>
-    find_counterparty(const boost::uuids::uuid& id);
+    std::optional<domain::counterparty> find_counterparty(const boost::uuids::uuid& id);
 
     /**
      * @brief Finds a counterparty by its code.
      */
-    std::optional<domain::counterparty>
-    find_counterparty_by_code(const std::string& code);
+    std::optional<domain::counterparty> find_counterparty_by_code(const std::string& code);
 
     /**
      * @brief Saves a counterparty (creates or updates).
@@ -109,8 +106,7 @@ public:
      * @param id The counterparty ID
      * @return Vector of all versions, newest first
      */
-    std::vector<domain::counterparty>
-    get_counterparty_history(const boost::uuids::uuid& id);
+    std::vector<domain::counterparty> get_counterparty_history(const boost::uuids::uuid& id);
 
 private:
     context ctx_;

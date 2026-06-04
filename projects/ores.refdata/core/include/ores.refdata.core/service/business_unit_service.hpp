@@ -20,14 +20,14 @@
 #ifndef ORES_REFDATA_CORE_SERVICE_BUSINESS_UNIT_SERVICE_HPP
 #define ORES_REFDATA_CORE_SERVICE_BUSINESS_UNIT_SERVICE_HPP
 
-#include <string>
-#include <vector>
-#include <optional>
-#include <boost/uuid/uuid.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/business_unit.hpp"
 #include "ores.refdata.core/repository/business_unit_repository.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <optional>
+#include <string>
+#include <vector>
 
 namespace ores::refdata::service {
 
@@ -39,8 +39,7 @@ namespace ores::refdata::service {
  */
 class business_unit_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.refdata.service.business_unit_service";
+    inline static std::string_view logger_name = "ores.refdata.service.business_unit_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -66,14 +65,12 @@ public:
     /**
      * @brief Finds a business unit by its ID.
      */
-    std::optional<domain::business_unit>
-    find_business_unit(const boost::uuids::uuid& id);
+    std::optional<domain::business_unit> find_business_unit(const boost::uuids::uuid& id);
 
     /**
      * @brief Finds a business unit by its code.
      */
-    std::optional<domain::business_unit>
-    find_business_unit_by_code(const std::string& code);
+    std::optional<domain::business_unit> find_business_unit_by_code(const std::string& code);
 
     /**
      * @brief Saves a business unit (creates or updates).
@@ -102,8 +99,7 @@ public:
      * @param id The business unit ID
      * @return Vector of all versions, newest first
      */
-    std::vector<domain::business_unit>
-    get_business_unit_history(const boost::uuids::uuid& id);
+    std::vector<domain::business_unit> get_business_unit_history(const boost::uuids::uuid& id);
 
 private:
     context ctx_;

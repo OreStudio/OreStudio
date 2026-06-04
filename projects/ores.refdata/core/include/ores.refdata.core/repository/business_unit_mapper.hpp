@@ -20,10 +20,10 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_BUSINESS_UNIT_MAPPER_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_BUSINESS_UNIT_MAPPER_HPP
 
-#include "ores.refdata.api/domain/business_unit.hpp"
-#include "ores.refdata.core/repository/business_unit_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.refdata.api/domain/business_unit.hpp"
 #include "ores.refdata.core/export.hpp"
+#include "ores.refdata.core/repository/business_unit_entity.hpp"
 
 namespace ores::refdata::repository {
 
@@ -32,22 +32,20 @@ namespace ores::refdata::repository {
  */
 class ORES_REFDATA_CORE_EXPORT business_unit_mapper {
 private:
-    inline static std::string_view logger_name =
-        "ores.refdata.repository.business_unit_mapper";
+    inline static std::string_view logger_name = "ores.refdata.repository.business_unit_mapper";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }
+
 public:
     static domain::business_unit map(const business_unit_entity& v);
     static business_unit_entity map(const domain::business_unit& v);
 
-    static std::vector<domain::business_unit>
-    map(const std::vector<business_unit_entity>& v);
-    static std::vector<business_unit_entity>
-    map(const std::vector<domain::business_unit>& v);
+    static std::vector<domain::business_unit> map(const std::vector<business_unit_entity>& v);
+    static std::vector<business_unit_entity> map(const std::vector<domain::business_unit>& v);
 };
 
 }

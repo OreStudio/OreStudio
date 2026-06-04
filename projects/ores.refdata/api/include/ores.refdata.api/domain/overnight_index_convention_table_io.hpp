@@ -20,17 +20,18 @@
 #ifndef ORES_REFDATA_DOMAIN_OVERNIGHT_INDEX_CONVENTION_TABLE_IO_HPP
 #define ORES_REFDATA_DOMAIN_OVERNIGHT_INDEX_CONVENTION_TABLE_IO_HPP
 
-#include <iosfwd>
-#include <vector>
 #include "ores.refdata.api/domain/overnight_index_convention.hpp"
 #include "ores.refdata.api/export.hpp"
+#include <iosfwd>
+#include <vector>
 
 namespace ores::refdata::domain {
 
 /**
  * @brief Dumps the overnight_index_convention objects to a stream in table format.
  */
-ORES_REFDATA_API_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<overnight_index_convention>& v);
+ORES_REFDATA_API_EXPORT std::ostream& operator<<(std::ostream& s,
+                                                 const std::vector<overnight_index_convention>& v);
 
 }
 

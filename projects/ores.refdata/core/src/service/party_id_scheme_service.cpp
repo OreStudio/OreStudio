@@ -18,9 +18,8 @@
  *
  */
 #include "ores.refdata.core/service/party_id_scheme_service.hpp"
-
-#include <stdexcept>
 #include "ores.service/messaging/handler_helpers.hpp"
+#include <stdexcept>
 
 using ores::service::messaging::stamp;
 
@@ -31,8 +30,7 @@ using namespace ores::logging;
 party_id_scheme_service::party_id_scheme_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
-std::vector<domain::party_id_scheme>
-party_id_scheme_service::list_schemes() {
+std::vector<domain::party_id_scheme> party_id_scheme_service::list_schemes() {
     BOOST_LOG_SEV(lg(), debug) << "Listing all party ID schemes";
     return repo_.read_latest(ctx_);
 }
@@ -47,8 +45,7 @@ party_id_scheme_service::find_scheme(const std::string& code) {
     return results.front();
 }
 
-void party_id_scheme_service::save_scheme(
-    const domain::party_id_scheme& scheme) {
+void party_id_scheme_service::save_scheme(const domain::party_id_scheme& scheme) {
     if (scheme.code.empty()) {
         throw std::invalid_argument("Party ID scheme code cannot be empty.");
     }
@@ -59,8 +56,7 @@ void party_id_scheme_service::save_scheme(
     BOOST_LOG_SEV(lg(), info) << "Saved party ID scheme: " << scheme.code;
 }
 
-void party_id_scheme_service::save_schemes(
-    const std::vector<domain::party_id_scheme>& schemes) {
+void party_id_scheme_service::save_schemes(const std::vector<domain::party_id_scheme>& schemes) {
     for (const auto& s : schemes) {
         if (s.code.empty())
             throw std::invalid_argument("Party ID scheme code cannot be empty.");
@@ -78,15 +74,13 @@ void party_id_scheme_service::remove_scheme(const std::string& code) {
     BOOST_LOG_SEV(lg(), info) << "Removed party ID scheme: " << code;
 }
 
-void party_id_scheme_service::remove_schemes(
-    const std::vector<std::string>& codes) {
+void party_id_scheme_service::remove_schemes(const std::vector<std::string>& codes) {
     repo_.remove(ctx_, codes);
 }
 
 std::vector<domain::party_id_scheme>
 party_id_scheme_service::get_scheme_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for party ID scheme: "
-                               << code;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for party ID scheme: " << code;
     return repo_.read_all(ctx_, code);
 }
 

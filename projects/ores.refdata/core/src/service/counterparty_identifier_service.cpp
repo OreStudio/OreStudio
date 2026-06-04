@@ -18,10 +18,9 @@
  *
  */
 #include "ores.refdata.core/service/counterparty_identifier_service.hpp"
-
-#include <stdexcept>
-#include <boost/uuid/uuid_io.hpp>
 #include "ores.service/messaging/handler_helpers.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <stdexcept>
 
 using ores::service::messaging::stamp;
 
@@ -30,9 +29,11 @@ namespace ores::refdata::service {
 using namespace ores::logging;
 
 counterparty_identifier_service::counterparty_identifier_service(context ctx)
-    : ctx_(ctx), repo_(ctx) {}
+    : ctx_(ctx)
+    , repo_(ctx) {}
 
-std::vector<domain::counterparty_identifier> counterparty_identifier_service::list_counterparty_identifiers() {
+std::vector<domain::counterparty_identifier>
+counterparty_identifier_service::list_counterparty_identifiers() {
     BOOST_LOG_SEV(lg(), debug) << "Listing all counterparty identifiers";
     return repo_.read_latest();
 }
@@ -65,7 +66,8 @@ counterparty_identifier_service::find_counterparty_identifier_by_code(const std:
     return results.front();
 }
 
-void counterparty_identifier_service::save_counterparty_identifier(const domain::counterparty_identifier& counterparty_identifier) {
+void counterparty_identifier_service::save_counterparty_identifier(
+    const domain::counterparty_identifier& counterparty_identifier) {
     if (counterparty_identifier.id.is_nil()) {
         throw std::invalid_argument("Counterparty Identifier ID cannot be nil.");
     }
@@ -82,7 +84,8 @@ void counterparty_identifier_service::save_counterparty_identifiers(
         if (ci.id.is_nil())
             throw std::invalid_argument("Counterparty Identifier ID cannot be nil.");
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << counterparty_identifiers.size() << " counterparty identifiers";
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << counterparty_identifiers.size()
+                               << " counterparty identifiers";
     auto stamped = counterparty_identifiers;
     for (auto& ci : stamped)
         stamp(ci, ctx_);

@@ -22,8 +22,8 @@
 
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/currency.hpp"
-#include "ores.refdata.core/repository/currency_entity.hpp"
 #include "ores.refdata.core/export.hpp"
+#include "ores.refdata.core/repository/currency_entity.hpp"
 
 namespace ores::refdata::repository {
 
@@ -32,8 +32,7 @@ namespace ores::refdata::repository {
  */
 class ORES_REFDATA_CORE_EXPORT currency_mapper {
 private:
-    inline static std::string_view logger_name =
-        "ores.refdata.repository.currency_mapper";
+    inline static std::string_view logger_name = "ores.refdata.repository.currency_mapper";
 
     static auto& lg() {
         using namespace ores::logging;
@@ -45,10 +44,8 @@ public:
     static domain::currency map(const currency_entity& v);
     static currency_entity map(const domain::currency& v);
 
-    static std::vector<domain::currency>
-    map(const std::vector<currency_entity>& v);
-    static std::vector<currency_entity>
-    map(const std::vector<domain::currency>& v);
+    static std::vector<domain::currency> map(const std::vector<currency_entity>& v);
+    static std::vector<currency_entity> map(const std::vector<domain::currency>& v);
 };
 
 }

@@ -20,13 +20,13 @@
 #ifndef ORES_REFDATA_SERVICE_IBOR_INDEX_CONVENTION_SERVICE_HPP
 #define ORES_REFDATA_SERVICE_IBOR_INDEX_CONVENTION_SERVICE_HPP
 
-#include <string>
-#include <vector>
-#include <optional>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/ibor_index_convention.hpp"
 #include "ores.refdata.core/repository/ibor_index_convention_repository.hpp"
+#include <optional>
+#include <string>
+#include <vector>
 
 namespace ores::refdata::service {
 
@@ -51,8 +51,7 @@ public:
 
     std::vector<domain::ibor_index_convention> list_ibor_index_conventions();
 
-    std::optional<domain::ibor_index_convention>
-    get_ibor_index_convention(const std::string& id);
+    std::optional<domain::ibor_index_convention> get_ibor_index_convention(const std::string& id);
 
     void save_ibor_index_convention(const domain::ibor_index_convention& v);
 

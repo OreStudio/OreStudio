@@ -18,7 +18,6 @@
  *
  */
 #include "ores.refdata.core/repository/contact_type_mapper.hpp"
-
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.refdata.api/domain/contact_type_json_io.hpp" // IWYU pragma: keep.
 
@@ -27,8 +26,7 @@ namespace ores::refdata::repository {
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::contact_type
-contact_type_mapper::map(const contact_type_entity& v) {
+domain::contact_type contact_type_mapper::map(const contact_type_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::contact_type r;
@@ -48,8 +46,7 @@ contact_type_mapper::map(const contact_type_entity& v) {
     return r;
 }
 
-contact_type_entity
-contact_type_mapper::map(const domain::contact_type& v) {
+contact_type_entity contact_type_mapper::map(const domain::contact_type& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     contact_type_entity r;
@@ -71,19 +68,13 @@ contact_type_mapper::map(const domain::contact_type& v) {
 std::vector<domain::contact_type>
 contact_type_mapper::map(const std::vector<contact_type_entity>& v) {
     return map_vector<contact_type_entity, domain::contact_type>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<contact_type_entity>
 contact_type_mapper::map(const std::vector<domain::contact_type>& v) {
     return map_vector<domain::contact_type, contact_type_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

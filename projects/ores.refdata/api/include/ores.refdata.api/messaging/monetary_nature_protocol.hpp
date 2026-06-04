@@ -20,9 +20,9 @@
 #ifndef ORES_REFDATA_API_MESSAGING_MONETARY_NATURE_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_MONETARY_NATURE_PROTOCOL_HPP
 
+#include "ores.refdata.api/domain/monetary_nature.hpp"
 #include <string>
 #include <vector>
-#include "ores.refdata.api/domain/monetary_nature.hpp"
 
 namespace ores::refdata::messaging {
 

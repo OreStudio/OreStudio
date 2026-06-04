@@ -20,10 +20,10 @@
 #ifndef ORES_REFDATA_API_DOMAIN_BUSINESS_UNIT_TYPE_HPP
 #define ORES_REFDATA_API_DOMAIN_BUSINESS_UNIT_TYPE_HPP
 
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <string>
-#include <boost/uuid/uuid.hpp>
-#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::refdata::domain {
 

@@ -18,11 +18,10 @@
  *
  */
 #include "ores.refdata.core/repository/party_contact_information_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.refdata.api/domain/party_contact_information_json_io.hpp" // IWYU pragma: keep.
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::refdata::repository {
 
@@ -89,19 +88,13 @@ party_contact_information_mapper::map(const domain::party_contact_information& v
 std::vector<domain::party_contact_information>
 party_contact_information_mapper::map(const std::vector<party_contact_information_entity>& v) {
     return map_vector<party_contact_information_entity, domain::party_contact_information>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<party_contact_information_entity>
 party_contact_information_mapper::map(const std::vector<domain::party_contact_information>& v) {
     return map_vector<domain::party_contact_information, party_contact_information_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

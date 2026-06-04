@@ -20,13 +20,13 @@
 #ifndef ORES_REFDATA_CORE_SERVICE_BUSINESS_CENTRE_SERVICE_HPP
 #define ORES_REFDATA_CORE_SERVICE_BUSINESS_CENTRE_SERVICE_HPP
 
-#include <string>
-#include <vector>
-#include <optional>
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/business_centre.hpp"
 #include "ores.refdata.core/repository/business_centre_repository.hpp"
-#include "ores.logging/make_logger.hpp"
+#include <optional>
+#include <string>
+#include <vector>
 
 namespace ores::refdata::service {
 
@@ -38,8 +38,7 @@ namespace ores::refdata::service {
  */
 class business_centre_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.refdata.service.business_centre_service";
+    inline static std::string_view logger_name = "ores.refdata.service.business_centre_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -58,8 +57,8 @@ public:
     /**
      * @brief Lists business centres with pagination support.
      */
-    std::vector<domain::business_centre> list_business_centres(
-        std::uint32_t offset, std::uint32_t limit);
+    std::vector<domain::business_centre> list_business_centres(std::uint32_t offset,
+                                                               std::uint32_t limit);
 
     /**
      * @brief Gets the total count of active business centres.
@@ -74,8 +73,7 @@ public:
     /**
      * @brief Saves a batch of business centres.
      */
-    void save_business_centres(
-        const std::vector<domain::business_centre>& business_centres);
+    void save_business_centres(const std::vector<domain::business_centre>& business_centres);
 
     /**
      * @brief Deletes a business centre by its code.
@@ -90,14 +88,12 @@ public:
     /**
      * @brief Retrieves a single business centre by its code.
      */
-    std::optional<domain::business_centre>
-    get_business_centre(const std::string& code);
+    std::optional<domain::business_centre> get_business_centre(const std::string& code);
 
     /**
      * @brief Retrieves all historical versions of a business centre.
      */
-    std::vector<domain::business_centre>
-    get_business_centre_history(const std::string& code);
+    std::vector<domain::business_centre> get_business_centre_history(const std::string& code);
 
 private:
     context ctx_;

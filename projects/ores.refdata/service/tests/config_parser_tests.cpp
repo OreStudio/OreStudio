@@ -17,14 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.refdata.service/config/parser.hpp"
-
-#include <sstream>
-#include <vector>
-#include <string>
-#include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.refdata.service/config/parser.hpp"
 #include "ores.refdata.service/config/parser_exception.hpp"
+#include <catch2/catch_test_macros.hpp>
+#include <sstream>
+#include <string>
+#include <vector>
 
 namespace {
 
@@ -64,8 +63,7 @@ TEST_CASE("parse_custom_nats_url", tags) {
 TEST_CASE("parse_nats_subject_prefix", tags) {
     auto lg(ores::logging::make_logger(test_suite));
 
-    const std::vector<std::string> args{
-        "--nats-subject-prefix", "ores.prod.main1"};
+    const std::vector<std::string> args{"--nats-subject-prefix", "ores.prod.main1"};
     std::ostringstream info, err;
     const auto result = parser{}.parse(args, info, err);
 
@@ -76,9 +74,7 @@ TEST_CASE("parse_nats_subject_prefix", tags) {
 TEST_CASE("parse_custom_database_host_and_port", tags) {
     auto lg(ores::logging::make_logger(test_suite));
 
-    const std::vector<std::string> args{
-        "--db-host", "dbserver.internal",
-        "--db-port", "5433"};
+    const std::vector<std::string> args{"--db-host", "dbserver.internal", "--db-port", "5433"};
     std::ostringstream info, err;
     const auto result = parser{}.parse(args, info, err);
 

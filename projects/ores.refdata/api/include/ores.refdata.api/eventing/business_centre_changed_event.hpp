@@ -20,10 +20,10 @@
 #ifndef ORES_REFDATA_API_EVENTING_BUSINESS_CENTRE_CHANGED_EVENT_HPP
 #define ORES_REFDATA_API_EVENTING_BUSINESS_CENTRE_CHANGED_EVENT_HPP
 
-#include <chrono>
-#include <vector>
-#include <string>
 #include "ores.eventing/domain/event_traits.hpp"
+#include <chrono>
+#include <string>
+#include <vector>
 
 namespace ores::refdata::eventing {
 
@@ -57,7 +57,7 @@ namespace ores::eventing::domain {
 /**
  * @brief Event traits specialization for business_centre_changed_event.
  */
-template<>
+template <>
 struct event_traits<ores::refdata::eventing::business_centre_changed_event> {
     static constexpr std::string_view name = "ores.refdata.business_centre_changed";
 };

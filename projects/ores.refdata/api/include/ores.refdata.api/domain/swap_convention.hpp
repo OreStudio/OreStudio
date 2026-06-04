@@ -20,10 +20,10 @@
 #ifndef ORES_REFDATA_DOMAIN_SWAP_CONVENTION_HPP
 #define ORES_REFDATA_DOMAIN_SWAP_CONVENTION_HPP
 
-#include <chrono>
-#include <string>
-#include <optional>
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <chrono>
+#include <optional>
+#include <string>
 
 namespace ores::refdata::domain {
 
@@ -85,12 +85,14 @@ struct swap_convention final {
     std::string index;
 
     /**
-     * @brief Floating-leg payment frequency override (canonical CDM). When absent the frequency is derived from the index tenor.
+     * @brief Floating-leg payment frequency override (canonical CDM). When absent the frequency is
+     * derived from the index tenor.
      */
     std::optional<std::string> float_frequency;
 
     /**
-     * @brief Sub-period coupon type when the float leg uses sub-periods. Either 'Compounding' or 'Averaging'.
+     * @brief Sub-period coupon type when the float leg uses sub-periods. Either 'Compounding' or
+     * 'Averaging'.
      */
     std::optional<std::string> sub_periods_coupon_type;
 

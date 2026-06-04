@@ -20,10 +20,10 @@
 #ifndef ORES_REFDATA_REPOSITORY_DEPOSIT_CONVENTION_MAPPER_HPP
 #define ORES_REFDATA_REPOSITORY_DEPOSIT_CONVENTION_MAPPER_HPP
 
-#include "ores.refdata.api/domain/deposit_convention.hpp"
-#include "ores.refdata.core/repository/deposit_convention_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.refdata.api/domain/deposit_convention.hpp"
 #include "ores.refdata.core/export.hpp"
+#include "ores.refdata.core/repository/deposit_convention_entity.hpp"
 
 namespace ores::refdata::repository {
 
@@ -40,6 +40,7 @@ private:
         static auto instance = make_logger(logger_name);
         return instance;
     }
+
 public:
     static domain::deposit_convention map(const deposit_convention_entity& v);
     static deposit_convention_entity map(const domain::deposit_convention& v);

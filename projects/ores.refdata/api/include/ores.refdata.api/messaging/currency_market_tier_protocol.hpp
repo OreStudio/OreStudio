@@ -20,9 +20,9 @@
 #ifndef ORES_REFDATA_API_MESSAGING_CURRENCY_MARKET_TIER_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_CURRENCY_MARKET_TIER_PROTOCOL_HPP
 
+#include "ores.refdata.api/domain/currency_market_tier.hpp"
 #include <string>
 #include <vector>
-#include "ores.refdata.api/domain/currency_market_tier.hpp"
 
 namespace ores::refdata::messaging {
 

@@ -20,10 +20,10 @@
 #ifndef ORES_REFDATA_DOMAIN_OIS_CONVENTION_TABLE_HPP
 #define ORES_REFDATA_DOMAIN_OIS_CONVENTION_TABLE_HPP
 
-#include <string>
-#include <vector>
 #include "ores.refdata.api/domain/ois_convention.hpp"
 #include "ores.refdata.api/export.hpp"
+#include <string>
+#include <vector>
 
 namespace ores::refdata::domain {
 

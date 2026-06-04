@@ -20,16 +20,17 @@
 #ifndef ORES_REFDATA_DOMAIN_OVERNIGHT_INDEX_CONVENTION_JSON_IO_HPP
 #define ORES_REFDATA_DOMAIN_OVERNIGHT_INDEX_CONVENTION_JSON_IO_HPP
 
-#include <iosfwd>
 #include "ores.refdata.api/domain/overnight_index_convention.hpp"
 #include "ores.refdata.api/export.hpp"
+#include <iosfwd>
 
 namespace ores::refdata::domain {
 
 /**
  * @brief Dumps the overnight_index_convention to a stream in JSON format.
  */
-ORES_REFDATA_API_EXPORT std::ostream& operator<<(std::ostream& s, const overnight_index_convention& v);
+ORES_REFDATA_API_EXPORT std::ostream& operator<<(std::ostream& s,
+                                                 const overnight_index_convention& v);
 
 }
 

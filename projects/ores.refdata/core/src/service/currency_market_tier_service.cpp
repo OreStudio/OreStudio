@@ -18,9 +18,8 @@
  *
  */
 #include "ores.refdata.core/service/currency_market_tier_service.hpp"
-
-#include <stdexcept>
 #include "ores.service/messaging/handler_helpers.hpp"
+#include <stdexcept>
 
 using ores::service::messaging::stamp;
 
@@ -40,7 +39,8 @@ std::optional<domain::currency_market_tier>
 currency_market_tier_service::find_type(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Finding currency market tier: " << code;
     auto results = repo_.read_latest(ctx_, code);
-    if (results.empty()) return std::nullopt;
+    if (results.empty())
+        return std::nullopt;
     return results.front();
 }
 
@@ -73,8 +73,7 @@ void currency_market_tier_service::remove_type(const std::string& code) {
     BOOST_LOG_SEV(lg(), info) << "Removed currency market tier: " << code;
 }
 
-void currency_market_tier_service::remove_types(
-    const std::vector<std::string>& codes) {
+void currency_market_tier_service::remove_types(const std::vector<std::string>& codes) {
     repo_.remove(ctx_, codes);
 }
 

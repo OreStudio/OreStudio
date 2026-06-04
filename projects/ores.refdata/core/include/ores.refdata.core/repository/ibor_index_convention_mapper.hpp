@@ -20,10 +20,10 @@
 #ifndef ORES_REFDATA_REPOSITORY_IBOR_INDEX_CONVENTION_MAPPER_HPP
 #define ORES_REFDATA_REPOSITORY_IBOR_INDEX_CONVENTION_MAPPER_HPP
 
-#include "ores.refdata.api/domain/ibor_index_convention.hpp"
-#include "ores.refdata.core/repository/ibor_index_convention_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.refdata.api/domain/ibor_index_convention.hpp"
 #include "ores.refdata.core/export.hpp"
+#include "ores.refdata.core/repository/ibor_index_convention_entity.hpp"
 
 namespace ores::refdata::repository {
 
@@ -40,6 +40,7 @@ private:
         static auto instance = make_logger(logger_name);
         return instance;
     }
+
 public:
     static domain::ibor_index_convention map(const ibor_index_convention_entity& v);
     static ibor_index_convention_entity map(const domain::ibor_index_convention& v);

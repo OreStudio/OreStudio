@@ -20,10 +20,10 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_BUSINESS_CENTRE_ENTITY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_BUSINESS_CENTRE_ENTITY_HPP
 
-#include <string>
-#include <optional>
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
+#include <optional>
+#include <string>
 
 namespace ores::refdata::repository {
 
@@ -44,7 +44,7 @@ struct business_centre_entity {
     std::optional<std::string> city_name;
     std::string coding_scheme_code;
     std::optional<std::string> country_alpha2_code;
-    std::optional<std::string> image_id;  // UUID stored as string, converted in mapper
+    std::optional<std::string> image_id; // UUID stored as string, converted in mapper
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

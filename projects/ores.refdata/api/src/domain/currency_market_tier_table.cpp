@@ -18,7 +18,6 @@
  *
  */
 #include "ores.refdata.api/domain/currency_market_tier_table.hpp"
-
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
 
@@ -28,10 +27,12 @@ std::string convert_to_table(const std::vector<currency_market_tier>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Code" << "Name" << "Description" << "Order" << "Modified By" << "Version" << fort::endr;
+    table << fort::header << "Code" << "Name" << "Description" << "Order" << "Modified By"
+          << "Version" << fort::endr;
 
     for (const auto& cmt : v) {
-        table << cmt.code << cmt.name << cmt.description << cmt.display_order << cmt.modified_by << cmt.version << fort::endr;
+        table << cmt.code << cmt.name << cmt.description << cmt.display_order << cmt.modified_by
+              << cmt.version << fort::endr;
     }
     return table.to_string();
 }

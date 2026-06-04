@@ -20,10 +20,10 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_CURRENCY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_CURRENCY_HPP
 
-#include <string>
-#include <optional>
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
+#include <optional>
+#include <string>
 
 namespace ores::refdata::repository {
 
@@ -49,7 +49,7 @@ struct currency_entity {
     std::string format;
     std::string monetary_nature;
     std::string market_tier;
-    std::optional<std::string> image_id;  // UUID stored as string, converted in mapper
+    std::optional<std::string> image_id; // UUID stored as string, converted in mapper
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

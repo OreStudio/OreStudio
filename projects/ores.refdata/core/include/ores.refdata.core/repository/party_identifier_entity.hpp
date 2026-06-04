@@ -20,9 +20,9 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_PARTY_IDENTIFIER_ENTITY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_PARTY_IDENTIFIER_ENTITY_HPP
 
-#include <string>
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
+#include <string>
 
 namespace ores::refdata::repository {
 

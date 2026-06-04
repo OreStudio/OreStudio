@@ -18,14 +18,13 @@
  *
  */
 #include "ores.refdata.core/repository/counterparty_repository.hpp"
-
-#include <sqlgen/postgres.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
 #include "ores.refdata.api/domain/counterparty_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/counterparty_entity.hpp"
 #include "ores.refdata.core/repository/counterparty_mapper.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <sqlgen/postgres.hpp>
 
 namespace ores::refdata::repository {
 
@@ -42,50 +41,47 @@ counterparty_repository::counterparty_repository(context ctx)
     : ctx_(std::move(ctx)) {}
 
 void counterparty_repository::write(const domain::counterparty& counterparty) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing counterparty to database: "
-                               << counterparty.id;
-    execute_write_query(ctx_, counterparty_mapper::map(counterparty),
-        lg(), "writing counterparty to database");
+    BOOST_LOG_SEV(lg(), debug) << "Writing counterparty to database: " << counterparty.id;
+    execute_write_query(
+        ctx_, counterparty_mapper::map(counterparty), lg(), "writing counterparty to database");
 }
 
-void counterparty_repository::write(
-    const std::vector<domain::counterparty>& counterparties) {
+void counterparty_repository::write(const std::vector<domain::counterparty>& counterparties) {
     BOOST_LOG_SEV(lg(), debug) << "Writing counterparties to database. Count: "
                                << counterparties.size();
-    execute_write_query(ctx_, counterparty_mapper::map(counterparties),
-        lg(), "writing counterparties to database");
+    execute_write_query(
+        ctx_, counterparty_mapper::map(counterparties), lg(), "writing counterparties to database");
 }
 
-std::vector<domain::counterparty>
-counterparty_repository::read_latest() {
+std::vector<domain::counterparty> counterparty_repository::read_latest() {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<counterparty_entity>> |
-        where("valid_to"_c == max.value()) |
-        order_by("full_name"_c);
+                       where("valid_to"_c == max.value()) | order_by("full_name"_c);
 
     return execute_read_query<counterparty_entity, domain::counterparty>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return counterparty_mapper::map(entities); },
-        lg(), "Reading latest counterparties");
+        lg(),
+        "Reading latest counterparties");
 }
 
-std::vector<domain::counterparty>
-counterparty_repository::read_latest(std::uint32_t offset,
-                                      std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest counterparties with offset: "
-                               << offset << " and limit: " << limit;
+std::vector<domain::counterparty> counterparty_repository::read_latest(std::uint32_t offset,
+                                                                       std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest counterparties with offset: " << offset
+                               << " and limit: " << limit;
 
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<counterparty_entity>> |
-        where("valid_to"_c == max.value()) |
-        order_by("full_name"_c) |
-        sqlgen::offset(offset) |
-        sqlgen::limit(limit);
+                       where("valid_to"_c == max.value()) | order_by("full_name"_c) |
+                       sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_read_query<counterparty_entity, domain::counterparty>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return counterparty_mapper::map(entities); },
-        lg(), "Reading latest counterparties with pagination.");
+        lg(),
+        "Reading latest counterparties with pagination.");
 }
 
 std::uint32_t counterparty_repository::get_total_count() {
@@ -97,10 +93,8 @@ std::uint32_t counterparty_repository::get_total_count() {
         long long count;
     };
 
-    const auto query = sqlgen::select_from<counterparty_entity>(
-        sqlgen::count().as<"count">()) |
-        where("valid_to"_c == max.value()) |
-        sqlgen::to<count_result>;
+    const auto query = sqlgen::select_from<counterparty_entity>(sqlgen::count().as<"count">()) |
+                       where("valid_to"_c == max.value()) | sqlgen::to<count_result>;
 
     const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
     ensure_success(r, lg());
@@ -117,12 +111,14 @@ counterparty_repository::read_latest(const boost::uuids::uuid& id) {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto id_str = boost::uuids::to_string(id);
     const auto query = sqlgen::read<std::vector<counterparty_entity>> |
-        where("id"_c == id_str && "valid_to"_c == max.value());
+                       where("id"_c == id_str && "valid_to"_c == max.value());
 
     return execute_read_query<counterparty_entity, domain::counterparty>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return counterparty_mapper::map(entities); },
-        lg(), "Reading latest counterparty by id.");
+        lg(),
+        "Reading latest counterparty by id.");
 }
 
 std::vector<domain::counterparty>
@@ -131,35 +127,36 @@ counterparty_repository::read_latest_by_code(const std::string& code) {
 
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<counterparty_entity>> |
-        where("short_code"_c == code && "valid_to"_c == max.value());
+                       where("short_code"_c == code && "valid_to"_c == max.value());
 
     return execute_read_query<counterparty_entity, domain::counterparty>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return counterparty_mapper::map(entities); },
-        lg(), "Reading latest counterparty by code.");
+        lg(),
+        "Reading latest counterparty by code.");
 }
 
-std::vector<domain::counterparty>
-counterparty_repository::read_all(const boost::uuids::uuid& id) {
+std::vector<domain::counterparty> counterparty_repository::read_all(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all counterparty versions. Id: " << id;
 
     const auto id_str = boost::uuids::to_string(id);
-    const auto query = sqlgen::read<std::vector<counterparty_entity>> |
-        where("id"_c == id_str) |
-        order_by("version"_c.desc());
+    const auto query = sqlgen::read<std::vector<counterparty_entity>> | where("id"_c == id_str) |
+                       order_by("version"_c.desc());
 
     return execute_read_query<counterparty_entity, domain::counterparty>(
-        ctx_, query,
+        ctx_,
+        query,
         [](const auto& entities) { return counterparty_mapper::map(entities); },
-        lg(), "Reading all counterparty versions by id.");
+        lg(),
+        "Reading all counterparty versions by id.");
 }
 
 void counterparty_repository::remove(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing counterparty from database: " << id;
 
     const auto id_str = boost::uuids::to_string(id);
-    const auto query = sqlgen::delete_from<counterparty_entity> |
-        where("id"_c == id_str);
+    const auto query = sqlgen::delete_from<counterparty_entity> | where("id"_c == id_str);
 
     execute_delete_query(ctx_, query, lg(), "removing counterparty from database");
 }

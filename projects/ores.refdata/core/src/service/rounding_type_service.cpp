@@ -18,9 +18,8 @@
  *
  */
 #include "ores.refdata.core/service/rounding_type_service.hpp"
-
-#include <stdexcept>
 #include "ores.service/messaging/handler_helpers.hpp"
+#include <stdexcept>
 
 using ores::service::messaging::stamp;
 
@@ -36,11 +35,11 @@ std::vector<domain::rounding_type> rounding_type_service::list_types() {
     return repo_.read_latest(ctx_);
 }
 
-std::optional<domain::rounding_type>
-rounding_type_service::find_type(const std::string& code) {
+std::optional<domain::rounding_type> rounding_type_service::find_type(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Finding rounding type: " << code;
     auto results = repo_.read_latest(ctx_, code);
-    if (results.empty()) return std::nullopt;
+    if (results.empty())
+        return std::nullopt;
     return results.front();
 }
 
@@ -54,8 +53,7 @@ void rounding_type_service::save_type(const domain::rounding_type& v) {
     BOOST_LOG_SEV(lg(), info) << "Saved rounding type: " << v.code;
 }
 
-void rounding_type_service::save_types(
-    const std::vector<domain::rounding_type>& types) {
+void rounding_type_service::save_types(const std::vector<domain::rounding_type>& types) {
     for (const auto& t : types) {
         if (t.code.empty())
             throw std::invalid_argument("Rounding Type code cannot be empty.");

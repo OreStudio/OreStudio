@@ -20,9 +20,9 @@
 #ifndef ORES_REFDATA_DOMAIN_DEPOSIT_CONVENTION_JSON_IO_HPP
 #define ORES_REFDATA_DOMAIN_DEPOSIT_CONVENTION_JSON_IO_HPP
 
-#include <iosfwd>
 #include "ores.refdata.api/domain/deposit_convention.hpp"
 #include "ores.refdata.api/export.hpp"
+#include <iosfwd>
 
 namespace ores::refdata::domain {
 

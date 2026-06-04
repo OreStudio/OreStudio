@@ -20,9 +20,9 @@
 #ifndef ORES_REFDATA_API_MESSAGING_PARTY_ID_SCHEME_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_PARTY_ID_SCHEME_PROTOCOL_HPP
 
+#include "ores.refdata.api/domain/party_id_scheme.hpp"
 #include <string>
 #include <vector>
-#include "ores.refdata.api/domain/party_id_scheme.hpp"
 
 namespace ores::refdata::messaging {
 

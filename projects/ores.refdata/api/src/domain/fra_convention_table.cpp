@@ -18,7 +18,6 @@
  *
  */
 #include "ores.refdata.api/domain/fra_convention_table.hpp"
-
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
 

@@ -1,0 +1,81 @@
+:PROPERTIES:
+:ID: 305E3A3B-8A72-49D3-9972-FAF06FEB4552
+:END:
+#+title: Story: Documentation review follow-ups
+#+description: Assorted improvements from a documentation review: split document types into per-type pages, add a definition-of-done doc, add outreach and demo steps to the agile process, restructure the agile process into per-concept pages (story, task, sprint phases), and link product identity to the user manual.
+#+type: story
+#+level: s2
+#+filetags: :documentation:agile:meta:sprint_19:v0:
+#+created: 2026-06-04
+#+updated: 2026-06-04
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A documentation review of the agile and meta docs surfaced a batch of
+structural gaps. The biggest: the agile process page jumbles together
+concepts that deserve their own pages — what a story is (and epics,
+and sizing), what a task is, and the three sprint phases — leaving
+readers no single place to learn each concept and recipes nothing
+precise to link to. Around that sit smaller gaps: document_types.org
+is one long page rather than a page per type; there is no document
+explaining what a definition of done is and why task/story/sprint/
+version carry one; the process has no outreach step and no demo step
+at sprint closure; and the product identity page does not point
+readers at the user manual.
+
+This story delivers the restructure: per-concept pages with
+agile-domain overviews, the agile process page reduced to an overview
+and inventory that links them, and the smaller additions woven in.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] |
+| Now           | Not yet started; tasks scaffolded.     |
+| Waiting on    | Nothing.                               |
+| Next          | Pick up the restructure task first — it shapes where the smaller additions land. |
+| Last touched  | 2026-06-04                               |
+
+* Acceptance
+
+- =document_types.org= is split into one page per document type
+  (=document_type_<type>.org=), with the original page remaining as
+  the index linking them.
+- A definition-of-done document exists explaining the concept and why
+  task, story, sprint, and version documents must carry one; those
+  documents org-roam-link to it.
+- The agile process includes an outreach step (LinkedIn post,
+  Twitter/X post, Discord announcement).
+- Sprint closure includes creation of the sprint demo as its last
+  step.
+- Dedicated pages exist for: story (what a story is, what an epic is,
+  how stories are sized), task, sprint planning, sprint execution,
+  and sprint closure — each opening with an agile-domain overview and
+  then carrying the detail currently in the process page.
+- The agile process page is an overview/inventory linking the
+  per-concept pages; story and task pages are linked from the
+  glossary; recipes link directly to the relevant phase page.
+- The product identity document links to the user manual for readers
+  looking for usage instructions.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:CD257D0D-31A9-4950-9568-97CFBC2DC7EF][Restructure agile process into per-concept pages]] | BACKLOG | | | Story/task/sprint-phase pages with domain overviews; process page becomes overview + inventory; glossary and recipe links. |
+| [[id:C94B52D2-D14E-4819-887A-E0BBC5EC54BC][Add demo creation to sprint closure]] | BACKLOG | | | Demo as the last step of sprint closure, if not already present. |
+| [[id:3E8C142C-EFE3-432B-88F5-12CAFFCBDDD4][Add outreach step to the agile process]] | BACKLOG | | | LinkedIn post, Twitter/X post, Discord announcement. |
+| [[id:ACBB8643-CA16-4523-885C-E87943164378][Add a definition-of-done document]] | BACKLOG | | | What a DoD is, why task/story/sprint/version must have one; org-roam links from those docs. |
+| [[id:FAFFCE73-0AD3-4801-A613-4E6C9BDEF1D5][Split document types into one page per type]] | BACKLOG | | | One document_type_<type>.org per type; document_types.org becomes the index. |
+| [[id:3DA4EDB1-F6E2-42D1-A029-0E8422A05E7A][Link product identity to the user manual]] | BACKLOG | | | "If you are looking for instructions on how to use the product see..." |
+
+* Out of scope
+
+- Changing the agile process itself beyond the additions above — this
+  is a documentation restructure, not a process redesign.
+- Restructuring recipes or runbooks (only their links are updated).

@@ -67,16 +67,32 @@
            </widget>
           </item>
           <item row="2" column="0">
-           <widget class="QLabel" name="labelIsAdmin">
+           <widget class="QLabel" name="labelAccountType">
             <property name="text">
-             <string>Admin:</string>
+             <string>Type:</string>
             </property>
            </widget>
           </item>
           <item row="2" column="1">
+           <widget class="QComboBox" name="accountTypeCombo"/>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="labelIsAdmin">
+            <property name="text">
+             <string>Admin:</string>
+            </property>
+            <property name="visible">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
            <widget class="QCheckBox" name="isAdminCheckBox">
             <property name="text">
              <string>Grant administrative privileges</string>
+            </property>
+            <property name="visible">
+             <bool>false</bool>
             </property>
            </widget>
           </item>

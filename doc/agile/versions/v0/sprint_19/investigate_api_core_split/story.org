@@ -1,0 +1,79 @@
+:PROPERTIES:
+:ID: BD519FC9-6B29-4055-877F-861E46043A06
+:END:
+#+title: Story: Investigate the API/core split in components
+#+description: The api sub-component was meant to be lightweight — standard types consumable by NATS clients without pulling in database or other heavy dependencies — but ores.dq.api links ores.database.lib. Inventory what every split component keeps in api vs core, understand the coupling, and define the refactor so api is just standard types (or at worst other apis).
+#+type: story
+#+level: s2
+#+filetags: :architecture:components:cpp:investigation:sprint_19:v0:
+#+created: 2026-06-04
+#+updated: 2026-06-04
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The api/core split exists so that consumers who only need a
+component's /types/ — typically NATS clients that serialise and
+deserialise its messages — can link the =api= sub-component without
+pulling in the database layer, repositories, or any other heavy
+machinery. That contract appears to have eroded: =ores.dq.api= links
+=ores.database.lib= directly
+(=projects/ores.dq/api/src/CMakeLists.txt=), which defeats the entire
+point of the split. Seventeen components currently carry an api+core
+split; if DQ's coupling pattern holds elsewhere, the erosion is
+systemic.
+
+This story does two things, in order:
+
+1. /Inventory/ — catalogue what every split component keeps in =api=
+   versus =core= (facets, headers, link dependencies), starting with
+   DQ, and flag every api that pulls in heavy dependencies.
+2. /Understand and decide/ — for each flagged api, determine whether
+   the coupling has a real reason. Ideally there is none, and the
+   refactor target is: *an api contains pretty much just standard
+   types — or at worst depends on other apis*.
+
+Refactor tasks are expected to be discovered out of the
+investigation; if the pattern holds across components, follow-up
+stories will extend the cleanup to all of them.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] |
+| Now           | Scaffolded; investigation not yet started. |
+| Waiting on    | Nothing.                               |
+| Next          | Run the inventory task, starting with ores.dq. |
+| Last touched  | 2026-06-04                               |
+
+* Acceptance
+
+- An investigation report exists covering all 17 api+core split
+  components: what each keeps in =api= vs =core=, and the full link
+  dependency list of each =api=.
+- Every api with heavy dependencies (database or similar) is flagged,
+  with the coupling characterised: which headers/facets cause it and
+  whether any genuine reason for it exists.
+- A refactor direction is decided and recorded: what moves out of
+  each offending =api= (and to where) so that apis are standard types
+  only, or at worst depend on other apis.
+- Follow-up refactor tasks (or stories, if the pattern is systemic)
+  are filed for the offending components, DQ first.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:681BBF6B-4DD8-411A-9B19-76AA5E14C1FC][Inventory api/core contents across split components]] | BACKLOG | | | Catalogue api vs core contents + link deps for all 17 split components, DQ first; flag heavy apis; investigation report. |
+
+* Decisions
+
+* Out of scope
+
+- The refactor itself — this story decides and files it; execution is
+  follow-up work scoped by the findings.
+- Components without an api/core split.

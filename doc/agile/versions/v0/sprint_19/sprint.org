@@ -119,6 +119,7 @@ Regroup and refactor the C++ component layout to align with the product-group mo
 |-------+-------+-------+-----+-------------|
 | [[id:FF9397CF-E6F6-44C3-9641-882EEA21C58D][Regroup C++ components under product-group parent directories]] | DONE | 2026-06-01 | 2026-06-02 | Move each =projects/ores.<group>.<role>/= (api, core, service) and =projects/ores.qt.<group>/= under a single =projects/ores.<group>/= parent so the group owns its modeling/ dir, root CMakeLists, and child layout. Blocks per-group org-migration tasks beyond refdata. |
 | [[id:FE9BB4DA-FC98-4C08-B784-104DCF3A6687][Move trade-instrument parsing out of ores.qt.api]] | BACKLOG | | | Extract the Qt-free parse logic into ores.trading.api so the dispatch test links a real target instead of hand-listing source files. Removes the stop-gap from the regroup story. |
+| [[id:BD519FC9-6B29-4055-877F-861E46043A06][Investigate the API/core split in components]] | BACKLOG | | | Inventory api vs core across all 17 split components; flag heavy apis (ores.dq.api links ores.database.lib); decide refactor so apis are standard types or other apis only. |
 
 ** Agile
 

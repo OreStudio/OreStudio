@@ -2,12 +2,12 @@
 :ID: 4BF2516D-F37E-4E31-AD7B-124F2639B9AB
 :END:
 #+title: How do I enable test logging?
-#+description: Turn on test-suite logging — configure-time flags (ORES_TEST_LOG_LEVEL, ORES_TEST_LOG_CONSOLE) and equivalent runtime environment variables.
+#+description: Turn on test-suite logging with compass test logging on/off/status — the ORES_TEST_LOG_* variables in .env, forwarded to test processes by CMake.
 #+type: recipe
 #+level: cross
 #+filetags: :cmake:build:tests:logging:recipe:
 #+created: 2026-05-21
-#+updated: 2026-05-21
+#+updated: 2026-06-04
 
 Test logging is /off/ by default for performance. The conceptual
 description lives in [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]]§"Test logging"; this recipe is
@@ -16,52 +16,61 @@ logging is configured, see [[id:20D2CB34-4E2F-45D3-8FA2-F1C5B4C7B22F][How do I r
 
 * Question
 
-How do I enable test logging — choose a level, optionally mirror it
-to stdout — at configure time and at run time?
+How do I enable test logging — choose a level — and turn it back off
+when I'm done?
 
 * Answer
 
-There are two switches, each set at /configure/ time and overridable
-at /run/ time via environment variables.
+Test logging is controlled by three =ORES_TEST_LOG_*= variables in
+=.env=. The root =CMakeLists.txt= forwards every =.env= variable
+verbatim to test processes, and =.env= is a CMake configure
+dependency, so any change is picked up automatically on the next
+build or test run — no manual re-configure needed.
 
-1. /Pick the level/ at configure time. Levels: =OFF= (default),
-   =trace=, =debug=, =info=, =warn=, =error=.
+The compass test pillar provides the toggle:
+
+1. /Enable/ — defaults to =debug=; pass a level (=trace=, =debug=,
+   =info=, =warn=, =error=) to override:
 
    #+begin_src sh :results verbatim
-   cmake --preset linux-clang-debug-ninja -DORES_TEST_LOG_LEVEL=debug
+   ./compass.sh test logging on
+   ./compass.sh test logging on trace
    #+end_src
 
-2. /Mirror logs to stdout/ as well as the log file (default =OFF=):
+   This appends a =# Test logging= block to =.env= setting
+   =ORES_TEST_LOG_ENABLED=true=, =ORES_TEST_LOG_LEVEL=<level>= and
+   =ORES_TEST_LOG_CONSOLE=true=.
+
+2. /Disable/ — strips the block; absence means disabled:
 
    #+begin_src sh :results verbatim
-   cmake --preset linux-clang-debug-ninja \
-         -DORES_TEST_LOG_LEVEL=debug \
-         -DORES_TEST_LOG_CONSOLE=ON
+   ./compass.sh test logging off
    #+end_src
 
-3. /Override at run time/ — the env vars override the configure-time
-   defaults without re-running CMake. Useful for a single test run
-   when you don't want to disturb the cached configuration:
+3. /Inspect/ — show the current settings:
 
    #+begin_src sh :results verbatim
-   ORES_TEST_LOG_ENABLED=1 \
+   ./compass.sh test logging status
+   #+end_src
+
+4. /One-off override/ — the same variables can be set in the process
+   environment for a single run without touching =.env= (the runtime
+   listener in =ores.testing= reads them directly):
+
+   #+begin_src sh :results verbatim
+   ORES_TEST_LOG_ENABLED=true \
    ORES_TEST_LOG_LEVEL=trace \
-   ORES_TEST_LOG_CONSOLE=1 \
+   ORES_TEST_LOG_CONSOLE=true \
        ctest --preset linux-clang-debug-ninja
    #+end_src
 
-4. /Turn it back off/ — set the level to =OFF= (or =unset= the env
-   var):
-
-   #+begin_src sh :results verbatim
-   cmake --preset linux-clang-debug-ninja -DORES_TEST_LOG_LEVEL=OFF
-   #+end_src
+=compass env init --enable-logging [level]= and =--disable-logging=
+remain as aliases for the same operation.
 
 * Script
 
-No wrapper — these are bare CMake/CTest invocations. The presets are
-listed by =./build/scripts/build.sh --list-presets= (see
-[[id:AADBEF95-AFD8-4DC0-A4EC-505E47B07F86][How do I list available presets?]]).
+=compass test logging= in =projects/ores.compass/src/compass.py=,
+delegating to =_logging_only= in =env_init.py=.
 
 * Tested by
 

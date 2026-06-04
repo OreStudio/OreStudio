@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :cmake:build:architecture:knowledge:
 #+created: 2026-05-18
-#+updated: 2026-05-26
+#+updated: 2026-06-04
 
 ORE Studio uses CMake with CMakePresets to drive its build across
 Linux, macOS, and Windows. Presets fix the compiler, build type, and
@@ -112,16 +112,19 @@ CI workflows set these automatically via =$(nproc)=.
 
 ** Test logging
 
-Test logging is disabled by default for performance. Two switches:
+Test logging is disabled by default for performance. It is controlled
+by three variables in =.env=: =ORES_TEST_LOG_ENABLED=,
+=ORES_TEST_LOG_LEVEL= (=trace=, =debug=, =info=, =warn=, =error=) and
+=ORES_TEST_LOG_CONSOLE=. The root =CMakeLists.txt= forwards every
+=.env= variable verbatim to test processes via =ORES_TEST_ENV_CMD=,
+and =.env= is registered as a =CMAKE_CONFIGURE_DEPENDS= so changes
+trigger an automatic re-configure on the next build.
 
-- =-DORES_TEST_LOG_LEVEL=<level>= at configure time. Levels: =OFF=
-  (default), =trace=, =debug=, =info=, =warn=, =error=.
-- =-DORES_TEST_LOG_CONSOLE=ON= to mirror logs to stdout (default
-  =OFF=).
-
-Environment-variable equivalents (override the configure-time
-defaults at run time): =ORES_TEST_LOG_ENABLED=,
-=ORES_TEST_LOG_LEVEL=, =ORES_TEST_LOG_CONSOLE=.
+Toggle with =compass test logging on [level]= / =off= / =status=
+(aliases: =compass env init --enable-logging= / =--disable-logging=).
+The variables can also be set directly in the process environment for
+a one-off run; the runtime listener in =ores.testing= reads them at
+test startup.
 
 See [[id:4BF2516D-F37E-4E31-AD7B-124F2639B9AB][How do I enable test logging?]] for the operational steps;
 [[id:20D2CB34-4E2F-45D3-8FA2-F1C5B4C7B22F][How do I run the tests?]] is the surrounding test-run recipe.

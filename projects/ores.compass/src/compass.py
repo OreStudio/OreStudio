@@ -2309,10 +2309,56 @@ def cmd_test(argv):
     rp.add_argument("--preset", default="",
                     help="CMake preset name (default: read ORES_PRESET from .env)")
 
+    lp = sub.add_parser("logging",
+                        help="Toggle test logging: 'logging on [level]', "
+                             "'logging off', 'logging status'")
+    lp.add_argument("action", choices=["on", "off", "status"],
+                    help="on: enable test logging; off: disable; "
+                         "status: show current .env settings")
+    lp.add_argument("level", nargs="?", default="debug",
+                    help="Log level for 'on' (trace, debug, info, warn, error; "
+                         "default: debug)")
+
     args = ap.parse_args(argv)
 
     if args.subcmd == "results":
         return _cmd_test_results(args)
+    if args.subcmd == "logging":
+        return _cmd_test_logging(args)
+
+
+def _cmd_test_logging(args):
+    """compass test logging on|off|status — toggle test logging in .env.
+
+    Delegates to env_init._logging_only: the three ORES_TEST_LOG_* vars in
+    .env are forwarded verbatim to test processes by the root CMakeLists,
+    and .env is a CMAKE_CONFIGURE_DEPENDS so the next build re-configures
+    automatically.
+    """
+    env_file = PROJECT_ROOT / ".env"
+    if args.action == "status":
+        if not env_file.is_file():
+            print("❌ No .env found. Run 'compass env init' first.",
+                  file=sys.stderr)
+            return 1
+        vals = {}
+        for line in env_file.read_text(encoding="utf-8").splitlines():
+            key, _, val = line.partition("=")
+            if key.strip().startswith("ORES_TEST_LOG_"):
+                vals[key.strip()] = val.strip()
+        if not vals:
+            print("Test logging: disabled (no ORES_TEST_LOG_* vars in .env)")
+            print("  Enable with: compass test logging on [level]")
+        else:
+            enabled = vals.get("ORES_TEST_LOG_ENABLED", "false") == "true"
+            print(f"Test logging: {'enabled' if enabled else 'disabled'}")
+            for k in sorted(vals):
+                print(f"  {k}={vals[k]}")
+        return 0
+
+    import env_init
+    return env_init._logging_only(
+        env_file, "enable" if args.action == "on" else "disable", args.level)
 
 
 def _cmd_test_results(args):
@@ -2352,11 +2398,13 @@ def _cmd_test_results(args):
 
     print(f"🧭 ores.compass — test results: preset={preset}\n")
     print(f"Found {len(xml_files)} test-results file(s)  |  "
-          f"Logs: {log_dir or 'none (run with -DORES_TEST_LOG_LEVEL=debug to enable)'}\n")
+          f"Logs: {log_dir or 'none'}\n")
 
     if log_dir is None:
-        print("⚠️  No log directory found. To enable logging, reconfigure CMake:")
-        print(f"   cmake --preset {preset} -DORES_TEST_LOG_LEVEL=debug\n")
+        print("⚠️  No log directory found. To enable test logging:")
+        print("   compass test logging on [trace|debug|info|warn|error]")
+        print("   The change is picked up automatically on the next test run")
+        print("   (.env is a CMake configure dependency). Then re-run the tests.\n")
 
     total_stats = {"total": 0, "passed": 0, "failed": 0,
                    "skipped": 0, "duration": 0.0}
@@ -2705,7 +2753,8 @@ def main():
     subparsers.add_parser("env",
                           help="Provision: 'env init' generates .env + certs + IAM key; 'env diff'; 'env --help'")
     subparsers.add_parser("test",
-                          help="Test: 'test results' parses Catch2 XML and shows an overview; 'test --help'")
+                          help="Test: 'test results' shows last run overview; "
+                               "'test logging on|off|status' toggles test logging; 'test --help'")
     subparsers.add_parser("bearings",
                           help="Cold-start orientation: identity, where, last session, recipes, memories")
     subparsers.add_parser("orient",

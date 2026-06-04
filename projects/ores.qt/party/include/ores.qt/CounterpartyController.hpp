@@ -20,15 +20,15 @@
 #ifndef ORES_QT_COUNTERPARTY_CONTROLLER_HPP
 #define ORES_QT_COUNTERPARTY_CONTROLLER_HPP
 
-#include <QDateTime>
-#include <QMdiArea>
-#include <QMainWindow>
-#include "ores.qt/EntityController.hpp"
-#include "ores.qt/ClientManager.hpp"
-#include "ores.qt/ImageCache.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata.api/domain/counterparty.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/EntityController.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
+#include "ores.qt/ImageCache.hpp"
+#include "ores.refdata.api/domain/counterparty.hpp"
+#include <QDateTime>
+#include <QMainWindow>
+#include <QMdiArea>
 
 namespace ores::qt {
 
@@ -47,8 +47,7 @@ class CounterpartyController final : public EntityController {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.counterparty_controller";
+    inline static std::string_view logger_name = "ores.qt.counterparty_controller";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -57,15 +56,14 @@ private:
     }
 
 public:
-    CounterpartyController(
-        QMainWindow* mainWindow,
-        QMdiArea* mdiArea,
-        ClientManager* clientManager,
-        ImageCache* imageCache,
-        ChangeReasonCache* changeReasonCache,
-        BadgeCache* badgeCache,
-        const QString& username,
-        QObject* parent = nullptr);
+    CounterpartyController(QMainWindow* mainWindow,
+                           QMdiArea* mdiArea,
+                           ClientManager* clientManager,
+                           ImageCache* imageCache,
+                           ChangeReasonCache* changeReasonCache,
+                           BadgeCache* badgeCache,
+                           const QString& username,
+                           QObject* parent = nullptr);
     ~CounterpartyController() override;
 
     void showListWindow() override;
@@ -84,10 +82,11 @@ private slots:
     void onAddNewRequested();
     void onShowHistory(const refdata::domain::counterparty& counterparty);
     void onRevertVersion(const refdata::domain::counterparty& counterparty);
-    void onOpenVersion(const refdata::domain::counterparty& counterparty,
-                       int versionNumber);
-    void onNotificationReceived(const QString& eventType, const QDateTime& timestamp,
-                                const QStringList& entityIds, const QString& tenantId);
+    void onOpenVersion(const refdata::domain::counterparty& counterparty, int versionNumber);
+    void onNotificationReceived(const QString& eventType,
+                                const QDateTime& timestamp,
+                                const QStringList& entityIds,
+                                const QString& tenantId);
 
 private:
     void showAddWindow();

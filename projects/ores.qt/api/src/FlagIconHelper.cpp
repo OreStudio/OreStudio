@@ -23,16 +23,17 @@
 namespace ores::qt {
 
 void apply_flag_icons(QComboBox* combo, ImageCache* cache, FlagSource source) {
-    if (!combo || !cache) return;
+    if (!combo || !cache)
+        return;
 
     auto resolver = [cache, source](const std::string& code) -> QIcon {
         switch (source) {
-        case FlagSource::Currency:
-            return cache->getCurrencyFlagIcon(code);
-        case FlagSource::Country:
-            return cache->getCountryFlagIcon(code);
-        case FlagSource::BusinessCentre:
-            return cache->getBusinessCentreFlagIcon(code);
+            case FlagSource::Currency:
+                return cache->getCurrencyFlagIcon(code);
+            case FlagSource::Country:
+                return cache->getCountryFlagIcon(code);
+            case FlagSource::BusinessCentre:
+                return cache->getBusinessCentreFlagIcon(code);
         }
         return {};
     };
@@ -40,9 +41,9 @@ void apply_flag_icons(QComboBox* combo, ImageCache* cache, FlagSource source) {
     set_combo_flag_icons(combo, resolver);
 }
 
-void setup_flag_combo(
-    QObject* context, QComboBox* combo, ImageCache* cache, FlagSource source) {
-    if (!combo || !cache) return;
+void setup_flag_combo(QObject* context, QComboBox* combo, ImageCache* cache, FlagSource source) {
+    if (!combo || !cache)
+        return;
 
     apply_flag_icons(combo, cache, source);
 

@@ -18,24 +18,23 @@
  *
  */
 #include "ores.qt/LegTypeDetailDialog.hpp"
-
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include <QPlainTextEdit>
-#include "ui_LegTypeDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.trading.api/messaging/leg_type_protocol.hpp"
+#include "ui_LegTypeDetailDialog.h"
+#include <QFutureWatcher>
+#include <QMessageBox>
+#include <QPlainTextEdit>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 LegTypeDetailDialog::LegTypeDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent),
-      ui_(new Ui::LegTypeDetailDialog),
-      clientManager_(nullptr) {
+    : DetailDialogBase(parent)
+    , ui_(new Ui::LegTypeDetailDialog)
+    , clientManager_(nullptr) {
 
     ui_->setupUi(this);
     setupUi();
@@ -71,16 +70,14 @@ void LegTypeDetailDialog::setupUi() {
 }
 
 void LegTypeDetailDialog::setupConnections() {
-    connect(ui_->saveButton, &QPushButton::clicked, this,
-            &LegTypeDetailDialog::onSaveClicked);
-    connect(ui_->deleteButton, &QPushButton::clicked, this,
-            &LegTypeDetailDialog::onDeleteClicked);
-    connect(ui_->closeButton, &QPushButton::clicked, this,
-            &LegTypeDetailDialog::onCloseClicked);
+    connect(ui_->saveButton, &QPushButton::clicked, this, &LegTypeDetailDialog::onSaveClicked);
+    connect(ui_->deleteButton, &QPushButton::clicked, this, &LegTypeDetailDialog::onDeleteClicked);
+    connect(ui_->closeButton, &QPushButton::clicked, this, &LegTypeDetailDialog::onCloseClicked);
 
-    connect(ui_->codeEdit, &QLineEdit::textChanged, this,
-            &LegTypeDetailDialog::onCodeChanged);
-    connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this,
+    connect(ui_->codeEdit, &QLineEdit::textChanged, this, &LegTypeDetailDialog::onCodeChanged);
+    connect(ui_->descriptionEdit,
+            &QPlainTextEdit::textChanged,
+            this,
             &LegTypeDetailDialog::onFieldChanged);
 }
 
@@ -92,8 +89,7 @@ void LegTypeDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
 
-void LegTypeDetailDialog::setType(
-    const trading::domain::leg_type& type) {
+void LegTypeDetailDialog::setType(const trading::domain::leg_type& type) {
     type_ = type;
     updateUiFromType();
 }
@@ -161,14 +157,13 @@ bool LegTypeDetailDialog::validateInput() {
 
 void LegTypeDetailDialog::onSaveClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot save leg type while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot save leg type while disconnected from server.");
         return;
     }
 
     if (!validateInput()) {
-        MessageBoxHelper::warning(this, "Invalid Input",
-            "Please fill in all required fields.");
+        MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
 
@@ -190,7 +185,8 @@ void LegTypeDetailDialog::onSaveClicked() {
 
         trading::messaging::save_leg_type_request request;
         request.data = type;
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -200,8 +196,7 @@ void LegTypeDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
@@ -226,13 +221,15 @@ void LegTypeDetailDialog::onSaveClicked() {
 
 void LegTypeDetailDialog::onDeleteClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot delete leg type while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot delete leg type while disconnected from server.");
         return;
     }
 
     QString code = QString::fromStdString(type_.code);
-    auto reply = MessageBoxHelper::question(this, "Delete Leg Type",
+    auto reply = MessageBoxHelper::question(
+        this,
+        "Delete Leg Type",
         QString("Are you sure you want to delete leg type '%1'?").arg(code),
         QMessageBox::Yes | QMessageBox::No);
 
@@ -256,7 +253,8 @@ void LegTypeDetailDialog::onDeleteClicked() {
 
         trading::messaging::delete_leg_type_request request;
         request.codes = {code};
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -266,8 +264,7 @@ void LegTypeDetailDialog::onDeleteClicked() {
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
-            self, [self, code, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, code, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 

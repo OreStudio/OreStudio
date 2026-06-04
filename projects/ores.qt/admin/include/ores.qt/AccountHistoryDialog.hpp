@@ -20,18 +20,18 @@
 #ifndef ORES_QT_ACCOUNT_HISTORY_DIALOG_HPP
 #define ORES_QT_ACCOUNT_HISTORY_DIALOG_HPP
 
-#include <memory>
-#include <QPair>
-#include <QWidget>
-#include <QString>
-#include <QVector>
-#include <QToolBar>
-#include <QAction>
-#include "ores.qt/ClientManager.hpp"
 #include "ores.iam.api/domain/account_version.hpp"
 #include "ores.iam.api/messaging/account_history_protocol.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
 #include "ui_AccountHistoryDialog.h"
+#include <QAction>
+#include <QPair>
+#include <QString>
+#include <QToolBar>
+#include <QVector>
+#include <QWidget>
+#include <memory>
 
 namespace Ui {
 class AccountHistoryDialog;
@@ -46,8 +46,7 @@ class AccountHistoryDialog : public QWidget {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.account_history_dialog";
+    inline static std::string_view logger_name = "ores.qt.account_history_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -59,8 +58,8 @@ private:
 
 public:
     explicit AccountHistoryDialog(QString username,
-        ClientManager* clientManager,
-        QWidget* parent = nullptr);
+                                  ClientManager* clientManager,
+                                  QWidget* parent = nullptr);
     ~AccountHistoryDialog() override;
 
     void loadHistory();
@@ -78,7 +77,9 @@ public:
     /**
      * @brief Returns the username of the account.
      */
-    [[nodiscard]] QString username() const { return username_; }
+    [[nodiscard]] QString username() const {
+        return username_;
+    }
 
 signals:
     void statusChanged(const QString& message);
@@ -115,9 +116,8 @@ private:
      * @return Vector of (field_name, (old_value, new_value)) pairs.
      */
     using DiffResult = QVector<QPair<QString, QPair<QString, QString>>>;
-    DiffResult calculateDiff(
-        const iam::domain::account_version& current,
-        const iam::domain::account_version& previous);
+    DiffResult calculateDiff(const iam::domain::account_version& current,
+                             const iam::domain::account_version& previous);
 
     void setupToolbar();
     void updateButtonStates();

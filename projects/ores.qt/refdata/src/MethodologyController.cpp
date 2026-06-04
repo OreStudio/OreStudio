@@ -18,42 +18,38 @@
  *
  */
 #include "ores.qt/MethodologyController.hpp"
+#include "ores.dq.api/eventing/methodology_changed_event.hpp"
+#include "ores.eventing/domain/event_traits.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
-
+#include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/MethodologyDetailDialog.hpp"
+#include "ores.qt/MethodologyHistoryDialog.hpp"
+#include "ores.qt/MethodologyMdiWindow.hpp"
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
 #include <boost/uuid/uuid_io.hpp>
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/MethodologyMdiWindow.hpp"
-#include "ores.qt/MethodologyDetailDialog.hpp"
-#include "ores.qt/MethodologyHistoryDialog.hpp"
-#include "ores.qt/DetachableMdiSubWindow.hpp"
-#include "ores.eventing/domain/event_traits.hpp"
-#include "ores.dq.api/eventing/methodology_changed_event.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    constexpr std::string_view methodology_event_name =
-        eventing::domain::event_traits<
-            dq::eventing::methodology_changed_event>::name;
+constexpr std::string_view methodology_event_name =
+    eventing::domain::event_traits<dq::eventing::methodology_changed_event>::name;
 }
 
-MethodologyController::MethodologyController(
-    QMainWindow* mainWindow,
-    QMdiArea* mdiArea,
-    ClientManager* clientManager,
-    ChangeReasonCache* changeReasonCache,
-    const QString& username,
-    QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username,
-                       methodology_event_name, parent),
-      changeReasonCache_(changeReasonCache),
-      listWindow_(nullptr),
-      listMdiSubWindow_(nullptr) {
+MethodologyController::MethodologyController(QMainWindow* mainWindow,
+                                             QMdiArea* mdiArea,
+                                             ClientManager* clientManager,
+                                             ChangeReasonCache* changeReasonCache,
+                                             const QString& username,
+                                             QObject* parent)
+    : EntityController(mainWindow, mdiArea, clientManager, username, methodology_event_name, parent)
+    , changeReasonCache_(changeReasonCache)
+    , listWindow_(nullptr)
+    , listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "MethodologyController created";
 }
@@ -69,22 +65,32 @@ void MethodologyController::showListWindow() {
 
     listWindow_ = new MethodologyMdiWindow(clientManager_, username_);
 
-    connect(listWindow_, &MethodologyMdiWindow::statusChanged,
-            this, &MethodologyController::statusMessage);
-    connect(listWindow_, &MethodologyMdiWindow::errorOccurred,
-            this, &MethodologyController::errorMessage);
-    connect(listWindow_, &MethodologyMdiWindow::showMethodologyDetails,
-            this, &MethodologyController::onShowDetails);
-    connect(listWindow_, &MethodologyMdiWindow::addNewRequested,
-            this, &MethodologyController::onAddNewRequested);
-    connect(listWindow_, &MethodologyMdiWindow::showMethodologyHistory,
-            this, &MethodologyController::onShowHistory);
+    connect(listWindow_,
+            &MethodologyMdiWindow::statusChanged,
+            this,
+            &MethodologyController::statusMessage);
+    connect(listWindow_,
+            &MethodologyMdiWindow::errorOccurred,
+            this,
+            &MethodologyController::errorMessage);
+    connect(listWindow_,
+            &MethodologyMdiWindow::showMethodologyDetails,
+            this,
+            &MethodologyController::onShowDetails);
+    connect(listWindow_,
+            &MethodologyMdiWindow::addNewRequested,
+            this,
+            &MethodologyController::onAddNewRequested);
+    connect(listWindow_,
+            &MethodologyMdiWindow::showMethodologyHistory,
+            this,
+            &MethodologyController::onShowHistory);
 
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Methodologies");
-    listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Book, IconUtils::DefaultIconColor));
+    listMdiSubWindow_->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Book, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -94,12 +100,16 @@ void MethodologyController::showListWindow() {
     track_window(key, listMdiSubWindow_);
     register_detachable_window(listMdiSubWindow_);
 
-    connect(listMdiSubWindow_, &QObject::destroyed, this, [self = QPointer<MethodologyController>(this), key]() {
-        if (!self) return;
-        self->untrack_window(key);
-        self->listWindow_ = nullptr;
-        self->listMdiSubWindow_ = nullptr;
-    });
+    connect(listMdiSubWindow_,
+            &QObject::destroyed,
+            this,
+            [self = QPointer<MethodologyController>(this), key]() {
+                if (!self)
+                    return;
+                self->untrack_window(key);
+                self->listWindow_ = nullptr;
+                self->listMdiSubWindow_ = nullptr;
+            });
 
     BOOST_LOG_SEV(lg(), debug) << "Methodology list window created";
 }
@@ -150,23 +160,30 @@ void MethodologyController::showAddWindow() {
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
 
-    connect(detailDialog, &MethodologyDetailDialog::statusMessage,
-            this, &MethodologyController::statusMessage);
-    connect(detailDialog, &MethodologyDetailDialog::errorMessage,
-            this, &MethodologyController::errorMessage);
-    connect(detailDialog, &MethodologyDetailDialog::methodologySaved,
-            this, [self = QPointer<MethodologyController>(this)](const boost::uuids::uuid& id) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Methodology saved: " << id;
-        self->handleEntitySaved();
-    });
+    connect(detailDialog,
+            &MethodologyDetailDialog::statusMessage,
+            this,
+            &MethodologyController::statusMessage);
+    connect(detailDialog,
+            &MethodologyDetailDialog::errorMessage,
+            this,
+            &MethodologyController::errorMessage);
+    connect(detailDialog,
+            &MethodologyDetailDialog::methodologySaved,
+            this,
+            [self = QPointer<MethodologyController>(this)](const boost::uuids::uuid& id) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Methodology saved: " << id;
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Methodology");
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Book, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Book, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -193,37 +210,46 @@ void MethodologyController::showDetailWindow(const dq::domain::methodology& meth
     detailDialog->setCreateMode(false);
     detailDialog->setMethodology(methodology);
 
-    connect(detailDialog, &MethodologyDetailDialog::statusMessage,
-            this, &MethodologyController::statusMessage);
-    connect(detailDialog, &MethodologyDetailDialog::errorMessage,
-            this, &MethodologyController::errorMessage);
-    connect(detailDialog, &MethodologyDetailDialog::methodologySaved,
-            this, [self = QPointer<MethodologyController>(this)](const boost::uuids::uuid& id) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Methodology saved: " << id;
-        self->handleEntitySaved();
-    });
-    connect(detailDialog, &MethodologyDetailDialog::methodologyDeleted,
-            this, [self = QPointer<MethodologyController>(this), key](const boost::uuids::uuid& id) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Methodology deleted: " << id;
-        self->handleEntityDeleted();
-    });
+    connect(detailDialog,
+            &MethodologyDetailDialog::statusMessage,
+            this,
+            &MethodologyController::statusMessage);
+    connect(detailDialog,
+            &MethodologyDetailDialog::errorMessage,
+            this,
+            &MethodologyController::errorMessage);
+    connect(detailDialog,
+            &MethodologyDetailDialog::methodologySaved,
+            this,
+            [self = QPointer<MethodologyController>(this)](const boost::uuids::uuid& id) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Methodology saved: " << id;
+                self->handleEntitySaved();
+            });
+    connect(detailDialog,
+            &MethodologyDetailDialog::methodologyDeleted,
+            this,
+            [self = QPointer<MethodologyController>(this), key](const boost::uuids::uuid& id) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Methodology deleted: " << id;
+                self->handleEntityDeleted();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Methodology: %1").arg(
-        QString::fromStdString(methodology.name)));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Book, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("Methodology: %1").arg(QString::fromStdString(methodology.name)));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Book, IconUtils::DefaultIconColor));
 
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<MethodologyController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, key]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, key]() {
         if (self) {
             self->untrack_window(key);
         }
@@ -248,20 +274,30 @@ void MethodologyController::showHistoryWindow(const std::string& name) {
 
     auto* historyDialog = new MethodologyHistoryDialog(name, clientManager_, mainWindow_);
 
-    connect(historyDialog, &MethodologyHistoryDialog::statusChanged,
-            this, [self = QPointer<MethodologyController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(historyDialog, &MethodologyHistoryDialog::errorOccurred,
-            this, [self = QPointer<MethodologyController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
-    connect(historyDialog, &MethodologyHistoryDialog::revertVersionRequested,
-            this, &MethodologyController::onRevertVersion);
-    connect(historyDialog, &MethodologyHistoryDialog::openVersionRequested,
-            this, &MethodologyController::onOpenVersion);
+    connect(historyDialog,
+            &MethodologyHistoryDialog::statusChanged,
+            this,
+            [self = QPointer<MethodologyController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(historyDialog,
+            &MethodologyHistoryDialog::errorOccurred,
+            this,
+            [self = QPointer<MethodologyController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
+    connect(historyDialog,
+            &MethodologyHistoryDialog::revertVersionRequested,
+            this,
+            &MethodologyController::onRevertVersion);
+    connect(historyDialog,
+            &MethodologyHistoryDialog::openVersionRequested,
+            this,
+            &MethodologyController::onOpenVersion);
 
     historyDialog->loadHistory();
 
@@ -269,15 +305,14 @@ void MethodologyController::showHistoryWindow(const std::string& name) {
     historyWindow->setAttribute(Qt::WA_DeleteOnClose);
     historyWindow->setWidget(historyDialog);
     historyWindow->setWindowTitle(QString("Methodology History: %1").arg(nameStr));
-    historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    historyWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
 
     QPointer<MethodologyController> self = this;
-    connect(historyWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -286,14 +321,14 @@ void MethodologyController::showHistoryWindow(const std::string& name) {
     show_managed_window(historyWindow, listMdiSubWindow_);
 }
 
-void MethodologyController::onOpenVersion(
-    const dq::domain::methodology& methodology, int versionNumber) {
+void MethodologyController::onOpenVersion(const dq::domain::methodology& methodology,
+                                          int versionNumber) {
     BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
                               << " for methodology: " << methodology.id;
 
     const QString idStr = QString::fromStdString(boost::uuids::to_string(methodology.id));
-    const QString windowKey = build_window_key("version", QString("%1_v%2")
-        .arg(idStr).arg(versionNumber));
+    const QString windowKey =
+        build_window_key("version", QString("%1_v%2").arg(idStr).arg(versionNumber));
 
     if (try_reuse_window(windowKey)) {
         BOOST_LOG_SEV(lg(), info) << "Reusing existing version window";
@@ -308,31 +343,37 @@ void MethodologyController::onOpenVersion(
     detailDialog->setMethodology(methodology);
     detailDialog->setReadOnly(true);
 
-    connect(detailDialog, &MethodologyDetailDialog::statusMessage,
-            this, [self = QPointer<MethodologyController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(detailDialog, &MethodologyDetailDialog::errorMessage,
-            this, [self = QPointer<MethodologyController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
+    connect(detailDialog,
+            &MethodologyDetailDialog::statusMessage,
+            this,
+            [self = QPointer<MethodologyController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(detailDialog,
+            &MethodologyDetailDialog::errorMessage,
+            this,
+            [self = QPointer<MethodologyController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Methodology: %1 (Version %2)")
-        .arg(QString::fromStdString(methodology.name)).arg(versionNumber));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+                                     .arg(QString::fromStdString(methodology.name))
+                                     .arg(versionNumber));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     track_window(windowKey, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<MethodologyController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -342,10 +383,8 @@ void MethodologyController::onOpenVersion(
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
-void MethodologyController::onRevertVersion(
-    const dq::domain::methodology& methodology) {
-    BOOST_LOG_SEV(lg(), info) << "Reverting methodology to version: "
-                              << methodology.version;
+void MethodologyController::onRevertVersion(const dq::domain::methodology& methodology) {
+    BOOST_LOG_SEV(lg(), info) << "Reverting methodology to version: " << methodology.version;
 
     auto* detailDialog = new MethodologyDetailDialog(mainWindow_);
     if (changeReasonCache_)
@@ -355,25 +394,32 @@ void MethodologyController::onRevertVersion(
     detailDialog->setMethodology(methodology);
     detailDialog->setCreateMode(false);
 
-    connect(detailDialog, &MethodologyDetailDialog::statusMessage,
-            this, &MethodologyController::statusMessage);
-    connect(detailDialog, &MethodologyDetailDialog::errorMessage,
-            this, &MethodologyController::errorMessage);
-    connect(detailDialog, &MethodologyDetailDialog::methodologySaved,
-            this, [self = QPointer<MethodologyController>(this)](const boost::uuids::uuid& id) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Methodology reverted: " << id;
-        emit self->statusMessage(QString("Methodology reverted successfully"));
-        self->handleEntitySaved();
-    });
+    connect(detailDialog,
+            &MethodologyDetailDialog::statusMessage,
+            this,
+            &MethodologyController::statusMessage);
+    connect(detailDialog,
+            &MethodologyDetailDialog::errorMessage,
+            this,
+            &MethodologyController::errorMessage);
+    connect(detailDialog,
+            &MethodologyDetailDialog::methodologySaved,
+            this,
+            [self = QPointer<MethodologyController>(this)](const boost::uuids::uuid& id) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Methodology reverted: " << id;
+                emit self->statusMessage(QString("Methodology reverted successfully"));
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Revert Methodology: %1")
-        .arg(QString::fromStdString(methodology.name)));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("Revert Methodology: %1").arg(QString::fromStdString(methodology.name)));
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
+                                                               IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 

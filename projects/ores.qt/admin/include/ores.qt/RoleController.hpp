@@ -20,10 +20,10 @@
 #ifndef ORES_QT_ROLE_CONTROLLER_HPP
 #define ORES_QT_ROLE_CONTROLLER_HPP
 
-#include <QPointer>
-#include "ores.qt/EntityController.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.iam.api/domain/role.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/EntityController.hpp"
+#include <QPointer>
 
 namespace ores::qt {
 
@@ -43,8 +43,7 @@ class RoleController : public EntityController {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.role_controller";
+    inline static std::string_view logger_name = "ores.qt.role_controller";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -62,12 +61,11 @@ public:
      * @param username Username of logged-in user
      * @param parent QObject parent (for Qt ownership)
      */
-    explicit RoleController(
-        QMainWindow* mainWindow,
-        QMdiArea* mdiArea,
-        ClientManager* clientManager,
-        const QString& username,
-        QObject* parent = nullptr);
+    explicit RoleController(QMainWindow* mainWindow,
+                            QMdiArea* mdiArea,
+                            ClientManager* clientManager,
+                            const QString& username,
+                            QObject* parent = nullptr);
 
     /**
      * @brief Destroys the role controller.

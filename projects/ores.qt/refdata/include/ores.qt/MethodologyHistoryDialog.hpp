@@ -20,13 +20,13 @@
 #ifndef ORES_QT_METHODOLOGY_HISTORY_DIALOG_HPP
 #define ORES_QT_METHODOLOGY_HISTORY_DIALOG_HPP
 
-#include <string>
-#include <QWidget>
-#include <QToolBar>
-#include <QTableWidget>
-#include "ores.qt/ClientManager.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.dq.api/domain/methodology.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include <QTableWidget>
+#include <QToolBar>
+#include <QWidget>
+#include <string>
 
 namespace Ui {
 class MethodologyHistoryDialog;
@@ -38,8 +38,7 @@ class MethodologyHistoryDialog final : public QWidget {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.methodology_history_dialog";
+    inline static std::string_view logger_name = "ores.qt.methodology_history_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -48,10 +47,9 @@ private:
     }
 
 public:
-    explicit MethodologyHistoryDialog(
-        const std::string& name,
-        ClientManager* clientManager,
-        QWidget* parent = nullptr);
+    explicit MethodologyHistoryDialog(const std::string& name,
+                                      ClientManager* clientManager,
+                                      QWidget* parent = nullptr);
     ~MethodologyHistoryDialog() override;
 
     void loadHistory();

@@ -18,30 +18,27 @@
  *
  */
 #include "ores.qt/PricingEngineTypeController.hpp"
-
+#include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/PricingEngineTypeDetailDialog.hpp"
+#include "ores.qt/PricingEngineTypeHistoryDialog.hpp"
+#include "ores.qt/PricingEngineTypeMdiWindow.hpp"
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/PricingEngineTypeMdiWindow.hpp"
-#include "ores.qt/PricingEngineTypeDetailDialog.hpp"
-#include "ores.qt/PricingEngineTypeHistoryDialog.hpp"
-#include "ores.qt/DetachableMdiSubWindow.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-PricingEngineTypeController::PricingEngineTypeController(
-    QMainWindow* mainWindow,
-    QMdiArea* mdiArea,
-    ClientManager* clientManager,
-    const QString& username,
-    QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username,
-          std::string_view{}, parent),
-      listWindow_(nullptr),
-      listMdiSubWindow_(nullptr) {
+PricingEngineTypeController::PricingEngineTypeController(QMainWindow* mainWindow,
+                                                         QMdiArea* mdiArea,
+                                                         ClientManager* clientManager,
+                                                         const QString& username,
+                                                         QObject* parent)
+    : EntityController(mainWindow, mdiArea, clientManager, username, std::string_view{}, parent)
+    , listWindow_(nullptr)
+    , listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "PricingEngineTypeController created";
 }
@@ -59,23 +56,33 @@ void PricingEngineTypeController::showListWindow() {
     listWindow_ = new PricingEngineTypeMdiWindow(clientManager_, username_);
 
     // Connect signals
-    connect(listWindow_, &PricingEngineTypeMdiWindow::statusChanged,
-            this, &PricingEngineTypeController::statusMessage);
-    connect(listWindow_, &PricingEngineTypeMdiWindow::errorOccurred,
-            this, &PricingEngineTypeController::errorMessage);
-    connect(listWindow_, &PricingEngineTypeMdiWindow::showTypeDetails,
-            this, &PricingEngineTypeController::onShowDetails);
-    connect(listWindow_, &PricingEngineTypeMdiWindow::addNewRequested,
-            this, &PricingEngineTypeController::onAddNewRequested);
-    connect(listWindow_, &PricingEngineTypeMdiWindow::showTypeHistory,
-            this, &PricingEngineTypeController::onShowHistory);
+    connect(listWindow_,
+            &PricingEngineTypeMdiWindow::statusChanged,
+            this,
+            &PricingEngineTypeController::statusMessage);
+    connect(listWindow_,
+            &PricingEngineTypeMdiWindow::errorOccurred,
+            this,
+            &PricingEngineTypeController::errorMessage);
+    connect(listWindow_,
+            &PricingEngineTypeMdiWindow::showTypeDetails,
+            this,
+            &PricingEngineTypeController::onShowDetails);
+    connect(listWindow_,
+            &PricingEngineTypeMdiWindow::addNewRequested,
+            this,
+            &PricingEngineTypeController::onAddNewRequested);
+    connect(listWindow_,
+            &PricingEngineTypeMdiWindow::showTypeHistory,
+            this,
+            &PricingEngineTypeController::onShowHistory);
 
     // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Pricing Engine Types");
-    listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Tag, IconUtils::DefaultIconColor));
+    listMdiSubWindow_->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -87,12 +94,16 @@ void PricingEngineTypeController::showListWindow() {
     register_detachable_window(listMdiSubWindow_);
 
     // Cleanup when closed
-    connect(listMdiSubWindow_, &QObject::destroyed, this, [self = QPointer<PricingEngineTypeController>(this), key]() {
-        if (!self) return;
-        self->untrack_window(key);
-        self->listWindow_ = nullptr;
-        self->listMdiSubWindow_ = nullptr;
-    });
+    connect(listMdiSubWindow_,
+            &QObject::destroyed,
+            this,
+            [self = QPointer<PricingEngineTypeController>(this), key]() {
+                if (!self)
+                    return;
+                self->untrack_window(key);
+                self->listWindow_ = nullptr;
+                self->listMdiSubWindow_ = nullptr;
+            });
 
     BOOST_LOG_SEV(lg(), debug) << "Pricing Engine Type list window created";
 }
@@ -144,23 +155,30 @@ void PricingEngineTypeController::showAddWindow() {
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
 
-    connect(detailDialog, &PricingEngineTypeDetailDialog::statusMessage,
-            this, &PricingEngineTypeController::statusMessage);
-    connect(detailDialog, &PricingEngineTypeDetailDialog::errorMessage,
-            this, &PricingEngineTypeController::errorMessage);
-    connect(detailDialog, &PricingEngineTypeDetailDialog::typeSaved,
-            this, [self = QPointer<PricingEngineTypeController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Pricing Engine Type saved: " << code.toStdString();
-        self->handleEntitySaved();
-    });
+    connect(detailDialog,
+            &PricingEngineTypeDetailDialog::statusMessage,
+            this,
+            &PricingEngineTypeController::statusMessage);
+    connect(detailDialog,
+            &PricingEngineTypeDetailDialog::errorMessage,
+            this,
+            &PricingEngineTypeController::errorMessage);
+    connect(detailDialog,
+            &PricingEngineTypeDetailDialog::typeSaved,
+            this,
+            [self = QPointer<PricingEngineTypeController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Pricing Engine Type saved: " << code.toStdString();
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Pricing Engine Type");
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Tag, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -187,37 +205,46 @@ void PricingEngineTypeController::showDetailWindow(
     detailDialog->setCreateMode(false);
     detailDialog->setType(type);
 
-    connect(detailDialog, &PricingEngineTypeDetailDialog::statusMessage,
-            this, &PricingEngineTypeController::statusMessage);
-    connect(detailDialog, &PricingEngineTypeDetailDialog::errorMessage,
-            this, &PricingEngineTypeController::errorMessage);
-    connect(detailDialog, &PricingEngineTypeDetailDialog::typeSaved,
-            this, [self = QPointer<PricingEngineTypeController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Pricing Engine Type saved: " << code.toStdString();
-        self->handleEntitySaved();
-    });
-    connect(detailDialog, &PricingEngineTypeDetailDialog::typeDeleted,
-            this, [self = QPointer<PricingEngineTypeController>(this), key](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Pricing Engine Type deleted: " << code.toStdString();
-        self->handleEntityDeleted();
-    });
+    connect(detailDialog,
+            &PricingEngineTypeDetailDialog::statusMessage,
+            this,
+            &PricingEngineTypeController::statusMessage);
+    connect(detailDialog,
+            &PricingEngineTypeDetailDialog::errorMessage,
+            this,
+            &PricingEngineTypeController::errorMessage);
+    connect(detailDialog,
+            &PricingEngineTypeDetailDialog::typeSaved,
+            this,
+            [self = QPointer<PricingEngineTypeController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Pricing Engine Type saved: " << code.toStdString();
+                self->handleEntitySaved();
+            });
+    connect(detailDialog,
+            &PricingEngineTypeDetailDialog::typeDeleted,
+            this,
+            [self = QPointer<PricingEngineTypeController>(this), key](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Pricing Engine Type deleted: " << code.toStdString();
+                self->handleEntityDeleted();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Pricing Engine Type: %1").arg(identifier));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Tag, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor));
 
     // Track window
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<PricingEngineTypeController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, key]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, key]() {
         if (self) {
             self->untrack_window(key);
         }
@@ -235,30 +262,38 @@ void PricingEngineTypeController::showHistoryWindow(const QString& code) {
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
-        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: "
-                                  << code.toStdString();
+        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: " << code.toStdString();
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
-                              << code.toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << code.toStdString();
 
     auto* historyDialog = new PricingEngineTypeHistoryDialog(code, clientManager_, mainWindow_);
 
-    connect(historyDialog, &PricingEngineTypeHistoryDialog::statusChanged,
-            this, [self = QPointer<PricingEngineTypeController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(historyDialog, &PricingEngineTypeHistoryDialog::errorOccurred,
-            this, [self = QPointer<PricingEngineTypeController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
-    connect(historyDialog, &PricingEngineTypeHistoryDialog::revertVersionRequested,
-            this, &PricingEngineTypeController::onRevertVersion);
-    connect(historyDialog, &PricingEngineTypeHistoryDialog::openVersionRequested,
-            this, &PricingEngineTypeController::onOpenVersion);
+    connect(historyDialog,
+            &PricingEngineTypeHistoryDialog::statusChanged,
+            this,
+            [self = QPointer<PricingEngineTypeController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(historyDialog,
+            &PricingEngineTypeHistoryDialog::errorOccurred,
+            this,
+            [self = QPointer<PricingEngineTypeController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
+    connect(historyDialog,
+            &PricingEngineTypeHistoryDialog::revertVersionRequested,
+            this,
+            &PricingEngineTypeController::onRevertVersion);
+    connect(historyDialog,
+            &PricingEngineTypeHistoryDialog::openVersionRequested,
+            this,
+            &PricingEngineTypeController::onOpenVersion);
 
     // Load history data
     historyDialog->loadHistory();
@@ -267,16 +302,15 @@ void PricingEngineTypeController::showHistoryWindow(const QString& code) {
     historyWindow->setAttribute(Qt::WA_DeleteOnClose);
     historyWindow->setWidget(historyDialog);
     historyWindow->setWindowTitle(QString("Pricing Engine Type History: %1").arg(code));
-    historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    historyWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     // Track this history window
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
 
     QPointer<PricingEngineTypeController> self = this;
-    connect(historyWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -285,14 +319,14 @@ void PricingEngineTypeController::showHistoryWindow(const QString& code) {
     show_managed_window(historyWindow, listMdiSubWindow_);
 }
 
-void PricingEngineTypeController::onOpenVersion(
-    const analytics::domain::pricing_engine_type& type, int versionNumber) {
+void PricingEngineTypeController::onOpenVersion(const analytics::domain::pricing_engine_type& type,
+                                                int versionNumber) {
     BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
                               << " for pricing engine type: " << type.code;
 
     const QString code = QString::fromStdString(type.code);
-    const QString windowKey = build_window_key("version", QString("%1_v%2")
-        .arg(code).arg(versionNumber));
+    const QString windowKey =
+        build_window_key("version", QString("%1_v%2").arg(code).arg(versionNumber));
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
@@ -306,31 +340,36 @@ void PricingEngineTypeController::onOpenVersion(
     detailDialog->setType(type);
     detailDialog->setReadOnly(true);
 
-    connect(detailDialog, &PricingEngineTypeDetailDialog::statusMessage,
-            this, [self = QPointer<PricingEngineTypeController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(detailDialog, &PricingEngineTypeDetailDialog::errorMessage,
-            this, [self = QPointer<PricingEngineTypeController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
+    connect(detailDialog,
+            &PricingEngineTypeDetailDialog::statusMessage,
+            this,
+            [self = QPointer<PricingEngineTypeController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(detailDialog,
+            &PricingEngineTypeDetailDialog::errorMessage,
+            this,
+            [self = QPointer<PricingEngineTypeController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Pricing Engine Type: %1 (Version %2)")
-        .arg(code).arg(versionNumber));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("Pricing Engine Type: %1 (Version %2)").arg(code).arg(versionNumber));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     track_window(windowKey, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<PricingEngineTypeController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -342,8 +381,7 @@ void PricingEngineTypeController::onOpenVersion(
 
 void PricingEngineTypeController::onRevertVersion(
     const analytics::domain::pricing_engine_type& type) {
-    BOOST_LOG_SEV(lg(), info) << "Reverting pricing engine type to version: "
-                              << type.version;
+    BOOST_LOG_SEV(lg(), info) << "Reverting pricing engine type to version: " << type.version;
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new PricingEngineTypeDetailDialog(mainWindow_);
@@ -352,25 +390,33 @@ void PricingEngineTypeController::onRevertVersion(
     detailDialog->setType(type);
     detailDialog->setCreateMode(false);
 
-    connect(detailDialog, &PricingEngineTypeDetailDialog::statusMessage,
-            this, &PricingEngineTypeController::statusMessage);
-    connect(detailDialog, &PricingEngineTypeDetailDialog::errorMessage,
-            this, &PricingEngineTypeController::errorMessage);
-    connect(detailDialog, &PricingEngineTypeDetailDialog::typeSaved,
-            this, [self = QPointer<PricingEngineTypeController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Pricing Engine Type reverted: " << code.toStdString();
-        emit self->statusMessage(QString("Pricing Engine Type '%1' reverted successfully").arg(code));
-        self->handleEntitySaved();
-    });
+    connect(detailDialog,
+            &PricingEngineTypeDetailDialog::statusMessage,
+            this,
+            &PricingEngineTypeController::statusMessage);
+    connect(detailDialog,
+            &PricingEngineTypeDetailDialog::errorMessage,
+            this,
+            &PricingEngineTypeController::errorMessage);
+    connect(detailDialog,
+            &PricingEngineTypeDetailDialog::typeSaved,
+            this,
+            [self = QPointer<PricingEngineTypeController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Pricing Engine Type reverted: " << code.toStdString();
+                emit self->statusMessage(
+                    QString("Pricing Engine Type '%1' reverted successfully").arg(code));
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Revert Pricing Engine Type: %1")
-        .arg(QString::fromStdString(type.code)));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("Revert Pricing Engine Type: %1").arg(QString::fromStdString(type.code)));
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
+                                                               IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 

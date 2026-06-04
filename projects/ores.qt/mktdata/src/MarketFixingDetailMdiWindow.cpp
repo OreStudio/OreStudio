@@ -18,31 +18,27 @@
  *
  */
 #include "ores.qt/MarketFixingDetailMdiWindow.hpp"
-
-#include <QHeaderView>
-#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/EntityItemDelegate.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include <QHeaderView>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 MarketFixingDetailMdiWindow::MarketFixingDetailMdiWindow(
-    ClientManager* clientManager,
-    const marketdata::domain::market_series& series,
-    QWidget* parent)
-    : EntityListMdiWindow(parent),
-      series_(series),
-      verticalLayout_(new QVBoxLayout(this)),
-      seriesInfoLabel_(new QLabel(this)),
-      tableView_(new QTableView(this)),
-      toolBar_(new QToolBar(this)),
-      reloadAction_(new QAction("Reload", this)),
-      model_(std::make_unique<ClientMarketFixingModel>(
-          clientManager, series.id)),
-      proxyModel_(new QSortFilterProxyModel(this)),
-      clientManager_(clientManager) {
+    ClientManager* clientManager, const marketdata::domain::market_series& series, QWidget* parent)
+    : EntityListMdiWindow(parent)
+    , series_(series)
+    , verticalLayout_(new QVBoxLayout(this))
+    , seriesInfoLabel_(new QLabel(this))
+    , tableView_(new QTableView(this))
+    , toolBar_(new QToolBar(this))
+    , reloadAction_(new QAction("Reload", this))
+    , model_(std::make_unique<ClientMarketFixingModel>(clientManager, series.id))
+    , proxyModel_(new QSortFilterProxyModel(this))
+    , clientManager_(clientManager) {
 
     BOOST_LOG_SEV(lg(), debug) << "Creating market fixing detail MDI window";
     setupUi();
@@ -62,9 +58,9 @@ void MarketFixingDetailMdiWindow::setupUi() {
 
     // Series info banner
     const QString info = tr("%1 / %2 / %3")
-        .arg(QString::fromStdString(series_.series_type))
-        .arg(QString::fromStdString(series_.metric))
-        .arg(QString::fromStdString(series_.qualifier));
+                             .arg(QString::fromStdString(series_.series_type))
+                             .arg(QString::fromStdString(series_.metric))
+                             .arg(QString::fromStdString(series_.qualifier));
     seriesInfoLabel_->setText(info);
     seriesInfoLabel_->setStyleSheet("padding: 4px; font-weight: bold;");
     verticalLayout_->addWidget(seriesInfoLabel_);
@@ -80,15 +76,19 @@ void MarketFixingDetailMdiWindow::setupUi() {
     tableView_->verticalHeader()->setVisible(false);
     tableView_->setItemDelegate(new EntityItemDelegate({}, tableView_));
 
-    initializeTableSettings(tableView_, model_.get(),
-        "MarketFixingDetailWindow", {}, {700, 500}, 1);
+    initializeTableSettings(
+        tableView_, model_.get(), "MarketFixingDetailWindow", {}, {700, 500}, 1);
 
     verticalLayout_->addWidget(tableView_);
 
-    connect(model_.get(), &ClientMarketFixingModel::dataLoaded,
-            this, &MarketFixingDetailMdiWindow::onDataLoaded);
-    connect(model_.get(), &ClientMarketFixingModel::loadError,
-            this, &MarketFixingDetailMdiWindow::onLoadError);
+    connect(model_.get(),
+            &ClientMarketFixingModel::dataLoaded,
+            this,
+            &MarketFixingDetailMdiWindow::onDataLoaded);
+    connect(model_.get(),
+            &ClientMarketFixingModel::loadError,
+            this,
+            &MarketFixingDetailMdiWindow::onLoadError);
 
     connectModel(model_.get());
     model_->refresh();
@@ -98,11 +98,10 @@ void MarketFixingDetailMdiWindow::setupToolbar() {
     toolBar_->setMovable(false);
     toolBar_->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
 
-    reloadAction_->setIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowSync, color_constants::icon_color));
+    reloadAction_->setIcon(
+        IconUtils::createRecoloredIcon(Icon::ArrowSync, color_constants::icon_color));
     reloadAction_->setToolTip(tr("Refresh fixings"));
-    connect(reloadAction_, &QAction::triggered,
-            this, &EntityListMdiWindow::reload);
+    connect(reloadAction_, &QAction::triggered, this, &EntityListMdiWindow::reload);
     toolBar_->addAction(reloadAction_);
     initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowSync));
 }
@@ -117,8 +116,8 @@ void MarketFixingDetailMdiWindow::onDataLoaded() {
     emit statusChanged(tr("Loaded %1 fixing(s)").arg(count));
 }
 
-void MarketFixingDetailMdiWindow::onLoadError(
-    const QString& error_message, const QString& /*details*/) {
+void MarketFixingDetailMdiWindow::onLoadError(const QString& error_message,
+                                              const QString& /*details*/) {
     emit errorOccurred(error_message);
 }
 

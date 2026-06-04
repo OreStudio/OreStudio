@@ -20,15 +20,15 @@
 #ifndef ORES_QT_DATASET_MDI_WINDOW_HPP
 #define ORES_QT_DATASET_MDI_WINDOW_HPP
 
+#include "ores.dq.api/domain/dataset.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientDatasetModel.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/EntityListMdiWindow.hpp"
+#include <QSortFilterProxyModel>
 #include <QTableView>
 #include <QToolBar>
-#include <QSortFilterProxyModel>
 #include <boost/uuid/uuid.hpp>
-#include "ores.qt/EntityListMdiWindow.hpp"
-#include "ores.qt/ClientManager.hpp"
-#include "ores.qt/ClientDatasetModel.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.dq.api/domain/dataset.hpp"
 
 namespace ores::qt {
 
@@ -36,8 +36,7 @@ class DatasetMdiWindow final : public EntityListMdiWindow {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.dataset_mdi_window";
+    inline static std::string_view logger_name = "ores.qt.dataset_mdi_window";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;

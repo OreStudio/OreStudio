@@ -18,24 +18,23 @@
  *
  */
 #include "ores.qt/BadgeSeverityDetailDialog.hpp"
-
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include <QPlainTextEdit>
-#include "ui_BadgeSeverityDetailDialog.h"
+#include "ores.dq.api/messaging/badge_protocol.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.dq.api/messaging/badge_protocol.hpp"
+#include "ui_BadgeSeverityDetailDialog.h"
+#include <QFutureWatcher>
+#include <QMessageBox>
+#include <QPlainTextEdit>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 BadgeSeverityDetailDialog::BadgeSeverityDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent),
-      ui_(new Ui::BadgeSeverityDetailDialog),
-      clientManager_(nullptr) {
+    : DetailDialogBase(parent)
+    , ui_(new Ui::BadgeSeverityDetailDialog)
+    , clientManager_(nullptr) {
 
     ui_->setupUi(this);
     setupUi();
@@ -71,18 +70,22 @@ void BadgeSeverityDetailDialog::setupUi() {
 }
 
 void BadgeSeverityDetailDialog::setupConnections() {
-    connect(ui_->saveButton, &QPushButton::clicked, this,
-            &BadgeSeverityDetailDialog::onSaveClicked);
-    connect(ui_->deleteButton, &QPushButton::clicked, this,
+    connect(
+        ui_->saveButton, &QPushButton::clicked, this, &BadgeSeverityDetailDialog::onSaveClicked);
+    connect(ui_->deleteButton,
+            &QPushButton::clicked,
+            this,
             &BadgeSeverityDetailDialog::onDeleteClicked);
-    connect(ui_->closeButton, &QPushButton::clicked, this,
-            &BadgeSeverityDetailDialog::onCloseClicked);
+    connect(
+        ui_->closeButton, &QPushButton::clicked, this, &BadgeSeverityDetailDialog::onCloseClicked);
 
-    connect(ui_->codeEdit, &QLineEdit::textChanged, this,
-            &BadgeSeverityDetailDialog::onCodeChanged);
-    connect(ui_->nameEdit, &QLineEdit::textChanged, this,
-            &BadgeSeverityDetailDialog::onFieldChanged);
-    connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this,
+    connect(
+        ui_->codeEdit, &QLineEdit::textChanged, this, &BadgeSeverityDetailDialog::onCodeChanged);
+    connect(
+        ui_->nameEdit, &QLineEdit::textChanged, this, &BadgeSeverityDetailDialog::onFieldChanged);
+    connect(ui_->descriptionEdit,
+            &QPlainTextEdit::textChanged,
+            this,
             &BadgeSeverityDetailDialog::onFieldChanged);
 }
 
@@ -94,8 +97,7 @@ void BadgeSeverityDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
 
-void BadgeSeverityDetailDialog::setSeverity(
-    const dq::domain::badge_severity& severity) {
+void BadgeSeverityDetailDialog::setSeverity(const dq::domain::badge_severity& severity) {
     severity_ = severity;
     updateUiFromSeverity();
 }
@@ -168,14 +170,13 @@ bool BadgeSeverityDetailDialog::validateInput() {
 
 void BadgeSeverityDetailDialog::onSaveClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot save badge severity while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot save badge severity while disconnected from server.");
         return;
     }
 
     if (!validateInput()) {
-        MessageBoxHelper::warning(this, "Invalid Input",
-            "Please fill in all required fields.");
+        MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
 
@@ -197,8 +198,8 @@ void BadgeSeverityDetailDialog::onSaveClicked() {
 
         dq::messaging::save_badge_severity_request request;
         request.data = severity;
-        auto response_result = self->clientManager_->
-            process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, response_result.error()};
@@ -208,8 +209,7 @@ void BadgeSeverityDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
@@ -234,13 +234,15 @@ void BadgeSeverityDetailDialog::onSaveClicked() {
 
 void BadgeSeverityDetailDialog::onDeleteClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot delete badge severity while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot delete badge severity while disconnected from server.");
         return;
     }
 
     QString code = QString::fromStdString(severity_.code);
-    auto reply = MessageBoxHelper::question(this, "Delete Badge Severity",
+    auto reply = MessageBoxHelper::question(
+        this,
+        "Delete Badge Severity",
         QString("Are you sure you want to delete badge severity '%1'?").arg(code),
         QMessageBox::Yes | QMessageBox::No);
 
@@ -264,8 +266,8 @@ void BadgeSeverityDetailDialog::onDeleteClicked() {
 
         dq::messaging::delete_badge_severity_request request;
         request.codes = {code_str};
-        auto response_result = self->clientManager_->
-            process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, response_result.error()};
@@ -275,8 +277,7 @@ void BadgeSeverityDetailDialog::onDeleteClicked() {
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
-            self, [self, code, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, code, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 

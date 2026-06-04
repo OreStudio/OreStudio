@@ -19,20 +19,20 @@
  */
 #include "ores.qt/FlagSelectorDialog.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-
-#include <QVBoxLayout>
-#include <QHBoxLayout>
 #include <QGroupBox>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 FlagSelectorDialog::FlagSelectorDialog(ImageCache* imageCache,
-    const QString& currentImageId, QWidget* parent)
-    : QDialog(parent),
-      imageCache_(imageCache),
-      currentImageId_(currentImageId) {
+                                       const QString& currentImageId,
+                                       QWidget* parent)
+    : QDialog(parent)
+    , imageCache_(imageCache)
+    , currentImageId_(currentImageId) {
 
     BOOST_LOG_SEV(lg(), debug) << "Creating flag selector dialog, current: "
                                << currentImageId_.toStdString();
@@ -42,12 +42,13 @@ FlagSelectorDialog::FlagSelectorDialog(ImageCache* imageCache,
     setupUi();
 
     // Connect to ImageCache signals
-    connect(imageCache_, &ImageCache::imageListLoaded,
-        this, &FlagSelectorDialog::onImageListLoaded);
-    connect(imageCache_, &ImageCache::imageLoaded,
-        this, &FlagSelectorDialog::onImageLoaded);
-    connect(imageCache_, &ImageCache::allAvailableImagesLoaded,
-        this, &FlagSelectorDialog::onAllImagesLoaded);
+    connect(
+        imageCache_, &ImageCache::imageListLoaded, this, &FlagSelectorDialog::onImageListLoaded);
+    connect(imageCache_, &ImageCache::imageLoaded, this, &FlagSelectorDialog::onImageLoaded);
+    connect(imageCache_,
+            &ImageCache::allAvailableImagesLoaded,
+            this,
+            &FlagSelectorDialog::onAllImagesLoaded);
 
     // Load image list if not already loaded
     if (!imageCache_->hasImageList()) {
@@ -118,18 +119,16 @@ void FlagSelectorDialog::setupUi() {
     mainLayout->addLayout(buttonLayout);
 
     // Connect signals
-    connect(searchEdit_, &QLineEdit::textChanged,
-        this, &FlagSelectorDialog::onSearchTextChanged);
-    connect(listWidget_, &QListWidget::itemSelectionChanged,
-        this, &FlagSelectorDialog::onItemSelectionChanged);
-    connect(listWidget_, &QListWidget::itemDoubleClicked,
-        this, &FlagSelectorDialog::onSelectClicked);
-    connect(clearButton_, &QPushButton::clicked,
-        this, &FlagSelectorDialog::onClearClicked);
-    connect(selectButton_, &QPushButton::clicked,
-        this, &FlagSelectorDialog::onSelectClicked);
-    connect(cancelButton_, &QPushButton::clicked,
-        this, &QDialog::reject);
+    connect(searchEdit_, &QLineEdit::textChanged, this, &FlagSelectorDialog::onSearchTextChanged);
+    connect(listWidget_,
+            &QListWidget::itemSelectionChanged,
+            this,
+            &FlagSelectorDialog::onItemSelectionChanged);
+    connect(
+        listWidget_, &QListWidget::itemDoubleClicked, this, &FlagSelectorDialog::onSelectClicked);
+    connect(clearButton_, &QPushButton::clicked, this, &FlagSelectorDialog::onClearClicked);
+    connect(selectButton_, &QPushButton::clicked, this, &FlagSelectorDialog::onSelectClicked);
+    connect(cancelButton_, &QPushButton::clicked, this, &QDialog::reject);
 }
 
 void FlagSelectorDialog::onImageListLoaded() {
@@ -176,8 +175,8 @@ void FlagSelectorDialog::populateList() {
 void FlagSelectorDialog::filterList(const QString& filter) {
     for (int i = 0; i < listWidget_->count(); ++i) {
         auto* item = listWidget_->item(i);
-        bool visible = filter.isEmpty() ||
-            item->text().contains(filter, Qt::CaseInsensitive) ||
+        bool visible =
+            filter.isEmpty() || item->text().contains(filter, Qt::CaseInsensitive) ||
             item->data(Qt::UserRole + 1).toString().contains(filter, Qt::CaseInsensitive);
         item->setHidden(!visible);
     }
@@ -217,8 +216,7 @@ void FlagSelectorDialog::onImageLoaded(const QString& image_id) {
 
     // Update preview if the loaded image is currently selected
     auto selected = listWidget_->selectedItems();
-    if (!selected.isEmpty() &&
-        selected.first()->data(Qt::UserRole).toString() == image_id) {
+    if (!selected.isEmpty() && selected.first()->data(Qt::UserRole).toString() == image_id) {
         QIcon icon = imageCache_->getIcon(image_id.toStdString());
         if (!icon.isNull()) {
             previewLabel_->setPixmap(icon.pixmap(64, 64));

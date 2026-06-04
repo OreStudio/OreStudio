@@ -18,7 +18,6 @@
  *
  */
 #include "ores.qt/MdiAreaWithBackground.hpp"
-
 #include <QBrush>
 #include <QColor>
 #include <QEvent>
@@ -36,8 +35,7 @@ MdiAreaWithBackground::MdiAreaWithBackground(QWidget* parent)
 
 void MdiAreaWithBackground::changeEvent(QEvent* event) {
     QMdiArea::changeEvent(event);
-    if (event->type() == QEvent::PaletteChange ||
-        event->type() == QEvent::StyleChange) {
+    if (event->type() == QEvent::PaletteChange || event->type() == QEvent::StyleChange) {
         setBackground(QBrush(palette().color(QPalette::Window)));
     }
 }
@@ -45,11 +43,9 @@ void MdiAreaWithBackground::changeEvent(QEvent* event) {
 void MdiAreaWithBackground::setBackgroundLogo(const QString& imagePath) {
     backgroundLogo_ = QPixmap(imagePath);
     if (backgroundLogo_.isNull()) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to load background logo: "
-                                 << imagePath.toStdString();
+        BOOST_LOG_SEV(lg(), warn) << "Failed to load background logo: " << imagePath.toStdString();
     } else {
-        BOOST_LOG_SEV(lg(), info) << "Background logo loaded: "
-                                 << imagePath.toStdString();
+        BOOST_LOG_SEV(lg(), info) << "Background logo loaded: " << imagePath.toStdString();
     }
 
     if (auto* vp = viewport()) {

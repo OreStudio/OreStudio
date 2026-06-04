@@ -18,27 +18,26 @@
  *
  */
 #include "ores.qt/BusinessCentreDetailDialog.hpp"
-
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include "ui_BusinessCentreDetailDialog.h"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata.api/messaging/business_centre_protocol.hpp"
 #include "ores.refdata.api/messaging/country_protocol.hpp"
+#include "ui_BusinessCentreDetailDialog.h"
+#include <QFutureWatcher>
+#include <QMessageBox>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 BusinessCentreDetailDialog::BusinessCentreDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent),
-      ui_(new Ui::BusinessCentreDetailDialog),
-      clientManager_(nullptr) {
+    : DetailDialogBase(parent)
+    , ui_(new Ui::BusinessCentreDetailDialog)
+    , clientManager_(nullptr) {
 
     ui_->setupUi(this);
     WidgetUtils::setupComboBoxes(this);
@@ -50,9 +49,15 @@ BusinessCentreDetailDialog::~BusinessCentreDetailDialog() {
     delete ui_;
 }
 
-QTabWidget* BusinessCentreDetailDialog::tabWidget() const { return ui_->tabWidget; }
-QWidget* BusinessCentreDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
-ProvenanceWidget* BusinessCentreDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
+QTabWidget* BusinessCentreDetailDialog::tabWidget() const {
+    return ui_->tabWidget;
+}
+QWidget* BusinessCentreDetailDialog::provenanceTab() const {
+    return ui_->provenanceTab;
+}
+ProvenanceWidget* BusinessCentreDetailDialog::provenanceWidget() const {
+    return ui_->provenanceWidget;
+}
 
 void BusinessCentreDetailDialog::setupUi() {
     ui_->saveButton->setIcon(
@@ -67,22 +72,32 @@ void BusinessCentreDetailDialog::setupUi() {
 }
 
 void BusinessCentreDetailDialog::setupConnections() {
-    connect(ui_->saveButton, &QPushButton::clicked, this,
-            &BusinessCentreDetailDialog::onSaveClicked);
-    connect(ui_->deleteButton, &QPushButton::clicked, this,
+    connect(
+        ui_->saveButton, &QPushButton::clicked, this, &BusinessCentreDetailDialog::onSaveClicked);
+    connect(ui_->deleteButton,
+            &QPushButton::clicked,
+            this,
             &BusinessCentreDetailDialog::onDeleteClicked);
-    connect(ui_->closeButton, &QPushButton::clicked, this,
-            &BusinessCentreDetailDialog::onCloseClicked);
+    connect(
+        ui_->closeButton, &QPushButton::clicked, this, &BusinessCentreDetailDialog::onCloseClicked);
 
-    connect(ui_->codeEdit, &QLineEdit::textChanged, this,
-            &BusinessCentreDetailDialog::onCodeChanged);
-    connect(ui_->sourceEdit, &QLineEdit::textChanged, this,
+    connect(
+        ui_->codeEdit, &QLineEdit::textChanged, this, &BusinessCentreDetailDialog::onCodeChanged);
+    connect(ui_->sourceEdit,
+            &QLineEdit::textChanged,
+            this,
             &BusinessCentreDetailDialog::onFieldChanged);
-    connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this,
+    connect(ui_->descriptionEdit,
+            &QPlainTextEdit::textChanged,
+            this,
             &BusinessCentreDetailDialog::onFieldChanged);
-    connect(ui_->codingSchemeEdit, &QLineEdit::textChanged, this,
+    connect(ui_->codingSchemeEdit,
+            &QLineEdit::textChanged,
+            this,
             &BusinessCentreDetailDialog::onFieldChanged);
-    connect(ui_->countryAlpha2Combo, &QComboBox::currentTextChanged, this,
+    connect(ui_->countryAlpha2Combo,
+            &QComboBox::currentTextChanged,
+            this,
             &BusinessCentreDetailDialog::onFieldChanged);
 }
 
@@ -92,7 +107,8 @@ void BusinessCentreDetailDialog::setClientManager(ClientManager* clientManager) 
 }
 
 void BusinessCentreDetailDialog::populateCountries() {
-    if (!clientManager_ || !clientManager_->isConnected()) return;
+    if (!clientManager_ || !clientManager_->isConnected())
+        return;
 
     QPointer<BusinessCentreDetailDialog> self = this;
     auto* cm = clientManager_;
@@ -101,7 +117,8 @@ void BusinessCentreDetailDialog::populateCountries() {
         refdata::messaging::get_countries_request request;
         request.limit = 1000;
         auto response = cm->process_authenticated_request(std::move(request));
-        if (!response) return {};
+        if (!response)
+            return {};
 
         std::vector<std::string> codes;
         codes.reserve(response->countries.size());
@@ -112,24 +129,22 @@ void BusinessCentreDetailDialog::populateCountries() {
     };
 
     auto* watcher = new QFutureWatcher<std::vector<std::string>>(self);
-    connect(watcher, &QFutureWatcher<std::vector<std::string>>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<std::vector<std::string>>::finished, self, [self, watcher]() {
         auto codes = watcher->result();
         watcher->deleteLater();
 
-        if (!self) return;
+        if (!self)
+            return;
 
         self->ui_->countryAlpha2Combo->blockSignals(true);
         self->ui_->countryAlpha2Combo->clear();
         self->ui_->countryAlpha2Combo->addItem(QString());
         for (const auto& code : codes) {
-            self->ui_->countryAlpha2Combo->addItem(
-                QString::fromStdString(code));
+            self->ui_->countryAlpha2Combo->addItem(QString::fromStdString(code));
         }
         self->ui_->countryAlpha2Combo->blockSignals(false);
 
-        apply_flag_icons(self->ui_->countryAlpha2Combo, self->imageCache_,
-                         FlagSource::Country);
+        apply_flag_icons(self->ui_->countryAlpha2Combo, self->imageCache_, FlagSource::Country);
         self->updateUiFromBusinessCentre();
 
         // Apply the pending country selection now that the combo is populated.
@@ -159,8 +174,7 @@ void BusinessCentreDetailDialog::setBusinessCentre(
     updateUiFromBusinessCentre();
     // If the combo already has items (populated before this call), apply now.
     if (ui_->countryAlpha2Combo->count() > 0) {
-        ui_->countryAlpha2Combo->setCurrentText(
-            QString::fromStdString(pending_country_));
+        ui_->countryAlpha2Combo->setCurrentText(QString::fromStdString(pending_country_));
     }
 }
 
@@ -194,8 +208,10 @@ void BusinessCentreDetailDialog::updateUiFromBusinessCentre() {
     ui_->descriptionEdit->setPlainText(QString::fromStdString(business_centre_.description));
     ui_->codingSchemeEdit->setText(QString::fromStdString(business_centre_.coding_scheme_code));
 
-    populateProvenance(business_centre_.version, business_centre_.modified_by,
-                       business_centre_.performed_by, business_centre_.recorded_at,
+    populateProvenance(business_centre_.version,
+                       business_centre_.modified_by,
+                       business_centre_.performed_by,
+                       business_centre_.recorded_at,
                        business_centre_.change_reason_code,
                        business_centre_.change_commentary);
     hasChanges_ = false;
@@ -209,7 +225,8 @@ void BusinessCentreDetailDialog::updateBusinessCentreFromUi() {
     business_centre_.source = ui_->sourceEdit->text().trimmed().toStdString();
     business_centre_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
     business_centre_.coding_scheme_code = ui_->codingSchemeEdit->text().trimmed().toStdString();
-    business_centre_.country_alpha2_code = ui_->countryAlpha2Combo->currentText().trimmed().toStdString();
+    business_centre_.country_alpha2_code =
+        ui_->countryAlpha2Combo->currentText().trimmed().toStdString();
     business_centre_.modified_by = username_;
     business_centre_.performed_by = username_;
 }
@@ -236,25 +253,23 @@ bool BusinessCentreDetailDialog::validateInput() {
 
 void BusinessCentreDetailDialog::onSaveClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot save business centre while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot save business centre while disconnected from server.");
         return;
     }
 
     if (!validateInput()) {
-        MessageBoxHelper::warning(this, "Invalid Input",
-            "Please fill in all required fields.");
+        MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
 
     updateBusinessCentreFromUi();
 
-    const auto crOpType = createMode_
-        ? ChangeReasonDialog::OperationType::Create
-        : ChangeReasonDialog::OperationType::Amend;
-    const auto crSel = promptChangeReason(crOpType, hasChanges_,
-        createMode_ ? "system" : "common");
-    if (!crSel) return;
+    const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
+                                        ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
+    if (!crSel)
+        return;
     business_centre_.change_reason_code = crSel->reason_code;
     business_centre_.change_commentary = crSel->commentary;
 
@@ -284,8 +299,7 @@ void BusinessCentreDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
@@ -310,13 +324,15 @@ void BusinessCentreDetailDialog::onSaveClicked() {
 
 void BusinessCentreDetailDialog::onDeleteClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot delete business centre while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot delete business centre while disconnected from server.");
         return;
     }
 
     QString code = QString::fromStdString(business_centre_.code);
-    auto reply = MessageBoxHelper::question(this, "Delete Business Centre",
+    auto reply = MessageBoxHelper::question(
+        this,
+        "Delete Business Centre",
         QString("Are you sure you want to delete business centre '%1'?").arg(code),
         QMessageBox::Yes | QMessageBox::No);
 
@@ -324,9 +340,10 @@ void BusinessCentreDetailDialog::onDeleteClicked() {
         return;
     }
 
-    const auto crSel = promptChangeReason(
-        ChangeReasonDialog::OperationType::Delete, true, "common");
-    if (!crSel) return;
+    const auto crSel =
+        promptChangeReason(ChangeReasonDialog::OperationType::Delete, true, "common");
+    if (!crSel)
+        return;
 
     BOOST_LOG_SEV(lg(), info) << "Deleting business centre: " << business_centre_.code;
 
@@ -354,8 +371,7 @@ void BusinessCentreDetailDialog::onDeleteClicked() {
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
-            self, [self, code, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, code, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 

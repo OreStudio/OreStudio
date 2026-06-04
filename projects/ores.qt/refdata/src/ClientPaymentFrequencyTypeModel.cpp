@@ -18,38 +18,43 @@
  *
  */
 #include "ores.qt/ClientPaymentFrequencyTypeModel.hpp"
-
-#include <QtConcurrent>
-#include "ores.trading.api/messaging/payment_frequency_type_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
+#include "ores.trading.api/messaging/payment_frequency_type_protocol.hpp"
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    std::string payment_frequency_type_key_extractor(const trading::domain::payment_frequency_type& e) {
-        return e.code;
-    }
+std::string payment_frequency_type_key_extractor(const trading::domain::payment_frequency_type& e) {
+    return e.code;
+}
 }
 
-ClientPaymentFrequencyTypeModel::ClientPaymentFrequencyTypeModel(
-    ClientManager* clientManager, QObject* parent)
-    : AbstractClientModel(parent),
-      clientManager_(clientManager),
-      watcher_(new QFutureWatcher<FetchResult>(this)),
-      recencyTracker_(payment_frequency_type_key_extractor),
-      pulseManager_(new RecencyPulseManager(this)) {
+ClientPaymentFrequencyTypeModel::ClientPaymentFrequencyTypeModel(ClientManager* clientManager,
+                                                                 QObject* parent)
+    : AbstractClientModel(parent)
+    , clientManager_(clientManager)
+    , watcher_(new QFutureWatcher<FetchResult>(this))
+    , recencyTracker_(payment_frequency_type_key_extractor)
+    , pulseManager_(new RecencyPulseManager(this)) {
 
-    connect(watcher_, &QFutureWatcher<FetchResult>::finished,
-            this, &ClientPaymentFrequencyTypeModel::onTypesLoaded);
+    connect(watcher_,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            &ClientPaymentFrequencyTypeModel::onTypesLoaded);
 
-    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
-            this, &ClientPaymentFrequencyTypeModel::onPulseStateChanged);
-    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
-            this, &ClientPaymentFrequencyTypeModel::onPulsingComplete);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulse_state_changed,
+            this,
+            &ClientPaymentFrequencyTypeModel::onPulseStateChanged);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulsing_complete,
+            this,
+            &ClientPaymentFrequencyTypeModel::onPulsingComplete);
 }
 
 int ClientPaymentFrequencyTypeModel::rowCount(const QModelIndex& parent) const {
@@ -64,8 +69,7 @@ int ClientPaymentFrequencyTypeModel::columnCount(const QModelIndex& parent) cons
     return ColumnCount;
 }
 
-QVariant ClientPaymentFrequencyTypeModel::data(
-    const QModelIndex& index, int role) const {
+QVariant ClientPaymentFrequencyTypeModel::data(const QModelIndex& index, int role) const {
     if (!index.isValid())
         return {};
 
@@ -77,18 +81,18 @@ QVariant ClientPaymentFrequencyTypeModel::data(
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-        case Code:
-            return QString::fromStdString(type.code);
-        case Description:
-            return QString::fromStdString(type.description);
-        case Version:
-            return static_cast<qlonglong>(type.version);
-        case ModifiedBy:
-            return QString::fromStdString(type.modified_by);
-        case RecordedAt:
-            return relative_time_helper::format(type.recorded_at);
-        default:
-            return {};
+            case Code:
+                return QString::fromStdString(type.code);
+            case Description:
+                return QString::fromStdString(type.description);
+            case Version:
+                return static_cast<qlonglong>(type.version);
+            case ModifiedBy:
+                return QString::fromStdString(type.modified_by);
+            case RecordedAt:
+                return relative_time_helper::format(type.recorded_at);
+            default:
+                return {};
         }
     }
 
@@ -99,24 +103,25 @@ QVariant ClientPaymentFrequencyTypeModel::data(
     return {};
 }
 
-QVariant ClientPaymentFrequencyTypeModel::headerData(
-    int section, Qt::Orientation orientation, int role) const {
+QVariant ClientPaymentFrequencyTypeModel::headerData(int section,
+                                                     Qt::Orientation orientation,
+                                                     int role) const {
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return {};
 
     switch (section) {
-    case Code:
-        return tr("Code");
-    case Description:
-        return tr("Description");
-    case Version:
-        return tr("Version");
-    case ModifiedBy:
-        return tr("Modified By");
-    case RecordedAt:
-        return tr("Recorded At");
-    default:
-        return {};
+        case Code:
+            return tr("Code");
+        case Description:
+            return tr("Description");
+        case Version:
+            return tr("Version");
+        case ModifiedBy:
+            return tr("Modified By");
+        case RecordedAt:
+            return tr("Recorded At");
+        default:
+            return {};
     }
 }
 
@@ -146,8 +151,7 @@ void ClientPaymentFrequencyTypeModel::refresh() {
     fetch_types(0, page_size_);
 }
 
-void ClientPaymentFrequencyTypeModel::load_page(std::uint32_t offset,
-                                          std::uint32_t limit) {
+void ClientPaymentFrequencyTypeModel::load_page(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "load_page: offset=" << offset << ", limit=" << limit;
 
     if (is_fetching_) {
@@ -171,18 +175,19 @@ void ClientPaymentFrequencyTypeModel::load_page(std::uint32_t offset,
     fetch_types(offset, limit);
 }
 
-void ClientPaymentFrequencyTypeModel::fetch_types(
-    std::uint32_t offset, std::uint32_t limit) {
+void ClientPaymentFrequencyTypeModel::fetch_types(std::uint32_t offset, std::uint32_t limit) {
     is_fetching_ = true;
     QPointer<ClientPaymentFrequencyTypeModel> self = this;
 
-    QFuture<FetchResult> future =
-        QtConcurrent::run([self, offset, limit]() -> FetchResult {
-            return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
-                BOOST_LOG_SEV(lg(), debug) << "Making payment frequency types request with offset="
-                                           << offset << ", limit=" << limit;
+    QFuture<FetchResult> future = QtConcurrent::run([self, offset, limit]() -> FetchResult {
+        return exception_helper::wrap_async_fetch<FetchResult>(
+            [&]() -> FetchResult {
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Making payment frequency types request with offset=" << offset
+                    << ", limit=" << limit;
                 if (!self || !self->clientManager_) {
-                    return {.success = false, .types = {},
+                    return {.success = false,
+                            .types = {},
                             .total_available_count = 0,
                             .error_message = "Model was destroyed",
                             .error_details = {}};
@@ -190,29 +195,31 @@ void ClientPaymentFrequencyTypeModel::fetch_types(
 
                 trading::messaging::get_payment_frequency_types_request request;
 
-                auto result = self->clientManager_->
-                    process_authenticated_request(std::move(request));
+                auto result =
+                    self->clientManager_->process_authenticated_request(std::move(request));
 
                 if (!result) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to fetch payment frequency types: "
-                                               << result.error();
-                    return {.success = false, .types = {},
+                    BOOST_LOG_SEV(lg(), error)
+                        << "Failed to fetch payment frequency types: " << result.error();
+                    return {.success = false,
+                            .types = {},
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(
                                 "Failed to fetch payment frequency types: " + result.error()),
                             .error_details = {}};
                 }
 
-                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->types.size()
-                                           << " payment frequency types";
-                const std::uint32_t count =
-                    static_cast<std::uint32_t>(result->types.size());
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Fetched " << result->types.size() << " payment frequency types";
+                const std::uint32_t count = static_cast<std::uint32_t>(result->types.size());
                 return {.success = true,
                         .types = std::move(result->types),
                         .total_available_count = count,
-                        .error_message = {}, .error_details = {}};
-            }, "payment frequency types");
-        });
+                        .error_message = {},
+                        .error_details = {}};
+            },
+            "payment frequency types");
+    });
 
     watcher_->setFuture(future);
 }
@@ -223,8 +230,8 @@ void ClientPaymentFrequencyTypeModel::onTypesLoaded() {
     const auto result = watcher_->result();
 
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to fetch payment frequency types: "
-                                   << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to fetch payment frequency types: " << result.error_message.toStdString();
         emit loadError(result.error_message, result.error_details);
         return;
     }
@@ -271,8 +278,7 @@ ClientPaymentFrequencyTypeModel::getType(int row) const {
     return &types_[idx];
 }
 
-QVariant ClientPaymentFrequencyTypeModel::recency_foreground_color(
-    const std::string& code) const {
+QVariant ClientPaymentFrequencyTypeModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {
         return color_constants::stale_indicator;
     }
@@ -281,8 +287,8 @@ QVariant ClientPaymentFrequencyTypeModel::recency_foreground_color(
 
 void ClientPaymentFrequencyTypeModel::onPulseStateChanged(bool /*isOn*/) {
     if (!types_.empty()) {
-        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
-            {Qt::ForegroundRole});
+        emit dataChanged(
+            index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::ForegroundRole});
     }
 }
 

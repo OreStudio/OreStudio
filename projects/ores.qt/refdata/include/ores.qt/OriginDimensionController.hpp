@@ -20,13 +20,13 @@
 #ifndef ORES_QT_ORIGIN_DIMENSION_CONTROLLER_HPP
 #define ORES_QT_ORIGIN_DIMENSION_CONTROLLER_HPP
 
-#include <QMdiArea>
-#include <QMainWindow>
-#include "ores.qt/EntityController.hpp"
-#include "ores.qt/ClientManager.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.dq.api/domain/origin_dimension.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/EntityController.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
+#include <QMainWindow>
+#include <QMdiArea>
 
 namespace ores::qt {
 
@@ -44,8 +44,7 @@ class OriginDimensionController final : public EntityController {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.origin_dimension_controller";
+    inline static std::string_view logger_name = "ores.qt.origin_dimension_controller";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -54,13 +53,12 @@ private:
     }
 
 public:
-    OriginDimensionController(
-        QMainWindow* mainWindow,
-        QMdiArea* mdiArea,
-        ClientManager* clientManager,
-        ChangeReasonCache* changeReasonCache,
-        const QString& username,
-        QObject* parent = nullptr);
+    OriginDimensionController(QMainWindow* mainWindow,
+                              QMdiArea* mdiArea,
+                              ClientManager* clientManager,
+                              ChangeReasonCache* changeReasonCache,
+                              const QString& username,
+                              QObject* parent = nullptr);
 
     void showListWindow() override;
     void closeAllWindows() override;
@@ -78,8 +76,7 @@ private slots:
     void onAddNewRequested();
     void onShowHistory(const QString& code);
     void onRevertVersion(const dq::domain::origin_dimension& dimension);
-    void onOpenVersion(const dq::domain::origin_dimension& dimension,
-                       int versionNumber);
+    void onOpenVersion(const dq::domain::origin_dimension& dimension, int versionNumber);
 
 private:
     void showAddWindow();

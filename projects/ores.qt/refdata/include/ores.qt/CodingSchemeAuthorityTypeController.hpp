@@ -20,12 +20,12 @@
 #ifndef ORES_QT_CODING_SCHEME_AUTHORITY_TYPE_CONTROLLER_HPP
 #define ORES_QT_CODING_SCHEME_AUTHORITY_TYPE_CONTROLLER_HPP
 
-#include <QMdiArea>
-#include <QMainWindow>
-#include "ores.qt/EntityController.hpp"
-#include "ores.qt/ClientManager.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.dq.api/domain/coding_scheme_authority_type.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/EntityController.hpp"
+#include <QMainWindow>
+#include <QMdiArea>
 
 namespace ores::qt {
 
@@ -37,8 +37,7 @@ class CodingSchemeAuthorityTypeController final : public EntityController {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.coding_scheme_authority_type_controller";
+    inline static std::string_view logger_name = "ores.qt.coding_scheme_authority_type_controller";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -47,13 +46,12 @@ private:
     }
 
 public:
-    CodingSchemeAuthorityTypeController(
-        QMainWindow* mainWindow,
-        QMdiArea* mdiArea,
-        ClientManager* clientManager,
-        ChangeReasonCache* changeReasonCache,
-        const QString& username,
-        QObject* parent = nullptr);
+    CodingSchemeAuthorityTypeController(QMainWindow* mainWindow,
+                                        QMdiArea* mdiArea,
+                                        ClientManager* clientManager,
+                                        ChangeReasonCache* changeReasonCache,
+                                        const QString& username,
+                                        QObject* parent = nullptr);
 
     void showListWindow() override;
     void closeAllWindows() override;

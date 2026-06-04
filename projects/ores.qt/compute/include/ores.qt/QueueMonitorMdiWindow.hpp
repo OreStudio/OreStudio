@@ -20,13 +20,13 @@
 #ifndef ORES_QT_QUEUE_MONITOR_MDI_WINDOW_HPP
 #define ORES_QT_QUEUE_MONITOR_MDI_WINDOW_HPP
 
-#include <QToolBar>
-#include <QTableView>
-#include <QSortFilterProxyModel>
-#include "ores.qt/EntityListMdiWindow.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ClientQueueModel.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.qt/EntityListMdiWindow.hpp"
+#include <QSortFilterProxyModel>
+#include <QTableView>
+#include <QToolBar>
 
 namespace ores::qt {
 
@@ -41,8 +41,7 @@ class QueueMonitorMdiWindow final : public EntityListMdiWindow {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.queue_monitor_mdi_window";
+    inline static std::string_view logger_name = "ores.qt.queue_monitor_mdi_window";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -51,8 +50,7 @@ private:
     }
 
 public:
-    explicit QueueMonitorMdiWindow(ClientManager* clientManager,
-                                   QWidget* parent = nullptr);
+    explicit QueueMonitorMdiWindow(ClientManager* clientManager, QWidget* parent = nullptr);
     ~QueueMonitorMdiWindow() override = default;
 
 public slots:

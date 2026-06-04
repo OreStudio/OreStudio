@@ -18,8 +18,8 @@
  *
  */
 #include "ores.qt/ConnectionDetailPanel.hpp"
-#include "ores.qt/ConnectionTypes.hpp"
 #include "ores.connections/service/connection_manager.hpp"
+#include "ores.qt/ConnectionTypes.hpp"
 #include <QHBoxLayout>
 #include <boost/uuid/uuid_io.hpp>
 
@@ -30,26 +30,24 @@ namespace {
 QLabel* createTagBadge(const QString& text, QWidget* parent) {
     auto* badge = new QLabel(text, parent);
     QColor bgColor = colorForTag(text);
-    badge->setStyleSheet(QString(
-        "QLabel {"
-        "  background-color: %1;"
-        "  color: white;"
-        "  border-radius: 8px;"
-        "  padding: 2px 8px;"
-        "  font-size: 11px;"
-        "  font-weight: bold;"
-        "}"
-    ).arg(bgColor.name()));
+    badge->setStyleSheet(QString("QLabel {"
+                                 "  background-color: %1;"
+                                 "  color: white;"
+                                 "  border-radius: 8px;"
+                                 "  padding: 2px 8px;"
+                                 "  font-size: 11px;"
+                                 "  font-weight: bold;"
+                                 "}")
+                             .arg(bgColor.name()));
     return badge;
 }
 
 }
 
-ConnectionDetailPanel::ConnectionDetailPanel(
-    connections::service::connection_manager* manager,
-    QWidget* parent)
-    : QWidget(parent),
-      manager_(manager) {
+ConnectionDetailPanel::ConnectionDetailPanel(connections::service::connection_manager* manager,
+                                             QWidget* parent)
+    : QWidget(parent)
+    , manager_(manager) {
 
     auto* mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(0, 0, 0, 0);
@@ -85,9 +83,8 @@ void ConnectionDetailPanel::setupEmptyPage() {
     titleLabel->setAlignment(Qt::AlignCenter);
     layout->addWidget(titleLabel);
 
-    auto* subtitleLabel = new QLabel(
-        tr("Select a connection or folder to view details."),
-        emptyPage_);
+    auto* subtitleLabel =
+        new QLabel(tr("Select a connection or folder to view details."), emptyPage_);
     subtitleLabel->setStyleSheet("font-size: 13px; color: #909090;");
     subtitleLabel->setAlignment(Qt::AlignCenter);
     layout->addWidget(subtitleLabel);
@@ -280,7 +277,8 @@ void ConnectionDetailPanel::showFolder(const connections::domain::folder& folder
 
     if (folder.description.empty()) {
         folderDescriptionLabel_->setText(tr("No description"));
-        folderDescriptionLabel_->setStyleSheet("font-size: 13px; color: #606060; font-style: italic;");
+        folderDescriptionLabel_->setStyleSheet(
+            "font-size: 13px; color: #606060; font-style: italic;");
     } else {
         folderDescriptionLabel_->setText(QString::fromStdString(folder.description));
         folderDescriptionLabel_->setStyleSheet("font-size: 13px; color: #c0c0c0;");
@@ -294,9 +292,8 @@ void ConnectionDetailPanel::showEnvironment(const connections::domain::environme
     envHostLabel_->setText(QString::fromStdString(env.host));
     envPortLabel_->setText(QString::number(env.port));
     envHttpPortLabel_->setText(QString::number(env.http_port));
-    envNamespaceLabel_->setText(env.subject_prefix.empty()
-        ? tr("(none)")
-        : QString::fromStdString(env.subject_prefix));
+    envNamespaceLabel_->setText(
+        env.subject_prefix.empty() ? tr("(none)") : QString::fromStdString(env.subject_prefix));
 
     if (env.description.empty()) {
         envDescriptionLabel_->setText(tr("No description"));
@@ -316,8 +313,7 @@ void ConnectionDetailPanel::showConnection(const connections::domain::connection
 
     static const auto inheritedStyle =
         QString("font-size: 13px; color: #606060; font-style: italic;");
-    static const auto normalStyle =
-        QString("font-size: 13px; color: #c0c0c0;");
+    static const auto normalStyle = QString("font-size: 13px; color: #c0c0c0;");
 
     // Resolve linked environment for inherited fields (host, port, namespace)
     std::optional<connections::domain::environment> resolvedEnv;
@@ -325,8 +321,8 @@ void ConnectionDetailPanel::showConnection(const connections::domain::connection
     if (conn.environment_id) {
         resolvedEnv = manager_->get_environment(*conn.environment_id);
         if (resolvedEnv) {
-            envTooltip = tr("Inherited from environment: %1")
-                .arg(QString::fromStdString(resolvedEnv->name));
+            envTooltip =
+                tr("Inherited from environment: %1").arg(QString::fromStdString(resolvedEnv->name));
         }
     }
 
@@ -359,8 +355,7 @@ void ConnectionDetailPanel::showConnection(const connections::domain::connection
     }
 
     if (resolvedEnv && !resolvedEnv->subject_prefix.empty()) {
-        connNamespaceLabel_->setText(
-            QString::fromStdString(resolvedEnv->subject_prefix));
+        connNamespaceLabel_->setText(QString::fromStdString(resolvedEnv->subject_prefix));
         connNamespaceLabel_->setStyleSheet(inheritedStyle);
         connNamespaceLabel_->setToolTip(envTooltip);
     } else {
@@ -373,7 +368,8 @@ void ConnectionDetailPanel::showConnection(const connections::domain::connection
 
     if (conn.description.empty()) {
         connDescriptionLabel_->setText(tr("No description"));
-        connDescriptionLabel_->setStyleSheet("font-size: 13px; color: #606060; font-style: italic;");
+        connDescriptionLabel_->setStyleSheet(
+            "font-size: 13px; color: #606060; font-style: italic;");
     } else {
         connDescriptionLabel_->setText(QString::fromStdString(conn.description));
         connDescriptionLabel_->setStyleSheet("font-size: 13px; color: #c0c0c0;");
@@ -407,8 +403,8 @@ void ConnectionDetailPanel::updateEnvironmentTagBadges(const boost::uuids::uuid&
     }
 }
 
-void ConnectionDetailPanel::updateConnectionTagBadges(const boost::uuids::uuid& connId,
-    const std::optional<boost::uuids::uuid>& envId) {
+void ConnectionDetailPanel::updateConnectionTagBadges(
+    const boost::uuids::uuid& connId, const std::optional<boost::uuids::uuid>& envId) {
 
     QLayoutItem* item;
     while ((item = connTagsContainer_->layout()->takeAt(0)) != nullptr) {
@@ -431,17 +427,16 @@ void ConnectionDetailPanel::updateConnectionTagBadges(const boost::uuids::uuid& 
                 QString name = QString::fromStdString(tag.name);
                 QColor c = colorForTag(name);
                 auto* badge = new QLabel(name, connTagsContainer_);
-                badge->setStyleSheet(QString(
-                    "QLabel {"
-                    "  background-color: transparent;"
-                    "  color: %1;"
-                    "  border-radius: 8px;"
-                    "  padding: 1px 7px;"
-                    "  font-size: 11px;"
-                    "  font-weight: bold;"
-                    "  border: 1px solid %1;"
-                    "}"
-                ).arg(c.name()));
+                badge->setStyleSheet(QString("QLabel {"
+                                             "  background-color: transparent;"
+                                             "  color: %1;"
+                                             "  border-radius: 8px;"
+                                             "  padding: 1px 7px;"
+                                             "  font-size: 11px;"
+                                             "  font-weight: bold;"
+                                             "  border: 1px solid %1;"
+                                             "}")
+                                         .arg(c.name()));
                 badge->setToolTip(tr("Inherited from environment"));
                 connTagsContainer_->layout()->addWidget(badge);
                 hasAny = true;

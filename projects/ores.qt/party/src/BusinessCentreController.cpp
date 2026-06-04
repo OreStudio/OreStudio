@@ -18,35 +18,32 @@
  *
  */
 #include "ores.qt/BusinessCentreController.hpp"
+#include "ores.qt/BusinessCentreDetailDialog.hpp"
+#include "ores.qt/BusinessCentreHistoryDialog.hpp"
+#include "ores.qt/BusinessCentreMdiWindow.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
-
+#include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/IconUtils.hpp"
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/BusinessCentreMdiWindow.hpp"
-#include "ores.qt/BusinessCentreDetailDialog.hpp"
-#include "ores.qt/BusinessCentreHistoryDialog.hpp"
-#include "ores.qt/DetachableMdiSubWindow.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-BusinessCentreController::BusinessCentreController(
-    QMainWindow* mainWindow,
-    QMdiArea* mdiArea,
-    ClientManager* clientManager,
-    ImageCache* imageCache,
-    ChangeReasonCache* changeReasonCache,
-    const QString& username,
-    QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username,
-          std::string_view{}, parent),
-      imageCache_(imageCache),
-      changeReasonCache_(changeReasonCache),
-      listWindow_(nullptr),
-      listMdiSubWindow_(nullptr) {
+BusinessCentreController::BusinessCentreController(QMainWindow* mainWindow,
+                                                   QMdiArea* mdiArea,
+                                                   ClientManager* clientManager,
+                                                   ImageCache* imageCache,
+                                                   ChangeReasonCache* changeReasonCache,
+                                                   const QString& username,
+                                                   QObject* parent)
+    : EntityController(mainWindow, mdiArea, clientManager, username, std::string_view{}, parent)
+    , imageCache_(imageCache)
+    , changeReasonCache_(changeReasonCache)
+    , listWindow_(nullptr)
+    , listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "BusinessCentreController created";
 }
@@ -64,23 +61,33 @@ void BusinessCentreController::showListWindow() {
     listWindow_ = new BusinessCentreMdiWindow(clientManager_, imageCache_, username_);
 
     // Connect signals
-    connect(listWindow_, &BusinessCentreMdiWindow::statusChanged,
-            this, &BusinessCentreController::statusMessage);
-    connect(listWindow_, &BusinessCentreMdiWindow::errorOccurred,
-            this, &BusinessCentreController::errorMessage);
-    connect(listWindow_, &BusinessCentreMdiWindow::showBusinessCentreDetails,
-            this, &BusinessCentreController::onShowDetails);
-    connect(listWindow_, &BusinessCentreMdiWindow::addNewRequested,
-            this, &BusinessCentreController::onAddNewRequested);
-    connect(listWindow_, &BusinessCentreMdiWindow::showBusinessCentreHistory,
-            this, &BusinessCentreController::onShowHistory);
+    connect(listWindow_,
+            &BusinessCentreMdiWindow::statusChanged,
+            this,
+            &BusinessCentreController::statusMessage);
+    connect(listWindow_,
+            &BusinessCentreMdiWindow::errorOccurred,
+            this,
+            &BusinessCentreController::errorMessage);
+    connect(listWindow_,
+            &BusinessCentreMdiWindow::showBusinessCentreDetails,
+            this,
+            &BusinessCentreController::onShowDetails);
+    connect(listWindow_,
+            &BusinessCentreMdiWindow::addNewRequested,
+            this,
+            &BusinessCentreController::onAddNewRequested);
+    connect(listWindow_,
+            &BusinessCentreMdiWindow::showBusinessCentreHistory,
+            this,
+            &BusinessCentreController::onShowHistory);
 
     // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Business Centres");
-    listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::BuildingBank, IconUtils::DefaultIconColor));
+    listMdiSubWindow_->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::BuildingBank, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -92,12 +99,16 @@ void BusinessCentreController::showListWindow() {
     register_detachable_window(listMdiSubWindow_);
 
     // Cleanup when closed
-    connect(listMdiSubWindow_, &QObject::destroyed, this, [self = QPointer<BusinessCentreController>(this), key]() {
-        if (!self) return;
-        self->untrack_window(key);
-        self->listWindow_ = nullptr;
-        self->listMdiSubWindow_ = nullptr;
-    });
+    connect(listMdiSubWindow_,
+            &QObject::destroyed,
+            this,
+            [self = QPointer<BusinessCentreController>(this), key]() {
+                if (!self)
+                    return;
+                self->untrack_window(key);
+                self->listWindow_ = nullptr;
+                self->listMdiSubWindow_ = nullptr;
+            });
 
     BOOST_LOG_SEV(lg(), debug) << "Business centre list window created";
 }
@@ -152,23 +163,30 @@ void BusinessCentreController::showAddWindow() {
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
 
-    connect(detailDialog, &BusinessCentreDetailDialog::statusMessage,
-            this, &BusinessCentreController::statusMessage);
-    connect(detailDialog, &BusinessCentreDetailDialog::errorMessage,
-            this, &BusinessCentreController::errorMessage);
-    connect(detailDialog, &BusinessCentreDetailDialog::businessCentreSaved,
-            this, [self = QPointer<BusinessCentreController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Business centre saved: " << code.toStdString();
-        self->handleEntitySaved();
-    });
+    connect(detailDialog,
+            &BusinessCentreDetailDialog::statusMessage,
+            this,
+            &BusinessCentreController::statusMessage);
+    connect(detailDialog,
+            &BusinessCentreDetailDialog::errorMessage,
+            this,
+            &BusinessCentreController::errorMessage);
+    connect(detailDialog,
+            &BusinessCentreDetailDialog::businessCentreSaved,
+            this,
+            [self = QPointer<BusinessCentreController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Business centre saved: " << code.toStdString();
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Business Centre");
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::BuildingBank, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::BuildingBank, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -198,37 +216,46 @@ void BusinessCentreController::showDetailWindow(
     detailDialog->setCreateMode(false);
     detailDialog->setBusinessCentre(business_centre);
 
-    connect(detailDialog, &BusinessCentreDetailDialog::statusMessage,
-            this, &BusinessCentreController::statusMessage);
-    connect(detailDialog, &BusinessCentreDetailDialog::errorMessage,
-            this, &BusinessCentreController::errorMessage);
-    connect(detailDialog, &BusinessCentreDetailDialog::businessCentreSaved,
-            this, [self = QPointer<BusinessCentreController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Business centre saved: " << code.toStdString();
-        self->handleEntitySaved();
-    });
-    connect(detailDialog, &BusinessCentreDetailDialog::businessCentreDeleted,
-            this, [self = QPointer<BusinessCentreController>(this), key](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Business centre deleted: " << code.toStdString();
-        self->handleEntityDeleted();
-    });
+    connect(detailDialog,
+            &BusinessCentreDetailDialog::statusMessage,
+            this,
+            &BusinessCentreController::statusMessage);
+    connect(detailDialog,
+            &BusinessCentreDetailDialog::errorMessage,
+            this,
+            &BusinessCentreController::errorMessage);
+    connect(detailDialog,
+            &BusinessCentreDetailDialog::businessCentreSaved,
+            this,
+            [self = QPointer<BusinessCentreController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Business centre saved: " << code.toStdString();
+                self->handleEntitySaved();
+            });
+    connect(detailDialog,
+            &BusinessCentreDetailDialog::businessCentreDeleted,
+            this,
+            [self = QPointer<BusinessCentreController>(this), key](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Business centre deleted: " << code.toStdString();
+                self->handleEntityDeleted();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Business Centre: %1").arg(identifier));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::BuildingBank, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::BuildingBank, IconUtils::DefaultIconColor));
 
     // Track window
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<BusinessCentreController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, key]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, key]() {
         if (self) {
             self->untrack_window(key);
         }
@@ -253,26 +280,34 @@ void BusinessCentreController::showHistoryWindow(
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
-                              << business_centre.code;
+    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << business_centre.code;
 
-    auto* historyDialog = new BusinessCentreHistoryDialog(
-        code, clientManager_, mainWindow_);
+    auto* historyDialog = new BusinessCentreHistoryDialog(code, clientManager_, mainWindow_);
 
-    connect(historyDialog, &BusinessCentreHistoryDialog::statusChanged,
-            this, [self = QPointer<BusinessCentreController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(historyDialog, &BusinessCentreHistoryDialog::errorOccurred,
-            this, [self = QPointer<BusinessCentreController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
-    connect(historyDialog, &BusinessCentreHistoryDialog::revertVersionRequested,
-            this, &BusinessCentreController::onRevertVersion);
-    connect(historyDialog, &BusinessCentreHistoryDialog::openVersionRequested,
-            this, &BusinessCentreController::onOpenVersion);
+    connect(historyDialog,
+            &BusinessCentreHistoryDialog::statusChanged,
+            this,
+            [self = QPointer<BusinessCentreController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(historyDialog,
+            &BusinessCentreHistoryDialog::errorOccurred,
+            this,
+            [self = QPointer<BusinessCentreController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
+    connect(historyDialog,
+            &BusinessCentreHistoryDialog::revertVersionRequested,
+            this,
+            &BusinessCentreController::onRevertVersion);
+    connect(historyDialog,
+            &BusinessCentreHistoryDialog::openVersionRequested,
+            this,
+            &BusinessCentreController::onOpenVersion);
 
     // Load history data
     historyDialog->loadHistory();
@@ -281,16 +316,15 @@ void BusinessCentreController::showHistoryWindow(
     historyWindow->setAttribute(Qt::WA_DeleteOnClose);
     historyWindow->setWidget(historyDialog);
     historyWindow->setWindowTitle(QString("Business Centre History: %1").arg(code));
-    historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    historyWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     // Track this history window
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
 
     QPointer<BusinessCentreController> self = this;
-    connect(historyWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -305,8 +339,8 @@ void BusinessCentreController::onOpenVersion(
                               << " for business centre: " << business_centre.code;
 
     const QString code = QString::fromStdString(business_centre.code);
-    const QString windowKey = build_window_key("version", QString("%1_v%2")
-        .arg(code).arg(versionNumber));
+    const QString windowKey =
+        build_window_key("version", QString("%1_v%2").arg(code).arg(versionNumber));
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
@@ -323,31 +357,36 @@ void BusinessCentreController::onOpenVersion(
     detailDialog->setBusinessCentre(business_centre);
     detailDialog->setReadOnly(true);
 
-    connect(detailDialog, &BusinessCentreDetailDialog::statusMessage,
-            this, [self = QPointer<BusinessCentreController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(detailDialog, &BusinessCentreDetailDialog::errorMessage,
-            this, [self = QPointer<BusinessCentreController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
+    connect(detailDialog,
+            &BusinessCentreDetailDialog::statusMessage,
+            this,
+            [self = QPointer<BusinessCentreController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(detailDialog,
+            &BusinessCentreDetailDialog::errorMessage,
+            this,
+            [self = QPointer<BusinessCentreController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Business Centre: %1 (Version %2)")
-        .arg(code).arg(versionNumber));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("Business Centre: %1 (Version %2)").arg(code).arg(versionNumber));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     track_window(windowKey, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<BusinessCentreController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -372,25 +411,33 @@ void BusinessCentreController::onRevertVersion(
     detailDialog->setBusinessCentre(business_centre);
     detailDialog->setCreateMode(false);
 
-    connect(detailDialog, &BusinessCentreDetailDialog::statusMessage,
-            this, &BusinessCentreController::statusMessage);
-    connect(detailDialog, &BusinessCentreDetailDialog::errorMessage,
-            this, &BusinessCentreController::errorMessage);
-    connect(detailDialog, &BusinessCentreDetailDialog::businessCentreSaved,
-            this, [self = QPointer<BusinessCentreController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Business centre reverted: " << code.toStdString();
-        emit self->statusMessage(QString("Business centre '%1' reverted successfully").arg(code));
-        self->handleEntitySaved();
-    });
+    connect(detailDialog,
+            &BusinessCentreDetailDialog::statusMessage,
+            this,
+            &BusinessCentreController::statusMessage);
+    connect(detailDialog,
+            &BusinessCentreDetailDialog::errorMessage,
+            this,
+            &BusinessCentreController::errorMessage);
+    connect(detailDialog,
+            &BusinessCentreDetailDialog::businessCentreSaved,
+            this,
+            [self = QPointer<BusinessCentreController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Business centre reverted: " << code.toStdString();
+                emit self->statusMessage(
+                    QString("Business centre '%1' reverted successfully").arg(code));
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Revert Business Centre: %1")
-        .arg(QString::fromStdString(business_centre.code)));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("Revert Business Centre: %1").arg(QString::fromStdString(business_centre.code)));
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
+                                                               IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 

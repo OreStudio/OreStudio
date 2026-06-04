@@ -17,32 +17,30 @@
  *
  */
 #include "ores.qt/AdminPlugin.hpp"
-
-#include <QMenu>
-#include <QAction>
-#include <QMdiArea>
-#include <QMainWindow>
-#include <QStatusBar>
-#include <QMessageBox>
-#include <QPointer>
-#include <QInputDialog>
-#include <QLineEdit>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-
-#include "ores.qt/DetachableMdiSubWindow.hpp"
-#include "ores.qt/IconUtils.hpp"
+#include "ores.iam.api/messaging/reset_protocol.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/AccountController.hpp"
-#include "ores.qt/RoleController.hpp"
-#include "ores.qt/TenantController.hpp"
-#include "ores.qt/TenantTypeController.hpp"
-#include "ores.qt/TenantOnboardingWizard.hpp"
-#include "ores.qt/SystemSettingController.hpp"
 #include "ores.qt/BadgeDefinitionController.hpp"
 #include "ores.qt/BadgeSeverityController.hpp"
+#include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.iam.api/messaging/reset_protocol.hpp"
+#include "ores.qt/RoleController.hpp"
+#include "ores.qt/SystemSettingController.hpp"
+#include "ores.qt/TenantController.hpp"
+#include "ores.qt/TenantOnboardingWizard.hpp"
+#include "ores.qt/TenantTypeController.hpp"
+#include <QAction>
+#include <QFutureWatcher>
+#include <QInputDialog>
+#include <QLineEdit>
+#include <QMainWindow>
+#include <QMdiArea>
+#include <QMenu>
+#include <QMessageBox>
+#include <QPointer>
+#include <QStatusBar>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
@@ -61,7 +59,8 @@ auto ico(Icon icon) {
 
 }
 
-AdminPlugin::AdminPlugin(QObject* parent) : PluginBase(parent) {
+AdminPlugin::AdminPlugin(QObject* parent)
+    : PluginBase(parent) {
     BOOST_LOG_SEV(lg(), debug) << "Plugin initialised.";
 }
 
@@ -74,12 +73,14 @@ void AdminPlugin::show_onboarding_wizard() {
     wizard->setWindowModality(Qt::ApplicationModal);
     wizard->setAttribute(Qt::WA_DeleteOnClose);
 
-    connect(wizard, &TenantOnboardingWizard::onboardingCompleted,
-            this, [this](const QString& tenantName) {
-        if (ctx_.status_bar)
-            ctx_.status_bar->showMessage(
-                tr("Tenant '%1' onboarded successfully.").arg(tenantName));
-    });
+    connect(wizard,
+            &TenantOnboardingWizard::onboardingCompleted,
+            this,
+            [this](const QString& tenantName) {
+                if (ctx_.status_bar)
+                    ctx_.status_bar->showMessage(
+                        tr("Tenant '%1' onboarded successfully.").arg(tenantName));
+            });
 
     wizard->show();
 }
@@ -88,30 +89,46 @@ void AdminPlugin::on_login(const plugin_context& ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Login event received.";
     ctx_ = ctx;
 
-    accountController_ = std::make_unique<AccountController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username,
-        ctx_.change_reason_cache, ctx_.badge_cache, this);
+    accountController_ = std::make_unique<AccountController>(ctx_.main_window,
+                                                             ctx_.mdi_area,
+                                                             ctx_.client_manager,
+                                                             ctx_.username,
+                                                             ctx_.change_reason_cache,
+                                                             ctx_.badge_cache,
+                                                             this);
     connectControllerSignals(accountController_.get());
 
     roleController_ = std::make_unique<RoleController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
     connectControllerSignals(roleController_.get());
 
-    tenantController_ = std::make_unique<TenantController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, ctx_.badge_cache, this);
+    tenantController_ = std::make_unique<TenantController>(ctx_.main_window,
+                                                           ctx_.mdi_area,
+                                                           ctx_.client_manager,
+                                                           ctx_.change_reason_cache,
+                                                           ctx_.username,
+                                                           ctx_.badge_cache,
+                                                           this);
     connectControllerSignals(tenantController_.get());
-    connect(tenantController_.get(), &TenantController::onboardRequested,
-            this, &AdminPlugin::show_onboarding_wizard);
+    connect(tenantController_.get(),
+            &TenantController::onboardRequested,
+            this,
+            &AdminPlugin::show_onboarding_wizard);
 
-    tenantTypeController_ = std::make_unique<TenantTypeController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
+    tenantTypeController_ = std::make_unique<TenantTypeController>(ctx_.main_window,
+                                                                   ctx_.mdi_area,
+                                                                   ctx_.client_manager,
+                                                                   ctx_.change_reason_cache,
+                                                                   ctx_.username,
+                                                                   this);
     connectControllerSignals(tenantTypeController_.get());
 
-    systemSettingController_ = std::make_unique<SystemSettingController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
+    systemSettingController_ = std::make_unique<SystemSettingController>(ctx_.main_window,
+                                                                         ctx_.mdi_area,
+                                                                         ctx_.client_manager,
+                                                                         ctx_.change_reason_cache,
+                                                                         ctx_.username,
+                                                                         this);
     connectControllerSignals(systemSettingController_.get());
 
     badgeDefinitionController_ = std::make_unique<BadgeDefinitionController>(
@@ -121,14 +138,13 @@ void AdminPlugin::on_login(const plugin_context& ctx) {
     badgeSeverityController_ = std::make_unique<BadgeSeverityController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
     connectControllerSignals(badgeSeverityController_.get());
-
 }
 
 void AdminPlugin::setup_menus(const shared_menus_context& smc) {
     BOOST_LOG_SEV(lg(), debug) << "Registering entries in shared menus."
-        << " account=" << (smc.account_menu ? "ok" : "null")
-        << " system=" << (smc.system_menu ? "ok" : "null")
-        << " telemetry=" << (smc.telemetry_menu ? "ok" : "null");
+                               << " account=" << (smc.account_menu ? "ok" : "null")
+                               << " system=" << (smc.system_menu ? "ok" : "null")
+                               << " telemetry=" << (smc.telemetry_menu ? "ok" : "null");
 
     if (!(smc.system_menu && smc.telemetry_menu))
         return;
@@ -139,18 +155,24 @@ void AdminPlugin::setup_menus(const shared_menus_context& smc) {
     smc.system_menu->insertMenu(telemetryAction, config);
 
     act_system_settings_ = config->addAction(ico(Icon::Flag), tr("&System Settings"));
-    connect(act_system_settings_, &QAction::triggered, this,
-        [this]() { if (systemSettingController_) systemSettingController_->showListWindow(); });
+    connect(act_system_settings_, &QAction::triggered, this, [this]() {
+        if (systemSettingController_)
+            systemSettingController_->showListWindow();
+    });
 
     config->addSeparator();
 
     auto* actBadgeDefs = config->addAction(tr("Badge &Definitions"));
-    connect(actBadgeDefs, &QAction::triggered, this,
-        [this]() { if (badgeDefinitionController_) badgeDefinitionController_->showListWindow(); });
+    connect(actBadgeDefs, &QAction::triggered, this, [this]() {
+        if (badgeDefinitionController_)
+            badgeDefinitionController_->showListWindow();
+    });
 
     auto* actBadgeSevs = config->addAction(tr("Badge &Severities"));
-    connect(actBadgeSevs, &QAction::triggered, this,
-        [this]() { if (badgeSeverityController_) badgeSeverityController_->showListWindow(); });
+    connect(actBadgeSevs, &QAction::triggered, this, [this]() {
+        if (badgeSeverityController_)
+            badgeSeverityController_->showListWindow();
+    });
 
     // ---- System > Administration (appended at end, admin-only) -----------
     smc.system_menu->addSeparator();
@@ -158,43 +180,48 @@ void AdminPlugin::setup_menus(const shared_menus_context& smc) {
     auto* admin = smc.system_menu->addMenu(tr("&Administration"));
 
     act_accounts_ = admin->addAction(ico(Icon::PersonAccounts), tr("&Accounts"));
-    connect(act_accounts_, &QAction::triggered, this,
-        [this]() { if (accountController_) accountController_->showListWindow(); });
+    connect(act_accounts_, &QAction::triggered, this, [this]() {
+        if (accountController_)
+            accountController_->showListWindow();
+    });
 
     auto* actRoles = admin->addAction(tr("&Roles"));
-    connect(actRoles, &QAction::triggered, this,
-        [this]() { if (roleController_) roleController_->showListWindow(); });
+    connect(actRoles, &QAction::triggered, this, [this]() {
+        if (roleController_)
+            roleController_->showListWindow();
+    });
 
     admin->addSeparator();
 
     act_tenants_ = admin->addAction(ico(Icon::BuildingSkyscraper), tr("&Tenants"));
-    connect(act_tenants_, &QAction::triggered, this,
-        [this]() { if (tenantController_) tenantController_->showListWindow(); });
+    connect(act_tenants_, &QAction::triggered, this, [this]() {
+        if (tenantController_)
+            tenantController_->showListWindow();
+    });
 
     auto* actTenantTypes = admin->addAction(tr("Tenant &Types"));
-    connect(actTenantTypes, &QAction::triggered, this,
-        [this]() { if (tenantTypeController_) tenantTypeController_->showListWindow(); });
+    connect(actTenantTypes, &QAction::triggered, this, [this]() {
+        if (tenantTypeController_)
+            tenantTypeController_->showListWindow();
+    });
 
     admin->addSeparator();
 
     auto* actOnboardTenant = admin->addAction(tr("&Onboard Tenant..."));
-    connect(actOnboardTenant, &QAction::triggered,
-            this, &AdminPlugin::show_onboarding_wizard);
+    connect(actOnboardTenant, &QAction::triggered, this, &AdminPlugin::show_onboarding_wizard);
 
     // ---- Reset System (appended after Administration) --------------------
     smc.system_menu->addSeparator();
 
-    act_reset_system_ = smc.system_menu->addAction(
-        ico(Icon::Warning), tr("Reset &System..."));
+    act_reset_system_ = smc.system_menu->addAction(ico(Icon::Warning), tr("Reset &System..."));
     act_reset_system_->setToolTip(
         tr("Reset the entire system to pre-bootstrap state (SuperAdmin only)"));
-    connect(act_reset_system_, &QAction::triggered,
-            this, &AdminPlugin::on_reset_system);
+    connect(act_reset_system_, &QAction::triggered, this, &AdminPlugin::on_reset_system);
 }
 
 QList<QMenu*> AdminPlugin::create_menus() {
     BOOST_LOG_SEV(lg(), debug) << "No standalone menus — all entries contributed via shared menus.";
-    return {};  // all items contributed via setup_menus()
+    return {}; // all items contributed via setup_menus()
 }
 
 QList<QAction*> AdminPlugin::toolbar_actions() {
@@ -205,25 +232,23 @@ QList<QAction*> AdminPlugin::toolbar_actions() {
 
 void AdminPlugin::on_reset_system() {
     if (!ctx_.client_manager || !ctx_.client_manager->isConnected()) {
-        MessageBoxHelper::warning(ctx_.main_window, "Disconnected",
-            "Cannot reset system while disconnected.");
+        MessageBoxHelper::warning(
+            ctx_.main_window, "Disconnected", "Cannot reset system while disconnected.");
         return;
     }
 
-    const QString confirmMessage =
-        "Reset the entire system to pre-bootstrap state?\n\n"
-        "This will:\n"
-        "  • Hard-delete all non-system tenants and their data\n"
-        "  • Soft-delete all system admin accounts and sessions\n"
-        "  • Re-enable bootstrap mode so the system provisioner wizard\n"
-        "    re-fires on next startup\n\n"
-        "This is a destructive, irreversible operation.\n"
-        "Type YES to confirm.";
+    const QString confirmMessage = "Reset the entire system to pre-bootstrap state?\n\n"
+                                   "This will:\n"
+                                   "  • Hard-delete all non-system tenants and their data\n"
+                                   "  • Soft-delete all system admin accounts and sessions\n"
+                                   "  • Re-enable bootstrap mode so the system provisioner wizard\n"
+                                   "    re-fires on next startup\n\n"
+                                   "This is a destructive, irreversible operation.\n"
+                                   "Type YES to confirm.";
 
     bool ok = false;
     const QString typed = QInputDialog::getText(
-        ctx_.main_window, "Reset System", confirmMessage,
-        QLineEdit::Normal, {}, &ok);
+        ctx_.main_window, "Reset System", confirmMessage, QLineEdit::Normal, {}, &ok);
     if (!ok || typed.trimmed() != "YES") {
         BOOST_LOG_SEV(lg(), debug) << "System reset cancelled by user";
         return;
@@ -237,16 +262,14 @@ void AdminPlugin::on_reset_system() {
             return {false, "Plugin unloaded"};
         BOOST_LOG_SEV(lg(), info) << "Sending reset-system request";
         iam::messaging::reset_system_command request;
-        auto result = self->ctx_.client_manager->process_authenticated_request(
-            std::move(request));
+        auto result = self->ctx_.client_manager->process_authenticated_request(std::move(request));
         if (!result)
             return {false, "Failed to communicate with server"};
         return {result->success, result->message};
     };
 
     auto* watcher = new QFutureWatcher<ResetResult>(this);
-    connect(watcher, &QFutureWatcher<ResetResult>::finished,
-            this, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<ResetResult>::finished, this, [self, watcher]() {
         ResetResult res;
         try {
             res = watcher->result();
@@ -256,7 +279,8 @@ void AdminPlugin::on_reset_system() {
         }
         auto [success, message] = res;
         watcher->deleteLater();
-        if (!self) return;
+        if (!self)
+            return;
 
         if (success) {
             BOOST_LOG_SEV(lg(), info) << "System reset complete";
@@ -264,12 +288,13 @@ void AdminPlugin::on_reset_system() {
                 self->ctx_.status_bar->showMessage(
                     tr("System has been reset to pre-bootstrap state."));
             MessageBoxHelper::information(self->ctx_.main_window,
-                "System Reset", "System has been reset to pre-bootstrap state.\n"
-                "Please restart the application.");
+                                          "System Reset",
+                                          "System has been reset to pre-bootstrap state.\n"
+                                          "Please restart the application.");
         } else {
             BOOST_LOG_SEV(lg(), error) << "System reset failed: " << message;
-            MessageBoxHelper::critical(self->ctx_.main_window,
-                "Reset Failed", QString::fromStdString(message));
+            MessageBoxHelper::critical(
+                self->ctx_.main_window, "Reset Failed", QString::fromStdString(message));
         }
     });
 

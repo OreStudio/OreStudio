@@ -18,62 +18,60 @@
  *
  */
 #include "ores.qt/AccountMdiWindow.hpp"
-#include "ores.qt/BadgeCache.hpp"
-
-#include <vector>
-#include <QtCore/QVariant>
-#include <QtCore/QTimer>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include <QtWidgets/QWidget>
-#include <QtWidgets/QHBoxLayout>
-#include <QtWidgets/QHeaderView>
-#include <QtWidgets/QTableView>
-#include <QtWidgets/QScrollBar>
-#include <QtWidgets/QApplication>
-#include <QtWidgets/QPushButton>
-#include <QMessageBox>
-#include <QToolBar>
-#include <QAction>
-#include <QPixmap>
-#include <QSortFilterProxyModel>
-#include <QImage>
-#include <boost/uuid/uuid_io.hpp>
+#include "ores.iam.api/messaging/account_protocol.hpp"
 #include "ores.qt/AccountItemDelegate.hpp"
-#include "ores.qt/ExceptionHelper.hpp"
+#include "ores.qt/BadgeCache.hpp"
 #include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.iam.api/messaging/account_protocol.hpp"
+#include <QAction>
+#include <QFutureWatcher>
+#include <QImage>
+#include <QMessageBox>
+#include <QPixmap>
+#include <QSortFilterProxyModel>
+#include <QToolBar>
+#include <QtConcurrent>
+#include <QtCore/QTimer>
+#include <QtCore/QVariant>
+#include <QtWidgets/QApplication>
+#include <QtWidgets/QHBoxLayout>
+#include <QtWidgets/QHeaderView>
+#include <QtWidgets/QPushButton>
+#include <QtWidgets/QScrollBar>
+#include <QtWidgets/QTableView>
+#include <QtWidgets/QWidget>
+#include <boost/uuid/uuid_io.hpp>
+#include <vector>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-AccountMdiWindow::
-AccountMdiWindow(ClientManager* clientManager,
-                 const QString& username,
-                 BadgeCache* badgeCache,
-                 QWidget* parent)
-    : EntityListMdiWindow(parent),
-      verticalLayout_(new QVBoxLayout(this)),
-      accountTableView_(new QTableView(this)),
-      toolBar_(new QToolBar(this)),
-      pagination_widget_(new PaginationWidget(this)),
-      reloadAction_(new QAction("Reload", this)),
-      addAction_(new QAction("Add", this)),
-      editAction_(new QAction("Edit", this)),
-      deleteAction_(new QAction("Delete", this)),
-      lockAction_(new QAction("Lock", this)),
-      unlockAction_(new QAction("Unlock", this)),
-      resetPasswordAction_(new QAction("Reset Pwd", this)),
-      historyAction_(new QAction("History", this)),
-      sessionsAction_(new QAction("Sessions", this)),
-      accountModel_(std::make_unique<ClientAccountModel>(clientManager)),
-      proxyModel_(new QSortFilterProxyModel(this)),
-      clientManager_(clientManager),
-      username_(username),
-      badgeCache_(badgeCache) {
+AccountMdiWindow::AccountMdiWindow(ClientManager* clientManager,
+                                   const QString& username,
+                                   BadgeCache* badgeCache,
+                                   QWidget* parent)
+    : EntityListMdiWindow(parent)
+    , verticalLayout_(new QVBoxLayout(this))
+    , accountTableView_(new QTableView(this))
+    , toolBar_(new QToolBar(this))
+    , pagination_widget_(new PaginationWidget(this))
+    , reloadAction_(new QAction("Reload", this))
+    , addAction_(new QAction("Add", this))
+    , editAction_(new QAction("Edit", this))
+    , deleteAction_(new QAction("Delete", this))
+    , lockAction_(new QAction("Lock", this))
+    , unlockAction_(new QAction("Unlock", this))
+    , resetPasswordAction_(new QAction("Reset Pwd", this))
+    , historyAction_(new QAction("History", this))
+    , sessionsAction_(new QAction("Sessions", this))
+    , accountModel_(std::make_unique<ClientAccountModel>(clientManager))
+    , proxyModel_(new QSortFilterProxyModel(this))
+    , clientManager_(clientManager)
+    , username_(username)
+    , badgeCache_(badgeCache) {
 
     BOOST_LOG_SEV(lg(), debug) << "Creating account MDI window";
 
@@ -86,63 +84,55 @@ AccountMdiWindow(ClientManager* clientManager,
 
     toolBar_->addSeparator();
 
-    addAction_->setIcon(IconUtils::createRecoloredIcon(
-            Icon::Add, IconUtils::DefaultIconColor));
+    addAction_->setIcon(IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor));
     addAction_->setToolTip("Add new account");
     connect(addAction_, &QAction::triggered, this, &AccountMdiWindow::addNew);
     toolBar_->addAction(addAction_);
 
-    editAction_->setIcon(IconUtils::createRecoloredIcon(
-            Icon::Edit, IconUtils::DefaultIconColor));
+    editAction_->setIcon(IconUtils::createRecoloredIcon(Icon::Edit, IconUtils::DefaultIconColor));
     editAction_->setToolTip("Edit selected account");
-    connect(editAction_, &QAction::triggered, this,
-        &AccountMdiWindow::editSelected);
+    connect(editAction_, &QAction::triggered, this, &AccountMdiWindow::editSelected);
     toolBar_->addAction(editAction_);
 
-    deleteAction_->setIcon(IconUtils::createRecoloredIcon(
-            Icon::Delete, IconUtils::DefaultIconColor));
+    deleteAction_->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor));
     deleteAction_->setToolTip("Delete selected account(s)");
-    connect(deleteAction_, &QAction::triggered, this,
-        &AccountMdiWindow::deleteSelected);
+    connect(deleteAction_, &QAction::triggered, this, &AccountMdiWindow::deleteSelected);
     toolBar_->addAction(deleteAction_);
 
     toolBar_->addSeparator();
 
-    lockAction_->setIcon(IconUtils::createRecoloredIcon(
-            Icon::LockClosed, IconUtils::DefaultIconColor));
+    lockAction_->setIcon(
+        IconUtils::createRecoloredIcon(Icon::LockClosed, IconUtils::DefaultIconColor));
     lockAction_->setToolTip("Lock selected account(s)");
-    connect(lockAction_, &QAction::triggered, this,
-        &AccountMdiWindow::lockSelected);
+    connect(lockAction_, &QAction::triggered, this, &AccountMdiWindow::lockSelected);
     toolBar_->addAction(lockAction_);
 
-    unlockAction_->setIcon(IconUtils::createRecoloredIcon(
-            Icon::LockOpen, IconUtils::DefaultIconColor));
+    unlockAction_->setIcon(
+        IconUtils::createRecoloredIcon(Icon::LockOpen, IconUtils::DefaultIconColor));
     unlockAction_->setToolTip("Unlock selected account(s)");
-    connect(unlockAction_, &QAction::triggered, this,
-        &AccountMdiWindow::unlockSelected);
+    connect(unlockAction_, &QAction::triggered, this, &AccountMdiWindow::unlockSelected);
     toolBar_->addAction(unlockAction_);
 
-    resetPasswordAction_->setIcon(IconUtils::createRecoloredIcon(
-            Icon::PasswordReset, IconUtils::DefaultIconColor));
+    resetPasswordAction_->setIcon(
+        IconUtils::createRecoloredIcon(Icon::PasswordReset, IconUtils::DefaultIconColor));
     resetPasswordAction_->setToolTip("Force password reset on next login");
-    connect(resetPasswordAction_, &QAction::triggered, this,
-        &AccountMdiWindow::resetPasswordSelected);
+    connect(
+        resetPasswordAction_, &QAction::triggered, this, &AccountMdiWindow::resetPasswordSelected);
     toolBar_->addAction(resetPasswordAction_);
 
     toolBar_->addSeparator();
 
-    historyAction_->setIcon(IconUtils::createRecoloredIcon(
-            Icon::History, IconUtils::DefaultIconColor));
+    historyAction_->setIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
     historyAction_->setToolTip("View account history");
-    connect(historyAction_, &QAction::triggered, this,
-        &AccountMdiWindow::viewHistorySelected);
+    connect(historyAction_, &QAction::triggered, this, &AccountMdiWindow::viewHistorySelected);
     toolBar_->addAction(historyAction_);
 
-    sessionsAction_->setIcon(IconUtils::createRecoloredIcon(
-            Icon::History, IconUtils::DefaultIconColor));
+    sessionsAction_->setIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
     sessionsAction_->setToolTip("View session history");
-    connect(sessionsAction_, &QAction::triggered, this,
-        &AccountMdiWindow::viewSessionsSelected);
+    connect(sessionsAction_, &QAction::triggered, this, &AccountMdiWindow::viewSessionsSelected);
     toolBar_->addAction(sessionsAction_);
 
     verticalLayout_->addWidget(toolBar_);
@@ -159,38 +149,41 @@ AccountMdiWindow(ClientManager* clientManager,
     proxyModel_->setSourceModel(accountModel_.get());
     accountTableView_->setModel(proxyModel_);
     accountTableView_->setItemDelegate(new AccountItemDelegate(badgeCache_, this));
-    connect(badgeCache_, &BadgeCache::loaded, accountTableView_->viewport(),
-            [this]() { accountTableView_->viewport()->update(); });
+    connect(badgeCache_, &BadgeCache::loaded, accountTableView_->viewport(), [this]() {
+        accountTableView_->viewport()->update();
+    });
     accountTableView_->setSortingEnabled(true);
     accountTableView_->sortByColumn(0, Qt::AscendingOrder);
 
     accountTableView_->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
 
-    initializeTableSettings(accountTableView_, accountModel_.get(),
-        "AccountListWindow", {}, {800, 500}, 1);
+    initializeTableSettings(
+        accountTableView_, accountModel_.get(), "AccountListWindow", {}, {800, 500}, 1);
 
     // Connect signals
-    connect(accountModel_.get(), &ClientAccountModel::dataLoaded,
-            this, &AccountMdiWindow::onDataLoaded);
-    connect(accountModel_.get(), &ClientAccountModel::loadError,
-            this, &AccountMdiWindow::onLoadError);
+    connect(accountModel_.get(),
+            &ClientAccountModel::dataLoaded,
+            this,
+            &AccountMdiWindow::onDataLoaded);
+    connect(
+        accountModel_.get(), &ClientAccountModel::loadError, this, &AccountMdiWindow::onLoadError);
     connectModel(accountModel_.get());
-    connect(accountTableView_, &QTableView::doubleClicked,
-            this, &AccountMdiWindow::onRowDoubleClicked);
+    connect(
+        accountTableView_, &QTableView::doubleClicked, this, &AccountMdiWindow::onRowDoubleClicked);
     connect(accountTableView_->selectionModel(),
-        &QItemSelectionModel::selectionChanged,
-            this, &AccountMdiWindow::onSelectionChanged);
+            &QItemSelectionModel::selectionChanged,
+            this,
+            &AccountMdiWindow::onSelectionChanged);
 
     // Connect pagination widget signals
-    connect(pagination_widget_, &PaginationWidget::page_size_changed,
-            this, [this](std::uint32_t size) {
-        BOOST_LOG_SEV(lg(), debug) << "Page size changed to: " << size;
-        accountModel_->set_page_size(size);
-        accountModel_->refresh(true);
-    });
+    connect(
+        pagination_widget_, &PaginationWidget::page_size_changed, this, [this](std::uint32_t size) {
+            BOOST_LOG_SEV(lg(), debug) << "Page size changed to: " << size;
+            accountModel_->set_page_size(size);
+            accountModel_->refresh(true);
+        });
 
-    connect(pagination_widget_, &PaginationWidget::load_all_requested,
-            this, [this]() {
+    connect(pagination_widget_, &PaginationWidget::load_all_requested, this, [this]() {
         BOOST_LOG_SEV(lg(), debug) << "Load all requested from pagination widget";
         const auto total = accountModel_->total_available_count();
         if (total > 0 && total <= 1000) {
@@ -198,24 +191,32 @@ AccountMdiWindow(ClientManager* clientManager,
             accountModel_->set_page_size(total);
             accountModel_->refresh(true);
         } else if (total > 1000) {
-            BOOST_LOG_SEV(lg(), warn) << "Total count " << total
-                                      << " exceeds maximum page size of 1000";
+            BOOST_LOG_SEV(lg(), warn)
+                << "Total count " << total << " exceeds maximum page size of 1000";
             emit statusChanged("Cannot load all - too many records (max 1000)");
         }
     });
 
-    connect(pagination_widget_, &PaginationWidget::page_requested,
-            this, [this](std::uint32_t offset, std::uint32_t limit) {
-        BOOST_LOG_SEV(lg(), debug) << "Page requested: offset=" << offset
-                                   << ", limit=" << limit;
-        emit statusChanged("Loading accounts...");
-        accountModel_->load_page(offset, limit);
-    });
+    connect(pagination_widget_,
+            &PaginationWidget::page_requested,
+            this,
+            [this](std::uint32_t offset, std::uint32_t limit) {
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Page requested: offset=" << offset << ", limit=" << limit;
+                emit statusChanged("Loading accounts...");
+                accountModel_->load_page(offset, limit);
+            });
 
     // Connect connection state signals
     if (clientManager_) {
-        connect(clientManager_, &ClientManager::connected, this, &AccountMdiWindow::onConnectionStateChanged);
-        connect(clientManager_, &ClientManager::disconnected, this, &AccountMdiWindow::onConnectionStateChanged);
+        connect(clientManager_,
+                &ClientManager::connected,
+                this,
+                &AccountMdiWindow::onConnectionStateChanged);
+        connect(clientManager_,
+                &ClientManager::disconnected,
+                this,
+                &AccountMdiWindow::onConnectionStateChanged);
     }
 
     updateActionStates();
@@ -275,17 +276,14 @@ void AccountMdiWindow::onDataLoaded() {
     pagination_widget_->update_state(loaded, total);
 
     const bool has_more = loaded < total && total > 0 && total <= 1000;
-    BOOST_LOG_SEV(lg(), debug) << "onDataLoaded: loaded=" << loaded
-                               << ", total=" << total
+    BOOST_LOG_SEV(lg(), debug) << "onDataLoaded: loaded=" << loaded << ", total=" << total
                                << ", has_more=" << has_more;
     pagination_widget_->set_load_all_enabled(has_more);
 
-    const QString message = QString("Loaded %1 of %2 accounts")
-                              .arg(loaded)
-                              .arg(total);
+    const QString message = QString("Loaded %1 of %2 accounts").arg(loaded).arg(total);
     emit statusChanged(message);
-    BOOST_LOG_SEV(lg(), debug) << "Account data loaded successfully: "
-                             << loaded << " of " << total << " accounts";
+    BOOST_LOG_SEV(lg(), debug) << "Account data loaded successfully: " << loaded << " of " << total
+                               << " accounts";
 
     if (accountModel_->rowCount() > 0 &&
         accountTableView_->selectionModel()->selectedRows().isEmpty()) {
@@ -294,11 +292,9 @@ void AccountMdiWindow::onDataLoaded() {
     }
 }
 
-void AccountMdiWindow::onLoadError(const QString& error_message,
-                                    const QString& details) {
+void AccountMdiWindow::onLoadError(const QString& error_message, const QString& details) {
     emit errorOccurred(error_message);
-    BOOST_LOG_SEV(lg(), error) << "Error loading accounts: "
-                              << error_message.toStdString();
+    BOOST_LOG_SEV(lg(), error) << "Error loading accounts: " << error_message.toStdString();
 
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);
 }
@@ -312,13 +308,12 @@ void AccountMdiWindow::onRowDoubleClicked(const QModelIndex& index) {
     const QModelIndex sourceIndex = proxyModel_->mapToSource(index);
     const auto* accountWithLoginInfo = accountModel_->getAccountWithLoginInfo(sourceIndex.row());
     if (!accountWithLoginInfo) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to get account for row: "
-                                 << sourceIndex.row();
+        BOOST_LOG_SEV(lg(), warn) << "Failed to get account for row: " << sourceIndex.row();
         return;
     }
 
     BOOST_LOG_SEV(lg(), debug) << "Emitting showAccountDetails for account: "
-                             << accountWithLoginInfo->account.username;
+                               << accountWithLoginInfo->account.username;
     emit showAccountDetails(*accountWithLoginInfo);
 }
 
@@ -346,8 +341,9 @@ void AccountMdiWindow::deleteSelected() {
     }
 
     if (!clientManager_->isConnected()) {
-         MessageBoxHelper::warning(this, "Disconnected", "Cannot delete account while disconnected.");
-         return;
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot delete account while disconnected.");
+        return;
     }
 
     std::vector<boost::uuids::uuid> account_ids;
@@ -364,8 +360,7 @@ void AccountMdiWindow::deleteSelected() {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Delete requested for " << account_ids.size()
-                               << " accounts";
+    BOOST_LOG_SEV(lg(), debug) << "Delete requested for " << account_ids.size() << " accounts";
 
     QString confirmMessage;
     if (account_ids.size() == 1) {
@@ -373,14 +368,14 @@ void AccountMdiWindow::deleteSelected() {
         const QModelIndex sourceIndex = proxyModel_->mapToSource(selected.first());
         const auto* account = accountModel_->getAccount(sourceIndex.row());
         confirmMessage = QString("Are you sure you want to delete account '%1'?")
-            .arg(QString::fromStdString(account->username));
+                             .arg(QString::fromStdString(account->username));
     } else {
-        confirmMessage = QString("Are you sure you want to delete %1 accounts?")
-            .arg(account_ids.size());
+        confirmMessage =
+            QString("Are you sure you want to delete %1 accounts?").arg(account_ids.size());
     }
 
-    auto reply = MessageBoxHelper::question(this, "Delete Account",
-        confirmMessage, QMessageBox::Yes | QMessageBox::No);
+    auto reply = MessageBoxHelper::question(
+        this, "Delete Account", confirmMessage, QMessageBox::Yes | QMessageBox::No);
 
     if (reply != QMessageBox::Yes) {
         BOOST_LOG_SEV(lg(), debug) << "Delete cancelled by user.";
@@ -392,33 +387,32 @@ void AccountMdiWindow::deleteSelected() {
 
     auto task = [self, account_ids]() -> DeleteResult {
         DeleteResult results;
-        if (!self) return {};
+        if (!self)
+            return {};
 
         for (const auto& account_id : account_ids) {
-            BOOST_LOG_SEV(lg(), debug) << "Deleting account: "
-                                       << boost::uuids::to_string(account_id);
+            BOOST_LOG_SEV(lg(), debug)
+                << "Deleting account: " << boost::uuids::to_string(account_id);
 
             iam::messaging::delete_account_request request;
             request.account_id = boost::uuids::to_string(account_id);
-            auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+            auto response_result =
+                self->clientManager_->process_authenticated_request(std::move(request));
 
             if (!response_result) {
                 BOOST_LOG_SEV(lg(), error) << "Failed to send delete request";
-                results.push_back({account_id,
-                    {false, "Failed to communicate with server"}});
+                results.push_back({account_id, {false, "Failed to communicate with server"}});
                 continue;
             }
 
-            results.push_back({account_id,
-                {response_result->success, response_result->message}});
+            results.push_back({account_id, {response_result->success, response_result->message}});
         }
 
         return results;
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, watcher]() {
         auto results = watcher->result();
         watcher->deleteLater();
 
@@ -430,14 +424,14 @@ void AccountMdiWindow::deleteSelected() {
             auto [success, message] = result;
 
             if (success) {
-                BOOST_LOG_SEV(lg(), debug) << "Account deleted successfully: "
-                                           << boost::uuids::to_string(account_id);
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Account deleted successfully: " << boost::uuids::to_string(account_id);
                 success_count++;
                 emit self->accountDeleted(account_id);
             } else {
-                BOOST_LOG_SEV(lg(), error) << "Account deletion failed: "
-                                           << boost::uuids::to_string(account_id)
-                                           << " - " << message;
+                BOOST_LOG_SEV(lg(), error)
+                    << "Account deletion failed: " << boost::uuids::to_string(account_id) << " - "
+                    << message;
                 failure_count++;
                 if (first_error.isEmpty()) {
                     first_error = QString::fromStdString(message);
@@ -447,23 +441,23 @@ void AccountMdiWindow::deleteSelected() {
 
         self->accountModel_->refresh();
         if (failure_count == 0) {
-            QString msg = success_count == 1
-                ? "Successfully deleted 1 account"
-                : QString("Successfully deleted %1 accounts").arg(success_count);
+            QString msg = success_count == 1 ?
+                              "Successfully deleted 1 account" :
+                              QString("Successfully deleted %1 accounts").arg(success_count);
             emit self->statusChanged(msg);
         } else if (success_count == 0) {
             QString msg = QString("Failed to delete %1 %2: %3")
-                .arg(failure_count)
-                .arg(failure_count == 1 ? "account" : "accounts")
-                .arg(first_error);
+                              .arg(failure_count)
+                              .arg(failure_count == 1 ? "account" : "accounts")
+                              .arg(first_error);
             emit self->errorOccurred(msg);
             MessageBoxHelper::critical(self, "Delete Failed", msg);
         } else {
             QString msg = QString("Deleted %1 %2, failed to delete %3 %4")
-                .arg(success_count)
-                .arg(success_count == 1 ? "account" : "accounts")
-                .arg(failure_count)
-                .arg(failure_count == 1 ? "account" : "accounts");
+                              .arg(success_count)
+                              .arg(success_count == 1 ? "account" : "accounts")
+                              .arg(failure_count)
+                              .arg(failure_count == 1 ? "account" : "accounts");
             emit self->statusChanged(msg);
             MessageBoxHelper::warning(self, "Partial Success", msg);
         }
@@ -481,8 +475,8 @@ void AccountMdiWindow::lockSelected() {
     }
 
     if (!clientManager_->isConnected()) {
-         MessageBoxHelper::warning(this, "Disconnected", "Cannot lock account while disconnected.");
-         return;
+        MessageBoxHelper::warning(this, "Disconnected", "Cannot lock account while disconnected.");
+        return;
     }
 
     std::vector<boost::uuids::uuid> account_ids;
@@ -498,22 +492,21 @@ void AccountMdiWindow::lockSelected() {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Lock requested for " << account_ids.size()
-                               << " accounts";
+    BOOST_LOG_SEV(lg(), debug) << "Lock requested for " << account_ids.size() << " accounts";
 
     QString confirmMessage;
     if (account_ids.size() == 1) {
         const QModelIndex sourceIndex = proxyModel_->mapToSource(selected.first());
         const auto* account = accountModel_->getAccount(sourceIndex.row());
         confirmMessage = QString("Are you sure you want to lock account '%1'?")
-            .arg(QString::fromStdString(account->username));
+                             .arg(QString::fromStdString(account->username));
     } else {
-        confirmMessage = QString("Are you sure you want to lock %1 accounts?")
-            .arg(account_ids.size());
+        confirmMessage =
+            QString("Are you sure you want to lock %1 accounts?").arg(account_ids.size());
     }
 
-    auto reply = MessageBoxHelper::question(this, "Lock Account",
-        confirmMessage, QMessageBox::Yes | QMessageBox::No);
+    auto reply = MessageBoxHelper::question(
+        this, "Lock Account", confirmMessage, QMessageBox::Yes | QMessageBox::No);
 
     if (reply != QMessageBox::Yes) {
         BOOST_LOG_SEV(lg(), debug) << "Lock cancelled by user.";
@@ -524,14 +517,16 @@ void AccountMdiWindow::lockSelected() {
     using LockResult = std::vector<iam::messaging::account_operation_result>;
 
     auto task = [self, account_ids]() -> LockResult {
-        if (!self) return {};
+        if (!self)
+            return {};
 
         BOOST_LOG_SEV(lg(), debug) << "Locking " << account_ids.size() << " accounts";
 
         iam::messaging::lock_account_request request;
         for (const auto& id : account_ids)
             request.account_ids.push_back(boost::uuids::to_string(id));
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             BOOST_LOG_SEV(lg(), error) << "Failed to send lock request";
@@ -546,8 +541,7 @@ void AccountMdiWindow::lockSelected() {
     };
 
     auto* watcher = new QFutureWatcher<LockResult>(self);
-    connect(watcher, &QFutureWatcher<LockResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<LockResult>::finished, self, [self, watcher]() {
         auto results = watcher->result();
         watcher->deleteLater();
 
@@ -570,23 +564,23 @@ void AccountMdiWindow::lockSelected() {
 
         self->accountModel_->refresh();
         if (failure_count == 0) {
-            QString msg = success_count == 1
-                ? "Successfully locked 1 account"
-                : QString("Successfully locked %1 accounts").arg(success_count);
+            QString msg = success_count == 1 ?
+                              "Successfully locked 1 account" :
+                              QString("Successfully locked %1 accounts").arg(success_count);
             emit self->statusChanged(msg);
         } else if (success_count == 0) {
             QString msg = QString("Failed to lock %1 %2: %3")
-                .arg(failure_count)
-                .arg(failure_count == 1 ? "account" : "accounts")
-                .arg(first_error);
+                              .arg(failure_count)
+                              .arg(failure_count == 1 ? "account" : "accounts")
+                              .arg(first_error);
             emit self->errorOccurred(msg);
             MessageBoxHelper::critical(self, "Lock Failed", msg);
         } else {
             QString msg = QString("Locked %1 %2, failed to lock %3 %4")
-                .arg(success_count)
-                .arg(success_count == 1 ? "account" : "accounts")
-                .arg(failure_count)
-                .arg(failure_count == 1 ? "account" : "accounts");
+                              .arg(success_count)
+                              .arg(success_count == 1 ? "account" : "accounts")
+                              .arg(failure_count)
+                              .arg(failure_count == 1 ? "account" : "accounts");
             emit self->statusChanged(msg);
             MessageBoxHelper::warning(self, "Partial Success", msg);
         }
@@ -604,8 +598,9 @@ void AccountMdiWindow::unlockSelected() {
     }
 
     if (!clientManager_->isConnected()) {
-         MessageBoxHelper::warning(this, "Disconnected", "Cannot unlock account while disconnected.");
-         return;
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot unlock account while disconnected.");
+        return;
     }
 
     std::vector<boost::uuids::uuid> account_ids;
@@ -621,22 +616,21 @@ void AccountMdiWindow::unlockSelected() {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Unlock requested for " << account_ids.size()
-                               << " accounts";
+    BOOST_LOG_SEV(lg(), debug) << "Unlock requested for " << account_ids.size() << " accounts";
 
     QString confirmMessage;
     if (account_ids.size() == 1) {
         const QModelIndex sourceIndex = proxyModel_->mapToSource(selected.first());
         const auto* account = accountModel_->getAccount(sourceIndex.row());
         confirmMessage = QString("Are you sure you want to unlock account '%1'?")
-            .arg(QString::fromStdString(account->username));
+                             .arg(QString::fromStdString(account->username));
     } else {
-        confirmMessage = QString("Are you sure you want to unlock %1 accounts?")
-            .arg(account_ids.size());
+        confirmMessage =
+            QString("Are you sure you want to unlock %1 accounts?").arg(account_ids.size());
     }
 
-    auto reply = MessageBoxHelper::question(this, "Unlock Account",
-        confirmMessage, QMessageBox::Yes | QMessageBox::No);
+    auto reply = MessageBoxHelper::question(
+        this, "Unlock Account", confirmMessage, QMessageBox::Yes | QMessageBox::No);
 
     if (reply != QMessageBox::Yes) {
         BOOST_LOG_SEV(lg(), debug) << "Unlock cancelled by user.";
@@ -647,14 +641,16 @@ void AccountMdiWindow::unlockSelected() {
     using UnlockResult = std::vector<iam::messaging::account_operation_result>;
 
     auto task = [self, account_ids]() -> UnlockResult {
-        if (!self) return {};
+        if (!self)
+            return {};
 
         BOOST_LOG_SEV(lg(), debug) << "Unlocking " << account_ids.size() << " accounts";
 
         iam::messaging::unlock_account_request request;
         for (const auto& id : account_ids)
             request.account_ids.push_back(boost::uuids::to_string(id));
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             BOOST_LOG_SEV(lg(), error) << "Failed to send unlock request";
@@ -669,8 +665,7 @@ void AccountMdiWindow::unlockSelected() {
     };
 
     auto* watcher = new QFutureWatcher<UnlockResult>(self);
-    connect(watcher, &QFutureWatcher<UnlockResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<UnlockResult>::finished, self, [self, watcher]() {
         auto results = watcher->result();
         watcher->deleteLater();
 
@@ -693,23 +688,23 @@ void AccountMdiWindow::unlockSelected() {
 
         self->accountModel_->refresh();
         if (failure_count == 0) {
-            QString msg = success_count == 1
-                ? "Successfully unlocked 1 account"
-                : QString("Successfully unlocked %1 accounts").arg(success_count);
+            QString msg = success_count == 1 ?
+                              "Successfully unlocked 1 account" :
+                              QString("Successfully unlocked %1 accounts").arg(success_count);
             emit self->statusChanged(msg);
         } else if (success_count == 0) {
             QString msg = QString("Failed to unlock %1 %2: %3")
-                .arg(failure_count)
-                .arg(failure_count == 1 ? "account" : "accounts")
-                .arg(first_error);
+                              .arg(failure_count)
+                              .arg(failure_count == 1 ? "account" : "accounts")
+                              .arg(first_error);
             emit self->errorOccurred(msg);
             MessageBoxHelper::critical(self, "Unlock Failed", msg);
         } else {
             QString msg = QString("Unlocked %1 %2, failed to unlock %3 %4")
-                .arg(success_count)
-                .arg(success_count == 1 ? "account" : "accounts")
-                .arg(failure_count)
-                .arg(failure_count == 1 ? "account" : "accounts");
+                              .arg(success_count)
+                              .arg(success_count == 1 ? "account" : "accounts")
+                              .arg(failure_count)
+                              .arg(failure_count == 1 ? "account" : "accounts");
             emit self->statusChanged(msg);
             MessageBoxHelper::warning(self, "Partial Success", msg);
         }
@@ -727,9 +722,9 @@ void AccountMdiWindow::resetPasswordSelected() {
     }
 
     if (!clientManager_->isConnected()) {
-         MessageBoxHelper::warning(this, "Disconnected",
-             "Cannot reset password while disconnected.");
-         return;
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot reset password while disconnected.");
+        return;
     }
 
     std::vector<boost::uuids::uuid> account_ids;
@@ -754,34 +749,34 @@ void AccountMdiWindow::resetPasswordSelected() {
             usernames.push_back(account->username);
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Password reset: admin initiating reset for "
-                              << account_ids.size() << " user(s): "
-                              << [&usernames]() {
-                                  std::string result;
-                                  for (size_t i = 0; i < usernames.size(); ++i) {
-                                      if (i > 0) result += ", ";
-                                      result += "'" + usernames[i] + "'";
-                                  }
-                                  return result;
-                              }();
+    BOOST_LOG_SEV(lg(), info) << "Password reset: admin initiating reset for " << account_ids.size()
+                              << " user(s): " << [&usernames]() {
+                                     std::string result;
+                                     for (size_t i = 0; i < usernames.size(); ++i) {
+                                         if (i > 0)
+                                             result += ", ";
+                                         result += "'" + usernames[i] + "'";
+                                     }
+                                     return result;
+                                 }();
 
     QString confirmMessage;
     if (account_ids.size() == 1) {
         const QModelIndex sourceIndex = proxyModel_->mapToSource(selected.first());
         const auto* account = accountModel_->getAccount(sourceIndex.row());
-        confirmMessage = QString(
-            "Are you sure you want to force password reset for account '%1'?\n\n"
-            "The user will be required to change their password on next login.")
-            .arg(QString::fromStdString(account->username));
+        confirmMessage =
+            QString("Are you sure you want to force password reset for account '%1'?\n\n"
+                    "The user will be required to change their password on next login.")
+                .arg(QString::fromStdString(account->username));
     } else {
-        confirmMessage = QString(
-            "Are you sure you want to force password reset for %1 accounts?\n\n"
-            "These users will be required to change their password on next login.")
-            .arg(account_ids.size());
+        confirmMessage =
+            QString("Are you sure you want to force password reset for %1 accounts?\n\n"
+                    "These users will be required to change their password on next login.")
+                .arg(account_ids.size());
     }
 
-    auto reply = MessageBoxHelper::question(this, "Reset Password",
-        confirmMessage, QMessageBox::Yes | QMessageBox::No);
+    auto reply = MessageBoxHelper::question(
+        this, "Reset Password", confirmMessage, QMessageBox::Yes | QMessageBox::No);
 
     if (reply != QMessageBox::Yes) {
         BOOST_LOG_SEV(lg(), debug) << "Reset password cancelled by user.";
@@ -792,15 +787,17 @@ void AccountMdiWindow::resetPasswordSelected() {
     using ResetResult = std::vector<iam::messaging::account_operation_result>;
 
     auto task = [self, account_ids]() -> ResetResult {
-        if (!self) return {};
+        if (!self)
+            return {};
 
-        BOOST_LOG_SEV(lg(), debug) << "Resetting password for "
-                                   << account_ids.size() << " accounts";
+        BOOST_LOG_SEV(lg(), debug)
+            << "Resetting password for " << account_ids.size() << " accounts";
 
         iam::messaging::reset_password_request request;
         for (const auto& id : account_ids)
             request.account_ids.push_back(boost::uuids::to_string(id));
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             BOOST_LOG_SEV(lg(), error) << "Failed to send reset password request";
@@ -815,8 +812,7 @@ void AccountMdiWindow::resetPasswordSelected() {
     };
 
     auto* watcher = new QFutureWatcher<ResetResult>(self);
-    connect(watcher, &QFutureWatcher<ResetResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<ResetResult>::finished, self, [self, watcher]() {
         auto results = watcher->result();
         watcher->deleteLater();
 
@@ -829,8 +825,7 @@ void AccountMdiWindow::resetPasswordSelected() {
                 BOOST_LOG_SEV(lg(), info) << "Password reset flag set successfully";
                 success_count++;
             } else {
-                BOOST_LOG_SEV(lg(), error)
-                    << "Password reset failed: " << result.message;
+                BOOST_LOG_SEV(lg(), error) << "Password reset failed: " << result.message;
                 failure_count++;
                 if (first_error.isEmpty()) {
                     first_error = QString::fromStdString(result.message);
@@ -840,24 +835,23 @@ void AccountMdiWindow::resetPasswordSelected() {
 
         self->accountModel_->refresh();
         if (failure_count == 0) {
-            QString msg = success_count == 1
-                ? "Password reset required for 1 account"
-                : QString("Password reset required for %1 accounts")
-                    .arg(success_count);
+            QString msg = success_count == 1 ?
+                              "Password reset required for 1 account" :
+                              QString("Password reset required for %1 accounts").arg(success_count);
             emit self->statusChanged(msg);
         } else if (success_count == 0) {
             QString msg = QString("Failed to reset password for %1 %2: %3")
-                .arg(failure_count)
-                .arg(failure_count == 1 ? "account" : "accounts")
-                .arg(first_error);
+                              .arg(failure_count)
+                              .arg(failure_count == 1 ? "account" : "accounts")
+                              .arg(first_error);
             emit self->errorOccurred(msg);
             MessageBoxHelper::critical(self, "Reset Password Failed", msg);
         } else {
             QString msg = QString("Reset %1 %2, failed to reset %3 %4")
-                .arg(success_count)
-                .arg(success_count == 1 ? "account" : "accounts")
-                .arg(failure_count)
-                .arg(failure_count == 1 ? "account" : "accounts");
+                              .arg(success_count)
+                              .arg(success_count == 1 ? "account" : "accounts")
+                              .arg(failure_count)
+                              .arg(failure_count == 1 ? "account" : "accounts");
             emit self->statusChanged(msg);
             MessageBoxHelper::warning(self, "Partial Success", msg);
         }
@@ -878,13 +872,11 @@ void AccountMdiWindow::viewHistorySelected() {
     const QModelIndex sourceIndex = proxyModel_->mapToSource(selected.first());
     const auto* account = accountModel_->getAccount(sourceIndex.row());
     if (!account) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to get account for row: "
-                                 << sourceIndex.row();
+        BOOST_LOG_SEV(lg(), warn) << "Failed to get account for row: " << sourceIndex.row();
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Emitting showAccountHistory for account: "
-                             << account->username;
+    BOOST_LOG_SEV(lg(), debug) << "Emitting showAccountHistory for account: " << account->username;
     emit showAccountHistory(QString::fromStdString(account->username));
 }
 
@@ -899,19 +891,16 @@ void AccountMdiWindow::viewSessionsSelected() {
     const QModelIndex sourceIndex = proxyModel_->mapToSource(selected.first());
     const auto* account = accountModel_->getAccount(sourceIndex.row());
     if (!account) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to get account for row: "
-                                 << sourceIndex.row();
+        BOOST_LOG_SEV(lg(), warn) << "Failed to get account for row: " << sourceIndex.row();
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Emitting showSessionHistory for account: "
-                             << account->username;
+    BOOST_LOG_SEV(lg(), debug) << "Emitting showSessionHistory for account: " << account->username;
     emit showSessionHistory(account->id, QString::fromStdString(account->username));
 }
 
 void AccountMdiWindow::updateActionStates() {
-    const int selection_count = accountTableView_
-        ->selectionModel()->selectedRows().count();
+    const int selection_count = accountTableView_->selectionModel()->selectedRows().count();
     const bool hasSingleSelection = selection_count == 1;
     const bool hasSelection = selection_count > 0;
 
@@ -928,8 +917,8 @@ void AccountMdiWindow::updateActionStates() {
 }
 
 void AccountMdiWindow::setupReloadAction() {
-    reloadAction_->setIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowSync, IconUtils::DefaultIconColor));
+    reloadAction_->setIcon(
+        IconUtils::createRecoloredIcon(Icon::ArrowSync, IconUtils::DefaultIconColor));
     connect(reloadAction_, &QAction::triggered, this, &EntityListMdiWindow::reload);
 
     initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowSync));

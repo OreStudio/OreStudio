@@ -20,11 +20,11 @@
 #ifndef ORES_QT_EXCEPTION_HELPER_HPP
 #define ORES_QT_EXCEPTION_HELPER_HPP
 
-#include <optional>
-#include <QString>
-#include <exception>
-#include <boost/exception/diagnostic_information.hpp>
 #include "ores.logging/boost_severity.hpp"
+#include <QString>
+#include <boost/exception/diagnostic_information.hpp>
+#include <exception>
+#include <optional>
 
 namespace ores::qt {
 
@@ -49,22 +49,18 @@ public:
      * @param logger Reference to the logger instance.
      * @param emit_error Callback to emit the error signal.
      */
-    template<typename Logger, typename EmitFunc>
-    static void handle_fetch_exception(
-        const std::exception& e,
-        const QString& entity_name,
-        Logger& logger,
-        EmitFunc emit_error) {
+    template <typename Logger, typename EmitFunc>
+    static void handle_fetch_exception(const std::exception& e,
+                                       const QString& entity_name,
+                                       Logger& logger,
+                                       EmitFunc emit_error) {
 
-        const auto details = QString::fromStdString(
-            boost::diagnostic_information(e));
+        const auto details = QString::fromStdString(boost::diagnostic_information(e));
 
         BOOST_LOG_SEV(logger, ores::logging::error)
-            << "Exception fetching " << entity_name.toStdString() << ": "
-            << details.toStdString();
+            << "Exception fetching " << entity_name.toStdString() << ": " << details.toStdString();
 
-        const auto message = QString("Failed to fetch %1 from server.")
-            .arg(entity_name);
+        const auto message = QString("Failed to fetch %1 from server.").arg(entity_name);
 
         emit_error(message, details);
     }
@@ -85,20 +81,16 @@ public:
      * @param entity_name The name of the entity being fetched (for error messages).
      * @return ResultType with success=false and error fields populated on exception.
      */
-    template<typename ResultType, typename FetchFunc>
-    static ResultType wrap_async_fetch(
-        FetchFunc&& fetch_func,
-        const QString& entity_name) {
+    template <typename ResultType, typename FetchFunc>
+    static ResultType wrap_async_fetch(FetchFunc&& fetch_func, const QString& entity_name) {
 
         try {
             return fetch_func();
         } catch (const std::exception& e) {
             ResultType result{};
             result.success = false;
-            result.error_message = QString("Failed to fetch %1 from server.")
-                .arg(entity_name);
-            result.error_details = QString::fromStdString(
-                boost::diagnostic_information(e));
+            result.error_message = QString("Failed to fetch %1 from server.").arg(entity_name);
+            result.error_details = QString::fromStdString(boost::diagnostic_information(e));
             return result;
         }
     }

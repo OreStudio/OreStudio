@@ -20,8 +20,8 @@
 #ifndef ORES_QT_FX_VARIANCE_SWAP_INSTRUMENT_FORM_HPP
 #define ORES_QT_FX_VARIANCE_SWAP_INSTRUMENT_FORM_HPP
 
-#include "ores.qt/IInstrumentForm.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/IInstrumentForm.hpp"
 #include "ores.trading.api/domain/fx_variance_swap_instrument.hpp"
 
 namespace Ui {
@@ -39,8 +39,7 @@ class FxVarianceSwapInstrumentForm final : public IInstrumentForm {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.fx_variance_swap_instrument_form";
+    inline static std::string_view logger_name = "ores.qt.fx_variance_swap_instrument_form";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -59,20 +58,17 @@ public:
     void populate(const trading::domain::fx_variance_swap_instrument& instr) override;
     void clear() override;
 
-    void setTradeType(const QString& code,
-        bool has_options, bool has_extension) override;
+    void setTradeType(const QString& code, bool has_options, bool has_extension) override;
 
     void setReadOnly(bool readOnly) override;
     bool isDirty() const override;
     bool isLoaded() const override;
 
-    void setChangeReason(
-        const std::string& code, const std::string& commentary) override;
+    void setChangeReason(const std::string& code, const std::string& commentary) override;
     void writeUiToInstrument() override;
 
-    void saveInstrument(
-        std::function<void(const std::string& id)> on_success,
-        std::function<void(const QString& error)> on_failure) override;
+    void saveInstrument(std::function<void(const std::string& id)> on_success,
+                        std::function<void(const QString& error)> on_failure) override;
 
 private:
     void setupConnections();

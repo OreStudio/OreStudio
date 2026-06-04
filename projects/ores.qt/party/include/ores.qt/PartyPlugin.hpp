@@ -19,9 +19,9 @@
 #ifndef ORES_QT_PARTY_PLUGIN_HPP
 #define ORES_QT_PARTY_PLUGIN_HPP
 
-#include <memory>
-#include <QList>
 #include "ores.qt/PluginBase.hpp"
+#include <QList>
+#include <memory>
 
 class QAction;
 
@@ -53,8 +53,12 @@ public:
     explicit PartyPlugin(QObject* parent = nullptr);
     ~PartyPlugin() override;
 
-    QString name() const override { return QStringLiteral("ores.qt.party"); }
-    int load_order() const override { return 105; }  // after RefdataPlugin (100)
+    QString name() const override {
+        return QStringLiteral("ores.qt.party");
+    }
+    int load_order() const override {
+        return 105;
+    } // after RefdataPlugin (100)
 
     void on_login(const plugin_context& ctx) override;
     void setup_menus(const shared_menus_context& ctx) override;
@@ -63,7 +67,6 @@ public:
     void on_logout() override;
 
 private:
-
     plugin_context ctx_;
 
     QAction* act_business_centres_{nullptr};
@@ -71,15 +74,15 @@ private:
     QAction* act_counterparties_{nullptr};
     QAction* act_business_units_{nullptr};
 
-    std::unique_ptr<PartyTypeController>         partyTypeController_;
-    std::unique_ptr<PartyStatusController>       partyStatusController_;
-    std::unique_ptr<PartyIdSchemeController>     partyIdSchemeController_;
-    std::unique_ptr<ContactTypeController>       contactTypeController_;
-    std::unique_ptr<PartyController>             partyController_;
-    std::unique_ptr<CounterpartyController>      counterpartyController_;
-    std::unique_ptr<BusinessCentreController>    businessCentreController_;
-    std::unique_ptr<BusinessUnitController>      businessUnitController_;
-    std::unique_ptr<BusinessUnitTypeController>  businessUnitTypeController_;
+    std::unique_ptr<PartyTypeController> partyTypeController_;
+    std::unique_ptr<PartyStatusController> partyStatusController_;
+    std::unique_ptr<PartyIdSchemeController> partyIdSchemeController_;
+    std::unique_ptr<ContactTypeController> contactTypeController_;
+    std::unique_ptr<PartyController> partyController_;
+    std::unique_ptr<CounterpartyController> counterpartyController_;
+    std::unique_ptr<BusinessCentreController> businessCentreController_;
+    std::unique_ptr<BusinessUnitController> businessUnitController_;
+    std::unique_ptr<BusinessUnitTypeController> businessUnitTypeController_;
 };
 
 }

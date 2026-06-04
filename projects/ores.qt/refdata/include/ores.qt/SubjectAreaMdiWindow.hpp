@@ -20,14 +20,14 @@
 #ifndef ORES_QT_SUBJECT_AREA_MDI_WINDOW_HPP
 #define ORES_QT_SUBJECT_AREA_MDI_WINDOW_HPP
 
-#include <QTableView>
-#include <QToolBar>
-#include <QSortFilterProxyModel>
-#include "ores.qt/EntityListMdiWindow.hpp"
+#include "ores.dq.api/domain/subject_area.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ClientSubjectAreaModel.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.dq.api/domain/subject_area.hpp"
+#include "ores.qt/EntityListMdiWindow.hpp"
+#include <QSortFilterProxyModel>
+#include <QTableView>
+#include <QToolBar>
 
 namespace ores::qt {
 
@@ -35,8 +35,7 @@ class SubjectAreaMdiWindow final : public EntityListMdiWindow {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.subject_area_mdi_window";
+    inline static std::string_view logger_name = "ores.qt.subject_area_mdi_window";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;

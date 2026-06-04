@@ -39,6 +39,6 @@
  * entity-specific operations (e.g., CurrencyController) which manage their own
  * MDI windows, dialogs, and data models.
  */
-namespace ores::qt { }
+namespace ores::qt {}
 
 #endif

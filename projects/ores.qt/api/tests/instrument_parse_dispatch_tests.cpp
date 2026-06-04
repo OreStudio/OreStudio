@@ -17,19 +17,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <rfl.hpp>
-#include <rfl/json.hpp>
-#include <catch2/catch_test_macros.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.qt/IInstrumentFormPopulator.hpp"
 #include "ores.qt/parse_trade_instrument.hpp"
+#include "ores.trading.api/domain/instrument.hpp"
 #include "ores.trading.api/domain/product_type.hpp"
 #include "ores.trading.api/domain/trade.hpp"
-#include "ores.trading.api/domain/instrument.hpp"
 #include "ores.trading.api/domain/trade_instrument.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <rfl.hpp>
+#include <rfl/json.hpp>
 
 namespace {
 
@@ -42,23 +42,23 @@ const std::string tags("[instrument_parse_dispatch]");
 
 trade make_test_trade(product_type pt, const std::string& trade_type) {
     trade t;
-    t.identity.id          = boost::uuids::random_generator()();
-    t.identity.party_id    = boost::uuids::random_generator()();
-    t.identity.version     = 1;
+    t.identity.id = boost::uuids::random_generator()();
+    t.identity.party_id = boost::uuids::random_generator()();
+    t.identity.version = 1;
     t.classification.product_type = pt;
-    t.classification.trade_type   = trade_type;
+    t.classification.trade_type = trade_type;
     t.classification.activity_type_code = "new_booking";
-    t.lifecycle.trade_date       = "2026-01-15";
-    t.lifecycle.effective_date   = "2026-01-20";
+    t.lifecycle.trade_date = "2026-01-15";
+    t.lifecycle.effective_date = "2026-01-20";
     t.lifecycle.termination_date = "2031-01-20";
     return t;
 }
 
 std::string make_response_json(trade t, trade_instrument instr) {
     get_trade_instrument_response resp;
-    resp.success    = true;
-    resp.message    = "";
-    resp.trade      = std::move(t);
+    resp.success = true;
+    resp.message = "";
+    resp.trade = std::move(t);
     resp.instrument = std::move(instr);
     return rfl::json::write(resp);
 }
@@ -68,45 +68,62 @@ std::string make_response_json(trade t, trade_instrument instr) {
 struct FxForwardPopulator : ores::qt::IInstrumentFormPopulator {
     fx_forward_instrument got;
     bool called = false;
-    void populate(const fx_forward_instrument& i) override { got = i; called = true; }
+    void populate(const fx_forward_instrument& i) override {
+        got = i;
+        called = true;
+    }
 };
 
 struct FxVanillaOptionPopulator : ores::qt::IInstrumentFormPopulator {
     fx_vanilla_option_instrument got;
     bool called = false;
-    void populate(const fx_vanilla_option_instrument& i) override { got = i; called = true; }
+    void populate(const fx_vanilla_option_instrument& i) override {
+        got = i;
+        called = true;
+    }
 };
 
 struct BondPopulator : ores::qt::IInstrumentFormPopulator {
     bond_instrument got;
     bool called = false;
-    void populate(const bond_instrument& i) override { got = i; called = true; }
+    void populate(const bond_instrument& i) override {
+        got = i;
+        called = true;
+    }
 };
 
 struct CreditPopulator : ores::qt::IInstrumentFormPopulator {
     credit_instrument got;
     bool called = false;
-    void populate(const credit_instrument& i) override { got = i; called = true; }
+    void populate(const credit_instrument& i) override {
+        got = i;
+        called = true;
+    }
 };
 
 struct CommodityPopulator : ores::qt::IInstrumentFormPopulator {
     commodity_instrument got;
     bool called = false;
-    void populate(const commodity_instrument& i) override { got = i; called = true; }
+    void populate(const commodity_instrument& i) override {
+        got = i;
+        called = true;
+    }
 };
 
 struct ScriptedPopulator : ores::qt::IInstrumentFormPopulator {
     scripted_instrument got;
     bool called = false;
-    void populate(const scripted_instrument& i) override { got = i; called = true; }
+    void populate(const scripted_instrument& i) override {
+        got = i;
+        called = true;
+    }
 };
 
 struct VanillaSwapPopulator : ores::qt::IInstrumentFormPopulator {
     vanilla_swap_instrument got;
     bool called = false;
     std::vector<swap_leg> got_legs;
-    void populate(const vanilla_swap_instrument& i,
-                  std::vector<swap_leg> legs) override {
+    void populate(const vanilla_swap_instrument& i, std::vector<swap_leg> legs) override {
         got = i;
         called = true;
         got_legs = std::move(legs);
@@ -117,8 +134,7 @@ struct FraPopulator : ores::qt::IInstrumentFormPopulator {
     fra_instrument got;
     bool called = false;
     std::vector<swap_leg> got_legs;
-    void populate(const fra_instrument& i,
-                  std::vector<swap_leg> legs) override {
+    void populate(const fra_instrument& i, std::vector<swap_leg> legs) override {
         got = i;
         called = true;
         got_legs = std::move(legs);
@@ -128,13 +144,19 @@ struct FraPopulator : ores::qt::IInstrumentFormPopulator {
 struct EquityOptionPopulator : ores::qt::IInstrumentFormPopulator {
     equity_option_instrument got;
     bool called = false;
-    void populate(const equity_option_instrument& i) override { got = i; called = true; }
+    void populate(const equity_option_instrument& i) override {
+        got = i;
+        called = true;
+    }
 };
 
 struct EquityForwardPopulator : ores::qt::IInstrumentFormPopulator {
     equity_forward_instrument got;
     bool called = false;
-    void populate(const equity_forward_instrument& i) override { got = i; called = true; }
+    void populate(const equity_forward_instrument& i) override {
+        got = i;
+        called = true;
+    }
 };
 
 } // namespace
@@ -145,12 +167,11 @@ struct EquityForwardPopulator : ores::qt::IInstrumentFormPopulator {
 
 TEST_CASE("parse_trade_instrument_dispatches_bond", tags) {
     bond_instrument instr;
-    instr.instrument_id   = boost::uuids::random_generator()();
+    instr.instrument_id = boost::uuids::random_generator()();
     instr.trade_type_code = "Bond";
 
-    auto json = make_response_json(
-        make_test_trade(product_type::bond, "Bond"),
-        trade_instrument{instr});
+    auto json =
+        make_response_json(make_test_trade(product_type::bond, "Bond"), trade_instrument{instr});
 
     BondPopulator pop;
     auto result = ores::qt::parse_trade_instrument(json, pop);
@@ -168,12 +189,11 @@ TEST_CASE("parse_trade_instrument_dispatches_bond", tags) {
 
 TEST_CASE("parse_trade_instrument_dispatches_credit", tags) {
     credit_instrument instr;
-    instr.instrument_id   = boost::uuids::random_generator()();
+    instr.instrument_id = boost::uuids::random_generator()();
     instr.trade_type_code = "CreditDefaultSwap";
 
-    auto json = make_response_json(
-        make_test_trade(product_type::credit, "CreditDefaultSwap"),
-        trade_instrument{instr});
+    auto json = make_response_json(make_test_trade(product_type::credit, "CreditDefaultSwap"),
+                                   trade_instrument{instr});
 
     CreditPopulator pop;
     auto result = ores::qt::parse_trade_instrument(json, pop);
@@ -190,12 +210,11 @@ TEST_CASE("parse_trade_instrument_dispatches_credit", tags) {
 
 TEST_CASE("parse_trade_instrument_dispatches_commodity", tags) {
     commodity_instrument instr;
-    instr.instrument_id   = boost::uuids::random_generator()();
+    instr.instrument_id = boost::uuids::random_generator()();
     instr.trade_type_code = "Commodity";
 
-    auto json = make_response_json(
-        make_test_trade(product_type::commodity, "Commodity"),
-        trade_instrument{instr});
+    auto json = make_response_json(make_test_trade(product_type::commodity, "Commodity"),
+                                   trade_instrument{instr});
 
     CommodityPopulator pop;
     auto result = ores::qt::parse_trade_instrument(json, pop);
@@ -212,12 +231,11 @@ TEST_CASE("parse_trade_instrument_dispatches_commodity", tags) {
 
 TEST_CASE("parse_trade_instrument_dispatches_scripted", tags) {
     scripted_instrument instr;
-    instr.instrument_id   = boost::uuids::random_generator()();
+    instr.instrument_id = boost::uuids::random_generator()();
     instr.trade_type_code = "ScriptedTrade";
 
-    auto json = make_response_json(
-        make_test_trade(product_type::scripted, "ScriptedTrade"),
-        trade_instrument{instr});
+    auto json = make_response_json(make_test_trade(product_type::scripted, "ScriptedTrade"),
+                                   trade_instrument{instr});
 
     ScriptedPopulator pop;
     auto result = ores::qt::parse_trade_instrument(json, pop);
@@ -234,17 +252,16 @@ TEST_CASE("parse_trade_instrument_dispatches_scripted", tags) {
 
 TEST_CASE("parse_trade_instrument_dispatches_fx_forward", tags) {
     fx_forward_instrument instr;
-    instr.instrument_id   = boost::uuids::random_generator()();
+    instr.instrument_id = boost::uuids::random_generator()();
     instr.trade_type_code = "FxForward";
     instr.bought_currency = "EUR";
-    instr.sold_currency   = "USD";
-    instr.bought_amount   = 1'000'000.0;
-    instr.sold_amount     = 1'100'000.0;
-    instr.value_date      = "2026-06-30";
+    instr.sold_currency = "USD";
+    instr.bought_amount = 1'000'000.0;
+    instr.sold_amount = 1'100'000.0;
+    instr.value_date = "2026-06-30";
 
-    auto json = make_response_json(
-        make_test_trade(product_type::fx, "FxForward"),
-        trade_instrument{fx_instrument_variant{instr}});
+    auto json = make_response_json(make_test_trade(product_type::fx, "FxForward"),
+                                   trade_instrument{fx_instrument_variant{instr}});
 
     FxForwardPopulator pop;
     auto result = ores::qt::parse_trade_instrument(json, pop);
@@ -252,10 +269,10 @@ TEST_CASE("parse_trade_instrument_dispatches_fx_forward", tags) {
     REQUIRE(result.has_value());
     CHECK(result->classification.product_type == product_type::fx);
     REQUIRE(pop.called);
-    CHECK(pop.got.instrument_id    == instr.instrument_id);
-    CHECK(pop.got.bought_currency  == "EUR");
-    CHECK(pop.got.sold_currency    == "USD");
-    CHECK(pop.got.value_date       == "2026-06-30");
+    CHECK(pop.got.instrument_id == instr.instrument_id);
+    CHECK(pop.got.bought_currency == "EUR");
+    CHECK(pop.got.sold_currency == "USD");
+    CHECK(pop.got.value_date == "2026-06-30");
 }
 
 // =============================================================================
@@ -264,12 +281,11 @@ TEST_CASE("parse_trade_instrument_dispatches_fx_forward", tags) {
 
 TEST_CASE("parse_trade_instrument_dispatches_fx_vanilla_option", tags) {
     fx_vanilla_option_instrument instr;
-    instr.instrument_id   = boost::uuids::random_generator()();
+    instr.instrument_id = boost::uuids::random_generator()();
     instr.trade_type_code = "FxOption";
 
-    auto json = make_response_json(
-        make_test_trade(product_type::fx, "FxOption"),
-        trade_instrument{fx_instrument_variant{instr}});
+    auto json = make_response_json(make_test_trade(product_type::fx, "FxOption"),
+                                   trade_instrument{fx_instrument_variant{instr}});
 
     FxVanillaOptionPopulator pop;
     auto result = ores::qt::parse_trade_instrument(json, pop);
@@ -286,17 +302,16 @@ TEST_CASE("parse_trade_instrument_dispatches_fx_vanilla_option", tags) {
 
 TEST_CASE("parse_trade_instrument_dispatches_fra", tags) {
     fra_instrument instr;
-    instr.identity.instrument_id   = boost::uuids::random_generator()();
+    instr.identity.instrument_id = boost::uuids::random_generator()();
     instr.identity.trade_type_code = "ForwardRateAgreement";
 
     swap_leg leg;
     leg.identity.leg_number = 1;
 
-    auto json = make_response_json(
-        make_test_trade(product_type::swap, "ForwardRateAgreement"),
-        trade_instrument{swap_instrument_data{
-            .instrument = rates_instrument_variant{instr},
-            .legs       = {leg}}});
+    auto json =
+        make_response_json(make_test_trade(product_type::swap, "ForwardRateAgreement"),
+                           trade_instrument{swap_instrument_data{
+                               .instrument = rates_instrument_variant{instr}, .legs = {leg}}});
 
     FraPopulator pop;
     auto result = ores::qt::parse_trade_instrument(json, pop);
@@ -315,7 +330,7 @@ TEST_CASE("parse_trade_instrument_dispatches_fra", tags) {
 
 TEST_CASE("parse_trade_instrument_dispatches_vanilla_swap", tags) {
     vanilla_swap_instrument instr;
-    instr.identity.instrument_id   = boost::uuids::random_generator()();
+    instr.identity.instrument_id = boost::uuids::random_generator()();
     instr.identity.trade_type_code = "Swap";
 
     swap_leg leg1;
@@ -325,9 +340,8 @@ TEST_CASE("parse_trade_instrument_dispatches_vanilla_swap", tags) {
 
     auto json = make_response_json(
         make_test_trade(product_type::swap, "Swap"),
-        trade_instrument{swap_instrument_data{
-            .instrument = rates_instrument_variant{instr},
-            .legs       = {leg1, leg2}}});
+        trade_instrument{swap_instrument_data{.instrument = rates_instrument_variant{instr},
+                                              .legs = {leg1, leg2}}});
 
     VanillaSwapPopulator pop;
     auto result = ores::qt::parse_trade_instrument(json, pop);
@@ -347,15 +361,14 @@ TEST_CASE("parse_trade_instrument_dispatches_vanilla_swap", tags) {
 
 TEST_CASE("parse_trade_instrument_dispatches_equity_option", tags) {
     equity_option_instrument instr;
-    instr.instrument_id   = boost::uuids::random_generator()();
+    instr.instrument_id = boost::uuids::random_generator()();
     instr.trade_type_code = "EquityOption";
     instr.underlying_name = "AAPL";
-    instr.currency        = "USD";
-    instr.option_type     = "Call";
+    instr.currency = "USD";
+    instr.option_type = "Call";
 
-    auto json = make_response_json(
-        make_test_trade(product_type::equity, "EquityOption"),
-        trade_instrument{equity_instrument_variant{instr}});
+    auto json = make_response_json(make_test_trade(product_type::equity, "EquityOption"),
+                                   trade_instrument{equity_instrument_variant{instr}});
 
     EquityOptionPopulator pop;
     auto result = ores::qt::parse_trade_instrument(json, pop);
@@ -363,9 +376,9 @@ TEST_CASE("parse_trade_instrument_dispatches_equity_option", tags) {
     REQUIRE(result.has_value());
     CHECK(result->classification.product_type == product_type::equity);
     REQUIRE(pop.called);
-    CHECK(pop.got.instrument_id   == instr.instrument_id);
+    CHECK(pop.got.instrument_id == instr.instrument_id);
     CHECK(pop.got.underlying_name == "AAPL");
-    CHECK(pop.got.option_type     == "Call");
+    CHECK(pop.got.option_type == "Call");
 }
 
 // =============================================================================
@@ -374,12 +387,11 @@ TEST_CASE("parse_trade_instrument_dispatches_equity_option", tags) {
 
 TEST_CASE("parse_trade_instrument_dispatches_equity_forward", tags) {
     equity_forward_instrument instr;
-    instr.instrument_id   = boost::uuids::random_generator()();
+    instr.instrument_id = boost::uuids::random_generator()();
     instr.trade_type_code = "EquityForward";
 
-    auto json = make_response_json(
-        make_test_trade(product_type::equity, "EquityForward"),
-        trade_instrument{equity_instrument_variant{instr}});
+    auto json = make_response_json(make_test_trade(product_type::equity, "EquityForward"),
+                                   trade_instrument{equity_instrument_variant{instr}});
 
     EquityForwardPopulator pop;
     auto result = ores::qt::parse_trade_instrument(json, pop);
@@ -395,9 +407,8 @@ TEST_CASE("parse_trade_instrument_dispatches_equity_forward", tags) {
 // =============================================================================
 
 TEST_CASE("parse_trade_instrument_returns_nullopt_for_unknown_product_type", tags) {
-    auto json = make_response_json(
-        make_test_trade(product_type::unknown, "Something"),
-        trade_instrument{bond_instrument{}});
+    auto json = make_response_json(make_test_trade(product_type::unknown, "Something"),
+                                   trade_instrument{bond_instrument{}});
 
     ores::qt::IInstrumentFormPopulator pop;
     auto result = ores::qt::parse_trade_instrument(json, pop);
@@ -406,9 +417,9 @@ TEST_CASE("parse_trade_instrument_returns_nullopt_for_unknown_product_type", tag
 }
 
 TEST_CASE("parse_trade_instrument_returns_nullopt_for_unknown_fx_trade_type", tags) {
-    auto json = make_response_json(
-        make_test_trade(product_type::fx, "UnknownFxType"),
-        trade_instrument{fx_instrument_variant{fx_forward_instrument{}}});
+    auto json =
+        make_response_json(make_test_trade(product_type::fx, "UnknownFxType"),
+                           trade_instrument{fx_instrument_variant{fx_forward_instrument{}}});
 
     ores::qt::IInstrumentFormPopulator pop;
     auto result = ores::qt::parse_trade_instrument(json, pop);

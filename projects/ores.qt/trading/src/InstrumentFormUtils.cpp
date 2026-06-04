@@ -17,7 +17,6 @@
  *
  */
 #include "ores.qt/InstrumentFormUtils.hpp"
-
 #include <QComboBox>
 
 namespace ores::qt {

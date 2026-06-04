@@ -20,15 +20,15 @@
 #ifndef ORES_QT_METHODOLOGY_MDI_WINDOW_HPP
 #define ORES_QT_METHODOLOGY_MDI_WINDOW_HPP
 
-#include <string>
-#include <QTableView>
-#include <QToolBar>
-#include <QSortFilterProxyModel>
-#include "ores.qt/EntityListMdiWindow.hpp"
+#include "ores.dq.api/domain/methodology.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ClientMethodologyModel.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.dq.api/domain/methodology.hpp"
+#include "ores.qt/EntityListMdiWindow.hpp"
+#include <QSortFilterProxyModel>
+#include <QTableView>
+#include <QToolBar>
+#include <string>
 
 namespace ores::qt {
 
@@ -36,8 +36,7 @@ class MethodologyMdiWindow final : public EntityListMdiWindow {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.methodology_mdi_window";
+    inline static std::string_view logger_name = "ores.qt.methodology_mdi_window";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;

@@ -23,9 +23,8 @@
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/DelegatePaintUtils.hpp"
 #include "ores.qt/FontUtils.hpp"
-
-#include <QPainter>
 #include <QApplication>
+#include <QPainter>
 #include <QStyleOptionViewItem>
 
 namespace ores::qt {
@@ -33,19 +32,19 @@ namespace ores::qt {
 using Column = ClientAccountModel::Column;
 
 AccountItemDelegate::AccountItemDelegate(BadgeCache* badgeCache, QObject* parent)
-    : QStyledItemDelegate(parent),
-      badgeCache_(badgeCache) {
+    : QStyledItemDelegate(parent)
+    , badgeCache_(badgeCache) {
     monospaceFont_ = FontUtils::monospace();
 }
 
-void AccountItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option,
+void AccountItemDelegate::paint(QPainter* painter,
+                                const QStyleOptionViewItem& option,
                                 const QModelIndex& index) const {
     QStyleOptionViewItem opt = option;
     initStyleOption(&opt, index);
 
     // Handle badge columns
-    if (index.column() == Column::Status ||
-        index.column() == Column::Locked ||
+    if (index.column() == Column::Status || index.column() == Column::Locked ||
         index.column() == Column::AccountType) {
 
         QStyle* style = QApplication::style();
@@ -59,10 +58,14 @@ void AccountItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
         QString badgeText;
 
         if (index.column() == Column::Status) {
-            if (text == "Online") badgeText = tr("Online");
-            else if (text == "Recent") badgeText = tr("Recent");
-            else if (text == "Old") badgeText = tr("Old");
-            else badgeText = tr("Never");
+            if (text == "Online")
+                badgeText = tr("Online");
+            else if (text == "Recent")
+                badgeText = tr("Recent");
+            else if (text == "Old")
+                badgeText = tr("Old");
+            else
+                badgeText = tr("Never");
             if (badgeCache_) {
                 auto* def = badgeCache_->resolve("login_status", text.toStdString());
                 if (def) {
@@ -80,11 +83,16 @@ void AccountItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
                 }
             }
         } else if (index.column() == Column::AccountType) {
-            if (text == "user")           badgeText = tr("User");
-            else if (text == "service")   badgeText = tr("Service");
-            else if (text == "algorithm") badgeText = tr("Algorithm");
-            else if (text == "llm")       badgeText = tr("LLM");
-            else                          badgeText = text;
+            if (text == "user")
+                badgeText = tr("User");
+            else if (text == "service")
+                badgeText = tr("Service");
+            else if (text == "algorithm")
+                badgeText = tr("Algorithm");
+            else if (text == "llm")
+                badgeText = tr("LLM");
+            else
+                badgeText = text;
             if (badgeCache_) {
                 auto* def = badgeCache_->resolve("account_type", text.toStdString());
                 if (def) {
@@ -99,8 +107,8 @@ void AccountItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
         badgeFont.setPointSize(qRound(badgeFont.pointSize() * 0.8));
         badgeFont.setBold(true);
 
-        DelegatePaintUtils::draw_centered_badge(painter, opt.rect,
-            badgeText, bgColor, textColor, badgeFont);
+        DelegatePaintUtils::draw_centered_badge(
+            painter, opt.rect, badgeText, bgColor, textColor, badgeFont);
         return;
     }
 
@@ -136,8 +144,7 @@ QSize AccountItemDelegate::sizeHint(const QStyleOptionViewItem& option,
                                     const QModelIndex& index) const {
     QSize size = QStyledItemDelegate::sizeHint(option, index);
 
-    if (index.column() == Column::Status ||
-        index.column() == Column::Locked ||
+    if (index.column() == Column::Status || index.column() == Column::Locked ||
         index.column() == Column::AccountType) {
         size.setHeight(qMax(size.height(), 24));
         if (index.column() == Column::Status) {

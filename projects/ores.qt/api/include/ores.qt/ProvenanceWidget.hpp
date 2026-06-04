@@ -20,10 +20,10 @@
 #ifndef ORES_QT_PROVENANCE_WIDGET_HPP
 #define ORES_QT_PROVENANCE_WIDGET_HPP
 
+#include "ores.qt/export.hpp"
+#include <QWidget>
 #include <chrono>
 #include <string>
-#include <QWidget>
-#include "ores.qt/export.hpp"
 
 namespace Ui {
 class ProvenanceWidget;

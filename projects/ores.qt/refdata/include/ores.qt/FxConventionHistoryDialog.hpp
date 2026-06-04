@@ -20,12 +20,12 @@
 #ifndef ORES_QT_FX_CONVENTION_HISTORY_DIALOG_HPP
 #define ORES_QT_FX_CONVENTION_HISTORY_DIALOG_HPP
 
-#include <QWidget>
-#include <QToolBar>
-#include <QTableWidget>
-#include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
 #include "ores.refdata.api/domain/fx_convention.hpp"
+#include <QTableWidget>
+#include <QToolBar>
+#include <QWidget>
 
 namespace Ui {
 class FxConventionHistoryDialog;
@@ -43,8 +43,7 @@ class FxConventionHistoryDialog final : public QWidget {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.fx_convention_history_dialog";
+    inline static std::string_view logger_name = "ores.qt.fx_convention_history_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -53,10 +52,9 @@ private:
     }
 
 public:
-    explicit FxConventionHistoryDialog(
-        const QString& code,
-        ClientManager* clientManager,
-        QWidget* parent = nullptr);
+    explicit FxConventionHistoryDialog(const QString& code,
+                                       ClientManager* clientManager,
+                                       QWidget* parent = nullptr);
     ~FxConventionHistoryDialog() override;
 
     void loadHistory();
@@ -64,8 +62,7 @@ public:
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
-    void openVersionRequested(const refdata::domain::fx_convention& fxc,
-                              int versionNumber);
+    void openVersionRequested(const refdata::domain::fx_convention& fxc, int versionNumber);
     void revertVersionRequested(const refdata::domain::fx_convention& fxc);
 
 private slots:

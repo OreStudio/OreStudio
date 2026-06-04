@@ -19,9 +19,9 @@
 #ifndef ORES_QT_WORKSPACE_PLUGIN_HPP
 #define ORES_QT_WORKSPACE_PLUGIN_HPP
 
-#include <memory>
-#include <QList>
 #include "ores.qt/PluginBase.hpp"
+#include <QList>
+#include <memory>
 
 class QAction;
 
@@ -44,8 +44,12 @@ public:
     explicit WorkspacePlugin(QObject* parent = nullptr);
     ~WorkspacePlugin() override;
 
-    QString name() const override { return QStringLiteral("ores.qt.workspace"); }
-    int load_order() const override { return 210; }  // after TradingPlugin (200)
+    QString name() const override {
+        return QStringLiteral("ores.qt.workspace");
+    }
+    int load_order() const override {
+        return 210;
+    } // after TradingPlugin (200)
 
     void on_login(const plugin_context& ctx) override;
     void setup_menus(const shared_menus_context& ctx) override;

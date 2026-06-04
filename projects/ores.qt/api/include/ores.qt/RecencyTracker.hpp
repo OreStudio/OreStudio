@@ -20,18 +20,18 @@
 #ifndef ORES_QT_RECENCY_TRACKER_HPP
 #define ORES_QT_RECENCY_TRACKER_HPP
 
+#include <QDateTime>
 #include <chrono>
+#include <ores.platform/attributes.hpp>
 #include <string>
 #include <unordered_set>
-#include <QDateTime>
-#include <ores.platform/attributes.hpp>
 
 namespace ores::qt {
 
 /**
  * @brief Default timestamp extractor that accesses .recorded_at member.
  */
-template<typename Entity>
+template <typename Entity>
 struct default_timestamp_extractor {
     auto operator()(const Entity& e) const {
         return e.recorded_at;
@@ -69,9 +69,9 @@ struct default_timestamp_extractor {
  * }
  * @endcode
  */
-template<typename Entity,
-         typename KeyExtractor,
-         typename TimestampExtractor = default_timestamp_extractor<Entity>>
+template <typename Entity,
+          typename KeyExtractor,
+          typename TimestampExtractor = default_timestamp_extractor<Entity>>
 class RecencyTracker {
 public:
     /**
@@ -82,8 +82,8 @@ public:
      * @param key_extractor Callable to extract identifier from entity
      */
     explicit RecencyTracker(KeyExtractor key_extractor)
-        : key_extractor_(std::move(key_extractor)),
-          timestamp_extractor_() {}
+        : key_extractor_(std::move(key_extractor))
+        , timestamp_extractor_() {}
 
     /**
      * @brief Construct a RecencyTracker with custom key and timestamp extractors.
@@ -92,8 +92,8 @@ public:
      * @param timestamp_extractor Callable to extract recorded_at from entity
      */
     RecencyTracker(KeyExtractor key_extractor, TimestampExtractor timestamp_extractor)
-        : key_extractor_(std::move(key_extractor)),
-          timestamp_extractor_(std::move(timestamp_extractor)) {}
+        : key_extractor_(std::move(key_extractor))
+        , timestamp_extractor_(std::move(timestamp_extractor)) {}
 
     /**
      * @brief Update the set of recent records by comparing timestamps.
@@ -104,7 +104,7 @@ public:
      * @param entities The collection of entities to check
      * @return true if any recent records were found, false otherwise
      */
-    template<typename Container>
+    template <typename Container>
     bool update(const Container& entities) {
         recent_keys_.clear();
 
@@ -124,7 +124,8 @@ public:
             }
 
             const auto msecs = std::chrono::duration_cast<std::chrono::milliseconds>(
-                recorded_at.time_since_epoch()).count();
+                                   recorded_at.time_since_epoch())
+                                   .count();
             QDateTime recorded_dt = QDateTime::fromMSecsSinceEpoch(msecs);
 
             if (recorded_dt.isValid() && recorded_dt > last_reload_time_) {
@@ -192,7 +193,7 @@ private:
  * @param key_extractor Callable to extract identifier from entity
  * @return RecencyTracker with deduced types
  */
-template<typename Entity, typename KeyExtractor>
+template <typename Entity, typename KeyExtractor>
 auto make_recency_tracker(KeyExtractor key_extractor) {
     return RecencyTracker<Entity, KeyExtractor>(std::move(key_extractor));
 }
@@ -204,11 +205,10 @@ auto make_recency_tracker(KeyExtractor key_extractor) {
  * @param timestamp_extractor Callable to extract recorded_at from entity
  * @return RecencyTracker with deduced types
  */
-template<typename Entity, typename KeyExtractor, typename TimestampExtractor>
-auto make_recency_tracker(KeyExtractor key_extractor,
-                          TimestampExtractor timestamp_extractor) {
-    return RecencyTracker<Entity, KeyExtractor, TimestampExtractor>(
-        std::move(key_extractor), std::move(timestamp_extractor));
+template <typename Entity, typename KeyExtractor, typename TimestampExtractor>
+auto make_recency_tracker(KeyExtractor key_extractor, TimestampExtractor timestamp_extractor) {
+    return RecencyTracker<Entity, KeyExtractor, TimestampExtractor>(std::move(key_extractor),
+                                                                    std::move(timestamp_extractor));
 }
 
 }

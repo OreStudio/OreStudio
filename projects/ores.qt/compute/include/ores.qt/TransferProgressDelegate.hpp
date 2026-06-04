@@ -37,11 +37,10 @@ public:
     explicit TransferProgressDelegate(QObject* parent = nullptr);
 
     void paint(QPainter* painter,
-        const QStyleOptionViewItem& option,
-        const QModelIndex& index) const override;
+               const QStyleOptionViewItem& option,
+               const QModelIndex& index) const override;
 
-    QSize sizeHint(const QStyleOptionViewItem& option,
-        const QModelIndex& index) const override;
+    QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 };
 
 } // namespace ores::qt

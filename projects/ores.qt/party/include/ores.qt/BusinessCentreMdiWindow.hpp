@@ -20,16 +20,16 @@
 #ifndef ORES_QT_BUSINESS_CENTRE_MDI_WINDOW_HPP
 #define ORES_QT_BUSINESS_CENTRE_MDI_WINDOW_HPP
 
-#include <QToolBar>
-#include <QTableView>
-#include <QSortFilterProxyModel>
-#include "ores.qt/EntityListMdiWindow.hpp"
-#include "ores.qt/PaginationWidget.hpp"
-#include "ores.qt/ClientManager.hpp"
-#include "ores.qt/ImageCache.hpp"
-#include "ores.qt/ClientBusinessCentreModel.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientBusinessCentreModel.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/EntityListMdiWindow.hpp"
+#include "ores.qt/ImageCache.hpp"
+#include "ores.qt/PaginationWidget.hpp"
 #include "ores.refdata.api/domain/business_centre.hpp"
+#include <QSortFilterProxyModel>
+#include <QTableView>
+#include <QToolBar>
 
 namespace ores::qt {
 
@@ -43,8 +43,7 @@ class BusinessCentreMdiWindow final : public EntityListMdiWindow {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.business_centre_mdi_window";
+    inline static std::string_view logger_name = "ores.qt.business_centre_mdi_window";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -53,11 +52,10 @@ private:
     }
 
 public:
-    explicit BusinessCentreMdiWindow(
-        ClientManager* clientManager,
-        ImageCache* imageCache,
-        const QString& username,
-        QWidget* parent = nullptr);
+    explicit BusinessCentreMdiWindow(ClientManager* clientManager,
+                                     ImageCache* imageCache,
+                                     const QString& username,
+                                     QWidget* parent = nullptr);
     ~BusinessCentreMdiWindow() override = default;
 
 public slots:

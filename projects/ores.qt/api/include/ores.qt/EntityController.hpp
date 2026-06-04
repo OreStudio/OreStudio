@@ -20,21 +20,21 @@
 #ifndef ORES_QT_ENTITY_CONTROLLER_HPP
 #define ORES_QT_ENTITY_CONTROLLER_HPP
 
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/DetailDialogBase.hpp"
+#include "ores.qt/export.hpp"
+#include <QDateTime>
+#include <QMainWindow>
+#include <QMap>
+#include <QMdiArea>
 #include <QObject>
 #include <QPointer>
-#include <QMainWindow>
-#include <QMdiArea>
 #include <QString>
 #include <QStringList>
-#include <QDateTime>
-#include <QMap>
 #include <memory>
 #include <string>
 #include <string_view>
-#include "ores.qt/ClientManager.hpp"
-#include "ores.qt/DetailDialogBase.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.qt/export.hpp"
 
 namespace ores::qt {
 
@@ -72,13 +72,12 @@ public:
      *        Pass empty string_view to disable event subscription.
      * @param parent QObject parent.
      */
-    EntityController(
-        QMainWindow* mainWindow,
-        QMdiArea* mdiArea,
-        ClientManager* clientManager,
-        const QString& username,
-        std::string_view eventName = {},
-        QObject* parent = nullptr);
+    EntityController(QMainWindow* mainWindow,
+                     QMdiArea* mdiArea,
+                     ClientManager* clientManager,
+                     const QString& username,
+                     std::string_view eventName = {},
+                     QObject* parent = nullptr);
 
     ~EntityController() override;
 
@@ -90,7 +89,9 @@ public:
     /**
      * @brief Updates just the username.
      */
-    void setUsername(const QString& username) { username_ = username; }
+    void setUsername(const QString& username) {
+        username_ = username;
+    }
 
     /**
      * @brief Pushes a new workspace context into the shared ClientManager.
@@ -118,7 +119,9 @@ public:
      * Default is false (no auto-reload). This can be used to implement a
      * user-configurable auto-reload preference in the future.
      */
-    void setAutoReloadOnSave(bool enabled) { autoReloadOnSave_ = enabled; }
+    void setAutoReloadOnSave(bool enabled) {
+        autoReloadOnSave_ = enabled;
+    }
 
 signals:
     /** @brief Emitted when a status message should be shown to the user. */
@@ -184,8 +187,8 @@ protected:
      * @param offset Position offset when detaching (default 30,30).
      */
     void show_managed_window(DetachableMdiSubWindow* window,
-        DetachableMdiSubWindow* referenceWindow = nullptr,
-        QPoint offset = QPoint(30, 30));
+                             DetachableMdiSubWindow* referenceWindow = nullptr,
+                             QPoint offset = QPoint(30, 30));
 
     /**
      * @brief Connects a dialog's closeRequested signal to the window's close slot.
@@ -216,7 +219,9 @@ protected:
      *
      * @return Pointer to the list window, or nullptr if not available.
      */
-    virtual EntityListMdiWindow* listWindow() const { return nullptr; }
+    virtual EntityListMdiWindow* listWindow() const {
+        return nullptr;
+    }
 
     /**
      * @brief Reloads the list window.

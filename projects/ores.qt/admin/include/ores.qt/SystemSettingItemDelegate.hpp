@@ -20,8 +20,8 @@
 #ifndef ORES_QT_SYSTEM_SETTING_ITEM_DELEGATE_HPP
 #define ORES_QT_SYSTEM_SETTING_ITEM_DELEGATE_HPP
 
-#include <QStyledItemDelegate>
 #include <QFont>
+#include <QStyledItemDelegate>
 
 namespace ores::qt {
 
@@ -37,11 +37,11 @@ class SystemSettingItemDelegate : public QStyledItemDelegate {
 public:
     explicit SystemSettingItemDelegate(QObject* parent = nullptr);
 
-    void paint(QPainter* painter, const QStyleOptionViewItem& option,
+    void paint(QPainter* painter,
+               const QStyleOptionViewItem& option,
                const QModelIndex& index) const override;
 
-    QSize sizeHint(const QStyleOptionViewItem& option,
-                   const QModelIndex& index) const override;
+    QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
 private:
     QFont monospaceFont_;

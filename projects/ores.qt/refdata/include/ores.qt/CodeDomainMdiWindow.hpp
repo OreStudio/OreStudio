@@ -20,15 +20,15 @@
 #ifndef ORES_QT_CODE_DOMAIN_MDI_WINDOW_HPP
 #define ORES_QT_CODE_DOMAIN_MDI_WINDOW_HPP
 
-#include <QToolBar>
-#include <QTableView>
-#include <QSortFilterProxyModel>
-#include "ores.qt/EntityListMdiWindow.hpp"
-#include "ores.qt/ClientManager.hpp"
-#include "ores.qt/ClientCodeDomainModel.hpp"
-#include "ores.qt/PaginationWidget.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.dq.api/domain/code_domain.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientCodeDomainModel.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/EntityListMdiWindow.hpp"
+#include "ores.qt/PaginationWidget.hpp"
+#include <QSortFilterProxyModel>
+#include <QTableView>
+#include <QToolBar>
 
 namespace ores::qt {
 
@@ -42,8 +42,7 @@ class CodeDomainMdiWindow final : public EntityListMdiWindow {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.code_domain_mdi_window";
+    inline static std::string_view logger_name = "ores.qt.code_domain_mdi_window";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -52,10 +51,9 @@ private:
     }
 
 public:
-    explicit CodeDomainMdiWindow(
-        ClientManager* clientManager,
-        const QString& username,
-        QWidget* parent = nullptr);
+    explicit CodeDomainMdiWindow(ClientManager* clientManager,
+                                 const QString& username,
+                                 QWidget* parent = nullptr);
     ~CodeDomainMdiWindow() override = default;
 
 signals:

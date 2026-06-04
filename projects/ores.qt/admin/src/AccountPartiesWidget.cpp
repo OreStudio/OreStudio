@@ -18,33 +18,32 @@
  *
  */
 #include "ores.qt/AccountPartiesWidget.hpp"
-
-#include <QVBoxLayout>
+#include "ores.iam.api/messaging/account_party_protocol.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/WidgetUtils.hpp"
+#include "ores.refdata.api/messaging/party_protocol.hpp"
+#include <QFutureWatcher>
 #include <QHBoxLayout>
 #include <QListWidgetItem>
+#include <QVBoxLayout>
 #include <QtConcurrent>
-#include <QFutureWatcher>
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <future>
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/WidgetUtils.hpp"
-#include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.iam.api/messaging/account_party_protocol.hpp"
-#include "ores.refdata.api/messaging/party_protocol.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 AccountPartiesWidget::AccountPartiesWidget(QWidget* parent)
-    : QWidget(parent),
-      partiesGroup_(new QGroupBox("Assigned Parties", this)),
-      assignedList_(new QListWidget(this)),
-      partyCombo_(new QComboBox(this)),
-      addButton_(new QToolButton(this)),
-      removeButton_(new QToolButton(this)) {
+    : QWidget(parent)
+    , partiesGroup_(new QGroupBox("Assigned Parties", this))
+    , assignedList_(new QListWidget(this))
+    , partyCombo_(new QComboBox(this))
+    , addButton_(new QToolButton(this))
+    , removeButton_(new QToolButton(this)) {
 
     setupUi();
     updateButtonStates();
@@ -59,26 +58,26 @@ void AccountPartiesWidget::setupUi() {
 
     assignedList_->setAlternatingRowColors(true);
     assignedList_->setSelectionMode(QAbstractItemView::SingleSelection);
-    connect(assignedList_, &QListWidget::itemSelectionChanged,
-        this, &AccountPartiesWidget::onAssignedSelectionChanged);
+    connect(assignedList_,
+            &QListWidget::itemSelectionChanged,
+            this,
+            &AccountPartiesWidget::onAssignedSelectionChanged);
 
     groupLayout->addWidget(assignedList_);
 
     auto* buttonsLayout = new QHBoxLayout();
 
-    addButton_->setIcon(IconUtils::createRecoloredIcon(
-        Icon::Add, IconUtils::DefaultIconColor));
+    addButton_->setIcon(IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor));
     addButton_->setToolTip("Add selected party");
     addButton_->setToolButtonStyle(Qt::ToolButtonIconOnly);
-    connect(addButton_, &QToolButton::clicked,
-        this, &AccountPartiesWidget::onAddPartyClicked);
+    connect(addButton_, &QToolButton::clicked, this, &AccountPartiesWidget::onAddPartyClicked);
 
-    removeButton_->setIcon(IconUtils::createRecoloredIcon(
-        Icon::Delete, IconUtils::DefaultIconColor));
+    removeButton_->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor));
     removeButton_->setToolTip("Remove selected party");
     removeButton_->setToolButtonStyle(Qt::ToolButtonIconOnly);
-    connect(removeButton_, &QToolButton::clicked,
-        this, &AccountPartiesWidget::onRemovePartyClicked);
+    connect(
+        removeButton_, &QToolButton::clicked, this, &AccountPartiesWidget::onRemovePartyClicked);
 
     buttonsLayout->addWidget(partyCombo_);
     buttonsLayout->addWidget(addButton_);
@@ -126,8 +125,8 @@ void AccountPartiesWidget::load() {
 
     const bool has_account = !accountId_.is_nil();
     if (has_account) {
-        BOOST_LOG_SEV(lg(), debug) << "Loading parties for account: "
-                                   << boost::uuids::to_string(accountId_);
+        BOOST_LOG_SEV(lg(), debug)
+            << "Loading parties for account: " << boost::uuids::to_string(accountId_);
     } else {
         BOOST_LOG_SEV(lg(), debug) << "Loading available parties for new account";
     }
@@ -138,88 +137,79 @@ void AccountPartiesWidget::load() {
     struct LoadResult {
         bool success;
         std::vector<iam::domain::account_party> assignedParties;
-        std::vector<refdata::domain::party>     allParties;
+        std::vector<refdata::domain::party> allParties;
     };
 
     auto* watcher = new QFutureWatcher<LoadResult>(this);
-    connect(watcher, &QFutureWatcher<LoadResult>::finished, this,
-        [self, watcher]() {
-            auto result = watcher->result();
-            watcher->deleteLater();
-            if (!self) return;
+    connect(watcher, &QFutureWatcher<LoadResult>::finished, this, [self, watcher]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+        if (!self)
+            return;
 
-            if (result.success) {
-                self->assignedParties_ = std::move(result.assignedParties);
-                self->allParties_      = std::move(result.allParties);
-                self->pendingAdds_.clear();
-                self->pendingRemoves_.clear();
-                self->refreshView();
-                BOOST_LOG_SEV(lg(), debug)
-                    << "Loaded " << self->assignedParties_.size()
-                    << " assigned, " << self->allParties_.size() << " total parties";
-            } else {
-                emit self->errorMessage("Load Failed", "Failed to load parties");
-            }
-        });
+        if (result.success) {
+            self->assignedParties_ = std::move(result.assignedParties);
+            self->allParties_ = std::move(result.allParties);
+            self->pendingAdds_.clear();
+            self->pendingRemoves_.clear();
+            self->refreshView();
+            BOOST_LOG_SEV(lg(), debug)
+                << "Loaded " << self->assignedParties_.size() << " assigned, "
+                << self->allParties_.size() << " total parties";
+        } else {
+            emit self->errorMessage("Load Failed", "Failed to load parties");
+        }
+    });
 
-    QFuture<LoadResult> future =
-        QtConcurrent::run([self, accountId, has_account]() -> LoadResult {
-            if (!self) return {.success = false};
+    QFuture<LoadResult> future = QtConcurrent::run([self, accountId, has_account]() -> LoadResult {
+        if (!self)
+            return {.success = false};
 
-            std::vector<iam::domain::account_party> assigned;
-            if (has_account) {
-                auto assignedFuture = std::async(std::launch::async,
-                    [&self, &accountId]() {
-                        iam::messaging::get_account_parties_by_account_request request;
-                        request.account_id = boost::uuids::to_string(accountId);
-                        return self->clientManager_->
-                            process_authenticated_request(std::move(request));
-                    });
+        std::vector<iam::domain::account_party> assigned;
+        if (has_account) {
+            auto assignedFuture = std::async(std::launch::async, [&self, &accountId]() {
+                iam::messaging::get_account_parties_by_account_request request;
+                request.account_id = boost::uuids::to_string(accountId);
+                return self->clientManager_->process_authenticated_request(std::move(request));
+            });
 
-                auto allPartiesFuture = std::async(std::launch::async,
-                    [&self]() {
-                        refdata::messaging::get_parties_request request;
-                        request.offset = 0;
-                        request.limit  = 1000;
-                        return self->clientManager_->
-                            process_authenticated_request(std::move(request));
-                    });
+            auto allPartiesFuture = std::async(std::launch::async, [&self]() {
+                refdata::messaging::get_parties_request request;
+                request.offset = 0;
+                request.limit = 1000;
+                return self->clientManager_->process_authenticated_request(std::move(request));
+            });
 
-                auto assignedResult   = assignedFuture.get();
-                auto allPartiesResult = allPartiesFuture.get();
+            auto assignedResult = assignedFuture.get();
+            auto allPartiesResult = allPartiesFuture.get();
 
-                if (!assignedResult) {
-                    BOOST_LOG_SEV(lg(), error)
-                        << "Failed to fetch assigned parties: "
-                        << assignedResult.error();
-                    return {.success = false};
-                }
-                if (!allPartiesResult) {
-                    BOOST_LOG_SEV(lg(), error)
-                        << "Failed to fetch all parties: "
-                        << allPartiesResult.error();
-                    return {.success = false};
-                }
-                return {.success = true,
-                    .assignedParties = std::move(assignedResult->account_parties),
-                    .allParties      = std::move(allPartiesResult->parties)};
-            }
-
-            // Create mode: only fetch all parties
-            refdata::messaging::get_parties_request request;
-            request.offset = 0;
-            request.limit  = 1000;
-            auto result = self->clientManager_->
-                process_authenticated_request(std::move(request));
-
-            if (!result) {
+            if (!assignedResult) {
                 BOOST_LOG_SEV(lg(), error)
-                    << "Failed to fetch parties: "
-                    << result.error();
+                    << "Failed to fetch assigned parties: " << assignedResult.error();
                 return {.success = false};
             }
-            return {.success = true, .allParties = std::move(result->parties)};
-        });
+            if (!allPartiesResult) {
+                BOOST_LOG_SEV(lg(), error)
+                    << "Failed to fetch all parties: " << allPartiesResult.error();
+                return {.success = false};
+            }
+            return {.success = true,
+                    .assignedParties = std::move(assignedResult->account_parties),
+                    .allParties = std::move(allPartiesResult->parties)};
+        }
+
+        // Create mode: only fetch all parties
+        refdata::messaging::get_parties_request request;
+        request.offset = 0;
+        request.limit = 1000;
+        auto result = self->clientManager_->process_authenticated_request(std::move(request));
+
+        if (!result) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to fetch parties: " << result.error();
+            return {.success = false};
+        }
+        return {.success = true, .allParties = std::move(result->parties)};
+    });
 
     watcher->setFuture(future);
 }
@@ -230,20 +220,24 @@ void AccountPartiesWidget::setReadOnly(bool readOnly) {
 }
 
 void AccountPartiesWidget::onAddPartyClicked() {
-    if (partyCombo_->count() == 0) return;
+    if (partyCombo_->count() == 0)
+        return;
 
     // Warn if this is a tenant admin account — party assignment is unusual
     if (accountType_ == "admin" || accountType_ == "tenant_admin") {
-        const auto reply = MessageBoxHelper::question(this,
+        const auto reply = MessageBoxHelper::question(
+            this,
             "Administrator Account",
             "This is an administrator account. Assigning parties to administrator "
             "accounts is not typical and may not be appropriate.\n\nContinue?",
             QMessageBox::Yes | QMessageBox::No);
-        if (reply != QMessageBox::Yes) return;
+        if (reply != QMessageBox::Yes)
+            return;
     }
 
     const auto partyIdStr = partyCombo_->currentData().toString().toStdString();
-    if (partyIdStr.empty()) return;
+    if (partyIdStr.empty())
+        return;
 
     const auto partyId = boost::lexical_cast<boost::uuids::uuid>(partyIdStr);
 
@@ -262,11 +256,12 @@ void AccountPartiesWidget::onAddPartyClicked() {
 
 void AccountPartiesWidget::onRemovePartyClicked() {
     auto selected = assignedList_->selectedItems();
-    if (selected.isEmpty()) return;
+    if (selected.isEmpty())
+        return;
 
-    const auto partyIdStr =
-        selected.first()->data(Qt::UserRole).toString().toStdString();
-    if (partyIdStr.empty()) return;
+    const auto partyIdStr = selected.first()->data(Qt::UserRole).toString().toStdString();
+    if (partyIdStr.empty())
+        return;
 
     const auto partyId = boost::lexical_cast<boost::uuids::uuid>(partyIdStr);
 
@@ -292,13 +287,12 @@ void AccountPartiesWidget::refreshView() {
 
     // Build the effective assigned set: DB parties minus removals, plus staged adds
     auto isRemoved = [&](const boost::uuids::uuid& id) {
-        return std::find(pendingRemoves_.begin(), pendingRemoves_.end(), id)
-            != pendingRemoves_.end();
+        return std::find(pendingRemoves_.begin(), pendingRemoves_.end(), id) !=
+               pendingRemoves_.end();
     };
 
     auto findPartyName = [&](const boost::uuids::uuid& id) -> QString {
-        auto it = std::ranges::find_if(allParties_,
-            [&id](const auto& p) { return p.id == id; });
+        auto it = std::ranges::find_if(allParties_, [&id](const auto& p) { return p.id == id; });
         if (it != allParties_.end()) {
             return QString("%1 (%2)")
                 .arg(QString::fromStdString(it->full_name))
@@ -315,7 +309,7 @@ void AccountPartiesWidget::refreshView() {
             effectiveIds.push_back(ap.party_id);
             auto* item = new QListWidgetItem(findPartyName(ap.party_id));
             item->setData(Qt::UserRole,
-                QString::fromStdString(boost::uuids::to_string(ap.party_id)));
+                          QString::fromStdString(boost::uuids::to_string(ap.party_id)));
             assignedList_->addItem(item);
         }
     }
@@ -324,23 +318,21 @@ void AccountPartiesWidget::refreshView() {
     for (const auto& partyId : pendingAdds_) {
         effectiveIds.push_back(partyId);
         auto* item = new QListWidgetItem(findPartyName(partyId));
-        item->setData(Qt::UserRole,
-            QString::fromStdString(boost::uuids::to_string(partyId)));
+        item->setData(Qt::UserRole, QString::fromStdString(boost::uuids::to_string(partyId)));
         assignedList_->addItem(item);
     }
 
     // Populate combo with parties not in effective set
     partyCombo_->clear();
     for (const auto& party : allParties_) {
-        bool inEffective = std::ranges::any_of(effectiveIds,
-            [&party](const auto& id) { return id == party.id; });
+        bool inEffective =
+            std::ranges::any_of(effectiveIds, [&party](const auto& id) { return id == party.id; });
         if (!inEffective) {
             const QString label = QString("%1 (%2)")
-                .arg(QString::fromStdString(party.full_name))
-                .arg(QString::fromStdString(party.party_type));
-            partyCombo_->addItem(label,
-                QVariant(QString::fromStdString(
-                    boost::uuids::to_string(party.id))));
+                                      .arg(QString::fromStdString(party.full_name))
+                                      .arg(QString::fromStdString(party.party_type));
+            partyCombo_->addItem(
+                label, QVariant(QString::fromStdString(boost::uuids::to_string(party.id))));
         }
     }
 
@@ -352,7 +344,7 @@ void AccountPartiesWidget::refreshView() {
 
 void AccountPartiesWidget::updateButtonStates() {
     const bool hasSelection = !assignedList_->selectedItems().isEmpty();
-    const bool isConnected  = clientManager_ && clientManager_->isConnected();
+    const bool isConnected = clientManager_ && clientManager_->isConnected();
     const bool hasComboItem = partyCombo_->count() > 0;
 
     addButton_->setEnabled(!readOnly_ && isConnected && hasComboItem);

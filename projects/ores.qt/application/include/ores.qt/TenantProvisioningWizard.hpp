@@ -20,24 +20,23 @@
 #ifndef ORES_QT_TENANT_PROVISIONING_WIZARD_HPP
 #define ORES_QT_TENANT_PROVISIONING_WIZARD_HPP
 
-#include <QWizard>
-#include <QWizardPage>
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/WorkflowStepsWidget.hpp"
 #include <QCheckBox>
 #include <QComboBox>
 #include <QLabel>
 #include <QLineEdit>
 #include <QProgressBar>
+#include <QPushButton>
 #include <QRadioButton>
 #include <QSpinBox>
 #include <QTextEdit>
-#include <QPushButton>
+#include <QWizard>
+#include <QWizardPage>
 #include <cstdint>
 #include <optional>
 #include <string>
-#include "ores.logging/make_logger.hpp"
-#include "ores.qt/ClientManager.hpp"
-
-#include "ores.qt/WorkflowStepsWidget.hpp"
 
 namespace ores::qt {
 
@@ -69,8 +68,7 @@ class TenantProvisioningWizard final : public QWizard {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.tenant_provisioning_wizard";
+    inline static std::string_view logger_name = "ores.qt.tenant_provisioning_wizard";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -90,80 +88,168 @@ public:
 
     enum class DataSourceMode { gleif, synthetic };
 
-    explicit TenantProvisioningWizard(
-        ClientManager* clientManager,
-        QWidget* parent = nullptr);
+    explicit TenantProvisioningWizard(ClientManager* clientManager, QWidget* parent = nullptr);
 
     ~TenantProvisioningWizard() override = default;
 
-    ClientManager* clientManager() const { return clientManager_; }
+    ClientManager* clientManager() const {
+        return clientManager_;
+    }
 
-    QString selectedBundleCode() const { return selectedBundleCode_; }
-    void setSelectedBundleCode(const QString& code) { selectedBundleCode_ = code; }
+    QString selectedBundleCode() const {
+        return selectedBundleCode_;
+    }
+    void setSelectedBundleCode(const QString& code) {
+        selectedBundleCode_ = code;
+    }
 
-    QString selectedBundleName() const { return selectedBundleName_; }
-    void setSelectedBundleName(const QString& name) { selectedBundleName_ = name; }
+    QString selectedBundleName() const {
+        return selectedBundleName_;
+    }
+    void setSelectedBundleName(const QString& name) {
+        selectedBundleName_ = name;
+    }
 
     // --- GLEIF / synthetic party setup state ---
-    DataSourceMode dataSourceMode() const { return dataSourceMode_; }
-    void setDataSourceMode(DataSourceMode m) { dataSourceMode_ = m; }
+    DataSourceMode dataSourceMode() const {
+        return dataSourceMode_;
+    }
+    void setDataSourceMode(DataSourceMode m) {
+        dataSourceMode_ = m;
+    }
 
-    QString rootLei() const { return rootLei_; }
-    void setRootLei(const QString& lei) { rootLei_ = lei; }
+    QString rootLei() const {
+        return rootLei_;
+    }
+    void setRootLei(const QString& lei) {
+        rootLei_ = lei;
+    }
 
-    QString rootLeiName() const { return rootLeiName_; }
-    void setRootLeiName(const QString& name) { rootLeiName_ = name; }
+    QString rootLeiName() const {
+        return rootLeiName_;
+    }
+    void setRootLeiName(const QString& name) {
+        rootLeiName_ = name;
+    }
 
-    QString leiDatasetSize() const { return leiDatasetSize_; }
-    void setLeiDatasetSize(const QString& size) { leiDatasetSize_ = size; }
+    QString leiDatasetSize() const {
+        return leiDatasetSize_;
+    }
+    void setLeiDatasetSize(const QString& size) {
+        leiDatasetSize_ = size;
+    }
 
-    QString syntheticCountry() const { return syntheticCountry_; }
-    void setSyntheticCountry(const QString& c) { syntheticCountry_ = c; }
+    QString syntheticCountry() const {
+        return syntheticCountry_;
+    }
+    void setSyntheticCountry(const QString& c) {
+        syntheticCountry_ = c;
+    }
 
-    int syntheticPartyCount() const { return syntheticPartyCount_; }
-    void setSyntheticPartyCount(int v) { syntheticPartyCount_ = v; }
+    int syntheticPartyCount() const {
+        return syntheticPartyCount_;
+    }
+    void setSyntheticPartyCount(int v) {
+        syntheticPartyCount_ = v;
+    }
 
-    int syntheticPartyMaxDepth() const { return syntheticPartyMaxDepth_; }
-    void setSyntheticPartyMaxDepth(int v) { syntheticPartyMaxDepth_ = v; }
+    int syntheticPartyMaxDepth() const {
+        return syntheticPartyMaxDepth_;
+    }
+    void setSyntheticPartyMaxDepth(int v) {
+        syntheticPartyMaxDepth_ = v;
+    }
 
-    int syntheticCounterpartyCount() const { return syntheticCounterpartyCount_; }
-    void setSyntheticCounterpartyCount(int v) { syntheticCounterpartyCount_ = v; }
+    int syntheticCounterpartyCount() const {
+        return syntheticCounterpartyCount_;
+    }
+    void setSyntheticCounterpartyCount(int v) {
+        syntheticCounterpartyCount_ = v;
+    }
 
-    int syntheticCounterpartyMaxDepth() const { return syntheticCounterpartyMaxDepth_; }
-    void setSyntheticCounterpartyMaxDepth(int v) { syntheticCounterpartyMaxDepth_ = v; }
+    int syntheticCounterpartyMaxDepth() const {
+        return syntheticCounterpartyMaxDepth_;
+    }
+    void setSyntheticCounterpartyMaxDepth(int v) {
+        syntheticCounterpartyMaxDepth_ = v;
+    }
 
-    int syntheticPortfolioLeafCount() const { return syntheticPortfolioLeafCount_; }
-    void setSyntheticPortfolioLeafCount(int v) { syntheticPortfolioLeafCount_ = v; }
+    int syntheticPortfolioLeafCount() const {
+        return syntheticPortfolioLeafCount_;
+    }
+    void setSyntheticPortfolioLeafCount(int v) {
+        syntheticPortfolioLeafCount_ = v;
+    }
 
-    int syntheticPortfolioMaxDepth() const { return syntheticPortfolioMaxDepth_; }
-    void setSyntheticPortfolioMaxDepth(int v) { syntheticPortfolioMaxDepth_ = v; }
+    int syntheticPortfolioMaxDepth() const {
+        return syntheticPortfolioMaxDepth_;
+    }
+    void setSyntheticPortfolioMaxDepth(int v) {
+        syntheticPortfolioMaxDepth_ = v;
+    }
 
-    int syntheticBooksPerPortfolio() const { return syntheticBooksPerPortfolio_; }
-    void setSyntheticBooksPerPortfolio(int v) { syntheticBooksPerPortfolio_ = v; }
+    int syntheticBooksPerPortfolio() const {
+        return syntheticBooksPerPortfolio_;
+    }
+    void setSyntheticBooksPerPortfolio(int v) {
+        syntheticBooksPerPortfolio_ = v;
+    }
 
-    int syntheticBusinessUnitCount() const { return syntheticBusinessUnitCount_; }
-    void setSyntheticBusinessUnitCount(int v) { syntheticBusinessUnitCount_ = v; }
+    int syntheticBusinessUnitCount() const {
+        return syntheticBusinessUnitCount_;
+    }
+    void setSyntheticBusinessUnitCount(int v) {
+        syntheticBusinessUnitCount_ = v;
+    }
 
-    int syntheticBusinessUnitMaxDepth() const { return syntheticBusinessUnitMaxDepth_; }
-    void setSyntheticBusinessUnitMaxDepth(int v) { syntheticBusinessUnitMaxDepth_ = v; }
+    int syntheticBusinessUnitMaxDepth() const {
+        return syntheticBusinessUnitMaxDepth_;
+    }
+    void setSyntheticBusinessUnitMaxDepth(int v) {
+        syntheticBusinessUnitMaxDepth_ = v;
+    }
 
-    bool syntheticGenerateAddresses() const { return syntheticGenerateAddresses_; }
-    void setSyntheticGenerateAddresses(bool v) { syntheticGenerateAddresses_ = v; }
+    bool syntheticGenerateAddresses() const {
+        return syntheticGenerateAddresses_;
+    }
+    void setSyntheticGenerateAddresses(bool v) {
+        syntheticGenerateAddresses_ = v;
+    }
 
-    int syntheticContactsPerParty() const { return syntheticContactsPerParty_; }
-    void setSyntheticContactsPerParty(int v) { syntheticContactsPerParty_ = v; }
+    int syntheticContactsPerParty() const {
+        return syntheticContactsPerParty_;
+    }
+    void setSyntheticContactsPerParty(int v) {
+        syntheticContactsPerParty_ = v;
+    }
 
-    int syntheticContactsPerCounterparty() const { return syntheticContactsPerCounterparty_; }
-    void setSyntheticContactsPerCounterparty(int v) { syntheticContactsPerCounterparty_ = v; }
+    int syntheticContactsPerCounterparty() const {
+        return syntheticContactsPerCounterparty_;
+    }
+    void setSyntheticContactsPerCounterparty(int v) {
+        syntheticContactsPerCounterparty_ = v;
+    }
 
-    bool syntheticGenerateIdentifiers() const { return syntheticGenerateIdentifiers_; }
-    void setSyntheticGenerateIdentifiers(bool v) { syntheticGenerateIdentifiers_ = v; }
+    bool syntheticGenerateIdentifiers() const {
+        return syntheticGenerateIdentifiers_;
+    }
+    void setSyntheticGenerateIdentifiers(bool v) {
+        syntheticGenerateIdentifiers_ = v;
+    }
 
-    std::optional<std::uint64_t> syntheticSeed() const { return syntheticSeed_; }
-    void setSyntheticSeed(std::optional<std::uint64_t> v) { syntheticSeed_ = v; }
+    std::optional<std::uint64_t> syntheticSeed() const {
+        return syntheticSeed_;
+    }
+    void setSyntheticSeed(std::optional<std::uint64_t> v) {
+        syntheticSeed_ = v;
+    }
 
-    int partiesLinkedCount() const { return partiesLinkedCount_; }
-    void setPartiesLinkedCount(int n) { partiesLinkedCount_ = n; }
+    int partiesLinkedCount() const {
+        return partiesLinkedCount_;
+    }
+    void setPartiesLinkedCount(int n) {
+        partiesLinkedCount_ = n;
+    }
 
     /**
      * @brief Clears the system.bootstrap_mode flag and marks the tenant active.
@@ -291,8 +377,7 @@ class TenantPartySetupPage final : public QWizardPage {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.tenant_party_setup_page";
+    inline static std::string_view logger_name = "ores.qt.tenant_party_setup_page";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -330,8 +415,7 @@ class TenantExecutePage final : public QWizardPage {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.tenant_execute_page";
+    inline static std::string_view logger_name = "ores.qt.tenant_execute_page";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -374,8 +458,7 @@ class TenantApplyAndSummaryPage final : public QWizardPage {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.tenant_apply_and_summary_page";
+    inline static std::string_view logger_name = "ores.qt.tenant_apply_and_summary_page";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;

@@ -20,13 +20,13 @@
 #ifndef ORES_QT_WORKSPACE_HISTORY_DIALOG_HPP
 #define ORES_QT_WORKSPACE_HISTORY_DIALOG_HPP
 
-#include <QToolBar>
-#include <QTableWidget>
-#include <boost/uuid/uuid.hpp>
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/HistoryDialogBase.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.workspace.api/domain/workspace.hpp"
+#include <QTableWidget>
+#include <QToolBar>
+#include <boost/uuid/uuid.hpp>
 
 namespace Ui {
 class WorkspaceHistoryDialog;
@@ -44,8 +44,7 @@ class WorkspaceHistoryDialog final : public HistoryDialogBase {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.workspace_history_dialog";
+    inline static std::string_view logger_name = "ores.qt.workspace_history_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -54,11 +53,10 @@ private:
     }
 
 public:
-    explicit WorkspaceHistoryDialog(
-        const boost::uuids::uuid& id,
-        const QString& code,
-        ClientManager* clientManager,
-        QWidget* parent = nullptr);
+    explicit WorkspaceHistoryDialog(const boost::uuids::uuid& id,
+                                    const QString& code,
+                                    ClientManager* clientManager,
+                                    QWidget* parent = nullptr);
     ~WorkspaceHistoryDialog() override;
 
     void loadHistory();
@@ -66,8 +64,7 @@ public:
     [[nodiscard]] QString code() const override;
 
 signals:
-    void openVersionRequested(const workspace::domain::workspace& workspace,
-                              int versionNumber);
+    void openVersionRequested(const workspace::domain::workspace& workspace, int versionNumber);
     void revertVersionRequested(const workspace::domain::workspace& workspace);
 
 private slots:

@@ -19,36 +19,35 @@
  *
  */
 #include "ores.qt/EventViewerDialog.hpp"
-#include "ores.qt/ClientManager.hpp"
 #include "ores.platform/time/datetime.hpp"
+#include "ores.qt/ClientManager.hpp"
 #include "ores.qt/FontUtils.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QTableView>
-#include <QHeaderView>
-#include <QLabel>
-#include <QPushButton>
-#include <QMessageBox>
-#include <QCloseEvent>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QJsonArray>
 #include <QApplication>
 #include <QClipboard>
-#include <QMenu>
+#include <QCloseEvent>
 #include <QDialog>
-#include <QTextEdit>
 #include <QDialogButtonBox>
+#include <QHBoxLayout>
+#include <QHeaderView>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QLabel>
+#include <QMenu>
+#include <QMessageBox>
+#include <QPushButton>
+#include <QTableView>
+#include <QTextEdit>
+#include <QVBoxLayout>
 
 // Event types to subscribe to
-#include "ores.refdata.api/eventing/currency_changed_event.hpp"
-#include "ores.variability.api/eventing/system_setting_changed_event.hpp"
 #include "ores.iam.api/eventing/account_changed_event.hpp"
+#include "ores.iam.api/eventing/account_permissions_changed_event.hpp"
 #include "ores.iam.api/eventing/role_assigned_event.hpp"
 #include "ores.iam.api/eventing/role_revoked_event.hpp"
-#include "ores.iam.api/eventing/account_permissions_changed_event.hpp"
+#include "ores.refdata.api/eventing/currency_changed_event.hpp"
+#include "ores.variability.api/eventing/system_setting_changed_event.hpp"
 #include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
@@ -59,8 +58,7 @@ namespace {
 
 QString formatTimestamp(std::chrono::system_clock::time_point tp) {
     auto time_t = std::chrono::system_clock::to_time_t(tp);
-    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
-        tp.time_since_epoch()) % 1000;
+    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(tp.time_since_epoch()) % 1000;
     std::tm tm{};
 #ifdef _WIN32
     localtime_s(&tm, &time_t);
@@ -73,8 +71,7 @@ QString formatTimestamp(std::chrono::system_clock::time_point tp) {
 }
 
 QDateTime toQDateTime(std::chrono::system_clock::time_point tp) {
-    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
-        tp.time_since_epoch()).count();
+    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(tp.time_since_epoch()).count();
     return QDateTime::fromMSecsSinceEpoch(ms);
 }
 
@@ -85,8 +82,7 @@ QDateTime toQDateTime(std::chrono::system_clock::time_point tp) {
 // ============================================================================
 
 EventTableModel::EventTableModel(QObject* parent)
-    : QAbstractTableModel(parent) {
-}
+    : QAbstractTableModel(parent) {}
 
 int EventTableModel::rowCount(const QModelIndex& parent) const {
     if (parent.isValid())
@@ -108,34 +104,33 @@ QVariant EventTableModel::data(const QModelIndex& index, int role) const {
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-        case Timestamp:
-            return event.timestamp.toString("yyyy-MM-dd hh:mm:ss.zzz");
-        case EventType:
-            return event.eventType;
-        case Source:
-            return event.source;
-        case Summary:
-            return event.summary;
+            case Timestamp:
+                return event.timestamp.toString("yyyy-MM-dd hh:mm:ss.zzz");
+            case EventType:
+                return event.eventType;
+            case Source:
+                return event.source;
+            case Summary:
+                return event.summary;
         }
     }
 
     return {};
 }
 
-QVariant EventTableModel::headerData(int section, Qt::Orientation orientation,
-                                      int role) const {
+QVariant EventTableModel::headerData(int section, Qt::Orientation orientation, int role) const {
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return {};
 
     switch (section) {
-    case Timestamp:
-        return tr("Timestamp");
-    case EventType:
-        return tr("Event Type");
-    case Source:
-        return tr("Source");
-    case Summary:
-        return tr("Summary");
+        case Timestamp:
+            return tr("Timestamp");
+        case EventType:
+            return tr("Event Type");
+        case Source:
+            return tr("Source");
+        case Summary:
+            return tr("Summary");
     }
 
     return {};
@@ -173,10 +168,9 @@ const EventRecord& EventTableModel::eventAt(int row) const {
 // EventViewerWindow
 // ============================================================================
 
-EventViewerWindow::EventViewerWindow(
-    std::shared_ptr<eventing::service::event_bus> eventBus,
-    ClientManager* clientManager,
-    QWidget* parent)
+EventViewerWindow::EventViewerWindow(std::shared_ptr<eventing::service::event_bus> eventBus,
+                                     ClientManager* clientManager,
+                                     QWidget* parent)
     : QWidget(parent)
     , eventBus_(std::move(eventBus))
     , clientManager_(clientManager)
@@ -233,10 +227,8 @@ void EventViewerWindow::setupUi() {
     layout->addLayout(bottomLayout);
 
     // Connections
-    connect(tableView_, &QTableView::doubleClicked,
-            this, &EventViewerWindow::onEventDoubleClicked);
-    connect(clearButton_, &QPushButton::clicked,
-            this, &EventViewerWindow::onClearClicked);
+    connect(tableView_, &QTableView::doubleClicked, this, &EventViewerWindow::onEventDoubleClicked);
+    connect(clearButton_, &QPushButton::clicked, this, &EventViewerWindow::onClearClicked);
 }
 
 void EventViewerWindow::showEvent(QShowEvent* event) {
@@ -264,68 +256,58 @@ void EventViewerWindow::subscribeToEvents() {
             QJsonObject json;
             json["address"] = QString::fromStdString(clientManager_->serverAddress());
             EventRecord record{
-                now, "connected", "local",
+                now,
+                "connected",
+                "local",
                 QString("Connected to %1")
                     .arg(QString::fromStdString(clientManager_->serverAddress())),
-                QString::fromUtf8(QJsonDocument(json).toJson(QJsonDocument::Indented))
-            };
+                QString::fromUtf8(QJsonDocument(json).toJson(QJsonDocument::Indented))};
             addEvent(std::move(record));
         });
 
         connect(clientManager_, &ClientManager::disconnected, this, [this]() {
             const auto now = QDateTime::currentDateTime();
-            EventRecord record{
-                now, "disconnected", "local",
-                "Disconnected from server", "{}"
-            };
+            EventRecord record{now, "disconnected", "local", "Disconnected from server", "{}"};
             addEvent(std::move(record));
         });
 
         connect(clientManager_, &ClientManager::reconnecting, this, [this]() {
             const auto now = QDateTime::currentDateTime();
-            EventRecord record{
-                now, "reconnecting", "local",
-                "Attempting to reconnect...", "{}"
-            };
+            EventRecord record{now, "reconnecting", "local", "Attempting to reconnect...", "{}"};
             addEvent(std::move(record));
         });
 
         connect(clientManager_, &ClientManager::reconnected, this, [this]() {
             const auto now = QDateTime::currentDateTime();
-            EventRecord record{
-                now, "reconnected", "local",
-                "Reconnected to server", "{}"
-            };
+            EventRecord record{now, "reconnected", "local", "Reconnected to server", "{}"};
             addEvent(std::move(record));
         });
     }
 
     // Subscribe to currency changed events
-    subscriptions_.push_back(
-        eventBus_->subscribe<refdata::eventing::currency_changed_event>(
-            [this](const refdata::eventing::currency_changed_event& e) {
-                QJsonObject json;
-                json["timestamp"] = formatTimestamp(e.timestamp);
-                QJsonArray codes;
-                for (const auto& code : e.iso_codes) {
-                    codes.append(QString::fromStdString(code));
-                }
-                json["iso_codes"] = codes;
+    subscriptions_.push_back(eventBus_->subscribe<refdata::eventing::currency_changed_event>(
+        [this](const refdata::eventing::currency_changed_event& e) {
+            QJsonObject json;
+            json["timestamp"] = formatTimestamp(e.timestamp);
+            QJsonArray codes;
+            for (const auto& code : e.iso_codes) {
+                codes.append(QString::fromStdString(code));
+            }
+            json["iso_codes"] = codes;
 
-                EventRecord record{
-                    toQDateTime(e.timestamp),
-                    QString::fromUtf8(eventing::domain::event_traits<
-                        refdata::eventing::currency_changed_event>::name),
-                    "local",
-                    QString("%1 currency(ies) changed").arg(e.iso_codes.size()),
-                    QString::fromUtf8(
-                        QJsonDocument(json).toJson(QJsonDocument::Indented))
-                };
+            EventRecord record{
+                toQDateTime(e.timestamp),
+                QString::fromUtf8(eventing::domain::event_traits<
+                                  refdata::eventing::currency_changed_event>::name),
+                "local",
+                QString("%1 currency(ies) changed").arg(e.iso_codes.size()),
+                QString::fromUtf8(QJsonDocument(json).toJson(QJsonDocument::Indented))};
 
-                QMetaObject::invokeMethod(this, [this, r = std::move(record)]() {
-                    addEvent(std::move(r));
-                }, Qt::QueuedConnection);
-            }));
+            QMetaObject::invokeMethod(
+                this,
+                [this, r = std::move(record)]() { addEvent(std::move(r)); },
+                Qt::QueuedConnection);
+        }));
 
     // Subscribe to system settings changed events
     subscriptions_.push_back(
@@ -337,128 +319,115 @@ void EventViewerWindow::subscribeToEvents() {
                 EventRecord record{
                     toQDateTime(e.timestamp),
                     QString::fromUtf8(eventing::domain::event_traits<
-                        variability::eventing::system_setting_changed_event>::name),
+                                      variability::eventing::system_setting_changed_event>::name),
                     "local",
                     "System settings changed",
-                    QString::fromUtf8(
-                        QJsonDocument(json).toJson(QJsonDocument::Indented))
-                };
+                    QString::fromUtf8(QJsonDocument(json).toJson(QJsonDocument::Indented))};
 
-                QMetaObject::invokeMethod(this, [this, r = std::move(record)]() {
-                    addEvent(std::move(r));
-                }, Qt::QueuedConnection);
+                QMetaObject::invokeMethod(
+                    this,
+                    [this, r = std::move(record)]() { addEvent(std::move(r)); },
+                    Qt::QueuedConnection);
             }));
 
     // Subscribe to IAM events
-    subscriptions_.push_back(
-        eventBus_->subscribe<iam::eventing::account_changed_event>(
-            [this](const iam::eventing::account_changed_event& e) {
-                QJsonObject json;
-                json["timestamp"] = formatTimestamp(e.timestamp);
-                QJsonArray ids;
-                for (const auto& id : e.account_ids) {
-                    ids.append(QString::fromStdString(id));
-                }
-                json["account_ids"] = ids;
+    subscriptions_.push_back(eventBus_->subscribe<iam::eventing::account_changed_event>(
+        [this](const iam::eventing::account_changed_event& e) {
+            QJsonObject json;
+            json["timestamp"] = formatTimestamp(e.timestamp);
+            QJsonArray ids;
+            for (const auto& id : e.account_ids) {
+                ids.append(QString::fromStdString(id));
+            }
+            json["account_ids"] = ids;
 
-                EventRecord record{
-                    toQDateTime(e.timestamp),
-                    QString::fromUtf8(eventing::domain::event_traits<
-                        iam::eventing::account_changed_event>::name),
-                    "local",
-                    QString("%1 account(s) changed").arg(e.account_ids.size()),
-                    QString::fromUtf8(
-                        QJsonDocument(json).toJson(QJsonDocument::Indented))
-                };
+            EventRecord record{
+                toQDateTime(e.timestamp),
+                QString::fromUtf8(
+                    eventing::domain::event_traits<iam::eventing::account_changed_event>::name),
+                "local",
+                QString("%1 account(s) changed").arg(e.account_ids.size()),
+                QString::fromUtf8(QJsonDocument(json).toJson(QJsonDocument::Indented))};
 
-                QMetaObject::invokeMethod(this, [this, r = std::move(record)]() {
-                    addEvent(std::move(r));
-                }, Qt::QueuedConnection);
-            }));
+            QMetaObject::invokeMethod(
+                this,
+                [this, r = std::move(record)]() { addEvent(std::move(r)); },
+                Qt::QueuedConnection);
+        }));
 
-    subscriptions_.push_back(
-        eventBus_->subscribe<iam::eventing::role_assigned_event>(
-            [this](const iam::eventing::role_assigned_event& e) {
-                QJsonObject json;
-                json["timestamp"] = formatTimestamp(e.timestamp);
-                json["account_id"] = QString::fromStdString(
-                    boost::uuids::to_string(e.account_id));
-                json["role_id"] = QString::fromStdString(
-                    boost::uuids::to_string(e.role_id));
+    subscriptions_.push_back(eventBus_->subscribe<iam::eventing::role_assigned_event>(
+        [this](const iam::eventing::role_assigned_event& e) {
+            QJsonObject json;
+            json["timestamp"] = formatTimestamp(e.timestamp);
+            json["account_id"] = QString::fromStdString(boost::uuids::to_string(e.account_id));
+            json["role_id"] = QString::fromStdString(boost::uuids::to_string(e.role_id));
 
-                EventRecord record{
-                    toQDateTime(e.timestamp),
-                    QString::fromUtf8(eventing::domain::event_traits<
-                        iam::eventing::role_assigned_event>::name),
-                    "local",
-                    "Role assigned",
-                    QString::fromUtf8(
-                        QJsonDocument(json).toJson(QJsonDocument::Indented))
-                };
+            EventRecord record{
+                toQDateTime(e.timestamp),
+                QString::fromUtf8(
+                    eventing::domain::event_traits<iam::eventing::role_assigned_event>::name),
+                "local",
+                "Role assigned",
+                QString::fromUtf8(QJsonDocument(json).toJson(QJsonDocument::Indented))};
 
-                QMetaObject::invokeMethod(this, [this, r = std::move(record)]() {
-                    addEvent(std::move(r));
-                }, Qt::QueuedConnection);
-            }));
+            QMetaObject::invokeMethod(
+                this,
+                [this, r = std::move(record)]() { addEvent(std::move(r)); },
+                Qt::QueuedConnection);
+        }));
 
-    subscriptions_.push_back(
-        eventBus_->subscribe<iam::eventing::role_revoked_event>(
-            [this](const iam::eventing::role_revoked_event& e) {
-                QJsonObject json;
-                json["timestamp"] = formatTimestamp(e.timestamp);
-                json["account_id"] = QString::fromStdString(
-                    boost::uuids::to_string(e.account_id));
-                json["role_id"] = QString::fromStdString(
-                    boost::uuids::to_string(e.role_id));
+    subscriptions_.push_back(eventBus_->subscribe<iam::eventing::role_revoked_event>(
+        [this](const iam::eventing::role_revoked_event& e) {
+            QJsonObject json;
+            json["timestamp"] = formatTimestamp(e.timestamp);
+            json["account_id"] = QString::fromStdString(boost::uuids::to_string(e.account_id));
+            json["role_id"] = QString::fromStdString(boost::uuids::to_string(e.role_id));
 
-                EventRecord record{
-                    toQDateTime(e.timestamp),
-                    QString::fromUtf8(eventing::domain::event_traits<
-                        iam::eventing::role_revoked_event>::name),
-                    "local",
-                    "Role revoked",
-                    QString::fromUtf8(
-                        QJsonDocument(json).toJson(QJsonDocument::Indented))
-                };
+            EventRecord record{
+                toQDateTime(e.timestamp),
+                QString::fromUtf8(
+                    eventing::domain::event_traits<iam::eventing::role_revoked_event>::name),
+                "local",
+                "Role revoked",
+                QString::fromUtf8(QJsonDocument(json).toJson(QJsonDocument::Indented))};
 
-                QMetaObject::invokeMethod(this, [this, r = std::move(record)]() {
-                    addEvent(std::move(r));
-                }, Qt::QueuedConnection);
-            }));
+            QMetaObject::invokeMethod(
+                this,
+                [this, r = std::move(record)]() { addEvent(std::move(r)); },
+                Qt::QueuedConnection);
+        }));
 
-    subscriptions_.push_back(
-        eventBus_->subscribe<iam::eventing::account_permissions_changed_event>(
-            [this](const iam::eventing::account_permissions_changed_event& e) {
-                QJsonObject json;
-                json["timestamp"] = formatTimestamp(e.timestamp);
-                json["account_id"] = QString::fromStdString(
-                    boost::uuids::to_string(e.account_id));
-                QJsonArray perms;
-                for (const auto& perm : e.permission_codes) {
-                    perms.append(QString::fromStdString(perm));
-                }
-                json["permission_codes"] = perms;
+    subscriptions_.push_back(eventBus_->subscribe<iam::eventing::account_permissions_changed_event>(
+        [this](const iam::eventing::account_permissions_changed_event& e) {
+            QJsonObject json;
+            json["timestamp"] = formatTimestamp(e.timestamp);
+            json["account_id"] = QString::fromStdString(boost::uuids::to_string(e.account_id));
+            QJsonArray perms;
+            for (const auto& perm : e.permission_codes) {
+                perms.append(QString::fromStdString(perm));
+            }
+            json["permission_codes"] = perms;
 
-                EventRecord record{
-                    toQDateTime(e.timestamp),
-                    QString::fromUtf8(eventing::domain::event_traits<
-                        iam::eventing::account_permissions_changed_event>::name),
-                    "local",
-                    QString("Permissions changed (%1 permission(s))")
-                        .arg(e.permission_codes.size()),
-                    QString::fromUtf8(
-                        QJsonDocument(json).toJson(QJsonDocument::Indented))
-                };
+            EventRecord record{
+                toQDateTime(e.timestamp),
+                QString::fromUtf8(eventing::domain::event_traits<
+                                  iam::eventing::account_permissions_changed_event>::name),
+                "local",
+                QString("Permissions changed (%1 permission(s))").arg(e.permission_codes.size()),
+                QString::fromUtf8(QJsonDocument(json).toJson(QJsonDocument::Indented))};
 
-                QMetaObject::invokeMethod(this, [this, r = std::move(record)]() {
-                    addEvent(std::move(r));
-                }, Qt::QueuedConnection);
-            }));
+            QMetaObject::invokeMethod(
+                this,
+                [this, r = std::move(record)]() { addEvent(std::move(r)); },
+                Qt::QueuedConnection);
+        }));
 
     // Connect to ClientManager for remote notifications
     if (clientManager_ && !connectedToClientManager_) {
-        connect(clientManager_, &ClientManager::notificationReceived,
-                this, &EventViewerWindow::onNotificationReceived);
+        connect(clientManager_,
+                &ClientManager::notificationReceived,
+                this,
+                &EventViewerWindow::onNotificationReceived);
         connectedToClientManager_ = true;
         BOOST_LOG_SEV(lg(), debug) << "Connected to ClientManager notifications.";
     }
@@ -474,13 +443,14 @@ void EventViewerWindow::unsubscribeFromEvents() {
 
     // Disconnect from ClientManager
     if (clientManager_ && connectedToClientManager_) {
-        disconnect(clientManager_, &ClientManager::notificationReceived,
-                   this, &EventViewerWindow::onNotificationReceived);
+        disconnect(clientManager_,
+                   &ClientManager::notificationReceived,
+                   this,
+                   &EventViewerWindow::onNotificationReceived);
         connectedToClientManager_ = false;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Unsubscribed from " << count
-                              << " event type(s).";
+    BOOST_LOG_SEV(lg(), info) << "Unsubscribed from " << count << " event type(s).";
 }
 
 void EventViewerWindow::addEvent(EventRecord record) {
@@ -506,16 +476,15 @@ void EventViewerWindow::onEventDoubleClicked(const QModelIndex& index) {
     auto* layout = new QVBoxLayout(&detailDialog);
 
     // Event info
-    auto* infoLabel = new QLabel(
-        tr("<b>Event Type:</b> %1<br>"
-           "<b>Source:</b> %2<br>"
-           "<b>Timestamp:</b> %3<br>"
-           "<b>Summary:</b> %4")
-            .arg(event.eventType)
-            .arg(event.source)
-            .arg(event.timestamp.toString("yyyy-MM-dd hh:mm:ss.zzz"))
-            .arg(event.summary),
-        &detailDialog);
+    auto* infoLabel = new QLabel(tr("<b>Event Type:</b> %1<br>"
+                                    "<b>Source:</b> %2<br>"
+                                    "<b>Timestamp:</b> %3<br>"
+                                    "<b>Summary:</b> %4")
+                                     .arg(event.eventType)
+                                     .arg(event.source)
+                                     .arg(event.timestamp.toString("yyyy-MM-dd hh:mm:ss.zzz"))
+                                     .arg(event.summary),
+                                 &detailDialog);
     infoLabel->setTextFormat(Qt::RichText);
     layout->addWidget(infoLabel);
 
@@ -536,8 +505,7 @@ void EventViewerWindow::onEventDoubleClicked(const QModelIndex& index) {
     connect(copyButton, &QPushButton::clicked, this, [&event]() {
         QApplication::clipboard()->setText(event.jsonPayload);
     });
-    connect(buttonBox, &QDialogButtonBox::rejected,
-            &detailDialog, &QDialog::reject);
+    connect(buttonBox, &QDialogButtonBox::rejected, &detailDialog, &QDialog::reject);
 
     layout->addWidget(buttonBox);
 
@@ -550,9 +518,9 @@ void EventViewerWindow::onClearClicked() {
 }
 
 void EventViewerWindow::onNotificationReceived(const QString& eventType,
-                                                const QDateTime& timestamp,
-                                                const QStringList& entityIds,
-                                                const QString& tenantId) {
+                                               const QDateTime& timestamp,
+                                               const QStringList& entityIds,
+                                               const QString& tenantId) {
     QJsonObject json;
     json["event_type"] = eventType;
     json["timestamp"] = timestamp.toString(Qt::ISODateWithMs);
@@ -572,17 +540,14 @@ void EventViewerWindow::onNotificationReceived(const QString& eventType,
         summary = QString("%1: %2 entities").arg(eventType).arg(entityIds.size());
     }
 
-    EventRecord record{
-        timestamp,
-        eventType,
-        "remote",
-        summary,
-        QString::fromUtf8(QJsonDocument(json).toJson(QJsonDocument::Indented))
-    };
+    EventRecord record{timestamp,
+                       eventType,
+                       "remote",
+                       summary,
+                       QString::fromUtf8(QJsonDocument(json).toJson(QJsonDocument::Indented))};
 
-    QMetaObject::invokeMethod(this, [this, r = std::move(record)]() {
-        addEvent(std::move(r));
-    }, Qt::QueuedConnection);
+    QMetaObject::invokeMethod(
+        this, [this, r = std::move(record)]() { addEvent(std::move(r)); }, Qt::QueuedConnection);
 }
 
 }

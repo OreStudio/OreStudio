@@ -20,11 +20,11 @@
 #ifndef ORES_QT_CHANGEPASSWORDDIALOG_HPP
 #define ORES_QT_CHANGEPASSWORDDIALOG_HPP
 
-#include <QLabel>
+#include "ores.qt/ClientManager.hpp"
 #include <QDialog>
+#include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
-#include "ores.qt/ClientManager.hpp"
 
 namespace ores::qt {
 

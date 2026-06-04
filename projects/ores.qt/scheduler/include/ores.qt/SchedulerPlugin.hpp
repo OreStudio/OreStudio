@@ -19,9 +19,9 @@
 #ifndef ORES_QT_SCHEDULER_PLUGIN_HPP
 #define ORES_QT_SCHEDULER_PLUGIN_HPP
 
-#include <memory>
-#include <QList>
 #include "ores.qt/PluginBase.hpp"
+#include <QList>
+#include <memory>
 
 namespace ores::qt {
 
@@ -45,8 +45,12 @@ public:
     explicit SchedulerPlugin(QObject* parent = nullptr);
     ~SchedulerPlugin() override;
 
-    QString name() const override { return QStringLiteral("ores.qt.scheduler"); }
-    int load_order() const override { return 360; }
+    QString name() const override {
+        return QStringLiteral("ores.qt.scheduler");
+    }
+    int load_order() const override {
+        return 360;
+    }
 
     void on_login(const plugin_context& ctx) override;
     void setup_menus(const shared_menus_context& ctx) override;
@@ -58,9 +62,9 @@ private:
 
     QMenu* operations_menu_{nullptr};
 
-    std::unique_ptr<JobDefinitionController>     jobDefinitionController_;
-    std::unique_ptr<JobInstanceController>       jobInstanceController_;
-    std::unique_ptr<SchedulerMonitorController>  schedulerMonitorController_;
+    std::unique_ptr<JobDefinitionController> jobDefinitionController_;
+    std::unique_ptr<JobInstanceController> jobInstanceController_;
+    std::unique_ptr<SchedulerMonitorController> schedulerMonitorController_;
 };
 
 }

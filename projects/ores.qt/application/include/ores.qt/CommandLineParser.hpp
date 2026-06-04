@@ -20,13 +20,13 @@
 #ifndef ORES_QT_COMMAND_LINE_PARSER_HPP
 #define ORES_QT_COMMAND_LINE_PARSER_HPP
 
+#include "ores.logging/logging_options.hpp"
+#include <QColor>
+#include <QCommandLineParser>
+#include <QCoreApplication>
+#include <QString>
 #include <optional>
 #include <string>
-#include <QCoreApplication>
-#include <QCommandLineParser>
-#include <QString>
-#include <QColor>
-#include "ores.logging/logging_options.hpp"
 
 namespace ores::qt {
 

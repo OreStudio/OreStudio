@@ -18,51 +18,54 @@
  *
  */
 #include "ores.qt/AccountHistoryDialog.hpp"
-
-#include <QIcon>
-#include <QDateTime>
-#include <QScrollBar>
-#include <QVBoxLayout>
-#include <QtConcurrent>
-#include <QFutureWatcher>
+#include "ores.iam.api/messaging/protocol.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.iam.api/messaging/protocol.hpp"
+#include <QDateTime>
+#include <QFutureWatcher>
+#include <QIcon>
+#include <QScrollBar>
+#include <QVBoxLayout>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 const QIcon& AccountHistoryDialog::getHistoryIcon() const {
-    static const QIcon historyIcon = IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor);
+    static const QIcon historyIcon =
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor);
     return historyIcon;
 }
 
 AccountHistoryDialog::AccountHistoryDialog(QString username,
-    ClientManager* clientManager, QWidget* parent)
-    : QWidget(parent), ui_(new Ui::AccountHistoryDialog),
-      clientManager_(clientManager), username_(std::move(username)),
-      toolBar_(nullptr), reloadAction_(nullptr),
-      openAction_(nullptr), revertAction_(nullptr) {
+                                           ClientManager* clientManager,
+                                           QWidget* parent)
+    : QWidget(parent)
+    , ui_(new Ui::AccountHistoryDialog)
+    , clientManager_(clientManager)
+    , username_(std::move(username))
+    , toolBar_(nullptr)
+    , reloadAction_(nullptr)
+    , openAction_(nullptr)
+    , revertAction_(nullptr) {
 
-    BOOST_LOG_SEV(lg(), info) << "Creating account history widget for: "
-                              << username_.toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Creating account history widget for: " << username_.toStdString();
 
     ui_->setupUi(this);
     WidgetUtils::setupComboBoxes(this);
 
     setupToolbar();
 
-    connect(ui_->versionListWidget, &QTableWidget::currentCellChanged,
-            this, [this](int currentRow, int, int, int) {
-        onVersionSelected(currentRow);
-    });
+    connect(ui_->versionListWidget,
+            &QTableWidget::currentCellChanged,
+            this,
+            [this](int currentRow, int, int, int) { onVersionSelected(currentRow); });
 
     // Double-click opens the version in read-only mode
-    connect(ui_->versionListWidget, &QTableWidget::cellDoubleClicked,
-            this, [this](int, int) {
+    connect(ui_->versionListWidget, &QTableWidget::cellDoubleClicked, this, [this](int, int) {
         onOpenClicked();
     });
 
@@ -82,8 +85,10 @@ AccountHistoryDialog::AccountHistoryDialog(QString username,
 
     ui_->closeButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
-    connect(ui_->closeButton, &QPushButton::clicked,
-            this, [this]() { if (window()) window()->close(); });
+    connect(ui_->closeButton, &QPushButton::clicked, this, [this]() {
+        if (window())
+            window()->close();
+    });
 
     updateButtonStates();
 }
@@ -101,15 +106,13 @@ AccountHistoryDialog::~AccountHistoryDialog() {
 }
 
 void AccountHistoryDialog::loadHistory() {
-    BOOST_LOG_SEV(lg(), info) << "Loading account history for: "
-                              << username_.toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Loading account history for: " << username_.toStdString();
 
     using HistoryResult = std::expected<iam::messaging::get_account_history_response, std::string>;
     QPointer<AccountHistoryDialog> self = this;
     const auto username = username_.toStdString();
 
-    QFuture<HistoryResult> future =
-        QtConcurrent::run([self, username]() -> HistoryResult {
+    QFuture<HistoryResult> future = QtConcurrent::run([self, username]() -> HistoryResult {
         if (!self->clientManager_ || !self->clientManager_->isConnected()) {
             return std::unexpected("Disconnected from server");
         }
@@ -124,10 +127,9 @@ void AccountHistoryDialog::loadHistory() {
 
     // Use watcher to handle results
     auto* watcher = new QFutureWatcher<HistoryResult>(self);
-    connect(watcher, &QFutureWatcher<HistoryResult>::finished, self,
-        [self, watcher]() {
-
-        if (!self) return;
+    connect(watcher, &QFutureWatcher<HistoryResult>::finished, self, [self, watcher]() {
+        if (!self)
+            return;
         auto result = watcher->result();
         watcher->deleteLater();
 
@@ -150,8 +152,8 @@ void AccountHistoryDialog::loadHistory() {
 }
 
 void AccountHistoryDialog::onHistoryLoaded() {
-    BOOST_LOG_SEV(lg(), info) << "History loaded successfully: "
-                              << history_.versions.size() << " versions";
+    BOOST_LOG_SEV(lg(), info) << "History loaded successfully: " << history_.versions.size()
+                              << " versions";
 
     const QIcon& cachedIcon = getHistoryIcon();
     ui_->versionListWidget->setRowCount(0);
@@ -160,12 +162,10 @@ void AccountHistoryDialog::onHistoryLoaded() {
     for (int i = 0; i < static_cast<int>(history_.versions.size()); ++i) {
         const auto& version = history_.versions[i];
 
-        auto* versionItem =
-            new QTableWidgetItem(QString::number(version.version_number));
+        auto* versionItem = new QTableWidgetItem(QString::number(version.version_number));
         auto* recordedAtItem =
             new QTableWidgetItem(relative_time_helper::format(version.recorded_at));
-        auto* modifiedByItem =
-            new QTableWidgetItem(QString::fromStdString(version.modified_by));
+        auto* modifiedByItem = new QTableWidgetItem(QString::fromStdString(version.modified_by));
 
         versionItem->setIcon(cachedIcon);
 
@@ -179,25 +179,21 @@ void AccountHistoryDialog::onHistoryLoaded() {
 
     if (!history_.versions.empty()) {
         const auto& latest = history_.versions[0];
-        ui_->titleLabel->setText(QString("Account History: %1")
-            .arg(QString::fromStdString(latest.data.username)));
+        ui_->titleLabel->setText(
+            QString("Account History: %1").arg(QString::fromStdString(latest.data.username)));
     }
 
     updateButtonStates();
 
-    emit statusChanged(QString("Loaded %1 versions")
-        .arg(history_.versions.size()));
+    emit statusChanged(QString("Loaded %1 versions").arg(history_.versions.size()));
 }
 
 void AccountHistoryDialog::onHistoryLoadError(const QString& error_msg) {
-    BOOST_LOG_SEV(lg(), error) << "Error loading history: "
-                               << error_msg.toStdString();
+    BOOST_LOG_SEV(lg(), error) << "Error loading history: " << error_msg.toStdString();
 
-    emit errorOccurred(QString("Failed to load account history: %1")
-        .arg(error_msg));
-    MessageBoxHelper::critical(this, "History Load Error",
-        QString("Failed to load account history:\n%1")
-        .arg(error_msg));
+    emit errorOccurred(QString("Failed to load account history: %1").arg(error_msg));
+    MessageBoxHelper::critical(
+        this, "History Load Error", QString("Failed to load account history:\n%1").arg(error_msg));
 }
 
 void AccountHistoryDialog::onVersionSelected(int index) {
@@ -260,25 +256,22 @@ void AccountHistoryDialog::displayFullDetailsTab(int version_index) {
     ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));
 }
 
-#define CHECK_DIFF_STRING(FIELD_NAME, FIELD) \
-    if (current.data.FIELD != previous.data.FIELD) { \
-        diffs.append({FIELD_NAME, { \
-            QString::fromStdString(previous.data.FIELD), \
-            QString::fromStdString(current.data.FIELD) \
-        }}); \
+#define CHECK_DIFF_STRING(FIELD_NAME, FIELD)                          \
+    if (current.data.FIELD != previous.data.FIELD) {                  \
+        diffs.append({FIELD_NAME,                                     \
+                      {QString::fromStdString(previous.data.FIELD),   \
+                       QString::fromStdString(current.data.FIELD)}}); \
     }
 
-#define CHECK_DIFF_BOOL(FIELD_NAME, FIELD) \
-    if (current.data.FIELD != previous.data.FIELD) { \
-        diffs.append({FIELD_NAME, { \
-            previous.data.FIELD ? "Yes" : "No", \
-            current.data.FIELD ? "Yes" : "No" \
-        }}); \
+#define CHECK_DIFF_BOOL(FIELD_NAME, FIELD)                                                       \
+    if (current.data.FIELD != previous.data.FIELD) {                                             \
+        diffs.append({FIELD_NAME,                                                                \
+                      {previous.data.FIELD ? "Yes" : "No", current.data.FIELD ? "Yes" : "No"}}); \
     }
 
-AccountHistoryDialog::DiffResult AccountHistoryDialog::
-calculateDiff(const iam::domain::account_version& current,
-    const iam::domain::account_version& previous) {
+AccountHistoryDialog::DiffResult
+AccountHistoryDialog::calculateDiff(const iam::domain::account_version& current,
+                                    const iam::domain::account_version& previous) {
 
     DiffResult diffs;
 
@@ -299,31 +292,27 @@ void AccountHistoryDialog::setupToolbar() {
 
     // Create Reload action
     reloadAction_ = new QAction("Reload", this);
-    reloadAction_->setIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowClockwise, IconUtils::DefaultIconColor));
+    reloadAction_->setIcon(
+        IconUtils::createRecoloredIcon(Icon::ArrowClockwise, IconUtils::DefaultIconColor));
     reloadAction_->setToolTip("Reload history from server");
-    connect(reloadAction_, &QAction::triggered, this,
-        &AccountHistoryDialog::onReloadClicked);
+    connect(reloadAction_, &QAction::triggered, this, &AccountHistoryDialog::onReloadClicked);
     toolBar_->addAction(reloadAction_);
 
     toolBar_->addSeparator();
 
     // Create Open action
     openAction_ = new QAction("Open", this);
-    openAction_->setIcon(IconUtils::createRecoloredIcon(
-        Icon::Edit, IconUtils::DefaultIconColor));
+    openAction_->setIcon(IconUtils::createRecoloredIcon(Icon::Edit, IconUtils::DefaultIconColor));
     openAction_->setToolTip("Open this version in read-only mode");
-    connect(openAction_, &QAction::triggered, this,
-        &AccountHistoryDialog::onOpenClicked);
+    connect(openAction_, &QAction::triggered, this, &AccountHistoryDialog::onOpenClicked);
     toolBar_->addAction(openAction_);
 
     // Create Revert action
     revertAction_ = new QAction("Revert", this);
-    revertAction_->setIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
+    revertAction_->setIcon(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
+                                                          IconUtils::DefaultIconColor));
     revertAction_->setToolTip("Revert account to this version");
-    connect(revertAction_, &QAction::triggered, this,
-        &AccountHistoryDialog::onRevertClicked);
+    connect(revertAction_, &QAction::triggered, this, &AccountHistoryDialog::onRevertClicked);
     toolBar_->addAction(revertAction_);
 
     // Add toolbar to layout
@@ -334,8 +323,7 @@ void AccountHistoryDialog::setupToolbar() {
 
 void AccountHistoryDialog::updateButtonStates() {
     const int index = selectedVersionIndex();
-    const bool hasSelection = index >= 0 &&
-        index < static_cast<int>(history_.versions.size());
+    const bool hasSelection = index >= 0 && index < static_cast<int>(history_.versions.size());
 
     if (openAction_)
         openAction_->setEnabled(hasSelection);
@@ -354,8 +342,8 @@ void AccountHistoryDialog::onOpenClicked() {
         return;
 
     const auto& version = history_.versions[index];
-    BOOST_LOG_SEV(lg(), info) << "Opening account version "
-                              << version.version_number << " in read-only mode";
+    BOOST_LOG_SEV(lg(), info) << "Opening account version " << version.version_number
+                              << " in read-only mode";
 
     emit openVersionRequested(version.data, version.version_number);
 }
@@ -371,7 +359,9 @@ void AccountHistoryDialog::onRevertClicked() {
     // If this is the oldest version, there's no previous version to revert to
     if (index == static_cast<int>(history_.versions.size()) - 1) {
         BOOST_LOG_SEV(lg(), warn) << "Cannot revert oldest version - no previous version exists";
-        MessageBoxHelper::information(this, "Cannot Revert",
+        MessageBoxHelper::information(
+            this,
+            "Cannot Revert",
             "This is the oldest version. There is no previous version to revert to.");
         return;
     }
@@ -379,12 +369,13 @@ void AccountHistoryDialog::onRevertClicked() {
     // The "previous" version is the one we want to revert TO (the "old" side in the diff)
     const auto& previous = history_.versions[index + 1];
 
-    BOOST_LOG_SEV(lg(), info) << "Requesting revert from version "
-                              << current.version_number << " to version "
-                              << previous.version_number;
+    BOOST_LOG_SEV(lg(), info) << "Requesting revert from version " << current.version_number
+                              << " to version " << previous.version_number;
 
     // Confirm with user
-    auto reply = MessageBoxHelper::question(this, "Revert Account",
+    auto reply = MessageBoxHelper::question(
+        this,
+        "Revert Account",
         QString("Are you sure you want to revert '%1' from version %2 back to version %3?\n\n"
                 "This will create a new version with the data from version %3.")
             .arg(username_)
@@ -422,16 +413,14 @@ QSize AccountHistoryDialog::sizeHint() const {
 
     // Return the maximum of the base size (to accommodate large text/UI
     // elements) and the defined minimum size.
-    return { qMax(baseSize.width(), minimumWidth),
-             qMax(baseSize.height(), minimumHeight) };
+    return {qMax(baseSize.width(), minimumWidth), qMax(baseSize.height(), minimumHeight)};
 }
 
 void AccountHistoryDialog::markAsStale() {
-    BOOST_LOG_SEV(lg(), info) << "Account history marked as stale for: "
-                              << username_.toStdString() << ", reloading...";
+    BOOST_LOG_SEV(lg(), info) << "Account history marked as stale for: " << username_.toStdString()
+                              << ", reloading...";
 
-    emit statusChanged(QString("Account %1 was modified - reloading history...")
-        .arg(username_));
+    emit statusChanged(QString("Account %1 was modified - reloading history...").arg(username_));
 
     // Reload history data
     loadHistory();

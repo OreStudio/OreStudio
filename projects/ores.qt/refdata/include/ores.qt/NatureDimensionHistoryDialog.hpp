@@ -20,12 +20,12 @@
 #ifndef ORES_QT_NATURE_DIMENSION_HISTORY_DIALOG_HPP
 #define ORES_QT_NATURE_DIMENSION_HISTORY_DIALOG_HPP
 
-#include <QWidget>
-#include <QToolBar>
-#include <QTableWidget>
-#include "ores.qt/ClientManager.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.dq.api/domain/nature_dimension.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include <QTableWidget>
+#include <QToolBar>
+#include <QWidget>
 
 namespace Ui {
 class NatureDimensionHistoryDialog;
@@ -37,8 +37,7 @@ class NatureDimensionHistoryDialog final : public QWidget {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.nature_dimension_history_dialog";
+    inline static std::string_view logger_name = "ores.qt.nature_dimension_history_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -47,10 +46,9 @@ private:
     }
 
 public:
-    explicit NatureDimensionHistoryDialog(
-        const QString& code,
-        ClientManager* clientManager,
-        QWidget* parent = nullptr);
+    explicit NatureDimensionHistoryDialog(const QString& code,
+                                          ClientManager* clientManager,
+                                          QWidget* parent = nullptr);
     ~NatureDimensionHistoryDialog() override;
 
     void loadHistory();

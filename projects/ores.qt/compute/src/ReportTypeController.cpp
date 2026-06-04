@@ -19,32 +19,29 @@
  */
 #include "ores.qt/ReportTypeController.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
-
+#include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/ReportTypeDetailDialog.hpp"
+#include "ores.qt/ReportTypeHistoryDialog.hpp"
+#include "ores.qt/ReportTypeMdiWindow.hpp"
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/ReportTypeMdiWindow.hpp"
-#include "ores.qt/ReportTypeDetailDialog.hpp"
-#include "ores.qt/ReportTypeHistoryDialog.hpp"
-#include "ores.qt/DetachableMdiSubWindow.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-ReportTypeController::ReportTypeController(
-    QMainWindow* mainWindow,
-    QMdiArea* mdiArea,
-    ClientManager* clientManager,
-    ChangeReasonCache* changeReasonCache,
-    const QString& username,
-    QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username,
-          std::string_view{}, parent),
-      changeReasonCache_(changeReasonCache),
-      listWindow_(nullptr),
-      listMdiSubWindow_(nullptr) {
+ReportTypeController::ReportTypeController(QMainWindow* mainWindow,
+                                           QMdiArea* mdiArea,
+                                           ClientManager* clientManager,
+                                           ChangeReasonCache* changeReasonCache,
+                                           const QString& username,
+                                           QObject* parent)
+    : EntityController(mainWindow, mdiArea, clientManager, username, std::string_view{}, parent)
+    , changeReasonCache_(changeReasonCache)
+    , listWindow_(nullptr)
+    , listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "ReportTypeController created";
 }
@@ -62,23 +59,33 @@ void ReportTypeController::showListWindow() {
     listWindow_ = new ReportTypeMdiWindow(clientManager_, username_);
 
     // Connect signals
-    connect(listWindow_, &ReportTypeMdiWindow::statusChanged,
-            this, &ReportTypeController::statusMessage);
-    connect(listWindow_, &ReportTypeMdiWindow::errorOccurred,
-            this, &ReportTypeController::errorMessage);
-    connect(listWindow_, &ReportTypeMdiWindow::showTypeDetails,
-            this, &ReportTypeController::onShowDetails);
-    connect(listWindow_, &ReportTypeMdiWindow::addNewRequested,
-            this, &ReportTypeController::onAddNewRequested);
-    connect(listWindow_, &ReportTypeMdiWindow::showTypeHistory,
-            this, &ReportTypeController::onShowHistory);
+    connect(listWindow_,
+            &ReportTypeMdiWindow::statusChanged,
+            this,
+            &ReportTypeController::statusMessage);
+    connect(listWindow_,
+            &ReportTypeMdiWindow::errorOccurred,
+            this,
+            &ReportTypeController::errorMessage);
+    connect(listWindow_,
+            &ReportTypeMdiWindow::showTypeDetails,
+            this,
+            &ReportTypeController::onShowDetails);
+    connect(listWindow_,
+            &ReportTypeMdiWindow::addNewRequested,
+            this,
+            &ReportTypeController::onAddNewRequested);
+    connect(listWindow_,
+            &ReportTypeMdiWindow::showTypeHistory,
+            this,
+            &ReportTypeController::onShowHistory);
 
     // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Report Types");
-    listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Chart, IconUtils::DefaultIconColor));
+    listMdiSubWindow_->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -90,12 +97,16 @@ void ReportTypeController::showListWindow() {
     register_detachable_window(listMdiSubWindow_);
 
     // Cleanup when closed
-    connect(listMdiSubWindow_, &QObject::destroyed, this, [self = QPointer<ReportTypeController>(this), key]() {
-        if (!self) return;
-        self->untrack_window(key);
-        self->listWindow_ = nullptr;
-        self->listMdiSubWindow_ = nullptr;
-    });
+    connect(listMdiSubWindow_,
+            &QObject::destroyed,
+            this,
+            [self = QPointer<ReportTypeController>(this), key]() {
+                if (!self)
+                    return;
+                self->untrack_window(key);
+                self->listWindow_ = nullptr;
+                self->listMdiSubWindow_ = nullptr;
+            });
 
     BOOST_LOG_SEV(lg(), debug) << "Report Type list window created";
 }
@@ -122,8 +133,7 @@ void ReportTypeController::reloadListWindow() {
     }
 }
 
-void ReportTypeController::onShowDetails(
-    const reporting::domain::report_type& type) {
+void ReportTypeController::onShowDetails(const reporting::domain::report_type& type) {
     BOOST_LOG_SEV(lg(), debug) << "Show details for: " << type.code;
     showDetailWindow(type);
 }
@@ -133,8 +143,7 @@ void ReportTypeController::onAddNewRequested() {
     showAddWindow();
 }
 
-void ReportTypeController::onShowHistory(
-    const reporting::domain::report_type& type) {
+void ReportTypeController::onShowHistory(const reporting::domain::report_type& type) {
     BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << type.code;
     showHistoryWindow(QString::fromStdString(type.code));
 }
@@ -149,23 +158,30 @@ void ReportTypeController::showAddWindow() {
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
 
-    connect(detailDialog, &ReportTypeDetailDialog::statusMessage,
-            this, &ReportTypeController::statusMessage);
-    connect(detailDialog, &ReportTypeDetailDialog::errorMessage,
-            this, &ReportTypeController::errorMessage);
-    connect(detailDialog, &ReportTypeDetailDialog::typeSaved,
-            this, [self = QPointer<ReportTypeController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Report Type saved: " << code.toStdString();
-        self->handleEntitySaved();
-    });
+    connect(detailDialog,
+            &ReportTypeDetailDialog::statusMessage,
+            this,
+            &ReportTypeController::statusMessage);
+    connect(detailDialog,
+            &ReportTypeDetailDialog::errorMessage,
+            this,
+            &ReportTypeController::errorMessage);
+    connect(detailDialog,
+            &ReportTypeDetailDialog::typeSaved,
+            this,
+            [self = QPointer<ReportTypeController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Report Type saved: " << code.toStdString();
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Report Type");
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Chart, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -173,8 +189,7 @@ void ReportTypeController::showAddWindow() {
     show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
-void ReportTypeController::showDetailWindow(
-    const reporting::domain::report_type& type) {
+void ReportTypeController::showDetailWindow(const reporting::domain::report_type& type) {
 
     const QString identifier = QString::fromStdString(type.code);
     const QString key = build_window_key("details", identifier);
@@ -194,37 +209,46 @@ void ReportTypeController::showDetailWindow(
     detailDialog->setCreateMode(false);
     detailDialog->setType(type);
 
-    connect(detailDialog, &ReportTypeDetailDialog::statusMessage,
-            this, &ReportTypeController::statusMessage);
-    connect(detailDialog, &ReportTypeDetailDialog::errorMessage,
-            this, &ReportTypeController::errorMessage);
-    connect(detailDialog, &ReportTypeDetailDialog::typeSaved,
-            this, [self = QPointer<ReportTypeController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Report Type saved: " << code.toStdString();
-        self->handleEntitySaved();
-    });
-    connect(detailDialog, &ReportTypeDetailDialog::typeDeleted,
-            this, [self = QPointer<ReportTypeController>(this), key](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Report Type deleted: " << code.toStdString();
-        self->handleEntityDeleted();
-    });
+    connect(detailDialog,
+            &ReportTypeDetailDialog::statusMessage,
+            this,
+            &ReportTypeController::statusMessage);
+    connect(detailDialog,
+            &ReportTypeDetailDialog::errorMessage,
+            this,
+            &ReportTypeController::errorMessage);
+    connect(detailDialog,
+            &ReportTypeDetailDialog::typeSaved,
+            this,
+            [self = QPointer<ReportTypeController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Report Type saved: " << code.toStdString();
+                self->handleEntitySaved();
+            });
+    connect(detailDialog,
+            &ReportTypeDetailDialog::typeDeleted,
+            this,
+            [self = QPointer<ReportTypeController>(this), key](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Report Type deleted: " << code.toStdString();
+                self->handleEntityDeleted();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Report Type: %1").arg(identifier));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Chart, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
 
     // Track window
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<ReportTypeController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, key]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, key]() {
         if (self) {
             self->untrack_window(key);
         }
@@ -235,37 +259,44 @@ void ReportTypeController::showDetailWindow(
 }
 
 void ReportTypeController::showHistoryWindow(const QString& code) {
-    BOOST_LOG_SEV(lg(), info) << "Opening history window for report type: "
-                              << code.toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Opening history window for report type: " << code.toStdString();
 
     const QString windowKey = build_window_key("history", code);
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
-        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: "
-                                  << code.toStdString();
+        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: " << code.toStdString();
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
-                              << code.toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << code.toStdString();
 
     auto* historyDialog = new ReportTypeHistoryDialog(code, clientManager_, mainWindow_);
 
-    connect(historyDialog, &ReportTypeHistoryDialog::statusChanged,
-            this, [self = QPointer<ReportTypeController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(historyDialog, &ReportTypeHistoryDialog::errorOccurred,
-            this, [self = QPointer<ReportTypeController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
-    connect(historyDialog, &ReportTypeHistoryDialog::revertVersionRequested,
-            this, &ReportTypeController::onRevertVersion);
-    connect(historyDialog, &ReportTypeHistoryDialog::openVersionRequested,
-            this, &ReportTypeController::onOpenVersion);
+    connect(historyDialog,
+            &ReportTypeHistoryDialog::statusChanged,
+            this,
+            [self = QPointer<ReportTypeController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(historyDialog,
+            &ReportTypeHistoryDialog::errorOccurred,
+            this,
+            [self = QPointer<ReportTypeController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
+    connect(historyDialog,
+            &ReportTypeHistoryDialog::revertVersionRequested,
+            this,
+            &ReportTypeController::onRevertVersion);
+    connect(historyDialog,
+            &ReportTypeHistoryDialog::openVersionRequested,
+            this,
+            &ReportTypeController::onOpenVersion);
 
     // Load history data
     historyDialog->loadHistory();
@@ -274,16 +305,15 @@ void ReportTypeController::showHistoryWindow(const QString& code) {
     historyWindow->setAttribute(Qt::WA_DeleteOnClose);
     historyWindow->setWidget(historyDialog);
     historyWindow->setWindowTitle(QString("Report Type History: %1").arg(code));
-    historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    historyWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     // Track this history window
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
 
     QPointer<ReportTypeController> self = this;
-    connect(historyWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -292,14 +322,14 @@ void ReportTypeController::showHistoryWindow(const QString& code) {
     show_managed_window(historyWindow, listMdiSubWindow_);
 }
 
-void ReportTypeController::onOpenVersion(
-    const reporting::domain::report_type& type, int versionNumber) {
+void ReportTypeController::onOpenVersion(const reporting::domain::report_type& type,
+                                         int versionNumber) {
     BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
                               << " for report type: " << type.code;
 
     const QString code = QString::fromStdString(type.code);
-    const QString windowKey = build_window_key("version", QString("%1_v%2")
-        .arg(code).arg(versionNumber));
+    const QString windowKey =
+        build_window_key("version", QString("%1_v%2").arg(code).arg(versionNumber));
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
@@ -315,31 +345,36 @@ void ReportTypeController::onOpenVersion(
     detailDialog->setType(type);
     detailDialog->setReadOnly(true);
 
-    connect(detailDialog, &ReportTypeDetailDialog::statusMessage,
-            this, [self = QPointer<ReportTypeController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(detailDialog, &ReportTypeDetailDialog::errorMessage,
-            this, [self = QPointer<ReportTypeController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
+    connect(detailDialog,
+            &ReportTypeDetailDialog::statusMessage,
+            this,
+            [self = QPointer<ReportTypeController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(detailDialog,
+            &ReportTypeDetailDialog::errorMessage,
+            this,
+            [self = QPointer<ReportTypeController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Report Type: %1 (Version %2)")
-        .arg(code).arg(versionNumber));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("Report Type: %1 (Version %2)").arg(code).arg(versionNumber));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     track_window(windowKey, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<ReportTypeController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -349,10 +384,8 @@ void ReportTypeController::onOpenVersion(
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
-void ReportTypeController::onRevertVersion(
-    const reporting::domain::report_type& type) {
-    BOOST_LOG_SEV(lg(), info) << "Reverting report type to version: "
-                              << type.version;
+void ReportTypeController::onRevertVersion(const reporting::domain::report_type& type) {
+    BOOST_LOG_SEV(lg(), info) << "Reverting report type to version: " << type.version;
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new ReportTypeDetailDialog(mainWindow_);
@@ -363,25 +396,33 @@ void ReportTypeController::onRevertVersion(
     detailDialog->setType(type);
     detailDialog->setCreateMode(false);
 
-    connect(detailDialog, &ReportTypeDetailDialog::statusMessage,
-            this, &ReportTypeController::statusMessage);
-    connect(detailDialog, &ReportTypeDetailDialog::errorMessage,
-            this, &ReportTypeController::errorMessage);
-    connect(detailDialog, &ReportTypeDetailDialog::typeSaved,
-            this, [self = QPointer<ReportTypeController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Report Type reverted: " << code.toStdString();
-        emit self->statusMessage(QString("Report Type '%1' reverted successfully").arg(code));
-        self->handleEntitySaved();
-    });
+    connect(detailDialog,
+            &ReportTypeDetailDialog::statusMessage,
+            this,
+            &ReportTypeController::statusMessage);
+    connect(detailDialog,
+            &ReportTypeDetailDialog::errorMessage,
+            this,
+            &ReportTypeController::errorMessage);
+    connect(detailDialog,
+            &ReportTypeDetailDialog::typeSaved,
+            this,
+            [self = QPointer<ReportTypeController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Report Type reverted: " << code.toStdString();
+                emit self->statusMessage(
+                    QString("Report Type '%1' reverted successfully").arg(code));
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Revert Report Type: %1")
-        .arg(QString::fromStdString(type.code)));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("Revert Report Type: %1").arg(QString::fromStdString(type.code)));
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
+                                                               IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 

@@ -18,23 +18,22 @@
  *
  */
 #include "ores.qt/SystemProvisionerWizard.hpp"
+#include "ores.iam.api/messaging/bootstrap_protocol.hpp"
+#include "ores.qt/ClientManager.hpp"
 #include "ores.qt/FontUtils.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/PasswordMatchIndicator.hpp"
-
-#include <QVBoxLayout>
-#include <QHBoxLayout>
+#include "ores.qt/WidgetUtils.hpp"
 #include <QFormLayout>
+#include <QFutureWatcher>
 #include <QGroupBox>
+#include <QHBoxLayout>
 #include <QMessageBox>
 #include <QRegularExpression>
 #include <QRegularExpressionValidator>
+#include <QVBoxLayout>
 #include <QtConcurrent>
-#include <QFutureWatcher>
 #include <boost/uuid/uuid_io.hpp>
-#include "ores.qt/ClientManager.hpp"
-#include "ores.qt/WidgetUtils.hpp"
-#include "ores.iam.api/messaging/bootstrap_protocol.hpp"
 
 namespace ores::qt {
 
@@ -44,15 +43,12 @@ using namespace ores::logging;
 // SystemProvisionerWizard (Main Wizard)
 // ============================================================================
 
-SystemProvisionerWizard::SystemProvisionerWizard(
-    ClientManager* clientManager,
-    QWidget* parent)
-    : QWizard(parent),
-      clientManager_(clientManager) {
+SystemProvisionerWizard::SystemProvisionerWizard(ClientManager* clientManager, QWidget* parent)
+    : QWizard(parent)
+    , clientManager_(clientManager) {
 
     setWindowTitle(tr("New System Provisioner"));
-    setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Settings, IconUtils::DefaultIconColor));
+    setWindowIcon(IconUtils::createRecoloredIcon(Icon::Settings, IconUtils::DefaultIconColor));
     setMinimumSize(900, 700);
     resize(900, 700);
 
@@ -77,8 +73,9 @@ void SystemProvisionerWizard::setupPages() {
     setStartId(Page_Welcome);
 }
 
-void SystemProvisionerWizard::setAdminCredentials(
-    const QString& username, const QString& email, const QString& password) {
+void SystemProvisionerWizard::setAdminCredentials(const QString& username,
+                                                  const QString& email,
+                                                  const QString& password) {
 
     adminUsername_ = username;
     adminEmail_ = email;
@@ -90,7 +87,8 @@ void SystemProvisionerWizard::setAdminCredentials(
 // ============================================================================
 
 WelcomePage::WelcomePage(SystemProvisionerWizard* wizard)
-    : QWizardPage(wizard), wizard_(wizard) {
+    : QWizardPage(wizard)
+    , wizard_(wizard) {
 
     setTitle(tr("Welcome"));
     setupUI();
@@ -111,8 +109,7 @@ void WelcomePage::setupUI() {
     }
 
     // Welcome header
-    auto* welcomeLabel = new QLabel(
-        tr("Welcome to <b>%1</b>").arg(hostname), this);
+    auto* welcomeLabel = new QLabel(tr("Welcome to <b>%1</b>").arg(hostname), this);
     welcomeLabel->setStyleSheet("font-size: 18pt; margin-bottom: 10px;");
     welcomeLabel->setAlignment(Qt::AlignCenter);
     layout->addWidget(welcomeLabel);
@@ -132,15 +129,14 @@ void WelcomePage::setupUI() {
     auto* stepsLabel = new QLabel(this);
     stepsLabel->setWordWrap(true);
     stepsLabel->setTextFormat(Qt::RichText);
-    stepsLabel->setText(
-        tr("<ol>"
-           "<li><b>Create Administrator Account</b> - Set up the initial admin "
-           "user who will have full access to manage the system.</li>"
-           "<li><b>Choose Setup Mode</b> - Select single-tenant or "
-           "multi-tenant configuration.</li>"
-           "<li><b>Create First Tenant</b> - Configure and provision the "
-           "first tenant with its own admin account.</li>"
-           "</ol>"));
+    stepsLabel->setText(tr("<ol>"
+                           "<li><b>Create Administrator Account</b> - Set up the initial admin "
+                           "user who will have full access to manage the system.</li>"
+                           "<li><b>Choose Setup Mode</b> - Select single-tenant or "
+                           "multi-tenant configuration.</li>"
+                           "<li><b>Create First Tenant</b> - Configure and provision the "
+                           "first tenant with its own admin account.</li>"
+                           "</ol>"));
     layout->addWidget(stepsLabel);
 
     layout->addStretch();
@@ -148,11 +144,10 @@ void WelcomePage::setupUI() {
     // Info box
     auto* infoBox = new QGroupBox(tr("Note"), this);
     auto* infoLayout = new QVBoxLayout(infoBox);
-    auto* infoLabel = new QLabel(
-        tr("This wizard only appears during initial system setup. Once "
-           "complete, you can provision additional tenants from the "
-           "Tenants list window."),
-        this);
+    auto* infoLabel = new QLabel(tr("This wizard only appears during initial system setup. Once "
+                                    "complete, you can provision additional tenants from the "
+                                    "Tenants list window."),
+                                 this);
     infoLabel->setWordWrap(true);
     infoLayout->addWidget(infoLabel);
     layout->addWidget(infoBox);
@@ -163,7 +158,8 @@ void WelcomePage::setupUI() {
 // ============================================================================
 
 AdminAccountPage::AdminAccountPage(SystemProvisionerWizard* wizard)
-    : QWizardPage(wizard), wizard_(wizard) {
+    : QWizardPage(wizard)
+    , wizard_(wizard) {
 
     setTitle(tr("Create Administrator Account"));
     setSubTitle(tr("Set up the initial administrator account for this system. "
@@ -224,8 +220,8 @@ void AdminAccountPage::setupUI() {
     layout->addStretch();
 
     // Connect signals
-    connect(showPasswordCheckbox_, &QCheckBox::toggled,
-            this, &AdminAccountPage::onShowPasswordToggled);
+    connect(
+        showPasswordCheckbox_, &QCheckBox::toggled, this, &AdminAccountPage::onShowPasswordToggled);
     PasswordMatchIndicator::connectFields(passwordEdit_, confirmPasswordEdit_);
 
     // Real-time email validation: red border until format is valid
@@ -237,18 +233,18 @@ void AdminAccountPage::setupUI() {
             return;
         }
         const bool valid = emailBorderRe.match(text.trimmed()).hasMatch();
-        emailEdit_->setStyleSheet(valid ? QString{}
-            : QStringLiteral("QLineEdit { border: 1px solid #cc0000; }"));
+        emailEdit_->setStyleSheet(
+            valid ? QString{} : QStringLiteral("QLineEdit { border: 1px solid #cc0000; }"));
     });
 
     // Info box
     auto* infoBox = new QGroupBox(tr("Important"), this);
     auto* infoLayout = new QVBoxLayout(infoBox);
-    auto* infoLabel = new QLabel(
-        tr("This administrator account will be the first user with full system "
-           "access. Keep these credentials secure. You can create additional "
-           "accounts and manage roles after the system is provisioned."),
-        this);
+    auto* infoLabel =
+        new QLabel(tr("This administrator account will be the first user with full system "
+                      "access. Keep these credentials secure. You can create additional "
+                      "accounts and manage roles after the system is provisioned."),
+                   this);
     infoLabel->setWordWrap(true);
     infoLayout->addWidget(infoLabel);
     layout->addWidget(infoBox);
@@ -308,9 +304,8 @@ bool AdminAccountPage::validatePage() {
     }
     QRegularExpression usernameRe("^[a-zA-Z][a-zA-Z0-9_]{2,49}$");
     if (!usernameRe.match(username).hasMatch()) {
-        validationLabel_->setText(
-            tr("Username must start with a letter and contain only letters, "
-               "numbers, and underscores."));
+        validationLabel_->setText(tr("Username must start with a letter and contain only letters, "
+                                     "numbers, and underscores."));
         usernameEdit_->setFocus();
         return false;
     }
@@ -321,8 +316,7 @@ bool AdminAccountPage::validatePage() {
         emailEdit_->setFocus();
         return false;
     }
-    static const QRegularExpression emailRe(
-        R"(^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9._-]+\.[a-zA-Z]{2,}$)");
+    static const QRegularExpression emailRe(R"(^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9._-]+\.[a-zA-Z]{2,}$)");
     if (!emailRe.match(email).hasMatch()) {
         validationLabel_->setText(tr("Please enter a valid email address."));
         emailEdit_->setFocus();
@@ -352,44 +346,38 @@ bool AdminAccountPage::validatePage() {
     wizard_->setAdminCredentials(username, email, password);
 
     // Create the administrator account
-    BOOST_LOG_SEV(lg(), info) << "Creating administrator account: "
-                               << username.toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Creating administrator account: " << username.toStdString();
 
     iam::messaging::create_initial_admin_request adminRequest;
     adminRequest.principal = username.toStdString();
     adminRequest.password = password.toStdString();
     adminRequest.email = email.toStdString();
 
-    auto adminResult = wizard_->clientManager()->process_request(
-        std::move(adminRequest));
+    auto adminResult = wizard_->clientManager()->process_request(std::move(adminRequest));
 
     if (!adminResult) {
-        validationLabel_->setText(
-            tr("Failed to communicate with server. Please check your "
-               "connection and try again."));
+        validationLabel_->setText(tr("Failed to communicate with server. Please check your "
+                                     "connection and try again."));
         return false;
     }
 
     if (!adminResult->success) {
-        validationLabel_->setText(
-            QString::fromStdString(adminResult->error_message));
+        validationLabel_->setText(QString::fromStdString(adminResult->error_message));
         return false;
     }
 
     wizard_->setAdminAccountId(adminResult->account_id);
-    BOOST_LOG_SEV(lg(), info) << "Administrator account created: "
-        << adminResult->account_id;
+    BOOST_LOG_SEV(lg(), info) << "Administrator account created: " << adminResult->account_id;
 
     // Login as the new administrator
     BOOST_LOG_SEV(lg(), info) << "Logging in as administrator...";
 
-    auto loginResult = wizard_->clientManager()->login(
-        username.toStdString(), password.toStdString());
+    auto loginResult =
+        wizard_->clientManager()->login(username.toStdString(), password.toStdString());
 
     if (!loginResult.success) {
         validationLabel_->setText(
-            tr("Account created but login failed: %1").arg(
-                loginResult.error_message));
+            tr("Account created but login failed: %1").arg(loginResult.error_message));
         return false;
     }
 
@@ -410,7 +398,8 @@ void AdminAccountPage::onShowPasswordToggled(bool checked) {
 // ============================================================================
 
 SetupModePage::SetupModePage(SystemProvisionerWizard* wizard)
-    : QWizardPage(wizard), wizard_(wizard) {
+    : QWizardPage(wizard)
+    , wizard_(wizard) {
 
     setTitle(tr("Setup Mode"));
     setSubTitle(tr("Choose how you want to configure your ORE Studio instance."));
@@ -429,11 +418,11 @@ void SetupModePage::setupUI() {
     singleTenantRadio_->setStyleSheet("font-weight: bold; font-size: 11pt;");
     layout->addWidget(singleTenantRadio_);
 
-    auto* singleDesc = new QLabel(
-        tr("Best for evaluation, development, or single-organisation deployments. "
-           "Creates a default tenant with pre-configured settings. You can always "
-           "add more tenants later."),
-        this);
+    auto* singleDesc =
+        new QLabel(tr("Best for evaluation, development, or single-organisation deployments. "
+                      "Creates a default tenant with pre-configured settings. You can always "
+                      "add more tenants later."),
+                   this);
     singleDesc->setWordWrap(true);
     singleDesc->setContentsMargins(25, 0, 0, 15);
     layout->addWidget(singleDesc);
@@ -443,11 +432,11 @@ void SetupModePage::setupUI() {
     multiTenantRadio_->setStyleSheet("font-weight: bold; font-size: 11pt;");
     layout->addWidget(multiTenantRadio_);
 
-    auto* multiDesc = new QLabel(
-        tr("For production deployments serving multiple organisations. "
-           "You will configure the first tenant's details on the next page. "
-           "Additional tenants can be onboarded from the Tenants window."),
-        this);
+    auto* multiDesc =
+        new QLabel(tr("For production deployments serving multiple organisations. "
+                      "You will configure the first tenant's details on the next page. "
+                      "Additional tenants can be onboarded from the Tenants window."),
+                   this);
     multiDesc->setWordWrap(true);
     multiDesc->setContentsMargins(25, 0, 0, 15);
     layout->addWidget(multiDesc);
@@ -479,9 +468,9 @@ bool SetupModePage::validatePage() {
 // ProvisionerTenantDetailsPage
 // ============================================================================
 
-ProvisionerTenantDetailsPage::ProvisionerTenantDetailsPage(
-    SystemProvisionerWizard* wizard)
-    : QWizardPage(wizard), wizard_(wizard) {
+ProvisionerTenantDetailsPage::ProvisionerTenantDetailsPage(SystemProvisionerWizard* wizard)
+    : QWizardPage(wizard)
+    , wizard_(wizard) {
 
     setTitle(tr("Tenant Details"));
     setSubTitle(tr("Configure the first tenant for your ORE Studio instance."));
@@ -506,8 +495,8 @@ void ProvisionerTenantDetailsPage::setupUI() {
     codeEdit_ = new QLineEdit(this);
     codeEdit_->setPlaceholderText(tr("Auto-generated from name"));
     codeEdit_->setMaxLength(50);
-    auto* codeValidator = new QRegularExpressionValidator(
-        QRegularExpression("^[a-z][a-z0-9_]{0,49}$"), this);
+    auto* codeValidator =
+        new QRegularExpressionValidator(QRegularExpression("^[a-z][a-z0-9_]{0,49}$"), this);
     codeEdit_->setValidator(codeValidator);
     formLayout->addRow(tr("Code:"), codeEdit_);
 
@@ -540,16 +529,13 @@ void ProvisionerTenantDetailsPage::setupUI() {
     layout->addStretch();
 
     // Auto-generate code from name, then hostname from code
-    connect(nameEdit_, &QLineEdit::textChanged,
-            this, &ProvisionerTenantDetailsPage::onNameChanged);
-    connect(codeEdit_, &QLineEdit::textChanged,
-            this, &ProvisionerTenantDetailsPage::onCodeChanged);
+    connect(nameEdit_, &QLineEdit::textChanged, this, &ProvisionerTenantDetailsPage::onNameChanged);
+    connect(codeEdit_, &QLineEdit::textChanged, this, &ProvisionerTenantDetailsPage::onCodeChanged);
 
     // Track manual edits to break the auto-fill chain
-    connect(codeEdit_, &QLineEdit::textEdited,
-            this, [this]() { codeManuallyEdited_ = true; });
-    connect(hostnameEdit_, &QLineEdit::textEdited,
-            this, [this]() { hostnameManuallyEdited_ = true; });
+    connect(codeEdit_, &QLineEdit::textEdited, this, [this]() { codeManuallyEdited_ = true; });
+    connect(
+        hostnameEdit_, &QLineEdit::textEdited, this, [this]() { hostnameManuallyEdited_ = true; });
 
     // Register required fields
     registerField("tenantName*", nameEdit_);
@@ -572,7 +558,8 @@ void ProvisionerTenantDetailsPage::initializePage() {
     }
     if (!wizard_->tenantType().isEmpty()) {
         int idx = typeCombo_->findText(wizard_->tenantType());
-        if (idx >= 0) typeCombo_->setCurrentIndex(idx);
+        if (idx >= 0)
+            typeCombo_->setCurrentIndex(idx);
     }
     if (hostnameEdit_->text().isEmpty() && !wizard_->tenantHostname().isEmpty()) {
         hostnameEdit_->setText(wizard_->tenantHostname());
@@ -637,9 +624,8 @@ bool ProvisionerTenantDetailsPage::validatePage() {
 
     QRegularExpression codeRe("^[a-z][a-z0-9_]{0,49}$");
     if (!codeRe.match(code).hasMatch()) {
-        validationLabel_->setText(
-            tr("Code must start with a lowercase letter and contain only "
-               "lowercase letters, numbers, and underscores."));
+        validationLabel_->setText(tr("Code must start with a lowercase letter and contain only "
+                                     "lowercase letters, numbers, and underscores."));
         codeEdit_->setFocus();
         return false;
     }
@@ -670,9 +656,9 @@ bool ProvisionerTenantDetailsPage::validatePage() {
 // ProvisionerTenantAdminPage
 // ============================================================================
 
-ProvisionerTenantAdminPage::ProvisionerTenantAdminPage(
-    SystemProvisionerWizard* wizard)
-    : QWizardPage(wizard), wizard_(wizard) {
+ProvisionerTenantAdminPage::ProvisionerTenantAdminPage(SystemProvisionerWizard* wizard)
+    : QWizardPage(wizard)
+    , wizard_(wizard) {
 
     setTitle(tr("Tenant Administrator Account"));
     setSubTitle(tr("Create the initial administrator account for the new tenant."));
@@ -730,8 +716,10 @@ void ProvisionerTenantAdminPage::setupUI() {
 
     layout->addStretch();
 
-    connect(showPasswordCheck_, &QCheckBox::toggled,
-            this, &ProvisionerTenantAdminPage::onShowPasswordToggled);
+    connect(showPasswordCheck_,
+            &QCheckBox::toggled,
+            this,
+            &ProvisionerTenantAdminPage::onShowPasswordToggled);
     PasswordMatchIndicator::connectFields(passwordEdit_, confirmPasswordEdit_);
 
     // Real-time email validation: red border until format is valid
@@ -743,8 +731,8 @@ void ProvisionerTenantAdminPage::setupUI() {
             return;
         }
         const bool valid = emailBorderRe.match(text.trimmed()).hasMatch();
-        emailEdit_->setStyleSheet(valid ? QString{}
-            : QStringLiteral("QLineEdit { border: 1px solid #cc0000; }"));
+        emailEdit_->setStyleSheet(
+            valid ? QString{} : QStringLiteral("QLineEdit { border: 1px solid #cc0000; }"));
     });
 
     registerField("tenantAdminUsername*", usernameEdit_);
@@ -761,8 +749,7 @@ void ProvisionerTenantAdminPage::initializePage() {
     }
     if (emailEdit_->text().isEmpty()) {
         const auto code = wizard_->tenantCode();
-        emailEdit_->setText(QString("admin@%1.com").arg(
-            code.isEmpty() ? "tenant" : code));
+        emailEdit_->setText(QString("admin@%1.com").arg(code.isEmpty() ? "tenant" : code));
     }
 }
 
@@ -790,8 +777,7 @@ bool ProvisionerTenantAdminPage::validatePage() {
         emailEdit_->setFocus();
         return false;
     }
-    static const QRegularExpression emailRe(
-        R"(^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9._-]+\.[a-zA-Z]{2,}$)");
+    static const QRegularExpression emailRe(R"(^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9._-]+\.[a-zA-Z]{2,}$)");
     if (!emailRe.match(email).hasMatch()) {
         validationLabel_->setText(tr("Please enter a valid email address."));
         emailEdit_->setFocus();
@@ -832,7 +818,8 @@ void ProvisionerTenantAdminPage::onShowPasswordToggled(bool checked) {
 // ============================================================================
 
 ProvisionerApplyPage::ProvisionerApplyPage(SystemProvisionerWizard* wizard)
-    : QWizardPage(wizard), wizard_(wizard) {
+    : QWizardPage(wizard)
+    , wizard_(wizard) {
 
     setTitle(tr("Provisioning Tenant"));
     setFinalPage(false);
@@ -846,10 +833,9 @@ ProvisionerApplyPage::ProvisionerApplyPage(SystemProvisionerWizard* wizard)
     progressBar_ = new QProgressBar(this);
     progressBar_->setRange(0, 0); // indeterminate
     progressBar_->setTextVisible(false);
-    progressBar_->setStyleSheet(
-        "QProgressBar { border: 1px solid #3d3d3d; border-radius: 3px; "
-        "background: #2d2d2d; height: 20px; }"
-        "QProgressBar::chunk { background-color: #4a9eff; }");
+    progressBar_->setStyleSheet("QProgressBar { border: 1px solid #3d3d3d; border-radius: 3px; "
+                                "background: #2d2d2d; height: 20px; }"
+                                "QProgressBar::chunk { background-color: #4a9eff; }");
     layout->addWidget(progressBar_);
 
     logOutput_ = new QTextEdit(this);
@@ -870,10 +856,9 @@ void ProvisionerApplyPage::initializePage() {
     logOutput_->clear();
     statusLabel_->setText(tr("Provisioning tenant..."));
     progressBar_->setRange(0, 0);
-    progressBar_->setStyleSheet(
-        "QProgressBar { border: 1px solid #3d3d3d; border-radius: 3px; "
-        "background: #2d2d2d; height: 20px; }"
-        "QProgressBar::chunk { background-color: #4a9eff; }");
+    progressBar_->setStyleSheet("QProgressBar { border: 1px solid #3d3d3d; border-radius: 3px; "
+                                "background: #2d2d2d; height: 20px; }"
+                                "QProgressBar::chunk { background-color: #4a9eff; }");
 
     startProvisioning();
 }
@@ -903,28 +888,23 @@ void ProvisionerApplyPage::startProvisioning() {
     };
 
     auto* watcher = new QFutureWatcher<ProvisioningResult>(this);
-    connect(watcher, &QFutureWatcher<ProvisioningResult>::finished,
-            [this, watcher]() {
+    connect(watcher, &QFutureWatcher<ProvisioningResult>::finished, [this, watcher]() {
         const auto result = watcher->result();
         watcher->deleteLater();
 
         if (!result.success) {
             statusLabel_->setText(tr("Provisioning failed"));
-            appendLog(tr("ERROR: %1").arg(
-                QString::fromStdString(result.error)));
+            appendLog(tr("ERROR: %1").arg(QString::fromStdString(result.error)));
             progressBar_->setRange(0, 1);
             progressBar_->setValue(1);
-            progressBar_->setStyleSheet(
-                "QProgressBar::chunk { background-color: #cc0000; }");
+            progressBar_->setStyleSheet("QProgressBar::chunk { background-color: #cc0000; }");
         } else {
             statusLabel_->setText(tr("Provisioning complete"));
-            wizard_->setProvisionedTenantId(
-                QString::fromStdString(result.tenantId));
+            wizard_->setProvisionedTenantId(QString::fromStdString(result.tenantId));
             appendLog(tr("Tenant '%1' provisioned successfully (ID: %2).")
-                .arg(wizard_->tenantName(),
-                     QString::fromStdString(result.tenantId)));
+                          .arg(wizard_->tenantName(), QString::fromStdString(result.tenantId)));
             appendLog(tr("Admin account '%1' created with TenantAdmin role.")
-                .arg(wizard_->tenantAdminUsername()));
+                          .arg(wizard_->tenantAdminUsername()));
             progressBar_->setRange(0, 1);
             progressBar_->setValue(1);
             provisioningSuccess_ = true;
@@ -934,50 +914,53 @@ void ProvisionerApplyPage::startProvisioning() {
         emit completeChanged();
     });
 
-    QFuture<ProvisioningResult> future = QtConcurrent::run(
-        [clientManager, code, name, type, hostname, description,
-         adminUsername, adminPassword, adminEmail]() -> ProvisioningResult {
+    QFuture<ProvisioningResult> future = QtConcurrent::run([clientManager,
+                                                            code,
+                                                            name,
+                                                            type,
+                                                            hostname,
+                                                            description,
+                                                            adminUsername,
+                                                            adminPassword,
+                                                            adminEmail]() -> ProvisioningResult {
+        ProvisioningResult result;
 
-            ProvisioningResult result;
+        iam::messaging::provision_tenant_request req;
+        req.type = type;
+        req.code = code;
+        req.name = name;
+        req.hostname = hostname;
+        req.description = description;
+        req.principal = adminUsername;
+        req.password = adminPassword;
+        req.email = adminEmail;
 
-            iam::messaging::provision_tenant_request req;
-            req.type = type;
-            req.code = code;
-            req.name = name;
-            req.hostname = hostname;
-            req.description = description;
-            req.principal = adminUsername;
-            req.password = adminPassword;
-            req.email = adminEmail;
+        auto resp = clientManager->process_authenticated_request(std::move(req),
+                                                                 ClientManager::slow_timeout);
 
-            auto resp = clientManager->process_authenticated_request(
-                std::move(req), ClientManager::slow_timeout);
-
-            if (!resp) {
-                result.error = QString("Failed to communicate with server: %1")
-                    .arg(QString::fromStdString(resp.error()))
-                    .toStdString();
-                return result;
-            }
-
-            if (!resp->success) {
-                result.error = resp->error_message;
-                return result;
-            }
-
-            result.success = true;
-            result.tenantId = resp->tenant_id;
+        if (!resp) {
+            result.error = QString("Failed to communicate with server: %1")
+                               .arg(QString::fromStdString(resp.error()))
+                               .toStdString();
             return result;
         }
-    );
+
+        if (!resp->success) {
+            result.error = resp->error_message;
+            return result;
+        }
+
+        result.success = true;
+        result.tenantId = resp->tenant_id;
+        return result;
+    });
 
     watcher->setFuture(future);
 
     appendLog(tr("Provisioning tenant '%1' (code: %2, hostname: %3)...")
-        .arg(wizard_->tenantName(), wizard_->tenantCode(),
-             wizard_->tenantHostname()));
-    appendLog(tr("Creating admin account '%1' for new tenant...")
-        .arg(wizard_->tenantAdminUsername()));
+                  .arg(wizard_->tenantName(), wizard_->tenantCode(), wizard_->tenantHostname()));
+    appendLog(
+        tr("Creating admin account '%1' for new tenant...").arg(wizard_->tenantAdminUsername()));
 }
 
 // ============================================================================
@@ -985,7 +968,8 @@ void ProvisionerApplyPage::startProvisioning() {
 // ============================================================================
 
 ProvisionerCompletePage::ProvisionerCompletePage(SystemProvisionerWizard* wizard)
-    : QWizardPage(wizard), wizard_(wizard) {
+    : QWizardPage(wizard)
+    , wizard_(wizard) {
 
     setTitle(tr("Setup Complete"));
     setFinalPage(true);
@@ -999,8 +983,7 @@ void ProvisionerCompletePage::setupUI() {
     layout->setSpacing(20);
 
     // Success header
-    auto* headerLabel = new QLabel(
-        tr("System provisioning complete"), this);
+    auto* headerLabel = new QLabel(tr("System provisioning complete"), this);
     headerLabel->setStyleSheet("font-size: 16pt; font-weight: bold;");
     headerLabel->setAlignment(Qt::AlignCenter);
     layout->addWidget(headerLabel);
@@ -1019,12 +1002,13 @@ void ProvisionerCompletePage::setupUI() {
     // Next steps
     auto* nextStepsBox = new QGroupBox(tr("Next Steps"), this);
     auto* nextStepsLayout = new QVBoxLayout(nextStepsBox);
-    nextStepsLabel_ = new QLabel(
-        tr("Log in as <b>%1@%2</b> to start the tenant provisioning wizard, "
-           "which will help you set up reference data and party hierarchies.\n\n"
-           "Use the <b>Data Librarian</b> to publish reference data bundles "
-           "to tenants.").arg("tenant_admin", "hostname"),
-        this);
+    nextStepsLabel_ =
+        new QLabel(tr("Log in as <b>%1@%2</b> to start the tenant provisioning wizard, "
+                      "which will help you set up reference data and party hierarchies.\n\n"
+                      "Use the <b>Data Librarian</b> to publish reference data bundles "
+                      "to tenants.")
+                       .arg("tenant_admin", "hostname"),
+                   this);
     nextStepsLabel_->setWordWrap(true);
     nextStepsLabel_->setTextFormat(Qt::RichText);
     nextStepsLayout->addWidget(nextStepsLabel_);
@@ -1044,24 +1028,21 @@ void ProvisionerCompletePage::initializePage() {
            "<p><b>System admin:</b> %1</p>"
            "<p><b>Tenant:</b> %2 (code: %3)</p>"
            "<p><b>Tenant admin:</b> %4@%5</p>")
-        .arg(adminUsername, tenantName, tenantCode,
-             tenantAdminUsername, tenantHostname));
+            .arg(adminUsername, tenantName, tenantCode, tenantAdminUsername, tenantHostname));
 
     // Update next steps with actual values
     if (nextStepsLabel_) {
         if (wizard_->isMultiTenantMode()) {
-            nextStepsLabel_->setText(
-                tr("Log in as <b>%1@%2</b> to start the tenant provisioning "
-                   "wizard, which will help you set up reference data.\n\n"
-                   "To create additional tenants, use <b>System > Identity > "
-                   "Tenants</b> and click <b>Onboard</b>.")
-                .arg(tenantAdminUsername, tenantHostname));
+            nextStepsLabel_->setText(tr("Log in as <b>%1@%2</b> to start the tenant provisioning "
+                                        "wizard, which will help you set up reference data.\n\n"
+                                        "To create additional tenants, use <b>System > Identity > "
+                                        "Tenants</b> and click <b>Onboard</b>.")
+                                         .arg(tenantAdminUsername, tenantHostname));
         } else {
-            nextStepsLabel_->setText(
-                tr("Log in as <b>%1@%2</b> to start the tenant provisioning "
-                   "wizard, which will help you set up reference data and "
-                   "party hierarchies.")
-                .arg(tenantAdminUsername, tenantHostname));
+            nextStepsLabel_->setText(tr("Log in as <b>%1@%2</b> to start the tenant provisioning "
+                                        "wizard, which will help you set up reference data and "
+                                        "party hierarchies.")
+                                         .arg(tenantAdminUsername, tenantHostname));
         }
     }
 

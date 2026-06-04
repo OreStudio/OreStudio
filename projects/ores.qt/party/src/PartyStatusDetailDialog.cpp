@@ -18,25 +18,24 @@
  *
  */
 #include "ores.qt/PartyStatusDetailDialog.hpp"
-
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include <QPlainTextEdit>
-#include "ui_PartyStatusDetailDialog.h"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.refdata.api/messaging/party_status_protocol.hpp"
+#include "ui_PartyStatusDetailDialog.h"
+#include <QFutureWatcher>
+#include <QMessageBox>
+#include <QPlainTextEdit>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 PartyStatusDetailDialog::PartyStatusDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent),
-      ui_(new Ui::PartyStatusDetailDialog),
-      clientManager_(nullptr) {
+    : DetailDialogBase(parent)
+    , ui_(new Ui::PartyStatusDetailDialog)
+    , clientManager_(nullptr) {
 
     ui_->setupUi(this);
     setupUi();
@@ -72,18 +71,17 @@ void PartyStatusDetailDialog::setupUi() {
 }
 
 void PartyStatusDetailDialog::setupConnections() {
-    connect(ui_->saveButton, &QPushButton::clicked, this,
-            &PartyStatusDetailDialog::onSaveClicked);
-    connect(ui_->deleteButton, &QPushButton::clicked, this,
-            &PartyStatusDetailDialog::onDeleteClicked);
-    connect(ui_->closeButton, &QPushButton::clicked, this,
-            &PartyStatusDetailDialog::onCloseClicked);
+    connect(ui_->saveButton, &QPushButton::clicked, this, &PartyStatusDetailDialog::onSaveClicked);
+    connect(
+        ui_->deleteButton, &QPushButton::clicked, this, &PartyStatusDetailDialog::onDeleteClicked);
+    connect(
+        ui_->closeButton, &QPushButton::clicked, this, &PartyStatusDetailDialog::onCloseClicked);
 
-    connect(ui_->codeEdit, &QLineEdit::textChanged, this,
-            &PartyStatusDetailDialog::onCodeChanged);
-    connect(ui_->nameEdit, &QLineEdit::textChanged, this,
-            &PartyStatusDetailDialog::onFieldChanged);
-    connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this,
+    connect(ui_->codeEdit, &QLineEdit::textChanged, this, &PartyStatusDetailDialog::onCodeChanged);
+    connect(ui_->nameEdit, &QLineEdit::textChanged, this, &PartyStatusDetailDialog::onFieldChanged);
+    connect(ui_->descriptionEdit,
+            &QPlainTextEdit::textChanged,
+            this,
             &PartyStatusDetailDialog::onFieldChanged);
 }
 
@@ -95,8 +93,7 @@ void PartyStatusDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
 
-void PartyStatusDetailDialog::setStatus(
-    const refdata::domain::party_status& status) {
+void PartyStatusDetailDialog::setStatus(const refdata::domain::party_status& status) {
     status_ = status;
     updateUiFromStatus();
 }
@@ -168,25 +165,23 @@ bool PartyStatusDetailDialog::validateInput() {
 
 void PartyStatusDetailDialog::onSaveClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot save party status while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot save party status while disconnected from server.");
         return;
     }
 
     if (!validateInput()) {
-        MessageBoxHelper::warning(this, "Invalid Input",
-            "Please fill in all required fields.");
+        MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
 
     updateStatusFromUi();
 
-    const auto crOpType = createMode_
-        ? ChangeReasonDialog::OperationType::Create
-        : ChangeReasonDialog::OperationType::Amend;
-    const auto crSel = promptChangeReason(crOpType, hasChanges_,
-        createMode_ ? "system" : "common");
-    if (!crSel) return;
+    const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
+                                        ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
+    if (!crSel)
+        return;
     status_.change_reason_code = crSel->reason_code;
     status_.change_commentary = crSel->commentary;
 
@@ -206,7 +201,8 @@ void PartyStatusDetailDialog::onSaveClicked() {
 
         refdata::messaging::save_party_status_request request;
         request.data = status;
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -217,8 +213,7 @@ void PartyStatusDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
@@ -243,13 +238,15 @@ void PartyStatusDetailDialog::onSaveClicked() {
 
 void PartyStatusDetailDialog::onDeleteClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot delete party status while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot delete party status while disconnected from server.");
         return;
     }
 
     QString code = QString::fromStdString(status_.code);
-    auto reply = MessageBoxHelper::question(this, "Delete Party Status",
+    auto reply = MessageBoxHelper::question(
+        this,
+        "Delete Party Status",
         QString("Are you sure you want to delete party status '%1'?").arg(code),
         QMessageBox::Yes | QMessageBox::No);
 
@@ -257,9 +254,10 @@ void PartyStatusDetailDialog::onDeleteClicked() {
         return;
     }
 
-    const auto crSel = promptChangeReason(
-        ChangeReasonDialog::OperationType::Delete, true, "common");
-    if (!crSel) return;
+    const auto crSel =
+        promptChangeReason(ChangeReasonDialog::OperationType::Delete, true, "common");
+    if (!crSel)
+        return;
 
     BOOST_LOG_SEV(lg(), info) << "Deleting party status: " << status_.code;
 
@@ -277,7 +275,8 @@ void PartyStatusDetailDialog::onDeleteClicked() {
 
         refdata::messaging::delete_party_status_request request;
         request.status = code;
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -288,8 +287,7 @@ void PartyStatusDetailDialog::onDeleteClicked() {
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
-            self, [self, code, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, code, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 

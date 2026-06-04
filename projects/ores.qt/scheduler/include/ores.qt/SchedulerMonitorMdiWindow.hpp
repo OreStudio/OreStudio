@@ -20,18 +20,18 @@
 #ifndef ORES_QT_SCHEDULER_MONITOR_MDI_WINDOW_HPP
 #define ORES_QT_SCHEDULER_MONITOR_MDI_WINDOW_HPP
 
-#include <vector>
-#include <QTimer>
-#include <QWidget>
-#include <QAction>
-#include <QSpinBox>
-#include <QToolBar>
-#include <QTableWidget>
-#include <QVBoxLayout>
-#include <QCloseEvent>
-#include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
 #include "ores.scheduler.api/messaging/scheduler_protocol.hpp"
+#include <QAction>
+#include <QCloseEvent>
+#include <QSpinBox>
+#include <QTableWidget>
+#include <QTimer>
+#include <QToolBar>
+#include <QVBoxLayout>
+#include <QWidget>
+#include <vector>
 
 namespace ores::qt {
 
@@ -45,8 +45,7 @@ class SchedulerMonitorMdiWindow final : public QWidget {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.scheduler_monitor_mdi_window";
+    inline static std::string_view logger_name = "ores.qt.scheduler_monitor_mdi_window";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -55,12 +54,12 @@ private:
     }
 
 public:
-    explicit SchedulerMonitorMdiWindow(
-        ClientManager* clientManager,
-        QWidget* parent = nullptr);
+    explicit SchedulerMonitorMdiWindow(ClientManager* clientManager, QWidget* parent = nullptr);
     ~SchedulerMonitorMdiWindow() override = default;
 
-    QSize sizeHint() const override { return {860, 500}; }
+    QSize sizeHint() const override {
+        return {860, 500};
+    }
 
 signals:
     void statusChanged(const QString& message);
@@ -78,14 +77,14 @@ private:
     void applyStatus(const std::vector<scheduler::messaging::job_schedule_status>& jobs);
 
     enum Col {
-        ColJobName   = 0,
-        ColSchedule  = 1,
-        ColActive    = 2,
-        ColLastRun   = 3,
-        ColLastStatus= 4,
-        ColNextFire  = 5,
-        ColRunning   = 6,
-        ColCount     = 7
+        ColJobName = 0,
+        ColSchedule = 1,
+        ColActive = 2,
+        ColLastRun = 3,
+        ColLastStatus = 4,
+        ColNextFire = 5,
+        ColRunning = 6,
+        ColCount = 7
     };
 
     ClientManager* clientManager_;

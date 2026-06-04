@@ -18,31 +18,30 @@
  *
  */
 #include "ores.qt/BusinessUnitDetailDialog.hpp"
-
-#include <algorithm>
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include <boost/lexical_cast.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include "ui_BusinessUnitDetailDialog.h"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/LookupFetcher.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata.api/messaging/business_unit_protocol.hpp"
 #include "ores.refdata.api/messaging/business_unit_type_protocol.hpp"
+#include "ui_BusinessUnitDetailDialog.h"
+#include <QFutureWatcher>
+#include <QMessageBox>
+#include <QtConcurrent>
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 BusinessUnitDetailDialog::BusinessUnitDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent),
-      ui_(new Ui::BusinessUnitDetailDialog),
-      clientManager_(nullptr) {
+    : DetailDialogBase(parent)
+    , ui_(new Ui::BusinessUnitDetailDialog)
+    , clientManager_(nullptr) {
 
     ui_->setupUi(this);
     WidgetUtils::setupComboBoxes(this);
@@ -54,9 +53,15 @@ BusinessUnitDetailDialog::~BusinessUnitDetailDialog() {
     delete ui_;
 }
 
-QTabWidget* BusinessUnitDetailDialog::tabWidget() const { return ui_->tabWidget; }
-QWidget* BusinessUnitDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
-ProvenanceWidget* BusinessUnitDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
+QTabWidget* BusinessUnitDetailDialog::tabWidget() const {
+    return ui_->tabWidget;
+}
+QWidget* BusinessUnitDetailDialog::provenanceTab() const {
+    return ui_->provenanceTab;
+}
+ProvenanceWidget* BusinessUnitDetailDialog::provenanceWidget() const {
+    return ui_->provenanceWidget;
+}
 
 void BusinessUnitDetailDialog::setupUi() {
     ui_->saveButton->setIcon(
@@ -71,23 +76,24 @@ void BusinessUnitDetailDialog::setupUi() {
 }
 
 void BusinessUnitDetailDialog::setupConnections() {
-    connect(ui_->saveButton, &QPushButton::clicked, this,
-            &BusinessUnitDetailDialog::onSaveClicked);
-    connect(ui_->deleteButton, &QPushButton::clicked, this,
-            &BusinessUnitDetailDialog::onDeleteClicked);
-    connect(ui_->closeButton, &QPushButton::clicked, this,
-            &BusinessUnitDetailDialog::onCloseClicked);
+    connect(ui_->saveButton, &QPushButton::clicked, this, &BusinessUnitDetailDialog::onSaveClicked);
+    connect(
+        ui_->deleteButton, &QPushButton::clicked, this, &BusinessUnitDetailDialog::onDeleteClicked);
+    connect(
+        ui_->closeButton, &QPushButton::clicked, this, &BusinessUnitDetailDialog::onCloseClicked);
 
-    connect(ui_->codeEdit, &QLineEdit::textChanged, this,
-            &BusinessUnitDetailDialog::onCodeChanged);
-    connect(ui_->nameEdit, &QLineEdit::textChanged, this,
+    connect(ui_->codeEdit, &QLineEdit::textChanged, this, &BusinessUnitDetailDialog::onCodeChanged);
+    connect(
+        ui_->nameEdit, &QLineEdit::textChanged, this, &BusinessUnitDetailDialog::onFieldChanged);
+    connect(ui_->businessCentreCombo,
+            &QComboBox::currentTextChanged,
+            this,
             &BusinessUnitDetailDialog::onFieldChanged);
-    connect(ui_->businessCentreCombo, &QComboBox::currentTextChanged, this,
+    connect(ui_->statusCombo,
+            &QComboBox::currentTextChanged,
+            this,
             &BusinessUnitDetailDialog::onFieldChanged);
-    connect(ui_->statusCombo, &QComboBox::currentTextChanged, this,
-            &BusinessUnitDetailDialog::onFieldChanged);
-    connect(ui_->unitTypeCombo, &QComboBox::currentIndexChanged, this,
-            [this](int index) {
+    connect(ui_->unitTypeCombo, &QComboBox::currentIndexChanged, this, [this](int index) {
         // Update the read-only level field whenever the type selection changes.
         // Index 0 is the "(none)" sentinel.
         if (index <= 0 || index > static_cast<int>(unit_type_entries_.size())) {
@@ -108,12 +114,12 @@ void BusinessUnitDetailDialog::setClientManager(ClientManager* clientManager) {
 
 void BusinessUnitDetailDialog::setImageCache(ImageCache* imageCache) {
     imageCache_ = imageCache;
-    setup_flag_combo(this, ui_->businessCentreCombo, imageCache_,
-                     FlagSource::BusinessCentre);
+    setup_flag_combo(this, ui_->businessCentreCombo, imageCache_, FlagSource::BusinessCentre);
 }
 
 void BusinessUnitDetailDialog::populateBusinessCentres() {
-    if (!clientManager_ || !clientManager_->isConnected()) return;
+    if (!clientManager_ || !clientManager_->isConnected())
+        return;
 
     QPointer<BusinessUnitDetailDialog> self = this;
     auto* cm = clientManager_;
@@ -123,20 +129,19 @@ void BusinessUnitDetailDialog::populateBusinessCentres() {
     };
 
     auto* watcher = new QFutureWatcher<lookup_result>(self);
-    connect(watcher, &QFutureWatcher<lookup_result>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<lookup_result>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
-        if (!self) return;
+        if (!self)
+            return;
 
         self->ui_->businessCentreCombo->clear();
         for (const auto& code : result.business_centre_codes) {
-            self->ui_->businessCentreCombo->addItem(
-                QString::fromStdString(code));
+            self->ui_->businessCentreCombo->addItem(QString::fromStdString(code));
         }
 
-        apply_flag_icons(self->ui_->businessCentreCombo, self->imageCache_,
-                         FlagSource::BusinessCentre);
+        apply_flag_icons(
+            self->ui_->businessCentreCombo, self->imageCache_, FlagSource::BusinessCentre);
 
         self->updateUiFromUnit();
     });
@@ -146,7 +151,8 @@ void BusinessUnitDetailDialog::populateBusinessCentres() {
 }
 
 void BusinessUnitDetailDialog::populateUnitTypes() {
-    if (!clientManager_ || !clientManager_->isConnected()) return;
+    if (!clientManager_ || !clientManager_->isConnected())
+        return;
 
     QPointer<BusinessUnitDetailDialog> self = this;
     auto* cm = clientManager_;
@@ -154,37 +160,39 @@ void BusinessUnitDetailDialog::populateUnitTypes() {
     auto task = [cm]() -> std::vector<unit_type_entry> {
         refdata::messaging::get_business_unit_types_request request;
         auto response_result = cm->process_authenticated_request(std::move(request));
-        if (!response_result) return {};
+        if (!response_result)
+            return {};
 
         std::vector<unit_type_entry> entries;
         entries.reserve(response_result->business_unit_types.size());
         for (const auto& t : response_result->business_unit_types) {
             entries.push_back({t.id, t.name, t.level});
         }
-        std::sort(entries.begin(), entries.end(),
-            [](const unit_type_entry& a, const unit_type_entry& b) {
-                if (a.level != b.level) return a.level < b.level;
+        std::sort(
+            entries.begin(), entries.end(), [](const unit_type_entry& a, const unit_type_entry& b) {
+                if (a.level != b.level)
+                    return a.level < b.level;
                 return a.name < b.name;
             });
         return entries;
     };
 
     auto* watcher = new QFutureWatcher<std::vector<unit_type_entry>>(self);
-    connect(watcher, &QFutureWatcher<std::vector<unit_type_entry>>::finished,
-            self, [self, watcher]() {
-        auto entries = watcher->result();
-        watcher->deleteLater();
-        if (!self) return;
+    connect(
+        watcher, &QFutureWatcher<std::vector<unit_type_entry>>::finished, self, [self, watcher]() {
+            auto entries = watcher->result();
+            watcher->deleteLater();
+            if (!self)
+                return;
 
-        self->unit_type_entries_ = entries;
-        self->ui_->unitTypeCombo->clear();
-        self->ui_->unitTypeCombo->addItem(QString("(none)"));
-        for (const auto& e : entries) {
-            self->ui_->unitTypeCombo->addItem(
-                QString::fromStdString(e.name));
-        }
-        self->updateUiFromUnit();
-    });
+            self->unit_type_entries_ = entries;
+            self->ui_->unitTypeCombo->clear();
+            self->ui_->unitTypeCombo->addItem(QString("(none)"));
+            for (const auto& e : entries) {
+                self->ui_->unitTypeCombo->addItem(QString::fromStdString(e.name));
+            }
+            self->updateUiFromUnit();
+        });
 
     QFuture<std::vector<unit_type_entry>> future = QtConcurrent::run(task);
     watcher->setFuture(future);
@@ -194,8 +202,7 @@ void BusinessUnitDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
 
-void BusinessUnitDetailDialog::setUnit(
-    const refdata::domain::business_unit& business_unit) {
+void BusinessUnitDetailDialog::setUnit(const refdata::domain::business_unit& business_unit) {
     business_unit_ = business_unit;
     updateUiFromUnit();
 }
@@ -225,7 +232,8 @@ void BusinessUnitDetailDialog::setReadOnly(bool readOnly) {
 void BusinessUnitDetailDialog::updateUiFromUnit() {
     ui_->codeEdit->setText(QString::fromStdString(business_unit_.unit_code));
     ui_->nameEdit->setText(QString::fromStdString(business_unit_.unit_name));
-    ui_->businessCentreCombo->setCurrentText(QString::fromStdString(business_unit_.business_centre_code));
+    ui_->businessCentreCombo->setCurrentText(
+        QString::fromStdString(business_unit_.business_centre_code));
     ui_->statusCombo->setCurrentText(QString::fromStdString(business_unit_.status));
 
     // Select the unit type combo entry that matches the stored unit_type_id.
@@ -236,15 +244,16 @@ void BusinessUnitDetailDialog::updateUiFromUnit() {
             if (unit_type_entries_[i].id == *business_unit_.unit_type_id) {
                 const int combo_index = static_cast<int>(i) + 1; // +1 for "(none)"
                 ui_->unitTypeCombo->setCurrentIndex(combo_index);
-                ui_->unitTypeLevelEdit->setText(
-                    QString::number(unit_type_entries_[i].level));
+                ui_->unitTypeLevelEdit->setText(QString::number(unit_type_entries_[i].level));
                 break;
             }
         }
     }
 
-    populateProvenance(business_unit_.version, business_unit_.modified_by,
-                       business_unit_.performed_by, business_unit_.recorded_at,
+    populateProvenance(business_unit_.version,
+                       business_unit_.modified_by,
+                       business_unit_.performed_by,
+                       business_unit_.recorded_at,
                        business_unit_.change_reason_code,
                        business_unit_.change_commentary);
     hasChanges_ = false;
@@ -256,7 +265,8 @@ void BusinessUnitDetailDialog::updateUnitFromUi() {
         business_unit_.unit_code = ui_->codeEdit->text().trimmed().toStdString();
     }
     business_unit_.unit_name = ui_->nameEdit->text().trimmed().toStdString();
-    business_unit_.business_centre_code = ui_->businessCentreCombo->currentText().trimmed().toStdString();
+    business_unit_.business_centre_code =
+        ui_->businessCentreCombo->currentText().trimmed().toStdString();
     business_unit_.status = ui_->statusCombo->currentText().trimmed().toStdString();
     business_unit_.modified_by = username_;
     business_unit_.performed_by = username_;
@@ -294,25 +304,23 @@ bool BusinessUnitDetailDialog::validateInput() {
 
 void BusinessUnitDetailDialog::onSaveClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot save business unit while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot save business unit while disconnected from server.");
         return;
     }
 
     if (!validateInput()) {
-        MessageBoxHelper::warning(this, "Invalid Input",
-            "Please fill in all required fields.");
+        MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
 
     updateUnitFromUi();
 
-    const auto crOpType = createMode_
-        ? ChangeReasonDialog::OperationType::Create
-        : ChangeReasonDialog::OperationType::Amend;
-    const auto crSel = promptChangeReason(crOpType, hasChanges_,
-        createMode_ ? "system" : "common");
-    if (!crSel) return;
+    const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
+                                        ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
+    if (!crSel)
+        return;
     business_unit_.change_reason_code = crSel->reason_code;
     business_unit_.change_commentary = crSel->commentary;
 
@@ -332,7 +340,8 @@ void BusinessUnitDetailDialog::onSaveClicked() {
 
         refdata::messaging::save_business_unit_request request;
         request.data = business_unit;
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -342,8 +351,7 @@ void BusinessUnitDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
@@ -368,13 +376,15 @@ void BusinessUnitDetailDialog::onSaveClicked() {
 
 void BusinessUnitDetailDialog::onDeleteClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot delete business unit while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot delete business unit while disconnected from server.");
         return;
     }
 
     QString code = QString::fromStdString(business_unit_.unit_code);
-    auto reply = MessageBoxHelper::question(this, "Delete Business Unit",
+    auto reply = MessageBoxHelper::question(
+        this,
+        "Delete Business Unit",
         QString("Are you sure you want to delete business unit '%1'?").arg(code),
         QMessageBox::Yes | QMessageBox::No);
 
@@ -382,9 +392,10 @@ void BusinessUnitDetailDialog::onDeleteClicked() {
         return;
     }
 
-    const auto crSel = promptChangeReason(
-        ChangeReasonDialog::OperationType::Delete, true, "common");
-    if (!crSel) return;
+    const auto crSel =
+        promptChangeReason(ChangeReasonDialog::OperationType::Delete, true, "common");
+    if (!crSel)
+        return;
 
     BOOST_LOG_SEV(lg(), info) << "Deleting business unit: " << business_unit_.unit_code;
 
@@ -402,7 +413,8 @@ void BusinessUnitDetailDialog::onDeleteClicked() {
 
         refdata::messaging::delete_business_unit_request request;
         request.ids.push_back(boost::uuids::to_string(id));
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -412,8 +424,7 @@ void BusinessUnitDetailDialog::onDeleteClicked() {
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
-            self, [self, code, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, code, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 

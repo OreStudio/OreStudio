@@ -19,9 +19,9 @@
 #ifndef ORES_QT_MKTDATA_PLUGIN_HPP
 #define ORES_QT_MKTDATA_PLUGIN_HPP
 
-#include <memory>
-#include <QList>
 #include "ores.qt/PluginBase.hpp"
+#include <QList>
+#include <memory>
 
 class QAction;
 
@@ -44,8 +44,12 @@ public:
     explicit MktdataPlugin(QObject* parent = nullptr);
     ~MktdataPlugin() override;
 
-    QString name() const override { return QStringLiteral("ores.qt.mktdata"); }
-    int load_order() const override { return 300; }
+    QString name() const override {
+        return QStringLiteral("ores.qt.mktdata");
+    }
+    int load_order() const override {
+        return 300;
+    }
 
     void on_login(const plugin_context& ctx) override;
     QList<QMenu*> create_menus() override;
@@ -53,7 +57,6 @@ public:
     void on_logout() override;
 
 private:
-
     plugin_context ctx_;
 
     std::unique_ptr<MarketDataController> marketDataController_;

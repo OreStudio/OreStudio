@@ -18,61 +18,69 @@
  *
  */
 #include "ores.qt/ClientJobInstanceModel.hpp"
-
+#include "ores.qt/ExceptionHelper.hpp"
+#include "ores.scheduler.api/rfl/reflectors.hpp"
 #include <QColor>
 #include <QtConcurrent>
-#include "ores.scheduler.api/rfl/reflectors.hpp"
-#include "ores.qt/ExceptionHelper.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-ClientJobInstanceModel::ClientJobInstanceModel(
-    ClientManager* clientManager, QObject* parent)
-    : AbstractClientModel(parent),
-      clientManager_(clientManager),
-      watcher_(new QFutureWatcher<FetchResult>(this)) {
+ClientJobInstanceModel::ClientJobInstanceModel(ClientManager* clientManager, QObject* parent)
+    : AbstractClientModel(parent)
+    , clientManager_(clientManager)
+    , watcher_(new QFutureWatcher<FetchResult>(this)) {
 
-    connect(watcher_, &QFutureWatcher<FetchResult>::finished,
-            this, &ClientJobInstanceModel::onInstancesLoaded);
+    connect(watcher_,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            &ClientJobInstanceModel::onInstancesLoaded);
 }
 
 int ClientJobInstanceModel::rowCount(const QModelIndex& parent) const {
-    if (parent.isValid()) return 0;
+    if (parent.isValid())
+        return 0;
     return static_cast<int>(instances_.size());
 }
 
 int ClientJobInstanceModel::columnCount(const QModelIndex& parent) const {
-    if (parent.isValid()) return 0;
+    if (parent.isValid())
+        return 0;
     return ColumnCount;
 }
 
-QVariant ClientJobInstanceModel::data(
-    const QModelIndex& index, int role) const {
-    if (!index.isValid()) return {};
+QVariant ClientJobInstanceModel::data(const QModelIndex& index, int role) const {
+    if (!index.isValid())
+        return {};
 
     const auto row = static_cast<std::size_t>(index.row());
-    if (row >= instances_.size()) return {};
+    if (row >= instances_.size())
+        return {};
 
     const auto& inst = instances_[row];
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-        case JobName:    return QString::fromStdString(inst.job_name);
-        case Status:     return QString::fromStdString(inst.status);
-        case TriggeredAt: return QString::fromStdString(inst.triggered_at);
-        case StartedAt:  return QString::fromStdString(inst.started_at);
-        case Duration:
-            if (inst.duration_ms)
-                return tr("%1 ms").arg(*inst.duration_ms);
-            return tr("—");
-        case ActionType: return QString::fromStdString(inst.action_type);
-        case ErrorMessage:
-            return inst.error_message.empty()
-                ? QVariant{}
-                : QString::fromStdString(inst.error_message);
-        default: return {};
+            case JobName:
+                return QString::fromStdString(inst.job_name);
+            case Status:
+                return QString::fromStdString(inst.status);
+            case TriggeredAt:
+                return QString::fromStdString(inst.triggered_at);
+            case StartedAt:
+                return QString::fromStdString(inst.started_at);
+            case Duration:
+                if (inst.duration_ms)
+                    return tr("%1 ms").arg(*inst.duration_ms);
+                return tr("—");
+            case ActionType:
+                return QString::fromStdString(inst.action_type);
+            case ErrorMessage:
+                return inst.error_message.empty() ? QVariant{} :
+                                                    QString::fromStdString(inst.error_message);
+            default:
+                return {};
         }
     }
 
@@ -88,19 +96,28 @@ QVariant ClientJobInstanceModel::data(
     return {};
 }
 
-QVariant ClientJobInstanceModel::headerData(
-    int section, Qt::Orientation orientation, int role) const {
-    if (orientation != Qt::Horizontal || role != Qt::DisplayRole) return {};
+QVariant
+ClientJobInstanceModel::headerData(int section, Qt::Orientation orientation, int role) const {
+    if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
+        return {};
 
     switch (section) {
-    case JobName:     return tr("Job Name");
-    case Status:      return tr("Status");
-    case TriggeredAt: return tr("Triggered At");
-    case StartedAt:   return tr("Started At");
-    case Duration:    return tr("Duration");
-    case ActionType:  return tr("Action Type");
-    case ErrorMessage:return tr("Error");
-    default:          return {};
+        case JobName:
+            return tr("Job Name");
+        case Status:
+            return tr("Status");
+        case TriggeredAt:
+            return tr("Triggered At");
+        case StartedAt:
+            return tr("Started At");
+        case Duration:
+            return tr("Duration");
+        case ActionType:
+            return tr("Action Type");
+        case ErrorMessage:
+            return tr("Error");
+        default:
+            return {};
     }
 }
 
@@ -130,25 +147,28 @@ void ClientJobInstanceModel::fetch_instances() {
     is_fetching_ = true;
     QPointer<ClientJobInstanceModel> self = this;
 
-    QFuture<FetchResult> future =
-        QtConcurrent::run([self]() -> FetchResult {
-            return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
+    QFuture<FetchResult> future = QtConcurrent::run([self]() -> FetchResult {
+        return exception_helper::wrap_async_fetch<FetchResult>(
+            [&]() -> FetchResult {
                 if (!self || !self->clientManager_)
                     return {false, {}, tr("Model destroyed"), {}};
 
                 scheduler::messaging::get_job_instances_request req;
                 req.limit = 200;
 
-                auto result = self->clientManager_->
-                    process_authenticated_request(std::move(req));
+                auto result = self->clientManager_->process_authenticated_request(std::move(req));
 
                 if (!result)
-                    return {false, {}, QString::fromStdString(
-                        "Failed to fetch job instances: " + result.error()), {}};
+                    return {
+                        false,
+                        {},
+                        QString::fromStdString("Failed to fetch job instances: " + result.error()),
+                        {}};
 
                 return {true, std::move(result->instances), {}, {}};
-            }, "job instances");
-        });
+            },
+            "job instances");
+    });
 
     watcher_->setFuture(future);
 }
@@ -158,8 +178,8 @@ void ClientJobInstanceModel::onInstancesLoaded() {
     const auto result = watcher_->result();
 
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to load job instances: "
-                                   << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to load job instances: " << result.error_message.toStdString();
         emit loadError(result.error_message, result.error_details);
         return;
     }
@@ -175,7 +195,8 @@ void ClientJobInstanceModel::onInstancesLoaded() {
 const scheduler::messaging::job_instance_summary*
 ClientJobInstanceModel::getInstance(int row) const {
     const auto idx = static_cast<std::size_t>(row);
-    if (idx >= instances_.size()) return nullptr;
+    if (idx >= instances_.size())
+        return nullptr;
     return &instances_[idx];
 }
 

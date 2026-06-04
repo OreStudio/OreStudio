@@ -18,17 +18,16 @@
  *
  */
 #include "ores.qt/QueueDetailDialog.hpp"
-
+#include "ores.platform/time/datetime.hpp"
+#include "ores.qt/ExceptionHelper.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
+#include <QFormLayout>
+#include <QHBoxLayout>
+#include <QHeaderView>
 #include <QPointer>
 #include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QFormLayout>
-#include <QHeaderView>
 #include <QtConcurrent>
-#include "ores.platform/time/datetime.hpp"
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/ExceptionHelper.hpp"
-#include "ores.qt/MessageBoxHelper.hpp"
 
 namespace ores::qt {
 
@@ -38,30 +37,34 @@ QueueDetailDialog::QueueDetailDialog(const QString& streamName,
                                      const QString& displayName,
                                      ClientManager* clientManager,
                                      QWidget* parent)
-    : QWidget(parent),
-      streamName_(streamName),
-      displayName_(displayName),
-      clientManager_(clientManager),
-      toolbar_(nullptr),
-      publishAction_(nullptr),
-      getMessagesAction_(nullptr),
-      deleteAction_(nullptr),
-      tabWidget_(nullptr),
-      publishTab_(nullptr),
-      subjectEdit_(nullptr),
-      payloadEdit_(nullptr),
-      messagesTab_(nullptr),
-      modeCombo_(nullptr),
-      startSeqSpinBox_(nullptr),
-      countSpinBox_(nullptr),
-      messagesTable_(nullptr),
-      publishWatcher_(new QFutureWatcher<PublishResult>(this)),
-      getWatcher_(new QFutureWatcher<GetMessagesResult>(this)) {
+    : QWidget(parent)
+    , streamName_(streamName)
+    , displayName_(displayName)
+    , clientManager_(clientManager)
+    , toolbar_(nullptr)
+    , publishAction_(nullptr)
+    , getMessagesAction_(nullptr)
+    , deleteAction_(nullptr)
+    , tabWidget_(nullptr)
+    , publishTab_(nullptr)
+    , subjectEdit_(nullptr)
+    , payloadEdit_(nullptr)
+    , messagesTab_(nullptr)
+    , modeCombo_(nullptr)
+    , startSeqSpinBox_(nullptr)
+    , countSpinBox_(nullptr)
+    , messagesTable_(nullptr)
+    , publishWatcher_(new QFutureWatcher<PublishResult>(this))
+    , getWatcher_(new QFutureWatcher<GetMessagesResult>(this)) {
 
-    connect(publishWatcher_, &QFutureWatcher<PublishResult>::finished,
-            this, &QueueDetailDialog::onPublishDone);
-    connect(getWatcher_, &QFutureWatcher<GetMessagesResult>::finished,
-            this, &QueueDetailDialog::onGetMessagesDone);
+    connect(publishWatcher_,
+            &QFutureWatcher<PublishResult>::finished,
+            this,
+            &QueueDetailDialog::onPublishDone);
+    connect(getWatcher_,
+            &QFutureWatcher<GetMessagesResult>::finished,
+            this,
+            &QueueDetailDialog::onGetMessagesDone);
 
     setupUi();
 }
@@ -77,7 +80,7 @@ void QueueDetailDialog::setupUi() {
     tabWidget_ = new QTabWidget(this);
     setupPublishTab();
     setupMessagesTab();
-    tabWidget_->addTab(publishTab_,  tr("Publish"));
+    tabWidget_->addTab(publishTab_, tr("Publish"));
     tabWidget_->addTab(messagesTab_, tr("Messages"));
 
     connect(tabWidget_, &QTabWidget::currentChanged, this, [this](int idx) {
@@ -96,28 +99,23 @@ void QueueDetailDialog::setupToolbar() {
     toolbar_->setIconSize(QSize(20, 20));
 
     publishAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Publish, IconUtils::DefaultIconColor),
-        tr("Publish"));
+        IconUtils::createRecoloredIcon(Icon::Publish, IconUtils::DefaultIconColor), tr("Publish"));
     publishAction_->setToolTip(tr("Send the payload to the stream subject"));
-    connect(publishAction_, &QAction::triggered,
-            this, &QueueDetailDialog::onPublish);
+    connect(publishAction_, &QAction::triggered, this, &QueueDetailDialog::onPublish);
 
     getMessagesAction_ = toolbar_->addAction(
         IconUtils::createRecoloredIcon(Icon::DocumentTable, IconUtils::DefaultIconColor),
         tr("Get Messages"));
     getMessagesAction_->setToolTip(tr("Peek messages from the stream by sequence"));
     getMessagesAction_->setVisible(false);
-    connect(getMessagesAction_, &QAction::triggered,
-            this, &QueueDetailDialog::onGetMessages);
+    connect(getMessagesAction_, &QAction::triggered, this, &QueueDetailDialog::onGetMessages);
 
     deleteAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor),
-        tr("Delete"));
+        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor), tr("Delete"));
     deleteAction_->setToolTip(tr("Delete selected messages from the stream"));
     deleteAction_->setEnabled(false);
     deleteAction_->setVisible(false);
-    connect(deleteAction_, &QAction::triggered,
-            this, &QueueDetailDialog::onDeleteSelected);
+    connect(deleteAction_, &QAction::triggered, this, &QueueDetailDialog::onDeleteSelected);
 }
 
 void QueueDetailDialog::setupPublishTab() {
@@ -154,7 +152,7 @@ void QueueDetailDialog::setupMessagesTab() {
     controls->addWidget(new QLabel(tr("Mode:")));
     modeCombo_ = new QComboBox();
     modeCombo_->addItem(tr("Peek (non-destructive)"), QVariant::fromValue(int(GetMode::Peek)));
-    modeCombo_->addItem(tr("Pop (peek + delete)"),    QVariant::fromValue(int(GetMode::Pop)));
+    modeCombo_->addItem(tr("Pop (peek + delete)"), QVariant::fromValue(int(GetMode::Pop)));
     controls->addWidget(modeCombo_);
 
     controls->addSpacing(16);
@@ -175,8 +173,8 @@ void QueueDetailDialog::setupMessagesTab() {
     controls->addStretch();
     layout->addLayout(controls);
 
-    auto* warning = new QLabel(
-        tr("<small><i>Pop is destructive — messages cannot be recovered.</i></small>"));
+    auto* warning =
+        new QLabel(tr("<small><i>Pop is destructive — messages cannot be recovered.</i></small>"));
     warning->setWordWrap(true);
     layout->addWidget(warning);
 
@@ -190,12 +188,13 @@ void QueueDetailDialog::setupMessagesTab() {
     messagesTable_->setAlternatingRowColors(true);
     messagesTable_->verticalHeader()->setVisible(false);
     messagesTable_->horizontalHeader()->setStretchLastSection(true);
-    messagesTable_->horizontalHeader()->setSectionResizeMode(
-        QHeaderView::ResizeToContents);
+    messagesTable_->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     layout->addWidget(messagesTable_, 1);
 
-    connect(messagesTable_, &QTableWidget::itemSelectionChanged,
-            this, &QueueDetailDialog::updateDeleteAction);
+    connect(messagesTable_,
+            &QTableWidget::itemSelectionChanged,
+            this,
+            &QueueDetailDialog::updateDeleteAction);
 }
 
 void QueueDetailDialog::onPublish() {
@@ -221,20 +220,20 @@ void QueueDetailDialog::onPublish() {
 
     QPointer<QueueDetailDialog> self = this;
 
-    QFuture<PublishResult> future = QtConcurrent::run(
-        [self, subject, payload]() -> PublishResult {
-            return exception_helper::wrap_async_fetch<PublishResult>(
-                [&]() -> PublishResult {
-                    if (!self || !self->clientManager_) {
-                        return {.success = false,
-                                .error_message = "Dialog closed", .error_details = {}};
-                    }
+    QFuture<PublishResult> future = QtConcurrent::run([self, subject, payload]() -> PublishResult {
+        return exception_helper::wrap_async_fetch<PublishResult>(
+            [&]() -> PublishResult {
+                if (!self || !self->clientManager_) {
+                    return {
+                        .success = false, .error_message = "Dialog closed", .error_details = {}};
+                }
 
-                    auto admin = self->clientManager_->admin();
-                    admin.publish(subject.toStdString(), payload.toStdString());
-                    return {.success = true, .error_message = {}, .error_details = {}};
-                }, "publish message");
-        });
+                auto admin = self->clientManager_->admin();
+                admin.publish(subject.toStdString(), payload.toStdString());
+                return {.success = true, .error_message = {}, .error_details = {}};
+            },
+            "publish message");
+    });
 
     publishWatcher_->setFuture(future);
 }
@@ -246,11 +245,10 @@ void QueueDetailDialog::onPublishDone() {
     if (result.success) {
         emit statusChanged(tr("Message published to '%1'").arg(subjectEdit_->text()));
     } else {
-        BOOST_LOG_SEV(lg(), error) << "Publish failed: "
-                                   << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error) << "Publish failed: " << result.error_message.toStdString();
         emit errorOccurred(result.error_message);
-        MessageBoxHelper::critical(this, tr("Publish Error"),
-                                   result.error_message, result.error_details);
+        MessageBoxHelper::critical(
+            this, tr("Publish Error"), result.error_message, result.error_details);
     }
 }
 
@@ -272,13 +270,16 @@ void QueueDetailDialog::onGetMessages() {
 
     QPointer<QueueDetailDialog> self = this;
 
-    QFuture<GetMessagesResult> future = QtConcurrent::run(
-        [self, streamName, startSeq, count, mode]() -> GetMessagesResult {
+    QFuture<GetMessagesResult> future =
+        QtConcurrent::run([self, streamName, startSeq, count, mode]() -> GetMessagesResult {
             return exception_helper::wrap_async_fetch<GetMessagesResult>(
                 [&]() -> GetMessagesResult {
                     if (!self || !self->clientManager_) {
-                        return {.success = false, .messages = {}, .mode = mode,
-                                .error_message = "Dialog closed", .error_details = {}};
+                        return {.success = false,
+                                .messages = {},
+                                .mode = mode,
+                                .error_message = "Dialog closed",
+                                .error_details = {}};
                     }
 
                     auto admin = self->clientManager_->admin();
@@ -292,12 +293,11 @@ void QueueDetailDialog::onGetMessages() {
                         try {
                             auto msg = admin.peek_message(stream, seq);
                             MessageRow r;
-                            r.sequence  = msg.sequence;
-                            r.subject   = msg.subject;
+                            r.sequence = msg.sequence;
+                            r.subject = msg.subject;
                             r.timestamp = platform::time::datetime::to_iso8601_utc(msg.timestamp);
-                            r.payload   = std::string(
-                                reinterpret_cast<const char*>(msg.data.data()),
-                                msg.data.size());
+                            r.payload = std::string(reinterpret_cast<const char*>(msg.data.data()),
+                                                    msg.data.size());
                             rows.push_back(std::move(r));
 
                             if (mode == GetMode::Pop)
@@ -308,9 +308,13 @@ void QueueDetailDialog::onGetMessages() {
                         }
                     }
 
-                    return {.success = true, .messages = std::move(rows),
-                            .mode = mode, .error_message = {}, .error_details = {}};
-                }, "get messages");
+                    return {.success = true,
+                            .messages = std::move(rows),
+                            .mode = mode,
+                            .error_message = {},
+                            .error_details = {}};
+                },
+                "get messages");
         });
 
     getWatcher_->setFuture(future);
@@ -323,15 +327,13 @@ void QueueDetailDialog::onGetMessagesDone() {
     if (result.success) {
         populateMessagesTable(result.messages);
         emit statusChanged(tr("Fetched %1 message(s) from '%2'%3")
-                           .arg(result.messages.size())
-                           .arg(displayName_)
-                           .arg(result.mode == GetMode::Pop ? tr(" (popped)") : QString{}));
+                               .arg(result.messages.size())
+                               .arg(displayName_)
+                               .arg(result.mode == GetMode::Pop ? tr(" (popped)") : QString{}));
     } else {
-        BOOST_LOG_SEV(lg(), error) << "Get messages failed: "
-                                   << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error) << "Get messages failed: " << result.error_message.toStdString();
         emit errorOccurred(result.error_message);
-        MessageBoxHelper::critical(this, tr("Error"),
-                                   result.error_message, result.error_details);
+        MessageBoxHelper::critical(this, tr("Error"), result.error_message, result.error_details);
     }
 }
 
@@ -340,19 +342,15 @@ void QueueDetailDialog::populateMessagesTable(const std::vector<MessageRow>& mes
     for (int row = 0; row < static_cast<int>(messages.size()); ++row) {
         const auto& m = messages[row];
 
-        auto* seqItem = new QTableWidgetItem(
-            QString::number(static_cast<qlonglong>(m.sequence)));
+        auto* seqItem = new QTableWidgetItem(QString::number(static_cast<qlonglong>(m.sequence)));
         // Store sequence as user data for delete operations
         seqItem->setData(Qt::UserRole, static_cast<qlonglong>(m.sequence));
         messagesTable_->setItem(row, 0, seqItem);
 
-        messagesTable_->setItem(row, 1,
-            new QTableWidgetItem(QString::fromStdString(m.subject)));
-        messagesTable_->setItem(row, 2,
-            new QTableWidgetItem(QString::fromStdString(m.timestamp)));
+        messagesTable_->setItem(row, 1, new QTableWidgetItem(QString::fromStdString(m.subject)));
+        messagesTable_->setItem(row, 2, new QTableWidgetItem(QString::fromStdString(m.timestamp)));
 
-        auto* payloadItem = new QTableWidgetItem(
-            QString::fromStdString(m.payload));
+        auto* payloadItem = new QTableWidgetItem(QString::fromStdString(m.payload));
         payloadItem->setToolTip(QString::fromStdString(m.payload));
         messagesTable_->setItem(row, 3, payloadItem);
     }
@@ -361,7 +359,8 @@ void QueueDetailDialog::populateMessagesTable(const std::vector<MessageRow>& mes
 
 void QueueDetailDialog::onDeleteSelected() {
     const auto selectedRows = messagesTable_->selectedItems();
-    if (selectedRows.isEmpty()) return;
+    if (selectedRows.isEmpty())
+        return;
 
     // Collect unique row indices and their sequence numbers
     QSet<int> rowSet;
@@ -372,16 +371,20 @@ void QueueDetailDialog::onDeleteSelected() {
     for (int row : rowSet) {
         auto* seqItem = messagesTable_->item(row, 0);
         if (seqItem)
-            sequences.push_back(static_cast<std::uint64_t>(
-                seqItem->data(Qt::UserRole).toLongLong()));
+            sequences.push_back(
+                static_cast<std::uint64_t>(seqItem->data(Qt::UserRole).toLongLong()));
     }
 
-    if (sequences.empty()) return;
+    if (sequences.empty())
+        return;
 
-    auto reply = MessageBoxHelper::question(this, tr("Delete Messages"),
-        tr("Delete %n message(s) from stream '%1'?", "",
-           static_cast<int>(sequences.size())).arg(displayName_));
-    if (reply != QMessageBox::Yes) return;
+    auto reply = MessageBoxHelper::question(
+        this,
+        tr("Delete Messages"),
+        tr("Delete %n message(s) from stream '%1'?", "", static_cast<int>(sequences.size()))
+            .arg(displayName_));
+    if (reply != QMessageBox::Yes)
+        return;
 
     deleteAction_->setEnabled(false);
 
@@ -396,11 +399,11 @@ void QueueDetailDialog::onDeleteSelected() {
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(this);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
-            this, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, this, [self, watcher]() {
         const auto result = watcher->result();
         watcher->deleteLater();
-        if (!self) return;
+        if (!self)
+            return;
 
         self->updateDeleteAction();
         if (result.success) {
@@ -414,50 +417,52 @@ void QueueDetailDialog::onDeleteSelected() {
             for (int row : toRemove)
                 self->messagesTable_->removeRow(row);
 
-            emit self->statusChanged(
-                tr("Deleted %1 message(s) from '%2'")
-                    .arg(result.deleted_count).arg(self->displayName_));
+            emit self->statusChanged(tr("Deleted %1 message(s) from '%2'")
+                                         .arg(result.deleted_count)
+                                         .arg(self->displayName_));
         } else {
             emit self->errorOccurred(result.error_message);
-            MessageBoxHelper::critical(self, tr("Delete Error"),
-                                       result.error_message, result.error_details);
+            MessageBoxHelper::critical(
+                self, tr("Delete Error"), result.error_message, result.error_details);
         }
     });
 
-    watcher->setFuture(QtConcurrent::run(
-        [self, streamName, sequences]() -> DeleteResult {
-            return exception_helper::wrap_async_fetch<DeleteResult>(
-                [&]() -> DeleteResult {
-                    if (!self || !self->clientManager_) {
-                        return {.success = false, .deleted_count = 0,
-                                .error_message = "Dialog closed", .error_details = {}};
+    watcher->setFuture(QtConcurrent::run([self, streamName, sequences]() -> DeleteResult {
+        return exception_helper::wrap_async_fetch<DeleteResult>(
+            [&]() -> DeleteResult {
+                if (!self || !self->clientManager_) {
+                    return {.success = false,
+                            .deleted_count = 0,
+                            .error_message = "Dialog closed",
+                            .error_details = {}};
+                }
+
+                auto admin = self->clientManager_->admin();
+                const std::string stream = streamName.toStdString();
+                int count = 0;
+
+                for (auto seq : sequences) {
+                    try {
+                        admin.delete_message(stream, seq);
+                        ++count;
+                    } catch (const std::exception& e) {
+                        BOOST_LOG_SEV(lg(), warn)
+                            << "Failed to delete seq " << seq << ": " << e.what();
                     }
+                }
 
-                    auto admin = self->clientManager_->admin();
-                    const std::string stream = streamName.toStdString();
-                    int count = 0;
-
-                    for (auto seq : sequences) {
-                        try {
-                            admin.delete_message(stream, seq);
-                            ++count;
-                        } catch (const std::exception& e) {
-                            BOOST_LOG_SEV(lg(), warn)
-                                << "Failed to delete seq " << seq
-                                << ": " << e.what();
-                        }
-                    }
-
-                    return {.success = true, .deleted_count = count,
-                            .error_message = {}, .error_details = {}};
-                }, "delete messages");
-        }));
+                return {.success = true,
+                        .deleted_count = count,
+                        .error_message = {},
+                        .error_details = {}};
+            },
+            "delete messages");
+    }));
 }
 
 void QueueDetailDialog::updateDeleteAction() {
-    deleteAction_->setEnabled(
-        messagesTable_->selectionModel() &&
-        messagesTable_->selectionModel()->hasSelection());
+    deleteAction_->setEnabled(messagesTable_->selectionModel() &&
+                              messagesTable_->selectionModel()->hasSelection());
 }
 
 }

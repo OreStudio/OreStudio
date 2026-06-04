@@ -18,14 +18,13 @@
  *
  */
 #include "ores.qt/ClientResultModel.hpp"
-
-#include <QtConcurrent>
-#include <boost/uuid/uuid_io.hpp>
 #include "ores.compute.api/messaging/result_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/HostDisplayNameCache.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
+#include <QtConcurrent>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
@@ -39,42 +38,57 @@ std::string result_key_extractor(const compute::domain::result& e) {
 
 QString format_state(int s) {
     switch (s) {
-    case 1: return QObject::tr("Inactive");
-    case 2: return QObject::tr("Unsent");
-    case 4: return QObject::tr("Running");
-    case 5: return QObject::tr("Done");
-    default: return QString::number(s);
+        case 1:
+            return QObject::tr("Inactive");
+        case 2:
+            return QObject::tr("Unsent");
+        case 4:
+            return QObject::tr("Running");
+        case 5:
+            return QObject::tr("Done");
+        default:
+            return QString::number(s);
     }
 }
 
 QString format_outcome(int o) {
     switch (o) {
-    case 0: return QObject::tr("Pending");
-    case 1: return QObject::tr("Success");
-    case 3: return QObject::tr("Failed");
-    case 4: return QObject::tr("No Reply");
-    default: return QString::number(o);
+        case 0:
+            return QObject::tr("Pending");
+        case 1:
+            return QObject::tr("Success");
+        case 3:
+            return QObject::tr("Failed");
+        case 4:
+            return QObject::tr("No Reply");
+        default:
+            return QString::number(o);
     }
 }
 
 
 } // namespace
 
-ClientResultModel::ClientResultModel(
-    ClientManager* clientManager, QObject* parent)
-    : AbstractClientModel(parent),
-      clientManager_(clientManager),
-      watcher_(new QFutureWatcher<FetchResult>(this)),
-      recencyTracker_(result_key_extractor),
-      pulseManager_(new RecencyPulseManager(this)) {
+ClientResultModel::ClientResultModel(ClientManager* clientManager, QObject* parent)
+    : AbstractClientModel(parent)
+    , clientManager_(clientManager)
+    , watcher_(new QFutureWatcher<FetchResult>(this))
+    , recencyTracker_(result_key_extractor)
+    , pulseManager_(new RecencyPulseManager(this)) {
 
-    connect(watcher_, &QFutureWatcher<FetchResult>::finished,
-            this, &ClientResultModel::onResultsLoaded);
+    connect(watcher_,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            &ClientResultModel::onResultsLoaded);
 
-    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
-            this, &ClientResultModel::onPulseStateChanged);
-    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
-            this, &ClientResultModel::onPulsingComplete);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulse_state_changed,
+            this,
+            &ClientResultModel::onPulseStateChanged);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulsing_complete,
+            this,
+            &ClientResultModel::onPulsingComplete);
 }
 
 int ClientResultModel::rowCount(const QModelIndex& parent) const {
@@ -89,8 +103,7 @@ int ClientResultModel::columnCount(const QModelIndex& parent) const {
     return ColumnCount;
 }
 
-QVariant ClientResultModel::data(
-    const QModelIndex& index, int role) const {
+QVariant ClientResultModel::data(const QModelIndex& index, int role) const {
     if (!index.isValid())
         return {};
 
@@ -102,40 +115,37 @@ QVariant ClientResultModel::data(
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-        case WorkunitId:
-            return QString::fromStdString(boost::uuids::to_string(result.workunit_id));
-        case HostId: {
-            if (result.host_id == boost::uuids::uuid{})
-                return QString{};
-            const auto quuid = QString::fromStdString(
-                boost::uuids::to_string(result.host_id));
-            return host_name_cache_
-                ? host_name_cache_->display_name_for(quuid)
-                : quuid;
-        }
-        case ServerState:
-            return format_state(result.server_state);
-        case Outcome:
-            return format_outcome(result.outcome);
-        case ErrorMessage:
-            return result.outcome != 1 && !result.change_commentary.empty()
-                ? QString::fromStdString(result.change_commentary)
-                : QString{};
-        case OutputUri:
-            return QString::fromStdString(result.output_uri);
-        case ReceivedAt:
-            return relative_time_helper::format(result.received_at);
-        case Version:
-            return static_cast<qlonglong>(result.version);
-        case ModifiedBy:
-            return QString::fromStdString(result.modified_by);
-        default:
-            return {};
+            case WorkunitId:
+                return QString::fromStdString(boost::uuids::to_string(result.workunit_id));
+            case HostId: {
+                if (result.host_id == boost::uuids::uuid{})
+                    return QString{};
+                const auto quuid = QString::fromStdString(boost::uuids::to_string(result.host_id));
+                return host_name_cache_ ? host_name_cache_->display_name_for(quuid) : quuid;
+            }
+            case ServerState:
+                return format_state(result.server_state);
+            case Outcome:
+                return format_outcome(result.outcome);
+            case ErrorMessage:
+                return result.outcome != 1 && !result.change_commentary.empty() ?
+                           QString::fromStdString(result.change_commentary) :
+                           QString{};
+            case OutputUri:
+                return QString::fromStdString(result.output_uri);
+            case ReceivedAt:
+                return relative_time_helper::format(result.received_at);
+            case Version:
+                return static_cast<qlonglong>(result.version);
+            case ModifiedBy:
+                return QString::fromStdString(result.modified_by);
+            default:
+                return {};
         }
     }
 
-    if (role == Qt::ToolTipRole && index.column() == HostId
-            && host_name_cache_ && result.host_id != boost::uuids::uuid{}) {
+    if (role == Qt::ToolTipRole && index.column() == HostId && host_name_cache_ &&
+        result.host_id != boost::uuids::uuid{}) {
         return QString::fromStdString(boost::uuids::to_string(result.host_id));
     }
 
@@ -149,32 +159,31 @@ void ClientResultModel::set_host_name_cache(HostDisplayNameCache* cache) {
     host_name_cache_ = cache;
 }
 
-QVariant ClientResultModel::headerData(
-    int section, Qt::Orientation orientation, int role) const {
+QVariant ClientResultModel::headerData(int section, Qt::Orientation orientation, int role) const {
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return {};
 
     switch (section) {
-    case WorkunitId:
-        return tr("Workunit ID");
-    case HostId:
-        return tr("Host");
-    case ServerState:
-        return tr("State");
-    case Outcome:
-        return tr("Outcome");
-    case ErrorMessage:
-        return tr("Error");
-    case OutputUri:
-        return tr("Output URI");
-    case ReceivedAt:
-        return tr("Received At");
-    case Version:
-        return tr("Version");
-    case ModifiedBy:
-        return tr("Modified By");
-    default:
-        return {};
+        case WorkunitId:
+            return tr("Workunit ID");
+        case HostId:
+            return tr("Host");
+        case ServerState:
+            return tr("State");
+        case Outcome:
+            return tr("Outcome");
+        case ErrorMessage:
+            return tr("Error");
+        case OutputUri:
+            return tr("Output URI");
+        case ReceivedAt:
+            return tr("Received At");
+        case Version:
+            return tr("Version");
+        case ModifiedBy:
+            return tr("Modified By");
+        default:
+            return {};
     }
 }
 
@@ -204,8 +213,7 @@ void ClientResultModel::refresh() {
     fetch_results(0, page_size_);
 }
 
-void ClientResultModel::load_page(std::uint32_t offset,
-                                          std::uint32_t limit) {
+void ClientResultModel::load_page(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "load_page: offset=" << offset << ", limit=" << limit;
 
     if (is_fetching_) {
@@ -229,18 +237,19 @@ void ClientResultModel::load_page(std::uint32_t offset,
     fetch_results(offset, limit);
 }
 
-void ClientResultModel::fetch_results(
-    std::uint32_t offset, std::uint32_t limit) {
+void ClientResultModel::fetch_results(std::uint32_t offset, std::uint32_t limit) {
     is_fetching_ = true;
     QPointer<ClientResultModel> self = this;
 
-    QFuture<FetchResult> future =
-        QtConcurrent::run([self, offset, limit]() -> FetchResult {
-            return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
-                BOOST_LOG_SEV(lg(), debug) << "Making compute results request with offset="
-                                           << offset << ", limit=" << limit;
+    QFuture<FetchResult> future = QtConcurrent::run([self, offset, limit]() -> FetchResult {
+        return exception_helper::wrap_async_fetch<FetchResult>(
+            [&]() -> FetchResult {
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Making compute results request with offset=" << offset
+                    << ", limit=" << limit;
                 if (!self || !self->clientManager_) {
-                    return {.success = false, .results = {},
+                    return {.success = false,
+                            .results = {},
                             .total_available_count = 0,
                             .error_message = "Model was destroyed",
                             .error_details = {}};
@@ -250,28 +259,32 @@ void ClientResultModel::fetch_results(
                 request.offset = offset;
                 request.limit = limit;
 
-                auto result = self->clientManager_->
-                    process_authenticated_request(std::move(request));
+                auto result =
+                    self->clientManager_->process_authenticated_request(std::move(request));
 
                 if (!result) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to fetch compute results: "
-                                               << result.error();
-                    return {.success = false, .results = {},
+                    BOOST_LOG_SEV(lg(), error)
+                        << "Failed to fetch compute results: " << result.error();
+                    return {.success = false,
+                            .results = {},
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(
                                 "Failed to fetch compute results: " + result.error()),
                             .error_details = {}};
                 }
 
-                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->results.size()
-                                           << " compute results, total available: "
-                                           << result->total_available_count;
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Fetched " << result->results.size()
+                    << " compute results, total available: " << result->total_available_count;
                 return {.success = true,
                         .results = std::move(result->results),
-                        .total_available_count = static_cast<std::uint32_t>(result->total_available_count),
-                        .error_message = {}, .error_details = {}};
-            }, "compute results");
-        });
+                        .total_available_count =
+                            static_cast<std::uint32_t>(result->total_available_count),
+                        .error_message = {},
+                        .error_details = {}};
+            },
+            "compute results");
+    });
 
     watcher_->setFuture(future);
 }
@@ -282,8 +295,8 @@ void ClientResultModel::onResultsLoaded() {
     const auto result = watcher_->result();
 
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to fetch compute results: "
-                                   << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to fetch compute results: " << result.error_message.toStdString();
         emit loadError(result.error_message, result.error_details);
         return;
     }
@@ -322,16 +335,14 @@ void ClientResultModel::set_page_size(std::uint32_t size) {
     }
 }
 
-const compute::domain::result*
-ClientResultModel::getResult(int row) const {
+const compute::domain::result* ClientResultModel::getResult(int row) const {
     const auto idx = static_cast<std::size_t>(row);
     if (idx >= results_.size())
         return nullptr;
     return &results_[idx];
 }
 
-QVariant ClientResultModel::recency_foreground_color(
-    const std::string& code) const {
+QVariant ClientResultModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {
         return color_constants::stale_indicator;
     }
@@ -340,8 +351,8 @@ QVariant ClientResultModel::recency_foreground_color(
 
 void ClientResultModel::onPulseStateChanged(bool /*isOn*/) {
     if (!results_.empty()) {
-        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
-            {Qt::ForegroundRole});
+        emit dataChanged(
+            index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::ForegroundRole});
     }
 }
 

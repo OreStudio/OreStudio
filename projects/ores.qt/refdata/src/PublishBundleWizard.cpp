@@ -18,21 +18,20 @@
  *
  */
 #include "ores.qt/PublishBundleWizard.hpp"
-
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QFormLayout>
-#include <QGroupBox>
-#include <QMessageBox>
-#include <QTimer>
-#include <QHeaderView>
-#include <QtConcurrent>
-#include <QFutureWatcher>
+#include "ores.dq.api/messaging/dataset_bundle_member_protocol.hpp"
+#include "ores.dq.api/messaging/publish_bundle_protocol.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/LeiEntityPicker.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.dq.api/messaging/publish_bundle_protocol.hpp"
-#include "ores.dq.api/messaging/dataset_bundle_member_protocol.hpp"
+#include <QFormLayout>
+#include <QFutureWatcher>
+#include <QGroupBox>
+#include <QHBoxLayout>
+#include <QHeaderView>
+#include <QMessageBox>
+#include <QTimer>
+#include <QVBoxLayout>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
@@ -42,15 +41,14 @@ using namespace ores::logging;
 // PublishBundleWizard (Main Wizard)
 // ============================================================================
 
-PublishBundleWizard::PublishBundleWizard(
-    ClientManager* clientManager,
-    const QString& bundleCode,
-    const QString& bundleName,
-    QWidget* parent)
-    : QWizard(parent),
-      clientManager_(clientManager),
-      bundleCode_(bundleCode),
-      bundleName_(bundleName) {
+PublishBundleWizard::PublishBundleWizard(ClientManager* clientManager,
+                                         const QString& bundleCode,
+                                         const QString& bundleName,
+                                         QWidget* parent)
+    : QWizard(parent)
+    , clientManager_(clientManager)
+    , bundleCode_(bundleCode)
+    , bundleName_(bundleName) {
 
     setWindowTitle(tr("Publish Bundle - %1").arg(bundleName));
     setMinimumSize(700, 550);
@@ -81,7 +79,8 @@ void PublishBundleWizard::setupPages() {
 // ============================================================================
 
 BundleSummaryPage::BundleSummaryPage(PublishBundleWizard* wizard)
-    : QWizardPage(wizard), wizard_(wizard) {
+    : QWizardPage(wizard)
+    , wizard_(wizard) {
 
     setTitle(tr("Bundle Summary"));
     setSubTitle(tr("Review the datasets in this bundle before publishing."));
@@ -102,9 +101,8 @@ void BundleSummaryPage::setupUI() {
 
     // Members table
     membersModel_ = new QStandardItemModel(0, 4, this);
-    membersModel_->setHorizontalHeaderLabels({
-        tr("Order"), tr("Dataset"), tr("Dataset Code"), tr("Optional")
-    });
+    membersModel_->setHorizontalHeaderLabels(
+        {tr("Order"), tr("Dataset"), tr("Dataset Code"), tr("Optional")});
 
     membersTable_ = new QTableView(this);
     membersTable_->setModel(membersModel_);
@@ -142,9 +140,8 @@ void BundleSummaryPage::loadMembers() {
 
     if (!result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to load bundle members.";
-        statusLabel_->setText(
-            tr("Failed to load bundle datasets. Please check your connection "
-               "and try again."));
+        statusLabel_->setText(tr("Failed to load bundle datasets. Please check your connection "
+                                 "and try again."));
         return;
     }
 
@@ -171,15 +168,13 @@ void BundleSummaryPage::loadMembers() {
             << "Bundle contains lei_parties dataset; LEI configuration required.";
     }
     if (hasOptional) {
-        BOOST_LOG_SEV(lg(), info)
-            << "Bundle contains optional datasets.";
+        BOOST_LOG_SEV(lg(), info) << "Bundle contains optional datasets.";
     }
 
     populateTable();
 
     const auto count = wizard_->members().size();
-    statusLabel_->setText(
-        tr("Found %1 dataset(s) in this bundle.").arg(count));
+    statusLabel_->setText(tr("Found %1 dataset(s) in this bundle.").arg(count));
 }
 
 void BundleSummaryPage::populateTable() {
@@ -189,20 +184,18 @@ void BundleSummaryPage::populateTable() {
         const int row = membersModel_->rowCount();
         membersModel_->insertRow(row);
 
-        auto* orderItem = new QStandardItem(
-            QString::number(member.display_order));
+        auto* orderItem = new QStandardItem(QString::number(member.display_order));
         orderItem->setTextAlignment(Qt::AlignCenter);
         membersModel_->setItem(row, 0, orderItem);
 
         // Use dataset_code as the display name (no separate name field)
-        membersModel_->setItem(row, 1, new QStandardItem(
-            QString::fromStdString(member.dataset_code)));
+        membersModel_->setItem(
+            row, 1, new QStandardItem(QString::fromStdString(member.dataset_code)));
 
-        membersModel_->setItem(row, 2, new QStandardItem(
-            QString::fromStdString(member.dataset_code)));
+        membersModel_->setItem(
+            row, 2, new QStandardItem(QString::fromStdString(member.dataset_code)));
 
-        auto* optionalItem = new QStandardItem(
-            member.optional ? tr("Yes") : tr("No"));
+        auto* optionalItem = new QStandardItem(member.optional ? tr("Yes") : tr("No"));
         optionalItem->setTextAlignment(Qt::AlignCenter);
         membersModel_->setItem(row, 3, optionalItem);
     }
@@ -228,7 +221,8 @@ int BundleSummaryPage::nextId() const {
 // ============================================================================
 
 OptionalDatasetsPage::OptionalDatasetsPage(PublishBundleWizard* wizard)
-    : QWizardPage(wizard), wizard_(wizard) {
+    : QWizardPage(wizard)
+    , wizard_(wizard) {
 
     setTitle(tr("Optional Datasets"));
     setSubTitle(tr("Select which optional datasets to include in this "
@@ -241,9 +235,10 @@ void OptionalDatasetsPage::setupUI() {
     WidgetUtils::setupComboBoxes(this);
     auto* layout = new QVBoxLayout(this);
 
-    auto* infoLabel = new QLabel(
-        tr("The following datasets are optional. Check the ones you want to "
-           "publish. Unchecked datasets will be skipped."), this);
+    auto* infoLabel =
+        new QLabel(tr("The following datasets are optional. Check the ones you want to "
+                      "publish. Unchecked datasets will be skipped."),
+                   this);
     infoLabel->setWordWrap(true);
     layout->addWidget(infoLabel);
 
@@ -265,10 +260,10 @@ void OptionalDatasetsPage::initializePage() {
 
     // Create a checkbox for each optional member
     for (const auto& member : wizard_->members()) {
-        if (!member.optional) continue;
+        if (!member.optional)
+            continue;
 
-        auto* cb = new QCheckBox(
-            QString::fromStdString(member.dataset_code), this);
+        auto* cb = new QCheckBox(QString::fromStdString(member.dataset_code), this);
 
         checkboxLayout_->addWidget(cb);
         checkboxes_.push_back(cb);
@@ -312,7 +307,8 @@ int OptionalDatasetsPage::nextId() const {
 // ============================================================================
 
 LeiPartyConfigPage::LeiPartyConfigPage(PublishBundleWizard* wizard)
-    : QWizardPage(wizard), wizard_(wizard) {
+    : QWizardPage(wizard)
+    , wizard_(wizard) {
 
     setTitle(tr("LEI Entity Configuration"));
     setSubTitle(tr("This bundle contains an LEI parties dataset. Select the "
@@ -353,14 +349,15 @@ void LeiPartyConfigPage::setupUI() {
     layout->addWidget(selectionBox);
 
     // Connect entity selection signal
-    connect(leiPicker_, &LeiEntityPicker::entitySelected,
-            this, [this](const QString& lei, const QString& name) {
-        wizard_->setRootLei(lei);
-        wizard_->setRootLeiName(name);
-        selectedEntityLabel_->setText(
-            tr("<b>%1</b> - %2").arg(lei, name));
-        emit completeChanged();
-    });
+    connect(leiPicker_,
+            &LeiEntityPicker::entitySelected,
+            this,
+            [this](const QString& lei, const QString& name) {
+                wizard_->setRootLei(lei);
+                wizard_->setRootLeiName(name);
+                selectedEntityLabel_->setText(tr("<b>%1</b> - %2").arg(lei, name));
+                emit completeChanged();
+            });
 }
 
 void LeiPartyConfigPage::initializePage() {
@@ -375,15 +372,14 @@ void LeiPartyConfigPage::initializePage() {
         selectedEntityLabel_->setText(tr("No entity selected."));
     } else {
         selectedEntityLabel_->setText(
-            tr("<b>%1</b> - %2").arg(
-                wizard_->rootLei(), wizard_->rootLeiName()));
+            tr("<b>%1</b> - %2").arg(wizard_->rootLei(), wizard_->rootLeiName()));
     }
 }
 
 bool LeiPartyConfigPage::validatePage() {
     if (wizard_->rootLei().isEmpty()) {
-        QMessageBox::warning(this, tr("Entity Required"),
-            tr("Please select a root LEI entity before continuing."));
+        QMessageBox::warning(
+            this, tr("Entity Required"), tr("Please select a root LEI entity before continuing."));
         return false;
     }
     return true;
@@ -398,7 +394,8 @@ int LeiPartyConfigPage::nextId() const {
 // ============================================================================
 
 ConfirmPublishPage::ConfirmPublishPage(PublishBundleWizard* wizard)
-    : QWizardPage(wizard), wizard_(wizard) {
+    : QWizardPage(wizard)
+    , wizard_(wizard) {
 
     setTitle(tr("Confirm Publication"));
     setSubTitle(tr("Review the publication settings and click 'Next' to begin "
@@ -432,8 +429,7 @@ void ConfirmPublishPage::setupUI() {
     settingsLayout->addRow(tr("Mode:"), modeCombo_);
 
     // Atomic checkbox
-    atomicCheckbox_ = new QCheckBox(
-        tr("Atomic (all datasets succeed or all fail)"), this);
+    atomicCheckbox_ = new QCheckBox(tr("Atomic (all datasets succeed or all fail)"), this);
     atomicCheckbox_->setChecked(true);
     settingsLayout->addRow(tr("Transaction:"), atomicCheckbox_);
 
@@ -444,17 +440,15 @@ void ConfirmPublishPage::setupUI() {
 void ConfirmPublishPage::initializePage() {
     const auto memberCount = wizard_->members().size();
 
-    QString summary = tr(
-        "<p><b>Bundle:</b> %1</p>"
-        "<p><b>Datasets:</b> %2</p>")
-        .arg(wizard_->bundleName())
-        .arg(memberCount);
+    QString summary = tr("<p><b>Bundle:</b> %1</p>"
+                         "<p><b>Datasets:</b> %2</p>")
+                          .arg(wizard_->bundleName())
+                          .arg(memberCount);
 
     if (wizard_->needsLeiPartyConfig() && !wizard_->rootLei().isEmpty()) {
-        summary += tr(
-            "<p><b>Root LEI:</b> %1</p>"
-            "<p><b>Entity:</b> %2</p>")
-            .arg(wizard_->rootLei(), wizard_->rootLeiName());
+        summary += tr("<p><b>Root LEI:</b> %1</p>"
+                      "<p><b>Entity:</b> %2</p>")
+                       .arg(wizard_->rootLei(), wizard_->rootLeiName());
     }
 
     summaryLabel_->setText(summary);
@@ -467,18 +461,18 @@ bool ConfirmPublishPage::validatePage() {
     // Store selected mode
     const int modeIndex = modeCombo_->currentIndex();
     switch (modeIndex) {
-    case 0:
-        wizard_->setSelectedMode(dq::domain::publication_mode::upsert);
-        break;
-    case 1:
-        wizard_->setSelectedMode(dq::domain::publication_mode::insert_only);
-        break;
-    case 2:
-        wizard_->setSelectedMode(dq::domain::publication_mode::replace_all);
-        break;
-    default:
-        wizard_->setSelectedMode(dq::domain::publication_mode::upsert);
-        break;
+        case 0:
+            wizard_->setSelectedMode(dq::domain::publication_mode::upsert);
+            break;
+        case 1:
+            wizard_->setSelectedMode(dq::domain::publication_mode::insert_only);
+            break;
+        case 2:
+            wizard_->setSelectedMode(dq::domain::publication_mode::replace_all);
+            break;
+        default:
+            wizard_->setSelectedMode(dq::domain::publication_mode::upsert);
+            break;
     }
 
     wizard_->setAtomic(atomicCheckbox_->isChecked());
@@ -494,7 +488,8 @@ int ConfirmPublishPage::nextId() const {
 // ============================================================================
 
 PublishProgressPage::PublishProgressPage(PublishBundleWizard* wizard)
-    : QWizardPage(wizard), wizard_(wizard) {
+    : QWizardPage(wizard)
+    , wizard_(wizard) {
 
     setTitle(tr("Publishing"));
     setSubTitle(tr("Please wait while the bundle is being published."));
@@ -516,10 +511,9 @@ PublishProgressPage::PublishProgressPage(PublishBundleWizard* wizard)
     progressBar_->setRange(0, 0);
     progressBar_->setMinimumWidth(400);
     progressBar_->setTextVisible(false);
-    progressBar_->setStyleSheet(
-        "QProgressBar { border: 1px solid #3d3d3d; border-radius: 3px; "
-        "background: #2d2d2d; height: 20px; }"
-        "QProgressBar::chunk { background-color: #4a9eff; }");
+    progressBar_->setStyleSheet("QProgressBar { border: 1px solid #3d3d3d; border-radius: 3px; "
+                                "background: #2d2d2d; height: 20px; }"
+                                "QProgressBar::chunk { background-color: #4a9eff; }");
     layout->addWidget(progressBar_, 0, Qt::AlignCenter);
 
     layout->addStretch();
@@ -551,8 +545,7 @@ void PublishProgressPage::startPublish() {
     BOOST_LOG_SEV(lg(), info) << "Starting bundle publication (async): "
                               << wizard_->bundleCode().toStdString();
 
-    statusLabel_->setText(tr("Publishing bundle '%1'...").arg(
-        wizard_->bundleName()));
+    statusLabel_->setText(tr("Publishing bundle '%1'...").arg(wizard_->bundleName()));
 
     // Capture values needed for the background thread
     const std::string bundleCode = wizard_->bundleCode().toStdString();
@@ -578,8 +571,7 @@ void PublishProgressPage::startPublish() {
     using ResponseType = dq::messaging::publish_bundle_response;
 
     auto* watcher = new QFutureWatcher<std::optional<ResponseType>>(this);
-    connect(watcher, &QFutureWatcher<std::optional<ResponseType>>::finished,
-            [this, watcher]() {
+    connect(watcher, &QFutureWatcher<std::optional<ResponseType>>::finished, [this, watcher]() {
         const auto result = watcher->result();
         watcher->deleteLater();
 
@@ -587,8 +579,8 @@ void PublishProgressPage::startPublish() {
         progressBar_->setRange(0, 1);
         progressBar_->setValue(1);
 
-        auto* resultsPage = qobject_cast<PublishResultsPage*>(
-            wizard()->page(PublishBundleWizard::Page_Results));
+        auto* resultsPage =
+            qobject_cast<PublishResultsPage*>(wizard()->page(PublishBundleWizard::Page_Results));
 
         if (!result) {
             BOOST_LOG_SEV(lg(), error) << "Failed to communicate with server "
@@ -603,12 +595,10 @@ void PublishProgressPage::startPublish() {
             publishSuccess_ = false;
 
             if (resultsPage) {
-                resultsPage->setResults(false,
-                    tr("Failed to communicate with server."));
+                resultsPage->setResults(false, tr("Failed to communicate with server."));
             }
         } else if (!result->success) {
-            BOOST_LOG_SEV(lg(), error) << "Bundle publication failed: "
-                                       << result->error_message;
+            BOOST_LOG_SEV(lg(), error) << "Bundle publication failed: " << result->error_message;
             statusLabel_->setText(tr("Publication failed!"));
             progressBar_->setStyleSheet(
                 "QProgressBar { border: 1px solid #8B0000; border-radius: 3px; "
@@ -619,12 +609,12 @@ void PublishProgressPage::startPublish() {
             publishSuccess_ = false;
 
             if (resultsPage) {
-                resultsPage->setResults(false,
-                    QString::fromStdString(result->error_message));
+                resultsPage->setResults(false, QString::fromStdString(result->error_message));
             }
         } else {
-            BOOST_LOG_SEV(lg(), info) << "Bundle publish workflow started: "
-                << result->datasets_dispatched << " datasets dispatched, "
+            BOOST_LOG_SEV(lg(), info)
+                << "Bundle publish workflow started: " << result->datasets_dispatched
+                << " datasets dispatched, "
                 << "instance=" << result->instance_id;
 
             statusLabel_->setText(tr("Publication workflow started!"));
@@ -632,8 +622,8 @@ void PublishProgressPage::startPublish() {
             publishSuccess_ = true;
 
             if (resultsPage) {
-                resultsPage->setResults(true, QString(),
-                    result->instance_id, result->datasets_dispatched);
+                resultsPage->setResults(
+                    true, QString(), result->instance_id, result->datasets_dispatched);
             }
 
             emit wizard_->bundlePublished(wizard_->bundleCode());
@@ -647,10 +637,9 @@ void PublishProgressPage::startPublish() {
         }
     });
 
-    QFuture<std::optional<ResponseType>> future = QtConcurrent::run(
-        [clientManager, bundleCode, mode, publishedBy, atomic,
-         paramsJson]() -> std::optional<ResponseType> {
-
+    QFuture<std::optional<ResponseType>> future =
+        QtConcurrent::run([clientManager, bundleCode, mode, publishedBy, atomic, paramsJson]()
+                              -> std::optional<ResponseType> {
             dq::messaging::publish_bundle_request request;
             request.bundle_code = bundleCode;
             request.mode = mode;
@@ -658,15 +647,13 @@ void PublishProgressPage::startPublish() {
             request.atomic = atomic;
             request.params_json = paramsJson;
 
-            auto result = clientManager->process_authenticated_request(
-                std::move(request));
+            auto result = clientManager->process_authenticated_request(std::move(request));
 
             if (!result) {
                 return std::nullopt;
             }
             return *result;
-        }
-    );
+        });
 
     watcher->setFuture(future);
 }
@@ -676,7 +663,8 @@ void PublishProgressPage::startPublish() {
 // ============================================================================
 
 PublishResultsPage::PublishResultsPage(PublishBundleWizard* wizard)
-    : QWizardPage(wizard), wizard_(wizard) {
+    : QWizardPage(wizard)
+    , wizard_(wizard) {
 
     setTitle(tr("Publication Results"));
     setSubTitle(tr("Summary of the bundle publication."));
@@ -700,15 +688,16 @@ void PublishResultsPage::setupUI() {
     stepsWidget_->setVisible(false);
     layout->addWidget(stepsWidget_, 1);
 
-    connect(stepsWidget_, &WorkflowStepsWidget::instanceReachedTerminalState,
-            this, &PublishResultsPage::onWorkflowComplete);
+    connect(stepsWidget_,
+            &WorkflowStepsWidget::instanceReachedTerminalState,
+            this,
+            &PublishResultsPage::onWorkflowComplete);
 }
 
-void PublishResultsPage::setResults(
-    bool overallSuccess,
-    const QString& errorMessage,
-    const std::string& instanceId,
-    int) {
+void PublishResultsPage::setResults(bool overallSuccess,
+                                    const QString& errorMessage,
+                                    const std::string& instanceId,
+                                    int) {
 
     overallSuccess_ = overallSuccess;
     errorMessage_ = errorMessage;
@@ -721,12 +710,10 @@ void PublishResultsPage::initializePage() {
     if (overallSuccess_) {
         overallStatusLabel_->setText(
             tr("Publication workflow started — waiting for completion..."));
-        overallStatusLabel_->setStyleSheet(
-            "font-size: 14px; font-weight: bold;");
+        overallStatusLabel_->setStyleSheet("font-size: 14px; font-weight: bold;");
         if (!instanceId_.empty()) {
             stepsWidget_->setVisible(true);
-            stepsWidget_->setInstance(
-                QUuid::fromString(QString::fromStdString(instanceId_)));
+            stepsWidget_->setInstance(QUuid::fromString(QString::fromStdString(instanceId_)));
         } else {
             workflowComplete_ = true;
         }
@@ -736,8 +723,7 @@ void PublishResultsPage::initializePage() {
             msg += " " + errorMessage_;
         }
         overallStatusLabel_->setText(msg);
-        overallStatusLabel_->setStyleSheet(
-            "font-size: 14px; font-weight: bold; color: #cc0000;");
+        overallStatusLabel_->setStyleSheet("font-size: 14px; font-weight: bold; color: #cc0000;");
         workflowComplete_ = true;
     }
 
@@ -751,12 +737,10 @@ bool PublishResultsPage::isComplete() const {
 void PublishResultsPage::onWorkflowComplete(bool success) {
     if (success) {
         overallStatusLabel_->setText(tr("Publication workflow completed successfully."));
-        overallStatusLabel_->setStyleSheet(
-            "font-size: 14px; font-weight: bold; color: #228B22;");
+        overallStatusLabel_->setStyleSheet("font-size: 14px; font-weight: bold; color: #228B22;");
     } else {
         overallStatusLabel_->setText(tr("Publication workflow completed with errors."));
-        overallStatusLabel_->setStyleSheet(
-            "font-size: 14px; font-weight: bold; color: #cc0000;");
+        overallStatusLabel_->setStyleSheet("font-size: 14px; font-weight: bold; color: #cc0000;");
     }
     workflowComplete_ = true;
     emit completeChanged();

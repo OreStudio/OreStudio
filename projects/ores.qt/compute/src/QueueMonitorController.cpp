@@ -18,33 +18,30 @@
  *
  */
 #include "ores.qt/QueueMonitorController.hpp"
-
-#include <QPointer>
-#include <QtConcurrent/QtConcurrent>
-#include <QFutureWatcher>
+#include "ores.qt/CreateQueueDialog.hpp"
+#include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/ExceptionHelper.hpp"
-#include "ores.qt/CreateQueueDialog.hpp"
 #include "ores.qt/QueueChartWindow.hpp"
 #include "ores.qt/QueueDetailDialog.hpp"
 #include "ores.qt/QueueMonitorMdiWindow.hpp"
-#include "ores.qt/DetachableMdiSubWindow.hpp"
+#include <QFutureWatcher>
+#include <QPointer>
+#include <QtConcurrent/QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-QueueMonitorController::QueueMonitorController(
-    QMainWindow* mainWindow,
-    QMdiArea* mdiArea,
-    ClientManager* clientManager,
-    const QString& username,
-    QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username,
-          std::string_view{}, parent),
-      listWindow_(nullptr),
-      listMdiSubWindow_(nullptr) {
+QueueMonitorController::QueueMonitorController(QMainWindow* mainWindow,
+                                               QMdiArea* mdiArea,
+                                               ClientManager* clientManager,
+                                               const QString& username,
+                                               QObject* parent)
+    : EntityController(mainWindow, mdiArea, clientManager, username, std::string_view{}, parent)
+    , listWindow_(nullptr)
+    , listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "QueueMonitorController created";
 }
@@ -60,26 +57,40 @@ void QueueMonitorController::showListWindow() {
 
     listWindow_ = new QueueMonitorMdiWindow(clientManager_);
 
-    connect(listWindow_, &QueueMonitorMdiWindow::statusChanged,
-            this, &QueueMonitorController::statusMessage);
-    connect(listWindow_, &QueueMonitorMdiWindow::errorOccurred,
-            this, &QueueMonitorController::errorMessage);
-    connect(listWindow_, &QueueMonitorMdiWindow::viewChartRequested,
-            this, &QueueMonitorController::onViewChartRequested);
-    connect(listWindow_, &QueueMonitorMdiWindow::openDetailsRequested,
-            this, &QueueMonitorController::onOpenDetailsRequested);
-    connect(listWindow_, &QueueMonitorMdiWindow::createQueueRequested,
-            this, &QueueMonitorController::onCreateQueueRequested);
-    connect(listWindow_, &QueueMonitorMdiWindow::deleteQueueRequested,
-            this, &QueueMonitorController::onDeleteQueueRequested);
-    connect(listWindow_, &QueueMonitorMdiWindow::purgeQueueRequested,
-            this, &QueueMonitorController::onPurgeQueueRequested);
+    connect(listWindow_,
+            &QueueMonitorMdiWindow::statusChanged,
+            this,
+            &QueueMonitorController::statusMessage);
+    connect(listWindow_,
+            &QueueMonitorMdiWindow::errorOccurred,
+            this,
+            &QueueMonitorController::errorMessage);
+    connect(listWindow_,
+            &QueueMonitorMdiWindow::viewChartRequested,
+            this,
+            &QueueMonitorController::onViewChartRequested);
+    connect(listWindow_,
+            &QueueMonitorMdiWindow::openDetailsRequested,
+            this,
+            &QueueMonitorController::onOpenDetailsRequested);
+    connect(listWindow_,
+            &QueueMonitorMdiWindow::createQueueRequested,
+            this,
+            &QueueMonitorController::onCreateQueueRequested);
+    connect(listWindow_,
+            &QueueMonitorMdiWindow::deleteQueueRequested,
+            this,
+            &QueueMonitorController::onDeleteQueueRequested);
+    connect(listWindow_,
+            &QueueMonitorMdiWindow::purgeQueueRequested,
+            this,
+            &QueueMonitorController::onPurgeQueueRequested);
 
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle(tr("Queue Monitor"));
-    listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Server, IconUtils::DefaultIconColor));
+    listMdiSubWindow_->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Server, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -89,13 +100,16 @@ void QueueMonitorController::showListWindow() {
     track_window(key, listMdiSubWindow_);
     register_detachable_window(listMdiSubWindow_);
 
-    connect(listMdiSubWindow_, &QObject::destroyed,
-            this, [self = QPointer<QueueMonitorController>(this), key]() {
-        if (!self) return;
-        self->untrack_window(key);
-        self->listWindow_ = nullptr;
-        self->listMdiSubWindow_ = nullptr;
-    });
+    connect(listMdiSubWindow_,
+            &QObject::destroyed,
+            this,
+            [self = QPointer<QueueMonitorController>(this), key]() {
+                if (!self)
+                    return;
+                self->untrack_window(key);
+                self->listWindow_ = nullptr;
+                self->listMdiSubWindow_ = nullptr;
+            });
 
     BOOST_LOG_SEV(lg(), debug) << "Queue monitor window created";
 }
@@ -125,117 +139,123 @@ EntityListMdiWindow* QueueMonitorController::listWindow() const {
 
 void QueueMonitorController::onViewChartRequested(const QString& queueId,
                                                   const QString& queueName) {
-    BOOST_LOG_SEV(lg(), debug) << "View chart requested for: "
-                               << queueName.toStdString();
+    BOOST_LOG_SEV(lg(), debug) << "View chart requested for: " << queueName.toStdString();
     showChartWindow(queueId, queueName);
 }
 
-void QueueMonitorController::showChartWindow(const QString& queueId,
-                                             const QString& queueName) {
+void QueueMonitorController::showChartWindow(const QString& queueId, const QString& queueName) {
     const QString key = build_window_key("chart", queueName);
     if (try_reuse_window(key)) {
-        BOOST_LOG_SEV(lg(), debug) << "Reusing existing chart window for: "
-                                   << queueName.toStdString();
+        BOOST_LOG_SEV(lg(), debug)
+            << "Reusing existing chart window for: " << queueName.toStdString();
         return;
     }
 
     auto* chartWindow = new QueueChartWindow(queueId, queueName, clientManager_);
 
-    connect(chartWindow, &QueueChartWindow::statusChanged,
-            this, &QueueMonitorController::statusMessage);
-    connect(chartWindow, &QueueChartWindow::errorOccurred,
-            this, &QueueMonitorController::errorMessage);
+    connect(chartWindow,
+            &QueueChartWindow::statusChanged,
+            this,
+            &QueueMonitorController::statusMessage);
+    connect(
+        chartWindow, &QueueChartWindow::errorOccurred, this, &QueueMonitorController::errorMessage);
 
     auto* subWindow = new DetachableMdiSubWindow(mainWindow_);
     subWindow->setWidget(chartWindow);
     subWindow->setWindowTitle(tr("Chart: %1").arg(queueName));
-    subWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Chart, IconUtils::DefaultIconColor));
+    subWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
     subWindow->setAttribute(Qt::WA_DeleteOnClose);
     subWindow->resize(chartWindow->sizeHint());
 
     track_window(key, subWindow);
     register_detachable_window(subWindow);
 
-    connect(subWindow, &QObject::destroyed,
-            this, [self = QPointer<QueueMonitorController>(this), key]() {
-        if (!self) return;
-        self->untrack_window(key);
-    });
+    connect(subWindow,
+            &QObject::destroyed,
+            this,
+            [self = QPointer<QueueMonitorController>(this), key]() {
+                if (!self)
+                    return;
+                self->untrack_window(key);
+            });
 
     show_managed_window(subWindow, listMdiSubWindow_, QPoint(60, 60));
 
-    BOOST_LOG_SEV(lg(), debug) << "Chart window created for: "
-                               << queueName.toStdString();
+    BOOST_LOG_SEV(lg(), debug) << "Chart window created for: " << queueName.toStdString();
 }
 
-void QueueMonitorController::onOpenDetailsRequested(
-    const QString& queueId, const QString& queueName) {
-    BOOST_LOG_SEV(lg(), debug) << "Open details requested for: "
-                               << queueName.toStdString();
+void QueueMonitorController::onOpenDetailsRequested(const QString& queueId,
+                                                    const QString& queueName) {
+    BOOST_LOG_SEV(lg(), debug) << "Open details requested for: " << queueName.toStdString();
     showDetailWindow(queueId, queueName);
 }
 
-void QueueMonitorController::showDetailWindow(
-    const QString& queueId, const QString& queueName) {
+void QueueMonitorController::showDetailWindow(const QString& queueId, const QString& queueName) {
     const QString key = build_window_key("details", queueName);
     if (try_reuse_window(key)) {
-        BOOST_LOG_SEV(lg(), debug) << "Reusing existing detail window for: "
-                                   << queueName.toStdString();
+        BOOST_LOG_SEV(lg(), debug)
+            << "Reusing existing detail window for: " << queueName.toStdString();
         return;
     }
 
     auto* detailWidget = new QueueDetailDialog(queueId, queueName, clientManager_);
 
-    connect(detailWidget, &QueueDetailDialog::statusChanged,
-            this, &QueueMonitorController::statusMessage);
-    connect(detailWidget, &QueueDetailDialog::errorOccurred,
-            this, &QueueMonitorController::errorMessage);
+    connect(detailWidget,
+            &QueueDetailDialog::statusChanged,
+            this,
+            &QueueMonitorController::statusMessage);
+    connect(detailWidget,
+            &QueueDetailDialog::errorOccurred,
+            this,
+            &QueueMonitorController::errorMessage);
 
     auto* subWindow = new DetachableMdiSubWindow(mainWindow_);
     subWindow->setWidget(detailWidget);
     subWindow->setWindowTitle(tr("Queue: %1").arg(queueName));
-    subWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::DocumentTable, IconUtils::DefaultIconColor));
+    subWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::DocumentTable, IconUtils::DefaultIconColor));
     subWindow->setAttribute(Qt::WA_DeleteOnClose);
     subWindow->resize(detailWidget->sizeHint());
 
     track_window(key, subWindow);
     register_detachable_window(subWindow);
 
-    connect(subWindow, &QObject::destroyed,
-            this, [self = QPointer<QueueMonitorController>(this), key]() {
-        if (!self) return;
-        self->untrack_window(key);
-    });
+    connect(subWindow,
+            &QObject::destroyed,
+            this,
+            [self = QPointer<QueueMonitorController>(this), key]() {
+                if (!self)
+                    return;
+                self->untrack_window(key);
+            });
 
     show_managed_window(subWindow, listMdiSubWindow_, QPoint(60, 60));
 
-    BOOST_LOG_SEV(lg(), debug) << "Detail window created for: "
-                               << queueName.toStdString();
+    BOOST_LOG_SEV(lg(), debug) << "Detail window created for: " << queueName.toStdString();
 }
 
 void QueueMonitorController::onCreateQueueRequested() {
     BOOST_LOG_SEV(lg(), warn) << "Create queue not supported in NATS protocol";
     emit errorMessage(tr("Queue creation is not available in this version."));
-    MessageBoxHelper::warning(mainWindow_, tr("Not Available"),
-        tr("Queue creation is not supported in this version."));
+    MessageBoxHelper::warning(
+        mainWindow_, tr("Not Available"), tr("Queue creation is not supported in this version."));
 }
 
 void QueueMonitorController::onDeleteQueueRequested(const QString& queueName) {
     BOOST_LOG_SEV(lg(), warn) << "Delete queue not supported in NATS protocol: "
                               << queueName.toStdString();
     emit errorMessage(tr("Queue deletion is not available in this version."));
-    MessageBoxHelper::warning(mainWindow_, tr("Not Available"),
-        tr("Queue deletion is not supported in this version."));
+    MessageBoxHelper::warning(
+        mainWindow_, tr("Not Available"), tr("Queue deletion is not supported in this version."));
 }
 
 void QueueMonitorController::onPurgeQueueRequested(const QString& queueName) {
     BOOST_LOG_SEV(lg(), warn) << "Purge queue not supported in NATS protocol: "
                               << queueName.toStdString();
     emit errorMessage(tr("Queue purging is not available in this version."));
-    MessageBoxHelper::warning(mainWindow_, tr("Not Available"),
-        tr("Queue purging is not supported in this version."));
+    MessageBoxHelper::warning(
+        mainWindow_, tr("Not Available"), tr("Queue purging is not supported in this version."));
 }
 
 }

@@ -20,12 +20,12 @@
 #ifndef ORES_QT_CODING_SCHEME_DETAIL_DIALOG_HPP
 #define ORES_QT_CODING_SCHEME_DETAIL_DIALOG_HPP
 
-#include <QTabWidget>
+#include "ores.dq.api/domain/coding_scheme.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.qt/ProvenanceWidget.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.dq.api/domain/coding_scheme.hpp"
+#include <QTabWidget>
 
 namespace Ui {
 class CodingSchemeDetailDialog;
@@ -37,8 +37,7 @@ class CodingSchemeDetailDialog final : public DetailDialogBase {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.coding_scheme_detail_dialog";
+    inline static std::string_view logger_name = "ores.qt.coding_scheme_detail_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -50,8 +49,12 @@ public:
     explicit CodingSchemeDetailDialog(QWidget* parent = nullptr);
     ~CodingSchemeDetailDialog() override;
 
-    void setClientManager(ClientManager* cm) { clientManager_ = cm; }
-    void setUsername(const std::string& username) { username_ = username; }
+    void setClientManager(ClientManager* cm) {
+        clientManager_ = cm;
+    }
+    void setUsername(const std::string& username) {
+        username_ = username;
+    }
     void setCreateMode(bool create);
     void setScheme(const dq::domain::coding_scheme& scheme);
     void setReadOnly(bool readOnly);

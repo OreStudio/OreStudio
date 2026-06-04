@@ -18,26 +18,26 @@
  *
  */
 #include "ores.qt/ClientRoleModel.hpp"
-
-#include <algorithm>
+#include "ores.iam.api/messaging/authorization_protocol.hpp"
+#include "ores.qt/ExceptionHelper.hpp"
+#include "ores.qt/RelativeTimeHelper.hpp"
 #include <QtConcurrent>
 #include <boost/uuid/uuid_io.hpp>
-#include "ores.qt/ExceptionHelper.hpp"
-#include "ores.iam.api/messaging/authorization_protocol.hpp"
-#include "ores.qt/RelativeTimeHelper.hpp"
+#include <algorithm>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-ClientRoleModel::
-ClientRoleModel(ClientManager* clientManager, QObject* parent)
-    : AbstractClientModel(parent), clientManager_(clientManager),
-      watcher_(new QFutureWatcher<FutureWatcherResult>(this)) {
+ClientRoleModel::ClientRoleModel(ClientManager* clientManager, QObject* parent)
+    : AbstractClientModel(parent)
+    , clientManager_(clientManager)
+    , watcher_(new QFutureWatcher<FutureWatcherResult>(this)) {
 
     connect(watcher_,
-        &QFutureWatcher<FutureWatcherResult>::finished,
-        this, &ClientRoleModel::onRolesLoaded);
+            &QFutureWatcher<FutureWatcherResult>::finished,
+            this,
+            &ClientRoleModel::onRolesLoaded);
 }
 
 int ClientRoleModel::rowCount(const QModelIndex& parent) const {
@@ -66,30 +66,43 @@ QVariant ClientRoleModel::data(const QModelIndex& index, int role) const {
         return {};
 
     switch (index.column()) {
-    case Column::Name: return QString::fromStdString(r.name);
-    case Column::Description: return QString::fromStdString(r.description);
-    case Column::PermissionCount: return static_cast<int>(r.permission_codes.size());
-    case Column::Version: return r.version;
-    case Column::ModifiedBy: return QString::fromStdString(r.modified_by);
-    case Column::RecordedAt: return relative_time_helper::format(r.recorded_at);
-    default: return {};
+        case Column::Name:
+            return QString::fromStdString(r.name);
+        case Column::Description:
+            return QString::fromStdString(r.description);
+        case Column::PermissionCount:
+            return static_cast<int>(r.permission_codes.size());
+        case Column::Version:
+            return r.version;
+        case Column::ModifiedBy:
+            return QString::fromStdString(r.modified_by);
+        case Column::RecordedAt:
+            return relative_time_helper::format(r.recorded_at);
+        default:
+            return {};
     }
 }
 
-QVariant ClientRoleModel::
-headerData(int section, Qt::Orientation orientation, int role) const {
+QVariant ClientRoleModel::headerData(int section, Qt::Orientation orientation, int role) const {
     if (role != Qt::DisplayRole)
         return {};
 
     if (orientation == Qt::Horizontal) {
         switch (section) {
-        case Column::Name: return tr("Name");
-        case Column::Description: return tr("Description");
-        case Column::PermissionCount: return tr("Permissions");
-        case Column::Version: return tr("Version");
-        case Column::ModifiedBy: return tr("Modified By");
-        case Column::RecordedAt: return tr("Recorded At");
-        default: return {};
+            case Column::Name:
+                return tr("Name");
+            case Column::Description:
+                return tr("Description");
+            case Column::PermissionCount:
+                return tr("Permissions");
+            case Column::Version:
+                return tr("Version");
+            case Column::ModifiedBy:
+                return tr("Modified By");
+            case Column::RecordedAt:
+                return tr("Recorded At");
+            default:
+                return {};
         }
     }
 
@@ -118,39 +131,42 @@ void ClientRoleModel::refresh() {
     is_fetching_ = true;
     QPointer<ClientRoleModel> self = this;
 
-    QFuture<FutureWatcherResult> future =
-        QtConcurrent::run([self]() -> FutureWatcherResult {
-            return exception_helper::wrap_async_fetch<FutureWatcherResult>([&]() -> FutureWatcherResult {
+    QFuture<FutureWatcherResult> future = QtConcurrent::run([self]() -> FutureWatcherResult {
+        return exception_helper::wrap_async_fetch<FutureWatcherResult>(
+            [&]() -> FutureWatcherResult {
                 BOOST_LOG_SEV(lg(), debug) << "Making a roles request";
                 if (!self || !self->clientManager_) {
-                    return {.success = false, .roles = {},
+                    return {.success = false,
+                            .roles = {},
                             .error_message = "Model was destroyed",
                             .error_details = {}};
                 }
 
                 iam::messaging::list_roles_request request;
 
-                auto result = self->clientManager_->
-                    process_authenticated_request(std::move(request));
+                auto result =
+                    self->clientManager_->process_authenticated_request(std::move(request));
 
                 if (!result) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to fetch roles: "
-                                               << result.error();
-                    return {.success = false, .roles = {},
-                            .error_message = QString::fromStdString(
-                                "Failed to fetch roles: " + result.error()),
+                    BOOST_LOG_SEV(lg(), error) << "Failed to fetch roles: " << result.error();
+                    return {.success = false,
+                            .roles = {},
+                            .error_message =
+                                QString::fromStdString("Failed to fetch roles: " + result.error()),
                             .error_details = {}};
                 }
 
-                BOOST_LOG_SEV(lg(), debug) << "Received " << result->roles.size()
-                                           << " roles";
+                BOOST_LOG_SEV(lg(), debug) << "Received " << result->roles.size() << " roles";
 
-                return {.success = true, .roles = std::move(result->roles),
-                        .error_message = {}, .error_details = {}};
-            }, "roles");
-        });
+                return {.success = true,
+                        .roles = std::move(result->roles),
+                        .error_message = {},
+                        .error_details = {}};
+            },
+            "roles");
+    });
 
-     watcher_->setFuture(future);
+    watcher_->setFuture(future);
 }
 
 void ClientRoleModel::onRolesLoaded() {
@@ -160,8 +176,8 @@ void ClientRoleModel::onRolesLoaded() {
     const auto result = watcher_->result();
 
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to fetch roles: "
-                                   << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to fetch roles: " << result.error_message.toStdString();
         emit loadError(result.error_message, result.error_details);
         return;
     }
@@ -170,9 +186,7 @@ void ClientRoleModel::onRolesLoaded() {
     roles_ = std::move(result.roles);
 
     // Sort by name
-    std::ranges::sort(roles_, [](auto const& a, auto const& b) {
-        return a.name < b.name;
-    });
+    std::ranges::sort(roles_, [](auto const& a, auto const& b) { return a.name < b.name; });
     endResetModel();
 
     BOOST_LOG_SEV(lg(), info) << "Loaded " << roles_.size() << " roles";

@@ -18,26 +18,25 @@
  *
  */
 #include "ores.qt/TenantTypeDetailDialog.hpp"
-
-#include <QPlainTextEdit>
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include "ui_TenantTypeDetailDialog.h"
+#include "ores.iam.api/messaging/tenant_type_protocol.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.iam.api/messaging/tenant_type_protocol.hpp"
+#include "ui_TenantTypeDetailDialog.h"
+#include <QFutureWatcher>
+#include <QMessageBox>
+#include <QPlainTextEdit>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 TenantTypeDetailDialog::TenantTypeDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent),
-      ui_(new Ui::TenantTypeDetailDialog),
-      clientManager_(nullptr) {
+    : DetailDialogBase(parent)
+    , ui_(new Ui::TenantTypeDetailDialog)
+    , clientManager_(nullptr) {
 
     ui_->setupUi(this);
     WidgetUtils::setupComboBoxes(this);
@@ -49,9 +48,15 @@ TenantTypeDetailDialog::~TenantTypeDetailDialog() {
     delete ui_;
 }
 
-QTabWidget* TenantTypeDetailDialog::tabWidget() const { return ui_->tabWidget; }
-QWidget* TenantTypeDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
-ProvenanceWidget* TenantTypeDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
+QTabWidget* TenantTypeDetailDialog::tabWidget() const {
+    return ui_->tabWidget;
+}
+QWidget* TenantTypeDetailDialog::provenanceTab() const {
+    return ui_->provenanceTab;
+}
+ProvenanceWidget* TenantTypeDetailDialog::provenanceWidget() const {
+    return ui_->provenanceWidget;
+}
 
 void TenantTypeDetailDialog::setupUi() {
     ui_->saveButton->setIcon(
@@ -66,18 +71,16 @@ void TenantTypeDetailDialog::setupUi() {
 }
 
 void TenantTypeDetailDialog::setupConnections() {
-    connect(ui_->saveButton, &QPushButton::clicked, this,
-            &TenantTypeDetailDialog::onSaveClicked);
-    connect(ui_->deleteButton, &QPushButton::clicked, this,
-            &TenantTypeDetailDialog::onDeleteClicked);
-    connect(ui_->closeButton, &QPushButton::clicked, this,
-            &TenantTypeDetailDialog::onCloseClicked);
+    connect(ui_->saveButton, &QPushButton::clicked, this, &TenantTypeDetailDialog::onSaveClicked);
+    connect(
+        ui_->deleteButton, &QPushButton::clicked, this, &TenantTypeDetailDialog::onDeleteClicked);
+    connect(ui_->closeButton, &QPushButton::clicked, this, &TenantTypeDetailDialog::onCloseClicked);
 
-    connect(ui_->codeEdit, &QLineEdit::textChanged, this,
-            &TenantTypeDetailDialog::onCodeChanged);
-    connect(ui_->nameEdit, &QLineEdit::textChanged, this,
-            &TenantTypeDetailDialog::onFieldChanged);
-    connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this,
+    connect(ui_->codeEdit, &QLineEdit::textChanged, this, &TenantTypeDetailDialog::onCodeChanged);
+    connect(ui_->nameEdit, &QLineEdit::textChanged, this, &TenantTypeDetailDialog::onFieldChanged);
+    connect(ui_->descriptionEdit,
+            &QPlainTextEdit::textChanged,
+            this,
             &TenantTypeDetailDialog::onFieldChanged);
 }
 
@@ -89,8 +92,7 @@ void TenantTypeDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
 
-void TenantTypeDetailDialog::setType(
-    const iam::domain::tenant_type& tenant_type) {
+void TenantTypeDetailDialog::setType(const iam::domain::tenant_type& tenant_type) {
     tenant_type_ = tenant_type;
     updateUiFromType();
 }
@@ -120,9 +122,12 @@ void TenantTypeDetailDialog::updateUiFromType() {
     ui_->nameEdit->setText(QString::fromStdString(tenant_type_.name));
     ui_->descriptionEdit->setPlainText(QString::fromStdString(tenant_type_.description));
 
-    populateProvenance(tenant_type_.version, tenant_type_.modified_by,
-        tenant_type_.performed_by, tenant_type_.recorded_at,
-        tenant_type_.change_reason_code, tenant_type_.change_commentary);
+    populateProvenance(tenant_type_.version,
+                       tenant_type_.modified_by,
+                       tenant_type_.performed_by,
+                       tenant_type_.recorded_at,
+                       tenant_type_.change_reason_code,
+                       tenant_type_.change_commentary);
     hasChanges_ = false;
     updateSaveButtonState();
 }
@@ -161,25 +166,23 @@ bool TenantTypeDetailDialog::validateInput() {
 
 void TenantTypeDetailDialog::onSaveClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot save tenant type while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot save tenant type while disconnected from server.");
         return;
     }
 
     if (!validateInput()) {
-        MessageBoxHelper::warning(this, "Invalid Input",
-            "Please fill in all required fields.");
+        MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
 
     updateTypeFromUi();
 
-    const auto crOpType = createMode_
-        ? ChangeReasonDialog::OperationType::Create
-        : ChangeReasonDialog::OperationType::Amend;
-    const auto crSel = promptChangeReason(crOpType, hasChanges_,
-        createMode_ ? "system" : "common");
-    if (!crSel) return;
+    const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
+                                        ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
+    if (!crSel)
+        return;
     tenant_type_.change_reason_code = crSel->reason_code;
     tenant_type_.change_commentary = crSel->commentary;
 
@@ -199,7 +202,8 @@ void TenantTypeDetailDialog::onSaveClicked() {
 
         iam::messaging::save_tenant_type_request request;
         request.data = tenant_type;
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -210,8 +214,7 @@ void TenantTypeDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
@@ -236,13 +239,15 @@ void TenantTypeDetailDialog::onSaveClicked() {
 
 void TenantTypeDetailDialog::onDeleteClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot delete tenant type while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot delete tenant type while disconnected from server.");
         return;
     }
 
     QString code = QString::fromStdString(tenant_type_.type);
-    auto reply = MessageBoxHelper::question(this, "Delete Tenant Type",
+    auto reply = MessageBoxHelper::question(
+        this,
+        "Delete Tenant Type",
         QString("Are you sure you want to delete tenant type '%1'?").arg(code),
         QMessageBox::Yes | QMessageBox::No);
 
@@ -250,9 +255,10 @@ void TenantTypeDetailDialog::onDeleteClicked() {
         return;
     }
 
-    const auto crSel = promptChangeReason(
-        ChangeReasonDialog::OperationType::Delete, true, "common");
-    if (!crSel) return;
+    const auto crSel =
+        promptChangeReason(ChangeReasonDialog::OperationType::Delete, true, "common");
+    if (!crSel)
+        return;
 
     BOOST_LOG_SEV(lg(), info) << "Deleting tenant type: " << tenant_type_.type;
 
@@ -270,7 +276,8 @@ void TenantTypeDetailDialog::onDeleteClicked() {
 
         iam::messaging::delete_tenant_type_request request;
         request.type = code;
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -281,8 +288,7 @@ void TenantTypeDetailDialog::onDeleteClicked() {
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
-            self, [self, code, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, code, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 

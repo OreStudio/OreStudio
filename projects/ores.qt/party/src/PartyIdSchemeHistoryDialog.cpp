@@ -18,31 +18,29 @@
  *
  */
 #include "ores.qt/PartyIdSchemeHistoryDialog.hpp"
-
-#include <QVBoxLayout>
-#include <QHeaderView>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include "ui_PartyIdSchemeHistoryDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.refdata.api/messaging/party_id_scheme_protocol.hpp"
+#include "ui_PartyIdSchemeHistoryDialog.h"
+#include <QFutureWatcher>
+#include <QHeaderView>
+#include <QVBoxLayout>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-PartyIdSchemeHistoryDialog::PartyIdSchemeHistoryDialog(
-    const QString& code,
-    ClientManager* clientManager,
-    QWidget* parent)
-    : QWidget(parent),
-      ui_(new Ui::PartyIdSchemeHistoryDialog),
-      code_(code),
-      clientManager_(clientManager),
-      toolbar_(nullptr),
-      openVersionAction_(nullptr),
-      revertAction_(nullptr) {
+PartyIdSchemeHistoryDialog::PartyIdSchemeHistoryDialog(const QString& code,
+                                                       ClientManager* clientManager,
+                                                       QWidget* parent)
+    : QWidget(parent)
+    , ui_(new Ui::PartyIdSchemeHistoryDialog)
+    , code_(code)
+    , clientManager_(clientManager)
+    , toolbar_(nullptr)
+    , openVersionAction_(nullptr)
+    , revertAction_(nullptr) {
 
     ui_->setupUi(this);
     setupUi();
@@ -70,8 +68,7 @@ void PartyIdSchemeHistoryDialog::setupUi() {
 
     // Setup changes table
     ui_->changesTableWidget->setColumnCount(3);
-    ui_->changesTableWidget->setHorizontalHeaderLabels(
-        {"Field", "Old Value", "New Value"});
+    ui_->changesTableWidget->setHorizontalHeaderLabels({"Field", "Old Value", "New Value"});
     ui_->changesTableWidget->horizontalHeader()->setStretchLastSection(true);
 }
 
@@ -82,15 +79,14 @@ void PartyIdSchemeHistoryDialog::setupToolbar() {
     toolbar_->setIconSize(QSize(20, 20));
 
     openVersionAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Open, IconUtils::DefaultIconColor),
-        tr("Open"));
+        IconUtils::createRecoloredIcon(Icon::Open, IconUtils::DefaultIconColor), tr("Open"));
     openVersionAction_->setToolTip(tr("Open this version (read-only)"));
     openVersionAction_->setEnabled(false);
 
-    revertAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor),
-        tr("Revert"));
+    revertAction_ =
+        toolbar_->addAction(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
+                                                           IconUtils::DefaultIconColor),
+                            tr("Revert"));
     revertAction_->setToolTip(tr("Revert to this version"));
     revertAction_->setEnabled(false);
 
@@ -102,14 +98,19 @@ void PartyIdSchemeHistoryDialog::setupToolbar() {
 }
 
 void PartyIdSchemeHistoryDialog::setupConnections() {
-    connect(ui_->versionListWidget, &QTableWidget::itemSelectionChanged,
-            this, &PartyIdSchemeHistoryDialog::onVersionSelected);
-    connect(openVersionAction_, &QAction::triggered,
-            this, &PartyIdSchemeHistoryDialog::onOpenVersionClicked);
-    connect(revertAction_, &QAction::triggered,
-            this, &PartyIdSchemeHistoryDialog::onRevertClicked);
-    connect(ui_->closeButton, &QPushButton::clicked,
-            this, [this]() { if (window()) window()->close(); });
+    connect(ui_->versionListWidget,
+            &QTableWidget::itemSelectionChanged,
+            this,
+            &PartyIdSchemeHistoryDialog::onVersionSelected);
+    connect(openVersionAction_,
+            &QAction::triggered,
+            this,
+            &PartyIdSchemeHistoryDialog::onOpenVersionClicked);
+    connect(revertAction_, &QAction::triggered, this, &PartyIdSchemeHistoryDialog::onRevertClicked);
+    connect(ui_->closeButton, &QPushButton::clicked, this, [this]() {
+        if (window())
+            window()->close();
+    });
 }
 
 void PartyIdSchemeHistoryDialog::loadHistory() {
@@ -136,28 +137,28 @@ void PartyIdSchemeHistoryDialog::loadHistory() {
 
         refdata::messaging::get_party_id_scheme_history_request request;
         request.scheme = code;
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server", {}};
         }
 
 
-        return {response_result->success, response_result->message,
+        return {response_result->success,
+                response_result->message,
                 std::move(response_result->history)};
     };
 
     auto* watcher = new QFutureWatcher<HistoryResult>(self);
-    connect(watcher, &QFutureWatcher<HistoryResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<HistoryResult>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
         if (result.success) {
             self->versions_ = std::move(result.versions);
             self->updateVersionList();
-            emit self->statusChanged(
-                QString("Loaded %1 versions").arg(self->versions_.size()));
+            emit self->statusChanged(QString("Loaded %1 versions").arg(self->versions_.size()));
         } else {
             BOOST_LOG_SEV(lg(), error) << "History load failed: " << result.message;
             emit self->errorOccurred(QString::fromStdString(result.message));
@@ -179,20 +180,18 @@ void PartyIdSchemeHistoryDialog::updateVersionList() {
         versionItem->setTextAlignment(Qt::AlignCenter);
         ui_->versionListWidget->setItem(row, 0, versionItem);
 
-        auto* recordedAtItem = new QTableWidgetItem(
-            relative_time_helper::format(version.recorded_at));
+        auto* recordedAtItem =
+            new QTableWidgetItem(relative_time_helper::format(version.recorded_at));
         ui_->versionListWidget->setItem(row, 1, recordedAtItem);
 
-        auto* modifiedByItem = new QTableWidgetItem(
-            QString::fromStdString(version.modified_by));
+        auto* modifiedByItem = new QTableWidgetItem(QString::fromStdString(version.modified_by));
         ui_->versionListWidget->setItem(row, 2, modifiedByItem);
 
-        auto* performedByItem = new QTableWidgetItem(
-            QString::fromStdString(version.performed_by));
+        auto* performedByItem = new QTableWidgetItem(QString::fromStdString(version.performed_by));
         ui_->versionListWidget->setItem(row, 3, performedByItem);
 
-        auto* commentaryItem = new QTableWidgetItem(
-            QString::fromStdString(version.change_commentary));
+        auto* commentaryItem =
+            new QTableWidgetItem(QString::fromStdString(version.change_commentary));
         ui_->versionListWidget->setItem(row, 4, commentaryItem);
     }
 
@@ -218,8 +217,7 @@ void PartyIdSchemeHistoryDialog::onVersionSelected() {
 void PartyIdSchemeHistoryDialog::updateChangesTable(int currentVersionIndex) {
     ui_->changesTableWidget->setRowCount(0);
 
-    if (currentVersionIndex < 0 ||
-        static_cast<size_t>(currentVersionIndex) >= versions_.size()) {
+    if (currentVersionIndex < 0 || static_cast<size_t>(currentVersionIndex) >= versions_.size()) {
         return;
     }
 
@@ -228,8 +226,7 @@ void PartyIdSchemeHistoryDialog::updateChangesTable(int currentVersionIndex) {
     if (static_cast<size_t>(previousVersionIndex) >= versions_.size()) {
         // This is the first version, no changes to show
         ui_->changesTableWidget->insertRow(0);
-        ui_->changesTableWidget->setItem(0, 0,
-            new QTableWidgetItem("(Initial version)"));
+        ui_->changesTableWidget->setItem(0, 0, new QTableWidgetItem("(Initial version)"));
         ui_->changesTableWidget->setItem(0, 1, new QTableWidgetItem("-"));
         ui_->changesTableWidget->setItem(0, 2, new QTableWidgetItem("-"));
         return;
@@ -238,8 +235,7 @@ void PartyIdSchemeHistoryDialog::updateChangesTable(int currentVersionIndex) {
     const auto& current = versions_[currentVersionIndex];
     const auto& previous = versions_[previousVersionIndex];
 
-    auto addChange = [this](const QString& field,
-                            const QString& oldVal, const QString& newVal) {
+    auto addChange = [this](const QString& field, const QString& oldVal, const QString& newVal) {
         int row = ui_->changesTableWidget->rowCount();
         ui_->changesTableWidget->insertRow(row);
         ui_->changesTableWidget->setItem(row, 0, new QTableWidgetItem(field));
@@ -248,15 +244,13 @@ void PartyIdSchemeHistoryDialog::updateChangesTable(int currentVersionIndex) {
     };
 
     if (current.code != previous.code) {
-        addChange("Code",
-                  QString::fromStdString(previous.code),
-                  QString::fromStdString(current.code));
+        addChange(
+            "Code", QString::fromStdString(previous.code), QString::fromStdString(current.code));
     }
 
     if (current.name != previous.name) {
-        addChange("Name",
-                  QString::fromStdString(previous.name),
-                  QString::fromStdString(current.name));
+        addChange(
+            "Name", QString::fromStdString(previous.name), QString::fromStdString(current.name));
     }
 
     if (current.description != previous.description) {
@@ -268,16 +262,14 @@ void PartyIdSchemeHistoryDialog::updateChangesTable(int currentVersionIndex) {
 
     if (ui_->changesTableWidget->rowCount() == 0) {
         ui_->changesTableWidget->insertRow(0);
-        ui_->changesTableWidget->setItem(0, 0,
-            new QTableWidgetItem("(No field changes)"));
+        ui_->changesTableWidget->setItem(0, 0, new QTableWidgetItem("(No field changes)"));
         ui_->changesTableWidget->setItem(0, 1, new QTableWidgetItem("-"));
         ui_->changesTableWidget->setItem(0, 2, new QTableWidgetItem("-"));
     }
 }
 
 void PartyIdSchemeHistoryDialog::updateFullDetails(int versionIndex) {
-    if (versionIndex < 0 ||
-        static_cast<size_t>(versionIndex) >= versions_.size()) {
+    if (versionIndex < 0 || static_cast<size_t>(versionIndex) >= versions_.size()) {
         return;
     }
 
@@ -289,8 +281,7 @@ void PartyIdSchemeHistoryDialog::updateFullDetails(int versionIndex) {
     ui_->versionNumberValue->setText(QString::number(version.version));
     ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
     ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));
-    ui_->changeCommentaryValue->setText(
-        QString::fromStdString(version.change_commentary));
+    ui_->changeCommentaryValue->setText(QString::fromStdString(version.change_commentary));
 }
 
 void PartyIdSchemeHistoryDialog::updateActionStates() {
@@ -304,20 +295,24 @@ void PartyIdSchemeHistoryDialog::updateActionStates() {
 
 void PartyIdSchemeHistoryDialog::onOpenVersionClicked() {
     auto selected = ui_->versionListWidget->selectedItems();
-    if (selected.isEmpty()) return;
+    if (selected.isEmpty())
+        return;
 
     int row = selected.first()->row();
-    if (static_cast<size_t>(row) >= versions_.size()) return;
+    if (static_cast<size_t>(row) >= versions_.size())
+        return;
 
     emit openVersionRequested(versions_[row], versions_[row].version);
 }
 
 void PartyIdSchemeHistoryDialog::onRevertClicked() {
     auto selected = ui_->versionListWidget->selectedItems();
-    if (selected.isEmpty()) return;
+    if (selected.isEmpty())
+        return;
 
     int row = selected.first()->row();
-    if (static_cast<size_t>(row) >= versions_.size()) return;
+    if (static_cast<size_t>(row) >= versions_.size())
+        return;
 
     emit revertVersionRequested(versions_[row]);
 }

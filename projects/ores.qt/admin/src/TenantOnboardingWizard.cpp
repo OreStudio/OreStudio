@@ -18,21 +18,20 @@
  *
  */
 #include "ores.qt/TenantOnboardingWizard.hpp"
+#include "ores.iam.api/messaging/bootstrap_protocol.hpp"
 #include "ores.qt/FontUtils.hpp"
+#include "ores.qt/LeiEntityPicker.hpp"
 #include "ores.qt/PasswordMatchIndicator.hpp"
-
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QFormLayout>
-#include <QGroupBox>
+#include "ores.qt/WidgetUtils.hpp"
 #include <QButtonGroup>
+#include <QFormLayout>
+#include <QFutureWatcher>
+#include <QGroupBox>
+#include <QHBoxLayout>
 #include <QMessageBox>
 #include <QRegularExpression>
+#include <QVBoxLayout>
 #include <QtConcurrent>
-#include <QFutureWatcher>
-#include "ores.qt/LeiEntityPicker.hpp"
-#include "ores.qt/WidgetUtils.hpp"
-#include "ores.iam.api/messaging/bootstrap_protocol.hpp"
 
 namespace ores::qt {
 
@@ -42,11 +41,9 @@ using namespace ores::logging;
 // TenantOnboardingWizard (Main Wizard)
 // ============================================================================
 
-TenantOnboardingWizard::TenantOnboardingWizard(
-    ClientManager* clientManager,
-    QWidget* parent)
-    : QWizard(parent),
-      clientManager_(clientManager) {
+TenantOnboardingWizard::TenantOnboardingWizard(ClientManager* clientManager, QWidget* parent)
+    : QWizard(parent)
+    , clientManager_(clientManager) {
 
     setWindowTitle(tr("Tenant Provisioning"));
     setMinimumSize(800, 650);
@@ -74,7 +71,8 @@ void TenantOnboardingWizard::setupPages() {
 // ============================================================================
 
 ModeAndLeiPage::ModeAndLeiPage(TenantOnboardingWizard* wizard)
-    : QWizardPage(wizard), wizard_(wizard) {
+    : QWizardPage(wizard)
+    , wizard_(wizard) {
 
     setTitle(tr("Provisioning Mode"));
     setSubTitle(tr("Choose whether to create a blank tenant or "
@@ -92,10 +90,9 @@ void ModeAndLeiPage::setupUI() {
     auto* modeLayout = new QVBoxLayout(modeGroup);
     modeLayout->setContentsMargins(8, 8, 8, 8);
 
-    blankRadio_ = new QRadioButton(
-        tr("Blank Tenant - Create an empty tenant"), this);
-    gleifRadio_ = new QRadioButton(
-        tr("GLEIF-Based Tenant - Pre-fill details from LEI entity"), this);
+    blankRadio_ = new QRadioButton(tr("Blank Tenant - Create an empty tenant"), this);
+    gleifRadio_ =
+        new QRadioButton(tr("GLEIF-Based Tenant - Pre-fill details from LEI entity"), this);
     blankRadio_->setChecked(true);
 
     auto* buttonGroup = new QButtonGroup(this);
@@ -106,31 +103,29 @@ void ModeAndLeiPage::setupUI() {
     modeLayout->addWidget(gleifRadio_);
     layout->addWidget(modeGroup, 0);
 
-    connect(blankRadio_, &QRadioButton::toggled, this,
-            &ModeAndLeiPage::onModeChanged);
+    connect(blankRadio_, &QRadioButton::toggled, this, &ModeAndLeiPage::onModeChanged);
 
     // Informational blurb about evaluation tenants
-    auto* infoLabel = new QLabel(
-        tr("<b>Note:</b> This wizard provisions a new tenant "
-           "\u2014 an isolated environment with its own users, roles, "
-           "and reference data. Choose <i>Evaluation</i> for demos, QA, "
-           "and testing, or <i>Production</i> for live workloads."
-           "<br><br>"
-           "If you prefer a simpler single-tenant setup, you can use the "
-           "system tenant directly without creating separate tenants. This "
-           "avoids the overhead of multi-tenancy but limits isolation between "
-           "environments."),
-        this);
+    auto* infoLabel =
+        new QLabel(tr("<b>Note:</b> This wizard provisions a new tenant "
+                      "\u2014 an isolated environment with its own users, roles, "
+                      "and reference data. Choose <i>Evaluation</i> for demos, QA, "
+                      "and testing, or <i>Production</i> for live workloads."
+                      "<br><br>"
+                      "If you prefer a simpler single-tenant setup, you can use the "
+                      "system tenant directly without creating separate tenants. This "
+                      "avoids the overhead of multi-tenancy but limits isolation between "
+                      "environments."),
+                   this);
     infoLabel->setWordWrap(true);
     infoLabel->setTextFormat(Qt::RichText);
-    infoLabel->setStyleSheet(
-        "QLabel {"
-        "  background-color: #2a2d32;"
-        "  border: 1px solid #444950;"
-        "  border-radius: 4px;"
-        "  padding: 10px;"
-        "  color: #b0b8c4;"
-        "}");
+    infoLabel->setStyleSheet("QLabel {"
+                             "  background-color: #2a2d32;"
+                             "  border: 1px solid #444950;"
+                             "  border-radius: 4px;"
+                             "  padding: 10px;"
+                             "  color: #b0b8c4;"
+                             "}");
     layout->addWidget(infoLabel, 0);
 
     // LEI entity picker (disabled until GLEIF mode)
@@ -144,15 +139,15 @@ void ModeAndLeiPage::setupUI() {
     selectedEntityLabel_->setStyleSheet("font-weight: bold;");
     layout->addWidget(selectedEntityLabel_, 0);
 
-    connect(leiPicker_, &LeiEntityPicker::entitySelected,
-            this, [this](const QString& lei, const QString& name) {
-        selectedEntityLabel_->setText(
-            tr("Selected: %1 (%2)").arg(name, lei));
-        emit completeChanged();
-    });
+    connect(leiPicker_,
+            &LeiEntityPicker::entitySelected,
+            this,
+            [this](const QString& lei, const QString& name) {
+                selectedEntityLabel_->setText(tr("Selected: %1 (%2)").arg(name, lei));
+                emit completeChanged();
+            });
 
-    connect(leiPicker_, &LeiEntityPicker::selectionCleared,
-            this, [this]() {
+    connect(leiPicker_, &LeiEntityPicker::selectionCleared, this, [this]() {
         selectedEntityLabel_->clear();
         emit completeChanged();
     });
@@ -182,8 +177,9 @@ bool ModeAndLeiPage::validatePage() {
 
     if (gleif) {
         if (!leiPicker_->hasSelection()) {
-            QMessageBox::warning(this, tr("No Selection"),
-                tr("Please select an LEI entity to use as the root party."));
+            QMessageBox::warning(this,
+                                 tr("No Selection"),
+                                 tr("Please select an LEI entity to use as the root party."));
             return false;
         }
 
@@ -203,7 +199,8 @@ int ModeAndLeiPage::nextId() const {
 // ============================================================================
 
 TenantDetailsPage::TenantDetailsPage(TenantOnboardingWizard* wizard)
-    : QWizardPage(wizard), wizard_(wizard) {
+    : QWizardPage(wizard)
+    , wizard_(wizard) {
 
     setTitle(tr("Tenant Details"));
     setSubTitle(tr("Configure the tenant identity. In GLEIF mode, fields are "
@@ -234,8 +231,7 @@ void TenantDetailsPage::setupUI() {
     formLayout->addRow(tr("Type:"), typeCombo_);
 
     hostnameEdit_ = new QLineEdit(this);
-    hostnameEdit_->setPlaceholderText(
-        tr("Unique hostname (e.g., acme)"));
+    hostnameEdit_->setPlaceholderText(tr("Unique hostname (e.g., acme)"));
     hostnameEdit_->setMaxLength(255);
     formLayout->addRow(tr("Hostname:"), hostnameEdit_);
 
@@ -255,13 +251,11 @@ void TenantDetailsPage::setupUI() {
     layout->addStretch();
 
     // Auto-generate hostname from code
-    connect(codeEdit_, &QLineEdit::textChanged,
-            this, &TenantDetailsPage::onCodeChanged);
+    connect(codeEdit_, &QLineEdit::textChanged, this, &TenantDetailsPage::onCodeChanged);
 
     // Track manual hostname edits
-    connect(hostnameEdit_, &QLineEdit::textEdited, this, [this]() {
-        hostnameManuallyEdited_ = true;
-    });
+    connect(
+        hostnameEdit_, &QLineEdit::textEdited, this, [this]() { hostnameManuallyEdited_ = true; });
 
     // Register mandatory fields
     registerField("tenantCode*", codeEdit_);
@@ -291,8 +285,7 @@ void TenantDetailsPage::initializePage() {
         codeEdit_->setText(code);
 
         // GLEIF mode: force evaluation type
-        typeCombo_->setCurrentIndex(
-            typeCombo_->findData(QStringLiteral("evaluation")));
+        typeCombo_->setCurrentIndex(typeCombo_->findData(QStringLiteral("evaluation")));
         typeCombo_->setEnabled(false);
     } else {
         // Blank mode: clear fields for fresh entry
@@ -349,8 +342,7 @@ bool TenantDetailsPage::validatePage() {
     // Store values in wizard
     wizard_->setTenantCode(code);
     wizard_->setTenantName(name);
-    wizard_->setTenantType(
-        typeCombo_->currentData().toString());
+    wizard_->setTenantType(typeCombo_->currentData().toString());
     wizard_->setTenantHostname(hostname);
     wizard_->setTenantDescription(descriptionEdit_->text().trimmed());
 
@@ -365,9 +357,9 @@ int TenantDetailsPage::nextId() const {
 // OnboardingAdminAccountPage
 // ============================================================================
 
-OnboardingAdminAccountPage::OnboardingAdminAccountPage(
-    TenantOnboardingWizard* wizard)
-    : QWizardPage(wizard), wizard_(wizard) {
+OnboardingAdminAccountPage::OnboardingAdminAccountPage(TenantOnboardingWizard* wizard)
+    : QWizardPage(wizard)
+    , wizard_(wizard) {
 
     setTitle(tr("Admin Account"));
     setSubTitle(tr("Create the initial administrator account for the new "
@@ -405,8 +397,10 @@ void OnboardingAdminAccountPage::setupUI() {
     showPasswordCheck_ = new QCheckBox(tr("Show password"), this);
     formLayout->addRow(QString(), showPasswordCheck_);
 
-    connect(showPasswordCheck_, &QCheckBox::toggled,
-            this, &OnboardingAdminAccountPage::onShowPasswordToggled);
+    connect(showPasswordCheck_,
+            &QCheckBox::toggled,
+            this,
+            &OnboardingAdminAccountPage::onShowPasswordToggled);
 
     PasswordMatchIndicator::connectFields(passwordEdit_, confirmPasswordEdit_);
 
@@ -493,9 +487,9 @@ int OnboardingAdminAccountPage::nextId() const {
 // ApplyOnboardingPage
 // ============================================================================
 
-ApplyOnboardingPage::ApplyOnboardingPage(
-    TenantOnboardingWizard* wizard)
-    : QWizardPage(wizard), wizard_(wizard) {
+ApplyOnboardingPage::ApplyOnboardingPage(TenantOnboardingWizard* wizard)
+    : QWizardPage(wizard)
+    , wizard_(wizard) {
 
     setTitle(tr("Provisioning Tenant"));
     setFinalPage(true);
@@ -556,26 +550,22 @@ void ApplyOnboardingPage::startOnboarding() {
     };
 
     auto* watcher = new QFutureWatcher<OnboardingResult>(this);
-    connect(watcher, &QFutureWatcher<OnboardingResult>::finished,
-            [this, watcher]() {
+    connect(watcher, &QFutureWatcher<OnboardingResult>::finished, [this, watcher]() {
         const auto result = watcher->result();
         watcher->deleteLater();
 
         if (!result.success) {
             statusLabel_->setText(tr("Provisioning failed"));
-            appendLog(tr("ERROR: %1").arg(
-                QString::fromStdString(result.error)));
+            appendLog(tr("ERROR: %1").arg(QString::fromStdString(result.error)));
             progressBar_->setRange(0, 1);
             progressBar_->setValue(1);
-            progressBar_->setStyleSheet(
-                "QProgressBar::chunk { background-color: #cc0000; }");
+            progressBar_->setStyleSheet("QProgressBar::chunk { background-color: #cc0000; }");
         } else {
             statusLabel_->setText(tr("Onboarding complete"));
             appendLog(tr("Tenant '%1' onboarded successfully (ID: %2).")
-                .arg(wizard_->tenantName(),
-                     QString::fromStdString(result.tenantId)));
+                          .arg(wizard_->tenantName(), QString::fromStdString(result.tenantId)));
             appendLog(tr("Admin account '%1' created with TenantAdmin role.")
-                .arg(wizard_->adminUsername()));
+                          .arg(wizard_->adminUsername()));
             progressBar_->setRange(0, 1);
             progressBar_->setValue(1);
             onboardingSuccess_ = true;
@@ -586,54 +576,55 @@ void ApplyOnboardingPage::startOnboarding() {
         emit completeChanged();
     });
 
-    QFuture<OnboardingResult> future = QtConcurrent::run(
-        [clientManager, code, name, type, hostname, description,
-         adminUsername, adminPassword, adminEmail]() -> OnboardingResult {
+    QFuture<OnboardingResult> future = QtConcurrent::run([clientManager,
+                                                          code,
+                                                          name,
+                                                          type,
+                                                          hostname,
+                                                          description,
+                                                          adminUsername,
+                                                          adminPassword,
+                                                          adminEmail]() -> OnboardingResult {
+        OnboardingResult result;
 
-            OnboardingResult result;
+        iam::messaging::provision_tenant_request req;
+        req.type = type;
+        req.code = code;
+        req.name = name;
+        req.hostname = hostname;
+        req.description = description;
+        req.principal = adminUsername;
+        req.password = adminPassword;
+        req.email = adminEmail;
 
-            iam::messaging::provision_tenant_request req;
-            req.type = type;
-            req.code = code;
-            req.name = name;
-            req.hostname = hostname;
-            req.description = description;
-            req.principal = adminUsername;
-            req.password = adminPassword;
-            req.email = adminEmail;
+        auto resp = clientManager->process_authenticated_request(std::move(req),
+                                                                 ClientManager::slow_timeout);
 
-            auto resp = clientManager->process_authenticated_request(
-                std::move(req), ClientManager::slow_timeout);
-
-            if (!resp) {
-                result.error = QString("Failed to communicate with server: %1")
-                    .arg(QString::fromStdString(resp.error()))
-                    .toStdString();
-                return result;
-            }
-
-            if (!resp->success) {
-                result.error = resp->error_message;
-                return result;
-            }
-
-            result.success = true;
-            result.tenantId = resp->tenant_id;
+        if (!resp) {
+            result.error = QString("Failed to communicate with server: %1")
+                               .arg(QString::fromStdString(resp.error()))
+                               .toStdString();
             return result;
         }
-    );
+
+        if (!resp->success) {
+            result.error = resp->error_message;
+            return result;
+        }
+
+        result.success = true;
+        result.tenantId = resp->tenant_id;
+        return result;
+    });
 
     watcher->setFuture(future);
 
     appendLog(tr("Provisioning tenant '%1' (code: %2, hostname: %3)...")
-        .arg(wizard_->tenantName(), wizard_->tenantCode(),
-             wizard_->tenantHostname()));
+                  .arg(wizard_->tenantName(), wizard_->tenantCode(), wizard_->tenantHostname()));
     if (wizard_->isGleifMode()) {
-        appendLog(tr("Tenant details pre-filled from LEI entity: %1")
-            .arg(wizard_->rootLeiName()));
+        appendLog(tr("Tenant details pre-filled from LEI entity: %1").arg(wizard_->rootLeiName()));
     }
-    appendLog(tr("Will create admin account '%1'")
-        .arg(wizard_->adminUsername()));
+    appendLog(tr("Will create admin account '%1'").arg(wizard_->adminUsername()));
 }
 
 }

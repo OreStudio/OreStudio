@@ -20,11 +20,11 @@
 #ifndef ORES_QT_ROLE_DETAIL_DIALOG_HPP
 #define ORES_QT_ROLE_DETAIL_DIALOG_HPP
 
-#include <memory>
 #include "ores.iam.api/domain/role.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
-#include "ores.logging/make_logger.hpp"
+#include <memory>
 
 namespace Ui {
 
@@ -46,8 +46,7 @@ class RoleDetailDialog final : public DetailDialogBase {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.role_detail_dialog";
+    inline static std::string_view logger_name = "ores.qt.role_detail_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -71,7 +70,9 @@ public:
      *
      * @return The role being displayed
      */
-    [[nodiscard]] const iam::domain::role& getRole() const { return currentRole_; }
+    [[nodiscard]] const iam::domain::role& getRole() const {
+        return currentRole_;
+    }
 
     /**
      * @brief Clears all form fields.

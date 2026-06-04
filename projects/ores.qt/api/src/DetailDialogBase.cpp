@@ -18,13 +18,12 @@
  *
  */
 #include "ores.qt/DetailDialogBase.hpp"
-
-#include <QMessageBox>
-#include <QTabWidget>
+#include "ores.dq.api/domain/change_reason.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ProvenanceWidget.hpp"
-#include "ores.dq.api/domain/change_reason.hpp"
+#include <QMessageBox>
+#include <QTabWidget>
 
 namespace ores::qt {
 
@@ -34,7 +33,8 @@ DetailDialogBase::~DetailDialogBase() {}
 void DetailDialogBase::setProvenanceEnabled(bool enabled) {
     auto* tw = tabWidget();
     auto* pt = provenanceTab();
-    if (!tw || !pt) return;
+    if (!tw || !pt)
+        return;
 
     for (int i = 0; i < tw->count(); ++i) {
         if (tw->widget(i) == pt) {
@@ -44,29 +44,28 @@ void DetailDialogBase::setProvenanceEnabled(bool enabled) {
     }
 }
 
-void DetailDialogBase::populateProvenance(
-        int version,
-        const std::string& modified_by,
-        const std::string& performed_by,
-        std::chrono::system_clock::time_point recorded_at,
-        const std::string& change_reason_code,
-        const std::string& change_commentary) {
+void DetailDialogBase::populateProvenance(int version,
+                                          const std::string& modified_by,
+                                          const std::string& performed_by,
+                                          std::chrono::system_clock::time_point recorded_at,
+                                          const std::string& change_reason_code,
+                                          const std::string& change_commentary) {
     auto* pw = provenanceWidget();
-    if (!pw) return;
-    pw->populate(version, modified_by, performed_by, recorded_at,
-                 change_reason_code, change_commentary);
+    if (!pw)
+        return;
+    pw->populate(
+        version, modified_by, performed_by, recorded_at, change_reason_code, change_commentary);
 }
 
 void DetailDialogBase::clearProvenance() {
     auto* pw = provenanceWidget();
-    if (!pw) return;
+    if (!pw)
+        return;
     pw->clear();
 }
 
-std::optional<DetailDialogBase::change_reason_selection>
-DetailDialogBase::promptChangeReason(ChangeReasonDialog::OperationType opType,
-                                     bool isDirty,
-                                     std::string_view category) {
+std::optional<DetailDialogBase::change_reason_selection> DetailDialogBase::promptChangeReason(
+    ChangeReasonDialog::OperationType opType, bool isDirty, std::string_view category) {
     if (!changeReasonCache_ || !changeReasonCache_->isLoaded()) {
         emit errorMessage(tr("Change reasons not loaded. Please try again."));
         return std::nullopt;
@@ -87,8 +86,7 @@ DetailDialogBase::promptChangeReason(ChangeReasonDialog::OperationType opType,
     }
 
     if (reasons.empty()) {
-        emit errorMessage(
-            tr("No change reasons available. Please contact administrator."));
+        emit errorMessage(tr("No change reasons available. Please contact administrator."));
         return std::nullopt;
     }
 
@@ -101,10 +99,10 @@ DetailDialogBase::promptChangeReason(ChangeReasonDialog::OperationType opType,
 
 void DetailDialogBase::onCloseClicked() {
     if (hasUnsavedChanges()) {
-        auto reply = MessageBoxHelper::question(
-            this, tr("Unsaved Changes"),
-            tr("You have unsaved changes. Close anyway?"),
-            QMessageBox::Yes | QMessageBox::No);
+        auto reply = MessageBoxHelper::question(this,
+                                                tr("Unsaved Changes"),
+                                                tr("You have unsaved changes. Close anyway?"),
+                                                QMessageBox::Yes | QMessageBox::No);
         if (reply != QMessageBox::Yes)
             return;
     }

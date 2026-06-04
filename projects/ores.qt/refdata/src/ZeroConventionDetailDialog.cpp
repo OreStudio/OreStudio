@@ -18,23 +18,22 @@
  *
  */
 #include "ores.qt/ZeroConventionDetailDialog.hpp"
-
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include "ui_ZeroConventionDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.refdata.api/messaging/zero_convention_protocol.hpp"
+#include "ui_ZeroConventionDetailDialog.h"
+#include <QFutureWatcher>
+#include <QMessageBox>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 ZeroConventionDetailDialog::ZeroConventionDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent),
-      ui_(new Ui::ZeroConventionDetailDialog),
-      clientManager_(nullptr) {
+    : DetailDialogBase(parent)
+    , ui_(new Ui::ZeroConventionDetailDialog)
+    , clientManager_(nullptr) {
 
     ui_->setupUi(this);
     setupUi();
@@ -70,26 +69,39 @@ void ZeroConventionDetailDialog::setupUi() {
 }
 
 void ZeroConventionDetailDialog::setupConnections() {
-    connect(ui_->saveButton, &QPushButton::clicked, this,
-            &ZeroConventionDetailDialog::onSaveClicked);
-    connect(ui_->deleteButton, &QPushButton::clicked, this,
+    connect(
+        ui_->saveButton, &QPushButton::clicked, this, &ZeroConventionDetailDialog::onSaveClicked);
+    connect(ui_->deleteButton,
+            &QPushButton::clicked,
+            this,
             &ZeroConventionDetailDialog::onDeleteClicked);
-    connect(ui_->closeButton, &QPushButton::clicked, this,
-            &ZeroConventionDetailDialog::onCloseClicked);
+    connect(
+        ui_->closeButton, &QPushButton::clicked, this, &ZeroConventionDetailDialog::onCloseClicked);
 
-    connect(ui_->idEdit, &QLineEdit::textChanged, this,
-            &ZeroConventionDetailDialog::onCodeChanged);
-    connect(ui_->dayCountFractionEdit, &QLineEdit::textChanged, this,
+    connect(ui_->idEdit, &QLineEdit::textChanged, this, &ZeroConventionDetailDialog::onCodeChanged);
+    connect(ui_->dayCountFractionEdit,
+            &QLineEdit::textChanged,
+            this,
             &ZeroConventionDetailDialog::onFieldChanged);
-    connect(ui_->compoundingEdit, &QLineEdit::textChanged, this,
+    connect(ui_->compoundingEdit,
+            &QLineEdit::textChanged,
+            this,
             &ZeroConventionDetailDialog::onFieldChanged);
-    connect(ui_->compoundingFrequencyEdit, &QLineEdit::textChanged, this,
+    connect(ui_->compoundingFrequencyEdit,
+            &QLineEdit::textChanged,
+            this,
             &ZeroConventionDetailDialog::onFieldChanged);
-    connect(ui_->tenorCalendarEdit, &QLineEdit::textChanged, this,
+    connect(ui_->tenorCalendarEdit,
+            &QLineEdit::textChanged,
+            this,
             &ZeroConventionDetailDialog::onFieldChanged);
-    connect(ui_->spotCalendarEdit, &QLineEdit::textChanged, this,
+    connect(ui_->spotCalendarEdit,
+            &QLineEdit::textChanged,
+            this,
             &ZeroConventionDetailDialog::onFieldChanged);
-    connect(ui_->rollConventionEdit, &QLineEdit::textChanged, this,
+    connect(ui_->rollConventionEdit,
+            &QLineEdit::textChanged,
+            this,
             &ZeroConventionDetailDialog::onFieldChanged);
 }
 
@@ -101,8 +113,7 @@ void ZeroConventionDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
 
-void ZeroConventionDetailDialog::setConvention(
-    const refdata::domain::zero_convention& zc) {
+void ZeroConventionDetailDialog::setConvention(const refdata::domain::zero_convention& zc) {
     zc_ = zc;
     updateUiFromConvention();
 }
@@ -132,21 +143,16 @@ void ZeroConventionDetailDialog::setReadOnly(bool readOnly) {
 void ZeroConventionDetailDialog::updateUiFromConvention() {
     ui_->idEdit->setText(QString::fromStdString(zc_.id));
     ui_->dayCountFractionEdit->setText(QString::fromStdString(zc_.day_count_fraction));
-    ui_->compoundingEdit->setText(zc_.compounding
-        ? QString::fromStdString(*zc_.compounding)
-        : QString{});
-    ui_->compoundingFrequencyEdit->setText(zc_.compounding_frequency
-        ? QString::fromStdString(*zc_.compounding_frequency)
-        : QString{});
-    ui_->tenorCalendarEdit->setText(zc_.tenor_calendar
-        ? QString::fromStdString(*zc_.tenor_calendar)
-        : QString{});
-    ui_->spotCalendarEdit->setText(zc_.spot_calendar
-        ? QString::fromStdString(*zc_.spot_calendar)
-        : QString{});
-    ui_->rollConventionEdit->setText(zc_.roll_convention
-        ? QString::fromStdString(*zc_.roll_convention)
-        : QString{});
+    ui_->compoundingEdit->setText(zc_.compounding ? QString::fromStdString(*zc_.compounding) :
+                                                    QString{});
+    ui_->compoundingFrequencyEdit->setText(
+        zc_.compounding_frequency ? QString::fromStdString(*zc_.compounding_frequency) : QString{});
+    ui_->tenorCalendarEdit->setText(
+        zc_.tenor_calendar ? QString::fromStdString(*zc_.tenor_calendar) : QString{});
+    ui_->spotCalendarEdit->setText(zc_.spot_calendar ? QString::fromStdString(*zc_.spot_calendar) :
+                                                       QString{});
+    ui_->rollConventionEdit->setText(
+        zc_.roll_convention ? QString::fromStdString(*zc_.roll_convention) : QString{});
 
     populateProvenance(zc_.version,
                        zc_.modified_by,
@@ -170,24 +176,29 @@ void ZeroConventionDetailDialog::updateConventionFromUi() {
             compounding_str.empty() ? std::nullopt : std::optional<std::string>(compounding_str);
     }
     {
-        const auto compounding_frequency_str = ui_->compoundingFrequencyEdit->text().trimmed().toStdString();
-        zc_.compounding_frequency =
-            compounding_frequency_str.empty() ? std::nullopt : std::optional<std::string>(compounding_frequency_str);
+        const auto compounding_frequency_str =
+            ui_->compoundingFrequencyEdit->text().trimmed().toStdString();
+        zc_.compounding_frequency = compounding_frequency_str.empty() ?
+                                        std::nullopt :
+                                        std::optional<std::string>(compounding_frequency_str);
     }
     {
         const auto tenor_calendar_str = ui_->tenorCalendarEdit->text().trimmed().toStdString();
-        zc_.tenor_calendar =
-            tenor_calendar_str.empty() ? std::nullopt : std::optional<std::string>(tenor_calendar_str);
+        zc_.tenor_calendar = tenor_calendar_str.empty() ?
+                                 std::nullopt :
+                                 std::optional<std::string>(tenor_calendar_str);
     }
     {
         const auto spot_calendar_str = ui_->spotCalendarEdit->text().trimmed().toStdString();
-        zc_.spot_calendar =
-            spot_calendar_str.empty() ? std::nullopt : std::optional<std::string>(spot_calendar_str);
+        zc_.spot_calendar = spot_calendar_str.empty() ?
+                                std::nullopt :
+                                std::optional<std::string>(spot_calendar_str);
     }
     {
         const auto roll_convention_str = ui_->rollConventionEdit->text().trimmed().toStdString();
-        zc_.roll_convention =
-            roll_convention_str.empty() ? std::nullopt : std::optional<std::string>(roll_convention_str);
+        zc_.roll_convention = roll_convention_str.empty() ?
+                                  std::nullopt :
+                                  std::optional<std::string>(roll_convention_str);
     }
     zc_.modified_by = username_;
 }
@@ -211,29 +222,24 @@ bool ZeroConventionDetailDialog::validateInput() {
     const QString id_val = ui_->idEdit->text().trimmed();
     const QString day_count_fraction_val = ui_->dayCountFractionEdit->text().trimmed();
 
-    return true
-        && !id_val.isEmpty()
-        && !day_count_fraction_val.isEmpty()
-    ;
+    return true && !id_val.isEmpty() && !day_count_fraction_val.isEmpty();
 }
 
 void ZeroConventionDetailDialog::onSaveClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot save zero convention while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot save zero convention while disconnected from server.");
         return;
     }
 
     if (!validateInput()) {
-        MessageBoxHelper::warning(this, "Invalid Input",
-            "Please fill in all required fields.");
+        MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
 
     updateConventionFromUi();
 
-    BOOST_LOG_SEV(lg(), info) << "Saving zero convention: "
-        << zc_.id;
+    BOOST_LOG_SEV(lg(), info) << "Saving zero convention: " << zc_.id;
 
     QPointer<ZeroConventionDetailDialog> self = this;
 
@@ -249,8 +255,8 @@ void ZeroConventionDetailDialog::onSaveClicked() {
 
         refdata::messaging::save_zero_convention_request request;
         request.data = zc;
-        auto response_result = self->clientManager_->
-            process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -260,15 +266,13 @@ void ZeroConventionDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Zero Convention saved successfully";
-            QString code = QString::fromStdString(
-                self->zc_.id);
+            QString code = QString::fromStdString(self->zc_.id);
             self->hasChanges_ = false;
             self->updateSaveButtonState();
             emit self->zcSaved(code);
@@ -287,14 +291,15 @@ void ZeroConventionDetailDialog::onSaveClicked() {
 
 void ZeroConventionDetailDialog::onDeleteClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot delete zero convention while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot delete zero convention while disconnected from server.");
         return;
     }
 
-    QString code = QString::fromStdString(
-        zc_.id);
-    auto reply = MessageBoxHelper::question(this, "Delete Zero Convention",
+    QString code = QString::fromStdString(zc_.id);
+    auto reply = MessageBoxHelper::question(
+        this,
+        "Delete Zero Convention",
         QString("Are you sure you want to delete zero convention '%1'?").arg(code),
         QMessageBox::Yes | QMessageBox::No);
 
@@ -302,8 +307,7 @@ void ZeroConventionDetailDialog::onDeleteClicked() {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Deleting zero convention: "
-        << zc_.id;
+    BOOST_LOG_SEV(lg(), info) << "Deleting zero convention: " << zc_.id;
 
     QPointer<ZeroConventionDetailDialog> self = this;
 
@@ -319,8 +323,8 @@ void ZeroConventionDetailDialog::onDeleteClicked() {
 
         refdata::messaging::delete_zero_convention_request request;
         request.codes = {code};
-        auto response_result = self->clientManager_->
-            process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -330,15 +334,13 @@ void ZeroConventionDetailDialog::onDeleteClicked() {
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
-            self, [self, code, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, code, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Zero Convention deleted successfully";
-            emit self->statusMessage(
-                QString("Zero Convention '%1' deleted").arg(code));
+            emit self->statusMessage(QString("Zero Convention '%1' deleted").arg(code));
             emit self->zcDeleted(code);
             self->requestClose();
         } else {

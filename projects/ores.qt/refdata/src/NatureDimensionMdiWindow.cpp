@@ -18,39 +18,37 @@
  *
  */
 #include "ores.qt/NatureDimensionMdiWindow.hpp"
-
-#include <QVBoxLayout>
+#include "ores.dq.api/messaging/dimension_protocol.hpp"
+#include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/EntityItemDelegate.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/WidgetUtils.hpp"
+#include <QFutureWatcher>
 #include <QHeaderView>
 #include <QMessageBox>
+#include <QVBoxLayout>
 #include <QtConcurrent>
-#include <QFutureWatcher>
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/EntityItemDelegate.hpp"
-#include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/ColorConstants.hpp"
-#include "ores.qt/WidgetUtils.hpp"
-#include "ores.dq.api/messaging/dimension_protocol.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-NatureDimensionMdiWindow::NatureDimensionMdiWindow(
-    ClientManager* clientManager,
-    const QString& username,
-    QWidget* parent)
-    : EntityListMdiWindow(parent),
-      clientManager_(clientManager),
-      username_(username),
-      toolbar_(nullptr),
-      tableView_(nullptr),
-      model_(nullptr),
-      proxyModel_(nullptr),
-      reloadAction_(nullptr),
-      addAction_(nullptr),
-      editAction_(nullptr),
-      deleteAction_(nullptr),
-      historyAction_(nullptr) {
+NatureDimensionMdiWindow::NatureDimensionMdiWindow(ClientManager* clientManager,
+                                                   const QString& username,
+                                                   QWidget* parent)
+    : EntityListMdiWindow(parent)
+    , clientManager_(clientManager)
+    , username_(username)
+    , toolbar_(nullptr)
+    , tableView_(nullptr)
+    , model_(nullptr)
+    , proxyModel_(nullptr)
+    , reloadAction_(nullptr)
+    , addAction_(nullptr)
+    , editAction_(nullptr)
+    , deleteAction_(nullptr)
+    , historyAction_(nullptr) {
 
     setupUi();
     setupConnections();
@@ -74,8 +72,7 @@ void NatureDimensionMdiWindow::setupToolbar() {
     toolbar_->setIconSize(QSize(20, 20));
 
     reloadAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::ArrowClockwise, IconUtils::DefaultIconColor),
+        IconUtils::createRecoloredIcon(Icon::ArrowClockwise, IconUtils::DefaultIconColor),
         tr("Reload"));
     connect(reloadAction_, &QAction::triggered, this, &EntityListMdiWindow::reload);
 
@@ -84,31 +81,28 @@ void NatureDimensionMdiWindow::setupToolbar() {
     toolbar_->addSeparator();
 
     addAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor),
-        tr("Add"));
+        IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor), tr("Add"));
     addAction_->setToolTip(tr("Add new nature dimension"));
     connect(addAction_, &QAction::triggered, this, &NatureDimensionMdiWindow::addNew);
 
     editAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Edit, IconUtils::DefaultIconColor),
-        tr("Edit"));
+        IconUtils::createRecoloredIcon(Icon::Edit, IconUtils::DefaultIconColor), tr("Edit"));
     editAction_->setToolTip(tr("Edit selected nature dimension"));
     editAction_->setEnabled(false);
     connect(editAction_, &QAction::triggered, this, &NatureDimensionMdiWindow::editSelected);
 
     deleteAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor),
-        tr("Delete"));
+        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor), tr("Delete"));
     deleteAction_->setToolTip(tr("Delete selected nature dimension"));
     deleteAction_->setEnabled(false);
     connect(deleteAction_, &QAction::triggered, this, &NatureDimensionMdiWindow::deleteSelected);
 
     historyAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor),
-        tr("History"));
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor), tr("History"));
     historyAction_->setToolTip(tr("View nature dimension history"));
     historyAction_->setEnabled(false);
-    connect(historyAction_, &QAction::triggered, this, &NatureDimensionMdiWindow::viewHistorySelected);
+    connect(
+        historyAction_, &QAction::triggered, this, &NatureDimensionMdiWindow::viewHistorySelected);
 }
 
 void NatureDimensionMdiWindow::setupTable() {
@@ -122,27 +116,35 @@ void NatureDimensionMdiWindow::setupTable() {
     tableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
     tableView_->setSelectionMode(QAbstractItemView::SingleSelection);
     tableView_->setSortingEnabled(true);
-    tableView_->setItemDelegate(new EntityItemDelegate(
-        ClientNatureDimensionModel::columnStyles(), tableView_));
+    tableView_->setItemDelegate(
+        new EntityItemDelegate(ClientNatureDimensionModel::columnStyles(), tableView_));
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
 
-    initializeTableSettings(tableView_, model_,
-        ClientNatureDimensionModel::kSettingsGroup,
-        ClientNatureDimensionModel::defaultHiddenColumns(),
-        ClientNatureDimensionModel::kDefaultWindowSize, 1);
+    initializeTableSettings(tableView_,
+                            model_,
+                            ClientNatureDimensionModel::kSettingsGroup,
+                            ClientNatureDimensionModel::defaultHiddenColumns(),
+                            ClientNatureDimensionModel::kDefaultWindowSize,
+                            1);
 }
 
 void NatureDimensionMdiWindow::setupConnections() {
-    connect(model_, &ClientNatureDimensionModel::dataLoaded,
-            this, &NatureDimensionMdiWindow::onDataLoaded);
-    connect(model_, &ClientNatureDimensionModel::loadError,
-            this, &NatureDimensionMdiWindow::onLoadError);
+    connect(model_,
+            &ClientNatureDimensionModel::dataLoaded,
+            this,
+            &NatureDimensionMdiWindow::onDataLoaded);
+    connect(model_,
+            &ClientNatureDimensionModel::loadError,
+            this,
+            &NatureDimensionMdiWindow::onLoadError);
     connectModel(model_);
-    connect(tableView_->selectionModel(), &QItemSelectionModel::selectionChanged,
-            this, &NatureDimensionMdiWindow::onSelectionChanged);
-    connect(tableView_, &QTableView::doubleClicked,
-            this, &NatureDimensionMdiWindow::onDoubleClicked);
+    connect(tableView_->selectionModel(),
+            &QItemSelectionModel::selectionChanged,
+            this,
+            &NatureDimensionMdiWindow::onSelectionChanged);
+    connect(
+        tableView_, &QTableView::doubleClicked, this, &NatureDimensionMdiWindow::onDoubleClicked);
 }
 
 void NatureDimensionMdiWindow::doReload() {
@@ -155,8 +157,7 @@ void NatureDimensionMdiWindow::onDataLoaded() {
     emit statusChanged(tr("Loaded %1 nature dimensions").arg(model_->rowCount()));
 }
 
-void NatureDimensionMdiWindow::onLoadError(const QString& error_message,
-                                            const QString& details) {
+void NatureDimensionMdiWindow::onLoadError(const QString& error_message, const QString& details) {
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);
@@ -190,7 +191,8 @@ void NatureDimensionMdiWindow::addNew() {
 
 void NatureDimensionMdiWindow::editSelected() {
     const auto selected = tableView_->selectionModel()->selectedRows();
-    if (selected.isEmpty()) return;
+    if (selected.isEmpty())
+        return;
 
     auto sourceIndex = proxyModel_->mapToSource(selected.first());
     if (auto* dimension = model_->getDimension(sourceIndex.row())) {
@@ -200,7 +202,8 @@ void NatureDimensionMdiWindow::editSelected() {
 
 void NatureDimensionMdiWindow::viewHistorySelected() {
     const auto selected = tableView_->selectionModel()->selectedRows();
-    if (selected.isEmpty()) return;
+    if (selected.isEmpty())
+        return;
 
     auto sourceIndex = proxyModel_->mapToSource(selected.first());
     if (auto* dimension = model_->getDimension(sourceIndex.row())) {
@@ -210,11 +213,12 @@ void NatureDimensionMdiWindow::viewHistorySelected() {
 
 void NatureDimensionMdiWindow::deleteSelected() {
     const auto selected = tableView_->selectionModel()->selectedRows();
-    if (selected.isEmpty()) return;
+    if (selected.isEmpty())
+        return;
 
     if (!clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot delete nature dimension while disconnected.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot delete nature dimension while disconnected.");
         return;
     }
 
@@ -226,29 +230,33 @@ void NatureDimensionMdiWindow::deleteSelected() {
         }
     }
 
-    if (codes.empty()) return;
+    if (codes.empty())
+        return;
 
-    QString confirmMessage = codes.size() == 1
-        ? QString("Are you sure you want to delete nature dimension '%1'?")
-              .arg(QString::fromStdString(codes.front()))
-        : QString("Are you sure you want to delete %1 nature dimensions?")
-              .arg(codes.size());
+    QString confirmMessage =
+        codes.size() == 1 ?
+            QString("Are you sure you want to delete nature dimension '%1'?")
+                .arg(QString::fromStdString(codes.front())) :
+            QString("Are you sure you want to delete %1 nature dimensions?").arg(codes.size());
 
-    auto reply = MessageBoxHelper::question(this, "Delete Nature Dimension",
-        confirmMessage, QMessageBox::Yes | QMessageBox::No);
+    auto reply = MessageBoxHelper::question(
+        this, "Delete Nature Dimension", confirmMessage, QMessageBox::Yes | QMessageBox::No);
 
-    if (reply != QMessageBox::Yes) return;
+    if (reply != QMessageBox::Yes)
+        return;
 
     QPointer<NatureDimensionMdiWindow> self = this;
     using DeleteResult = std::vector<std::pair<std::string, std::pair<bool, std::string>>>;
 
     auto task = [self, codes]() -> DeleteResult {
         DeleteResult results;
-        if (!self) return {};
+        if (!self)
+            return {};
 
         dq::messaging::delete_nature_dimension_request request;
         request.codes = codes;
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
         if (!response_result) {
             for (const auto& code : codes) {
                 results.push_back({code, {false, "Failed to communicate with server"}});
@@ -277,22 +285,25 @@ void NatureDimensionMdiWindow::deleteSelected() {
                 emit self->dimensionDeleted(QString::fromStdString(code));
             } else {
                 failure_count++;
-                if (first_error.isEmpty()) first_error = QString::fromStdString(message);
+                if (first_error.isEmpty())
+                    first_error = QString::fromStdString(message);
             }
         }
 
         self->model_->refresh();
 
         if (failure_count == 0) {
-            emit self->statusChanged(success_count == 1
-                ? "Successfully deleted 1 nature dimension"
-                : QString("Successfully deleted %1 nature dimensions").arg(success_count));
+            emit self->statusChanged(
+                success_count == 1 ?
+                    "Successfully deleted 1 nature dimension" :
+                    QString("Successfully deleted %1 nature dimensions").arg(success_count));
         } else if (success_count == 0) {
             QString msg = QString("Failed to delete: %1").arg(first_error);
             emit self->errorOccurred(msg);
             MessageBoxHelper::critical(self, "Delete Failed", msg);
         } else {
-            QString msg = QString("Deleted %1, failed to delete %2").arg(success_count).arg(failure_count);
+            QString msg =
+                QString("Deleted %1, failed to delete %2").arg(success_count).arg(failure_count);
             emit self->statusChanged(msg);
             MessageBoxHelper::warning(self, "Partial Success", msg);
         }

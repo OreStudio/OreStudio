@@ -20,11 +20,11 @@
 #ifndef ORES_QT_SCHEDULER_MONITOR_CONTROLLER_HPP
 #define ORES_QT_SCHEDULER_MONITOR_CONTROLLER_HPP
 
-#include <QObject>
-#include <QMdiArea>
-#include <QMainWindow>
-#include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include <QMainWindow>
+#include <QMdiArea>
+#include <QObject>
 
 namespace ores::qt {
 
@@ -38,8 +38,7 @@ class SchedulerMonitorController final : public QObject {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.scheduler_monitor_controller";
+    inline static std::string_view logger_name = "ores.qt.scheduler_monitor_controller";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -47,15 +46,13 @@ private:
         return instance;
     }
 
-    static constexpr std::string_view event_subject =
-        "scheduler.v1.job-instance-events";
+    static constexpr std::string_view event_subject = "scheduler.v1.job-instance-events";
 
 public:
-    SchedulerMonitorController(
-        QMainWindow* mainWindow,
-        QMdiArea* mdiArea,
-        ClientManager* clientManager,
-        QObject* parent = nullptr);
+    SchedulerMonitorController(QMainWindow* mainWindow,
+                               QMdiArea* mdiArea,
+                               ClientManager* clientManager,
+                               QObject* parent = nullptr);
     ~SchedulerMonitorController() override;
 
     void showWindow();

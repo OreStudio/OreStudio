@@ -17,12 +17,11 @@
  *
  */
 #include "ores.qt/WorkflowPlugin.hpp"
-
-#include <QMenu>
-#include <QAction>
-#include "ores.qt/IconUtils.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/WorkflowController.hpp"
+#include <QAction>
+#include <QMenu>
 
 namespace ores::qt {
 
@@ -41,7 +40,8 @@ auto ico(Icon icon) {
 
 }
 
-WorkflowPlugin::WorkflowPlugin(QObject* parent) : PluginBase(parent) {
+WorkflowPlugin::WorkflowPlugin(QObject* parent)
+    : PluginBase(parent) {
     BOOST_LOG_SEV(lg(), debug) << "Plugin initialised.";
 }
 
@@ -56,32 +56,40 @@ void WorkflowPlugin::on_login(const plugin_context& ctx) {
     controller_ = std::make_unique<WorkflowController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, this);
 
-    connect(controller_.get(), &WorkflowController::statusMessage,
-            this, &WorkflowPlugin::statusMessage);
-    connect(controller_.get(), &WorkflowController::detachableWindowCreated,
-            this, &WorkflowPlugin::windowCreated);
-    connect(controller_.get(), &WorkflowController::detachableWindowDestroyed,
-            this, &WorkflowPlugin::windowDestroyed);
+    connect(controller_.get(),
+            &WorkflowController::statusMessage,
+            this,
+            &WorkflowPlugin::statusMessage);
+    connect(controller_.get(),
+            &WorkflowController::detachableWindowCreated,
+            this,
+            &WorkflowPlugin::windowCreated);
+    connect(controller_.get(),
+            &WorkflowController::detachableWindowDestroyed,
+            this,
+            &WorkflowPlugin::windowDestroyed);
 }
 
 void WorkflowPlugin::setup_menus(const shared_menus_context& smc) {
     BOOST_LOG_SEV(lg(), debug) << "Registering entries in shared menus."
-        << " operations=" << (smc.operations_menu ? "ok" : "null");
+                               << " operations=" << (smc.operations_menu ? "ok" : "null");
     if (!smc.operations_menu)
         return;
 
     smc.operations_menu->addSeparator();
 
-    auto* actExecutions = smc.operations_menu->addAction(
-        ico(Icon::TasksApp), tr("Workflow &Executions"));
+    auto* actExecutions =
+        smc.operations_menu->addAction(ico(Icon::TasksApp), tr("Workflow &Executions"));
     connect(actExecutions, &QAction::triggered, this, [this]() {
-        if (controller_) controller_->showListWindow();
+        if (controller_)
+            controller_->showListWindow();
     });
 
-    auto* actDefinitions = smc.operations_menu->addAction(
-        ico(Icon::DocumentTable), tr("Workflow &Definitions"));
+    auto* actDefinitions =
+        smc.operations_menu->addAction(ico(Icon::DocumentTable), tr("Workflow &Definitions"));
     connect(actDefinitions, &QAction::triggered, this, [this]() {
-        if (controller_) controller_->showDefinitionsWindow();
+        if (controller_)
+            controller_->showDefinitionsWindow();
     });
 }
 
@@ -92,7 +100,8 @@ QList<QMenu*> WorkflowPlugin::create_menus() {
 
 void WorkflowPlugin::on_logout() {
     BOOST_LOG_SEV(lg(), debug) << "Logout event received.";
-    if (controller_) controller_->closeAllWindows();
+    if (controller_)
+        controller_->closeAllWindows();
     controller_.reset();
     ctx_ = {};
 }

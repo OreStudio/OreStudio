@@ -18,23 +18,22 @@
  *
  */
 #include "ores.qt/FxConventionDetailDialog.hpp"
-
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include "ui_FxConventionDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.refdata.api/messaging/fx_convention_protocol.hpp"
+#include "ui_FxConventionDetailDialog.h"
+#include <QFutureWatcher>
+#include <QMessageBox>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 FxConventionDetailDialog::FxConventionDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent),
-      ui_(new Ui::FxConventionDetailDialog),
-      clientManager_(nullptr) {
+    : DetailDialogBase(parent)
+    , ui_(new Ui::FxConventionDetailDialog)
+    , clientManager_(nullptr) {
 
     ui_->setupUi(this);
     setupUi();
@@ -70,22 +69,28 @@ void FxConventionDetailDialog::setupUi() {
 }
 
 void FxConventionDetailDialog::setupConnections() {
-    connect(ui_->saveButton, &QPushButton::clicked, this,
-            &FxConventionDetailDialog::onSaveClicked);
-    connect(ui_->deleteButton, &QPushButton::clicked, this,
-            &FxConventionDetailDialog::onDeleteClicked);
-    connect(ui_->closeButton, &QPushButton::clicked, this,
-            &FxConventionDetailDialog::onCloseClicked);
+    connect(ui_->saveButton, &QPushButton::clicked, this, &FxConventionDetailDialog::onSaveClicked);
+    connect(
+        ui_->deleteButton, &QPushButton::clicked, this, &FxConventionDetailDialog::onDeleteClicked);
+    connect(
+        ui_->closeButton, &QPushButton::clicked, this, &FxConventionDetailDialog::onCloseClicked);
 
-    connect(ui_->idEdit, &QLineEdit::textChanged, this,
-            &FxConventionDetailDialog::onCodeChanged);
-    connect(ui_->sourceCurrencyEdit, &QLineEdit::textChanged, this,
+    connect(ui_->idEdit, &QLineEdit::textChanged, this, &FxConventionDetailDialog::onCodeChanged);
+    connect(ui_->sourceCurrencyEdit,
+            &QLineEdit::textChanged,
+            this,
             &FxConventionDetailDialog::onFieldChanged);
-    connect(ui_->targetCurrencyEdit, &QLineEdit::textChanged, this,
+    connect(ui_->targetCurrencyEdit,
+            &QLineEdit::textChanged,
+            this,
             &FxConventionDetailDialog::onFieldChanged);
-    connect(ui_->advanceCalendarEdit, &QLineEdit::textChanged, this,
+    connect(ui_->advanceCalendarEdit,
+            &QLineEdit::textChanged,
+            this,
             &FxConventionDetailDialog::onFieldChanged);
-    connect(ui_->conventionEdit, &QLineEdit::textChanged, this,
+    connect(ui_->conventionEdit,
+            &QLineEdit::textChanged,
+            this,
             &FxConventionDetailDialog::onFieldChanged);
 }
 
@@ -97,8 +102,7 @@ void FxConventionDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
 
-void FxConventionDetailDialog::setConvention(
-    const refdata::domain::fx_convention& fxc) {
+void FxConventionDetailDialog::setConvention(const refdata::domain::fx_convention& fxc) {
     fxc_ = fxc;
     updateUiFromConvention();
 }
@@ -128,18 +132,16 @@ void FxConventionDetailDialog::updateUiFromConvention() {
     ui_->sourceCurrencyEdit->setText(QString::fromStdString(fxc_.source_currency));
     ui_->targetCurrencyEdit->setText(QString::fromStdString(fxc_.target_currency));
     ui_->spotDaysEdit->setValue(fxc_.spot_days);
-    ui_->advanceCalendarEdit->setText(fxc_.advance_calendar
-        ? QString::fromStdString(*fxc_.advance_calendar)
-        : QString{});
-    ui_->conventionEdit->setText(fxc_.convention
-        ? QString::fromStdString(*fxc_.convention)
-        : QString{});
-    ui_->spotRelativeEdit->setCheckState(fxc_.spot_relative
-        ? (*fxc_.spot_relative ? Qt::Checked : Qt::Unchecked)
-        : Qt::PartiallyChecked);
-    ui_->endOfMonthEdit->setCheckState(fxc_.end_of_month
-        ? (*fxc_.end_of_month ? Qt::Checked : Qt::Unchecked)
-        : Qt::PartiallyChecked);
+    ui_->advanceCalendarEdit->setText(
+        fxc_.advance_calendar ? QString::fromStdString(*fxc_.advance_calendar) : QString{});
+    ui_->conventionEdit->setText(fxc_.convention ? QString::fromStdString(*fxc_.convention) :
+                                                   QString{});
+    ui_->spotRelativeEdit->setCheckState(fxc_.spot_relative ?
+                                             (*fxc_.spot_relative ? Qt::Checked : Qt::Unchecked) :
+                                             Qt::PartiallyChecked);
+    ui_->endOfMonthEdit->setCheckState(fxc_.end_of_month ?
+                                           (*fxc_.end_of_month ? Qt::Checked : Qt::Unchecked) :
+                                           Qt::PartiallyChecked);
 
     populateProvenance(fxc_.version,
                        fxc_.modified_by,
@@ -161,8 +163,9 @@ void FxConventionDetailDialog::updateConventionFromUi() {
     fxc_.spot_days = ui_->spotDaysEdit->value();
     {
         const auto advance_calendar_str = ui_->advanceCalendarEdit->text().trimmed().toStdString();
-        fxc_.advance_calendar =
-            advance_calendar_str.empty() ? std::nullopt : std::optional<std::string>(advance_calendar_str);
+        fxc_.advance_calendar = advance_calendar_str.empty() ?
+                                    std::nullopt :
+                                    std::optional<std::string>(advance_calendar_str);
     }
     {
         const auto convention_str = ui_->conventionEdit->text().trimmed().toStdString();
@@ -170,26 +173,26 @@ void FxConventionDetailDialog::updateConventionFromUi() {
             convention_str.empty() ? std::nullopt : std::optional<std::string>(convention_str);
     }
     switch (ui_->spotRelativeEdit->checkState()) {
-    case Qt::Checked:
-        fxc_.spot_relative = std::optional<bool>(true);
-        break;
-    case Qt::Unchecked:
-        fxc_.spot_relative = std::optional<bool>(false);
-        break;
-    default:
-        fxc_.spot_relative = std::nullopt;
-        break;
+        case Qt::Checked:
+            fxc_.spot_relative = std::optional<bool>(true);
+            break;
+        case Qt::Unchecked:
+            fxc_.spot_relative = std::optional<bool>(false);
+            break;
+        default:
+            fxc_.spot_relative = std::nullopt;
+            break;
     }
     switch (ui_->endOfMonthEdit->checkState()) {
-    case Qt::Checked:
-        fxc_.end_of_month = std::optional<bool>(true);
-        break;
-    case Qt::Unchecked:
-        fxc_.end_of_month = std::optional<bool>(false);
-        break;
-    default:
-        fxc_.end_of_month = std::nullopt;
-        break;
+        case Qt::Checked:
+            fxc_.end_of_month = std::optional<bool>(true);
+            break;
+        case Qt::Unchecked:
+            fxc_.end_of_month = std::optional<bool>(false);
+            break;
+        default:
+            fxc_.end_of_month = std::nullopt;
+            break;
     }
     fxc_.modified_by = username_;
 }
@@ -214,30 +217,25 @@ bool FxConventionDetailDialog::validateInput() {
     const QString source_currency_val = ui_->sourceCurrencyEdit->text().trimmed();
     const QString target_currency_val = ui_->targetCurrencyEdit->text().trimmed();
 
-    return true
-        && !id_val.isEmpty()
-        && !source_currency_val.isEmpty()
-        && !target_currency_val.isEmpty()
-    ;
+    return true && !id_val.isEmpty() && !source_currency_val.isEmpty() &&
+           !target_currency_val.isEmpty();
 }
 
 void FxConventionDetailDialog::onSaveClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot save FX convention while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot save FX convention while disconnected from server.");
         return;
     }
 
     if (!validateInput()) {
-        MessageBoxHelper::warning(this, "Invalid Input",
-            "Please fill in all required fields.");
+        MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
 
     updateConventionFromUi();
 
-    BOOST_LOG_SEV(lg(), info) << "Saving FX convention: "
-        << fxc_.id;
+    BOOST_LOG_SEV(lg(), info) << "Saving FX convention: " << fxc_.id;
 
     QPointer<FxConventionDetailDialog> self = this;
 
@@ -253,8 +251,8 @@ void FxConventionDetailDialog::onSaveClicked() {
 
         refdata::messaging::save_fx_convention_request request;
         request.data = fxc;
-        auto response_result = self->clientManager_->
-            process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -264,15 +262,13 @@ void FxConventionDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "FX Convention saved successfully";
-            QString code = QString::fromStdString(
-                self->fxc_.id);
+            QString code = QString::fromStdString(self->fxc_.id);
             self->hasChanges_ = false;
             self->updateSaveButtonState();
             emit self->fxcSaved(code);
@@ -291,14 +287,15 @@ void FxConventionDetailDialog::onSaveClicked() {
 
 void FxConventionDetailDialog::onDeleteClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot delete FX convention while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot delete FX convention while disconnected from server.");
         return;
     }
 
-    QString code = QString::fromStdString(
-        fxc_.id);
-    auto reply = MessageBoxHelper::question(this, "Delete FX Convention",
+    QString code = QString::fromStdString(fxc_.id);
+    auto reply = MessageBoxHelper::question(
+        this,
+        "Delete FX Convention",
         QString("Are you sure you want to delete FX convention '%1'?").arg(code),
         QMessageBox::Yes | QMessageBox::No);
 
@@ -306,8 +303,7 @@ void FxConventionDetailDialog::onDeleteClicked() {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Deleting FX convention: "
-        << fxc_.id;
+    BOOST_LOG_SEV(lg(), info) << "Deleting FX convention: " << fxc_.id;
 
     QPointer<FxConventionDetailDialog> self = this;
 
@@ -323,8 +319,8 @@ void FxConventionDetailDialog::onDeleteClicked() {
 
         refdata::messaging::delete_fx_convention_request request;
         request.codes = {code};
-        auto response_result = self->clientManager_->
-            process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -334,15 +330,13 @@ void FxConventionDetailDialog::onDeleteClicked() {
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
-            self, [self, code, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, code, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "FX Convention deleted successfully";
-            emit self->statusMessage(
-                QString("FX Convention '%1' deleted").arg(code));
+            emit self->statusMessage(QString("FX Convention '%1' deleted").arg(code));
             emit self->fxcDeleted(code);
             self->requestClose();
         } else {

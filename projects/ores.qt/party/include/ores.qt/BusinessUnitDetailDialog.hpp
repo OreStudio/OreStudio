@@ -20,14 +20,14 @@
 #ifndef ORES_QT_BUSINESS_UNIT_DETAIL_DIALOG_HPP
 #define ORES_QT_BUSINESS_UNIT_DETAIL_DIALOG_HPP
 
-#include <string>
-#include <vector>
-#include <boost/uuid/uuid.hpp>
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.qt/ImageCache.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/business_unit.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <string>
+#include <vector>
 
 namespace Ui {
 class BusinessUnitDetailDialog;
@@ -56,8 +56,7 @@ class BusinessUnitDetailDialog final : public DetailDialogBase {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.business_unit_detail_dialog";
+    inline static std::string_view logger_name = "ores.qt.business_unit_detail_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -90,7 +89,9 @@ protected:
     QTabWidget* tabWidget() const override;
     QWidget* provenanceTab() const override;
     ProvenanceWidget* provenanceWidget() const override;
-    bool hasUnsavedChanges() const override { return hasChanges_; }
+    bool hasUnsavedChanges() const override {
+        return hasChanges_;
+    }
 
 private:
     void setupUi();

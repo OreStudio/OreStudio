@@ -20,16 +20,16 @@
 #ifndef ORES_QT_ACCOUNT_ROLES_WIDGET_HPP
 #define ORES_QT_ACCOUNT_ROLES_WIDGET_HPP
 
-#include <QWidget>
+#include "ores.iam.api/domain/role.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
 #include <QComboBox>
+#include <QGroupBox>
 #include <QListWidget>
 #include <QToolButton>
-#include <QGroupBox>
-#include <vector>
+#include <QWidget>
 #include <boost/uuid/uuid.hpp>
-#include "ores.qt/ClientManager.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.iam.api/domain/role.hpp"
+#include <vector>
 
 namespace ores::qt {
 
@@ -42,8 +42,7 @@ class AccountRolesWidget : public QWidget {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.account_roles_widget";
+    inline static std::string_view logger_name = "ores.qt.account_roles_widget";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -85,15 +84,15 @@ private:
     void updateButtonStates();
     void refreshRolesList();
 
-    QGroupBox*   groupBox_;
+    QGroupBox* groupBox_;
     QListWidget* rolesList_;
-    QComboBox*   roleCombo_;
+    QComboBox* roleCombo_;
     QToolButton* assignButton_;
     QToolButton* revokeButton_;
 
-    ClientManager*     clientManager_ = nullptr;
+    ClientManager* clientManager_ = nullptr;
     boost::uuids::uuid accountId_;
-    bool               isReadOnly_{false};
+    bool isReadOnly_{false};
 
     std::vector<iam::domain::role> assignedRoles_;
     std::vector<iam::domain::role> allRoles_;

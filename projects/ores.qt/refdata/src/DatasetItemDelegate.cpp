@@ -22,19 +22,18 @@
 #include "ores.qt/ClientDatasetModel.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/DelegatePaintUtils.hpp"
-
-#include <QPainter>
 #include <QApplication>
+#include <QPainter>
 #include <QStyleOptionViewItem>
 
 namespace ores::qt {
 
 DatasetItemDelegate::DatasetItemDelegate(BadgeCache* badgeCache, QObject* parent)
-    : QStyledItemDelegate(parent),
-      badgeCache_(badgeCache) {
-}
+    : QStyledItemDelegate(parent)
+    , badgeCache_(badgeCache) {}
 
-void DatasetItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option,
+void DatasetItemDelegate::paint(QPainter* painter,
+                                const QStyleOptionViewItem& option,
                                 const QModelIndex& index) const {
     QStyleOptionViewItem opt = option;
     initStyleOption(&opt, index);
@@ -49,19 +48,17 @@ void DatasetItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
         badgeFont.setPointSize(qRound(badgeFont.pointSize() * 0.8));
         badgeFont.setBold(true);
 
-        auto resolve = [this](
-            const QString& domain, const QString& value) -> std::pair<QColor, QColor> {
+        auto resolve = [this](const QString& domain,
+                              const QString& value) -> std::pair<QColor, QColor> {
             if (badgeCache_ && !value.isEmpty()) {
-                auto* def = badgeCache_->resolve(domain.toStdString(),
-                                                 value.toStdString());
+                auto* def = badgeCache_->resolve(domain.toStdString(), value.toStdString());
                 if (def)
                     return {QColor(QString::fromStdString(def->background_colour)),
                             QColor(QString::fromStdString(def->text_colour))};
             }
             // Fallback for unresolved badge definitions — deliberately not
             // gray, which is reserved for inactive/negative states.
-            return {color_constants::badge_fallback,
-                    color_constants::badge_fallback_text};
+            return {color_constants::badge_fallback, color_constants::badge_fallback_text};
         };
 
         // Get the tag values
@@ -75,20 +72,17 @@ void DatasetItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
 
         if (!origin.isEmpty()) {
             auto [bg, fg] = resolve("dq_origin", origin);
-            DelegatePaintUtils::draw_inline_badge(painter, badgeRect,
-                origin, bg, fg, badgeFont);
+            DelegatePaintUtils::draw_inline_badge(painter, badgeRect, origin, bg, fg, badgeFont);
         }
 
         if (!nature.isEmpty()) {
             auto [bg, fg] = resolve("dq_nature", nature);
-            DelegatePaintUtils::draw_inline_badge(painter, badgeRect,
-                nature, bg, fg, badgeFont);
+            DelegatePaintUtils::draw_inline_badge(painter, badgeRect, nature, bg, fg, badgeFont);
         }
 
         if (!treatment.isEmpty()) {
             auto [bg, fg] = resolve("dq_treatment", treatment);
-            DelegatePaintUtils::draw_inline_badge(painter, badgeRect,
-                treatment, bg, fg, badgeFont);
+            DelegatePaintUtils::draw_inline_badge(painter, badgeRect, treatment, bg, fg, badgeFont);
         }
 
         return;

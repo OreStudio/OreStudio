@@ -18,40 +18,38 @@
  *
  */
 #include "ores.qt/JobDefinitionMdiWindow.hpp"
-
-#include <QVBoxLayout>
-#include <QHeaderView>
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include <boost/uuid/uuid_io.hpp>
+#include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/ColorConstants.hpp"
-#include "ores.scheduler.api/rfl/reflectors.hpp"
 #include "ores.scheduler.api/messaging/scheduler_protocol.hpp"
+#include "ores.scheduler.api/rfl/reflectors.hpp"
+#include <QFutureWatcher>
+#include <QHeaderView>
+#include <QMessageBox>
+#include <QVBoxLayout>
+#include <QtConcurrent>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-JobDefinitionMdiWindow::JobDefinitionMdiWindow(
-    ClientManager* clientManager,
-    const QString& username,
-    QWidget* parent)
-    : EntityListMdiWindow(parent),
-      clientManager_(clientManager),
-      username_(username),
-      toolbar_(nullptr),
-      tableView_(nullptr),
-      model_(nullptr),
-      proxyModel_(nullptr),
-      paginationWidget_(nullptr),
-      reloadAction_(nullptr),
-      addAction_(nullptr),
-      editAction_(nullptr),
-      deleteAction_(nullptr),
-      historyAction_(nullptr) {
+JobDefinitionMdiWindow::JobDefinitionMdiWindow(ClientManager* clientManager,
+                                               const QString& username,
+                                               QWidget* parent)
+    : EntityListMdiWindow(parent)
+    , clientManager_(clientManager)
+    , username_(username)
+    , toolbar_(nullptr)
+    , tableView_(nullptr)
+    , model_(nullptr)
+    , proxyModel_(nullptr)
+    , paginationWidget_(nullptr)
+    , reloadAction_(nullptr)
+    , addAction_(nullptr)
+    , editAction_(nullptr)
+    , deleteAction_(nullptr)
+    , historyAction_(nullptr) {
 
     setupUi();
     setupConnections();
@@ -81,50 +79,39 @@ void JobDefinitionMdiWindow::setupToolbar() {
     toolbar_->setIconSize(QSize(20, 20));
 
     reloadAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::ArrowClockwise, IconUtils::DefaultIconColor),
+        IconUtils::createRecoloredIcon(Icon::ArrowClockwise, IconUtils::DefaultIconColor),
         tr("Reload"));
-    connect(reloadAction_, &QAction::triggered, this,
-            &EntityListMdiWindow::reload);
+    connect(reloadAction_, &QAction::triggered, this, &EntityListMdiWindow::reload);
 
     initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowClockwise));
 
     toolbar_->addSeparator();
 
     addAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::CalendarAdd, IconUtils::DefaultIconColor),
+        IconUtils::createRecoloredIcon(Icon::CalendarAdd, IconUtils::DefaultIconColor),
         tr("Schedule"));
     addAction_->setToolTip(tr("Schedule a new job definition"));
-    connect(addAction_, &QAction::triggered, this,
-            &JobDefinitionMdiWindow::addNew);
+    connect(addAction_, &QAction::triggered, this, &JobDefinitionMdiWindow::addNew);
 
     editAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::Edit, IconUtils::DefaultIconColor),
-        tr("Edit"));
+        IconUtils::createRecoloredIcon(Icon::Edit, IconUtils::DefaultIconColor), tr("Edit"));
     editAction_->setToolTip(tr("Edit selected job definition"));
     editAction_->setEnabled(false);
-    connect(editAction_, &QAction::triggered, this,
-            &JobDefinitionMdiWindow::editSelected);
+    connect(editAction_, &QAction::triggered, this, &JobDefinitionMdiWindow::editSelected);
 
     deleteAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::CalendarCancel, IconUtils::DefaultIconColor),
+        IconUtils::createRecoloredIcon(Icon::CalendarCancel, IconUtils::DefaultIconColor),
         tr("Unschedule"));
     deleteAction_->setToolTip(tr("Unschedule selected job definition"));
     deleteAction_->setEnabled(false);
-    connect(deleteAction_, &QAction::triggered, this,
-            &JobDefinitionMdiWindow::deleteSelected);
+    connect(deleteAction_, &QAction::triggered, this, &JobDefinitionMdiWindow::deleteSelected);
 
     historyAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::History, IconUtils::DefaultIconColor),
-        tr("History"));
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor), tr("History"));
     historyAction_->setToolTip(tr("View job definition history"));
     historyAction_->setEnabled(false);
-    connect(historyAction_, &QAction::triggered, this,
-            &JobDefinitionMdiWindow::viewHistorySelected);
+    connect(
+        historyAction_, &QAction::triggered, this, &JobDefinitionMdiWindow::viewHistorySelected);
 }
 
 void JobDefinitionMdiWindow::setupTable() {
@@ -141,32 +128,34 @@ void JobDefinitionMdiWindow::setupTable() {
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
 
-    initializeTableSettings(tableView_, model_,
-        "JobDefinitionListWindow",
-        {ClientJobDefinitionModel::Description},
-        {900, 400}, 1);
+    initializeTableSettings(tableView_,
+                            model_,
+                            "JobDefinitionListWindow",
+                            {ClientJobDefinitionModel::Description},
+                            {900, 400},
+                            1);
 }
 
 void JobDefinitionMdiWindow::setupConnections() {
-    connect(model_, &ClientJobDefinitionModel::dataLoaded,
-            this, &JobDefinitionMdiWindow::onDataLoaded);
-    connect(model_, &ClientJobDefinitionModel::loadError,
-            this, &JobDefinitionMdiWindow::onLoadError);
+    connect(
+        model_, &ClientJobDefinitionModel::dataLoaded, this, &JobDefinitionMdiWindow::onDataLoaded);
+    connect(
+        model_, &ClientJobDefinitionModel::loadError, this, &JobDefinitionMdiWindow::onLoadError);
     connectModel(model_);
 
-    connect(tableView_->selectionModel(), &QItemSelectionModel::selectionChanged,
-            this, &JobDefinitionMdiWindow::onSelectionChanged);
-    connect(tableView_, &QTableView::doubleClicked,
-            this, &JobDefinitionMdiWindow::onDoubleClicked);
+    connect(tableView_->selectionModel(),
+            &QItemSelectionModel::selectionChanged,
+            this,
+            &JobDefinitionMdiWindow::onSelectionChanged);
+    connect(tableView_, &QTableView::doubleClicked, this, &JobDefinitionMdiWindow::onDoubleClicked);
 
-    connect(paginationWidget_, &PaginationWidget::page_size_changed,
-            this, [this](std::uint32_t size) {
-        model_->set_page_size(size);
-        model_->refresh();
-    });
+    connect(
+        paginationWidget_, &PaginationWidget::page_size_changed, this, [this](std::uint32_t size) {
+            model_->set_page_size(size);
+            model_->refresh();
+        });
 
-    connect(paginationWidget_, &PaginationWidget::load_all_requested,
-            this, [this]() {
+    connect(paginationWidget_, &PaginationWidget::load_all_requested, this, [this]() {
         const auto total = model_->total_available_count();
         if (total > 0 && total <= 1000) {
             model_->set_page_size(total);
@@ -174,10 +163,11 @@ void JobDefinitionMdiWindow::setupConnections() {
         }
     });
 
-    connect(paginationWidget_, &PaginationWidget::page_requested,
-            this, [this](std::uint32_t offset, std::uint32_t limit) {
-        model_->load_page(offset, limit);
-    });
+    connect(
+        paginationWidget_,
+        &PaginationWidget::page_requested,
+        this,
+        [this](std::uint32_t offset, std::uint32_t limit) { model_->load_page(offset, limit); });
 }
 
 void JobDefinitionMdiWindow::doReload() {
@@ -192,12 +182,11 @@ void JobDefinitionMdiWindow::onDataLoaded() {
     emit statusChanged(tr("Loaded %1 of %2 job definitions").arg(loaded).arg(total));
 
     paginationWidget_->update_state(loaded, total);
-    paginationWidget_->set_load_all_enabled(
-        loaded < static_cast<int>(total) && total > 0 && total <= 1000);
+    paginationWidget_->set_load_all_enabled(loaded < static_cast<int>(total) && total > 0 &&
+                                            total <= 1000);
 }
 
-void JobDefinitionMdiWindow::onLoadError(const QString& error_message,
-                                          const QString& details) {
+void JobDefinitionMdiWindow::onLoadError(const QString& error_message, const QString& details) {
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);
@@ -251,8 +240,8 @@ void JobDefinitionMdiWindow::viewHistorySelected() {
 
     auto sourceIndex = proxyModel_->mapToSource(selected.first());
     if (auto* definition = model_->getDefinition(sourceIndex.row())) {
-        BOOST_LOG_SEV(lg(), debug) << "Emitting showDefinitionHistory for code: "
-                                   << definition->job_name;
+        BOOST_LOG_SEV(lg(), debug)
+            << "Emitting showDefinitionHistory for code: " << definition->job_name;
         emit showDefinitionHistory(*definition);
     }
 }
@@ -265,13 +254,13 @@ void JobDefinitionMdiWindow::deleteSelected() {
     }
 
     if (!clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot delete job definition while disconnected.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot delete job definition while disconnected.");
         return;
     }
 
     std::vector<boost::uuids::uuid> ids;
-    std::vector<std::string> codes;  // For display purposes
+    std::vector<std::string> codes; // For display purposes
     for (const auto& index : selected) {
         auto sourceIndex = proxyModel_->mapToSource(index);
         if (auto* definition = model_->getDefinition(sourceIndex.row())) {
@@ -285,20 +274,19 @@ void JobDefinitionMdiWindow::deleteSelected() {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Delete requested for " << ids.size()
-                               << " job definitions";
+    BOOST_LOG_SEV(lg(), debug) << "Delete requested for " << ids.size() << " job definitions";
 
     QString confirmMessage;
     if (ids.size() == 1) {
         confirmMessage = QString("Are you sure you want to delete job definition '%1'?")
-            .arg(QString::fromStdString(codes.front()));
+                             .arg(QString::fromStdString(codes.front()));
     } else {
-        confirmMessage = QString("Are you sure you want to delete %1 job definitions?")
-            .arg(ids.size());
+        confirmMessage =
+            QString("Are you sure you want to delete %1 job definitions?").arg(ids.size());
     }
 
-    auto reply = MessageBoxHelper::question(this, "Delete Job Definition",
-        confirmMessage, QMessageBox::Yes | QMessageBox::No);
+    auto reply = MessageBoxHelper::question(
+        this, "Delete Job Definition", confirmMessage, QMessageBox::Yes | QMessageBox::No);
 
     if (reply != QMessageBox::Yes) {
         BOOST_LOG_SEV(lg(), debug) << "Delete cancelled by user";
@@ -306,36 +294,38 @@ void JobDefinitionMdiWindow::deleteSelected() {
     }
 
     QPointer<JobDefinitionMdiWindow> self = this;
-    using DeleteResult = std::vector<std::tuple<boost::uuids::uuid, std::string, bool, std::string>>;
+    using DeleteResult =
+        std::vector<std::tuple<boost::uuids::uuid, std::string, bool, std::string>>;
 
     auto task = [self, ids, codes]() -> DeleteResult {
         DeleteResult results;
-        if (!self) return {};
+        if (!self)
+            return {};
 
-        BOOST_LOG_SEV(lg(), debug) << "Making unschedule requests for "
-                                   << ids.size() << " job definitions";
+        BOOST_LOG_SEV(lg(), debug)
+            << "Making unschedule requests for " << ids.size() << " job definitions";
 
         for (std::size_t i = 0; i < ids.size(); ++i) {
             scheduler::messaging::unschedule_job_request request;
             request.job_definition_id = boost::uuids::to_string(ids[i]);
-            auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+            auto response_result =
+                self->clientManager_->process_authenticated_request(std::move(request));
 
             if (!response_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to send unschedule request for "
-                                           << codes[i];
+                BOOST_LOG_SEV(lg(), error) << "Failed to send unschedule request for " << codes[i];
                 results.push_back({ids[i], codes[i], false, "Failed to communicate with server"});
                 continue;
             }
 
-            results.push_back({ids[i], codes[i], response_result->success, response_result->message});
+            results.push_back(
+                {ids[i], codes[i], response_result->success, response_result->message});
         }
 
         return results;
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, watcher]() {
         auto results = watcher->result();
         watcher->deleteLater();
 
@@ -349,8 +339,8 @@ void JobDefinitionMdiWindow::deleteSelected() {
                 success_count++;
                 emit self->definitionDeleted(QString::fromStdString(code));
             } else {
-                BOOST_LOG_SEV(lg(), error) << "Job Definition deletion failed: "
-                                           << code << " - " << message;
+                BOOST_LOG_SEV(lg(), error)
+                    << "Job Definition deletion failed: " << code << " - " << message;
                 failure_count++;
                 if (first_error.isEmpty()) {
                     first_error = QString::fromStdString(message);
@@ -361,21 +351,20 @@ void JobDefinitionMdiWindow::deleteSelected() {
         self->model_->refresh();
 
         if (failure_count == 0) {
-            QString msg = success_count == 1
-                ? "Successfully deleted 1 job definition"
-                : QString("Successfully deleted %1 job definitions").arg(success_count);
+            QString msg = success_count == 1 ?
+                              "Successfully deleted 1 job definition" :
+                              QString("Successfully deleted %1 job definitions").arg(success_count);
             emit self->statusChanged(msg);
         } else if (success_count == 0) {
             QString msg = QString("Failed to delete %1 %2: %3")
-                .arg(failure_count)
-                .arg(failure_count == 1 ? "job definition" : "job definitions")
-                .arg(first_error);
+                              .arg(failure_count)
+                              .arg(failure_count == 1 ? "job definition" : "job definitions")
+                              .arg(first_error);
             emit self->errorOccurred(msg);
             MessageBoxHelper::critical(self, "Delete Failed", msg);
         } else {
-            QString msg = QString("Deleted %1, failed to delete %2")
-                .arg(success_count)
-                .arg(failure_count);
+            QString msg =
+                QString("Deleted %1, failed to delete %2").arg(success_count).arg(failure_count);
             emit self->statusChanged(msg);
             MessageBoxHelper::warning(self, "Partial Success", msg);
         }

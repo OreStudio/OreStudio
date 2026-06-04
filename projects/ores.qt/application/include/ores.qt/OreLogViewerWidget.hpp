@@ -20,18 +20,18 @@
 #ifndef ORES_QT_ORE_LOG_VIEWER_WIDGET_HPP
 #define ORES_QT_ORE_LOG_VIEWER_WIDGET_HPP
 
-#include <memory>
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/ClientTelemetryLogModel.hpp"
+#include <QLabel>
+#include <QSortFilterProxyModel>
+#include <QSplitter>
 #include <QString>
-#include <QWidget>
 #include <QTabWidget>
 #include <QTableView>
 #include <QTextEdit>
-#include <QSplitter>
-#include <QLabel>
-#include <QSortFilterProxyModel>
-#include "ores.qt/ClientManager.hpp"
-#include "ores.qt/ClientTelemetryLogModel.hpp"
-#include "ores.logging/make_logger.hpp"
+#include <QWidget>
+#include <memory>
 
 namespace ores::qt {
 
@@ -55,8 +55,7 @@ private:
     }
 
 public:
-    explicit OreLogViewerWidget(ClientManager* clientManager,
-                                QWidget* parent = nullptr);
+    explicit OreLogViewerWidget(ClientManager* clientManager, QWidget* parent = nullptr);
 
     /**
      * @brief Load logs for the given result id (UUID string).
@@ -76,8 +75,7 @@ public slots:
 private slots:
     void on_data_loaded();
     void on_load_error(const QString& message, const QString& details);
-    void on_selection_changed(const QItemSelection& selected,
-                              const QItemSelection& deselected);
+    void on_selection_changed(const QItemSelection& selected, const QItemSelection& deselected);
     void on_tab_changed(int index);
 
 private:
@@ -91,9 +89,9 @@ private:
     std::unique_ptr<ClientTelemetryLogModel> model_;
 
     // Source-filtered proxy views
-    QSortFilterProxyModel* ore_proxy_{nullptr};   ///< Source LIKE %ore_log%
-    QSortFilterProxyModel* wrap_proxy_{nullptr};  ///< Source LIKE %wrapper%
-    QSortFilterProxyModel* all_proxy_{nullptr};   ///< All entries
+    QSortFilterProxyModel* ore_proxy_{nullptr};  ///< Source LIKE %ore_log%
+    QSortFilterProxyModel* wrap_proxy_{nullptr}; ///< Source LIKE %wrapper%
+    QSortFilterProxyModel* all_proxy_{nullptr};  ///< All entries
 
     QTabWidget* tabs_{nullptr};
     QTableView* ore_view_{nullptr};

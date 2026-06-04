@@ -20,10 +20,10 @@
 #ifndef ORES_QT_CRON_EDITOR_DIALOG_HPP
 #define ORES_QT_CRON_EDITOR_DIALOG_HPP
 
-#include <QDialog>
-#include <QString>
 #include "ores.qt/CronFieldWidget.hpp"
 #include "ores.qt/export.hpp"
+#include <QDialog>
+#include <QString>
 
 class QLabel;
 class QTabWidget;
@@ -55,8 +55,8 @@ private slots:
 private:
     QString describeExpression() const;
 
-    QLabel*          descriptionLabel_;
-    QTabWidget*      tabWidget_;
+    QLabel* descriptionLabel_;
+    QTabWidget* tabWidget_;
     CronFieldWidget* minuteField_;
     CronFieldWidget* hourField_;
     CronFieldWidget* dayField_;

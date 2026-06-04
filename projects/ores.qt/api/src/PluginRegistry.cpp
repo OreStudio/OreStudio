@@ -17,11 +17,11 @@
  *
  */
 #include "ores.qt/PluginRegistry.hpp"
-#include <algorithm>
+#include "ores.logging/make_logger.hpp"
 #include <QDir>
 #include <QLibrary>
 #include <QPluginLoader>
-#include "ores.logging/make_logger.hpp"
+#include <algorithm>
 
 namespace ores::qt {
 
@@ -46,7 +46,7 @@ void PluginRegistry::initialise(PluginRegistry& registry) {
 
 PluginRegistry& PluginRegistry::instance() {
     Q_ASSERT(s_instance != nullptr &&
-        "PluginRegistry::initialise() must be called before instance()");
+             "PluginRegistry::initialise() must be called before instance()");
     return *s_instance;
 }
 
@@ -80,9 +80,8 @@ void PluginRegistry::load_from_directory(const QString& plugin_dir) {
         QObject* obj = loader->instance();
         if (!obj) {
             const QString err = loader->errorString();
-            BOOST_LOG_SEV(lg(), error)
-                << "Failed to load plugin: " << filename.toStdString()
-                << " - " << err.toStdString();
+            BOOST_LOG_SEV(lg(), error) << "Failed to load plugin: " << filename.toStdString()
+                                       << " - " << err.toStdString();
             load_errors_.push_back({filename, err});
             delete loader;
             continue;
@@ -98,17 +97,17 @@ void PluginRegistry::load_from_directory(const QString& plugin_dir) {
             continue;
         }
 
-        BOOST_LOG_SEV(lg(), info)
-            << "Loaded plugin: " << filename.toStdString()
-            << " (order=" << plugin->load_order() << ")";
+        BOOST_LOG_SEV(lg(), info) << "Loaded plugin: " << filename.toStdString()
+                                  << " (order=" << plugin->load_order() << ")";
         loaders_.push_back(loader);
         ordered.push_back({plugin->load_order(), plugin});
     }
 
-    std::stable_sort(ordered.begin(), ordered.end(),
-        [](const QPair<int, IPlugin*>& a, const QPair<int, IPlugin*>& b) {
-            return a.first < b.first;
-        });
+    std::stable_sort(ordered.begin(),
+                     ordered.end(),
+                     [](const QPair<int, IPlugin*>& a, const QPair<int, IPlugin*>& b) {
+                         return a.first < b.first;
+                     });
 
     for (const auto& pair : ordered)
         plugins_.push_back(pair.second);

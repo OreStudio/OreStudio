@@ -20,13 +20,13 @@
 #ifndef ORES_QT_CATALOG_HISTORY_DIALOG_HPP
 #define ORES_QT_CATALOG_HISTORY_DIALOG_HPP
 
-#include <QWidget>
-#include <QToolBar>
-#include <QAction>
-#include <vector>
 #include "ores.dq.api/domain/catalog.hpp"
-#include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include <QAction>
+#include <QToolBar>
+#include <QWidget>
+#include <vector>
 
 namespace Ui {
 class CatalogHistoryDialog;
@@ -60,8 +60,7 @@ public:
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& message);
-    void openVersionRequested(const dq::domain::catalog& catalog,
-                              int versionNumber);
+    void openVersionRequested(const dq::domain::catalog& catalog, int versionNumber);
     void revertVersionRequested(const dq::domain::catalog& catalog);
 
 private slots:

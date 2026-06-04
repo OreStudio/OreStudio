@@ -19,9 +19,9 @@
 #ifndef ORES_QT_COMPUTE_PLUGIN_HPP
 #define ORES_QT_COMPUTE_PLUGIN_HPP
 
-#include <memory>
-#include <QList>
 #include "ores.qt/PluginBase.hpp"
+#include <QList>
+#include <memory>
 
 class QAction;
 
@@ -54,8 +54,12 @@ public:
     explicit ComputePlugin(QObject* parent = nullptr);
     ~ComputePlugin() override;
 
-    QString name() const override { return QStringLiteral("ores.qt.compute"); }
-    int load_order() const override { return 355; }
+    QString name() const override {
+        return QStringLiteral("ores.qt.compute");
+    }
+    int load_order() const override {
+        return 355;
+    }
 
     void on_login(const plugin_context& ctx) override;
     void setup_menus(const shared_menus_context& ctx) override;
@@ -64,22 +68,21 @@ public:
     void on_logout() override;
 
 private:
-
     plugin_context ctx_;
 
     QAction* act_report_definitions_{nullptr};
     QAction* act_report_instances_{nullptr};
 
-    std::unique_ptr<AppController>               appController_;
-    std::unique_ptr<AppVersionController>        appVersionController_;
-    std::unique_ptr<ComputeDashboardController>  computeDashboardController_;
-    std::unique_ptr<ComputeConsoleController>    computeConsoleController_;
-    std::unique_ptr<ServiceDashboardController>  serviceDashboardController_;
-    std::unique_ptr<QueueMonitorController>      queueMonitorController_;
-    std::unique_ptr<ReportTypeController>        reportTypeController_;
+    std::unique_ptr<AppController> appController_;
+    std::unique_ptr<AppVersionController> appVersionController_;
+    std::unique_ptr<ComputeDashboardController> computeDashboardController_;
+    std::unique_ptr<ComputeConsoleController> computeConsoleController_;
+    std::unique_ptr<ServiceDashboardController> serviceDashboardController_;
+    std::unique_ptr<QueueMonitorController> queueMonitorController_;
+    std::unique_ptr<ReportTypeController> reportTypeController_;
     std::unique_ptr<ConcurrencyPolicyController> concurrencyPolicyController_;
-    std::unique_ptr<ReportDefinitionController>  reportDefinitionController_;
-    std::unique_ptr<ReportInstanceController>    reportInstanceController_;
+    std::unique_ptr<ReportDefinitionController> reportDefinitionController_;
+    std::unique_ptr<ReportInstanceController> reportInstanceController_;
 };
 
 }

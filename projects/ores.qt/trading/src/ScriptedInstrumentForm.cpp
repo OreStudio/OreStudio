@@ -18,22 +18,21 @@
  *
  */
 #include "ores.qt/ScriptedInstrumentForm.hpp"
-
-#include <QPointer>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include <boost/uuid/uuid_io.hpp>
-#include "ui_ScriptedInstrumentForm.h"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.trading.api/messaging/instrument_protocol.hpp"
+#include "ui_ScriptedInstrumentForm.h"
+#include <QFutureWatcher>
+#include <QPointer>
+#include <QtConcurrent>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 ScriptedInstrumentForm::ScriptedInstrumentForm(QWidget* parent)
-    : IInstrumentForm(parent),
-      ui_(new Ui::ScriptedInstrumentForm) {
+    : IInstrumentForm(parent)
+    , ui_(new Ui::ScriptedInstrumentForm) {
     ui_->setupUi(this);
     setupConnections();
 }
@@ -41,7 +40,9 @@ ScriptedInstrumentForm::ScriptedInstrumentForm(QWidget* parent)
 ScriptedInstrumentForm::~ScriptedInstrumentForm() = default;
 
 void ScriptedInstrumentForm::setupConnections() {
-    auto markChanged = [this]() { onFieldChanged(); };
+    auto markChanged = [this]() {
+        onFieldChanged();
+    };
     connect(ui_->tradeTypeCodeEdit, &QLineEdit::textChanged, this, markChanged);
     connect(ui_->scriptNameEdit, &QLineEdit::textChanged, this, markChanged);
     connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this, markChanged);
@@ -67,7 +68,8 @@ void ScriptedInstrumentForm::clear() {
 }
 
 void ScriptedInstrumentForm::setTradeType(const QString& code,
-    bool /*has_options*/, bool /*has_extension*/) {
+                                          bool /*has_options*/,
+                                          bool /*has_extension*/) {
     instrument_.trade_type_code = code.trimmed().toStdString();
 }
 
@@ -81,36 +83,32 @@ void ScriptedInstrumentForm::setReadOnly(bool readOnly) {
     ui_->parametersJsonEdit->setReadOnly(readOnly);
 }
 
-bool ScriptedInstrumentForm::isDirty() const { return dirty_; }
-bool ScriptedInstrumentForm::isLoaded() const { return loaded_; }
+bool ScriptedInstrumentForm::isDirty() const {
+    return dirty_;
+}
+bool ScriptedInstrumentForm::isLoaded() const {
+    return loaded_;
+}
 
-void ScriptedInstrumentForm::setChangeReason(
-    const std::string& code, const std::string& commentary) {
+void ScriptedInstrumentForm::setChangeReason(const std::string& code,
+                                             const std::string& commentary) {
     instrument_.change_reason_code = code;
     instrument_.change_commentary = commentary;
 }
 
 void ScriptedInstrumentForm::writeUiToInstrument() {
-    instrument_.trade_type_code =
-        ui_->tradeTypeCodeEdit->text().trimmed().toStdString();
-    instrument_.script_name =
-        ui_->scriptNameEdit->text().trimmed().toStdString();
-    instrument_.description =
-        ui_->descriptionEdit->toPlainText().trimmed().toStdString();
-    instrument_.script_body =
-        ui_->scriptBodyEdit->toPlainText().toStdString();
-    instrument_.events_json =
-        ui_->eventsJsonEdit->toPlainText().toStdString();
-    instrument_.underlyings_json =
-        ui_->underlyingsJsonEdit->toPlainText().toStdString();
-    instrument_.parameters_json =
-        ui_->parametersJsonEdit->toPlainText().toStdString();
+    instrument_.trade_type_code = ui_->tradeTypeCodeEdit->text().trimmed().toStdString();
+    instrument_.script_name = ui_->scriptNameEdit->text().trimmed().toStdString();
+    instrument_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
+    instrument_.script_body = ui_->scriptBodyEdit->toPlainText().toStdString();
+    instrument_.events_json = ui_->eventsJsonEdit->toPlainText().toStdString();
+    instrument_.underlyings_json = ui_->underlyingsJsonEdit->toPlainText().toStdString();
+    instrument_.parameters_json = ui_->parametersJsonEdit->toPlainText().toStdString();
     instrument_.modified_by = username_;
     instrument_.performed_by = username_;
 }
 
-void ScriptedInstrumentForm::populate(
-    const trading::domain::scripted_instrument& instr) {
+void ScriptedInstrumentForm::populate(const trading::domain::scripted_instrument& instr) {
     instrument_ = instr;
     loaded_ = true;
     dirty_ = false;
@@ -131,20 +129,13 @@ void ScriptedInstrumentForm::populateFromInstrument() {
     };
 
     block(true);
-    ui_->tradeTypeCodeEdit->setText(
-        QString::fromStdString(instrument_.trade_type_code));
-    ui_->scriptNameEdit->setText(
-        QString::fromStdString(instrument_.script_name));
-    ui_->descriptionEdit->setPlainText(
-        QString::fromStdString(instrument_.description));
-    ui_->scriptBodyEdit->setPlainText(
-        QString::fromStdString(instrument_.script_body));
-    ui_->eventsJsonEdit->setPlainText(
-        QString::fromStdString(instrument_.events_json));
-    ui_->underlyingsJsonEdit->setPlainText(
-        QString::fromStdString(instrument_.underlyings_json));
-    ui_->parametersJsonEdit->setPlainText(
-        QString::fromStdString(instrument_.parameters_json));
+    ui_->tradeTypeCodeEdit->setText(QString::fromStdString(instrument_.trade_type_code));
+    ui_->scriptNameEdit->setText(QString::fromStdString(instrument_.script_name));
+    ui_->descriptionEdit->setPlainText(QString::fromStdString(instrument_.description));
+    ui_->scriptBodyEdit->setPlainText(QString::fromStdString(instrument_.script_body));
+    ui_->eventsJsonEdit->setPlainText(QString::fromStdString(instrument_.events_json));
+    ui_->underlyingsJsonEdit->setPlainText(QString::fromStdString(instrument_.underlyings_json));
+    ui_->parametersJsonEdit->setPlainText(QString::fromStdString(instrument_.parameters_json));
     block(false);
 }
 
@@ -160,55 +151,59 @@ void ScriptedInstrumentForm::emitProvenance() {
 }
 
 void ScriptedInstrumentForm::onFieldChanged() {
-    if (!loaded_) return;
+    if (!loaded_)
+        return;
     dirty_ = true;
     emit changed();
 }
 
-void ScriptedInstrumentForm::saveInstrument(
-    std::function<void(const std::string&)> on_success,
-    std::function<void(const QString&)> on_failure) {
+void ScriptedInstrumentForm::saveInstrument(std::function<void(const std::string&)> on_success,
+                                            std::function<void(const QString&)> on_failure) {
 
     if (!clientManager_) {
         on_failure(QStringLiteral("Dialog closed"));
         return;
     }
 
-    struct SaveResult { bool success; std::string message; };
+    struct SaveResult {
+        bool success;
+        std::string message;
+    };
 
     QPointer<ScriptedInstrumentForm> self = this;
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished, self,
-        [self, watcher,
-         on_success = std::move(on_success),
-         on_failure = std::move(on_failure)]() {
-        auto result = watcher->result();
-        watcher->deleteLater();
-        if (!self) return;
+    connect(
+        watcher,
+        &QFutureWatcher<SaveResult>::finished,
+        self,
+        [self, watcher, on_success = std::move(on_success), on_failure = std::move(on_failure)]() {
+            auto result = watcher->result();
+            watcher->deleteLater();
+            if (!self)
+                return;
 
-        if (!result.success) {
-            BOOST_LOG_SEV(lg(), error)
-                << "Scripted instrument save failed: " << result.message;
-            on_failure(QString::fromStdString(result.message));
-            return;
-        }
+            if (!result.success) {
+                BOOST_LOG_SEV(lg(), error) << "Scripted instrument save failed: " << result.message;
+                on_failure(QString::fromStdString(result.message));
+                return;
+            }
 
-        BOOST_LOG_SEV(lg(), info) << "Scripted instrument saved";
-        self->dirty_ = false;
-        self->emitProvenance();
-        on_success(boost::uuids::to_string(self->instrument_.instrument_id));
-    });
+            BOOST_LOG_SEV(lg(), info) << "Scripted instrument saved";
+            self->dirty_ = false;
+            self->emitProvenance();
+            on_success(boost::uuids::to_string(self->instrument_.instrument_id));
+        });
 
     auto* cm = clientManager_;
     auto instrument = instrument_;
-    watcher->setFuture(QtConcurrent::run(
-        [cm, instrument = std::move(instrument)]() -> SaveResult {
+    watcher->setFuture(QtConcurrent::run([cm, instrument = std::move(instrument)]() -> SaveResult {
         if (!cm)
             return {false, "Dialog closed"};
         trading::messaging::save_scripted_instrument_request req;
         req.data = instrument;
         auto r = cm->process_authenticated_request(std::move(req));
-        if (!r) return {false, "Failed to communicate with server"};
+        if (!r)
+            return {false, "Failed to communicate with server"};
         return {r->success, r->message};
     }));
 }

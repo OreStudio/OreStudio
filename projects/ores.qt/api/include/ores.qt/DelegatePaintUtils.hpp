@@ -20,14 +20,14 @@
 #ifndef ORES_QT_DELEGATE_PAINT_UTILS_HPP
 #define ORES_QT_DELEGATE_PAINT_UTILS_HPP
 
-#include <QFont>
-#include <QRect>
-#include <QColor>
-#include <QString>
-#include <QPainter>
-#include <QModelIndex>
-#include <QStyleOptionViewItem>
 #include "ores.qt/export.hpp"
+#include <QColor>
+#include <QFont>
+#include <QModelIndex>
+#include <QPainter>
+#include <QRect>
+#include <QString>
+#include <QStyleOptionViewItem>
 
 namespace ores::qt {
 
@@ -40,8 +40,9 @@ struct ORES_QT_API DelegatePaintUtils {
      * icon columns.
      */
     static void paint_centered_icon(QPainter* painter,
-        const QStyleOptionViewItem& option, const QModelIndex& index,
-        int padding = 4);
+                                    const QStyleOptionViewItem& option,
+                                    const QModelIndex& index,
+                                    int padding = 4);
 
     /**
      * @brief Applies ForegroundRole color to both Text and HighlightedText.
@@ -50,8 +51,7 @@ struct ORES_QT_API DelegatePaintUtils {
      * applies it to both palette roles so it works in both normal and selected
      * states.
      */
-    static void apply_foreground_role(QStyleOptionViewItem& opt,
-        const QModelIndex& index);
+    static void apply_foreground_role(QStyleOptionViewItem& opt, const QModelIndex& index);
 
     /**
      * @brief Draws a centered pill-shaped badge with text.
@@ -59,9 +59,12 @@ struct ORES_QT_API DelegatePaintUtils {
      * Renders a rounded rectangle badge centered in the given rect, with the
      * specified background color, text color, and font.
      */
-    static void draw_centered_badge(QPainter* painter, const QRect& rect,
-        const QString& text, const QColor& bg, const QColor& fg,
-        const QFont& font);
+    static void draw_centered_badge(QPainter* painter,
+                                    const QRect& rect,
+                                    const QString& text,
+                                    const QColor& bg,
+                                    const QColor& fg,
+                                    const QFont& font);
 
     /**
      * @brief Draws a left-aligned inline badge and advances the rect.
@@ -69,9 +72,14 @@ struct ORES_QT_API DelegatePaintUtils {
      * Renders a pill badge at the left edge of rect, then moves rect.left()
      * past the badge plus spacing, ready for the next badge.
      */
-    static void draw_inline_badge(QPainter* painter, QRect& rect,
-        const QString& text, const QColor& bg, const QColor& fg,
-        const QFont& font, int padding = 4, int spacing = 3);
+    static void draw_inline_badge(QPainter* painter,
+                                  QRect& rect,
+                                  const QString& text,
+                                  const QColor& bg,
+                                  const QColor& fg,
+                                  const QFont& font,
+                                  int padding = 4,
+                                  int spacing = 3);
 };
 
 }

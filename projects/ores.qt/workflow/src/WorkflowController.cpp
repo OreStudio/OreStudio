@@ -17,31 +17,29 @@
  *
  */
 #include "ores.qt/WorkflowController.hpp"
-
-#include <QEvent>
+#include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/UiPersistence.hpp"
-#include "ores.qt/WorkflowMdiWindow.hpp"
 #include "ores.qt/WorkflowDefinitionMdiWindow.hpp"
-#include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/WorkflowMdiWindow.hpp"
+#include <QEvent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-WorkflowController::WorkflowController(
-    QMainWindow* mainWindow,
-    QMdiArea* mdiArea,
-    ClientManager* clientManager,
-    QObject* parent)
-    : QObject(parent),
-      mainWindow_(mainWindow),
-      mdiArea_(mdiArea),
-      clientManager_(clientManager),
-      listWindow_(nullptr),
-      listSubWindow_(nullptr),
-      defsWindow_(nullptr),
-      defsSubWindow_(nullptr) {
+WorkflowController::WorkflowController(QMainWindow* mainWindow,
+                                       QMdiArea* mdiArea,
+                                       ClientManager* clientManager,
+                                       QObject* parent)
+    : QObject(parent)
+    , mainWindow_(mainWindow)
+    , mdiArea_(mdiArea)
+    , clientManager_(clientManager)
+    , listWindow_(nullptr)
+    , listSubWindow_(nullptr)
+    , defsWindow_(nullptr)
+    , defsSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "WorkflowController created";
 }
@@ -56,30 +54,37 @@ void WorkflowController::showListWindow() {
 
     listWindow_ = new WorkflowMdiWindow(clientManager_);
 
-    connect(listWindow_, &WorkflowMdiWindow::statusChanged,
-            this, [self = QPointer<WorkflowController>(this)](const QString& msg) {
-        if (!self) return;
-        emit self->statusMessage(msg);
-    });
-    connect(listWindow_, &WorkflowMdiWindow::errorOccurred,
-            this, [self = QPointer<WorkflowController>(this)](const QString& err) {
-        if (!self) return;
-        emit self->errorMessage(err);
-    });
+    connect(listWindow_,
+            &WorkflowMdiWindow::statusChanged,
+            this,
+            [self = QPointer<WorkflowController>(this)](const QString& msg) {
+                if (!self)
+                    return;
+                emit self->statusMessage(msg);
+            });
+    connect(listWindow_,
+            &WorkflowMdiWindow::errorOccurred,
+            this,
+            [self = QPointer<WorkflowController>(this)](const QString& err) {
+                if (!self)
+                    return;
+                emit self->errorMessage(err);
+            });
 
     listSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     listSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listSubWindow_->setWidget(listWindow_);
     listSubWindow_->setWindowTitle(tr("Workflows"));
-    listSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::TasksApp, IconUtils::DefaultIconColor));
+    listSubWindow_->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::TasksApp, IconUtils::DefaultIconColor));
 
-    connect(listSubWindow_, &QObject::destroyed, this,
-            [self = QPointer<WorkflowController>(this)]() {
-        if (!self) return;
-        self->listWindow_ = nullptr;
-        self->listSubWindow_ = nullptr;
-    });
+    connect(
+        listSubWindow_, &QObject::destroyed, this, [self = QPointer<WorkflowController>(this)]() {
+            if (!self)
+                return;
+            self->listWindow_ = nullptr;
+            self->listSubWindow_ = nullptr;
+        });
 
     listSubWindow_->installEventFilter(this);
 
@@ -101,30 +106,37 @@ void WorkflowController::showDefinitionsWindow() {
 
     defsWindow_ = new WorkflowDefinitionMdiWindow(clientManager_);
 
-    connect(defsWindow_, &WorkflowDefinitionMdiWindow::statusChanged,
-            this, [self = QPointer<WorkflowController>(this)](const QString& msg) {
-        if (!self) return;
-        emit self->statusMessage(msg);
-    });
-    connect(defsWindow_, &WorkflowDefinitionMdiWindow::errorOccurred,
-            this, [self = QPointer<WorkflowController>(this)](const QString& err) {
-        if (!self) return;
-        emit self->errorMessage(err);
-    });
+    connect(defsWindow_,
+            &WorkflowDefinitionMdiWindow::statusChanged,
+            this,
+            [self = QPointer<WorkflowController>(this)](const QString& msg) {
+                if (!self)
+                    return;
+                emit self->statusMessage(msg);
+            });
+    connect(defsWindow_,
+            &WorkflowDefinitionMdiWindow::errorOccurred,
+            this,
+            [self = QPointer<WorkflowController>(this)](const QString& err) {
+                if (!self)
+                    return;
+                emit self->errorMessage(err);
+            });
 
     defsSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     defsSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     defsSubWindow_->setWidget(defsWindow_);
     defsSubWindow_->setWindowTitle(tr("Workflow Definitions"));
-    defsSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::DocumentTable, IconUtils::DefaultIconColor));
+    defsSubWindow_->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::DocumentTable, IconUtils::DefaultIconColor));
 
-    connect(defsSubWindow_, &QObject::destroyed, this,
-            [self = QPointer<WorkflowController>(this)]() {
-        if (!self) return;
-        self->defsWindow_ = nullptr;
-        self->defsSubWindow_ = nullptr;
-    });
+    connect(
+        defsSubWindow_, &QObject::destroyed, this, [self = QPointer<WorkflowController>(this)]() {
+            if (!self)
+                return;
+            self->defsWindow_ = nullptr;
+            self->defsSubWindow_ = nullptr;
+        });
 
     defsSubWindow_->installEventFilter(this);
 

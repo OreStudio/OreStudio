@@ -20,14 +20,14 @@
 #ifndef ORES_QT_BOOK_STATUS_MDI_WINDOW_HPP
 #define ORES_QT_BOOK_STATUS_MDI_WINDOW_HPP
 
-#include <QToolBar>
-#include <QTableView>
-#include <QSortFilterProxyModel>
-#include "ores.qt/EntityListMdiWindow.hpp"
-#include "ores.qt/ClientManager.hpp"
-#include "ores.qt/ClientBookStatusModel.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientBookStatusModel.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/EntityListMdiWindow.hpp"
 #include "ores.refdata.api/domain/book_status.hpp"
+#include <QSortFilterProxyModel>
+#include <QTableView>
+#include <QToolBar>
 
 namespace ores::qt {
 
@@ -41,8 +41,7 @@ class BookStatusMdiWindow final : public EntityListMdiWindow {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.book_status_mdi_window";
+    inline static std::string_view logger_name = "ores.qt.book_status_mdi_window";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -51,10 +50,9 @@ private:
     }
 
 public:
-    explicit BookStatusMdiWindow(
-        ClientManager* clientManager,
-        const QString& username,
-        QWidget* parent = nullptr);
+    explicit BookStatusMdiWindow(ClientManager* clientManager,
+                                 const QString& username,
+                                 QWidget* parent = nullptr);
     ~BookStatusMdiWindow() override = default;
 
 public slots:

@@ -18,38 +18,42 @@
  *
  */
 #include "ores.qt/ClientFxConventionModel.hpp"
-
-#include <QtConcurrent>
-#include "ores.refdata.api/messaging/fx_convention_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
+#include "ores.refdata.api/messaging/fx_convention_protocol.hpp"
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    std::string fx_convention_key_extractor(const refdata::domain::fx_convention& e) {
-        return e.id;
-    }
+std::string fx_convention_key_extractor(const refdata::domain::fx_convention& e) {
+    return e.id;
+}
 }
 
-ClientFxConventionModel::ClientFxConventionModel(
-    ClientManager* clientManager, QObject* parent)
-    : AbstractClientModel(parent),
-      clientManager_(clientManager),
-      watcher_(new QFutureWatcher<FetchResult>(this)),
-      recencyTracker_(fx_convention_key_extractor),
-      pulseManager_(new RecencyPulseManager(this)) {
+ClientFxConventionModel::ClientFxConventionModel(ClientManager* clientManager, QObject* parent)
+    : AbstractClientModel(parent)
+    , clientManager_(clientManager)
+    , watcher_(new QFutureWatcher<FetchResult>(this))
+    , recencyTracker_(fx_convention_key_extractor)
+    , pulseManager_(new RecencyPulseManager(this)) {
 
-    connect(watcher_, &QFutureWatcher<FetchResult>::finished,
-            this, &ClientFxConventionModel::onConventionsLoaded);
+    connect(watcher_,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            &ClientFxConventionModel::onConventionsLoaded);
 
-    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
-            this, &ClientFxConventionModel::onPulseStateChanged);
-    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
-            this, &ClientFxConventionModel::onPulsingComplete);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulse_state_changed,
+            this,
+            &ClientFxConventionModel::onPulseStateChanged);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulsing_complete,
+            this,
+            &ClientFxConventionModel::onPulsingComplete);
 }
 
 int ClientFxConventionModel::rowCount(const QModelIndex& parent) const {
@@ -64,8 +68,7 @@ int ClientFxConventionModel::columnCount(const QModelIndex& parent) const {
     return ColumnCount;
 }
 
-QVariant ClientFxConventionModel::data(
-    const QModelIndex& index, int role) const {
+QVariant ClientFxConventionModel::data(const QModelIndex& index, int role) const {
     if (!index.isValid())
         return {};
 
@@ -77,22 +80,22 @@ QVariant ClientFxConventionModel::data(
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-        case Id:
-            return QString::fromStdString(fxc.id);
-        case SourceCurrency:
-            return QString::fromStdString(fxc.source_currency);
-        case TargetCurrency:
-            return QString::fromStdString(fxc.target_currency);
-        case SpotDays:
-            return static_cast<qlonglong>(fxc.spot_days);
-        case Version:
-            return static_cast<qlonglong>(fxc.version);
-        case ModifiedBy:
-            return QString::fromStdString(fxc.modified_by);
-        case RecordedAt:
-            return relative_time_helper::format(fxc.recorded_at);
-        default:
-            return {};
+            case Id:
+                return QString::fromStdString(fxc.id);
+            case SourceCurrency:
+                return QString::fromStdString(fxc.source_currency);
+            case TargetCurrency:
+                return QString::fromStdString(fxc.target_currency);
+            case SpotDays:
+                return static_cast<qlonglong>(fxc.spot_days);
+            case Version:
+                return static_cast<qlonglong>(fxc.version);
+            case ModifiedBy:
+                return QString::fromStdString(fxc.modified_by);
+            case RecordedAt:
+                return relative_time_helper::format(fxc.recorded_at);
+            default:
+                return {};
         }
     }
 
@@ -103,28 +106,28 @@ QVariant ClientFxConventionModel::data(
     return {};
 }
 
-QVariant ClientFxConventionModel::headerData(
-    int section, Qt::Orientation orientation, int role) const {
+QVariant
+ClientFxConventionModel::headerData(int section, Qt::Orientation orientation, int role) const {
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return {};
 
     switch (section) {
-    case Id:
-        return tr("Id");
-    case SourceCurrency:
-        return tr("Source CCY");
-    case TargetCurrency:
-        return tr("Target CCY");
-    case SpotDays:
-        return tr("Spot Days");
-    case Version:
-        return tr("Version");
-    case ModifiedBy:
-        return tr("Modified By");
-    case RecordedAt:
-        return tr("Recorded At");
-    default:
-        return {};
+        case Id:
+            return tr("Id");
+        case SourceCurrency:
+            return tr("Source CCY");
+        case TargetCurrency:
+            return tr("Target CCY");
+        case SpotDays:
+            return tr("Spot Days");
+        case Version:
+            return tr("Version");
+        case ModifiedBy:
+            return tr("Modified By");
+        case RecordedAt:
+            return tr("Recorded At");
+        default:
+            return {};
     }
 }
 
@@ -154,8 +157,7 @@ void ClientFxConventionModel::refresh() {
     fetch_fx_conventions(0, page_size_);
 }
 
-void ClientFxConventionModel::load_page(std::uint32_t offset,
-                                          std::uint32_t limit) {
+void ClientFxConventionModel::load_page(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "load_page: offset=" << offset << ", limit=" << limit;
 
     if (is_fetching_) {
@@ -179,18 +181,18 @@ void ClientFxConventionModel::load_page(std::uint32_t offset,
     fetch_fx_conventions(offset, limit);
 }
 
-void ClientFxConventionModel::fetch_fx_conventions(
-    std::uint32_t offset, std::uint32_t limit) {
+void ClientFxConventionModel::fetch_fx_conventions(std::uint32_t offset, std::uint32_t limit) {
     is_fetching_ = true;
     QPointer<ClientFxConventionModel> self = this;
 
-    QFuture<FetchResult> future =
-        QtConcurrent::run([self, offset, limit]() -> FetchResult {
-            return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
-                BOOST_LOG_SEV(lg(), debug) << "Making FX conventions request with offset="
-                                           << offset << ", limit=" << limit;
+    QFuture<FetchResult> future = QtConcurrent::run([self, offset, limit]() -> FetchResult {
+        return exception_helper::wrap_async_fetch<FetchResult>(
+            [&]() -> FetchResult {
+                BOOST_LOG_SEV(lg(), debug) << "Making FX conventions request with offset=" << offset
+                                           << ", limit=" << limit;
                 if (!self || !self->clientManager_) {
-                    return {.success = false, .fx_conventions = {},
+                    return {.success = false,
+                            .fx_conventions = {},
                             .total_available_count = 0,
                             .error_message = "Model was destroyed",
                             .error_details = {}};
@@ -198,27 +200,30 @@ void ClientFxConventionModel::fetch_fx_conventions(
 
                 refdata::messaging::get_fx_conventions_request request;
 
-                auto result = self->clientManager_->
-                    process_authenticated_request(std::move(request));
+                auto result =
+                    self->clientManager_->process_authenticated_request(std::move(request));
 
                 if (!result) {
                     BOOST_LOG_SEV(lg(), error) << "Failed to send request: " << result.error();
-                    return {.success = false, .fx_conventions = {},
+                    return {.success = false,
+                            .fx_conventions = {},
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(result.error()),
                             .error_details = {}};
                 }
 
-                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->fx_conventions.size()
-                                           << " FX conventions";
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Fetched " << result->fx_conventions.size() << " FX conventions";
                 const std::uint32_t count =
                     static_cast<std::uint32_t>(result->fx_conventions.size());
                 return {.success = true,
                         .fx_conventions = std::move(result->fx_conventions),
                         .total_available_count = count,
-                        .error_message = {}, .error_details = {}};
-            }, "FX conventions");
-        });
+                        .error_message = {},
+                        .error_details = {}};
+            },
+            "FX conventions");
+    });
 
     watcher_->setFuture(future);
 }
@@ -229,8 +234,8 @@ void ClientFxConventionModel::onConventionsLoaded() {
     const auto result = watcher_->result();
 
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to fetch FX conventions: "
-                                   << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to fetch FX conventions: " << result.error_message.toStdString();
         emit loadError(result.error_message, result.error_details);
         return;
     }
@@ -269,16 +274,14 @@ void ClientFxConventionModel::set_page_size(std::uint32_t size) {
     }
 }
 
-const refdata::domain::fx_convention*
-ClientFxConventionModel::getConvention(int row) const {
+const refdata::domain::fx_convention* ClientFxConventionModel::getConvention(int row) const {
     const auto idx = static_cast<std::size_t>(row);
     if (idx >= fx_conventions_.size())
         return nullptr;
     return &fx_conventions_[idx];
 }
 
-QVariant ClientFxConventionModel::recency_foreground_color(
-    const std::string& code) const {
+QVariant ClientFxConventionModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {
         return color_constants::stale_indicator;
     }
@@ -287,8 +290,8 @@ QVariant ClientFxConventionModel::recency_foreground_color(
 
 void ClientFxConventionModel::onPulseStateChanged(bool /*isOn*/) {
     if (!fx_conventions_.empty()) {
-        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
-            {Qt::ForegroundRole});
+        emit dataChanged(
+            index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::ForegroundRole});
     }
 }
 

@@ -18,23 +18,22 @@
  *
  */
 #include "ores.qt/PublishDatasetsDialog.hpp"
-
-#include <algorithm>
-#include <QVBoxLayout>
-#include <QHBoxLayout>
+#include "ores.dq.api/messaging/dataset_dependency_protocol.hpp"
+#include "ores.dq.api/messaging/dataset_protocol.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include <QFormLayout>
+#include <QFutureWatcher>
+#include <QHBoxLayout>
 #include <QHeaderView>
 #include <QMessageBox>
 #include <QTimer>
 #include <QUuid>
+#include <QVBoxLayout>
 #include <QtConcurrent>
-#include <QFutureWatcher>
 #include <boost/uuid/uuid_io.hpp>
-#include "ores.qt/ClientManager.hpp"
-#include "ores.qt/WidgetUtils.hpp"
-#include "ores.dq.api/messaging/dataset_protocol.hpp"
-#include "ores.dq.api/messaging/dataset_dependency_protocol.hpp"
-#include "ores.logging/make_logger.hpp"
+#include <algorithm>
 
 namespace {
 inline auto& lg() {
@@ -51,13 +50,12 @@ using namespace ores::logging;
 // PublishDatasetsDialog (Main Wizard)
 // ============================================================================
 
-PublishDatasetsDialog::PublishDatasetsDialog(
-    ClientManager* clientManager,
-    const QString& username,
-    QWidget* parent)
-    : QWizard(parent),
-      clientManager_(clientManager),
-      username_(username) {
+PublishDatasetsDialog::PublishDatasetsDialog(ClientManager* clientManager,
+                                             const QString& username,
+                                             QWidget* parent)
+    : QWizard(parent)
+    , clientManager_(clientManager)
+    , username_(username) {
 
     setWindowTitle(tr("Publish Datasets"));
     setMinimumSize(600, 500);
@@ -82,8 +80,7 @@ void PublishDatasetsDialog::setupPages() {
     setStartId(Page_Selection);
 }
 
-void PublishDatasetsDialog::setDatasets(
-    const std::vector<dq::domain::dataset>& datasets) {
+void PublishDatasetsDialog::setDatasets(const std::vector<dq::domain::dataset>& datasets) {
 
     datasets_ = datasets;
 
@@ -117,7 +114,8 @@ bool PublishDatasetsDialog::resolveDependencies() const {
 // ============================================================================
 
 SelectionPage::SelectionPage(PublishDatasetsDialog* wizard)
-    : QWizardPage(wizard), wizard_(wizard) {
+    : QWizardPage(wizard)
+    , wizard_(wizard) {
 
     setTitle(tr("Selected Datasets"));
     setSubTitle(tr("Review the datasets you have selected for publication."));
@@ -141,14 +139,12 @@ void SelectionPage::initializePage() {
 
     const auto& datasets = wizard_->datasets();
     for (const auto& ds : datasets) {
-        auto* item = new QListWidgetItem(
-            QString::fromStdString(ds.code) + " - " +
-            QString::fromStdString(ds.name));
+        auto* item = new QListWidgetItem(QString::fromStdString(ds.code) + " - " +
+                                         QString::fromStdString(ds.name));
         datasetList_->addItem(item);
     }
 
-    countLabel_->setText(tr("%1 dataset(s) selected for publication")
-        .arg(datasets.size()));
+    countLabel_->setText(tr("%1 dataset(s) selected for publication").arg(datasets.size()));
 }
 
 // ============================================================================
@@ -156,7 +152,8 @@ void SelectionPage::initializePage() {
 // ============================================================================
 
 OptionsPage::OptionsPage(PublishDatasetsDialog* wizard)
-    : QWizardPage(wizard), wizard_(wizard) {
+    : QWizardPage(wizard)
+    , wizard_(wizard) {
 
     setTitle(tr("Publication Options"));
     setSubTitle(tr("Configure how the datasets should be published."));
@@ -172,24 +169,23 @@ OptionsPage::OptionsPage(PublishDatasetsDialog* wizard)
     layout->addRow(tr("Publication Mode:"), modeCombo_);
 
     // Mode description
-    auto* modeDescription = new QLabel(
-        tr("<i>Upsert</i> will insert new records and update existing ones.<br>"
-           "<i>Insert Only</i> will only add new records, skipping existing.<br>"
-           "<i>Replace All</i> will delete all existing records first, then insert."),
-        this);
+    auto* modeDescription =
+        new QLabel(tr("<i>Upsert</i> will insert new records and update existing ones.<br>"
+                      "<i>Insert Only</i> will only add new records, skipping existing.<br>"
+                      "<i>Replace All</i> will delete all existing records first, then insert."),
+                   this);
     modeDescription->setWordWrap(true);
     layout->addRow("", modeDescription);
 
     // Dependencies
-    resolveDependenciesCheck_ = new QCheckBox(
-        tr("Automatically publish dependencies first"), this);
+    resolveDependenciesCheck_ = new QCheckBox(tr("Automatically publish dependencies first"), this);
     resolveDependenciesCheck_->setChecked(true);
     layout->addRow(tr("Dependencies:"), resolveDependenciesCheck_);
 
-    auto* dependencyDescription = new QLabel(
-        tr("When enabled, any datasets that this dataset depends on will be "
-           "published first in the correct order."),
-        this);
+    auto* dependencyDescription =
+        new QLabel(tr("When enabled, any datasets that this dataset depends on will be "
+                      "published first in the correct order."),
+                   this);
     dependencyDescription->setWordWrap(true);
     layout->addRow("", dependencyDescription);
 
@@ -203,7 +199,8 @@ OptionsPage::OptionsPage(PublishDatasetsDialog* wizard)
 // ============================================================================
 
 ReviewPage::ReviewPage(PublishDatasetsDialog* wizard)
-    : QWizardPage(wizard), wizard_(wizard) {
+    : QWizardPage(wizard)
+    , wizard_(wizard) {
 
     setTitle(tr("Review Publication Order"));
     setSubTitle(tr("Verify the order in which datasets will be published."));
@@ -223,11 +220,7 @@ ReviewPage::ReviewPage(PublishDatasetsDialog* wizard)
 
     orderTable_ = new QTableWidget(this);
     orderTable_->setColumnCount(3);
-    orderTable_->setHorizontalHeaderLabels({
-        tr("Order"),
-        tr("Dataset Code"),
-        tr("Type")
-    });
+    orderTable_->setHorizontalHeaderLabels({tr("Order"), tr("Dataset Code"), tr("Type")});
     orderTable_->horizontalHeader()->setStretchLastSection(true);
     orderTable_->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
     orderTable_->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -283,11 +276,10 @@ void ReviewPage::resolveDependencies() {
         }
         resolved_ = true;
         const auto& errMsg = result.error();
-        QString errorDetail = errMsg.empty()
-            ? tr("unknown error")
-            : QString::fromStdString(errMsg);
-        statusLabel_->setText(tr("Failed to resolve dependencies (%1). Will publish selected datasets only.")
-            .arg(errorDetail));
+        QString errorDetail = errMsg.empty() ? tr("unknown error") : QString::fromStdString(errMsg);
+        statusLabel_->setText(
+            tr("Failed to resolve dependencies (%1). Will publish selected datasets only.")
+                .arg(errorDetail));
         updatePublicationOrder();
         emit completeChanged();
         return;
@@ -320,13 +312,12 @@ void ReviewPage::updatePublicationOrder() {
         orderTable_->setItem(row, 0, orderItem);
 
         // Code column
-        auto* codeItem = new QTableWidgetItem(
-            QString::fromStdString(ds.code));
+        auto* codeItem = new QTableWidgetItem(QString::fromStdString(ds.code));
         orderTable_->setItem(row, 1, codeItem);
 
         // Type column - check if this is a dependency or requested
-        bool isRequested = std::ranges::find(requestedIds,
-            boost::uuids::to_string(ds.id)) != requestedIds.end();
+        bool isRequested =
+            std::ranges::find(requestedIds, boost::uuids::to_string(ds.id)) != requestedIds.end();
         QString typeText = isRequested ? tr("Selected") : tr("Dependency");
         auto* typeItem = new QTableWidgetItem(typeText);
 
@@ -342,15 +333,12 @@ void ReviewPage::updatePublicationOrder() {
     }
 
     if (dependencyCount > 0) {
-        summaryLabel_->setText(
-            tr("%1 dataset(s) will be published: %2 selected, %3 dependencies")
-                .arg(resolvedDatasets.size())
-                .arg(requestedCount)
-                .arg(dependencyCount));
+        summaryLabel_->setText(tr("%1 dataset(s) will be published: %2 selected, %3 dependencies")
+                                   .arg(resolvedDatasets.size())
+                                   .arg(requestedCount)
+                                   .arg(dependencyCount));
     } else {
-        summaryLabel_->setText(
-            tr("%1 dataset(s) will be published")
-                .arg(resolvedDatasets.size()));
+        summaryLabel_->setText(tr("%1 dataset(s) will be published").arg(resolvedDatasets.size()));
     }
 }
 
@@ -359,7 +347,8 @@ void ReviewPage::updatePublicationOrder() {
 // ============================================================================
 
 ProgressPage::ProgressPage(PublishDatasetsDialog* wizard)
-    : QWizardPage(wizard), wizard_(wizard) {
+    : QWizardPage(wizard)
+    , wizard_(wizard) {
 
     setTitle(tr("Publishing"));
     setSubTitle(tr("Please wait while the datasets are being published."));
@@ -375,7 +364,7 @@ ProgressPage::ProgressPage(PublishDatasetsDialog* wizard)
     layout->addSpacing(20);
 
     progressBar_ = new QProgressBar(this);
-    progressBar_->setRange(0, 0);  // Indeterminate
+    progressBar_->setRange(0, 0); // Indeterminate
     progressBar_->setMinimumWidth(400);
     layout->addWidget(progressBar_, 0, Qt::AlignCenter);
 
@@ -412,8 +401,8 @@ void ProgressPage::performPublish() {
         return;
     }
 
-    statusLabel_->setText(tr("Submitting publish request for %1 dataset(s)...")
-        .arg(resolvedDatasets.size()));
+    statusLabel_->setText(
+        tr("Submitting publish request for %1 dataset(s)...").arg(resolvedDatasets.size()));
 
     // Capture values for the background thread
     std::vector<std::string> datasetIds;
@@ -428,16 +417,15 @@ void ProgressPage::performPublish() {
     using ResponseType = dq::messaging::publish_datasets_response;
 
     auto* watcher = new QFutureWatcher<std::optional<ResponseType>>(this);
-    connect(watcher, &QFutureWatcher<std::optional<ResponseType>>::finished,
-            [this, watcher]() {
+    connect(watcher, &QFutureWatcher<std::optional<ResponseType>>::finished, [this, watcher]() {
         const auto result = watcher->result();
         watcher->deleteLater();
 
         progressBar_->setRange(0, 1);
         progressBar_->setValue(1);
 
-        auto* resultsPage = qobject_cast<ResultsPage*>(
-            wizard()->page(PublishDatasetsDialog::Page_Results));
+        auto* resultsPage =
+            qobject_cast<ResultsPage*>(wizard()->page(PublishDatasetsDialog::Page_Results));
 
         if (!result) {
             BOOST_LOG_SEV(lg(), error)
@@ -446,17 +434,14 @@ void ProgressPage::performPublish() {
             publishComplete_ = true;
             publishSuccess_ = false;
             if (resultsPage)
-                resultsPage->setResults(false,
-                    tr("Failed to communicate with server."));
+                resultsPage->setResults(false, tr("Failed to communicate with server."));
         } else if (!result->success) {
-            BOOST_LOG_SEV(lg(), error)
-                << "Dataset publication failed: " << result->message;
+            BOOST_LOG_SEV(lg(), error) << "Dataset publication failed: " << result->message;
             statusLabel_->setText(tr("Publication failed!"));
             publishComplete_ = true;
             publishSuccess_ = false;
             if (resultsPage)
-                resultsPage->setResults(false,
-                    QString::fromStdString(result->message));
+                resultsPage->setResults(false, QString::fromStdString(result->message));
         } else {
             BOOST_LOG_SEV(lg(), info)
                 << "Dataset publish workflow started: instance=" << result->instance_id
@@ -481,14 +466,13 @@ void ProgressPage::performPublish() {
             request.dataset_ids = datasetIds;
             request.mode = mode;
             request.published_by = publishedBy;
-            request.resolve_dependencies = false;  // Already resolved by ReviewPage
+            request.resolve_dependencies = false; // Already resolved by ReviewPage
 
             auto result = clientManager->process_authenticated_request(std::move(request));
             if (!result)
                 return std::nullopt;
             return *result;
-        }
-    );
+        });
 
     watcher->setFuture(future);
 }
@@ -498,7 +482,8 @@ void ProgressPage::performPublish() {
 // ============================================================================
 
 ResultsPage::ResultsPage(PublishDatasetsDialog* wizard)
-    : QWizardPage(wizard), wizard_(wizard) {
+    : QWizardPage(wizard)
+    , wizard_(wizard) {
 
     setTitle(tr("Publication Results"));
     setSubTitle(tr("Summary of the publication operation."));
@@ -517,8 +502,10 @@ ResultsPage::ResultsPage(PublishDatasetsDialog* wizard)
     stepsWidget_->setVisible(false);
     layout->addWidget(stepsWidget_, 1);
 
-    connect(stepsWidget_, &WorkflowStepsWidget::instanceReachedTerminalState,
-            this, &ResultsPage::onWorkflowComplete);
+    connect(stepsWidget_,
+            &WorkflowStepsWidget::instanceReachedTerminalState,
+            this,
+            &ResultsPage::onWorkflowComplete);
 }
 
 void ResultsPage::setResults(bool success, const QString& errorMessage) {
@@ -536,8 +523,7 @@ void ResultsPage::initializePage() {
         overallStatusLabel_->setStyleSheet("font-size: 14px; font-weight: bold;");
         if (!instanceId.empty()) {
             stepsWidget_->setVisible(true);
-            stepsWidget_->setInstance(
-                QUuid::fromString(QString::fromStdString(instanceId)));
+            stepsWidget_->setInstance(QUuid::fromString(QString::fromStdString(instanceId)));
         } else {
             workflowComplete_ = true;
         }
@@ -546,8 +532,7 @@ void ResultsPage::initializePage() {
         if (!errorMessage_.isEmpty())
             msg += " " + errorMessage_;
         overallStatusLabel_->setText(msg);
-        overallStatusLabel_->setStyleSheet(
-            "font-size: 14px; font-weight: bold; color: #cc0000;");
+        overallStatusLabel_->setStyleSheet("font-size: 14px; font-weight: bold; color: #cc0000;");
         workflowComplete_ = true;
     }
 
@@ -560,20 +545,16 @@ bool ResultsPage::isComplete() const {
 
 void ResultsPage::onWorkflowComplete(bool success) {
     if (success) {
-        overallStatusLabel_->setText(
-            tr("Publication workflow completed successfully."));
-        overallStatusLabel_->setStyleSheet(
-            "font-size: 14px; font-weight: bold; color: #228B22;");
+        overallStatusLabel_->setText(tr("Publication workflow completed successfully."));
+        overallStatusLabel_->setStyleSheet("font-size: 14px; font-weight: bold; color: #228B22;");
 
         QStringList publishedCodes;
         for (const auto& ds : wizard_->resolvedDatasets())
             publishedCodes.append(QString::fromStdString(ds.code));
         emit qobject_cast<PublishDatasetsDialog*>(wizard())->datasetsPublished(publishedCodes);
     } else {
-        overallStatusLabel_->setText(
-            tr("Publication workflow completed with errors."));
-        overallStatusLabel_->setStyleSheet(
-            "font-size: 14px; font-weight: bold; color: #cc0000;");
+        overallStatusLabel_->setText(tr("Publication workflow completed with errors."));
+        overallStatusLabel_->setStyleSheet("font-size: 14px; font-weight: bold; color: #cc0000;");
     }
     workflowComplete_ = true;
     emit completeChanged();

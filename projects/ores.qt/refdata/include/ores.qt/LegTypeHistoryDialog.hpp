@@ -20,12 +20,12 @@
 #ifndef ORES_QT_LEG_TYPE_HISTORY_DIALOG_HPP
 #define ORES_QT_LEG_TYPE_HISTORY_DIALOG_HPP
 
-#include <QWidget>
-#include <QToolBar>
-#include <QTableWidget>
-#include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
 #include "ores.trading.api/domain/leg_type.hpp"
+#include <QTableWidget>
+#include <QToolBar>
+#include <QWidget>
 
 namespace Ui {
 class LegTypeHistoryDialog;
@@ -43,8 +43,7 @@ class LegTypeHistoryDialog final : public QWidget {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.leg_type_history_dialog";
+    inline static std::string_view logger_name = "ores.qt.leg_type_history_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -53,10 +52,9 @@ private:
     }
 
 public:
-    explicit LegTypeHistoryDialog(
-        const QString& code,
-        ClientManager* clientManager,
-        QWidget* parent = nullptr);
+    explicit LegTypeHistoryDialog(const QString& code,
+                                  ClientManager* clientManager,
+                                  QWidget* parent = nullptr);
     ~LegTypeHistoryDialog() override;
 
     void loadHistory();
@@ -64,8 +62,7 @@ public:
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
-    void openVersionRequested(const trading::domain::leg_type& type,
-                              int versionNumber);
+    void openVersionRequested(const trading::domain::leg_type& type, int versionNumber);
     void revertVersionRequested(const trading::domain::leg_type& type);
 
 private slots:

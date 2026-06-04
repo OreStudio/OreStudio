@@ -20,12 +20,12 @@
 #ifndef ORES_QT_CODE_DOMAIN_HISTORY_DIALOG_HPP
 #define ORES_QT_CODE_DOMAIN_HISTORY_DIALOG_HPP
 
-#include <QWidget>
-#include <QToolBar>
-#include <QTableWidget>
-#include "ores.qt/ClientManager.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.dq.api/domain/code_domain.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include <QTableWidget>
+#include <QToolBar>
+#include <QWidget>
 
 namespace Ui {
 class CodeDomainHistoryDialog;
@@ -43,8 +43,7 @@ class CodeDomainHistoryDialog final : public QWidget {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.code_domain_history_dialog";
+    inline static std::string_view logger_name = "ores.qt.code_domain_history_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -53,10 +52,9 @@ private:
     }
 
 public:
-    explicit CodeDomainHistoryDialog(
-        const QString& code,
-        ClientManager* clientManager,
-        QWidget* parent = nullptr);
+    explicit CodeDomainHistoryDialog(const QString& code,
+                                     ClientManager* clientManager,
+                                     QWidget* parent = nullptr);
     ~CodeDomainHistoryDialog() override;
 
     void loadHistory();
@@ -64,8 +62,7 @@ public:
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
-    void openVersionRequested(const dq::domain::code_domain& domain,
-                              int versionNumber);
+    void openVersionRequested(const dq::domain::code_domain& domain, int versionNumber);
     void revertVersionRequested(const dq::domain::code_domain& domain);
 
 private slots:

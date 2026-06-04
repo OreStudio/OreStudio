@@ -20,18 +20,18 @@
 #ifndef ORES_QT_PARTYPICKERDIALOG_HPP
 #define ORES_QT_PARTYPICKERDIALOG_HPP
 
-#include <vector>
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/export.hpp"
+#include <QComboBox>
 #include <QDialog>
 #include <QLabel>
 #include <QLineEdit>
-#include <QComboBox>
+#include <QPushButton>
 #include <QRadioButton>
 #include <QTimer>
 #include <QTreeWidget>
-#include <QPushButton>
 #include <boost/uuid/uuid.hpp>
-#include "ores.qt/ClientManager.hpp"
-#include "ores.qt/export.hpp"
+#include <vector>
 
 namespace ores::qt {
 
@@ -49,12 +49,11 @@ class ORES_QT_API PartyPickerDialog : public QDialog {
     Q_OBJECT
 
 public:
-    explicit PartyPickerDialog(
-        const std::vector<PartyInfo>& parties,
-        const std::vector<boost::uuids::uuid>& recent_ids,
-        ClientManager* clientManager,
-        ImageCache* imageCache,
-        QWidget* parent = nullptr);
+    explicit PartyPickerDialog(const std::vector<PartyInfo>& parties,
+                               const std::vector<boost::uuids::uuid>& recent_ids,
+                               ClientManager* clientManager,
+                               ImageCache* imageCache,
+                               QWidget* parent = nullptr);
 
     boost::uuids::uuid selectedPartyId() const;
     QString selectedPartyName() const;
@@ -81,30 +80,30 @@ private:
     void refreshFlagIcons();
 
 private:
-    ClientManager*              clientManager_;
-    ImageCache*                 imageCache_;
-    std::vector<PartyInfo>      parties_;
+    ClientManager* clientManager_;
+    ImageCache* imageCache_;
+    std::vector<PartyInfo> parties_;
     std::vector<boost::uuids::uuid> recent_ids_;
 
     // System-party section (hidden when no system party is available)
     QRadioButton* systemRadio_;
 
     // Operational-party section
-    QRadioButton*    operationalRadio_;
-    QWidget*         operationalContent_;
-    QLineEdit*       filterEdit_;
-    QComboBox*       centreCombo_;
-    QTreeWidget*     listWidget_;
-    QTreeWidgetItem* recentHeader_{nullptr};  // null when no recents
+    QRadioButton* operationalRadio_;
+    QWidget* operationalContent_;
+    QLineEdit* filterEdit_;
+    QComboBox* centreCombo_;
+    QTreeWidget* listWidget_;
+    QTreeWidgetItem* recentHeader_{nullptr}; // null when no recents
     QTreeWidgetItem* allPartiesHeader_{nullptr};
 
     QPushButton* okButton_;
     QPushButton* cancelButton_;
-    QTimer*      flagRefreshTimer_;
+    QTimer* flagRefreshTimer_;
 
     // Tracks which party is currently selected
     boost::uuids::uuid selectedId_;
-    QString            selectedName_;
+    QString selectedName_;
 };
 
 }

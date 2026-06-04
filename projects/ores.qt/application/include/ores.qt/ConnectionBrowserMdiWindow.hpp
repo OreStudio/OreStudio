@@ -20,22 +20,22 @@
 #ifndef ORES_QT_CONNECTION_BROWSER_MDI_WINDOW_HPP
 #define ORES_QT_CONNECTION_BROWSER_MDI_WINDOW_HPP
 
-#include <QWidget>
-#include <QTreeView>
-#include <QToolBar>
-#include <QAction>
-#include <QVBoxLayout>
-#include <QSplitter>
-#include <QMdiArea>
-#include <QMainWindow>
-#include <QList>
-#include <QPointer>
-#include <QSize>
-#include <QCloseEvent>
-#include <memory>
-#include <boost/uuid/uuid.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ConnectionTypes.hpp"
+#include <QAction>
+#include <QCloseEvent>
+#include <QList>
+#include <QMainWindow>
+#include <QMdiArea>
+#include <QPointer>
+#include <QSize>
+#include <QSplitter>
+#include <QToolBar>
+#include <QTreeView>
+#include <QVBoxLayout>
+#include <QWidget>
+#include <boost/uuid/uuid.hpp>
+#include <memory>
 
 namespace ores::connections::service {
 class connection_manager;
@@ -57,8 +57,7 @@ class ConnectionBrowserMdiWindow : public QWidget {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.connection_browser_mdi_window";
+    inline static std::string_view logger_name = "ores.qt.connection_browser_mdi_window";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -67,9 +66,8 @@ private:
     }
 
 public:
-    explicit ConnectionBrowserMdiWindow(
-        connections::service::connection_manager* manager,
-        QWidget* parent = nullptr);
+    explicit ConnectionBrowserMdiWindow(connections::service::connection_manager* manager,
+                                        QWidget* parent = nullptr);
     ~ConnectionBrowserMdiWindow() override;
 
     QSize sizeHint() const override;
@@ -82,7 +80,8 @@ public:
     /**
      * @brief Set MDI area and main window for creating sub-windows.
      */
-    void setMdiArea(QMdiArea* mdiArea, QMainWindow* mainWindow,
+    void setMdiArea(QMdiArea* mdiArea,
+                    QMainWindow* mainWindow,
                     QList<QPointer<DetachableMdiSubWindow>>* allDetachableWindows);
 
 signals:
@@ -92,8 +91,7 @@ signals:
     /**
      * @brief Emitted when user requests to connect using a saved connection.
      */
-    void connectRequested(const boost::uuids::uuid& connectionId,
-                          const QString& connectionName);
+    void connectRequested(const boost::uuids::uuid& connectionId, const QString& connectionName);
 
     /**
      * @brief Emitted when user requests to connect using a pure environment.

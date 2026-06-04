@@ -17,63 +17,82 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep. Must be before rfl/json.hpp
 #include "ores.qt/ImageCache.hpp"
-
-#include <algorithm>
-#include <sstream>
-#include <rfl/json.hpp>
+#include "ores.assets.api/messaging/assets_protocol.hpp"
 #include "ores.platform/time/datetime.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.refdata.api/messaging/business_centre_protocol.hpp"
+#include "ores.refdata.api/messaging/country_protocol.hpp"
+#include "ores.refdata.api/messaging/currency_protocol.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep. Must be before rfl/json.hpp
 #include <QPainter>
 #include <QPixmap>
 #include <QTimer>
 #include <QtConcurrent>
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include "ores.qt/IconUtils.hpp"
-#include "ores.assets.api/messaging/assets_protocol.hpp"
-#include "ores.refdata.api/messaging/currency_protocol.hpp"
-#include "ores.refdata.api/messaging/country_protocol.hpp"
-#include "ores.refdata.api/messaging/business_centre_protocol.hpp"
+#include <algorithm>
+#include <rfl/json.hpp>
+#include <sstream>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 ImageCache::ImageCache(ClientManager* clientManager, QObject* parent)
-    : QObject(parent),
-      clientManager_(clientManager),
-      currency_ids_watcher_(new QFutureWatcher<ImageIdsResult>(this)),
-      country_ids_watcher_(new QFutureWatcher<ImageIdsResult>(this)),
-      incremental_changes_watcher_(new QFutureWatcher<ImageIdsResult>(this)),
-      images_watcher_(new QFutureWatcher<ImagesResult>(this)),
-      image_list_watcher_(new QFutureWatcher<ImageListResult>(this)),
-      single_image_watcher_(new QFutureWatcher<SingleImageResult>(this)),
-      set_currency_image_watcher_(new QFutureWatcher<SetCurrencyImageResult>(this)),
-      set_country_image_watcher_(new QFutureWatcher<SetCountryImageResult>(this)),
-      all_available_watcher_(new QFutureWatcher<ImagesResult>(this)),
-      bc_mapping_watcher_(new QFutureWatcher<BusinessCentreMappingResult>(this)) {
+    : QObject(parent)
+    , clientManager_(clientManager)
+    , currency_ids_watcher_(new QFutureWatcher<ImageIdsResult>(this))
+    , country_ids_watcher_(new QFutureWatcher<ImageIdsResult>(this))
+    , incremental_changes_watcher_(new QFutureWatcher<ImageIdsResult>(this))
+    , images_watcher_(new QFutureWatcher<ImagesResult>(this))
+    , image_list_watcher_(new QFutureWatcher<ImageListResult>(this))
+    , single_image_watcher_(new QFutureWatcher<SingleImageResult>(this))
+    , set_currency_image_watcher_(new QFutureWatcher<SetCurrencyImageResult>(this))
+    , set_country_image_watcher_(new QFutureWatcher<SetCountryImageResult>(this))
+    , all_available_watcher_(new QFutureWatcher<ImagesResult>(this))
+    , bc_mapping_watcher_(new QFutureWatcher<BusinessCentreMappingResult>(this)) {
 
-    connect(currency_ids_watcher_, &QFutureWatcher<ImageIdsResult>::finished,
-        this, &ImageCache::onCurrencyImageIdsLoaded);
-    connect(country_ids_watcher_, &QFutureWatcher<ImageIdsResult>::finished,
-        this, &ImageCache::onCountryImageIdsLoaded);
-    connect(incremental_changes_watcher_, &QFutureWatcher<ImageIdsResult>::finished,
-        this, &ImageCache::onIncrementalChangesLoaded);
-    connect(images_watcher_, &QFutureWatcher<ImagesResult>::finished,
-        this, &ImageCache::onImagesLoaded);
-    connect(image_list_watcher_, &QFutureWatcher<ImageListResult>::finished,
-        this, &ImageCache::onImageListLoaded);
-    connect(single_image_watcher_, &QFutureWatcher<SingleImageResult>::finished,
-        this, &ImageCache::onSingleImageLoaded);
-    connect(set_currency_image_watcher_, &QFutureWatcher<SetCurrencyImageResult>::finished,
-        this, &ImageCache::onCurrencyImageSet);
-    connect(set_country_image_watcher_, &QFutureWatcher<SetCountryImageResult>::finished,
-        this, &ImageCache::onCountryImageSet);
-    connect(all_available_watcher_, &QFutureWatcher<ImagesResult>::finished,
-        this, &ImageCache::onAllAvailableImagesLoaded);
-    connect(bc_mapping_watcher_, &QFutureWatcher<BusinessCentreMappingResult>::finished,
-        this, &ImageCache::onBusinessCentreMappingLoaded);
+    connect(currency_ids_watcher_,
+            &QFutureWatcher<ImageIdsResult>::finished,
+            this,
+            &ImageCache::onCurrencyImageIdsLoaded);
+    connect(country_ids_watcher_,
+            &QFutureWatcher<ImageIdsResult>::finished,
+            this,
+            &ImageCache::onCountryImageIdsLoaded);
+    connect(incremental_changes_watcher_,
+            &QFutureWatcher<ImageIdsResult>::finished,
+            this,
+            &ImageCache::onIncrementalChangesLoaded);
+    connect(images_watcher_,
+            &QFutureWatcher<ImagesResult>::finished,
+            this,
+            &ImageCache::onImagesLoaded);
+    connect(image_list_watcher_,
+            &QFutureWatcher<ImageListResult>::finished,
+            this,
+            &ImageCache::onImageListLoaded);
+    connect(single_image_watcher_,
+            &QFutureWatcher<SingleImageResult>::finished,
+            this,
+            &ImageCache::onSingleImageLoaded);
+    connect(set_currency_image_watcher_,
+            &QFutureWatcher<SetCurrencyImageResult>::finished,
+            this,
+            &ImageCache::onCurrencyImageSet);
+    connect(set_country_image_watcher_,
+            &QFutureWatcher<SetCountryImageResult>::finished,
+            this,
+            &ImageCache::onCountryImageSet);
+    connect(all_available_watcher_,
+            &QFutureWatcher<ImagesResult>::finished,
+            this,
+            &ImageCache::onAllAvailableImagesLoaded);
+    connect(bc_mapping_watcher_,
+            &QFutureWatcher<BusinessCentreMappingResult>::finished,
+            this,
+            &ImageCache::onBusinessCentreMappingLoaded);
 }
 
 void ImageCache::loadAll() {
@@ -158,46 +177,44 @@ void ImageCache::loadCurrencyImageIds() {
 
     QPointer<ImageCache> self = this;
 
-    QFuture<ImageIdsResult> future =
-        QtConcurrent::run([self]() -> ImageIdsResult {
-            BOOST_LOG_SEV(lg(), debug) << "Fetching currencies to extract image_ids.";
-            if (!self) {
-                BOOST_LOG_SEV(lg(), error) << "ImageCache destroyed during async fetch.";
-                return {false, {}};
+    QFuture<ImageIdsResult> future = QtConcurrent::run([self]() -> ImageIdsResult {
+        BOOST_LOG_SEV(lg(), debug) << "Fetching currencies to extract image_ids.";
+        if (!self) {
+            BOOST_LOG_SEV(lg(), error) << "ImageCache destroyed during async fetch.";
+            return {false, {}};
+        }
+
+        refdata::messaging::get_currencies_request request;
+        request.offset = 0;
+        request.limit = 1000;
+
+        auto response = self->clientManager_->process_authenticated_request(std::move(request));
+
+        if (!response) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to fetch currencies: " << response.error();
+            return {false, {}};
+        }
+
+        BOOST_LOG_SEV(lg(), debug)
+            << "Received " << response->currencies.size() << " currencies from server.";
+
+        std::vector<std::string> image_ids;
+        std::unordered_map<std::string, std::string> iso_to_image_id;
+        for (const auto& currency : response->currencies) {
+            if (currency.image_id) {
+                auto id_str = boost::uuids::to_string(*currency.image_id);
+                image_ids.push_back(id_str);
+                iso_to_image_id.emplace(currency.iso_code, id_str);
             }
+        }
 
-            refdata::messaging::get_currencies_request request;
-            request.offset = 0;
-            request.limit = 1000;
+        BOOST_LOG_SEV(lg(), debug)
+            << "Extracted " << image_ids.size() << " image IDs from currencies.";
 
-            auto response = self->clientManager_->
-                process_authenticated_request(std::move(request));
-
-            if (!response) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to fetch currencies: "
-                                           << response.error();
-                return {false, {}};
-            }
-
-            BOOST_LOG_SEV(lg(), debug) << "Received " << response->currencies.size()
-                                       << " currencies from server.";
-
-            std::vector<std::string> image_ids;
-            std::unordered_map<std::string, std::string> iso_to_image_id;
-            for (const auto& currency : response->currencies) {
-                if (currency.image_id) {
-                    auto id_str = boost::uuids::to_string(*currency.image_id);
-                    image_ids.push_back(id_str);
-                    iso_to_image_id.emplace(currency.iso_code, id_str);
-                }
-            }
-
-            BOOST_LOG_SEV(lg(), debug) << "Extracted " << image_ids.size()
-                                       << " image IDs from currencies.";
-
-            return {.success = true, .image_ids = std::move(image_ids),
-                    .code_to_image_id = std::move(iso_to_image_id)};
-        });
+        return {.success = true,
+                .image_ids = std::move(image_ids),
+                .code_to_image_id = std::move(iso_to_image_id)};
+    });
 
     currency_ids_watcher_->setFuture(future);
 }
@@ -220,11 +237,10 @@ void ImageCache::onCurrencyImageIdsLoaded() {
         }
         // Store the code -> image_id mapping
         currency_iso_to_image_id_ = std::move(result.code_to_image_id);
-        BOOST_LOG_SEV(lg(), debug) << "Added " << result.image_ids.size()
-                                   << " currency image IDs. Total pending: "
-                                   << pending_image_ids_.size()
-                                   << ". Currency mappings: "
-                                   << currency_iso_to_image_id_.size();
+        BOOST_LOG_SEV(lg(), debug)
+            << "Added " << result.image_ids.size()
+            << " currency image IDs. Total pending: " << pending_image_ids_.size()
+            << ". Currency mappings: " << currency_iso_to_image_id_.size();
     } else {
         BOOST_LOG_SEV(lg(), error) << "Failed to load currency image IDs.";
     }
@@ -245,46 +261,44 @@ void ImageCache::loadCountryImageIds() {
 
     QPointer<ImageCache> self = this;
 
-    QFuture<ImageIdsResult> future =
-        QtConcurrent::run([self]() -> ImageIdsResult {
-            BOOST_LOG_SEV(lg(), debug) << "Fetching countries to extract image_ids.";
-            if (!self) {
-                BOOST_LOG_SEV(lg(), error) << "ImageCache destroyed during async fetch.";
-                return {false, {}};
+    QFuture<ImageIdsResult> future = QtConcurrent::run([self]() -> ImageIdsResult {
+        BOOST_LOG_SEV(lg(), debug) << "Fetching countries to extract image_ids.";
+        if (!self) {
+            BOOST_LOG_SEV(lg(), error) << "ImageCache destroyed during async fetch.";
+            return {false, {}};
+        }
+
+        refdata::messaging::get_countries_request request;
+        request.offset = 0;
+        request.limit = 1000;
+
+        auto response = self->clientManager_->process_authenticated_request(std::move(request));
+
+        if (!response) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to fetch countries: " << response.error();
+            return {false, {}};
+        }
+
+        BOOST_LOG_SEV(lg(), debug)
+            << "Received " << response->countries.size() << " countries from server.";
+
+        std::vector<std::string> image_ids;
+        std::unordered_map<std::string, std::string> alpha2_to_image_id;
+        for (const auto& country : response->countries) {
+            if (country.image_id) {
+                auto id_str = boost::uuids::to_string(*country.image_id);
+                image_ids.push_back(id_str);
+                alpha2_to_image_id.emplace(country.alpha2_code, id_str);
             }
+        }
 
-            refdata::messaging::get_countries_request request;
-            request.offset = 0;
-            request.limit = 1000;
+        BOOST_LOG_SEV(lg(), debug)
+            << "Extracted " << image_ids.size() << " image IDs from countries.";
 
-            auto response = self->clientManager_->
-                process_authenticated_request(std::move(request));
-
-            if (!response) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to fetch countries: "
-                                           << response.error();
-                return {false, {}};
-            }
-
-            BOOST_LOG_SEV(lg(), debug) << "Received " << response->countries.size()
-                                       << " countries from server.";
-
-            std::vector<std::string> image_ids;
-            std::unordered_map<std::string, std::string> alpha2_to_image_id;
-            for (const auto& country : response->countries) {
-                if (country.image_id) {
-                    auto id_str = boost::uuids::to_string(*country.image_id);
-                    image_ids.push_back(id_str);
-                    alpha2_to_image_id.emplace(country.alpha2_code, id_str);
-                }
-            }
-
-            BOOST_LOG_SEV(lg(), debug) << "Extracted " << image_ids.size()
-                                       << " image IDs from countries.";
-
-            return {.success = true, .image_ids = std::move(image_ids),
-                    .code_to_image_id = std::move(alpha2_to_image_id)};
-        });
+        return {.success = true,
+                .image_ids = std::move(image_ids),
+                .code_to_image_id = std::move(alpha2_to_image_id)};
+    });
 
     country_ids_watcher_->setFuture(future);
 }
@@ -306,11 +320,10 @@ void ImageCache::onCountryImageIdsLoaded() {
         }
         // Store the code -> image_id mapping
         country_alpha2_to_image_id_ = std::move(result.code_to_image_id);
-        BOOST_LOG_SEV(lg(), debug) << "Added " << result.image_ids.size()
-                                   << " country image IDs. Total pending: "
-                                   << pending_image_ids_.size()
-                                   << ". Country mappings: "
-                                   << country_alpha2_to_image_id_.size();
+        BOOST_LOG_SEV(lg(), debug)
+            << "Added " << result.image_ids.size()
+            << " country image IDs. Total pending: " << pending_image_ids_.size()
+            << ". Country mappings: " << country_alpha2_to_image_id_.size();
     } else {
         BOOST_LOG_SEV(lg(), error) << "Failed to load country image IDs.";
     }
@@ -339,8 +352,7 @@ void ImageCache::loadBusinessCentreMapping() {
 
             refdata::messaging::get_business_centres_request request;
             request.limit = 1000;
-            auto response = self->clientManager_->
-                process_authenticated_request(std::move(request));
+            auto response = self->clientManager_->process_authenticated_request(std::move(request));
             if (!response) {
                 BOOST_LOG_SEV(lg(), error) << "Failed to fetch business centres.";
                 return {.success = false, .bc_to_country = {}};
@@ -353,8 +365,8 @@ void ImageCache::loadBusinessCentreMapping() {
                 }
             }
 
-            BOOST_LOG_SEV(lg(), debug) << "Built " << bc_to_country.size()
-                                       << " BC->country mappings.";
+            BOOST_LOG_SEV(lg(), debug)
+                << "Built " << bc_to_country.size() << " BC->country mappings.";
 
             return {.success = true, .bc_to_country = std::move(bc_to_country)};
         });
@@ -375,8 +387,8 @@ void ImageCache::onBusinessCentreMappingLoaded() {
     }
     if (result.success) {
         bc_code_to_country_alpha2_ = std::move(result.bc_to_country);
-        BOOST_LOG_SEV(lg(), debug) << "Stored " << bc_code_to_country_alpha2_.size()
-                                   << " BC->country mappings.";
+        BOOST_LOG_SEV(lg(), debug)
+            << "Stored " << bc_code_to_country_alpha2_.size() << " BC->country mappings.";
     } else {
         BOOST_LOG_SEV(lg(), error) << "Failed to load BC->country mapping.";
     }
@@ -410,16 +422,14 @@ QIcon ImageCache::getBusinessCentreFlagIcon(const std::string& bc_code) {
 }
 
 void ImageCache::loadImagesByIds(const std::vector<std::string>& image_ids) {
-    BOOST_LOG_SEV(lg(), debug) << "loadImagesByIds() called with "
-                               << image_ids.size() << " IDs.";
+    BOOST_LOG_SEV(lg(), debug) << "loadImagesByIds() called with " << image_ids.size() << " IDs.";
 
     // Deduplicate and filter out already-cached images
     std::vector<std::string> ids_to_fetch;
     std::unordered_set<std::string> seen;
 
     for (const auto& id : image_ids) {
-        if (seen.find(id) == seen.end() &&
-            image_svg_cache_.find(id) == image_svg_cache_.end()) {
+        if (seen.find(id) == seen.end() && image_svg_cache_.find(id) == image_svg_cache_.end()) {
             ids_to_fetch.push_back(id);
             seen.insert(id);
         }
@@ -438,10 +448,9 @@ void ImageCache::loadImagesByIds(const std::vector<std::string>& image_ids) {
     is_loading_images_ = true;
     ClientManager* clientMgr = clientManager_;
 
-    QFuture<ImagesResult> future =
-        QtConcurrent::run([clientMgr, ids_to_fetch]() -> ImagesResult {
-            return fetchImagesInBatches(clientMgr, ids_to_fetch);
-        });
+    QFuture<ImagesResult> future = QtConcurrent::run([clientMgr, ids_to_fetch]() -> ImagesResult {
+        return fetchImagesInBatches(clientMgr, ids_to_fetch);
+    });
 
     images_watcher_->setFuture(future);
 }
@@ -456,52 +465,48 @@ void ImageCache::loadIncrementalChanges() {
 
     if (!last_load_time_) {
         BOOST_LOG_SEV(lg(), warn) << "No last load time, falling back to full reload.";
-        last_load_time_ = std::nullopt;  // Force full reload
+        last_load_time_ = std::nullopt; // Force full reload
         reload();
         return;
     }
 
     // Format last load time for logging (thread-safe)
-    const auto time_str =
-        platform::time::datetime::to_iso8601_utc(*last_load_time_) + " UTC";
-    BOOST_LOG_SEV(lg(), info) << "Incremental reload: fetching images modified since "
-                              << time_str;
+    const auto time_str = platform::time::datetime::to_iso8601_utc(*last_load_time_) + " UTC";
+    BOOST_LOG_SEV(lg(), info) << "Incremental reload: fetching images modified since " << time_str;
 
     load_all_in_progress_ = true;
     QPointer<ImageCache> self = this;
     auto modified_since = *last_load_time_;
 
-    QFuture<ImageIdsResult> future =
-        QtConcurrent::run([self, modified_since]() -> ImageIdsResult {
-            BOOST_LOG_SEV(lg(), debug) << "Fetching images modified since last load.";
-            if (!self) {
-                BOOST_LOG_SEV(lg(), error) << "ImageCache destroyed during async fetch.";
-                return {.success = false, .image_ids = {}};
-            }
+    QFuture<ImageIdsResult> future = QtConcurrent::run([self, modified_since]() -> ImageIdsResult {
+        BOOST_LOG_SEV(lg(), debug) << "Fetching images modified since last load.";
+        if (!self) {
+            BOOST_LOG_SEV(lg(), error) << "ImageCache destroyed during async fetch.";
+            return {.success = false, .image_ids = {}};
+        }
 
-            // Build request with modified_since filter
-            assets::messaging::list_images_request request;
-            request.modified_since = modified_since;
+        // Build request with modified_since filter
+        assets::messaging::list_images_request request;
+        request.modified_since = modified_since;
 
-            auto response = self->clientManager_->
-                process_authenticated_request(std::move(request));
+        auto response = self->clientManager_->process_authenticated_request(std::move(request));
 
-            if (!response) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to fetch incremental image list: "
-                                           << response.error();
-                return {.success = false, .image_ids = {}};
-            }
+        if (!response) {
+            BOOST_LOG_SEV(lg(), error)
+                << "Failed to fetch incremental image list: " << response.error();
+            return {.success = false, .image_ids = {}};
+        }
 
-            BOOST_LOG_SEV(lg(), debug) << "Received " << response->images.size()
-                                       << " images modified since last load.";
+        BOOST_LOG_SEV(lg(), debug)
+            << "Received " << response->images.size() << " images modified since last load.";
 
-            std::vector<std::string> image_ids;
-            for (const auto& img : response->images) {
-                image_ids.push_back(img.image_id);
-            }
+        std::vector<std::string> image_ids;
+        for (const auto& img : response->images) {
+            image_ids.push_back(img.image_id);
+        }
 
-            return {.success = true, .image_ids = std::move(image_ids)};
-        });
+        return {.success = true, .image_ids = std::move(image_ids)};
+    });
 
     incremental_changes_watcher_->setFuture(future);
 }
@@ -530,8 +535,7 @@ void ImageCache::onIncrementalChangesLoaded() {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Loading " << result.image_ids.size()
-                              << " changed images.";
+    BOOST_LOG_SEV(lg(), info) << "Loading " << result.image_ids.size() << " changed images.";
     loadImagesByIds(result.image_ids);
 }
 
@@ -567,8 +571,7 @@ void ImageCache::onImagesLoaded() {
 
         // Record successful load time for future incremental loads
         last_load_time_ = std::chrono::system_clock::now();
-        const auto time_str =
-            platform::time::datetime::to_iso8601_utc(*last_load_time_) + " UTC";
+        const auto time_str = platform::time::datetime::to_iso8601_utc(*last_load_time_) + " UTC";
         BOOST_LOG_SEV(lg(), debug) << "Recorded last load time: " << time_str;
 
         BOOST_LOG_SEV(lg(), info) << "Cached " << result.images.size() << " images. "
@@ -586,7 +589,7 @@ void ImageCache::onImagesLoaded() {
         if (result.failed_batches > 0) {
             BOOST_LOG_SEV(lg(), warn) << result.failed_batches << " image batches failed to load";
             emit loadError(tr("Some images could not be loaded due to a transmission error. "
-                             "Try refreshing to reload missing images."));
+                              "Try refreshing to reload missing images."));
         }
     } else {
         BOOST_LOG_SEV(lg(), error) << "Failed to load images.";
@@ -648,13 +651,13 @@ void ImageCache::loadImageById(const std::string& image_id) {
     QFuture<SingleImageResult> future =
         QtConcurrent::run([self, requested_id]() -> SingleImageResult {
             BOOST_LOG_SEV(lg(), debug) << "Fetching single image: " << requested_id;
-            if (!self) return {false, requested_id, {}};
+            if (!self)
+                return {false, requested_id, {}};
 
             assets::messaging::get_images_request request;
             request.image_ids.push_back(requested_id);
 
-            auto response = self->clientManager_->
-                process_authenticated_request(std::move(request));
+            auto response = self->clientManager_->process_authenticated_request(std::move(request));
 
             if (!response || response->images.empty()) {
                 BOOST_LOG_SEV(lg(), error) << "Failed to get image: " << requested_id;
@@ -698,12 +701,12 @@ QIcon ImageCache::svgToIcon(const std::string& svg_data) {
     return IconUtils::svgDataToIcon(svg_data);
 }
 
-ImageCache::ImagesResult ImageCache::fetchImagesInBatches(
-    ClientManager* clientManager,
-    const std::vector<std::string>& image_ids) {
+ImageCache::ImagesResult
+ImageCache::fetchImagesInBatches(ClientManager* clientManager,
+                                 const std::vector<std::string>& image_ids) {
 
-    BOOST_LOG_SEV(lg(), debug) << "fetchImagesInBatches() called with "
-                               << image_ids.size() << " image IDs.";
+    BOOST_LOG_SEV(lg(), debug) << "fetchImagesInBatches() called with " << image_ids.size()
+                               << " image IDs.";
 
     if (!clientManager) {
         BOOST_LOG_SEV(lg(), error) << "clientManager is null in fetchImagesInBatches.";
@@ -722,8 +725,8 @@ ImageCache::ImagesResult ImageCache::fetchImagesInBatches(
         }
 
         batch_num++;
-        BOOST_LOG_SEV(lg(), debug) << "Fetching batch " << batch_num << " with "
-                                   << batch.size() << " images.";
+        BOOST_LOG_SEV(lg(), debug)
+            << "Fetching batch " << batch_num << " with " << batch.size() << " images.";
 
         assets::messaging::get_images_request request;
         request.image_ids = std::move(batch);
@@ -731,23 +734,22 @@ ImageCache::ImagesResult ImageCache::fetchImagesInBatches(
         auto response = clientManager->process_authenticated_request(std::move(request));
 
         if (!response) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to fetch images (batch "
-                                       << batch_num << "): " << response.error();
+            BOOST_LOG_SEV(lg(), error)
+                << "Failed to fetch images (batch " << batch_num << "): " << response.error();
             ++failed_batches;
             continue;
         }
 
-        BOOST_LOG_SEV(lg(), debug) << "Batch " << batch_num << " returned "
-                                   << response->images.size() << " images.";
+        BOOST_LOG_SEV(lg(), debug)
+            << "Batch " << batch_num << " returned " << response->images.size() << " images.";
 
         for (auto& img : response->images) {
             all_images.push_back(std::move(img));
         }
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "fetchImagesInBatches complete. Total: "
-                               << all_images.size() << " images, failed_batches: "
-                               << failed_batches;
+    BOOST_LOG_SEV(lg(), debug) << "fetchImagesInBatches complete. Total: " << all_images.size()
+                               << " images, failed_batches: " << failed_batches;
     return {.success = true, .images = std::move(all_images), .failed_batches = failed_batches};
 }
 
@@ -759,27 +761,24 @@ void ImageCache::loadImageList() {
 
     QPointer<ImageCache> self = this;
 
-    QFuture<ImageListResult> future =
-        QtConcurrent::run([self]() -> ImageListResult {
-            BOOST_LOG_SEV(lg(), debug) << "Fetching image list.";
-            if (!self) return {false, {}};
+    QFuture<ImageListResult> future = QtConcurrent::run([self]() -> ImageListResult {
+        BOOST_LOG_SEV(lg(), debug) << "Fetching image list.";
+        if (!self)
+            return {false, {}};
 
-            assets::messaging::list_images_request request;
+        assets::messaging::list_images_request request;
 
-            auto response = self->clientManager_->
-                process_authenticated_request(std::move(request));
+        auto response = self->clientManager_->process_authenticated_request(std::move(request));
 
-            if (!response) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to fetch image list: "
-                                           << response.error();
-                return {false, {}};
-            }
+        if (!response) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to fetch image list: " << response.error();
+            return {false, {}};
+        }
 
-            BOOST_LOG_SEV(lg(), debug) << "Received " << response->images.size()
-                                       << " images in list.";
+        BOOST_LOG_SEV(lg(), debug) << "Received " << response->images.size() << " images in list.";
 
-            return {true, std::move(response->images)};
-        });
+        return {true, std::move(response->images)};
+    });
 
     image_list_watcher_->setFuture(future);
 }
@@ -796,8 +795,7 @@ void ImageCache::onImageListLoaded() {
     if (result.success) {
         available_images_ = std::move(result.images);
 
-        BOOST_LOG_SEV(lg(), info) << "Loaded " << available_images_.size()
-                                  << " available images.";
+        BOOST_LOG_SEV(lg(), info) << "Loaded " << available_images_.size() << " available images.";
 
         emit imageListLoaded();
     } else {
@@ -839,8 +837,7 @@ void ImageCache::loadAllAvailableImages() {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Loading " << image_ids_to_fetch.size()
-                               << " available images.";
+    BOOST_LOG_SEV(lg(), debug) << "Loading " << image_ids_to_fetch.size() << " available images.";
 
     is_loading_all_available_ = true;
     ClientManager* clientMgr = clientManager_;
@@ -876,8 +873,7 @@ void ImageCache::onAllAvailableImagesLoaded() {
             }
         }
 
-        BOOST_LOG_SEV(lg(), info) << "Cached " << result.images.size()
-                                  << " available images.";
+        BOOST_LOG_SEV(lg(), info) << "Cached " << result.images.size() << " available images.";
 
         emit allAvailableImagesLoaded();
     } else {
@@ -924,12 +920,13 @@ QIcon ImageCache::getNoFlagIcon() const {
 }
 
 void ImageCache::setCurrencyImage(const std::string& iso_code,
-    const std::string& image_id, const std::string& assigned_by) {
+                                  const std::string& image_id,
+                                  const std::string& assigned_by) {
 
     if (!clientManager_ || !clientManager_->isConnected()) {
         BOOST_LOG_SEV(lg(), warn) << "Cannot set currency image: not connected.";
-        emit currencyImageSet(QString::fromStdString(iso_code), false,
-            tr("Not connected to server"));
+        emit currencyImageSet(
+            QString::fromStdString(iso_code), false, tr("Not connected to server"));
         return;
     }
 
@@ -938,29 +935,31 @@ void ImageCache::setCurrencyImage(const std::string& iso_code,
     std::string req_image_id = image_id;
     std::string req_assigned_by = assigned_by;
 
-    QFuture<SetCurrencyImageResult> future =
-        QtConcurrent::run([self, req_iso_code, req_image_id, req_assigned_by]() -> SetCurrencyImageResult {
-            BOOST_LOG_SEV(lg(), debug) << "Setting currency image: " << req_iso_code
-                                       << " -> " << (req_image_id.empty() ? "(none)" : req_image_id);
-            if (!self) return {false, req_iso_code, "Widget destroyed"};
+    QFuture<SetCurrencyImageResult> future = QtConcurrent::run(
+        [self, req_iso_code, req_image_id, req_assigned_by]() -> SetCurrencyImageResult {
+            BOOST_LOG_SEV(lg(), debug) << "Setting currency image: " << req_iso_code << " -> "
+                                       << (req_image_id.empty() ? "(none)" : req_image_id);
+            if (!self)
+                return {false, req_iso_code, "Widget destroyed"};
 
             // Step 1: Fetch currencies
             refdata::messaging::get_currencies_request get_request;
             get_request.offset = 0;
             get_request.limit = 1000;
 
-            auto get_response = self->clientManager_->
-                process_authenticated_request(std::move(get_request));
+            auto get_response =
+                self->clientManager_->process_authenticated_request(std::move(get_request));
             if (!get_response) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to fetch currencies: "
-                                           << get_response.error();
+                BOOST_LOG_SEV(lg(), error)
+                    << "Failed to fetch currencies: " << get_response.error();
                 return {false, req_iso_code, "Failed to fetch currencies"};
             }
 
             // Find the currency with matching iso_code
-            auto it = std::find_if(get_response->currencies.begin(),
-                get_response->currencies.end(),
-                [&req_iso_code](const auto& c) { return c.iso_code == req_iso_code; });
+            auto it =
+                std::find_if(get_response->currencies.begin(),
+                             get_response->currencies.end(),
+                             [&req_iso_code](const auto& c) { return c.iso_code == req_iso_code; });
 
             if (it == get_response->currencies.end()) {
                 return {false, req_iso_code, "Currency not found"};
@@ -976,18 +975,16 @@ void ImageCache::setCurrencyImage(const std::string& iso_code,
             currency.modified_by = req_assigned_by;
 
             // Step 3: Save the updated currency
-            auto save_response = self->clientManager_->
-                process_authenticated_request(
-                    refdata::messaging::save_currency_request::from(std::move(currency)));
+            auto save_response = self->clientManager_->process_authenticated_request(
+                refdata::messaging::save_currency_request::from(std::move(currency)));
             if (!save_response) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to save currency: "
-                                           << save_response.error();
+                BOOST_LOG_SEV(lg(), error) << "Failed to save currency: " << save_response.error();
                 return {false, req_iso_code, "Failed to save currency"};
             }
 
             if (save_response->success) {
-                BOOST_LOG_SEV(lg(), info) << "Currency image updated: " << req_iso_code
-                                          << " -> " << (req_image_id.empty() ? "(none)" : req_image_id);
+                BOOST_LOG_SEV(lg(), info) << "Currency image updated: " << req_iso_code << " -> "
+                                          << (req_image_id.empty() ? "(none)" : req_image_id);
             }
 
             return {save_response->success, req_iso_code, save_response->message};
@@ -1007,24 +1004,25 @@ void ImageCache::onCurrencyImageSet() {
     }
 
     if (result.success) {
-        BOOST_LOG_SEV(lg(), info) << "Currency image set successfully for: "
-                                  << result.iso_code;
+        BOOST_LOG_SEV(lg(), info) << "Currency image set successfully for: " << result.iso_code;
     } else {
-        BOOST_LOG_SEV(lg(), error) << "Failed to set currency image for "
-                                   << result.iso_code << ": " << result.message;
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to set currency image for " << result.iso_code << ": " << result.message;
     }
 
     emit currencyImageSet(QString::fromStdString(result.iso_code),
-        result.success, QString::fromStdString(result.message));
+                          result.success,
+                          QString::fromStdString(result.message));
 }
 
 void ImageCache::setCountryImage(const std::string& alpha2_code,
-    const std::string& image_id, const std::string& assigned_by) {
+                                 const std::string& image_id,
+                                 const std::string& assigned_by) {
 
     if (!clientManager_ || !clientManager_->isConnected()) {
         BOOST_LOG_SEV(lg(), warn) << "Cannot set country image: not connected.";
-        emit countryImageSet(QString::fromStdString(alpha2_code), false,
-            tr("Not connected to server"));
+        emit countryImageSet(
+            QString::fromStdString(alpha2_code), false, tr("Not connected to server"));
         return;
     }
 
@@ -1033,27 +1031,28 @@ void ImageCache::setCountryImage(const std::string& alpha2_code,
     std::string req_image_id = image_id;
     std::string req_assigned_by = assigned_by;
 
-    QFuture<SetCountryImageResult> future =
-        QtConcurrent::run([self, req_alpha2_code, req_image_id, req_assigned_by]() -> SetCountryImageResult {
-            BOOST_LOG_SEV(lg(), debug) << "Setting country image: " << req_alpha2_code
-                                       << " -> " << (req_image_id.empty() ? "(none)" : req_image_id);
-            if (!self) return {false, req_alpha2_code, "Widget destroyed"};
+    QFuture<SetCountryImageResult> future = QtConcurrent::run(
+        [self, req_alpha2_code, req_image_id, req_assigned_by]() -> SetCountryImageResult {
+            BOOST_LOG_SEV(lg(), debug) << "Setting country image: " << req_alpha2_code << " -> "
+                                       << (req_image_id.empty() ? "(none)" : req_image_id);
+            if (!self)
+                return {false, req_alpha2_code, "Widget destroyed"};
 
             // Step 1: Fetch countries
             refdata::messaging::get_countries_request get_request;
             get_request.offset = 0;
             get_request.limit = 1000;
 
-            auto get_response = self->clientManager_->
-                process_authenticated_request(std::move(get_request));
+            auto get_response =
+                self->clientManager_->process_authenticated_request(std::move(get_request));
             if (!get_response) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to fetch countries: "
-                                           << get_response.error();
+                BOOST_LOG_SEV(lg(), error) << "Failed to fetch countries: " << get_response.error();
                 return {false, req_alpha2_code, "Failed to fetch countries"};
             }
 
             // Find the country with matching alpha2_code
-            auto it = std::find_if(get_response->countries.begin(),
+            auto it = std::find_if(
+                get_response->countries.begin(),
                 get_response->countries.end(),
                 [&req_alpha2_code](const auto& c) { return c.alpha2_code == req_alpha2_code; });
 
@@ -1071,18 +1070,16 @@ void ImageCache::setCountryImage(const std::string& alpha2_code,
             country.modified_by = req_assigned_by;
 
             // Step 3: Save the updated country
-            auto save_response = self->clientManager_->
-                process_authenticated_request(
-                    refdata::messaging::save_country_request::from(std::move(country)));
+            auto save_response = self->clientManager_->process_authenticated_request(
+                refdata::messaging::save_country_request::from(std::move(country)));
             if (!save_response) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to save country: "
-                                           << save_response.error();
+                BOOST_LOG_SEV(lg(), error) << "Failed to save country: " << save_response.error();
                 return {false, req_alpha2_code, "Failed to save country"};
             }
 
             if (save_response->success) {
-                BOOST_LOG_SEV(lg(), info) << "Country image updated: " << req_alpha2_code
-                                          << " -> " << (req_image_id.empty() ? "(none)" : req_image_id);
+                BOOST_LOG_SEV(lg(), info) << "Country image updated: " << req_alpha2_code << " -> "
+                                          << (req_image_id.empty() ? "(none)" : req_image_id);
             }
 
             return {save_response->success, req_alpha2_code, save_response->message};
@@ -1102,15 +1099,15 @@ void ImageCache::onCountryImageSet() {
     }
 
     if (result.success) {
-        BOOST_LOG_SEV(lg(), info) << "Country image set successfully for: "
-                                  << result.alpha2_code;
+        BOOST_LOG_SEV(lg(), info) << "Country image set successfully for: " << result.alpha2_code;
     } else {
-        BOOST_LOG_SEV(lg(), error) << "Failed to set country image for "
-                                   << result.alpha2_code << ": " << result.message;
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to set country image for " << result.alpha2_code << ": " << result.message;
     }
 
     emit countryImageSet(QString::fromStdString(result.alpha2_code),
-        result.success, QString::fromStdString(result.message));
+                         result.success,
+                         QString::fromStdString(result.message));
 }
 
 }

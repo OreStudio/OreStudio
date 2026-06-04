@@ -18,17 +18,16 @@
  *
  */
 #include "ores.qt/ShellMdiWindow.hpp"
-
-#include <fstream>
-#include <QLabel>
-#include <QFileDialog>
-#include <QTextCharFormat>
-#include <rfl/json.hpp>
+#include "ores.iam.api/messaging/login_protocol.hpp"
+#include "ores.nats/config/nats_options.hpp"
+#include "ores.platform/environment/environment.hpp"
 #include "ores.qt/FontUtils.hpp"
 #include "ores.qt/IconUtils.hpp"
-#include "ores.nats/config/nats_options.hpp"
-#include "ores.iam.api/messaging/login_protocol.hpp"
-#include "ores.platform/environment/environment.hpp"
+#include <QFileDialog>
+#include <QLabel>
+#include <QTextCharFormat>
+#include <fstream>
+#include <rfl/json.hpp>
 
 namespace ores::qt {
 
@@ -108,7 +107,8 @@ qt_input_streambuf::int_type qt_input_streambuf::underflow() {
 // --- ShellMdiWindow ---
 
 ShellMdiWindow::ShellMdiWindow(ClientManager* clientManager, QWidget* parent)
-    : QWidget(parent), client_manager_(clientManager) {
+    : QWidget(parent)
+    , client_manager_(clientManager) {
     setup_ui();
 
     if (client_manager_->isLoggedIn())
@@ -129,20 +129,15 @@ void ShellMdiWindow::setup_ui() {
     toolbar_->setIconSize(QSize(16, 16));
 
     auto* loadAction = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::FolderOpen,
-            IconUtils::DefaultIconColor),
+        IconUtils::createRecoloredIcon(Icon::FolderOpen, IconUtils::DefaultIconColor),
         "Load Script...");
     loadAction->setToolTip("Load and execute a .ores script file");
-    connect(loadAction, &QAction::triggered,
-        this, &ShellMdiWindow::on_load_script);
+    connect(loadAction, &QAction::triggered, this, &ShellMdiWindow::on_load_script);
 
     auto* saveAction = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Save,
-            IconUtils::DefaultIconColor),
-        "Save Script...");
+        IconUtils::createRecoloredIcon(Icon::Save, IconUtils::DefaultIconColor), "Save Script...");
     saveAction->setToolTip("Save session commands as a .ores script file");
-    connect(saveAction, &QAction::triggered,
-        this, &ShellMdiWindow::on_save_script);
+    connect(saveAction, &QAction::triggered, this, &ShellMdiWindow::on_save_script);
 
     layout->addWidget(toolbar_);
 
@@ -160,8 +155,7 @@ void ShellMdiWindow::setup_ui() {
     layout->addWidget(output_area_);
     layout->addWidget(input_line_);
 
-    connect(input_line_, &QLineEdit::returnPressed,
-        this, &ShellMdiWindow::on_command_entered);
+    connect(input_line_, &QLineEdit::returnPressed, this, &ShellMdiWindow::on_command_entered);
 
     input_line_->setFocus();
 }
@@ -174,27 +168,33 @@ void ShellMdiWindow::start_shell() {
     input_buf_ = std::make_unique<qt_input_streambuf>();
 
     // Connect output signal (cross-thread via QueuedConnection)
-    connect(output_buf_.get(), &qt_output_streambuf::text_ready,
-        this, &ShellMdiWindow::on_output_ready, Qt::QueuedConnection);
+    connect(output_buf_.get(),
+            &qt_output_streambuf::text_ready,
+            this,
+            &ShellMdiWindow::on_output_ready,
+            Qt::QueuedConnection);
 
     out_stream_ = std::make_unique<std::ostream>(output_buf_.get());
     in_stream_ = std::make_unique<std::istream>(input_buf_.get());
 
     // Connect the shell's own NATS session
     nats::config::nats_options shell_opts;
-    shell_opts.url = "nats://" + client_manager_->connectedHost()
-        + ":" + std::to_string(client_manager_->connectedPort());
+    shell_opts.url = "nats://" + client_manager_->connectedHost() + ":" +
+                     std::to_string(client_manager_->connectedPort());
     shell_opts.subject_prefix = client_manager_->subjectPrefix();
     using ores::platform::environment::environment;
-    if (auto v = environment::get_value("ORES_NATS_TLS_CA"))   shell_opts.tls_ca_cert     = *v;
-    if (auto v = environment::get_value("ORES_NATS_TLS_CERT")) shell_opts.tls_client_cert = *v;
-    if (auto v = environment::get_value("ORES_NATS_TLS_KEY"))  shell_opts.tls_client_key  = *v;
+    if (auto v = environment::get_value("ORES_NATS_TLS_CA"))
+        shell_opts.tls_ca_cert = *v;
+    if (auto v = environment::get_value("ORES_NATS_TLS_CERT"))
+        shell_opts.tls_client_cert = *v;
+    if (auto v = environment::get_value("ORES_NATS_TLS_KEY"))
+        shell_opts.tls_client_key = *v;
 
     try {
         shell_session_.connect(std::move(shell_opts));
     } catch (const std::exception& e) {
-        auto msg = QString("Shell: Failed to connect to server: %1")
-            .arg(QString::fromStdString(e.what()));
+        auto msg =
+            QString("Shell: Failed to connect to server: %1").arg(QString::fromStdString(e.what()));
         BOOST_LOG_SEV(lg(), error) << msg.toStdString();
         output_area_->appendPlainText(msg);
         input_line_->setEnabled(false);
@@ -203,35 +203,29 @@ void ShellMdiWindow::start_shell() {
 
     // Login using stored credentials via NATS request
     try {
-        iam::messaging::login_request req{
-            .principal = client_manager_->storedUsername(),
-            .password  = client_manager_->storedPassword()
-        };
+        iam::messaging::login_request req{.principal = client_manager_->storedUsername(),
+                                          .password = client_manager_->storedPassword()};
         const auto json_body = rfl::json::write(req);
-        auto msg = shell_session_.request(
-            iam::messaging::login_request::nats_subject, json_body);
-        const std::string_view data(
-            reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
+        auto msg = shell_session_.request(iam::messaging::login_request::nats_subject, json_body);
+        const std::string_view data(reinterpret_cast<const char*>(msg.data.data()),
+                                    msg.data.size());
         auto resp = rfl::json::read<iam::messaging::login_response>(data);
         if (!resp || !resp->success) {
             const std::string err = resp ? resp->error_message : "Invalid response";
-            auto qmsg = QString("Shell: Login failed: %1")
-                .arg(QString::fromStdString(err));
+            auto qmsg = QString("Shell: Login failed: %1").arg(QString::fromStdString(err));
             BOOST_LOG_SEV(lg(), error) << qmsg.toStdString();
             output_area_->appendPlainText(qmsg);
             input_line_->setEnabled(false);
             shell_session_.disconnect();
             return;
         }
-        shell_session_.set_auth(ores::nats::service::nats_client::login_info{
-            .jwt         = resp->token,
-            .username    = resp->username,
-            .tenant_id   = resp->tenant_id,
-            .tenant_name = resp->tenant_name
-        });
+        shell_session_.set_auth(
+            ores::nats::service::nats_client::login_info{.jwt = resp->token,
+                                                         .username = resp->username,
+                                                         .tenant_id = resp->tenant_id,
+                                                         .tenant_name = resp->tenant_name});
     } catch (const std::exception& e) {
-        auto qmsg = QString("Shell: Login failed: %1")
-            .arg(QString::fromStdString(e.what()));
+        auto qmsg = QString("Shell: Login failed: %1").arg(QString::fromStdString(e.what()));
         BOOST_LOG_SEV(lg(), error) << qmsg.toStdString();
         output_area_->appendPlainText(qmsg);
         input_line_->setEnabled(false);
@@ -247,8 +241,7 @@ void ShellMdiWindow::start_shell() {
     worker_thread_ = std::make_unique<std::thread>([this, in, out]() {
         shell_repl_->run(*in, *out);
         // Signal the UI thread that the REPL has finished
-        QMetaObject::invokeMethod(this, &ShellMdiWindow::on_repl_finished,
-            Qt::QueuedConnection);
+        QMetaObject::invokeMethod(this, &ShellMdiWindow::on_repl_finished, Qt::QueuedConnection);
     });
 }
 
@@ -323,21 +316,18 @@ void ShellMdiWindow::on_output_ready(const QString& text) {
 
 void ShellMdiWindow::on_load_script() {
     auto filename = QFileDialog::getOpenFileName(
-        this, "Load Shell Script", QString(),
-        "ORE Shell Scripts (*.ores);;All Files (*)");
+        this, "Load Shell Script", QString(), "ORE Shell Scripts (*.ores);;All Files (*)");
 
     if (filename.isEmpty())
         return;
 
     std::ifstream file(filename.toStdString());
     if (!file.is_open()) {
-        output_area_->appendPlainText(
-            QString("Error: cannot open file: %1").arg(filename));
+        output_area_->appendPlainText(QString("Error: cannot open file: %1").arg(filename));
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Loading script: "
-                              << filename.toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Loading script: " << filename.toStdString();
 
     std::string line;
     while (std::getline(file, line)) {
@@ -369,8 +359,7 @@ void ShellMdiWindow::on_save_script() {
     }
 
     auto filename = QFileDialog::getSaveFileName(
-        this, "Save Shell Script", QString(),
-        "ORE Shell Scripts (*.ores);;All Files (*)");
+        this, "Save Shell Script", QString(), "ORE Shell Scripts (*.ores);;All Files (*)");
 
     if (filename.isEmpty())
         return;
@@ -381,8 +370,7 @@ void ShellMdiWindow::on_save_script() {
 
     std::ofstream file(filename.toStdString());
     if (!file.is_open()) {
-        output_area_->appendPlainText(
-            QString("Error: cannot write to file: %1").arg(filename));
+        output_area_->appendPlainText(QString("Error: cannot write to file: %1").arg(filename));
         return;
     }
 
@@ -390,10 +378,10 @@ void ShellMdiWindow::on_save_script() {
     for (const auto& cmd : command_history_)
         file << cmd << "\n";
 
-    BOOST_LOG_SEV(lg(), info) << "Saved " << command_history_.size()
-                              << " commands to " << filename.toStdString();
-    emit statusChanged(QString("Script saved: %1 (%2 commands)")
-        .arg(filename).arg(command_history_.size()));
+    BOOST_LOG_SEV(lg(), info) << "Saved " << command_history_.size() << " commands to "
+                              << filename.toStdString();
+    emit statusChanged(
+        QString("Script saved: %1 (%2 commands)").arg(filename).arg(command_history_.size()));
 }
 
 void ShellMdiWindow::closeEvent(QCloseEvent* event) {

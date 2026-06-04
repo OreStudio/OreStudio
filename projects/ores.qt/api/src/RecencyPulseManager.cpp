@@ -22,12 +22,12 @@
 namespace ores::qt {
 
 RecencyPulseManager::RecencyPulseManager(QObject* parent,
-                                          int pulse_interval_ms,
-                                          int max_pulse_cycles)
-    : QObject(parent),
-      timer_(new QTimer(this)),
-      pulse_interval_ms_(pulse_interval_ms),
-      max_pulse_cycles_(max_pulse_cycles) {
+                                         int pulse_interval_ms,
+                                         int max_pulse_cycles)
+    : QObject(parent)
+    , timer_(new QTimer(this))
+    , pulse_interval_ms_(pulse_interval_ms)
+    , max_pulse_cycles_(max_pulse_cycles) {
     timer_->setInterval(pulse_interval_ms_);
     connect(timer_, &QTimer::timeout, this, &RecencyPulseManager::on_timer_timeout);
 }

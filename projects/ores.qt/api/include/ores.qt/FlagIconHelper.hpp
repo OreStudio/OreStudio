@@ -20,11 +20,11 @@
 #ifndef ORES_QT_FLAG_ICON_HELPER_HPP
 #define ORES_QT_FLAG_ICON_HELPER_HPP
 
+#include "ores.qt/export.hpp"
 #include <QAction>
 #include <QComboBox>
 #include <QLineEdit>
 #include <QObject>
-#include "ores.qt/export.hpp"
 
 namespace ores::qt {
 
@@ -62,8 +62,8 @@ ORES_QT_API void apply_flag_icons(QComboBox* combo, ImageCache* cache, FlagSourc
  * @param cache    The image cache (no-op if null)
  * @param source   Which flag type to use
  */
-ORES_QT_API void setup_flag_combo(
-    QObject* context, QComboBox* combo, ImageCache* cache, FlagSource source);
+ORES_QT_API void
+setup_flag_combo(QObject* context, QComboBox* combo, ImageCache* cache, FlagSource source);
 
 /**
  * @brief Set flag icons on every item in a QComboBox.
@@ -76,7 +76,7 @@ ORES_QT_API void setup_flag_combo(
  * @param combo      The combo box to decorate
  * @param resolver   Maps an item's text to a flag icon
  */
-template<typename Resolver>
+template <typename Resolver>
 void set_combo_flag_icons(QComboBox* combo, Resolver&& resolver) {
     for (int i = 0; i < combo->count(); ++i) {
         const std::string code = combo->itemText(i).toStdString();
@@ -97,8 +97,7 @@ void set_combo_flag_icons(QComboBox* combo, Resolver&& resolver) {
  * @param icon        The icon to display (empty icon removes the action)
  * @param action_ptr  Reference to the caller-owned QAction pointer
  */
-inline void set_line_edit_flag_icon(
-    QLineEdit* edit, const QIcon& icon, QAction*& action_ptr) {
+inline void set_line_edit_flag_icon(QLineEdit* edit, const QIcon& icon, QAction*& action_ptr) {
     if (action_ptr) {
         edit->removeAction(action_ptr);
         delete action_ptr;

@@ -18,39 +18,44 @@
  *
  */
 #include "ores.qt/ClientPricingModelConfigModel.hpp"
-
-#include <QtConcurrent>
-#include <boost/uuid/uuid_io.hpp>
 #include "ores.analytics.api/messaging/pricing_model_config_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
+#include <QtConcurrent>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    std::string pricing_model_config_key_extractor(const analytics::domain::pricing_model_config& e) {
-        return e.name;
-    }
+std::string pricing_model_config_key_extractor(const analytics::domain::pricing_model_config& e) {
+    return e.name;
+}
 }
 
-ClientPricingModelConfigModel::ClientPricingModelConfigModel(
-    ClientManager* clientManager, QObject* parent)
-    : AbstractClientModel(parent),
-      clientManager_(clientManager),
-      watcher_(new QFutureWatcher<FetchResult>(this)),
-      recencyTracker_(pricing_model_config_key_extractor),
-      pulseManager_(new RecencyPulseManager(this)) {
+ClientPricingModelConfigModel::ClientPricingModelConfigModel(ClientManager* clientManager,
+                                                             QObject* parent)
+    : AbstractClientModel(parent)
+    , clientManager_(clientManager)
+    , watcher_(new QFutureWatcher<FetchResult>(this))
+    , recencyTracker_(pricing_model_config_key_extractor)
+    , pulseManager_(new RecencyPulseManager(this)) {
 
-    connect(watcher_, &QFutureWatcher<FetchResult>::finished,
-            this, &ClientPricingModelConfigModel::onConfigsLoaded);
+    connect(watcher_,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            &ClientPricingModelConfigModel::onConfigsLoaded);
 
-    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
-            this, &ClientPricingModelConfigModel::onPulseStateChanged);
-    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
-            this, &ClientPricingModelConfigModel::onPulsingComplete);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulse_state_changed,
+            this,
+            &ClientPricingModelConfigModel::onPulseStateChanged);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulsing_complete,
+            this,
+            &ClientPricingModelConfigModel::onPulsingComplete);
 }
 
 int ClientPricingModelConfigModel::rowCount(const QModelIndex& parent) const {
@@ -65,8 +70,7 @@ int ClientPricingModelConfigModel::columnCount(const QModelIndex& parent) const 
     return ColumnCount;
 }
 
-QVariant ClientPricingModelConfigModel::data(
-    const QModelIndex& index, int role) const {
+QVariant ClientPricingModelConfigModel::data(const QModelIndex& index, int role) const {
     if (!index.isValid())
         return {};
 
@@ -78,22 +82,21 @@ QVariant ClientPricingModelConfigModel::data(
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-        case Name:
-            return QString::fromStdString(config.name);
-        case ConfigVariant:
-            return config.config_variant
-                ? QString::fromStdString(*config.config_variant)
-                : QString{};
-        case Description:
-            return QString::fromStdString(config.description);
-        case Version:
-            return static_cast<qlonglong>(config.version);
-        case ModifiedBy:
-            return QString::fromStdString(config.modified_by);
-        case RecordedAt:
-            return relative_time_helper::format(config.recorded_at);
-        default:
-            return {};
+            case Name:
+                return QString::fromStdString(config.name);
+            case ConfigVariant:
+                return config.config_variant ? QString::fromStdString(*config.config_variant) :
+                                               QString{};
+            case Description:
+                return QString::fromStdString(config.description);
+            case Version:
+                return static_cast<qlonglong>(config.version);
+            case ModifiedBy:
+                return QString::fromStdString(config.modified_by);
+            case RecordedAt:
+                return relative_time_helper::format(config.recorded_at);
+            default:
+                return {};
         }
     }
 
@@ -104,26 +107,27 @@ QVariant ClientPricingModelConfigModel::data(
     return {};
 }
 
-QVariant ClientPricingModelConfigModel::headerData(
-    int section, Qt::Orientation orientation, int role) const {
+QVariant ClientPricingModelConfigModel::headerData(int section,
+                                                   Qt::Orientation orientation,
+                                                   int role) const {
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return {};
 
     switch (section) {
-    case Name:
-        return tr("Name");
-    case ConfigVariant:
-        return tr("Variant");
-    case Description:
-        return tr("Description");
-    case Version:
-        return tr("Version");
-    case ModifiedBy:
-        return tr("Modified By");
-    case RecordedAt:
-        return tr("Recorded At");
-    default:
-        return {};
+        case Name:
+            return tr("Name");
+        case ConfigVariant:
+            return tr("Variant");
+        case Description:
+            return tr("Description");
+        case Version:
+            return tr("Version");
+        case ModifiedBy:
+            return tr("Modified By");
+        case RecordedAt:
+            return tr("Recorded At");
+        default:
+            return {};
     }
 }
 
@@ -136,7 +140,8 @@ void ClientPricingModelConfigModel::refresh() {
     }
 
     if (!clientManager_ || !clientManager_->isConnected()) {
-        BOOST_LOG_SEV(lg(), warn) << "Cannot refresh pricing model configuration model: disconnected.";
+        BOOST_LOG_SEV(lg(), warn)
+            << "Cannot refresh pricing model configuration model: disconnected.";
         emit loadError("Not connected to server");
         return;
     }
@@ -153,8 +158,7 @@ void ClientPricingModelConfigModel::refresh() {
     fetch_configs(0, page_size_);
 }
 
-void ClientPricingModelConfigModel::load_page(std::uint32_t offset,
-                                          std::uint32_t limit) {
+void ClientPricingModelConfigModel::load_page(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "load_page: offset=" << offset << ", limit=" << limit;
 
     if (is_fetching_) {
@@ -178,18 +182,19 @@ void ClientPricingModelConfigModel::load_page(std::uint32_t offset,
     fetch_configs(offset, limit);
 }
 
-void ClientPricingModelConfigModel::fetch_configs(
-    std::uint32_t offset, std::uint32_t limit) {
+void ClientPricingModelConfigModel::fetch_configs(std::uint32_t offset, std::uint32_t limit) {
     is_fetching_ = true;
     QPointer<ClientPricingModelConfigModel> self = this;
 
-    QFuture<FetchResult> future =
-        QtConcurrent::run([self, offset, limit]() -> FetchResult {
-            return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
-                BOOST_LOG_SEV(lg(), debug) << "Making pricing model configurations request with offset="
-                                           << offset << ", limit=" << limit;
+    QFuture<FetchResult> future = QtConcurrent::run([self, offset, limit]() -> FetchResult {
+        return exception_helper::wrap_async_fetch<FetchResult>(
+            [&]() -> FetchResult {
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Making pricing model configurations request with offset=" << offset
+                    << ", limit=" << limit;
                 if (!self || !self->clientManager_) {
-                    return {.success = false, .configs = {},
+                    return {.success = false,
+                            .configs = {},
                             .total_available_count = 0,
                             .error_message = "Model was destroyed",
                             .error_details = {}};
@@ -197,27 +202,29 @@ void ClientPricingModelConfigModel::fetch_configs(
 
                 analytics::messaging::get_pricing_model_configs_request request;
 
-                auto result = self->clientManager_->
-                    process_authenticated_request(std::move(request));
+                auto result =
+                    self->clientManager_->process_authenticated_request(std::move(request));
 
                 if (!result) {
                     BOOST_LOG_SEV(lg(), error) << "Failed to send request: " << result.error();
-                    return {.success = false, .configs = {},
+                    return {.success = false,
+                            .configs = {},
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(result.error()),
                             .error_details = {}};
                 }
 
-                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->configs.size()
-                                           << " pricing model configurations";
-                const std::uint32_t count =
-                    static_cast<std::uint32_t>(result->configs.size());
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Fetched " << result->configs.size() << " pricing model configurations";
+                const std::uint32_t count = static_cast<std::uint32_t>(result->configs.size());
                 return {.success = true,
                         .configs = std::move(result->configs),
                         .total_available_count = count,
-                        .error_message = {}, .error_details = {}};
-            }, "pricing model configurations");
-        });
+                        .error_message = {},
+                        .error_details = {}};
+            },
+            "pricing model configurations");
+    });
 
     watcher_->setFuture(future);
 }
@@ -276,8 +283,7 @@ ClientPricingModelConfigModel::getConfig(int row) const {
     return &configs_[idx];
 }
 
-QVariant ClientPricingModelConfigModel::recency_foreground_color(
-    const std::string& code) const {
+QVariant ClientPricingModelConfigModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {
         return color_constants::stale_indicator;
     }
@@ -286,8 +292,8 @@ QVariant ClientPricingModelConfigModel::recency_foreground_color(
 
 void ClientPricingModelConfigModel::onPulseStateChanged(bool /*isOn*/) {
     if (!configs_.empty()) {
-        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
-            {Qt::ForegroundRole});
+        emit dataChanged(
+            index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::ForegroundRole});
     }
 }
 

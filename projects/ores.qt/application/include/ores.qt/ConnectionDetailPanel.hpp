@@ -20,16 +20,16 @@
 #ifndef ORES_QT_CONNECTION_DETAIL_PANEL_HPP
 #define ORES_QT_CONNECTION_DETAIL_PANEL_HPP
 
-#include <QWidget>
-#include <QStackedWidget>
-#include <QLabel>
-#include <QVBoxLayout>
-#include <QFormLayout>
-#include <boost/uuid/uuid.hpp>
-#include "ores.connections/domain/folder.hpp"
-#include "ores.connections/domain/environment.hpp"
 #include "ores.connections/domain/connection.hpp"
+#include "ores.connections/domain/environment.hpp"
+#include "ores.connections/domain/folder.hpp"
 #include "ores.logging/make_logger.hpp"
+#include <QFormLayout>
+#include <QLabel>
+#include <QStackedWidget>
+#include <QVBoxLayout>
+#include <QWidget>
+#include <boost/uuid/uuid.hpp>
 
 namespace ores::connections::service {
 class connection_manager;
@@ -50,8 +50,7 @@ class ConnectionDetailPanel : public QWidget {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.connection_detail_panel";
+    inline static std::string_view logger_name = "ores.qt.connection_detail_panel";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -60,9 +59,8 @@ private:
     }
 
 public:
-    explicit ConnectionDetailPanel(
-        connections::service::connection_manager* manager,
-        QWidget* parent = nullptr);
+    explicit ConnectionDetailPanel(connections::service::connection_manager* manager,
+                                   QWidget* parent = nullptr);
     ~ConnectionDetailPanel() override;
 
     void showEmptyState();
@@ -77,7 +75,7 @@ private:
     void setupConnectionPage();
     void updateEnvironmentTagBadges(const boost::uuids::uuid& envId);
     void updateConnectionTagBadges(const boost::uuids::uuid& connId,
-        const std::optional<boost::uuids::uuid>& envId);
+                                   const std::optional<boost::uuids::uuid>& envId);
 
     connections::service::connection_manager* manager_;
 

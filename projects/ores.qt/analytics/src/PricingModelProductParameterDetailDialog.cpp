@@ -18,25 +18,24 @@
  *
  */
 #include "ores.qt/PricingModelProductParameterDetailDialog.hpp"
-
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include <QComboBox>
-#include <boost/uuid/random_generator.hpp>
-#include "ui_PricingModelProductParameterDetailDialog.h"
+#include "ores.analytics.api/messaging/pricing_model_product_parameter_protocol.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.analytics.api/messaging/pricing_model_product_parameter_protocol.hpp"
+#include "ui_PricingModelProductParameterDetailDialog.h"
+#include <QComboBox>
+#include <QFutureWatcher>
+#include <QMessageBox>
+#include <QtConcurrent>
+#include <boost/uuid/random_generator.hpp>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 PricingModelProductParameterDetailDialog::PricingModelProductParameterDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent),
-      ui_(new Ui::PricingModelProductParameterDetailDialog),
-      clientManager_(nullptr) {
+    : DetailDialogBase(parent)
+    , ui_(new Ui::PricingModelProductParameterDetailDialog)
+    , clientManager_(nullptr) {
 
     ui_->setupUi(this);
     setupUi();
@@ -80,18 +79,30 @@ void PricingModelProductParameterDetailDialog::setupCombos() {
 }
 
 void PricingModelProductParameterDetailDialog::setupConnections() {
-    connect(ui_->saveButton, &QPushButton::clicked, this,
+    connect(ui_->saveButton,
+            &QPushButton::clicked,
+            this,
             &PricingModelProductParameterDetailDialog::onSaveClicked);
-    connect(ui_->deleteButton, &QPushButton::clicked, this,
+    connect(ui_->deleteButton,
+            &QPushButton::clicked,
+            this,
             &PricingModelProductParameterDetailDialog::onDeleteClicked);
-    connect(ui_->closeButton, &QPushButton::clicked, this,
+    connect(ui_->closeButton,
+            &QPushButton::clicked,
+            this,
             &PricingModelProductParameterDetailDialog::onCloseClicked);
 
-    connect(ui_->parameterScopeCombo, &QComboBox::currentIndexChanged, this,
+    connect(ui_->parameterScopeCombo,
+            &QComboBox::currentIndexChanged,
+            this,
             &PricingModelProductParameterDetailDialog::onFieldChanged);
-    connect(ui_->parameterNameEdit, &QLineEdit::textChanged, this,
+    connect(ui_->parameterNameEdit,
+            &QLineEdit::textChanged,
+            this,
             &PricingModelProductParameterDetailDialog::onCodeChanged);
-    connect(ui_->parameterValueEdit, &QLineEdit::textChanged, this,
+    connect(ui_->parameterValueEdit,
+            &QLineEdit::textChanged,
+            this,
             &PricingModelProductParameterDetailDialog::onFieldChanged);
 }
 
@@ -132,9 +143,10 @@ void PricingModelProductParameterDetailDialog::setReadOnly(bool readOnly) {
 
 void PricingModelProductParameterDetailDialog::updateUiFromParameter() {
     {
-        const int idx = ui_->parameterScopeCombo->findData(
-            QString::fromStdString(parameter_.parameter_scope));
-        if (idx >= 0) ui_->parameterScopeCombo->setCurrentIndex(idx);
+        const int idx =
+            ui_->parameterScopeCombo->findData(QString::fromStdString(parameter_.parameter_scope));
+        if (idx >= 0)
+            ui_->parameterScopeCombo->setCurrentIndex(idx);
     }
     ui_->parameterNameEdit->setText(QString::fromStdString(parameter_.parameter_name));
     ui_->parameterValueEdit->setText(QString::fromStdString(parameter_.parameter_value));
@@ -151,8 +163,7 @@ void PricingModelProductParameterDetailDialog::updateUiFromParameter() {
 }
 
 void PricingModelProductParameterDetailDialog::updateParameterFromUi() {
-    parameter_.parameter_scope =
-        ui_->parameterScopeCombo->currentData().toString().toStdString();
+    parameter_.parameter_scope = ui_->parameterScopeCombo->currentData().toString().toStdString();
     if (createMode_) {
         parameter_.parameter_name = ui_->parameterNameEdit->text().trimmed().toStdString();
     }
@@ -179,29 +190,27 @@ bool PricingModelProductParameterDetailDialog::validateInput() {
     const QString parameter_name_val = ui_->parameterNameEdit->text().trimmed();
     const QString parameter_value_val = ui_->parameterValueEdit->text().trimmed();
 
-    return true
-        && !parameter_name_val.isEmpty()
-        && !parameter_value_val.isEmpty()
-    ;
+    return true && !parameter_name_val.isEmpty() && !parameter_value_val.isEmpty();
 }
 
 void PricingModelProductParameterDetailDialog::onSaveClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
+        MessageBoxHelper::warning(
+            this,
+            "Disconnected",
             "Cannot save pricing model product parameter while disconnected from server.");
         return;
     }
 
     if (!validateInput()) {
-        MessageBoxHelper::warning(this, "Invalid Input",
-            "Please fill in all required fields.");
+        MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
 
     updateParameterFromUi();
 
     BOOST_LOG_SEV(lg(), info) << "Saving pricing model product parameter: "
-        << parameter_.parameter_name;
+                              << parameter_.parameter_name;
 
     QPointer<PricingModelProductParameterDetailDialog> self = this;
 
@@ -217,8 +226,8 @@ void PricingModelProductParameterDetailDialog::onSaveClicked() {
 
         analytics::messaging::save_pricing_model_product_parameter_request request;
         request.data = parameter;
-        auto response_result = self->clientManager_->
-            process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -228,15 +237,13 @@ void PricingModelProductParameterDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Pricing Model Product Parameter saved successfully";
-            QString code = QString::fromStdString(
-                self->parameter_.parameter_name);
+            QString code = QString::fromStdString(self->parameter_.parameter_name);
             self->hasChanges_ = false;
             self->updateSaveButtonState();
             emit self->parameterSaved(code);
@@ -255,14 +262,17 @@ void PricingModelProductParameterDetailDialog::onSaveClicked() {
 
 void PricingModelProductParameterDetailDialog::onDeleteClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
+        MessageBoxHelper::warning(
+            this,
+            "Disconnected",
             "Cannot delete pricing model product parameter while disconnected from server.");
         return;
     }
 
-    QString code = QString::fromStdString(
-        parameter_.parameter_name);
-    auto reply = MessageBoxHelper::question(this, "Delete Pricing Model Product Parameter",
+    QString code = QString::fromStdString(parameter_.parameter_name);
+    auto reply = MessageBoxHelper::question(
+        this,
+        "Delete Pricing Model Product Parameter",
         QString("Are you sure you want to delete pricing model product parameter '%1'?").arg(code),
         QMessageBox::Yes | QMessageBox::No);
 
@@ -271,7 +281,7 @@ void PricingModelProductParameterDetailDialog::onDeleteClicked() {
     }
 
     BOOST_LOG_SEV(lg(), info) << "Deleting pricing model product parameter: "
-        << parameter_.parameter_name;
+                              << parameter_.parameter_name;
 
     QPointer<PricingModelProductParameterDetailDialog> self = this;
 
@@ -287,8 +297,8 @@ void PricingModelProductParameterDetailDialog::onDeleteClicked() {
 
         analytics::messaging::delete_pricing_model_product_parameter_request request;
         request.ids = {id};
-        auto response_result = self->clientManager_->
-            process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -298,8 +308,7 @@ void PricingModelProductParameterDetailDialog::onDeleteClicked() {
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
-            self, [self, code, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, code, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 

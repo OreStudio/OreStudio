@@ -18,41 +18,37 @@
  *
  */
 #include "ores.qt/DatasetController.hpp"
+#include "ores.dq.api/eventing/dataset_changed_event.hpp"
+#include "ores.eventing/domain/event_traits.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
-
+#include "ores.qt/DatasetDetailDialog.hpp"
+#include "ores.qt/DatasetHistoryDialog.hpp"
+#include "ores.qt/DatasetMdiWindow.hpp"
+#include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/IconUtils.hpp"
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <boost/uuid/uuid_io.hpp>
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/DatasetMdiWindow.hpp"
-#include "ores.qt/DatasetDetailDialog.hpp"
-#include "ores.qt/DatasetHistoryDialog.hpp"
-#include "ores.qt/DetachableMdiSubWindow.hpp"
-#include "ores.eventing/domain/event_traits.hpp"
-#include "ores.dq.api/eventing/dataset_changed_event.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    constexpr std::string_view dataset_event_name =
-        eventing::domain::event_traits<
-            dq::eventing::dataset_changed_event>::name;
+constexpr std::string_view dataset_event_name =
+    eventing::domain::event_traits<dq::eventing::dataset_changed_event>::name;
 }
 
-DatasetController::DatasetController(
-    QMainWindow* mainWindow,
-    QMdiArea* mdiArea,
-    ClientManager* clientManager,
-    ChangeReasonCache* changeReasonCache,
-    const QString& username,
-    QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username,
-                       dataset_event_name, parent),
-      changeReasonCache_(changeReasonCache),
-      listWindow_(nullptr),
-      listMdiSubWindow_(nullptr) {
+DatasetController::DatasetController(QMainWindow* mainWindow,
+                                     QMdiArea* mdiArea,
+                                     ClientManager* clientManager,
+                                     ChangeReasonCache* changeReasonCache,
+                                     const QString& username,
+                                     QObject* parent)
+    : EntityController(mainWindow, mdiArea, clientManager, username, dataset_event_name, parent)
+    , changeReasonCache_(changeReasonCache)
+    , listWindow_(nullptr)
+    , listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "DatasetController created";
 }
@@ -72,23 +68,27 @@ void DatasetController::showListWindow() {
 
     listWindow_ = new DatasetMdiWindow(clientManager_, username_);
 
-    connect(listWindow_, &DatasetMdiWindow::statusChanged,
-            this, &DatasetController::statusMessage);
-    connect(listWindow_, &DatasetMdiWindow::errorOccurred,
-            this, &DatasetController::errorMessage);
-    connect(listWindow_, &DatasetMdiWindow::showDatasetDetails,
-            this, &DatasetController::onShowDetails);
-    connect(listWindow_, &DatasetMdiWindow::addNewRequested,
-            this, &DatasetController::onAddNewRequested);
-    connect(listWindow_, &DatasetMdiWindow::showDatasetHistory,
-            this, &DatasetController::onShowHistory);
+    connect(listWindow_, &DatasetMdiWindow::statusChanged, this, &DatasetController::statusMessage);
+    connect(listWindow_, &DatasetMdiWindow::errorOccurred, this, &DatasetController::errorMessage);
+    connect(listWindow_,
+            &DatasetMdiWindow::showDatasetDetails,
+            this,
+            &DatasetController::onShowDetails);
+    connect(listWindow_,
+            &DatasetMdiWindow::addNewRequested,
+            this,
+            &DatasetController::onAddNewRequested);
+    connect(listWindow_,
+            &DatasetMdiWindow::showDatasetHistory,
+            this,
+            &DatasetController::onShowHistory);
 
     // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Datasets");
-    listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Database, IconUtils::DefaultIconColor));
+    listMdiSubWindow_->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Database, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -98,12 +98,16 @@ void DatasetController::showListWindow() {
     track_window(key, listMdiSubWindow_);
     register_detachable_window(listMdiSubWindow_);
 
-    connect(listMdiSubWindow_, &QObject::destroyed, this, [self = QPointer<DatasetController>(this), key]() {
-        if (!self) return;
-        self->untrack_window(key);
-        self->listWindow_ = nullptr;
-        self->listMdiSubWindow_ = nullptr;
-    });
+    connect(listMdiSubWindow_,
+            &QObject::destroyed,
+            this,
+            [self = QPointer<DatasetController>(this), key]() {
+                if (!self)
+                    return;
+                self->untrack_window(key);
+                self->listWindow_ = nullptr;
+                self->listMdiSubWindow_ = nullptr;
+            });
 
     BOOST_LOG_SEV(lg(), debug) << "Dataset list window created";
 }
@@ -157,23 +161,26 @@ void DatasetController::showAddWindow() {
     detailDialog->setCreateMode(true);
     detailDialog->loadLookupData();
 
-    connect(detailDialog, &DatasetDetailDialog::statusMessage,
-            this, &DatasetController::statusMessage);
-    connect(detailDialog, &DatasetDetailDialog::errorMessage,
-            this, &DatasetController::errorMessage);
-    connect(detailDialog, &DatasetDetailDialog::datasetSaved,
-            this, [self = QPointer<DatasetController>(this)](const boost::uuids::uuid& id) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Dataset saved: " << id;
-        self->handleEntitySaved();
-    });
+    connect(
+        detailDialog, &DatasetDetailDialog::statusMessage, this, &DatasetController::statusMessage);
+    connect(
+        detailDialog, &DatasetDetailDialog::errorMessage, this, &DatasetController::errorMessage);
+    connect(detailDialog,
+            &DatasetDetailDialog::datasetSaved,
+            this,
+            [self = QPointer<DatasetController>(this)](const boost::uuids::uuid& id) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Dataset saved: " << id;
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Dataset");
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Database, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Database, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -201,37 +208,41 @@ void DatasetController::showDetailWindow(const dq::domain::dataset& dataset) {
     detailDialog->loadLookupData();
     detailDialog->setDataset(dataset);
 
-    connect(detailDialog, &DatasetDetailDialog::statusMessage,
-            this, &DatasetController::statusMessage);
-    connect(detailDialog, &DatasetDetailDialog::errorMessage,
-            this, &DatasetController::errorMessage);
-    connect(detailDialog, &DatasetDetailDialog::datasetSaved,
-            this, [self = QPointer<DatasetController>(this)](const boost::uuids::uuid& id) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Dataset saved: " << id;
-        self->handleEntitySaved();
-    });
-    connect(detailDialog, &DatasetDetailDialog::datasetDeleted,
-            this, [self = QPointer<DatasetController>(this), key](const boost::uuids::uuid& id) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Dataset deleted: " << id;
-        self->handleEntityDeleted();
-    });
+    connect(
+        detailDialog, &DatasetDetailDialog::statusMessage, this, &DatasetController::statusMessage);
+    connect(
+        detailDialog, &DatasetDetailDialog::errorMessage, this, &DatasetController::errorMessage);
+    connect(detailDialog,
+            &DatasetDetailDialog::datasetSaved,
+            this,
+            [self = QPointer<DatasetController>(this)](const boost::uuids::uuid& id) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Dataset saved: " << id;
+                self->handleEntitySaved();
+            });
+    connect(detailDialog,
+            &DatasetDetailDialog::datasetDeleted,
+            this,
+            [self = QPointer<DatasetController>(this), key](const boost::uuids::uuid& id) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Dataset deleted: " << id;
+                self->handleEntityDeleted();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Dataset: %1").arg(
-        QString::fromStdString(dataset.name)));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Database, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(QString("Dataset: %1").arg(QString::fromStdString(dataset.name)));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Database, IconUtils::DefaultIconColor));
 
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<DatasetController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, key]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, key]() {
         if (self) {
             self->untrack_window(key);
         }
@@ -256,20 +267,30 @@ void DatasetController::showHistoryWindow(const boost::uuids::uuid& id) {
 
     auto* historyDialog = new DatasetHistoryDialog(id, clientManager_, mainWindow_);
 
-    connect(historyDialog, &DatasetHistoryDialog::statusChanged,
-            this, [self = QPointer<DatasetController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(historyDialog, &DatasetHistoryDialog::errorOccurred,
-            this, [self = QPointer<DatasetController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
-    connect(historyDialog, &DatasetHistoryDialog::revertVersionRequested,
-            this, &DatasetController::onRevertVersion);
-    connect(historyDialog, &DatasetHistoryDialog::openVersionRequested,
-            this, &DatasetController::onOpenVersion);
+    connect(historyDialog,
+            &DatasetHistoryDialog::statusChanged,
+            this,
+            [self = QPointer<DatasetController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(historyDialog,
+            &DatasetHistoryDialog::errorOccurred,
+            this,
+            [self = QPointer<DatasetController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
+    connect(historyDialog,
+            &DatasetHistoryDialog::revertVersionRequested,
+            this,
+            &DatasetController::onRevertVersion);
+    connect(historyDialog,
+            &DatasetHistoryDialog::openVersionRequested,
+            this,
+            &DatasetController::onOpenVersion);
 
     historyDialog->loadHistory();
 
@@ -277,15 +298,14 @@ void DatasetController::showHistoryWindow(const boost::uuids::uuid& id) {
     historyWindow->setAttribute(Qt::WA_DeleteOnClose);
     historyWindow->setWidget(historyDialog);
     historyWindow->setWindowTitle(QString("Dataset History: %1").arg(idStr));
-    historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    historyWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
 
     QPointer<DatasetController> self = this;
-    connect(historyWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -294,14 +314,13 @@ void DatasetController::showHistoryWindow(const boost::uuids::uuid& id) {
     show_managed_window(historyWindow, listMdiSubWindow_);
 }
 
-void DatasetController::onOpenVersion(
-    const dq::domain::dataset& dataset, int versionNumber) {
+void DatasetController::onOpenVersion(const dq::domain::dataset& dataset, int versionNumber) {
     BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
                               << " for dataset: " << dataset.id;
 
     const QString idStr = QString::fromStdString(boost::uuids::to_string(dataset.id));
-    const QString windowKey = build_window_key("version", QString("%1_v%2")
-        .arg(idStr).arg(versionNumber));
+    const QString windowKey =
+        build_window_key("version", QString("%1_v%2").arg(idStr).arg(versionNumber));
 
     if (try_reuse_window(windowKey)) {
         BOOST_LOG_SEV(lg(), info) << "Reusing existing version window";
@@ -317,31 +336,37 @@ void DatasetController::onOpenVersion(
     detailDialog->setDataset(dataset);
     detailDialog->setReadOnly(true);
 
-    connect(detailDialog, &DatasetDetailDialog::statusMessage,
-            this, [self = QPointer<DatasetController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(detailDialog, &DatasetDetailDialog::errorMessage,
-            this, [self = QPointer<DatasetController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
+    connect(detailDialog,
+            &DatasetDetailDialog::statusMessage,
+            this,
+            [self = QPointer<DatasetController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(detailDialog,
+            &DatasetDetailDialog::errorMessage,
+            this,
+            [self = QPointer<DatasetController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Dataset: %1 (Version %2)")
-        .arg(QString::fromStdString(dataset.name)).arg(versionNumber));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+                                     .arg(QString::fromStdString(dataset.name))
+                                     .arg(versionNumber));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     track_window(windowKey, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<DatasetController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -351,10 +376,8 @@ void DatasetController::onOpenVersion(
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
-void DatasetController::onRevertVersion(
-    const dq::domain::dataset& dataset) {
-    BOOST_LOG_SEV(lg(), info) << "Reverting dataset to version: "
-                              << dataset.version;
+void DatasetController::onRevertVersion(const dq::domain::dataset& dataset) {
+    BOOST_LOG_SEV(lg(), info) << "Reverting dataset to version: " << dataset.version;
 
     auto* detailDialog = new DatasetDetailDialog(mainWindow_);
     if (changeReasonCache_)
@@ -365,25 +388,28 @@ void DatasetController::onRevertVersion(
     detailDialog->setDataset(dataset);
     detailDialog->setCreateMode(false);
 
-    connect(detailDialog, &DatasetDetailDialog::statusMessage,
-            this, &DatasetController::statusMessage);
-    connect(detailDialog, &DatasetDetailDialog::errorMessage,
-            this, &DatasetController::errorMessage);
-    connect(detailDialog, &DatasetDetailDialog::datasetSaved,
-            this, [self = QPointer<DatasetController>(this)](const boost::uuids::uuid& id) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Dataset reverted: " << id;
-        emit self->statusMessage(QString("Dataset reverted successfully"));
-        self->handleEntitySaved();
-    });
+    connect(
+        detailDialog, &DatasetDetailDialog::statusMessage, this, &DatasetController::statusMessage);
+    connect(
+        detailDialog, &DatasetDetailDialog::errorMessage, this, &DatasetController::errorMessage);
+    connect(detailDialog,
+            &DatasetDetailDialog::datasetSaved,
+            this,
+            [self = QPointer<DatasetController>(this)](const boost::uuids::uuid& id) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Dataset reverted: " << id;
+                emit self->statusMessage(QString("Dataset reverted successfully"));
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Revert Dataset: %1")
-        .arg(QString::fromStdString(dataset.name)));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("Revert Dataset: %1").arg(QString::fromStdString(dataset.name)));
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
+                                                               IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 

@@ -18,23 +18,22 @@
  *
  */
 #include "ores.qt/CompositeInstrumentForm.hpp"
-
-#include <QPointer>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include <boost/uuid/uuid_io.hpp>
-#include "ui_CompositeInstrumentForm.h"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/CompositeLegsWidget.hpp"
 #include "ores.trading.api/messaging/instrument_protocol.hpp"
+#include "ui_CompositeInstrumentForm.h"
+#include <QFutureWatcher>
+#include <QPointer>
+#include <QtConcurrent>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 CompositeInstrumentForm::CompositeInstrumentForm(QWidget* parent)
-    : IInstrumentForm(parent),
-      ui_(new Ui::CompositeInstrumentForm) {
+    : IInstrumentForm(parent)
+    , ui_(new Ui::CompositeInstrumentForm) {
     ui_->setupUi(this);
     setupConnections();
 }
@@ -42,13 +41,12 @@ CompositeInstrumentForm::CompositeInstrumentForm(QWidget* parent)
 CompositeInstrumentForm::~CompositeInstrumentForm() = default;
 
 void CompositeInstrumentForm::setupConnections() {
-    auto markChanged = [this]() { onFieldChanged(); };
-    connect(ui_->tradeTypeCombo, &QComboBox::currentTextChanged,
-            this, markChanged);
-    connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged,
-            this, markChanged);
-    connect(ui_->legsWidget, &CompositeLegsWidget::legsChanged,
-            this, markChanged);
+    auto markChanged = [this]() {
+        onFieldChanged();
+    };
+    connect(ui_->tradeTypeCombo, &QComboBox::currentTextChanged, this, markChanged);
+    connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this, markChanged);
+    connect(ui_->legsWidget, &CompositeLegsWidget::legsChanged, this, markChanged);
 }
 
 void CompositeInstrumentForm::setClientManager(ClientManager* cm) {
@@ -68,7 +66,8 @@ void CompositeInstrumentForm::clear() {
 }
 
 void CompositeInstrumentForm::setTradeType(const QString& code,
-    bool /*has_options*/, bool /*has_extension*/) {
+                                           bool /*has_options*/,
+                                           bool /*has_extension*/) {
     instrument_.trade_type_code = code.trimmed().toStdString();
     const auto idx = ui_->tradeTypeCombo->findText(code.trimmed());
     if (idx >= 0)
@@ -81,28 +80,29 @@ void CompositeInstrumentForm::setReadOnly(bool readOnly) {
     ui_->legsWidget->setReadOnly(readOnly);
 }
 
-bool CompositeInstrumentForm::isDirty() const { return dirty_; }
-bool CompositeInstrumentForm::isLoaded() const { return loaded_; }
+bool CompositeInstrumentForm::isDirty() const {
+    return dirty_;
+}
+bool CompositeInstrumentForm::isLoaded() const {
+    return loaded_;
+}
 
-void CompositeInstrumentForm::setChangeReason(
-    const std::string& code, const std::string& commentary) {
+void CompositeInstrumentForm::setChangeReason(const std::string& code,
+                                              const std::string& commentary) {
     instrument_.change_reason_code = code;
     instrument_.change_commentary = commentary;
 }
 
 void CompositeInstrumentForm::writeUiToInstrument() {
-    instrument_.trade_type_code =
-        ui_->tradeTypeCombo->currentText().trimmed().toStdString();
-    instrument_.description =
-        ui_->descriptionEdit->toPlainText().trimmed().toStdString();
+    instrument_.trade_type_code = ui_->tradeTypeCombo->currentText().trimmed().toStdString();
+    instrument_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
     legs_ = ui_->legsWidget->legs();
     instrument_.modified_by = username_;
     instrument_.performed_by = username_;
 }
 
-void CompositeInstrumentForm::populate(
-    const trading::domain::composite_instrument& instr,
-    std::vector<trading::domain::composite_leg> legs) {
+void CompositeInstrumentForm::populate(const trading::domain::composite_instrument& instr,
+                                       std::vector<trading::domain::composite_leg> legs) {
     instrument_ = instr;
     legs_ = std::move(legs);
     loaded_ = true;
@@ -117,12 +117,11 @@ void CompositeInstrumentForm::populateFromInstrument() {
     ui_->descriptionEdit->blockSignals(true);
     ui_->legsWidget->blockSignals(true);
 
-    const auto idx = ui_->tradeTypeCombo->findText(
-        QString::fromStdString(instrument_.trade_type_code));
+    const auto idx =
+        ui_->tradeTypeCombo->findText(QString::fromStdString(instrument_.trade_type_code));
     if (idx >= 0)
         ui_->tradeTypeCombo->setCurrentIndex(idx);
-    ui_->descriptionEdit->setPlainText(
-        QString::fromStdString(instrument_.description));
+    ui_->descriptionEdit->setPlainText(QString::fromStdString(instrument_.description));
     ui_->legsWidget->setLegs(legs_);
 
     ui_->tradeTypeCombo->blockSignals(false);
@@ -142,60 +141,65 @@ void CompositeInstrumentForm::emitProvenance() {
 }
 
 void CompositeInstrumentForm::onFieldChanged() {
-    if (!loaded_) return;
+    if (!loaded_)
+        return;
     dirty_ = true;
     emit changed();
 }
 
-void CompositeInstrumentForm::saveInstrument(
-    std::function<void(const std::string&)> on_success,
-    std::function<void(const QString&)> on_failure) {
+void CompositeInstrumentForm::saveInstrument(std::function<void(const std::string&)> on_success,
+                                             std::function<void(const QString&)> on_failure) {
 
     if (!clientManager_) {
         on_failure(QStringLiteral("Dialog closed"));
         return;
     }
 
-    struct SaveResult { bool success; std::string message; };
+    struct SaveResult {
+        bool success;
+        std::string message;
+    };
 
     QPointer<CompositeInstrumentForm> self = this;
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished, self,
-        [self, watcher,
-         on_success = std::move(on_success),
-         on_failure = std::move(on_failure)]() {
-        auto result = watcher->result();
-        watcher->deleteLater();
-        if (!self) return;
+    connect(
+        watcher,
+        &QFutureWatcher<SaveResult>::finished,
+        self,
+        [self, watcher, on_success = std::move(on_success), on_failure = std::move(on_failure)]() {
+            auto result = watcher->result();
+            watcher->deleteLater();
+            if (!self)
+                return;
 
-        if (!result.success) {
-            BOOST_LOG_SEV(lg(), error)
-                << "Composite instrument save failed: " << result.message;
-            on_failure(QString::fromStdString(result.message));
-            return;
-        }
+            if (!result.success) {
+                BOOST_LOG_SEV(lg(), error)
+                    << "Composite instrument save failed: " << result.message;
+                on_failure(QString::fromStdString(result.message));
+                return;
+            }
 
-        BOOST_LOG_SEV(lg(), info) << "Composite instrument saved";
-        self->dirty_ = false;
-        self->emitProvenance();
-        on_success(boost::uuids::to_string(self->instrument_.instrument_id));
-    });
+            BOOST_LOG_SEV(lg(), info) << "Composite instrument saved";
+            self->dirty_ = false;
+            self->emitProvenance();
+            on_success(boost::uuids::to_string(self->instrument_.instrument_id));
+        });
 
     auto* cm = clientManager_;
     auto instrument = instrument_;
     auto legs = legs_;
     watcher->setFuture(QtConcurrent::run(
-        [cm, instrument = std::move(instrument),
-         legs = std::move(legs)]() -> SaveResult {
-        if (!cm)
-            return {false, "Dialog closed"};
-        trading::messaging::save_composite_instrument_request req;
-        req.data = instrument;
-        req.legs = legs;
-        auto r = cm->process_authenticated_request(std::move(req));
-        if (!r) return {false, "Failed to communicate with server"};
-        return {r->success, r->message};
-    }));
+        [cm, instrument = std::move(instrument), legs = std::move(legs)]() -> SaveResult {
+            if (!cm)
+                return {false, "Dialog closed"};
+            trading::messaging::save_composite_instrument_request req;
+            req.data = instrument;
+            req.legs = legs;
+            auto r = cm->process_authenticated_request(std::move(req));
+            if (!r)
+                return {false, "Failed to communicate with server"};
+            return {r->success, r->message};
+        }));
 }
 
 }

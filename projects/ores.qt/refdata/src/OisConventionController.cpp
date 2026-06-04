@@ -18,30 +18,27 @@
  *
  */
 #include "ores.qt/OisConventionController.hpp"
-
+#include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/OisConventionDetailDialog.hpp"
+#include "ores.qt/OisConventionHistoryDialog.hpp"
+#include "ores.qt/OisConventionMdiWindow.hpp"
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/OisConventionMdiWindow.hpp"
-#include "ores.qt/OisConventionDetailDialog.hpp"
-#include "ores.qt/OisConventionHistoryDialog.hpp"
-#include "ores.qt/DetachableMdiSubWindow.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-OisConventionController::OisConventionController(
-    QMainWindow* mainWindow,
-    QMdiArea* mdiArea,
-    ClientManager* clientManager,
-    const QString& username,
-    QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username,
-          std::string_view{}, parent),
-      listWindow_(nullptr),
-      listMdiSubWindow_(nullptr) {
+OisConventionController::OisConventionController(QMainWindow* mainWindow,
+                                                 QMdiArea* mdiArea,
+                                                 ClientManager* clientManager,
+                                                 const QString& username,
+                                                 QObject* parent)
+    : EntityController(mainWindow, mdiArea, clientManager, username, std::string_view{}, parent)
+    , listWindow_(nullptr)
+    , listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "OisConventionController created";
 }
@@ -59,23 +56,33 @@ void OisConventionController::showListWindow() {
     listWindow_ = new OisConventionMdiWindow(clientManager_, username_);
 
     // Connect signals
-    connect(listWindow_, &OisConventionMdiWindow::statusChanged,
-            this, &OisConventionController::statusMessage);
-    connect(listWindow_, &OisConventionMdiWindow::errorOccurred,
-            this, &OisConventionController::errorMessage);
-    connect(listWindow_, &OisConventionMdiWindow::showConventionDetails,
-            this, &OisConventionController::onShowDetails);
-    connect(listWindow_, &OisConventionMdiWindow::addNewRequested,
-            this, &OisConventionController::onAddNewRequested);
-    connect(listWindow_, &OisConventionMdiWindow::showConventionHistory,
-            this, &OisConventionController::onShowHistory);
+    connect(listWindow_,
+            &OisConventionMdiWindow::statusChanged,
+            this,
+            &OisConventionController::statusMessage);
+    connect(listWindow_,
+            &OisConventionMdiWindow::errorOccurred,
+            this,
+            &OisConventionController::errorMessage);
+    connect(listWindow_,
+            &OisConventionMdiWindow::showConventionDetails,
+            this,
+            &OisConventionController::onShowDetails);
+    connect(listWindow_,
+            &OisConventionMdiWindow::addNewRequested,
+            this,
+            &OisConventionController::onAddNewRequested);
+    connect(listWindow_,
+            &OisConventionMdiWindow::showConventionHistory,
+            this,
+            &OisConventionController::onShowHistory);
 
     // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("OIS Conventions");
-    listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Chart, IconUtils::DefaultIconColor));
+    listMdiSubWindow_->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -87,12 +94,16 @@ void OisConventionController::showListWindow() {
     register_detachable_window(listMdiSubWindow_);
 
     // Cleanup when closed
-    connect(listMdiSubWindow_, &QObject::destroyed, this, [self = QPointer<OisConventionController>(this), key]() {
-        if (!self) return;
-        self->untrack_window(key);
-        self->listWindow_ = nullptr;
-        self->listMdiSubWindow_ = nullptr;
-    });
+    connect(listMdiSubWindow_,
+            &QObject::destroyed,
+            this,
+            [self = QPointer<OisConventionController>(this), key]() {
+                if (!self)
+                    return;
+                self->untrack_window(key);
+                self->listWindow_ = nullptr;
+                self->listMdiSubWindow_ = nullptr;
+            });
 
     BOOST_LOG_SEV(lg(), debug) << "OIS Convention list window created";
 }
@@ -119,8 +130,7 @@ void OisConventionController::reloadListWindow() {
     }
 }
 
-void OisConventionController::onShowDetails(
-    const refdata::domain::ois_convention& oc) {
+void OisConventionController::onShowDetails(const refdata::domain::ois_convention& oc) {
     BOOST_LOG_SEV(lg(), debug) << "Show details for: " << oc.id;
     showDetailWindow(oc);
 }
@@ -130,8 +140,7 @@ void OisConventionController::onAddNewRequested() {
     showAddWindow();
 }
 
-void OisConventionController::onShowHistory(
-    const refdata::domain::ois_convention& oc) {
+void OisConventionController::onShowHistory(const refdata::domain::ois_convention& oc) {
     BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << oc.id;
     showHistoryWindow(QString::fromStdString(oc.id));
 }
@@ -144,23 +153,30 @@ void OisConventionController::showAddWindow() {
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
 
-    connect(detailDialog, &OisConventionDetailDialog::statusMessage,
-            this, &OisConventionController::statusMessage);
-    connect(detailDialog, &OisConventionDetailDialog::errorMessage,
-            this, &OisConventionController::errorMessage);
-    connect(detailDialog, &OisConventionDetailDialog::ocSaved,
-            this, [self = QPointer<OisConventionController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "OIS Convention saved: " << code.toStdString();
-        self->handleEntitySaved();
-    });
+    connect(detailDialog,
+            &OisConventionDetailDialog::statusMessage,
+            this,
+            &OisConventionController::statusMessage);
+    connect(detailDialog,
+            &OisConventionDetailDialog::errorMessage,
+            this,
+            &OisConventionController::errorMessage);
+    connect(detailDialog,
+            &OisConventionDetailDialog::ocSaved,
+            this,
+            [self = QPointer<OisConventionController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "OIS Convention saved: " << code.toStdString();
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New OIS Convention");
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Chart, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -168,8 +184,7 @@ void OisConventionController::showAddWindow() {
     show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
-void OisConventionController::showDetailWindow(
-    const refdata::domain::ois_convention& oc) {
+void OisConventionController::showDetailWindow(const refdata::domain::ois_convention& oc) {
 
     const QString identifier = QString::fromStdString(oc.id);
     const QString key = build_window_key("details", identifier);
@@ -187,37 +202,46 @@ void OisConventionController::showDetailWindow(
     detailDialog->setCreateMode(false);
     detailDialog->setConvention(oc);
 
-    connect(detailDialog, &OisConventionDetailDialog::statusMessage,
-            this, &OisConventionController::statusMessage);
-    connect(detailDialog, &OisConventionDetailDialog::errorMessage,
-            this, &OisConventionController::errorMessage);
-    connect(detailDialog, &OisConventionDetailDialog::ocSaved,
-            this, [self = QPointer<OisConventionController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "OIS Convention saved: " << code.toStdString();
-        self->handleEntitySaved();
-    });
-    connect(detailDialog, &OisConventionDetailDialog::ocDeleted,
-            this, [self = QPointer<OisConventionController>(this), key](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "OIS Convention deleted: " << code.toStdString();
-        self->handleEntityDeleted();
-    });
+    connect(detailDialog,
+            &OisConventionDetailDialog::statusMessage,
+            this,
+            &OisConventionController::statusMessage);
+    connect(detailDialog,
+            &OisConventionDetailDialog::errorMessage,
+            this,
+            &OisConventionController::errorMessage);
+    connect(detailDialog,
+            &OisConventionDetailDialog::ocSaved,
+            this,
+            [self = QPointer<OisConventionController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "OIS Convention saved: " << code.toStdString();
+                self->handleEntitySaved();
+            });
+    connect(detailDialog,
+            &OisConventionDetailDialog::ocDeleted,
+            this,
+            [self = QPointer<OisConventionController>(this), key](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "OIS Convention deleted: " << code.toStdString();
+                self->handleEntityDeleted();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("OIS Convention: %1").arg(identifier));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Chart, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
 
     // Track window
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<OisConventionController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, key]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, key]() {
         if (self) {
             self->untrack_window(key);
         }
@@ -235,30 +259,38 @@ void OisConventionController::showHistoryWindow(const QString& code) {
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
-        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: "
-                                  << code.toStdString();
+        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: " << code.toStdString();
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
-                              << code.toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << code.toStdString();
 
     auto* historyDialog = new OisConventionHistoryDialog(code, clientManager_, mainWindow_);
 
-    connect(historyDialog, &OisConventionHistoryDialog::statusChanged,
-            this, [self = QPointer<OisConventionController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(historyDialog, &OisConventionHistoryDialog::errorOccurred,
-            this, [self = QPointer<OisConventionController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
-    connect(historyDialog, &OisConventionHistoryDialog::revertVersionRequested,
-            this, &OisConventionController::onRevertVersion);
-    connect(historyDialog, &OisConventionHistoryDialog::openVersionRequested,
-            this, &OisConventionController::onOpenVersion);
+    connect(historyDialog,
+            &OisConventionHistoryDialog::statusChanged,
+            this,
+            [self = QPointer<OisConventionController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(historyDialog,
+            &OisConventionHistoryDialog::errorOccurred,
+            this,
+            [self = QPointer<OisConventionController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
+    connect(historyDialog,
+            &OisConventionHistoryDialog::revertVersionRequested,
+            this,
+            &OisConventionController::onRevertVersion);
+    connect(historyDialog,
+            &OisConventionHistoryDialog::openVersionRequested,
+            this,
+            &OisConventionController::onOpenVersion);
 
     // Load history data
     historyDialog->loadHistory();
@@ -267,16 +299,15 @@ void OisConventionController::showHistoryWindow(const QString& code) {
     historyWindow->setAttribute(Qt::WA_DeleteOnClose);
     historyWindow->setWidget(historyDialog);
     historyWindow->setWindowTitle(QString("OIS Convention History: %1").arg(code));
-    historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    historyWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     // Track this history window
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
 
     QPointer<OisConventionController> self = this;
-    connect(historyWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -285,14 +316,14 @@ void OisConventionController::showHistoryWindow(const QString& code) {
     show_managed_window(historyWindow, listMdiSubWindow_);
 }
 
-void OisConventionController::onOpenVersion(
-    const refdata::domain::ois_convention& oc, int versionNumber) {
+void OisConventionController::onOpenVersion(const refdata::domain::ois_convention& oc,
+                                            int versionNumber) {
     BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
                               << " for OIS convention: " << oc.id;
 
     const QString code = QString::fromStdString(oc.id);
-    const QString windowKey = build_window_key("version", QString("%1_v%2")
-        .arg(code).arg(versionNumber));
+    const QString windowKey =
+        build_window_key("version", QString("%1_v%2").arg(code).arg(versionNumber));
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
@@ -306,31 +337,36 @@ void OisConventionController::onOpenVersion(
     detailDialog->setConvention(oc);
     detailDialog->setReadOnly(true);
 
-    connect(detailDialog, &OisConventionDetailDialog::statusMessage,
-            this, [self = QPointer<OisConventionController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(detailDialog, &OisConventionDetailDialog::errorMessage,
-            this, [self = QPointer<OisConventionController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
+    connect(detailDialog,
+            &OisConventionDetailDialog::statusMessage,
+            this,
+            [self = QPointer<OisConventionController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(detailDialog,
+            &OisConventionDetailDialog::errorMessage,
+            this,
+            [self = QPointer<OisConventionController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("OIS Convention: %1 (Version %2)")
-        .arg(code).arg(versionNumber));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("OIS Convention: %1 (Version %2)").arg(code).arg(versionNumber));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     track_window(windowKey, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<OisConventionController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -340,10 +376,8 @@ void OisConventionController::onOpenVersion(
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
-void OisConventionController::onRevertVersion(
-    const refdata::domain::ois_convention& oc) {
-    BOOST_LOG_SEV(lg(), info) << "Reverting OIS convention to version: "
-                              << oc.version;
+void OisConventionController::onRevertVersion(const refdata::domain::ois_convention& oc) {
+    BOOST_LOG_SEV(lg(), info) << "Reverting OIS convention to version: " << oc.version;
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new OisConventionDetailDialog(mainWindow_);
@@ -352,25 +386,33 @@ void OisConventionController::onRevertVersion(
     detailDialog->setConvention(oc);
     detailDialog->setCreateMode(false);
 
-    connect(detailDialog, &OisConventionDetailDialog::statusMessage,
-            this, &OisConventionController::statusMessage);
-    connect(detailDialog, &OisConventionDetailDialog::errorMessage,
-            this, &OisConventionController::errorMessage);
-    connect(detailDialog, &OisConventionDetailDialog::ocSaved,
-            this, [self = QPointer<OisConventionController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "OIS Convention reverted: " << code.toStdString();
-        emit self->statusMessage(QString("OIS Convention '%1' reverted successfully").arg(code));
-        self->handleEntitySaved();
-    });
+    connect(detailDialog,
+            &OisConventionDetailDialog::statusMessage,
+            this,
+            &OisConventionController::statusMessage);
+    connect(detailDialog,
+            &OisConventionDetailDialog::errorMessage,
+            this,
+            &OisConventionController::errorMessage);
+    connect(detailDialog,
+            &OisConventionDetailDialog::ocSaved,
+            this,
+            [self = QPointer<OisConventionController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "OIS Convention reverted: " << code.toStdString();
+                emit self->statusMessage(
+                    QString("OIS Convention '%1' reverted successfully").arg(code));
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Revert OIS Convention: %1")
-        .arg(QString::fromStdString(oc.id)));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("Revert OIS Convention: %1").arg(QString::fromStdString(oc.id)));
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
+                                                               IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 

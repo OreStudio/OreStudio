@@ -20,16 +20,16 @@
 #ifndef ORES_QT_LEI_ENTITY_PICKER_HPP
 #define ORES_QT_LEI_ENTITY_PICKER_HPP
 
-#include <QWidget>
-#include <QLineEdit>
-#include <QComboBox>
-#include <QTableView>
-#include <QLabel>
-#include <QStandardItemModel>
-#include <QSortFilterProxyModel>
-#include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
 #include "ores.qt/export.hpp"
+#include <QComboBox>
+#include <QLabel>
+#include <QLineEdit>
+#include <QSortFilterProxyModel>
+#include <QStandardItemModel>
+#include <QTableView>
+#include <QWidget>
 
 namespace ores::qt {
 
@@ -44,8 +44,7 @@ class ORES_QT_API LeiEntityPicker final : public QWidget {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.lei_entity_picker";
+    inline static std::string_view logger_name = "ores.qt.lei_entity_picker";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -54,8 +53,7 @@ private:
     }
 
 public:
-    explicit LeiEntityPicker(ClientManager* clientManager,
-        QWidget* parent = nullptr);
+    explicit LeiEntityPicker(ClientManager* clientManager, QWidget* parent = nullptr);
 
     /**
      * @brief Get the LEI of the currently selected entity.

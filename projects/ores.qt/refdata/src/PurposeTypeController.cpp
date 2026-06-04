@@ -19,32 +19,29 @@
  */
 #include "ores.qt/PurposeTypeController.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
-
+#include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/PurposeTypeDetailDialog.hpp"
+#include "ores.qt/PurposeTypeHistoryDialog.hpp"
+#include "ores.qt/PurposeTypeMdiWindow.hpp"
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/PurposeTypeMdiWindow.hpp"
-#include "ores.qt/PurposeTypeDetailDialog.hpp"
-#include "ores.qt/PurposeTypeHistoryDialog.hpp"
-#include "ores.qt/DetachableMdiSubWindow.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-PurposeTypeController::PurposeTypeController(
-    QMainWindow* mainWindow,
-    QMdiArea* mdiArea,
-    ClientManager* clientManager,
-    ChangeReasonCache* changeReasonCache,
-    const QString& username,
-    QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username,
-          std::string_view{}, parent),
-      changeReasonCache_(changeReasonCache),
-      listWindow_(nullptr),
-      listMdiSubWindow_(nullptr) {
+PurposeTypeController::PurposeTypeController(QMainWindow* mainWindow,
+                                             QMdiArea* mdiArea,
+                                             ClientManager* clientManager,
+                                             ChangeReasonCache* changeReasonCache,
+                                             const QString& username,
+                                             QObject* parent)
+    : EntityController(mainWindow, mdiArea, clientManager, username, std::string_view{}, parent)
+    , changeReasonCache_(changeReasonCache)
+    , listWindow_(nullptr)
+    , listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "PurposeTypeController created";
 }
@@ -62,23 +59,33 @@ void PurposeTypeController::showListWindow() {
     listWindow_ = new PurposeTypeMdiWindow(clientManager_, username_);
 
     // Connect signals
-    connect(listWindow_, &PurposeTypeMdiWindow::statusChanged,
-            this, &PurposeTypeController::statusMessage);
-    connect(listWindow_, &PurposeTypeMdiWindow::errorOccurred,
-            this, &PurposeTypeController::errorMessage);
-    connect(listWindow_, &PurposeTypeMdiWindow::showTypeDetails,
-            this, &PurposeTypeController::onShowDetails);
-    connect(listWindow_, &PurposeTypeMdiWindow::addNewRequested,
-            this, &PurposeTypeController::onAddNewRequested);
-    connect(listWindow_, &PurposeTypeMdiWindow::showTypeHistory,
-            this, &PurposeTypeController::onShowHistory);
+    connect(listWindow_,
+            &PurposeTypeMdiWindow::statusChanged,
+            this,
+            &PurposeTypeController::statusMessage);
+    connect(listWindow_,
+            &PurposeTypeMdiWindow::errorOccurred,
+            this,
+            &PurposeTypeController::errorMessage);
+    connect(listWindow_,
+            &PurposeTypeMdiWindow::showTypeDetails,
+            this,
+            &PurposeTypeController::onShowDetails);
+    connect(listWindow_,
+            &PurposeTypeMdiWindow::addNewRequested,
+            this,
+            &PurposeTypeController::onAddNewRequested);
+    connect(listWindow_,
+            &PurposeTypeMdiWindow::showTypeHistory,
+            this,
+            &PurposeTypeController::onShowHistory);
 
     // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Purpose Types");
-    listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Flag, IconUtils::DefaultIconColor));
+    listMdiSubWindow_->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Flag, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -90,12 +97,16 @@ void PurposeTypeController::showListWindow() {
     register_detachable_window(listMdiSubWindow_);
 
     // Cleanup when closed
-    connect(listMdiSubWindow_, &QObject::destroyed, this, [self = QPointer<PurposeTypeController>(this), key]() {
-        if (!self) return;
-        self->untrack_window(key);
-        self->listWindow_ = nullptr;
-        self->listMdiSubWindow_ = nullptr;
-    });
+    connect(listMdiSubWindow_,
+            &QObject::destroyed,
+            this,
+            [self = QPointer<PurposeTypeController>(this), key]() {
+                if (!self)
+                    return;
+                self->untrack_window(key);
+                self->listWindow_ = nullptr;
+                self->listMdiSubWindow_ = nullptr;
+            });
 
     BOOST_LOG_SEV(lg(), debug) << "Purpose Type list window created";
 }
@@ -122,8 +133,7 @@ void PurposeTypeController::reloadListWindow() {
     }
 }
 
-void PurposeTypeController::onShowDetails(
-    const refdata::domain::purpose_type& pt) {
+void PurposeTypeController::onShowDetails(const refdata::domain::purpose_type& pt) {
     BOOST_LOG_SEV(lg(), debug) << "Show details for: " << pt.code;
     showDetailWindow(pt);
 }
@@ -133,8 +143,7 @@ void PurposeTypeController::onAddNewRequested() {
     showAddWindow();
 }
 
-void PurposeTypeController::onShowHistory(
-    const refdata::domain::purpose_type& pt) {
+void PurposeTypeController::onShowHistory(const refdata::domain::purpose_type& pt) {
     BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << pt.code;
     showHistoryWindow(QString::fromStdString(pt.code));
 }
@@ -149,23 +158,30 @@ void PurposeTypeController::showAddWindow() {
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
 
-    connect(detailDialog, &PurposeTypeDetailDialog::statusMessage,
-            this, &PurposeTypeController::statusMessage);
-    connect(detailDialog, &PurposeTypeDetailDialog::errorMessage,
-            this, &PurposeTypeController::errorMessage);
-    connect(detailDialog, &PurposeTypeDetailDialog::typeSaved,
-            this, [self = QPointer<PurposeTypeController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Purpose Type saved: " << code.toStdString();
-        self->handleEntitySaved();
-    });
+    connect(detailDialog,
+            &PurposeTypeDetailDialog::statusMessage,
+            this,
+            &PurposeTypeController::statusMessage);
+    connect(detailDialog,
+            &PurposeTypeDetailDialog::errorMessage,
+            this,
+            &PurposeTypeController::errorMessage);
+    connect(detailDialog,
+            &PurposeTypeDetailDialog::typeSaved,
+            this,
+            [self = QPointer<PurposeTypeController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Purpose Type saved: " << code.toStdString();
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Purpose Type");
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Flag, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Flag, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -173,8 +189,7 @@ void PurposeTypeController::showAddWindow() {
     show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
-void PurposeTypeController::showDetailWindow(
-    const refdata::domain::purpose_type& pt) {
+void PurposeTypeController::showDetailWindow(const refdata::domain::purpose_type& pt) {
 
     const QString identifier = QString::fromStdString(pt.code);
     const QString key = build_window_key("details", identifier);
@@ -194,37 +209,46 @@ void PurposeTypeController::showDetailWindow(
     detailDialog->setCreateMode(false);
     detailDialog->setType(pt);
 
-    connect(detailDialog, &PurposeTypeDetailDialog::statusMessage,
-            this, &PurposeTypeController::statusMessage);
-    connect(detailDialog, &PurposeTypeDetailDialog::errorMessage,
-            this, &PurposeTypeController::errorMessage);
-    connect(detailDialog, &PurposeTypeDetailDialog::typeSaved,
-            this, [self = QPointer<PurposeTypeController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Purpose Type saved: " << code.toStdString();
-        self->handleEntitySaved();
-    });
-    connect(detailDialog, &PurposeTypeDetailDialog::typeDeleted,
-            this, [self = QPointer<PurposeTypeController>(this), key](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Purpose Type deleted: " << code.toStdString();
-        self->handleEntityDeleted();
-    });
+    connect(detailDialog,
+            &PurposeTypeDetailDialog::statusMessage,
+            this,
+            &PurposeTypeController::statusMessage);
+    connect(detailDialog,
+            &PurposeTypeDetailDialog::errorMessage,
+            this,
+            &PurposeTypeController::errorMessage);
+    connect(detailDialog,
+            &PurposeTypeDetailDialog::typeSaved,
+            this,
+            [self = QPointer<PurposeTypeController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Purpose Type saved: " << code.toStdString();
+                self->handleEntitySaved();
+            });
+    connect(detailDialog,
+            &PurposeTypeDetailDialog::typeDeleted,
+            this,
+            [self = QPointer<PurposeTypeController>(this), key](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Purpose Type deleted: " << code.toStdString();
+                self->handleEntityDeleted();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Purpose Type: %1").arg(identifier));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Flag, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Flag, IconUtils::DefaultIconColor));
 
     // Track window
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<PurposeTypeController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, key]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, key]() {
         if (self) {
             self->untrack_window(key);
         }
@@ -235,37 +259,44 @@ void PurposeTypeController::showDetailWindow(
 }
 
 void PurposeTypeController::showHistoryWindow(const QString& code) {
-    BOOST_LOG_SEV(lg(), info) << "Opening history window for purpose type: "
-                              << code.toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Opening history window for purpose type: " << code.toStdString();
 
     const QString windowKey = build_window_key("history", code);
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
-        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: "
-                                  << code.toStdString();
+        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: " << code.toStdString();
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
-                              << code.toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << code.toStdString();
 
     auto* historyDialog = new PurposeTypeHistoryDialog(code, clientManager_, mainWindow_);
 
-    connect(historyDialog, &PurposeTypeHistoryDialog::statusChanged,
-            this, [self = QPointer<PurposeTypeController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(historyDialog, &PurposeTypeHistoryDialog::errorOccurred,
-            this, [self = QPointer<PurposeTypeController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
-    connect(historyDialog, &PurposeTypeHistoryDialog::revertVersionRequested,
-            this, &PurposeTypeController::onRevertVersion);
-    connect(historyDialog, &PurposeTypeHistoryDialog::openVersionRequested,
-            this, &PurposeTypeController::onOpenVersion);
+    connect(historyDialog,
+            &PurposeTypeHistoryDialog::statusChanged,
+            this,
+            [self = QPointer<PurposeTypeController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(historyDialog,
+            &PurposeTypeHistoryDialog::errorOccurred,
+            this,
+            [self = QPointer<PurposeTypeController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
+    connect(historyDialog,
+            &PurposeTypeHistoryDialog::revertVersionRequested,
+            this,
+            &PurposeTypeController::onRevertVersion);
+    connect(historyDialog,
+            &PurposeTypeHistoryDialog::openVersionRequested,
+            this,
+            &PurposeTypeController::onOpenVersion);
 
     // Load history data
     historyDialog->loadHistory();
@@ -274,16 +305,15 @@ void PurposeTypeController::showHistoryWindow(const QString& code) {
     historyWindow->setAttribute(Qt::WA_DeleteOnClose);
     historyWindow->setWidget(historyDialog);
     historyWindow->setWindowTitle(QString("Purpose Type History: %1").arg(code));
-    historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    historyWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     // Track this history window
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
 
     QPointer<PurposeTypeController> self = this;
-    connect(historyWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -292,14 +322,14 @@ void PurposeTypeController::showHistoryWindow(const QString& code) {
     show_managed_window(historyWindow, listMdiSubWindow_);
 }
 
-void PurposeTypeController::onOpenVersion(
-    const refdata::domain::purpose_type& pt, int versionNumber) {
+void PurposeTypeController::onOpenVersion(const refdata::domain::purpose_type& pt,
+                                          int versionNumber) {
     BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
                               << " for purpose type: " << pt.code;
 
     const QString code = QString::fromStdString(pt.code);
-    const QString windowKey = build_window_key("version", QString("%1_v%2")
-        .arg(code).arg(versionNumber));
+    const QString windowKey =
+        build_window_key("version", QString("%1_v%2").arg(code).arg(versionNumber));
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
@@ -315,31 +345,36 @@ void PurposeTypeController::onOpenVersion(
     detailDialog->setType(pt);
     detailDialog->setReadOnly(true);
 
-    connect(detailDialog, &PurposeTypeDetailDialog::statusMessage,
-            this, [self = QPointer<PurposeTypeController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(detailDialog, &PurposeTypeDetailDialog::errorMessage,
-            this, [self = QPointer<PurposeTypeController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
+    connect(detailDialog,
+            &PurposeTypeDetailDialog::statusMessage,
+            this,
+            [self = QPointer<PurposeTypeController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(detailDialog,
+            &PurposeTypeDetailDialog::errorMessage,
+            this,
+            [self = QPointer<PurposeTypeController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Purpose Type: %1 (Version %2)")
-        .arg(code).arg(versionNumber));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("Purpose Type: %1 (Version %2)").arg(code).arg(versionNumber));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     track_window(windowKey, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<PurposeTypeController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -349,10 +384,8 @@ void PurposeTypeController::onOpenVersion(
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
-void PurposeTypeController::onRevertVersion(
-    const refdata::domain::purpose_type& pt) {
-    BOOST_LOG_SEV(lg(), info) << "Reverting purpose type to version: "
-                              << pt.version;
+void PurposeTypeController::onRevertVersion(const refdata::domain::purpose_type& pt) {
+    BOOST_LOG_SEV(lg(), info) << "Reverting purpose type to version: " << pt.version;
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new PurposeTypeDetailDialog(mainWindow_);
@@ -363,25 +396,33 @@ void PurposeTypeController::onRevertVersion(
     detailDialog->setType(pt);
     detailDialog->setCreateMode(false);
 
-    connect(detailDialog, &PurposeTypeDetailDialog::statusMessage,
-            this, &PurposeTypeController::statusMessage);
-    connect(detailDialog, &PurposeTypeDetailDialog::errorMessage,
-            this, &PurposeTypeController::errorMessage);
-    connect(detailDialog, &PurposeTypeDetailDialog::typeSaved,
-            this, [self = QPointer<PurposeTypeController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Purpose Type reverted: " << code.toStdString();
-        emit self->statusMessage(QString("Purpose Type '%1' reverted successfully").arg(code));
-        self->handleEntitySaved();
-    });
+    connect(detailDialog,
+            &PurposeTypeDetailDialog::statusMessage,
+            this,
+            &PurposeTypeController::statusMessage);
+    connect(detailDialog,
+            &PurposeTypeDetailDialog::errorMessage,
+            this,
+            &PurposeTypeController::errorMessage);
+    connect(detailDialog,
+            &PurposeTypeDetailDialog::typeSaved,
+            this,
+            [self = QPointer<PurposeTypeController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Purpose Type reverted: " << code.toStdString();
+                emit self->statusMessage(
+                    QString("Purpose Type '%1' reverted successfully").arg(code));
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Revert Purpose Type: %1")
-        .arg(QString::fromStdString(pt.code)));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("Revert Purpose Type: %1").arg(QString::fromStdString(pt.code)));
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
+                                                               IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 

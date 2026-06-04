@@ -18,38 +18,42 @@
  *
  */
 #include "ores.qt/ClientBookStatusModel.hpp"
-
-#include <QtConcurrent>
-#include "ores.refdata.api/messaging/book_status_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
+#include "ores.refdata.api/messaging/book_status_protocol.hpp"
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    std::string book_status_key_extractor(const refdata::domain::book_status& e) {
-        return e.code;
-    }
+std::string book_status_key_extractor(const refdata::domain::book_status& e) {
+    return e.code;
+}
 }
 
-ClientBookStatusModel::ClientBookStatusModel(
-    ClientManager* clientManager, QObject* parent)
-    : AbstractClientModel(parent),
-      clientManager_(clientManager),
-      watcher_(new QFutureWatcher<FetchResult>(this)),
-      recencyTracker_(book_status_key_extractor),
-      pulseManager_(new RecencyPulseManager(this)) {
+ClientBookStatusModel::ClientBookStatusModel(ClientManager* clientManager, QObject* parent)
+    : AbstractClientModel(parent)
+    , clientManager_(clientManager)
+    , watcher_(new QFutureWatcher<FetchResult>(this))
+    , recencyTracker_(book_status_key_extractor)
+    , pulseManager_(new RecencyPulseManager(this)) {
 
-    connect(watcher_, &QFutureWatcher<FetchResult>::finished,
-            this, &ClientBookStatusModel::onStatusesLoaded);
+    connect(watcher_,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            &ClientBookStatusModel::onStatusesLoaded);
 
-    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
-            this, &ClientBookStatusModel::onPulseStateChanged);
-    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
-            this, &ClientBookStatusModel::onPulsingComplete);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulse_state_changed,
+            this,
+            &ClientBookStatusModel::onPulseStateChanged);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulsing_complete,
+            this,
+            &ClientBookStatusModel::onPulsingComplete);
 }
 
 int ClientBookStatusModel::rowCount(const QModelIndex& parent) const {
@@ -64,8 +68,7 @@ int ClientBookStatusModel::columnCount(const QModelIndex& parent) const {
     return ColumnCount;
 }
 
-QVariant ClientBookStatusModel::data(
-    const QModelIndex& index, int role) const {
+QVariant ClientBookStatusModel::data(const QModelIndex& index, int role) const {
     if (!index.isValid())
         return {};
 
@@ -77,22 +80,22 @@ QVariant ClientBookStatusModel::data(
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-        case Code:
-            return QString::fromStdString(status.code);
-        case Name:
-            return QString::fromStdString(status.name);
-        case Description:
-            return QString::fromStdString(status.description);
-        case DisplayOrder:
-            return status.display_order;
-        case Version:
-            return status.version;
-        case ModifiedBy:
-            return QString::fromStdString(status.modified_by);
-        case RecordedAt:
-            return relative_time_helper::format(status.recorded_at);
-        default:
-            return {};
+            case Code:
+                return QString::fromStdString(status.code);
+            case Name:
+                return QString::fromStdString(status.name);
+            case Description:
+                return QString::fromStdString(status.description);
+            case DisplayOrder:
+                return status.display_order;
+            case Version:
+                return status.version;
+            case ModifiedBy:
+                return QString::fromStdString(status.modified_by);
+            case RecordedAt:
+                return relative_time_helper::format(status.recorded_at);
+            default:
+                return {};
         }
     }
 
@@ -103,28 +106,28 @@ QVariant ClientBookStatusModel::data(
     return {};
 }
 
-QVariant ClientBookStatusModel::headerData(
-    int section, Qt::Orientation orientation, int role) const {
+QVariant
+ClientBookStatusModel::headerData(int section, Qt::Orientation orientation, int role) const {
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return {};
 
     switch (section) {
-    case Code:
-        return tr("Code");
-    case Name:
-        return tr("Name");
-    case Description:
-        return tr("Description");
-    case DisplayOrder:
-        return tr("Order");
-    case Version:
-        return tr("Version");
-    case ModifiedBy:
-        return tr("Modified By");
-    case RecordedAt:
-        return tr("Recorded At");
-    default:
-        return {};
+        case Code:
+            return tr("Code");
+        case Name:
+            return tr("Name");
+        case Description:
+            return tr("Description");
+        case DisplayOrder:
+            return tr("Order");
+        case Version:
+            return tr("Version");
+        case ModifiedBy:
+            return tr("Modified By");
+        case RecordedAt:
+            return tr("Recorded At");
+        default:
+            return {};
     }
 }
 
@@ -145,27 +148,34 @@ void ClientBookStatusModel::refresh() {
     QPointer<ClientBookStatusModel> self = this;
 
     QFuture<FetchResult> future = QtConcurrent::run([self]() -> FetchResult {
-        return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
-            if (!self || !self->clientManager_) {
-                return {.success = false, .statuses = {},
-                        .error_message = "Model was destroyed",
-                        .error_details = {}};
-            }
+        return exception_helper::wrap_async_fetch<FetchResult>(
+            [&]() -> FetchResult {
+                if (!self || !self->clientManager_) {
+                    return {.success = false,
+                            .statuses = {},
+                            .error_message = "Model was destroyed",
+                            .error_details = {}};
+                }
 
-            refdata::messaging::get_book_statuses_request request;
-            auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
-            if (!response_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to send request";
-                return {.success = false, .statuses = {},
-                        .error_message = "Failed to send request",
-                        .error_details = {}};
-            }
+                refdata::messaging::get_book_statuses_request request;
+                auto response_result =
+                    self->clientManager_->process_authenticated_request(std::move(request));
+                if (!response_result) {
+                    BOOST_LOG_SEV(lg(), error) << "Failed to send request";
+                    return {.success = false,
+                            .statuses = {},
+                            .error_message = "Failed to send request",
+                            .error_details = {}};
+                }
 
-            BOOST_LOG_SEV(lg(), debug) << "Fetched " << response_result->book_statuses.size()
-                                       << " book statuses";
-            return {.success = true, .statuses = std::move(response_result->book_statuses),
-                    .error_message = {}, .error_details = {}};
-        }, "book statuses");
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Fetched " << response_result->book_statuses.size() << " book statuses";
+                return {.success = true,
+                        .statuses = std::move(response_result->book_statuses),
+                        .error_message = {},
+                        .error_details = {}};
+            },
+            "book statuses");
     });
 
     watcher_->setFuture(future);
@@ -177,8 +187,8 @@ void ClientBookStatusModel::onStatusesLoaded() {
     const auto result = watcher_->result();
 
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to fetch book statuses: "
-                                   << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to fetch book statuses: " << result.error_message.toStdString();
         emit loadError(result.error_message, result.error_details);
         return;
     }
@@ -198,16 +208,14 @@ void ClientBookStatusModel::onStatusesLoaded() {
     emit dataLoaded();
 }
 
-const refdata::domain::book_status*
-ClientBookStatusModel::getStatus(int row) const {
+const refdata::domain::book_status* ClientBookStatusModel::getStatus(int row) const {
     const auto idx = static_cast<std::size_t>(row);
     if (idx >= statuses_.size())
         return nullptr;
     return &statuses_[idx];
 }
 
-QVariant ClientBookStatusModel::recency_foreground_color(
-    const std::string& code) const {
+QVariant ClientBookStatusModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {
         return color_constants::stale_indicator;
     }
@@ -216,8 +224,8 @@ QVariant ClientBookStatusModel::recency_foreground_color(
 
 void ClientBookStatusModel::onPulseStateChanged(bool /*isOn*/) {
     if (!statuses_.empty()) {
-        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
-            {Qt::ForegroundRole});
+        emit dataChanged(
+            index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::ForegroundRole});
     }
 }
 

@@ -17,21 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.qt/BadgeCache.hpp"
-
-#include <vector>
-#include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/BadgeCache.hpp"
+#include <catch2/catch_test_macros.hpp>
+#include <vector>
 
 namespace {
 
 const std::string_view test_suite("ores.qt.tests");
 const std::string tags("[badge_cache]");
 
-ores::dq::domain::badge_definition make_def(
-    const std::string& code,
-    const std::string& background,
-    const std::string& text) {
+ores::dq::domain::badge_definition
+make_def(const std::string& code, const std::string& background, const std::string& text) {
     ores::dq::domain::badge_definition d;
     d.code = code;
     d.name = code;
@@ -40,10 +37,8 @@ ores::dq::domain::badge_definition make_def(
     return d;
 }
 
-ores::dq::messaging::badge_mapping make_mapping(
-    const std::string& domain,
-    const std::string& entity,
-    const std::string& badge) {
+ores::dq::messaging::badge_mapping
+make_mapping(const std::string& domain, const std::string& entity, const std::string& badge) {
     ores::dq::messaging::badge_mapping m;
     m.code_domain_code = domain;
     m.entity_code = entity;
@@ -71,9 +66,8 @@ TEST_CASE("resolve_returns_definition_for_known_mapping", tags) {
     auto lg(make_logger(test_suite));
 
     BadgeCache cache(nullptr);
-    cache.populate_for_testing(
-        {make_def("login_online", "#22c55e", "#ffffff")},
-        {make_mapping("login_status", "Online", "login_online")});
+    cache.populate_for_testing({make_def("login_online", "#22c55e", "#ffffff")},
+                               {make_mapping("login_status", "Online", "login_online")});
 
     BOOST_LOG_SEV(lg, info) << "Testing resolve for known mapping";
 
@@ -89,9 +83,8 @@ TEST_CASE("resolve_returns_nullptr_for_missing_entity", tags) {
     auto lg(make_logger(test_suite));
 
     BadgeCache cache(nullptr);
-    cache.populate_for_testing(
-        {make_def("login_online", "#22c55e", "#ffffff")},
-        {make_mapping("login_status", "Online", "login_online")});
+    cache.populate_for_testing({make_def("login_online", "#22c55e", "#ffffff")},
+                               {make_mapping("login_status", "Online", "login_online")});
 
     BOOST_LOG_SEV(lg, info) << "Testing resolve for missing entity";
 
@@ -105,8 +98,7 @@ TEST_CASE("resolve_domains_do_not_cross_contaminate", tags) {
 
     BadgeCache cache(nullptr);
     cache.populate_for_testing(
-        {make_def("active", "#22c55e", "#ffffff"),
-         make_def("locked", "#ef4444", "#ffffff")},
+        {make_def("active", "#22c55e", "#ffffff"), make_def("locked", "#ef4444", "#ffffff")},
         {make_mapping("party_status", "ACTIVE", "active"),
          make_mapping("account_locked", "Locked", "locked")});
 
@@ -131,9 +123,7 @@ TEST_CASE("resolve_returns_nullptr_for_unmapped_badge_code", tags) {
     // Mapping references a badge_code absent from definitions_ — buildIndex
     // must silently skip it and resolve must return nullptr.
     BadgeCache cache(nullptr);
-    cache.populate_for_testing(
-        {},
-        {make_mapping("login_status", "Online", "nonexistent_badge")});
+    cache.populate_for_testing({}, {make_mapping("login_status", "Online", "nonexistent_badge")});
 
     BOOST_LOG_SEV(lg, info) << "Testing resolve with unmapped badge code";
 
@@ -144,13 +134,12 @@ TEST_CASE("resolve_multiple_mappings_in_same_domain", tags) {
     auto lg(make_logger(test_suite));
 
     BadgeCache cache(nullptr);
-    cache.populate_for_testing(
-        {make_def("login_online",  "#22c55e", "#ffffff"),
-         make_def("login_recent",  "#eab308", "#ffffff"),
-         make_def("login_old",     "#6b7280", "#ffffff")},
-        {make_mapping("login_status", "Online",  "login_online"),
-         make_mapping("login_status", "Recent",  "login_recent"),
-         make_mapping("login_status", "Old",     "login_old")});
+    cache.populate_for_testing({make_def("login_online", "#22c55e", "#ffffff"),
+                                make_def("login_recent", "#eab308", "#ffffff"),
+                                make_def("login_old", "#6b7280", "#ffffff")},
+                               {make_mapping("login_status", "Online", "login_online"),
+                                make_mapping("login_status", "Recent", "login_recent"),
+                                make_mapping("login_status", "Old", "login_old")});
 
     BOOST_LOG_SEV(lg, info) << "Testing multiple mappings in the same domain";
 

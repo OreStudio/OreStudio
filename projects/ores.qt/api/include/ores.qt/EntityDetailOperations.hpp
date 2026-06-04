@@ -20,11 +20,11 @@
 #ifndef ORES_QT_ENTITY_DETAIL_OPERATIONS_HPP
 #define ORES_QT_ENTITY_DETAIL_OPERATIONS_HPP
 
+#include "ores.qt/export.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <optional>
 #include <string>
 #include <vector>
-#include <boost/uuid/uuid.hpp>
-#include "ores.qt/export.hpp"
 
 namespace ores::qt {
 
@@ -151,40 +151,39 @@ public:
     [[nodiscard]] virtual bool has_party_category() const = 0;
 
     /// Save the entity via protocol messages.
-    [[nodiscard]] virtual operation_result save_entity(
-        ClientManager* cm, const entity_data& data) const = 0;
+    [[nodiscard]] virtual operation_result save_entity(ClientManager* cm,
+                                                       const entity_data& data) const = 0;
 
     /// Delete the entity via protocol messages.
-    [[nodiscard]] virtual operation_result delete_entity(
-        ClientManager* cm, const boost::uuids::uuid& id) const = 0;
+    [[nodiscard]] virtual operation_result delete_entity(ClientManager* cm,
+                                                         const boost::uuids::uuid& id) const = 0;
 
     /// Load all entities for parent combo and hierarchy tree.
-    [[nodiscard]] virtual load_all_entities_result load_all_entities(
-        ClientManager* cm) const = 0;
+    [[nodiscard]] virtual load_all_entities_result load_all_entities(ClientManager* cm) const = 0;
 
     /// Load identifiers for a specific entity.
-    [[nodiscard]] virtual load_identifiers_result load_identifiers(
-        ClientManager* cm, const boost::uuids::uuid& entity_id) const = 0;
+    [[nodiscard]] virtual load_identifiers_result
+    load_identifiers(ClientManager* cm, const boost::uuids::uuid& entity_id) const = 0;
 
     /// Save an identifier.
-    [[nodiscard]] virtual operation_result save_identifier(
-        ClientManager* cm, const identifier_entry& entry) const = 0;
+    [[nodiscard]] virtual operation_result save_identifier(ClientManager* cm,
+                                                           const identifier_entry& entry) const = 0;
 
     /// Delete an identifier.
-    [[nodiscard]] virtual operation_result delete_identifier(
-        ClientManager* cm, const boost::uuids::uuid& id) const = 0;
+    [[nodiscard]] virtual operation_result
+    delete_identifier(ClientManager* cm, const boost::uuids::uuid& id) const = 0;
 
     /// Load contacts for a specific entity.
-    [[nodiscard]] virtual load_contacts_result load_contacts(
-        ClientManager* cm, const boost::uuids::uuid& entity_id) const = 0;
+    [[nodiscard]] virtual load_contacts_result
+    load_contacts(ClientManager* cm, const boost::uuids::uuid& entity_id) const = 0;
 
     /// Save a contact.
-    [[nodiscard]] virtual operation_result save_contact(
-        ClientManager* cm, const contact_entry& entry) const = 0;
+    [[nodiscard]] virtual operation_result save_contact(ClientManager* cm,
+                                                        const contact_entry& entry) const = 0;
 
     /// Delete a contact.
-    [[nodiscard]] virtual operation_result delete_contact(
-        ClientManager* cm, const boost::uuids::uuid& id) const = 0;
+    [[nodiscard]] virtual operation_result delete_contact(ClientManager* cm,
+                                                          const boost::uuids::uuid& id) const = 0;
 };
 
 }

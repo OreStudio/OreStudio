@@ -18,56 +18,59 @@
  *
  */
 #include "ores.qt/CurrencyHistoryDialog.hpp"
-
-#include <QIcon>
-#include <QLabel>
-#include <QCloseEvent>
-#include <QDateTime>
-#include <QScrollBar>
-#include <QVBoxLayout>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.qt/UiPersistence.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata.api/messaging/protocol.hpp"
+#include <QCloseEvent>
+#include <QDateTime>
+#include <QFutureWatcher>
+#include <QIcon>
+#include <QLabel>
+#include <QScrollBar>
+#include <QVBoxLayout>
+#include <QtConcurrent>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 const QIcon& CurrencyHistoryDialog::getHistoryIcon() const {
-    static const QIcon historyIcon = IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor);
+    static const QIcon historyIcon =
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor);
     return historyIcon;
 }
 
 CurrencyHistoryDialog::CurrencyHistoryDialog(QString iso_code,
-    ClientManager* clientManager, QWidget* parent)
-    : QWidget(parent), ui_(new Ui::CurrencyHistoryDialog),
-      clientManager_(clientManager), imageCache_(nullptr),
-      isoCode_(std::move(iso_code)),
-      toolBar_(nullptr), reloadAction_(nullptr),
-      openAction_(nullptr), revertAction_(nullptr) {
+                                             ClientManager* clientManager,
+                                             QWidget* parent)
+    : QWidget(parent)
+    , ui_(new Ui::CurrencyHistoryDialog)
+    , clientManager_(clientManager)
+    , imageCache_(nullptr)
+    , isoCode_(std::move(iso_code))
+    , toolBar_(nullptr)
+    , reloadAction_(nullptr)
+    , openAction_(nullptr)
+    , revertAction_(nullptr) {
 
-    BOOST_LOG_SEV(lg(), info) << "Creating currency history widget for: "
-                              << isoCode_.toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Creating currency history widget for: " << isoCode_.toStdString();
 
     ui_->setupUi(this);
     WidgetUtils::setupComboBoxes(this);
 
     setupToolbar();
 
-    connect(ui_->versionListWidget, &QTableWidget::currentCellChanged,
-            this, [this](int currentRow, int, int, int) {
-        onVersionSelected(currentRow);
-    });
+    connect(ui_->versionListWidget,
+            &QTableWidget::currentCellChanged,
+            this,
+            [this](int currentRow, int, int, int) { onVersionSelected(currentRow); });
 
     // Double-click opens the version in read-only mode
-    connect(ui_->versionListWidget, &QTableWidget::cellDoubleClicked,
-            this, [this](int, int) {
+    connect(ui_->versionListWidget, &QTableWidget::cellDoubleClicked, this, [this](int, int) {
         onOpenClicked();
     });
 
@@ -87,12 +90,13 @@ CurrencyHistoryDialog::CurrencyHistoryDialog(QString iso_code,
 
     ui_->closeButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
-    connect(ui_->closeButton, &QPushButton::clicked,
-            this, [this]() { if (window()) window()->close(); });
+    connect(ui_->closeButton, &QPushButton::clicked, this, [this]() {
+        if (window())
+            window()->close();
+    });
 
     updateButtonStates();
-    resize(UiPersistence::restoreSize(
-        QLatin1String("CurrencyHistoryDialog"), sizeHint()));
+    resize(UiPersistence::restoreSize(QLatin1String("CurrencyHistoryDialog"), sizeHint()));
 }
 
 CurrencyHistoryDialog::~CurrencyHistoryDialog() {
@@ -106,15 +110,14 @@ CurrencyHistoryDialog::~CurrencyHistoryDialog() {
 }
 
 void CurrencyHistoryDialog::loadHistory() {
-    BOOST_LOG_SEV(lg(), info) << "Loading currency history for: "
-                              << isoCode_.toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Loading currency history for: " << isoCode_.toStdString();
 
-    using HistoryResult = std::expected<refdata::messaging::get_currency_history_response, std::string>;
+    using HistoryResult =
+        std::expected<refdata::messaging::get_currency_history_response, std::string>;
     QPointer<CurrencyHistoryDialog> self = this;
     const auto iso_code = isoCode_.toStdString();
 
-    QFuture<HistoryResult> future =
-        QtConcurrent::run([self, iso_code]() -> HistoryResult {
+    QFuture<HistoryResult> future = QtConcurrent::run([self, iso_code]() -> HistoryResult {
         if (!self->clientManager_ || !self->clientManager_->isConnected()) {
             return std::unexpected("Disconnected from server");
         }
@@ -129,10 +132,9 @@ void CurrencyHistoryDialog::loadHistory() {
 
     // Use watcher to handle results
     auto* watcher = new QFutureWatcher<HistoryResult>(self);
-    connect(watcher, &QFutureWatcher<HistoryResult>::finished, self,
-        [self, watcher]() {
-
-        if (!self) return;
+    connect(watcher, &QFutureWatcher<HistoryResult>::finished, self, [self, watcher]() {
+        if (!self)
+            return;
         auto result = watcher->result();
         watcher->deleteLater();
 
@@ -155,8 +157,8 @@ void CurrencyHistoryDialog::loadHistory() {
 }
 
 void CurrencyHistoryDialog::onHistoryLoaded() {
-    BOOST_LOG_SEV(lg(), info) << "History loaded successfully: "
-                              << history_.versions.size() << " versions";
+    BOOST_LOG_SEV(lg(), info) << "History loaded successfully: " << history_.versions.size()
+                              << " versions";
 
     const QIcon& cachedIcon = getHistoryIcon();
     ui_->versionListWidget->setRowCount(0);
@@ -165,17 +167,15 @@ void CurrencyHistoryDialog::onHistoryLoaded() {
     for (int i = 0; i < static_cast<int>(history_.versions.size()); ++i) {
         const auto& version = history_.versions[i];
 
-        BOOST_LOG_SEV(lg(), trace) << "Displaying version [" << i << "]: "
-                                   << "version_number=" << version.version_number
-                                   << ", data.version=" << version.data.version
-                                   << ", modified_by=" << version.modified_by;
+        BOOST_LOG_SEV(lg(), trace)
+            << "Displaying version [" << i << "]: "
+            << "version_number=" << version.version_number
+            << ", data.version=" << version.data.version << ", modified_by=" << version.modified_by;
 
-        auto* versionItem =
-            new QTableWidgetItem(QString::number(version.version_number));
+        auto* versionItem = new QTableWidgetItem(QString::number(version.version_number));
         auto* recordedAtItem =
             new QTableWidgetItem(relative_time_helper::format(version.recorded_at));
-        auto* modifiedByItem =
-            new QTableWidgetItem(QString::fromStdString(version.modified_by));
+        auto* modifiedByItem = new QTableWidgetItem(QString::fromStdString(version.modified_by));
         auto* changeReasonItem =
             new QTableWidgetItem(QString::fromStdString(version.data.change_reason_code));
         auto* commentaryItem =
@@ -196,25 +196,21 @@ void CurrencyHistoryDialog::onHistoryLoaded() {
     if (!history_.versions.empty()) {
         const auto& latest = history_.versions[0];
         ui_->titleLabel->setText(QString("Currency History: %1 - %2")
-            .arg(isoCode_)
-            .arg(QString::fromStdString(latest.data.name)));
+                                     .arg(isoCode_)
+                                     .arg(QString::fromStdString(latest.data.name)));
     }
 
     updateButtonStates();
 
-    emit statusChanged(QString("Loaded %1 versions")
-        .arg(history_.versions.size()));
+    emit statusChanged(QString("Loaded %1 versions").arg(history_.versions.size()));
 }
 
 void CurrencyHistoryDialog::onHistoryLoadError(const QString& error_msg) {
-    BOOST_LOG_SEV(lg(), error) << "Error loading history: "
-                               << error_msg.toStdString();
+    BOOST_LOG_SEV(lg(), error) << "Error loading history: " << error_msg.toStdString();
 
-    emit errorOccurred(QString("Failed to load currency history: %1")
-        .arg(error_msg));
-    MessageBoxHelper::critical(this, "History Load Error",
-        QString("Failed to load currency history:\n%1")
-        .arg(error_msg));
+    emit errorOccurred(QString("Failed to load currency history: %1").arg(error_msg));
+    MessageBoxHelper::critical(
+        this, "History Load Error", QString("Failed to load currency history:\n%1").arg(error_msg));
 }
 
 void CurrencyHistoryDialog::onVersionSelected(int index) {
@@ -245,8 +241,8 @@ void CurrencyHistoryDialog::displayChangesTab(int version_index) {
     // Calculate diff with previous version
     const auto& previous = history_.versions[version_index + 1];
 
-    BOOST_LOG_SEV(lg(), trace) << "Calculating diff between version "
-                               << current.version_number << " and " << previous.version_number;
+    BOOST_LOG_SEV(lg(), trace) << "Calculating diff between version " << current.version_number
+                               << " and " << previous.version_number;
     BOOST_LOG_SEV(lg(), trace) << "Current name: " << current.data.name
                                << ", Previous name: " << previous.data.name;
 
@@ -320,27 +316,27 @@ void CurrencyHistoryDialog::displayFullDetailsTab(int version_index) {
     ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));
 }
 
-CurrencyHistoryDialog::DiffResult CurrencyHistoryDialog::
-calculateDiff(const refdata::domain::currency_version& current,
-    const refdata::domain::currency_version& previous) {
+CurrencyHistoryDialog::DiffResult
+CurrencyHistoryDialog::calculateDiff(const refdata::domain::currency_version& current,
+                                     const refdata::domain::currency_version& previous) {
 
     DiffResult diffs;
 
     // Helper to check string field differences
     auto checkDiffString = [&diffs](const QString& fieldName,
-        const std::string& currentVal, const std::string& previousVal) {
+                                    const std::string& currentVal,
+                                    const std::string& previousVal) {
         if (currentVal != previousVal) {
-            diffs.append({fieldName, {QString::fromStdString(previousVal),
-                                      QString::fromStdString(currentVal)}});
+            diffs.append(
+                {fieldName,
+                 {QString::fromStdString(previousVal), QString::fromStdString(currentVal)}});
         }
     };
 
     // Helper to check integer field differences
-    auto checkDiffInt = [&diffs](const QString& fieldName,
-        int currentVal, int previousVal) {
+    auto checkDiffInt = [&diffs](const QString& fieldName, int currentVal, int previousVal) {
         if (currentVal != previousVal) {
-            diffs.append({fieldName, {QString::number(previousVal),
-                                      QString::number(currentVal)}});
+            diffs.append({fieldName, {QString::number(previousVal), QString::number(currentVal)}});
         }
     };
 
@@ -356,11 +352,14 @@ calculateDiff(const refdata::domain::currency_version& current,
     checkDiffString("Market Tier", current.data.market_tier, previous.data.market_tier);
 
     // Compare integer fields
-    checkDiffInt("Fractions Per Unit", current.data.fractions_per_unit, previous.data.fractions_per_unit);
-    checkDiffInt("Rounding Precision", current.data.rounding_precision, previous.data.rounding_precision);
+    checkDiffInt(
+        "Fractions Per Unit", current.data.fractions_per_unit, previous.data.fractions_per_unit);
+    checkDiffInt(
+        "Rounding Precision", current.data.rounding_precision, previous.data.rounding_precision);
 
     // Compare change management fields
-    checkDiffString("Change Reason", current.data.change_reason_code, previous.data.change_reason_code);
+    checkDiffString(
+        "Change Reason", current.data.change_reason_code, previous.data.change_reason_code);
     checkDiffString("Commentary", current.data.change_commentary, previous.data.change_commentary);
 
     // Compare image_id (flag)
@@ -371,8 +370,9 @@ calculateDiff(const refdata::domain::currency_version& current,
             }
             return QString::fromStdString(boost::uuids::to_string(*id));
         };
-        diffs.append({"Flag", {formatImageId(previous.data.image_id),
-                               formatImageId(current.data.image_id)}});
+        diffs.append(
+            {"Flag",
+             {formatImageId(previous.data.image_id), formatImageId(current.data.image_id)}});
     }
 
     return diffs;
@@ -385,31 +385,27 @@ void CurrencyHistoryDialog::setupToolbar() {
 
     // Create Reload action
     reloadAction_ = new QAction("Reload", this);
-    reloadAction_->setIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowClockwise, IconUtils::DefaultIconColor));
+    reloadAction_->setIcon(
+        IconUtils::createRecoloredIcon(Icon::ArrowClockwise, IconUtils::DefaultIconColor));
     reloadAction_->setToolTip("Reload history from server");
-    connect(reloadAction_, &QAction::triggered, this,
-        &CurrencyHistoryDialog::onReloadClicked);
+    connect(reloadAction_, &QAction::triggered, this, &CurrencyHistoryDialog::onReloadClicked);
     toolBar_->addAction(reloadAction_);
 
     toolBar_->addSeparator();
 
     // Create Open action
     openAction_ = new QAction("Open", this);
-    openAction_->setIcon(IconUtils::createRecoloredIcon(
-        Icon::Edit, IconUtils::DefaultIconColor));
+    openAction_->setIcon(IconUtils::createRecoloredIcon(Icon::Edit, IconUtils::DefaultIconColor));
     openAction_->setToolTip("Open this version in read-only mode");
-    connect(openAction_, &QAction::triggered, this,
-        &CurrencyHistoryDialog::onOpenClicked);
+    connect(openAction_, &QAction::triggered, this, &CurrencyHistoryDialog::onOpenClicked);
     toolBar_->addAction(openAction_);
 
     // Create Revert action
     revertAction_ = new QAction("Revert", this);
-    revertAction_->setIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
+    revertAction_->setIcon(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
+                                                          IconUtils::DefaultIconColor));
     revertAction_->setToolTip("Revert currency to this version");
-    connect(revertAction_, &QAction::triggered, this,
-        &CurrencyHistoryDialog::onRevertClicked);
+    connect(revertAction_, &QAction::triggered, this, &CurrencyHistoryDialog::onRevertClicked);
     toolBar_->addAction(revertAction_);
 
     // Add toolbar to layout
@@ -420,8 +416,7 @@ void CurrencyHistoryDialog::setupToolbar() {
 
 void CurrencyHistoryDialog::updateButtonStates() {
     const int index = selectedVersionIndex();
-    const bool hasSelection = index >= 0 &&
-        index < static_cast<int>(history_.versions.size());
+    const bool hasSelection = index >= 0 && index < static_cast<int>(history_.versions.size());
 
     if (openAction_)
         openAction_->setEnabled(hasSelection);
@@ -440,8 +435,8 @@ void CurrencyHistoryDialog::onOpenClicked() {
         return;
 
     const auto& version = history_.versions[index];
-    BOOST_LOG_SEV(lg(), info) << "Opening currency version "
-                              << version.version_number << " in read-only mode";
+    BOOST_LOG_SEV(lg(), info) << "Opening currency version " << version.version_number
+                              << " in read-only mode";
 
     emit openVersionRequested(version.data, version.version_number);
 }
@@ -457,7 +452,9 @@ void CurrencyHistoryDialog::onRevertClicked() {
     // If this is the oldest version, there's no previous version to revert to
     if (index == static_cast<int>(history_.versions.size()) - 1) {
         BOOST_LOG_SEV(lg(), warn) << "Cannot revert oldest version - no previous version exists";
-        MessageBoxHelper::information(this, "Cannot Revert",
+        MessageBoxHelper::information(
+            this,
+            "Cannot Revert",
             "This is the oldest version. There is no previous version to revert to.");
         return;
     }
@@ -465,12 +462,13 @@ void CurrencyHistoryDialog::onRevertClicked() {
     // The "previous" version is the one we want to revert TO (the "old" side in the diff)
     const auto& previous = history_.versions[index + 1];
 
-    BOOST_LOG_SEV(lg(), info) << "Requesting revert from version "
-                              << current.version_number << " to version "
-                              << previous.version_number;
+    BOOST_LOG_SEV(lg(), info) << "Requesting revert from version " << current.version_number
+                              << " to version " << previous.version_number;
 
     // Confirm with user
-    auto reply = MessageBoxHelper::question(this, "Revert Currency",
+    auto reply = MessageBoxHelper::question(
+        this,
+        "Revert Currency",
         QString("Are you sure you want to revert '%1' from version %2 back to version %3?\n\n"
                 "This will create a new version with the data from version %3.")
             .arg(isoCode_)
@@ -515,16 +513,14 @@ QSize CurrencyHistoryDialog::sizeHint() const {
 
     // Return the maximum of the base size (to accommodate large text/UI
     // elements) and the defined minimum size.
-    return { qMax(baseSize.width(), minimumWidth),
-             qMax(baseSize.height(), minimumHeight) };
+    return {qMax(baseSize.width(), minimumWidth), qMax(baseSize.height(), minimumHeight)};
 }
 
 void CurrencyHistoryDialog::markAsStale() {
-    BOOST_LOG_SEV(lg(), info) << "Currency history marked as stale for: "
-                              << isoCode_.toStdString() << ", reloading...";
+    BOOST_LOG_SEV(lg(), info) << "Currency history marked as stale for: " << isoCode_.toStdString()
+                              << ", reloading...";
 
-    emit statusChanged(QString("Currency %1 was modified - reloading history...")
-        .arg(isoCode_));
+    emit statusChanged(QString("Currency %1 was modified - reloading history...").arg(isoCode_));
 
     // Reload history data
     loadHistory();

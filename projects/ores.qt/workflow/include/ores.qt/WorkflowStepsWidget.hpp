@@ -19,17 +19,17 @@
 #ifndef ORES_QT_WORKFLOW_STEPS_WIDGET_HPP
 #define ORES_QT_WORKFLOW_STEPS_WIDGET_HPP
 
-#include <vector>
-#include <QLabel>
-#include <QTimer>
-#include <QUuid>
-#include <QWidget>
-#include <QTableWidget>
-#include <QFutureWatcher>
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/WorkflowExport.hpp"
 #include "ores.workflow.api/messaging/workflow_query_protocol.hpp"
+#include <QFutureWatcher>
+#include <QLabel>
+#include <QTableWidget>
+#include <QTimer>
+#include <QUuid>
+#include <QWidget>
+#include <vector>
 
 namespace ores::qt {
 
@@ -50,8 +50,7 @@ class ORES_QT_WORKFLOW_EXPORT WorkflowStepsWidget final : public QWidget {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.workflow_steps_widget";
+    inline static std::string_view logger_name = "ores.qt.workflow_steps_widget";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -66,8 +65,7 @@ private:
     };
 
 public:
-    explicit WorkflowStepsWidget(ClientManager* clientManager,
-        QWidget* parent = nullptr);
+    explicit WorkflowStepsWidget(ClientManager* clientManager, QWidget* parent = nullptr);
 
     /**
      * @brief Binds the widget to a workflow instance and starts auto-refresh.
@@ -104,8 +102,9 @@ public:
      *
      * Empty until the first successful fetch completes.
      */
-    const std::vector<ores::workflow::messaging::workflow_step_summary>&
-    steps() const { return currentSteps_; }
+    const std::vector<ores::workflow::messaging::workflow_step_summary>& steps() const {
+        return currentSteps_;
+    }
 
 signals:
     /**
@@ -147,8 +146,7 @@ private slots:
 
 private:
     void setupUi();
-    void populateSteps(
-        const std::vector<ores::workflow::messaging::workflow_step_summary>& steps);
+    void populateSteps(const std::vector<ores::workflow::messaging::workflow_step_summary>& steps);
 
     ClientManager* clientManager_;
     QUuid instanceId_;
@@ -162,6 +160,6 @@ private:
     std::vector<ores::workflow::messaging::workflow_step_summary> currentSteps_;
 };
 
-}  // namespace ores::qt
+} // namespace ores::qt
 
 #endif

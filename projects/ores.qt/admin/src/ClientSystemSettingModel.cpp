@@ -18,39 +18,43 @@
  *
  */
 #include "ores.qt/ClientSystemSettingModel.hpp"
-
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.variability.api/messaging/system_settings_protocol.hpp"
+#include <QFutureWatcher>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    std::string system_setting_key_extractor(const variability::domain::system_setting& e) {
-        return e.name;
-    }
+std::string system_setting_key_extractor(const variability::domain::system_setting& e) {
+    return e.name;
+}
 }
 
-ClientSystemSettingModel::ClientSystemSettingModel(ClientManager* clientManager,
-                                               QObject* parent)
-    : AbstractClientModel(parent),
-      clientManager_(clientManager),
-      watcher_(new QFutureWatcher<FetchResult>(this)),
-      recencyTracker_(system_setting_key_extractor),
-      pulseManager_(new RecencyPulseManager(this)) {
+ClientSystemSettingModel::ClientSystemSettingModel(ClientManager* clientManager, QObject* parent)
+    : AbstractClientModel(parent)
+    , clientManager_(clientManager)
+    , watcher_(new QFutureWatcher<FetchResult>(this))
+    , recencyTracker_(system_setting_key_extractor)
+    , pulseManager_(new RecencyPulseManager(this)) {
 
-    connect(watcher_, &QFutureWatcher<FetchResult>::finished,
-            this, &ClientSystemSettingModel::onSystemSettingsLoaded);
+    connect(watcher_,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            &ClientSystemSettingModel::onSystemSettingsLoaded);
 
-    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
-            this, &ClientSystemSettingModel::onPulseStateChanged);
-    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
-            this, &ClientSystemSettingModel::onPulsingComplete);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulse_state_changed,
+            this,
+            &ClientSystemSettingModel::onPulseStateChanged);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulsing_complete,
+            this,
+            &ClientSystemSettingModel::onPulsingComplete);
 }
 
 int ClientSystemSettingModel::rowCount(const QModelIndex& parent) const {
@@ -82,42 +86,42 @@ QVariant ClientSystemSettingModel::data(const QModelIndex& index, int role) cons
 
     if (role == Qt::DisplayRole) {
         switch (column) {
-        case Name:
-            return QString::fromStdString(flag.name);
-        case Enabled:
-            return (flag.value == "true") ? tr("Yes") : tr("No");
-        case Version:
-            return QString::number(flag.version);
-        case ModifiedBy:
-            return QString::fromStdString(flag.modified_by);
-        case RecordedAt:
-            return relative_time_helper::format(flag.recorded_at);
-        default:
-            return {};
+            case Name:
+                return QString::fromStdString(flag.name);
+            case Enabled:
+                return (flag.value == "true") ? tr("Yes") : tr("No");
+            case Version:
+                return QString::number(flag.version);
+            case ModifiedBy:
+                return QString::fromStdString(flag.modified_by);
+            case RecordedAt:
+                return relative_time_helper::format(flag.recorded_at);
+            default:
+                return {};
         }
     }
 
     return {};
 }
 
-QVariant ClientSystemSettingModel::headerData(int section, Qt::Orientation orientation,
-                                            int role) const {
+QVariant
+ClientSystemSettingModel::headerData(int section, Qt::Orientation orientation, int role) const {
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return {};
 
     switch (static_cast<Column>(section)) {
-    case Name:
-        return tr("Name");
-    case Enabled:
-        return tr("Enabled");
-    case Version:
-        return tr("Version");
-    case ModifiedBy:
-        return tr("Modified By");
-    case RecordedAt:
-        return tr("Recorded At");
-    default:
-        return {};
+        case Name:
+            return tr("Name");
+        case Enabled:
+            return tr("Enabled");
+        case Version:
+            return tr("Version");
+        case ModifiedBy:
+            return tr("Modified By");
+        case RecordedAt:
+            return tr("Recorded At");
+        default:
+            return {};
     }
 }
 
@@ -138,28 +142,35 @@ void ClientSystemSettingModel::refresh() {
 
     QPointer<ClientSystemSettingModel> self = this;
     QFuture<FetchResult> future = QtConcurrent::run([self]() -> FetchResult {
-        return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
-            if (!self || !self->clientManager_) {
-                return {.success = false, .flags = {},
-                        .error_message = "Model was destroyed",
+        return exception_helper::wrap_async_fetch<FetchResult>(
+            [&]() -> FetchResult {
+                if (!self || !self->clientManager_) {
+                    return {.success = false,
+                            .flags = {},
+                            .error_message = "Model was destroyed",
+                            .error_details = {}};
+                }
+
+                variability::messaging::list_settings_request request;
+                auto response_result =
+                    self->clientManager_->process_authenticated_request(std::move(request));
+
+                if (!response_result) {
+                    BOOST_LOG_SEV(lg(), error) << "Failed to send request";
+                    return {.success = false,
+                            .flags = {},
+                            .error_message = "Failed to send request",
+                            .error_details = {}};
+                }
+
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Fetched " << response_result->settings.size() << " system settings";
+                return {.success = true,
+                        .flags = std::move(response_result->settings),
+                        .error_message = {},
                         .error_details = {}};
-            }
-
-            variability::messaging::list_settings_request request;
-            auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
-
-            if (!response_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to send request";
-                return {.success = false, .flags = {},
-                        .error_message = "Failed to send request",
-                        .error_details = {}};
-            }
-
-            BOOST_LOG_SEV(lg(), debug) << "Fetched " << response_result->settings.size()
-                                       << " system settings";
-            return {.success = true, .flags = std::move(response_result->settings),
-                    .error_message = {}, .error_details = {}};
-        }, "system settings");
+            },
+            "system settings");
     });
 
     watcher_->setFuture(future);
@@ -171,8 +182,8 @@ void ClientSystemSettingModel::onSystemSettingsLoaded() {
     const auto result = watcher_->result();
 
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to fetch system settings: "
-                                   << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to fetch system settings: " << result.error_message.toStdString();
         emit loadError(result.error_message, result.error_details);
         return;
     }
@@ -201,8 +212,8 @@ ClientSystemSettingModel::getSystemSetting(int row) const {
 
 void ClientSystemSettingModel::onPulseStateChanged(bool /*isOn*/) {
     if (!flags_.empty()) {
-        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
-            {Qt::ForegroundRole});
+        emit dataChanged(
+            index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::ForegroundRole});
     }
 }
 

@@ -20,13 +20,13 @@
 #ifndef ORES_QT_REPORT_DEFINITION_DETAIL_DIALOG_HPP
 #define ORES_QT_REPORT_DEFINITION_DETAIL_DIALOG_HPP
 
-#include <vector>
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.reporting.api/domain/concurrency_policy.hpp"
 #include "ores.reporting.api/domain/report_definition.hpp"
 #include "ores.reporting.api/domain/report_type.hpp"
-#include "ores.reporting.api/domain/concurrency_policy.hpp"
+#include <vector>
 
 namespace Ui {
 class ReportDefinitionDetailDialog;
@@ -45,8 +45,7 @@ class ReportDefinitionDetailDialog final : public DetailDialogBase {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.report_definition_detail_dialog";
+    inline static std::string_view logger_name = "ores.qt.report_definition_detail_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -78,7 +77,9 @@ protected:
     QTabWidget* tabWidget() const override;
     QWidget* provenanceTab() const override;
     ProvenanceWidget* provenanceWidget() const override;
-    bool hasUnsavedChanges() const override { return hasChanges_; }
+    bool hasUnsavedChanges() const override {
+        return hasChanges_;
+    }
 
 private:
     void setupUi();
@@ -90,7 +91,8 @@ private:
     void loadReportTypes();
     void loadConcurrencyPolicies();
     void populateReportTypeCombo(const std::vector<reporting::domain::report_type>& types);
-    void populateConcurrencyPolicyCombo(const std::vector<reporting::domain::concurrency_policy>& policies);
+    void populateConcurrencyPolicyCombo(
+        const std::vector<reporting::domain::concurrency_policy>& policies);
 
     Ui::ReportDefinitionDetailDialog* ui_;
     ClientManager* clientManager_;

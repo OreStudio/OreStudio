@@ -18,9 +18,8 @@
  *
  */
 #include "ores.qt/MdiUtils.hpp"
-
-#include <QWidget>
 #include <QMdiSubWindow>
+#include <QWidget>
 
 namespace ores::qt {
 

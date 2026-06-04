@@ -20,9 +20,9 @@
 #ifndef ORES_QT_COMPOSITE_LEGS_WIDGET_HPP
 #define ORES_QT_COMPOSITE_LEGS_WIDGET_HPP
 
-#include <vector>
-#include <QWidget>
 #include "ores.trading.api/domain/composite_leg.hpp"
+#include <QWidget>
+#include <vector>
 
 namespace Ui {
 class CompositeLegsWidget;

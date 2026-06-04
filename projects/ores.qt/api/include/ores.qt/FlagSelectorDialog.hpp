@@ -20,15 +20,15 @@
 #ifndef ORES_QT_FLAG_SELECTOR_DIALOG_HPP
 #define ORES_QT_FLAG_SELECTOR_DIALOG_HPP
 
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/ImageCache.hpp"
+#include "ores.qt/export.hpp"
 #include <QDialog>
+#include <QLabel>
+#include <QLineEdit>
 #include <QListWidget>
 #include <QPushButton>
-#include <QLineEdit>
-#include <QLabel>
 #include <QString>
-#include "ores.qt/ImageCache.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.qt/export.hpp"
 
 namespace ores::qt {
 
@@ -58,15 +58,17 @@ public:
      * @param parent The parent widget
      */
     explicit FlagSelectorDialog(ImageCache* imageCache,
-        const QString& currentImageId = QString(),
-        QWidget* parent = nullptr);
+                                const QString& currentImageId = QString(),
+                                QWidget* parent = nullptr);
 
     /**
      * @brief Get the selected image ID.
      *
      * @return The selected image ID, or empty string if none/cleared
      */
-    QString selectedImageId() const { return selectedImageId_; }
+    QString selectedImageId() const {
+        return selectedImageId_;
+    }
 
 private slots:
     void onImageListLoaded();

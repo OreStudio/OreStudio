@@ -18,23 +18,22 @@
  *
  */
 #include "ores.qt/OvernightIndexConventionDetailDialog.hpp"
-
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include "ui_OvernightIndexConventionDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.refdata.api/messaging/overnight_index_convention_protocol.hpp"
+#include "ui_OvernightIndexConventionDetailDialog.h"
+#include <QFutureWatcher>
+#include <QMessageBox>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 OvernightIndexConventionDetailDialog::OvernightIndexConventionDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent),
-      ui_(new Ui::OvernightIndexConventionDetailDialog),
-      clientManager_(nullptr) {
+    : DetailDialogBase(parent)
+    , ui_(new Ui::OvernightIndexConventionDetailDialog)
+    , clientManager_(nullptr) {
 
     ui_->setupUi(this);
     setupUi();
@@ -70,18 +69,30 @@ void OvernightIndexConventionDetailDialog::setupUi() {
 }
 
 void OvernightIndexConventionDetailDialog::setupConnections() {
-    connect(ui_->saveButton, &QPushButton::clicked, this,
+    connect(ui_->saveButton,
+            &QPushButton::clicked,
+            this,
             &OvernightIndexConventionDetailDialog::onSaveClicked);
-    connect(ui_->deleteButton, &QPushButton::clicked, this,
+    connect(ui_->deleteButton,
+            &QPushButton::clicked,
+            this,
             &OvernightIndexConventionDetailDialog::onDeleteClicked);
-    connect(ui_->closeButton, &QPushButton::clicked, this,
+    connect(ui_->closeButton,
+            &QPushButton::clicked,
+            this,
             &OvernightIndexConventionDetailDialog::onCloseClicked);
 
-    connect(ui_->idEdit, &QLineEdit::textChanged, this,
+    connect(ui_->idEdit,
+            &QLineEdit::textChanged,
+            this,
             &OvernightIndexConventionDetailDialog::onCodeChanged);
-    connect(ui_->fixingCalendarEdit, &QLineEdit::textChanged, this,
+    connect(ui_->fixingCalendarEdit,
+            &QLineEdit::textChanged,
+            this,
             &OvernightIndexConventionDetailDialog::onFieldChanged);
-    connect(ui_->dayCountFractionEdit, &QLineEdit::textChanged, this,
+    connect(ui_->dayCountFractionEdit,
+            &QLineEdit::textChanged,
+            this,
             &OvernightIndexConventionDetailDialog::onFieldChanged);
 }
 
@@ -164,30 +175,27 @@ bool OvernightIndexConventionDetailDialog::validateInput() {
     const QString fixing_calendar_val = ui_->fixingCalendarEdit->text().trimmed();
     const QString day_count_fraction_val = ui_->dayCountFractionEdit->text().trimmed();
 
-    return true
-        && !id_val.isEmpty()
-        && !fixing_calendar_val.isEmpty()
-        && !day_count_fraction_val.isEmpty()
-    ;
+    return true && !id_val.isEmpty() && !fixing_calendar_val.isEmpty() &&
+           !day_count_fraction_val.isEmpty();
 }
 
 void OvernightIndexConventionDetailDialog::onSaveClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
+        MessageBoxHelper::warning(
+            this,
+            "Disconnected",
             "Cannot save overnight index convention while disconnected from server.");
         return;
     }
 
     if (!validateInput()) {
-        MessageBoxHelper::warning(this, "Invalid Input",
-            "Please fill in all required fields.");
+        MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
 
     updateConventionFromUi();
 
-    BOOST_LOG_SEV(lg(), info) << "Saving overnight index convention: "
-        << ni_.id;
+    BOOST_LOG_SEV(lg(), info) << "Saving overnight index convention: " << ni_.id;
 
     QPointer<OvernightIndexConventionDetailDialog> self = this;
 
@@ -203,8 +211,8 @@ void OvernightIndexConventionDetailDialog::onSaveClicked() {
 
         refdata::messaging::save_overnight_index_convention_request request;
         request.data = ni;
-        auto response_result = self->clientManager_->
-            process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -214,15 +222,13 @@ void OvernightIndexConventionDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Overnight Index Convention saved successfully";
-            QString code = QString::fromStdString(
-                self->ni_.id);
+            QString code = QString::fromStdString(self->ni_.id);
             self->hasChanges_ = false;
             self->updateSaveButtonState();
             emit self->niSaved(code);
@@ -241,14 +247,17 @@ void OvernightIndexConventionDetailDialog::onSaveClicked() {
 
 void OvernightIndexConventionDetailDialog::onDeleteClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
+        MessageBoxHelper::warning(
+            this,
+            "Disconnected",
             "Cannot delete overnight index convention while disconnected from server.");
         return;
     }
 
-    QString code = QString::fromStdString(
-        ni_.id);
-    auto reply = MessageBoxHelper::question(this, "Delete Overnight Index Convention",
+    QString code = QString::fromStdString(ni_.id);
+    auto reply = MessageBoxHelper::question(
+        this,
+        "Delete Overnight Index Convention",
         QString("Are you sure you want to delete overnight index convention '%1'?").arg(code),
         QMessageBox::Yes | QMessageBox::No);
 
@@ -256,8 +265,7 @@ void OvernightIndexConventionDetailDialog::onDeleteClicked() {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Deleting overnight index convention: "
-        << ni_.id;
+    BOOST_LOG_SEV(lg(), info) << "Deleting overnight index convention: " << ni_.id;
 
     QPointer<OvernightIndexConventionDetailDialog> self = this;
 
@@ -273,8 +281,8 @@ void OvernightIndexConventionDetailDialog::onDeleteClicked() {
 
         refdata::messaging::delete_overnight_index_convention_request request;
         request.codes = {code};
-        auto response_result = self->clientManager_->
-            process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -284,15 +292,13 @@ void OvernightIndexConventionDetailDialog::onDeleteClicked() {
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
-            self, [self, code, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, code, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Overnight Index Convention deleted successfully";
-            emit self->statusMessage(
-                QString("Overnight Index Convention '%1' deleted").arg(code));
+            emit self->statusMessage(QString("Overnight Index Convention '%1' deleted").arg(code));
             emit self->niDeleted(code);
             self->requestClose();
         } else {

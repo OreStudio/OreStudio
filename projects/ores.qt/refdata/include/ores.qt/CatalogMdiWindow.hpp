@@ -20,13 +20,13 @@
 #ifndef ORES_QT_CATALOG_MDI_WINDOW_HPP
 #define ORES_QT_CATALOG_MDI_WINDOW_HPP
 
-#include <QTableView>
-#include <QToolBar>
-#include "ores.qt/EntityListMdiWindow.hpp"
-#include "ores.qt/ClientCatalogModel.hpp"
-#include "ores.qt/ClientManager.hpp"
 #include "ores.dq.api/domain/catalog.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientCatalogModel.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/EntityListMdiWindow.hpp"
+#include <QTableView>
+#include <QToolBar>
 
 namespace ores::qt {
 

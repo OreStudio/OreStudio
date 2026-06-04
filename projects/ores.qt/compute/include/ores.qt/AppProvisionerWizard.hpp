@@ -20,11 +20,11 @@
 #ifndef ORES_QT_APP_PROVISIONER_WIZARD_HPP
 #define ORES_QT_APP_PROVISIONER_WIZARD_HPP
 
-#include <boost/uuid/uuid.hpp>
-#include <QWizard>
-#include "ores.qt/ClientManager.hpp"
-#include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include <QWizard>
+#include <boost/uuid/uuid.hpp>
 
 namespace ores::qt {
 
@@ -53,8 +53,7 @@ class AppProvisionerWizard : public QWizard {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.app_provisioner_wizard";
+    inline static std::string_view logger_name = "ores.qt.app_provisioner_wizard";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -64,12 +63,12 @@ private:
 
 public:
     enum Page {
-        kAppIdentityPage    = 0,
+        kAppIdentityPage = 0,
         kVersionDetailsPage = 1,
-        kPlatformsPage      = 2,
-        kPackageUploadPage  = 3,
-        kAuditPage          = 4,
-        kReviewPage         = 5,
+        kPlatformsPage = 2,
+        kPackageUploadPage = 3,
+        kAuditPage = 4,
+        kReviewPage = 5,
     };
 
     explicit AppProvisionerWizard(ClientManager* clientManager,
@@ -88,11 +87,11 @@ signals:
     void provisioned();
 
 private:
-    friend class AppProvisionerReviewPage;  // needs access to page pointers in initializePage()
+    friend class AppProvisionerReviewPage; // needs access to page pointers in initializePage()
 
-    ClientManager*     client_manager_;
+    ClientManager* client_manager_;
     ChangeReasonCache* change_reason_cache_;
-    std::string        http_base_url_;
+    std::string http_base_url_;
 
     // Pre-generated UUIDs so PackageUploadPage knows the version ID before
     // the version record is saved.
@@ -100,12 +99,12 @@ private:
     boost::uuids::uuid app_version_id_;
 
     // Non-owning pointers — pages are owned by QWizard.
-    AppIdentityPage*    app_identity_page_;
+    AppIdentityPage* app_identity_page_;
     VersionDetailsPage* version_details_page_;
-    PlatformsPage*      platforms_page_;
-    PackageUploadPage*  package_upload_page_;
-    AuditPage*          audit_page_;
-    AppProvisionerReviewPage*         app_provisioner_review_page_;
+    PlatformsPage* platforms_page_;
+    PackageUploadPage* package_upload_page_;
+    AuditPage* audit_page_;
+    AppProvisionerReviewPage* app_provisioner_review_page_;
 };
 
 } // namespace ores::qt

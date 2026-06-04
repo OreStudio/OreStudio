@@ -19,18 +19,16 @@
  */
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
-
 #include <QAbstractButton>
-#include <QPixmap>
 #include <QImage>
+#include <QPixmap>
 
 namespace ores::qt {
 
-QMessageBox::StandardButton MessageBoxHelper::question(
-    QWidget* parent,
-    const QString& title,
-    const QString& text,
-    QMessageBox::StandardButtons buttons) {
+QMessageBox::StandardButton MessageBoxHelper::question(QWidget* parent,
+                                                       const QString& title,
+                                                       const QString& text,
+                                                       QMessageBox::StandardButtons buttons) {
 
     QMessageBox msgBox(parent);
     msgBox.setWindowTitle(title);
@@ -38,7 +36,8 @@ QMessageBox::StandardButton MessageBoxHelper::question(
     msgBox.setStandardButtons(buttons);
 
     // Set custom question icon
-    QIcon questionIcon = IconUtils::createRecoloredIcon(Icon::Question, IconUtils::DefaultIconColor);
+    QIcon questionIcon =
+        IconUtils::createRecoloredIcon(Icon::Question, IconUtils::DefaultIconColor);
     if (!questionIcon.isNull()) {
         msgBox.setIconPixmap(questionIcon.pixmap(48, 48));
     }
@@ -47,7 +46,8 @@ QMessageBox::StandardButton MessageBoxHelper::question(
     if (buttons & QMessageBox::Yes) {
         QAbstractButton* yesButton = msgBox.button(QMessageBox::Yes);
         if (yesButton) {
-            QIcon checkIcon = IconUtils::createRecoloredIcon(Icon::Checkmark, IconUtils::DefaultIconColor);
+            QIcon checkIcon =
+                IconUtils::createRecoloredIcon(Icon::Checkmark, IconUtils::DefaultIconColor);
             if (!checkIcon.isNull()) {
                 yesButton->setIcon(checkIcon);
             }
@@ -57,7 +57,8 @@ QMessageBox::StandardButton MessageBoxHelper::question(
     if (buttons & QMessageBox::No) {
         QAbstractButton* noButton = msgBox.button(QMessageBox::No);
         if (noButton) {
-            QIcon dismissIcon = IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor);
+            QIcon dismissIcon =
+                IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor);
             if (!dismissIcon.isNull()) {
                 noButton->setIcon(dismissIcon);
             }
@@ -67,10 +68,7 @@ QMessageBox::StandardButton MessageBoxHelper::question(
     return static_cast<QMessageBox::StandardButton>(msgBox.exec());
 }
 
-void MessageBoxHelper::warning(
-    QWidget* parent,
-    const QString& title,
-    const QString& text) {
+void MessageBoxHelper::warning(QWidget* parent, const QString& title, const QString& text) {
 
     QMessageBox msgBox(parent);
     msgBox.setWindowTitle(title);
@@ -86,18 +84,14 @@ void MessageBoxHelper::warning(
     msgBox.exec();
 }
 
-void MessageBoxHelper::critical(
-    QWidget* parent,
-    const QString& title,
-    const QString& text) {
+void MessageBoxHelper::critical(QWidget* parent, const QString& title, const QString& text) {
     critical(parent, title, text, QString());
 }
 
-void MessageBoxHelper::critical(
-    QWidget* parent,
-    const QString& title,
-    const QString& text,
-    const QString& detailedText) {
+void MessageBoxHelper::critical(QWidget* parent,
+                                const QString& title,
+                                const QString& text,
+                                const QString& detailedText) {
 
     QMessageBox msgBox(parent);
     msgBox.setWindowTitle(title);
@@ -117,10 +111,7 @@ void MessageBoxHelper::critical(
     msgBox.exec();
 }
 
-void MessageBoxHelper::information(
-    QWidget* parent,
-    const QString& title,
-    const QString& text) {
+void MessageBoxHelper::information(QWidget* parent, const QString& title, const QString& text) {
 
     QMessageBox msgBox(parent);
     msgBox.setWindowTitle(title);

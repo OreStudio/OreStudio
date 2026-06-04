@@ -20,11 +20,11 @@
 #ifndef ORES_QT_CHANGE_REASON_CONTROLLER_HPP
 #define ORES_QT_CHANGE_REASON_CONTROLLER_HPP
 
-#include <QDateTime>
-#include "ores.qt/EntityController.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.dq.api/domain/change_reason.hpp"
 #include "ores.dq.api/domain/change_reason_category.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/EntityController.hpp"
+#include <QDateTime>
 
 namespace ores::qt {
 
@@ -40,8 +40,7 @@ class ChangeReasonController final : public EntityController {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.change_reason_controller";
+    inline static std::string_view logger_name = "ores.qt.change_reason_controller";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -50,13 +49,12 @@ private:
     }
 
 public:
-    ChangeReasonController(
-        QMainWindow* mainWindow,
-        QMdiArea* mdiArea,
-        ClientManager* clientManager,
-        const QString& username,
-        ChangeReasonCache* changeReasonCache,
-        QObject* parent = nullptr);
+    ChangeReasonController(QMainWindow* mainWindow,
+                           QMdiArea* mdiArea,
+                           ClientManager* clientManager,
+                           const QString& username,
+                           ChangeReasonCache* changeReasonCache,
+                           QObject* parent = nullptr);
 
     ~ChangeReasonController() override;
 
@@ -68,8 +66,10 @@ private slots:
     void onShowDetails(const dq::domain::change_reason& reason);
     void onAddNewRequested();
     void onShowHistory(const QString& code);
-    void onNotificationReceived(const QString& eventType, const QDateTime& timestamp,
-                                const QStringList& entityIds, const QString& tenantId);
+    void onNotificationReceived(const QString& eventType,
+                                const QDateTime& timestamp,
+                                const QStringList& entityIds,
+                                const QString& tenantId);
     void onOpenVersion(const dq::domain::change_reason& reason, int versionNumber);
     void onRevertVersion(const dq::domain::change_reason& reason);
 

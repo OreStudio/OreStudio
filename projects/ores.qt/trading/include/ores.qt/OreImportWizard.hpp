@@ -20,34 +20,34 @@
 #ifndef ORES_QT_ORE_IMPORT_WIZARD_HPP
 #define ORES_QT_ORE_IMPORT_WIZARD_HPP
 
+#include "ores.logging/make_logger.hpp"
+#include "ores.ore.api/messaging/ore_import_protocol.hpp"
+#include "ores.ore.core/planner/import_choices.hpp"
+#include "ores.ore.core/planner/ore_import_plan.hpp"
+#include "ores.ore.core/scanner/scan_result.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/WorkflowStepLogWidget.hpp"
+#include "ores.qt/WorkflowStepsWidget.hpp"
+#include "ores.refdata.api/domain/book.hpp"
+#include <QCheckBox>
+#include <QComboBox>
+#include <QDateEdit>
+#include <QLabel>
+#include <QLineEdit>
+#include <QListWidget>
+#include <QProgressBar>
+#include <QPushButton>
+#include <QRadioButton>
+#include <QTextEdit>
+#include <QTreeWidget>
+#include <QWizard>
+#include <QWizardPage>
+#include <boost/uuid/uuid.hpp>
+#include <filesystem>
 #include <map>
 #include <optional>
 #include <string>
-#include <boost/uuid/uuid.hpp>
-#include <QWizard>
-#include <QWizardPage>
-#include <QLabel>
-#include <QLineEdit>
-#include <QPushButton>
-#include <QProgressBar>
-#include <QTextEdit>
-#include <QRadioButton>
-#include <QCheckBox>
-#include <QListWidget>
-#include <QTreeWidget>
-#include <QComboBox>
-#include <QDateEdit>
-#include <filesystem>
 #include <vector>
-#include "ores.logging/make_logger.hpp"
-#include "ores.qt/ClientManager.hpp"
-#include "ores.qt/WorkflowStepsWidget.hpp"
-#include "ores.qt/WorkflowStepLogWidget.hpp"
-#include "ores.ore.core/scanner/scan_result.hpp"
-#include "ores.ore.core/planner/import_choices.hpp"
-#include "ores.ore.core/planner/ore_import_plan.hpp"
-#include "ores.refdata.api/domain/book.hpp"
-#include "ores.ore.api/messaging/ore_import_protocol.hpp"
 
 namespace ores::qt {
 
@@ -91,25 +91,45 @@ public:
                              const std::string& targetBookName = "",
                              QWidget* parent = nullptr);
 
-    const std::string& targetBookName() const { return targetBookName_; }
+    const std::string& targetBookName() const {
+        return targetBookName_;
+    }
     ~OreImportWizard() override = default;
 
-    ClientManager* clientManager() const { return clientManager_; }
+    ClientManager* clientManager() const {
+        return clientManager_;
+    }
 
     // Shared state — written by pages, read by subsequent pages
-    ore::scanner::scan_result& scanResult() { return scanResult_; }
-    ore::planner::import_choices& choices() { return choices_; }
-    ore::planner::ore_import_plan& importPlan() { return importPlan_; }
+    ore::scanner::scan_result& scanResult() {
+        return scanResult_;
+    }
+    ore::planner::import_choices& choices() {
+        return choices_;
+    }
+    ore::planner::ore_import_plan& importPlan() {
+        return importPlan_;
+    }
 
-    void setScanResult(ore::scanner::scan_result r) { scanResult_ = std::move(r); }
+    void setScanResult(ore::scanner::scan_result r) {
+        scanResult_ = std::move(r);
+    }
 
     // ORE directory picked on Page_Directory — needed by Page_TradeImport for upload
-    void setOreDir(std::filesystem::path dir) { ore_dir_ = std::move(dir); }
-    const std::filesystem::path& oreDir() const { return ore_dir_; }
+    void setOreDir(std::filesystem::path dir) {
+        ore_dir_ = std::move(dir);
+    }
+    const std::filesystem::path& oreDir() const {
+        return ore_dir_;
+    }
 
     // HTTP base URL set by OreImportController before the wizard is shown
-    void setHttpBaseUrl(std::string url) { http_base_url_ = std::move(url); }
-    const std::string& httpBaseUrl() const { return http_base_url_; }
+    void setHttpBaseUrl(std::string url) {
+        http_base_url_ = std::move(url);
+    }
+    const std::string& httpBaseUrl() const {
+        return http_base_url_;
+    }
 
     // Results set by Page_TradeImport after the server-side import completes
     void setImportResponse(ores::ore::messaging::ore_import_response response) {
@@ -117,14 +137,20 @@ public:
         importSuccess_ = import_response_.success;
         importError_ = QString::fromStdString(import_response_.message);
     }
-    bool importSuccess() const { return importSuccess_; }
-    QString importError() const { return importError_; }
+    bool importSuccess() const {
+        return importSuccess_;
+    }
+    QString importError() const {
+        return importError_;
+    }
     const ores::ore::messaging::ore_import_response& importResponse() const {
         return import_response_;
     }
 
     // Existing ISO codes fetched on Page_Currency
-    const std::set<std::string>& existingIsoCodes() const { return existingIsoCodes_; }
+    const std::set<std::string>& existingIsoCodes() const {
+        return existingIsoCodes_;
+    }
     void setExistingIsoCodes(std::set<std::string> codes) {
         existingIsoCodes_ = std::move(codes);
     }
@@ -163,6 +189,7 @@ class OreWelcomePage final : public QWizardPage {
     Q_OBJECT
 public:
     explicit OreWelcomePage(OreImportWizard* wizard);
+
 private:
     OreImportWizard* wizard_;
 };
@@ -333,10 +360,10 @@ private:
     QLabel* errorBanner_ = nullptr;
 
     // Selectable ID rows — shown only when the IDs are present
-    QWidget*      workflowIdRow_  = nullptr;
-    QLineEdit*    workflowIdEdit_ = nullptr;
-    QWidget*      correlIdRow_    = nullptr;
-    QLineEdit*    correlIdEdit_   = nullptr;
+    QWidget* workflowIdRow_ = nullptr;
+    QLineEdit* workflowIdEdit_ = nullptr;
+    QWidget* correlIdRow_ = nullptr;
+    QLineEdit* correlIdEdit_ = nullptr;
 
     // Live step progress — shown only for async (workflow-backed) imports.
     WorkflowStepsWidget* stepsWidget_ = nullptr;

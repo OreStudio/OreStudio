@@ -18,30 +18,29 @@
  *
  */
 #include "ores.qt/BookDetailDialog.hpp"
-
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include <boost/lexical_cast.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/uuid/random_generator.hpp>
-#include "ui_BookDetailDialog.h"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/LookupFetcher.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.refdata.api/messaging/book_protocol.hpp"
+#include "ui_BookDetailDialog.h"
+#include <QFutureWatcher>
+#include <QMessageBox>
+#include <QtConcurrent>
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 BookDetailDialog::BookDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent),
-      ui_(new Ui::BookDetailDialog),
-      clientManager_(nullptr) {
+    : DetailDialogBase(parent)
+    , ui_(new Ui::BookDetailDialog)
+    , clientManager_(nullptr) {
 
     ui_->setupUi(this);
     WidgetUtils::setupComboBoxes(this);
@@ -53,9 +52,15 @@ BookDetailDialog::~BookDetailDialog() {
     delete ui_;
 }
 
-QTabWidget* BookDetailDialog::tabWidget() const { return ui_->tabWidget; }
-QWidget* BookDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
-ProvenanceWidget* BookDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
+QTabWidget* BookDetailDialog::tabWidget() const {
+    return ui_->tabWidget;
+}
+QWidget* BookDetailDialog::provenanceTab() const {
+    return ui_->provenanceTab;
+}
+ProvenanceWidget* BookDetailDialog::provenanceWidget() const {
+    return ui_->provenanceWidget;
+}
 
 void BookDetailDialog::setupUi() {
     ui_->saveButton->setIcon(
@@ -70,30 +75,37 @@ void BookDetailDialog::setupUi() {
 }
 
 void BookDetailDialog::setupConnections() {
-    connect(ui_->saveButton, &QPushButton::clicked, this,
-            &BookDetailDialog::onSaveClicked);
-    connect(ui_->deleteButton, &QPushButton::clicked, this,
-            &BookDetailDialog::onDeleteClicked);
-    connect(ui_->closeButton, &QPushButton::clicked, this,
-            &BookDetailDialog::onCloseClicked);
+    connect(ui_->saveButton, &QPushButton::clicked, this, &BookDetailDialog::onSaveClicked);
+    connect(ui_->deleteButton, &QPushButton::clicked, this, &BookDetailDialog::onDeleteClicked);
+    connect(ui_->closeButton, &QPushButton::clicked, this, &BookDetailDialog::onCloseClicked);
 
-    connect(ui_->nameEdit, &QLineEdit::textChanged, this,
-            &BookDetailDialog::onCodeChanged);
-    connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this,
+    connect(ui_->nameEdit, &QLineEdit::textChanged, this, &BookDetailDialog::onCodeChanged);
+    connect(ui_->descriptionEdit,
+            &QPlainTextEdit::textChanged,
+            this,
             &BookDetailDialog::onFieldChanged);
-    connect(ui_->ledgerCcyCombo, &QComboBox::currentTextChanged, this,
+    connect(ui_->ledgerCcyCombo,
+            &QComboBox::currentTextChanged,
+            this,
             &BookDetailDialog::onFieldChanged);
-    connect(ui_->glAccountRefEdit, &QLineEdit::textChanged, this,
+    connect(
+        ui_->glAccountRefEdit, &QLineEdit::textChanged, this, &BookDetailDialog::onFieldChanged);
+    connect(ui_->costCenterEdit, &QLineEdit::textChanged, this, &BookDetailDialog::onFieldChanged);
+    connect(ui_->bookStatusCombo,
+            &QComboBox::currentTextChanged,
+            this,
             &BookDetailDialog::onFieldChanged);
-    connect(ui_->costCenterEdit, &QLineEdit::textChanged, this,
+    connect(ui_->bookTypeCombo,
+            &QComboBox::currentTextChanged,
+            this,
             &BookDetailDialog::onFieldChanged);
-    connect(ui_->bookStatusCombo, &QComboBox::currentTextChanged, this,
+    connect(ui_->parentPortfolioCombo,
+            &QComboBox::currentTextChanged,
+            this,
             &BookDetailDialog::onFieldChanged);
-    connect(ui_->bookTypeCombo, &QComboBox::currentTextChanged, this,
-            &BookDetailDialog::onFieldChanged);
-    connect(ui_->parentPortfolioCombo, &QComboBox::currentTextChanged, this,
-            &BookDetailDialog::onFieldChanged);
-    connect(ui_->ownerUnitCombo, &QComboBox::currentIndexChanged, this,
+    connect(ui_->ownerUnitCombo,
+            &QComboBox::currentIndexChanged,
+            this,
             &BookDetailDialog::onFieldChanged);
 }
 
@@ -111,7 +123,8 @@ void BookDetailDialog::setImageCache(ImageCache* imageCache) {
 }
 
 void BookDetailDialog::populateCurrencyCombo() {
-    if (!clientManager_ || !clientManager_->isConnected()) return;
+    if (!clientManager_ || !clientManager_->isConnected())
+        return;
 
     QPointer<BookDetailDialog> self = this;
     auto* cm = clientManager_;
@@ -121,21 +134,19 @@ void BookDetailDialog::populateCurrencyCombo() {
     };
 
     auto* watcher = new QFutureWatcher<std::vector<std::string>>(self);
-    connect(watcher, &QFutureWatcher<std::vector<std::string>>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<std::vector<std::string>>::finished, self, [self, watcher]() {
         auto codes = watcher->result();
         watcher->deleteLater();
-        if (!self) return;
+        if (!self)
+            return;
 
         self->ui_->ledgerCcyCombo->clear();
-        self->ui_->ledgerCcyCombo->addItem(QString());  // "(select)" sentinel
+        self->ui_->ledgerCcyCombo->addItem(QString()); // "(select)" sentinel
         for (const auto& code : codes) {
-            self->ui_->ledgerCcyCombo->addItem(
-                QString::fromStdString(code));
+            self->ui_->ledgerCcyCombo->addItem(QString::fromStdString(code));
         }
 
-        apply_flag_icons(self->ui_->ledgerCcyCombo, self->imageCache_,
-                         FlagSource::Currency);
+        apply_flag_icons(self->ui_->ledgerCcyCombo, self->imageCache_, FlagSource::Currency);
 
         self->updateUiFromBook();
     });
@@ -155,7 +166,8 @@ void BookDetailDialog::populateBookStatusCombo() {
 }
 
 void BookDetailDialog::populateParentPortfolioCombo() {
-    if (!clientManager_ || !clientManager_->isConnected()) return;
+    if (!clientManager_ || !clientManager_->isConnected())
+        return;
 
     QPointer<BookDetailDialog> self = this;
     auto* cm = clientManager_;
@@ -165,27 +177,28 @@ void BookDetailDialog::populateParentPortfolioCombo() {
     };
 
     auto* watcher = new QFutureWatcher<std::vector<portfolio_entry>>(self);
-    connect(watcher, &QFutureWatcher<std::vector<portfolio_entry>>::finished,
-            self, [self, watcher]() {
-        auto entries = watcher->result();
-        watcher->deleteLater();
-        if (!self) return;
+    connect(
+        watcher, &QFutureWatcher<std::vector<portfolio_entry>>::finished, self, [self, watcher]() {
+            auto entries = watcher->result();
+            watcher->deleteLater();
+            if (!self)
+                return;
 
-        self->portfolioEntries_ = entries;
-        self->ui_->parentPortfolioCombo->clear();
-        for (const auto& e : entries) {
-            self->ui_->parentPortfolioCombo->addItem(
-                QString::fromStdString(e.name));
-        }
-        self->updateUiFromBook();
-    });
+            self->portfolioEntries_ = entries;
+            self->ui_->parentPortfolioCombo->clear();
+            for (const auto& e : entries) {
+                self->ui_->parentPortfolioCombo->addItem(QString::fromStdString(e.name));
+            }
+            self->updateUiFromBook();
+        });
 
     QFuture<std::vector<portfolio_entry>> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
 
 void BookDetailDialog::populateOwnerUnitCombo() {
-    if (!clientManager_ || !clientManager_->isConnected()) return;
+    if (!clientManager_ || !clientManager_->isConnected())
+        return;
 
     QPointer<BookDetailDialog> self = this;
     auto* cm = clientManager_;
@@ -195,22 +208,24 @@ void BookDetailDialog::populateOwnerUnitCombo() {
     };
 
     auto* watcher = new QFutureWatcher<std::vector<business_unit_entry>>(self);
-    connect(watcher, &QFutureWatcher<std::vector<business_unit_entry>>::finished,
-            self, [self, watcher]() {
-        auto entries = watcher->result();
-        watcher->deleteLater();
-        if (!self) return;
+    connect(watcher,
+            &QFutureWatcher<std::vector<business_unit_entry>>::finished,
+            self,
+            [self, watcher]() {
+                auto entries = watcher->result();
+                watcher->deleteLater();
+                if (!self)
+                    return;
 
-        self->ownerUnitEntries_ = entries;
-        self->ui_->ownerUnitCombo->clear();
-        self->ui_->ownerUnitCombo->addItem(tr("(none)"), QString{});
-        for (const auto& e : entries) {
-            self->ui_->ownerUnitCombo->addItem(
-                QString::fromStdString(e.name),
-                QString::fromStdString(e.id));
-        }
-        self->updateUiFromBook();
-    });
+                self->ownerUnitEntries_ = entries;
+                self->ui_->ownerUnitCombo->clear();
+                self->ui_->ownerUnitCombo->addItem(tr("(none)"), QString{});
+                for (const auto& e : entries) {
+                    self->ui_->ownerUnitCombo->addItem(QString::fromStdString(e.name),
+                                                       QString::fromStdString(e.id));
+                }
+                self->updateUiFromBook();
+            });
 
     QFuture<std::vector<business_unit_entry>> future = QtConcurrent::run(task);
     watcher->setFuture(future);
@@ -220,8 +235,7 @@ void BookDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
 
-void BookDetailDialog::setBook(
-    const refdata::domain::book& book) {
+void BookDetailDialog::setBook(const refdata::domain::book& book) {
     book_ = book;
     updateUiFromBook();
 }
@@ -265,13 +279,11 @@ void BookDetailDialog::updateUiFromBook() {
     ui_->bookTypeCombo->setCurrentIndex(book_.is_trading_book != 0 ? 1 : 0);
 
     // Select the parent portfolio by matching the stored UUID to a loaded entry
-    const auto parent_id_str =
-        boost::uuids::to_string(book_.parent_portfolio_id);
+    const auto parent_id_str = boost::uuids::to_string(book_.parent_portfolio_id);
     ui_->parentPortfolioCombo->setCurrentIndex(0);
     for (const auto& e : portfolioEntries_) {
         if (e.id == parent_id_str) {
-            ui_->parentPortfolioCombo->setCurrentText(
-                QString::fromStdString(e.name));
+            ui_->parentPortfolioCombo->setCurrentText(QString::fromStdString(e.name));
             break;
         }
     }
@@ -289,8 +301,11 @@ void BookDetailDialog::updateUiFromBook() {
         }
     }
 
-    populateProvenance(book_.version, book_.modified_by, book_.performed_by,
-                       book_.recorded_at, book_.change_reason_code,
+    populateProvenance(book_.version,
+                       book_.modified_by,
+                       book_.performed_by,
+                       book_.recorded_at,
+                       book_.change_reason_code,
                        book_.change_commentary);
     hasChanges_ = false;
     updateSaveButtonState();
@@ -308,19 +323,16 @@ void BookDetailDialog::updateBookFromUi() {
     book_.performed_by = username_;
 
     // Resolve parent portfolio name back to UUID
-    const auto parent_name =
-        ui_->parentPortfolioCombo->currentText().trimmed().toStdString();
+    const auto parent_name = ui_->parentPortfolioCombo->currentText().trimmed().toStdString();
     for (const auto& e : portfolioEntries_) {
         if (e.name == parent_name) {
-            book_.parent_portfolio_id =
-                boost::lexical_cast<boost::uuids::uuid>(e.id);
+            book_.parent_portfolio_id = boost::lexical_cast<boost::uuids::uuid>(e.id);
             break;
         }
     }
 
     // Resolve owner unit: item data holds the UUID string; index 0 = none
-    const auto owner_data =
-        ui_->ownerUnitCombo->currentData().toString().trimmed().toStdString();
+    const auto owner_data = ui_->ownerUnitCombo->currentData().toString().trimmed().toStdString();
     if (owner_data.empty()) {
         book_.owner_unit_id = std::nullopt;
     } else {
@@ -352,25 +364,26 @@ bool BookDetailDialog::validateInput() {
 
 void BookDetailDialog::onSaveClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot save book while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot save book while disconnected from server.");
         return;
     }
 
     if (!validateInput()) {
-        MessageBoxHelper::warning(this, "Invalid Input",
+        MessageBoxHelper::warning(
+            this,
+            "Invalid Input",
             "Please fill in all required fields (name and currency are required).");
         return;
     }
 
-    const auto crOpType = createMode_
-        ? ChangeReasonDialog::OperationType::Create
-        : ChangeReasonDialog::OperationType::Amend;
-    const auto crSel = promptChangeReason(crOpType, hasChanges_,
-        createMode_ ? "system" : "common");
-    if (!crSel) return;
+    const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
+                                        ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
+    if (!crSel)
+        return;
     book_.change_reason_code = crSel->reason_code;
-    book_.change_commentary  = crSel->commentary;
+    book_.change_commentary = crSel->commentary;
 
     updateBookFromUi();
 
@@ -390,7 +403,8 @@ void BookDetailDialog::onSaveClicked() {
 
         refdata::messaging::save_book_request request;
         request.data = book;
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -400,8 +414,7 @@ void BookDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
@@ -426,23 +439,25 @@ void BookDetailDialog::onSaveClicked() {
 
 void BookDetailDialog::onDeleteClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot delete book while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot delete book while disconnected from server.");
         return;
     }
 
     QString code = QString::fromStdString(book_.name);
-    auto reply = MessageBoxHelper::question(this, "Delete Book",
-        QString("Are you sure you want to delete book '%1'?").arg(code),
-        QMessageBox::Yes | QMessageBox::No);
+    auto reply =
+        MessageBoxHelper::question(this,
+                                   "Delete Book",
+                                   QString("Are you sure you want to delete book '%1'?").arg(code),
+                                   QMessageBox::Yes | QMessageBox::No);
 
     if (reply != QMessageBox::Yes) {
         return;
     }
 
-    const auto crSel = promptChangeReason(
-        ChangeReasonDialog::OperationType::Delete, false);
-    if (!crSel) return;
+    const auto crSel = promptChangeReason(ChangeReasonDialog::OperationType::Delete, false);
+    if (!crSel)
+        return;
 
     BOOST_LOG_SEV(lg(), info) << "Deleting book: " << book_.name;
 
@@ -460,7 +475,8 @@ void BookDetailDialog::onDeleteClicked() {
 
         refdata::messaging::delete_book_request request;
         request.ids.push_back(boost::uuids::to_string(id));
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -470,8 +486,7 @@ void BookDetailDialog::onDeleteClicked() {
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
-            self, [self, code, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, code, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 

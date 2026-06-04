@@ -18,38 +18,36 @@
  *
  */
 #include "ores.qt/PricingEngineTypeMdiWindow.hpp"
-
-#include <QVBoxLayout>
-#include <QHeaderView>
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
+#include "ores.analytics.api/messaging/pricing_engine_type_protocol.hpp"
+#include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/ColorConstants.hpp"
-#include "ores.analytics.api/messaging/pricing_engine_type_protocol.hpp"
+#include <QFutureWatcher>
+#include <QHeaderView>
+#include <QMessageBox>
+#include <QVBoxLayout>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-PricingEngineTypeMdiWindow::PricingEngineTypeMdiWindow(
-    ClientManager* clientManager,
-    const QString& username,
-    QWidget* parent)
-    : EntityListMdiWindow(parent),
-      clientManager_(clientManager),
-      username_(username),
-      toolbar_(nullptr),
-      tableView_(nullptr),
-      model_(nullptr),
-      proxyModel_(nullptr),
-      paginationWidget_(nullptr),
-      reloadAction_(nullptr),
-      addAction_(nullptr),
-      editAction_(nullptr),
-      deleteAction_(nullptr),
-      historyAction_(nullptr) {
+PricingEngineTypeMdiWindow::PricingEngineTypeMdiWindow(ClientManager* clientManager,
+                                                       const QString& username,
+                                                       QWidget* parent)
+    : EntityListMdiWindow(parent)
+    , clientManager_(clientManager)
+    , username_(username)
+    , toolbar_(nullptr)
+    , tableView_(nullptr)
+    , model_(nullptr)
+    , proxyModel_(nullptr)
+    , paginationWidget_(nullptr)
+    , reloadAction_(nullptr)
+    , addAction_(nullptr)
+    , editAction_(nullptr)
+    , deleteAction_(nullptr)
+    , historyAction_(nullptr) {
 
     setupUi();
     setupConnections();
@@ -78,49 +76,38 @@ void PricingEngineTypeMdiWindow::setupToolbar() {
     toolbar_->setIconSize(QSize(20, 20));
 
     reloadAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::ArrowClockwise, IconUtils::DefaultIconColor),
+        IconUtils::createRecoloredIcon(Icon::ArrowClockwise, IconUtils::DefaultIconColor),
         tr("Reload"));
-    connect(reloadAction_, &QAction::triggered, this,
-            &EntityListMdiWindow::reload);
+    connect(reloadAction_, &QAction::triggered, this, &EntityListMdiWindow::reload);
 
     initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowClockwise));
 
     toolbar_->addSeparator();
 
     addAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::Add, IconUtils::DefaultIconColor),
-        tr("Add"));
+        IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor), tr("Add"));
     addAction_->setToolTip(tr("Add new pricing engine type"));
-    connect(addAction_, &QAction::triggered, this,
-            &PricingEngineTypeMdiWindow::addNew);
+    connect(addAction_, &QAction::triggered, this, &PricingEngineTypeMdiWindow::addNew);
 
     editAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::Edit, IconUtils::DefaultIconColor),
-        tr("Edit"));
+        IconUtils::createRecoloredIcon(Icon::Edit, IconUtils::DefaultIconColor), tr("Edit"));
     editAction_->setToolTip(tr("Edit selected pricing engine type"));
     editAction_->setEnabled(false);
-    connect(editAction_, &QAction::triggered, this,
-            &PricingEngineTypeMdiWindow::editSelected);
+    connect(editAction_, &QAction::triggered, this, &PricingEngineTypeMdiWindow::editSelected);
 
     deleteAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::Delete, IconUtils::DefaultIconColor),
-        tr("Delete"));
+        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor), tr("Delete"));
     deleteAction_->setToolTip(tr("Delete selected pricing engine type"));
     deleteAction_->setEnabled(false);
-    connect(deleteAction_, &QAction::triggered, this,
-            &PricingEngineTypeMdiWindow::deleteSelected);
+    connect(deleteAction_, &QAction::triggered, this, &PricingEngineTypeMdiWindow::deleteSelected);
 
     historyAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::History, IconUtils::DefaultIconColor),
-        tr("History"));
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor), tr("History"));
     historyAction_->setToolTip(tr("View pricing engine type history"));
     historyAction_->setEnabled(false);
-    connect(historyAction_, &QAction::triggered, this,
+    connect(historyAction_,
+            &QAction::triggered,
+            this,
             &PricingEngineTypeMdiWindow::viewHistorySelected);
 }
 
@@ -138,31 +125,38 @@ void PricingEngineTypeMdiWindow::setupTable() {
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
 
-    initializeTableSettings(tableView_, model_,
-        "PricingEngineTypeListWindow",
-        {ClientPricingEngineTypeModel::Description},
-        {900, 400}, 1);
+    initializeTableSettings(tableView_,
+                            model_,
+                            "PricingEngineTypeListWindow",
+                            {ClientPricingEngineTypeModel::Description},
+                            {900, 400},
+                            1);
 }
 
 void PricingEngineTypeMdiWindow::setupConnections() {
-    connect(model_, &ClientPricingEngineTypeModel::dataLoaded,
-            this, &PricingEngineTypeMdiWindow::onDataLoaded);
-    connect(model_, &ClientPricingEngineTypeModel::loadError,
-            this, &PricingEngineTypeMdiWindow::onLoadError);
+    connect(model_,
+            &ClientPricingEngineTypeModel::dataLoaded,
+            this,
+            &PricingEngineTypeMdiWindow::onDataLoaded);
+    connect(model_,
+            &ClientPricingEngineTypeModel::loadError,
+            this,
+            &PricingEngineTypeMdiWindow::onLoadError);
 
-    connect(tableView_->selectionModel(), &QItemSelectionModel::selectionChanged,
-            this, &PricingEngineTypeMdiWindow::onSelectionChanged);
-    connect(tableView_, &QTableView::doubleClicked,
-            this, &PricingEngineTypeMdiWindow::onDoubleClicked);
+    connect(tableView_->selectionModel(),
+            &QItemSelectionModel::selectionChanged,
+            this,
+            &PricingEngineTypeMdiWindow::onSelectionChanged);
+    connect(
+        tableView_, &QTableView::doubleClicked, this, &PricingEngineTypeMdiWindow::onDoubleClicked);
 
-    connect(paginationWidget_, &PaginationWidget::page_size_changed,
-            this, [this](std::uint32_t size) {
-        model_->set_page_size(size);
-        model_->refresh();
-    });
+    connect(
+        paginationWidget_, &PaginationWidget::page_size_changed, this, [this](std::uint32_t size) {
+            model_->set_page_size(size);
+            model_->refresh();
+        });
 
-    connect(paginationWidget_, &PaginationWidget::load_all_requested,
-            this, [this]() {
+    connect(paginationWidget_, &PaginationWidget::load_all_requested, this, [this]() {
         const auto total = model_->total_available_count();
         if (total > 0 && total <= 1000) {
             model_->set_page_size(total);
@@ -170,10 +164,11 @@ void PricingEngineTypeMdiWindow::setupConnections() {
         }
     });
 
-    connect(paginationWidget_, &PaginationWidget::page_requested,
-            this, [this](std::uint32_t offset, std::uint32_t limit) {
-        model_->load_page(offset, limit);
-    });
+    connect(
+        paginationWidget_,
+        &PaginationWidget::page_requested,
+        this,
+        [this](std::uint32_t offset, std::uint32_t limit) { model_->load_page(offset, limit); });
 
     connectModel(model_);
 }
@@ -191,12 +186,11 @@ void PricingEngineTypeMdiWindow::onDataLoaded() {
     emit statusChanged(tr("Loaded %1 of %2 pricing engine types").arg(loaded).arg(total));
 
     paginationWidget_->update_state(loaded, total);
-    paginationWidget_->set_load_all_enabled(
-        loaded < static_cast<int>(total) && total > 0 && total <= 1000);
+    paginationWidget_->set_load_all_enabled(loaded < static_cast<int>(total) && total > 0 &&
+                                            total <= 1000);
 }
 
-void PricingEngineTypeMdiWindow::onLoadError(const QString& error_message,
-                                          const QString& details) {
+void PricingEngineTypeMdiWindow::onLoadError(const QString& error_message, const QString& details) {
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);
@@ -250,8 +244,7 @@ void PricingEngineTypeMdiWindow::viewHistorySelected() {
 
     auto sourceIndex = proxyModel_->mapToSource(selected.first());
     if (auto* type = model_->getType(sourceIndex.row())) {
-        BOOST_LOG_SEV(lg(), debug) << "Emitting showTypeHistory for code: "
-                                   << type->code;
+        BOOST_LOG_SEV(lg(), debug) << "Emitting showTypeHistory for code: " << type->code;
         emit showTypeHistory(*type);
     }
 }
@@ -264,8 +257,8 @@ void PricingEngineTypeMdiWindow::deleteSelected() {
     }
 
     if (!clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot delete pricing engine type while disconnected.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot delete pricing engine type while disconnected.");
         return;
     }
 
@@ -288,14 +281,14 @@ void PricingEngineTypeMdiWindow::deleteSelected() {
     QString confirmMessage;
     if (codes.size() == 1) {
         confirmMessage = QString("Are you sure you want to delete pricing engine type '%1'?")
-            .arg(QString::fromStdString(codes.front()));
+                             .arg(QString::fromStdString(codes.front()));
     } else {
-        confirmMessage = QString("Are you sure you want to delete %1 pricing engine types?")
-            .arg(codes.size());
+        confirmMessage =
+            QString("Are you sure you want to delete %1 pricing engine types?").arg(codes.size());
     }
 
-    auto reply = MessageBoxHelper::question(this, "Delete Pricing Engine Type",
-        confirmMessage, QMessageBox::Yes | QMessageBox::No);
+    auto reply = MessageBoxHelper::question(
+        this, "Delete Pricing Engine Type", confirmMessage, QMessageBox::Yes | QMessageBox::No);
 
     if (reply != QMessageBox::Yes) {
         BOOST_LOG_SEV(lg(), debug) << "Delete cancelled by user";
@@ -307,14 +300,16 @@ void PricingEngineTypeMdiWindow::deleteSelected() {
 
     auto task = [self, codes]() -> DeleteResult {
         DeleteResult results;
-        if (!self) return {};
+        if (!self)
+            return {};
 
-        BOOST_LOG_SEV(lg(), debug) << "Making batch delete request for "
-                                   << codes.size() << " pricing engine types";
+        BOOST_LOG_SEV(lg(), debug)
+            << "Making batch delete request for " << codes.size() << " pricing engine types";
 
         analytics::messaging::delete_pricing_engine_type_request request;
         request.codes = codes;
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             BOOST_LOG_SEV(lg(), error) << "Failed to send batch delete request";
@@ -332,8 +327,7 @@ void PricingEngineTypeMdiWindow::deleteSelected() {
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, watcher]() {
         auto results = watcher->result();
         watcher->deleteLater();
 
@@ -347,8 +341,8 @@ void PricingEngineTypeMdiWindow::deleteSelected() {
                 success_count++;
                 emit self->typeDeleted(QString::fromStdString(code));
             } else {
-                BOOST_LOG_SEV(lg(), error) << "Pricing Engine Type deletion failed: "
-                                           << code << " - " << result.second;
+                BOOST_LOG_SEV(lg(), error)
+                    << "Pricing Engine Type deletion failed: " << code << " - " << result.second;
                 failure_count++;
                 if (first_error.isEmpty()) {
                     first_error = QString::fromStdString(result.second);
@@ -359,21 +353,22 @@ void PricingEngineTypeMdiWindow::deleteSelected() {
         self->model_->refresh();
 
         if (failure_count == 0) {
-            QString msg = success_count == 1
-                ? "Successfully deleted 1 pricing engine type"
-                : QString("Successfully deleted %1 pricing engine types").arg(success_count);
+            QString msg =
+                success_count == 1 ?
+                    "Successfully deleted 1 pricing engine type" :
+                    QString("Successfully deleted %1 pricing engine types").arg(success_count);
             emit self->statusChanged(msg);
         } else if (success_count == 0) {
-            QString msg = QString("Failed to delete %1 %2: %3")
-                .arg(failure_count)
-                .arg(failure_count == 1 ? "pricing engine type" : "pricing engine types")
-                .arg(first_error);
+            QString msg =
+                QString("Failed to delete %1 %2: %3")
+                    .arg(failure_count)
+                    .arg(failure_count == 1 ? "pricing engine type" : "pricing engine types")
+                    .arg(first_error);
             emit self->errorOccurred(msg);
             MessageBoxHelper::critical(self, "Delete Failed", msg);
         } else {
-            QString msg = QString("Deleted %1, failed to delete %2")
-                .arg(success_count)
-                .arg(failure_count);
+            QString msg =
+                QString("Deleted %1, failed to delete %2").arg(success_count).arg(failure_count);
             emit self->statusChanged(msg);
             MessageBoxHelper::warning(self, "Partial Success", msg);
         }

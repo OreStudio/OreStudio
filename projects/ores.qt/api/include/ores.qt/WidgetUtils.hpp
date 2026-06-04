@@ -48,11 +48,12 @@ public:
     static constexpr int max_popup_height = 250;
 
     explicit BoundedListView(QComboBox* combo)
-        : QListView(combo), combo_(combo) {}
+        : QListView(combo)
+        , combo_(combo) {}
 
     QSize sizeHint() const override {
         const auto s = QListView::sizeHint();
-        return { s.width(), std::min(s.height(), max_popup_height) };
+        return {s.width(), std::min(s.height(), max_popup_height)};
     }
 
 protected:
@@ -71,9 +72,7 @@ protected:
 
             // Get the available screen geometry.
             const QScreen* screen = QApplication::screenAt(comboPos);
-            const QRect screenRect = screen
-                ? screen->availableGeometry()
-                : QRect(0, 0, 9999, 9999);
+            const QRect screenRect = screen ? screen->availableGeometry() : QRect(0, 0, 9999, 9999);
 
             // Resize first, then reposition: prefer opening below the combo,
             // fall back to above if there is not enough room.

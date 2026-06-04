@@ -20,28 +20,28 @@
 #ifndef ORES_QT_ORG_EXPLORER_MDI_WINDOW_HPP
 #define ORES_QT_ORG_EXPLORER_MDI_WINDOW_HPP
 
-#include <vector>
-#include <QList>
-#include <QLabel>
-#include <QAction>
-#include <QToolBar>
-#include <QSplitter>
-#include <QTreeView>
-#include <QWidget>
-#include <QTableView>
-#include <QDateTime>
-#include <QFutureWatcher>
-#include <QItemSelection>
-#include <QSortFilterProxyModel>
-#include <QToolButton>
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
-#include "ores.qt/PaginationWidget.hpp"
-#include "ores.qt/OrgExplorerTreeModel.hpp"
 #include "ores.qt/OrgExplorerTradeModel.hpp"
-#include "ores.refdata.api/domain/business_unit.hpp"
+#include "ores.qt/OrgExplorerTreeModel.hpp"
+#include "ores.qt/PaginationWidget.hpp"
 #include "ores.refdata.api/domain/book.hpp"
+#include "ores.refdata.api/domain/business_unit.hpp"
+#include <QAction>
+#include <QDateTime>
+#include <QFutureWatcher>
+#include <QItemSelection>
+#include <QLabel>
+#include <QList>
+#include <QSortFilterProxyModel>
+#include <QSplitter>
+#include <QTableView>
+#include <QToolBar>
+#include <QToolButton>
+#include <QTreeView>
+#include <QWidget>
+#include <vector>
 
 namespace ores::qt {
 
@@ -60,8 +60,7 @@ class OrgExplorerMdiWindow final : public EntityListMdiWindow {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.org_explorer_mdi_window";
+    inline static std::string_view logger_name = "ores.qt.org_explorer_mdi_window";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -71,21 +70,21 @@ private:
 
     // Event names for subscription
     static constexpr const char* book_event = "ores.refdata.book_changed";
-    static constexpr const char* business_unit_event =
-        "ores.refdata.business_unit_changed";
+    static constexpr const char* business_unit_event = "ores.refdata.business_unit_changed";
     static constexpr const char* trade_event = "ores.trading.trade_changed";
 
 public:
-    explicit OrgExplorerMdiWindow(
-        ClientManager* clientManager,
-        IBusinessUnitBrowser* businessUnitController,
-        BookController* bookController,
-        TradeController* tradeController,
-        const QString& username,
-        QWidget* parent = nullptr);
+    explicit OrgExplorerMdiWindow(ClientManager* clientManager,
+                                  IBusinessUnitBrowser* businessUnitController,
+                                  BookController* bookController,
+                                  TradeController* tradeController,
+                                  const QString& username,
+                                  QWidget* parent = nullptr);
     ~OrgExplorerMdiWindow() override = default;
 
-    QSize sizeHint() const override { return QSize(1200, 700); }
+    QSize sizeHint() const override {
+        return QSize(1200, 700);
+    }
 
 public slots:
     /**
@@ -104,8 +103,7 @@ protected:
     }
 
 private slots:
-    void onTreeSelectionChanged(const QItemSelection& selected,
-                                const QItemSelection& deselected);
+    void onTreeSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
     void onNotificationReceived(const QString& eventType,
                                 const QDateTime& timestamp,
                                 const QStringList& entityIds,
@@ -127,8 +125,7 @@ private:
     void setupEventSubscriptions();
     void rebuildTree();
     void updateBreadcrumb(const OrgTreeNode* node);
-    void collectBookUuids(const QModelIndex& parent,
-                          QList<boost::uuids::uuid>& uuids);
+    void collectBookUuids(const QModelIndex& parent, QList<boost::uuids::uuid>& uuids);
 
     // Fetch result types
     struct UnitFetchResult {

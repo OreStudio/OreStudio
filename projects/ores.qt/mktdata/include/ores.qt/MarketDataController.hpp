@@ -20,12 +20,12 @@
 #ifndef ORES_QT_MARKET_DATA_CONTROLLER_HPP
 #define ORES_QT_MARKET_DATA_CONTROLLER_HPP
 
+#include "ores.logging/make_logger.hpp"
+#include "ores.marketdata.api/domain/market_series.hpp"
+#include "ores.qt/EntityController.hpp"
 #include <QMainWindow>
 #include <QMdiArea>
 #include <QPointer>
-#include "ores.qt/EntityController.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.marketdata.api/domain/market_series.hpp"
 
 namespace ores::qt {
 
@@ -46,8 +46,7 @@ class MarketDataController : public EntityController {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.market_data_controller";
+    inline static std::string_view logger_name = "ores.qt.market_data_controller";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -56,12 +55,11 @@ private:
     }
 
 public:
-    MarketDataController(
-        QMainWindow* mainWindow,
-        QMdiArea* mdiArea,
-        ClientManager* clientManager,
-        const QString& username,
-        QObject* parent = nullptr);
+    MarketDataController(QMainWindow* mainWindow,
+                         QMdiArea* mdiArea,
+                         ClientManager* clientManager,
+                         const QString& username,
+                         QObject* parent = nullptr);
 
     void showListWindow() override;
     void showFixingsWindow();
@@ -72,16 +70,12 @@ protected:
     EntityListMdiWindow* listWindow() const override;
 
 private slots:
-    void onShowMarketObservations(
-        const marketdata::domain::market_series& series);
-    void onShowMarketFixings(
-        const marketdata::domain::market_series& series);
+    void onShowMarketObservations(const marketdata::domain::market_series& series);
+    void onShowMarketFixings(const marketdata::domain::market_series& series);
 
 private:
-    void showObservationWindow(
-        const marketdata::domain::market_series& series);
-    void showFixingDetailWindow(
-        const marketdata::domain::market_series& series);
+    void showObservationWindow(const marketdata::domain::market_series& series);
+    void showFixingDetailWindow(const marketdata::domain::market_series& series);
 
     QPointer<MarketSeriesMdiWindow> seriesListWindow_;
     QPointer<DetachableMdiSubWindow> seriesListMdiSubWindow_;

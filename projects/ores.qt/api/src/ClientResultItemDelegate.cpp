@@ -21,9 +21,8 @@
 #include "ores.qt/ClientResultModel.hpp"
 #include "ores.qt/DelegatePaintUtils.hpp"
 #include "ores.qt/FontUtils.hpp"
-
-#include <QPainter>
 #include <QApplication>
+#include <QPainter>
 #include <QStyleOptionViewItem>
 
 namespace ores::qt {
@@ -33,9 +32,9 @@ using Column = ClientResultModel::Column;
 namespace {
 
 // State badge colors
-const QColor state_done_bg(34, 197, 94);        // Green — Done
-const QColor state_running_bg(234, 179, 8);     // Amber — Running
-const QColor state_default_bg(107, 114, 128);   // Gray  — Inactive/Unsent
+const QColor state_done_bg(34, 197, 94);      // Green — Done
+const QColor state_running_bg(234, 179, 8);   // Amber — Running
+const QColor state_default_bg(107, 114, 128); // Gray  — Inactive/Unsent
 const QColor state_text(255, 255, 255);
 
 // Outcome badge colors
@@ -52,7 +51,7 @@ struct badge_spec {
 
 badge_spec state_badge(const QString& value) {
     if (value == QObject::tr("Done"))
-        return {state_done_bg,    state_text, value};
+        return {state_done_bg, state_text, value};
     if (value == QObject::tr("Running"))
         return {state_running_bg, state_text, value};
     return {state_default_bg, state_text, value};
@@ -62,7 +61,7 @@ badge_spec outcome_badge(const QString& value) {
     if (value == QObject::tr("Success"))
         return {outcome_success_bg, outcome_text, value};
     if (value == QObject::tr("Failed") || value == QObject::tr("No Reply"))
-        return {outcome_failed_bg,  outcome_text, value};
+        return {outcome_failed_bg, outcome_text, value};
     return {outcome_default_bg, outcome_text, value};
 }
 
@@ -74,65 +73,63 @@ ClientResultItemDelegate::ClientResultItemDelegate(QObject* parent)
 }
 
 void ClientResultItemDelegate::paint(QPainter* painter,
-    const QStyleOptionViewItem& option, const QModelIndex& index) const {
+                                     const QStyleOptionViewItem& option,
+                                     const QModelIndex& index) const {
 
     QStyleOptionViewItem opt = option;
     initStyleOption(&opt, index);
 
-    if (index.column() == Column::ServerState ||
-        index.column() == Column::Outcome) {
+    if (index.column() == Column::ServerState || index.column() == Column::Outcome) {
 
-        QApplication::style()->drawPrimitive(
-            QStyle::PE_PanelItemViewItem, &opt, painter);
+        QApplication::style()->drawPrimitive(QStyle::PE_PanelItemViewItem, &opt, painter);
 
         const QString text = index.data(Qt::DisplayRole).toString();
-        const auto spec = (index.column() == Column::ServerState)
-            ? state_badge(text) : outcome_badge(text);
+        const auto spec =
+            (index.column() == Column::ServerState) ? state_badge(text) : outcome_badge(text);
 
         QFont badgeFont = opt.font;
         badgeFont.setPointSize(qRound(badgeFont.pointSize() * 0.8));
         badgeFont.setBold(true);
 
-        DelegatePaintUtils::draw_centered_badge(painter, opt.rect,
-            spec.text, spec.bg, spec.fg, badgeFont);
+        DelegatePaintUtils::draw_centered_badge(
+            painter, opt.rect, spec.text, spec.bg, spec.fg, badgeFont);
         return;
     }
 
     DelegatePaintUtils::apply_foreground_role(opt, index);
 
     switch (index.column()) {
-    case Column::WorkunitId:
-    case Column::HostId:
-        opt.font = monospaceFont_;
-        opt.displayAlignment = Qt::AlignLeft | Qt::AlignVCenter;
-        break;
-    case Column::ErrorMessage: {
-        const QString text = index.data(Qt::DisplayRole).toString();
-        if (!text.isEmpty())
-            opt.palette.setColor(QPalette::Text, QColor(239, 68, 68)); // red
-        break;
-    }
-    case Column::Version:
-        opt.font = monospaceFont_;
-        opt.displayAlignment = Qt::AlignCenter;
-        break;
-    case Column::ReceivedAt:
-        opt.font = monospaceFont_;
-        opt.displayAlignment = Qt::AlignLeft | Qt::AlignVCenter;
-        break;
-    default:
-        break;
+        case Column::WorkunitId:
+        case Column::HostId:
+            opt.font = monospaceFont_;
+            opt.displayAlignment = Qt::AlignLeft | Qt::AlignVCenter;
+            break;
+        case Column::ErrorMessage: {
+            const QString text = index.data(Qt::DisplayRole).toString();
+            if (!text.isEmpty())
+                opt.palette.setColor(QPalette::Text, QColor(239, 68, 68)); // red
+            break;
+        }
+        case Column::Version:
+            opt.font = monospaceFont_;
+            opt.displayAlignment = Qt::AlignCenter;
+            break;
+        case Column::ReceivedAt:
+            opt.font = monospaceFont_;
+            opt.displayAlignment = Qt::AlignLeft | Qt::AlignVCenter;
+            break;
+        default:
+            break;
     }
 
     QApplication::style()->drawControl(QStyle::CE_ItemViewItem, &opt, painter);
 }
 
 QSize ClientResultItemDelegate::sizeHint(const QStyleOptionViewItem& option,
-    const QModelIndex& index) const {
+                                         const QModelIndex& index) const {
 
     QSize size = QStyledItemDelegate::sizeHint(option, index);
-    if (index.column() == Column::ServerState ||
-        index.column() == Column::Outcome) {
+    if (index.column() == Column::ServerState || index.column() == Column::Outcome) {
         size.setHeight(qMax(size.height(), 24));
         size.setWidth(qMax(size.width(), 70));
     }

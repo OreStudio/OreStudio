@@ -20,13 +20,13 @@
 #ifndef ORES_QT_FX_CONVENTION_CONTROLLER_HPP
 #define ORES_QT_FX_CONVENTION_CONTROLLER_HPP
 
-#include <QMdiArea>
-#include <QMainWindow>
-#include "ores.qt/EntityController.hpp"
-#include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata.api/domain/fx_convention.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/EntityController.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
+#include "ores.refdata.api/domain/fx_convention.hpp"
+#include <QMainWindow>
+#include <QMdiArea>
 
 namespace ores::qt {
 
@@ -43,8 +43,7 @@ class FxConventionController final : public EntityController {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.fx_convention_controller";
+    inline static std::string_view logger_name = "ores.qt.fx_convention_controller";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -53,12 +52,11 @@ private:
     }
 
 public:
-    FxConventionController(
-        QMainWindow* mainWindow,
-        QMdiArea* mdiArea,
-        ClientManager* clientManager,
-        const QString& username,
-        QObject* parent = nullptr);
+    FxConventionController(QMainWindow* mainWindow,
+                           QMdiArea* mdiArea,
+                           ClientManager* clientManager,
+                           const QString& username,
+                           QObject* parent = nullptr);
 
     void showListWindow() override;
     void closeAllWindows() override;
@@ -76,8 +74,7 @@ private slots:
     void onAddNewRequested();
     void onShowHistory(const refdata::domain::fx_convention& fxc);
     void onRevertVersion(const refdata::domain::fx_convention& fxc);
-    void onOpenVersion(const refdata::domain::fx_convention& fxc,
-                       int versionNumber);
+    void onOpenVersion(const refdata::domain::fx_convention& fxc, int versionNumber);
 
 private:
     void showAddWindow();

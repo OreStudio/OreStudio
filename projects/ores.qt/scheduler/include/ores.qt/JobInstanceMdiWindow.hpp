@@ -20,17 +20,17 @@
 #ifndef ORES_QT_JOB_INSTANCE_MDI_WINDOW_HPP
 #define ORES_QT_JOB_INSTANCE_MDI_WINDOW_HPP
 
-#include <QTimer>
-#include <QLabel>
-#include <QSpinBox>
-#include <QToolBar>
-#include <QTableView>
-#include <QSortFilterProxyModel>
-#include "ores.qt/EntityListMdiWindow.hpp"
-#include "ores.qt/ClientManager.hpp"
-#include "ores.qt/ClientJobInstanceModel.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientJobInstanceModel.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/EntityListMdiWindow.hpp"
 #include "ores.scheduler.api/messaging/scheduler_protocol.hpp"
+#include <QLabel>
+#include <QSortFilterProxyModel>
+#include <QSpinBox>
+#include <QTableView>
+#include <QTimer>
+#include <QToolBar>
 
 namespace ores::qt {
 
@@ -44,8 +44,7 @@ class JobInstanceMdiWindow final : public EntityListMdiWindow {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.job_instance_mdi_window";
+    inline static std::string_view logger_name = "ores.qt.job_instance_mdi_window";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -54,9 +53,7 @@ private:
     }
 
 public:
-    explicit JobInstanceMdiWindow(
-        ClientManager* clientManager,
-        QWidget* parent = nullptr);
+    explicit JobInstanceMdiWindow(ClientManager* clientManager, QWidget* parent = nullptr);
     ~JobInstanceMdiWindow() override = default;
 
 public slots:

@@ -20,10 +20,10 @@
 #ifndef ORES_QT_SUBJECT_AREA_DETAIL_DIALOG_HPP
 #define ORES_QT_SUBJECT_AREA_DETAIL_DIALOG_HPP
 
+#include "ores.dq.api/domain/subject_area.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.dq.api/domain/subject_area.hpp"
 
 namespace Ui {
 class SubjectAreaDetailDialog;
@@ -35,8 +35,7 @@ class SubjectAreaDetailDialog final : public DetailDialogBase {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.subject_area_detail_dialog";
+    inline static std::string_view logger_name = "ores.qt.subject_area_detail_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -48,8 +47,12 @@ public:
     explicit SubjectAreaDetailDialog(QWidget* parent = nullptr);
     ~SubjectAreaDetailDialog() override;
 
-    void setClientManager(ClientManager* cm) { clientManager_ = cm; }
-    void setUsername(const std::string& username) { username_ = username; }
+    void setClientManager(ClientManager* cm) {
+        clientManager_ = cm;
+    }
+    void setUsername(const std::string& username) {
+        username_ = username;
+    }
     void setCreateMode(bool create);
     void setSubjectArea(const dq::domain::subject_area& subject_area);
     void setReadOnly(bool readOnly);

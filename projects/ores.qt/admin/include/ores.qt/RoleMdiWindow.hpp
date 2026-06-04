@@ -20,15 +20,15 @@
 #ifndef ORES_QT_ROLE_MDI_WINDOW_HPP
 #define ORES_QT_ROLE_MDI_WINDOW_HPP
 
-#include <QTableView>
-#include <QVBoxLayout>
-#include <QToolBar>
-#include <QSortFilterProxyModel>
-#include <memory>
-#include "ores.qt/EntityListMdiWindow.hpp"
-#include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ClientRoleModel.hpp"
+#include "ores.qt/EntityListMdiWindow.hpp"
+#include <QSortFilterProxyModel>
+#include <QTableView>
+#include <QToolBar>
+#include <QVBoxLayout>
+#include <memory>
 
 namespace ores::qt {
 
@@ -42,8 +42,7 @@ class RoleMdiWindow : public EntityListMdiWindow {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.role_mdi_window";
+    inline static std::string_view logger_name = "ores.qt.role_mdi_window";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -57,7 +56,9 @@ public:
                            QWidget* parent = nullptr);
     ~RoleMdiWindow() override;
 
-    ClientRoleModel* roleModel() const { return roleModel_.get(); }
+    ClientRoleModel* roleModel() const {
+        return roleModel_.get();
+    }
 
 signals:
     void statusChanged(const QString& message);
@@ -70,7 +71,9 @@ public slots:
     void viewSelected();
 
 protected:
-    QString normalRefreshTooltip() const override { return tr("Refresh roles"); }
+    QString normalRefreshTooltip() const override {
+        return tr("Refresh roles");
+    }
 
 private slots:
     void onDataLoaded();

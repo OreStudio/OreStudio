@@ -20,11 +20,11 @@
 #ifndef ORES_QT_LOOKUP_FETCHER_HPP
 #define ORES_QT_LOOKUP_FETCHER_HPP
 
+#include "ores.qt/export.hpp"
 #include <string>
 #include <string_view>
 #include <unordered_map>
 #include <vector>
-#include "ores.qt/export.hpp"
 
 namespace ores::qt {
 
@@ -100,7 +100,7 @@ fetch_business_centre_image_map(ClientManager* cm);
  * @brief A name/id pair for a portfolio, used to populate parent combos.
  */
 struct portfolio_entry {
-    std::string id;   // UUID as string
+    std::string id; // UUID as string
     std::string name;
 };
 
@@ -116,7 +116,7 @@ ORES_QT_API std::vector<portfolio_entry> fetch_portfolio_entries(ClientManager* 
  * @brief A name/id pair for a business unit, used to populate owner-unit combos.
  */
 struct business_unit_entry {
-    std::string id;   // UUID as string
+    std::string id; // UUID as string
     std::string name;
 };
 

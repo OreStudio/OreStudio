@@ -19,9 +19,9 @@
 #ifndef ORES_QT_TRADING_PLUGIN_HPP
 #define ORES_QT_TRADING_PLUGIN_HPP
 
-#include <memory>
-#include <QList>
 #include "ores.qt/PluginBase.hpp"
+#include <QList>
+#include <memory>
 
 class QAction;
 
@@ -57,8 +57,12 @@ public:
     explicit TradingPlugin(QObject* parent = nullptr);
     ~TradingPlugin() override;
 
-    QString name() const override { return QStringLiteral("ores.qt.trading"); }
-    int load_order() const override { return 200; }
+    QString name() const override {
+        return QStringLiteral("ores.qt.trading");
+    }
+    int load_order() const override {
+        return 200;
+    }
 
     void on_login(const plugin_context& ctx) override;
     void setup_menus(const shared_menus_context& ctx) override;
@@ -67,7 +71,6 @@ public:
     void on_logout() override;
 
 private:
-
     plugin_context ctx_;
 
     // Singleton MDI sub-windows (nullptr when not open)
@@ -84,11 +87,11 @@ private:
     QAction* act_trades_{nullptr};
 
     // Entity controllers
-    std::unique_ptr<OreImportController>   oreImportController_;
-    std::unique_ptr<PortfolioController>   portfolioController_;
-    std::unique_ptr<BookController>        bookController_;
-    std::unique_ptr<BookStatusController>  bookStatusController_;
-    std::unique_ptr<TradeController>       tradeController_;
+    std::unique_ptr<OreImportController> oreImportController_;
+    std::unique_ptr<PortfolioController> portfolioController_;
+    std::unique_ptr<BookController> bookController_;
+    std::unique_ptr<BookStatusController> bookStatusController_;
+    std::unique_ptr<TradeController> tradeController_;
 };
 
 }

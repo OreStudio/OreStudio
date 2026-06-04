@@ -28,14 +28,17 @@
 
 #include <string>
 
-namespace ores::qt { struct IInstrumentFormPopulator; }
+namespace ores::qt {
+struct IInstrumentFormPopulator;
+}
 
 namespace ores::qt::internal {
 
 // Dispatch on ttc ("ForwardRateAgreement", "Swap", "Swaption", …).
 // Returns false and logs on parse failure or unknown ttc.
-bool parse_swap_instrument(const std::string& raw, const std::string& ttc,
-    ores::qt::IInstrumentFormPopulator& pop);
+bool parse_swap_instrument(const std::string& raw,
+                           const std::string& ttc,
+                           ores::qt::IInstrumentFormPopulator& pop);
 
 }
 

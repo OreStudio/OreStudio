@@ -18,13 +18,12 @@
  *
  */
 #include "ores.qt/ComputeDashboardMdiWindow.hpp"
-
-#include <QtConcurrent>
+#include "ores.compute.api/messaging/telemetry_protocol.hpp"
+#include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/IconUtils.hpp"
 #include <QFutureWatcher>
 #include <QPointer>
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/ColorConstants.hpp"
-#include "ores.compute.api/messaging/telemetry_protocol.hpp"
+#include <QtConcurrent>
 
 namespace ores::qt {
 
@@ -46,26 +45,23 @@ struct GridStats {
 
 }
 
-ComputeDashboardMdiWindow::ComputeDashboardMdiWindow(
-    ClientManager* clientManager,
-    QWidget* parent)
-    : QWidget(parent),
-      clientManager_(clientManager),
-      toolbar_(nullptr),
-      refreshAction_(nullptr),
-      autoRefreshAction_(nullptr),
-      totalHostsLabel_(nullptr),
-      idleHostsLabel_(nullptr),
-      totalWorkunitLabel_(nullptr),
-      inProgressLabel_(nullptr),
-      completedLabel_(nullptr),
-      successfulLabel_(nullptr),
-      autoRefreshTimer_(nullptr) {
+ComputeDashboardMdiWindow::ComputeDashboardMdiWindow(ClientManager* clientManager, QWidget* parent)
+    : QWidget(parent)
+    , clientManager_(clientManager)
+    , toolbar_(nullptr)
+    , refreshAction_(nullptr)
+    , autoRefreshAction_(nullptr)
+    , totalHostsLabel_(nullptr)
+    , idleHostsLabel_(nullptr)
+    , totalWorkunitLabel_(nullptr)
+    , inProgressLabel_(nullptr)
+    , completedLabel_(nullptr)
+    , successfulLabel_(nullptr)
+    , autoRefreshTimer_(nullptr) {
 
     autoRefreshTimer_ = new QTimer(this);
-    autoRefreshTimer_->setInterval(10000);  // 10 seconds
-    connect(autoRefreshTimer_, &QTimer::timeout, this,
-            &ComputeDashboardMdiWindow::refresh);
+    autoRefreshTimer_->setInterval(10000); // 10 seconds
+    connect(autoRefreshTimer_, &QTimer::timeout, this, &ComputeDashboardMdiWindow::refresh);
 
     setupUi();
     refresh();
@@ -97,12 +93,12 @@ void ComputeDashboardMdiWindow::setupUi() {
         return box;
     };
 
-    gridLayout->addWidget(makeStatBox(tr("Total Hosts"),       totalHostsLabel_),   0, 0);
-    gridLayout->addWidget(makeStatBox(tr("Idle Hosts"),        idleHostsLabel_),    0, 1);
-    gridLayout->addWidget(makeStatBox(tr("Total Workunits"),   totalWorkunitLabel_),1, 0);
-    gridLayout->addWidget(makeStatBox(tr("In Progress"),       inProgressLabel_),   1, 1);
-    gridLayout->addWidget(makeStatBox(tr("Completed"),         completedLabel_),    2, 0);
-    gridLayout->addWidget(makeStatBox(tr("Successful (24h)"),  successfulLabel_),   2, 1);
+    gridLayout->addWidget(makeStatBox(tr("Total Hosts"), totalHostsLabel_), 0, 0);
+    gridLayout->addWidget(makeStatBox(tr("Idle Hosts"), idleHostsLabel_), 0, 1);
+    gridLayout->addWidget(makeStatBox(tr("Total Workunits"), totalWorkunitLabel_), 1, 0);
+    gridLayout->addWidget(makeStatBox(tr("In Progress"), inProgressLabel_), 1, 1);
+    gridLayout->addWidget(makeStatBox(tr("Completed"), completedLabel_), 2, 0);
+    gridLayout->addWidget(makeStatBox(tr("Successful (24h)"), successfulLabel_), 2, 1);
 
     mainLayout->addWidget(grid);
     mainLayout->addStretch();
@@ -115,22 +111,19 @@ void ComputeDashboardMdiWindow::setupToolbar() {
     toolbar_->setIconSize(QSize(20, 20));
 
     refreshAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::ArrowClockwise, IconUtils::DefaultIconColor),
+        IconUtils::createRecoloredIcon(Icon::ArrowClockwise, IconUtils::DefaultIconColor),
         tr("Refresh"));
     refreshAction_->setToolTip(tr("Refresh dashboard statistics"));
-    connect(refreshAction_, &QAction::triggered,
-            this, &ComputeDashboardMdiWindow::refresh);
+    connect(refreshAction_, &QAction::triggered, this, &ComputeDashboardMdiWindow::refresh);
 
     autoRefreshAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::ArrowSync, IconUtils::DefaultIconColor),
+        IconUtils::createRecoloredIcon(Icon::ArrowSync, IconUtils::DefaultIconColor),
         tr("Auto-Refresh"));
     autoRefreshAction_->setToolTip(tr("Toggle automatic refresh every 10 seconds"));
     autoRefreshAction_->setCheckable(true);
     autoRefreshAction_->setChecked(false);
-    connect(autoRefreshAction_, &QAction::toggled,
-            this, &ComputeDashboardMdiWindow::onRefreshToggled);
+    connect(
+        autoRefreshAction_, &QAction::toggled, this, &ComputeDashboardMdiWindow::onRefreshToggled);
 }
 
 void ComputeDashboardMdiWindow::refresh() {
@@ -147,58 +140,55 @@ void ComputeDashboardMdiWindow::refresh() {
 void ComputeDashboardMdiWindow::loadStats() {
     QPointer<ComputeDashboardMdiWindow> self = this;
 
-    QFuture<GridStats> future =
-        QtConcurrent::run([self]() -> GridStats {
-            if (!self || !self->clientManager_)
-                return {};
+    QFuture<GridStats> future = QtConcurrent::run([self]() -> GridStats {
+        if (!self || !self->clientManager_)
+            return {};
 
-            auto resp = self->clientManager_->process_authenticated_request(
-                compute::messaging::get_grid_stats_request{});
+        auto resp = self->clientManager_->process_authenticated_request(
+            compute::messaging::get_grid_stats_request{});
 
-            if (!resp || !resp->success) {
-                GridStats r;
-                r.error = QString::fromStdString(
-                    resp ? resp->message : "Failed to contact compute service");
-                return r;
-            }
-
+        if (!resp || !resp->success) {
             GridStats r;
-            r.success           = true;
-            r.total_hosts       = resp->total_hosts;
-            r.idle_hosts        = resp->idle_hosts;
-            r.total_workunits   = resp->total_workunits;
-            r.results_in_progress = resp->results_in_progress;
-            r.results_done      = resp->results_done;
-            r.outcomes_success  = resp->outcomes_success;
+            r.error =
+                QString::fromStdString(resp ? resp->message : "Failed to contact compute service");
             return r;
-        });
+        }
+
+        GridStats r;
+        r.success = true;
+        r.total_hosts = resp->total_hosts;
+        r.idle_hosts = resp->idle_hosts;
+        r.total_workunits = resp->total_workunits;
+        r.results_in_progress = resp->results_in_progress;
+        r.results_done = resp->results_done;
+        r.outcomes_success = resp->outcomes_success;
+        return r;
+    });
 
     auto* watcher = new QFutureWatcher<GridStats>(this);
-    connect(watcher, &QFutureWatcher<GridStats>::finished, this,
-            [self, watcher]() {
+    connect(watcher, &QFutureWatcher<GridStats>::finished, this, [self, watcher]() {
         const auto stats = watcher->result();
         watcher->deleteLater();
 
-        if (!self) return;
+        if (!self)
+            return;
 
         self->refreshAction_->setEnabled(true);
 
         if (!stats.success) {
-            const QString msg = stats.error.isEmpty()
-                ? tr("Failed to load dashboard statistics")
-                : stats.error;
-            BOOST_LOG_SEV(lg(), error) << "Dashboard load failed: "
-                                       << msg.toStdString();
+            const QString msg =
+                stats.error.isEmpty() ? tr("Failed to load dashboard statistics") : stats.error;
+            BOOST_LOG_SEV(lg(), error) << "Dashboard load failed: " << msg.toStdString();
             emit self->errorOccurred(msg);
             return;
         }
 
-        self->updateCountLabel(self->totalHostsLabel_,    stats.total_hosts);
-        self->updateCountLabel(self->idleHostsLabel_,     stats.idle_hosts);
+        self->updateCountLabel(self->totalHostsLabel_, stats.total_hosts);
+        self->updateCountLabel(self->idleHostsLabel_, stats.idle_hosts);
         self->updateCountLabel(self->totalWorkunitLabel_, stats.total_workunits);
-        self->updateCountLabel(self->inProgressLabel_,    stats.results_in_progress);
-        self->updateCountLabel(self->completedLabel_,     stats.results_done);
-        self->updateCountLabel(self->successfulLabel_,    stats.outcomes_success);
+        self->updateCountLabel(self->inProgressLabel_, stats.results_in_progress);
+        self->updateCountLabel(self->completedLabel_, stats.results_done);
+        self->updateCountLabel(self->successfulLabel_, stats.outcomes_success);
 
         emit self->statusChanged(
             tr("Dashboard updated: %1 hosts, %2 idle, %3 workunits, %4 in progress")
@@ -207,12 +197,11 @@ void ComputeDashboardMdiWindow::loadStats() {
                 .arg(stats.total_workunits)
                 .arg(stats.results_in_progress));
 
-        BOOST_LOG_SEV(lg(), debug) << "Dashboard: hosts=" << stats.total_hosts
-                                   << " idle=" << stats.idle_hosts
-                                   << " workunits=" << stats.total_workunits
-                                   << " in_progress=" << stats.results_in_progress
-                                   << " done=" << stats.results_done
-                                   << " successful_24h=" << stats.outcomes_success;
+        BOOST_LOG_SEV(lg(), debug)
+            << "Dashboard: hosts=" << stats.total_hosts << " idle=" << stats.idle_hosts
+            << " workunits=" << stats.total_workunits
+            << " in_progress=" << stats.results_in_progress << " done=" << stats.results_done
+            << " successful_24h=" << stats.outcomes_success;
     });
     watcher->setFuture(future);
 }

@@ -20,9 +20,9 @@
 #ifndef ORES_QT_BOOK_STATUS_DETAIL_DIALOG_HPP
 #define ORES_QT_BOOK_STATUS_DETAIL_DIALOG_HPP
 
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/book_status.hpp"
 
 namespace Ui {
@@ -42,8 +42,7 @@ class BookStatusDetailDialog final : public DetailDialogBase {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.book_status_detail_dialog";
+    inline static std::string_view logger_name = "ores.qt.book_status_detail_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -76,7 +75,9 @@ protected:
     QWidget* provenanceTab() const override;
     ProvenanceWidget* provenanceWidget() const override;
 
-    bool hasUnsavedChanges() const override { return hasChanges_; }
+    bool hasUnsavedChanges() const override {
+        return hasChanges_;
+    }
 
 private:
     void setupUi();

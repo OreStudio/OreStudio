@@ -18,32 +18,32 @@
  *
  */
 #include "ores.qt/DatasetHistoryDialog.hpp"
-
-#include <QVBoxLayout>
-#include <QHeaderView>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include <boost/uuid/uuid_io.hpp>
-#include "ui_DatasetHistoryDialog.h"
-#include "ores.qt/IconUtils.hpp"
+#include "ores.dq.api/messaging/dataset_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.dq.api/messaging/dataset_protocol.hpp"
+#include "ui_DatasetHistoryDialog.h"
+#include <QFutureWatcher>
+#include <QHeaderView>
+#include <QVBoxLayout>
+#include <QtConcurrent>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-DatasetHistoryDialog::DatasetHistoryDialog(
-    const boost::uuids::uuid& id, ClientManager* clientManager, QWidget* parent)
-    : QWidget(parent),
-      ui_(new Ui::DatasetHistoryDialog),
-      id_(id),
-      clientManager_(clientManager),
-      toolbar_(nullptr),
-      openVersionAction_(nullptr),
-      revertAction_(nullptr) {
+DatasetHistoryDialog::DatasetHistoryDialog(const boost::uuids::uuid& id,
+                                           ClientManager* clientManager,
+                                           QWidget* parent)
+    : QWidget(parent)
+    , ui_(new Ui::DatasetHistoryDialog)
+    , id_(id)
+    , clientManager_(clientManager)
+    , toolbar_(nullptr)
+    , openVersionAction_(nullptr)
+    , revertAction_(nullptr) {
 
     ui_->setupUi(this);
     WidgetUtils::setupComboBoxes(this);
@@ -62,7 +62,8 @@ void DatasetHistoryDialog::setupUi() {
 
     ui_->titleLabel->setText(QString("Dataset History"));
     ui_->versionListWidget->setColumnCount(4);
-    ui_->versionListWidget->setHorizontalHeaderLabels({"Version", "Recorded At", "Modified By", "Commentary"});
+    ui_->versionListWidget->setHorizontalHeaderLabels(
+        {"Version", "Recorded At", "Modified By", "Commentary"});
     ui_->versionListWidget->horizontalHeader()->setStretchLastSection(true);
     ui_->versionListWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui_->versionListWidget->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -82,9 +83,10 @@ void DatasetHistoryDialog::setupToolbar() {
     openVersionAction_->setToolTip(tr("Open this version (read-only)"));
     openVersionAction_->setEnabled(false);
 
-    revertAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor),
-        tr("Revert"));
+    revertAction_ =
+        toolbar_->addAction(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
+                                                           IconUtils::DefaultIconColor),
+                            tr("Revert"));
     revertAction_->setToolTip(tr("Revert to this version"));
     revertAction_->setEnabled(false);
 
@@ -94,11 +96,17 @@ void DatasetHistoryDialog::setupToolbar() {
 }
 
 void DatasetHistoryDialog::setupConnections() {
-    connect(ui_->versionListWidget, &QTableWidget::itemSelectionChanged, this, &DatasetHistoryDialog::onVersionSelected);
-    connect(openVersionAction_, &QAction::triggered, this, &DatasetHistoryDialog::onOpenVersionClicked);
+    connect(ui_->versionListWidget,
+            &QTableWidget::itemSelectionChanged,
+            this,
+            &DatasetHistoryDialog::onVersionSelected);
+    connect(
+        openVersionAction_, &QAction::triggered, this, &DatasetHistoryDialog::onOpenVersionClicked);
     connect(revertAction_, &QAction::triggered, this, &DatasetHistoryDialog::onRevertClicked);
-    connect(ui_->closeButton, &QPushButton::clicked,
-            this, [this]() { if (window()) window()->close(); });
+    connect(ui_->closeButton, &QPushButton::clicked, this, [this]() {
+        if (window())
+            window()->close();
+    });
 }
 
 void DatasetHistoryDialog::loadHistory() {
@@ -110,17 +118,26 @@ void DatasetHistoryDialog::loadHistory() {
     emit statusChanged(tr("Loading history..."));
 
     QPointer<DatasetHistoryDialog> self = this;
-    struct HistoryResult { bool success; std::string message; std::vector<dq::domain::dataset> versions; };
+    struct HistoryResult {
+        bool success;
+        std::string message;
+        std::vector<dq::domain::dataset> versions;
+    };
 
     auto task = [self, id = id_]() -> HistoryResult {
-        if (!self || !self->clientManager_) return {false, "Dialog closed", {}};
+        if (!self || !self->clientManager_)
+            return {false, "Dialog closed", {}};
 
         dq::messaging::get_dataset_history_request request;
         request.id = boost::uuids::to_string(id);
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
-        if (!response_result) return {false, "Failed to communicate with server", {}};
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
+        if (!response_result)
+            return {false, "Failed to communicate with server", {}};
 
-        return {response_result->success, response_result->message, std::move(response_result->history)};
+        return {response_result->success,
+                response_result->message,
+                std::move(response_result->history)};
     };
 
     auto* watcher = new QFutureWatcher<HistoryResult>(self);
@@ -150,17 +167,24 @@ void DatasetHistoryDialog::updateVersionList() {
         auto* versionItem = new QTableWidgetItem(QString::number(version.version));
         versionItem->setTextAlignment(Qt::AlignCenter);
         ui_->versionListWidget->setItem(row, 0, versionItem);
-        ui_->versionListWidget->setItem(row, 1, new QTableWidgetItem(relative_time_helper::format(version.recorded_at)));
-        ui_->versionListWidget->setItem(row, 2, new QTableWidgetItem(QString::fromStdString(version.modified_by)));
-        ui_->versionListWidget->setItem(row, 3, new QTableWidgetItem(QString::fromStdString(version.change_commentary)));
+        ui_->versionListWidget->setItem(
+            row, 1, new QTableWidgetItem(relative_time_helper::format(version.recorded_at)));
+        ui_->versionListWidget->setItem(
+            row, 2, new QTableWidgetItem(QString::fromStdString(version.modified_by)));
+        ui_->versionListWidget->setItem(
+            row, 3, new QTableWidgetItem(QString::fromStdString(version.change_commentary)));
     }
 
-    if (!versions_.empty()) ui_->versionListWidget->selectRow(0);
+    if (!versions_.empty())
+        ui_->versionListWidget->selectRow(0);
 }
 
 void DatasetHistoryDialog::onVersionSelected() {
     auto selected = ui_->versionListWidget->selectedItems();
-    if (selected.isEmpty()) { updateActionStates(); return; }
+    if (selected.isEmpty()) {
+        updateActionStates();
+        return;
+    }
 
     int row = selected.first()->row();
     updateChangesTable(row);
@@ -171,7 +195,8 @@ void DatasetHistoryDialog::onVersionSelected() {
 void DatasetHistoryDialog::updateChangesTable(int currentVersionIndex) {
     ui_->changesTableWidget->setRowCount(0);
 
-    if (currentVersionIndex < 0 || static_cast<size_t>(currentVersionIndex) >= versions_.size()) return;
+    if (currentVersionIndex < 0 || static_cast<size_t>(currentVersionIndex) >= versions_.size())
+        return;
 
     int previousVersionIndex = currentVersionIndex + 1;
     if (static_cast<size_t>(previousVersionIndex) >= versions_.size()) {
@@ -193,12 +218,29 @@ void DatasetHistoryDialog::updateChangesTable(int currentVersionIndex) {
         ui_->changesTableWidget->setItem(row, 2, new QTableWidgetItem(newVal));
     };
 
-    if (current.name != previous.name) addChange("Name", QString::fromStdString(previous.name), QString::fromStdString(current.name));
-    if (current.catalog_name != previous.catalog_name) addChange("Catalog", QString::fromStdString(previous.catalog_name.value_or("")), QString::fromStdString(current.catalog_name.value_or("")));
-    if (current.subject_area_name != previous.subject_area_name) addChange("Subject Area", QString::fromStdString(previous.subject_area_name), QString::fromStdString(current.subject_area_name));
-    if (current.domain_name != previous.domain_name) addChange("Domain", QString::fromStdString(previous.domain_name), QString::fromStdString(current.domain_name));
-    if (current.source_system_id != previous.source_system_id) addChange("Source System", QString::fromStdString(previous.source_system_id), QString::fromStdString(current.source_system_id));
-    if (current.description != previous.description) addChange("Description", QString::fromStdString(previous.description), QString::fromStdString(current.description));
+    if (current.name != previous.name)
+        addChange(
+            "Name", QString::fromStdString(previous.name), QString::fromStdString(current.name));
+    if (current.catalog_name != previous.catalog_name)
+        addChange("Catalog",
+                  QString::fromStdString(previous.catalog_name.value_or("")),
+                  QString::fromStdString(current.catalog_name.value_or("")));
+    if (current.subject_area_name != previous.subject_area_name)
+        addChange("Subject Area",
+                  QString::fromStdString(previous.subject_area_name),
+                  QString::fromStdString(current.subject_area_name));
+    if (current.domain_name != previous.domain_name)
+        addChange("Domain",
+                  QString::fromStdString(previous.domain_name),
+                  QString::fromStdString(current.domain_name));
+    if (current.source_system_id != previous.source_system_id)
+        addChange("Source System",
+                  QString::fromStdString(previous.source_system_id),
+                  QString::fromStdString(current.source_system_id));
+    if (current.description != previous.description)
+        addChange("Description",
+                  QString::fromStdString(previous.description),
+                  QString::fromStdString(current.description));
 
     if (ui_->changesTableWidget->rowCount() == 0) {
         ui_->changesTableWidget->insertRow(0);
@@ -209,7 +251,8 @@ void DatasetHistoryDialog::updateChangesTable(int currentVersionIndex) {
 }
 
 void DatasetHistoryDialog::updateFullDetails(int versionIndex) {
-    if (versionIndex < 0 || static_cast<size_t>(versionIndex) >= versions_.size()) return;
+    if (versionIndex < 0 || static_cast<size_t>(versionIndex) >= versions_.size())
+        return;
 
     const auto& version = versions_[versionIndex];
     ui_->nameValue->setText(QString::fromStdString(version.name));
@@ -235,20 +278,24 @@ void DatasetHistoryDialog::updateActionStates() {
 
 void DatasetHistoryDialog::onOpenVersionClicked() {
     auto selected = ui_->versionListWidget->selectedItems();
-    if (selected.isEmpty()) return;
+    if (selected.isEmpty())
+        return;
 
     int row = selected.first()->row();
-    if (static_cast<size_t>(row) >= versions_.size()) return;
+    if (static_cast<size_t>(row) >= versions_.size())
+        return;
 
     emit openVersionRequested(versions_[row], versions_[row].version);
 }
 
 void DatasetHistoryDialog::onRevertClicked() {
     auto selected = ui_->versionListWidget->selectedItems();
-    if (selected.isEmpty()) return;
+    if (selected.isEmpty())
+        return;
 
     int row = selected.first()->row();
-    if (static_cast<size_t>(row) >= versions_.size()) return;
+    if (static_cast<size_t>(row) >= versions_.size())
+        return;
 
     emit revertVersionRequested(versions_[row]);
 }

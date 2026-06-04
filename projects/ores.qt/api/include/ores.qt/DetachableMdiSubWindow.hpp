@@ -20,14 +20,14 @@
 #ifndef ORES_QT_DETACHABLE_MDI_SUB_WINDOW_HPP
 #define ORES_QT_DETACHABLE_MDI_SUB_WINDOW_HPP
 
-#include <QMdiSubWindow>
-#include <QMdiArea>
-#include <QPointer>
-#include <QPoint>
-#include <QSize>
-#include <QString>
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/export.hpp"
+#include <QMdiArea>
+#include <QMdiSubWindow>
+#include <QPoint>
+#include <QPointer>
+#include <QSize>
+#include <QString>
 
 namespace ores::qt {
 
@@ -42,8 +42,7 @@ class ORES_QT_API DetachableMdiSubWindow : public QMdiSubWindow {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.detachable_mdi_sub_window";
+    inline static std::string_view logger_name = "ores.qt.detachable_mdi_sub_window";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -55,8 +54,12 @@ public:
     explicit DetachableMdiSubWindow(QWidget* parent = nullptr);
     ~DetachableMdiSubWindow() override = default;
 
-    bool isDetached() const { return isDetached_; }
-    void setGeometryKey(const QString& key) { geometryKey_ = key; }
+    bool isDetached() const {
+        return isDetached_;
+    }
+    void setGeometryKey(const QString& key) {
+        geometryKey_ = key;
+    }
 
 public slots:
     void detach();

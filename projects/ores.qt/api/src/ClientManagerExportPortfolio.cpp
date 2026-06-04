@@ -38,20 +38,16 @@ namespace ores::qt {
 
 std::expected<trading::messaging::export_portfolio_response, std::string>
 ClientManager::exportPortfolio(trading::messaging::export_portfolio_request request,
-    std::chrono::milliseconds timeout)
-{
+                               std::chrono::milliseconds timeout) {
     using ResponseType = trading::messaging::export_portfolio_response;
     using namespace trading::messaging;
     try {
         const auto raw = send_authenticated_request(
-            export_portfolio_request::nats_subject,
-            rfl::json::write(request),
-            timeout);
+            export_portfolio_request::nats_subject, rfl::json::write(request), timeout);
         auto result = rfl::json::read<ResponseType>(raw);
         if (!result) {
-            return std::unexpected(
-                std::string("Failed to deserialize response: ") +
-                result.error().what());
+            return std::unexpected(std::string("Failed to deserialize response: ") +
+                                   result.error().what());
         }
         return std::move(*result);
     } catch (const ores::nats::service::nats_connect_error&) {

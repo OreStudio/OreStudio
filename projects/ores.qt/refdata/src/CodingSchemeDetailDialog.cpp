@@ -18,29 +18,28 @@
  *
  */
 #include "ores.qt/CodingSchemeDetailDialog.hpp"
-
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include "ui_CodingSchemeDetailDialog.h"
-#include "ores.qt/IconUtils.hpp"
+#include "ores.dq.api/messaging/coding_scheme_protocol.hpp"
+#include "ores.dq.api/messaging/data_organization_protocol.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
+#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ProvenanceWidget.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.dq.api/messaging/coding_scheme_protocol.hpp"
-#include "ores.dq.api/messaging/data_organization_protocol.hpp"
+#include "ui_CodingSchemeDetailDialog.h"
+#include <QFutureWatcher>
+#include <QMessageBox>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 CodingSchemeDetailDialog::CodingSchemeDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent),
-      ui_(new Ui::CodingSchemeDetailDialog),
-      clientManager_(nullptr),
-      isCreateMode_(true),
-      isReadOnly_(false) {
+    : DetailDialogBase(parent)
+    , ui_(new Ui::CodingSchemeDetailDialog)
+    , clientManager_(nullptr)
+    , isCreateMode_(true)
+    , isReadOnly_(false) {
 
     ui_->setupUi(this);
     WidgetUtils::setupComboBoxes(this);
@@ -51,33 +50,42 @@ CodingSchemeDetailDialog::~CodingSchemeDetailDialog() {
     delete ui_;
 }
 
-QTabWidget* CodingSchemeDetailDialog::tabWidget() const { return ui_->tabWidget; }
-QWidget* CodingSchemeDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
-ProvenanceWidget* CodingSchemeDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
+QTabWidget* CodingSchemeDetailDialog::tabWidget() const {
+    return ui_->tabWidget;
+}
+QWidget* CodingSchemeDetailDialog::provenanceTab() const {
+    return ui_->provenanceTab;
+}
+ProvenanceWidget* CodingSchemeDetailDialog::provenanceWidget() const {
+    return ui_->provenanceWidget;
+}
 
 void CodingSchemeDetailDialog::setupConnections() {
-    connect(ui_->saveButton, &QPushButton::clicked,
-            this, &CodingSchemeDetailDialog::onSaveClicked);
-    connect(ui_->deleteButton, &QPushButton::clicked,
-            this, &CodingSchemeDetailDialog::onDeleteClicked);
+    connect(ui_->saveButton, &QPushButton::clicked, this, &CodingSchemeDetailDialog::onSaveClicked);
+    connect(
+        ui_->deleteButton, &QPushButton::clicked, this, &CodingSchemeDetailDialog::onDeleteClicked);
     ui_->closeButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
-    connect(ui_->closeButton, &QPushButton::clicked, this,
-            &CodingSchemeDetailDialog::onCloseClicked);
+    connect(
+        ui_->closeButton, &QPushButton::clicked, this, &CodingSchemeDetailDialog::onCloseClicked);
 }
 
 void CodingSchemeDetailDialog::loadLookupData() {
-    if (!clientManager_ || !clientManager_->isConnected()) return;
+    if (!clientManager_ || !clientManager_->isConnected())
+        return;
 
     QPointer<CodingSchemeDetailDialog> self = this;
 
     // Load authority types
     auto authTask = [self]() -> std::vector<std::string> {
-        if (!self || !self->clientManager_) return {};
+        if (!self || !self->clientManager_)
+            return {};
 
         dq::messaging::get_coding_scheme_authority_types_request request;
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
-        if (!response_result) return {};
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
+        if (!response_result)
+            return {};
 
         std::vector<std::string> codes;
         for (const auto& at : response_result->coding_scheme_authority_types) {
@@ -87,26 +95,32 @@ void CodingSchemeDetailDialog::loadLookupData() {
     };
 
     auto* authWatcher = new QFutureWatcher<std::vector<std::string>>(this);
-    connect(authWatcher, &QFutureWatcher<std::vector<std::string>>::finished,
-            this, [self, authWatcher]() {
-        auto codes = authWatcher->result();
-        authWatcher->deleteLater();
-        if (!self) return;
+    connect(authWatcher,
+            &QFutureWatcher<std::vector<std::string>>::finished,
+            this,
+            [self, authWatcher]() {
+                auto codes = authWatcher->result();
+                authWatcher->deleteLater();
+                if (!self)
+                    return;
 
-        self->ui_->authorityTypeCombo->clear();
-        for (const auto& code : codes) {
-            self->ui_->authorityTypeCombo->addItem(QString::fromStdString(code));
-        }
-    });
+                self->ui_->authorityTypeCombo->clear();
+                for (const auto& code : codes) {
+                    self->ui_->authorityTypeCombo->addItem(QString::fromStdString(code));
+                }
+            });
     authWatcher->setFuture(QtConcurrent::run(authTask));
 
     // Load subject areas
     auto saTask = [self]() -> std::vector<std::string> {
-        if (!self || !self->clientManager_) return {};
+        if (!self || !self->clientManager_)
+            return {};
 
         dq::messaging::get_subject_areas_request request;
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
-        if (!response_result) return {};
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
+        if (!response_result)
+            return {};
 
         std::vector<std::string> names;
         for (const auto& sa : response_result->subject_areas) {
@@ -116,26 +130,30 @@ void CodingSchemeDetailDialog::loadLookupData() {
     };
 
     auto* saWatcher = new QFutureWatcher<std::vector<std::string>>(this);
-    connect(saWatcher, &QFutureWatcher<std::vector<std::string>>::finished,
-            this, [self, saWatcher]() {
-        auto names = saWatcher->result();
-        saWatcher->deleteLater();
-        if (!self) return;
+    connect(
+        saWatcher, &QFutureWatcher<std::vector<std::string>>::finished, this, [self, saWatcher]() {
+            auto names = saWatcher->result();
+            saWatcher->deleteLater();
+            if (!self)
+                return;
 
-        self->ui_->subjectAreaCombo->clear();
-        for (const auto& name : names) {
-            self->ui_->subjectAreaCombo->addItem(QString::fromStdString(name));
-        }
-    });
+            self->ui_->subjectAreaCombo->clear();
+            for (const auto& name : names) {
+                self->ui_->subjectAreaCombo->addItem(QString::fromStdString(name));
+            }
+        });
     saWatcher->setFuture(QtConcurrent::run(saTask));
 
     // Load data domains
     auto ddTask = [self]() -> std::vector<std::string> {
-        if (!self || !self->clientManager_) return {};
+        if (!self || !self->clientManager_)
+            return {};
 
         dq::messaging::get_data_domains_request request;
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
-        if (!response_result) return {};
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
+        if (!response_result)
+            return {};
 
         std::vector<std::string> names;
         for (const auto& dd : response_result->domains) {
@@ -145,17 +163,18 @@ void CodingSchemeDetailDialog::loadLookupData() {
     };
 
     auto* ddWatcher = new QFutureWatcher<std::vector<std::string>>(this);
-    connect(ddWatcher, &QFutureWatcher<std::vector<std::string>>::finished,
-            this, [self, ddWatcher]() {
-        auto names = ddWatcher->result();
-        ddWatcher->deleteLater();
-        if (!self) return;
+    connect(
+        ddWatcher, &QFutureWatcher<std::vector<std::string>>::finished, this, [self, ddWatcher]() {
+            auto names = ddWatcher->result();
+            ddWatcher->deleteLater();
+            if (!self)
+                return;
 
-        self->ui_->domainCombo->clear();
-        for (const auto& name : names) {
-            self->ui_->domainCombo->addItem(QString::fromStdString(name));
-        }
-    });
+            self->ui_->domainCombo->clear();
+            for (const auto& name : names) {
+                self->ui_->domainCombo->addItem(QString::fromStdString(name));
+            }
+        });
     ddWatcher->setFuture(QtConcurrent::run(ddTask));
 }
 
@@ -165,8 +184,7 @@ void CodingSchemeDetailDialog::setCreateMode(bool create) {
     updateUiState();
 }
 
-void CodingSchemeDetailDialog::setScheme(
-    const dq::domain::coding_scheme& scheme) {
+void CodingSchemeDetailDialog::setScheme(const dq::domain::coding_scheme& scheme) {
     scheme_ = scheme;
 
     ui_->codeEdit->setText(QString::fromStdString(scheme.code));
@@ -178,16 +196,23 @@ void CodingSchemeDetailDialog::setScheme(
     }
 
     int authIdx = ui_->authorityTypeCombo->findText(QString::fromStdString(scheme.authority_type));
-    if (authIdx >= 0) ui_->authorityTypeCombo->setCurrentIndex(authIdx);
+    if (authIdx >= 0)
+        ui_->authorityTypeCombo->setCurrentIndex(authIdx);
 
     int saIdx = ui_->subjectAreaCombo->findText(QString::fromStdString(scheme.subject_area_name));
-    if (saIdx >= 0) ui_->subjectAreaCombo->setCurrentIndex(saIdx);
+    if (saIdx >= 0)
+        ui_->subjectAreaCombo->setCurrentIndex(saIdx);
 
     int ddIdx = ui_->domainCombo->findText(QString::fromStdString(scheme.domain_name));
-    if (ddIdx >= 0) ui_->domainCombo->setCurrentIndex(ddIdx);
+    if (ddIdx >= 0)
+        ui_->domainCombo->setCurrentIndex(ddIdx);
 
-    populateProvenance(scheme.version, scheme.modified_by, scheme.performed_by,
-                       scheme.recorded_at, "", scheme.change_commentary);
+    populateProvenance(scheme.version,
+                       scheme.modified_by,
+                       scheme.performed_by,
+                       scheme.recorded_at,
+                       "",
+                       scheme.change_commentary);
 
     updateUiState();
 }
@@ -220,14 +245,12 @@ void CodingSchemeDetailDialog::onSaveClicked() {
     QString domain = ui_->domainCombo->currentText();
 
     if (code.isEmpty()) {
-        MessageBoxHelper::warning(this, tr("Validation Error"),
-                                  tr("Code is required."));
+        MessageBoxHelper::warning(this, tr("Validation Error"), tr("Code is required."));
         return;
     }
 
     if (name.isEmpty()) {
-        MessageBoxHelper::warning(this, tr("Validation Error"),
-                                  tr("Name is required."));
+        MessageBoxHelper::warning(this, tr("Validation Error"), tr("Name is required."));
         return;
     }
 
@@ -246,26 +269,31 @@ void CodingSchemeDetailDialog::onSaveClicked() {
     }
 
     {
-        const auto crOpType = isCreateMode_
-            ? ChangeReasonDialog::OperationType::Create
-            : ChangeReasonDialog::OperationType::Amend;
-        const auto crSel = promptChangeReason(crOpType, true,
-            isCreateMode_ ? "system" : "common");
-        if (!crSel) return;
+        const auto crOpType = isCreateMode_ ? ChangeReasonDialog::OperationType::Create :
+                                              ChangeReasonDialog::OperationType::Amend;
+        const auto crSel = promptChangeReason(crOpType, true, isCreateMode_ ? "system" : "common");
+        if (!crSel)
+            return;
         scheme.change_commentary = crSel->commentary;
     }
 
     QPointer<CodingSchemeDetailDialog> self = this;
 
-    struct SaveResult { bool success; std::string message; };
+    struct SaveResult {
+        bool success;
+        std::string message;
+    };
 
     auto task = [self, scheme]() -> SaveResult {
-        if (!self || !self->clientManager_) return {false, "Dialog closed"};
+        if (!self || !self->clientManager_)
+            return {false, "Dialog closed"};
 
         dq::messaging::save_coding_scheme_request request;
         request.data = scheme;
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
-        if (!response_result) return {false, "Failed to communicate with server"};
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
+        if (!response_result)
+            return {false, "Failed to communicate with server"};
 
         return {response_result->success, response_result->message};
     };
@@ -275,7 +303,8 @@ void CodingSchemeDetailDialog::onSaveClicked() {
         auto result = watcher->result();
         watcher->deleteLater();
 
-        if (!self) return;
+        if (!self)
+            return;
 
         if (result.success) {
             emit self->schemeSaved(code);
@@ -290,28 +319,35 @@ void CodingSchemeDetailDialog::onSaveClicked() {
 }
 
 void CodingSchemeDetailDialog::onDeleteClicked() {
-    auto reply = MessageBoxHelper::question(this, tr("Confirm Delete"),
-        tr("Delete coding scheme '%1'?").arg(ui_->codeEdit->text()),
-        QMessageBox::Yes | QMessageBox::No);
+    auto reply =
+        MessageBoxHelper::question(this,
+                                   tr("Confirm Delete"),
+                                   tr("Delete coding scheme '%1'?").arg(ui_->codeEdit->text()),
+                                   QMessageBox::Yes | QMessageBox::No);
 
-    if (reply != QMessageBox::Yes) return;
+    if (reply != QMessageBox::Yes)
+        return;
 
     {
-        const auto crSel = promptChangeReason(
-            ChangeReasonDialog::OperationType::Delete, true, "common");
-        if (!crSel) return;
+        const auto crSel =
+            promptChangeReason(ChangeReasonDialog::OperationType::Delete, true, "common");
+        if (!crSel)
+            return;
     }
 
     QPointer<CodingSchemeDetailDialog> self = this;
     QString code = ui_->codeEdit->text();
 
     auto task = [self, code]() -> bool {
-        if (!self || !self->clientManager_) return false;
+        if (!self || !self->clientManager_)
+            return false;
 
         dq::messaging::delete_coding_scheme_request request;
         request.codes.push_back(code.toStdString());
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
-        if (!response_result) return false;
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
+        if (!response_result)
+            return false;
 
         return response_result->success;
     };
@@ -321,7 +357,8 @@ void CodingSchemeDetailDialog::onDeleteClicked() {
         bool success = watcher->result();
         watcher->deleteLater();
 
-        if (!self) return;
+        if (!self)
+            return;
 
         if (success) {
             emit self->statusMessage(tr("Coding scheme deleted successfully"));

@@ -20,14 +20,14 @@
 #ifndef ORES_QT_COMPUTE_CONSOLE_CONTROLLER_HPP
 #define ORES_QT_COMPUTE_CONSOLE_CONTROLLER_HPP
 
-#include <QObject>
-#include <QPointer>
-#include <QMdiArea>
-#include <QMainWindow>
-#include <string>
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
-#include "ores.logging/make_logger.hpp"
+#include <QMainWindow>
+#include <QMdiArea>
+#include <QObject>
+#include <QPointer>
+#include <string>
 
 namespace ores::qt {
 
@@ -45,8 +45,7 @@ class ComputeConsoleController final : public QObject {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.compute_console_controller";
+    inline static std::string_view logger_name = "ores.qt.compute_console_controller";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -55,13 +54,12 @@ private:
     }
 
 public:
-    ComputeConsoleController(
-        QMainWindow* mainWindow,
-        QMdiArea* mdiArea,
-        ClientManager* clientManager,
-        ChangeReasonCache* changeReasonCache,
-        BadgeCache* badgeCache,
-        QObject* parent = nullptr);
+    ComputeConsoleController(QMainWindow* mainWindow,
+                             QMdiArea* mdiArea,
+                             ClientManager* clientManager,
+                             ChangeReasonCache* changeReasonCache,
+                             BadgeCache* badgeCache,
+                             QObject* parent = nullptr);
 
     void showConsole();
     void closeAllWindows();
@@ -74,14 +72,14 @@ signals:
     void detachableWindowDestroyed(DetachableMdiSubWindow* window);
 
 private:
-    QMainWindow*       mainWindow_;
-    QMdiArea*          mdiArea_;
-    ClientManager*     clientManager_;
+    QMainWindow* mainWindow_;
+    QMdiArea* mdiArea_;
+    ClientManager* clientManager_;
     ChangeReasonCache* changeReasonCache_;
-    BadgeCache*        badgeCache_;
-    std::string        http_base_url_;
+    BadgeCache* badgeCache_;
+    std::string http_base_url_;
 
-    QPointer<ComputeConsoleWindow>   consoleWindow_;
+    QPointer<ComputeConsoleWindow> consoleWindow_;
     QPointer<DetachableMdiSubWindow> subWindow_;
 };
 

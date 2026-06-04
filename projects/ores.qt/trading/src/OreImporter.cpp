@@ -18,18 +18,17 @@
  *
  */
 #include "ores.qt/OreImporter.hpp"
-
-#include <map>
-#include <unordered_set>
-#include <boost/lexical_cast.hpp>
-#include <boost/uuid/uuid_io.hpp>
+#include "ores.dq.api/domain/change_reason_constants.hpp"
 #include "ores.ore.core/planner/ore_import_planner.hpp"
+#include "ores.refdata.api/messaging/book_protocol.hpp"
 #include "ores.refdata.api/messaging/currency_protocol.hpp"
 #include "ores.refdata.api/messaging/portfolio_protocol.hpp"
-#include "ores.refdata.api/messaging/book_protocol.hpp"
-#include "ores.trading.api/messaging/trade_protocol.hpp"
 #include "ores.trading.api/messaging/instrument_protocol.hpp"
-#include "ores.dq.api/domain/change_reason_constants.hpp"
+#include "ores.trading.api/messaging/trade_protocol.hpp"
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <map>
+#include <unordered_set>
 
 namespace ores::qt {
 
@@ -40,7 +39,7 @@ using ore::planner::ore_instrument_error;
 namespace {
 
 // Fallback dates applied when ORE XML omits required trade fields.
-constexpr std::string_view fallback_trade_date       = "2026-01-01";
+constexpr std::string_view fallback_trade_date = "2026-01-01";
 constexpr std::string_view fallback_timestamp_suffix = " 00:00:00+00:00";
 constexpr std::string_view fallback_termination_date = "2099-12-31";
 
@@ -52,25 +51,21 @@ auto make_error(const auto& resp, const char* step) -> std::string {
 
 }
 
-OreImporter::OreImporter(ClientManager* cm) : cm_(cm) {}
+OreImporter::OreImporter(ClientManager* cm)
+    : cm_(cm) {}
 
-ore_import_result OreImporter::execute(
-        ore::scanner::scan_result scan_result,
-        std::set<std::string> existing_iso_codes,
-        ore::planner::import_choices choices) {
+ore_import_result OreImporter::execute(ore::scanner::scan_result scan_result,
+                                       std::set<std::string> existing_iso_codes,
+                                       ore::planner::import_choices choices) {
 
     try {
         ore::planner::ore_import_planner planner(
-            std::move(scan_result),
-            std::move(existing_iso_codes),
-            choices);
+            std::move(scan_result), std::move(existing_iso_codes), choices);
         auto plan = planner.plan();
 
-        BOOST_LOG_SEV(lg(), info) << "Import plan: "
-            << plan.currencies.size() << " currencies, "
-            << plan.portfolios.size() << " portfolios, "
-            << plan.books.size() << " books, "
-            << plan.trades.size() << " trades";
+        BOOST_LOG_SEV(lg(), info) << "Import plan: " << plan.currencies.size() << " currencies, "
+                                  << plan.portfolios.size() << " portfolios, " << plan.books.size()
+                                  << " books, " << plan.trades.size() << " trades";
 
         // -----------------------------------------------------------------
         // Resolve name conflicts for portfolios and books.
@@ -86,25 +81,24 @@ ore_import_result OreImporter::execute(
                 for (const auto& p : resp->portfolios)
                     existing_portfolio_by_name[p.name] = p.id;
             }
-            BOOST_LOG_SEV(lg(), debug) << "Fetched "
-                << existing_portfolio_by_name.size() << " existing portfolios";
+            BOOST_LOG_SEV(lg(), debug)
+                << "Fetched " << existing_portfolio_by_name.size() << " existing portfolios";
         }
 
         // Step B: build portfolio UUID remap; decide which to save.
-        const bool new_versions = (choices.portfolio_reimport_mode ==
-            ore::planner::reimport_mode::create_new_versions);
+        const bool new_versions =
+            (choices.portfolio_reimport_mode == ore::planner::reimport_mode::create_new_versions);
         std::map<boost::uuids::uuid, boost::uuids::uuid> portfolio_uuid_remap;
         {
-            std::map<std::string, boost::uuids::uuid> committed_names =
-                existing_portfolio_by_name;
+            std::map<std::string, boost::uuids::uuid> committed_names = existing_portfolio_by_name;
             std::map<boost::uuids::uuid, std::string> uuid_to_name;
             for (const auto& [name, id] : existing_portfolio_by_name)
                 uuid_to_name[id] = name;
             std::vector<refdata::domain::portfolio> portfolios_to_save;
 
-            auto make_unique_name = [&](const std::string& base,
-                                        const std::optional<boost::uuids::uuid>& parent_id)
-                    -> std::string {
+            auto make_unique_name =
+                [&](const std::string& base,
+                    const std::optional<boost::uuids::uuid>& parent_id) -> std::string {
                 if (parent_id) {
                     auto pit = portfolio_uuid_remap.find(*parent_id);
                     auto pkey = pit != portfolio_uuid_remap.end() ? pit->second : *parent_id;
@@ -114,7 +108,7 @@ ore_import_result OreImporter::execute(
                             return candidate;
                     }
                 }
-                for (int n = 2; ; ++n) {
+                for (int n = 2;; ++n) {
                     std::string candidate = base + " " + std::to_string(n);
                     if (!committed_names.count(candidate))
                         return candidate;
@@ -159,8 +153,8 @@ ore_import_result OreImporter::execute(
                 portfolios_to_save.push_back(std::move(p));
             }
             plan.portfolios = std::move(portfolios_to_save);
-            BOOST_LOG_SEV(lg(), info) << "After dedup: "
-                << plan.portfolios.size() << " portfolio(s) to save";
+            BOOST_LOG_SEV(lg(), info)
+                << "After dedup: " << plan.portfolios.size() << " portfolio(s) to save";
         }
 
         // Apply portfolio remap to books and trades
@@ -184,31 +178,30 @@ ore_import_result OreImporter::execute(
                 for (const auto& b : resp->books)
                     existing_book_by_name[b.name] = b.id;
             }
-            BOOST_LOG_SEV(lg(), debug) << "Fetched "
-                << existing_book_by_name.size() << " existing books";
+            BOOST_LOG_SEV(lg(), debug)
+                << "Fetched " << existing_book_by_name.size() << " existing books";
         }
 
         // Step D: build book UUID remap; decide which to save.
         std::map<boost::uuids::uuid, boost::uuids::uuid> book_uuid_remap;
         {
-            std::map<std::string, boost::uuids::uuid> committed_book_names =
-                existing_book_by_name;
+            std::map<std::string, boost::uuids::uuid> committed_book_names = existing_book_by_name;
             std::map<boost::uuids::uuid, std::string> portfolio_uuid_to_name;
             for (const auto& p : plan.portfolios)
                 portfolio_uuid_to_name[p.id] = p.name;
             for (const auto& [name, id] : existing_portfolio_by_name)
                 portfolio_uuid_to_name.emplace(id, name);
 
-            auto make_unique_book_name = [&](const std::string& base,
-                                             const boost::uuids::uuid& parent_portfolio_id)
-                    -> std::string {
+            auto make_unique_book_name =
+                [&](const std::string& base,
+                    const boost::uuids::uuid& parent_portfolio_id) -> std::string {
                 if (auto pit = portfolio_uuid_to_name.find(parent_portfolio_id);
-                        pit != portfolio_uuid_to_name.end()) {
+                    pit != portfolio_uuid_to_name.end()) {
                     std::string candidate = base + " " + pit->second;
                     if (!committed_book_names.count(candidate))
                         return candidate;
                 }
-                for (int n = 2; ; ++n) {
+                for (int n = 2;; ++n) {
                     std::string candidate = base + " " + std::to_string(n);
                     if (!committed_book_names.count(candidate))
                         return candidate;
@@ -244,8 +237,7 @@ ore_import_result OreImporter::execute(
                 books_to_save.push_back(std::move(b));
             }
             plan.books = std::move(books_to_save);
-            BOOST_LOG_SEV(lg(), info) << "After dedup: "
-                << plan.books.size() << " book(s) to save";
+            BOOST_LOG_SEV(lg(), info) << "After dedup: " << plan.books.size() << " book(s) to save";
         }
 
         // Apply book remap to trades
@@ -262,7 +254,7 @@ ore_import_result OreImporter::execute(
             auto req = refdata::messaging::save_currency_request::from(ccy);
             const auto resp = cm_->process_authenticated_request(std::move(req));
             if (!resp || !resp->success)
-                return {.success=false, .error=make_error(resp, "Currency save")};
+                return {.success = false, .error = make_error(resp, "Currency save")};
             res.currencies++;
         }
         if (res.currencies > 0)
@@ -274,8 +266,9 @@ ore_import_result OreImporter::execute(
             req.data = pf;
             const auto resp = cm_->process_authenticated_request(std::move(req));
             if (!resp || !resp->success)
-                return {.success=false, .error=make_error(resp, "Portfolio save"),
-                        .currencies=res.currencies};
+                return {.success = false,
+                        .error = make_error(resp, "Portfolio save"),
+                        .currencies = res.currencies};
             res.portfolios++;
         }
         if (res.portfolios > 0)
@@ -287,8 +280,10 @@ ore_import_result OreImporter::execute(
             req.data = bk;
             const auto resp = cm_->process_authenticated_request(std::move(req));
             if (!resp || !resp->success)
-                return {.success=false, .error=make_error(resp, "Book save"),
-                        .currencies=res.currencies, .portfolios=res.portfolios};
+                return {.success = false,
+                        .error = make_error(resp, "Book save"),
+                        .currencies = res.currencies,
+                        .portfolios = res.portfolios};
             res.books++;
         }
         if (res.books > 0)
@@ -297,11 +292,11 @@ ore_import_result OreImporter::execute(
         // Fill required trade fields that ORE XML may omit.
         {
             const std::string& td = choices.defaults.trade_date;
-            const std::string ts_fallback = td.empty()
-                ? std::string(fallback_trade_date) + std::string(fallback_timestamp_suffix)
-                : td + std::string(fallback_timestamp_suffix);
-            const std::string date_fallback = td.empty()
-                ? std::string(fallback_trade_date) : td;
+            const std::string ts_fallback =
+                td.empty() ?
+                    std::string(fallback_trade_date) + std::string(fallback_timestamp_suffix) :
+                    td + std::string(fallback_timestamp_suffix);
+            const std::string date_fallback = td.empty() ? std::string(fallback_trade_date) : td;
 
             int filled = 0;
             for (auto& item : plan.trades) {
@@ -319,21 +314,21 @@ ore_import_result OreImporter::execute(
                     t.lifecycle.termination_date = std::string(fallback_termination_date);
                     any = true;
                 }
-                if (any) ++filled;
+                if (any)
+                    ++filled;
             }
             if (filled > 0)
-                BOOST_LOG_SEV(lg(), info) << "Filled missing date fields for "
-                    << filled << " trade(s)";
+                BOOST_LOG_SEV(lg(), info)
+                    << "Filled missing date fields for " << filled << " trade(s)";
         }
 
         // Step 4: trades in batches of 100
         constexpr int trade_batch_size = 100;
         const int total_trades = static_cast<int>(plan.trades.size());
-        const int num_batches = total_trades == 0 ? 0
-            : (total_trades + trade_batch_size - 1) / trade_batch_size;
-        BOOST_LOG_SEV(lg(), info)
-            << "Sending " << total_trades << " trades in "
-            << num_batches << " batch(es) of up to " << trade_batch_size << " each";
+        const int num_batches =
+            total_trades == 0 ? 0 : (total_trades + trade_batch_size - 1) / trade_batch_size;
+        BOOST_LOG_SEV(lg(), info) << "Sending " << total_trades << " trades in " << num_batches
+                                  << " batch(es) of up to " << trade_batch_size << " each";
         for (int offset = 0; offset < total_trades; offset += trade_batch_size) {
             const int end = std::min(offset + trade_batch_size, total_trades);
             namespace reason = ores::dq::domain::change_reason_constants;
@@ -345,24 +340,25 @@ ore_import_result OreImporter::execute(
                 batch.push_back(std::move(t));
             }
 
-            BOOST_LOG_SEV(lg(), debug) << "Sending trade batch "
-                << (offset / trade_batch_size + 1) << "/" << num_batches
-                << ": " << batch.size() << " trades";
+            BOOST_LOG_SEV(lg(), debug) << "Sending trade batch " << (offset / trade_batch_size + 1)
+                                       << "/" << num_batches << ": " << batch.size() << " trades";
 
             auto req = trading::messaging::save_trade_request::from(std::move(batch));
             const auto resp = cm_->process_authenticated_request(std::move(req));
             if (!resp || !resp->success)
-                return {.success=false, .error=make_error(resp, "Trade save"),
-                        .currencies=res.currencies, .portfolios=res.portfolios,
-                        .books=res.books};
+                return {.success = false,
+                        .error = make_error(resp, "Trade save"),
+                        .currencies = res.currencies,
+                        .portfolios = res.portfolios,
+                        .books = res.books};
             res.trades += end - offset;
         }
         if (total_trades > 0)
             BOOST_LOG_SEV(lg(), info) << "Saved " << res.trades << " trades";
 
         // Step 5: save instruments (non-fatal — collect errors, continue)
-        BOOST_LOG_SEV(lg(), debug) << "Saving instruments for "
-            << plan.trades.size() << " trade(s)";
+        BOOST_LOG_SEV(lg(), debug)
+            << "Saving instruments for " << plan.trades.size() << " trade(s)";
         for (const auto& item : plan.trades) {
             using namespace ores::trading::messaging;
             using ores::trading::domain::swap_instrument_data;
@@ -373,264 +369,379 @@ ore_import_result OreImporter::execute(
             using ores::trading::domain::commodity_instrument;
             using ores::trading::domain::composite_instrument_data;
             using ores::trading::domain::scripted_instrument;
-            std::visit([&](const auto& r) {
-                using T = std::decay_t<decltype(r)>;
-                if constexpr (std::is_same_v<T, std::monostate>) {
-                    // No instrument mapping for this trade type.
-                } else {
-                    const auto record_error = [&](const auto& resp) {
-                        const auto msg = resp ? resp->message : "no response from server";
-                        BOOST_LOG_SEV(lg(), warn)
-                            << "Instrument save failed for trade "
-                            << item.trade.identity.external_id << ": " << msg;
-                        res.instrument_errors.push_back(
-                            {item.trade.identity.external_id, std::string(msg)});
-                    };
+            std::visit(
+                [&](const auto& r) {
+                    using T = std::decay_t<decltype(r)>;
+                    if constexpr (std::is_same_v<T, std::monostate>) {
+                        // No instrument mapping for this trade type.
+                    } else {
+                        const auto record_error = [&](const auto& resp) {
+                            const auto msg = resp ? resp->message : "no response from server";
+                            BOOST_LOG_SEV(lg(), warn)
+                                << "Instrument save failed for trade "
+                                << item.trade.identity.external_id << ": " << msg;
+                            res.instrument_errors.push_back(
+                                {item.trade.identity.external_id, std::string(msg)});
+                        };
 
-                    if constexpr (std::is_same_v<T, swap_instrument_data>) {
-                        std::visit([&](const auto& instr) {
-                            using InstrT = std::decay_t<decltype(instr)>;
-                            using ores::trading::domain::fra_instrument;
-                            using ores::trading::domain::vanilla_swap_instrument;
-                            using ores::trading::domain::cap_floor_instrument;
-                            using ores::trading::domain::swaption_instrument;
-                            using ores::trading::domain::balance_guaranteed_swap_instrument;
-                            using ores::trading::domain::callable_swap_instrument;
-                            using ores::trading::domain::knock_out_swap_instrument;
-                            using ores::trading::domain::inflation_swap_instrument;
-                            using ores::trading::domain::rpa_instrument;
-                            if constexpr (std::is_same_v<InstrT, fra_instrument>) {
-                                save_fra_instrument_request req;
-                                req.data = instr;
-                                const auto resp =
-                                    cm_->process_authenticated_request(std::move(req));
-                                if (!resp || !resp->success) record_error(resp);
-                                else ++res.instruments;
-                            } else if constexpr (std::is_same_v<InstrT, vanilla_swap_instrument>) {
-                                save_vanilla_swap_instrument_request req;
-                                req.data = instr;
-                                const auto resp =
-                                    cm_->process_authenticated_request(std::move(req));
-                                if (!resp || !resp->success) record_error(resp);
-                                else ++res.instruments;
-                            } else if constexpr (std::is_same_v<InstrT, cap_floor_instrument>) {
-                                save_cap_floor_instrument_request req;
-                                req.data = instr;
-                                const auto resp =
-                                    cm_->process_authenticated_request(std::move(req));
-                                if (!resp || !resp->success) record_error(resp);
-                                else ++res.instruments;
-                            } else if constexpr (std::is_same_v<InstrT, swaption_instrument>) {
-                                save_swaption_instrument_request req;
-                                req.data = instr;
-                                const auto resp =
-                                    cm_->process_authenticated_request(std::move(req));
-                                if (!resp || !resp->success) record_error(resp);
-                                else ++res.instruments;
-                            } else if constexpr (std::is_same_v<InstrT, balance_guaranteed_swap_instrument>) {
-                                save_balance_guaranteed_swap_instrument_request req;
-                                req.data = instr;
-                                const auto resp =
-                                    cm_->process_authenticated_request(std::move(req));
-                                if (!resp || !resp->success) record_error(resp);
-                                else ++res.instruments;
-                            } else if constexpr (std::is_same_v<InstrT, callable_swap_instrument>) {
-                                save_callable_swap_instrument_request req;
-                                req.data = instr;
-                                const auto resp =
-                                    cm_->process_authenticated_request(std::move(req));
-                                if (!resp || !resp->success) record_error(resp);
-                                else ++res.instruments;
-                            } else if constexpr (std::is_same_v<InstrT, knock_out_swap_instrument>) {
-                                save_knock_out_swap_instrument_request req;
-                                req.data = instr;
-                                const auto resp =
-                                    cm_->process_authenticated_request(std::move(req));
-                                if (!resp || !resp->success) record_error(resp);
-                                else ++res.instruments;
-                            } else if constexpr (std::is_same_v<InstrT, inflation_swap_instrument>) {
-                                save_inflation_swap_instrument_request req;
-                                req.data = instr;
-                                const auto resp =
-                                    cm_->process_authenticated_request(std::move(req));
-                                if (!resp || !resp->success) record_error(resp);
-                                else ++res.instruments;
-                            } else if constexpr (std::is_same_v<InstrT, rpa_instrument>) {
-                                save_rpa_instrument_request req;
-                                req.data = instr;
-                                const auto resp =
-                                    cm_->process_authenticated_request(std::move(req));
-                                if (!resp || !resp->success) record_error(resp);
-                                else ++res.instruments;
-                            }
-                        }, r.instrument);
-                    } else if constexpr (std::is_same_v<T, fx_instrument_variant>) {
-                        std::visit([&](const auto& instr) {
-                            using InstrT = std::decay_t<decltype(instr)>;
-                            using ores::trading::domain::fx_forward_instrument;
-                            using ores::trading::domain::fx_vanilla_option_instrument;
-                            using ores::trading::domain::fx_barrier_option_instrument;
-                            using ores::trading::domain::fx_digital_option_instrument;
-                            using ores::trading::domain::fx_asian_forward_instrument;
-                            using ores::trading::domain::fx_accumulator_instrument;
-                            using ores::trading::domain::fx_variance_swap_instrument;
-                            if constexpr (std::is_same_v<InstrT, fx_forward_instrument>) {
-                                save_fx_forward_instrument_request req;
-                                req.data = instr;
-                                const auto resp =
-                                    cm_->process_authenticated_request(std::move(req));
-                                if (!resp || !resp->success) record_error(resp);
-                                else ++res.instruments;
-                            } else if constexpr (std::is_same_v<InstrT, fx_vanilla_option_instrument>) {
-                                save_fx_vanilla_option_instrument_request req;
-                                req.data = instr;
-                                const auto resp =
-                                    cm_->process_authenticated_request(std::move(req));
-                                if (!resp || !resp->success) record_error(resp);
-                                else ++res.instruments;
-                            } else if constexpr (std::is_same_v<InstrT, fx_barrier_option_instrument>) {
-                                save_fx_barrier_option_instrument_request req;
-                                req.data = instr;
-                                const auto resp =
-                                    cm_->process_authenticated_request(std::move(req));
-                                if (!resp || !resp->success) record_error(resp);
-                                else ++res.instruments;
-                            } else if constexpr (std::is_same_v<InstrT, fx_digital_option_instrument>) {
-                                save_fx_digital_option_instrument_request req;
-                                req.data = instr;
-                                const auto resp =
-                                    cm_->process_authenticated_request(std::move(req));
-                                if (!resp || !resp->success) record_error(resp);
-                                else ++res.instruments;
-                            } else if constexpr (std::is_same_v<InstrT, fx_asian_forward_instrument>) {
-                                save_fx_asian_forward_instrument_request req;
-                                req.data = instr;
-                                const auto resp =
-                                    cm_->process_authenticated_request(std::move(req));
-                                if (!resp || !resp->success) record_error(resp);
-                                else ++res.instruments;
-                            } else if constexpr (std::is_same_v<InstrT, fx_accumulator_instrument>) {
-                                save_fx_accumulator_instrument_request req;
-                                req.data = instr;
-                                const auto resp =
-                                    cm_->process_authenticated_request(std::move(req));
-                                if (!resp || !resp->success) record_error(resp);
-                                else ++res.instruments;
-                            } else if constexpr (std::is_same_v<InstrT, fx_variance_swap_instrument>) {
-                                save_fx_variance_swap_instrument_request req;
-                                req.data = instr;
-                                const auto resp =
-                                    cm_->process_authenticated_request(std::move(req));
-                                if (!resp || !resp->success) record_error(resp);
-                                else ++res.instruments;
-                            }
-                        }, r);
-                    } else if constexpr (std::is_same_v<T, bond_instrument>) {
-                        save_bond_instrument_request req;
-                        req.data = r;
-                        const auto resp = cm_->process_authenticated_request(std::move(req));
-                        if (!resp || !resp->success) record_error(resp);
-                        else ++res.instruments;
-                    } else if constexpr (std::is_same_v<T, credit_instrument>) {
-                        save_credit_instrument_request req;
-                        req.data = r;
-                        const auto resp = cm_->process_authenticated_request(std::move(req));
-                        if (!resp || !resp->success) record_error(resp);
-                        else ++res.instruments;
-                    } else if constexpr (std::is_same_v<T, equity_instrument_variant>) {
-                        std::visit([&](const auto& instr) {
-                            using InstrT = std::decay_t<decltype(instr)>;
-                            using namespace ores::trading::domain;
-                            if constexpr (std::is_same_v<InstrT, equity_option_instrument>) {
-                                save_equity_option_instrument_request req; req.data = instr;
-                                const auto resp =
-                                    cm_->process_authenticated_request(std::move(req));
-                                if (!resp || !resp->success) record_error(resp);
-                                else ++res.instruments;
-                            } else if constexpr (std::is_same_v<InstrT, equity_digital_option_instrument>) {
-                                save_equity_digital_option_instrument_request req; req.data = instr;
-                                const auto resp =
-                                    cm_->process_authenticated_request(std::move(req));
-                                if (!resp || !resp->success) record_error(resp);
-                                else ++res.instruments;
-                            } else if constexpr (std::is_same_v<InstrT, equity_barrier_option_instrument>) {
-                                save_equity_barrier_option_instrument_request req; req.data = instr;
-                                const auto resp =
-                                    cm_->process_authenticated_request(std::move(req));
-                                if (!resp || !resp->success) record_error(resp);
-                                else ++res.instruments;
-                            } else if constexpr (std::is_same_v<InstrT, equity_asian_option_instrument>) {
-                                save_equity_asian_option_instrument_request req; req.data = instr;
-                                const auto resp =
-                                    cm_->process_authenticated_request(std::move(req));
-                                if (!resp || !resp->success) record_error(resp);
-                                else ++res.instruments;
-                            } else if constexpr (std::is_same_v<InstrT, equity_forward_instrument>) {
-                                save_equity_forward_instrument_request req; req.data = instr;
-                                const auto resp =
-                                    cm_->process_authenticated_request(std::move(req));
-                                if (!resp || !resp->success) record_error(resp);
-                                else ++res.instruments;
-                            } else if constexpr (std::is_same_v<InstrT, equity_variance_swap_instrument>) {
-                                save_equity_variance_swap_instrument_request req; req.data = instr;
-                                const auto resp =
-                                    cm_->process_authenticated_request(std::move(req));
-                                if (!resp || !resp->success) record_error(resp);
-                                else ++res.instruments;
-                            } else if constexpr (std::is_same_v<InstrT, equity_swap_instrument>) {
-                                save_equity_swap_instrument_request req; req.data = instr;
-                                const auto resp =
-                                    cm_->process_authenticated_request(std::move(req));
-                                if (!resp || !resp->success) record_error(resp);
-                                else ++res.instruments;
-                            } else if constexpr (std::is_same_v<InstrT, equity_accumulator_instrument>) {
-                                save_equity_accumulator_instrument_request req; req.data = instr;
-                                const auto resp =
-                                    cm_->process_authenticated_request(std::move(req));
-                                if (!resp || !resp->success) record_error(resp);
-                                else ++res.instruments;
-                            } else if constexpr (std::is_same_v<InstrT, equity_position_instrument>) {
-                                save_equity_position_instrument_request req; req.data = instr;
-                                const auto resp =
-                                    cm_->process_authenticated_request(std::move(req));
-                                if (!resp || !resp->success) record_error(resp);
-                                else ++res.instruments;
-                            }
-                        }, r);
-                    } else if constexpr (std::is_same_v<T, commodity_instrument>) {
-                        save_commodity_instrument_request req;
-                        req.data = r;
-                        const auto resp = cm_->process_authenticated_request(std::move(req));
-                        if (!resp || !resp->success) record_error(resp);
-                        else ++res.instruments;
-                    } else if constexpr (std::is_same_v<T, composite_instrument_data>) {
-                        save_composite_instrument_request req;
-                        req.data = r.instrument;
-                        const auto resp = cm_->process_authenticated_request(std::move(req));
-                        if (!resp || !resp->success) record_error(resp);
-                        else ++res.instruments;
-                    } else if constexpr (std::is_same_v<T, scripted_instrument>) {
-                        save_scripted_instrument_request req;
-                        req.data = r;
-                        const auto resp = cm_->process_authenticated_request(std::move(req));
-                        if (!resp || !resp->success) record_error(resp);
-                        else ++res.instruments;
+                        if constexpr (std::is_same_v<T, swap_instrument_data>) {
+                            std::visit(
+                                [&](const auto& instr) {
+                                    using InstrT = std::decay_t<decltype(instr)>;
+                                    using ores::trading::domain::fra_instrument;
+                                    using ores::trading::domain::vanilla_swap_instrument;
+                                    using ores::trading::domain::cap_floor_instrument;
+                                    using ores::trading::domain::swaption_instrument;
+                                    using ores::trading::domain::balance_guaranteed_swap_instrument;
+                                    using ores::trading::domain::callable_swap_instrument;
+                                    using ores::trading::domain::knock_out_swap_instrument;
+                                    using ores::trading::domain::inflation_swap_instrument;
+                                    using ores::trading::domain::rpa_instrument;
+                                    if constexpr (std::is_same_v<InstrT, fra_instrument>) {
+                                        save_fra_instrument_request req;
+                                        req.data = instr;
+                                        const auto resp =
+                                            cm_->process_authenticated_request(std::move(req));
+                                        if (!resp || !resp->success)
+                                            record_error(resp);
+                                        else
+                                            ++res.instruments;
+                                    } else if constexpr (std::is_same_v<InstrT,
+                                                                        vanilla_swap_instrument>) {
+                                        save_vanilla_swap_instrument_request req;
+                                        req.data = instr;
+                                        const auto resp =
+                                            cm_->process_authenticated_request(std::move(req));
+                                        if (!resp || !resp->success)
+                                            record_error(resp);
+                                        else
+                                            ++res.instruments;
+                                    } else if constexpr (std::is_same_v<InstrT,
+                                                                        cap_floor_instrument>) {
+                                        save_cap_floor_instrument_request req;
+                                        req.data = instr;
+                                        const auto resp =
+                                            cm_->process_authenticated_request(std::move(req));
+                                        if (!resp || !resp->success)
+                                            record_error(resp);
+                                        else
+                                            ++res.instruments;
+                                    } else if constexpr (std::is_same_v<InstrT,
+                                                                        swaption_instrument>) {
+                                        save_swaption_instrument_request req;
+                                        req.data = instr;
+                                        const auto resp =
+                                            cm_->process_authenticated_request(std::move(req));
+                                        if (!resp || !resp->success)
+                                            record_error(resp);
+                                        else
+                                            ++res.instruments;
+                                    } else if constexpr (std::is_same_v<
+                                                             InstrT,
+                                                             balance_guaranteed_swap_instrument>) {
+                                        save_balance_guaranteed_swap_instrument_request req;
+                                        req.data = instr;
+                                        const auto resp =
+                                            cm_->process_authenticated_request(std::move(req));
+                                        if (!resp || !resp->success)
+                                            record_error(resp);
+                                        else
+                                            ++res.instruments;
+                                    } else if constexpr (std::is_same_v<InstrT,
+                                                                        callable_swap_instrument>) {
+                                        save_callable_swap_instrument_request req;
+                                        req.data = instr;
+                                        const auto resp =
+                                            cm_->process_authenticated_request(std::move(req));
+                                        if (!resp || !resp->success)
+                                            record_error(resp);
+                                        else
+                                            ++res.instruments;
+                                    } else if constexpr (std::is_same_v<
+                                                             InstrT,
+                                                             knock_out_swap_instrument>) {
+                                        save_knock_out_swap_instrument_request req;
+                                        req.data = instr;
+                                        const auto resp =
+                                            cm_->process_authenticated_request(std::move(req));
+                                        if (!resp || !resp->success)
+                                            record_error(resp);
+                                        else
+                                            ++res.instruments;
+                                    } else if constexpr (std::is_same_v<
+                                                             InstrT,
+                                                             inflation_swap_instrument>) {
+                                        save_inflation_swap_instrument_request req;
+                                        req.data = instr;
+                                        const auto resp =
+                                            cm_->process_authenticated_request(std::move(req));
+                                        if (!resp || !resp->success)
+                                            record_error(resp);
+                                        else
+                                            ++res.instruments;
+                                    } else if constexpr (std::is_same_v<InstrT, rpa_instrument>) {
+                                        save_rpa_instrument_request req;
+                                        req.data = instr;
+                                        const auto resp =
+                                            cm_->process_authenticated_request(std::move(req));
+                                        if (!resp || !resp->success)
+                                            record_error(resp);
+                                        else
+                                            ++res.instruments;
+                                    }
+                                },
+                                r.instrument);
+                        } else if constexpr (std::is_same_v<T, fx_instrument_variant>) {
+                            std::visit(
+                                [&](const auto& instr) {
+                                    using InstrT = std::decay_t<decltype(instr)>;
+                                    using ores::trading::domain::fx_forward_instrument;
+                                    using ores::trading::domain::fx_vanilla_option_instrument;
+                                    using ores::trading::domain::fx_barrier_option_instrument;
+                                    using ores::trading::domain::fx_digital_option_instrument;
+                                    using ores::trading::domain::fx_asian_forward_instrument;
+                                    using ores::trading::domain::fx_accumulator_instrument;
+                                    using ores::trading::domain::fx_variance_swap_instrument;
+                                    if constexpr (std::is_same_v<InstrT, fx_forward_instrument>) {
+                                        save_fx_forward_instrument_request req;
+                                        req.data = instr;
+                                        const auto resp =
+                                            cm_->process_authenticated_request(std::move(req));
+                                        if (!resp || !resp->success)
+                                            record_error(resp);
+                                        else
+                                            ++res.instruments;
+                                    } else if constexpr (std::is_same_v<
+                                                             InstrT,
+                                                             fx_vanilla_option_instrument>) {
+                                        save_fx_vanilla_option_instrument_request req;
+                                        req.data = instr;
+                                        const auto resp =
+                                            cm_->process_authenticated_request(std::move(req));
+                                        if (!resp || !resp->success)
+                                            record_error(resp);
+                                        else
+                                            ++res.instruments;
+                                    } else if constexpr (std::is_same_v<
+                                                             InstrT,
+                                                             fx_barrier_option_instrument>) {
+                                        save_fx_barrier_option_instrument_request req;
+                                        req.data = instr;
+                                        const auto resp =
+                                            cm_->process_authenticated_request(std::move(req));
+                                        if (!resp || !resp->success)
+                                            record_error(resp);
+                                        else
+                                            ++res.instruments;
+                                    } else if constexpr (std::is_same_v<
+                                                             InstrT,
+                                                             fx_digital_option_instrument>) {
+                                        save_fx_digital_option_instrument_request req;
+                                        req.data = instr;
+                                        const auto resp =
+                                            cm_->process_authenticated_request(std::move(req));
+                                        if (!resp || !resp->success)
+                                            record_error(resp);
+                                        else
+                                            ++res.instruments;
+                                    } else if constexpr (std::is_same_v<
+                                                             InstrT,
+                                                             fx_asian_forward_instrument>) {
+                                        save_fx_asian_forward_instrument_request req;
+                                        req.data = instr;
+                                        const auto resp =
+                                            cm_->process_authenticated_request(std::move(req));
+                                        if (!resp || !resp->success)
+                                            record_error(resp);
+                                        else
+                                            ++res.instruments;
+                                    } else if constexpr (std::is_same_v<
+                                                             InstrT,
+                                                             fx_accumulator_instrument>) {
+                                        save_fx_accumulator_instrument_request req;
+                                        req.data = instr;
+                                        const auto resp =
+                                            cm_->process_authenticated_request(std::move(req));
+                                        if (!resp || !resp->success)
+                                            record_error(resp);
+                                        else
+                                            ++res.instruments;
+                                    } else if constexpr (std::is_same_v<
+                                                             InstrT,
+                                                             fx_variance_swap_instrument>) {
+                                        save_fx_variance_swap_instrument_request req;
+                                        req.data = instr;
+                                        const auto resp =
+                                            cm_->process_authenticated_request(std::move(req));
+                                        if (!resp || !resp->success)
+                                            record_error(resp);
+                                        else
+                                            ++res.instruments;
+                                    }
+                                },
+                                r);
+                        } else if constexpr (std::is_same_v<T, bond_instrument>) {
+                            save_bond_instrument_request req;
+                            req.data = r;
+                            const auto resp = cm_->process_authenticated_request(std::move(req));
+                            if (!resp || !resp->success)
+                                record_error(resp);
+                            else
+                                ++res.instruments;
+                        } else if constexpr (std::is_same_v<T, credit_instrument>) {
+                            save_credit_instrument_request req;
+                            req.data = r;
+                            const auto resp = cm_->process_authenticated_request(std::move(req));
+                            if (!resp || !resp->success)
+                                record_error(resp);
+                            else
+                                ++res.instruments;
+                        } else if constexpr (std::is_same_v<T, equity_instrument_variant>) {
+                            std::visit(
+                                [&](const auto& instr) {
+                                    using InstrT = std::decay_t<decltype(instr)>;
+                                    using namespace ores::trading::domain;
+                                    if constexpr (std::is_same_v<InstrT,
+                                                                 equity_option_instrument>) {
+                                        save_equity_option_instrument_request req;
+                                        req.data = instr;
+                                        const auto resp =
+                                            cm_->process_authenticated_request(std::move(req));
+                                        if (!resp || !resp->success)
+                                            record_error(resp);
+                                        else
+                                            ++res.instruments;
+                                    } else if constexpr (std::is_same_v<
+                                                             InstrT,
+                                                             equity_digital_option_instrument>) {
+                                        save_equity_digital_option_instrument_request req;
+                                        req.data = instr;
+                                        const auto resp =
+                                            cm_->process_authenticated_request(std::move(req));
+                                        if (!resp || !resp->success)
+                                            record_error(resp);
+                                        else
+                                            ++res.instruments;
+                                    } else if constexpr (std::is_same_v<
+                                                             InstrT,
+                                                             equity_barrier_option_instrument>) {
+                                        save_equity_barrier_option_instrument_request req;
+                                        req.data = instr;
+                                        const auto resp =
+                                            cm_->process_authenticated_request(std::move(req));
+                                        if (!resp || !resp->success)
+                                            record_error(resp);
+                                        else
+                                            ++res.instruments;
+                                    } else if constexpr (std::is_same_v<
+                                                             InstrT,
+                                                             equity_asian_option_instrument>) {
+                                        save_equity_asian_option_instrument_request req;
+                                        req.data = instr;
+                                        const auto resp =
+                                            cm_->process_authenticated_request(std::move(req));
+                                        if (!resp || !resp->success)
+                                            record_error(resp);
+                                        else
+                                            ++res.instruments;
+                                    } else if constexpr (std::is_same_v<
+                                                             InstrT,
+                                                             equity_forward_instrument>) {
+                                        save_equity_forward_instrument_request req;
+                                        req.data = instr;
+                                        const auto resp =
+                                            cm_->process_authenticated_request(std::move(req));
+                                        if (!resp || !resp->success)
+                                            record_error(resp);
+                                        else
+                                            ++res.instruments;
+                                    } else if constexpr (std::is_same_v<
+                                                             InstrT,
+                                                             equity_variance_swap_instrument>) {
+                                        save_equity_variance_swap_instrument_request req;
+                                        req.data = instr;
+                                        const auto resp =
+                                            cm_->process_authenticated_request(std::move(req));
+                                        if (!resp || !resp->success)
+                                            record_error(resp);
+                                        else
+                                            ++res.instruments;
+                                    } else if constexpr (std::is_same_v<InstrT,
+                                                                        equity_swap_instrument>) {
+                                        save_equity_swap_instrument_request req;
+                                        req.data = instr;
+                                        const auto resp =
+                                            cm_->process_authenticated_request(std::move(req));
+                                        if (!resp || !resp->success)
+                                            record_error(resp);
+                                        else
+                                            ++res.instruments;
+                                    } else if constexpr (std::is_same_v<
+                                                             InstrT,
+                                                             equity_accumulator_instrument>) {
+                                        save_equity_accumulator_instrument_request req;
+                                        req.data = instr;
+                                        const auto resp =
+                                            cm_->process_authenticated_request(std::move(req));
+                                        if (!resp || !resp->success)
+                                            record_error(resp);
+                                        else
+                                            ++res.instruments;
+                                    } else if constexpr (std::is_same_v<
+                                                             InstrT,
+                                                             equity_position_instrument>) {
+                                        save_equity_position_instrument_request req;
+                                        req.data = instr;
+                                        const auto resp =
+                                            cm_->process_authenticated_request(std::move(req));
+                                        if (!resp || !resp->success)
+                                            record_error(resp);
+                                        else
+                                            ++res.instruments;
+                                    }
+                                },
+                                r);
+                        } else if constexpr (std::is_same_v<T, commodity_instrument>) {
+                            save_commodity_instrument_request req;
+                            req.data = r;
+                            const auto resp = cm_->process_authenticated_request(std::move(req));
+                            if (!resp || !resp->success)
+                                record_error(resp);
+                            else
+                                ++res.instruments;
+                        } else if constexpr (std::is_same_v<T, composite_instrument_data>) {
+                            save_composite_instrument_request req;
+                            req.data = r.instrument;
+                            const auto resp = cm_->process_authenticated_request(std::move(req));
+                            if (!resp || !resp->success)
+                                record_error(resp);
+                            else
+                                ++res.instruments;
+                        } else if constexpr (std::is_same_v<T, scripted_instrument>) {
+                            save_scripted_instrument_request req;
+                            req.data = r;
+                            const auto resp = cm_->process_authenticated_request(std::move(req));
+                            if (!resp || !resp->success)
+                                record_error(resp);
+                            else
+                                ++res.instruments;
+                        }
                     }
-                }
-            }, item.instrument);
+                },
+                item.instrument);
         }
         if (res.instruments > 0)
             BOOST_LOG_SEV(lg(), info) << "Saved " << res.instruments << " instruments";
         if (!res.instrument_errors.empty())
-            BOOST_LOG_SEV(lg(), warn) << res.instrument_errors.size()
-                << " instrument(s) failed to save";
+            BOOST_LOG_SEV(lg(), warn)
+                << res.instrument_errors.size() << " instrument(s) failed to save";
 
         res.success = true;
         return res;
 
     } catch (const std::exception& ex) {
         BOOST_LOG_SEV(lg(), error) << "Import exception: " << ex.what();
-        return {.success=false, .error=ex.what()};
+        return {.success = false, .error = ex.what()};
     }
 }
 

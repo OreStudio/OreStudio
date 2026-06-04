@@ -18,27 +18,26 @@
  *
  */
 #include "ores.qt/DatasetBundleDetailDialog.hpp"
-
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include <QPlainTextEdit>
-#include <boost/uuid/random_generator.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include "ui_DatasetBundleDetailDialog.h"
+#include "ores.dq.api/messaging/dataset_bundle_protocol.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/ChangeReasonDialog.hpp"
-#include "ores.dq.api/messaging/dataset_bundle_protocol.hpp"
+#include "ui_DatasetBundleDetailDialog.h"
+#include <QFutureWatcher>
+#include <QMessageBox>
+#include <QPlainTextEdit>
+#include <QtConcurrent>
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 DatasetBundleDetailDialog::DatasetBundleDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent),
-      ui_(new Ui::DatasetBundleDetailDialog),
-      clientManager_(nullptr) {
+    : DetailDialogBase(parent)
+    , ui_(new Ui::DatasetBundleDetailDialog)
+    , clientManager_(nullptr) {
 
     ui_->setupUi(this);
     setupUi();
@@ -74,18 +73,22 @@ void DatasetBundleDetailDialog::setupUi() {
 }
 
 void DatasetBundleDetailDialog::setupConnections() {
-    connect(ui_->saveButton, &QPushButton::clicked, this,
-            &DatasetBundleDetailDialog::onSaveClicked);
-    connect(ui_->deleteButton, &QPushButton::clicked, this,
+    connect(
+        ui_->saveButton, &QPushButton::clicked, this, &DatasetBundleDetailDialog::onSaveClicked);
+    connect(ui_->deleteButton,
+            &QPushButton::clicked,
+            this,
             &DatasetBundleDetailDialog::onDeleteClicked);
-    connect(ui_->closeButton, &QPushButton::clicked, this,
-            &DatasetBundleDetailDialog::onCloseClicked);
+    connect(
+        ui_->closeButton, &QPushButton::clicked, this, &DatasetBundleDetailDialog::onCloseClicked);
 
-    connect(ui_->codeEdit, &QLineEdit::textChanged, this,
-            &DatasetBundleDetailDialog::onCodeChanged);
-    connect(ui_->nameEdit, &QLineEdit::textChanged, this,
-            &DatasetBundleDetailDialog::onFieldChanged);
-    connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this,
+    connect(
+        ui_->codeEdit, &QLineEdit::textChanged, this, &DatasetBundleDetailDialog::onCodeChanged);
+    connect(
+        ui_->nameEdit, &QLineEdit::textChanged, this, &DatasetBundleDetailDialog::onFieldChanged);
+    connect(ui_->descriptionEdit,
+            &QPlainTextEdit::textChanged,
+            this,
             &DatasetBundleDetailDialog::onFieldChanged);
 }
 
@@ -97,8 +100,7 @@ void DatasetBundleDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
 
-void DatasetBundleDetailDialog::setBundle(
-    const dq::domain::dataset_bundle& bundle) {
+void DatasetBundleDetailDialog::setBundle(const dq::domain::dataset_bundle& bundle) {
     bundle_ = bundle;
     updateUiFromBundle();
 }
@@ -173,25 +175,23 @@ bool DatasetBundleDetailDialog::validateInput() {
 
 void DatasetBundleDetailDialog::onSaveClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot save dataset bundle while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot save dataset bundle while disconnected from server.");
         return;
     }
 
     if (!validateInput()) {
-        MessageBoxHelper::warning(this, "Invalid Input",
-            "Please fill in all required fields.");
+        MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
 
     updateBundleFromUi();
 
-    const auto crOpType = createMode_
-        ? ChangeReasonDialog::OperationType::Create
-        : ChangeReasonDialog::OperationType::Amend;
-    const auto crSel = promptChangeReason(crOpType, hasChanges_,
-        createMode_ ? "system" : "common");
-    if (!crSel) return;
+    const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
+                                        ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
+    if (!crSel)
+        return;
     bundle_.change_reason_code = crSel->reason_code;
     bundle_.change_commentary = crSel->commentary;
 
@@ -211,7 +211,8 @@ void DatasetBundleDetailDialog::onSaveClicked() {
 
         dq::messaging::save_dataset_bundle_request request;
         request.bundles.push_back(bundle);
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -222,8 +223,7 @@ void DatasetBundleDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
@@ -248,13 +248,15 @@ void DatasetBundleDetailDialog::onSaveClicked() {
 
 void DatasetBundleDetailDialog::onDeleteClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot delete dataset bundle while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot delete dataset bundle while disconnected from server.");
         return;
     }
 
     QString code = QString::fromStdString(bundle_.code);
-    auto reply = MessageBoxHelper::question(this, "Delete Dataset Bundle",
+    auto reply = MessageBoxHelper::question(
+        this,
+        "Delete Dataset Bundle",
         QString("Are you sure you want to delete dataset bundle '%1'?").arg(code),
         QMessageBox::Yes | QMessageBox::No);
 
@@ -262,9 +264,10 @@ void DatasetBundleDetailDialog::onDeleteClicked() {
         return;
     }
 
-    const auto crSel = promptChangeReason(
-        ChangeReasonDialog::OperationType::Delete, true, "common");
-    if (!crSel) return;
+    const auto crSel =
+        promptChangeReason(ChangeReasonDialog::OperationType::Delete, true, "common");
+    if (!crSel)
+        return;
 
     BOOST_LOG_SEV(lg(), info) << "Deleting dataset bundle: " << bundle_.code;
 
@@ -282,7 +285,8 @@ void DatasetBundleDetailDialog::onDeleteClicked() {
 
         dq::messaging::delete_dataset_bundle_request request;
         request.ids.push_back(boost::uuids::to_string(id));
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -293,8 +297,7 @@ void DatasetBundleDetailDialog::onDeleteClicked() {
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
-            self, [self, code, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, code, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 

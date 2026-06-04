@@ -20,15 +20,15 @@
 #ifndef ORES_QT_BUSINESS_UNIT_CONTROLLER_HPP
 #define ORES_QT_BUSINESS_UNIT_CONTROLLER_HPP
 
-#include <QMdiArea>
-#include <QMainWindow>
-#include "ores.qt/EntityController.hpp"
-#include "ores.qt/IBusinessUnitBrowser.hpp"
-#include "ores.qt/ClientManager.hpp"
-#include "ores.qt/ImageCache.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata.api/domain/business_unit.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/EntityController.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
+#include "ores.qt/IBusinessUnitBrowser.hpp"
+#include "ores.qt/ImageCache.hpp"
+#include "ores.refdata.api/domain/business_unit.hpp"
+#include <QMainWindow>
+#include <QMdiArea>
 
 namespace ores::qt {
 
@@ -43,13 +43,11 @@ class ChangeReasonCache;
  * Manages the lifecycle of business unit list, detail, and history windows.
  * Handles event subscriptions and coordinates between windows.
  */
-class BusinessUnitController final
-    : public EntityController, public IBusinessUnitBrowser {
+class BusinessUnitController final : public EntityController, public IBusinessUnitBrowser {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.business_unit_controller";
+    inline static std::string_view logger_name = "ores.qt.business_unit_controller";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -58,15 +56,14 @@ private:
     }
 
 public:
-    BusinessUnitController(
-        QMainWindow* mainWindow,
-        QMdiArea* mdiArea,
-        ClientManager* clientManager,
-        ImageCache* imageCache,
-        ChangeReasonCache* changeReasonCache,
-        BadgeCache* badgeCache,
-        const QString& username,
-        QObject* parent = nullptr);
+    BusinessUnitController(QMainWindow* mainWindow,
+                           QMdiArea* mdiArea,
+                           ClientManager* clientManager,
+                           ImageCache* imageCache,
+                           ChangeReasonCache* changeReasonCache,
+                           BadgeCache* badgeCache,
+                           const QString& username,
+                           QObject* parent = nullptr);
 
     void showListWindow() override;
     void closeAllWindows() override;
@@ -87,8 +84,7 @@ private slots:
     void onAddNewRequested();
     void onShowHistory(const refdata::domain::business_unit& business_unit);
     void onRevertVersion(const refdata::domain::business_unit& business_unit);
-    void onOpenVersion(const refdata::domain::business_unit& business_unit,
-                       int versionNumber);
+    void onOpenVersion(const refdata::domain::business_unit& business_unit, int versionNumber);
 
 private:
     void showAddWindow();

@@ -18,30 +18,27 @@
  *
  */
 #include "ores.qt/ZeroConventionController.hpp"
-
+#include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/ZeroConventionDetailDialog.hpp"
+#include "ores.qt/ZeroConventionHistoryDialog.hpp"
+#include "ores.qt/ZeroConventionMdiWindow.hpp"
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/ZeroConventionMdiWindow.hpp"
-#include "ores.qt/ZeroConventionDetailDialog.hpp"
-#include "ores.qt/ZeroConventionHistoryDialog.hpp"
-#include "ores.qt/DetachableMdiSubWindow.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-ZeroConventionController::ZeroConventionController(
-    QMainWindow* mainWindow,
-    QMdiArea* mdiArea,
-    ClientManager* clientManager,
-    const QString& username,
-    QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username,
-          std::string_view{}, parent),
-      listWindow_(nullptr),
-      listMdiSubWindow_(nullptr) {
+ZeroConventionController::ZeroConventionController(QMainWindow* mainWindow,
+                                                   QMdiArea* mdiArea,
+                                                   ClientManager* clientManager,
+                                                   const QString& username,
+                                                   QObject* parent)
+    : EntityController(mainWindow, mdiArea, clientManager, username, std::string_view{}, parent)
+    , listWindow_(nullptr)
+    , listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "ZeroConventionController created";
 }
@@ -59,23 +56,33 @@ void ZeroConventionController::showListWindow() {
     listWindow_ = new ZeroConventionMdiWindow(clientManager_, username_);
 
     // Connect signals
-    connect(listWindow_, &ZeroConventionMdiWindow::statusChanged,
-            this, &ZeroConventionController::statusMessage);
-    connect(listWindow_, &ZeroConventionMdiWindow::errorOccurred,
-            this, &ZeroConventionController::errorMessage);
-    connect(listWindow_, &ZeroConventionMdiWindow::showConventionDetails,
-            this, &ZeroConventionController::onShowDetails);
-    connect(listWindow_, &ZeroConventionMdiWindow::addNewRequested,
-            this, &ZeroConventionController::onAddNewRequested);
-    connect(listWindow_, &ZeroConventionMdiWindow::showConventionHistory,
-            this, &ZeroConventionController::onShowHistory);
+    connect(listWindow_,
+            &ZeroConventionMdiWindow::statusChanged,
+            this,
+            &ZeroConventionController::statusMessage);
+    connect(listWindow_,
+            &ZeroConventionMdiWindow::errorOccurred,
+            this,
+            &ZeroConventionController::errorMessage);
+    connect(listWindow_,
+            &ZeroConventionMdiWindow::showConventionDetails,
+            this,
+            &ZeroConventionController::onShowDetails);
+    connect(listWindow_,
+            &ZeroConventionMdiWindow::addNewRequested,
+            this,
+            &ZeroConventionController::onAddNewRequested);
+    connect(listWindow_,
+            &ZeroConventionMdiWindow::showConventionHistory,
+            this,
+            &ZeroConventionController::onShowHistory);
 
     // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Zero Conventions");
-    listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Chart, IconUtils::DefaultIconColor));
+    listMdiSubWindow_->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -87,12 +94,16 @@ void ZeroConventionController::showListWindow() {
     register_detachable_window(listMdiSubWindow_);
 
     // Cleanup when closed
-    connect(listMdiSubWindow_, &QObject::destroyed, this, [self = QPointer<ZeroConventionController>(this), key]() {
-        if (!self) return;
-        self->untrack_window(key);
-        self->listWindow_ = nullptr;
-        self->listMdiSubWindow_ = nullptr;
-    });
+    connect(listMdiSubWindow_,
+            &QObject::destroyed,
+            this,
+            [self = QPointer<ZeroConventionController>(this), key]() {
+                if (!self)
+                    return;
+                self->untrack_window(key);
+                self->listWindow_ = nullptr;
+                self->listMdiSubWindow_ = nullptr;
+            });
 
     BOOST_LOG_SEV(lg(), debug) << "Zero Convention list window created";
 }
@@ -119,8 +130,7 @@ void ZeroConventionController::reloadListWindow() {
     }
 }
 
-void ZeroConventionController::onShowDetails(
-    const refdata::domain::zero_convention& zc) {
+void ZeroConventionController::onShowDetails(const refdata::domain::zero_convention& zc) {
     BOOST_LOG_SEV(lg(), debug) << "Show details for: " << zc.id;
     showDetailWindow(zc);
 }
@@ -130,8 +140,7 @@ void ZeroConventionController::onAddNewRequested() {
     showAddWindow();
 }
 
-void ZeroConventionController::onShowHistory(
-    const refdata::domain::zero_convention& zc) {
+void ZeroConventionController::onShowHistory(const refdata::domain::zero_convention& zc) {
     BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << zc.id;
     showHistoryWindow(QString::fromStdString(zc.id));
 }
@@ -144,23 +153,30 @@ void ZeroConventionController::showAddWindow() {
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
 
-    connect(detailDialog, &ZeroConventionDetailDialog::statusMessage,
-            this, &ZeroConventionController::statusMessage);
-    connect(detailDialog, &ZeroConventionDetailDialog::errorMessage,
-            this, &ZeroConventionController::errorMessage);
-    connect(detailDialog, &ZeroConventionDetailDialog::zcSaved,
-            this, [self = QPointer<ZeroConventionController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Zero Convention saved: " << code.toStdString();
-        self->handleEntitySaved();
-    });
+    connect(detailDialog,
+            &ZeroConventionDetailDialog::statusMessage,
+            this,
+            &ZeroConventionController::statusMessage);
+    connect(detailDialog,
+            &ZeroConventionDetailDialog::errorMessage,
+            this,
+            &ZeroConventionController::errorMessage);
+    connect(detailDialog,
+            &ZeroConventionDetailDialog::zcSaved,
+            this,
+            [self = QPointer<ZeroConventionController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Zero Convention saved: " << code.toStdString();
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Zero Convention");
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Chart, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -168,8 +184,7 @@ void ZeroConventionController::showAddWindow() {
     show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
-void ZeroConventionController::showDetailWindow(
-    const refdata::domain::zero_convention& zc) {
+void ZeroConventionController::showDetailWindow(const refdata::domain::zero_convention& zc) {
 
     const QString identifier = QString::fromStdString(zc.id);
     const QString key = build_window_key("details", identifier);
@@ -187,37 +202,46 @@ void ZeroConventionController::showDetailWindow(
     detailDialog->setCreateMode(false);
     detailDialog->setConvention(zc);
 
-    connect(detailDialog, &ZeroConventionDetailDialog::statusMessage,
-            this, &ZeroConventionController::statusMessage);
-    connect(detailDialog, &ZeroConventionDetailDialog::errorMessage,
-            this, &ZeroConventionController::errorMessage);
-    connect(detailDialog, &ZeroConventionDetailDialog::zcSaved,
-            this, [self = QPointer<ZeroConventionController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Zero Convention saved: " << code.toStdString();
-        self->handleEntitySaved();
-    });
-    connect(detailDialog, &ZeroConventionDetailDialog::zcDeleted,
-            this, [self = QPointer<ZeroConventionController>(this), key](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Zero Convention deleted: " << code.toStdString();
-        self->handleEntityDeleted();
-    });
+    connect(detailDialog,
+            &ZeroConventionDetailDialog::statusMessage,
+            this,
+            &ZeroConventionController::statusMessage);
+    connect(detailDialog,
+            &ZeroConventionDetailDialog::errorMessage,
+            this,
+            &ZeroConventionController::errorMessage);
+    connect(detailDialog,
+            &ZeroConventionDetailDialog::zcSaved,
+            this,
+            [self = QPointer<ZeroConventionController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Zero Convention saved: " << code.toStdString();
+                self->handleEntitySaved();
+            });
+    connect(detailDialog,
+            &ZeroConventionDetailDialog::zcDeleted,
+            this,
+            [self = QPointer<ZeroConventionController>(this), key](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Zero Convention deleted: " << code.toStdString();
+                self->handleEntityDeleted();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Zero Convention: %1").arg(identifier));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Chart, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
 
     // Track window
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<ZeroConventionController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, key]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, key]() {
         if (self) {
             self->untrack_window(key);
         }
@@ -235,30 +259,38 @@ void ZeroConventionController::showHistoryWindow(const QString& code) {
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
-        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: "
-                                  << code.toStdString();
+        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: " << code.toStdString();
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
-                              << code.toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << code.toStdString();
 
     auto* historyDialog = new ZeroConventionHistoryDialog(code, clientManager_, mainWindow_);
 
-    connect(historyDialog, &ZeroConventionHistoryDialog::statusChanged,
-            this, [self = QPointer<ZeroConventionController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(historyDialog, &ZeroConventionHistoryDialog::errorOccurred,
-            this, [self = QPointer<ZeroConventionController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
-    connect(historyDialog, &ZeroConventionHistoryDialog::revertVersionRequested,
-            this, &ZeroConventionController::onRevertVersion);
-    connect(historyDialog, &ZeroConventionHistoryDialog::openVersionRequested,
-            this, &ZeroConventionController::onOpenVersion);
+    connect(historyDialog,
+            &ZeroConventionHistoryDialog::statusChanged,
+            this,
+            [self = QPointer<ZeroConventionController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(historyDialog,
+            &ZeroConventionHistoryDialog::errorOccurred,
+            this,
+            [self = QPointer<ZeroConventionController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
+    connect(historyDialog,
+            &ZeroConventionHistoryDialog::revertVersionRequested,
+            this,
+            &ZeroConventionController::onRevertVersion);
+    connect(historyDialog,
+            &ZeroConventionHistoryDialog::openVersionRequested,
+            this,
+            &ZeroConventionController::onOpenVersion);
 
     // Load history data
     historyDialog->loadHistory();
@@ -267,16 +299,15 @@ void ZeroConventionController::showHistoryWindow(const QString& code) {
     historyWindow->setAttribute(Qt::WA_DeleteOnClose);
     historyWindow->setWidget(historyDialog);
     historyWindow->setWindowTitle(QString("Zero Convention History: %1").arg(code));
-    historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    historyWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     // Track this history window
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
 
     QPointer<ZeroConventionController> self = this;
-    connect(historyWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -285,14 +316,14 @@ void ZeroConventionController::showHistoryWindow(const QString& code) {
     show_managed_window(historyWindow, listMdiSubWindow_);
 }
 
-void ZeroConventionController::onOpenVersion(
-    const refdata::domain::zero_convention& zc, int versionNumber) {
+void ZeroConventionController::onOpenVersion(const refdata::domain::zero_convention& zc,
+                                             int versionNumber) {
     BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
                               << " for zero convention: " << zc.id;
 
     const QString code = QString::fromStdString(zc.id);
-    const QString windowKey = build_window_key("version", QString("%1_v%2")
-        .arg(code).arg(versionNumber));
+    const QString windowKey =
+        build_window_key("version", QString("%1_v%2").arg(code).arg(versionNumber));
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
@@ -306,31 +337,36 @@ void ZeroConventionController::onOpenVersion(
     detailDialog->setConvention(zc);
     detailDialog->setReadOnly(true);
 
-    connect(detailDialog, &ZeroConventionDetailDialog::statusMessage,
-            this, [self = QPointer<ZeroConventionController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(detailDialog, &ZeroConventionDetailDialog::errorMessage,
-            this, [self = QPointer<ZeroConventionController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
+    connect(detailDialog,
+            &ZeroConventionDetailDialog::statusMessage,
+            this,
+            [self = QPointer<ZeroConventionController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(detailDialog,
+            &ZeroConventionDetailDialog::errorMessage,
+            this,
+            [self = QPointer<ZeroConventionController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Zero Convention: %1 (Version %2)")
-        .arg(code).arg(versionNumber));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("Zero Convention: %1 (Version %2)").arg(code).arg(versionNumber));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     track_window(windowKey, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<ZeroConventionController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -340,10 +376,8 @@ void ZeroConventionController::onOpenVersion(
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
-void ZeroConventionController::onRevertVersion(
-    const refdata::domain::zero_convention& zc) {
-    BOOST_LOG_SEV(lg(), info) << "Reverting zero convention to version: "
-                              << zc.version;
+void ZeroConventionController::onRevertVersion(const refdata::domain::zero_convention& zc) {
+    BOOST_LOG_SEV(lg(), info) << "Reverting zero convention to version: " << zc.version;
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new ZeroConventionDetailDialog(mainWindow_);
@@ -352,25 +386,33 @@ void ZeroConventionController::onRevertVersion(
     detailDialog->setConvention(zc);
     detailDialog->setCreateMode(false);
 
-    connect(detailDialog, &ZeroConventionDetailDialog::statusMessage,
-            this, &ZeroConventionController::statusMessage);
-    connect(detailDialog, &ZeroConventionDetailDialog::errorMessage,
-            this, &ZeroConventionController::errorMessage);
-    connect(detailDialog, &ZeroConventionDetailDialog::zcSaved,
-            this, [self = QPointer<ZeroConventionController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Zero Convention reverted: " << code.toStdString();
-        emit self->statusMessage(QString("Zero Convention '%1' reverted successfully").arg(code));
-        self->handleEntitySaved();
-    });
+    connect(detailDialog,
+            &ZeroConventionDetailDialog::statusMessage,
+            this,
+            &ZeroConventionController::statusMessage);
+    connect(detailDialog,
+            &ZeroConventionDetailDialog::errorMessage,
+            this,
+            &ZeroConventionController::errorMessage);
+    connect(detailDialog,
+            &ZeroConventionDetailDialog::zcSaved,
+            this,
+            [self = QPointer<ZeroConventionController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Zero Convention reverted: " << code.toStdString();
+                emit self->statusMessage(
+                    QString("Zero Convention '%1' reverted successfully").arg(code));
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Revert Zero Convention: %1")
-        .arg(QString::fromStdString(zc.id)));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("Revert Zero Convention: %1").arg(QString::fromStdString(zc.id)));
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
+                                                               IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 

@@ -21,21 +21,20 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-
-#include <cmath>
-#include <QVBoxLayout>
+#include <QGraphicsTextItem>
 #include <QHBoxLayout>
-#include <QSplitter>
 #include <QHeaderView>
 #include <QPainterPath>
-#include <QGraphicsTextItem>
+#include <QSplitter>
+#include <QVBoxLayout>
 #include <boost/uuid/uuid_io.hpp>
+#include <cmath>
 
 namespace ores::qt {
 
-DatasetViewDialog::DatasetViewDialog(ClientManager* clientManager,
-                                     QWidget* parent)
-    : QDialog(parent), clientManager_(clientManager) {
+DatasetViewDialog::DatasetViewDialog(ClientManager* clientManager, QWidget* parent)
+    : QDialog(parent)
+    , clientManager_(clientManager) {
     setupUi();
 }
 
@@ -141,8 +140,10 @@ QWidget* DatasetViewDialog::createLineageTab() {
     return widget;
 }
 
-void DatasetViewDialog::addProperty(QTreeWidget* tree, const QString& name,
-    const QString& value, const QString& tooltip) {
+void DatasetViewDialog::addProperty(QTreeWidget* tree,
+                                    const QString& name,
+                                    const QString& value,
+                                    const QString& tooltip) {
 
     auto* item = new QTreeWidgetItem(tree);
     item->setText(0, name);
@@ -189,8 +190,8 @@ QString DatasetViewDialog::findMethodologyName(
     return tr("Unknown");
 }
 
-const dq::domain::methodology* DatasetViewDialog::findMethodology(
-    const std::optional<boost::uuids::uuid>& methodologyId) const {
+const dq::domain::methodology*
+DatasetViewDialog::findMethodology(const std::optional<boost::uuids::uuid>& methodologyId) const {
     if (!methodologyId) {
         return nullptr;
     }
@@ -212,7 +213,8 @@ void DatasetViewDialog::setDataset(const dq::domain::dataset& dataset) {
     updateLineageView();
 }
 
-void DatasetViewDialog::setMethodologies(const std::vector<dq::domain::methodology>& methodologies) {
+void DatasetViewDialog::setMethodologies(
+    const std::vector<dq::domain::methodology>& methodologies) {
     methodologies_ = methodologies;
 }
 
@@ -221,8 +223,7 @@ void DatasetViewDialog::setDatasetDependencies(
     datasetDependencies_ = dependencies;
 }
 
-void DatasetViewDialog::setDatasetNames(
-    const std::map<std::string, std::string>& codeToName) {
+void DatasetViewDialog::setDatasetNames(const std::map<std::string, std::string>& codeToName) {
     datasetNames_ = codeToName;
 }
 
@@ -234,18 +235,21 @@ void DatasetViewDialog::updateOverviewTab() {
     addProperty(overviewTree_, tr("Name"), QString::fromStdString(dataset_.name));
     addProperty(overviewTree_, tr("Code"), QString::fromStdString(dataset_.code));
     addProperty(overviewTree_, tr("Version"), QString::number(dataset_.version));
-    addProperty(overviewTree_, tr("ID"),
-        QString::fromStdString(boost::uuids::to_string(dataset_.id)));
-    addProperty(overviewTree_, tr("Description"),
-        dataset_.description.empty() ? tr("-") : QString::fromStdString(dataset_.description));
+    addProperty(
+        overviewTree_, tr("ID"), QString::fromStdString(boost::uuids::to_string(dataset_.id)));
+    addProperty(overviewTree_,
+                tr("Description"),
+                dataset_.description.empty() ? tr("-") :
+                                               QString::fromStdString(dataset_.description));
 
     // Classification section
     addSectionHeader(overviewTree_, tr("Classification"));
     addProperty(overviewTree_, tr("Domain"), QString::fromStdString(dataset_.domain_name));
-    addProperty(overviewTree_, tr("Subject Area"),
-        QString::fromStdString(dataset_.subject_area_name));
-    addProperty(overviewTree_, tr("Catalog"),
-        dataset_.catalog_name ? QString::fromStdString(*dataset_.catalog_name) : tr("-"));
+    addProperty(
+        overviewTree_, tr("Subject Area"), QString::fromStdString(dataset_.subject_area_name));
+    addProperty(overviewTree_,
+                tr("Catalog"),
+                dataset_.catalog_name ? QString::fromStdString(*dataset_.catalog_name) : tr("-"));
 
     // Data Governance section
     addSectionHeader(overviewTree_, tr("Data Governance"));
@@ -256,11 +260,13 @@ void DatasetViewDialog::updateOverviewTab() {
     // Audit section
     addSectionHeader(overviewTree_, tr("Audit"));
     addProperty(overviewTree_, tr("Modified By"), QString::fromStdString(dataset_.modified_by));
-    addProperty(overviewTree_, tr("Recorded At"),
-        relative_time_helper::format(dataset_.recorded_at));
-    addProperty(overviewTree_, tr("Commentary"),
-        dataset_.change_commentary.empty()
-            ? tr("-") : QString::fromStdString(dataset_.change_commentary));
+    addProperty(
+        overviewTree_, tr("Recorded At"), relative_time_helper::format(dataset_.recorded_at));
+    addProperty(overviewTree_,
+                tr("Commentary"),
+                dataset_.change_commentary.empty() ?
+                    tr("-") :
+                    QString::fromStdString(dataset_.change_commentary));
 }
 
 void DatasetViewDialog::updateProvenanceTab() {
@@ -268,30 +274,36 @@ void DatasetViewDialog::updateProvenanceTab() {
 
     // Source section
     addSectionHeader(provenanceTree_, tr("Source"));
-    addProperty(provenanceTree_, tr("Source System"),
-        QString::fromStdString(dataset_.source_system_id));
-    addProperty(provenanceTree_, tr("Business Context"),
-        dataset_.business_context.empty()
-            ? tr("-") : QString::fromStdString(dataset_.business_context));
-    addProperty(provenanceTree_, tr("License"),
-        dataset_.license_info ? QString::fromStdString(*dataset_.license_info) : tr("-"));
-    addProperty(provenanceTree_, tr("Coding Scheme"),
-        dataset_.coding_scheme_code
-            ? QString::fromStdString(*dataset_.coding_scheme_code) : tr("-"));
+    addProperty(
+        provenanceTree_, tr("Source System"), QString::fromStdString(dataset_.source_system_id));
+    addProperty(provenanceTree_,
+                tr("Business Context"),
+                dataset_.business_context.empty() ?
+                    tr("-") :
+                    QString::fromStdString(dataset_.business_context));
+    addProperty(provenanceTree_,
+                tr("License"),
+                dataset_.license_info ? QString::fromStdString(*dataset_.license_info) : tr("-"));
+    addProperty(provenanceTree_,
+                tr("Coding Scheme"),
+                dataset_.coding_scheme_code ? QString::fromStdString(*dataset_.coding_scheme_code) :
+                                              tr("-"));
 
     // Dates section
     addSectionHeader(provenanceTree_, tr("Dates"));
-    addProperty(provenanceTree_, tr("As Of Date"),
-        relative_time_helper::format(dataset_.as_of_date));
-    addProperty(provenanceTree_, tr("Ingestion"),
-        relative_time_helper::format(dataset_.ingestion_timestamp));
+    addProperty(
+        provenanceTree_, tr("As Of Date"), relative_time_helper::format(dataset_.as_of_date));
+    addProperty(provenanceTree_,
+                tr("Ingestion"),
+                relative_time_helper::format(dataset_.ingestion_timestamp));
 
     // Lineage section
     addSectionHeader(provenanceTree_, tr("Lineage"));
-    addProperty(provenanceTree_, tr("Upstream Derivation"),
-        dataset_.upstream_derivation_id
-            ? QString::fromStdString(boost::uuids::to_string(*dataset_.upstream_derivation_id))
-            : tr("-"));
+    addProperty(provenanceTree_,
+                tr("Upstream Derivation"),
+                dataset_.upstream_derivation_id ? QString::fromStdString(boost::uuids::to_string(
+                                                      *dataset_.upstream_derivation_id)) :
+                                                  tr("-"));
     addProperty(provenanceTree_, tr("Lineage Depth"), QString::number(dataset_.lineage_depth));
 }
 
@@ -310,27 +322,35 @@ void DatasetViewDialog::updateMethodologyTab() {
     addSectionHeader(methodologyTree_, tr("General"));
     addProperty(methodologyTree_, tr("Name"), QString::fromStdString(methodology->name));
     addProperty(methodologyTree_, tr("Version"), QString::number(methodology->version));
-    addProperty(methodologyTree_, tr("ID"),
-        QString::fromStdString(boost::uuids::to_string(methodology->id)));
-    addProperty(methodologyTree_, tr("Description"),
-        methodology->description.empty()
-            ? tr("-") : QString::fromStdString(methodology->description));
+    addProperty(methodologyTree_,
+                tr("ID"),
+                QString::fromStdString(boost::uuids::to_string(methodology->id)));
+    addProperty(methodologyTree_,
+                tr("Description"),
+                methodology->description.empty() ?
+                    tr("-") :
+                    QString::fromStdString(methodology->description));
 
     // References
     addSectionHeader(methodologyTree_, tr("References"));
-    addProperty(methodologyTree_, tr("Logic Reference"),
-        methodology->logic_reference
-            ? QString::fromStdString(*methodology->logic_reference) : tr("-"));
+    addProperty(methodologyTree_,
+                tr("Logic Reference"),
+                methodology->logic_reference ?
+                    QString::fromStdString(*methodology->logic_reference) :
+                    tr("-"));
 
     // Audit info
     addSectionHeader(methodologyTree_, tr("Audit"));
-    addProperty(methodologyTree_, tr("Modified By"),
-        QString::fromStdString(methodology->modified_by));
-    addProperty(methodologyTree_, tr("Recorded At"),
-        relative_time_helper::format(methodology->recorded_at));
-    addProperty(methodologyTree_, tr("Commentary"),
-        methodology->change_commentary.empty()
-            ? tr("-") : QString::fromStdString(methodology->change_commentary));
+    addProperty(
+        methodologyTree_, tr("Modified By"), QString::fromStdString(methodology->modified_by));
+    addProperty(methodologyTree_,
+                tr("Recorded At"),
+                relative_time_helper::format(methodology->recorded_at));
+    addProperty(methodologyTree_,
+                tr("Commentary"),
+                methodology->change_commentary.empty() ?
+                    tr("-") :
+                    QString::fromStdString(methodology->change_commentary));
 
     // Implementation details in the text browser
     if (methodology->implementation_details) {
@@ -345,10 +365,11 @@ void DatasetViewDialog::updateLineageView() {
     scene->clear();
 
     // Layout parameters
-    const qreal rowSpacing = 50;  // Vertical spacing between rows
+    const qreal rowSpacing = 50; // Vertical spacing between rows
     qreal currentX = 0;
     qreal dependencyRow = 0;
-    qreal datasetRow = rowSpacing + lineageHeaderHeight_ + lineageRowHeight_ * 3;  // 3 rows: header + Code + Name
+    qreal datasetRow =
+        rowSpacing + lineageHeaderHeight_ + lineageRowHeight_ * 3; // 3 rows: header + Code + Name
 
     // Row 1: Dependency datasets (datasets this dataset depends on)
     struct DepInfo {
@@ -376,12 +397,16 @@ void DatasetViewDialog::updateLineageView() {
         // Create nodes for dependency datasets (shown as Dataset nodes, not Dependency)
         for (auto& dep : dependencies) {
             dep.nodeX = currentX;
-            dep.nodeHeight = createLineageNode(scene, currentX, dependencyRow,
+            dep.nodeHeight = createLineageNode(
+                scene,
+                currentX,
+                dependencyRow,
                 tr("Dataset"),
                 {tr("Code"), tr("Name")},
-                {QString::fromStdString(dep.code),
-                 QString::fromStdString(dep.name)},
-                lineageHeaderCatalog_, false, true);
+                {QString::fromStdString(dep.code), QString::fromStdString(dep.name)},
+                lineageHeaderCatalog_,
+                false,
+                true);
 
             currentX += lineageNodeWidth_ + lineageNodeSpacing_;
         }
@@ -395,12 +420,16 @@ void DatasetViewDialog::updateLineageView() {
         datasetX = (totalWidth - lineageNodeWidth_) / 2;
     }
 
-    qreal datasetHeight = createLineageNode(scene, datasetX, datasetRow,
+    qreal datasetHeight = createLineageNode(
+        scene,
+        datasetX,
+        datasetRow,
         tr("Dataset"),
         {tr("Code"), tr("Name")},
-        {QString::fromStdString(dataset_.code),
-         QString::fromStdString(dataset_.name)},
-        lineageHeaderDataset_, !dependencies.empty(), false);
+        {QString::fromStdString(dataset_.code), QString::fromStdString(dataset_.name)},
+        lineageHeaderDataset_,
+        !dependencies.empty(),
+        false);
 
     // Draw labeled connections from dependencies to dataset
     if (!dependencies.empty()) {
@@ -409,8 +438,12 @@ void DatasetViewDialog::updateLineageView() {
         for (const auto& dep : dependencies) {
             qreal depRightX = dep.nodeX + lineageNodeWidth_ + lineageSocketRadius_;
             qreal depCenterY = dependencyRow + dep.nodeHeight / 2;
-            drawLabeledConnection(scene, depRightX, depCenterY,
-                datasetCenterX, datasetTopY, QString::fromStdString(dep.role));
+            drawLabeledConnection(scene,
+                                  depRightX,
+                                  depCenterY,
+                                  datasetCenterX,
+                                  datasetTopY,
+                                  QString::fromStdString(dep.role));
         }
     }
 
@@ -423,9 +456,15 @@ void DatasetViewDialog::updateLineageView() {
     lineageView_->fitInView(sceneRect, Qt::KeepAspectRatio);
 }
 
-qreal DatasetViewDialog::createLineageNode(QGraphicsScene* scene, qreal x, qreal y,
-    const QString& headerText, const QStringList& labels, const QStringList& values,
-    const QColor& headerColor, bool hasInputSocket, bool hasOutputSocket) const {
+qreal DatasetViewDialog::createLineageNode(QGraphicsScene* scene,
+                                           qreal x,
+                                           qreal y,
+                                           const QString& headerText,
+                                           const QStringList& labels,
+                                           const QStringList& values,
+                                           const QColor& headerColor,
+                                           bool hasInputSocket,
+                                           bool hasOutputSocket) const {
 
     const int numRows = std::min(labels.size(), values.size());
     const qreal bodyHeight = numRows * lineageRowHeight_ + lineagePadding_ * 2;
@@ -439,27 +478,29 @@ qreal DatasetViewDialog::createLineageNode(QGraphicsScene* scene, qreal x, qreal
 
     createLineageNodeBody(scene, x, y, nodeHeight, tooltip);
     createLineageNodeHeader(scene, x, y, headerText, headerColor, tooltip);
-    createLineageNodeProperties(scene, x, y + lineageHeaderHeight_ + lineagePadding_,
-        labels, values);
+    createLineageNodeProperties(
+        scene, x, y + lineageHeaderHeight_ + lineagePadding_, labels, values);
     createLineageNodeSockets(scene, x, y, nodeHeight, hasInputSocket, hasOutputSocket);
 
     return nodeHeight;
 }
 
-void DatasetViewDialog::createLineageNodeBody(QGraphicsScene* scene, qreal x, qreal y,
-    qreal nodeHeight, const QString& tooltip) const {
+void DatasetViewDialog::createLineageNodeBody(
+    QGraphicsScene* scene, qreal x, qreal y, qreal nodeHeight, const QString& tooltip) const {
 
     QPainterPath bodyPath;
-    bodyPath.addRoundedRect(x, y, lineageNodeWidth_, nodeHeight,
-        lineageCornerRadius_, lineageCornerRadius_);
-    auto* bodyItem = scene->addPath(bodyPath,
-        QPen(lineageNodeBorder_), QBrush(lineageNodeBody_));
+    bodyPath.addRoundedRect(
+        x, y, lineageNodeWidth_, nodeHeight, lineageCornerRadius_, lineageCornerRadius_);
+    auto* bodyItem = scene->addPath(bodyPath, QPen(lineageNodeBorder_), QBrush(lineageNodeBody_));
     bodyItem->setToolTip(tooltip);
 }
 
-void DatasetViewDialog::createLineageNodeHeader(QGraphicsScene* scene, qreal x, qreal y,
-    const QString& headerText, const QColor& headerColor,
-    const QString& tooltip) const {
+void DatasetViewDialog::createLineageNodeHeader(QGraphicsScene* scene,
+                                                qreal x,
+                                                qreal y,
+                                                const QString& headerText,
+                                                const QColor& headerColor,
+                                                const QString& tooltip) const {
 
     // Header background (top rounded, bottom square)
     QPainterPath headerPath;
@@ -468,8 +509,12 @@ void DatasetViewDialog::createLineageNodeHeader(QGraphicsScene* scene, qreal x, 
     headerPath.lineTo(x, y + lineageHeaderHeight_);
     headerPath.lineTo(x + lineageNodeWidth_, y + lineageHeaderHeight_);
     headerPath.lineTo(x + lineageNodeWidth_, y + lineageCornerRadius_);
-    headerPath.arcTo(x + lineageNodeWidth_ - lineageCornerRadius_ * 2, y,
-        lineageCornerRadius_ * 2, lineageCornerRadius_ * 2, 0, 90);
+    headerPath.arcTo(x + lineageNodeWidth_ - lineageCornerRadius_ * 2,
+                     y,
+                     lineageCornerRadius_ * 2,
+                     lineageCornerRadius_ * 2,
+                     0,
+                     90);
     headerPath.closeSubpath();
     auto* headerBg = scene->addPath(headerPath, QPen(Qt::NoPen), QBrush(headerColor));
     headerBg->setToolTip(tooltip);
@@ -480,19 +525,22 @@ void DatasetViewDialog::createLineageNodeHeader(QGraphicsScene* scene, qreal x, 
     headerFont.setBold(true);
     QFontMetrics headerFm(headerFont);
 
-    QString elidedHeader = headerFm.elidedText(headerText, Qt::ElideRight,
-        static_cast<int>(lineageNodeWidth_ - 2 * lineagePadding_));
+    QString elidedHeader = headerFm.elidedText(
+        headerText, Qt::ElideRight, static_cast<int>(lineageNodeWidth_ - 2 * lineagePadding_));
     auto* headerItem = scene->addText(elidedHeader);
     headerItem->setFont(headerFont);
     headerItem->setDefaultTextColor(lineageText_);
     headerItem->setToolTip(tooltip);
     qreal headerTextWidth = headerFm.horizontalAdvance(elidedHeader);
     headerItem->setPos(x + (lineageNodeWidth_ - headerTextWidth) / 2,
-        y + (lineageHeaderHeight_ - headerFm.height()) / 2 - 1);
+                       y + (lineageHeaderHeight_ - headerFm.height()) / 2 - 1);
 }
 
-void DatasetViewDialog::createLineageNodeProperties(QGraphicsScene* scene, qreal x, qreal y,
-    const QStringList& labels, const QStringList& values) const {
+void DatasetViewDialog::createLineageNodeProperties(QGraphicsScene* scene,
+                                                    qreal x,
+                                                    qreal y,
+                                                    const QStringList& labels,
+                                                    const QStringList& values) const {
 
     QFont labelFont;
     labelFont.setPointSize(5);
@@ -522,33 +570,43 @@ void DatasetViewDialog::createLineageNodeProperties(QGraphicsScene* scene, qreal
         valueItem->setFont(valueFont);
         valueItem->setDefaultTextColor(lineageValue_);
         valueItem->setPos(x + lineagePadding_ + maxLabelWidth + 2,
-            rowY + (lineageRowHeight_ - valueFm.height()) / 2);
+                          rowY + (lineageRowHeight_ - valueFm.height()) / 2);
         valueItem->setToolTip(QString("%1: %2").arg(labels[i], values[i]));
 
         rowY += lineageRowHeight_;
     }
 }
 
-void DatasetViewDialog::createLineageNodeSockets(QGraphicsScene* scene, qreal x, qreal y,
-    qreal nodeHeight, bool hasInput, bool hasOutput) const {
+void DatasetViewDialog::createLineageNodeSockets(QGraphicsScene* scene,
+                                                 qreal x,
+                                                 qreal y,
+                                                 qreal nodeHeight,
+                                                 bool hasInput,
+                                                 bool hasOutput) const {
 
     qreal socketY = y + nodeHeight / 2;
 
     if (hasInput) {
-        scene->addEllipse(x - lineageSocketRadius_, socketY - lineageSocketRadius_,
-            lineageSocketRadius_ * 2, lineageSocketRadius_ * 2,
-            QPen(lineageNodeBorder_), QBrush(lineageSocket_));
+        scene->addEllipse(x - lineageSocketRadius_,
+                          socketY - lineageSocketRadius_,
+                          lineageSocketRadius_ * 2,
+                          lineageSocketRadius_ * 2,
+                          QPen(lineageNodeBorder_),
+                          QBrush(lineageSocket_));
     }
 
     if (hasOutput) {
-        scene->addEllipse(x + lineageNodeWidth_ - lineageSocketRadius_, socketY - lineageSocketRadius_,
-            lineageSocketRadius_ * 2, lineageSocketRadius_ * 2,
-            QPen(lineageNodeBorder_), QBrush(lineageSocket_));
+        scene->addEllipse(x + lineageNodeWidth_ - lineageSocketRadius_,
+                          socketY - lineageSocketRadius_,
+                          lineageSocketRadius_ * 2,
+                          lineageSocketRadius_ * 2,
+                          QPen(lineageNodeBorder_),
+                          QBrush(lineageSocket_));
     }
 }
 
-void DatasetViewDialog::drawLineageConnection(QGraphicsScene* scene,
-    qreal x1, qreal y1, qreal x2, qreal y2) const {
+void DatasetViewDialog::drawLineageConnection(
+    QGraphicsScene* scene, qreal x1, qreal y1, qreal x2, qreal y2) const {
 
     QPainterPath path;
     path.moveTo(x1, y1);
@@ -557,8 +615,8 @@ void DatasetViewDialog::drawLineageConnection(QGraphicsScene* scene,
     scene->addPath(path, QPen(lineageConnection_, 1.2));
 }
 
-void DatasetViewDialog::drawLabeledConnection(QGraphicsScene* scene,
-    qreal x1, qreal y1, qreal x2, qreal y2, const QString& label) const {
+void DatasetViewDialog::drawLabeledConnection(
+    QGraphicsScene* scene, qreal x1, qreal y1, qreal x2, qreal y2, const QString& label) const {
 
     // Draw the connection line
     QPainterPath path;
@@ -580,9 +638,12 @@ void DatasetViewDialog::drawLabeledConnection(QGraphicsScene* scene,
     // Create background for label
     qreal labelWidth = fm.horizontalAdvance(label) + 4;
     qreal labelHeight = fm.height() + 2;
-    scene->addRect(midX - labelWidth / 2, midY - labelHeight / 2,
-        labelWidth, labelHeight,
-        QPen(Qt::NoPen), QBrush(lineageBackground_));
+    scene->addRect(midX - labelWidth / 2,
+                   midY - labelHeight / 2,
+                   labelWidth,
+                   labelHeight,
+                   QPen(Qt::NoPen),
+                   QBrush(lineageBackground_));
 
     // Add label text
     auto* textItem = scene->addText(label);

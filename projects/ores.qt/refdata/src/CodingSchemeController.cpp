@@ -18,40 +18,37 @@
  *
  */
 #include "ores.qt/CodingSchemeController.hpp"
+#include "ores.dq.api/eventing/coding_scheme_changed_event.hpp"
+#include "ores.eventing/domain/event_traits.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
-
-#include <QMdiSubWindow>
-#include <QMessageBox>
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/CodingSchemeMdiWindow.hpp"
 #include "ores.qt/CodingSchemeDetailDialog.hpp"
 #include "ores.qt/CodingSchemeHistoryDialog.hpp"
+#include "ores.qt/CodingSchemeMdiWindow.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
-#include "ores.eventing/domain/event_traits.hpp"
-#include "ores.dq.api/eventing/coding_scheme_changed_event.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include <QMdiSubWindow>
+#include <QMessageBox>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    constexpr std::string_view coding_scheme_event_name =
-        eventing::domain::event_traits<
-            dq::eventing::coding_scheme_changed_event>::name;
+constexpr std::string_view coding_scheme_event_name =
+    eventing::domain::event_traits<dq::eventing::coding_scheme_changed_event>::name;
 }
 
-CodingSchemeController::CodingSchemeController(
-    QMainWindow* mainWindow,
-    QMdiArea* mdiArea,
-    ClientManager* clientManager,
-    ChangeReasonCache* changeReasonCache,
-    const QString& username,
-    QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username,
-                       coding_scheme_event_name, parent),
-      changeReasonCache_(changeReasonCache),
-      listWindow_(nullptr),
-      listMdiSubWindow_(nullptr) {
+CodingSchemeController::CodingSchemeController(QMainWindow* mainWindow,
+                                               QMdiArea* mdiArea,
+                                               ClientManager* clientManager,
+                                               ChangeReasonCache* changeReasonCache,
+                                               const QString& username,
+                                               QObject* parent)
+    : EntityController(
+          mainWindow, mdiArea, clientManager, username, coding_scheme_event_name, parent)
+    , changeReasonCache_(changeReasonCache)
+    , listWindow_(nullptr)
+    , listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "CodingSchemeController created";
 }
@@ -71,23 +68,33 @@ void CodingSchemeController::showListWindow() {
 
     listWindow_ = new CodingSchemeMdiWindow(clientManager_, username_);
 
-    connect(listWindow_, &CodingSchemeMdiWindow::statusChanged,
-            this, &CodingSchemeController::statusMessage);
-    connect(listWindow_, &CodingSchemeMdiWindow::errorOccurred,
-            this, &CodingSchemeController::errorMessage);
-    connect(listWindow_, &CodingSchemeMdiWindow::showSchemeDetails,
-            this, &CodingSchemeController::onShowDetails);
-    connect(listWindow_, &CodingSchemeMdiWindow::addNewRequested,
-            this, &CodingSchemeController::onAddNewRequested);
-    connect(listWindow_, &CodingSchemeMdiWindow::showSchemeHistory,
-            this, &CodingSchemeController::onShowHistory);
+    connect(listWindow_,
+            &CodingSchemeMdiWindow::statusChanged,
+            this,
+            &CodingSchemeController::statusMessage);
+    connect(listWindow_,
+            &CodingSchemeMdiWindow::errorOccurred,
+            this,
+            &CodingSchemeController::errorMessage);
+    connect(listWindow_,
+            &CodingSchemeMdiWindow::showSchemeDetails,
+            this,
+            &CodingSchemeController::onShowDetails);
+    connect(listWindow_,
+            &CodingSchemeMdiWindow::addNewRequested,
+            this,
+            &CodingSchemeController::onAddNewRequested);
+    connect(listWindow_,
+            &CodingSchemeMdiWindow::showSchemeHistory,
+            this,
+            &CodingSchemeController::onShowHistory);
 
     // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Coding Schemes");
-    listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Code, IconUtils::DefaultIconColor));
+    listMdiSubWindow_->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Code, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -97,12 +104,16 @@ void CodingSchemeController::showListWindow() {
     track_window(key, listMdiSubWindow_);
     register_detachable_window(listMdiSubWindow_);
 
-    connect(listMdiSubWindow_, &QObject::destroyed, this, [self = QPointer<CodingSchemeController>(this), key]() {
-        if (!self) return;
-        self->untrack_window(key);
-        self->listWindow_ = nullptr;
-        self->listMdiSubWindow_ = nullptr;
-    });
+    connect(listMdiSubWindow_,
+            &QObject::destroyed,
+            this,
+            [self = QPointer<CodingSchemeController>(this), key]() {
+                if (!self)
+                    return;
+                self->untrack_window(key);
+                self->listWindow_ = nullptr;
+                self->listMdiSubWindow_ = nullptr;
+            });
 
     BOOST_LOG_SEV(lg(), debug) << "Coding scheme list window created";
 }
@@ -154,23 +165,30 @@ void CodingSchemeController::showAddWindow() {
     detailDialog->setCreateMode(true);
     detailDialog->loadLookupData();
 
-    connect(detailDialog, &CodingSchemeDetailDialog::statusMessage,
-            this, &CodingSchemeController::statusMessage);
-    connect(detailDialog, &CodingSchemeDetailDialog::errorMessage,
-            this, &CodingSchemeController::errorMessage);
-    connect(detailDialog, &CodingSchemeDetailDialog::schemeSaved,
-            this, [self = QPointer<CodingSchemeController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Coding scheme saved: " << code.toStdString();
-        self->handleEntitySaved();
-    });
+    connect(detailDialog,
+            &CodingSchemeDetailDialog::statusMessage,
+            this,
+            &CodingSchemeController::statusMessage);
+    connect(detailDialog,
+            &CodingSchemeDetailDialog::errorMessage,
+            this,
+            &CodingSchemeController::errorMessage);
+    connect(detailDialog,
+            &CodingSchemeDetailDialog::schemeSaved,
+            this,
+            [self = QPointer<CodingSchemeController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Coding scheme saved: " << code.toStdString();
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Coding Scheme");
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Code, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Code, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -198,36 +216,45 @@ void CodingSchemeController::showDetailWindow(const dq::domain::coding_scheme& s
     detailDialog->loadLookupData();
     detailDialog->setScheme(scheme);
 
-    connect(detailDialog, &CodingSchemeDetailDialog::statusMessage,
-            this, &CodingSchemeController::statusMessage);
-    connect(detailDialog, &CodingSchemeDetailDialog::errorMessage,
-            this, &CodingSchemeController::errorMessage);
-    connect(detailDialog, &CodingSchemeDetailDialog::schemeSaved,
-            this, [self = QPointer<CodingSchemeController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Coding scheme saved: " << code.toStdString();
-        self->handleEntitySaved();
-    });
-    connect(detailDialog, &CodingSchemeDetailDialog::schemeDeleted,
-            this, [self = QPointer<CodingSchemeController>(this), key](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Coding scheme deleted: " << code.toStdString();
-        self->handleEntityDeleted();
-    });
+    connect(detailDialog,
+            &CodingSchemeDetailDialog::statusMessage,
+            this,
+            &CodingSchemeController::statusMessage);
+    connect(detailDialog,
+            &CodingSchemeDetailDialog::errorMessage,
+            this,
+            &CodingSchemeController::errorMessage);
+    connect(detailDialog,
+            &CodingSchemeDetailDialog::schemeSaved,
+            this,
+            [self = QPointer<CodingSchemeController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Coding scheme saved: " << code.toStdString();
+                self->handleEntitySaved();
+            });
+    connect(detailDialog,
+            &CodingSchemeDetailDialog::schemeDeleted,
+            this,
+            [self = QPointer<CodingSchemeController>(this), key](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Coding scheme deleted: " << code.toStdString();
+                self->handleEntityDeleted();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Coding Scheme: %1").arg(identifier));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Code, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Code, IconUtils::DefaultIconColor));
 
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<CodingSchemeController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, key]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, key]() {
         if (self) {
             self->untrack_window(key);
         }
@@ -238,36 +265,43 @@ void CodingSchemeController::showDetailWindow(const dq::domain::coding_scheme& s
 }
 
 void CodingSchemeController::showHistoryWindow(const QString& code) {
-    BOOST_LOG_SEV(lg(), info) << "Opening history window for coding scheme: "
-                              << code.toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Opening history window for coding scheme: " << code.toStdString();
 
     const QString windowKey = build_window_key("history", code);
 
     if (try_reuse_window(windowKey)) {
-        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: "
-                                  << code.toStdString();
+        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: " << code.toStdString();
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
-                              << code.toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << code.toStdString();
 
     auto* historyDialog = new CodingSchemeHistoryDialog(code, clientManager_, mainWindow_);
 
-    connect(historyDialog, &CodingSchemeHistoryDialog::statusChanged,
-            this, [self = QPointer<CodingSchemeController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(historyDialog, &CodingSchemeHistoryDialog::errorOccurred,
-            this, [self = QPointer<CodingSchemeController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
-    connect(historyDialog, &CodingSchemeHistoryDialog::revertVersionRequested,
-            this, &CodingSchemeController::onRevertVersion);
-    connect(historyDialog, &CodingSchemeHistoryDialog::openVersionRequested,
-            this, &CodingSchemeController::onOpenVersion);
+    connect(historyDialog,
+            &CodingSchemeHistoryDialog::statusChanged,
+            this,
+            [self = QPointer<CodingSchemeController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(historyDialog,
+            &CodingSchemeHistoryDialog::errorOccurred,
+            this,
+            [self = QPointer<CodingSchemeController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
+    connect(historyDialog,
+            &CodingSchemeHistoryDialog::revertVersionRequested,
+            this,
+            &CodingSchemeController::onRevertVersion);
+    connect(historyDialog,
+            &CodingSchemeHistoryDialog::openVersionRequested,
+            this,
+            &CodingSchemeController::onOpenVersion);
 
     historyDialog->loadHistory();
 
@@ -275,15 +309,14 @@ void CodingSchemeController::showHistoryWindow(const QString& code) {
     historyWindow->setAttribute(Qt::WA_DeleteOnClose);
     historyWindow->setWidget(historyDialog);
     historyWindow->setWindowTitle(QString("Coding Scheme History: %1").arg(code));
-    historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    historyWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
 
     QPointer<CodingSchemeController> self = this;
-    connect(historyWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -292,14 +325,14 @@ void CodingSchemeController::showHistoryWindow(const QString& code) {
     show_managed_window(historyWindow, listMdiSubWindow_);
 }
 
-void CodingSchemeController::onOpenVersion(
-    const dq::domain::coding_scheme& scheme, int versionNumber) {
+void CodingSchemeController::onOpenVersion(const dq::domain::coding_scheme& scheme,
+                                           int versionNumber) {
     BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
                               << " for coding scheme: " << scheme.code;
 
     const QString code = QString::fromStdString(scheme.code);
-    const QString windowKey = build_window_key("version", QString("%1_v%2")
-        .arg(code).arg(versionNumber));
+    const QString windowKey =
+        build_window_key("version", QString("%1_v%2").arg(code).arg(versionNumber));
 
     if (try_reuse_window(windowKey)) {
         BOOST_LOG_SEV(lg(), info) << "Reusing existing version window";
@@ -315,31 +348,36 @@ void CodingSchemeController::onOpenVersion(
     detailDialog->setScheme(scheme);
     detailDialog->setReadOnly(true);
 
-    connect(detailDialog, &CodingSchemeDetailDialog::statusMessage,
-            this, [self = QPointer<CodingSchemeController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(detailDialog, &CodingSchemeDetailDialog::errorMessage,
-            this, [self = QPointer<CodingSchemeController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
+    connect(detailDialog,
+            &CodingSchemeDetailDialog::statusMessage,
+            this,
+            [self = QPointer<CodingSchemeController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(detailDialog,
+            &CodingSchemeDetailDialog::errorMessage,
+            this,
+            [self = QPointer<CodingSchemeController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Coding Scheme: %1 (Version %2)")
-        .arg(code).arg(versionNumber));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("Coding Scheme: %1 (Version %2)").arg(code).arg(versionNumber));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     track_window(windowKey, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<CodingSchemeController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -349,10 +387,8 @@ void CodingSchemeController::onOpenVersion(
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
-void CodingSchemeController::onRevertVersion(
-    const dq::domain::coding_scheme& scheme) {
-    BOOST_LOG_SEV(lg(), info) << "Reverting coding scheme to version: "
-                              << scheme.version;
+void CodingSchemeController::onRevertVersion(const dq::domain::coding_scheme& scheme) {
+    BOOST_LOG_SEV(lg(), info) << "Reverting coding scheme to version: " << scheme.version;
 
     auto* detailDialog = new CodingSchemeDetailDialog(mainWindow_);
     if (changeReasonCache_)
@@ -363,25 +399,33 @@ void CodingSchemeController::onRevertVersion(
     detailDialog->setScheme(scheme);
     detailDialog->setCreateMode(false);
 
-    connect(detailDialog, &CodingSchemeDetailDialog::statusMessage,
-            this, &CodingSchemeController::statusMessage);
-    connect(detailDialog, &CodingSchemeDetailDialog::errorMessage,
-            this, &CodingSchemeController::errorMessage);
-    connect(detailDialog, &CodingSchemeDetailDialog::schemeSaved,
-            this, [self = QPointer<CodingSchemeController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Coding scheme reverted: " << code.toStdString();
-        emit self->statusMessage(QString("Coding scheme '%1' reverted successfully").arg(code));
-        self->handleEntitySaved();
-    });
+    connect(detailDialog,
+            &CodingSchemeDetailDialog::statusMessage,
+            this,
+            &CodingSchemeController::statusMessage);
+    connect(detailDialog,
+            &CodingSchemeDetailDialog::errorMessage,
+            this,
+            &CodingSchemeController::errorMessage);
+    connect(detailDialog,
+            &CodingSchemeDetailDialog::schemeSaved,
+            this,
+            [self = QPointer<CodingSchemeController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Coding scheme reverted: " << code.toStdString();
+                emit self->statusMessage(
+                    QString("Coding scheme '%1' reverted successfully").arg(code));
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Revert Coding Scheme: %1")
-        .arg(QString::fromStdString(scheme.code)));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("Revert Coding Scheme: %1").arg(QString::fromStdString(scheme.code)));
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
+                                                               IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 

@@ -20,18 +20,18 @@
 #ifndef ORES_QT_CLIENT_QUEUE_MODEL_HPP
 #define ORES_QT_CLIENT_QUEUE_MODEL_HPP
 
-#include <vector>
-#include <optional>
-#include <chrono>
-#include <cstdint>
-#include <string>
-#include <QSize>
-#include <QFutureWatcher>
-#include <QAbstractTableModel>
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/AbstractClientModel.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ColumnMetadata.hpp"
-#include "ores.logging/make_logger.hpp"
+#include <QAbstractTableModel>
+#include <QFutureWatcher>
+#include <QSize>
+#include <chrono>
+#include <cstdint>
+#include <optional>
+#include <string>
+#include <vector>
 
 namespace ores::qt {
 
@@ -42,9 +42,9 @@ namespace ores::qt {
  * list_consumers().
  */
 struct queue_row {
-    std::string id;           // stream name (used as identifier)
-    std::string name;         // stream name
-    std::string subjects;     // subjects joined with ", "
+    std::string id;       // stream name (used as identifier)
+    std::string name;     // stream name
+    std::string subjects; // subjects joined with ", "
     std::uint64_t message_count{0};
     std::uint64_t byte_count{0};
     std::uint64_t consumer_count{0};
@@ -84,13 +84,41 @@ public:
 
     static constexpr std::size_t kColumnCount = std::size_t(ColumnCount);
     static constexpr std::array<ColumnMetadata, kColumnCount> kColumns = {{
-        { .column = StreamName,    .header = "Stream",        .style = column_style::text_left,   .hidden_by_default = false, .default_width = kColumnWidthAuto },
-        { .column = Subjects,      .header = "Subjects",      .style = column_style::text_left,   .hidden_by_default = false, .default_width = kColumnWidthAuto },
-        { .column = Messages,      .header = "Messages",      .style = column_style::mono_center, .hidden_by_default = false, .default_width = 90  },
-        { .column = Bytes,         .header = "Bytes",         .style = column_style::mono_center, .hidden_by_default = false, .default_width = 90  },
-        { .column = Consumers,     .header = "Consumers",     .style = column_style::mono_center, .hidden_by_default = false, .default_width = 80  },
-        { .column = CreatedAt,     .header = "Created",       .style = column_style::mono_left,   .hidden_by_default = false, .default_width = kColumnWidthAuto },
-        { .column = LastMessageAt, .header = "Last Message",  .style = column_style::mono_left,   .hidden_by_default = false, .default_width = kColumnWidthAuto },
+        {.column = StreamName,
+         .header = "Stream",
+         .style = column_style::text_left,
+         .hidden_by_default = false,
+         .default_width = kColumnWidthAuto},
+        {.column = Subjects,
+         .header = "Subjects",
+         .style = column_style::text_left,
+         .hidden_by_default = false,
+         .default_width = kColumnWidthAuto},
+        {.column = Messages,
+         .header = "Messages",
+         .style = column_style::mono_center,
+         .hidden_by_default = false,
+         .default_width = 90},
+        {.column = Bytes,
+         .header = "Bytes",
+         .style = column_style::mono_center,
+         .hidden_by_default = false,
+         .default_width = 90},
+        {.column = Consumers,
+         .header = "Consumers",
+         .style = column_style::mono_center,
+         .hidden_by_default = false,
+         .default_width = 80},
+        {.column = CreatedAt,
+         .header = "Created",
+         .style = column_style::mono_left,
+         .hidden_by_default = false,
+         .default_width = kColumnWidthAuto},
+        {.column = LastMessageAt,
+         .header = "Last Message",
+         .style = column_style::mono_left,
+         .hidden_by_default = false,
+         .default_width = kColumnWidthAuto},
     }};
 
     inline static const QSize kDefaultWindowSize = {900, 400};
@@ -108,21 +136,18 @@ public:
     }
 
     static QVector<int> defaultHiddenColumns() {
-        static QVector<int> const result =
-            ::ores::qt::defaultHiddenColumns<kColumnCount>(kColumns);
+        static QVector<int> const result = ::ores::qt::defaultHiddenColumns<kColumnCount>(kColumns);
         return result;
     }
 
-    explicit ClientQueueModel(ClientManager* clientManager,
-                              QObject* parent = nullptr);
+    explicit ClientQueueModel(ClientManager* clientManager, QObject* parent = nullptr);
     ~ClientQueueModel() override = default;
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
-    QVariant data(const QModelIndex& index,
-                  int role = Qt::DisplayRole) const override;
-    QVariant headerData(int section, Qt::Orientation orientation,
-                        int role = Qt::DisplayRole) const override;
+    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+    QVariant
+    headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
     void refresh();
 

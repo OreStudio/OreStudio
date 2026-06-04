@@ -18,10 +18,9 @@
  *
  */
 #include "ores.qt/PortfolioExplorerTreeModel.hpp"
-
-#include <functional>
-#include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/IconUtils.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <functional>
 
 namespace ores::qt {
 
@@ -30,10 +29,9 @@ using namespace ores::logging;
 PortfolioExplorerTreeModel::PortfolioExplorerTreeModel(QObject* parent)
     : QAbstractItemModel(parent) {}
 
-void PortfolioExplorerTreeModel::load(
-    const QString& party_name,
-    std::vector<refdata::domain::portfolio> portfolios,
-    std::vector<refdata::domain::book> books) {
+void PortfolioExplorerTreeModel::load(const QString& party_name,
+                                      std::vector<refdata::domain::portfolio> portfolios,
+                                      std::vector<refdata::domain::book> books) {
 
     beginResetModel();
     trade_counts_.clear();
@@ -47,10 +45,8 @@ void PortfolioExplorerTreeModel::load(
     build_subtree(root_.get(), portfolios, books, std::nullopt);
 
     endResetModel();
-    BOOST_LOG_SEV(lg(), debug) << "Tree loaded with party root: "
-                               << party_name.toStdString()
-                               << ", " << root_->children.size()
-                               << " top-level portfolio nodes.";
+    BOOST_LOG_SEV(lg(), debug) << "Tree loaded with party root: " << party_name.toStdString()
+                               << ", " << root_->children.size() << " top-level portfolio nodes.";
 }
 
 void PortfolioExplorerTreeModel::build_subtree(
@@ -67,10 +63,8 @@ void PortfolioExplorerTreeModel::build_subtree(
 
     for (const auto& p : portfolios) {
         // Match this portfolio to the given parent_id
-        const bool is_root = !parent_id.has_value() &&
-                             !p.parent_portfolio_id.has_value();
-        const bool is_child = parent_id.has_value() &&
-                              p.parent_portfolio_id.has_value() &&
+        const bool is_root = !parent_id.has_value() && !p.parent_portfolio_id.has_value();
+        const bool is_child = parent_id.has_value() && p.parent_portfolio_id.has_value() &&
                               *p.parent_portfolio_id == *parent_id;
 
         if (!is_root && !is_child)
@@ -83,8 +77,7 @@ void PortfolioExplorerTreeModel::build_subtree(
         node->row_in_parent = row++;
 
         // Recurse: add child portfolios
-        build_subtree(node.get(), portfolios, books,
-            std::optional<boost::uuids::uuid>{p.id});
+        build_subtree(node.get(), portfolios, books, std::optional<boost::uuids::uuid>{p.id});
 
         // Add books under this portfolio
         for (const auto& b : books) {
@@ -93,8 +86,7 @@ void PortfolioExplorerTreeModel::build_subtree(
                 book_node->kind = PortfolioTreeNode::Kind::Book;
                 book_node->book = b;
                 book_node->parent = node.get();
-                book_node->row_in_parent =
-                    static_cast<int>(node->children.size());
+                book_node->row_in_parent = static_cast<int>(node->children.size());
                 node->children.push_back(std::move(book_node));
             }
         }
@@ -103,8 +95,7 @@ void PortfolioExplorerTreeModel::build_subtree(
     }
 }
 
-TreeNodeFilter
-PortfolioExplorerTreeModel::selected_filter(const QModelIndex& index) const {
+TreeNodeFilter PortfolioExplorerTreeModel::selected_filter(const QModelIndex& index) const {
     const auto* node = node_from_index(index);
     if (!node)
         return {};
@@ -118,13 +109,11 @@ PortfolioExplorerTreeModel::selected_filter(const QModelIndex& index) const {
     return {.book_id = std::nullopt, .portfolio_id = node->portfolio.id};
 }
 
-std::uint32_t PortfolioExplorerTreeModel::subtree_count(
-    const PortfolioTreeNode* node) const {
+std::uint32_t PortfolioExplorerTreeModel::subtree_count(const PortfolioTreeNode* node) const {
     if (!node)
         return 0;
     if (node->kind == PortfolioTreeNode::Kind::Book) {
-        const auto it = trade_counts_.find(
-            boost::uuids::to_string(node->book.id));
+        const auto it = trade_counts_.find(boost::uuids::to_string(node->book.id));
         return it != trade_counts_.end() ? it->second : 0;
     }
     std::uint32_t total = 0;
@@ -133,8 +122,8 @@ std::uint32_t PortfolioExplorerTreeModel::subtree_count(
     return total;
 }
 
-void PortfolioExplorerTreeModel::set_trade_count(
-    const boost::uuids::uuid& book_id, std::uint32_t count) {
+void PortfolioExplorerTreeModel::set_trade_count(const boost::uuids::uuid& book_id,
+                                                 std::uint32_t count) {
     trade_counts_[boost::uuids::to_string(book_id)] = count;
     auto idx = find_book_index(book_id);
     if (!idx.isValid())
@@ -146,15 +135,13 @@ void PortfolioExplorerTreeModel::set_trade_count(
     }
 }
 
-QModelIndex PortfolioExplorerTreeModel::find_book_index(
-    const boost::uuids::uuid& id) const {
+QModelIndex PortfolioExplorerTreeModel::find_book_index(const boost::uuids::uuid& id) const {
     std::function<QModelIndex(const QModelIndex&)> search =
         [&](const QModelIndex& parent) -> QModelIndex {
         for (int r = 0; r < rowCount(parent); ++r) {
             auto idx = index(r, 0, parent);
             const auto* node = node_from_index(idx);
-            if (node && node->kind == PortfolioTreeNode::Kind::Book
-                    && node->book.id == id)
+            if (node && node->kind == PortfolioTreeNode::Kind::Book && node->book.id == id)
                 return idx;
             if (node && !node->children.empty()) {
                 auto found = search(idx);
@@ -167,15 +154,13 @@ QModelIndex PortfolioExplorerTreeModel::find_book_index(
     return search({});
 }
 
-PortfolioTreeNode*
-PortfolioExplorerTreeModel::node_from_index(const QModelIndex& index) const {
+PortfolioTreeNode* PortfolioExplorerTreeModel::node_from_index(const QModelIndex& index) const {
     if (!index.isValid())
         return nullptr;
     return static_cast<PortfolioTreeNode*>(index.internalPointer());
 }
 
-QModelIndex PortfolioExplorerTreeModel::index(
-    int row, int col, const QModelIndex& parent) const {
+QModelIndex PortfolioExplorerTreeModel::index(int row, int col, const QModelIndex& parent) const {
     if (row < 0 || col != 0)
         return {};
 
@@ -215,8 +200,7 @@ int PortfolioExplorerTreeModel::columnCount(const QModelIndex& /*parent*/) const
     return 1;
 }
 
-QVariant PortfolioExplorerTreeModel::data(
-    const QModelIndex& index, int role) const {
+QVariant PortfolioExplorerTreeModel::data(const QModelIndex& index, int role) const {
     const auto* node = node_from_index(index);
     if (!node)
         return {};
@@ -230,33 +214,28 @@ QVariant PortfolioExplorerTreeModel::data(
         if (node->kind == PortfolioTreeNode::Kind::Party)
             return append_count(node->party_name, subtree_count(node));
         if (node->kind == PortfolioTreeNode::Kind::Portfolio)
-            return append_count(
-                QString::fromStdString(node->portfolio.name),
-                subtree_count(node));
+            return append_count(QString::fromStdString(node->portfolio.name), subtree_count(node));
         // Book: look up count directly
-        const auto it = trade_counts_.find(
-            boost::uuids::to_string(node->book.id));
+        const auto it = trade_counts_.find(boost::uuids::to_string(node->book.id));
         const auto n = it != trade_counts_.end() ? it->second : 0;
         return append_count(QString::fromStdString(node->book.name), n);
     }
 
     if (role == Qt::DecorationRole) {
         if (node->kind == PortfolioTreeNode::Kind::Party)
-            return IconUtils::createRecoloredIcon(
-                Icon::Organization, IconUtils::DefaultIconColor);
+            return IconUtils::createRecoloredIcon(Icon::Organization, IconUtils::DefaultIconColor);
         if (node->kind == PortfolioTreeNode::Kind::Portfolio) {
             // Virtual portfolios use outline icon; real portfolios use filled icon
-            const auto icon = node->portfolio.is_virtual == 1
-                ? Icon::Briefcase : Icon::BriefcaseFilled;
+            const auto icon =
+                node->portfolio.is_virtual == 1 ? Icon::Briefcase : Icon::BriefcaseFilled;
             return IconUtils::createRecoloredIcon(icon, IconUtils::DefaultIconColor);
         }
         // Book
         if (node->book.is_trading_book == 1) {
-            return IconUtils::createRecoloredIcon(
-                Icon::BookOpenFilled, IconUtils::DefaultIconColor);
+            return IconUtils::createRecoloredIcon(Icon::BookOpenFilled,
+                                                  IconUtils::DefaultIconColor);
         }
-        return IconUtils::createRecoloredIcon(
-            Icon::BookOpen, IconUtils::DefaultIconColor);
+        return IconUtils::createRecoloredIcon(Icon::BookOpen, IconUtils::DefaultIconColor);
     }
 
     if (role == Qt::UserRole) {

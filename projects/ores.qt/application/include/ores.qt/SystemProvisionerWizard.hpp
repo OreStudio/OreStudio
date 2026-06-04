@@ -20,19 +20,19 @@
 #ifndef ORES_QT_SYSTEM_PROVISIONER_WIZARD_HPP
 #define ORES_QT_SYSTEM_PROVISIONER_WIZARD_HPP
 
-#include <QWizard>
-#include <QWizardPage>
-#include <QLineEdit>
-#include <QPushButton>
-#include <QLabel>
-#include <QCheckBox>
-#include <QComboBox>
-#include <QRadioButton>
-#include <QProgressBar>
-#include <QTextEdit>
-#include <boost/uuid/uuid.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
+#include <QCheckBox>
+#include <QComboBox>
+#include <QLabel>
+#include <QLineEdit>
+#include <QProgressBar>
+#include <QPushButton>
+#include <QRadioButton>
+#include <QTextEdit>
+#include <QWizard>
+#include <QWizardPage>
+#include <boost/uuid/uuid.hpp>
 
 namespace ores::qt {
 
@@ -92,56 +92,106 @@ public:
         Page_Complete
     };
 
-    explicit SystemProvisionerWizard(
-        ClientManager* clientManager,
-        QWidget* parent = nullptr);
+    explicit SystemProvisionerWizard(ClientManager* clientManager, QWidget* parent = nullptr);
 
     ~SystemProvisionerWizard() override = default;
 
-    ClientManager* clientManager() const { return clientManager_; }
+    ClientManager* clientManager() const {
+        return clientManager_;
+    }
 
     // Admin account accessors
-    QString adminUsername() const { return adminUsername_; }
-    QString adminEmail() const { return adminEmail_; }
-    QString adminPassword() const { return adminPassword_; }
-    void setAdminCredentials(const QString& username, const QString& email,
-                             const QString& password);
+    QString adminUsername() const {
+        return adminUsername_;
+    }
+    QString adminEmail() const {
+        return adminEmail_;
+    }
+    QString adminPassword() const {
+        return adminPassword_;
+    }
+    void
+    setAdminCredentials(const QString& username, const QString& email, const QString& password);
 
-    std::string adminAccountId() const { return adminAccountId_; }
-    void setAdminAccountId(const std::string& id) { adminAccountId_ = id; }
+    std::string adminAccountId() const {
+        return adminAccountId_;
+    }
+    void setAdminAccountId(const std::string& id) {
+        adminAccountId_ = id;
+    }
 
     // Setup mode accessors
-    bool isMultiTenantMode() const { return multiTenantMode_; }
-    void setMultiTenantMode(bool multi) { multiTenantMode_ = multi; }
+    bool isMultiTenantMode() const {
+        return multiTenantMode_;
+    }
+    void setMultiTenantMode(bool multi) {
+        multiTenantMode_ = multi;
+    }
 
     // Tenant details accessors
-    QString tenantCode() const { return tenantCode_; }
-    void setTenantCode(const QString& code) { tenantCode_ = code; }
+    QString tenantCode() const {
+        return tenantCode_;
+    }
+    void setTenantCode(const QString& code) {
+        tenantCode_ = code;
+    }
 
-    QString tenantName() const { return tenantName_; }
-    void setTenantName(const QString& name) { tenantName_ = name; }
+    QString tenantName() const {
+        return tenantName_;
+    }
+    void setTenantName(const QString& name) {
+        tenantName_ = name;
+    }
 
-    QString tenantType() const { return tenantType_; }
-    void setTenantType(const QString& type) { tenantType_ = type; }
+    QString tenantType() const {
+        return tenantType_;
+    }
+    void setTenantType(const QString& type) {
+        tenantType_ = type;
+    }
 
-    QString tenantHostname() const { return tenantHostname_; }
-    void setTenantHostname(const QString& hostname) { tenantHostname_ = hostname; }
+    QString tenantHostname() const {
+        return tenantHostname_;
+    }
+    void setTenantHostname(const QString& hostname) {
+        tenantHostname_ = hostname;
+    }
 
-    QString tenantDescription() const { return tenantDescription_; }
-    void setTenantDescription(const QString& desc) { tenantDescription_ = desc; }
+    QString tenantDescription() const {
+        return tenantDescription_;
+    }
+    void setTenantDescription(const QString& desc) {
+        tenantDescription_ = desc;
+    }
 
     // Tenant admin accessors
-    QString tenantAdminUsername() const { return tenantAdminUsername_; }
-    void setTenantAdminUsername(const QString& u) { tenantAdminUsername_ = u; }
+    QString tenantAdminUsername() const {
+        return tenantAdminUsername_;
+    }
+    void setTenantAdminUsername(const QString& u) {
+        tenantAdminUsername_ = u;
+    }
 
-    QString tenantAdminPassword() const { return tenantAdminPassword_; }
-    void setTenantAdminPassword(const QString& p) { tenantAdminPassword_ = p; }
+    QString tenantAdminPassword() const {
+        return tenantAdminPassword_;
+    }
+    void setTenantAdminPassword(const QString& p) {
+        tenantAdminPassword_ = p;
+    }
 
-    QString tenantAdminEmail() const { return tenantAdminEmail_; }
-    void setTenantAdminEmail(const QString& e) { tenantAdminEmail_ = e; }
+    QString tenantAdminEmail() const {
+        return tenantAdminEmail_;
+    }
+    void setTenantAdminEmail(const QString& e) {
+        tenantAdminEmail_ = e;
+    }
 
-    QString provisionedTenantId() const { return provisionedTenantId_; }
-    void setProvisionedTenantId(const QString& id) { provisionedTenantId_ = id; }
+    QString provisionedTenantId() const {
+        return provisionedTenantId_;
+    }
+    void setProvisionedTenantId(const QString& id) {
+        provisionedTenantId_ = id;
+    }
 
 private:
     void setupPages();
@@ -194,8 +244,7 @@ class AdminAccountPage final : public QWizardPage {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.admin_account_page";
+    inline static std::string_view logger_name = "ores.qt.admin_account_page";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -306,8 +355,7 @@ class ProvisionerApplyPage final : public QWizardPage {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.provisioner_apply_page";
+    inline static std::string_view logger_name = "ores.qt.provisioner_apply_page";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;

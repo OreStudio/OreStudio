@@ -18,10 +18,9 @@
  *
  */
 #include "ores.qt/OrgExplorerTreeModel.hpp"
-
-#include <functional>
-#include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/IconUtils.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <functional>
 
 namespace ores::qt {
 
@@ -30,10 +29,9 @@ using namespace ores::logging;
 OrgExplorerTreeModel::OrgExplorerTreeModel(QObject* parent)
     : QAbstractItemModel(parent) {}
 
-void OrgExplorerTreeModel::load(
-    const QString& party_name,
-    std::vector<refdata::domain::business_unit> units,
-    std::vector<refdata::domain::book> books) {
+void OrgExplorerTreeModel::load(const QString& party_name,
+                                std::vector<refdata::domain::business_unit> units,
+                                std::vector<refdata::domain::book> books) {
 
     beginResetModel();
     trade_counts_.clear();
@@ -66,8 +64,7 @@ void OrgExplorerTreeModel::load(
             book_node->kind = OrgTreeNode::Kind::Book;
             book_node->book = b;
             book_node->parent = unassigned_node.get();
-            book_node->row_in_parent =
-                static_cast<int>(unassigned_node->children.size());
+            book_node->row_in_parent = static_cast<int>(unassigned_node->children.size());
             unassigned_node->children.push_back(std::move(book_node));
         }
 
@@ -76,10 +73,8 @@ void OrgExplorerTreeModel::load(
 
     endResetModel();
 
-    BOOST_LOG_SEV(lg(), debug) << "Org tree loaded with party root: "
-                               << party_name.toStdString()
-                               << ", " << root_->children.size()
-                               << " top-level unit nodes.";
+    BOOST_LOG_SEV(lg(), debug) << "Org tree loaded with party root: " << party_name.toStdString()
+                               << ", " << root_->children.size() << " top-level unit nodes.";
 }
 
 void OrgExplorerTreeModel::build_unit_subtree(
@@ -95,10 +90,8 @@ void OrgExplorerTreeModel::build_unit_subtree(
 
     for (const auto& u : units) {
         // Match this unit to the given parent_unit_id
-        const bool is_root = !parent_unit_id.has_value() &&
-                             !u.parent_business_unit_id.has_value();
-        const bool is_child = parent_unit_id.has_value() &&
-                              u.parent_business_unit_id.has_value() &&
+        const bool is_root = !parent_unit_id.has_value() && !u.parent_business_unit_id.has_value();
+        const bool is_child = parent_unit_id.has_value() && u.parent_business_unit_id.has_value() &&
                               *u.parent_business_unit_id == *parent_unit_id;
 
         if (!is_root && !is_child)
@@ -111,8 +104,7 @@ void OrgExplorerTreeModel::build_unit_subtree(
         node->row_in_parent = row++;
 
         // Recurse: add child units
-        build_unit_subtree(node.get(), units, books,
-            std::optional<boost::uuids::uuid>{u.id});
+        build_unit_subtree(node.get(), units, books, std::optional<boost::uuids::uuid>{u.id});
 
         // Add books owned by this unit
         for (const auto& b : books) {
@@ -121,8 +113,7 @@ void OrgExplorerTreeModel::build_unit_subtree(
                 book_node->kind = OrgTreeNode::Kind::Book;
                 book_node->book = b;
                 book_node->parent = node.get();
-                book_node->row_in_parent =
-                    static_cast<int>(node->children.size());
+                book_node->row_in_parent = static_cast<int>(node->children.size());
                 node->children.push_back(std::move(book_node));
             }
         }
@@ -131,8 +122,7 @@ void OrgExplorerTreeModel::build_unit_subtree(
     }
 }
 
-OrgTreeNodeFilter OrgExplorerTreeModel::selected_filter(
-    const QModelIndex& index) const {
+OrgTreeNodeFilter OrgExplorerTreeModel::selected_filter(const QModelIndex& index) const {
     const auto* node = node_from_index(index);
     if (!node)
         return {};
@@ -154,13 +144,11 @@ OrgTreeNodeFilter OrgExplorerTreeModel::selected_filter(
     return {.book_id = std::nullopt, .business_unit_id = node->unit.id};
 }
 
-std::uint32_t OrgExplorerTreeModel::subtree_count(
-    const OrgTreeNode* node) const {
+std::uint32_t OrgExplorerTreeModel::subtree_count(const OrgTreeNode* node) const {
     if (!node)
         return 0;
     if (node->kind == OrgTreeNode::Kind::Book) {
-        const auto it = trade_counts_.find(
-            boost::uuids::to_string(node->book.id));
+        const auto it = trade_counts_.find(boost::uuids::to_string(node->book.id));
         return it != trade_counts_.end() ? it->second : 0;
     }
     std::uint32_t total = 0;
@@ -169,8 +157,7 @@ std::uint32_t OrgExplorerTreeModel::subtree_count(
     return total;
 }
 
-void OrgExplorerTreeModel::set_trade_count(
-    const boost::uuids::uuid& book_id, std::uint32_t count) {
+void OrgExplorerTreeModel::set_trade_count(const boost::uuids::uuid& book_id, std::uint32_t count) {
     trade_counts_[boost::uuids::to_string(book_id)] = count;
     auto idx = find_book_index(book_id);
     if (!idx.isValid())
@@ -182,15 +169,13 @@ void OrgExplorerTreeModel::set_trade_count(
     }
 }
 
-QModelIndex OrgExplorerTreeModel::find_book_index(
-    const boost::uuids::uuid& id) const {
+QModelIndex OrgExplorerTreeModel::find_book_index(const boost::uuids::uuid& id) const {
     std::function<QModelIndex(const QModelIndex&)> search =
         [&](const QModelIndex& parent) -> QModelIndex {
         for (int r = 0; r < rowCount(parent); ++r) {
             auto idx = index(r, 0, parent);
             const auto* node = node_from_index(idx);
-            if (node && node->kind == OrgTreeNode::Kind::Book
-                    && node->book.id == id)
+            if (node && node->kind == OrgTreeNode::Kind::Book && node->book.id == id)
                 return idx;
             if (node && !node->children.empty()) {
                 auto found = search(idx);
@@ -203,15 +188,13 @@ QModelIndex OrgExplorerTreeModel::find_book_index(
     return search({});
 }
 
-OrgTreeNode* OrgExplorerTreeModel::node_from_index(
-    const QModelIndex& index) const {
+OrgTreeNode* OrgExplorerTreeModel::node_from_index(const QModelIndex& index) const {
     if (!index.isValid())
         return nullptr;
     return static_cast<OrgTreeNode*>(index.internalPointer());
 }
 
-QModelIndex OrgExplorerTreeModel::index(
-    int row, int col, const QModelIndex& parent) const {
+QModelIndex OrgExplorerTreeModel::index(int row, int col, const QModelIndex& parent) const {
     if (row < 0 || col != 0)
         return {};
 
@@ -251,8 +234,7 @@ int OrgExplorerTreeModel::columnCount(const QModelIndex& /*parent*/) const {
     return 1;
 }
 
-QVariant OrgExplorerTreeModel::data(
-    const QModelIndex& index, int role) const {
+QVariant OrgExplorerTreeModel::data(const QModelIndex& index, int role) const {
     const auto* node = node_from_index(index);
     if (!node)
         return {};
@@ -266,29 +248,23 @@ QVariant OrgExplorerTreeModel::data(
         if (node->kind == OrgTreeNode::Kind::Party)
             return append_count(node->party_name, subtree_count(node));
         if (node->kind == OrgTreeNode::Kind::BusinessUnit)
-            return append_count(
-                QString::fromStdString(node->unit.unit_name),
-                subtree_count(node));
+            return append_count(QString::fromStdString(node->unit.unit_name), subtree_count(node));
         // Book: look up count directly
-        const auto it = trade_counts_.find(
-            boost::uuids::to_string(node->book.id));
+        const auto it = trade_counts_.find(boost::uuids::to_string(node->book.id));
         const auto n = it != trade_counts_.end() ? it->second : 0;
         return append_count(QString::fromStdString(node->book.name), n);
     }
 
     if (role == Qt::DecorationRole) {
         if (node->kind == OrgTreeNode::Kind::Party)
-            return IconUtils::createRecoloredIcon(
-                Icon::Organization, IconUtils::DefaultIconColor);
+            return IconUtils::createRecoloredIcon(Icon::Organization, IconUtils::DefaultIconColor);
         if (node->kind == OrgTreeNode::Kind::BusinessUnit)
-            return IconUtils::createRecoloredIcon(
-                Icon::PeopleTeam, IconUtils::DefaultIconColor);
+            return IconUtils::createRecoloredIcon(Icon::PeopleTeam, IconUtils::DefaultIconColor);
         // Book
         if (node->book.is_trading_book == 1)
-            return IconUtils::createRecoloredIcon(
-                Icon::BookOpenFilled, IconUtils::DefaultIconColor);
-        return IconUtils::createRecoloredIcon(
-            Icon::BookOpen, IconUtils::DefaultIconColor);
+            return IconUtils::createRecoloredIcon(Icon::BookOpenFilled,
+                                                  IconUtils::DefaultIconColor);
+        return IconUtils::createRecoloredIcon(Icon::BookOpen, IconUtils::DefaultIconColor);
     }
 
     if (role == Qt::UserRole)
@@ -298,10 +274,8 @@ QVariant OrgExplorerTreeModel::data(
         if (node->kind == OrgTreeNode::Kind::Party)
             return node->party_name;
         if (node->kind == OrgTreeNode::Kind::BusinessUnit)
-            return QString::fromStdString(
-                boost::uuids::to_string(node->unit.id));
-        return QString::fromStdString(
-            boost::uuids::to_string(node->book.id));
+            return QString::fromStdString(boost::uuids::to_string(node->unit.id));
+        return QString::fromStdString(boost::uuids::to_string(node->book.id));
     }
 
     return {};

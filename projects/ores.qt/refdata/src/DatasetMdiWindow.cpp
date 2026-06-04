@@ -18,32 +18,32 @@
  *
  */
 #include "ores.qt/DatasetMdiWindow.hpp"
-
-#include <QVBoxLayout>
-#include <QHeaderView>
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <boost/uuid/uuid_io.hpp>
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/EntityItemDelegate.hpp"
+#include "ores.dq.api/messaging/dataset_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/EntityItemDelegate.hpp"
+#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.dq.api/messaging/dataset_protocol.hpp"
+#include <QHeaderView>
+#include <QMessageBox>
+#include <QVBoxLayout>
+#include <QtConcurrent>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-DatasetMdiWindow::DatasetMdiWindow(
-    ClientManager* clientManager, const QString& username, QWidget* parent)
-    : EntityListMdiWindow(parent),
-      clientManager_(clientManager),
-      username_(username),
-      model_(new ClientDatasetModel(clientManager, this)),
-      proxyModel_(new QSortFilterProxyModel(this)),
-      tableView_(new QTableView(this)),
-      toolbar_(nullptr) {
+DatasetMdiWindow::DatasetMdiWindow(ClientManager* clientManager,
+                                   const QString& username,
+                                   QWidget* parent)
+    : EntityListMdiWindow(parent)
+    , clientManager_(clientManager)
+    , username_(username)
+    , model_(new ClientDatasetModel(clientManager, this))
+    , proxyModel_(new QSortFilterProxyModel(this))
+    , tableView_(new QTableView(this))
+    , toolbar_(nullptr) {
 
     proxyModel_->setSourceModel(model_);
     proxyModel_->setSortCaseSensitivity(Qt::CaseInsensitive);
@@ -62,8 +62,8 @@ void DatasetMdiWindow::setupUi() {
 
     tableView_->setModel(proxyModel_);
     tableView_->setSortingEnabled(true);
-    tableView_->setItemDelegate(new EntityItemDelegate(
-        ClientDatasetModel::columnStyles(), tableView_));
+    tableView_->setItemDelegate(
+        new EntityItemDelegate(ClientDatasetModel::columnStyles(), tableView_));
     tableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
     tableView_->setSelectionMode(QAbstractItemView::ExtendedSelection);
     tableView_->setAlternatingRowColors(true);
@@ -71,9 +71,12 @@ void DatasetMdiWindow::setupUi() {
     tableView_->verticalHeader()->setVisible(false);
     tableView_->sortByColumn(ClientDatasetModel::Name, Qt::AscendingOrder);
 
-    initializeTableSettings(tableView_, model_,
-        ClientDatasetModel::kSettingsGroup,
-        ClientDatasetModel::defaultHiddenColumns(), ClientDatasetModel::kDefaultWindowSize, 1);
+    initializeTableSettings(tableView_,
+                            model_,
+                            ClientDatasetModel::kSettingsGroup,
+                            ClientDatasetModel::defaultHiddenColumns(),
+                            ClientDatasetModel::kDefaultWindowSize,
+                            1);
 
     layout->addWidget(loadingBar());
     layout->addWidget(tableView_);
@@ -86,27 +89,23 @@ void DatasetMdiWindow::setupToolbar() {
     toolbar_->setIconSize(QSize(20, 20));
 
     addAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor),
-        tr("Add"));
+        IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor), tr("Add"));
     addAction_->setToolTip(tr("Add new dataset"));
 
     editAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Edit, IconUtils::DefaultIconColor),
-        tr("Edit"));
+        IconUtils::createRecoloredIcon(Icon::Edit, IconUtils::DefaultIconColor), tr("Edit"));
     editAction_->setToolTip(tr("Edit selected dataset"));
     editAction_->setEnabled(false);
 
     deleteAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor),
-        tr("Delete"));
+        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor), tr("Delete"));
     deleteAction_->setToolTip(tr("Delete selected dataset(s)"));
     deleteAction_->setEnabled(false);
 
     toolbar_->addSeparator();
 
     historyAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor),
-        tr("History"));
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor), tr("History"));
     historyAction_->setToolTip(tr("View version history"));
     historyAction_->setEnabled(false);
 
@@ -124,15 +123,14 @@ void DatasetMdiWindow::setupToolbar() {
 }
 
 void DatasetMdiWindow::setupConnections() {
-    connect(model_, &ClientDatasetModel::dataLoaded,
-            this, &DatasetMdiWindow::onDataLoaded);
-    connect(model_, &ClientDatasetModel::loadError,
-            this, &DatasetMdiWindow::onLoadError);
+    connect(model_, &ClientDatasetModel::dataLoaded, this, &DatasetMdiWindow::onDataLoaded);
+    connect(model_, &ClientDatasetModel::loadError, this, &DatasetMdiWindow::onLoadError);
     connectModel(model_);
-    connect(tableView_, &QTableView::doubleClicked,
-            this, &DatasetMdiWindow::onRowDoubleClicked);
-    connect(tableView_->selectionModel(), &QItemSelectionModel::selectionChanged,
-            this, &DatasetMdiWindow::onSelectionChanged);
+    connect(tableView_, &QTableView::doubleClicked, this, &DatasetMdiWindow::onRowDoubleClicked);
+    connect(tableView_->selectionModel(),
+            &QItemSelectionModel::selectionChanged,
+            this,
+            &DatasetMdiWindow::onSelectionChanged);
 
     connect(addAction_, &QAction::triggered, this, &DatasetMdiWindow::onAddClicked);
     connect(editAction_, &QAction::triggered, this, &DatasetMdiWindow::onEditClicked);
@@ -146,8 +144,7 @@ void DatasetMdiWindow::onDataLoaded() {
     updateActionStates();
 }
 
-void DatasetMdiWindow::onLoadError(const QString& error_message,
-                                    const QString& details) {
+void DatasetMdiWindow::onLoadError(const QString& error_message, const QString& details) {
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);
@@ -166,7 +163,8 @@ void DatasetMdiWindow::onAddClicked() {
 
 void DatasetMdiWindow::onEditClicked() {
     auto selected = tableView_->selectionModel()->selectedRows();
-    if (selected.isEmpty()) return;
+    if (selected.isEmpty())
+        return;
 
     auto sourceIndex = proxyModel_->mapToSource(selected.first());
     if (auto* dataset = model_->getDataset(sourceIndex.row())) {
@@ -176,7 +174,8 @@ void DatasetMdiWindow::onEditClicked() {
 
 void DatasetMdiWindow::onDeleteClicked() {
     auto selected = tableView_->selectionModel()->selectedRows();
-    if (selected.isEmpty()) return;
+    if (selected.isEmpty())
+        return;
 
     std::vector<boost::uuids::uuid> ids;
     for (const auto& index : selected) {
@@ -186,23 +185,26 @@ void DatasetMdiWindow::onDeleteClicked() {
         }
     }
 
-    QString message = ids.size() == 1
-        ? tr("Delete selected dataset?")
-        : tr("Delete %1 datasets?").arg(ids.size());
+    QString message = ids.size() == 1 ? tr("Delete selected dataset?") :
+                                        tr("Delete %1 datasets?").arg(ids.size());
 
-    auto reply = MessageBoxHelper::question(this, tr("Confirm Delete"), message,
-                                            QMessageBox::Yes | QMessageBox::No);
-    if (reply != QMessageBox::Yes) return;
+    auto reply = MessageBoxHelper::question(
+        this, tr("Confirm Delete"), message, QMessageBox::Yes | QMessageBox::No);
+    if (reply != QMessageBox::Yes)
+        return;
 
     QPointer<DatasetMdiWindow> self = this;
     auto task = [self, ids = std::move(ids)]() -> bool {
-        if (!self || !self->clientManager_) return false;
+        if (!self || !self->clientManager_)
+            return false;
 
         dq::messaging::delete_dataset_request request;
         for (const auto& id : ids)
             request.ids.push_back(boost::uuids::to_string(id));
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
-        if (!response_result) return false;
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
+        if (!response_result)
+            return false;
 
         return response_result->success;
     };
@@ -236,7 +238,8 @@ void DatasetMdiWindow::onSelectionChanged() {
 
 void DatasetMdiWindow::onHistoryClicked() {
     auto selected = tableView_->selectionModel()->selectedRows();
-    if (selected.isEmpty()) return;
+    if (selected.isEmpty())
+        return;
 
     auto sourceIndex = proxyModel_->mapToSource(selected.first());
     if (auto* dataset = model_->getDataset(sourceIndex.row())) {

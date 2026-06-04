@@ -20,17 +20,17 @@
 #ifndef ORES_QT_TENANT_ONBOARDING_WIZARD_HPP
 #define ORES_QT_TENANT_ONBOARDING_WIZARD_HPP
 
-#include <QWizard>
-#include <QWizardPage>
-#include <QLineEdit>
-#include <QLabel>
-#include <QComboBox>
-#include <QRadioButton>
-#include <QProgressBar>
-#include <QCheckBox>
-#include <QTextEdit>
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
+#include <QCheckBox>
+#include <QComboBox>
+#include <QLabel>
+#include <QLineEdit>
+#include <QProgressBar>
+#include <QRadioButton>
+#include <QTextEdit>
+#include <QWizard>
+#include <QWizardPage>
 
 namespace ores::qt {
 
@@ -54,8 +54,7 @@ class TenantOnboardingWizard final : public QWizard {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.tenant_onboarding_wizard";
+    inline static std::string_view logger_name = "ores.qt.tenant_onboarding_wizard";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -64,53 +63,92 @@ private:
     }
 
 public:
-    enum PageId {
-        Page_ModeAndLei,
-        Page_TenantDetails,
-        Page_AdminAccount,
-        Page_Apply
-    };
+    enum PageId { Page_ModeAndLei, Page_TenantDetails, Page_AdminAccount, Page_Apply };
 
-    explicit TenantOnboardingWizard(
-        ClientManager* clientManager,
-        QWidget* parent = nullptr);
+    explicit TenantOnboardingWizard(ClientManager* clientManager, QWidget* parent = nullptr);
 
     ~TenantOnboardingWizard() override = default;
 
-    ClientManager* clientManager() const { return clientManager_; }
+    ClientManager* clientManager() const {
+        return clientManager_;
+    }
 
-    bool isGleifMode() const { return gleifMode_; }
-    void setGleifMode(bool gleif) { gleifMode_ = gleif; }
+    bool isGleifMode() const {
+        return gleifMode_;
+    }
+    void setGleifMode(bool gleif) {
+        gleifMode_ = gleif;
+    }
 
-    QString tenantCode() const { return tenantCode_; }
-    void setTenantCode(const QString& code) { tenantCode_ = code; }
+    QString tenantCode() const {
+        return tenantCode_;
+    }
+    void setTenantCode(const QString& code) {
+        tenantCode_ = code;
+    }
 
-    QString tenantName() const { return tenantName_; }
-    void setTenantName(const QString& name) { tenantName_ = name; }
+    QString tenantName() const {
+        return tenantName_;
+    }
+    void setTenantName(const QString& name) {
+        tenantName_ = name;
+    }
 
-    QString tenantType() const { return tenantType_; }
-    void setTenantType(const QString& type) { tenantType_ = type; }
+    QString tenantType() const {
+        return tenantType_;
+    }
+    void setTenantType(const QString& type) {
+        tenantType_ = type;
+    }
 
-    QString tenantHostname() const { return tenantHostname_; }
-    void setTenantHostname(const QString& hostname) { tenantHostname_ = hostname; }
+    QString tenantHostname() const {
+        return tenantHostname_;
+    }
+    void setTenantHostname(const QString& hostname) {
+        tenantHostname_ = hostname;
+    }
 
-    QString tenantDescription() const { return tenantDescription_; }
-    void setTenantDescription(const QString& desc) { tenantDescription_ = desc; }
+    QString tenantDescription() const {
+        return tenantDescription_;
+    }
+    void setTenantDescription(const QString& desc) {
+        tenantDescription_ = desc;
+    }
 
-    QString rootLei() const { return rootLei_; }
-    void setRootLei(const QString& lei) { rootLei_ = lei; }
+    QString rootLei() const {
+        return rootLei_;
+    }
+    void setRootLei(const QString& lei) {
+        rootLei_ = lei;
+    }
 
-    QString rootLeiName() const { return rootLeiName_; }
-    void setRootLeiName(const QString& name) { rootLeiName_ = name; }
+    QString rootLeiName() const {
+        return rootLeiName_;
+    }
+    void setRootLeiName(const QString& name) {
+        rootLeiName_ = name;
+    }
 
-    QString adminUsername() const { return adminUsername_; }
-    void setAdminUsername(const QString& u) { adminUsername_ = u; }
+    QString adminUsername() const {
+        return adminUsername_;
+    }
+    void setAdminUsername(const QString& u) {
+        adminUsername_ = u;
+    }
 
-    QString adminPassword() const { return adminPassword_; }
-    void setAdminPassword(const QString& p) { adminPassword_ = p; }
+    QString adminPassword() const {
+        return adminPassword_;
+    }
+    void setAdminPassword(const QString& p) {
+        adminPassword_ = p;
+    }
 
-    QString adminEmail() const { return adminEmail_; }
-    void setAdminEmail(const QString& e) { adminEmail_ = e; }
+    QString adminEmail() const {
+        return adminEmail_;
+    }
+    void setAdminEmail(const QString& e) {
+        adminEmail_ = e;
+    }
 
 signals:
     void onboardingCompleted(const QString& tenantName);
@@ -235,8 +273,7 @@ class ApplyOnboardingPage final : public QWizardPage {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.apply_onboarding_page";
+    inline static std::string_view logger_name = "ores.qt.apply_onboarding_page";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;

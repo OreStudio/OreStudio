@@ -20,15 +20,15 @@
 #ifndef ORES_QT_WORKSPACE_CONTROLLER_HPP
 #define ORES_QT_WORKSPACE_CONTROLLER_HPP
 
-#include <QDateTime>
-#include <QMdiArea>
-#include <QMainWindow>
-#include <QStringList>
-#include "ores.qt/EntityController.hpp"
-#include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.workspace.api/domain/workspace.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/EntityController.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
+#include "ores.workspace.api/domain/workspace.hpp"
+#include <QDateTime>
+#include <QMainWindow>
+#include <QMdiArea>
+#include <QStringList>
 
 namespace ores::qt {
 
@@ -46,8 +46,7 @@ class WorkspaceController final : public EntityController {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.workspace_controller";
+    inline static std::string_view logger_name = "ores.qt.workspace_controller";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -56,13 +55,12 @@ private:
     }
 
 public:
-    WorkspaceController(
-        QMainWindow* mainWindow,
-        QMdiArea* mdiArea,
-        ClientManager* clientManager,
-        const QString& username,
-        BadgeCache* badgeCache,
-        QObject* parent = nullptr);
+    WorkspaceController(QMainWindow* mainWindow,
+                        QMdiArea* mdiArea,
+                        ClientManager* clientManager,
+                        const QString& username,
+                        BadgeCache* badgeCache,
+                        QObject* parent = nullptr);
     ~WorkspaceController() override;
 
     void showListWindow() override;
@@ -81,8 +79,7 @@ private slots:
     void onAddNewRequested();
     void onShowHistory(const workspace::domain::workspace& workspace);
     void onRevertVersion(const workspace::domain::workspace& workspace);
-    void onOpenVersion(const workspace::domain::workspace& workspace,
-                       int versionNumber);
+    void onOpenVersion(const workspace::domain::workspace& workspace, int versionNumber);
     void onNotificationReceived(const QString& eventType,
                                 const QDateTime& timestamp,
                                 const QStringList& entityIds,

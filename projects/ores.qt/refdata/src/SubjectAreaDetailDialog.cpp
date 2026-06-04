@@ -18,27 +18,26 @@
  *
  */
 #include "ores.qt/SubjectAreaDetailDialog.hpp"
-
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include "ui_SubjectAreaDetailDialog.h"
-#include "ores.qt/IconUtils.hpp"
+#include "ores.dq.api/messaging/data_organization_protocol.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
+#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.dq.api/messaging/data_organization_protocol.hpp"
+#include "ui_SubjectAreaDetailDialog.h"
+#include <QFutureWatcher>
+#include <QMessageBox>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 SubjectAreaDetailDialog::SubjectAreaDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent),
-      ui_(new Ui::SubjectAreaDetailDialog),
-      clientManager_(nullptr),
-      isCreateMode_(true),
-      isReadOnly_(false) {
+    : DetailDialogBase(parent)
+    , ui_(new Ui::SubjectAreaDetailDialog)
+    , clientManager_(nullptr)
+    , isCreateMode_(true)
+    , isReadOnly_(false) {
 
     ui_->setupUi(this);
     WidgetUtils::setupComboBoxes(this);
@@ -49,19 +48,24 @@ SubjectAreaDetailDialog::~SubjectAreaDetailDialog() {
     delete ui_;
 }
 
-QTabWidget* SubjectAreaDetailDialog::tabWidget() const { return ui_->tabWidget; }
-QWidget* SubjectAreaDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
-ProvenanceWidget* SubjectAreaDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
+QTabWidget* SubjectAreaDetailDialog::tabWidget() const {
+    return ui_->tabWidget;
+}
+QWidget* SubjectAreaDetailDialog::provenanceTab() const {
+    return ui_->provenanceTab;
+}
+ProvenanceWidget* SubjectAreaDetailDialog::provenanceWidget() const {
+    return ui_->provenanceWidget;
+}
 
 void SubjectAreaDetailDialog::setupConnections() {
-    connect(ui_->saveButton, &QPushButton::clicked,
-            this, &SubjectAreaDetailDialog::onSaveClicked);
-    connect(ui_->deleteButton, &QPushButton::clicked,
-            this, &SubjectAreaDetailDialog::onDeleteClicked);
+    connect(ui_->saveButton, &QPushButton::clicked, this, &SubjectAreaDetailDialog::onSaveClicked);
+    connect(
+        ui_->deleteButton, &QPushButton::clicked, this, &SubjectAreaDetailDialog::onDeleteClicked);
     ui_->closeButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
-    connect(ui_->closeButton, &QPushButton::clicked, this,
-            &SubjectAreaDetailDialog::onCloseClicked);
+    connect(
+        ui_->closeButton, &QPushButton::clicked, this, &SubjectAreaDetailDialog::onCloseClicked);
 }
 
 void SubjectAreaDetailDialog::setCreateMode(bool create) {
@@ -69,8 +73,7 @@ void SubjectAreaDetailDialog::setCreateMode(bool create) {
     updateUiState();
 }
 
-void SubjectAreaDetailDialog::setSubjectArea(
-    const dq::domain::subject_area& subject_area) {
+void SubjectAreaDetailDialog::setSubjectArea(const dq::domain::subject_area& subject_area) {
     subject_area_ = subject_area;
 
     ui_->nameEdit->setText(QString::fromStdString(subject_area.name));
@@ -82,9 +85,12 @@ void SubjectAreaDetailDialog::setSubjectArea(
         ui_->domainCombo->setCurrentIndex(index);
     }
 
-    populateProvenance(subject_area_.version, subject_area_.modified_by,
-        subject_area_.performed_by, subject_area_.recorded_at,
-        "", subject_area_.change_commentary);
+    populateProvenance(subject_area_.version,
+                       subject_area_.modified_by,
+                       subject_area_.performed_by,
+                       subject_area_.recorded_at,
+                       "",
+                       subject_area_.change_commentary);
 
     updateUiState();
 }
@@ -118,11 +124,14 @@ void SubjectAreaDetailDialog::loadDomains() {
     };
 
     auto task = [self]() -> DomainsResult {
-        if (!self || !self->clientManager_) return {false, {}};
+        if (!self || !self->clientManager_)
+            return {false, {}};
 
         dq::messaging::get_data_domains_request request;
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
-        if (!response_result) return {false, {}};
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
+        if (!response_result)
+            return {false, {}};
 
         return {true, std::move(response_result->domains)};
     };
@@ -132,7 +141,8 @@ void SubjectAreaDetailDialog::loadDomains() {
         auto result = watcher->result();
         watcher->deleteLater();
 
-        if (!self) return;
+        if (!self)
+            return;
 
         if (result.success) {
             self->ui_->domainCombo->clear();
@@ -151,8 +161,7 @@ void SubjectAreaDetailDialog::loadDomains() {
 void SubjectAreaDetailDialog::onDomainsLoaded() {
     // Re-select domain if we have a subject_area set
     if (!subject_area_.domain_name.empty()) {
-        int index = ui_->domainCombo->findText(
-            QString::fromStdString(subject_area_.domain_name));
+        int index = ui_->domainCombo->findText(QString::fromStdString(subject_area_.domain_name));
         if (index >= 0) {
             ui_->domainCombo->setCurrentIndex(index);
         }
@@ -165,14 +174,12 @@ void SubjectAreaDetailDialog::onSaveClicked() {
     QString description = ui_->descriptionEdit->toPlainText().trimmed();
 
     if (name.isEmpty()) {
-        MessageBoxHelper::warning(this, tr("Validation Error"),
-                                  tr("Name is required."));
+        MessageBoxHelper::warning(this, tr("Validation Error"), tr("Name is required."));
         return;
     }
 
     if (domain_name.isEmpty()) {
-        MessageBoxHelper::warning(this, tr("Validation Error"),
-                                  tr("Domain is required."));
+        MessageBoxHelper::warning(this, tr("Validation Error"), tr("Domain is required."));
         return;
     }
 
@@ -184,61 +191,71 @@ void SubjectAreaDetailDialog::onSaveClicked() {
     subject_area.version = isCreateMode_ ? 0 : subject_area_.version;
 
     {
-        const auto crOpType = isCreateMode_
-            ? ChangeReasonDialog::OperationType::Create
-            : ChangeReasonDialog::OperationType::Amend;
-        const auto crSel = promptChangeReason(crOpType, true,
-            isCreateMode_ ? "system" : "common");
-        if (!crSel) return;
+        const auto crOpType = isCreateMode_ ? ChangeReasonDialog::OperationType::Create :
+                                              ChangeReasonDialog::OperationType::Amend;
+        const auto crSel = promptChangeReason(crOpType, true, isCreateMode_ ? "system" : "common");
+        if (!crSel)
+            return;
         subject_area.change_commentary = crSel->commentary;
     }
 
     QPointer<SubjectAreaDetailDialog> self = this;
 
-    struct SaveResult { bool success; std::string message; };
+    struct SaveResult {
+        bool success;
+        std::string message;
+    };
 
     auto task = [self, subject_area]() -> SaveResult {
-        if (!self || !self->clientManager_) return {false, "Dialog closed"};
+        if (!self || !self->clientManager_)
+            return {false, "Dialog closed"};
 
         dq::messaging::save_subject_area_request request;
         request.data = subject_area;
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
-        if (!response_result) return {false, "Failed to communicate with server"};
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
+        if (!response_result)
+            return {false, "Failed to communicate with server"};
 
         return {response_result->success, response_result->message};
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(this);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished, this,
-            [self, watcher, name, domain_name]() {
-        auto result = watcher->result();
-        watcher->deleteLater();
+    connect(
+        watcher, &QFutureWatcher<SaveResult>::finished, this, [self, watcher, name, domain_name]() {
+            auto result = watcher->result();
+            watcher->deleteLater();
 
-        if (!self) return;
+            if (!self)
+                return;
 
-        if (result.success) {
-            emit self->subjectAreaSaved(name, domain_name);
-            self->notifySaveSuccess(tr("Subject area '%1' saved").arg(name));
-        } else {
-            emit self->errorMessage(QString::fromStdString(result.message));
-        }
-    });
+            if (result.success) {
+                emit self->subjectAreaSaved(name, domain_name);
+                self->notifySaveSuccess(tr("Subject area '%1' saved").arg(name));
+            } else {
+                emit self->errorMessage(QString::fromStdString(result.message));
+            }
+        });
 
     emit statusMessage(tr("Saving..."));
     watcher->setFuture(QtConcurrent::run(task));
 }
 
 void SubjectAreaDetailDialog::onDeleteClicked() {
-    auto reply = MessageBoxHelper::question(this, tr("Confirm Delete"),
-        tr("Delete subject area '%1'?").arg(ui_->nameEdit->text()),
-        QMessageBox::Yes | QMessageBox::No);
+    auto reply =
+        MessageBoxHelper::question(this,
+                                   tr("Confirm Delete"),
+                                   tr("Delete subject area '%1'?").arg(ui_->nameEdit->text()),
+                                   QMessageBox::Yes | QMessageBox::No);
 
-    if (reply != QMessageBox::Yes) return;
+    if (reply != QMessageBox::Yes)
+        return;
 
     {
-        const auto crSel = promptChangeReason(
-            ChangeReasonDialog::OperationType::Delete, true, "common");
-        if (!crSel) return;
+        const auto crSel =
+            promptChangeReason(ChangeReasonDialog::OperationType::Delete, true, "common");
+        if (!crSel)
+            return;
     }
 
     QPointer<SubjectAreaDetailDialog> self = this;
@@ -246,26 +263,29 @@ void SubjectAreaDetailDialog::onDeleteClicked() {
     QString domain_name = ui_->domainCombo->currentText();
 
     auto task = [self, name, domain_name]() -> bool {
-        if (!self || !self->clientManager_) return false;
+        if (!self || !self->clientManager_)
+            return false;
 
         dq::messaging::delete_subject_area_request request;
         dq::messaging::subject_area_key key;
         key.name = name.toStdString();
         key.domain_name = domain_name.toStdString();
         request.keys.push_back(key);
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
-        if (!response_result) return false;
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
+        if (!response_result)
+            return false;
 
         return response_result->success;
     };
 
     auto* watcher = new QFutureWatcher<bool>(this);
-    connect(watcher, &QFutureWatcher<bool>::finished, this,
-            [self, watcher, name, domain_name]() {
+    connect(watcher, &QFutureWatcher<bool>::finished, this, [self, watcher, name, domain_name]() {
         bool success = watcher->result();
         watcher->deleteLater();
 
-        if (!self) return;
+        if (!self)
+            return;
 
         if (success) {
             emit self->statusMessage(tr("Subject area deleted successfully"));

@@ -18,63 +18,70 @@
  *
  */
 #include "ores.qt/CurrencyDetailDialog.hpp"
-
-#include <algorithm>
-#include <random>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QToolBar>
-#include <QIcon>
-#include <QPixmap>
-#include <QImage>
-#include <QPainter>
-#include <QMdiSubWindow>
-#include <QMetaObject>
-#include <QGroupBox>
-#include <QTimer>
-#include <boost/uuid/string_generator.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include "ores.utility/generation/generation_context.hpp"
-#include "ui_CurrencyDetailDialog.h"
-#include "ores.qt/FlagIconHelper.hpp"
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/MdiUtils.hpp"
-#include "ores.qt/FlagSelectorDialog.hpp"
+#include "ores.eventing/domain/event_traits.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
+#include "ores.qt/FlagIconHelper.hpp"
+#include "ores.qt/FlagSelectorDialog.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/MdiUtils.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
+#include "ores.refdata.api/generators/currency_generator.hpp"
+#include "ores.refdata.api/messaging/currency_market_tier_protocol.hpp"
+#include "ores.refdata.api/messaging/monetary_nature_protocol.hpp"
 #include "ores.refdata.api/messaging/protocol.hpp"
 #include "ores.refdata.api/messaging/rounding_type_protocol.hpp"
-#include "ores.refdata.api/messaging/monetary_nature_protocol.hpp"
-#include "ores.refdata.api/messaging/currency_market_tier_protocol.hpp"
-#include "ores.refdata.api/generators/currency_generator.hpp"
-#include "ores.eventing/domain/event_traits.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 #include "ores.variability.api/eventing/system_setting_changed_event.hpp"
 #include "ores.variability.api/messaging/system_settings_protocol.hpp"
+#include "ui_CurrencyDetailDialog.h"
+#include <QFutureWatcher>
+#include <QGroupBox>
+#include <QHBoxLayout>
+#include <QIcon>
+#include <QImage>
+#include <QMdiSubWindow>
+#include <QMetaObject>
+#include <QPainter>
+#include <QPixmap>
+#include <QTimer>
+#include <QToolBar>
+#include <QVBoxLayout>
+#include <QtConcurrent>
+#include <boost/uuid/string_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
+#include <random>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 using FutureResult = std::pair<bool, std::string>;
 namespace {
-    // Event type name for system setting changes
-    constexpr std::string_view system_setting_event_name =
-        eventing::domain::event_traits<variability::eventing::system_setting_changed_event>::name;
+// Event type name for system setting changes
+constexpr std::string_view system_setting_event_name =
+    eventing::domain::event_traits<variability::eventing::system_setting_changed_event>::name;
 
-    // Feature flag name for synthetic data generation
-    constexpr std::string_view synthetic_generation_flag = "system.synthetic_data_generation";
+// Feature flag name for synthetic data generation
+constexpr std::string_view synthetic_generation_flag = "system.synthetic_data_generation";
 }
 
 CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent), ui_(new Ui::CurrencyDetailDialog), isDirty_(false),
-      isAddMode_(false), isReadOnly_(false), isStale_(false),
-      historicalVersion_(0), flagButton_(nullptr),
-      clientManager_(nullptr), imageCache_(nullptr),
-      currentHistoryIndex_(0),
-      firstVersionAction_(nullptr), prevVersionAction_(nullptr),
-      nextVersionAction_(nullptr), lastVersionAction_(nullptr) {
+    : DetailDialogBase(parent)
+    , ui_(new Ui::CurrencyDetailDialog)
+    , isDirty_(false)
+    , isAddMode_(false)
+    , isReadOnly_(false)
+    , isStale_(false)
+    , historicalVersion_(0)
+    , flagButton_(nullptr)
+    , clientManager_(nullptr)
+    , imageCache_(nullptr)
+    , currentHistoryIndex_(0)
+    , firstVersionAction_(nullptr)
+    , prevVersionAction_(nullptr)
+    , nextVersionAction_(nullptr)
+    , lastVersionAction_(nullptr) {
 
     ui_->setupUi(this);
     WidgetUtils::setupComboBoxes(this);
@@ -86,11 +93,10 @@ CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
 
     // Create Revert action (initially hidden)
     revertAction_ = new QAction("Revert", this);
-    revertAction_->setIcon(IconUtils::createRecoloredIcon(
-            Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
+    revertAction_->setIcon(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
+                                                          IconUtils::DefaultIconColor));
     revertAction_->setToolTip("Revert currency to this historical version");
-    connect(revertAction_, &QAction::triggered, this,
-        &CurrencyDetailDialog::onRevertClicked);
+    connect(revertAction_, &QAction::triggered, this, &CurrencyDetailDialog::onRevertClicked);
     toolBar_->addAction(revertAction_);
     revertAction_->setVisible(false);
 
@@ -98,38 +104,40 @@ CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
     toolBar_->addSeparator();
 
     firstVersionAction_ = new QAction("First", this);
-    firstVersionAction_->setIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowPrevious, IconUtils::DefaultIconColor));
+    firstVersionAction_->setIcon(
+        IconUtils::createRecoloredIcon(Icon::ArrowPrevious, IconUtils::DefaultIconColor));
     firstVersionAction_->setToolTip(tr("First version"));
-    connect(firstVersionAction_, &QAction::triggered, this,
-        &CurrencyDetailDialog::onFirstVersionClicked);
+    connect(firstVersionAction_,
+            &QAction::triggered,
+            this,
+            &CurrencyDetailDialog::onFirstVersionClicked);
     toolBar_->addAction(firstVersionAction_);
     firstVersionAction_->setVisible(false);
 
     prevVersionAction_ = new QAction("Previous", this);
-    prevVersionAction_->setIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowLeft, IconUtils::DefaultIconColor));
+    prevVersionAction_->setIcon(
+        IconUtils::createRecoloredIcon(Icon::ArrowLeft, IconUtils::DefaultIconColor));
     prevVersionAction_->setToolTip(tr("Previous version"));
-    connect(prevVersionAction_, &QAction::triggered, this,
-        &CurrencyDetailDialog::onPrevVersionClicked);
+    connect(
+        prevVersionAction_, &QAction::triggered, this, &CurrencyDetailDialog::onPrevVersionClicked);
     toolBar_->addAction(prevVersionAction_);
     prevVersionAction_->setVisible(false);
 
     nextVersionAction_ = new QAction("Next", this);
-    nextVersionAction_->setIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowRight, IconUtils::DefaultIconColor));
+    nextVersionAction_->setIcon(
+        IconUtils::createRecoloredIcon(Icon::ArrowRight, IconUtils::DefaultIconColor));
     nextVersionAction_->setToolTip(tr("Next version"));
-    connect(nextVersionAction_, &QAction::triggered, this,
-        &CurrencyDetailDialog::onNextVersionClicked);
+    connect(
+        nextVersionAction_, &QAction::triggered, this, &CurrencyDetailDialog::onNextVersionClicked);
     toolBar_->addAction(nextVersionAction_);
     nextVersionAction_->setVisible(false);
 
     lastVersionAction_ = new QAction("Last", this);
-    lastVersionAction_->setIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowNext, IconUtils::DefaultIconColor));
+    lastVersionAction_->setIcon(
+        IconUtils::createRecoloredIcon(Icon::ArrowNext, IconUtils::DefaultIconColor));
     lastVersionAction_->setToolTip(tr("Last version"));
-    connect(lastVersionAction_, &QAction::triggered, this,
-        &CurrencyDetailDialog::onLastVersionClicked);
+    connect(
+        lastVersionAction_, &QAction::triggered, this, &CurrencyDetailDialog::onLastVersionClicked);
     toolBar_->addAction(lastVersionAction_);
     lastVersionAction_->setVisible(false);
 
@@ -152,12 +160,13 @@ CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
         flagButton_->setFixedSize(52, 52);
         flagButton_->setIconSize(QSize(48, 48));
         flagButton_->setFlat(true);
-        flagButton_->setStyleSheet("QPushButton { border: none; background: transparent; padding: 0px; } "
-                                   "QPushButton:hover { background: rgba(255, 255, 255, 15); }");
+        flagButton_->setStyleSheet(
+            "QPushButton { border: none; background: transparent; padding: 0px; } "
+            "QPushButton:hover { background: rgba(255, 255, 255, 15); }");
         flagButton_->setCursor(Qt::PointingHandCursor);
         flagButton_->setToolTip(tr("Click to select flag"));
-        connect(flagButton_, &QPushButton::clicked, this,
-            &CurrencyDetailDialog::onSelectFlagClicked);
+        connect(
+            flagButton_, &QPushButton::clicked, this, &CurrencyDetailDialog::onSelectFlagClicked);
         flagLayout->addStretch();
         flagLayout->addWidget(flagButton_);
         flagLayout->addStretch();
@@ -173,53 +182,63 @@ CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
         IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor));
     ui_->closeButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
-    connect(ui_->saveButton, &QPushButton::clicked, this,
-        &CurrencyDetailDialog::onSaveClicked);
-    connect(ui_->deleteButton, &QPushButton::clicked, this,
-        &CurrencyDetailDialog::onDeleteClicked);
-    connect(ui_->closeButton, &QPushButton::clicked, this,
-        &CurrencyDetailDialog::onCloseClicked);
+    connect(ui_->saveButton, &QPushButton::clicked, this, &CurrencyDetailDialog::onSaveClicked);
+    connect(ui_->deleteButton, &QPushButton::clicked, this, &CurrencyDetailDialog::onDeleteClicked);
+    connect(ui_->closeButton, &QPushButton::clicked, this, &CurrencyDetailDialog::onCloseClicked);
 
     // Connect signals for editable fields to detect changes
-    connect(ui_->isoCodeEdit, &QLineEdit::textChanged, this,
-        &CurrencyDetailDialog::onFieldChanged);
-    connect(ui_->nameEdit, &QLineEdit::textChanged, this,
-        &CurrencyDetailDialog::onFieldChanged);
-    connect(ui_->numericCodeEdit, &QLineEdit::textChanged, this,
-        &CurrencyDetailDialog::onFieldChanged);
-    connect(ui_->symbolEdit, &QLineEdit::textChanged, this,
-        &CurrencyDetailDialog::onFieldChanged);
-    connect(ui_->fractionSymbolEdit, &QLineEdit::textChanged, this,
-        &CurrencyDetailDialog::onFieldChanged);
+    connect(ui_->isoCodeEdit, &QLineEdit::textChanged, this, &CurrencyDetailDialog::onFieldChanged);
+    connect(ui_->nameEdit, &QLineEdit::textChanged, this, &CurrencyDetailDialog::onFieldChanged);
+    connect(
+        ui_->numericCodeEdit, &QLineEdit::textChanged, this, &CurrencyDetailDialog::onFieldChanged);
+    connect(ui_->symbolEdit, &QLineEdit::textChanged, this, &CurrencyDetailDialog::onFieldChanged);
+    connect(ui_->fractionSymbolEdit,
+            &QLineEdit::textChanged,
+            this,
+            &CurrencyDetailDialog::onFieldChanged);
     connect(ui_->fractionsPerUnitSpinBox,
-        QOverload<int>::of(&QSpinBox::valueChanged), this,
-        &CurrencyDetailDialog::onFieldChanged);
-    connect(ui_->roundingTypeCombo, &QComboBox::currentTextChanged, this,
-        &CurrencyDetailDialog::onFieldChanged);
-    connect(ui_->roundingTypeCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
-            this, [this](int idx) {
-        const auto tip = ui_->roundingTypeCombo->itemData(idx, Qt::ToolTipRole).toString();
-        ui_->roundingTypeCombo->setToolTip(tip);
-    });
-    connect(ui_->roundingPrecisionSpinBox, QOverload<int>::of(
-            &QSpinBox::valueChanged), this,
-        &CurrencyDetailDialog::onFieldChanged);
-    connect(ui_->formatEdit, &QLineEdit::textChanged, this,
-        &CurrencyDetailDialog::onFieldChanged);
-    connect(ui_->monetaryNatureCombo, &QComboBox::currentTextChanged, this,
-        &CurrencyDetailDialog::onFieldChanged);
-    connect(ui_->monetaryNatureCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
-            this, [this](int idx) {
-        const auto tip = ui_->monetaryNatureCombo->itemData(idx, Qt::ToolTipRole).toString();
-        ui_->monetaryNatureCombo->setToolTip(tip);
-    });
-    connect(ui_->marketTierCombo, &QComboBox::currentTextChanged, this,
-        &CurrencyDetailDialog::onFieldChanged);
-    connect(ui_->marketTierCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
-            this, [this](int idx) {
-        const auto tip = ui_->marketTierCombo->itemData(idx, Qt::ToolTipRole).toString();
-        ui_->marketTierCombo->setToolTip(tip);
-    });
+            QOverload<int>::of(&QSpinBox::valueChanged),
+            this,
+            &CurrencyDetailDialog::onFieldChanged);
+    connect(ui_->roundingTypeCombo,
+            &QComboBox::currentTextChanged,
+            this,
+            &CurrencyDetailDialog::onFieldChanged);
+    connect(ui_->roundingTypeCombo,
+            QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this,
+            [this](int idx) {
+                const auto tip = ui_->roundingTypeCombo->itemData(idx, Qt::ToolTipRole).toString();
+                ui_->roundingTypeCombo->setToolTip(tip);
+            });
+    connect(ui_->roundingPrecisionSpinBox,
+            QOverload<int>::of(&QSpinBox::valueChanged),
+            this,
+            &CurrencyDetailDialog::onFieldChanged);
+    connect(ui_->formatEdit, &QLineEdit::textChanged, this, &CurrencyDetailDialog::onFieldChanged);
+    connect(ui_->monetaryNatureCombo,
+            &QComboBox::currentTextChanged,
+            this,
+            &CurrencyDetailDialog::onFieldChanged);
+    connect(ui_->monetaryNatureCombo,
+            QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this,
+            [this](int idx) {
+                const auto tip =
+                    ui_->monetaryNatureCombo->itemData(idx, Qt::ToolTipRole).toString();
+                ui_->monetaryNatureCombo->setToolTip(tip);
+            });
+    connect(ui_->marketTierCombo,
+            &QComboBox::currentTextChanged,
+            this,
+            &CurrencyDetailDialog::onFieldChanged);
+    connect(ui_->marketTierCombo,
+            QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this,
+            [this](int idx) {
+                const auto tip = ui_->marketTierCombo->itemData(idx, Qt::ToolTipRole).toString();
+                ui_->marketTierCombo->setToolTip(tip);
+            });
 
     // Initially disable save/reset buttons
     updateSaveResetButtonState();
@@ -230,14 +249,20 @@ void CurrencyDetailDialog::setClientManager(ClientManager* clientManager) {
 
     if (clientManager_) {
         // Connect to system setting notifications for generate action visibility
-        connect(clientManager_, &ClientManager::notificationReceived,
-                this, &CurrencyDetailDialog::onSystemSettingNotification);
+        connect(clientManager_,
+                &ClientManager::notificationReceived,
+                this,
+                &CurrencyDetailDialog::onSystemSettingNotification);
 
         // Subscribe to system setting events when logged in/reconnected
-        connect(clientManager_, &ClientManager::loggedIn,
-                this, &CurrencyDetailDialog::onConnectionEstablished);
-        connect(clientManager_, &ClientManager::reconnected,
-                this, &CurrencyDetailDialog::onConnectionEstablished);
+        connect(clientManager_,
+                &ClientManager::loggedIn,
+                this,
+                &CurrencyDetailDialog::onConnectionEstablished);
+        connect(clientManager_,
+                &ClientManager::reconnected,
+                this,
+                &CurrencyDetailDialog::onConnectionEstablished);
 
         // If already logged in, subscribe and check flag
         if (clientManager_->isLoggedIn()) {
@@ -250,12 +275,18 @@ void CurrencyDetailDialog::setClientManager(ClientManager* clientManager) {
             populateMonetaryNatureCombo();
             populateMarketTierCombo();
         } else {
-            connect(clientManager_, &ClientManager::loggedIn,
-                    this, &CurrencyDetailDialog::populateRoundingTypeCombo);
-            connect(clientManager_, &ClientManager::loggedIn,
-                    this, &CurrencyDetailDialog::populateMonetaryNatureCombo);
-            connect(clientManager_, &ClientManager::loggedIn,
-                    this, &CurrencyDetailDialog::populateMarketTierCombo);
+            connect(clientManager_,
+                    &ClientManager::loggedIn,
+                    this,
+                    &CurrencyDetailDialog::populateRoundingTypeCombo);
+            connect(clientManager_,
+                    &ClientManager::loggedIn,
+                    this,
+                    &CurrencyDetailDialog::populateMonetaryNatureCombo);
+            connect(clientManager_,
+                    &ClientManager::loggedIn,
+                    this,
+                    &CurrencyDetailDialog::populateMarketTierCombo);
         }
     }
 }
@@ -267,15 +298,17 @@ void CurrencyDetailDialog::setUsername(const std::string& username) {
 void CurrencyDetailDialog::setImageCache(ImageCache* imageCache) {
     imageCache_ = imageCache;
     if (imageCache_) {
-        connect(imageCache_, &ImageCache::currencyImageSet,
-            this, &CurrencyDetailDialog::onCurrencyImageSet);
+        connect(imageCache_,
+                &ImageCache::currencyImageSet,
+                this,
+                &CurrencyDetailDialog::onCurrencyImageSet);
         // Connect to imagesLoaded (not currencyMappingsLoaded) because:
         // - currencyMappingsLoaded fires before icons are re-rendered
         // - imagesLoaded fires after icons are ready in currency_icons_
-        connect(imageCache_, &ImageCache::imagesLoaded,
-            this, &CurrencyDetailDialog::updateFlagDisplay);
-        connect(imageCache_, &ImageCache::allLoaded,
-            this, &CurrencyDetailDialog::updateFlagDisplay);
+        connect(
+            imageCache_, &ImageCache::imagesLoaded, this, &CurrencyDetailDialog::updateFlagDisplay);
+        connect(
+            imageCache_, &ImageCache::allLoaded, this, &CurrencyDetailDialog::updateFlagDisplay);
     }
 }
 
@@ -287,17 +320,22 @@ CurrencyDetailDialog::~CurrencyDetailDialog() {
     }
 }
 
-QTabWidget* CurrencyDetailDialog::tabWidget() const { return ui_->tabWidget; }
-QWidget* CurrencyDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
-ProvenanceWidget* CurrencyDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
+QTabWidget* CurrencyDetailDialog::tabWidget() const {
+    return ui_->tabWidget;
+}
+QWidget* CurrencyDetailDialog::provenanceTab() const {
+    return ui_->provenanceTab;
+}
+ProvenanceWidget* CurrencyDetailDialog::provenanceWidget() const {
+    return ui_->provenanceWidget;
+}
 
 void CurrencyDetailDialog::setCurrency(const refdata::domain::currency& currency) {
     currentCurrency_ = currency;
     isAddMode_ = currency.iso_code.empty();
 
     if (currency.image_id) {
-        pendingImageId_ = QString::fromStdString(
-            boost::uuids::to_string(*currency.image_id));
+        pendingImageId_ = QString::fromStdString(boost::uuids::to_string(*currency.image_id));
     } else if (imageCache_) {
         std::string noFlagId = imageCache_->getNoFlagImageId();
         if (!noFlagId.empty()) {
@@ -321,8 +359,12 @@ void CurrencyDetailDialog::setCurrency(const refdata::domain::currency& currency
     ui_->formatEdit->setText(QString::fromStdString(currency.format));
     ui_->monetaryNatureCombo->setCurrentText(QString::fromStdString(currency.monetary_nature));
     ui_->marketTierCombo->setCurrentText(QString::fromStdString(currency.market_tier));
-    populateProvenance(currency.version, currency.modified_by, currency.performed_by,
-        currency.recorded_at, currency.change_reason_code, currency.change_commentary);
+    populateProvenance(currency.version,
+                       currency.modified_by,
+                       currency.performed_by,
+                       currency.recorded_at,
+                       currency.change_reason_code,
+                       currency.change_commentary);
 
     isDirty_ = false;
     flagChanged_ = false;
@@ -386,44 +428,39 @@ void CurrencyDetailDialog::onSaveClicked() {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Save clicked for currency: "
-                               << currentCurrency_.iso_code;
+    BOOST_LOG_SEV(lg(), debug) << "Save clicked for currency: " << currentCurrency_.iso_code;
 
     refdata::domain::currency currency = getCurrency();
 
-    const auto crOpType = isAddMode_
-        ? ChangeReasonDialog::OperationType::Create
-        : ChangeReasonDialog::OperationType::Amend;
-    const auto crSel = promptChangeReason(crOpType, isDirty_,
-        isAddMode_ ? "system" : "common");
-    if (!crSel) return;
+    const auto crOpType = isAddMode_ ? ChangeReasonDialog::OperationType::Create :
+                                       ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, isDirty_, isAddMode_ ? "system" : "common");
+    if (!crSel)
+        return;
     currency.change_reason_code = crSel->reason_code;
     currency.change_commentary = crSel->commentary;
 
     QPointer<CurrencyDetailDialog> self = this;
-    QFuture<FutureResult> future =
-        QtConcurrent::run([self, currency]() -> FutureResult {
-            if (!self) return {false, ""};
-                BOOST_LOG_SEV(lg(), debug) << "Sending save currency request for: "
-                                           << currency.iso_code;
+    QFuture<FutureResult> future = QtConcurrent::run([self, currency]() -> FutureResult {
+        if (!self)
+            return {false, ""};
+        BOOST_LOG_SEV(lg(), debug) << "Sending save currency request for: " << currency.iso_code;
 
-                // Use single save_currency message for both create and update
-                auto request = refdata::messaging::save_currency_request::from(currency);
-                auto response_result =
-self->clientManager_->process_authenticated_request(std::move(request));
+        // Use single save_currency message for both create and update
+        auto request = refdata::messaging::save_currency_request::from(currency);
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
-                if (!response_result)
-                    return {false, "Failed to communicate with server"};
+        if (!response_result)
+            return {false, "Failed to communicate with server"};
 
-                BOOST_LOG_SEV(lg(), debug) << "Received save currency response.";
+        BOOST_LOG_SEV(lg(), debug) << "Received save currency response.";
 
-                return {response_result->success, response_result->message};
-            });
+        return {response_result->success, response_result->message};
+    });
 
     auto* watcher = new QFutureWatcher<FutureResult>(self);
-    connect(watcher, &QFutureWatcher<FutureResult>::finished, self,
-        [self, watcher, currency]() {
-
+    connect(watcher, &QFutureWatcher<FutureResult>::finished, self, [self, watcher, currency]() {
         if (!self)
             return;
 
@@ -450,10 +487,9 @@ self->clientManager_->process_authenticated_request(std::move(request));
             self->notifySaveSuccess(tr("Currency '%1' saved").arg(code));
         } else {
             BOOST_LOG_SEV(lg(), error) << "Currency save failed: " << message;
-            emit self->errorMessage(QString("Failed to save currency: %1")
-                .arg(QString::fromStdString(message)));
-            MessageBoxHelper::critical(self, "Save Failed",
-                QString::fromStdString(message));
+            emit self->errorMessage(
+                QString("Failed to save currency: %1").arg(QString::fromStdString(message)));
+            MessageBoxHelper::critical(self, "Save Failed", QString::fromStdString(message));
         }
     });
 
@@ -461,8 +497,7 @@ self->clientManager_->process_authenticated_request(std::move(request));
 }
 
 void CurrencyDetailDialog::onResetClicked() {
-    BOOST_LOG_SEV(lg(), debug) << "Reset clicked for currency: "
-                               << currentCurrency_.iso_code;
+    BOOST_LOG_SEV(lg(), debug) << "Reset clicked for currency: " << currentCurrency_.iso_code;
     setCurrency(currentCurrency_);
 }
 
@@ -473,15 +508,15 @@ void CurrencyDetailDialog::onDeleteClicked() {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Delete request for currency: "
-                               << currentCurrency_.iso_code;
+    BOOST_LOG_SEV(lg(), debug) << "Delete request for currency: " << currentCurrency_.iso_code;
 
     auto reply =
-        MessageBoxHelper::question(this, "Delete Currency",
-        QString("Are you sure you want to delete currency '%1' (%2)?")
-        .arg(QString::fromStdString(currentCurrency_.name))
-        .arg(QString::fromStdString(currentCurrency_.iso_code)),
-        QMessageBox::Yes | QMessageBox::No);
+        MessageBoxHelper::question(this,
+                                   "Delete Currency",
+                                   QString("Are you sure you want to delete currency '%1' (%2)?")
+                                       .arg(QString::fromStdString(currentCurrency_.name))
+                                       .arg(QString::fromStdString(currentCurrency_.iso_code)),
+                                   QMessageBox::Yes | QMessageBox::No);
 
     if (reply != QMessageBox::Yes) {
         BOOST_LOG_SEV(lg(), debug) << "Delete cancelled by user";
@@ -490,50 +525,46 @@ void CurrencyDetailDialog::onDeleteClicked() {
 
     QPointer<CurrencyDetailDialog> self = this;
     const std::string iso_code = currentCurrency_.iso_code;
-    QFuture<FutureResult> future =
-        QtConcurrent::run([self, iso_code]() -> FutureResult {
-            if (!self) return {false, {}};
-            BOOST_LOG_SEV(lg(), debug) << "Sending delete currency request for: "
-                                       << iso_code;
+    QFuture<FutureResult> future = QtConcurrent::run([self, iso_code]() -> FutureResult {
+        if (!self)
+            return {false, {}};
+        BOOST_LOG_SEV(lg(), debug) << "Sending delete currency request for: " << iso_code;
 
-            // Create batch request with single ISO code
-            refdata::messaging::delete_currency_request request{{iso_code}};
-            auto response_result =
-self->clientManager_->process_authenticated_request(std::move(request));
+        // Create batch request with single ISO code
+        refdata::messaging::delete_currency_request request{{iso_code}};
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
-            if (!response_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to communicate with server.";
-                return {false, "Failed to communicate with server."};
-            }
+        if (!response_result) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to communicate with server.";
+            return {false, "Failed to communicate with server."};
+        }
 
-            BOOST_LOG_SEV(lg(), debug) << "Received delete currency response.";
+        BOOST_LOG_SEV(lg(), debug) << "Received delete currency response.";
 
-            return {response_result->success, response_result->message};
-        });
+        return {response_result->success, response_result->message};
+    });
 
 
     auto* watcher = new QFutureWatcher<FutureResult>(self);
-    connect(watcher, &QFutureWatcher<FutureResult>::finished, self,
-        [self, watcher, iso_code]() {
-
+    connect(watcher, &QFutureWatcher<FutureResult>::finished, self, [self, watcher, iso_code]() {
         BOOST_LOG_SEV(lg(), debug) << "Received currencies delete result.";
-        if (!self) return;
+        if (!self)
+            return;
         auto [success, message] = watcher->result();
         watcher->deleteLater();
 
         if (success) {
             BOOST_LOG_SEV(lg(), debug) << "Currency deleted successfully.";
-            emit self->statusMessage(QString("Successfully deleted currency: %1")
-                .arg(QString::fromStdString(iso_code)));
+            emit self->statusMessage(
+                QString("Successfully deleted currency: %1").arg(QString::fromStdString(iso_code)));
             emit self->currencyDeleted(QString::fromStdString(iso_code));
             self->clearDialog();
         } else {
-            BOOST_LOG_SEV(lg(), error) << "Currency deletion failed: "
-                                       << message;
-            emit self->errorMessage(QString("Failed to delete currency: %1")
-                .arg(QString::fromStdString(message)));
-            MessageBoxHelper::critical(self, "Delete Failed",
-                QString::fromStdString(message));
+            BOOST_LOG_SEV(lg(), error) << "Currency deletion failed: " << message;
+            emit self->errorMessage(
+                QString("Failed to delete currency: %1").arg(QString::fromStdString(message)));
+            MessageBoxHelper::critical(self, "Delete Failed", QString::fromStdString(message));
         }
     });
 
@@ -550,11 +581,12 @@ void CurrencyDetailDialog::onFieldChanged() {
 }
 
 void CurrencyDetailDialog::onRevertClicked() {
-    BOOST_LOG_SEV(lg(), info) << "Revert clicked for historical version "
-                              << historicalVersion_;
+    BOOST_LOG_SEV(lg(), info) << "Revert clicked for historical version " << historicalVersion_;
 
     // Confirm with user
-    auto reply = MessageBoxHelper::question(this, "Revert Currency",
+    auto reply = MessageBoxHelper::question(
+        this,
+        "Revert Currency",
         QString("Are you sure you want to revert '%1' to version %2?\n\n"
                 "This will create a new version with the data from version %2.")
             .arg(QString::fromStdString(currentCurrency_.iso_code))
@@ -634,7 +666,7 @@ void CurrencyDetailDialog::markAsStale() {
     MdiUtils::markParentWindowAsStale(this);
 
     emit statusMessage(QString("Currency %1 has been modified on the server")
-        .arg(QString::fromStdString(currentCurrency_.iso_code)));
+                           .arg(QString::fromStdString(currentCurrency_.iso_code)));
 }
 
 QString CurrencyDetailDialog::isoCode() const {
@@ -648,21 +680,20 @@ void CurrencyDetailDialog::onSelectFlagClicked() {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Opening flag selector for: "
-                               << currentCurrency_.iso_code;
+    BOOST_LOG_SEV(lg(), debug) << "Opening flag selector for: " << currentCurrency_.iso_code;
 
     // Get current image ID - use pending if set, otherwise from the currency
-    QString currentImageId = pendingImageId_.isEmpty()
-        ? (currentCurrency_.image_id
-            ? QString::fromStdString(boost::uuids::to_string(*currentCurrency_.image_id))
-            : QString())
-        : pendingImageId_;
+    QString currentImageId =
+        pendingImageId_.isEmpty() ?
+            (currentCurrency_.image_id ?
+                 QString::fromStdString(boost::uuids::to_string(*currentCurrency_.image_id)) :
+                 QString()) :
+            pendingImageId_;
 
     FlagSelectorDialog dialog(imageCache_, currentImageId, this);
     if (dialog.exec() == QDialog::Accepted) {
         QString selectedImageId = dialog.selectedImageId();
-        BOOST_LOG_SEV(lg(), debug) << "Selected flag image: "
-                                   << selectedImageId.toStdString();
+        BOOST_LOG_SEV(lg(), debug) << "Selected flag image: " << selectedImageId.toStdString();
 
         // Store the selection locally - will be persisted on Save
         pendingImageId_ = selectedImageId;
@@ -683,22 +714,21 @@ void CurrencyDetailDialog::onSelectFlagClicked() {
 }
 
 void CurrencyDetailDialog::onCurrencyImageSet(const QString& iso_code,
-    bool success, const QString& message) {
+                                              bool success,
+                                              const QString& message) {
 
     if (iso_code.toStdString() != currentCurrency_.iso_code) {
-        return;  // Not our currency
+        return; // Not our currency
     }
 
     if (success) {
-        BOOST_LOG_SEV(lg(), info) << "Flag updated successfully for: "
-                                  << currentCurrency_.iso_code;
-        emit statusMessage(tr("Flag updated for %1")
-            .arg(QString::fromStdString(currentCurrency_.iso_code)));
+        BOOST_LOG_SEV(lg(), info) << "Flag updated successfully for: " << currentCurrency_.iso_code;
+        emit statusMessage(
+            tr("Flag updated for %1").arg(QString::fromStdString(currentCurrency_.iso_code)));
         updateFlagDisplay();
     } else {
-        BOOST_LOG_SEV(lg(), error) << "Failed to update flag for "
-                                   << currentCurrency_.iso_code << ": "
-                                   << message.toStdString();
+        BOOST_LOG_SEV(lg(), error) << "Failed to update flag for " << currentCurrency_.iso_code
+                                   << ": " << message.toStdString();
         emit errorMessage(tr("Failed to update flag: %1").arg(message));
         MessageBoxHelper::critical(this, "Flag Update Failed", message);
     }
@@ -712,13 +742,15 @@ void CurrencyDetailDialog::updateFlagDisplay() {
     // Update styling based on changed state
     if (flagChanged_) {
         // Show orange border to indicate unsaved change
-        flagButton_->setStyleSheet("QPushButton { border: 2px solid orange; background: transparent; padding: 0px; border-radius: 4px; } "
+        flagButton_->setStyleSheet("QPushButton { border: 2px solid orange; background: "
+                                   "transparent; padding: 0px; border-radius: 4px; } "
                                    "QPushButton:hover { background: rgba(255, 255, 255, 15); }");
         flagButton_->setToolTip(tr("Flag changed (unsaved)"));
     } else {
         // Normal transparent style
-        flagButton_->setStyleSheet("QPushButton { border: none; background: transparent; padding: 0px; } "
-                                   "QPushButton:hover { background: rgba(255, 255, 255, 15); }");
+        flagButton_->setStyleSheet(
+            "QPushButton { border: none; background: transparent; padding: 0px; } "
+            "QPushButton:hover { background: rgba(255, 255, 255, 15); }");
         flagButton_->setToolTip(tr("Click to select flag"));
     }
 
@@ -736,8 +768,7 @@ void CurrencyDetailDialog::updateFlagDisplay() {
         imageIdToShow = pendingImageId_;
     } else if (currentCurrency_.image_id) {
         // Get image_id from the currency domain object
-        imageIdToShow = QString::fromStdString(
-            boost::uuids::to_string(*currentCurrency_.image_id));
+        imageIdToShow = QString::fromStdString(boost::uuids::to_string(*currentCurrency_.image_id));
     }
 
     // If we have an ID, try to get the icon
@@ -772,8 +803,8 @@ void CurrencyDetailDialog::showVersionNavActions(bool visible) {
         lastVersionAction_->setVisible(visible);
 }
 
-void CurrencyDetailDialog::setHistory(
-    const refdata::messaging::currency_version_history& history, int versionNumber) {
+void CurrencyDetailDialog::setHistory(const refdata::messaging::currency_version_history& history,
+                                      int versionNumber) {
     BOOST_LOG_SEV(lg(), debug) << "Setting history with " << history.versions.size()
                                << " versions, displaying version " << versionNumber;
 
@@ -818,8 +849,8 @@ void CurrencyDetailDialog::displayCurrentVersion() {
     while (parent) {
         if (auto* mdiSubWindow = qobject_cast<QMdiSubWindow*>(parent)) {
             mdiSubWindow->setWindowTitle(QString("Currency: %1 v%2")
-                .arg(QString::fromStdString(version.data.iso_code))
-                .arg(version.version_number));
+                                             .arg(QString::fromStdString(version.data.iso_code))
+                                             .arg(version.version_number));
             break;
         }
         parent = parent->parentWidget();
@@ -828,24 +859,33 @@ void CurrencyDetailDialog::displayCurrentVersion() {
 
 void CurrencyDetailDialog::updateVersionNavButtonStates() {
     if (history_.versions.empty()) {
-        if (firstVersionAction_) firstVersionAction_->setEnabled(false);
-        if (prevVersionAction_) prevVersionAction_->setEnabled(false);
-        if (nextVersionAction_) nextVersionAction_->setEnabled(false);
-        if (lastVersionAction_) lastVersionAction_->setEnabled(false);
+        if (firstVersionAction_)
+            firstVersionAction_->setEnabled(false);
+        if (prevVersionAction_)
+            prevVersionAction_->setEnabled(false);
+        if (nextVersionAction_)
+            nextVersionAction_->setEnabled(false);
+        if (lastVersionAction_)
+            lastVersionAction_->setEnabled(false);
         return;
     }
 
     bool atOldest = (currentHistoryIndex_ == static_cast<int>(history_.versions.size()) - 1);
     bool atNewest = (currentHistoryIndex_ == 0);
 
-    if (firstVersionAction_) firstVersionAction_->setEnabled(!atOldest);  // Go to oldest
-    if (prevVersionAction_) prevVersionAction_->setEnabled(!atOldest);   // Go to older
-    if (nextVersionAction_) nextVersionAction_->setEnabled(!atNewest);   // Go to newer
-    if (lastVersionAction_) lastVersionAction_->setEnabled(!atNewest);   // Go to latest
+    if (firstVersionAction_)
+        firstVersionAction_->setEnabled(!atOldest); // Go to oldest
+    if (prevVersionAction_)
+        prevVersionAction_->setEnabled(!atOldest); // Go to older
+    if (nextVersionAction_)
+        nextVersionAction_->setEnabled(!atNewest); // Go to newer
+    if (lastVersionAction_)
+        lastVersionAction_->setEnabled(!atNewest); // Go to latest
 }
 
 void CurrencyDetailDialog::onFirstVersionClicked() {
-    if (history_.versions.empty()) return;
+    if (history_.versions.empty())
+        return;
 
     BOOST_LOG_SEV(lg(), debug) << "Navigating to first (oldest) version";
     currentHistoryIndex_ = static_cast<int>(history_.versions.size()) - 1;
@@ -853,7 +893,8 @@ void CurrencyDetailDialog::onFirstVersionClicked() {
 }
 
 void CurrencyDetailDialog::onPrevVersionClicked() {
-    if (history_.versions.empty()) return;
+    if (history_.versions.empty())
+        return;
 
     if (currentHistoryIndex_ < static_cast<int>(history_.versions.size()) - 1) {
         BOOST_LOG_SEV(lg(), debug) << "Navigating to previous (older) version";
@@ -863,7 +904,8 @@ void CurrencyDetailDialog::onPrevVersionClicked() {
 }
 
 void CurrencyDetailDialog::onNextVersionClicked() {
-    if (history_.versions.empty()) return;
+    if (history_.versions.empty())
+        return;
 
     if (currentHistoryIndex_ > 0) {
         BOOST_LOG_SEV(lg(), debug) << "Navigating to next (newer) version";
@@ -873,7 +915,8 @@ void CurrencyDetailDialog::onNextVersionClicked() {
 }
 
 void CurrencyDetailDialog::onLastVersionClicked() {
-    if (history_.versions.empty()) return;
+    if (history_.versions.empty())
+        return;
 
     BOOST_LOG_SEV(lg(), debug) << "Navigating to last (latest) version";
     currentHistoryIndex_ = 0;
@@ -882,11 +925,10 @@ void CurrencyDetailDialog::onLastVersionClicked() {
 
 void CurrencyDetailDialog::setupGenerateAction() {
     generateAction_ = new QAction("Generate", this);
-    generateAction_->setIcon(IconUtils::createRecoloredIcon(
-            Icon::Wand, IconUtils::DefaultIconColor));
+    generateAction_->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Wand, IconUtils::DefaultIconColor));
     generateAction_->setToolTip("Fill fields with synthetic test data");
-    connect(generateAction_, &QAction::triggered, this,
-        &CurrencyDetailDialog::onGenerateClicked);
+    connect(generateAction_, &QAction::triggered, this, &CurrencyDetailDialog::onGenerateClicked);
     toolBar_->addAction(generateAction_);
 
     // Initially hidden - will be shown if feature flag is enabled
@@ -914,8 +956,7 @@ void CurrencyDetailDialog::updateGenerateActionVisibility() {
             return false;
 
         variability::messaging::list_settings_request request;
-        auto result = self->clientManager_->
-            process_authenticated_request(std::move(request));
+        auto result = self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!result) {
             BOOST_LOG_SEV(lg(), debug) << "System settings request failed";
@@ -923,10 +964,9 @@ void CurrencyDetailDialog::updateGenerateActionVisibility() {
         }
 
         // Find our specific setting
-        auto it = std::find_if(result->settings.begin(), result->settings.end(),
-            [](const auto& s) {
-                return s.name == synthetic_generation_flag;
-            });
+        auto it = std::find_if(result->settings.begin(), result->settings.end(), [](const auto& s) {
+            return s.name == synthetic_generation_flag;
+        });
 
         if (it == result->settings.end()) {
             BOOST_LOG_SEV(lg(), debug) << "System setting not found: " << synthetic_generation_flag;
@@ -937,8 +977,8 @@ void CurrencyDetailDialog::updateGenerateActionVisibility() {
     }).then(this, [self](bool enabled) {
         if (self && self->generateAction_ && !self->isReadOnly_) {
             self->generateAction_->setVisible(enabled);
-            BOOST_LOG_SEV(lg(), debug) << "Generate action visibility in detail dialog set to: "
-                                       << enabled;
+            BOOST_LOG_SEV(lg(), debug)
+                << "Generate action visibility in detail dialog set to: " << enabled;
         }
     });
 }
@@ -948,8 +988,7 @@ void CurrencyDetailDialog::onGenerateClicked() {
 
     try {
         utility::generation::generation_context ctx;
-        auto currencies = refdata::generators::generate_fictional_currencies(
-            0, ctx);
+        auto currencies = refdata::generators::generate_fictional_currencies(0, ctx);
         static std::random_device rd;
         static std::mt19937 gen(rd());
         std::uniform_int_distribution<std::size_t> dist(0, currencies.size() - 1);
@@ -979,19 +1018,19 @@ void CurrencyDetailDialog::onGenerateClicked() {
 
         emit statusMessage("Generated synthetic currency data - modify as needed and save");
 
-        BOOST_LOG_SEV(lg(), info) << "Filled fields with generated currency: "
-                                  << currency.iso_code;
+        BOOST_LOG_SEV(lg(), info) << "Filled fields with generated currency: " << currency.iso_code;
 
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Error generating currency: " << e.what();
-        MessageBoxHelper::critical(this, "Generation Error",
-            QString("Failed to generate currency data: %1").arg(e.what()));
+        MessageBoxHelper::critical(this,
+                                   "Generation Error",
+                                   QString("Failed to generate currency data: %1").arg(e.what()));
     }
 }
 
-void CurrencyDetailDialog::onSystemSettingNotification(
-    const QString& eventType, const QDateTime& timestamp,
-    const QStringList& entityIds) {
+void CurrencyDetailDialog::onSystemSettingNotification(const QString& eventType,
+                                                       const QDateTime& timestamp,
+                                                       const QStringList& entityIds) {
 
     // Check if this is a system setting change event
     if (eventType != QString::fromStdString(std::string{system_setting_event_name})) {
@@ -1044,7 +1083,8 @@ void CurrencyDetailDialog::populateRoundingTypeCombo() {
         }
 
         refdata::messaging::get_rounding_types_request request;
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
         if (!response_result) {
             return {false, {}};
         }
@@ -1054,59 +1094,61 @@ void CurrencyDetailDialog::populateRoundingTypeCombo() {
 
     auto* watcher = new QFutureWatcher<FetchResult>(self);
     watcher->setObjectName("roundingTypeWatcher");
-    connect(watcher, &QFutureWatcher<FetchResult>::finished,
-            self, [self, watcher, previousSelection]() {
-        auto result = watcher->result();
-        watcher->deleteLater();
+    connect(watcher,
+            &QFutureWatcher<FetchResult>::finished,
+            self,
+            [self, watcher, previousSelection]() {
+                auto result = watcher->result();
+                watcher->deleteLater();
 
-        if (!self) return;
+                if (!self)
+                    return;
 
-        if (!result.success) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to fetch rounding types for combo box.";
-            emit self->errorMessage(tr("Could not load rounding types."));
-            return;
-        }
+                if (!result.success) {
+                    BOOST_LOG_SEV(lg(), error) << "Failed to fetch rounding types for combo box.";
+                    emit self->errorMessage(tr("Could not load rounding types."));
+                    return;
+                }
 
-        self->ui_->roundingTypeCombo->blockSignals(true);
-        self->ui_->roundingTypeCombo->clear();
+                self->ui_->roundingTypeCombo->blockSignals(true);
+                self->ui_->roundingTypeCombo->clear();
 
-        // Sort by display_order
-        auto& types = result.types;
-        std::sort(types.begin(), types.end(),
-            [](const auto& a, const auto& b) {
-                return a.display_order < b.display_order;
+                // Sort by display_order
+                auto& types = result.types;
+                std::sort(types.begin(), types.end(), [](const auto& a, const auto& b) {
+                    return a.display_order < b.display_order;
+                });
+
+                for (const auto& type : types) {
+                    QString code = QString::fromStdString(type.code);
+                    self->ui_->roundingTypeCombo->addItem(code);
+                    int idx = self->ui_->roundingTypeCombo->count() - 1;
+                    self->ui_->roundingTypeCombo->setItemData(
+                        idx, QString::fromStdString(type.description), Qt::ToolTipRole);
+                }
+
+                {
+                    const QString toSelect =
+                        !previousSelection.isEmpty() ?
+                            previousSelection :
+                            QString::fromStdString(self->currentCurrency_.rounding_type);
+                    if (!toSelect.isEmpty())
+                        self->ui_->roundingTypeCombo->setCurrentText(toSelect);
+                }
+
+                self->ui_->roundingTypeCombo->blockSignals(false);
+
+                // Sync the combo widget tooltip with the current selection
+                const int cur = self->ui_->roundingTypeCombo->currentIndex();
+                if (cur >= 0) {
+                    const auto tip =
+                        self->ui_->roundingTypeCombo->itemData(cur, Qt::ToolTipRole).toString();
+                    self->ui_->roundingTypeCombo->setToolTip(tip);
+                }
+
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Rounding type combo populated with " << result.types.size() << " entries";
             });
-
-        for (const auto& type : types) {
-            QString code = QString::fromStdString(type.code);
-            self->ui_->roundingTypeCombo->addItem(code);
-            int idx = self->ui_->roundingTypeCombo->count() - 1;
-            self->ui_->roundingTypeCombo->setItemData(
-                idx, QString::fromStdString(type.description),
-                Qt::ToolTipRole);
-        }
-
-        {
-            const QString toSelect = !previousSelection.isEmpty()
-                ? previousSelection
-                : QString::fromStdString(self->currentCurrency_.rounding_type);
-            if (!toSelect.isEmpty())
-                self->ui_->roundingTypeCombo->setCurrentText(toSelect);
-        }
-
-        self->ui_->roundingTypeCombo->blockSignals(false);
-
-        // Sync the combo widget tooltip with the current selection
-        const int cur = self->ui_->roundingTypeCombo->currentIndex();
-        if (cur >= 0) {
-            const auto tip = self->ui_->roundingTypeCombo->itemData(
-                cur, Qt::ToolTipRole).toString();
-            self->ui_->roundingTypeCombo->setToolTip(tip);
-        }
-
-        BOOST_LOG_SEV(lg(), debug) << "Rounding type combo populated with "
-                                   << result.types.size() << " entries";
-    });
 
     watcher->setFuture(future);
 }
@@ -1140,7 +1182,8 @@ void CurrencyDetailDialog::populateMonetaryNatureCombo() {
         }
 
         refdata::messaging::get_monetary_natures_request request;
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
         if (!response_result) {
             return {false, {}};
         }
@@ -1150,57 +1193,59 @@ void CurrencyDetailDialog::populateMonetaryNatureCombo() {
 
     auto* watcher = new QFutureWatcher<FetchResult>(self);
     watcher->setObjectName("monetaryNatureWatcher");
-    connect(watcher, &QFutureWatcher<FetchResult>::finished,
-            self, [self, watcher, previousSelection]() {
-        auto result = watcher->result();
-        watcher->deleteLater();
+    connect(watcher,
+            &QFutureWatcher<FetchResult>::finished,
+            self,
+            [self, watcher, previousSelection]() {
+                auto result = watcher->result();
+                watcher->deleteLater();
 
-        if (!self) return;
+                if (!self)
+                    return;
 
-        if (!result.success) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to fetch monetary natures for combo box.";
-            emit self->errorMessage(tr("Could not load monetary natures."));
-            return;
-        }
+                if (!result.success) {
+                    BOOST_LOG_SEV(lg(), error) << "Failed to fetch monetary natures for combo box.";
+                    emit self->errorMessage(tr("Could not load monetary natures."));
+                    return;
+                }
 
-        self->ui_->monetaryNatureCombo->blockSignals(true);
-        self->ui_->monetaryNatureCombo->clear();
+                self->ui_->monetaryNatureCombo->blockSignals(true);
+                self->ui_->monetaryNatureCombo->clear();
 
-        auto& types = result.types;
-        std::sort(types.begin(), types.end(),
-            [](const auto& a, const auto& b) {
-                return a.display_order < b.display_order;
+                auto& types = result.types;
+                std::sort(types.begin(), types.end(), [](const auto& a, const auto& b) {
+                    return a.display_order < b.display_order;
+                });
+
+                for (const auto& type : types) {
+                    QString code = QString::fromStdString(type.code);
+                    self->ui_->monetaryNatureCombo->addItem(code);
+                    int idx = self->ui_->monetaryNatureCombo->count() - 1;
+                    self->ui_->monetaryNatureCombo->setItemData(
+                        idx, QString::fromStdString(type.description), Qt::ToolTipRole);
+                }
+
+                {
+                    const QString toSelect =
+                        !previousSelection.isEmpty() ?
+                            previousSelection :
+                            QString::fromStdString(self->currentCurrency_.monetary_nature);
+                    if (!toSelect.isEmpty())
+                        self->ui_->monetaryNatureCombo->setCurrentText(toSelect);
+                }
+
+                self->ui_->monetaryNatureCombo->blockSignals(false);
+
+                const int cur = self->ui_->monetaryNatureCombo->currentIndex();
+                if (cur >= 0) {
+                    const auto tip =
+                        self->ui_->monetaryNatureCombo->itemData(cur, Qt::ToolTipRole).toString();
+                    self->ui_->monetaryNatureCombo->setToolTip(tip);
+                }
+
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Monetary nature combo populated with " << result.types.size() << " entries";
             });
-
-        for (const auto& type : types) {
-            QString code = QString::fromStdString(type.code);
-            self->ui_->monetaryNatureCombo->addItem(code);
-            int idx = self->ui_->monetaryNatureCombo->count() - 1;
-            self->ui_->monetaryNatureCombo->setItemData(
-                idx, QString::fromStdString(type.description),
-                Qt::ToolTipRole);
-        }
-
-        {
-            const QString toSelect = !previousSelection.isEmpty()
-                ? previousSelection
-                : QString::fromStdString(self->currentCurrency_.monetary_nature);
-            if (!toSelect.isEmpty())
-                self->ui_->monetaryNatureCombo->setCurrentText(toSelect);
-        }
-
-        self->ui_->monetaryNatureCombo->blockSignals(false);
-
-        const int cur = self->ui_->monetaryNatureCombo->currentIndex();
-        if (cur >= 0) {
-            const auto tip = self->ui_->monetaryNatureCombo->itemData(
-                cur, Qt::ToolTipRole).toString();
-            self->ui_->monetaryNatureCombo->setToolTip(tip);
-        }
-
-        BOOST_LOG_SEV(lg(), debug) << "Monetary nature combo populated with "
-                                   << result.types.size() << " entries";
-    });
 
     watcher->setFuture(future);
 }
@@ -1234,7 +1279,8 @@ void CurrencyDetailDialog::populateMarketTierCombo() {
         }
 
         refdata::messaging::get_currency_market_tiers_request request;
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
         if (!response_result) {
             return {false, {}};
         }
@@ -1244,57 +1290,60 @@ void CurrencyDetailDialog::populateMarketTierCombo() {
 
     auto* watcher = new QFutureWatcher<FetchResult>(self);
     watcher->setObjectName("marketTierWatcher");
-    connect(watcher, &QFutureWatcher<FetchResult>::finished,
-            self, [self, watcher, previousSelection]() {
-        auto result = watcher->result();
-        watcher->deleteLater();
+    connect(watcher,
+            &QFutureWatcher<FetchResult>::finished,
+            self,
+            [self, watcher, previousSelection]() {
+                auto result = watcher->result();
+                watcher->deleteLater();
 
-        if (!self) return;
+                if (!self)
+                    return;
 
-        if (!result.success) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to fetch currency market tiers for combo box.";
-            emit self->errorMessage(tr("Could not load currency market tiers."));
-            return;
-        }
+                if (!result.success) {
+                    BOOST_LOG_SEV(lg(), error)
+                        << "Failed to fetch currency market tiers for combo box.";
+                    emit self->errorMessage(tr("Could not load currency market tiers."));
+                    return;
+                }
 
-        self->ui_->marketTierCombo->blockSignals(true);
-        self->ui_->marketTierCombo->clear();
+                self->ui_->marketTierCombo->blockSignals(true);
+                self->ui_->marketTierCombo->clear();
 
-        auto& types = result.types;
-        std::sort(types.begin(), types.end(),
-            [](const auto& a, const auto& b) {
-                return a.display_order < b.display_order;
+                auto& types = result.types;
+                std::sort(types.begin(), types.end(), [](const auto& a, const auto& b) {
+                    return a.display_order < b.display_order;
+                });
+
+                for (const auto& type : types) {
+                    QString code = QString::fromStdString(type.code);
+                    self->ui_->marketTierCombo->addItem(code);
+                    int idx = self->ui_->marketTierCombo->count() - 1;
+                    self->ui_->marketTierCombo->setItemData(
+                        idx, QString::fromStdString(type.description), Qt::ToolTipRole);
+                }
+
+                {
+                    const QString toSelect =
+                        !previousSelection.isEmpty() ?
+                            previousSelection :
+                            QString::fromStdString(self->currentCurrency_.market_tier);
+                    if (!toSelect.isEmpty())
+                        self->ui_->marketTierCombo->setCurrentText(toSelect);
+                }
+
+                self->ui_->marketTierCombo->blockSignals(false);
+
+                const int cur = self->ui_->marketTierCombo->currentIndex();
+                if (cur >= 0) {
+                    const auto tip =
+                        self->ui_->marketTierCombo->itemData(cur, Qt::ToolTipRole).toString();
+                    self->ui_->marketTierCombo->setToolTip(tip);
+                }
+
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Market tier combo populated with " << result.types.size() << " entries";
             });
-
-        for (const auto& type : types) {
-            QString code = QString::fromStdString(type.code);
-            self->ui_->marketTierCombo->addItem(code);
-            int idx = self->ui_->marketTierCombo->count() - 1;
-            self->ui_->marketTierCombo->setItemData(
-                idx, QString::fromStdString(type.description),
-                Qt::ToolTipRole);
-        }
-
-        {
-            const QString toSelect = !previousSelection.isEmpty()
-                ? previousSelection
-                : QString::fromStdString(self->currentCurrency_.market_tier);
-            if (!toSelect.isEmpty())
-                self->ui_->marketTierCombo->setCurrentText(toSelect);
-        }
-
-        self->ui_->marketTierCombo->blockSignals(false);
-
-        const int cur = self->ui_->marketTierCombo->currentIndex();
-        if (cur >= 0) {
-            const auto tip = self->ui_->marketTierCombo->itemData(
-                cur, Qt::ToolTipRole).toString();
-            self->ui_->marketTierCombo->setToolTip(tip);
-        }
-
-        BOOST_LOG_SEV(lg(), debug) << "Market tier combo populated with "
-                                   << result.types.size() << " entries";
-    });
 
     watcher->setFuture(future);
 }

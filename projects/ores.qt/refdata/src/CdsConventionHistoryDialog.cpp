@@ -18,31 +18,29 @@
  *
  */
 #include "ores.qt/CdsConventionHistoryDialog.hpp"
-
-#include <QVBoxLayout>
-#include <QHeaderView>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include "ui_CdsConventionHistoryDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.refdata.api/messaging/cds_convention_protocol.hpp"
+#include "ui_CdsConventionHistoryDialog.h"
+#include <QFutureWatcher>
+#include <QHeaderView>
+#include <QVBoxLayout>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-CdsConventionHistoryDialog::CdsConventionHistoryDialog(
-    const QString& code,
-    ClientManager* clientManager,
-    QWidget* parent)
-    : QWidget(parent),
-      ui_(new Ui::CdsConventionHistoryDialog),
-      code_(code),
-      clientManager_(clientManager),
-      toolbar_(nullptr),
-      openVersionAction_(nullptr),
-      revertAction_(nullptr) {
+CdsConventionHistoryDialog::CdsConventionHistoryDialog(const QString& code,
+                                                       ClientManager* clientManager,
+                                                       QWidget* parent)
+    : QWidget(parent)
+    , ui_(new Ui::CdsConventionHistoryDialog)
+    , code_(code)
+    , clientManager_(clientManager)
+    , toolbar_(nullptr)
+    , openVersionAction_(nullptr)
+    , revertAction_(nullptr) {
 
     ui_->setupUi(this);
     setupUi();
@@ -70,8 +68,7 @@ void CdsConventionHistoryDialog::setupUi() {
 
     // Setup changes table
     ui_->changesTableWidget->setColumnCount(3);
-    ui_->changesTableWidget->setHorizontalHeaderLabels(
-        {"Field", "Old Value", "New Value"});
+    ui_->changesTableWidget->setHorizontalHeaderLabels({"Field", "Old Value", "New Value"});
     ui_->changesTableWidget->horizontalHeader()->setStretchLastSection(true);
 }
 
@@ -82,15 +79,14 @@ void CdsConventionHistoryDialog::setupToolbar() {
     toolbar_->setIconSize(QSize(20, 20));
 
     openVersionAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Open, IconUtils::DefaultIconColor),
-        tr("Open"));
+        IconUtils::createRecoloredIcon(Icon::Open, IconUtils::DefaultIconColor), tr("Open"));
     openVersionAction_->setToolTip(tr("Open this version (read-only)"));
     openVersionAction_->setEnabled(false);
 
-    revertAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor),
-        tr("Revert"));
+    revertAction_ =
+        toolbar_->addAction(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
+                                                           IconUtils::DefaultIconColor),
+                            tr("Revert"));
     revertAction_->setToolTip(tr("Revert to this version"));
     revertAction_->setEnabled(false);
 
@@ -102,14 +98,19 @@ void CdsConventionHistoryDialog::setupToolbar() {
 }
 
 void CdsConventionHistoryDialog::setupConnections() {
-    connect(ui_->versionListWidget, &QTableWidget::itemSelectionChanged,
-            this, &CdsConventionHistoryDialog::onVersionSelected);
-    connect(openVersionAction_, &QAction::triggered,
-            this, &CdsConventionHistoryDialog::onOpenVersionClicked);
-    connect(revertAction_, &QAction::triggered,
-            this, &CdsConventionHistoryDialog::onRevertClicked);
-    connect(ui_->closeButton, &QPushButton::clicked,
-            this, [this]() { if (window()) window()->close(); });
+    connect(ui_->versionListWidget,
+            &QTableWidget::itemSelectionChanged,
+            this,
+            &CdsConventionHistoryDialog::onVersionSelected);
+    connect(openVersionAction_,
+            &QAction::triggered,
+            this,
+            &CdsConventionHistoryDialog::onOpenVersionClicked);
+    connect(revertAction_, &QAction::triggered, this, &CdsConventionHistoryDialog::onRevertClicked);
+    connect(ui_->closeButton, &QPushButton::clicked, this, [this]() {
+        if (window())
+            window()->close();
+    });
 }
 
 void CdsConventionHistoryDialog::loadHistory() {
@@ -123,22 +124,23 @@ void CdsConventionHistoryDialog::loadHistory() {
 
     QPointer<CdsConventionHistoryDialog> self = this;
 
-    using HistoryResult = std::expected<refdata::messaging::get_cds_convention_history_response, std::string>;
+    using HistoryResult =
+        std::expected<refdata::messaging::get_cds_convention_history_response, std::string>;
 
     QFuture<HistoryResult> future =
         QtConcurrent::run([self, code = code_.toStdString()]() -> HistoryResult {
-        if (!self || !self->clientManager_)
-            return std::unexpected("Dialog closed");
-        refdata::messaging::get_cds_convention_history_request request;
-        request.id = code;
-        auto result = self->clientManager_->process_authenticated_request(std::move(request));
-        if (!result) return std::unexpected(result.error());
-        return std::move(*result);
-    });
+            if (!self || !self->clientManager_)
+                return std::unexpected("Dialog closed");
+            refdata::messaging::get_cds_convention_history_request request;
+            request.id = code;
+            auto result = self->clientManager_->process_authenticated_request(std::move(request));
+            if (!result)
+                return std::unexpected(result.error());
+            return std::move(*result);
+        });
 
     auto* watcher = new QFutureWatcher<HistoryResult>(self);
-    connect(watcher, &QFutureWatcher<HistoryResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<HistoryResult>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
@@ -153,8 +155,7 @@ void CdsConventionHistoryDialog::loadHistory() {
         }
         self->versions_ = std::move(result->cds_conventions);
         self->updateVersionList();
-        emit self->statusChanged(
-            QString("Loaded %1 versions").arg(self->versions_.size()));
+        emit self->statusChanged(QString("Loaded %1 versions").arg(self->versions_.size()));
     });
     watcher->setFuture(future);
 }
@@ -170,20 +171,18 @@ void CdsConventionHistoryDialog::updateVersionList() {
         versionItem->setTextAlignment(Qt::AlignCenter);
         ui_->versionListWidget->setItem(row, 0, versionItem);
 
-        auto* recordedAtItem = new QTableWidgetItem(
-            relative_time_helper::format(version.recorded_at));
+        auto* recordedAtItem =
+            new QTableWidgetItem(relative_time_helper::format(version.recorded_at));
         ui_->versionListWidget->setItem(row, 1, recordedAtItem);
 
-        auto* modifiedByItem = new QTableWidgetItem(
-            QString::fromStdString(version.modified_by));
+        auto* modifiedByItem = new QTableWidgetItem(QString::fromStdString(version.modified_by));
         ui_->versionListWidget->setItem(row, 2, modifiedByItem);
 
-        auto* performedByItem = new QTableWidgetItem(
-            QString::fromStdString(version.performed_by));
+        auto* performedByItem = new QTableWidgetItem(QString::fromStdString(version.performed_by));
         ui_->versionListWidget->setItem(row, 3, performedByItem);
 
-        auto* commentaryItem = new QTableWidgetItem(
-            QString::fromStdString(version.change_commentary));
+        auto* commentaryItem =
+            new QTableWidgetItem(QString::fromStdString(version.change_commentary));
         ui_->versionListWidget->setItem(row, 4, commentaryItem);
     }
 
@@ -209,8 +208,7 @@ void CdsConventionHistoryDialog::onVersionSelected() {
 void CdsConventionHistoryDialog::updateChangesTable(int currentVersionIndex) {
     ui_->changesTableWidget->setRowCount(0);
 
-    if (currentVersionIndex < 0 ||
-        static_cast<size_t>(currentVersionIndex) >= versions_.size()) {
+    if (currentVersionIndex < 0 || static_cast<size_t>(currentVersionIndex) >= versions_.size()) {
         return;
     }
 
@@ -219,8 +217,7 @@ void CdsConventionHistoryDialog::updateChangesTable(int currentVersionIndex) {
     if (static_cast<size_t>(previousVersionIndex) >= versions_.size()) {
         // This is the first version, no changes to show
         ui_->changesTableWidget->insertRow(0);
-        ui_->changesTableWidget->setItem(0, 0,
-            new QTableWidgetItem("(Initial version)"));
+        ui_->changesTableWidget->setItem(0, 0, new QTableWidgetItem("(Initial version)"));
         ui_->changesTableWidget->setItem(0, 1, new QTableWidgetItem("-"));
         ui_->changesTableWidget->setItem(0, 2, new QTableWidgetItem("-"));
         return;
@@ -229,8 +226,7 @@ void CdsConventionHistoryDialog::updateChangesTable(int currentVersionIndex) {
     const auto& current = versions_[currentVersionIndex];
     const auto& previous = versions_[previousVersionIndex];
 
-    auto addChange = [this](const QString& field,
-                            const QString& oldVal, const QString& newVal) {
+    auto addChange = [this](const QString& field, const QString& oldVal, const QString& newVal) {
         int row = ui_->changesTableWidget->rowCount();
         ui_->changesTableWidget->insertRow(row);
         ui_->changesTableWidget->setItem(row, 0, new QTableWidgetItem(field));
@@ -239,9 +235,7 @@ void CdsConventionHistoryDialog::updateChangesTable(int currentVersionIndex) {
     };
 
     if (current.id != previous.id) {
-        addChange("Id",
-                  QString::fromStdString(previous.id),
-                  QString::fromStdString(current.id));
+        addChange("Id", QString::fromStdString(previous.id), QString::fromStdString(current.id));
     }
 
     if (current.calendar != previous.calendar) {
@@ -263,9 +257,8 @@ void CdsConventionHistoryDialog::updateChangesTable(int currentVersionIndex) {
     }
 
     if (current.rule != previous.rule) {
-        addChange("Rule",
-                  QString::fromStdString(previous.rule),
-                  QString::fromStdString(current.rule));
+        addChange(
+            "Rule", QString::fromStdString(previous.rule), QString::fromStdString(current.rule));
     }
 
     if (current.day_count_fraction != previous.day_count_fraction) {
@@ -281,15 +274,22 @@ void CdsConventionHistoryDialog::updateChangesTable(int currentVersionIndex) {
     }
 
     if (current.upfront_settlement_days != previous.upfront_settlement_days) {
-        addChange("Upfront Settlement Days",
-                  previous.upfront_settlement_days ? QString::number(*previous.upfront_settlement_days) : tr("(unset)"),
-                  current.upfront_settlement_days ? QString::number(*current.upfront_settlement_days) : tr("(unset)"));
+        addChange(
+            "Upfront Settlement Days",
+            previous.upfront_settlement_days ? QString::number(*previous.upfront_settlement_days) :
+                                               tr("(unset)"),
+            current.upfront_settlement_days ? QString::number(*current.upfront_settlement_days) :
+                                              tr("(unset)"));
     }
 
     if (current.last_period_day_count_fraction != previous.last_period_day_count_fraction) {
         addChange("Last Period DCF",
-                  previous.last_period_day_count_fraction ? QString::fromStdString(*previous.last_period_day_count_fraction) : QString{},
-                  current.last_period_day_count_fraction ? QString::fromStdString(*current.last_period_day_count_fraction) : QString{});
+                  previous.last_period_day_count_fraction ?
+                      QString::fromStdString(*previous.last_period_day_count_fraction) :
+                      QString{},
+                  current.last_period_day_count_fraction ?
+                      QString::fromStdString(*current.last_period_day_count_fraction) :
+                      QString{});
     }
 
     if (current.settles_accrual != previous.settles_accrual) {
@@ -307,16 +307,14 @@ void CdsConventionHistoryDialog::updateChangesTable(int currentVersionIndex) {
 
     if (ui_->changesTableWidget->rowCount() == 0) {
         ui_->changesTableWidget->insertRow(0);
-        ui_->changesTableWidget->setItem(0, 0,
-            new QTableWidgetItem("(No field changes)"));
+        ui_->changesTableWidget->setItem(0, 0, new QTableWidgetItem("(No field changes)"));
         ui_->changesTableWidget->setItem(0, 1, new QTableWidgetItem("-"));
         ui_->changesTableWidget->setItem(0, 2, new QTableWidgetItem("-"));
     }
 }
 
 void CdsConventionHistoryDialog::updateFullDetails(int versionIndex) {
-    if (versionIndex < 0 ||
-        static_cast<size_t>(versionIndex) >= versions_.size()) {
+    if (versionIndex < 0 || static_cast<size_t>(versionIndex) >= versions_.size()) {
         return;
     }
 
@@ -329,19 +327,19 @@ void CdsConventionHistoryDialog::updateFullDetails(int versionIndex) {
     ui_->ruleValue->setText(QString::fromStdString(version.rule));
     ui_->dayCountFractionValue->setText(QString::fromStdString(version.day_count_fraction));
     ui_->settlementDaysValue->setText(QString::number(version.settlement_days));
-    ui_->upfrontSettlementDaysValue->setText(version.upfront_settlement_days
-        ? QString::number(*version.upfront_settlement_days)
-        : tr("(unset)"));
-    ui_->lastPeriodDayCountFractionValue->setText(version.last_period_day_count_fraction
-        ? QString::fromStdString(*version.last_period_day_count_fraction)
-        : QString{});
+    ui_->upfrontSettlementDaysValue->setText(version.upfront_settlement_days ?
+                                                 QString::number(*version.upfront_settlement_days) :
+                                                 tr("(unset)"));
+    ui_->lastPeriodDayCountFractionValue->setText(
+        version.last_period_day_count_fraction ?
+            QString::fromStdString(*version.last_period_day_count_fraction) :
+            QString{});
     ui_->settlesAccrualValue->setText(version.settles_accrual ? tr("true") : tr("false"));
     ui_->paysAtDefaultTimeValue->setText(version.pays_at_default_time ? tr("true") : tr("false"));
     ui_->versionNumberValue->setText(QString::number(version.version));
     ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
     ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));
-    ui_->changeCommentaryValue->setText(
-        QString::fromStdString(version.change_commentary));
+    ui_->changeCommentaryValue->setText(QString::fromStdString(version.change_commentary));
 }
 
 void CdsConventionHistoryDialog::updateActionStates() {
@@ -355,20 +353,24 @@ void CdsConventionHistoryDialog::updateActionStates() {
 
 void CdsConventionHistoryDialog::onOpenVersionClicked() {
     auto selected = ui_->versionListWidget->selectedItems();
-    if (selected.isEmpty()) return;
+    if (selected.isEmpty())
+        return;
 
     int row = selected.first()->row();
-    if (static_cast<size_t>(row) >= versions_.size()) return;
+    if (static_cast<size_t>(row) >= versions_.size())
+        return;
 
     emit openVersionRequested(versions_[row], versions_[row].version);
 }
 
 void CdsConventionHistoryDialog::onRevertClicked() {
     auto selected = ui_->versionListWidget->selectedItems();
-    if (selected.isEmpty()) return;
+    if (selected.isEmpty())
+        return;
 
     int row = selected.first()->row();
-    if (static_cast<size_t>(row) >= versions_.size()) return;
+    if (static_cast<size_t>(row) >= versions_.size())
+        return;
 
     emit revertVersionRequested(versions_[row]);
 }

@@ -18,54 +18,52 @@
  *
  */
 #include "ores.qt/PortfolioExplorerMdiWindow.hpp"
-
-#include <QtConcurrent>
+#include "ores.qt/BookController.hpp"
+#include "ores.qt/ExceptionHelper.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/OreImportController.hpp"
+#include "ores.qt/PortfolioController.hpp"
+#include "ores.qt/TradeController.hpp"
+#include "ores.qt/WidgetUtils.hpp"
+#include "ores.refdata.api/domain/counterparty.hpp"
+#include "ores.refdata.api/messaging/book_protocol.hpp"
+#include "ores.refdata.api/messaging/counterparty_protocol.hpp"
+#include "ores.refdata.api/messaging/portfolio_protocol.hpp"
+#include "ores.trading.api/messaging/trade_protocol.hpp"
 #include <QApplication>
-#include <QThreadPool>
 #include <QDialog>
 #include <QDrag>
+#include <QHBoxLayout>
+#include <QHeaderView>
 #include <QLabel>
 #include <QMenu>
 #include <QMimeData>
 #include <QMouseEvent>
 #include <QPushButton>
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QHeaderView>
+#include <QThreadPool>
 #include <QToolButton>
+#include <QVBoxLayout>
+#include <QtConcurrent>
 #include <boost/uuid/uuid_io.hpp>
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/ExceptionHelper.hpp"
-#include "ores.qt/WidgetUtils.hpp"
-#include "ores.qt/BookController.hpp"
-#include "ores.qt/OreImportController.hpp"
-#include "ores.qt/PortfolioController.hpp"
-#include "ores.qt/TradeController.hpp"
-#include "ores.refdata.api/messaging/portfolio_protocol.hpp"
-#include "ores.refdata.api/messaging/book_protocol.hpp"
-#include "ores.refdata.api/messaging/counterparty_protocol.hpp"
-#include "ores.refdata.api/domain/counterparty.hpp"
-#include "ores.trading.api/messaging/trade_protocol.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-PortfolioExplorerMdiWindow::PortfolioExplorerMdiWindow(
-    ClientManager* clientManager,
-    BookController* bookController,
-    PortfolioController* portfolioController,
-    TradeController* tradeController,
-    OreImportController* oreImportController,
-    const QString& username,
-    QWidget* parent)
-    : EntityListMdiWindow(parent),
-      clientManager_(clientManager),
-      username_(username),
-      bookController_(bookController),
-      oreImportController_(oreImportController),
-      portfolioController_(portfolioController),
-      tradeController_(tradeController) {
+PortfolioExplorerMdiWindow::PortfolioExplorerMdiWindow(ClientManager* clientManager,
+                                                       BookController* bookController,
+                                                       PortfolioController* portfolioController,
+                                                       TradeController* tradeController,
+                                                       OreImportController* oreImportController,
+                                                       const QString& username,
+                                                       QWidget* parent)
+    : EntityListMdiWindow(parent)
+    , clientManager_(clientManager)
+    , username_(username)
+    , bookController_(bookController)
+    , oreImportController_(oreImportController)
+    , portfolioController_(portfolioController)
+    , tradeController_(tradeController) {
 
     setupUi();
     setupConnections();
@@ -99,50 +97,41 @@ void PortfolioExplorerMdiWindow::setupToolbar() {
     toolbar_->setIconSize(QSize(20, 20));
 
     reloadAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::ArrowClockwise, IconUtils::DefaultIconColor),
+        IconUtils::createRecoloredIcon(Icon::ArrowClockwise, IconUtils::DefaultIconColor),
         tr("Reload"));
     reloadAction_->setToolTip(tr("Refresh portfolio/book tree"));
-    connect(reloadAction_, &QAction::triggered, this,
-            &EntityListMdiWindow::reload);
+    connect(reloadAction_, &QAction::triggered, this, &EntityListMdiWindow::reload);
 
-    initializeStaleIndicator(reloadAction_,
-        IconUtils::iconPath(Icon::ArrowClockwise));
+    initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowClockwise));
 
     toolbar_->addSeparator();
 
     addAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor),
-        tr("Add"));
+        IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor), tr("Add"));
     addAction_->setToolTip(tr("Add new portfolio or book"));
-    connect(addAction_, &QAction::triggered,
-            this, &PortfolioExplorerMdiWindow::onAddRequested);
+    connect(addAction_, &QAction::triggered, this, &PortfolioExplorerMdiWindow::onAddRequested);
 
     toolbar_->addSeparator();
 
     editAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Edit, IconUtils::DefaultIconColor),
-        tr("Edit"));
+        IconUtils::createRecoloredIcon(Icon::Edit, IconUtils::DefaultIconColor), tr("Edit"));
     editAction_->setToolTip(tr("Edit selected item"));
     editAction_->setEnabled(false);
-    connect(editAction_, &QAction::triggered,
-            this, &PortfolioExplorerMdiWindow::onEditSelected);
+    connect(editAction_, &QAction::triggered, this, &PortfolioExplorerMdiWindow::onEditSelected);
 
     deleteAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor),
-        tr("Delete"));
+        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor), tr("Delete"));
     deleteAction_->setToolTip(tr("Delete selected item"));
     deleteAction_->setEnabled(false);
-    connect(deleteAction_, &QAction::triggered,
-            this, &PortfolioExplorerMdiWindow::onDeleteSelected);
+    connect(
+        deleteAction_, &QAction::triggered, this, &PortfolioExplorerMdiWindow::onDeleteSelected);
 
     historyAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor),
-        tr("History"));
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor), tr("History"));
     historyAction_->setToolTip(tr("View history of selected item"));
     historyAction_->setEnabled(false);
-    connect(historyAction_, &QAction::triggered,
-            this, &PortfolioExplorerMdiWindow::onHistorySelected);
+    connect(
+        historyAction_, &QAction::triggered, this, &PortfolioExplorerMdiWindow::onHistorySelected);
 
     toolbar_->addSeparator();
 
@@ -213,45 +202,52 @@ void PortfolioExplorerMdiWindow::setupTradePanel() {
     splitter_->setStretchFactor(0, 1);
     splitter_->setStretchFactor(1, 3);
 
-    initializeTableSettings(tradeTableView_, tradeModel_,
-        "PortfolioExplorer", {}, {1100, 600}, 1, splitter_);
+    initializeTableSettings(
+        tradeTableView_, tradeModel_, "PortfolioExplorer", {}, {1100, 600}, 1, splitter_);
 }
 
 void PortfolioExplorerMdiWindow::setupConnections() {
     // Tree selection and context menu
-    connect(treeView_->selectionModel(), &QItemSelectionModel::selectionChanged,
-            this, &PortfolioExplorerMdiWindow::onTreeSelectionChanged);
-    connect(treeView_, &QTreeView::customContextMenuRequested,
-            this, &PortfolioExplorerMdiWindow::onShowContextMenu);
+    connect(treeView_->selectionModel(),
+            &QItemSelectionModel::selectionChanged,
+            this,
+            &PortfolioExplorerMdiWindow::onTreeSelectionChanged);
+    connect(treeView_,
+            &QTreeView::customContextMenuRequested,
+            this,
+            &PortfolioExplorerMdiWindow::onShowContextMenu);
 
     // Trade double-click opens detail
-    connect(tradeTableView_, &QTableView::doubleClicked,
-            this, &PortfolioExplorerMdiWindow::onTradeDoubleClicked);
+    connect(tradeTableView_,
+            &QTableView::doubleClicked,
+            this,
+            &PortfolioExplorerMdiWindow::onTradeDoubleClicked);
 
     // Trade model signals
-    connect(tradeModel_, &PortfolioExplorerTradeModel::dataLoaded,
-            this, [this]() {
+    connect(tradeModel_, &PortfolioExplorerTradeModel::dataLoaded, this, [this]() {
         endLoading();
-        paginationWidget_->update_state(
-            static_cast<std::uint32_t>(tradeModel_->rowCount()),
-            tradeModel_->total_available_count());
+        paginationWidget_->update_state(static_cast<std::uint32_t>(tradeModel_->rowCount()),
+                                        tradeModel_->total_available_count());
     });
-    connect(tradeModel_, &PortfolioExplorerTradeModel::loadError,
-            this, [this](const QString&, const QString&) { endLoading(); });
+    connect(tradeModel_,
+            &PortfolioExplorerTradeModel::loadError,
+            this,
+            [this](const QString&, const QString&) { endLoading(); });
 
     // Pagination signals
-    connect(paginationWidget_, &PaginationWidget::page_requested,
-            this, [this](std::uint32_t offset, std::uint32_t limit) {
-        tradeModel_->load_page(offset, limit);
-    });
+    connect(paginationWidget_,
+            &PaginationWidget::page_requested,
+            this,
+            [this](std::uint32_t offset, std::uint32_t limit) {
+                tradeModel_->load_page(offset, limit);
+            });
 
-    connect(paginationWidget_, &PaginationWidget::page_size_changed,
-            this, [this](std::uint32_t /*size*/) {
-        tradeModel_->refresh();
-    });
+    connect(paginationWidget_,
+            &PaginationWidget::page_size_changed,
+            this,
+            [this](std::uint32_t /*size*/) { tradeModel_->refresh(); });
 
-    connect(paginationWidget_, &PaginationWidget::load_all_requested,
-            this, [this]() {
+    connect(paginationWidget_, &PaginationWidget::load_all_requested, this, [this]() {
         const auto total = tradeModel_->total_available_count();
         if (total > 0 && total <= 1000)
             tradeModel_->load_page(0, total);
@@ -259,25 +255,32 @@ void PortfolioExplorerMdiWindow::setupConnections() {
 
     // Async watchers
     portfolioWatcher_ = new QFutureWatcher<PortfolioFetchResult>(this);
-    connect(portfolioWatcher_, &QFutureWatcher<PortfolioFetchResult>::finished,
-            this, &PortfolioExplorerMdiWindow::onPortfoliosLoaded);
+    connect(portfolioWatcher_,
+            &QFutureWatcher<PortfolioFetchResult>::finished,
+            this,
+            &PortfolioExplorerMdiWindow::onPortfoliosLoaded);
 
     bookWatcher_ = new QFutureWatcher<BookFetchResult>(this);
-    connect(bookWatcher_, &QFutureWatcher<BookFetchResult>::finished,
-            this, &PortfolioExplorerMdiWindow::onBooksLoaded);
+    connect(bookWatcher_,
+            &QFutureWatcher<BookFetchResult>::finished,
+            this,
+            &PortfolioExplorerMdiWindow::onBooksLoaded);
 
     counterpartyWatcher_ = new QFutureWatcher<CounterpartyFetchResult>(this);
     connect(counterpartyWatcher_,
             &QFutureWatcher<CounterpartyFetchResult>::finished,
-            this, &PortfolioExplorerMdiWindow::onCounterpartiesLoaded);
+            this,
+            &PortfolioExplorerMdiWindow::onCounterpartiesLoaded);
 }
 
 void PortfolioExplorerMdiWindow::setupEventSubscriptions() {
     if (!clientManager_)
         return;
 
-    connect(clientManager_, &ClientManager::notificationReceived,
-            this, &PortfolioExplorerMdiWindow::onNotificationReceived);
+    connect(clientManager_,
+            &ClientManager::notificationReceived,
+            this,
+            &PortfolioExplorerMdiWindow::onNotificationReceived);
 
     auto subscribe_all = [this]() {
         clientManager_->subscribeToEvent(std::string{book_event});
@@ -285,11 +288,10 @@ void PortfolioExplorerMdiWindow::setupEventSubscriptions() {
         clientManager_->subscribeToEvent(std::string{trade_event});
     };
 
-    connect(clientManager_, &ClientManager::loggedIn,
-            this, [subscribe_all]() { subscribe_all(); });
+    connect(clientManager_, &ClientManager::loggedIn, this, [subscribe_all]() { subscribe_all(); });
 
-    connect(clientManager_, &ClientManager::reconnected,
-            this, [subscribe_all]() { subscribe_all(); });
+    connect(
+        clientManager_, &ClientManager::reconnected, this, [subscribe_all]() { subscribe_all(); });
 
     if (clientManager_->isConnected())
         subscribe_all();
@@ -305,98 +307,87 @@ void PortfolioExplorerMdiWindow::doReload() {
     books_loaded_ = false;
 
     BOOST_LOG_SEV(lg(), info) << "doReload: submitting tasks. Thread pool: "
-        << QThreadPool::globalInstance()->activeThreadCount() << " active / "
-        << QThreadPool::globalInstance()->maxThreadCount() << " max";
+                              << QThreadPool::globalInstance()->activeThreadCount() << " active / "
+                              << QThreadPool::globalInstance()->maxThreadCount() << " max";
 
     // Fetch portfolios
     QPointer<PortfolioExplorerMdiWindow> self = this;
-    portfolioWatcher_->setFuture(
-        QtConcurrent::run([self]() -> PortfolioFetchResult {
-            BOOST_LOG_SEV(lg(), info) << "DIAG: portfolio task started on worker thread";
-            return exception_helper::wrap_async_fetch<PortfolioFetchResult>(
-                [&]() -> PortfolioFetchResult {
-                    if (!self || !self->clientManager_)
-                        return {.success = false, .portfolios = {},
-                                .error_message = "Model destroyed"};
+    portfolioWatcher_->setFuture(QtConcurrent::run([self]() -> PortfolioFetchResult {
+        BOOST_LOG_SEV(lg(), info) << "DIAG: portfolio task started on worker thread";
+        return exception_helper::wrap_async_fetch<PortfolioFetchResult>(
+            [&]() -> PortfolioFetchResult {
+                if (!self || !self->clientManager_)
+                    return {.success = false, .portfolios = {}, .error_message = "Model destroyed"};
 
-                    refdata::messaging::get_portfolios_request req;
-                    req.limit = 1000;
-                    BOOST_LOG_SEV(lg(), info) << "DIAG: portfolio sending NATS request";
-                    auto result = self->clientManager_->
-                        process_authenticated_request(std::move(req));
-                    BOOST_LOG_SEV(lg(), info) << "DIAG: portfolio NATS response received";
-                    if (!result)
-                        return {.success = false, .portfolios = {},
-                                .error_message = QString::fromStdString(
-                                    "Failed to fetch portfolios: " +
-                                    result.error())};
+                refdata::messaging::get_portfolios_request req;
+                req.limit = 1000;
+                BOOST_LOG_SEV(lg(), info) << "DIAG: portfolio sending NATS request";
+                auto result = self->clientManager_->process_authenticated_request(std::move(req));
+                BOOST_LOG_SEV(lg(), info) << "DIAG: portfolio NATS response received";
+                if (!result)
+                    return {.success = false,
+                            .portfolios = {},
+                            .error_message = QString::fromStdString("Failed to fetch portfolios: " +
+                                                                    result.error())};
 
-                    return {.success = true,
-                            .portfolios = std::move(result->portfolios),
-                            .error_message = {}};
-                }, "portfolios");
-        }));
+                return {.success = true,
+                        .portfolios = std::move(result->portfolios),
+                        .error_message = {}};
+            },
+            "portfolios");
+    }));
 
     // Fetch books
-    bookWatcher_->setFuture(
-        QtConcurrent::run([self]() -> BookFetchResult {
-            BOOST_LOG_SEV(lg(), info) << "DIAG: book task started on worker thread";
-            return exception_helper::wrap_async_fetch<BookFetchResult>(
-                [&]() -> BookFetchResult {
-                    if (!self || !self->clientManager_)
-                        return {.success = false, .books = {},
-                                .error_message = "Model destroyed"};
+    bookWatcher_->setFuture(QtConcurrent::run([self]() -> BookFetchResult {
+        BOOST_LOG_SEV(lg(), info) << "DIAG: book task started on worker thread";
+        return exception_helper::wrap_async_fetch<BookFetchResult>(
+            [&]() -> BookFetchResult {
+                if (!self || !self->clientManager_)
+                    return {.success = false, .books = {}, .error_message = "Model destroyed"};
 
-                    refdata::messaging::get_books_request req;
-                    BOOST_LOG_SEV(lg(), info) << "DIAG: books sending NATS request";
-                    auto result = self->clientManager_->
-                        process_authenticated_request(std::move(req));
-                    BOOST_LOG_SEV(lg(), info) << "DIAG: books NATS response received";
-                    if (!result)
-                        return {.success = false, .books = {},
-                                .error_message = QString::fromStdString(
-                                    "Failed to fetch books: " +
-                                    result.error())};
+                refdata::messaging::get_books_request req;
+                BOOST_LOG_SEV(lg(), info) << "DIAG: books sending NATS request";
+                auto result = self->clientManager_->process_authenticated_request(std::move(req));
+                BOOST_LOG_SEV(lg(), info) << "DIAG: books NATS response received";
+                if (!result)
+                    return {.success = false,
+                            .books = {},
+                            .error_message =
+                                QString::fromStdString("Failed to fetch books: " + result.error())};
 
-                    return {.success = true,
-                            .books = std::move(result->books),
-                            .error_message = {}};
-                }, "books");
-        }));
+                return {.success = true, .books = std::move(result->books), .error_message = {}};
+            },
+            "books");
+    }));
 
     // Fetch counterparties for display
-    counterpartyWatcher_->setFuture(
-        QtConcurrent::run([self]() -> CounterpartyFetchResult {
-            BOOST_LOG_SEV(lg(), info) << "DIAG: counterparty task started on worker thread";
-            return exception_helper::wrap_async_fetch<CounterpartyFetchResult>(
-                [&]() -> CounterpartyFetchResult {
-                    if (!self || !self->clientManager_)
-                        return {.success = false, .cpty_map = {},
-                                .error_message = "Model destroyed"};
+    counterpartyWatcher_->setFuture(QtConcurrent::run([self]() -> CounterpartyFetchResult {
+        BOOST_LOG_SEV(lg(), info) << "DIAG: counterparty task started on worker thread";
+        return exception_helper::wrap_async_fetch<CounterpartyFetchResult>(
+            [&]() -> CounterpartyFetchResult {
+                if (!self || !self->clientManager_)
+                    return {.success = false, .cpty_map = {}, .error_message = "Model destroyed"};
 
-                    refdata::messaging::get_counterparties_request req;
-                    req.limit = 1000;
-                    BOOST_LOG_SEV(lg(), info) << "DIAG: counterparties sending NATS request";
-                    auto result = self->clientManager_->
-                        process_authenticated_request(std::move(req));
-                    BOOST_LOG_SEV(lg(), info) << "DIAG: counterparties NATS response received";
-                    if (!result)
-                        return {.success = false, .cpty_map = {},
-                                .error_message = QString::fromStdString(
-                                    "Failed to fetch counterparties: " +
-                                    result.error())};
+                refdata::messaging::get_counterparties_request req;
+                req.limit = 1000;
+                BOOST_LOG_SEV(lg(), info) << "DIAG: counterparties sending NATS request";
+                auto result = self->clientManager_->process_authenticated_request(std::move(req));
+                BOOST_LOG_SEV(lg(), info) << "DIAG: counterparties NATS response received";
+                if (!result)
+                    return {.success = false,
+                            .cpty_map = {},
+                            .error_message = QString::fromStdString(
+                                "Failed to fetch counterparties: " + result.error())};
 
-                    std::unordered_map<std::string, CounterpartyInfo> cpty_map;
-                    for (const auto& c : result->counterparties) {
-                        cpty_map[boost::uuids::to_string(c.id)] = {
-                            .short_code = c.short_code,
-                            .full_name = c.full_name};
-                    }
-                    return {.success = true,
-                            .cpty_map = std::move(cpty_map),
-                            .error_message = {}};
-                }, "counterparties");
-        }));
+                std::unordered_map<std::string, CounterpartyInfo> cpty_map;
+                for (const auto& c : result->counterparties) {
+                    cpty_map[boost::uuids::to_string(c.id)] = {.short_code = c.short_code,
+                                                               .full_name = c.full_name};
+                }
+                return {.success = true, .cpty_map = std::move(cpty_map), .error_message = {}};
+            },
+            "counterparties");
+    }));
 
     BOOST_LOG_SEV(lg(), info) << "doReload: all tasks submitted";
 }
@@ -404,15 +395,14 @@ void PortfolioExplorerMdiWindow::doReload() {
 void PortfolioExplorerMdiWindow::onPortfoliosLoaded() {
     const auto result = portfolioWatcher_->result();
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to load portfolios: "
-                                   << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to load portfolios: " << result.error_message.toStdString();
         return;
     }
 
     portfolios_ = std::move(result.portfolios);
     portfolios_loaded_ = true;
-    BOOST_LOG_SEV(lg(), debug) << "Loaded " << portfolios_.size()
-                               << " portfolios.";
+    BOOST_LOG_SEV(lg(), debug) << "Loaded " << portfolios_.size() << " portfolios.";
 
     if (portfolios_loaded_ && books_loaded_)
         rebuildTree();
@@ -421,8 +411,8 @@ void PortfolioExplorerMdiWindow::onPortfoliosLoaded() {
 void PortfolioExplorerMdiWindow::onBooksLoaded() {
     const auto result = bookWatcher_->result();
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to load books: "
-                                   << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to load books: " << result.error_message.toStdString();
         return;
     }
 
@@ -437,20 +427,19 @@ void PortfolioExplorerMdiWindow::onBooksLoaded() {
 void PortfolioExplorerMdiWindow::onCounterpartiesLoaded() {
     const auto result = counterpartyWatcher_->result();
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to load counterparties: "
-                                   << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to load counterparties: " << result.error_message.toStdString();
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Loaded " << result.cpty_map.size()
-                               << " counterparties.";
+    BOOST_LOG_SEV(lg(), debug) << "Loaded " << result.cpty_map.size() << " counterparties.";
     tradeModel_->set_counterparty_map(
         // NOLINTNEXTLINE(performance-move-const-arg)
         std::unordered_map<std::string, CounterpartyInfo>(result.cpty_map));
 }
 
-void PortfolioExplorerMdiWindow::collectBookUuids(
-    const QModelIndex& parent, QList<boost::uuids::uuid>& uuids) {
+void PortfolioExplorerMdiWindow::collectBookUuids(const QModelIndex& parent,
+                                                  QList<boost::uuids::uuid>& uuids) {
     for (int r = 0; r < treeModel_->rowCount(parent); ++r) {
         auto idx = treeModel_->index(r, 0, parent);
         const auto* node = treeModel_->node_from_index(idx);
@@ -473,8 +462,7 @@ void PortfolioExplorerMdiWindow::rebuildTree() {
     }
     countWatchers_.clear();
 
-    const QString party_name = clientManager_
-        ? clientManager_->currentPartyName() : tr("Party");
+    const QString party_name = clientManager_ ? clientManager_->currentPartyName() : tr("Party");
     treeModel_->load(party_name, portfolios_, books_);
     treeView_->expandAll();
     updateBreadcrumb(nullptr);
@@ -489,28 +477,29 @@ void PortfolioExplorerMdiWindow::rebuildTree() {
         auto* watcher = new QFutureWatcher<CountResult>(this);
         countWatchers_.append(watcher);
 
-        connect(watcher, &QFutureWatcher<CountResult>::finished, this,
-            [this, watcher]() {
-                countWatchers_.removeOne(watcher);
-                const auto result = watcher->result();
-                if (result.success)
-                    treeModel_->set_trade_count(result.book_id, result.count);
-                watcher->deleteLater();
-            });
+        connect(watcher, &QFutureWatcher<CountResult>::finished, this, [this, watcher]() {
+            countWatchers_.removeOne(watcher);
+            const auto result = watcher->result();
+            if (result.success)
+                treeModel_->set_trade_count(result.book_id, result.count);
+            watcher->deleteLater();
+        });
 
         const auto bid = book_id;
         watcher->setFuture(QtConcurrent::run([self, bid]() -> CountResult {
             return exception_helper::wrap_async_fetch<CountResult>(
                 [&]() -> CountResult {
                     if (!self || !self->clientManager_)
-                        return {.book_id = bid, .count = 0,
+                        return {.book_id = bid,
+                                .count = 0,
                                 .success = false,
                                 .error_message = "Destroyed",
                                 .error_details = {}};
 
                     auto result = self->clientManager_->listTrades(bid, 0, 0);
                     if (!result)
-                        return {.book_id = bid, .count = 0,
+                        return {.book_id = bid,
+                                .count = 0,
                                 .success = false,
                                 .error_message = "Failed to get count",
                                 .error_details = {}};
@@ -520,13 +509,14 @@ void PortfolioExplorerMdiWindow::rebuildTree() {
                             .success = true,
                             .error_message = {},
                             .error_details = {}};
-                }, "book trade count");
+                },
+                "book trade count");
         }));
     }
 }
 
-void PortfolioExplorerMdiWindow::onTreeSelectionChanged(
-    const QItemSelection& selected, const QItemSelection& /*deselected*/) {
+void PortfolioExplorerMdiWindow::onTreeSelectionChanged(const QItemSelection& selected,
+                                                        const QItemSelection& /*deselected*/) {
 
     if (selected.isEmpty()) {
         tradeModel_->set_filter(std::nullopt, std::nullopt);
@@ -548,8 +538,7 @@ void PortfolioExplorerMdiWindow::onTreeSelectionChanged(
     updateActionStates();
 }
 
-void PortfolioExplorerMdiWindow::updateBreadcrumb(
-    const PortfolioTreeNode* node) {
+void PortfolioExplorerMdiWindow::updateBreadcrumb(const PortfolioTreeNode* node) {
     // Clear all existing breadcrumb widgets
     QLayout* layout = breadcrumbBar_->layout();
     while (QLayoutItem* item = layout->takeAt(0)) {
@@ -560,8 +549,7 @@ void PortfolioExplorerMdiWindow::updateBreadcrumb(
 
     auto* bl = static_cast<QHBoxLayout*>(layout);
 
-    auto add_button = [&](const QString& label, bool bold,
-                          auto on_click) {
+    auto add_button = [&](const QString& label, bool bold, auto on_click) {
         auto* btn = new QToolButton(breadcrumbBar_);
         btn->setText(label);
         btn->setAutoRaise(true);
@@ -581,8 +569,7 @@ void PortfolioExplorerMdiWindow::updateBreadcrumb(
 
     if (!node) {
         // No selection: just a bold "Trades" label
-        add_button(tr("Trades"), true,
-            [this]() { treeView_->clearSelection(); });
+        add_button(tr("Trades"), true, [this]() { treeView_->clearSelection(); });
         bl->addStretch();
         return;
     }
@@ -605,8 +592,7 @@ void PortfolioExplorerMdiWindow::updateBreadcrumb(
     }
 
     // "Trades" root — always clears selection
-    add_button(tr("Trades"), false,
-        [this]() { treeView_->clearSelection(); });
+    add_button(tr("Trades"), false, [this]() { treeView_->clearSelection(); });
 
     for (int i = 0; i < path.size(); ++i) {
         add_separator();
@@ -623,21 +609,18 @@ void PortfolioExplorerMdiWindow::updateBreadcrumb(
             name = QString::fromStdString(n->book.name);
 
         const QModelIndex idx = indices[i];
-        add_button(name, is_last,
-            [this, idx]() { treeView_->setCurrentIndex(idx); });
+        add_button(name, is_last, [this, idx]() { treeView_->setCurrentIndex(idx); });
     }
 
     bl->addStretch();
 }
 
-void PortfolioExplorerMdiWindow::onNotificationReceived(
-    const QString& eventType,
-    const QDateTime& /*timestamp*/,
-    const QStringList& /*entityIds*/,
-    const QString& /*tenantId*/) {
+void PortfolioExplorerMdiWindow::onNotificationReceived(const QString& eventType,
+                                                        const QDateTime& /*timestamp*/,
+                                                        const QStringList& /*entityIds*/,
+                                                        const QString& /*tenantId*/) {
 
-    if (eventType == QLatin1String(book_event) ||
-        eventType == QLatin1String(portfolio_event) ||
+    if (eventType == QLatin1String(book_event) || eventType == QLatin1String(portfolio_event) ||
         eventType == QLatin1String(trade_event)) {
         markAsStale();
     }
@@ -645,9 +628,8 @@ void PortfolioExplorerMdiWindow::onNotificationReceived(
 
 void PortfolioExplorerMdiWindow::updateActionStates() {
     const auto* node = treeModel_->node_from_index(treeView_->currentIndex());
-    const bool editable = node &&
-        (node->kind == PortfolioTreeNode::Kind::Portfolio ||
-         node->kind == PortfolioTreeNode::Kind::Book);
+    const bool editable = node && (node->kind == PortfolioTreeNode::Kind::Portfolio ||
+                                   node->kind == PortfolioTreeNode::Kind::Book);
 
     editAction_->setEnabled(editable);
     historyAction_->setEnabled(editable);
@@ -662,10 +644,12 @@ void PortfolioExplorerMdiWindow::onAddRequested() {
     auto* row = new QHBoxLayout;
     auto* btnPortfolio = new QPushButton(
         IconUtils::createRecoloredIcon(Icon::Briefcase, IconUtils::DefaultIconColor),
-        tr("Portfolio"), &dlg);
-    auto* btnBook = new QPushButton(
-        IconUtils::createRecoloredIcon(Icon::BookOpen, IconUtils::DefaultIconColor),
-        tr("Book"), &dlg);
+        tr("Portfolio"),
+        &dlg);
+    auto* btnBook =
+        new QPushButton(IconUtils::createRecoloredIcon(Icon::BookOpen, IconUtils::DefaultIconColor),
+                        tr("Book"),
+                        &dlg);
     auto* btnCancel = new QPushButton(tr("Cancel"), &dlg);
     row->addWidget(btnPortfolio);
     row->addWidget(btnBook);
@@ -673,12 +657,13 @@ void PortfolioExplorerMdiWindow::onAddRequested() {
     row->addWidget(btnCancel);
     layout->addLayout(row);
 
-    connect(btnPortfolio, &QPushButton::clicked, &dlg, [&dlg]{ dlg.done(1); });
-    connect(btnBook,      &QPushButton::clicked, &dlg, [&dlg]{ dlg.done(2); });
-    connect(btnCancel,    &QPushButton::clicked, &dlg, &QDialog::reject);
+    connect(btnPortfolio, &QPushButton::clicked, &dlg, [&dlg] { dlg.done(1); });
+    connect(btnBook, &QPushButton::clicked, &dlg, [&dlg] { dlg.done(2); });
+    connect(btnCancel, &QPushButton::clicked, &dlg, &QDialog::reject);
 
     const int r = dlg.exec();
-    if (r != 1 && r != 2) return;
+    if (r != 1 && r != 2)
+        return;
 
     // Derive context portfolio from current tree selection
     const auto* node = treeModel_->node_from_index(treeView_->currentIndex());
@@ -705,7 +690,8 @@ void PortfolioExplorerMdiWindow::onAddRequested() {
 
 void PortfolioExplorerMdiWindow::onEditSelected() {
     const auto* node = treeModel_->node_from_index(treeView_->currentIndex());
-    if (!node) return;
+    if (!node)
+        return;
     if (node->kind == PortfolioTreeNode::Kind::Portfolio && portfolioController_)
         portfolioController_->openEdit(node->portfolio);
     else if (node->kind == PortfolioTreeNode::Kind::Book && bookController_)
@@ -714,7 +700,8 @@ void PortfolioExplorerMdiWindow::onEditSelected() {
 
 void PortfolioExplorerMdiWindow::onDeleteSelected() {
     const auto* node = treeModel_->node_from_index(treeView_->currentIndex());
-    if (!node) return;
+    if (!node)
+        return;
     if (node->kind == PortfolioTreeNode::Kind::Portfolio && portfolioController_)
         portfolioController_->openEdit(node->portfolio);
     else if (node->kind == PortfolioTreeNode::Kind::Book && bookController_)
@@ -723,7 +710,8 @@ void PortfolioExplorerMdiWindow::onDeleteSelected() {
 
 void PortfolioExplorerMdiWindow::onHistorySelected() {
     const auto* node = treeModel_->node_from_index(treeView_->currentIndex());
-    if (!node) return;
+    if (!node)
+        return;
     if (node->kind == PortfolioTreeNode::Kind::Portfolio && portfolioController_)
         portfolioController_->openHistory(node->portfolio);
     else if (node->kind == PortfolioTreeNode::Kind::Book && bookController_)
@@ -731,13 +719,11 @@ void PortfolioExplorerMdiWindow::onHistorySelected() {
 }
 
 void PortfolioExplorerMdiWindow::onShowContextMenu(const QPoint& pos) {
-    const auto idx   = treeView_->indexAt(pos);
+    const auto idx = treeView_->indexAt(pos);
     const auto* node = treeModel_->node_from_index(idx);
 
-    const bool is_portfolio = node &&
-        node->kind == PortfolioTreeNode::Kind::Portfolio;
-    const bool is_book = node &&
-        node->kind == PortfolioTreeNode::Kind::Book;
+    const bool is_portfolio = node && node->kind == PortfolioTreeNode::Kind::Portfolio;
+    const bool is_book = node && node->kind == PortfolioTreeNode::Kind::Book;
 
     QMenu menu(this);
     menu.addAction(addAction_);
@@ -770,79 +756,77 @@ bool PortfolioExplorerMdiWindow::eventFilter(QObject* obj, QEvent* event) {
         return QObject::eventFilter(obj, event);
 
     switch (event->type()) {
-    case QEvent::MouseButtonPress: {
-        auto* me = static_cast<QMouseEvent*>(event);
-        if (me->button() == Qt::LeftButton)
-            dragStartPos_ = me->pos();
-        break;
-    }
-    case QEvent::MouseMove: {
-        auto* me = static_cast<QMouseEvent*>(event);
-        if (!(me->buttons() & Qt::LeftButton))
+        case QEvent::MouseButtonPress: {
+            auto* me = static_cast<QMouseEvent*>(event);
+            if (me->button() == Qt::LeftButton)
+                dragStartPos_ = me->pos();
             break;
-        if ((me->pos() - dragStartPos_).manhattanLength() <
-                QApplication::startDragDistance())
-            break;
+        }
+        case QEvent::MouseMove: {
+            auto* me = static_cast<QMouseEvent*>(event);
+            if (!(me->buttons() & Qt::LeftButton))
+                break;
+            if ((me->pos() - dragStartPos_).manhattanLength() < QApplication::startDragDistance())
+                break;
 
-        const auto source_idx = treeView_->indexAt(dragStartPos_);
-        const auto* source = treeModel_->node_from_index(source_idx);
-        if (!source || source->kind == PortfolioTreeNode::Kind::Party)
-            break;
+            const auto source_idx = treeView_->indexAt(dragStartPos_);
+            const auto* source = treeModel_->node_from_index(source_idx);
+            if (!source || source->kind == PortfolioTreeNode::Kind::Party)
+                break;
 
-        dragSourceIndex_ = source_idx;
-        auto* drag = new QDrag(treeView_);
-        auto* mime = new QMimeData;
-        mime->setText(QStringLiteral("ores_tree_drag"));
-        drag->setMimeData(mime);
-        drag->exec(Qt::MoveAction);
-        return true;
-    }
-    case QEvent::DragEnter: {
-        auto* de = static_cast<QDragEnterEvent*>(event);
-        if (de->mimeData()->hasText() &&
-                de->mimeData()->text() == QLatin1String("ores_tree_drag"))
-            de->acceptProposedAction();
-        else
-            de->ignore();
-        return true;
-    }
-    case QEvent::DragMove: {
-        auto* dm = static_cast<QDragMoveEvent*>(event);
-        if (!dm->mimeData()->hasText() ||
-                dm->mimeData()->text() != QLatin1String("ores_tree_drag")) {
-            dm->ignore();
+            dragSourceIndex_ = source_idx;
+            auto* drag = new QDrag(treeView_);
+            auto* mime = new QMimeData;
+            mime->setText(QStringLiteral("ores_tree_drag"));
+            drag->setMimeData(mime);
+            drag->exec(Qt::MoveAction);
             return true;
         }
-        const auto target_idx = treeView_->indexAt(dm->position().toPoint());
-        const auto* target = treeModel_->node_from_index(target_idx);
-        if (target && target->kind == PortfolioTreeNode::Kind::Portfolio &&
+        case QEvent::DragEnter: {
+            auto* de = static_cast<QDragEnterEvent*>(event);
+            if (de->mimeData()->hasText() &&
+                de->mimeData()->text() == QLatin1String("ores_tree_drag"))
+                de->acceptProposedAction();
+            else
+                de->ignore();
+            return true;
+        }
+        case QEvent::DragMove: {
+            auto* dm = static_cast<QDragMoveEvent*>(event);
+            if (!dm->mimeData()->hasText() ||
+                dm->mimeData()->text() != QLatin1String("ores_tree_drag")) {
+                dm->ignore();
+                return true;
+            }
+            const auto target_idx = treeView_->indexAt(dm->position().toPoint());
+            const auto* target = treeModel_->node_from_index(target_idx);
+            if (target && target->kind == PortfolioTreeNode::Kind::Portfolio &&
                 target_idx != dragSourceIndex_)
-            dm->acceptProposedAction();
-        else
-            dm->ignore();
-        return true;
-    }
-    case QEvent::Drop: {
-        auto* de = static_cast<QDropEvent*>(event);
-        de->acceptProposedAction();
-        const auto target_idx = treeView_->indexAt(de->position().toPoint());
-        const auto* target = treeModel_->node_from_index(target_idx);
-        const auto* source = treeModel_->node_from_index(dragSourceIndex_);
-        if (source && target &&
-                target->kind == PortfolioTreeNode::Kind::Portfolio &&
+                dm->acceptProposedAction();
+            else
+                dm->ignore();
+            return true;
+        }
+        case QEvent::Drop: {
+            auto* de = static_cast<QDropEvent*>(event);
+            de->acceptProposedAction();
+            const auto target_idx = treeView_->indexAt(de->position().toPoint());
+            const auto* target = treeModel_->node_from_index(target_idx);
+            const auto* source = treeModel_->node_from_index(dragSourceIndex_);
+            if (source && target && target->kind == PortfolioTreeNode::Kind::Portfolio &&
                 target_idx != dragSourceIndex_)
-            onReparentRequested(source, target->portfolio.id);
-        dragSourceIndex_ = {};
-        return true;
-    }
-    default:
-        break;
+                onReparentRequested(source, target->portfolio.id);
+            dragSourceIndex_ = {};
+            return true;
+        }
+        default:
+            break;
     }
     return QObject::eventFilter(obj, event);
 }
 
-void PortfolioExplorerMdiWindow::onReparentRequested(
-    const PortfolioTreeNode* node, const boost::uuids::uuid& newParentId) {
+void PortfolioExplorerMdiWindow::onReparentRequested(const PortfolioTreeNode* node,
+                                                     const boost::uuids::uuid& newParentId) {
 
     if (node->kind == PortfolioTreeNode::Kind::Portfolio && portfolioController_) {
         auto portfolio = node->portfolio;

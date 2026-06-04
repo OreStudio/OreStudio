@@ -18,10 +18,9 @@
  *
  */
 #include "ores.qt/CommandLineParser.hpp"
-
-#include <optional>
-#include <QSettings>
 #include "ores.qt/TelemetrySettingsDialog.hpp"
+#include <QSettings>
+#include <optional>
 
 namespace ores::qt {
 
@@ -35,63 +34,35 @@ void CommandLineParser::setupOptions() {
     parser_.addVersionOption();
 
     // Logging options
-    parser_.addOption({
-        {"e", "log-enabled"},
-        "Generate a log file."
-    });
+    parser_.addOption({{"e", "log-enabled"}, "Generate a log file."});
 
-    parser_.addOption({
-        {"l", "log-level"},
-        "What level to use for logging. Valid values: trace, debug, info, "
-        "warn, error.",
-        "level",
-        "info"
-    });
+    parser_.addOption({{"l", "log-level"},
+                       "What level to use for logging. Valid values: trace, debug, info, "
+                       "warn, error.",
+                       "level",
+                       "info"});
 
-    parser_.addOption({
-        "log-to-console",
-        "Output logging to the console, as well as to file."
-    });
+    parser_.addOption({"log-to-console", "Output logging to the console, as well as to file."});
 
-    parser_.addOption({
-        "log-directory",
-        "Where to place the log files.",
-        "directory",
-        "log"
-    });
+    parser_.addOption({"log-directory", "Where to place the log files.", "directory", "log"});
 
-    parser_.addOption({
-        "log-filename",
-        "Name of the log file.",
-        "filename",
-        "ores.qt.log"
-    });
+    parser_.addOption({"log-filename", "Name of the log file.", "filename", "ores.qt.log"});
 
-    parser_.addOption({
-        "log-include-pid",
-        "Include the process ID in the log filename."
-    });
+    parser_.addOption({"log-include-pid", "Include the process ID in the log filename."});
 
     // Instance identification options
-    parser_.addOption({
-        {"n", "instance-name"},
-        "Name for this application instance (for multi-instance testing).",
-        "name"
-    });
+    parser_.addOption({{"n", "instance-name"},
+                       "Name for this application instance (for multi-instance testing).",
+                       "name"});
 
-    parser_.addOption({
-        "instance-color",
-        "Color for the window title bar as RGB hex (e.g., FF0000 for red).",
-        "color"
-    });
+    parser_.addOption({"instance-color",
+                       "Color for the window title bar as RGB hex (e.g., FF0000 for red).",
+                       "color"});
 
     // Compute service options
-    parser_.addOption({
-        "http-base-url",
-        "HTTP base URL for the ORE compute service (e.g., http://localhost:8080).",
-        "url"
-    });
-
+    parser_.addOption({"http-base-url",
+                       "HTTP base URL for the ORE compute service (e.g., http://localhost:8080).",
+                       "url"});
 }
 
 void CommandLineParser::process(const QCoreApplication& app) {
@@ -115,7 +86,6 @@ void CommandLineParser::saveToSettings() {
         settings.endGroup();
         settings.endGroup();
     }
-
 }
 
 bool CommandLineParser::isLoggingEnabled() const {
@@ -167,7 +137,7 @@ std::string CommandLineParser::httpBaseUrl() const {
 QColor CommandLineParser::instanceColor() const {
     const QString colorStr = parser_.value("instance-color");
     if (colorStr.isEmpty()) {
-        return QColor();  // Invalid color
+        return QColor(); // Invalid color
     }
 
     // Prepend # if not present for QColor parsing

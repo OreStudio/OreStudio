@@ -18,73 +18,86 @@
  *
  */
 #include "ores.qt/TelemetrySettingsDialog.hpp"
-
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QFormLayout>
-#include <QFileDialog>
-#include <QSettings>
-#include <QStandardPaths>
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
+#include <QFileDialog>
+#include <QFormLayout>
+#include <QHBoxLayout>
+#include <QSettings>
+#include <QStandardPaths>
+#include <QVBoxLayout>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 TelemetrySettingsDialog::TelemetrySettingsDialog(QWidget* parent)
-    : QDialog(parent),
-      // Tab widget
-      tab_widget_(new QTabWidget(this)),
-      // Logging tab
-      logging_enabled_checkbox_(new QCheckBox("Enable file logging", this)),
-      log_level_combo_(new QComboBox(this)),
-      console_output_checkbox_(new QCheckBox("Output to console", this)),
-      log_directory_edit_(new QLineEdit(this)),
-      log_directory_browse_(new QPushButton("Browse...", this)),
-      log_filename_edit_(new QLineEdit(this)),
-      include_pid_checkbox_(new QCheckBox("Include PID in filename", this)),
-      tag_filter_edit_(new QLineEdit(this)),
-      // Telemetry tab
-      telemetry_enabled_checkbox_(new QCheckBox("Enable telemetry export", this)),
-      telemetry_output_file_edit_(new QLineEdit(this)),
-      telemetry_directory_edit_(new QLineEdit(this)),
-      telemetry_directory_browse_(new QPushButton("Browse...", this)),
-      streaming_enabled_checkbox_(new QCheckBox("Enable streaming to server", this)),
-      batch_size_spin_(new QSpinBox(this)),
-      flush_interval_spin_(new QSpinBox(this)),
-      // Networking tab
-      compression_enabled_checkbox_(new QCheckBox("Enable compression", this)),
-      compression_algorithm_combo_(new QComboBox(this)),
-      // Dialog buttons
-      apply_button_(new QPushButton("Apply", this)),
-      cancel_button_(new QPushButton("Cancel", this)) {
+    : QDialog(parent)
+    ,
+    // Tab widget
+    tab_widget_(new QTabWidget(this))
+    ,
+    // Logging tab
+    logging_enabled_checkbox_(new QCheckBox("Enable file logging", this))
+    , log_level_combo_(new QComboBox(this))
+    , console_output_checkbox_(new QCheckBox("Output to console", this))
+    , log_directory_edit_(new QLineEdit(this))
+    , log_directory_browse_(new QPushButton("Browse...", this))
+    , log_filename_edit_(new QLineEdit(this))
+    , include_pid_checkbox_(new QCheckBox("Include PID in filename", this))
+    , tag_filter_edit_(new QLineEdit(this))
+    ,
+    // Telemetry tab
+    telemetry_enabled_checkbox_(new QCheckBox("Enable telemetry export", this))
+    , telemetry_output_file_edit_(new QLineEdit(this))
+    , telemetry_directory_edit_(new QLineEdit(this))
+    , telemetry_directory_browse_(new QPushButton("Browse...", this))
+    , streaming_enabled_checkbox_(new QCheckBox("Enable streaming to server", this))
+    , batch_size_spin_(new QSpinBox(this))
+    , flush_interval_spin_(new QSpinBox(this))
+    ,
+    // Networking tab
+    compression_enabled_checkbox_(new QCheckBox("Enable compression", this))
+    , compression_algorithm_combo_(new QComboBox(this))
+    ,
+    // Dialog buttons
+    apply_button_(new QPushButton("Apply", this))
+    , cancel_button_(new QPushButton("Cancel", this)) {
 
     setupUI();
     loadSettings();
 
     // Connect signals
-    connect(apply_button_, &QPushButton::clicked,
-            this, &TelemetrySettingsDialog::onApplyClicked);
-    connect(cancel_button_, &QPushButton::clicked,
-            this, &TelemetrySettingsDialog::onCancelClicked);
-    connect(log_directory_browse_, &QPushButton::clicked,
-            this, &TelemetrySettingsDialog::onBrowseLogDirectoryClicked);
-    connect(telemetry_directory_browse_, &QPushButton::clicked,
-            this, &TelemetrySettingsDialog::onBrowseTelemetryDirectoryClicked);
-    connect(logging_enabled_checkbox_, &QCheckBox::checkStateChanged,
-            this, &TelemetrySettingsDialog::onLoggingEnabledChanged);
-    connect(telemetry_enabled_checkbox_, &QCheckBox::checkStateChanged,
-            this, &TelemetrySettingsDialog::onTelemetryExportEnabledChanged);
-    connect(streaming_enabled_checkbox_, &QCheckBox::checkStateChanged,
-            this, &TelemetrySettingsDialog::onTelemetryExportEnabledChanged);
-    connect(compression_enabled_checkbox_, &QCheckBox::checkStateChanged,
-            this, &TelemetrySettingsDialog::onCompressionEnabledChanged);
+    connect(apply_button_, &QPushButton::clicked, this, &TelemetrySettingsDialog::onApplyClicked);
+    connect(cancel_button_, &QPushButton::clicked, this, &TelemetrySettingsDialog::onCancelClicked);
+    connect(log_directory_browse_,
+            &QPushButton::clicked,
+            this,
+            &TelemetrySettingsDialog::onBrowseLogDirectoryClicked);
+    connect(telemetry_directory_browse_,
+            &QPushButton::clicked,
+            this,
+            &TelemetrySettingsDialog::onBrowseTelemetryDirectoryClicked);
+    connect(logging_enabled_checkbox_,
+            &QCheckBox::checkStateChanged,
+            this,
+            &TelemetrySettingsDialog::onLoggingEnabledChanged);
+    connect(telemetry_enabled_checkbox_,
+            &QCheckBox::checkStateChanged,
+            this,
+            &TelemetrySettingsDialog::onTelemetryExportEnabledChanged);
+    connect(streaming_enabled_checkbox_,
+            &QCheckBox::checkStateChanged,
+            this,
+            &TelemetrySettingsDialog::onTelemetryExportEnabledChanged);
+    connect(compression_enabled_checkbox_,
+            &QCheckBox::checkStateChanged,
+            this,
+            &TelemetrySettingsDialog::onCompressionEnabledChanged);
 }
 
-TelemetrySettingsDialog::~TelemetrySettingsDialog() {
-}
+TelemetrySettingsDialog::~TelemetrySettingsDialog() {}
 
 void TelemetrySettingsDialog::setupUI() {
     WidgetUtils::setupComboBoxes(this);
@@ -151,8 +164,7 @@ void TelemetrySettingsDialog::setupUI() {
     telem_dir_layout->addWidget(telemetry_directory_browse_);
     telemetry_layout->addRow("Directory:", telem_dir_layout);
 
-    streaming_enabled_checkbox_->setToolTip(
-        "When enabled, telemetry is also sent to the server");
+    streaming_enabled_checkbox_->setToolTip("When enabled, telemetry is also sent to the server");
     telemetry_layout->addRow(streaming_enabled_checkbox_);
 
     batch_size_spin_->setRange(1, 1000);
@@ -229,7 +241,8 @@ void TelemetrySettingsDialog::loadSettings() {
     // Telemetry export settings
     settings.beginGroup("export");
     telemetry_enabled_checkbox_->setChecked(settings.value("enabled", false).toBool());
-    telemetry_output_file_edit_->setText(settings.value("output_file", "telemetry.jsonl").toString());
+    telemetry_output_file_edit_->setText(
+        settings.value("output_file", "telemetry.jsonl").toString());
     telemetry_directory_edit_->setText(settings.value("directory", "").toString());
     streaming_enabled_checkbox_->setChecked(settings.value("streaming", false).toBool());
     batch_size_spin_->setValue(settings.value("batch_size", 50).toInt());
@@ -319,9 +332,10 @@ void TelemetrySettingsDialog::onApplyClicked() {
     BOOST_LOG_SEV(lg(), debug) << "Apply button clicked.";
     applySettings();
 
-    MessageBoxHelper::information(this, "Settings Saved",
-        "Telemetry settings have been saved.\n\n"
-        "You must restart the application for changes to take effect.");
+    MessageBoxHelper::information(this,
+                                  "Settings Saved",
+                                  "Telemetry settings have been saved.\n\n"
+                                  "You must restart the application for changes to take effect.");
 
     accept();
 }
@@ -339,9 +353,11 @@ void TelemetrySettingsDialog::onBrowseLogDirectoryClicked() {
         current_dir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
     }
 
-    QString dir = QFileDialog::getExistingDirectory(
-        this, "Select Log Directory", current_dir,
-        QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    QString dir = QFileDialog::getExistingDirectory(this,
+                                                    "Select Log Directory",
+                                                    current_dir,
+                                                    QFileDialog::ShowDirsOnly |
+                                                        QFileDialog::DontResolveSymlinks);
 
     if (!dir.isEmpty()) {
         log_directory_edit_->setText(dir);
@@ -356,9 +372,11 @@ void TelemetrySettingsDialog::onBrowseTelemetryDirectoryClicked() {
         current_dir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
     }
 
-    QString dir = QFileDialog::getExistingDirectory(
-        this, "Select Telemetry Output Directory", current_dir,
-        QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    QString dir = QFileDialog::getExistingDirectory(this,
+                                                    "Select Telemetry Output Directory",
+                                                    current_dir,
+                                                    QFileDialog::ShowDirsOnly |
+                                                        QFileDialog::DontResolveSymlinks);
 
     if (!dir.isEmpty()) {
         telemetry_directory_edit_->setText(dir);
@@ -376,13 +394,13 @@ void TelemetrySettingsDialog::onTelemetryExportEnabledChanged(Qt::CheckState /*s
 void TelemetrySettingsDialog::updateLoggingGroupEnabled() {
     bool enabled = logging_enabled_checkbox_->isChecked();
 
-    log_level_combo_->setEnabled(true);  // Level always available for console
+    log_level_combo_->setEnabled(true); // Level always available for console
     console_output_checkbox_->setEnabled(true);
     log_directory_edit_->setEnabled(enabled);
     log_directory_browse_->setEnabled(enabled);
     log_filename_edit_->setEnabled(enabled);
     include_pid_checkbox_->setEnabled(enabled);
-    tag_filter_edit_->setEnabled(true);  // Tag filter can work with console too
+    tag_filter_edit_->setEnabled(true); // Tag filter can work with console too
 }
 
 void TelemetrySettingsDialog::updateTelemetryGroupEnabled() {

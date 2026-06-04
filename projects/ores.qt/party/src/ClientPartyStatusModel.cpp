@@ -18,38 +18,42 @@
  *
  */
 #include "ores.qt/ClientPartyStatusModel.hpp"
-
-#include <QtConcurrent>
-#include "ores.refdata.api/messaging/party_status_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
+#include "ores.refdata.api/messaging/party_status_protocol.hpp"
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    std::string party_status_key_extractor(const refdata::domain::party_status& e) {
-        return e.code;
-    }
+std::string party_status_key_extractor(const refdata::domain::party_status& e) {
+    return e.code;
+}
 }
 
-ClientPartyStatusModel::ClientPartyStatusModel(
-    ClientManager* clientManager, QObject* parent)
-    : AbstractClientModel(parent),
-      clientManager_(clientManager),
-      watcher_(new QFutureWatcher<FetchResult>(this)),
-      recencyTracker_(party_status_key_extractor),
-      pulseManager_(new RecencyPulseManager(this)) {
+ClientPartyStatusModel::ClientPartyStatusModel(ClientManager* clientManager, QObject* parent)
+    : AbstractClientModel(parent)
+    , clientManager_(clientManager)
+    , watcher_(new QFutureWatcher<FetchResult>(this))
+    , recencyTracker_(party_status_key_extractor)
+    , pulseManager_(new RecencyPulseManager(this)) {
 
-    connect(watcher_, &QFutureWatcher<FetchResult>::finished,
-            this, &ClientPartyStatusModel::onStatussLoaded);
+    connect(watcher_,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            &ClientPartyStatusModel::onStatussLoaded);
 
-    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
-            this, &ClientPartyStatusModel::onPulseStateChanged);
-    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
-            this, &ClientPartyStatusModel::onPulsingComplete);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulse_state_changed,
+            this,
+            &ClientPartyStatusModel::onPulseStateChanged);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulsing_complete,
+            this,
+            &ClientPartyStatusModel::onPulsingComplete);
 }
 
 int ClientPartyStatusModel::rowCount(const QModelIndex& parent) const {
@@ -64,8 +68,7 @@ int ClientPartyStatusModel::columnCount(const QModelIndex& parent) const {
     return ColumnCount;
 }
 
-QVariant ClientPartyStatusModel::data(
-    const QModelIndex& index, int role) const {
+QVariant ClientPartyStatusModel::data(const QModelIndex& index, int role) const {
     if (!index.isValid())
         return {};
 
@@ -77,22 +80,22 @@ QVariant ClientPartyStatusModel::data(
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-        case Code:
-            return QString::fromStdString(status.code);
-        case Name:
-            return QString::fromStdString(status.name);
-        case Description:
-            return QString::fromStdString(status.description);
-        case DisplayOrder:
-            return status.display_order;
-        case Version:
-            return status.version;
-        case ModifiedBy:
-            return QString::fromStdString(status.modified_by);
-        case RecordedAt:
-            return relative_time_helper::format(status.recorded_at);
-        default:
-            return {};
+            case Code:
+                return QString::fromStdString(status.code);
+            case Name:
+                return QString::fromStdString(status.name);
+            case Description:
+                return QString::fromStdString(status.description);
+            case DisplayOrder:
+                return status.display_order;
+            case Version:
+                return status.version;
+            case ModifiedBy:
+                return QString::fromStdString(status.modified_by);
+            case RecordedAt:
+                return relative_time_helper::format(status.recorded_at);
+            default:
+                return {};
         }
     }
 
@@ -103,28 +106,28 @@ QVariant ClientPartyStatusModel::data(
     return {};
 }
 
-QVariant ClientPartyStatusModel::headerData(
-    int section, Qt::Orientation orientation, int role) const {
+QVariant
+ClientPartyStatusModel::headerData(int section, Qt::Orientation orientation, int role) const {
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return {};
 
     switch (section) {
-    case Code:
-        return tr("Code");
-    case Name:
-        return tr("Name");
-    case Description:
-        return tr("Description");
-    case DisplayOrder:
-        return tr("Order");
-    case Version:
-        return tr("Version");
-    case ModifiedBy:
-        return tr("Modified By");
-    case RecordedAt:
-        return tr("Recorded At");
-    default:
-        return {};
+        case Code:
+            return tr("Code");
+        case Name:
+            return tr("Name");
+        case Description:
+            return tr("Description");
+        case DisplayOrder:
+            return tr("Order");
+        case Version:
+            return tr("Version");
+        case ModifiedBy:
+            return tr("Modified By");
+        case RecordedAt:
+            return tr("Recorded At");
+        default:
+            return {};
     }
 }
 
@@ -154,8 +157,7 @@ void ClientPartyStatusModel::refresh() {
     fetch_statuses(0, page_size_);
 }
 
-void ClientPartyStatusModel::load_page(std::uint32_t offset,
-                                          std::uint32_t limit) {
+void ClientPartyStatusModel::load_page(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "load_page: offset=" << offset << ", limit=" << limit;
 
     if (is_fetching_) {
@@ -179,18 +181,18 @@ void ClientPartyStatusModel::load_page(std::uint32_t offset,
     fetch_statuses(offset, limit);
 }
 
-void ClientPartyStatusModel::fetch_statuses(
-    std::uint32_t offset, std::uint32_t limit) {
+void ClientPartyStatusModel::fetch_statuses(std::uint32_t offset, std::uint32_t limit) {
     is_fetching_ = true;
     QPointer<ClientPartyStatusModel> self = this;
 
-    QFuture<FetchResult> future =
-        QtConcurrent::run([self, offset, limit]() -> FetchResult {
-            return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
-                BOOST_LOG_SEV(lg(), debug) << "Making party statuses request with offset="
-                                           << offset << ", limit=" << limit;
+    QFuture<FetchResult> future = QtConcurrent::run([self, offset, limit]() -> FetchResult {
+        return exception_helper::wrap_async_fetch<FetchResult>(
+            [&]() -> FetchResult {
+                BOOST_LOG_SEV(lg(), debug) << "Making party statuses request with offset=" << offset
+                                           << ", limit=" << limit;
                 if (!self || !self->clientManager_) {
-                    return {.success = false, .statuses = {},
+                    return {.success = false,
+                            .statuses = {},
                             .total_available_count = 0,
                             .error_message = "Model was destroyed",
                             .error_details = {}};
@@ -198,29 +200,32 @@ void ClientPartyStatusModel::fetch_statuses(
 
                 refdata::messaging::get_party_statuses_request request;
 
-                auto result = self->clientManager_->
-                    process_authenticated_request(std::move(request));
+                auto result =
+                    self->clientManager_->process_authenticated_request(std::move(request));
 
                 if (!result) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to fetch party statuses: "
-                                               << result.error();
-                    return {.success = false, .statuses = {},
+                    BOOST_LOG_SEV(lg(), error)
+                        << "Failed to fetch party statuses: " << result.error();
+                    return {.success = false,
+                            .statuses = {},
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(
                                 "Failed to fetch party statuses: " + result.error()),
                             .error_details = {}};
                 }
 
-                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->party_statuses.size()
-                                           << " party statuses";
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Fetched " << result->party_statuses.size() << " party statuses";
                 const std::uint32_t count =
                     static_cast<std::uint32_t>(result->party_statuses.size());
                 return {.success = true,
                         .statuses = std::move(result->party_statuses),
                         .total_available_count = count,
-                        .error_message = {}, .error_details = {}};
-            }, "party statuses");
-        });
+                        .error_message = {},
+                        .error_details = {}};
+            },
+            "party statuses");
+    });
 
     watcher_->setFuture(future);
 }
@@ -231,8 +236,8 @@ void ClientPartyStatusModel::onStatussLoaded() {
     const auto result = watcher_->result();
 
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to fetch party statuses: "
-                                   << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to fetch party statuses: " << result.error_message.toStdString();
         emit loadError(result.error_message, result.error_details);
         return;
     }
@@ -271,16 +276,14 @@ void ClientPartyStatusModel::set_page_size(std::uint32_t size) {
     }
 }
 
-const refdata::domain::party_status*
-ClientPartyStatusModel::getStatus(int row) const {
+const refdata::domain::party_status* ClientPartyStatusModel::getStatus(int row) const {
     const auto idx = static_cast<std::size_t>(row);
     if (idx >= statuses_.size())
         return nullptr;
     return &statuses_[idx];
 }
 
-QVariant ClientPartyStatusModel::recency_foreground_color(
-    const std::string& code) const {
+QVariant ClientPartyStatusModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {
         return color_constants::stale_indicator;
     }
@@ -289,8 +292,8 @@ QVariant ClientPartyStatusModel::recency_foreground_color(
 
 void ClientPartyStatusModel::onPulseStateChanged(bool /*isOn*/) {
     if (!statuses_.empty()) {
-        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
-            {Qt::ForegroundRole});
+        emit dataChanged(
+            index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::ForegroundRole});
     }
 }
 

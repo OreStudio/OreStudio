@@ -18,49 +18,55 @@
  *
  */
 #include "ores.qt/TelemetryMdiWindow.hpp"
-
-#include <algorithm>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include <QHeaderView>
-#include <QDateTime>
-#include <QBrush>
-#include "ores.qt/MessageBoxHelper.hpp"
-#include <QRegularExpression>
-#include <boost/uuid/uuid_io.hpp>
-#include "ores.qt/IconUtils.hpp"
+#include "ores.iam.api/messaging/session_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/TelemetryLogDelegate.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.iam.api/messaging/session_protocol.hpp"
+#include <QBrush>
+#include <QDateTime>
+#include <QFutureWatcher>
+#include <QHeaderView>
+#include <QRegularExpression>
+#include <QtConcurrent>
+#include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-TelemetryMdiWindow::
-TelemetryMdiWindow(ClientManager* clientManager,
-                   const QString& username,
-                   QWidget* parent)
-    : QWidget(parent),
-      clientManager_(clientManager),
-      username_(username),
-      pulseTimer_(new QTimer(this)),
-      logModel_(std::make_unique<ClientTelemetryLogModel>(clientManager)) {
+TelemetryMdiWindow::TelemetryMdiWindow(ClientManager* clientManager,
+                                       const QString& username,
+                                       QWidget* parent)
+    : QWidget(parent)
+    , clientManager_(clientManager)
+    , username_(username)
+    , pulseTimer_(new QTimer(this))
+    , logModel_(std::make_unique<ClientTelemetryLogModel>(clientManager)) {
 
     BOOST_LOG_SEV(lg(), debug) << "Creating telemetry MDI window";
     setupUi();
 
-    connect(logModel_.get(), &ClientTelemetryLogModel::dataLoaded,
-            this, &TelemetryMdiWindow::onLogsLoaded);
-    connect(logModel_.get(), &ClientTelemetryLogModel::loadError,
-            this, &TelemetryMdiWindow::onLoadError);
+    connect(logModel_.get(),
+            &ClientTelemetryLogModel::dataLoaded,
+            this,
+            &TelemetryMdiWindow::onLogsLoaded);
+    connect(logModel_.get(),
+            &ClientTelemetryLogModel::loadError,
+            this,
+            &TelemetryMdiWindow::onLoadError);
 
     if (clientManager_) {
-        connect(clientManager_, &ClientManager::connected,
-                this, &TelemetryMdiWindow::onConnectionStateChanged);
-        connect(clientManager_, &ClientManager::disconnected,
-                this, &TelemetryMdiWindow::onConnectionStateChanged);
+        connect(clientManager_,
+                &ClientManager::connected,
+                this,
+                &TelemetryMdiWindow::onConnectionStateChanged);
+        connect(clientManager_,
+                &ClientManager::disconnected,
+                this,
+                &TelemetryMdiWindow::onConnectionStateChanged);
 
         // Load sessions if already logged in
         if (clientManager_->isLoggedIn()) {
@@ -109,7 +115,8 @@ void TelemetryMdiWindow::setupUi() {
     sessionDetailsTable_->setColumnCount(2);
     sessionDetailsTable_->setHorizontalHeaderLabels({tr("Field"), tr("Value")});
     sessionDetailsTable_->horizontalHeader()->setStretchLastSection(true);
-    sessionDetailsTable_->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+    sessionDetailsTable_->horizontalHeader()->setSectionResizeMode(0,
+                                                                   QHeaderView::ResizeToContents);
     sessionDetailsTable_->verticalHeader()->setVisible(false);
     sessionDetailsTable_->setEditTriggers(QAbstractItemView::NoEditTriggers);
     sessionDetailsTable_->setSelectionMode(QAbstractItemView::NoSelection);
@@ -118,8 +125,8 @@ void TelemetryMdiWindow::setupUi() {
 
     leftSplitter_->addWidget(treeContainer);
     leftSplitter_->addWidget(sessionDetailsGroup_);
-    leftSplitter_->setStretchFactor(0, 2);  // Tree gets more space
-    leftSplitter_->setStretchFactor(1, 1);  // Details gets less
+    leftSplitter_->setStretchFactor(0, 2); // Tree gets more space
+    leftSplitter_->setStretchFactor(1, 1); // Details gets less
 
     leftLayout->addWidget(leftSplitter_);
 
@@ -134,8 +141,8 @@ void TelemetryMdiWindow::setupUi() {
 
     mainSplitter_->addWidget(leftPanel_);
     mainSplitter_->addWidget(rightPanel_);
-    mainSplitter_->setStretchFactor(0, 1);  // Left panel gets 1 part
-    mainSplitter_->setStretchFactor(1, 3);  // Right panel gets 3 parts
+    mainSplitter_->setStretchFactor(0, 1); // Left panel gets 1 part
+    mainSplitter_->setStretchFactor(1, 3); // Right panel gets 3 parts
     mainSplitter_->setSizes({300, 900});
 
     mainLayout->addWidget(mainSplitter_);
@@ -188,14 +195,16 @@ void TelemetryMdiWindow::setupLevelFilters() {
     toolBar_->addWidget(filterErrorBtn_);
 }
 
-void TelemetryMdiWindow::updateFilterButtonStyle(QPushButton* btn, bool enabled, const QColor& color) {
+void TelemetryMdiWindow::updateFilterButtonStyle(QPushButton* btn,
+                                                 bool enabled,
+                                                 const QColor& color) {
     if (enabled) {
-        btn->setStyleSheet(QString(
-            "QPushButton { background-color: %1; color: white; border: none; "
-            "border-radius: 3px; padding: 2px 8px; font-weight: bold; font-size: 10px; }"
-            "QPushButton:hover { background-color: %2; }")
-            .arg(color.name())
-            .arg(color.lighter(110).name()));
+        btn->setStyleSheet(
+            QString("QPushButton { background-color: %1; color: white; border: none; "
+                    "border-radius: 3px; padding: 2px 8px; font-weight: bold; font-size: 10px; }"
+                    "QPushButton:hover { background-color: %2; }")
+                .arg(color.name())
+                .arg(color.lighter(110).name()));
     } else {
         btn->setStyleSheet(
             "QPushButton { background-color: #555; color: #888; border: none; "
@@ -207,11 +216,16 @@ void TelemetryMdiWindow::updateFilterButtonStyle(QPushButton* btn, bool enabled,
 void TelemetryMdiWindow::applyLevelFilter() {
     // Build regex pattern for enabled levels
     QStringList enabledLevels;
-    if (showTrace_) enabledLevels << "trace";
-    if (showDebug_) enabledLevels << "debug";
-    if (showInfo_) enabledLevels << "info";
-    if (showWarn_) enabledLevels << "warn" << "warning";
-    if (showError_) enabledLevels << "error";
+    if (showTrace_)
+        enabledLevels << "trace";
+    if (showDebug_)
+        enabledLevels << "debug";
+    if (showInfo_)
+        enabledLevels << "info";
+    if (showWarn_)
+        enabledLevels << "warn" << "warning";
+    if (showError_)
+        enabledLevels << "error";
 
     if (enabledLevels.isEmpty()) {
         // No levels selected - show nothing
@@ -219,16 +233,17 @@ void TelemetryMdiWindow::applyLevelFilter() {
     } else {
         // Filter on Level column (column 1)
         QString pattern = "^(" + enabledLevels.join("|") + ")$";
-        proxyModel_->setFilterRegularExpression(QRegularExpression(pattern, QRegularExpression::CaseInsensitiveOption));
+        proxyModel_->setFilterRegularExpression(
+            QRegularExpression(pattern, QRegularExpression::CaseInsensitiveOption));
     }
     proxyModel_->setFilterKeyColumn(ClientTelemetryLogModel::Level);
 }
 
 void TelemetryMdiWindow::setupReloadAction() {
-    normalReloadIcon_ = IconUtils::createRecoloredIcon(
-        Icon::ArrowSync, IconUtils::DefaultIconColor);
-    staleReloadIcon_ = IconUtils::createRecoloredIcon(
-        Icon::ArrowSync, color_constants::stale_indicator);
+    normalReloadIcon_ =
+        IconUtils::createRecoloredIcon(Icon::ArrowSync, IconUtils::DefaultIconColor);
+    staleReloadIcon_ =
+        IconUtils::createRecoloredIcon(Icon::ArrowSync, color_constants::stale_indicator);
 
     reloadAction_ = new QAction("Reload", this);
     reloadAction_->setIcon(normalReloadIcon_);
@@ -251,8 +266,7 @@ void TelemetryMdiWindow::setupSessionTree() {
     sessionTree_->setHeaderHidden(true);
     sessionTree_->setIndentation(15);
 
-    connect(sessionTree_, &QTreeWidget::itemClicked,
-            this, &TelemetryMdiWindow::onSessionSelected);
+    connect(sessionTree_, &QTreeWidget::itemClicked, this, &TelemetryMdiWindow::onSessionSelected);
 }
 
 void TelemetryMdiWindow::setupLogTable() {
@@ -283,15 +297,17 @@ void TelemetryMdiWindow::setupLogTable() {
     logTableView_->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     logTableView_->verticalHeader()->setDefaultSectionSize(24);
 
-    connect(logTableView_->selectionModel(), &QItemSelectionModel::currentChanged,
-            this, &TelemetryMdiWindow::onLogSelected);
+    connect(logTableView_->selectionModel(),
+            &QItemSelectionModel::currentChanged,
+            this,
+            &TelemetryMdiWindow::onLogSelected);
 
     paginationWidget_ = new PaginationWidget(rightPanel_);
-    connect(paginationWidget_, &PaginationWidget::page_requested,
-            this, [this](int offset, int limit) {
-        logModel_->load_page(static_cast<std::uint32_t>(offset),
-                             static_cast<std::uint32_t>(limit));
-    });
+    connect(
+        paginationWidget_, &PaginationWidget::page_requested, this, [this](int offset, int limit) {
+            logModel_->load_page(static_cast<std::uint32_t>(offset),
+                                 static_cast<std::uint32_t>(limit));
+        });
 
     rightLayout_->addWidget(logTableView_, 1);
     rightLayout_->addWidget(paginationWidget_);
@@ -332,34 +348,35 @@ void TelemetryMdiWindow::loadSessions() {
     QPointer<TelemetryMdiWindow> self = this;
 
     (void)QtConcurrent::run([self]() {
-        if (!self) return;
+        if (!self)
+            return;
 
         iam::messaging::list_sessions_request request;
         request.limit = 1000;
         request.offset = 0;
 
-        auto result = self->clientManager_->
-            process_authenticated_request(std::move(request));
+        auto result = self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!result) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to fetch sessions: "
-                                       << result.error();
-            QMetaObject::invokeMethod(self, [self]() {
-                emit self->errorOccurred(tr("Failed to load sessions"));
-            }, Qt::QueuedConnection);
+            BOOST_LOG_SEV(lg(), error) << "Failed to fetch sessions: " << result.error();
+            QMetaObject::invokeMethod(
+                self,
+                [self]() { emit self->errorOccurred(tr("Failed to load sessions")); },
+                Qt::QueuedConnection);
             return;
         }
 
-        QMetaObject::invokeMethod(self, [self, sessions = std::move(result->sessions)]() {
-            self->populateSessionTree(sessions);
-        }, Qt::QueuedConnection);
+        QMetaObject::invokeMethod(
+            self,
+            [self, sessions = std::move(result->sessions)]() {
+                self->populateSessionTree(sessions);
+            },
+            Qt::QueuedConnection);
     });
 }
 
-void TelemetryMdiWindow::
-populateSessionTree(const std::vector<iam::domain::session>& sessions) {
-    BOOST_LOG_SEV(lg(), debug) << "Populating session tree with "
-                               << sessions.size() << " sessions";
+void TelemetryMdiWindow::populateSessionTree(const std::vector<iam::domain::session>& sessions) {
+    BOOST_LOG_SEV(lg(), debug) << "Populating session tree with " << sessions.size() << " sessions";
 
     sessionTree_->clear();
     sessionCache_.clear();
@@ -369,7 +386,8 @@ populateSessionTree(const std::vector<iam::domain::session>& sessions) {
 
     for (const auto& session : sessions) {
         const auto msecs = std::chrono::duration_cast<std::chrono::milliseconds>(
-            session.start_time.time_since_epoch()).count();
+                               session.start_time.time_since_epoch())
+                               .count();
         QDateTime startTime = QDateTime::fromMSecsSinceEpoch(msecs);
         QString dateKey = startTime.toString("yyyy-MM-dd");
 
@@ -393,8 +411,7 @@ populateSessionTree(const std::vector<iam::domain::session>& sessions) {
 
         for (const auto& [username, userSessions] : dateIt->second) {
             auto* userItem = new QTreeWidgetItem(dateItem);
-            userItem->setText(0, QString("%1 (%2)")
-                .arg(username).arg(userSessions.size()));
+            userItem->setText(0, QString("%1 (%2)").arg(username).arg(userSessions.size()));
             userItem->setExpanded(true);
 
             for (const auto* session : userSessions) {
@@ -434,8 +451,7 @@ void TelemetryMdiWindow::onSessionSelected(QTreeWidgetItem* item, int column) {
     logModel_->load_session_logs(session.id);
 }
 
-void TelemetryMdiWindow::
-updateSessionInfoPanel(const iam::domain::session& session) {
+void TelemetryMdiWindow::updateSessionInfoPanel(const iam::domain::session& session) {
     sessionDetailsTable_->setRowCount(0);
 
     auto addRow = [this](const QString& field, const QString& value) {
@@ -446,12 +462,10 @@ updateSessionInfoPanel(const iam::domain::session& session) {
     };
 
     // Session ID
-    addRow(tr("Session ID"), QString::fromStdString(
-        boost::uuids::to_string(session.id)));
+    addRow(tr("Session ID"), QString::fromStdString(boost::uuids::to_string(session.id)));
 
     // Account ID
-    addRow(tr("Account ID"), QString::fromStdString(
-        boost::uuids::to_string(session.account_id)));
+    addRow(tr("Account ID"), QString::fromStdString(boost::uuids::to_string(session.account_id)));
 
     // Username
     QString username = QString::fromStdString(session.username);
@@ -461,13 +475,13 @@ updateSessionInfoPanel(const iam::domain::session& session) {
     addRow(tr("Client"), QString::fromStdString(session.client_identifier));
 
     // Version
-    addRow(tr("Version"), QString("%1.%2")
-        .arg(session.client_version_major)
-        .arg(session.client_version_minor));
+    addRow(tr("Version"),
+           QString("%1.%2").arg(session.client_version_major).arg(session.client_version_minor));
 
     // Start time
-    const auto startMsecs = std::chrono::duration_cast<std::chrono::milliseconds>(
-        session.start_time.time_since_epoch()).count();
+    const auto startMsecs =
+        std::chrono::duration_cast<std::chrono::milliseconds>(session.start_time.time_since_epoch())
+            .count();
     QDateTime start = QDateTime::fromMSecsSinceEpoch(startMsecs);
     addRow(tr("Start Time"), start.toString("yyyy-MM-dd hh:mm:ss"));
 
@@ -476,7 +490,8 @@ updateSessionInfoPanel(const iam::domain::session& session) {
         addRow(tr("Status"), tr("Active"));
     } else {
         const auto endMsecs = std::chrono::duration_cast<std::chrono::milliseconds>(
-            session.end_time->time_since_epoch()).count();
+                                  session.end_time->time_since_epoch())
+                                  .count();
         QDateTime end = QDateTime::fromMSecsSinceEpoch(endMsecs);
         addRow(tr("End Time"), end.toString("yyyy-MM-dd hh:mm:ss"));
 
@@ -497,16 +512,15 @@ updateSessionInfoPanel(const iam::domain::session& session) {
     }
 
     // Protocol
-    addRow(tr("Protocol"), QString::fromStdString(
-        std::string(iam::domain::to_string(session.protocol))));
+    addRow(tr("Protocol"),
+           QString::fromStdString(std::string(iam::domain::to_string(session.protocol))));
 
     // Bytes transferred
     addRow(tr("Bytes Sent"), QString::number(session.bytes_sent));
     addRow(tr("Bytes Received"), QString::number(session.bytes_received));
 }
 
-void TelemetryMdiWindow::
-updateLogDetailPanel(const telemetry::domain::telemetry_log_entry& entry) {
+void TelemetryMdiWindow::updateLogDetailPanel(const telemetry::domain::telemetry_log_entry& entry) {
     logMessageEdit_->setText(QString::fromStdString(entry.message));
 }
 
@@ -515,8 +529,7 @@ void TelemetryMdiWindow::clearDetailPanels() {
     logMessageEdit_->clear();
 }
 
-void TelemetryMdiWindow::
-onLogSelected(const QModelIndex& current, const QModelIndex& previous) {
+void TelemetryMdiWindow::onLogSelected(const QModelIndex& current, const QModelIndex& previous) {
     Q_UNUSED(previous);
 
     if (!current.isValid()) {
@@ -533,15 +546,13 @@ onLogSelected(const QModelIndex& current, const QModelIndex& previous) {
 void TelemetryMdiWindow::onLogsLoaded() {
     BOOST_LOG_SEV(lg(), debug) << "Logs loaded: " << logModel_->rowCount();
 
-    paginationWidget_->update_state(
-        static_cast<int>(logModel_->rowCount()),
-        static_cast<int>(logModel_->total_available_count()));
+    paginationWidget_->update_state(static_cast<int>(logModel_->rowCount()),
+                                    static_cast<int>(logModel_->total_available_count()));
 
     emit statusChanged(tr("Loaded %1 log entries").arg(logModel_->rowCount()));
 }
 
-void TelemetryMdiWindow::onLoadError(const QString& error_message,
-                                      const QString& details) {
+void TelemetryMdiWindow::onLoadError(const QString& error_message, const QString& details) {
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);

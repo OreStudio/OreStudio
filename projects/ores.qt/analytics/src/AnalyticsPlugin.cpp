@@ -17,16 +17,14 @@
  *
  */
 #include "ores.qt/AnalyticsPlugin.hpp"
-
-#include <QMenu>
-#include <QAction>
-
-#include "ores.qt/IconUtils.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/PricingEngineTypeController.hpp"
 #include "ores.qt/PricingModelConfigController.hpp"
 #include "ores.qt/PricingModelProductController.hpp"
 #include "ores.qt/PricingModelProductParameterController.hpp"
+#include <QAction>
+#include <QMenu>
 
 namespace ores::qt {
 
@@ -45,7 +43,8 @@ auto ico(Icon icon) {
 
 }
 
-AnalyticsPlugin::AnalyticsPlugin(QObject* parent) : PluginBase(parent) {
+AnalyticsPlugin::AnalyticsPlugin(QObject* parent)
+    : PluginBase(parent) {
     BOOST_LOG_SEV(lg(), debug) << "Plugin initialised.";
 }
 
@@ -77,37 +76,36 @@ void AnalyticsPlugin::on_login(const plugin_context& ctx) {
 
 void AnalyticsPlugin::setup_menus(const shared_menus_context& smc) {
     BOOST_LOG_SEV(lg(), debug) << "Registering entries in shared menus."
-        << " analytics=" << (smc.analytics_menu ? "ok" : "null")
-        << " analytics_codes=" << (smc.analytics_codes_menu ? "ok" : "null");
+                               << " analytics=" << (smc.analytics_menu ? "ok" : "null")
+                               << " analytics_codes=" << (smc.analytics_codes_menu ? "ok" : "null");
     if (!smc.analytics_menu || !smc.analytics_codes_menu)
         return;
 
     analytics_menu_ = smc.analytics_menu;
     analytics_codes_menu_ = smc.analytics_codes_menu;
 
-    auto* actModelConfigs = analytics_menu_->addAction(
-        ico(Icon::Chart), tr("Model &Configurations"));
+    auto* actModelConfigs =
+        analytics_menu_->addAction(ico(Icon::Chart), tr("Model &Configurations"));
     connect(actModelConfigs, &QAction::triggered, this, [this]() {
         if (pricingModelConfigController_)
             pricingModelConfigController_->showListWindow();
     });
 
-    auto* actModelProducts = analytics_menu_->addAction(
-        ico(Icon::Table), tr("Model &Products"));
+    auto* actModelProducts = analytics_menu_->addAction(ico(Icon::Table), tr("Model &Products"));
     connect(actModelProducts, &QAction::triggered, this, [this]() {
         if (pricingModelProductController_)
             pricingModelProductController_->showListWindow();
     });
 
-    auto* actModelProductParameters = analytics_menu_->addAction(
-        ico(Icon::Settings), tr("Model Product &Parameters"));
+    auto* actModelProductParameters =
+        analytics_menu_->addAction(ico(Icon::Settings), tr("Model Product &Parameters"));
     connect(actModelProductParameters, &QAction::triggered, this, [this]() {
         if (pricingModelProductParameterController_)
             pricingModelProductParameterController_->showListWindow();
     });
 
-    auto* actPricingEngineTypes = analytics_codes_menu_->addAction(
-        ico(Icon::Tag), tr("&Pricing Engine Types"));
+    auto* actPricingEngineTypes =
+        analytics_codes_menu_->addAction(ico(Icon::Tag), tr("&Pricing Engine Types"));
     connect(actPricingEngineTypes, &QAction::triggered, this, [this]() {
         if (pricingEngineTypeController_)
             pricingEngineTypeController_->showListWindow();

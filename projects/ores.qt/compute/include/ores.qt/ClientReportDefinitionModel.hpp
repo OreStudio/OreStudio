@@ -20,17 +20,17 @@
 #ifndef ORES_QT_CLIENT_REPORT_DEFINITION_MODEL_HPP
 #define ORES_QT_CLIENT_REPORT_DEFINITION_MODEL_HPP
 
-#include <vector>
-#include <QHash>
-#include <QString>
-#include <QFutureWatcher>
-#include <QAbstractTableModel>
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/AbstractClientModel.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/RecencyPulseManager.hpp"
 #include "ores.qt/RecencyTracker.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.reporting.api/domain/report_definition.hpp"
+#include <QAbstractTableModel>
+#include <QFutureWatcher>
+#include <QHash>
+#include <QString>
+#include <vector>
 
 namespace ores::qt {
 
@@ -44,8 +44,7 @@ class ClientReportDefinitionModel final : public AbstractClientModel {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.client_report_definition_model";
+    inline static std::string_view logger_name = "ores.qt.client_report_definition_model";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -59,7 +58,7 @@ public:
      */
     enum Column {
         Name,
-        Source,             // "Local" or "Inherited" — visible in workspace context
+        Source, // "Local" or "Inherited" — visible in workspace context
         ReportType,
         ScheduleExpression,
         ConcurrencyPolicy,
@@ -71,16 +70,15 @@ public:
         ColumnCount
     };
 
-    explicit ClientReportDefinitionModel(ClientManager* clientManager,
-                                       QObject* parent = nullptr);
+    explicit ClientReportDefinitionModel(ClientManager* clientManager, QObject* parent = nullptr);
     ~ClientReportDefinitionModel() override = default;
 
     // QAbstractTableModel interface
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-    QVariant headerData(int section, Qt::Orientation orientation,
-        int role = Qt::DisplayRole) const override;
+    QVariant
+    headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
     /**
      * @brief Refresh report definition data from server asynchronously.
@@ -111,7 +109,9 @@ public:
     /**
      * @brief Get the page size used for pagination.
      */
-    std::uint32_t page_size() const { return page_size_; }
+    std::uint32_t page_size() const {
+        return page_size_;
+    }
 
     /**
      * @brief Set the page size for pagination.
@@ -121,7 +121,9 @@ public:
     /**
      * @brief Get the total number of records available on the server.
      */
-    std::uint32_t total_available_count() const { return total_available_count_; }
+    std::uint32_t total_available_count() const {
+        return total_available_count_;
+    }
 
 signals:
     /**
@@ -140,8 +142,7 @@ private slots:
 
 private:
     QVariant recency_foreground_color(const std::string& code) const;
-    QString resolve_fsm_state_name(
-        const std::optional<boost::uuids::uuid>& state_id) const;
+    QString resolve_fsm_state_name(const std::optional<boost::uuids::uuid>& state_id) const;
 
     struct FetchResult {
         bool success;
@@ -170,8 +171,10 @@ private:
     // UUID string → state name, populated once from the DQ service
     QHash<QString, QString> fsm_state_map_;
 
-    using ReportDefinitionKeyExtractor = std::string(*)(const reporting::domain::report_definition&);
-    RecencyTracker<reporting::domain::report_definition, ReportDefinitionKeyExtractor> recencyTracker_;
+    using ReportDefinitionKeyExtractor =
+        std::string (*)(const reporting::domain::report_definition&);
+    RecencyTracker<reporting::domain::report_definition, ReportDefinitionKeyExtractor>
+        recencyTracker_;
     RecencyPulseManager* pulseManager_;
 };
 

@@ -20,9 +20,9 @@
 #ifndef ORES_QT_COMPUTE_TRANSFER_MODEL_HPP
 #define ORES_QT_COMPUTE_TRANSFER_MODEL_HPP
 
-#include <vector>
-#include <QString>
 #include <QAbstractTableModel>
+#include <QString>
+#include <vector>
 
 namespace ores::qt {
 
@@ -33,9 +33,9 @@ struct transfer_item {
     QString id;        ///< Unique token (e.g. result_id + direction)
     QString direction; ///< "↑" (upload) or "↓" (download)
     QString filename;
-    int     progress = 0;   ///< 0–100
-    QString speed;          ///< e.g. "1.2 MB/s"; empty when idle
-    QString status;         ///< "Transferring", "Complete", "Failed"
+    int progress = 0; ///< 0–100
+    QString speed;    ///< e.g. "1.2 MB/s"; empty when idle
+    QString status;   ///< "Transferring", "Complete", "Failed"
 };
 
 /**
@@ -48,37 +48,26 @@ class ComputeTransferModel final : public QAbstractTableModel {
     Q_OBJECT
 
 public:
-    enum Column {
-        Direction,
-        Filename,
-        Progress,
-        Speed,
-        Status,
-        ColumnCount
-    };
+    enum Column { Direction, Filename, Progress, Speed, Status, ColumnCount };
 
     explicit ComputeTransferModel(QObject* parent = nullptr);
 
     // QAbstractTableModel interface
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
-    QVariant data(const QModelIndex& index,
-        int role = Qt::DisplayRole) const override;
-    QVariant headerData(int section, Qt::Orientation orientation,
-        int role = Qt::DisplayRole) const override;
+    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+    QVariant
+    headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
     /**
      * @brief Adds a new transfer entry and returns its row index.
      */
-    int add_transfer(const QString& id,
-        const QString& direction,
-        const QString& filename);
+    int add_transfer(const QString& id, const QString& direction, const QString& filename);
 
     /**
      * @brief Updates progress (0–100) and speed string for an existing entry.
      */
-    void update_progress(const QString& id, int progress,
-        const QString& speed = {});
+    void update_progress(const QString& id, int progress, const QString& speed = {});
 
     /**
      * @brief Marks a transfer as complete (progress = 100).

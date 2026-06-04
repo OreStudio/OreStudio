@@ -20,15 +20,15 @@
 #ifndef ORES_QT_CHANGE_REASON_CACHE_HPP
 #define ORES_QT_CHANGE_REASON_CACHE_HPP
 
-#include <vector>
-#include <unordered_map>
-#include <QObject>
-#include <QFutureWatcher>
-#include "ores.qt/ClientManager.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.dq.api/domain/change_reason.hpp"
 #include "ores.dq.api/domain/change_reason_category.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
 #include "ores.qt/export.hpp"
+#include <QFutureWatcher>
+#include <QObject>
+#include <unordered_map>
+#include <vector>
 
 namespace ores::qt {
 
@@ -58,8 +58,7 @@ private:
     }
 
 public:
-    explicit ChangeReasonCache(ClientManager* clientManager,
-        QObject* parent = nullptr);
+    explicit ChangeReasonCache(ClientManager* clientManager, QObject* parent = nullptr);
     ~ChangeReasonCache() override = default;
 
     /**
@@ -73,12 +72,16 @@ public:
     /**
      * @brief Check if reasons have been loaded.
      */
-    bool isLoaded() const { return is_loaded_; }
+    bool isLoaded() const {
+        return is_loaded_;
+    }
 
     /**
      * @brief Check if loading is in progress.
      */
-    bool isLoading() const { return is_loading_; }
+    bool isLoading() const {
+        return is_loading_;
+    }
 
     /**
      * @brief Get all change reasons.
@@ -93,8 +96,7 @@ public:
      * @param category_code Filter by category (e.g., "system")
      * @return Reasons where applies_to_new is true, sorted by display_order
      */
-    std::vector<dq::domain::change_reason> getReasonsForNew(
-        const std::string& category_code) const;
+    std::vector<dq::domain::change_reason> getReasonsForNew(const std::string& category_code) const;
 
     /**
      * @brief Get change reasons filtered for amend operations.
@@ -102,8 +104,8 @@ public:
      * @param category_code Filter by category (e.g., "common")
      * @return Reasons where applies_to_amend is true, sorted by display_order
      */
-    std::vector<dq::domain::change_reason> getReasonsForAmend(
-        const std::string& category_code) const;
+    std::vector<dq::domain::change_reason>
+    getReasonsForAmend(const std::string& category_code) const;
 
     /**
      * @brief Get change reasons filtered for delete operations.
@@ -111,8 +113,8 @@ public:
      * @param category_code Filter by category (e.g., "common")
      * @return Reasons where applies_to_delete is true, sorted by display_order
      */
-    std::vector<dq::domain::change_reason> getReasonsForDelete(
-        const std::string& category_code) const;
+    std::vector<dq::domain::change_reason>
+    getReasonsForDelete(const std::string& category_code) const;
 
     /**
      * @brief Get a reason by its code.
@@ -120,8 +122,7 @@ public:
      * @param code The reason code (e.g., "common.rectification")
      * @return Pointer to reason if found, nullptr otherwise
      */
-    const dq::domain::change_reason* getReasonByCode(
-        const std::string& code) const;
+    const dq::domain::change_reason* getReasonByCode(const std::string& code) const;
 
     /**
      * @brief Check if a reason code is valid.
@@ -158,8 +159,9 @@ private slots:
     void onReasonsLoaded();
     void onCategoriesLoaded();
     void onNotificationReceived(const QString& eventType,
-        const QDateTime& timestamp, const QStringList& entityIds,
-        const QString& tenantId);
+                                const QDateTime& timestamp,
+                                const QStringList& entityIds,
+                                const QString& tenantId);
 
 private:
     void loadReasons();

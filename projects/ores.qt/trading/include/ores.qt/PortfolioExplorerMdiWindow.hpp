@@ -20,28 +20,28 @@
 #ifndef ORES_QT_PORTFOLIO_EXPLORER_MDI_WINDOW_HPP
 #define ORES_QT_PORTFOLIO_EXPLORER_MDI_WINDOW_HPP
 
-#include <vector>
-#include <QLabel>
-#include <QList>
-#include <QAction>
-#include <QToolBar>
-#include <QSplitter>
-#include <QTreeView>
-#include <QWidget>
-#include <QTableView>
-#include <QDateTime>
-#include <QFutureWatcher>
-#include <QItemSelection>
-#include <QSortFilterProxyModel>
-#include <QToolButton>
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
 #include "ores.qt/PaginationWidget.hpp"
-#include "ores.qt/PortfolioExplorerTreeModel.hpp"
 #include "ores.qt/PortfolioExplorerTradeModel.hpp"
-#include "ores.refdata.api/domain/portfolio.hpp"
+#include "ores.qt/PortfolioExplorerTreeModel.hpp"
 #include "ores.refdata.api/domain/book.hpp"
+#include "ores.refdata.api/domain/portfolio.hpp"
+#include <QAction>
+#include <QDateTime>
+#include <QFutureWatcher>
+#include <QItemSelection>
+#include <QLabel>
+#include <QList>
+#include <QSortFilterProxyModel>
+#include <QSplitter>
+#include <QTableView>
+#include <QToolBar>
+#include <QToolButton>
+#include <QTreeView>
+#include <QWidget>
+#include <vector>
 
 namespace ores::qt {
 
@@ -61,8 +61,7 @@ class PortfolioExplorerMdiWindow final : public EntityListMdiWindow {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.portfolio_explorer_mdi_window";
+    inline static std::string_view logger_name = "ores.qt.portfolio_explorer_mdi_window";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -76,14 +75,13 @@ private:
     static constexpr const char* trade_event = "ores.trading.trade_changed";
 
 public:
-    explicit PortfolioExplorerMdiWindow(
-        ClientManager* clientManager,
-        BookController* bookController,
-        PortfolioController* portfolioController,
-        TradeController* tradeController,
-        OreImportController* oreImportController,
-        const QString& username,
-        QWidget* parent = nullptr);
+    explicit PortfolioExplorerMdiWindow(ClientManager* clientManager,
+                                        BookController* bookController,
+                                        PortfolioController* portfolioController,
+                                        TradeController* tradeController,
+                                        OreImportController* oreImportController,
+                                        const QString& username,
+                                        QWidget* parent = nullptr);
     ~PortfolioExplorerMdiWindow() override = default;
 
 public slots:
@@ -103,8 +101,7 @@ protected:
     }
 
 private slots:
-    void onTreeSelectionChanged(const QItemSelection& selected,
-                                const QItemSelection& deselected);
+    void onTreeSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
     void onNotificationReceived(const QString& eventType,
                                 const QDateTime& timestamp,
                                 const QStringList& entityIds,
@@ -130,10 +127,8 @@ private:
     void setupEventSubscriptions();
     void rebuildTree();
     void updateBreadcrumb(const PortfolioTreeNode* node);
-    void collectBookUuids(const QModelIndex& parent,
-                          QList<boost::uuids::uuid>& uuids);
-    void onReparentRequested(const PortfolioTreeNode* node,
-                             const boost::uuids::uuid& newParentId);
+    void collectBookUuids(const QModelIndex& parent, QList<boost::uuids::uuid>& uuids);
+    void onReparentRequested(const PortfolioTreeNode* node, const boost::uuids::uuid& newParentId);
 
     // Fetch result types
     struct PortfolioFetchResult {

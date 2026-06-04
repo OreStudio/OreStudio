@@ -18,26 +18,25 @@
  *
  */
 #include "ores.qt/BookStatusDetailDialog.hpp"
-
-#include <QPlainTextEdit>
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include "ui_BookStatusDetailDialog.h"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata.api/messaging/book_status_protocol.hpp"
+#include "ui_BookStatusDetailDialog.h"
+#include <QFutureWatcher>
+#include <QMessageBox>
+#include <QPlainTextEdit>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 BookStatusDetailDialog::BookStatusDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent),
-      ui_(new Ui::BookStatusDetailDialog),
-      clientManager_(nullptr) {
+    : DetailDialogBase(parent)
+    , ui_(new Ui::BookStatusDetailDialog)
+    , clientManager_(nullptr) {
 
     ui_->setupUi(this);
     WidgetUtils::setupComboBoxes(this);
@@ -49,9 +48,15 @@ BookStatusDetailDialog::~BookStatusDetailDialog() {
     delete ui_;
 }
 
-QTabWidget* BookStatusDetailDialog::tabWidget() const { return ui_->tabWidget; }
-QWidget* BookStatusDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
-ProvenanceWidget* BookStatusDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
+QTabWidget* BookStatusDetailDialog::tabWidget() const {
+    return ui_->tabWidget;
+}
+QWidget* BookStatusDetailDialog::provenanceTab() const {
+    return ui_->provenanceTab;
+}
+ProvenanceWidget* BookStatusDetailDialog::provenanceWidget() const {
+    return ui_->provenanceWidget;
+}
 
 void BookStatusDetailDialog::setupUi() {
     ui_->saveButton->setIcon(
@@ -66,18 +71,16 @@ void BookStatusDetailDialog::setupUi() {
 }
 
 void BookStatusDetailDialog::setupConnections() {
-    connect(ui_->saveButton, &QPushButton::clicked, this,
-            &BookStatusDetailDialog::onSaveClicked);
-    connect(ui_->deleteButton, &QPushButton::clicked, this,
-            &BookStatusDetailDialog::onDeleteClicked);
-    connect(ui_->closeButton, &QPushButton::clicked, this,
-            &BookStatusDetailDialog::onCloseClicked);
+    connect(ui_->saveButton, &QPushButton::clicked, this, &BookStatusDetailDialog::onSaveClicked);
+    connect(
+        ui_->deleteButton, &QPushButton::clicked, this, &BookStatusDetailDialog::onDeleteClicked);
+    connect(ui_->closeButton, &QPushButton::clicked, this, &BookStatusDetailDialog::onCloseClicked);
 
-    connect(ui_->codeEdit, &QLineEdit::textChanged, this,
-            &BookStatusDetailDialog::onCodeChanged);
-    connect(ui_->nameEdit, &QLineEdit::textChanged, this,
-            &BookStatusDetailDialog::onFieldChanged);
-    connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this,
+    connect(ui_->codeEdit, &QLineEdit::textChanged, this, &BookStatusDetailDialog::onCodeChanged);
+    connect(ui_->nameEdit, &QLineEdit::textChanged, this, &BookStatusDetailDialog::onFieldChanged);
+    connect(ui_->descriptionEdit,
+            &QPlainTextEdit::textChanged,
+            this,
             &BookStatusDetailDialog::onFieldChanged);
 }
 
@@ -89,8 +92,7 @@ void BookStatusDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
 
-void BookStatusDetailDialog::setStatus(
-    const refdata::domain::book_status& status) {
+void BookStatusDetailDialog::setStatus(const refdata::domain::book_status& status) {
     status_ = status;
     updateUiFromStatus();
 }
@@ -120,8 +122,11 @@ void BookStatusDetailDialog::updateUiFromStatus() {
     ui_->nameEdit->setText(QString::fromStdString(status_.name));
     ui_->descriptionEdit->setPlainText(QString::fromStdString(status_.description));
 
-    populateProvenance(status_.version, status_.modified_by, status_.performed_by,
-                       status_.recorded_at, status_.change_reason_code,
+    populateProvenance(status_.version,
+                       status_.modified_by,
+                       status_.performed_by,
+                       status_.recorded_at,
+                       status_.change_reason_code,
                        status_.change_commentary);
     hasChanges_ = false;
     updateSaveButtonState();
@@ -161,25 +166,24 @@ bool BookStatusDetailDialog::validateInput() {
 
 void BookStatusDetailDialog::onSaveClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot save book status while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot save book status while disconnected from server.");
         return;
     }
 
     if (!validateInput()) {
-        MessageBoxHelper::warning(this, "Invalid Input",
-            "Please fill in all required fields (Code and Name).");
+        MessageBoxHelper::warning(
+            this, "Invalid Input", "Please fill in all required fields (Code and Name).");
         return;
     }
 
     updateStatusFromUi();
 
-    const auto crOpType = createMode_
-        ? ChangeReasonDialog::OperationType::Create
-        : ChangeReasonDialog::OperationType::Amend;
-    const auto crSel = promptChangeReason(crOpType, hasChanges_,
-        createMode_ ? "system" : "common");
-    if (!crSel) return;
+    const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
+                                        ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
+    if (!crSel)
+        return;
     status_.change_reason_code = crSel->reason_code;
     status_.change_commentary = crSel->commentary;
 
@@ -199,7 +203,8 @@ void BookStatusDetailDialog::onSaveClicked() {
 
         refdata::messaging::save_book_status_request request;
         request.data = status;
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -209,8 +214,7 @@ void BookStatusDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
@@ -235,13 +239,15 @@ void BookStatusDetailDialog::onSaveClicked() {
 
 void BookStatusDetailDialog::onDeleteClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot delete book status while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot delete book status while disconnected from server.");
         return;
     }
 
     QString code = QString::fromStdString(status_.code);
-    auto reply = MessageBoxHelper::question(this, "Delete Book Status",
+    auto reply = MessageBoxHelper::question(
+        this,
+        "Delete Book Status",
         QString("Are you sure you want to delete book status '%1'?").arg(code),
         QMessageBox::Yes | QMessageBox::No);
 
@@ -249,9 +255,10 @@ void BookStatusDetailDialog::onDeleteClicked() {
         return;
     }
 
-    const auto crSel = promptChangeReason(
-        ChangeReasonDialog::OperationType::Delete, true, "common");
-    if (!crSel) return;
+    const auto crSel =
+        promptChangeReason(ChangeReasonDialog::OperationType::Delete, true, "common");
+    if (!crSel)
+        return;
 
     BOOST_LOG_SEV(lg(), info) << "Deleting book status: " << status_.code;
 
@@ -269,7 +276,8 @@ void BookStatusDetailDialog::onDeleteClicked() {
 
         refdata::messaging::delete_book_status_request request;
         request.status = code;
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -279,8 +287,7 @@ void BookStatusDetailDialog::onDeleteClicked() {
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
-            self, [self, code, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, code, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 

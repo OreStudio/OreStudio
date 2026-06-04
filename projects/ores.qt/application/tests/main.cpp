@@ -17,10 +17,10 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.testing/logging_listener.hpp"
 #include <QCoreApplication>
 #include <catch2/catch_session.hpp>
 #include <catch2/reporters/catch_reporter_registrars.hpp>
-#include "ores.testing/logging_listener.hpp"
 
 CATCH_REGISTER_LISTENER(ores::testing::logging_listener)
 

@@ -20,17 +20,17 @@
 #ifndef ORES_QT_MARKET_FIXING_DETAIL_MDI_WINDOW_HPP
 #define ORES_QT_MARKET_FIXING_DETAIL_MDI_WINDOW_HPP
 
-#include <memory>
+#include "ores.logging/make_logger.hpp"
+#include "ores.marketdata.api/domain/market_series.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/ClientMarketFixingModel.hpp"
+#include "ores.qt/EntityListMdiWindow.hpp"
 #include <QLabel>
+#include <QSortFilterProxyModel>
 #include <QTableView>
 #include <QToolBar>
 #include <QVBoxLayout>
-#include <QSortFilterProxyModel>
-#include "ores.qt/EntityListMdiWindow.hpp"
-#include "ores.qt/ClientManager.hpp"
-#include "ores.qt/ClientMarketFixingModel.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.marketdata.api/domain/market_series.hpp"
+#include <memory>
 
 namespace ores::qt {
 
@@ -41,8 +41,7 @@ class MarketFixingDetailMdiWindow final : public EntityListMdiWindow {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.market_fixing_detail_mdi_window";
+    inline static std::string_view logger_name = "ores.qt.market_fixing_detail_mdi_window";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -51,10 +50,9 @@ private:
     }
 
 public:
-    explicit MarketFixingDetailMdiWindow(
-        ClientManager* clientManager,
-        const marketdata::domain::market_series& series,
-        QWidget* parent = nullptr);
+    explicit MarketFixingDetailMdiWindow(ClientManager* clientManager,
+                                         const marketdata::domain::market_series& series,
+                                         QWidget* parent = nullptr);
     ~MarketFixingDetailMdiWindow() override = default;
 
     [[nodiscard]] const boost::uuids::uuid& seriesId() const;

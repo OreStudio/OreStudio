@@ -18,28 +18,26 @@
  *
  */
 #include "ores.qt/AddItemDialog.hpp"
-#include "ores.qt/TagSelectorWidget.hpp"
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/WidgetUtils.hpp"
 #include "ores.connections/service/connection_manager.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/TagSelectorWidget.hpp"
+#include "ores.qt/WidgetUtils.hpp"
 #include "ores.security/validation/password_validator.hpp"
-#include <QVBoxLayout>
-#include <QHBoxLayout>
 #include <QFormLayout>
-#include <QPushButton>
-#include <QMessageBox>
-#include <QtConcurrent>
 #include <QFutureWatcher>
+#include <QHBoxLayout>
+#include <QMessageBox>
+#include <QPushButton>
+#include <QVBoxLayout>
+#include <QtConcurrent>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
-AddItemDialog::AddItemDialog(
-    connections::service::connection_manager* manager,
-    QWidget* parent)
-    : QWidget(parent),
-      manager_(manager) {
+AddItemDialog::AddItemDialog(connections::service::connection_manager* manager, QWidget* parent)
+    : QWidget(parent)
+    , manager_(manager) {
 
     setupUI();
     updateFieldVisibility();
@@ -153,20 +151,20 @@ void AddItemDialog::setupUI() {
     populateEnvironmentCombo();
 
     // Connections
-    connect(typeCombo_, QOverload<int>::of(&QComboBox::currentIndexChanged),
-            this, &AddItemDialog::onTypeChanged);
-    connect(nameEdit_, &QLineEdit::textChanged,
-            this, &AddItemDialog::updateSaveButtonState);
-    connect(hostEdit_, &QLineEdit::textChanged,
-            this, &AddItemDialog::updateSaveButtonState);
-    connect(usernameEdit_, &QLineEdit::textChanged,
-            this, &AddItemDialog::updateSaveButtonState);
-    connect(passwordEdit_, &QLineEdit::textChanged,
-            this, &AddItemDialog::onPasswordChanged);
-    connect(showPasswordCheckbox_, &QCheckBox::toggled,
-            this, &AddItemDialog::togglePasswordVisibility);
-    connect(environmentCombo_, QOverload<int>::of(&QComboBox::currentIndexChanged),
-            this, &AddItemDialog::onEnvironmentComboChanged);
+    connect(typeCombo_,
+            QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this,
+            &AddItemDialog::onTypeChanged);
+    connect(nameEdit_, &QLineEdit::textChanged, this, &AddItemDialog::updateSaveButtonState);
+    connect(hostEdit_, &QLineEdit::textChanged, this, &AddItemDialog::updateSaveButtonState);
+    connect(usernameEdit_, &QLineEdit::textChanged, this, &AddItemDialog::updateSaveButtonState);
+    connect(passwordEdit_, &QLineEdit::textChanged, this, &AddItemDialog::onPasswordChanged);
+    connect(
+        showPasswordCheckbox_, &QCheckBox::toggled, this, &AddItemDialog::togglePasswordVisibility);
+    connect(environmentCombo_,
+            QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this,
+            &AddItemDialog::onEnvironmentComboChanged);
 }
 
 QWidget* AddItemDialog::setupButtons() {
@@ -189,8 +187,7 @@ QWidget* AddItemDialog::setupButtons() {
     layout->addWidget(cancelButton_);
 
     saveButton_ = new QPushButton(tr("Save"), bar);
-    saveButton_->setIcon(
-        IconUtils::createRecoloredIcon(Icon::Save, IconUtils::DefaultIconColor));
+    saveButton_->setIcon(IconUtils::createRecoloredIcon(Icon::Save, IconUtils::DefaultIconColor));
     saveButton_->setDefault(true);
     saveButton_->setEnabled(false);
     layout->addWidget(saveButton_);
@@ -211,9 +208,8 @@ void AddItemDialog::populateFolderCombo() {
     try {
         auto folders = manager_->get_all_folders();
         for (const auto& folder : folders) {
-            folderCombo_->addItem(
-                QString::fromStdString(folder.name),
-                QString::fromStdString(boost::uuids::to_string(folder.id)));
+            folderCombo_->addItem(QString::fromStdString(folder.name),
+                                  QString::fromStdString(boost::uuids::to_string(folder.id)));
         }
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Failed to load folders: " << e.what();
@@ -229,9 +225,8 @@ void AddItemDialog::populateEnvironmentCombo() {
     try {
         auto envs = manager_->get_all_environments();
         for (const auto& env : envs) {
-            environmentCombo_->addItem(
-                QString::fromStdString(env.name),
-                QString::fromStdString(boost::uuids::to_string(env.id)));
+            environmentCombo_->addItem(QString::fromStdString(env.name),
+                                       QString::fromStdString(boost::uuids::to_string(env.id)));
         }
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Failed to load environments: " << e.what();
@@ -241,8 +236,10 @@ void AddItemDialog::populateEnvironmentCombo() {
 void AddItemDialog::setItemType(ItemType type) {
     itemType_ = type;
     int idx = 0;
-    if (type == ItemType::Environment) idx = 1;
-    else if (type == ItemType::Connection) idx = 2;
+    if (type == ItemType::Environment)
+        idx = 1;
+    else if (type == ItemType::Connection)
+        idx = 2;
     typeCombo_->setCurrentIndex(idx);
     updateFieldVisibility();
     updateSaveButtonState();
@@ -254,9 +251,12 @@ void AddItemDialog::setCreateMode(bool createMode) {
 
     if (!createMode) {
         QString typeName;
-        if (itemType_ == ItemType::Folder) typeName = tr("Folder");
-        else if (itemType_ == ItemType::Environment) typeName = tr("Environment");
-        else typeName = tr("Connection");
+        if (itemType_ == ItemType::Folder)
+            typeName = tr("Folder");
+        else if (itemType_ == ItemType::Environment)
+            typeName = tr("Environment");
+        else
+            typeName = tr("Connection");
         setWindowTitle(tr("Edit %1").arg(typeName));
     } else {
         setWindowTitle(tr("Add Item"));
@@ -280,7 +280,8 @@ void AddItemDialog::onEnvironmentComboChanged(int index) {
     } else {
         // Environment selected — fill and lock host/port
         QString envIdStr = environmentCombo_->itemData(index).toString();
-        if (envIdStr.isEmpty()) return;
+        if (envIdStr.isEmpty())
+            return;
 
         try {
             boost::uuids::string_generator gen;
@@ -381,8 +382,7 @@ void AddItemDialog::setFolder(const connections::domain::folder& folder) {
 
     // Set parent folder
     if (folder.parent_id) {
-        QString parentIdStr = QString::fromStdString(
-            boost::uuids::to_string(*folder.parent_id));
+        QString parentIdStr = QString::fromStdString(boost::uuids::to_string(*folder.parent_id));
         int index = folderCombo_->findData(parentIdStr);
         if (index >= 0)
             folderCombo_->setCurrentIndex(index);
@@ -417,8 +417,7 @@ connections::domain::folder AddItemDialog::getFolder() const {
 
 void AddItemDialog::setInitialParent(const std::optional<boost::uuids::uuid>& parentId) {
     if (parentId) {
-        QString parentIdStr = QString::fromStdString(
-            boost::uuids::to_string(*parentId));
+        QString parentIdStr = QString::fromStdString(boost::uuids::to_string(*parentId));
         int index = folderCombo_->findData(parentIdStr);
         if (index >= 0)
             folderCombo_->setCurrentIndex(index);
@@ -439,8 +438,7 @@ void AddItemDialog::setEnvironment(const connections::domain::environment& env) 
 
     // Set folder
     if (env.folder_id) {
-        QString folderIdStr = QString::fromStdString(
-            boost::uuids::to_string(*env.folder_id));
+        QString folderIdStr = QString::fromStdString(boost::uuids::to_string(*env.folder_id));
         int index = folderCombo_->findData(folderIdStr);
         if (index >= 0)
             folderCombo_->setCurrentIndex(index);
@@ -491,8 +489,7 @@ void AddItemDialog::setConnection(const connections::domain::connection& conn) {
     // Set up environment link or manual host/port
     if (conn.environment_id) {
         linkedEnvironmentId_ = conn.environment_id;
-        QString envIdStr = QString::fromStdString(
-            boost::uuids::to_string(*conn.environment_id));
+        QString envIdStr = QString::fromStdString(boost::uuids::to_string(*conn.environment_id));
         int index = environmentCombo_->findData(envIdStr);
         if (index >= 0) {
             environmentCombo_->setCurrentIndex(index);
@@ -501,14 +498,15 @@ void AddItemDialog::setConnection(const connections::domain::connection& conn) {
     } else {
         linkedEnvironmentId_ = std::nullopt;
         environmentCombo_->setCurrentIndex(0);
-        if (conn.host) hostEdit_->setText(QString::fromStdString(*conn.host));
-        if (conn.port) portSpinBox_->setValue(*conn.port);
+        if (conn.host)
+            hostEdit_->setText(QString::fromStdString(*conn.host));
+        if (conn.port)
+            portSpinBox_->setValue(*conn.port);
     }
 
     // Set folder
     if (conn.folder_id) {
-        QString folderIdStr = QString::fromStdString(
-            boost::uuids::to_string(*conn.folder_id));
+        QString folderIdStr = QString::fromStdString(boost::uuids::to_string(*conn.folder_id));
         int index = folderCombo_->findData(folderIdStr);
         if (index >= 0)
             folderCombo_->setCurrentIndex(index);
@@ -552,8 +550,7 @@ connections::domain::connection AddItemDialog::getConnection() const {
 
 void AddItemDialog::setInitialFolder(const std::optional<boost::uuids::uuid>& folderId) {
     if (folderId) {
-        QString folderIdStr = QString::fromStdString(
-            boost::uuids::to_string(*folderId));
+        QString folderIdStr = QString::fromStdString(boost::uuids::to_string(*folderId));
         int index = folderCombo_->findData(folderIdStr);
         if (index >= 0)
             folderCombo_->setCurrentIndex(index);
@@ -590,8 +587,8 @@ void AddItemDialog::onPasswordChanged() {
 }
 
 void AddItemDialog::togglePasswordVisibility() {
-    passwordEdit_->setEchoMode(
-        showPasswordCheckbox_->isChecked() ? QLineEdit::Normal : QLineEdit::Password);
+    passwordEdit_->setEchoMode(showPasswordCheckbox_->isChecked() ? QLineEdit::Normal :
+                                                                    QLineEdit::Password);
 }
 
 QString AddItemDialog::itemName() const {
@@ -602,8 +599,7 @@ bool AddItemDialog::validateInput() {
     QString name = nameEdit_->text().trimmed();
 
     if (name.isEmpty()) {
-        QMessageBox::warning(this, tr("Validation Error"),
-            tr("Name cannot be empty."));
+        QMessageBox::warning(this, tr("Validation Error"), tr("Name cannot be empty."));
         nameEdit_->setFocus();
         return false;
     }
@@ -611,23 +607,22 @@ bool AddItemDialog::validateInput() {
     if (itemType_ == ItemType::Environment) {
         QString host = hostEdit_->text().trimmed();
         if (host.isEmpty()) {
-            QMessageBox::warning(this, tr("Validation Error"),
-                tr("Host cannot be empty for an environment."));
+            QMessageBox::warning(
+                this, tr("Validation Error"), tr("Host cannot be empty for an environment."));
             hostEdit_->setFocus();
             return false;
         }
     } else if (itemType_ == ItemType::Connection) {
         // Must have either a linked environment or a manual host
         if (!linkedEnvironmentId_ && hostEdit_->text().trimmed().isEmpty()) {
-            QMessageBox::warning(this, tr("Validation Error"),
-                tr("Please select an environment or enter a host."));
+            QMessageBox::warning(
+                this, tr("Validation Error"), tr("Please select an environment or enter a host."));
             hostEdit_->setFocus();
             return false;
         }
 
         if (usernameEdit_->text().trimmed().isEmpty()) {
-            QMessageBox::warning(this, tr("Validation Error"),
-                tr("Username cannot be empty."));
+            QMessageBox::warning(this, tr("Validation Error"), tr("Username cannot be empty."));
             usernameEdit_->setFocus();
             return false;
         }
@@ -636,12 +631,13 @@ bool AddItemDialog::validateInput() {
         QString password = passwordEdit_->text();
         if (!password.isEmpty()) {
             if (isCreateMode_ || passwordChanged_) {
-                auto result = security::validation::password_validator::validate(
-                    password.toStdString());
+                auto result =
+                    security::validation::password_validator::validate(password.toStdString());
                 if (!result.is_valid) {
-                    QMessageBox::warning(this, tr("Password Policy"),
-                        tr("Password does not meet security requirements:\n\n%1")
-                            .arg(QString::fromStdString(result.error_message)));
+                    QMessageBox::warning(this,
+                                         tr("Password Policy"),
+                                         tr("Password does not meet security requirements:\n\n%1")
+                                             .arg(QString::fromStdString(result.error_message)));
                     passwordEdit_->setFocus();
                     return false;
                 }
@@ -787,8 +783,9 @@ void AddItemDialog::onTestClicked() {
     int port = portSpinBox_->value();
 
     if (host.isEmpty() || username.isEmpty()) {
-        QMessageBox::warning(this, tr("Test Connection"),
-            tr("Please enter host and username to test the connection."));
+        QMessageBox::warning(this,
+                             tr("Test Connection"),
+                             tr("Please enter host and username to test the connection."));
         return;
     }
 
@@ -798,23 +795,22 @@ void AddItemDialog::onTestClicked() {
             password = QString::fromStdString(manager_->get_password(connectionId_));
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), error) << "Failed to retrieve saved password: " << e.what();
-            QMessageBox::warning(this, tr("Test Connection"),
-                tr("Please enter password to test the connection."));
+            QMessageBox::warning(
+                this, tr("Test Connection"), tr("Please enter password to test the connection."));
             return;
         }
     }
 
     if (password.isEmpty()) {
-        QMessageBox::warning(this, tr("Test Connection"),
-            tr("Please enter password to test the connection."));
+        QMessageBox::warning(
+            this, tr("Test Connection"), tr("Please enter password to test the connection."));
         return;
     }
 
     testButton_->setEnabled(false);
     testButton_->setText(tr("Testing..."));
 
-    BOOST_LOG_SEV(lg(), info) << "Testing connection to " << host.toStdString()
-                              << ":" << port;
+    BOOST_LOG_SEV(lg(), info) << "Testing connection to " << host.toStdString() << ":" << port;
 
     auto* watcher = new QFutureWatcher<QString>(this);
     connect(watcher, &QFutureWatcher<QString>::finished, this, [this, watcher]() {
@@ -825,23 +821,21 @@ void AddItemDialog::onTestClicked() {
         testButton_->setText(tr("Test"));
 
         if (error.isEmpty()) {
-            QMessageBox::information(this, tr("Test Connection"),
-                tr("Connection successful!"));
+            QMessageBox::information(this, tr("Test Connection"), tr("Connection successful!"));
             using namespace ores::logging;
             BOOST_LOG_SEV(lg(), info) << "Connection test successful";
         } else {
-            QMessageBox::warning(this, tr("Test Connection"),
-                tr("Connection failed: %1").arg(error));
+            QMessageBox::warning(
+                this, tr("Test Connection"), tr("Connection failed: %1").arg(error));
             using namespace ores::logging;
             BOOST_LOG_SEV(lg(), warn) << "Connection test failed: " << error.toStdString();
         }
     });
 
-    QFuture<QString> future = QtConcurrent::run(
-        [cb = testCallback_, host, port, username, password]() {
+    QFuture<QString> future =
+        QtConcurrent::run([cb = testCallback_, host, port, username, password]() {
             return cb(host, port, username, password);
-        }
-    );
+        });
     watcher->setFuture(future);
 }
 

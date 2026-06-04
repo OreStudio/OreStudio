@@ -18,39 +18,44 @@
  *
  */
 #include "ores.qt/ClientChangeReasonCategoryModel.hpp"
-
-#include <QtConcurrent>
-#include <QBrush>
 #include "ores.dq.api/messaging/change_management_protocol.hpp"
-#include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
+#include <QBrush>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    std::string change_reason_category_key_extractor(const dq::domain::change_reason_category& c) {
-        return c.code;
-    }
+std::string change_reason_category_key_extractor(const dq::domain::change_reason_category& c) {
+    return c.code;
+}
 }
 
-ClientChangeReasonCategoryModel::ClientChangeReasonCategoryModel(
-    ClientManager* clientManager, QObject* parent)
-    : AbstractClientModel(parent),
-      clientManager_(clientManager),
-      watcher_(new QFutureWatcher<FetchResult>(this)),
-      recencyTracker_(change_reason_category_key_extractor),
-      pulseManager_(new RecencyPulseManager(this)) {
+ClientChangeReasonCategoryModel::ClientChangeReasonCategoryModel(ClientManager* clientManager,
+                                                                 QObject* parent)
+    : AbstractClientModel(parent)
+    , clientManager_(clientManager)
+    , watcher_(new QFutureWatcher<FetchResult>(this))
+    , recencyTracker_(change_reason_category_key_extractor)
+    , pulseManager_(new RecencyPulseManager(this)) {
 
-    connect(watcher_, &QFutureWatcher<FetchResult>::finished,
-            this, &ClientChangeReasonCategoryModel::onCategoriesLoaded);
+    connect(watcher_,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            &ClientChangeReasonCategoryModel::onCategoriesLoaded);
 
-    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
-        this, &ClientChangeReasonCategoryModel::onPulseStateChanged);
-    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
-        this, &ClientChangeReasonCategoryModel::onPulsingComplete);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulse_state_changed,
+            this,
+            &ClientChangeReasonCategoryModel::onPulseStateChanged);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulsing_complete,
+            this,
+            &ClientChangeReasonCategoryModel::onPulsingComplete);
 }
 
 int ClientChangeReasonCategoryModel::rowCount(const QModelIndex& parent) const {
@@ -65,8 +70,7 @@ int ClientChangeReasonCategoryModel::columnCount(const QModelIndex& parent) cons
     return ColumnCount;
 }
 
-QVariant ClientChangeReasonCategoryModel::data(
-    const QModelIndex& index, int role) const {
+QVariant ClientChangeReasonCategoryModel::data(const QModelIndex& index, int role) const {
     if (!index.isValid())
         return {};
 
@@ -78,18 +82,18 @@ QVariant ClientChangeReasonCategoryModel::data(
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-        case Code:
-            return QString::fromStdString(category.code);
-        case Description:
-            return QString::fromStdString(category.description);
-        case Version:
-            return category.version;
-        case ModifiedBy:
-            return QString::fromStdString(category.modified_by);
-        case RecordedAt:
-            return relative_time_helper::format(category.recorded_at);
-        default:
-            return {};
+            case Code:
+                return QString::fromStdString(category.code);
+            case Description:
+                return QString::fromStdString(category.description);
+            case Version:
+                return category.version;
+            case ModifiedBy:
+                return QString::fromStdString(category.modified_by);
+            case RecordedAt:
+                return relative_time_helper::format(category.recorded_at);
+            default:
+                return {};
         }
     }
 
@@ -100,24 +104,25 @@ QVariant ClientChangeReasonCategoryModel::data(
     return {};
 }
 
-QVariant ClientChangeReasonCategoryModel::headerData(
-    int section, Qt::Orientation orientation, int role) const {
+QVariant ClientChangeReasonCategoryModel::headerData(int section,
+                                                     Qt::Orientation orientation,
+                                                     int role) const {
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return {};
 
     switch (section) {
-    case Code:
-        return tr("Code");
-    case Description:
-        return tr("Description");
-    case Version:
-        return tr("Version");
-    case ModifiedBy:
-        return tr("Modified By");
-    case RecordedAt:
-        return tr("Recorded At");
-    default:
-        return {};
+        case Code:
+            return tr("Code");
+        case Description:
+            return tr("Description");
+        case Version:
+            return tr("Version");
+        case ModifiedBy:
+            return tr("Modified By");
+        case RecordedAt:
+            return tr("Recorded At");
+        default:
+            return {};
     }
 }
 
@@ -138,27 +143,34 @@ void ClientChangeReasonCategoryModel::refresh() {
     QPointer<ClientChangeReasonCategoryModel> self = this;
 
     QFuture<FetchResult> future = QtConcurrent::run([self]() -> FetchResult {
-        return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
-            if (!self || !self->clientManager_) {
-                return {.success = false, .categories = {},
-                        .error_message = "Model was destroyed",
-                        .error_details = {}};
-            }
+        return exception_helper::wrap_async_fetch<FetchResult>(
+            [&]() -> FetchResult {
+                if (!self || !self->clientManager_) {
+                    return {.success = false,
+                            .categories = {},
+                            .error_message = "Model was destroyed",
+                            .error_details = {}};
+                }
 
-            dq::messaging::get_change_reason_categories_request request;
-            auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
-            if (!response_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to send request";
-                return {.success = false, .categories = {},
-                        .error_message = "Failed to send request",
-                        .error_details = {}};
-            }
+                dq::messaging::get_change_reason_categories_request request;
+                auto response_result =
+                    self->clientManager_->process_authenticated_request(std::move(request));
+                if (!response_result) {
+                    BOOST_LOG_SEV(lg(), error) << "Failed to send request";
+                    return {.success = false,
+                            .categories = {},
+                            .error_message = "Failed to send request",
+                            .error_details = {}};
+                }
 
-            BOOST_LOG_SEV(lg(), debug) << "Fetched " << response_result->categories.size()
-                                       << " change reason categories";
-            return {.success = true, .categories = std::move(response_result->categories),
-                    .error_message = {}, .error_details = {}};
-        }, "change reason categories");
+                BOOST_LOG_SEV(lg(), debug) << "Fetched " << response_result->categories.size()
+                                           << " change reason categories";
+                return {.success = true,
+                        .categories = std::move(response_result->categories),
+                        .error_message = {},
+                        .error_details = {}};
+            },
+            "change reason categories");
     });
 
     watcher_->setFuture(future);
@@ -170,8 +182,8 @@ void ClientChangeReasonCategoryModel::onCategoriesLoaded() {
     const auto result = watcher_->result();
 
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to fetch change reason categories: "
-                                   << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to fetch change reason categories: " << result.error_message.toStdString();
         emit loadError(result.error_message, result.error_details);
         return;
     }
@@ -183,8 +195,8 @@ void ClientChangeReasonCategoryModel::onCategoriesLoaded() {
     const bool has_recent = recencyTracker_.update(categories_);
     if (has_recent && !pulseManager_->is_pulsing()) {
         pulseManager_->start_pulsing();
-        BOOST_LOG_SEV(lg(), debug) << "Found " << recencyTracker_.recent_count()
-                                   << " categories newer than last reload";
+        BOOST_LOG_SEV(lg(), debug)
+            << "Found " << recencyTracker_.recent_count() << " categories newer than last reload";
     }
 
     BOOST_LOG_SEV(lg(), info) << "Loaded " << categories_.size() << " change reason categories";
@@ -199,8 +211,7 @@ ClientChangeReasonCategoryModel::getCategory(int row) const {
     return &categories_[idx];
 }
 
-QVariant ClientChangeReasonCategoryModel::recency_foreground_color(
-    const std::string& code) const {
+QVariant ClientChangeReasonCategoryModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {
         return color_constants::stale_indicator;
     }
@@ -209,8 +220,8 @@ QVariant ClientChangeReasonCategoryModel::recency_foreground_color(
 
 void ClientChangeReasonCategoryModel::onPulseStateChanged(bool /*isOn*/) {
     if (!categories_.empty()) {
-        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
-            {Qt::ForegroundRole});
+        emit dataChanged(
+            index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::ForegroundRole});
     }
 }
 

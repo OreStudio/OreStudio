@@ -39,7 +39,6 @@ void OreDateEdit::setIsoDate(const std::string& iso) {
         setDate(minimumDate());
         return;
     }
-    const QDate d = QDate::fromString(
-        QString::fromStdString(iso), QStringLiteral("yyyy-MM-dd"));
+    const QDate d = QDate::fromString(QString::fromStdString(iso), QStringLiteral("yyyy-MM-dd"));
     setDate(d.isValid() ? d : minimumDate());
 }

@@ -18,7 +18,6 @@
  *
  */
 #include "ores.qt/TransferProgressDelegate.hpp"
-
 #include <QApplication>
 #include <QPainter>
 #include <QStyleOptionProgressBar>
@@ -28,28 +27,25 @@ namespace ores::qt {
 TransferProgressDelegate::TransferProgressDelegate(QObject* parent)
     : QStyledItemDelegate(parent) {}
 
-void TransferProgressDelegate::paint(
-    QPainter* painter,
-    const QStyleOptionViewItem& option,
-    const QModelIndex& index) const {
+void TransferProgressDelegate::paint(QPainter* painter,
+                                     const QStyleOptionViewItem& option,
+                                     const QModelIndex& index) const {
     const int value = index.data(Qt::UserRole).toInt();
 
     QStyleOptionProgressBar bar;
-    bar.rect     = option.rect;
-    bar.minimum  = 0;
-    bar.maximum  = 100;
+    bar.rect = option.rect;
+    bar.minimum = 0;
+    bar.maximum = 100;
     bar.progress = value;
-    bar.text     = QString("%1%").arg(value);
+    bar.text = QString("%1%").arg(value);
     bar.textVisible = true;
-    bar.state    = QStyle::State_Enabled | QStyle::State_Horizontal;
+    bar.state = QStyle::State_Enabled | QStyle::State_Horizontal;
 
-    QApplication::style()->drawControl(
-        QStyle::CE_ProgressBar, &bar, painter);
+    QApplication::style()->drawControl(QStyle::CE_ProgressBar, &bar, painter);
 }
 
-QSize TransferProgressDelegate::sizeHint(
-    const QStyleOptionViewItem& option,
-    const QModelIndex& index) const {
+QSize TransferProgressDelegate::sizeHint(const QStyleOptionViewItem& option,
+                                         const QModelIndex& index) const {
     Q_UNUSED(index)
     // Match the row height; let the view decide the width.
     return {120, option.rect.height()};

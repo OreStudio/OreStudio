@@ -20,17 +20,17 @@
 #ifndef ORES_QT_ACCOUNT_PARTIES_WIDGET_HPP
 #define ORES_QT_ACCOUNT_PARTIES_WIDGET_HPP
 
-#include <QWidget>
-#include <QListWidget>
-#include <QComboBox>
-#include <QToolButton>
-#include <QGroupBox>
-#include <vector>
-#include <boost/uuid/uuid.hpp>
-#include "ores.qt/ClientManager.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.iam.api/domain/account_party.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
 #include "ores.refdata.api/domain/party.hpp"
+#include <QComboBox>
+#include <QGroupBox>
+#include <QListWidget>
+#include <QToolButton>
+#include <QWidget>
+#include <boost/uuid/uuid.hpp>
+#include <vector>
 
 namespace ores::qt {
 
@@ -49,8 +49,7 @@ class AccountPartiesWidget : public QWidget {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.account_parties_widget";
+    inline static std::string_view logger_name = "ores.qt.account_parties_widget";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -98,20 +97,20 @@ private:
     void refreshView();
     void updateButtonStates();
 
-    QGroupBox*   partiesGroup_;
+    QGroupBox* partiesGroup_;
     QListWidget* assignedList_;
-    QComboBox*   partyCombo_;
+    QComboBox* partyCombo_;
     QToolButton* addButton_;
     QToolButton* removeButton_;
 
-    ClientManager*     clientManager_ = nullptr;
+    ClientManager* clientManager_ = nullptr;
     boost::uuids::uuid accountId_;
-    std::string        accountType_;
-    bool               readOnly_ = false;
+    std::string accountType_;
+    bool readOnly_ = false;
 
     // DB state
-    std::vector<iam::domain::account_party>  assignedParties_;
-    std::vector<refdata::domain::party>      allParties_;
+    std::vector<iam::domain::account_party> assignedParties_;
+    std::vector<refdata::domain::party> allParties_;
 
     // Pending local changes (committed by the parent dialog's Save action)
     std::vector<boost::uuids::uuid> pendingAdds_;

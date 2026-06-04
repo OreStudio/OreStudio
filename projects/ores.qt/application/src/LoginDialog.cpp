@@ -18,21 +18,21 @@
  *
  */
 #include "ores.qt/LoginDialog.hpp"
-#include <boost/uuid/uuid_io.hpp>
-#include <QSet>
-#include <QStandardItemModel>
+#include "ores.qt/ChangePasswordDialog.hpp"
 #include "ores.qt/DialogStyles.hpp"
 #include "ores.qt/IconUtils.hpp"
-#include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/ChangePasswordDialog.hpp"
 #include "ores.qt/ImageCache.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/PartyPickerDialog.hpp"
 #include "ores.utility/version/version.hpp"
-#include <QHBoxLayout>
-#include <QVBoxLayout>
-#include <QKeyEvent>
-#include <QtConcurrent>
 #include <QFutureWatcher>
+#include <QHBoxLayout>
+#include <QKeyEvent>
+#include <QSet>
+#include <QStandardItemModel>
+#include <QVBoxLayout>
+#include <QtConcurrent>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
@@ -55,7 +55,7 @@ const QString titleStyle = R"(
 constexpr int ItemTypeRole = Qt::UserRole;
 constexpr int ItemNameRole = Qt::UserRole + 1;
 constexpr int TypeEnvironment = static_cast<int>(LoginDialog::QuickConnectItem::Type::Environment);
-constexpr int TypeConnection  = static_cast<int>(LoginDialog::QuickConnectItem::Type::Connection);
+constexpr int TypeConnection = static_cast<int>(LoginDialog::QuickConnectItem::Type::Connection);
 
 }
 
@@ -182,9 +182,8 @@ void LoginDialog::rebuildQuickConnectModel(const QList<QuickConnectItem>& items)
         model->appendRow(makeHeader(tr("  Environments")));
         auto icon = IconUtils::createRecoloredIcon(Icon::Server, QColor("#9090b0"));
         for (const auto* it : envs) {
-            const QString text = it->subtitle.isEmpty()
-                ? it->name
-                : it->name + "   " + it->subtitle;
+            const QString text =
+                it->subtitle.isEmpty() ? it->name : it->name + "   " + it->subtitle;
             auto* row = new QStandardItem(icon, text);
             row->setData(TypeEnvironment, ItemTypeRole);
             row->setData(it->name, ItemNameRole);
@@ -196,9 +195,8 @@ void LoginDialog::rebuildQuickConnectModel(const QList<QuickConnectItem>& items)
         model->appendRow(makeHeader(tr("  Connections")));
         auto icon = IconUtils::createRecoloredIcon(Icon::PlugConnected, QColor("#90b090"));
         for (const auto* it : conns) {
-            const QString text = it->subtitle.isEmpty()
-                ? it->name
-                : it->name + "   [" + it->subtitle + "]";
+            const QString text =
+                it->subtitle.isEmpty() ? it->name : it->name + "   [" + it->subtitle + "]";
             auto* row = new QStandardItem(icon, text);
             row->setData(TypeConnection, ItemTypeRole);
             row->setData(it->name, ItemNameRole);
@@ -266,28 +264,28 @@ void LoginDialog::lockServerFields(bool locked) {
     hostEdit_->setReadOnly(locked);
     portSpinBox_->setReadOnly(locked);
     subjectPrefixEdit_->setReadOnly(locked);
-    hostEdit_->setStyleSheet(
-        locked ? dialog_styles::input_field_locked : dialog_styles::input_field);
-    portSpinBox_->setStyleSheet(
-        locked ? dialog_styles::spin_box_locked : dialog_styles::spin_box);
-    subjectPrefixEdit_->setStyleSheet(
-        locked ? dialog_styles::input_field_locked : dialog_styles::input_field);
+    hostEdit_->setStyleSheet(locked ? dialog_styles::input_field_locked :
+                                      dialog_styles::input_field);
+    portSpinBox_->setStyleSheet(locked ? dialog_styles::spin_box_locked : dialog_styles::spin_box);
+    subjectPrefixEdit_->setStyleSheet(locked ? dialog_styles::input_field_locked :
+                                               dialog_styles::input_field);
 }
 
 void LoginDialog::lockCredentialFields(bool locked) {
     credentialFieldsLocked_ = locked;
     usernameEdit_->setReadOnly(locked);
     passwordEdit_->setReadOnly(locked);
-    usernameEdit_->setStyleSheet(
-        locked ? dialog_styles::input_field_locked : dialog_styles::input_field);
-    passwordEdit_->setStyleSheet(
-        locked ? dialog_styles::input_field_locked : dialog_styles::input_field);
+    usernameEdit_->setStyleSheet(locked ? dialog_styles::input_field_locked :
+                                          dialog_styles::input_field);
+    passwordEdit_->setStyleSheet(locked ? dialog_styles::input_field_locked :
+                                          dialog_styles::input_field);
 }
 
 void LoginDialog::enableForm(bool enabled) {
     loginButton_->setEnabled(enabled);
     signUpButton_->setEnabled(enabled);
-    if (labelFilterCombo_) labelFilterCombo_->setEnabled(enabled);
+    if (labelFilterCombo_)
+        labelFilterCombo_->setEnabled(enabled);
     quickConnectCombo_->setEnabled(enabled);
 
     if (enabled) {
@@ -378,8 +376,7 @@ void LoginDialog::setupAuthFields(QVBoxLayout* layout, QWidget* parent) {
     auto* optionsRow = new QHBoxLayout();
     showPasswordCheck_ = new QCheckBox("Show password", parent);
     showPasswordCheck_->setStyleSheet(dialog_styles::checkbox);
-    connect(showPasswordCheck_, &QCheckBox::toggled,
-            this, &LoginDialog::onShowPasswordToggled);
+    connect(showPasswordCheck_, &QCheckBox::toggled, this, &LoginDialog::onShowPasswordToggled);
 
     rememberMeCheck_ = new QCheckBox("Remember me", parent);
     rememberMeCheck_->setStyleSheet(dialog_styles::checkbox);
@@ -406,8 +403,10 @@ void LoginDialog::setupServerFields(QVBoxLayout* layout, QWidget* parent) {
     labelFilterCombo_->setVisible(false);
     layout->addWidget(labelFilterCombo_);
 
-    connect(labelFilterCombo_, &QComboBox::currentIndexChanged,
-            this, &LoginDialog::onLabelFilterChanged);
+    connect(labelFilterCombo_,
+            &QComboBox::currentIndexChanged,
+            this,
+            &LoginDialog::onLabelFilterChanged);
 
     layout->addSpacing(12);
 
@@ -426,8 +425,10 @@ void LoginDialog::setupServerFields(QVBoxLayout* layout, QWidget* parent) {
     quickConnectCombo_->setVisible(false);
     layout->addWidget(quickConnectCombo_);
 
-    connect(quickConnectCombo_, &QComboBox::currentIndexChanged,
-            this, &LoginDialog::onQuickConnectChanged);
+    connect(quickConnectCombo_,
+            &QComboBox::currentIndexChanged,
+            this,
+            &LoginDialog::onQuickConnectChanged);
 
     layout->addSpacing(12);
 
@@ -486,8 +487,7 @@ void LoginDialog::setupActions(QVBoxLayout* layout, QWidget* parent) {
     loginButton_->setStyleSheet(dialog_styles::primary_button);
     loginButton_->setFixedHeight(40);
     loginButton_->setCursor(Qt::PointingHandCursor);
-    connect(loginButton_, &QPushButton::clicked,
-            this, &LoginDialog::onLoginClicked);
+    connect(loginButton_, &QPushButton::clicked, this, &LoginDialog::onLoginClicked);
     layout->addWidget(loginButton_);
 
     layout->addSpacing(16);
@@ -502,8 +502,7 @@ void LoginDialog::setupActions(QVBoxLayout* layout, QWidget* parent) {
     signUpButton_ = new QPushButton("Register", parent);
     signUpButton_->setStyleSheet(dialog_styles::link_button);
     signUpButton_->setCursor(Qt::PointingHandCursor);
-    connect(signUpButton_, &QPushButton::clicked,
-            this, &LoginDialog::onSignUpClicked);
+    connect(signUpButton_, &QPushButton::clicked, this, &LoginDialog::onSignUpClicked);
 
     signUpRow->addWidget(signUpLabel_);
     signUpRow->addWidget(signUpButton_);
@@ -512,8 +511,8 @@ void LoginDialog::setupActions(QVBoxLayout* layout, QWidget* parent) {
 
 void LoginDialog::setupFooter(QVBoxLayout* layout, QWidget* parent) {
     QString versionText = QString("v%1  %2")
-        .arg(ORES_VERSION)
-        .arg(QString::fromStdString(ores::utility::version::build_info()));
+                              .arg(ORES_VERSION)
+                              .arg(QString::fromStdString(ores::utility::version::build_info()));
     auto* versionLabel = new QLabel(versionText, parent);
     versionLabel->setStyleSheet(dialog_styles::version);
     layout->addWidget(versionLabel, 0, Qt::AlignCenter);
@@ -533,10 +532,12 @@ void LoginDialog::onLabelFilterChanged(int) {
 
 void LoginDialog::onQuickConnectChanged(int idx) {
     auto* model = qobject_cast<QStandardItemModel*>(quickConnectCombo_->model());
-    if (!model) return;
+    if (!model)
+        return;
 
     auto* item = model->item(idx);
-    if (!item || !item->isEnabled()) return; // section header — skip
+    if (!item || !item->isEnabled())
+        return; // section header — skip
 
     const int type = item->data(ItemTypeRole).toInt();
 
@@ -598,25 +599,22 @@ void LoginDialog::onLoginClicked() {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Connecting to " << host.toStdString()
-                              << ":" << port
-                              << " as '" << username.toStdString() << "'"
-                              << " (namespace: '" << prefix.toStdString() << "')";
+    BOOST_LOG_SEV(lg(), debug) << "Connecting to " << host.toStdString() << ":" << port << " as '"
+                               << username.toStdString() << "'"
+                               << " (namespace: '" << prefix.toStdString() << "')";
 
     enableForm(false);
     statusLabel_->setText("Connecting to server...");
     statusLabel_->setStyleSheet(dialog_styles::status);
 
     auto* watcher = new QFutureWatcher<LoginResult>(this);
-    connect(watcher, &QFutureWatcher<LoginResult>::finished,
-            [this, watcher]() {
+    connect(watcher, &QFutureWatcher<LoginResult>::finished, [this, watcher]() {
         try {
             const auto result = watcher->result();
             watcher->deleteLater();
             onLoginResult(result);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), error)
-                << "Login future threw unexpected exception: " << e.what();
+            BOOST_LOG_SEV(lg(), error) << "Login future threw unexpected exception: " << e.what();
             watcher->deleteLater();
             LoginResult r;
             r.error_message = QString::fromStdString(e.what());
@@ -630,39 +628,33 @@ void LoginDialog::onLoginClicked() {
         }
     });
 
-    QFuture<LoginResult> future = QtConcurrent::run(
-        [this, host, port, username, password]() -> LoginResult {
-            BOOST_LOG_SEV(lg(), debug) << "Background login thread started for "
-                                      << host.toStdString() << ":" << port;
+    QFuture<LoginResult> future =
+        QtConcurrent::run([this, host, port, username, password]() -> LoginResult {
+            BOOST_LOG_SEV(lg(), debug)
+                << "Background login thread started for " << host.toStdString() << ":" << port;
             try {
                 return clientManager_->connectAndLogin(
-                    host.toStdString(), port,
-                    username.toStdString(), password.toStdString());
+                    host.toStdString(), port, username.toStdString(), password.toStdString());
             } catch (const std::exception& e) {
-                BOOST_LOG_SEV(lg(), error)
-                    << "connectAndLogin threw exception: " << e.what();
+                BOOST_LOG_SEV(lg(), error) << "connectAndLogin threw exception: " << e.what();
                 LoginResult r;
                 r.error_message = QString::fromStdString(e.what());
                 return r;
             } catch (...) {
-                BOOST_LOG_SEV(lg(), error)
-                    << "connectAndLogin threw unknown exception";
+                BOOST_LOG_SEV(lg(), error) << "connectAndLogin threw unknown exception";
                 LoginResult r;
                 r.error_message = "Unknown internal error";
                 return r;
             }
-        }
-    );
+        });
 
     watcher->setFuture(future);
 }
 
 void LoginDialog::onLoginResult(const LoginResult& result) {
-    BOOST_LOG_SEV(lg(), debug) << "Login result received: "
-                              << (result.success ? "success" : "failure")
-                              << (result.error_message.isEmpty()
-                                  ? ""
-                                  : " — " + result.error_message.toStdString());
+    BOOST_LOG_SEV(lg(), debug)
+        << "Login result received: " << (result.success ? "success" : "failure")
+        << (result.error_message.isEmpty() ? "" : " — " + result.error_message.toStdString());
 
     if (result.bootstrap_mode) {
         BOOST_LOG_SEV(lg(), info) << "System is in bootstrap mode - provisioning required";
@@ -690,13 +682,15 @@ void LoginDialog::onLoginResult(const LoginResult& result) {
                 clientManager_->disconnect();
                 enableForm(true);
                 statusLabel_->setText("");
-                MessageBoxHelper::warning(this, "Password Change Required",
+                MessageBoxHelper::warning(
+                    this,
+                    "Password Change Required",
                     "You must change your password to continue. Please login again to retry.");
             }
         } else if (result.selected_party_id.is_nil() && !result.available_parties.empty()) {
-            BOOST_LOG_SEV(lg(), info) << "Party selection required: "
-                                      << result.available_parties.size()
-                                      << " parties available";
+            BOOST_LOG_SEV(lg(), info)
+                << "Party selection required: " << result.available_parties.size()
+                << " parties available";
             statusLabel_->setText("Select party...");
 
             std::vector<boost::uuids::uuid> recentIds;
@@ -705,27 +699,23 @@ void LoginDialog::onLoginResult(const LoginResult& result) {
                     for (const auto& rp : connectionManager_->get_recent_parties())
                         recentIds.push_back(rp.party_id);
                 } catch (const std::exception& e) {
-                    BOOST_LOG_SEV(lg(), warn)
-                        << "Failed to load recent parties: " << e.what();
+                    BOOST_LOG_SEV(lg(), warn) << "Failed to load recent parties: " << e.what();
                 }
             }
 
-            PartyPickerDialog partyDialog(result.available_parties, recentIds,
-                                          clientManager_, imageCache_, this);
+            PartyPickerDialog partyDialog(
+                result.available_parties, recentIds, clientManager_, imageCache_, this);
             if (partyDialog.exec() == QDialog::Accepted) {
-                BOOST_LOG_SEV(lg(), info) << "Party selected: "
-                                          << clientManager_->currentPartyName().toStdString()
-                                          << " (category="
-                                          << clientManager_->currentPartyCategory().toStdString()
-                                          << ")";
+                BOOST_LOG_SEV(lg(), info)
+                    << "Party selected: " << clientManager_->currentPartyName().toStdString()
+                    << " (category=" << clientManager_->currentPartyCategory().toStdString() << ")";
                 if (connectionManager_) {
                     try {
                         connectionManager_->record_party_selection(
                             partyDialog.selectedPartyId(),
                             partyDialog.selectedPartyName().toStdString());
                     } catch (const std::exception& e) {
-                        BOOST_LOG_SEV(lg(), warn)
-                            << "Failed to record recent party: " << e.what();
+                        BOOST_LOG_SEV(lg(), warn) << "Failed to record recent party: " << e.what();
                     }
                 }
                 statusLabel_->setText("Login successful!");
@@ -743,8 +733,8 @@ void LoginDialog::onLoginResult(const LoginResult& result) {
                 clientManager_->disconnect();
                 enableForm(true);
                 statusLabel_->setText("");
-                MessageBoxHelper::warning(this, "Party Selection Required",
-                    "You must select a party to continue.");
+                MessageBoxHelper::warning(
+                    this, "Party Selection Required", "You must select a party to continue.");
             }
         } else if (result.tenant_bootstrap_mode) {
             BOOST_LOG_SEV(lg(), info)
@@ -764,13 +754,10 @@ void LoginDialog::onLoginResult(const LoginResult& result) {
             emit closeRequested();
         } else {
             if (!result.selected_party_id.is_nil()) {
-                BOOST_LOG_SEV(lg(), info) << "Party auto-selected: "
-                                          << clientManager_->currentPartyName().toStdString()
-                                          << " (category="
-                                          << clientManager_->currentPartyCategory().toStdString()
-                                          << ", id="
-                                          << boost::uuids::to_string(result.selected_party_id)
-                                          << ")";
+                BOOST_LOG_SEV(lg(), info)
+                    << "Party auto-selected: " << clientManager_->currentPartyName().toStdString()
+                    << " (category=" << clientManager_->currentPartyCategory().toStdString()
+                    << ", id=" << boost::uuids::to_string(result.selected_party_id) << ")";
             } else {
                 BOOST_LOG_SEV(lg(), info) << "No party context for this account";
             }
@@ -785,8 +772,8 @@ void LoginDialog::onLoginResult(const LoginResult& result) {
         statusLabel_->setText("Login failed.");
 
         emit loginFailed(result.error_message);
-        MessageBoxHelper::critical(this, "Login Failed",
-            QString("Authentication failed: %1").arg(result.error_message));
+        MessageBoxHelper::critical(
+            this, "Login Failed", QString("Authentication failed: %1").arg(result.error_message));
     }
 }
 

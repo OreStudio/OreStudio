@@ -18,38 +18,44 @@
  *
  */
 #include "ores.qt/ClientOvernightIndexConventionModel.hpp"
-
-#include <QtConcurrent>
-#include "ores.refdata.api/messaging/overnight_index_convention_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
+#include "ores.refdata.api/messaging/overnight_index_convention_protocol.hpp"
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    std::string overnight_index_convention_key_extractor(const refdata::domain::overnight_index_convention& e) {
-        return e.id;
-    }
+std::string
+overnight_index_convention_key_extractor(const refdata::domain::overnight_index_convention& e) {
+    return e.id;
+}
 }
 
 ClientOvernightIndexConventionModel::ClientOvernightIndexConventionModel(
     ClientManager* clientManager, QObject* parent)
-    : AbstractClientModel(parent),
-      clientManager_(clientManager),
-      watcher_(new QFutureWatcher<FetchResult>(this)),
-      recencyTracker_(overnight_index_convention_key_extractor),
-      pulseManager_(new RecencyPulseManager(this)) {
+    : AbstractClientModel(parent)
+    , clientManager_(clientManager)
+    , watcher_(new QFutureWatcher<FetchResult>(this))
+    , recencyTracker_(overnight_index_convention_key_extractor)
+    , pulseManager_(new RecencyPulseManager(this)) {
 
-    connect(watcher_, &QFutureWatcher<FetchResult>::finished,
-            this, &ClientOvernightIndexConventionModel::onConventionsLoaded);
+    connect(watcher_,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            &ClientOvernightIndexConventionModel::onConventionsLoaded);
 
-    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
-            this, &ClientOvernightIndexConventionModel::onPulseStateChanged);
-    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
-            this, &ClientOvernightIndexConventionModel::onPulsingComplete);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulse_state_changed,
+            this,
+            &ClientOvernightIndexConventionModel::onPulseStateChanged);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulsing_complete,
+            this,
+            &ClientOvernightIndexConventionModel::onPulsingComplete);
 }
 
 int ClientOvernightIndexConventionModel::rowCount(const QModelIndex& parent) const {
@@ -64,8 +70,7 @@ int ClientOvernightIndexConventionModel::columnCount(const QModelIndex& parent) 
     return ColumnCount;
 }
 
-QVariant ClientOvernightIndexConventionModel::data(
-    const QModelIndex& index, int role) const {
+QVariant ClientOvernightIndexConventionModel::data(const QModelIndex& index, int role) const {
     if (!index.isValid())
         return {};
 
@@ -77,22 +82,22 @@ QVariant ClientOvernightIndexConventionModel::data(
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-        case Id:
-            return QString::fromStdString(ni.id);
-        case FixingCalendar:
-            return QString::fromStdString(ni.fixing_calendar);
-        case DayCountFraction:
-            return QString::fromStdString(ni.day_count_fraction);
-        case SettlementDays:
-            return static_cast<qlonglong>(ni.settlement_days);
-        case Version:
-            return static_cast<qlonglong>(ni.version);
-        case ModifiedBy:
-            return QString::fromStdString(ni.modified_by);
-        case RecordedAt:
-            return relative_time_helper::format(ni.recorded_at);
-        default:
-            return {};
+            case Id:
+                return QString::fromStdString(ni.id);
+            case FixingCalendar:
+                return QString::fromStdString(ni.fixing_calendar);
+            case DayCountFraction:
+                return QString::fromStdString(ni.day_count_fraction);
+            case SettlementDays:
+                return static_cast<qlonglong>(ni.settlement_days);
+            case Version:
+                return static_cast<qlonglong>(ni.version);
+            case ModifiedBy:
+                return QString::fromStdString(ni.modified_by);
+            case RecordedAt:
+                return relative_time_helper::format(ni.recorded_at);
+            default:
+                return {};
         }
     }
 
@@ -103,28 +108,29 @@ QVariant ClientOvernightIndexConventionModel::data(
     return {};
 }
 
-QVariant ClientOvernightIndexConventionModel::headerData(
-    int section, Qt::Orientation orientation, int role) const {
+QVariant ClientOvernightIndexConventionModel::headerData(int section,
+                                                         Qt::Orientation orientation,
+                                                         int role) const {
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return {};
 
     switch (section) {
-    case Id:
-        return tr("Id");
-    case FixingCalendar:
-        return tr("Fixing Calendar");
-    case DayCountFraction:
-        return tr("DCF");
-    case SettlementDays:
-        return tr("Settlement Days");
-    case Version:
-        return tr("Version");
-    case ModifiedBy:
-        return tr("Modified By");
-    case RecordedAt:
-        return tr("Recorded At");
-    default:
-        return {};
+        case Id:
+            return tr("Id");
+        case FixingCalendar:
+            return tr("Fixing Calendar");
+        case DayCountFraction:
+            return tr("DCF");
+        case SettlementDays:
+            return tr("Settlement Days");
+        case Version:
+            return tr("Version");
+        case ModifiedBy:
+            return tr("Modified By");
+        case RecordedAt:
+            return tr("Recorded At");
+        default:
+            return {};
     }
 }
 
@@ -137,7 +143,8 @@ void ClientOvernightIndexConventionModel::refresh() {
     }
 
     if (!clientManager_ || !clientManager_->isConnected()) {
-        BOOST_LOG_SEV(lg(), warn) << "Cannot refresh overnight index convention model: disconnected.";
+        BOOST_LOG_SEV(lg(), warn)
+            << "Cannot refresh overnight index convention model: disconnected.";
         emit loadError("Not connected to server");
         return;
     }
@@ -154,8 +161,7 @@ void ClientOvernightIndexConventionModel::refresh() {
     fetch_overnight_index_conventions(0, page_size_);
 }
 
-void ClientOvernightIndexConventionModel::load_page(std::uint32_t offset,
-                                          std::uint32_t limit) {
+void ClientOvernightIndexConventionModel::load_page(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "load_page: offset=" << offset << ", limit=" << limit;
 
     if (is_fetching_) {
@@ -179,18 +185,20 @@ void ClientOvernightIndexConventionModel::load_page(std::uint32_t offset,
     fetch_overnight_index_conventions(offset, limit);
 }
 
-void ClientOvernightIndexConventionModel::fetch_overnight_index_conventions(
-    std::uint32_t offset, std::uint32_t limit) {
+void ClientOvernightIndexConventionModel::fetch_overnight_index_conventions(std::uint32_t offset,
+                                                                            std::uint32_t limit) {
     is_fetching_ = true;
     QPointer<ClientOvernightIndexConventionModel> self = this;
 
-    QFuture<FetchResult> future =
-        QtConcurrent::run([self, offset, limit]() -> FetchResult {
-            return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
-                BOOST_LOG_SEV(lg(), debug) << "Making overnight index conventions request with offset="
-                                           << offset << ", limit=" << limit;
+    QFuture<FetchResult> future = QtConcurrent::run([self, offset, limit]() -> FetchResult {
+        return exception_helper::wrap_async_fetch<FetchResult>(
+            [&]() -> FetchResult {
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Making overnight index conventions request with offset=" << offset
+                    << ", limit=" << limit;
                 if (!self || !self->clientManager_) {
-                    return {.success = false, .overnight_index_conventions = {},
+                    return {.success = false,
+                            .overnight_index_conventions = {},
                             .total_available_count = 0,
                             .error_message = "Model was destroyed",
                             .error_details = {}};
@@ -198,27 +206,32 @@ void ClientOvernightIndexConventionModel::fetch_overnight_index_conventions(
 
                 refdata::messaging::get_overnight_index_conventions_request request;
 
-                auto result = self->clientManager_->
-                    process_authenticated_request(std::move(request));
+                auto result =
+                    self->clientManager_->process_authenticated_request(std::move(request));
 
                 if (!result) {
                     BOOST_LOG_SEV(lg(), error) << "Failed to send request: " << result.error();
-                    return {.success = false, .overnight_index_conventions = {},
+                    return {.success = false,
+                            .overnight_index_conventions = {},
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(result.error()),
                             .error_details = {}};
                 }
 
-                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->overnight_index_conventions.size()
-                                           << " overnight index conventions";
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Fetched " << result->overnight_index_conventions.size()
+                    << " overnight index conventions";
                 const std::uint32_t count =
                     static_cast<std::uint32_t>(result->overnight_index_conventions.size());
                 return {.success = true,
-                        .overnight_index_conventions = std::move(result->overnight_index_conventions),
+                        .overnight_index_conventions =
+                            std::move(result->overnight_index_conventions),
                         .total_available_count = count,
-                        .error_message = {}, .error_details = {}};
-            }, "overnight index conventions");
-        });
+                        .error_message = {},
+                        .error_details = {}};
+            },
+            "overnight index conventions");
+    });
 
     watcher_->setFuture(future);
 }
@@ -277,8 +290,8 @@ ClientOvernightIndexConventionModel::getConvention(int row) const {
     return &overnight_index_conventions_[idx];
 }
 
-QVariant ClientOvernightIndexConventionModel::recency_foreground_color(
-    const std::string& code) const {
+QVariant
+ClientOvernightIndexConventionModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {
         return color_constants::stale_indicator;
     }
@@ -287,8 +300,8 @@ QVariant ClientOvernightIndexConventionModel::recency_foreground_color(
 
 void ClientOvernightIndexConventionModel::onPulseStateChanged(bool /*isOn*/) {
     if (!overnight_index_conventions_.empty()) {
-        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
-            {Qt::ForegroundRole});
+        emit dataChanged(
+            index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::ForegroundRole});
     }
 }
 

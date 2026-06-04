@@ -20,13 +20,13 @@
 #ifndef ORES_QT_CLIENT_JOB_INSTANCE_MODEL_HPP
 #define ORES_QT_CLIENT_JOB_INSTANCE_MODEL_HPP
 
-#include <vector>
-#include <QFutureWatcher>
-#include <QAbstractTableModel>
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/AbstractClientModel.hpp"
 #include "ores.qt/ClientManager.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.scheduler.api/messaging/scheduler_protocol.hpp"
+#include <QAbstractTableModel>
+#include <QFutureWatcher>
+#include <vector>
 
 namespace ores::qt {
 
@@ -40,8 +40,7 @@ class ClientJobInstanceModel final : public AbstractClientModel {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.client_job_instance_model";
+    inline static std::string_view logger_name = "ores.qt.client_job_instance_model";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -61,15 +60,14 @@ public:
         ColumnCount
     };
 
-    explicit ClientJobInstanceModel(ClientManager* clientManager,
-                                    QObject* parent = nullptr);
+    explicit ClientJobInstanceModel(ClientManager* clientManager, QObject* parent = nullptr);
     ~ClientJobInstanceModel() override = default;
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-    QVariant headerData(int section, Qt::Orientation orientation,
-        int role = Qt::DisplayRole) const override;
+    QVariant
+    headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
     void refresh();
 

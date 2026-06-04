@@ -18,30 +18,27 @@
  *
  */
 #include "ores.qt/CdsConventionController.hpp"
-
+#include "ores.qt/CdsConventionDetailDialog.hpp"
+#include "ores.qt/CdsConventionHistoryDialog.hpp"
+#include "ores.qt/CdsConventionMdiWindow.hpp"
+#include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/IconUtils.hpp"
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/CdsConventionMdiWindow.hpp"
-#include "ores.qt/CdsConventionDetailDialog.hpp"
-#include "ores.qt/CdsConventionHistoryDialog.hpp"
-#include "ores.qt/DetachableMdiSubWindow.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-CdsConventionController::CdsConventionController(
-    QMainWindow* mainWindow,
-    QMdiArea* mdiArea,
-    ClientManager* clientManager,
-    const QString& username,
-    QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username,
-          std::string_view{}, parent),
-      listWindow_(nullptr),
-      listMdiSubWindow_(nullptr) {
+CdsConventionController::CdsConventionController(QMainWindow* mainWindow,
+                                                 QMdiArea* mdiArea,
+                                                 ClientManager* clientManager,
+                                                 const QString& username,
+                                                 QObject* parent)
+    : EntityController(mainWindow, mdiArea, clientManager, username, std::string_view{}, parent)
+    , listWindow_(nullptr)
+    , listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "CdsConventionController created";
 }
@@ -59,23 +56,33 @@ void CdsConventionController::showListWindow() {
     listWindow_ = new CdsConventionMdiWindow(clientManager_, username_);
 
     // Connect signals
-    connect(listWindow_, &CdsConventionMdiWindow::statusChanged,
-            this, &CdsConventionController::statusMessage);
-    connect(listWindow_, &CdsConventionMdiWindow::errorOccurred,
-            this, &CdsConventionController::errorMessage);
-    connect(listWindow_, &CdsConventionMdiWindow::showConventionDetails,
-            this, &CdsConventionController::onShowDetails);
-    connect(listWindow_, &CdsConventionMdiWindow::addNewRequested,
-            this, &CdsConventionController::onAddNewRequested);
-    connect(listWindow_, &CdsConventionMdiWindow::showConventionHistory,
-            this, &CdsConventionController::onShowHistory);
+    connect(listWindow_,
+            &CdsConventionMdiWindow::statusChanged,
+            this,
+            &CdsConventionController::statusMessage);
+    connect(listWindow_,
+            &CdsConventionMdiWindow::errorOccurred,
+            this,
+            &CdsConventionController::errorMessage);
+    connect(listWindow_,
+            &CdsConventionMdiWindow::showConventionDetails,
+            this,
+            &CdsConventionController::onShowDetails);
+    connect(listWindow_,
+            &CdsConventionMdiWindow::addNewRequested,
+            this,
+            &CdsConventionController::onAddNewRequested);
+    connect(listWindow_,
+            &CdsConventionMdiWindow::showConventionHistory,
+            this,
+            &CdsConventionController::onShowHistory);
 
     // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("CDS Conventions");
-    listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Chart, IconUtils::DefaultIconColor));
+    listMdiSubWindow_->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -87,12 +94,16 @@ void CdsConventionController::showListWindow() {
     register_detachable_window(listMdiSubWindow_);
 
     // Cleanup when closed
-    connect(listMdiSubWindow_, &QObject::destroyed, this, [self = QPointer<CdsConventionController>(this), key]() {
-        if (!self) return;
-        self->untrack_window(key);
-        self->listWindow_ = nullptr;
-        self->listMdiSubWindow_ = nullptr;
-    });
+    connect(listMdiSubWindow_,
+            &QObject::destroyed,
+            this,
+            [self = QPointer<CdsConventionController>(this), key]() {
+                if (!self)
+                    return;
+                self->untrack_window(key);
+                self->listWindow_ = nullptr;
+                self->listMdiSubWindow_ = nullptr;
+            });
 
     BOOST_LOG_SEV(lg(), debug) << "CDS Convention list window created";
 }
@@ -119,8 +130,7 @@ void CdsConventionController::reloadListWindow() {
     }
 }
 
-void CdsConventionController::onShowDetails(
-    const refdata::domain::cds_convention& cc) {
+void CdsConventionController::onShowDetails(const refdata::domain::cds_convention& cc) {
     BOOST_LOG_SEV(lg(), debug) << "Show details for: " << cc.id;
     showDetailWindow(cc);
 }
@@ -130,8 +140,7 @@ void CdsConventionController::onAddNewRequested() {
     showAddWindow();
 }
 
-void CdsConventionController::onShowHistory(
-    const refdata::domain::cds_convention& cc) {
+void CdsConventionController::onShowHistory(const refdata::domain::cds_convention& cc) {
     BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << cc.id;
     showHistoryWindow(QString::fromStdString(cc.id));
 }
@@ -144,23 +153,30 @@ void CdsConventionController::showAddWindow() {
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
 
-    connect(detailDialog, &CdsConventionDetailDialog::statusMessage,
-            this, &CdsConventionController::statusMessage);
-    connect(detailDialog, &CdsConventionDetailDialog::errorMessage,
-            this, &CdsConventionController::errorMessage);
-    connect(detailDialog, &CdsConventionDetailDialog::ccSaved,
-            this, [self = QPointer<CdsConventionController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "CDS Convention saved: " << code.toStdString();
-        self->handleEntitySaved();
-    });
+    connect(detailDialog,
+            &CdsConventionDetailDialog::statusMessage,
+            this,
+            &CdsConventionController::statusMessage);
+    connect(detailDialog,
+            &CdsConventionDetailDialog::errorMessage,
+            this,
+            &CdsConventionController::errorMessage);
+    connect(detailDialog,
+            &CdsConventionDetailDialog::ccSaved,
+            this,
+            [self = QPointer<CdsConventionController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "CDS Convention saved: " << code.toStdString();
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New CDS Convention");
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Chart, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -168,8 +184,7 @@ void CdsConventionController::showAddWindow() {
     show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
-void CdsConventionController::showDetailWindow(
-    const refdata::domain::cds_convention& cc) {
+void CdsConventionController::showDetailWindow(const refdata::domain::cds_convention& cc) {
 
     const QString identifier = QString::fromStdString(cc.id);
     const QString key = build_window_key("details", identifier);
@@ -187,37 +202,46 @@ void CdsConventionController::showDetailWindow(
     detailDialog->setCreateMode(false);
     detailDialog->setConvention(cc);
 
-    connect(detailDialog, &CdsConventionDetailDialog::statusMessage,
-            this, &CdsConventionController::statusMessage);
-    connect(detailDialog, &CdsConventionDetailDialog::errorMessage,
-            this, &CdsConventionController::errorMessage);
-    connect(detailDialog, &CdsConventionDetailDialog::ccSaved,
-            this, [self = QPointer<CdsConventionController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "CDS Convention saved: " << code.toStdString();
-        self->handleEntitySaved();
-    });
-    connect(detailDialog, &CdsConventionDetailDialog::ccDeleted,
-            this, [self = QPointer<CdsConventionController>(this), key](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "CDS Convention deleted: " << code.toStdString();
-        self->handleEntityDeleted();
-    });
+    connect(detailDialog,
+            &CdsConventionDetailDialog::statusMessage,
+            this,
+            &CdsConventionController::statusMessage);
+    connect(detailDialog,
+            &CdsConventionDetailDialog::errorMessage,
+            this,
+            &CdsConventionController::errorMessage);
+    connect(detailDialog,
+            &CdsConventionDetailDialog::ccSaved,
+            this,
+            [self = QPointer<CdsConventionController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "CDS Convention saved: " << code.toStdString();
+                self->handleEntitySaved();
+            });
+    connect(detailDialog,
+            &CdsConventionDetailDialog::ccDeleted,
+            this,
+            [self = QPointer<CdsConventionController>(this), key](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "CDS Convention deleted: " << code.toStdString();
+                self->handleEntityDeleted();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("CDS Convention: %1").arg(identifier));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Chart, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
 
     // Track window
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<CdsConventionController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, key]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, key]() {
         if (self) {
             self->untrack_window(key);
         }
@@ -235,30 +259,38 @@ void CdsConventionController::showHistoryWindow(const QString& code) {
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
-        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: "
-                                  << code.toStdString();
+        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: " << code.toStdString();
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
-                              << code.toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << code.toStdString();
 
     auto* historyDialog = new CdsConventionHistoryDialog(code, clientManager_, mainWindow_);
 
-    connect(historyDialog, &CdsConventionHistoryDialog::statusChanged,
-            this, [self = QPointer<CdsConventionController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(historyDialog, &CdsConventionHistoryDialog::errorOccurred,
-            this, [self = QPointer<CdsConventionController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
-    connect(historyDialog, &CdsConventionHistoryDialog::revertVersionRequested,
-            this, &CdsConventionController::onRevertVersion);
-    connect(historyDialog, &CdsConventionHistoryDialog::openVersionRequested,
-            this, &CdsConventionController::onOpenVersion);
+    connect(historyDialog,
+            &CdsConventionHistoryDialog::statusChanged,
+            this,
+            [self = QPointer<CdsConventionController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(historyDialog,
+            &CdsConventionHistoryDialog::errorOccurred,
+            this,
+            [self = QPointer<CdsConventionController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
+    connect(historyDialog,
+            &CdsConventionHistoryDialog::revertVersionRequested,
+            this,
+            &CdsConventionController::onRevertVersion);
+    connect(historyDialog,
+            &CdsConventionHistoryDialog::openVersionRequested,
+            this,
+            &CdsConventionController::onOpenVersion);
 
     // Load history data
     historyDialog->loadHistory();
@@ -267,16 +299,15 @@ void CdsConventionController::showHistoryWindow(const QString& code) {
     historyWindow->setAttribute(Qt::WA_DeleteOnClose);
     historyWindow->setWidget(historyDialog);
     historyWindow->setWindowTitle(QString("CDS Convention History: %1").arg(code));
-    historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    historyWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     // Track this history window
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
 
     QPointer<CdsConventionController> self = this;
-    connect(historyWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -285,14 +316,14 @@ void CdsConventionController::showHistoryWindow(const QString& code) {
     show_managed_window(historyWindow, listMdiSubWindow_);
 }
 
-void CdsConventionController::onOpenVersion(
-    const refdata::domain::cds_convention& cc, int versionNumber) {
+void CdsConventionController::onOpenVersion(const refdata::domain::cds_convention& cc,
+                                            int versionNumber) {
     BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
                               << " for CDS convention: " << cc.id;
 
     const QString code = QString::fromStdString(cc.id);
-    const QString windowKey = build_window_key("version", QString("%1_v%2")
-        .arg(code).arg(versionNumber));
+    const QString windowKey =
+        build_window_key("version", QString("%1_v%2").arg(code).arg(versionNumber));
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
@@ -306,31 +337,36 @@ void CdsConventionController::onOpenVersion(
     detailDialog->setConvention(cc);
     detailDialog->setReadOnly(true);
 
-    connect(detailDialog, &CdsConventionDetailDialog::statusMessage,
-            this, [self = QPointer<CdsConventionController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(detailDialog, &CdsConventionDetailDialog::errorMessage,
-            this, [self = QPointer<CdsConventionController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
+    connect(detailDialog,
+            &CdsConventionDetailDialog::statusMessage,
+            this,
+            [self = QPointer<CdsConventionController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(detailDialog,
+            &CdsConventionDetailDialog::errorMessage,
+            this,
+            [self = QPointer<CdsConventionController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("CDS Convention: %1 (Version %2)")
-        .arg(code).arg(versionNumber));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("CDS Convention: %1 (Version %2)").arg(code).arg(versionNumber));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     track_window(windowKey, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<CdsConventionController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -340,10 +376,8 @@ void CdsConventionController::onOpenVersion(
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
-void CdsConventionController::onRevertVersion(
-    const refdata::domain::cds_convention& cc) {
-    BOOST_LOG_SEV(lg(), info) << "Reverting CDS convention to version: "
-                              << cc.version;
+void CdsConventionController::onRevertVersion(const refdata::domain::cds_convention& cc) {
+    BOOST_LOG_SEV(lg(), info) << "Reverting CDS convention to version: " << cc.version;
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new CdsConventionDetailDialog(mainWindow_);
@@ -352,25 +386,33 @@ void CdsConventionController::onRevertVersion(
     detailDialog->setConvention(cc);
     detailDialog->setCreateMode(false);
 
-    connect(detailDialog, &CdsConventionDetailDialog::statusMessage,
-            this, &CdsConventionController::statusMessage);
-    connect(detailDialog, &CdsConventionDetailDialog::errorMessage,
-            this, &CdsConventionController::errorMessage);
-    connect(detailDialog, &CdsConventionDetailDialog::ccSaved,
-            this, [self = QPointer<CdsConventionController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "CDS Convention reverted: " << code.toStdString();
-        emit self->statusMessage(QString("CDS Convention '%1' reverted successfully").arg(code));
-        self->handleEntitySaved();
-    });
+    connect(detailDialog,
+            &CdsConventionDetailDialog::statusMessage,
+            this,
+            &CdsConventionController::statusMessage);
+    connect(detailDialog,
+            &CdsConventionDetailDialog::errorMessage,
+            this,
+            &CdsConventionController::errorMessage);
+    connect(detailDialog,
+            &CdsConventionDetailDialog::ccSaved,
+            this,
+            [self = QPointer<CdsConventionController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "CDS Convention reverted: " << code.toStdString();
+                emit self->statusMessage(
+                    QString("CDS Convention '%1' reverted successfully").arg(code));
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Revert CDS Convention: %1")
-        .arg(QString::fromStdString(cc.id)));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("Revert CDS Convention: %1").arg(QString::fromStdString(cc.id)));
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
+                                                               IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 

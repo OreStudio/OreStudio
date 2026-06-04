@@ -18,7 +18,6 @@
  */
 #include "ores.qt/SplashScreen.hpp"
 #include "ores.qt/FontUtils.hpp"
-
 #include <QPainter>
 
 namespace ores::qt {

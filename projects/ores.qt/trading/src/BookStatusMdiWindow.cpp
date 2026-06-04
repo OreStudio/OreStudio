@@ -18,39 +18,37 @@
  *
  */
 #include "ores.qt/BookStatusMdiWindow.hpp"
-
-#include <QVBoxLayout>
-#include <QHeaderView>
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/EntityItemDelegate.hpp"
-#include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/EntityItemDelegate.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata.api/messaging/book_status_protocol.hpp"
+#include <QFutureWatcher>
+#include <QHeaderView>
+#include <QMessageBox>
+#include <QVBoxLayout>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-BookStatusMdiWindow::BookStatusMdiWindow(
-    ClientManager* clientManager,
-    const QString& username,
-    QWidget* parent)
-    : EntityListMdiWindow(parent),
-      clientManager_(clientManager),
-      username_(username),
-      toolbar_(nullptr),
-      tableView_(nullptr),
-      model_(nullptr),
-      proxyModel_(nullptr),
-      reloadAction_(nullptr),
-      addAction_(nullptr),
-      editAction_(nullptr),
-      deleteAction_(nullptr),
-      historyAction_(nullptr) {
+BookStatusMdiWindow::BookStatusMdiWindow(ClientManager* clientManager,
+                                         const QString& username,
+                                         QWidget* parent)
+    : EntityListMdiWindow(parent)
+    , clientManager_(clientManager)
+    , username_(username)
+    , toolbar_(nullptr)
+    , tableView_(nullptr)
+    , model_(nullptr)
+    , proxyModel_(nullptr)
+    , reloadAction_(nullptr)
+    , addAction_(nullptr)
+    , editAction_(nullptr)
+    , deleteAction_(nullptr)
+    , historyAction_(nullptr) {
 
     setupUi();
     setupConnections();
@@ -78,50 +76,36 @@ void BookStatusMdiWindow::setupToolbar() {
     toolbar_->setIconSize(QSize(20, 20));
 
     reloadAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::ArrowClockwise, IconUtils::DefaultIconColor),
+        IconUtils::createRecoloredIcon(Icon::ArrowClockwise, IconUtils::DefaultIconColor),
         tr("Reload"));
-    connect(reloadAction_, &QAction::triggered, this,
-            &EntityListMdiWindow::reload);
+    connect(reloadAction_, &QAction::triggered, this, &EntityListMdiWindow::reload);
 
     initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowClockwise));
 
     toolbar_->addSeparator();
 
     addAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::Add, IconUtils::DefaultIconColor),
-        tr("Add"));
+        IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor), tr("Add"));
     addAction_->setToolTip(tr("Add new book status"));
-    connect(addAction_, &QAction::triggered, this,
-            &BookStatusMdiWindow::addNew);
+    connect(addAction_, &QAction::triggered, this, &BookStatusMdiWindow::addNew);
 
     editAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::Edit, IconUtils::DefaultIconColor),
-        tr("Edit"));
+        IconUtils::createRecoloredIcon(Icon::Edit, IconUtils::DefaultIconColor), tr("Edit"));
     editAction_->setToolTip(tr("Edit selected book status"));
     editAction_->setEnabled(false);
-    connect(editAction_, &QAction::triggered, this,
-            &BookStatusMdiWindow::editSelected);
+    connect(editAction_, &QAction::triggered, this, &BookStatusMdiWindow::editSelected);
 
     deleteAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::Delete, IconUtils::DefaultIconColor),
-        tr("Delete"));
+        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor), tr("Delete"));
     deleteAction_->setToolTip(tr("Delete selected book status"));
     deleteAction_->setEnabled(false);
-    connect(deleteAction_, &QAction::triggered, this,
-            &BookStatusMdiWindow::deleteSelected);
+    connect(deleteAction_, &QAction::triggered, this, &BookStatusMdiWindow::deleteSelected);
 
     historyAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::History, IconUtils::DefaultIconColor),
-        tr("History"));
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor), tr("History"));
     historyAction_->setToolTip(tr("View book status history"));
     historyAction_->setEnabled(false);
-    connect(historyAction_, &QAction::triggered, this,
-            &BookStatusMdiWindow::viewHistorySelected);
+    connect(historyAction_, &QAction::triggered, this, &BookStatusMdiWindow::viewHistorySelected);
 }
 
 void BookStatusMdiWindow::setupTable() {
@@ -135,28 +119,29 @@ void BookStatusMdiWindow::setupTable() {
     tableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
     tableView_->setSelectionMode(QAbstractItemView::SingleSelection);
     tableView_->setSortingEnabled(true);
-    tableView_->setItemDelegate(new EntityItemDelegate(
-        ClientBookStatusModel::columnStyles(), tableView_));
+    tableView_->setItemDelegate(
+        new EntityItemDelegate(ClientBookStatusModel::columnStyles(), tableView_));
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
 
-    initializeTableSettings(tableView_, model_,
-        ClientBookStatusModel::kSettingsGroup,
-        ClientBookStatusModel::defaultHiddenColumns(),
-        ClientBookStatusModel::kDefaultWindowSize, 1);
+    initializeTableSettings(tableView_,
+                            model_,
+                            ClientBookStatusModel::kSettingsGroup,
+                            ClientBookStatusModel::defaultHiddenColumns(),
+                            ClientBookStatusModel::kDefaultWindowSize,
+                            1);
 }
 
 void BookStatusMdiWindow::setupConnections() {
-    connect(model_, &ClientBookStatusModel::dataLoaded,
-            this, &BookStatusMdiWindow::onDataLoaded);
-    connect(model_, &ClientBookStatusModel::loadError,
-            this, &BookStatusMdiWindow::onLoadError);
+    connect(model_, &ClientBookStatusModel::dataLoaded, this, &BookStatusMdiWindow::onDataLoaded);
+    connect(model_, &ClientBookStatusModel::loadError, this, &BookStatusMdiWindow::onLoadError);
     connectModel(model_);
 
-    connect(tableView_->selectionModel(), &QItemSelectionModel::selectionChanged,
-            this, &BookStatusMdiWindow::onSelectionChanged);
-    connect(tableView_, &QTableView::doubleClicked,
-            this, &BookStatusMdiWindow::onDoubleClicked);
+    connect(tableView_->selectionModel(),
+            &QItemSelectionModel::selectionChanged,
+            this,
+            &BookStatusMdiWindow::onSelectionChanged);
+    connect(tableView_, &QTableView::doubleClicked, this, &BookStatusMdiWindow::onDoubleClicked);
 }
 
 void BookStatusMdiWindow::doReload() {
@@ -169,8 +154,7 @@ void BookStatusMdiWindow::onDataLoaded() {
     emit statusChanged(tr("Loaded %1 book statuses").arg(model_->rowCount()));
 }
 
-void BookStatusMdiWindow::onLoadError(const QString& error_message,
-                                         const QString& details) {
+void BookStatusMdiWindow::onLoadError(const QString& error_message, const QString& details) {
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);
@@ -224,8 +208,7 @@ void BookStatusMdiWindow::viewHistorySelected() {
 
     auto sourceIndex = proxyModel_->mapToSource(selected.first());
     if (auto* status = model_->getStatus(sourceIndex.row())) {
-        BOOST_LOG_SEV(lg(), debug) << "Emitting showStatusHistory for code: "
-                                   << status->code;
+        BOOST_LOG_SEV(lg(), debug) << "Emitting showStatusHistory for code: " << status->code;
         emit showStatusHistory(*status);
     }
 }
@@ -238,8 +221,8 @@ void BookStatusMdiWindow::deleteSelected() {
     }
 
     if (!clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot delete book status while disconnected.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot delete book status while disconnected.");
         return;
     }
 
@@ -256,20 +239,19 @@ void BookStatusMdiWindow::deleteSelected() {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Delete requested for " << codes.size()
-                               << " book statuses";
+    BOOST_LOG_SEV(lg(), debug) << "Delete requested for " << codes.size() << " book statuses";
 
     QString confirmMessage;
     if (codes.size() == 1) {
         confirmMessage = QString("Are you sure you want to delete book status '%1'?")
-            .arg(QString::fromStdString(codes.front()));
+                             .arg(QString::fromStdString(codes.front()));
     } else {
-        confirmMessage = QString("Are you sure you want to delete %1 book statuses?")
-            .arg(codes.size());
+        confirmMessage =
+            QString("Are you sure you want to delete %1 book statuses?").arg(codes.size());
     }
 
-    auto reply = MessageBoxHelper::question(this, "Delete Book Status",
-        confirmMessage, QMessageBox::Yes | QMessageBox::No);
+    auto reply = MessageBoxHelper::question(
+        this, "Delete Book Status", confirmMessage, QMessageBox::Yes | QMessageBox::No);
 
     if (reply != QMessageBox::Yes) {
         BOOST_LOG_SEV(lg(), debug) << "Delete cancelled by user";
@@ -281,16 +263,17 @@ void BookStatusMdiWindow::deleteSelected() {
 
     auto task = [self, codes]() -> DeleteResult {
         DeleteResult results;
-        if (!self) return {};
+        if (!self)
+            return {};
 
-        BOOST_LOG_SEV(lg(), debug) << "Making batch delete request for "
-                                   << codes.size() << " book statuses";
+        BOOST_LOG_SEV(lg(), debug)
+            << "Making batch delete request for " << codes.size() << " book statuses";
 
         for (const auto& code : codes) {
             refdata::messaging::delete_book_status_request request;
             request.status = code;
-            auto response_result = self->clientManager_->
-                process_authenticated_request(std::move(request));
+            auto response_result =
+                self->clientManager_->process_authenticated_request(std::move(request));
             if (!response_result) {
                 BOOST_LOG_SEV(lg(), error) << "Failed to delete book status: " << code;
                 results.push_back({code, {false, "Failed to communicate with server"}});
@@ -303,8 +286,7 @@ void BookStatusMdiWindow::deleteSelected() {
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, watcher]() {
         auto results = watcher->result();
         watcher->deleteLater();
 
@@ -318,8 +300,8 @@ void BookStatusMdiWindow::deleteSelected() {
                 success_count++;
                 emit self->statusDeleted(QString::fromStdString(code));
             } else {
-                BOOST_LOG_SEV(lg(), error) << "Book Status deletion failed: "
-                                           << code << " - " << result.second;
+                BOOST_LOG_SEV(lg(), error)
+                    << "Book Status deletion failed: " << code << " - " << result.second;
                 failure_count++;
                 if (first_error.isEmpty()) {
                     first_error = QString::fromStdString(result.second);
@@ -330,21 +312,20 @@ void BookStatusMdiWindow::deleteSelected() {
         self->model_->refresh();
 
         if (failure_count == 0) {
-            QString msg = success_count == 1
-                ? "Successfully deleted 1 book status"
-                : QString("Successfully deleted %1 book statuses").arg(success_count);
+            QString msg = success_count == 1 ?
+                              "Successfully deleted 1 book status" :
+                              QString("Successfully deleted %1 book statuses").arg(success_count);
             emit self->statusChanged(msg);
         } else if (success_count == 0) {
             QString msg = QString("Failed to delete %1 %2: %3")
-                .arg(failure_count)
-                .arg(failure_count == 1 ? "book status" : "book statuses")
-                .arg(first_error);
+                              .arg(failure_count)
+                              .arg(failure_count == 1 ? "book status" : "book statuses")
+                              .arg(first_error);
             emit self->errorOccurred(msg);
             MessageBoxHelper::critical(self, "Delete Failed", msg);
         } else {
-            QString msg = QString("Deleted %1, failed to delete %2")
-                .arg(success_count)
-                .arg(failure_count);
+            QString msg =
+                QString("Deleted %1, failed to delete %2").arg(success_count).arg(failure_count);
             emit self->statusChanged(msg);
             MessageBoxHelper::warning(self, "Partial Success", msg);
         }

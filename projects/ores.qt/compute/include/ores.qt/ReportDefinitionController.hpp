@@ -20,15 +20,15 @@
 #ifndef ORES_QT_REPORT_DEFINITION_CONTROLLER_HPP
 #define ORES_QT_REPORT_DEFINITION_CONTROLLER_HPP
 
-#include <vector>
-#include <QMdiArea>
-#include <QMainWindow>
-#include <boost/uuid/uuid.hpp>
-#include "ores.qt/EntityController.hpp"
-#include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.reporting.api/domain/report_definition.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/EntityController.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
+#include "ores.reporting.api/domain/report_definition.hpp"
+#include <QMainWindow>
+#include <QMdiArea>
+#include <boost/uuid/uuid.hpp>
+#include <vector>
 
 namespace ores::qt {
 
@@ -47,8 +47,7 @@ class ReportDefinitionController final : public EntityController {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.report_definition_controller";
+    inline static std::string_view logger_name = "ores.qt.report_definition_controller";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -57,14 +56,13 @@ private:
     }
 
 public:
-    ReportDefinitionController(
-        QMainWindow* mainWindow,
-        QMdiArea* mdiArea,
-        ClientManager* clientManager,
-        ChangeReasonCache* changeReasonCache,
-        BadgeCache* badgeCache,
-        const QString& username,
-        QObject* parent = nullptr);
+    ReportDefinitionController(QMainWindow* mainWindow,
+                               QMdiArea* mdiArea,
+                               ClientManager* clientManager,
+                               ChangeReasonCache* changeReasonCache,
+                               BadgeCache* badgeCache,
+                               const QString& username,
+                               QObject* parent = nullptr);
 
     ~ReportDefinitionController() override;
 
@@ -80,14 +78,15 @@ protected:
     EntityListMdiWindow* listWindow() const override;
 
 private slots:
-    void onNotificationReceived(const QString& eventType, const QDateTime& timestamp,
-                                const QStringList& entityIds, const QString& tenantId);
+    void onNotificationReceived(const QString& eventType,
+                                const QDateTime& timestamp,
+                                const QStringList& entityIds,
+                                const QString& tenantId);
     void onShowDetails(const reporting::domain::report_definition& definition);
     void onAddNewRequested();
     void onShowHistory(const reporting::domain::report_definition& definition);
     void onRevertVersion(const reporting::domain::report_definition& definition);
-    void onOpenVersion(const reporting::domain::report_definition& definition,
-                       int versionNumber);
+    void onOpenVersion(const reporting::domain::report_definition& definition, int versionNumber);
     void onScheduleRequested(const std::vector<boost::uuids::uuid>& ids);
     void onUnscheduleRequested(const std::vector<boost::uuids::uuid>& ids);
 

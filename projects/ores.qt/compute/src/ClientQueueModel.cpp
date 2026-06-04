@@ -18,22 +18,21 @@
  *
  */
 #include "ores.qt/ClientQueueModel.hpp"
-
-#include <QtConcurrent>
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 ClientQueueModel::ClientQueueModel(ClientManager* clientManager, QObject* parent)
-    : AbstractClientModel(parent),
-      clientManager_(clientManager),
-      watcher_(new QFutureWatcher<FetchResult>(this)) {
+    : AbstractClientModel(parent)
+    , clientManager_(clientManager)
+    , watcher_(new QFutureWatcher<FetchResult>(this)) {
 
-    connect(watcher_, &QFutureWatcher<FetchResult>::finished,
-            this, &ClientQueueModel::onDataLoaded);
+    connect(
+        watcher_, &QFutureWatcher<FetchResult>::finished, this, &ClientQueueModel::onDataLoaded);
 }
 
 int ClientQueueModel::rowCount(const QModelIndex& parent) const {
@@ -60,44 +59,50 @@ QVariant ClientQueueModel::data(const QModelIndex& index, int role) const {
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-        case StreamName:
-            return QString::fromStdString(r.name);
-        case Subjects:
-            return QString::fromStdString(r.subjects);
-        case Messages:
-            return static_cast<qlonglong>(r.message_count);
-        case Bytes:
-            return static_cast<qlonglong>(r.byte_count);
-        case Consumers:
-            return static_cast<qlonglong>(r.consumer_count);
-        case CreatedAt:
-            return relative_time_helper::format(r.created_at);
-        case LastMessageAt:
-            return r.last_message_at
-                ? relative_time_helper::format(*r.last_message_at)
-                : tr("—");
-        default:
-            return {};
+            case StreamName:
+                return QString::fromStdString(r.name);
+            case Subjects:
+                return QString::fromStdString(r.subjects);
+            case Messages:
+                return static_cast<qlonglong>(r.message_count);
+            case Bytes:
+                return static_cast<qlonglong>(r.byte_count);
+            case Consumers:
+                return static_cast<qlonglong>(r.consumer_count);
+            case CreatedAt:
+                return relative_time_helper::format(r.created_at);
+            case LastMessageAt:
+                return r.last_message_at ? relative_time_helper::format(*r.last_message_at) :
+                                           tr("—");
+            default:
+                return {};
         }
     }
 
     return {};
 }
 
-QVariant ClientQueueModel::headerData(
-    int section, Qt::Orientation orientation, int role) const {
+QVariant ClientQueueModel::headerData(int section, Qt::Orientation orientation, int role) const {
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return {};
 
     switch (section) {
-    case StreamName:    return tr("Stream");
-    case Subjects:      return tr("Subjects");
-    case Messages:      return tr("Messages");
-    case Bytes:         return tr("Bytes");
-    case Consumers:     return tr("Consumers");
-    case CreatedAt:     return tr("Created");
-    case LastMessageAt: return tr("Last Message");
-    default:            return {};
+        case StreamName:
+            return tr("Stream");
+        case Subjects:
+            return tr("Subjects");
+        case Messages:
+            return tr("Messages");
+        case Bytes:
+            return tr("Bytes");
+        case Consumers:
+            return tr("Consumers");
+        case CreatedAt:
+            return tr("Created");
+        case LastMessageAt:
+            return tr("Last Message");
+        default:
+            return {};
     }
 }
 
@@ -118,45 +123,50 @@ void ClientQueueModel::refresh() {
     QPointer<ClientQueueModel> self = this;
 
     QFuture<FetchResult> future = QtConcurrent::run([self]() -> FetchResult {
-        return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
-            if (!self || !self->clientManager_) {
-                return {.success = false, .rows = {},
-                        .error_message = "Model was destroyed",
-                        .error_details = {}};
-            }
-
-            auto admin = self->clientManager_->admin();
-            const auto streams = admin.list_streams();
-
-            std::vector<queue_row> rows;
-            rows.reserve(streams.size());
-            for (const auto& si : streams) {
-                queue_row r;
-                r.id   = si.name;
-                r.name = si.name;
-
-                // Join subjects with ", "
-                for (std::size_t i = 0; i < si.subjects.size(); ++i) {
-                    if (i > 0)
-                        r.subjects += ", ";
-                    r.subjects += si.subjects[i];
+        return exception_helper::wrap_async_fetch<FetchResult>(
+            [&]() -> FetchResult {
+                if (!self || !self->clientManager_) {
+                    return {.success = false,
+                            .rows = {},
+                            .error_message = "Model was destroyed",
+                            .error_details = {}};
                 }
 
-                r.message_count  = si.message_count;
-                r.byte_count     = si.byte_count;
-                r.consumer_count = si.consumer_count;
-                r.created_at     = si.created_at;
+                auto admin = self->clientManager_->admin();
+                const auto streams = admin.list_streams();
 
-                if (si.last_seq > 0)
-                    r.last_message_at = si.last_message_at;
+                std::vector<queue_row> rows;
+                rows.reserve(streams.size());
+                for (const auto& si : streams) {
+                    queue_row r;
+                    r.id = si.name;
+                    r.name = si.name;
 
-                rows.push_back(std::move(r));
-            }
+                    // Join subjects with ", "
+                    for (std::size_t i = 0; i < si.subjects.size(); ++i) {
+                        if (i > 0)
+                            r.subjects += ", ";
+                        r.subjects += si.subjects[i];
+                    }
 
-            BOOST_LOG_SEV(lg(), debug) << "Fetched " << rows.size() << " streams";
-            return {.success = true, .rows = std::move(rows),
-                    .error_message = {}, .error_details = {}};
-        }, "streams");
+                    r.message_count = si.message_count;
+                    r.byte_count = si.byte_count;
+                    r.consumer_count = si.consumer_count;
+                    r.created_at = si.created_at;
+
+                    if (si.last_seq > 0)
+                        r.last_message_at = si.last_message_at;
+
+                    rows.push_back(std::move(r));
+                }
+
+                BOOST_LOG_SEV(lg(), debug) << "Fetched " << rows.size() << " streams";
+                return {.success = true,
+                        .rows = std::move(rows),
+                        .error_message = {},
+                        .error_details = {}};
+            },
+            "streams");
     });
 
     watcher_->setFuture(future);
@@ -168,8 +178,8 @@ void ClientQueueModel::onDataLoaded() {
     const auto result = watcher_->result();
 
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to fetch streams: "
-                                   << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to fetch streams: " << result.error_message.toStdString();
         emit loadError(result.error_message, result.error_details);
         return;
     }

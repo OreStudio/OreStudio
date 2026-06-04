@@ -18,26 +18,24 @@
  *
  */
 #include "ores.qt/ComputeDashboardController.hpp"
-
-#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ComputeDashboardMdiWindow.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/IconUtils.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-ComputeDashboardController::ComputeDashboardController(
-    QMainWindow* mainWindow,
-    QMdiArea* mdiArea,
-    ClientManager* clientManager,
-    QObject* parent)
-    : QObject(parent),
-      mainWindow_(mainWindow),
-      mdiArea_(mdiArea),
-      clientManager_(clientManager),
-      dashboardWindow_(nullptr),
-      dashboardSubWindow_(nullptr) {
+ComputeDashboardController::ComputeDashboardController(QMainWindow* mainWindow,
+                                                       QMdiArea* mdiArea,
+                                                       ClientManager* clientManager,
+                                                       QObject* parent)
+    : QObject(parent)
+    , mainWindow_(mainWindow)
+    , mdiArea_(mdiArea)
+    , clientManager_(clientManager)
+    , dashboardWindow_(nullptr)
+    , dashboardSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "ComputeDashboardController created";
 }
@@ -53,30 +51,39 @@ void ComputeDashboardController::showDashboard() {
 
     dashboardWindow_ = new ComputeDashboardMdiWindow(clientManager_);
 
-    connect(dashboardWindow_, &ComputeDashboardMdiWindow::statusChanged,
-            this, [self = QPointer<ComputeDashboardController>(this)](const QString& msg) {
-        if (!self) return;
-        emit self->statusMessage(msg);
-    });
-    connect(dashboardWindow_, &ComputeDashboardMdiWindow::errorOccurred,
-            this, [self = QPointer<ComputeDashboardController>(this)](const QString& err) {
-        if (!self) return;
-        emit self->errorMessage(err);
-    });
+    connect(dashboardWindow_,
+            &ComputeDashboardMdiWindow::statusChanged,
+            this,
+            [self = QPointer<ComputeDashboardController>(this)](const QString& msg) {
+                if (!self)
+                    return;
+                emit self->statusMessage(msg);
+            });
+    connect(dashboardWindow_,
+            &ComputeDashboardMdiWindow::errorOccurred,
+            this,
+            [self = QPointer<ComputeDashboardController>(this)](const QString& err) {
+                if (!self)
+                    return;
+                emit self->errorMessage(err);
+            });
 
     dashboardSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     dashboardSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     dashboardSubWindow_->setWidget(dashboardWindow_);
     dashboardSubWindow_->setWindowTitle(tr("Compute Dashboard"));
-    dashboardSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Chart, IconUtils::DefaultIconColor));
+    dashboardSubWindow_->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
 
-    connect(dashboardSubWindow_, &QObject::destroyed, this,
+    connect(dashboardSubWindow_,
+            &QObject::destroyed,
+            this,
             [self = QPointer<ComputeDashboardController>(this)]() {
-        if (!self) return;
-        self->dashboardWindow_ = nullptr;
-        self->dashboardSubWindow_ = nullptr;
-    });
+                if (!self)
+                    return;
+                self->dashboardWindow_ = nullptr;
+                self->dashboardSubWindow_ = nullptr;
+            });
 
     emit detachableWindowCreated(dashboardSubWindow_);
 

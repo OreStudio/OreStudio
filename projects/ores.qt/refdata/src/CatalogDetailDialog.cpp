@@ -18,49 +18,51 @@
  *
  */
 #include "ores.qt/CatalogDetailDialog.hpp"
-
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include "ui_CatalogDetailDialog.h"
+#include "ores.dq.api/messaging/data_organization_protocol.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ProvenanceWidget.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.dq.api/messaging/data_organization_protocol.hpp"
+#include "ui_CatalogDetailDialog.h"
+#include <QFutureWatcher>
+#include <QMessageBox>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 CatalogDetailDialog::CatalogDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent),
-      ui_(new Ui::CatalogDetailDialog),
-      clientManager_(nullptr),
-      createMode_(false),
-      readOnly_(false) {
+    : DetailDialogBase(parent)
+    , ui_(new Ui::CatalogDetailDialog)
+    , clientManager_(nullptr)
+    , createMode_(false)
+    , readOnly_(false) {
 
     ui_->setupUi(this);
     WidgetUtils::setupComboBoxes(this);
 
-    connect(ui_->saveButton, &QPushButton::clicked,
-            this, &CatalogDetailDialog::onSaveClicked);
-    connect(ui_->deleteButton, &QPushButton::clicked,
-            this, &CatalogDetailDialog::onDeleteClicked);
+    connect(ui_->saveButton, &QPushButton::clicked, this, &CatalogDetailDialog::onSaveClicked);
+    connect(ui_->deleteButton, &QPushButton::clicked, this, &CatalogDetailDialog::onDeleteClicked);
 
     ui_->closeButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
-    connect(ui_->closeButton, &QPushButton::clicked, this,
-            &CatalogDetailDialog::onCloseClicked);
+    connect(ui_->closeButton, &QPushButton::clicked, this, &CatalogDetailDialog::onCloseClicked);
 }
 
 CatalogDetailDialog::~CatalogDetailDialog() {
     delete ui_;
 }
 
-QTabWidget* CatalogDetailDialog::tabWidget() const { return ui_->tabWidget; }
-QWidget* CatalogDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
-ProvenanceWidget* CatalogDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
+QTabWidget* CatalogDetailDialog::tabWidget() const {
+    return ui_->tabWidget;
+}
+QWidget* CatalogDetailDialog::provenanceTab() const {
+    return ui_->provenanceTab;
+}
+ProvenanceWidget* CatalogDetailDialog::provenanceWidget() const {
+    return ui_->provenanceWidget;
+}
 
 void CatalogDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
@@ -93,18 +95,19 @@ void CatalogDetailDialog::setReadOnly(bool readOnly) {
 
 void CatalogDetailDialog::updateUiFromCatalog() {
     ui_->nameEdit->setText(QString::fromStdString(catalog_.name));
-    ui_->descriptionEdit->setPlainText(
-        QString::fromStdString(catalog_.description));
-    ui_->ownerEdit->setText(
-        catalog_.owner ? QString::fromStdString(*catalog_.owner) : QString());
-    populateProvenance(catalog_.version, catalog_.modified_by, catalog_.performed_by,
-                       catalog_.recorded_at, "", catalog_.change_commentary);
+    ui_->descriptionEdit->setPlainText(QString::fromStdString(catalog_.description));
+    ui_->ownerEdit->setText(catalog_.owner ? QString::fromStdString(*catalog_.owner) : QString());
+    populateProvenance(catalog_.version,
+                       catalog_.modified_by,
+                       catalog_.performed_by,
+                       catalog_.recorded_at,
+                       "",
+                       catalog_.change_commentary);
 }
 
 void CatalogDetailDialog::updateCatalogFromUi() {
     catalog_.name = ui_->nameEdit->text().trimmed().toStdString();
-    catalog_.description =
-        ui_->descriptionEdit->toPlainText().trimmed().toStdString();
+    catalog_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
 
     QString owner = ui_->ownerEdit->text().trimmed();
     if (owner.isEmpty()) {
@@ -129,12 +132,11 @@ void CatalogDetailDialog::onSaveClicked() {
 
     updateCatalogFromUi();
 
-    const auto crOpType = createMode_
-        ? ChangeReasonDialog::OperationType::Create
-        : ChangeReasonDialog::OperationType::Amend;
-    const auto crSel = promptChangeReason(crOpType, true,
-        createMode_ ? "system" : "common");
-    if (!crSel) return;
+    const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
+                                        ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, true, createMode_ ? "system" : "common");
+    if (!crSel)
+        return;
     catalog_.change_commentary = crSel->commentary;
 
     emit statusMessage(tr("Saving catalog..."));
@@ -160,12 +162,12 @@ void CatalogDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(this);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished, this,
-            [self, watcher]() {
+    connect(watcher, &QFutureWatcher<SaveResult>::finished, this, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
-        if (!self) return;
+        if (!self)
+            return;
 
         if (result.success) {
             QString name = QString::fromStdString(self->catalog_.name);
@@ -184,18 +186,20 @@ void CatalogDetailDialog::onDeleteClicked() {
     if (name.isEmpty())
         return;
 
-    auto result = QMessageBox::question(
-        this, tr("Confirm Delete"),
-        tr("Are you sure you want to delete catalog '%1'?").arg(name),
-        QMessageBox::Yes | QMessageBox::No);
+    auto result =
+        QMessageBox::question(this,
+                              tr("Confirm Delete"),
+                              tr("Are you sure you want to delete catalog '%1'?").arg(name),
+                              QMessageBox::Yes | QMessageBox::No);
 
     if (result != QMessageBox::Yes)
         return;
 
     {
-        const auto crSel = promptChangeReason(
-            ChangeReasonDialog::OperationType::Delete, true, "common");
-        if (!crSel) return;
+        const auto crSel =
+            promptChangeReason(ChangeReasonDialog::OperationType::Delete, true, "common");
+        if (!crSel)
+            return;
     }
 
     if (!clientManager_ || !clientManager_->isConnected()) {
@@ -226,16 +230,15 @@ void CatalogDetailDialog::onDeleteClicked() {
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(this);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished, this,
-            [self, watcher, name]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, this, [self, watcher, name]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
-        if (!self) return;
+        if (!self)
+            return;
 
         if (result.success) {
-            emit self->statusMessage(
-                tr("Catalog '%1' deleted successfully").arg(name));
+            emit self->statusMessage(tr("Catalog '%1' deleted successfully").arg(name));
             emit self->catalogDeleted(name);
             self->requestClose();
         } else {

@@ -18,45 +18,49 @@
  *
  */
 #include "ores.qt/ClientAccountModel.hpp"
-
-#include <algorithm>
-#include <unordered_map>
-#include <QtConcurrent>
+#include "ores.iam.api/messaging/account_party_protocol.hpp"
+#include "ores.iam.api/messaging/account_protocol.hpp"
+#include "ores.iam.api/messaging/login_protocol.hpp"
+#include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/ExceptionHelper.hpp"
+#include "ores.qt/RelativeTimeHelper.hpp"
 #include <QColor>
 #include <QFont>
+#include <QtConcurrent>
 #include <boost/uuid/uuid_io.hpp>
-#include "ores.qt/ExceptionHelper.hpp"
-#include "ores.qt/ColorConstants.hpp"
-#include "ores.iam.api/messaging/account_protocol.hpp"
-#include "ores.iam.api/messaging/account_party_protocol.hpp"
-#include "ores.iam.api/messaging/login_protocol.hpp"
-#include "ores.qt/RelativeTimeHelper.hpp"
+#include <algorithm>
+#include <unordered_map>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    std::string account_key_extractor(const iam::domain::account& a) {
-        return a.username;
-    }
+std::string account_key_extractor(const iam::domain::account& a) {
+    return a.username;
+}
 }
 
-ClientAccountModel::
-ClientAccountModel(ClientManager* clientManager, QObject* parent)
-    : AbstractClientModel(parent), clientManager_(clientManager),
-      watcher_(new QFutureWatcher<FutureWatcherResult>(this)),
-      recencyTracker_(account_key_extractor),
-      pulseManager_(new RecencyPulseManager(this)) {
+ClientAccountModel::ClientAccountModel(ClientManager* clientManager, QObject* parent)
+    : AbstractClientModel(parent)
+    , clientManager_(clientManager)
+    , watcher_(new QFutureWatcher<FutureWatcherResult>(this))
+    , recencyTracker_(account_key_extractor)
+    , pulseManager_(new RecencyPulseManager(this)) {
 
     connect(watcher_,
-        &QFutureWatcher<FutureWatcherResult>::finished,
-        this, &ClientAccountModel::onAccountsLoaded);
+            &QFutureWatcher<FutureWatcherResult>::finished,
+            this,
+            &ClientAccountModel::onAccountsLoaded);
 
-    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
-        this, &ClientAccountModel::onPulseStateChanged);
-    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
-        this, &ClientAccountModel::onPulsingComplete);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulse_state_changed,
+            this,
+            &ClientAccountModel::onPulseStateChanged);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulsing_complete,
+            this,
+            &ClientAccountModel::onPulsingComplete);
 }
 
 int ClientAccountModel::rowCount(const QModelIndex& parent) const {
@@ -85,8 +89,7 @@ QVariant ClientAccountModel::data(const QModelIndex& index, int role) const {
     // Recency highlighting for foreground color
     if (role == Qt::ForegroundRole) {
         // Skip recency coloring for badge columns (handled by delegate)
-        if (index.column() == Column::Status ||
-            index.column() == Column::Locked) {
+        if (index.column() == Column::Status || index.column() == Column::Locked) {
             return {};
         }
         auto recency_color = recency_foreground_color(account.username);
@@ -99,48 +102,69 @@ QVariant ClientAccountModel::data(const QModelIndex& index, int role) const {
         return {};
 
     switch (index.column()) {
-    case Column::Username: return QString::fromStdString(account.username);
-    case Column::AccountType: return QString::fromStdString(account.account_type);
-    case Column::Email: return QString::fromStdString(account.email);
-    case Column::Parties: return item.partyCount > 0 ? QString::number(item.partyCount) : QString("-");
-    case Column::Status: {
-        auto status = calculateLoginStatus(item.loginInfo);
-        switch (status) {
-        case LoginStatus::Never: return tr("Never");
-        case LoginStatus::LongAgo: return tr("Old");
-        case LoginStatus::Recent: return tr("Recent");
-        case LoginStatus::Online: return tr("Online");
+        case Column::Username:
+            return QString::fromStdString(account.username);
+        case Column::AccountType:
+            return QString::fromStdString(account.account_type);
+        case Column::Email:
+            return QString::fromStdString(account.email);
+        case Column::Parties:
+            return item.partyCount > 0 ? QString::number(item.partyCount) : QString("-");
+        case Column::Status: {
+            auto status = calculateLoginStatus(item.loginInfo);
+            switch (status) {
+                case LoginStatus::Never:
+                    return tr("Never");
+                case LoginStatus::LongAgo:
+                    return tr("Old");
+                case LoginStatus::Recent:
+                    return tr("Recent");
+                case LoginStatus::Online:
+                    return tr("Online");
+            }
+            return tr("-");
         }
-        return tr("-");
-    }
-    case Column::Locked:
-        if (item.loginInfo.has_value())
-            return item.loginInfo->locked ? tr("Locked") : tr("-");
-        return tr("-");
-    case Column::Version: return account.version;
-    case Column::ModifiedBy: return QString::fromStdString(account.modified_by);
-    case Column::RecordedAt: return relative_time_helper::format(account.recorded_at);
-    default: return {};
+        case Column::Locked:
+            if (item.loginInfo.has_value())
+                return item.loginInfo->locked ? tr("Locked") : tr("-");
+            return tr("-");
+        case Column::Version:
+            return account.version;
+        case Column::ModifiedBy:
+            return QString::fromStdString(account.modified_by);
+        case Column::RecordedAt:
+            return relative_time_helper::format(account.recorded_at);
+        default:
+            return {};
     }
 }
 
-QVariant ClientAccountModel::
-headerData(int section, Qt::Orientation orientation, int role) const {
+QVariant ClientAccountModel::headerData(int section, Qt::Orientation orientation, int role) const {
     if (role != Qt::DisplayRole)
         return {};
 
     if (orientation == Qt::Horizontal) {
         switch (section) {
-        case Column::Username: return tr("Username");
-        case Column::AccountType: return tr("Type");
-        case Column::Email: return tr("Email");
-        case Column::Parties: return tr("Parties");
-        case Column::Status: return tr("Status");
-        case Column::Locked: return tr("Locked");
-        case Column::Version: return tr("Version");
-        case Column::ModifiedBy: return tr("Modified By");
-        case Column::RecordedAt: return tr("Recorded At");
-        default: return {};
+            case Column::Username:
+                return tr("Username");
+            case Column::AccountType:
+                return tr("Type");
+            case Column::Email:
+                return tr("Email");
+            case Column::Parties:
+                return tr("Parties");
+            case Column::Status:
+                return tr("Status");
+            case Column::Locked:
+                return tr("Locked");
+            case Column::Version:
+                return tr("Version");
+            case Column::ModifiedBy:
+                return tr("Modified By");
+            case Column::RecordedAt:
+                return tr("Recorded At");
+            default:
+                return {};
         }
     }
 
@@ -203,78 +227,88 @@ void ClientAccountModel::fetch_accounts(std::uint32_t offset, std::uint32_t limi
 
     QFuture<FutureWatcherResult> future =
         QtConcurrent::run([self, offset, limit]() -> FutureWatcherResult {
-            return exception_helper::wrap_async_fetch<FutureWatcherResult>([&]() -> FutureWatcherResult {
-                BOOST_LOG_SEV(lg(), debug) << "Making an accounts request with offset="
-                                           << offset << ", limit=" << limit;
-                if (!self || !self->clientManager_) {
-                    return {.success = false, .accounts = {}, .loginInfos = {},
-                            .total_available_count = 0,
-                            .error_message = "Model was destroyed",
+            return exception_helper::wrap_async_fetch<FutureWatcherResult>(
+                [&]() -> FutureWatcherResult {
+                    BOOST_LOG_SEV(lg(), debug)
+                        << "Making an accounts request with offset=" << offset
+                        << ", limit=" << limit;
+                    if (!self || !self->clientManager_) {
+                        return {.success = false,
+                                .accounts = {},
+                                .loginInfos = {},
+                                .total_available_count = 0,
+                                .error_message = "Model was destroyed",
+                                .error_details = {}};
+                    }
+
+                    // Fetch accounts using typed request
+                    iam::messaging::get_accounts_request_typed accounts_request;
+                    accounts_request.offset = offset;
+                    accounts_request.limit = limit;
+
+                    auto accounts_result = self->clientManager_->process_authenticated_request(
+                        std::move(accounts_request));
+
+                    if (!accounts_result) {
+                        BOOST_LOG_SEV(lg(), error)
+                            << "Failed to fetch accounts: " << accounts_result.error();
+                        return {.success = false,
+                                .accounts = {},
+                                .loginInfos = {},
+                                .total_available_count = 0,
+                                .error_message = QString::fromStdString(
+                                    "Failed to fetch accounts: " + accounts_result.error()),
+                                .error_details = {}};
+                    }
+
+                    BOOST_LOG_SEV(lg(), debug)
+                        << "Received " << accounts_result->accounts.size()
+                        << " accounts, total available: " << accounts_result->total_available_count;
+
+                    // Fetch login info using typed request
+                    iam::messaging::list_login_info_request login_info_request;
+
+                    std::vector<iam::domain::login_info> login_infos;
+                    auto login_info_result = self->clientManager_->process_authenticated_request(
+                        std::move(login_info_request));
+
+                    if (login_info_result) {
+                        login_infos = std::move(login_info_result->login_infos);
+                        BOOST_LOG_SEV(lg(), debug)
+                            << "Received " << login_infos.size() << " login info records";
+                    } else {
+                        BOOST_LOG_SEV(lg(), warn)
+                            << "Failed to fetch login info: " << login_info_result.error();
+                    }
+
+                    // Fetch all account-party assignments for party count column
+                    std::vector<iam::domain::account_party> account_parties;
+                    iam::messaging::get_account_parties_request parties_request;
+                    auto parties_result = self->clientManager_->process_authenticated_request(
+                        std::move(parties_request));
+
+                    if (parties_result) {
+                        account_parties = std::move(parties_result->account_parties);
+                        BOOST_LOG_SEV(lg(), debug)
+                            << "Received " << account_parties.size() << " account party records";
+                    } else {
+                        BOOST_LOG_SEV(lg(), warn)
+                            << "Failed to fetch account parties: " << parties_result.error();
+                    }
+
+                    return {.success = true,
+                            .accounts = std::move(accounts_result->accounts),
+                            .loginInfos = std::move(login_infos),
+                            .accountParties = std::move(account_parties),
+                            .total_available_count =
+                                static_cast<std::uint32_t>(accounts_result->total_available_count),
+                            .error_message = {},
                             .error_details = {}};
-                }
-
-                // Fetch accounts using typed request
-                iam::messaging::get_accounts_request_typed accounts_request;
-                accounts_request.offset = offset;
-                accounts_request.limit = limit;
-
-                auto accounts_result = self->clientManager_->
-                    process_authenticated_request(std::move(accounts_request));
-
-                if (!accounts_result) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to fetch accounts: "
-                                               << accounts_result.error();
-                    return {.success = false, .accounts = {}, .loginInfos = {},
-                            .total_available_count = 0,
-                            .error_message = QString::fromStdString(
-                                "Failed to fetch accounts: " + accounts_result.error()),
-                            .error_details = {}};
-                }
-
-                BOOST_LOG_SEV(lg(), debug) << "Received " << accounts_result->accounts.size()
-                                           << " accounts, total available: "
-                                           << accounts_result->total_available_count;
-
-                // Fetch login info using typed request
-                iam::messaging::list_login_info_request login_info_request;
-
-                std::vector<iam::domain::login_info> login_infos;
-                auto login_info_result = self->clientManager_->
-                    process_authenticated_request(std::move(login_info_request));
-
-                if (login_info_result) {
-                    login_infos = std::move(login_info_result->login_infos);
-                    BOOST_LOG_SEV(lg(), debug) << "Received " << login_infos.size()
-                                               << " login info records";
-                } else {
-                    BOOST_LOG_SEV(lg(), warn) << "Failed to fetch login info: "
-                                              << login_info_result.error();
-                }
-
-                // Fetch all account-party assignments for party count column
-                std::vector<iam::domain::account_party> account_parties;
-                iam::messaging::get_account_parties_request parties_request;
-                auto parties_result = self->clientManager_->
-                    process_authenticated_request(std::move(parties_request));
-
-                if (parties_result) {
-                    account_parties = std::move(parties_result->account_parties);
-                    BOOST_LOG_SEV(lg(), debug) << "Received " << account_parties.size()
-                                               << " account party records";
-                } else {
-                    BOOST_LOG_SEV(lg(), warn) << "Failed to fetch account parties: "
-                                              << parties_result.error();
-                }
-
-                return {.success = true, .accounts = std::move(accounts_result->accounts),
-                        .loginInfos = std::move(login_infos),
-                        .accountParties = std::move(account_parties),
-                        .total_available_count = static_cast<std::uint32_t>(accounts_result->total_available_count),
-                        .error_message = {}, .error_details = {}};
-            }, "accounts");
+                },
+                "accounts");
         });
 
-     watcher_->setFuture(future);
+    watcher_->setFuture(future);
 }
 
 void ClientAccountModel::onAccountsLoaded() {
@@ -284,8 +318,8 @@ void ClientAccountModel::onAccountsLoaded() {
     auto result = watcher_->result();
 
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to fetch accounts: "
-                                   << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to fetch accounts: " << result.error_message.toStdString();
         emit loadError(result.error_message, result.error_details);
         return;
     }
@@ -340,8 +374,8 @@ void ClientAccountModel::onAccountsLoaded() {
         const bool has_recent = recencyTracker_.update(accounts_for_tracker);
         if (has_recent && !pulseManager_->is_pulsing()) {
             pulseManager_->start_pulsing();
-            BOOST_LOG_SEV(lg(), debug) << "Found " << recencyTracker_.recent_count()
-                                       << " accounts newer than last reload";
+            BOOST_LOG_SEV(lg(), debug)
+                << "Found " << recencyTracker_.recent_count() << " accounts newer than last reload";
         }
     }
 
@@ -380,8 +414,7 @@ void ClientAccountModel::set_page_size(std::uint32_t size) {
     }
 }
 
-QVariant ClientAccountModel::
-recency_foreground_color(const std::string& username) const {
+QVariant ClientAccountModel::recency_foreground_color(const std::string& username) const {
     if (recencyTracker_.is_recent(username) && pulseManager_->is_pulse_on()) {
         return color_constants::stale_indicator;
     }
@@ -390,8 +423,8 @@ recency_foreground_color(const std::string& username) const {
 
 void ClientAccountModel::onPulseStateChanged(bool /*isOn*/) {
     if (!accounts_.empty()) {
-        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
-            {Qt::ForegroundRole});
+        emit dataChanged(
+            index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::ForegroundRole});
     }
 }
 
@@ -400,8 +433,8 @@ void ClientAccountModel::onPulsingComplete() {
     recencyTracker_.clear();
 }
 
-LoginStatus ClientAccountModel::calculateLoginStatus(
-    const std::optional<iam::domain::login_info>& loginInfo) {
+LoginStatus
+ClientAccountModel::calculateLoginStatus(const std::optional<iam::domain::login_info>& loginInfo) {
 
     // No login info means never logged in
     if (!loginInfo.has_value()) {
@@ -421,8 +454,8 @@ LoginStatus ClientAccountModel::calculateLoginStatus(
 
     // Calculate time since last login
     const auto now = std::chrono::system_clock::now();
-    const auto days_since_login = std::chrono::duration_cast<std::chrono::hours>(
-        now - loginInfo->last_login).count() / 24;
+    const auto days_since_login =
+        std::chrono::duration_cast<std::chrono::hours>(now - loginInfo->last_login).count() / 24;
 
     // Threshold: 30 days for "recent" vs "long ago"
     constexpr int recent_threshold_days = 30;
@@ -435,4 +468,3 @@ LoginStatus ClientAccountModel::calculateLoginStatus(
 }
 
 }
-

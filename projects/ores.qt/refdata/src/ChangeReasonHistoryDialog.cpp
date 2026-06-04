@@ -18,34 +18,39 @@
  *
  */
 #include "ores.qt/ChangeReasonHistoryDialog.hpp"
-
-#include <QIcon>
-#include <QDateTime>
-#include <QScrollBar>
-#include <QVBoxLayout>
-#include <QtConcurrent>
-#include <QFutureWatcher>
+#include "ores.dq.api/messaging/change_management_protocol.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.dq.api/messaging/change_management_protocol.hpp"
+#include <QDateTime>
+#include <QFutureWatcher>
+#include <QIcon>
+#include <QScrollBar>
+#include <QVBoxLayout>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 const QIcon& ChangeReasonHistoryDialog::getHistoryIcon() const {
-    static const QIcon historyIcon = IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor);
+    static const QIcon historyIcon =
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor);
     return historyIcon;
 }
 
 ChangeReasonHistoryDialog::ChangeReasonHistoryDialog(QString code,
-    ClientManager* clientManager, QWidget* parent)
-    : QWidget(parent), ui_(new Ui::ChangeReasonHistoryDialog),
-      clientManager_(clientManager), code_(std::move(code)),
-      toolBar_(nullptr), reloadAction_(nullptr),
-      openAction_(nullptr), revertAction_(nullptr) {
+                                                     ClientManager* clientManager,
+                                                     QWidget* parent)
+    : QWidget(parent)
+    , ui_(new Ui::ChangeReasonHistoryDialog)
+    , clientManager_(clientManager)
+    , code_(std::move(code))
+    , toolBar_(nullptr)
+    , reloadAction_(nullptr)
+    , openAction_(nullptr)
+    , revertAction_(nullptr) {
 
     BOOST_LOG_SEV(lg(), info) << "Creating change reason history widget for: "
                               << code_.toStdString();
@@ -55,14 +60,13 @@ ChangeReasonHistoryDialog::ChangeReasonHistoryDialog(QString code,
 
     setupToolbar();
 
-    connect(ui_->versionListWidget, &QTableWidget::currentCellChanged,
-            this, [this](int currentRow, int, int, int) {
-        onVersionSelected(currentRow);
-    });
+    connect(ui_->versionListWidget,
+            &QTableWidget::currentCellChanged,
+            this,
+            [this](int currentRow, int, int, int) { onVersionSelected(currentRow); });
 
     // Double-click opens the version in read-only mode
-    connect(ui_->versionListWidget, &QTableWidget::cellDoubleClicked,
-            this, [this](int, int) {
+    connect(ui_->versionListWidget, &QTableWidget::cellDoubleClicked, this, [this](int, int) {
         onOpenClicked();
     });
 
@@ -82,8 +86,10 @@ ChangeReasonHistoryDialog::ChangeReasonHistoryDialog(QString code,
 
     ui_->closeButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
-    connect(ui_->closeButton, &QPushButton::clicked,
-            this, [this]() { if (window()) window()->close(); });
+    connect(ui_->closeButton, &QPushButton::clicked, this, [this]() {
+        if (window())
+            window()->close();
+    });
 
     updateButtonStates();
 }
@@ -101,15 +107,14 @@ ChangeReasonHistoryDialog::~ChangeReasonHistoryDialog() {
 }
 
 void ChangeReasonHistoryDialog::loadHistory() {
-    BOOST_LOG_SEV(lg(), info) << "Loading change reason history for: "
-                              << code_.toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Loading change reason history for: " << code_.toStdString();
 
-    using HistoryResult = std::expected<dq::messaging::get_change_reason_history_response, std::string>;
+    using HistoryResult =
+        std::expected<dq::messaging::get_change_reason_history_response, std::string>;
     QPointer<ChangeReasonHistoryDialog> self = this;
     const auto code = code_.toStdString();
 
-    QFuture<HistoryResult> future =
-        QtConcurrent::run([self, code]() -> HistoryResult {
+    QFuture<HistoryResult> future = QtConcurrent::run([self, code]() -> HistoryResult {
         if (!self->clientManager_ || !self->clientManager_->isConnected()) {
             return std::unexpected("Disconnected from server");
         }
@@ -124,10 +129,9 @@ void ChangeReasonHistoryDialog::loadHistory() {
 
     // Use watcher to handle results
     auto* watcher = new QFutureWatcher<HistoryResult>(self);
-    connect(watcher, &QFutureWatcher<HistoryResult>::finished, self,
-        [self, watcher]() {
-
-        if (!self) return;
+    connect(watcher, &QFutureWatcher<HistoryResult>::finished, self, [self, watcher]() {
+        if (!self)
+            return;
         auto result = watcher->result();
         watcher->deleteLater();
 
@@ -150,8 +154,7 @@ void ChangeReasonHistoryDialog::loadHistory() {
 }
 
 void ChangeReasonHistoryDialog::onHistoryLoaded() {
-    BOOST_LOG_SEV(lg(), info) << "History loaded successfully: "
-                              << versions_.size() << " versions";
+    BOOST_LOG_SEV(lg(), info) << "History loaded successfully: " << versions_.size() << " versions";
 
     const QIcon& cachedIcon = getHistoryIcon();
     ui_->versionListWidget->setRowCount(0);
@@ -160,12 +163,10 @@ void ChangeReasonHistoryDialog::onHistoryLoaded() {
     for (int i = 0; i < static_cast<int>(versions_.size()); ++i) {
         const auto& version = versions_[i];
 
-        auto* versionItem =
-            new QTableWidgetItem(QString::number(version.version));
+        auto* versionItem = new QTableWidgetItem(QString::number(version.version));
         auto* recordedAtItem =
             new QTableWidgetItem(relative_time_helper::format(version.recorded_at));
-        auto* modifiedByItem =
-            new QTableWidgetItem(QString::fromStdString(version.modified_by));
+        auto* modifiedByItem = new QTableWidgetItem(QString::fromStdString(version.modified_by));
         auto* commentaryItem =
             new QTableWidgetItem(QString::fromStdString(version.change_commentary));
 
@@ -182,25 +183,22 @@ void ChangeReasonHistoryDialog::onHistoryLoaded() {
 
     if (!versions_.empty()) {
         const auto& latest = versions_[0];
-        ui_->titleLabel->setText(QString("Change Reason History: %1")
-            .arg(QString::fromStdString(latest.code)));
+        ui_->titleLabel->setText(
+            QString("Change Reason History: %1").arg(QString::fromStdString(latest.code)));
     }
 
     updateButtonStates();
 
-    emit statusChanged(QString("Loaded %1 versions")
-        .arg(versions_.size()));
+    emit statusChanged(QString("Loaded %1 versions").arg(versions_.size()));
 }
 
 void ChangeReasonHistoryDialog::onHistoryLoadError(const QString& error_msg) {
-    BOOST_LOG_SEV(lg(), error) << "Error loading history: "
-                               << error_msg.toStdString();
+    BOOST_LOG_SEV(lg(), error) << "Error loading history: " << error_msg.toStdString();
 
-    emit errorOccurred(QString("Failed to load change reason history: %1")
-        .arg(error_msg));
-    MessageBoxHelper::critical(this, "History Load Error",
-        QString("Failed to load change reason history:\n%1")
-        .arg(error_msg));
+    emit errorOccurred(QString("Failed to load change reason history: %1").arg(error_msg));
+    MessageBoxHelper::critical(this,
+                               "History Load Error",
+                               QString("Failed to load change reason history:\n%1").arg(error_msg));
 }
 
 void ChangeReasonHistoryDialog::onVersionSelected(int index) {
@@ -265,33 +263,27 @@ void ChangeReasonHistoryDialog::displayFullDetailsTab(int version_index) {
     ui_->changeCommentaryValue->setText(QString::fromStdString(reason.change_commentary));
 }
 
-#define CHECK_DIFF_STRING(FIELD_NAME, FIELD) \
-    if (current.FIELD != previous.FIELD) { \
-        diffs.append({FIELD_NAME, { \
-            QString::fromStdString(previous.FIELD), \
-            QString::fromStdString(current.FIELD) \
-        }}); \
+#define CHECK_DIFF_STRING(FIELD_NAME, FIELD)                                                    \
+    if (current.FIELD != previous.FIELD) {                                                      \
+        diffs.append(                                                                           \
+            {FIELD_NAME,                                                                        \
+             {QString::fromStdString(previous.FIELD), QString::fromStdString(current.FIELD)}}); \
     }
 
-#define CHECK_DIFF_BOOL(FIELD_NAME, FIELD) \
-    if (current.FIELD != previous.FIELD) { \
-        diffs.append({FIELD_NAME, { \
-            previous.FIELD ? "Yes" : "No", \
-            current.FIELD ? "Yes" : "No" \
-        }}); \
+#define CHECK_DIFF_BOOL(FIELD_NAME, FIELD)                                                         \
+    if (current.FIELD != previous.FIELD) {                                                         \
+        diffs.append({FIELD_NAME, {previous.FIELD ? "Yes" : "No", current.FIELD ? "Yes" : "No"}}); \
     }
 
-#define CHECK_DIFF_INT(FIELD_NAME, FIELD) \
-    if (current.FIELD != previous.FIELD) { \
-        diffs.append({FIELD_NAME, { \
-            QString::number(previous.FIELD), \
-            QString::number(current.FIELD) \
-        }}); \
+#define CHECK_DIFF_INT(FIELD_NAME, FIELD)                                                     \
+    if (current.FIELD != previous.FIELD) {                                                    \
+        diffs.append(                                                                         \
+            {FIELD_NAME, {QString::number(previous.FIELD), QString::number(current.FIELD)}}); \
     }
 
-ChangeReasonHistoryDialog::DiffResult ChangeReasonHistoryDialog::
-calculateDiff(const dq::domain::change_reason& current,
-    const dq::domain::change_reason& previous) {
+ChangeReasonHistoryDialog::DiffResult
+ChangeReasonHistoryDialog::calculateDiff(const dq::domain::change_reason& current,
+                                         const dq::domain::change_reason& previous) {
 
     DiffResult diffs;
 
@@ -322,31 +314,27 @@ void ChangeReasonHistoryDialog::setupToolbar() {
 
     // Create Reload action
     reloadAction_ = new QAction("Reload", this);
-    reloadAction_->setIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowClockwise, IconUtils::DefaultIconColor));
+    reloadAction_->setIcon(
+        IconUtils::createRecoloredIcon(Icon::ArrowClockwise, IconUtils::DefaultIconColor));
     reloadAction_->setToolTip("Reload history from server");
-    connect(reloadAction_, &QAction::triggered, this,
-        &ChangeReasonHistoryDialog::onReloadClicked);
+    connect(reloadAction_, &QAction::triggered, this, &ChangeReasonHistoryDialog::onReloadClicked);
     toolBar_->addAction(reloadAction_);
 
     toolBar_->addSeparator();
 
     // Create Open action
     openAction_ = new QAction("Open", this);
-    openAction_->setIcon(IconUtils::createRecoloredIcon(
-        Icon::Edit, IconUtils::DefaultIconColor));
+    openAction_->setIcon(IconUtils::createRecoloredIcon(Icon::Edit, IconUtils::DefaultIconColor));
     openAction_->setToolTip("Open this version in read-only mode");
-    connect(openAction_, &QAction::triggered, this,
-        &ChangeReasonHistoryDialog::onOpenClicked);
+    connect(openAction_, &QAction::triggered, this, &ChangeReasonHistoryDialog::onOpenClicked);
     toolBar_->addAction(openAction_);
 
     // Create Revert action
     revertAction_ = new QAction("Revert", this);
-    revertAction_->setIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
+    revertAction_->setIcon(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
+                                                          IconUtils::DefaultIconColor));
     revertAction_->setToolTip("Revert change reason to this version");
-    connect(revertAction_, &QAction::triggered, this,
-        &ChangeReasonHistoryDialog::onRevertClicked);
+    connect(revertAction_, &QAction::triggered, this, &ChangeReasonHistoryDialog::onRevertClicked);
     toolBar_->addAction(revertAction_);
 
     // Add toolbar to layout
@@ -357,8 +345,7 @@ void ChangeReasonHistoryDialog::setupToolbar() {
 
 void ChangeReasonHistoryDialog::updateButtonStates() {
     const int index = selectedVersionIndex();
-    const bool hasSelection = index >= 0 &&
-        index < static_cast<int>(versions_.size());
+    const bool hasSelection = index >= 0 && index < static_cast<int>(versions_.size());
 
     if (openAction_)
         openAction_->setEnabled(hasSelection);
@@ -377,8 +364,8 @@ void ChangeReasonHistoryDialog::onOpenClicked() {
         return;
 
     const auto& version = versions_[index];
-    BOOST_LOG_SEV(lg(), info) << "Opening change reason version "
-                              << version.version << " in read-only mode";
+    BOOST_LOG_SEV(lg(), info) << "Opening change reason version " << version.version
+                              << " in read-only mode";
 
     emit openVersionRequested(version, version.version);
 }
@@ -394,7 +381,9 @@ void ChangeReasonHistoryDialog::onRevertClicked() {
     // If this is the oldest version, there's no previous version to revert to
     if (index == static_cast<int>(versions_.size()) - 1) {
         BOOST_LOG_SEV(lg(), warn) << "Cannot revert oldest version - no previous version exists";
-        MessageBoxHelper::information(this, "Cannot Revert",
+        MessageBoxHelper::information(
+            this,
+            "Cannot Revert",
             "This is the oldest version. There is no previous version to revert to.");
         return;
     }
@@ -402,12 +391,13 @@ void ChangeReasonHistoryDialog::onRevertClicked() {
     // The "previous" version is the one we want to revert TO (the "old" side in the diff)
     const auto& previous = versions_[index + 1];
 
-    BOOST_LOG_SEV(lg(), info) << "Requesting revert from version "
-                              << current.version << " to version "
-                              << previous.version;
+    BOOST_LOG_SEV(lg(), info) << "Requesting revert from version " << current.version
+                              << " to version " << previous.version;
 
     // Confirm with user
-    auto reply = MessageBoxHelper::question(this, "Revert Change Reason",
+    auto reply = MessageBoxHelper::question(
+        this,
+        "Revert Change Reason",
         QString("Are you sure you want to revert '%1' from version %2 back to version %3?\n\n"
                 "This will create a new version with the data from version %3.")
             .arg(code_)
@@ -445,16 +435,14 @@ QSize ChangeReasonHistoryDialog::sizeHint() const {
 
     // Return the maximum of the base size (to accommodate large text/UI
     // elements) and the defined minimum size.
-    return { qMax(baseSize.width(), minimumWidth),
-             qMax(baseSize.height(), minimumHeight) };
+    return {qMax(baseSize.width(), minimumWidth), qMax(baseSize.height(), minimumHeight)};
 }
 
 void ChangeReasonHistoryDialog::markAsStale() {
     BOOST_LOG_SEV(lg(), info) << "Change reason history marked as stale for: "
                               << code_.toStdString() << ", reloading...";
 
-    emit statusChanged(QString("Change reason %1 was modified - reloading history...")
-        .arg(code_));
+    emit statusChanged(QString("Change reason %1 was modified - reloading history...").arg(code_));
 
     // Reload history data
     loadHistory();

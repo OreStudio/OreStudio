@@ -20,15 +20,15 @@
 #ifndef ORES_QT_TRADE_CONTROLLER_HPP
 #define ORES_QT_TRADE_CONTROLLER_HPP
 
-#include <QMdiArea>
-#include <QMainWindow>
-#include "ores.qt/EntityController.hpp"
-#include "ores.qt/ClientManager.hpp"
-#include "ores.qt/ImageCache.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/EntityController.hpp"
+#include "ores.qt/EntityListMdiWindow.hpp"
+#include "ores.qt/ImageCache.hpp"
 #include "ores.trading.api/domain/trade.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
-#include "ores.qt/EntityListMdiWindow.hpp"
+#include <QMainWindow>
+#include <QMdiArea>
 
 namespace ores::qt {
 
@@ -46,8 +46,7 @@ class TradeController final : public EntityController {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.trade_controller";
+    inline static std::string_view logger_name = "ores.qt.trade_controller";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -56,14 +55,13 @@ private:
     }
 
 public:
-    TradeController(
-        QMainWindow* mainWindow,
-        QMdiArea* mdiArea,
-        ClientManager* clientManager,
-        ChangeReasonCache* changeReasonCache,
-        ImageCache* imageCache,
-        const QString& username,
-        QObject* parent = nullptr);
+    TradeController(QMainWindow* mainWindow,
+                    QMdiArea* mdiArea,
+                    ClientManager* clientManager,
+                    ChangeReasonCache* changeReasonCache,
+                    ImageCache* imageCache,
+                    const QString& username,
+                    QObject* parent = nullptr);
 
     void showListWindow() override;
     void closeAllWindows() override;
@@ -84,8 +82,7 @@ private slots:
     void onShowHistory(const trading::domain::trade& trade);
     void onImportTradesRequested();
     void onRevertVersion(const trading::domain::trade& trade);
-    void onOpenVersion(const trading::domain::trade& trade,
-                       int versionNumber);
+    void onOpenVersion(const trading::domain::trade& trade, int versionNumber);
 
 private:
     void showAddWindow();

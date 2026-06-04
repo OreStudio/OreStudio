@@ -18,38 +18,44 @@
  *
  */
 #include "ores.qt/ClientBusinessDayConventionTypeModel.hpp"
-
-#include <QtConcurrent>
-#include "ores.trading.api/messaging/business_day_convention_type_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
+#include "ores.trading.api/messaging/business_day_convention_type_protocol.hpp"
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    std::string business_day_convention_type_key_extractor(const trading::domain::business_day_convention_type& e) {
-        return e.code;
-    }
+std::string
+business_day_convention_type_key_extractor(const trading::domain::business_day_convention_type& e) {
+    return e.code;
+}
 }
 
 ClientBusinessDayConventionTypeModel::ClientBusinessDayConventionTypeModel(
     ClientManager* clientManager, QObject* parent)
-    : AbstractClientModel(parent),
-      clientManager_(clientManager),
-      watcher_(new QFutureWatcher<FetchResult>(this)),
-      recencyTracker_(business_day_convention_type_key_extractor),
-      pulseManager_(new RecencyPulseManager(this)) {
+    : AbstractClientModel(parent)
+    , clientManager_(clientManager)
+    , watcher_(new QFutureWatcher<FetchResult>(this))
+    , recencyTracker_(business_day_convention_type_key_extractor)
+    , pulseManager_(new RecencyPulseManager(this)) {
 
-    connect(watcher_, &QFutureWatcher<FetchResult>::finished,
-            this, &ClientBusinessDayConventionTypeModel::onTypesLoaded);
+    connect(watcher_,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            &ClientBusinessDayConventionTypeModel::onTypesLoaded);
 
-    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
-            this, &ClientBusinessDayConventionTypeModel::onPulseStateChanged);
-    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
-            this, &ClientBusinessDayConventionTypeModel::onPulsingComplete);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulse_state_changed,
+            this,
+            &ClientBusinessDayConventionTypeModel::onPulseStateChanged);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulsing_complete,
+            this,
+            &ClientBusinessDayConventionTypeModel::onPulsingComplete);
 }
 
 int ClientBusinessDayConventionTypeModel::rowCount(const QModelIndex& parent) const {
@@ -64,8 +70,7 @@ int ClientBusinessDayConventionTypeModel::columnCount(const QModelIndex& parent)
     return ColumnCount;
 }
 
-QVariant ClientBusinessDayConventionTypeModel::data(
-    const QModelIndex& index, int role) const {
+QVariant ClientBusinessDayConventionTypeModel::data(const QModelIndex& index, int role) const {
     if (!index.isValid())
         return {};
 
@@ -77,18 +82,18 @@ QVariant ClientBusinessDayConventionTypeModel::data(
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-        case Code:
-            return QString::fromStdString(type.code);
-        case Description:
-            return QString::fromStdString(type.description);
-        case Version:
-            return static_cast<qlonglong>(type.version);
-        case ModifiedBy:
-            return QString::fromStdString(type.modified_by);
-        case RecordedAt:
-            return relative_time_helper::format(type.recorded_at);
-        default:
-            return {};
+            case Code:
+                return QString::fromStdString(type.code);
+            case Description:
+                return QString::fromStdString(type.description);
+            case Version:
+                return static_cast<qlonglong>(type.version);
+            case ModifiedBy:
+                return QString::fromStdString(type.modified_by);
+            case RecordedAt:
+                return relative_time_helper::format(type.recorded_at);
+            default:
+                return {};
         }
     }
 
@@ -99,24 +104,25 @@ QVariant ClientBusinessDayConventionTypeModel::data(
     return {};
 }
 
-QVariant ClientBusinessDayConventionTypeModel::headerData(
-    int section, Qt::Orientation orientation, int role) const {
+QVariant ClientBusinessDayConventionTypeModel::headerData(int section,
+                                                          Qt::Orientation orientation,
+                                                          int role) const {
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return {};
 
     switch (section) {
-    case Code:
-        return tr("Code");
-    case Description:
-        return tr("Description");
-    case Version:
-        return tr("Version");
-    case ModifiedBy:
-        return tr("Modified By");
-    case RecordedAt:
-        return tr("Recorded At");
-    default:
-        return {};
+        case Code:
+            return tr("Code");
+        case Description:
+            return tr("Description");
+        case Version:
+            return tr("Version");
+        case ModifiedBy:
+            return tr("Modified By");
+        case RecordedAt:
+            return tr("Recorded At");
+        default:
+            return {};
     }
 }
 
@@ -129,7 +135,8 @@ void ClientBusinessDayConventionTypeModel::refresh() {
     }
 
     if (!clientManager_ || !clientManager_->isConnected()) {
-        BOOST_LOG_SEV(lg(), warn) << "Cannot refresh business day convention type model: disconnected.";
+        BOOST_LOG_SEV(lg(), warn)
+            << "Cannot refresh business day convention type model: disconnected.";
         emit loadError("Not connected to server");
         return;
     }
@@ -146,8 +153,7 @@ void ClientBusinessDayConventionTypeModel::refresh() {
     fetch_types(0, page_size_);
 }
 
-void ClientBusinessDayConventionTypeModel::load_page(std::uint32_t offset,
-                                          std::uint32_t limit) {
+void ClientBusinessDayConventionTypeModel::load_page(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "load_page: offset=" << offset << ", limit=" << limit;
 
     if (is_fetching_) {
@@ -171,18 +177,19 @@ void ClientBusinessDayConventionTypeModel::load_page(std::uint32_t offset,
     fetch_types(offset, limit);
 }
 
-void ClientBusinessDayConventionTypeModel::fetch_types(
-    std::uint32_t offset, std::uint32_t limit) {
+void ClientBusinessDayConventionTypeModel::fetch_types(std::uint32_t offset, std::uint32_t limit) {
     is_fetching_ = true;
     QPointer<ClientBusinessDayConventionTypeModel> self = this;
 
-    QFuture<FetchResult> future =
-        QtConcurrent::run([self, offset, limit]() -> FetchResult {
-            return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
-                BOOST_LOG_SEV(lg(), debug) << "Making business day convention types request with offset="
-                                           << offset << ", limit=" << limit;
+    QFuture<FetchResult> future = QtConcurrent::run([self, offset, limit]() -> FetchResult {
+        return exception_helper::wrap_async_fetch<FetchResult>(
+            [&]() -> FetchResult {
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Making business day convention types request with offset=" << offset
+                    << ", limit=" << limit;
                 if (!self || !self->clientManager_) {
-                    return {.success = false, .types = {},
+                    return {.success = false,
+                            .types = {},
                             .total_available_count = 0,
                             .error_message = "Model was destroyed",
                             .error_details = {}};
@@ -190,29 +197,31 @@ void ClientBusinessDayConventionTypeModel::fetch_types(
 
                 trading::messaging::get_business_day_convention_types_request request;
 
-                auto result = self->clientManager_->
-                    process_authenticated_request(std::move(request));
+                auto result =
+                    self->clientManager_->process_authenticated_request(std::move(request));
 
                 if (!result) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to fetch business day convention types: "
-                                               << result.error();
-                    return {.success = false, .types = {},
+                    BOOST_LOG_SEV(lg(), error)
+                        << "Failed to fetch business day convention types: " << result.error();
+                    return {.success = false,
+                            .types = {},
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(
                                 "Failed to fetch business day convention types: " + result.error()),
                             .error_details = {}};
                 }
 
-                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->types.size()
-                                           << " business day convention types";
-                const std::uint32_t count =
-                    static_cast<std::uint32_t>(result->types.size());
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Fetched " << result->types.size() << " business day convention types";
+                const std::uint32_t count = static_cast<std::uint32_t>(result->types.size());
                 return {.success = true,
                         .types = std::move(result->types),
                         .total_available_count = count,
-                        .error_message = {}, .error_details = {}};
-            }, "business day convention types");
-        });
+                        .error_message = {},
+                        .error_details = {}};
+            },
+            "business day convention types");
+    });
 
     watcher_->setFuture(future);
 }
@@ -271,8 +280,8 @@ ClientBusinessDayConventionTypeModel::getType(int row) const {
     return &types_[idx];
 }
 
-QVariant ClientBusinessDayConventionTypeModel::recency_foreground_color(
-    const std::string& code) const {
+QVariant
+ClientBusinessDayConventionTypeModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {
         return color_constants::stale_indicator;
     }
@@ -281,8 +290,8 @@ QVariant ClientBusinessDayConventionTypeModel::recency_foreground_color(
 
 void ClientBusinessDayConventionTypeModel::onPulseStateChanged(bool /*isOn*/) {
     if (!types_.empty()) {
-        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
-            {Qt::ForegroundRole});
+        emit dataChanged(
+            index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::ForegroundRole});
     }
 }
 

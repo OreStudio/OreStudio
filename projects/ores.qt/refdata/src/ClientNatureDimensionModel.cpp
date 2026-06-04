@@ -18,38 +18,43 @@
  *
  */
 #include "ores.qt/ClientNatureDimensionModel.hpp"
-
-#include <QtConcurrent>
 #include "ores.dq.api/messaging/dimension_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    std::string nature_dimension_key_extractor(const dq::domain::nature_dimension& e) {
-        return e.code;
-    }
+std::string nature_dimension_key_extractor(const dq::domain::nature_dimension& e) {
+    return e.code;
+}
 }
 
-ClientNatureDimensionModel::ClientNatureDimensionModel(
-    ClientManager* clientManager, QObject* parent)
-    : AbstractClientModel(parent),
-      clientManager_(clientManager),
-      watcher_(new QFutureWatcher<FetchResult>(this)),
-      recencyTracker_(nature_dimension_key_extractor),
-      pulseManager_(new RecencyPulseManager(this)) {
+ClientNatureDimensionModel::ClientNatureDimensionModel(ClientManager* clientManager,
+                                                       QObject* parent)
+    : AbstractClientModel(parent)
+    , clientManager_(clientManager)
+    , watcher_(new QFutureWatcher<FetchResult>(this))
+    , recencyTracker_(nature_dimension_key_extractor)
+    , pulseManager_(new RecencyPulseManager(this)) {
 
-    connect(watcher_, &QFutureWatcher<FetchResult>::finished,
-            this, &ClientNatureDimensionModel::onDimensionsLoaded);
+    connect(watcher_,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            &ClientNatureDimensionModel::onDimensionsLoaded);
 
-    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
-            this, &ClientNatureDimensionModel::onPulseStateChanged);
-    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
-            this, &ClientNatureDimensionModel::onPulsingComplete);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulse_state_changed,
+            this,
+            &ClientNatureDimensionModel::onPulseStateChanged);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulsing_complete,
+            this,
+            &ClientNatureDimensionModel::onPulsingComplete);
 }
 
 int ClientNatureDimensionModel::rowCount(const QModelIndex& parent) const {
@@ -64,8 +69,7 @@ int ClientNatureDimensionModel::columnCount(const QModelIndex& parent) const {
     return ColumnCount;
 }
 
-QVariant ClientNatureDimensionModel::data(
-    const QModelIndex& index, int role) const {
+QVariant ClientNatureDimensionModel::data(const QModelIndex& index, int role) const {
     if (!index.isValid())
         return {};
 
@@ -77,20 +81,20 @@ QVariant ClientNatureDimensionModel::data(
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-        case Code:
-            return QString::fromStdString(dimension.code);
-        case Name:
-            return QString::fromStdString(dimension.name);
-        case Description:
-            return QString::fromStdString(dimension.description);
-        case Version:
-            return dimension.version;
-        case ModifiedBy:
-            return QString::fromStdString(dimension.modified_by);
-        case RecordedAt:
-            return relative_time_helper::format(dimension.recorded_at);
-        default:
-            return {};
+            case Code:
+                return QString::fromStdString(dimension.code);
+            case Name:
+                return QString::fromStdString(dimension.name);
+            case Description:
+                return QString::fromStdString(dimension.description);
+            case Version:
+                return dimension.version;
+            case ModifiedBy:
+                return QString::fromStdString(dimension.modified_by);
+            case RecordedAt:
+                return relative_time_helper::format(dimension.recorded_at);
+            default:
+                return {};
         }
     }
 
@@ -101,26 +105,26 @@ QVariant ClientNatureDimensionModel::data(
     return {};
 }
 
-QVariant ClientNatureDimensionModel::headerData(
-    int section, Qt::Orientation orientation, int role) const {
+QVariant
+ClientNatureDimensionModel::headerData(int section, Qt::Orientation orientation, int role) const {
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return {};
 
     switch (section) {
-    case Code:
-        return tr("Code");
-    case Name:
-        return tr("Name");
-    case Description:
-        return tr("Description");
-    case Version:
-        return tr("Version");
-    case ModifiedBy:
-        return tr("Modified By");
-    case RecordedAt:
-        return tr("Recorded At");
-    default:
-        return {};
+        case Code:
+            return tr("Code");
+        case Name:
+            return tr("Name");
+        case Description:
+            return tr("Description");
+        case Version:
+            return tr("Version");
+        case ModifiedBy:
+            return tr("Modified By");
+        case RecordedAt:
+            return tr("Recorded At");
+        default:
+            return {};
     }
 }
 
@@ -141,27 +145,35 @@ void ClientNatureDimensionModel::refresh() {
     QPointer<ClientNatureDimensionModel> self = this;
 
     QFuture<FetchResult> future = QtConcurrent::run([self]() -> FetchResult {
-        return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
-            if (!self || !self->clientManager_) {
-                return {.success = false, .dimensions = {},
-                        .error_message = "Model was destroyed",
-                        .error_details = {}};
-            }
+        return exception_helper::wrap_async_fetch<FetchResult>(
+            [&]() -> FetchResult {
+                if (!self || !self->clientManager_) {
+                    return {.success = false,
+                            .dimensions = {},
+                            .error_message = "Model was destroyed",
+                            .error_details = {}};
+                }
 
-            dq::messaging::get_nature_dimensions_request request;
-            auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
-            if (!response_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to send request";
-                return {.success = false, .dimensions = {},
-                        .error_message = "Failed to send request",
-                        .error_details = {}};
-            }
+                dq::messaging::get_nature_dimensions_request request;
+                auto response_result =
+                    self->clientManager_->process_authenticated_request(std::move(request));
+                if (!response_result) {
+                    BOOST_LOG_SEV(lg(), error) << "Failed to send request";
+                    return {.success = false,
+                            .dimensions = {},
+                            .error_message = "Failed to send request",
+                            .error_details = {}};
+                }
 
-            BOOST_LOG_SEV(lg(), debug) << "Fetched " << response_result->nature_dimensions.size()
-                                       << " nature dimensions";
-            return {.success = true, .dimensions = std::move(response_result->nature_dimensions),
-                    .error_message = {}, .error_details = {}};
-        }, "nature dimensions");
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Fetched " << response_result->nature_dimensions.size()
+                    << " nature dimensions";
+                return {.success = true,
+                        .dimensions = std::move(response_result->nature_dimensions),
+                        .error_message = {},
+                        .error_details = {}};
+            },
+            "nature dimensions");
     });
 
     watcher_->setFuture(future);
@@ -173,8 +185,8 @@ void ClientNatureDimensionModel::onDimensionsLoaded() {
     const auto result = watcher_->result();
 
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to fetch nature dimensions: "
-                                   << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to fetch nature dimensions: " << result.error_message.toStdString();
         emit loadError(result.error_message, result.error_details);
         return;
     }
@@ -186,24 +198,22 @@ void ClientNatureDimensionModel::onDimensionsLoaded() {
     const bool has_recent = recencyTracker_.update(dimensions_);
     if (has_recent && !pulseManager_->is_pulsing()) {
         pulseManager_->start_pulsing();
-        BOOST_LOG_SEV(lg(), debug) << "Found " << recencyTracker_.recent_count()
-                                   << " dimensions newer than last reload";
+        BOOST_LOG_SEV(lg(), debug)
+            << "Found " << recencyTracker_.recent_count() << " dimensions newer than last reload";
     }
 
     BOOST_LOG_SEV(lg(), info) << "Loaded " << dimensions_.size() << " nature dimensions";
     emit dataLoaded();
 }
 
-const dq::domain::nature_dimension*
-ClientNatureDimensionModel::getDimension(int row) const {
+const dq::domain::nature_dimension* ClientNatureDimensionModel::getDimension(int row) const {
     const auto idx = static_cast<std::size_t>(row);
     if (idx >= dimensions_.size())
         return nullptr;
     return &dimensions_[idx];
 }
 
-QVariant ClientNatureDimensionModel::recency_foreground_color(
-    const std::string& code) const {
+QVariant ClientNatureDimensionModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {
         return color_constants::stale_indicator;
     }
@@ -212,8 +222,8 @@ QVariant ClientNatureDimensionModel::recency_foreground_color(
 
 void ClientNatureDimensionModel::onPulseStateChanged(bool /*isOn*/) {
     if (!dimensions_.empty()) {
-        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
-            {Qt::ForegroundRole});
+        emit dataChanged(
+            index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::ForegroundRole});
     }
 }
 

@@ -20,13 +20,13 @@
 #ifndef ORES_QT_PRICING_MODEL_PRODUCT_HISTORY_DIALOG_HPP
 #define ORES_QT_PRICING_MODEL_PRODUCT_HISTORY_DIALOG_HPP
 
-#include <QWidget>
-#include <QToolBar>
-#include <QTableWidget>
-#include <boost/uuid/uuid.hpp>
-#include "ores.qt/ClientManager.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.analytics.api/domain/pricing_model_product.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include <QTableWidget>
+#include <QToolBar>
+#include <QWidget>
+#include <boost/uuid/uuid.hpp>
 
 namespace Ui {
 class PricingModelProductHistoryDialog;
@@ -44,8 +44,7 @@ class PricingModelProductHistoryDialog final : public QWidget {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.pricing_model_product_history_dialog";
+    inline static std::string_view logger_name = "ores.qt.pricing_model_product_history_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -54,11 +53,10 @@ private:
     }
 
 public:
-    explicit PricingModelProductHistoryDialog(
-        const boost::uuids::uuid& id,
-        const QString& code,
-        ClientManager* clientManager,
-        QWidget* parent = nullptr);
+    explicit PricingModelProductHistoryDialog(const boost::uuids::uuid& id,
+                                              const QString& code,
+                                              ClientManager* clientManager,
+                                              QWidget* parent = nullptr);
     ~PricingModelProductHistoryDialog() override;
 
     void loadHistory();

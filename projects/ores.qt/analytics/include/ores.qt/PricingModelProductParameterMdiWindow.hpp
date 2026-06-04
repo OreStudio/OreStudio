@@ -20,15 +20,15 @@
 #ifndef ORES_QT_PRICING_MODEL_PRODUCT_PARAMETER_MDI_WINDOW_HPP
 #define ORES_QT_PRICING_MODEL_PRODUCT_PARAMETER_MDI_WINDOW_HPP
 
-#include <QToolBar>
-#include <QTableView>
-#include <QSortFilterProxyModel>
-#include "ores.qt/EntityListMdiWindow.hpp"
+#include "ores.analytics.api/domain/pricing_model_product_parameter.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ClientPricingModelProductParameterModel.hpp"
+#include "ores.qt/EntityListMdiWindow.hpp"
 #include "ores.qt/PaginationWidget.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.analytics.api/domain/pricing_model_product_parameter.hpp"
+#include <QSortFilterProxyModel>
+#include <QTableView>
+#include <QToolBar>
 
 namespace ores::qt {
 
@@ -52,10 +52,9 @@ private:
     }
 
 public:
-    explicit PricingModelProductParameterMdiWindow(
-        ClientManager* clientManager,
-        const QString& username,
-        QWidget* parent = nullptr);
+    explicit PricingModelProductParameterMdiWindow(ClientManager* clientManager,
+                                                   const QString& username,
+                                                   QWidget* parent = nullptr);
     ~PricingModelProductParameterMdiWindow() override = default;
 
 signals:

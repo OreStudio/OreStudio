@@ -18,24 +18,23 @@
  *
  */
 #include "ores.qt/CodeDomainDetailDialog.hpp"
-
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include <QPlainTextEdit>
-#include "ui_CodeDomainDetailDialog.h"
+#include "ores.dq.api/messaging/badge_protocol.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.dq.api/messaging/badge_protocol.hpp"
+#include "ui_CodeDomainDetailDialog.h"
+#include <QFutureWatcher>
+#include <QMessageBox>
+#include <QPlainTextEdit>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 CodeDomainDetailDialog::CodeDomainDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent),
-      ui_(new Ui::CodeDomainDetailDialog),
-      clientManager_(nullptr) {
+    : DetailDialogBase(parent)
+    , ui_(new Ui::CodeDomainDetailDialog)
+    , clientManager_(nullptr) {
 
     ui_->setupUi(this);
     setupUi();
@@ -71,18 +70,16 @@ void CodeDomainDetailDialog::setupUi() {
 }
 
 void CodeDomainDetailDialog::setupConnections() {
-    connect(ui_->saveButton, &QPushButton::clicked, this,
-            &CodeDomainDetailDialog::onSaveClicked);
-    connect(ui_->deleteButton, &QPushButton::clicked, this,
-            &CodeDomainDetailDialog::onDeleteClicked);
-    connect(ui_->closeButton, &QPushButton::clicked, this,
-            &CodeDomainDetailDialog::onCloseClicked);
+    connect(ui_->saveButton, &QPushButton::clicked, this, &CodeDomainDetailDialog::onSaveClicked);
+    connect(
+        ui_->deleteButton, &QPushButton::clicked, this, &CodeDomainDetailDialog::onDeleteClicked);
+    connect(ui_->closeButton, &QPushButton::clicked, this, &CodeDomainDetailDialog::onCloseClicked);
 
-    connect(ui_->codeEdit, &QLineEdit::textChanged, this,
-            &CodeDomainDetailDialog::onCodeChanged);
-    connect(ui_->nameEdit, &QLineEdit::textChanged, this,
-            &CodeDomainDetailDialog::onFieldChanged);
-    connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this,
+    connect(ui_->codeEdit, &QLineEdit::textChanged, this, &CodeDomainDetailDialog::onCodeChanged);
+    connect(ui_->nameEdit, &QLineEdit::textChanged, this, &CodeDomainDetailDialog::onFieldChanged);
+    connect(ui_->descriptionEdit,
+            &QPlainTextEdit::textChanged,
+            this,
             &CodeDomainDetailDialog::onFieldChanged);
 }
 
@@ -94,8 +91,7 @@ void CodeDomainDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
 
-void CodeDomainDetailDialog::setDomain(
-    const dq::domain::code_domain& domain) {
+void CodeDomainDetailDialog::setDomain(const dq::domain::code_domain& domain) {
     domain_ = domain;
     updateUiFromDomain();
 }
@@ -168,14 +164,13 @@ bool CodeDomainDetailDialog::validateInput() {
 
 void CodeDomainDetailDialog::onSaveClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot save code domain while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot save code domain while disconnected from server.");
         return;
     }
 
     if (!validateInput()) {
-        MessageBoxHelper::warning(this, "Invalid Input",
-            "Please fill in all required fields.");
+        MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
 
@@ -197,8 +192,8 @@ void CodeDomainDetailDialog::onSaveClicked() {
 
         dq::messaging::save_code_domain_request request;
         request.data = domain;
-        auto response_result = self->clientManager_->
-            process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, response_result.error()};
@@ -208,8 +203,7 @@ void CodeDomainDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
@@ -234,13 +228,15 @@ void CodeDomainDetailDialog::onSaveClicked() {
 
 void CodeDomainDetailDialog::onDeleteClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot delete code domain while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot delete code domain while disconnected from server.");
         return;
     }
 
     QString code = QString::fromStdString(domain_.code);
-    auto reply = MessageBoxHelper::question(this, "Delete Code Domain",
+    auto reply = MessageBoxHelper::question(
+        this,
+        "Delete Code Domain",
         QString("Are you sure you want to delete code domain '%1'?").arg(code),
         QMessageBox::Yes | QMessageBox::No);
 
@@ -264,8 +260,8 @@ void CodeDomainDetailDialog::onDeleteClicked() {
 
         dq::messaging::delete_code_domain_request request;
         request.codes = {code_str};
-        auto response_result = self->clientManager_->
-            process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, response_result.error()};
@@ -275,8 +271,7 @@ void CodeDomainDetailDialog::onDeleteClicked() {
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
-            self, [self, code, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, code, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 

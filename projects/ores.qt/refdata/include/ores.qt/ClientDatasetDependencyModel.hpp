@@ -20,12 +20,12 @@
 #ifndef ORES_QT_CLIENT_DATASET_DEPENDENCY_MODEL_HPP
 #define ORES_QT_CLIENT_DATASET_DEPENDENCY_MODEL_HPP
 
-#include <QAbstractTableModel>
-#include <vector>
 #include "ores.dq.api/domain/dataset_dependency.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/AbstractClientModel.hpp"
 #include "ores.qt/ClientManager.hpp"
-#include "ores.logging/make_logger.hpp"
+#include <QAbstractTableModel>
+#include <vector>
 
 namespace ores::qt {
 
@@ -39,8 +39,7 @@ class ClientDatasetDependencyModel : public AbstractClientModel {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.client_dataset_dependency_model";
+    inline static std::string_view logger_name = "ores.qt.client_dataset_dependency_model";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -49,24 +48,15 @@ private:
     }
 
 public:
-    enum Column {
-        DatasetCode = 0,
-        DependencyCode,
-        Role,
-        ModifiedBy,
-        RecordedAt,
-        ColumnCount
-    };
+    enum Column { DatasetCode = 0, DependencyCode, Role, ModifiedBy, RecordedAt, ColumnCount };
 
-    explicit ClientDatasetDependencyModel(ClientManager* clientManager,
-                                          QObject* parent = nullptr);
+    explicit ClientDatasetDependencyModel(ClientManager* clientManager, QObject* parent = nullptr);
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
-    QVariant data(const QModelIndex& index,
-                  int role = Qt::DisplayRole) const override;
-    QVariant headerData(int section, Qt::Orientation orientation,
-                        int role = Qt::DisplayRole) const override;
+    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+    QVariant
+    headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
     void loadData();
     void loadDataByDataset(const std::string& dataset_code);

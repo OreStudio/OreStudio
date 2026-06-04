@@ -18,26 +18,25 @@
  *
  */
 #include "ores.qt/BatchDetailDialog.hpp"
-
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include <QPlainTextEdit>
-#include <boost/uuid/random_generator.hpp>
-#include "ui_BatchDetailDialog.h"
+#include "ores.compute.api/messaging/batch_protocol.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/ChangeReasonDialog.hpp"
-#include "ores.compute.api/messaging/batch_protocol.hpp"
+#include "ui_BatchDetailDialog.h"
+#include <QFutureWatcher>
+#include <QMessageBox>
+#include <QPlainTextEdit>
+#include <QtConcurrent>
+#include <boost/uuid/random_generator.hpp>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 BatchDetailDialog::BatchDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent),
-      ui_(new Ui::BatchDetailDialog),
-      clientManager_(nullptr) {
+    : DetailDialogBase(parent)
+    , ui_(new Ui::BatchDetailDialog)
+    , clientManager_(nullptr) {
 
     ui_->setupUi(this);
     setupUi();
@@ -73,18 +72,15 @@ void BatchDetailDialog::setupUi() {
 }
 
 void BatchDetailDialog::setupConnections() {
-    connect(ui_->saveButton, &QPushButton::clicked, this,
-            &BatchDetailDialog::onSaveClicked);
-    connect(ui_->deleteButton, &QPushButton::clicked, this,
-            &BatchDetailDialog::onDeleteClicked);
-    connect(ui_->closeButton, &QPushButton::clicked, this,
-            &BatchDetailDialog::onCloseClicked);
+    connect(ui_->saveButton, &QPushButton::clicked, this, &BatchDetailDialog::onSaveClicked);
+    connect(ui_->deleteButton, &QPushButton::clicked, this, &BatchDetailDialog::onDeleteClicked);
+    connect(ui_->closeButton, &QPushButton::clicked, this, &BatchDetailDialog::onCloseClicked);
 
-    connect(ui_->codeEdit, &QLineEdit::textChanged, this,
-            &BatchDetailDialog::onCodeChanged);
-    connect(ui_->nameEdit, &QLineEdit::textChanged, this,
-            &BatchDetailDialog::onFieldChanged);
-    connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this,
+    connect(ui_->codeEdit, &QLineEdit::textChanged, this, &BatchDetailDialog::onCodeChanged);
+    connect(ui_->nameEdit, &QLineEdit::textChanged, this, &BatchDetailDialog::onFieldChanged);
+    connect(ui_->descriptionEdit,
+            &QPlainTextEdit::textChanged,
+            this,
             &BatchDetailDialog::onFieldChanged);
 }
 
@@ -96,8 +92,7 @@ void BatchDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
 
-void BatchDetailDialog::setBatch(
-    const compute::domain::batch& batch) {
+void BatchDetailDialog::setBatch(const compute::domain::batch& batch) {
     batch_ = batch;
     updateUiFromBatch();
 }
@@ -173,25 +168,23 @@ bool BatchDetailDialog::validateInput() {
 
 void BatchDetailDialog::onSaveClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot save compute batch while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot save compute batch while disconnected from server.");
         return;
     }
 
     if (!validateInput()) {
-        MessageBoxHelper::warning(this, "Invalid Input",
-            "Please fill in all required fields.");
+        MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
 
     updateBatchFromUi();
 
-    const auto crOpType = createMode_
-        ? ChangeReasonDialog::OperationType::Create
-        : ChangeReasonDialog::OperationType::Amend;
-    const auto crSel = promptChangeReason(crOpType, hasChanges_,
-        createMode_ ? "system" : "common");
-    if (!crSel) return;
+    const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
+                                        ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
+    if (!crSel)
+        return;
     batch_.change_reason_code = crSel->reason_code;
     batch_.change_commentary = crSel->commentary;
 
@@ -201,43 +194,38 @@ void BatchDetailDialog::onSaveClicked() {
     QPointer<BatchDetailDialog> self = this;
     const compute::domain::batch batchToSave = batch_;
 
-    QFuture<FutureResult> future =
-        QtConcurrent::run([self, batchToSave]() -> FutureResult {
-            if (!self) return {false, ""};
+    QFuture<FutureResult> future = QtConcurrent::run([self, batchToSave]() -> FutureResult {
+        if (!self)
+            return {false, ""};
 
-            compute::messaging::save_batch_request request;
-            request.batch = batchToSave;
+        compute::messaging::save_batch_request request;
+        request.batch = batchToSave;
 
-            auto result =
-                self->clientManager_->process_authenticated_request(
-                    std::move(request));
+        auto result = self->clientManager_->process_authenticated_request(std::move(request));
 
-            if (!result) return {false, "Failed to communicate with server"};
-            return {result->success, result->message};
-        });
+        if (!result)
+            return {false, "Failed to communicate with server"};
+        return {result->success, result->message};
+    });
 
     auto* watcher = new QFutureWatcher<FutureResult>(this);
-    connect(watcher, &QFutureWatcher<FutureResult>::finished, self,
-        [self, watcher, batchToSave]() {
-        if (!self) return;
+    connect(watcher, &QFutureWatcher<FutureResult>::finished, self, [self, watcher, batchToSave]() {
+        if (!self)
+            return;
         auto [success, message] = watcher->result();
         watcher->deleteLater();
 
         if (success) {
             self->hasChanges_ = false;
             self->updateSaveButtonState();
-            emit self->batchSaved(
-                QString::fromStdString(batchToSave.external_ref));
+            emit self->batchSaved(QString::fromStdString(batchToSave.external_ref));
             self->notifySaveSuccess(
-                tr("Batch '%1' saved").arg(
-                    QString::fromStdString(batchToSave.external_ref)));
+                tr("Batch '%1' saved").arg(QString::fromStdString(batchToSave.external_ref)));
         } else {
             BOOST_LOG_SEV(lg(), error) << "Batch save failed: " << message;
             emit self->errorMessage(
-                QString("Failed to save batch: %1").arg(
-                    QString::fromStdString(message)));
-            MessageBoxHelper::critical(self, "Save Failed",
-                QString::fromStdString(message));
+                QString("Failed to save batch: %1").arg(QString::fromStdString(message)));
+            MessageBoxHelper::critical(self, "Save Failed", QString::fromStdString(message));
         }
     });
     watcher->setFuture(future);
@@ -245,13 +233,15 @@ void BatchDetailDialog::onSaveClicked() {
 
 void BatchDetailDialog::onDeleteClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot delete compute batch while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot delete compute batch while disconnected from server.");
         return;
     }
 
     QString code = QString::fromStdString(batch_.external_ref);
-    auto reply = MessageBoxHelper::question(this, "Delete Batch",
+    auto reply = MessageBoxHelper::question(
+        this,
+        "Delete Batch",
         QString("Are you sure you want to delete compute batch '%1'?").arg(code),
         QMessageBox::Yes | QMessageBox::No);
 
@@ -259,15 +249,16 @@ void BatchDetailDialog::onDeleteClicked() {
         return;
     }
 
-    const auto crSel = promptChangeReason(
-        ChangeReasonDialog::OperationType::Delete, true, "common");
-    if (!crSel) return;
+    const auto crSel =
+        promptChangeReason(ChangeReasonDialog::OperationType::Delete, true, "common");
+    if (!crSel)
+        return;
 
     BOOST_LOG_SEV(lg(), info) << "Deleting compute batch: " << batch_.external_ref;
 
     // Delete not yet implemented for compute entities
-    MessageBoxHelper::warning(this, "Not Implemented",
-        "Delete operation is not yet implemented for this entity.");
+    MessageBoxHelper::warning(
+        this, "Not Implemented", "Delete operation is not yet implemented for this entity.");
 }
 
 }

@@ -20,9 +20,9 @@
 #ifndef ORES_QT_HISTORY_DIALOG_BASE_HPP
 #define ORES_QT_HISTORY_DIALOG_BASE_HPP
 
+#include "ores.qt/export.hpp"
 #include <QString>
 #include <QWidget>
-#include "ores.qt/export.hpp"
 
 namespace ores::qt {
 
@@ -45,7 +45,9 @@ public:
     ~HistoryDialogBase() override;
 
     virtual void markAsStale() {}
-    [[nodiscard]] virtual QString code() const { return {}; }
+    [[nodiscard]] virtual QString code() const {
+        return {};
+    }
 
 signals:
     void statusChanged(const QString& message);

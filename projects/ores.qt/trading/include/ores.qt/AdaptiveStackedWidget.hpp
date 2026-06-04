@@ -37,17 +37,18 @@ class AdaptiveStackedWidget : public QStackedWidget {
 public:
     explicit AdaptiveStackedWidget(QWidget* parent = nullptr)
         : QStackedWidget(parent) {
-        connect(this, &QStackedWidget::currentChanged,
-                this, [this](int) { updateGeometry(); });
+        connect(this, &QStackedWidget::currentChanged, this, [this](int) { updateGeometry(); });
     }
 
     QSize sizeHint() const override {
-        if (const auto* w = currentWidget()) return w->sizeHint();
+        if (const auto* w = currentWidget())
+            return w->sizeHint();
         return QStackedWidget::sizeHint();
     }
 
     QSize minimumSizeHint() const override {
-        if (const auto* w = currentWidget()) return w->minimumSizeHint();
+        if (const auto* w = currentWidget())
+            return w->minimumSizeHint();
         return QStackedWidget::minimumSizeHint();
     }
 };

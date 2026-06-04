@@ -18,42 +18,41 @@
  *
  */
 #include "ores.qt/ComputeConsoleWindow.hpp"
-
-#include <QtConcurrent>
+#include "ores.compute.api/messaging/host_protocol.hpp"
+#include "ores.compute.api/net/compute_storage.hpp"
+#include "ores.qt/AppDetailDialog.hpp"
+#include "ores.qt/AppProvisionerWizard.hpp"
+#include "ores.qt/AppVersionDetailDialog.hpp"
+#include "ores.qt/BadgeCache.hpp"
+#include "ores.qt/BatchDetailDialog.hpp"
+#include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/DetailDialogBase.hpp"
+#include "ores.qt/EntityItemDelegate.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/OreLogViewerWidget.hpp"
+#include "ores.qt/TransferProgressDelegate.hpp"
+#include "ores.qt/WorkunitDetailDialog.hpp"
 #include <QDialog>
 #include <QDialogButtonBox>
-#include <QFontDatabase>
-#include <QFormLayout>
-#include <QLabel>
-#include <QLineEdit>
-#include <QPlainTextEdit>
-#include <QVBoxLayout>
-#include <QHeaderView>
-#include <QSplitter>
-#include <QToolBar>
-#include <QPointer>
 #include <QFile>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QFontDatabase>
+#include <QFormLayout>
+#include <QHeaderView>
+#include <QLabel>
+#include <QLineEdit>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
+#include <QPlainTextEdit>
+#include <QPointer>
+#include <QSplitter>
+#include <QToolBar>
 #include <QUrl>
-#include "ores.qt/AppProvisionerWizard.hpp"
-#include "ores.compute.api/net/compute_storage.hpp"
-#include "ores.qt/DetailDialogBase.hpp"
-#include "ores.qt/EntityItemDelegate.hpp"
-#include "ores.qt/BadgeCache.hpp"
-#include "ores.qt/AppDetailDialog.hpp"
-#include "ores.qt/AppVersionDetailDialog.hpp"
-#include "ores.qt/BatchDetailDialog.hpp"
-#include "ores.qt/WorkunitDetailDialog.hpp"
-#include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/OreLogViewerWidget.hpp"
-#include "ores.qt/ColorConstants.hpp"
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/TransferProgressDelegate.hpp"
-#include "ores.compute.api/messaging/host_protocol.hpp"
+#include <QVBoxLayout>
+#include <QtConcurrent>
 #include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
@@ -64,35 +63,42 @@ ComputeConsoleWindow::ComputeConsoleWindow(ClientManager* clientManager,
                                            ChangeReasonCache* changeReasonCache,
                                            BadgeCache* badgeCache,
                                            QWidget* parent)
-    : QWidget(parent),
-      client_manager_(clientManager),
-      change_reason_cache_(changeReasonCache),
-      badge_cache_(badgeCache),
-      host_cache_(new HostDisplayNameCache(this)),
-      task_model_(std::make_unique<ComputeTaskViewModel>(clientManager, this)),
-      app_model_(std::make_unique<ClientAppModel>(clientManager, this)),
-      app_version_model_(std::make_unique<ClientAppVersionModel>(clientManager, this)),
-      host_model_(std::make_unique<ClientHostModel>(clientManager, this)),
-      transfer_model_(std::make_unique<ComputeTransferModel>(this)),
-      host_watcher_(new QFutureWatcher<HostList>(this)),
-      auto_refresh_timer_(new QTimer(this)) {
+    : QWidget(parent)
+    , client_manager_(clientManager)
+    , change_reason_cache_(changeReasonCache)
+    , badge_cache_(badgeCache)
+    , host_cache_(new HostDisplayNameCache(this))
+    , task_model_(std::make_unique<ComputeTaskViewModel>(clientManager, this))
+    , app_model_(std::make_unique<ClientAppModel>(clientManager, this))
+    , app_version_model_(std::make_unique<ClientAppVersionModel>(clientManager, this))
+    , host_model_(std::make_unique<ClientHostModel>(clientManager, this))
+    , transfer_model_(std::make_unique<ComputeTransferModel>(this))
+    , host_watcher_(new QFutureWatcher<HostList>(this))
+    , auto_refresh_timer_(new QTimer(this)) {
 
     task_model_->set_host_name_cache(host_cache_);
 
-    connect(task_model_.get(), &ComputeTaskViewModel::dataLoaded,
-            this, &ComputeConsoleWindow::on_tasks_loaded);
-    connect(task_model_.get(), &ComputeTaskViewModel::loadError,
-            this, &ComputeConsoleWindow::on_tasks_error);
-    connect(app_model_.get(), &ClientAppModel::dataLoaded,
-            this, &ComputeConsoleWindow::on_apps_loaded);
-    connect(app_version_model_.get(), &ClientAppVersionModel::dataLoaded,
-            this, &ComputeConsoleWindow::on_app_versions_loaded);
-    connect(host_watcher_, &QFutureWatcher<HostList>::finished,
-            this, &ComputeConsoleWindow::on_hosts_loaded);
+    connect(task_model_.get(),
+            &ComputeTaskViewModel::dataLoaded,
+            this,
+            &ComputeConsoleWindow::on_tasks_loaded);
+    connect(task_model_.get(),
+            &ComputeTaskViewModel::loadError,
+            this,
+            &ComputeConsoleWindow::on_tasks_error);
+    connect(
+        app_model_.get(), &ClientAppModel::dataLoaded, this, &ComputeConsoleWindow::on_apps_loaded);
+    connect(app_version_model_.get(),
+            &ClientAppVersionModel::dataLoaded,
+            this,
+            &ComputeConsoleWindow::on_app_versions_loaded);
+    connect(host_watcher_,
+            &QFutureWatcher<HostList>::finished,
+            this,
+            &ComputeConsoleWindow::on_hosts_loaded);
 
     auto_refresh_timer_->setInterval(15000);
-    connect(auto_refresh_timer_, &QTimer::timeout,
-            this, &ComputeConsoleWindow::refresh);
+    connect(auto_refresh_timer_, &QTimer::timeout, this, &ComputeConsoleWindow::refresh);
 
     setup_ui();
 
@@ -115,13 +121,12 @@ void ComputeConsoleWindow::setup_ui() {
     layout->setSpacing(0);
 
     main_tabs_ = new QTabWidget(this);
-    main_tabs_->addTab(make_tasks_tab(),     tr("Tasks"));
-    main_tabs_->addTab(make_apps_tab(),      tr("Apps"));
-    main_tabs_->addTab(make_hosts_tab(),     tr("Hosts"));
+    main_tabs_->addTab(make_tasks_tab(), tr("Tasks"));
+    main_tabs_->addTab(make_apps_tab(), tr("Apps"));
+    main_tabs_->addTab(make_hosts_tab(), tr("Hosts"));
     main_tabs_->addTab(make_transfers_tab(), tr("Transfers"));
 
-    connect(main_tabs_, &QTabWidget::currentChanged,
-            this, &ComputeConsoleWindow::on_tab_changed);
+    connect(main_tabs_, &QTabWidget::currentChanged, this, &ComputeConsoleWindow::on_tab_changed);
 
     layout->addWidget(main_tabs_);
 }
@@ -139,110 +144,123 @@ QWidget* ComputeConsoleWindow::make_tasks_tab() {
     task_view_->setSortingEnabled(true);
     task_view_->verticalHeader()->setVisible(false);
     task_view_->horizontalHeader()->setStretchLastSection(true);
-    task_view_->horizontalHeader()->setSectionResizeMode(
-        ComputeTaskViewModel::Label, QHeaderView::ResizeToContents);
+    task_view_->horizontalHeader()->setSectionResizeMode(ComputeTaskViewModel::Label,
+                                                         QHeaderView::ResizeToContents);
 
     using cs = column_style;
-    auto* task_delegate = new EntityItemDelegate({
-        cs::text_left,      // Label
-        cs::badge_centered, // State
-        cs::badge_centered, // Outcome
-        cs::text_left,      // Host
-        cs::mono_center,    // Duration
-        cs::text_left,      // Batch
-        cs::text_left,      // Received
-    }, task_view_);
-    task_delegate->set_badge_color_resolver(1, [cache = badge_cache_](const QString& value) -> badge_color_pair {
-        static const badge_color_pair fallback{color_constants::badge_fallback,
-            color_constants::badge_fallback_text};
-        if (!cache) return fallback;
-        auto* def = cache->resolve("compute_task_state", value.toStdString());
-        if (!def) return fallback;
-        return {QColor(QString::fromStdString(def->background_colour)),
-                QColor(QString::fromStdString(def->text_colour))};
-    });
-    task_delegate->set_badge_color_resolver(2, [cache = badge_cache_](const QString& value) -> badge_color_pair {
-        static const badge_color_pair fallback{color_constants::badge_fallback,
-            color_constants::badge_fallback_text};
-        if (!cache) return fallback;
-        auto* def = cache->resolve("compute_task_outcome", value.toStdString());
-        if (!def) return fallback;
-        return {QColor(QString::fromStdString(def->background_colour)),
-                QColor(QString::fromStdString(def->text_colour))};
-    });
+    auto* task_delegate = new EntityItemDelegate(
+        {
+            cs::text_left,      // Label
+            cs::badge_centered, // State
+            cs::badge_centered, // Outcome
+            cs::text_left,      // Host
+            cs::mono_center,    // Duration
+            cs::text_left,      // Batch
+            cs::text_left,      // Received
+        },
+        task_view_);
+    task_delegate->set_badge_color_resolver(
+        1, [cache = badge_cache_](const QString& value) -> badge_color_pair {
+            static const badge_color_pair fallback{color_constants::badge_fallback,
+                                                   color_constants::badge_fallback_text};
+            if (!cache)
+                return fallback;
+            auto* def = cache->resolve("compute_task_state", value.toStdString());
+            if (!def)
+                return fallback;
+            return {QColor(QString::fromStdString(def->background_colour)),
+                    QColor(QString::fromStdString(def->text_colour))};
+        });
+    task_delegate->set_badge_color_resolver(
+        2, [cache = badge_cache_](const QString& value) -> badge_color_pair {
+            static const badge_color_pair fallback{color_constants::badge_fallback,
+                                                   color_constants::badge_fallback_text};
+            if (!cache)
+                return fallback;
+            auto* def = cache->resolve("compute_task_outcome", value.toStdString());
+            if (!def)
+                return fallback;
+            return {QColor(QString::fromStdString(def->background_colour)),
+                    QColor(QString::fromStdString(def->text_colour))};
+        });
     task_view_->setItemDelegate(task_delegate);
 
     connect(task_view_->selectionModel(),
             &QItemSelectionModel::selectionChanged,
-            this, &ComputeConsoleWindow::on_task_selection_changed);
-    connect(task_view_, &QTableView::doubleClicked,
-            this, &ComputeConsoleWindow::on_task_double_clicked);
+            this,
+            &ComputeConsoleWindow::on_task_selection_changed);
+    connect(task_view_,
+            &QTableView::doubleClicked,
+            this,
+            &ComputeConsoleWindow::on_task_double_clicked);
 
     auto* toolbar = make_tab_toolbar();
 
     auto* new_batch_action = new QAction(
-        IconUtils::createRecoloredIcon(Icon::Add, color_constants::icon_color),
-        tr("Batch"), this);
-    connect(new_batch_action, &QAction::triggered,
-            this, &ComputeConsoleWindow::on_new_batch);
+        IconUtils::createRecoloredIcon(Icon::Add, color_constants::icon_color), tr("Batch"), this);
+    connect(new_batch_action, &QAction::triggered, this, &ComputeConsoleWindow::on_new_batch);
     toolbar->addAction(new_batch_action);
 
-    auto* new_wu_action = new QAction(
-        IconUtils::createRecoloredIcon(Icon::Add, color_constants::icon_color),
-        tr("Work Unit"), this);
-    connect(new_wu_action, &QAction::triggered,
-            this, &ComputeConsoleWindow::on_new_work_unit);
+    auto* new_wu_action =
+        new QAction(IconUtils::createRecoloredIcon(Icon::Add, color_constants::icon_color),
+                    tr("Work Unit"),
+                    this);
+    connect(new_wu_action, &QAction::triggered, this, &ComputeConsoleWindow::on_new_work_unit);
     toolbar->addAction(new_wu_action);
 
     toolbar->addSeparator();
 
-    logs_action_ = new QAction(
-        IconUtils::createRecoloredIcon(Icon::Notepad,
-            color_constants::icon_color),
-        tr("Details"), this);
+    logs_action_ =
+        new QAction(IconUtils::createRecoloredIcon(Icon::Notepad, color_constants::icon_color),
+                    tr("Details"),
+                    this);
     logs_action_->setToolTip(tr("Show task details, error message, and logs"));
     logs_action_->setEnabled(false);
-    connect(logs_action_, &QAction::triggered,
-            this, &ComputeConsoleWindow::on_show_details);
+    connect(logs_action_, &QAction::triggered, this, &ComputeConsoleWindow::on_show_details);
     toolbar->addAction(logs_action_);
 
     download_input_action_ = new QAction(
-        IconUtils::createRecoloredIcon(Icon::ArrowDownload,
-            color_constants::icon_color),
-        tr("Input"), this);
+        IconUtils::createRecoloredIcon(Icon::ArrowDownload, color_constants::icon_color),
+        tr("Input"),
+        this);
     download_input_action_->setToolTip(tr("Download input archive"));
     download_input_action_->setEnabled(false);
-    connect(download_input_action_, &QAction::triggered,
-            this, &ComputeConsoleWindow::on_download_input);
+    connect(download_input_action_,
+            &QAction::triggered,
+            this,
+            &ComputeConsoleWindow::on_download_input);
     toolbar->addAction(download_input_action_);
 
     download_output_action_ = new QAction(
-        IconUtils::createRecoloredIcon(Icon::ArrowDownload,
-            color_constants::icon_color),
-        tr("Output"), this);
+        IconUtils::createRecoloredIcon(Icon::ArrowDownload, color_constants::icon_color),
+        tr("Output"),
+        this);
     download_output_action_->setToolTip(tr("Download output archive"));
     download_output_action_->setEnabled(false);
-    connect(download_output_action_, &QAction::triggered,
-            this, &ComputeConsoleWindow::on_download_output);
+    connect(download_output_action_,
+            &QAction::triggered,
+            this,
+            &ComputeConsoleWindow::on_download_output);
     toolbar->addAction(download_output_action_);
 
     toolbar->addSeparator();
 
     auto* refresh_action = new QAction(
-        IconUtils::createRecoloredIcon(Icon::ArrowClockwise,
-            color_constants::icon_color),
-        tr("Refresh"), this);
-    connect(refresh_action, &QAction::triggered,
-            this, &ComputeConsoleWindow::refresh);
+        IconUtils::createRecoloredIcon(Icon::ArrowClockwise, color_constants::icon_color),
+        tr("Refresh"),
+        this);
+    connect(refresh_action, &QAction::triggered, this, &ComputeConsoleWindow::refresh);
     toolbar->addAction(refresh_action);
 
-    auto* auto_refresh_action = new QAction(
-        IconUtils::createRecoloredIcon(Icon::ArrowSync,
-            color_constants::icon_color),
-        tr("Auto-refresh"), this);
+    auto* auto_refresh_action =
+        new QAction(IconUtils::createRecoloredIcon(Icon::ArrowSync, color_constants::icon_color),
+                    tr("Auto-refresh"),
+                    this);
     auto_refresh_action->setCheckable(true);
-    connect(auto_refresh_action, &QAction::toggled,
-            this, &ComputeConsoleWindow::on_auto_refresh_toggled);
+    connect(auto_refresh_action,
+            &QAction::toggled,
+            this,
+            &ComputeConsoleWindow::on_auto_refresh_toggled);
     toolbar->addAction(auto_refresh_action);
 
     auto* container = new QWidget(this);
@@ -268,30 +286,29 @@ QWidget* ComputeConsoleWindow::make_apps_tab() {
     app_view_->setSortingEnabled(true);
     app_view_->verticalHeader()->setVisible(false);
     app_view_->horizontalHeader()->setStretchLastSection(true);
-    app_view_->horizontalHeader()->setSectionResizeMode(
-        ClientAppModel::Name, QHeaderView::ResizeToContents);
+    app_view_->horizontalHeader()->setSectionResizeMode(ClientAppModel::Name,
+                                                        QHeaderView::ResizeToContents);
 
     connect(app_view_->selectionModel(),
             &QItemSelectionModel::selectionChanged,
-            this, &ComputeConsoleWindow::on_app_selection_changed);
-    connect(app_view_, &QTableView::doubleClicked,
-            this, &ComputeConsoleWindow::on_app_double_clicked);
+            this,
+            &ComputeConsoleWindow::on_app_selection_changed);
+    connect(
+        app_view_, &QTableView::doubleClicked, this, &ComputeConsoleWindow::on_app_double_clicked);
 
     auto* app_toolbar = make_tab_toolbar();
 
     auto* new_app_action = new QAction(
-        IconUtils::createRecoloredIcon(Icon::Add, color_constants::icon_color),
-        tr("App"), this);
-    connect(new_app_action, &QAction::triggered,
-            this, &ComputeConsoleWindow::on_new_application);
+        IconUtils::createRecoloredIcon(Icon::Add, color_constants::icon_color), tr("App"), this);
+    connect(new_app_action, &QAction::triggered, this, &ComputeConsoleWindow::on_new_application);
     app_toolbar->addAction(new_app_action);
 
     app_toolbar->addSeparator();
 
     auto* refresh_apps = new QAction(
-        IconUtils::createRecoloredIcon(Icon::ArrowClockwise,
-            color_constants::icon_color),
-        tr("Refresh"), this);
+        IconUtils::createRecoloredIcon(Icon::ArrowClockwise, color_constants::icon_color),
+        tr("Refresh"),
+        this);
     connect(refresh_apps, &QAction::triggered, this, [this]() {
         app_model_->refresh();
         app_version_model_->refresh();
@@ -319,20 +336,25 @@ QWidget* ComputeConsoleWindow::make_apps_tab() {
     app_version_view_->setSortingEnabled(true);
     app_version_view_->verticalHeader()->setVisible(false);
     app_version_view_->horizontalHeader()->setStretchLastSection(true);
-    app_version_view_->horizontalHeader()->setSectionResizeMode(
-        ClientAppVersionModel::AppId, QHeaderView::ResizeToContents);
+    app_version_view_->horizontalHeader()->setSectionResizeMode(ClientAppVersionModel::AppId,
+                                                                QHeaderView::ResizeToContents);
 
-    connect(app_version_view_, &QTableView::doubleClicked,
-            this, &ComputeConsoleWindow::on_app_version_double_clicked);
+    connect(app_version_view_,
+            &QTableView::doubleClicked,
+            this,
+            &ComputeConsoleWindow::on_app_version_double_clicked);
 
     auto* av_toolbar = make_tab_toolbar();
 
-    new_app_version_action_ = new QAction(
-        IconUtils::createRecoloredIcon(Icon::Add, color_constants::icon_color),
-        tr("App Version"), this);
+    new_app_version_action_ =
+        new QAction(IconUtils::createRecoloredIcon(Icon::Add, color_constants::icon_color),
+                    tr("App Version"),
+                    this);
     new_app_version_action_->setEnabled(false);
-    connect(new_app_version_action_, &QAction::triggered,
-            this, &ComputeConsoleWindow::on_new_app_version);
+    connect(new_app_version_action_,
+            &QAction::triggered,
+            this,
+            &ComputeConsoleWindow::on_new_app_version);
     av_toolbar->addAction(new_app_version_action_);
 
     auto* bottom_pane = new QWidget(this);
@@ -364,18 +386,16 @@ QWidget* ComputeConsoleWindow::make_hosts_tab() {
     host_view_->setSortingEnabled(true);
     host_view_->verticalHeader()->setVisible(false);
     host_view_->horizontalHeader()->setStretchLastSection(true);
-    host_view_->horizontalHeader()->setSectionResizeMode(
-        ClientHostModel::DisplayName, QHeaderView::ResizeToContents);
+    host_view_->horizontalHeader()->setSectionResizeMode(ClientHostModel::DisplayName,
+                                                         QHeaderView::ResizeToContents);
 
     auto* toolbar = make_tab_toolbar();
 
     auto* refresh_action = new QAction(
-        IconUtils::createRecoloredIcon(Icon::ArrowClockwise,
-            color_constants::icon_color),
-        tr("Refresh"), this);
-    connect(refresh_action, &QAction::triggered, this, [this]() {
-        host_model_->refresh();
-    });
+        IconUtils::createRecoloredIcon(Icon::ArrowClockwise, color_constants::icon_color),
+        tr("Refresh"),
+        this);
+    connect(refresh_action, &QAction::triggered, this, [this]() { host_model_->refresh(); });
     toolbar->addAction(refresh_action);
 
     auto* container = new QWidget(this);
@@ -390,17 +410,16 @@ QWidget* ComputeConsoleWindow::make_hosts_tab() {
 QWidget* ComputeConsoleWindow::make_transfers_tab() {
     transfer_view_ = new QTableView(this);
     transfer_view_->setModel(transfer_model_.get());
-    transfer_view_->setItemDelegateForColumn(
-        ComputeTransferModel::Progress,
-        new TransferProgressDelegate(transfer_view_));
+    transfer_view_->setItemDelegateForColumn(ComputeTransferModel::Progress,
+                                             new TransferProgressDelegate(transfer_view_));
     transfer_view_->setSelectionBehavior(QAbstractItemView::SelectRows);
     transfer_view_->setSelectionMode(QAbstractItemView::SingleSelection);
     transfer_view_->setEditTriggers(QAbstractItemView::NoEditTriggers);
     transfer_view_->setAlternatingRowColors(true);
     transfer_view_->verticalHeader()->setVisible(false);
     transfer_view_->horizontalHeader()->setStretchLastSection(true);
-    transfer_view_->horizontalHeader()->setSectionResizeMode(
-        ComputeTransferModel::Filename, QHeaderView::Stretch);
+    transfer_view_->horizontalHeader()->setSectionResizeMode(ComputeTransferModel::Filename,
+                                                             QHeaderView::Stretch);
 
     return transfer_view_;
 }
@@ -424,15 +443,14 @@ void ComputeConsoleWindow::refresh() {
     // triggers the task refresh.
     QPointer<ComputeConsoleWindow> self = this;
     host_watcher_->setFuture(QtConcurrent::run([self]() -> HostList {
-        if (!self || !self->client_manager_) return {};
+        if (!self || !self->client_manager_)
+            return {};
 
         compute::messaging::list_hosts_request req;
-        auto resp = self->client_manager_->
-            process_authenticated_request(std::move(req));
+        auto resp = self->client_manager_->process_authenticated_request(std::move(req));
 
         if (!resp) {
-            BOOST_LOG_SEV(lg(), warn)
-                << "Host fetch failed: " << resp.error();
+            BOOST_LOG_SEV(lg(), warn) << "Host fetch failed: " << resp.error();
             return {};
         }
         return std::move(resp->hosts);
@@ -452,8 +470,7 @@ void ComputeConsoleWindow::on_tasks_loaded() {
     const int n = task_model_->rowCount();
     const int h = host_model_->rowCount();
     emit statusChanged(tr("%1 tasks, %2 hosts").arg(n).arg(h));
-    BOOST_LOG_SEV(lg(), info) << "Console loaded " << n << " tasks, "
-                              << h << " hosts.";
+    BOOST_LOG_SEV(lg(), info) << "Console loaded " << n << " tasks, " << h << " hosts.";
 
     main_tabs_->setTabText(kTasksTab, tr("Tasks (%1)").arg(n));
     main_tabs_->setTabText(kHostsTab, tr("Hosts (%1)").arg(h));
@@ -470,8 +487,7 @@ void ComputeConsoleWindow::on_app_versions_loaded() {
     BOOST_LOG_SEV(lg(), debug) << "App versions loaded: " << n;
 }
 
-void ComputeConsoleWindow::on_tasks_error(
-    const QString& message, const QString& /*details*/) {
+void ComputeConsoleWindow::on_tasks_error(const QString& message, const QString& /*details*/) {
     BOOST_LOG_SEV(lg(), error) << "Task load failed: " << message.toStdString();
     emit errorOccurred(message);
     emit statusChanged(tr("Error: %1").arg(message));
@@ -491,8 +507,7 @@ static void show_detail_as_window(DetailDialogBase* dlg, const QString& title) {
     dlg->setWindowFlags(Qt::Window);
     dlg->setWindowTitle(title);
     dlg->setAttribute(Qt::WA_DeleteOnClose);
-    QObject::connect(dlg, &DetailDialogBase::closeRequested,
-                     dlg, &QWidget::close);
+    QObject::connect(dlg, &DetailDialogBase::closeRequested, dlg, &QWidget::close);
     dlg->show();
 }
 
@@ -511,16 +526,16 @@ void ComputeConsoleWindow::on_task_selection_changed() {
 
     const QModelIndex src = task_proxy_->mapToSource(selected.first());
     const auto* task = task_model_->get_task(src.row());
-    if (!task) return;
+    if (!task)
+        return;
 
     selected_task_ = task;
-    selected_result_id_ = QString::fromStdString(
-        boost::uuids::to_string(task->result.id));
+    selected_result_id_ = QString::fromStdString(boost::uuids::to_string(task->result.id));
     logs_action_->setEnabled(true);
     download_input_action_->setEnabled(!task->workunit.input_uri.empty());
     // Output only available when job completed successfully (state=5, outcome=1)
-    download_output_action_->setEnabled(
-        task->result.server_state == 5 && task->result.outcome == 1);
+    download_output_action_->setEnabled(task->result.server_state == 5 &&
+                                        task->result.outcome == 1);
 }
 
 void ComputeConsoleWindow::on_app_selection_changed() {
@@ -533,19 +548,19 @@ void ComputeConsoleWindow::on_app_selection_changed() {
 
     const QModelIndex src = app_proxy_->mapToSource(selected.first());
     const auto* app = app_model_->getApp(src.row());
-    if (!app) return;
+    if (!app)
+        return;
 
     const auto uuid_str = boost::uuids::to_string(app->id);
-    app_version_proxy_->setFilterFixedString(
-        QString::fromStdString(uuid_str));
+    app_version_proxy_->setFilterFixedString(QString::fromStdString(uuid_str));
     new_app_version_action_->setEnabled(true);
 }
 
 void ComputeConsoleWindow::on_tab_changed(int /*index*/) {}
 
 void ComputeConsoleWindow::on_new_application() {
-    auto* wizard = new AppProvisionerWizard(
-        client_manager_, change_reason_cache_, http_base_url_, this);
+    auto* wizard =
+        new AppProvisionerWizard(client_manager_, change_reason_cache_, http_base_url_, this);
     wizard->setAttribute(Qt::WA_DeleteOnClose);
     connect(wizard, &AppProvisionerWizard::provisioned, this, [this]() {
         app_model_->refresh();
@@ -556,11 +571,13 @@ void ComputeConsoleWindow::on_new_application() {
 
 void ComputeConsoleWindow::on_new_app_version() {
     const auto selected = app_view_->selectionModel()->selectedRows();
-    if (selected.isEmpty()) return;
+    if (selected.isEmpty())
+        return;
 
     const QModelIndex src = app_proxy_->mapToSource(selected.first());
     const auto* app = app_model_->getApp(src.row());
-    if (!app) return;
+    if (!app)
+        return;
 
     compute::domain::app_version version;
     version.app_id = app->id;
@@ -584,9 +601,7 @@ void ComputeConsoleWindow::on_new_batch() {
     dlg->setUsername(client_manager_ ? client_manager_->currentUsername() : "");
     dlg->setChangeReasonCache(change_reason_cache_);
     dlg->setCreateMode(true);
-    connect(dlg, &BatchDetailDialog::batchSaved, this, [this](const QString&) {
-        refresh();
-    });
+    connect(dlg, &BatchDetailDialog::batchSaved, this, [this](const QString&) { refresh(); });
     show_detail_as_window(dlg, tr("New Batch"));
 }
 
@@ -597,14 +612,13 @@ void ComputeConsoleWindow::on_new_work_unit() {
     dlg->setChangeReasonCache(change_reason_cache_);
     dlg->setHttpBaseUrl(http_base_url_);
     dlg->setCreateMode(true);
-    connect(dlg, &WorkunitDetailDialog::workunitSaved, this, [this](const QString&) {
-        refresh();
-    });
+    connect(dlg, &WorkunitDetailDialog::workunitSaved, this, [this](const QString&) { refresh(); });
     show_detail_as_window(dlg, tr("New Work Unit"));
 }
 
 void ComputeConsoleWindow::on_show_details() {
-    if (!selected_task_ || selected_result_id_.isEmpty()) return;
+    if (!selected_task_ || selected_result_id_.isEmpty())
+        return;
 
     const auto& result = selected_task_->result;
     const auto& workunit = selected_task_->workunit;
@@ -626,24 +640,21 @@ void ComputeConsoleWindow::on_show_details() {
         auto* le = new QLineEdit(value, dlg);
         le->setReadOnly(true);
         le->setFrame(false);
-        le->setStyleSheet(
-            QStringLiteral("QLineEdit { background: transparent; }"));
+        le->setStyleSheet(QStringLiteral("QLineEdit { background: transparent; }"));
         return le;
     };
 
-    form->addRow(tr("Result ID:"),   makeField(selected_result_id_));
-    form->addRow(tr("Batch:"),       makeField(QString::fromStdString(
-        selected_task_->batch.external_ref)));
-    form->addRow(tr("State:"),       makeField(
-        ComputeTaskViewModel::format_state(result.server_state)));
-    form->addRow(tr("Outcome:"),     makeField(
-        ComputeTaskViewModel::format_outcome(result.outcome)));
+    form->addRow(tr("Result ID:"), makeField(selected_result_id_));
+    form->addRow(tr("Batch:"),
+                 makeField(QString::fromStdString(selected_task_->batch.external_ref)));
+    form->addRow(tr("State:"), makeField(ComputeTaskViewModel::format_state(result.server_state)));
+    form->addRow(tr("Outcome:"), makeField(ComputeTaskViewModel::format_outcome(result.outcome)));
 
-    const QString hostId = (result.host_id != boost::uuids::uuid{})
-        ? QString::fromStdString(boost::uuids::to_string(result.host_id))
-        : tr("—");
-    form->addRow(tr("Host:"), makeField(
-        host_cache_ ? host_cache_->display_name_for(hostId) : hostId));
+    const QString hostId = (result.host_id != boost::uuids::uuid{}) ?
+                               QString::fromStdString(boost::uuids::to_string(result.host_id)) :
+                               tr("—");
+    form->addRow(tr("Host:"),
+                 makeField(host_cache_ ? host_cache_->display_name_for(hostId) : hostId));
 
     vbox->addLayout(form);
 
@@ -672,84 +683,87 @@ void ComputeConsoleWindow::on_show_details() {
 }
 
 void ComputeConsoleWindow::on_download_input() {
-    if (!selected_task_ || selected_task_->workunit.input_uri.empty()) return;
+    if (!selected_task_ || selected_task_->workunit.input_uri.empty())
+        return;
 
     const auto uri = QString::fromStdString(selected_task_->workunit.input_uri);
     const QString default_name = QFileInfo(uri).fileName();
-    const QString save_path = QFileDialog::getSaveFileName(
-        this, tr("Save Input Archive"), default_name,
-        tr("Archives (*.tar.gz *.zip);;All Files (*)"));
-    if (save_path.isEmpty()) return;
+    const QString save_path =
+        QFileDialog::getSaveFileName(this,
+                                     tr("Save Input Archive"),
+                                     default_name,
+                                     tr("Archives (*.tar.gz *.zip);;All Files (*)"));
+    if (save_path.isEmpty())
+        return;
 
     const QUrl url = QUrl(QString::fromStdString(http_base_url_) + uri);
     auto* nam = new QNetworkAccessManager(this);
     auto* reply = nam->get(QNetworkRequest(url));
     QPointer<ComputeConsoleWindow> self = this;
-    connect(reply, &QNetworkReply::finished, this,
-        [self, reply, nam, save_path]() {
-            reply->deleteLater();
-            nam->deleteLater();
-            if (!self) return;
-            if (reply->error() != QNetworkReply::NoError) {
-                MessageBoxHelper::critical(self, tr("Download Failed"),
-                    reply->errorString());
-                return;
-            }
-            QFile f(save_path);
-            if (f.open(QIODevice::WriteOnly)) {
-                f.write(reply->readAll());
-                f.close();
-            } else {
-                MessageBoxHelper::critical(self, tr("Save Failed"),
-                    tr("Cannot write to: %1").arg(save_path));
-            }
-        });
+    connect(reply, &QNetworkReply::finished, this, [self, reply, nam, save_path]() {
+        reply->deleteLater();
+        nam->deleteLater();
+        if (!self)
+            return;
+        if (reply->error() != QNetworkReply::NoError) {
+            MessageBoxHelper::critical(self, tr("Download Failed"), reply->errorString());
+            return;
+        }
+        QFile f(save_path);
+        if (f.open(QIODevice::WriteOnly)) {
+            f.write(reply->readAll());
+            f.close();
+        } else {
+            MessageBoxHelper::critical(
+                self, tr("Save Failed"), tr("Cannot write to: %1").arg(save_path));
+        }
+    });
 }
 
 void ComputeConsoleWindow::on_download_output() {
-    if (selected_result_id_.isEmpty()) return;
+    if (selected_result_id_.isEmpty())
+        return;
 
-    const QString default_name =
-        "output_" + selected_result_id_.left(8) + ".tar.gz";
+    const QString default_name = "output_" + selected_result_id_.left(8) + ".tar.gz";
     const QString save_path = QFileDialog::getSaveFileName(
-        this, tr("Save Output Archive"), default_name,
-        tr("Archives (*.tar.gz);;All Files (*)"));
-    if (save_path.isEmpty()) return;
+        this, tr("Save Output Archive"), default_name, tr("Archives (*.tar.gz);;All Files (*)"));
+    if (save_path.isEmpty())
+        return;
 
-    const QUrl url = QUrl(
-        QString::fromStdString(http_base_url_) +
-        QString::fromStdString(ores::compute::net::compute_storage::output_path(
-            selected_result_id_.toStdString())));
+    const QUrl url = QUrl(QString::fromStdString(http_base_url_) +
+                          QString::fromStdString(ores::compute::net::compute_storage::output_path(
+                              selected_result_id_.toStdString())));
     auto* nam = new QNetworkAccessManager(this);
     auto* reply = nam->get(QNetworkRequest(url));
     QPointer<ComputeConsoleWindow> self = this;
-    connect(reply, &QNetworkReply::finished, this,
-        [self, reply, nam, save_path]() {
-            reply->deleteLater();
-            nam->deleteLater();
-            if (!self) return;
-            if (reply->error() != QNetworkReply::NoError) {
-                MessageBoxHelper::critical(self, tr("Download Failed"),
-                    reply->errorString());
-                return;
-            }
-            QFile f(save_path);
-            if (f.open(QIODevice::WriteOnly)) {
-                f.write(reply->readAll());
-                f.close();
-            } else {
-                MessageBoxHelper::critical(self, tr("Save Failed"),
-                    tr("Cannot write to: %1").arg(save_path));
-            }
-        });
+    connect(reply, &QNetworkReply::finished, this, [self, reply, nam, save_path]() {
+        reply->deleteLater();
+        nam->deleteLater();
+        if (!self)
+            return;
+        if (reply->error() != QNetworkReply::NoError) {
+            MessageBoxHelper::critical(self, tr("Download Failed"), reply->errorString());
+            return;
+        }
+        QFile f(save_path);
+        if (f.open(QIODevice::WriteOnly)) {
+            f.write(reply->readAll());
+            f.close();
+        } else {
+            MessageBoxHelper::critical(
+                self, tr("Save Failed"), tr("Cannot write to: %1").arg(save_path));
+        }
+    });
 }
 
 void ComputeConsoleWindow::on_task_double_clicked(const QModelIndex& index) {
-    if (!index.isValid()) return;
+    if (!index.isValid())
+        return;
 
     const QModelIndex src = task_proxy_->mapToSource(index);
     const auto* task = task_model_->get_task(src.row());
-    if (!task) return;
+    if (!task)
+        return;
 
     auto* dlg = new WorkunitDetailDialog(this);
     dlg->setClientManager(client_manager_);
@@ -758,18 +772,18 @@ void ComputeConsoleWindow::on_task_double_clicked(const QModelIndex& index) {
     dlg->setHttpBaseUrl(http_base_url_);
     dlg->setWorkunit(task->workunit);
     dlg->setCreateMode(false);
-    connect(dlg, &WorkunitDetailDialog::workunitSaved, this, [this](const QString&) {
-        refresh();
-    });
+    connect(dlg, &WorkunitDetailDialog::workunitSaved, this, [this](const QString&) { refresh(); });
     show_detail_as_window(dlg, tr("Work Unit"));
 }
 
 void ComputeConsoleWindow::on_app_double_clicked(const QModelIndex& index) {
-    if (!index.isValid()) return;
+    if (!index.isValid())
+        return;
 
     const QModelIndex src = app_proxy_->mapToSource(index);
     const auto* app = app_model_->getApp(src.row());
-    if (!app) return;
+    if (!app)
+        return;
 
     auto* dlg = new AppDetailDialog(this);
     dlg->setClientManager(client_manager_);
@@ -777,18 +791,19 @@ void ComputeConsoleWindow::on_app_double_clicked(const QModelIndex& index) {
     dlg->setChangeReasonCache(change_reason_cache_);
     dlg->setApp(*app);
     dlg->setCreateMode(false);
-    connect(dlg, &AppDetailDialog::appSaved, this, [this](const QString&) {
-        app_model_->refresh();
-    });
+    connect(
+        dlg, &AppDetailDialog::appSaved, this, [this](const QString&) { app_model_->refresh(); });
     show_detail_as_window(dlg, QString::fromStdString(app->name));
 }
 
 void ComputeConsoleWindow::on_app_version_double_clicked(const QModelIndex& index) {
-    if (!index.isValid()) return;
+    if (!index.isValid())
+        return;
 
     const QModelIndex src = app_version_proxy_->mapToSource(index);
     const auto* version = app_version_model_->getVersion(src.row());
-    if (!version) return;
+    if (!version)
+        return;
 
     auto* dlg = new AppVersionDetailDialog(this);
     dlg->setClientManager(client_manager_);

@@ -18,40 +18,36 @@
  *
  */
 #include "ores.qt/DataDomainController.hpp"
+#include "ores.dq.api/eventing/data_domain_changed_event.hpp"
+#include "ores.eventing/domain/event_traits.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
-
-#include <QMdiSubWindow>
-#include <QMessageBox>
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/DataDomainMdiWindow.hpp"
 #include "ores.qt/DataDomainDetailDialog.hpp"
 #include "ores.qt/DataDomainHistoryDialog.hpp"
+#include "ores.qt/DataDomainMdiWindow.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
-#include "ores.eventing/domain/event_traits.hpp"
-#include "ores.dq.api/eventing/data_domain_changed_event.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include <QMdiSubWindow>
+#include <QMessageBox>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    constexpr std::string_view data_domain_event_name =
-        eventing::domain::event_traits<
-            dq::eventing::data_domain_changed_event>::name;
+constexpr std::string_view data_domain_event_name =
+    eventing::domain::event_traits<dq::eventing::data_domain_changed_event>::name;
 }
 
-DataDomainController::DataDomainController(
-    QMainWindow* mainWindow,
-    QMdiArea* mdiArea,
-    ClientManager* clientManager,
-    ChangeReasonCache* changeReasonCache,
-    const QString& username,
-    QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username,
-                       data_domain_event_name, parent),
-      changeReasonCache_(changeReasonCache),
-      listWindow_(nullptr),
-      listMdiSubWindow_(nullptr) {
+DataDomainController::DataDomainController(QMainWindow* mainWindow,
+                                           QMdiArea* mdiArea,
+                                           ClientManager* clientManager,
+                                           ChangeReasonCache* changeReasonCache,
+                                           const QString& username,
+                                           QObject* parent)
+    : EntityController(mainWindow, mdiArea, clientManager, username, data_domain_event_name, parent)
+    , changeReasonCache_(changeReasonCache)
+    , listWindow_(nullptr)
+    , listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "DataDomainController created";
 }
@@ -67,23 +63,33 @@ void DataDomainController::showListWindow() {
 
     listWindow_ = new DataDomainMdiWindow(clientManager_, username_);
 
-    connect(listWindow_, &DataDomainMdiWindow::statusChanged,
-            this, &DataDomainController::statusMessage);
-    connect(listWindow_, &DataDomainMdiWindow::errorOccurred,
-            this, &DataDomainController::errorMessage);
-    connect(listWindow_, &DataDomainMdiWindow::showDomainDetails,
-            this, &DataDomainController::onShowDetails);
-    connect(listWindow_, &DataDomainMdiWindow::addNewRequested,
-            this, &DataDomainController::onAddNewRequested);
-    connect(listWindow_, &DataDomainMdiWindow::showDomainHistory,
-            this, &DataDomainController::onShowHistory);
+    connect(listWindow_,
+            &DataDomainMdiWindow::statusChanged,
+            this,
+            &DataDomainController::statusMessage);
+    connect(listWindow_,
+            &DataDomainMdiWindow::errorOccurred,
+            this,
+            &DataDomainController::errorMessage);
+    connect(listWindow_,
+            &DataDomainMdiWindow::showDomainDetails,
+            this,
+            &DataDomainController::onShowDetails);
+    connect(listWindow_,
+            &DataDomainMdiWindow::addNewRequested,
+            this,
+            &DataDomainController::onAddNewRequested);
+    connect(listWindow_,
+            &DataDomainMdiWindow::showDomainHistory,
+            this,
+            &DataDomainController::onShowHistory);
 
     // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Data Domains");
-    listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Folder, IconUtils::DefaultIconColor));
+    listMdiSubWindow_->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Folder, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -93,12 +99,16 @@ void DataDomainController::showListWindow() {
     track_window(key, listMdiSubWindow_);
     register_detachable_window(listMdiSubWindow_);
 
-    connect(listMdiSubWindow_, &QObject::destroyed, this, [self = QPointer<DataDomainController>(this), key]() {
-        if (!self) return;
-        self->untrack_window(key);
-        self->listWindow_ = nullptr;
-        self->listMdiSubWindow_ = nullptr;
-    });
+    connect(listMdiSubWindow_,
+            &QObject::destroyed,
+            this,
+            [self = QPointer<DataDomainController>(this), key]() {
+                if (!self)
+                    return;
+                self->untrack_window(key);
+                self->listWindow_ = nullptr;
+                self->listMdiSubWindow_ = nullptr;
+            });
 
     BOOST_LOG_SEV(lg(), debug) << "Data domain list window created";
 }
@@ -124,8 +134,7 @@ void DataDomainController::reloadListWindow() {
     }
 }
 
-void DataDomainController::onShowDetails(
-    const dq::domain::data_domain& domain) {
+void DataDomainController::onShowDetails(const dq::domain::data_domain& domain) {
     BOOST_LOG_SEV(lg(), debug) << "Show details for: " << domain.name;
     showDetailWindow(domain);
 }
@@ -150,23 +159,30 @@ void DataDomainController::showAddWindow() {
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
 
-    connect(detailDialog, &DataDomainDetailDialog::statusMessage,
-            this, &DataDomainController::statusMessage);
-    connect(detailDialog, &DataDomainDetailDialog::errorMessage,
-            this, &DataDomainController::errorMessage);
-    connect(detailDialog, &DataDomainDetailDialog::domainSaved,
-            this, [self = QPointer<DataDomainController>(this)](const QString& name) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Data domain saved: " << name.toStdString();
-        self->handleEntitySaved();
-    });
+    connect(detailDialog,
+            &DataDomainDetailDialog::statusMessage,
+            this,
+            &DataDomainController::statusMessage);
+    connect(detailDialog,
+            &DataDomainDetailDialog::errorMessage,
+            this,
+            &DataDomainController::errorMessage);
+    connect(detailDialog,
+            &DataDomainDetailDialog::domainSaved,
+            this,
+            [self = QPointer<DataDomainController>(this)](const QString& name) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Data domain saved: " << name.toStdString();
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Data Domain");
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Folder, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Folder, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -174,8 +190,7 @@ void DataDomainController::showAddWindow() {
     show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
-void DataDomainController::showDetailWindow(
-    const dq::domain::data_domain& domain) {
+void DataDomainController::showDetailWindow(const dq::domain::data_domain& domain) {
 
     const QString identifier = QString::fromStdString(domain.name);
     const QString key = build_window_key("details", identifier);
@@ -195,36 +210,45 @@ void DataDomainController::showDetailWindow(
     detailDialog->setCreateMode(false);
     detailDialog->setDomain(domain);
 
-    connect(detailDialog, &DataDomainDetailDialog::statusMessage,
-            this, &DataDomainController::statusMessage);
-    connect(detailDialog, &DataDomainDetailDialog::errorMessage,
-            this, &DataDomainController::errorMessage);
-    connect(detailDialog, &DataDomainDetailDialog::domainSaved,
-            this, [self = QPointer<DataDomainController>(this)](const QString& name) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Data domain saved: " << name.toStdString();
-        self->handleEntitySaved();
-    });
-    connect(detailDialog, &DataDomainDetailDialog::domainDeleted,
-            this, [self = QPointer<DataDomainController>(this), key](const QString& name) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Data domain deleted: " << name.toStdString();
-        self->handleEntityDeleted();
-    });
+    connect(detailDialog,
+            &DataDomainDetailDialog::statusMessage,
+            this,
+            &DataDomainController::statusMessage);
+    connect(detailDialog,
+            &DataDomainDetailDialog::errorMessage,
+            this,
+            &DataDomainController::errorMessage);
+    connect(detailDialog,
+            &DataDomainDetailDialog::domainSaved,
+            this,
+            [self = QPointer<DataDomainController>(this)](const QString& name) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Data domain saved: " << name.toStdString();
+                self->handleEntitySaved();
+            });
+    connect(detailDialog,
+            &DataDomainDetailDialog::domainDeleted,
+            this,
+            [self = QPointer<DataDomainController>(this), key](const QString& name) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Data domain deleted: " << name.toStdString();
+                self->handleEntityDeleted();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Data Domain: %1").arg(identifier));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Folder, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Folder, IconUtils::DefaultIconColor));
 
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<DataDomainController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, key]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, key]() {
         if (self) {
             self->untrack_window(key);
         }
@@ -235,36 +259,43 @@ void DataDomainController::showDetailWindow(
 }
 
 void DataDomainController::showHistoryWindow(const QString& name) {
-    BOOST_LOG_SEV(lg(), info) << "Opening history window for data domain: "
-                              << name.toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Opening history window for data domain: " << name.toStdString();
 
     const QString windowKey = build_window_key("history", name);
 
     if (try_reuse_window(windowKey)) {
-        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: "
-                                  << name.toStdString();
+        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: " << name.toStdString();
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
-                              << name.toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << name.toStdString();
 
     auto* historyDialog = new DataDomainHistoryDialog(name, clientManager_, mainWindow_);
 
-    connect(historyDialog, &DataDomainHistoryDialog::statusChanged,
-            this, [self = QPointer<DataDomainController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(historyDialog, &DataDomainHistoryDialog::errorOccurred,
-            this, [self = QPointer<DataDomainController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
-    connect(historyDialog, &DataDomainHistoryDialog::revertVersionRequested,
-            this, &DataDomainController::onRevertVersion);
-    connect(historyDialog, &DataDomainHistoryDialog::openVersionRequested,
-            this, &DataDomainController::onOpenVersion);
+    connect(historyDialog,
+            &DataDomainHistoryDialog::statusChanged,
+            this,
+            [self = QPointer<DataDomainController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(historyDialog,
+            &DataDomainHistoryDialog::errorOccurred,
+            this,
+            [self = QPointer<DataDomainController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
+    connect(historyDialog,
+            &DataDomainHistoryDialog::revertVersionRequested,
+            this,
+            &DataDomainController::onRevertVersion);
+    connect(historyDialog,
+            &DataDomainHistoryDialog::openVersionRequested,
+            this,
+            &DataDomainController::onOpenVersion);
 
     historyDialog->loadHistory();
 
@@ -272,15 +303,14 @@ void DataDomainController::showHistoryWindow(const QString& name) {
     historyWindow->setAttribute(Qt::WA_DeleteOnClose);
     historyWindow->setWidget(historyDialog);
     historyWindow->setWindowTitle(QString("Data Domain History: %1").arg(name));
-    historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    historyWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
 
     QPointer<DataDomainController> self = this;
-    connect(historyWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -289,14 +319,13 @@ void DataDomainController::showHistoryWindow(const QString& name) {
     show_managed_window(historyWindow, listMdiSubWindow_);
 }
 
-void DataDomainController::onOpenVersion(
-    const dq::domain::data_domain& domain, int versionNumber) {
+void DataDomainController::onOpenVersion(const dq::domain::data_domain& domain, int versionNumber) {
     BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
                               << " for data domain: " << domain.name;
 
     const QString name = QString::fromStdString(domain.name);
-    const QString windowKey = build_window_key("version", QString("%1_v%2")
-        .arg(name).arg(versionNumber));
+    const QString windowKey =
+        build_window_key("version", QString("%1_v%2").arg(name).arg(versionNumber));
 
     if (try_reuse_window(windowKey)) {
         BOOST_LOG_SEV(lg(), info) << "Reusing existing version window";
@@ -311,31 +340,36 @@ void DataDomainController::onOpenVersion(
     detailDialog->setDomain(domain);
     detailDialog->setReadOnly(true);
 
-    connect(detailDialog, &DataDomainDetailDialog::statusMessage,
-            this, [self = QPointer<DataDomainController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(detailDialog, &DataDomainDetailDialog::errorMessage,
-            this, [self = QPointer<DataDomainController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
+    connect(detailDialog,
+            &DataDomainDetailDialog::statusMessage,
+            this,
+            [self = QPointer<DataDomainController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(detailDialog,
+            &DataDomainDetailDialog::errorMessage,
+            this,
+            [self = QPointer<DataDomainController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Data Domain: %1 (Version %2)")
-        .arg(name).arg(versionNumber));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("Data Domain: %1 (Version %2)").arg(name).arg(versionNumber));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     track_window(windowKey, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<DataDomainController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -345,10 +379,8 @@ void DataDomainController::onOpenVersion(
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
-void DataDomainController::onRevertVersion(
-    const dq::domain::data_domain& domain) {
-    BOOST_LOG_SEV(lg(), info) << "Reverting data domain to version: "
-                              << domain.version;
+void DataDomainController::onRevertVersion(const dq::domain::data_domain& domain) {
+    BOOST_LOG_SEV(lg(), info) << "Reverting data domain to version: " << domain.version;
 
     auto* detailDialog = new DataDomainDetailDialog(mainWindow_);
     if (changeReasonCache_)
@@ -358,25 +390,33 @@ void DataDomainController::onRevertVersion(
     detailDialog->setDomain(domain);
     detailDialog->setCreateMode(false);
 
-    connect(detailDialog, &DataDomainDetailDialog::statusMessage,
-            this, &DataDomainController::statusMessage);
-    connect(detailDialog, &DataDomainDetailDialog::errorMessage,
-            this, &DataDomainController::errorMessage);
-    connect(detailDialog, &DataDomainDetailDialog::domainSaved,
-            this, [self = QPointer<DataDomainController>(this)](const QString& name) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Data domain reverted: " << name.toStdString();
-        emit self->statusMessage(QString("Data domain '%1' reverted successfully").arg(name));
-        self->handleEntitySaved();
-    });
+    connect(detailDialog,
+            &DataDomainDetailDialog::statusMessage,
+            this,
+            &DataDomainController::statusMessage);
+    connect(detailDialog,
+            &DataDomainDetailDialog::errorMessage,
+            this,
+            &DataDomainController::errorMessage);
+    connect(detailDialog,
+            &DataDomainDetailDialog::domainSaved,
+            this,
+            [self = QPointer<DataDomainController>(this)](const QString& name) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Data domain reverted: " << name.toStdString();
+                emit self->statusMessage(
+                    QString("Data domain '%1' reverted successfully").arg(name));
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Revert Data Domain: %1")
-        .arg(QString::fromStdString(domain.name)));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("Revert Data Domain: %1").arg(QString::fromStdString(domain.name)));
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
+                                                               IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 

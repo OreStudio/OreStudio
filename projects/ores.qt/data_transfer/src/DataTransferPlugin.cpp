@@ -17,9 +17,8 @@
  *
  */
 #include "ores.qt/DataTransferPlugin.hpp"
-
-#include <QMenu>
 #include "ores.logging/make_logger.hpp"
+#include <QMenu>
 
 namespace ores::qt {
 
@@ -34,7 +33,8 @@ auto& lg() {
 
 }
 
-DataTransferPlugin::DataTransferPlugin(QObject* parent) : PluginBase(parent) {
+DataTransferPlugin::DataTransferPlugin(QObject* parent)
+    : PluginBase(parent) {
     BOOST_LOG_SEV(lg(), debug) << "Plugin initialised.";
 }
 
@@ -49,15 +49,17 @@ void DataTransferPlugin::on_login(const plugin_context& ctx) {
 
 void DataTransferPlugin::setup_menus(const shared_menus_context& smc) {
     BOOST_LOG_SEV(lg(), debug) << "Capturing shared Data Management menu handle."
-        << " data_management=" << (smc.data_management_menu ? "ok" : "null");
+                               << " data_management=" << (smc.data_management_menu ? "ok" : "null");
     data_management_menu_ = smc.data_management_menu;
 }
 
 QList<QMenu*> DataTransferPlugin::create_menus() {
     BOOST_LOG_SEV(lg(), debug) << "Building plugin menus."
-        << " data_management_menu=" << (data_management_menu_ ? "ok" : "null");
+                               << " data_management_menu="
+                               << (data_management_menu_ ? "ok" : "null");
     if (!data_management_menu_) {
-        BOOST_LOG_SEV(lg(), warn) << "Data Management menu handle is missing — no menu will appear.";
+        BOOST_LOG_SEV(lg(), warn)
+            << "Data Management menu handle is missing — no menu will appear.";
         return {};
     }
     return {data_management_menu_};

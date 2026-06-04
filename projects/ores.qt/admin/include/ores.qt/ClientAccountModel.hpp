@@ -20,18 +20,18 @@
 #ifndef ORES_QT_CLIENT_ACCOUNT_MODEL_HPP
 #define ORES_QT_CLIENT_ACCOUNT_MODEL_HPP
 
-#include <vector>
-#include <optional>
-#include <QFutureWatcher>
-#include <QAbstractTableModel>
+#include "ores.iam.api/domain/account.hpp"
+#include "ores.iam.api/domain/account_party.hpp"
+#include "ores.iam.api/domain/login_info.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/AbstractClientModel.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/RecencyPulseManager.hpp"
 #include "ores.qt/RecencyTracker.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.iam.api/domain/account.hpp"
-#include "ores.iam.api/domain/account_party.hpp"
-#include "ores.iam.api/domain/login_info.hpp"
+#include <QAbstractTableModel>
+#include <QFutureWatcher>
+#include <optional>
+#include <vector>
 
 namespace ores::qt {
 
@@ -42,10 +42,10 @@ namespace ores::qt {
  * with different visual treatments (badge colors).
  */
 enum class LoginStatus {
-    Never,    // Never logged in (no login_info or epoch last_login)
-    LongAgo,  // Logged in more than 30 days ago
-    Recent,   // Logged in within the last 30 days
-    Online    // Currently logged in
+    Never,   // Never logged in (no login_info or epoch last_login)
+    LongAgo, // Logged in more than 30 days ago
+    Recent,  // Logged in within the last 30 days
+    Online   // Currently logged in
 };
 
 /**
@@ -72,8 +72,7 @@ class ClientAccountModel final : public AbstractClientModel {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.client_account_model";
+    inline static std::string_view logger_name = "ores.qt.client_account_model";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -95,25 +94,24 @@ public:
         Username,
         AccountType,
         Email,
-        Parties,    // Number of parties assigned to the account
-        Status,     // Login status: Never, LongAgo, Recent, Online
+        Parties, // Number of parties assigned to the account
+        Status,  // Login status: Never, LongAgo, Recent, Online
         Locked,
         Version,
         ModifiedBy,
         RecordedAt,
-        ColumnCount  // Must be last - represents total number of columns
+        ColumnCount // Must be last - represents total number of columns
     };
 
-    explicit ClientAccountModel(ClientManager* clientManager,
-                                QObject* parent = nullptr);
+    explicit ClientAccountModel(ClientManager* clientManager, QObject* parent = nullptr);
     ~ClientAccountModel() override = default;
 
     // QAbstractTableModel interface
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-    QVariant headerData(int section, Qt::Orientation orientation,
-        int role = Qt::DisplayRole) const override;
+    QVariant
+    headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
     /**
      * @brief Refresh account data from server asynchronously.
@@ -166,7 +164,9 @@ public:
      *
      * @return The number of records fetched per page.
      */
-    std::uint32_t page_size() const { return page_size_; }
+    std::uint32_t page_size() const {
+        return page_size_;
+    }
 
     /**
      * @brief Set the page size for pagination.
@@ -180,7 +180,9 @@ public:
      *
      * @return Total available record count.
      */
-    std::uint32_t total_available_count() const { return total_available_count_; }
+    std::uint32_t total_available_count() const {
+        return total_available_count_;
+    }
 
 signals:
     /**
@@ -214,8 +216,8 @@ private:
      * @param loginInfo Optional login info for the account.
      * @return LoginStatus bucket based on login recency.
      */
-    static LoginStatus calculateLoginStatus(
-        const std::optional<iam::domain::login_info>& loginInfo);
+    static LoginStatus
+    calculateLoginStatus(const std::optional<iam::domain::login_info>& loginInfo);
 
     struct FetchResult {
         bool success;
@@ -237,7 +239,7 @@ private:
     bool is_fetching_{false};
 
     // Recency highlighting
-    using AccountKeyExtractor = std::string(*)(const iam::domain::account&);
+    using AccountKeyExtractor = std::string (*)(const iam::domain::account&);
     RecencyTracker<iam::domain::account, AccountKeyExtractor> recencyTracker_;
     RecencyPulseManager* pulseManager_;
 

@@ -18,25 +18,24 @@
  *
  */
 #include "ores.qt/BusinessUnitTypeDetailDialog.hpp"
-
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include "ui_BusinessUnitTypeDetailDialog.h"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata.api/messaging/business_unit_type_protocol.hpp"
+#include "ui_BusinessUnitTypeDetailDialog.h"
+#include <QFutureWatcher>
+#include <QMessageBox>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 BusinessUnitTypeDetailDialog::BusinessUnitTypeDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent),
-      ui_(new Ui::BusinessUnitTypeDetailDialog),
-      clientManager_(nullptr) {
+    : DetailDialogBase(parent)
+    , ui_(new Ui::BusinessUnitTypeDetailDialog)
+    , clientManager_(nullptr) {
 
     ui_->setupUi(this);
     WidgetUtils::setupComboBoxes(this);
@@ -48,9 +47,15 @@ BusinessUnitTypeDetailDialog::~BusinessUnitTypeDetailDialog() {
     delete ui_;
 }
 
-QTabWidget* BusinessUnitTypeDetailDialog::tabWidget() const { return ui_->tabWidget; }
-QWidget* BusinessUnitTypeDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
-ProvenanceWidget* BusinessUnitTypeDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
+QTabWidget* BusinessUnitTypeDetailDialog::tabWidget() const {
+    return ui_->tabWidget;
+}
+QWidget* BusinessUnitTypeDetailDialog::provenanceTab() const {
+    return ui_->provenanceTab;
+}
+ProvenanceWidget* BusinessUnitTypeDetailDialog::provenanceWidget() const {
+    return ui_->provenanceWidget;
+}
 
 void BusinessUnitTypeDetailDialog::setupUi() {
     ui_->saveButton->setIcon(
@@ -65,22 +70,33 @@ void BusinessUnitTypeDetailDialog::setupUi() {
 }
 
 void BusinessUnitTypeDetailDialog::setupConnections() {
-    connect(ui_->saveButton, &QPushButton::clicked, this,
-            &BusinessUnitTypeDetailDialog::onSaveClicked);
-    connect(ui_->deleteButton, &QPushButton::clicked, this,
+    connect(
+        ui_->saveButton, &QPushButton::clicked, this, &BusinessUnitTypeDetailDialog::onSaveClicked);
+    connect(ui_->deleteButton,
+            &QPushButton::clicked,
+            this,
             &BusinessUnitTypeDetailDialog::onDeleteClicked);
-    connect(ui_->closeButton, &QPushButton::clicked, this,
+    connect(ui_->closeButton,
+            &QPushButton::clicked,
+            this,
             &BusinessUnitTypeDetailDialog::onCloseClicked);
 
-    connect(ui_->codeEdit, &QLineEdit::textChanged, this,
-            &BusinessUnitTypeDetailDialog::onCodeChanged);
-    connect(ui_->nameEdit, &QLineEdit::textChanged, this,
+    connect(
+        ui_->codeEdit, &QLineEdit::textChanged, this, &BusinessUnitTypeDetailDialog::onCodeChanged);
+    connect(ui_->nameEdit,
+            &QLineEdit::textChanged,
+            this,
             &BusinessUnitTypeDetailDialog::onFieldChanged);
-    connect(ui_->levelSpinBox, qOverload<int>(&QSpinBox::valueChanged), this,
-            [this](int) { onFieldChanged(); });
-    connect(ui_->codingSchemeEdit, &QLineEdit::textChanged, this,
+    connect(ui_->levelSpinBox, qOverload<int>(&QSpinBox::valueChanged), this, [this](int) {
+        onFieldChanged();
+    });
+    connect(ui_->codingSchemeEdit,
+            &QLineEdit::textChanged,
+            this,
             &BusinessUnitTypeDetailDialog::onFieldChanged);
-    connect(ui_->descriptionEdit, &QTextEdit::textChanged, this,
+    connect(ui_->descriptionEdit,
+            &QTextEdit::textChanged,
+            this,
             &BusinessUnitTypeDetailDialog::onFieldChanged);
 }
 
@@ -92,8 +108,7 @@ void BusinessUnitTypeDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
 
-void BusinessUnitTypeDetailDialog::setType(
-    const refdata::domain::business_unit_type& type) {
+void BusinessUnitTypeDetailDialog::setType(const refdata::domain::business_unit_type& type) {
     type_ = type;
     updateUiFromType();
 }
@@ -127,8 +142,10 @@ void BusinessUnitTypeDetailDialog::updateUiFromType() {
     ui_->codingSchemeEdit->setText(QString::fromStdString(type_.coding_scheme_code));
     ui_->descriptionEdit->setPlainText(QString::fromStdString(type_.description));
 
-    populateProvenance(type_.version, type_.modified_by,
-                       type_.performed_by, type_.recorded_at,
+    populateProvenance(type_.version,
+                       type_.modified_by,
+                       type_.performed_by,
+                       type_.recorded_at,
                        type_.change_reason_code,
                        type_.change_commentary);
     hasChanges_ = false;
@@ -171,25 +188,23 @@ bool BusinessUnitTypeDetailDialog::validateInput() {
 
 void BusinessUnitTypeDetailDialog::onSaveClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot save business unit type while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot save business unit type while disconnected from server.");
         return;
     }
 
     if (!validateInput()) {
-        MessageBoxHelper::warning(this, "Invalid Input",
-            "Please fill in all required fields.");
+        MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
 
     updateTypeFromUi();
 
-    const auto crOpType = createMode_
-        ? ChangeReasonDialog::OperationType::Create
-        : ChangeReasonDialog::OperationType::Amend;
-    const auto crSel = promptChangeReason(crOpType, hasChanges_,
-        createMode_ ? "system" : "common");
-    if (!crSel) return;
+    const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
+                                        ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
+    if (!crSel)
+        return;
     type_.change_reason_code = crSel->reason_code;
     type_.change_commentary = crSel->commentary;
 
@@ -209,7 +224,8 @@ void BusinessUnitTypeDetailDialog::onSaveClicked() {
 
         refdata::messaging::save_business_unit_type_request request;
         request.data = type;
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -220,8 +236,7 @@ void BusinessUnitTypeDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
@@ -246,13 +261,17 @@ void BusinessUnitTypeDetailDialog::onSaveClicked() {
 
 void BusinessUnitTypeDetailDialog::onDeleteClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
+        MessageBoxHelper::warning(
+            this,
+            "Disconnected",
             "Cannot delete business unit type while disconnected from server.");
         return;
     }
 
     QString code = QString::fromStdString(type_.code);
-    auto reply = MessageBoxHelper::question(this, "Delete Business Unit Type",
+    auto reply = MessageBoxHelper::question(
+        this,
+        "Delete Business Unit Type",
         QString("Are you sure you want to delete business unit type '%1'?").arg(code),
         QMessageBox::Yes | QMessageBox::No);
 
@@ -260,9 +279,10 @@ void BusinessUnitTypeDetailDialog::onDeleteClicked() {
         return;
     }
 
-    const auto crSel = promptChangeReason(
-        ChangeReasonDialog::OperationType::Delete, true, "common");
-    if (!crSel) return;
+    const auto crSel =
+        promptChangeReason(ChangeReasonDialog::OperationType::Delete, true, "common");
+    if (!crSel)
+        return;
 
     BOOST_LOG_SEV(lg(), info) << "Deleting business unit type: " << type_.code;
 
@@ -280,7 +300,8 @@ void BusinessUnitTypeDetailDialog::onDeleteClicked() {
 
         refdata::messaging::delete_business_unit_type_request request;
         request.type = code;
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -291,15 +312,13 @@ void BusinessUnitTypeDetailDialog::onDeleteClicked() {
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
-            self, [self, code, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, code, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Business Unit Type deleted successfully";
-            emit self->statusMessage(
-                QString("Business Unit Type '%1' deleted").arg(code));
+            emit self->statusMessage(QString("Business Unit Type '%1' deleted").arg(code));
             emit self->typeDeleted(code);
             self->requestClose();
         } else {

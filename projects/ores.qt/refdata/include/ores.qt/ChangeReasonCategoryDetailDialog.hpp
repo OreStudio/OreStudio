@@ -20,15 +20,15 @@
 #ifndef ORES_QT_CHANGE_REASON_CATEGORY_DETAIL_DIALOG_HPP
 #define ORES_QT_CHANGE_REASON_CATEGORY_DETAIL_DIALOG_HPP
 
-#include <vector>
-#include <QAction>
-#include <QTabWidget>
-#include <QToolBar>
+#include "ores.dq.api/domain/change_reason_category.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.qt/ProvenanceWidget.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.dq.api/domain/change_reason_category.hpp"
+#include <QAction>
+#include <QTabWidget>
+#include <QToolBar>
+#include <vector>
 
 namespace Ui {
 class ChangeReasonCategoryDetailDialog;
@@ -46,8 +46,7 @@ class ChangeReasonCategoryDetailDialog : public DetailDialogBase {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.change_reason_category_detail_dialog";
+    inline static std::string_view logger_name = "ores.qt.change_reason_category_detail_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -72,8 +71,12 @@ public:
     void save();
 
     QString categoryCode() const;
-    bool isDirty() const { return isDirty_; }
-    bool isReadOnly() const { return isReadOnly_; }
+    bool isDirty() const {
+        return isDirty_;
+    }
+    bool isReadOnly() const {
+        return isReadOnly_;
+    }
 
 signals:
     void isDirtyChanged(bool dirty);
@@ -84,7 +87,9 @@ protected:
     QTabWidget* tabWidget() const override;
     QWidget* provenanceTab() const override;
     ProvenanceWidget* provenanceWidget() const override;
-    bool hasUnsavedChanges() const override { return isDirty_; }
+    bool hasUnsavedChanges() const override {
+        return isDirty_;
+    }
 
 private slots:
     void onSaveClicked();

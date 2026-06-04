@@ -18,29 +18,28 @@
  *
  */
 #include "ores.qt/MethodologyDetailDialog.hpp"
-
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/uuid/random_generator.hpp>
-#include "ui_MethodologyDetailDialog.h"
-#include "ores.qt/IconUtils.hpp"
+#include "ores.dq.api/messaging/data_organization_protocol.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
+#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.dq.api/messaging/data_organization_protocol.hpp"
+#include "ui_MethodologyDetailDialog.h"
+#include <QFutureWatcher>
+#include <QMessageBox>
+#include <QtConcurrent>
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 MethodologyDetailDialog::MethodologyDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent),
-      ui_(new Ui::MethodologyDetailDialog),
-      clientManager_(nullptr),
-      isCreateMode_(true),
-      isReadOnly_(false) {
+    : DetailDialogBase(parent)
+    , ui_(new Ui::MethodologyDetailDialog)
+    , clientManager_(nullptr)
+    , isCreateMode_(true)
+    , isReadOnly_(false) {
 
     ui_->setupUi(this);
     WidgetUtils::setupComboBoxes(this);
@@ -51,19 +50,24 @@ MethodologyDetailDialog::~MethodologyDetailDialog() {
     delete ui_;
 }
 
-QTabWidget* MethodologyDetailDialog::tabWidget() const { return ui_->tabWidget; }
-QWidget* MethodologyDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
-ProvenanceWidget* MethodologyDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
+QTabWidget* MethodologyDetailDialog::tabWidget() const {
+    return ui_->tabWidget;
+}
+QWidget* MethodologyDetailDialog::provenanceTab() const {
+    return ui_->provenanceTab;
+}
+ProvenanceWidget* MethodologyDetailDialog::provenanceWidget() const {
+    return ui_->provenanceWidget;
+}
 
 void MethodologyDetailDialog::setupConnections() {
-    connect(ui_->saveButton, &QPushButton::clicked,
-            this, &MethodologyDetailDialog::onSaveClicked);
-    connect(ui_->deleteButton, &QPushButton::clicked,
-            this, &MethodologyDetailDialog::onDeleteClicked);
+    connect(ui_->saveButton, &QPushButton::clicked, this, &MethodologyDetailDialog::onSaveClicked);
+    connect(
+        ui_->deleteButton, &QPushButton::clicked, this, &MethodologyDetailDialog::onDeleteClicked);
     ui_->closeButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
-    connect(ui_->closeButton, &QPushButton::clicked, this,
-            &MethodologyDetailDialog::onCloseClicked);
+    connect(
+        ui_->closeButton, &QPushButton::clicked, this, &MethodologyDetailDialog::onCloseClicked);
 }
 
 void MethodologyDetailDialog::setCreateMode(bool create) {
@@ -72,8 +76,7 @@ void MethodologyDetailDialog::setCreateMode(bool create) {
     updateUiState();
 }
 
-void MethodologyDetailDialog::setMethodology(
-    const dq::domain::methodology& methodology) {
+void MethodologyDetailDialog::setMethodology(const dq::domain::methodology& methodology) {
     methodology_ = methodology;
 
     ui_->nameEdit->setText(QString::fromStdString(methodology.name));
@@ -84,12 +87,16 @@ void MethodologyDetailDialog::setMethodology(
     }
 
     if (methodology.implementation_details) {
-        ui_->implementationEdit->setPlainText(QString::fromStdString(*methodology.implementation_details));
+        ui_->implementationEdit->setPlainText(
+            QString::fromStdString(*methodology.implementation_details));
     }
 
-    populateProvenance(methodology_.version, methodology_.modified_by,
-                       methodology_.performed_by, methodology_.recorded_at,
-                       "", methodology_.change_commentary);
+    populateProvenance(methodology_.version,
+                       methodology_.modified_by,
+                       methodology_.performed_by,
+                       methodology_.recorded_at,
+                       "",
+                       methodology_.change_commentary);
 
     updateUiState();
 }
@@ -116,8 +123,7 @@ void MethodologyDetailDialog::onSaveClicked() {
     QString implementation = ui_->implementationEdit->toPlainText().trimmed();
 
     if (name.isEmpty()) {
-        MessageBoxHelper::warning(this, tr("Validation Error"),
-                                  tr("Name is required."));
+        MessageBoxHelper::warning(this, tr("Validation Error"), tr("Name is required."));
         return;
     }
 
@@ -137,27 +143,32 @@ void MethodologyDetailDialog::onSaveClicked() {
     }
 
     {
-        const auto crOpType = isCreateMode_
-            ? ChangeReasonDialog::OperationType::Create
-            : ChangeReasonDialog::OperationType::Amend;
-        const auto crSel = promptChangeReason(crOpType, true,
-            isCreateMode_ ? "system" : "common");
-        if (!crSel) return;
+        const auto crOpType = isCreateMode_ ? ChangeReasonDialog::OperationType::Create :
+                                              ChangeReasonDialog::OperationType::Amend;
+        const auto crSel = promptChangeReason(crOpType, true, isCreateMode_ ? "system" : "common");
+        if (!crSel)
+            return;
         methodology.change_commentary = crSel->commentary;
     }
 
     QPointer<MethodologyDetailDialog> self = this;
     boost::uuids::uuid methodologyId = methodology.id;
 
-    struct SaveResult { bool success; std::string message; };
+    struct SaveResult {
+        bool success;
+        std::string message;
+    };
 
     auto task = [self, methodology]() -> SaveResult {
-        if (!self || !self->clientManager_) return {false, "Dialog closed"};
+        if (!self || !self->clientManager_)
+            return {false, "Dialog closed"};
 
         dq::messaging::save_methodology_request request;
         request.data = methodology;
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
-        if (!response_result) return {false, "Failed to communicate with server"};
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
+        if (!response_result)
+            return {false, "Failed to communicate with server"};
 
         return {response_result->success, response_result->message};
     };
@@ -167,7 +178,8 @@ void MethodologyDetailDialog::onSaveClicked() {
         auto result = watcher->result();
         watcher->deleteLater();
 
-        if (!self) return;
+        if (!self)
+            return;
 
         if (result.success) {
             emit self->methodologySaved(methodologyId);
@@ -182,16 +194,20 @@ void MethodologyDetailDialog::onSaveClicked() {
 }
 
 void MethodologyDetailDialog::onDeleteClicked() {
-    auto reply = MessageBoxHelper::question(this, tr("Confirm Delete"),
-        tr("Delete methodology '%1'?").arg(ui_->nameEdit->text()),
-        QMessageBox::Yes | QMessageBox::No);
+    auto reply =
+        MessageBoxHelper::question(this,
+                                   tr("Confirm Delete"),
+                                   tr("Delete methodology '%1'?").arg(ui_->nameEdit->text()),
+                                   QMessageBox::Yes | QMessageBox::No);
 
-    if (reply != QMessageBox::Yes) return;
+    if (reply != QMessageBox::Yes)
+        return;
 
     {
-        const auto crSel = promptChangeReason(
-            ChangeReasonDialog::OperationType::Delete, true, "common");
-        if (!crSel) return;
+        const auto crSel =
+            promptChangeReason(ChangeReasonDialog::OperationType::Delete, true, "common");
+        if (!crSel)
+            return;
     }
 
     QPointer<MethodologyDetailDialog> self = this;
@@ -199,12 +215,15 @@ void MethodologyDetailDialog::onDeleteClicked() {
     std::string methodologyName = methodology_.name;
 
     auto task = [self, methodologyId, methodologyName]() -> bool {
-        if (!self || !self->clientManager_) return false;
+        if (!self || !self->clientManager_)
+            return false;
 
         dq::messaging::delete_methodology_request request;
         request.codes.push_back(methodologyName);
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
-        if (!response_result) return false;
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
+        if (!response_result)
+            return false;
 
         return response_result->success;
     };
@@ -214,7 +233,8 @@ void MethodologyDetailDialog::onDeleteClicked() {
         bool success = watcher->result();
         watcher->deleteLater();
 
-        if (!self) return;
+        if (!self)
+            return;
 
         if (success) {
             emit self->statusMessage(tr("Methodology deleted successfully"));

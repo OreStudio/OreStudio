@@ -17,51 +17,49 @@
  *
  */
 #include "ores.qt/RefdataPlugin.hpp"
-
-#include <QMenu>
-#include <QAction>
-#include <QMdiArea>
-#include <QMdiSubWindow>
-#include <QMainWindow>
 #include "ores.logging/make_logger.hpp"
-
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/DetachableMdiSubWindow.hpp"
-#include "ores.qt/DataLibrarianWindow.hpp"
-#include "ores.qt/CurrencyController.hpp"
-#include "ores.qt/CountryController.hpp"
+#include "ores.qt/BusinessDayConventionTypeController.hpp"
+#include "ores.qt/CatalogController.hpp"
+#include "ores.qt/CdsConventionController.hpp"
 #include "ores.qt/ChangeReasonCategoryController.hpp"
 #include "ores.qt/ChangeReasonController.hpp"
-#include "ores.qt/CodingSchemeAuthorityTypeController.hpp"
 #include "ores.qt/CodeDomainController.hpp"
+#include "ores.qt/CodingSchemeAuthorityTypeController.hpp"
 #include "ores.qt/CodingSchemeController.hpp"
+#include "ores.qt/CountryController.hpp"
+#include "ores.qt/CurrencyController.hpp"
+#include "ores.qt/CurrencyMarketTierController.hpp"
+#include "ores.qt/DataDomainController.hpp"
+#include "ores.qt/DataLibrarianWindow.hpp"
+#include "ores.qt/DatasetBundleController.hpp"
 #include "ores.qt/DatasetController.hpp"
 #include "ores.qt/DayCountFractionTypeController.hpp"
-#include "ores.qt/BusinessDayConventionTypeController.hpp"
-#include "ores.qt/FloatingIndexTypeController.hpp"
-#include "ores.qt/PaymentFrequencyTypeController.hpp"
-#include "ores.qt/LegTypeController.hpp"
-#include "ores.qt/CurrencyMarketTierController.hpp"
-#include "ores.qt/MonetaryNatureController.hpp"
-#include "ores.qt/RoundingTypeController.hpp"
-#include "ores.qt/PurposeTypeController.hpp"
-#include "ores.qt/ZeroConventionController.hpp"
 #include "ores.qt/DepositConventionController.hpp"
-#include "ores.qt/SwapConventionController.hpp"
-#include "ores.qt/OisConventionController.hpp"
+#include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/FloatingIndexTypeController.hpp"
 #include "ores.qt/FraConventionController.hpp"
-#include "ores.qt/IborIndexConventionController.hpp"
-#include "ores.qt/OvernightIndexConventionController.hpp"
 #include "ores.qt/FxConventionController.hpp"
-#include "ores.qt/CdsConventionController.hpp"
-#include "ores.qt/DataDomainController.hpp"
-#include "ores.qt/SubjectAreaController.hpp"
-#include "ores.qt/CatalogController.hpp"
-#include "ores.qt/DatasetBundleController.hpp"
+#include "ores.qt/IborIndexConventionController.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/LegTypeController.hpp"
 #include "ores.qt/MethodologyController.hpp"
-#include "ores.qt/OriginDimensionController.hpp"
+#include "ores.qt/MonetaryNatureController.hpp"
 #include "ores.qt/NatureDimensionController.hpp"
+#include "ores.qt/OisConventionController.hpp"
+#include "ores.qt/OriginDimensionController.hpp"
+#include "ores.qt/OvernightIndexConventionController.hpp"
+#include "ores.qt/PaymentFrequencyTypeController.hpp"
+#include "ores.qt/PurposeTypeController.hpp"
+#include "ores.qt/RoundingTypeController.hpp"
+#include "ores.qt/SubjectAreaController.hpp"
+#include "ores.qt/SwapConventionController.hpp"
 #include "ores.qt/TreatmentDimensionController.hpp"
+#include "ores.qt/ZeroConventionController.hpp"
+#include <QAction>
+#include <QMainWindow>
+#include <QMdiArea>
+#include <QMdiSubWindow>
+#include <QMenu>
 
 namespace ores::qt {
 
@@ -74,7 +72,8 @@ auto& lg() {
 }
 }
 
-RefdataPlugin::RefdataPlugin(QObject* parent) : PluginBase(parent) {
+RefdataPlugin::RefdataPlugin(QObject* parent)
+    : PluginBase(parent) {
     BOOST_LOG_SEV(lg(), debug) << "Plugin initialised.";
 }
 
@@ -89,44 +88,68 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Login event received.";
     ctx_ = ctx;
 
-    currencyController_ = std::make_unique<CurrencyController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.image_cache,
-        ctx_.change_reason_cache, ctx_.username, this);
+    currencyController_ = std::make_unique<CurrencyController>(ctx_.main_window,
+                                                               ctx_.mdi_area,
+                                                               ctx_.client_manager,
+                                                               ctx_.image_cache,
+                                                               ctx_.change_reason_cache,
+                                                               ctx_.username,
+                                                               this);
     connectControllerSignals(currencyController_.get());
 
-    countryController_ = std::make_unique<CountryController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.image_cache,
-        ctx_.change_reason_cache, ctx_.username, this);
+    countryController_ = std::make_unique<CountryController>(ctx_.main_window,
+                                                             ctx_.mdi_area,
+                                                             ctx_.client_manager,
+                                                             ctx_.image_cache,
+                                                             ctx_.change_reason_cache,
+                                                             ctx_.username,
+                                                             this);
     connectControllerSignals(countryController_.get());
 
-    changeReasonCategoryController_ = std::make_unique<ChangeReasonCategoryController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
+    changeReasonCategoryController_ =
+        std::make_unique<ChangeReasonCategoryController>(ctx_.main_window,
+                                                         ctx_.mdi_area,
+                                                         ctx_.client_manager,
+                                                         ctx_.change_reason_cache,
+                                                         ctx_.username,
+                                                         this);
     connectControllerSignals(changeReasonCategoryController_.get());
 
-    changeReasonController_ = std::make_unique<ChangeReasonController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username,
-        ctx_.change_reason_cache, this);
+    changeReasonController_ = std::make_unique<ChangeReasonController>(ctx_.main_window,
+                                                                       ctx_.mdi_area,
+                                                                       ctx_.client_manager,
+                                                                       ctx_.username,
+                                                                       ctx_.change_reason_cache,
+                                                                       this);
     connectControllerSignals(changeReasonController_.get());
 
-    codingSchemeAuthorityTypeController_ = std::make_unique<CodingSchemeAuthorityTypeController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
+    codingSchemeAuthorityTypeController_ =
+        std::make_unique<CodingSchemeAuthorityTypeController>(ctx_.main_window,
+                                                              ctx_.mdi_area,
+                                                              ctx_.client_manager,
+                                                              ctx_.change_reason_cache,
+                                                              ctx_.username,
+                                                              this);
     connectControllerSignals(codingSchemeAuthorityTypeController_.get());
 
     codeDomainController_ = std::make_unique<CodeDomainController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.username, this);
+        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
     connectControllerSignals(codeDomainController_.get());
 
-    codingSchemeController_ = std::make_unique<CodingSchemeController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
+    codingSchemeController_ = std::make_unique<CodingSchemeController>(ctx_.main_window,
+                                                                       ctx_.mdi_area,
+                                                                       ctx_.client_manager,
+                                                                       ctx_.change_reason_cache,
+                                                                       ctx_.username,
+                                                                       this);
     connectControllerSignals(codingSchemeController_.get());
 
-    datasetController_ = std::make_unique<DatasetController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
+    datasetController_ = std::make_unique<DatasetController>(ctx_.main_window,
+                                                             ctx_.mdi_area,
+                                                             ctx_.client_manager,
+                                                             ctx_.change_reason_cache,
+                                                             ctx_.username,
+                                                             this);
     connectControllerSignals(datasetController_.get());
 
     dayCountFractionTypeController_ = std::make_unique<DayCountFractionTypeController>(
@@ -149,126 +172,162 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
     connectControllerSignals(legTypeController_.get());
 
-    roundingTypeController_ = std::make_unique<RoundingTypeController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
+    roundingTypeController_ = std::make_unique<RoundingTypeController>(ctx_.main_window,
+                                                                       ctx_.mdi_area,
+                                                                       ctx_.client_manager,
+                                                                       ctx_.change_reason_cache,
+                                                                       ctx_.username,
+                                                                       this);
     connectControllerSignals(roundingTypeController_.get());
 
     // CurrencyController cross-domain relays (within refdata)
-    connect(currencyController_.get(), &CurrencyController::showRoundingTypesRequested,
-            this, [this]() {
-        if (roundingTypeController_) roundingTypeController_->showListWindow();
-    });
+    connect(
+        currencyController_.get(), &CurrencyController::showRoundingTypesRequested, this, [this]() {
+            if (roundingTypeController_)
+                roundingTypeController_->showListWindow();
+        });
 
-    monetaryNatureController_ = std::make_unique<MonetaryNatureController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
+    monetaryNatureController_ = std::make_unique<MonetaryNatureController>(ctx_.main_window,
+                                                                           ctx_.mdi_area,
+                                                                           ctx_.client_manager,
+                                                                           ctx_.change_reason_cache,
+                                                                           ctx_.username,
+                                                                           this);
     connectControllerSignals(monetaryNatureController_.get());
 
-    connect(currencyController_.get(), &CurrencyController::showMonetaryNaturesRequested,
-            this, [this]() {
-        if (monetaryNatureController_) monetaryNatureController_->showListWindow();
-    });
+    connect(currencyController_.get(),
+            &CurrencyController::showMonetaryNaturesRequested,
+            this,
+            [this]() {
+                if (monetaryNatureController_)
+                    monetaryNatureController_->showListWindow();
+            });
 
-    currencyMarketTierController_ = std::make_unique<CurrencyMarketTierController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
+    currencyMarketTierController_ =
+        std::make_unique<CurrencyMarketTierController>(ctx_.main_window,
+                                                       ctx_.mdi_area,
+                                                       ctx_.client_manager,
+                                                       ctx_.change_reason_cache,
+                                                       ctx_.username,
+                                                       this);
     connectControllerSignals(currencyMarketTierController_.get());
 
-    connect(currencyController_.get(), &CurrencyController::showMarketTiersRequested,
-            this, [this]() {
-        if (currencyMarketTierController_) currencyMarketTierController_->showListWindow();
-    });
+    connect(
+        currencyController_.get(), &CurrencyController::showMarketTiersRequested, this, [this]() {
+            if (currencyMarketTierController_)
+                currencyMarketTierController_->showListWindow();
+        });
 
-    purposeTypeController_ = std::make_unique<PurposeTypeController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
+    purposeTypeController_ = std::make_unique<PurposeTypeController>(ctx_.main_window,
+                                                                     ctx_.mdi_area,
+                                                                     ctx_.client_manager,
+                                                                     ctx_.change_reason_cache,
+                                                                     ctx_.username,
+                                                                     this);
     connectControllerSignals(purposeTypeController_.get());
 
     zeroConventionController_ = std::make_unique<ZeroConventionController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.username, this);
+        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
     connectControllerSignals(zeroConventionController_.get());
 
     depositConventionController_ = std::make_unique<DepositConventionController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.username, this);
+        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
     connectControllerSignals(depositConventionController_.get());
 
     swapConventionController_ = std::make_unique<SwapConventionController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.username, this);
+        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
     connectControllerSignals(swapConventionController_.get());
 
     oisConventionController_ = std::make_unique<OisConventionController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.username, this);
+        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
     connectControllerSignals(oisConventionController_.get());
 
     fraConventionController_ = std::make_unique<FraConventionController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.username, this);
+        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
     connectControllerSignals(fraConventionController_.get());
 
     iborIndexConventionController_ = std::make_unique<IborIndexConventionController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.username, this);
+        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
     connectControllerSignals(iborIndexConventionController_.get());
 
     overnightIndexConventionController_ = std::make_unique<OvernightIndexConventionController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.username, this);
+        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
     connectControllerSignals(overnightIndexConventionController_.get());
 
     fxConventionController_ = std::make_unique<FxConventionController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.username, this);
+        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
     connectControllerSignals(fxConventionController_.get());
 
     cdsConventionController_ = std::make_unique<CdsConventionController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.username, this);
+        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username, this);
     connectControllerSignals(cdsConventionController_.get());
 
     // Data Catalogue controllers
-    dataDomainController_ = std::make_unique<DataDomainController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
+    dataDomainController_ = std::make_unique<DataDomainController>(ctx_.main_window,
+                                                                   ctx_.mdi_area,
+                                                                   ctx_.client_manager,
+                                                                   ctx_.change_reason_cache,
+                                                                   ctx_.username,
+                                                                   this);
     connectControllerSignals(dataDomainController_.get());
 
-    subjectAreaController_ = std::make_unique<SubjectAreaController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
+    subjectAreaController_ = std::make_unique<SubjectAreaController>(ctx_.main_window,
+                                                                     ctx_.mdi_area,
+                                                                     ctx_.client_manager,
+                                                                     ctx_.change_reason_cache,
+                                                                     ctx_.username,
+                                                                     this);
     connectControllerSignals(subjectAreaController_.get());
 
-    catalogController_ = std::make_unique<CatalogController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
+    catalogController_ = std::make_unique<CatalogController>(ctx_.main_window,
+                                                             ctx_.mdi_area,
+                                                             ctx_.client_manager,
+                                                             ctx_.change_reason_cache,
+                                                             ctx_.username,
+                                                             this);
     connectControllerSignals(catalogController_.get());
 
-    datasetBundleController_ = std::make_unique<DatasetBundleController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
+    datasetBundleController_ = std::make_unique<DatasetBundleController>(ctx_.main_window,
+                                                                         ctx_.mdi_area,
+                                                                         ctx_.client_manager,
+                                                                         ctx_.change_reason_cache,
+                                                                         ctx_.username,
+                                                                         this);
     connectControllerSignals(datasetBundleController_.get());
 
-    methodologyController_ = std::make_unique<MethodologyController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
+    methodologyController_ = std::make_unique<MethodologyController>(ctx_.main_window,
+                                                                     ctx_.mdi_area,
+                                                                     ctx_.client_manager,
+                                                                     ctx_.change_reason_cache,
+                                                                     ctx_.username,
+                                                                     this);
     connectControllerSignals(methodologyController_.get());
 
-    originDimensionController_ = std::make_unique<OriginDimensionController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
+    originDimensionController_ =
+        std::make_unique<OriginDimensionController>(ctx_.main_window,
+                                                    ctx_.mdi_area,
+                                                    ctx_.client_manager,
+                                                    ctx_.change_reason_cache,
+                                                    ctx_.username,
+                                                    this);
     connectControllerSignals(originDimensionController_.get());
 
-    natureDimensionController_ = std::make_unique<NatureDimensionController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
+    natureDimensionController_ =
+        std::make_unique<NatureDimensionController>(ctx_.main_window,
+                                                    ctx_.mdi_area,
+                                                    ctx_.client_manager,
+                                                    ctx_.change_reason_cache,
+                                                    ctx_.username,
+                                                    this);
     connectControllerSignals(natureDimensionController_.get());
 
-    treatmentDimensionController_ = std::make_unique<TreatmentDimensionController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager,
-        ctx_.change_reason_cache, ctx_.username, this);
+    treatmentDimensionController_ =
+        std::make_unique<TreatmentDimensionController>(ctx_.main_window,
+                                                       ctx_.mdi_area,
+                                                       ctx_.client_manager,
+                                                       ctx_.change_reason_cache,
+                                                       ctx_.username,
+                                                       this);
     connectControllerSignals(treatmentDimensionController_.get());
 }
 
@@ -277,11 +336,13 @@ void RefdataPlugin::on_login(const plugin_context& ctx) {
 // ---------------------------------------------------------------------------
 void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
     BOOST_LOG_SEV(lg(), debug) << "Registering entries in shared menus."
-        << " reference_data=" << (smc.reference_data_menu ? "ok" : "null")
-        << " data_management=" << (smc.data_management_menu ? "ok" : "null")
-        << " trading_codes=" << (smc.trading_codes_menu ? "ok" : "null");
+                               << " reference_data=" << (smc.reference_data_menu ? "ok" : "null")
+                               << " data_management=" << (smc.data_management_menu ? "ok" : "null")
+                               << " trading_codes=" << (smc.trading_codes_menu ? "ok" : "null");
     using IC = IconUtils;
-    auto ico = [](Icon i) { return IC::createRecoloredIcon(i, IC::DefaultIconColor); };
+    auto ico = [](Icon i) {
+        return IC::createRecoloredIcon(i, IC::DefaultIconColor);
+    };
 
     // ---- Reference Data menu --------------------------------------------
     reference_data_menu_ = smc.reference_data_menu;
@@ -289,107 +350,123 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
     if (ref) {
         act_currencies_ = ref->addAction(ico(Icon::Currency), tr("&Currencies"));
         connect(act_currencies_, &QAction::triggered, this, [this]() {
-            if (currencyController_) currencyController_->showListWindow();
+            if (currencyController_)
+                currencyController_->showListWindow();
         });
         act_countries_ = ref->addAction(ico(Icon::Globe), tr("C&ountries"));
         connect(act_countries_, &QAction::triggered, this, [this]() {
-            if (countryController_) countryController_->showListWindow();
+            if (countryController_)
+                countryController_->showListWindow();
         });
 
         ref->addSeparator();
 
         // Trading Conventions submenu (unchanged)
         auto* menuConventions = ref->addMenu(tr("Trading &Conventions"));
-        auto* actDayCountFractionTypes = menuConventions->addAction(
-            ico(Icon::Tag), tr("&Day Count Fraction Types"));
+        auto* actDayCountFractionTypes =
+            menuConventions->addAction(ico(Icon::Tag), tr("&Day Count Fraction Types"));
         connect(actDayCountFractionTypes, &QAction::triggered, this, [this]() {
-            if (dayCountFractionTypeController_) dayCountFractionTypeController_->showListWindow();
+            if (dayCountFractionTypeController_)
+                dayCountFractionTypeController_->showListWindow();
         });
-        auto* actBusinessDayConventionTypes = menuConventions->addAction(
-            ico(Icon::Tag), tr("&Business Day Convention Types"));
+        auto* actBusinessDayConventionTypes =
+            menuConventions->addAction(ico(Icon::Tag), tr("&Business Day Convention Types"));
         connect(actBusinessDayConventionTypes, &QAction::triggered, this, [this]() {
             if (businessDayConventionTypeController_)
                 businessDayConventionTypeController_->showListWindow();
         });
-        auto* actFloatingIndexTypes = menuConventions->addAction(
-            ico(Icon::Tag), tr("&Floating Index Types"));
+        auto* actFloatingIndexTypes =
+            menuConventions->addAction(ico(Icon::Tag), tr("&Floating Index Types"));
         connect(actFloatingIndexTypes, &QAction::triggered, this, [this]() {
-            if (floatingIndexTypeController_) floatingIndexTypeController_->showListWindow();
+            if (floatingIndexTypeController_)
+                floatingIndexTypeController_->showListWindow();
         });
-        auto* actPaymentFrequencyTypes = menuConventions->addAction(
-            ico(Icon::Tag), tr("&Payment Frequency Types"));
+        auto* actPaymentFrequencyTypes =
+            menuConventions->addAction(ico(Icon::Tag), tr("&Payment Frequency Types"));
         connect(actPaymentFrequencyTypes, &QAction::triggered, this, [this]() {
-            if (paymentFrequencyTypeController_) paymentFrequencyTypeController_->showListWindow();
+            if (paymentFrequencyTypeController_)
+                paymentFrequencyTypeController_->showListWindow();
         });
         auto* actLegTypes = menuConventions->addAction(ico(Icon::Tag), tr("&Leg Types"));
         connect(actLegTypes, &QAction::triggered, this, [this]() {
-            if (legTypeController_) legTypeController_->showListWindow();
+            if (legTypeController_)
+                legTypeController_->showListWindow();
         });
 
         // Conventions submenu (curve-building conventions from conventions.xml)
         auto* menuOreConventions = ref->addMenu(tr("Con&ventions"));
-        auto* actZeroConventions = menuOreConventions->addAction(
-            ico(Icon::Tag), tr("&Zero Conventions"));
+        auto* actZeroConventions =
+            menuOreConventions->addAction(ico(Icon::Tag), tr("&Zero Conventions"));
         connect(actZeroConventions, &QAction::triggered, this, [this]() {
-            if (zeroConventionController_) zeroConventionController_->showListWindow();
+            if (zeroConventionController_)
+                zeroConventionController_->showListWindow();
         });
-        auto* actDepositConventions = menuOreConventions->addAction(
-            ico(Icon::Tag), tr("&Deposit Conventions"));
+        auto* actDepositConventions =
+            menuOreConventions->addAction(ico(Icon::Tag), tr("&Deposit Conventions"));
         connect(actDepositConventions, &QAction::triggered, this, [this]() {
-            if (depositConventionController_) depositConventionController_->showListWindow();
+            if (depositConventionController_)
+                depositConventionController_->showListWindow();
         });
-        auto* actSwapConventions = menuOreConventions->addAction(
-            ico(Icon::Tag), tr("&Swap Conventions"));
+        auto* actSwapConventions =
+            menuOreConventions->addAction(ico(Icon::Tag), tr("&Swap Conventions"));
         connect(actSwapConventions, &QAction::triggered, this, [this]() {
-            if (swapConventionController_) swapConventionController_->showListWindow();
+            if (swapConventionController_)
+                swapConventionController_->showListWindow();
         });
-        auto* actOisConventions = menuOreConventions->addAction(
-            ico(Icon::Tag), tr("&OIS Conventions"));
+        auto* actOisConventions =
+            menuOreConventions->addAction(ico(Icon::Tag), tr("&OIS Conventions"));
         connect(actOisConventions, &QAction::triggered, this, [this]() {
-            if (oisConventionController_) oisConventionController_->showListWindow();
+            if (oisConventionController_)
+                oisConventionController_->showListWindow();
         });
-        auto* actFraConventions = menuOreConventions->addAction(
-            ico(Icon::Tag), tr("&FRA Conventions"));
+        auto* actFraConventions =
+            menuOreConventions->addAction(ico(Icon::Tag), tr("&FRA Conventions"));
         connect(actFraConventions, &QAction::triggered, this, [this]() {
-            if (fraConventionController_) fraConventionController_->showListWindow();
+            if (fraConventionController_)
+                fraConventionController_->showListWindow();
         });
-        auto* actIborIndexConventions = menuOreConventions->addAction(
-            ico(Icon::Tag), tr("&IBOR Index Conventions"));
+        auto* actIborIndexConventions =
+            menuOreConventions->addAction(ico(Icon::Tag), tr("&IBOR Index Conventions"));
         connect(actIborIndexConventions, &QAction::triggered, this, [this]() {
-            if (iborIndexConventionController_) iborIndexConventionController_->showListWindow();
+            if (iborIndexConventionController_)
+                iborIndexConventionController_->showListWindow();
         });
-        auto* actOvernightIndexConventions = menuOreConventions->addAction(
-            ico(Icon::Tag), tr("O&vernight Index Conventions"));
+        auto* actOvernightIndexConventions =
+            menuOreConventions->addAction(ico(Icon::Tag), tr("O&vernight Index Conventions"));
         connect(actOvernightIndexConventions, &QAction::triggered, this, [this]() {
-            if (overnightIndexConventionController_) overnightIndexConventionController_->showListWindow();
+            if (overnightIndexConventionController_)
+                overnightIndexConventionController_->showListWindow();
         });
-        auto* actFxConventions = menuOreConventions->addAction(
-            ico(Icon::Tag), tr("F&X Conventions"));
+        auto* actFxConventions =
+            menuOreConventions->addAction(ico(Icon::Tag), tr("F&X Conventions"));
         connect(actFxConventions, &QAction::triggered, this, [this]() {
-            if (fxConventionController_) fxConventionController_->showListWindow();
+            if (fxConventionController_)
+                fxConventionController_->showListWindow();
         });
-        auto* actCdsConventions = menuOreConventions->addAction(
-            ico(Icon::Tag), tr("&CDS Conventions"));
+        auto* actCdsConventions =
+            menuOreConventions->addAction(ico(Icon::Tag), tr("&CDS Conventions"));
         connect(actCdsConventions, &QAction::triggered, this, [this]() {
-            if (cdsConventionController_) cdsConventionController_->showListWindow();
+            if (cdsConventionController_)
+                cdsConventionController_->showListWindow();
         });
 
         ref->addSeparator();
 
         // Classifications submenu
         auto* menuClassifications = ref->addMenu(tr("C&lassifications"));
-        auto* actCodingSchemes = menuClassifications->addAction(
-            ico(Icon::Code), tr("Codin&g Schemes"));
+        auto* actCodingSchemes =
+            menuClassifications->addAction(ico(Icon::Code), tr("Codin&g Schemes"));
         connect(actCodingSchemes, &QAction::triggered, this, [this]() {
-            if (codingSchemeController_) codingSchemeController_->showListWindow();
+            if (codingSchemeController_)
+                codingSchemeController_->showListWindow();
         });
-        auto* actCodeDomains = menuClassifications->addAction(
-            ico(Icon::Tag), tr("Code &Domains"));
+        auto* actCodeDomains = menuClassifications->addAction(ico(Icon::Tag), tr("Code &Domains"));
         connect(actCodeDomains, &QAction::triggered, this, [this]() {
-            if (codeDomainController_) codeDomainController_->showListWindow();
+            if (codeDomainController_)
+                codeDomainController_->showListWindow();
         });
-        auto* actCodingSchemeAuthorityTypes = menuClassifications->addAction(
-            ico(Icon::Tag), tr("Coding Scheme &Authority Types"));
+        auto* actCodingSchemeAuthorityTypes =
+            menuClassifications->addAction(ico(Icon::Tag), tr("Coding Scheme &Authority Types"));
         connect(actCodingSchemeAuthorityTypes, &QAction::triggered, this, [this]() {
             if (codingSchemeAuthorityTypeController_)
                 codingSchemeAuthorityTypeController_->showListWindow();
@@ -399,36 +476,40 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
 
         // Currency Codes submenu (Monetary Natures + Rounding Types)
         auto* menuCurrencyCodes = ref->addMenu(tr("Currency &Codes"));
-        auto* actMonetaryNatures = menuCurrencyCodes->addAction(
-            ico(Icon::Classification), tr("&Monetary Natures"));
+        auto* actMonetaryNatures =
+            menuCurrencyCodes->addAction(ico(Icon::Classification), tr("&Monetary Natures"));
         connect(actMonetaryNatures, &QAction::triggered, this, [this]() {
-            if (monetaryNatureController_) monetaryNatureController_->showListWindow();
+            if (monetaryNatureController_)
+                monetaryNatureController_->showListWindow();
         });
-        auto* actRoundingTypes = menuCurrencyCodes->addAction(
-            ico(Icon::Tag), tr("&Rounding Types"));
+        auto* actRoundingTypes =
+            menuCurrencyCodes->addAction(ico(Icon::Tag), tr("&Rounding Types"));
         connect(actRoundingTypes, &QAction::triggered, this, [this]() {
-            if (roundingTypeController_) roundingTypeController_->showListWindow();
+            if (roundingTypeController_)
+                roundingTypeController_->showListWindow();
         });
-        auto* actCurrencyMarketTiers = menuCurrencyCodes->addAction(
-            ico(Icon::Chart), tr("Currency Market &Tiers"));
+        auto* actCurrencyMarketTiers =
+            menuCurrencyCodes->addAction(ico(Icon::Chart), tr("Currency Market &Tiers"));
         connect(actCurrencyMarketTiers, &QAction::triggered, this, [this]() {
-            if (currencyMarketTierController_) currencyMarketTierController_->showListWindow();
+            if (currencyMarketTierController_)
+                currencyMarketTierController_->showListWindow();
         });
 
         ref->addSeparator();
 
         // Audit Trail submenu (Change Reason Categories + Change Reasons)
         auto* menuAuditTrail = ref->addMenu(tr("&Audit Trail"));
-        auto* actChangeReasonCategories = menuAuditTrail->addAction(
-            ico(Icon::Tag), tr("Change Reason &Categories"));
+        auto* actChangeReasonCategories =
+            menuAuditTrail->addAction(ico(Icon::Tag), tr("Change Reason &Categories"));
         connect(actChangeReasonCategories, &QAction::triggered, this, [this]() {
             if (changeReasonCategoryController_)
                 changeReasonCategoryController_->showListWindow();
         });
-        auto* actChangeReasons = menuAuditTrail->addAction(
-            ico(Icon::NoteEdit), tr("Change &Reasons"));
+        auto* actChangeReasons =
+            menuAuditTrail->addAction(ico(Icon::NoteEdit), tr("Change &Reasons"));
         connect(actChangeReasons, &QAction::triggered, this, [this]() {
-            if (changeReasonController_) changeReasonController_->showListWindow();
+            if (changeReasonController_)
+                changeReasonController_->showListWindow();
         });
     }
 
@@ -439,48 +520,56 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
 
         auto* actDataDomains = menuCatalogue->addAction(ico(Icon::Folder), tr("&Data Domains"));
         connect(actDataDomains, &QAction::triggered, this, [this]() {
-            if (dataDomainController_) dataDomainController_->showListWindow();
+            if (dataDomainController_)
+                dataDomainController_->showListWindow();
         });
 
         auto* actSubjectAreas = menuCatalogue->addAction(ico(Icon::Table), tr("&Subject Areas"));
         connect(actSubjectAreas, &QAction::triggered, this, [this]() {
-            if (subjectAreaController_) subjectAreaController_->showListWindow();
+            if (subjectAreaController_)
+                subjectAreaController_->showListWindow();
         });
 
         auto* actCatalogs = menuCatalogue->addAction(ico(Icon::Library), tr("&Catalogues"));
         connect(actCatalogs, &QAction::triggered, this, [this]() {
-            if (catalogController_) catalogController_->showListWindow();
+            if (catalogController_)
+                catalogController_->showListWindow();
         });
 
-        auto* actDatasetBundles = menuCatalogue->addAction(
-            ico(Icon::Folder), tr("Dataset &Bundles"));
+        auto* actDatasetBundles =
+            menuCatalogue->addAction(ico(Icon::Folder), tr("Dataset &Bundles"));
         connect(actDatasetBundles, &QAction::triggered, this, [this]() {
-            if (datasetBundleController_) datasetBundleController_->showListWindow();
+            if (datasetBundleController_)
+                datasetBundleController_->showListWindow();
         });
 
         auto* actMethodologies = menuCatalogue->addAction(ico(Icon::Book), tr("&Methodologies"));
         connect(actMethodologies, &QAction::triggered, this, [this]() {
-            if (methodologyController_) methodologyController_->showListWindow();
+            if (methodologyController_)
+                methodologyController_->showListWindow();
         });
 
         menuCatalogue->addSeparator();
 
-        auto* actOriginDimensions = menuCatalogue->addAction(
-            ico(Icon::Database), tr("&Origin Dimensions"));
+        auto* actOriginDimensions =
+            menuCatalogue->addAction(ico(Icon::Database), tr("&Origin Dimensions"));
         connect(actOriginDimensions, &QAction::triggered, this, [this]() {
-            if (originDimensionController_) originDimensionController_->showListWindow();
+            if (originDimensionController_)
+                originDimensionController_->showListWindow();
         });
 
-        auto* actNatureDimensions = menuCatalogue->addAction(
-            ico(Icon::Database), tr("&Nature Dimensions"));
+        auto* actNatureDimensions =
+            menuCatalogue->addAction(ico(Icon::Database), tr("&Nature Dimensions"));
         connect(actNatureDimensions, &QAction::triggered, this, [this]() {
-            if (natureDimensionController_) natureDimensionController_->showListWindow();
+            if (natureDimensionController_)
+                natureDimensionController_->showListWindow();
         });
 
-        auto* actTreatmentDimensions = menuCatalogue->addAction(
-            ico(Icon::Database), tr("&Treatment Dimensions"));
+        auto* actTreatmentDimensions =
+            menuCatalogue->addAction(ico(Icon::Database), tr("&Treatment Dimensions"));
         connect(actTreatmentDimensions, &QAction::triggered, this, [this]() {
-            if (treatmentDimensionController_) treatmentDimensionController_->showListWindow();
+            if (treatmentDimensionController_)
+                treatmentDimensionController_->showListWindow();
         });
 
         act_data_librarian_ = dt->addAction(
@@ -498,14 +587,18 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
             auto* subWindow = new DetachableMdiSubWindow(ctx_.main_window);
             subWindow->setWidget(librarianWindow);
             subWindow->setWindowTitle(tr("Data Librarian"));
-            subWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-                Icon::Library, IconUtils::DefaultIconColor));
+            subWindow->setWindowIcon(
+                IconUtils::createRecoloredIcon(Icon::Library, IconUtils::DefaultIconColor));
             subWindow->setAttribute(Qt::WA_DeleteOnClose);
 
-            connect(librarianWindow, &DataLibrarianWindow::statusChanged,
-                    this, [this](const QString& msg) { emit statusMessage(msg); });
-            connect(librarianWindow, &DataLibrarianWindow::errorOccurred,
-                    this, [this](const QString& msg) { emit statusMessage(msg); });
+            connect(librarianWindow,
+                    &DataLibrarianWindow::statusChanged,
+                    this,
+                    [this](const QString& msg) { emit statusMessage(msg); });
+            connect(librarianWindow,
+                    &DataLibrarianWindow::errorOccurred,
+                    this,
+                    [this](const QString& msg) { emit statusMessage(msg); });
 
             data_librarian_window_ = subWindow;
             connect(subWindow, &QObject::destroyed, this, [this]() {
@@ -521,11 +614,12 @@ void RefdataPlugin::setup_menus(const shared_menus_context& smc) {
     // ---- Trading Codes menu — contribute Purpose Types ------------------
     auto* tc = smc.trading_codes_menu;
     if (tc) {
-        auto* actPurposeTypes = tc->addAction(
-            IconUtils::createRecoloredIcon(Icon::Flag, IconUtils::DefaultIconColor),
-            tr("&Purpose Types"));
+        auto* actPurposeTypes =
+            tc->addAction(IconUtils::createRecoloredIcon(Icon::Flag, IconUtils::DefaultIconColor),
+                          tr("&Purpose Types"));
         connect(actPurposeTypes, &QAction::triggered, this, [this]() {
-            if (purposeTypeController_) purposeTypeController_->showListWindow();
+            if (purposeTypeController_)
+                purposeTypeController_->showListWindow();
         });
     }
 }

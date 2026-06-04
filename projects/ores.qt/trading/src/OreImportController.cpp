@@ -18,24 +18,22 @@
  *
  */
 #include "ores.qt/OreImportController.hpp"
-
+#include "ores.qt/OreImportWizard.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <optional>
 #include <string>
-#include <boost/uuid/uuid.hpp>
-#include "ores.qt/OreImportWizard.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-OreImportController::OreImportController(ClientManager* clientManager,
-                                          QObject* parent)
-    : QObject(parent),
-      clientManager_(clientManager) {}
+OreImportController::OreImportController(ClientManager* clientManager, QObject* parent)
+    : QObject(parent)
+    , clientManager_(clientManager) {}
 
 void OreImportController::trigger(QWidget* parent,
-                                   std::optional<boost::uuids::uuid> bookId,
-                                   const std::string& bookName) {
+                                  std::optional<boost::uuids::uuid> bookId,
+                                  const std::string& bookName) {
     BOOST_LOG_SEV(lg(), info) << "Opening ORE import wizard";
 
     OreImportWizard wizard(clientManager_, bookId, bookName, parent);
@@ -46,10 +44,11 @@ void OreImportController::trigger(QWidget* parent,
 
         const auto& resp = wizard.importResponse();
         const int item_errors = static_cast<int>(resp.item_errors.size());
-        const auto msg = item_errors == 0
-            ? QString("ORE import completed successfully.")
-            : QString("ORE import completed with %1 trade error(s) — see the import log.")
-                .arg(item_errors);
+        const auto msg =
+            item_errors == 0 ?
+                QString("ORE import completed successfully.") :
+                QString("ORE import completed with %1 trade error(s) — see the import log.")
+                    .arg(item_errors);
 
         emit statusMessage(msg);
         emit importCompleted();

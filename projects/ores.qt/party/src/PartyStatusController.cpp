@@ -19,32 +19,29 @@
  */
 #include "ores.qt/PartyStatusController.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
-
+#include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/PartyStatusDetailDialog.hpp"
+#include "ores.qt/PartyStatusHistoryDialog.hpp"
+#include "ores.qt/PartyStatusMdiWindow.hpp"
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/PartyStatusMdiWindow.hpp"
-#include "ores.qt/PartyStatusDetailDialog.hpp"
-#include "ores.qt/PartyStatusHistoryDialog.hpp"
-#include "ores.qt/DetachableMdiSubWindow.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-PartyStatusController::PartyStatusController(
-    QMainWindow* mainWindow,
-    QMdiArea* mdiArea,
-    ClientManager* clientManager,
-    ChangeReasonCache* changeReasonCache,
-    const QString& username,
-    QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username,
-          std::string_view{}, parent),
-      changeReasonCache_(changeReasonCache),
-      listWindow_(nullptr),
-      listMdiSubWindow_(nullptr) {
+PartyStatusController::PartyStatusController(QMainWindow* mainWindow,
+                                             QMdiArea* mdiArea,
+                                             ClientManager* clientManager,
+                                             ChangeReasonCache* changeReasonCache,
+                                             const QString& username,
+                                             QObject* parent)
+    : EntityController(mainWindow, mdiArea, clientManager, username, std::string_view{}, parent)
+    , changeReasonCache_(changeReasonCache)
+    , listWindow_(nullptr)
+    , listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "PartyStatusController created";
 }
@@ -62,23 +59,33 @@ void PartyStatusController::showListWindow() {
     listWindow_ = new PartyStatusMdiWindow(clientManager_, username_);
 
     // Connect signals
-    connect(listWindow_, &PartyStatusMdiWindow::statusChanged,
-            this, &PartyStatusController::statusMessage);
-    connect(listWindow_, &PartyStatusMdiWindow::errorOccurred,
-            this, &PartyStatusController::errorMessage);
-    connect(listWindow_, &PartyStatusMdiWindow::showStatusDetails,
-            this, &PartyStatusController::onShowDetails);
-    connect(listWindow_, &PartyStatusMdiWindow::addNewRequested,
-            this, &PartyStatusController::onAddNewRequested);
-    connect(listWindow_, &PartyStatusMdiWindow::showStatusHistory,
-            this, &PartyStatusController::onShowHistory);
+    connect(listWindow_,
+            &PartyStatusMdiWindow::statusChanged,
+            this,
+            &PartyStatusController::statusMessage);
+    connect(listWindow_,
+            &PartyStatusMdiWindow::errorOccurred,
+            this,
+            &PartyStatusController::errorMessage);
+    connect(listWindow_,
+            &PartyStatusMdiWindow::showStatusDetails,
+            this,
+            &PartyStatusController::onShowDetails);
+    connect(listWindow_,
+            &PartyStatusMdiWindow::addNewRequested,
+            this,
+            &PartyStatusController::onAddNewRequested);
+    connect(listWindow_,
+            &PartyStatusMdiWindow::showStatusHistory,
+            this,
+            &PartyStatusController::onShowHistory);
 
     // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Party Statuses");
-    listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Flag, IconUtils::DefaultIconColor));
+    listMdiSubWindow_->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Flag, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -90,12 +97,16 @@ void PartyStatusController::showListWindow() {
     register_detachable_window(listMdiSubWindow_);
 
     // Cleanup when closed
-    connect(listMdiSubWindow_, &QObject::destroyed, this, [self = QPointer<PartyStatusController>(this), key]() {
-        if (!self) return;
-        self->untrack_window(key);
-        self->listWindow_ = nullptr;
-        self->listMdiSubWindow_ = nullptr;
-    });
+    connect(listMdiSubWindow_,
+            &QObject::destroyed,
+            this,
+            [self = QPointer<PartyStatusController>(this), key]() {
+                if (!self)
+                    return;
+                self->untrack_window(key);
+                self->listWindow_ = nullptr;
+                self->listMdiSubWindow_ = nullptr;
+            });
 
     BOOST_LOG_SEV(lg(), debug) << "Party Status list window created";
 }
@@ -122,8 +133,7 @@ void PartyStatusController::reloadListWindow() {
     }
 }
 
-void PartyStatusController::onShowDetails(
-    const refdata::domain::party_status& status) {
+void PartyStatusController::onShowDetails(const refdata::domain::party_status& status) {
     BOOST_LOG_SEV(lg(), debug) << "Show details for: " << status.code;
     showDetailWindow(status);
 }
@@ -133,8 +143,7 @@ void PartyStatusController::onAddNewRequested() {
     showAddWindow();
 }
 
-void PartyStatusController::onShowHistory(
-    const refdata::domain::party_status& status) {
+void PartyStatusController::onShowHistory(const refdata::domain::party_status& status) {
     BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << status.code;
     showHistoryWindow(QString::fromStdString(status.code));
 }
@@ -149,23 +158,30 @@ void PartyStatusController::showAddWindow() {
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
 
-    connect(detailDialog, &PartyStatusDetailDialog::statusMessage,
-            this, &PartyStatusController::statusMessage);
-    connect(detailDialog, &PartyStatusDetailDialog::errorMessage,
-            this, &PartyStatusController::errorMessage);
-    connect(detailDialog, &PartyStatusDetailDialog::statusSaved,
-            this, [self = QPointer<PartyStatusController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Party Status saved: " << code.toStdString();
-        self->handleEntitySaved();
-    });
+    connect(detailDialog,
+            &PartyStatusDetailDialog::statusMessage,
+            this,
+            &PartyStatusController::statusMessage);
+    connect(detailDialog,
+            &PartyStatusDetailDialog::errorMessage,
+            this,
+            &PartyStatusController::errorMessage);
+    connect(detailDialog,
+            &PartyStatusDetailDialog::statusSaved,
+            this,
+            [self = QPointer<PartyStatusController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Party Status saved: " << code.toStdString();
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Party Status");
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Flag, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Flag, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -173,8 +189,7 @@ void PartyStatusController::showAddWindow() {
     show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
-void PartyStatusController::showDetailWindow(
-    const refdata::domain::party_status& status) {
+void PartyStatusController::showDetailWindow(const refdata::domain::party_status& status) {
 
     const QString identifier = QString::fromStdString(status.code);
     const QString key = build_window_key("details", identifier);
@@ -194,37 +209,46 @@ void PartyStatusController::showDetailWindow(
     detailDialog->setCreateMode(false);
     detailDialog->setStatus(status);
 
-    connect(detailDialog, &PartyStatusDetailDialog::statusMessage,
-            this, &PartyStatusController::statusMessage);
-    connect(detailDialog, &PartyStatusDetailDialog::errorMessage,
-            this, &PartyStatusController::errorMessage);
-    connect(detailDialog, &PartyStatusDetailDialog::statusSaved,
-            this, [self = QPointer<PartyStatusController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Party Status saved: " << code.toStdString();
-        self->handleEntitySaved();
-    });
-    connect(detailDialog, &PartyStatusDetailDialog::statusDeleted,
-            this, [self = QPointer<PartyStatusController>(this), key](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Party Status deleted: " << code.toStdString();
-        self->handleEntityDeleted();
-    });
+    connect(detailDialog,
+            &PartyStatusDetailDialog::statusMessage,
+            this,
+            &PartyStatusController::statusMessage);
+    connect(detailDialog,
+            &PartyStatusDetailDialog::errorMessage,
+            this,
+            &PartyStatusController::errorMessage);
+    connect(detailDialog,
+            &PartyStatusDetailDialog::statusSaved,
+            this,
+            [self = QPointer<PartyStatusController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Party Status saved: " << code.toStdString();
+                self->handleEntitySaved();
+            });
+    connect(detailDialog,
+            &PartyStatusDetailDialog::statusDeleted,
+            this,
+            [self = QPointer<PartyStatusController>(this), key](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Party Status deleted: " << code.toStdString();
+                self->handleEntityDeleted();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Party Status: %1").arg(identifier));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Flag, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Flag, IconUtils::DefaultIconColor));
 
     // Track window
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<PartyStatusController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, key]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, key]() {
         if (self) {
             self->untrack_window(key);
         }
@@ -235,37 +259,44 @@ void PartyStatusController::showDetailWindow(
 }
 
 void PartyStatusController::showHistoryWindow(const QString& code) {
-    BOOST_LOG_SEV(lg(), info) << "Opening history window for party status: "
-                              << code.toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Opening history window for party status: " << code.toStdString();
 
     const QString windowKey = build_window_key("history", code);
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
-        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: "
-                                  << code.toStdString();
+        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: " << code.toStdString();
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
-                              << code.toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << code.toStdString();
 
     auto* historyDialog = new PartyStatusHistoryDialog(code, clientManager_, mainWindow_);
 
-    connect(historyDialog, &PartyStatusHistoryDialog::statusChanged,
-            this, [self = QPointer<PartyStatusController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(historyDialog, &PartyStatusHistoryDialog::errorOccurred,
-            this, [self = QPointer<PartyStatusController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
-    connect(historyDialog, &PartyStatusHistoryDialog::revertVersionRequested,
-            this, &PartyStatusController::onRevertVersion);
-    connect(historyDialog, &PartyStatusHistoryDialog::openVersionRequested,
-            this, &PartyStatusController::onOpenVersion);
+    connect(historyDialog,
+            &PartyStatusHistoryDialog::statusChanged,
+            this,
+            [self = QPointer<PartyStatusController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(historyDialog,
+            &PartyStatusHistoryDialog::errorOccurred,
+            this,
+            [self = QPointer<PartyStatusController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
+    connect(historyDialog,
+            &PartyStatusHistoryDialog::revertVersionRequested,
+            this,
+            &PartyStatusController::onRevertVersion);
+    connect(historyDialog,
+            &PartyStatusHistoryDialog::openVersionRequested,
+            this,
+            &PartyStatusController::onOpenVersion);
 
     // Load history data
     historyDialog->loadHistory();
@@ -274,16 +305,15 @@ void PartyStatusController::showHistoryWindow(const QString& code) {
     historyWindow->setAttribute(Qt::WA_DeleteOnClose);
     historyWindow->setWidget(historyDialog);
     historyWindow->setWindowTitle(QString("Party Status History: %1").arg(code));
-    historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    historyWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     // Track this history window
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
 
     QPointer<PartyStatusController> self = this;
-    connect(historyWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -292,14 +322,14 @@ void PartyStatusController::showHistoryWindow(const QString& code) {
     show_managed_window(historyWindow, listMdiSubWindow_);
 }
 
-void PartyStatusController::onOpenVersion(
-    const refdata::domain::party_status& status, int versionNumber) {
+void PartyStatusController::onOpenVersion(const refdata::domain::party_status& status,
+                                          int versionNumber) {
     BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
                               << " for party status: " << status.code;
 
     const QString code = QString::fromStdString(status.code);
-    const QString windowKey = build_window_key("version", QString("%1_v%2")
-        .arg(code).arg(versionNumber));
+    const QString windowKey =
+        build_window_key("version", QString("%1_v%2").arg(code).arg(versionNumber));
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
@@ -315,31 +345,36 @@ void PartyStatusController::onOpenVersion(
     detailDialog->setStatus(status);
     detailDialog->setReadOnly(true);
 
-    connect(detailDialog, &PartyStatusDetailDialog::statusMessage,
-            this, [self = QPointer<PartyStatusController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(detailDialog, &PartyStatusDetailDialog::errorMessage,
-            this, [self = QPointer<PartyStatusController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
+    connect(detailDialog,
+            &PartyStatusDetailDialog::statusMessage,
+            this,
+            [self = QPointer<PartyStatusController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(detailDialog,
+            &PartyStatusDetailDialog::errorMessage,
+            this,
+            [self = QPointer<PartyStatusController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Party Status: %1 (Version %2)")
-        .arg(code).arg(versionNumber));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("Party Status: %1 (Version %2)").arg(code).arg(versionNumber));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     track_window(windowKey, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<PartyStatusController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -349,10 +384,8 @@ void PartyStatusController::onOpenVersion(
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
-void PartyStatusController::onRevertVersion(
-    const refdata::domain::party_status& status) {
-    BOOST_LOG_SEV(lg(), info) << "Reverting party status to version: "
-                              << status.version;
+void PartyStatusController::onRevertVersion(const refdata::domain::party_status& status) {
+    BOOST_LOG_SEV(lg(), info) << "Reverting party status to version: " << status.version;
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new PartyStatusDetailDialog(mainWindow_);
@@ -363,25 +396,33 @@ void PartyStatusController::onRevertVersion(
     detailDialog->setStatus(status);
     detailDialog->setCreateMode(false);
 
-    connect(detailDialog, &PartyStatusDetailDialog::statusMessage,
-            this, &PartyStatusController::statusMessage);
-    connect(detailDialog, &PartyStatusDetailDialog::errorMessage,
-            this, &PartyStatusController::errorMessage);
-    connect(detailDialog, &PartyStatusDetailDialog::statusSaved,
-            this, [self = QPointer<PartyStatusController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Party Status reverted: " << code.toStdString();
-        emit self->statusMessage(QString("Party Status '%1' reverted successfully").arg(code));
-        self->handleEntitySaved();
-    });
+    connect(detailDialog,
+            &PartyStatusDetailDialog::statusMessage,
+            this,
+            &PartyStatusController::statusMessage);
+    connect(detailDialog,
+            &PartyStatusDetailDialog::errorMessage,
+            this,
+            &PartyStatusController::errorMessage);
+    connect(detailDialog,
+            &PartyStatusDetailDialog::statusSaved,
+            this,
+            [self = QPointer<PartyStatusController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Party Status reverted: " << code.toStdString();
+                emit self->statusMessage(
+                    QString("Party Status '%1' reverted successfully").arg(code));
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Revert Party Status: %1")
-        .arg(QString::fromStdString(status.code)));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("Revert Party Status: %1").arg(QString::fromStdString(status.code)));
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
+                                                               IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 

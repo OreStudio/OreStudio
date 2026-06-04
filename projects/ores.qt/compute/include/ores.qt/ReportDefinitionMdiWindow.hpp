@@ -20,17 +20,17 @@
 #ifndef ORES_QT_REPORT_DEFINITION_MDI_WINDOW_HPP
 #define ORES_QT_REPORT_DEFINITION_MDI_WINDOW_HPP
 
-#include <vector>
-#include <QToolBar>
-#include <QTableView>
-#include <QSortFilterProxyModel>
-#include <boost/uuid/uuid.hpp>
-#include "ores.qt/EntityListMdiWindow.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ClientReportDefinitionModel.hpp"
+#include "ores.qt/EntityListMdiWindow.hpp"
 #include "ores.qt/PaginationWidget.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.reporting.api/domain/report_definition.hpp"
+#include <QSortFilterProxyModel>
+#include <QTableView>
+#include <QToolBar>
+#include <boost/uuid/uuid.hpp>
+#include <vector>
 
 namespace ores::qt {
 
@@ -46,8 +46,7 @@ class ReportDefinitionMdiWindow final : public EntityListMdiWindow {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.report_definition_mdi_window";
+    inline static std::string_view logger_name = "ores.qt.report_definition_mdi_window";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -56,11 +55,10 @@ private:
     }
 
 public:
-    explicit ReportDefinitionMdiWindow(
-        ClientManager* clientManager,
-        const QString& username,
-        BadgeCache* badgeCache,
-        QWidget* parent = nullptr);
+    explicit ReportDefinitionMdiWindow(ClientManager* clientManager,
+                                       const QString& username,
+                                       BadgeCache* badgeCache,
+                                       QWidget* parent = nullptr);
     ~ReportDefinitionMdiWindow() override = default;
 
 public slots:

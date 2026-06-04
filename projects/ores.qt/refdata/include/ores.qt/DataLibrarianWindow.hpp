@@ -20,31 +20,31 @@
 #ifndef ORES_QT_DATA_LIBRARIAN_WINDOW_HPP
 #define ORES_QT_DATA_LIBRARIAN_WINDOW_HPP
 
-#include <map>
-#include <QWidget>
-#include <QSplitter>
-#include <QTreeView>
-#include <QTableView>
-#include <QToolBar>
-#include <QStatusBar>
+#include "ores.dq.api/domain/dataset.hpp"
+#include "ores.dq.api/domain/methodology.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientCatalogModel.hpp"
+#include "ores.qt/ClientDataDomainModel.hpp"
+#include "ores.qt/ClientDatasetBundleModel.hpp"
+#include "ores.qt/ClientDatasetDependencyModel.hpp"
+#include "ores.qt/ClientDatasetModel.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/ClientMethodologyModel.hpp"
+#include "ores.qt/ClientNatureDimensionModel.hpp"
+#include "ores.qt/ClientOriginDimensionModel.hpp"
+#include "ores.qt/ClientSubjectAreaModel.hpp"
+#include "ores.qt/ClientTreatmentDimensionModel.hpp"
 #include <QLabel>
 #include <QProgressBar>
 #include <QSortFilterProxyModel>
+#include <QSplitter>
 #include <QStandardItemModel>
-#include "ores.qt/ClientManager.hpp"
-#include "ores.qt/ClientDatasetModel.hpp"
-#include "ores.qt/ClientDataDomainModel.hpp"
-#include "ores.qt/ClientSubjectAreaModel.hpp"
-#include "ores.qt/ClientCatalogModel.hpp"
-#include "ores.qt/ClientDatasetDependencyModel.hpp"
-#include "ores.qt/ClientMethodologyModel.hpp"
-#include "ores.qt/ClientDatasetBundleModel.hpp"
-#include "ores.qt/ClientOriginDimensionModel.hpp"
-#include "ores.qt/ClientNatureDimensionModel.hpp"
-#include "ores.qt/ClientTreatmentDimensionModel.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.dq.api/domain/dataset.hpp"
-#include "ores.dq.api/domain/methodology.hpp"
+#include <QStatusBar>
+#include <QTableView>
+#include <QToolBar>
+#include <QTreeView>
+#include <QWidget>
+#include <map>
 
 namespace ores::qt {
 
@@ -67,7 +67,7 @@ class DataLibrarianWindow final : public QWidget {
 
 private:
     inline static std::string_view logger_name = "ores.qt.data_librarian_window";
-    static constexpr int total_model_loads = 10;  // 6 original + 4 new (bundle, 3 dimensions)
+    static constexpr int total_model_loads = 10; // 6 original + 4 new (bundle, 3 dimensions)
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -77,12 +77,14 @@ private:
 
 public:
     explicit DataLibrarianWindow(ClientManager* clientManager,
-                                  const QString& username,
-                                  BadgeCache* badgeCache,
-                                  QWidget* parent = nullptr);
+                                 const QString& username,
+                                 BadgeCache* badgeCache,
+                                 QWidget* parent = nullptr);
     ~DataLibrarianWindow() override = default;
 
-    QSize sizeHint() const override { return QSize(1600, 900); }
+    QSize sizeHint() const override {
+        return QSize(1600, 900);
+    }
 
 signals:
     void statusChanged(const QString& message);
@@ -109,8 +111,7 @@ signals:
     void openCatalogsRequested();
 
 private slots:
-    void onNavigationSelectionChanged(const QModelIndex& current,
-                                       const QModelIndex& previous);
+    void onNavigationSelectionChanged(const QModelIndex& current, const QModelIndex& previous);
     void onDatasetSelectionChanged();
     void onDatasetDoubleClicked(const QModelIndex& index);
     void onRefreshClicked();

@@ -18,7 +18,6 @@
  *
  */
 #include "ores.qt/BadgeCache.hpp"
-
 #include <QtConcurrent>
 
 namespace ores::qt {
@@ -26,15 +25,19 @@ namespace ores::qt {
 using namespace ores::logging;
 
 BadgeCache::BadgeCache(ClientManager* clientManager, QObject* parent)
-    : QObject(parent),
-      clientManager_(clientManager),
-      definitions_watcher_(new QFutureWatcher<DefinitionsResult>(this)),
-      mappings_watcher_(new QFutureWatcher<MappingsResult>(this)) {
+    : QObject(parent)
+    , clientManager_(clientManager)
+    , definitions_watcher_(new QFutureWatcher<DefinitionsResult>(this))
+    , mappings_watcher_(new QFutureWatcher<MappingsResult>(this)) {
 
-    connect(definitions_watcher_, &QFutureWatcher<DefinitionsResult>::finished,
-            this, &BadgeCache::onDefinitionsLoaded);
-    connect(mappings_watcher_, &QFutureWatcher<MappingsResult>::finished,
-            this, &BadgeCache::onMappingsLoaded);
+    connect(definitions_watcher_,
+            &QFutureWatcher<DefinitionsResult>::finished,
+            this,
+            &BadgeCache::onDefinitionsLoaded);
+    connect(mappings_watcher_,
+            &QFutureWatcher<MappingsResult>::finished,
+            this,
+            &BadgeCache::onMappingsLoaded);
 
     BOOST_LOG_SEV(lg(), debug) << "BadgeCache created";
 }
@@ -69,13 +72,12 @@ void BadgeCache::loadDefinitions() {
         auto result = self->clientManager_->process_authenticated_request(
             dq::messaging::get_badge_definitions_request{});
         if (!result) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to fetch badge definitions: "
-                                       << result.error();
+            BOOST_LOG_SEV(lg(), error) << "Failed to fetch badge definitions: " << result.error();
             return {false, {}};
         }
 
-        BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->definitions.size()
-                                   << " badge definitions";
+        BOOST_LOG_SEV(lg(), debug)
+            << "Fetched " << result->definitions.size() << " badge definitions";
         return {true, std::move(result->definitions)};
     });
 
@@ -92,13 +94,11 @@ void BadgeCache::loadMappings() {
         auto result = self->clientManager_->process_authenticated_request(
             dq::messaging::get_badge_mappings_request{});
         if (!result) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to fetch badge mappings: "
-                                       << result.error();
+            BOOST_LOG_SEV(lg(), error) << "Failed to fetch badge mappings: " << result.error();
             return {false, {}};
         }
 
-        BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->mappings.size()
-                                   << " badge mappings";
+        BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->mappings.size() << " badge mappings";
         return {true, std::move(result->mappings)};
     });
 
@@ -166,9 +166,8 @@ void BadgeCache::onMappingsLoaded() {
     }
 }
 
-void BadgeCache::populate_for_testing(
-    std::vector<dq::domain::badge_definition> definitions,
-    std::vector<dq::messaging::badge_mapping> mappings) {
+void BadgeCache::populate_for_testing(std::vector<dq::domain::badge_definition> definitions,
+                                      std::vector<dq::messaging::badge_mapping> mappings) {
 
     definitions_ = std::move(definitions);
     mappings_ = std::move(mappings);
@@ -208,9 +207,8 @@ BadgeCache::list_by_domain(const std::string& code_domain_code) const {
     return result;
 }
 
-const dq::domain::badge_definition* BadgeCache::resolve(
-    const std::string& code_domain_code,
-    const std::string& entity_code) const {
+const dq::domain::badge_definition* BadgeCache::resolve(const std::string& code_domain_code,
+                                                        const std::string& entity_code) const {
 
     if (!is_loaded_)
         return nullptr;

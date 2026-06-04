@@ -19,9 +19,9 @@
 #ifndef ORES_QT_PLUGIN_BASE_HPP
 #define ORES_QT_PLUGIN_BASE_HPP
 
-#include <QObject>
 #include "ores.qt/IPlugin.hpp"
 #include "ores.qt/export.hpp"
+#include <QObject>
 
 namespace ores::qt {
 

@@ -20,8 +20,8 @@
 #ifndef ORES_QT_JOB_INSTANCE_DETAIL_DIALOG_HPP
 #define ORES_QT_JOB_INSTANCE_DETAIL_DIALOG_HPP
 
-#include <QDialog>
 #include "ores.scheduler.api/messaging/scheduler_protocol.hpp"
+#include <QDialog>
 
 namespace ores::qt {
 
@@ -32,9 +32,8 @@ class JobInstanceDetailDialog final : public QDialog {
     Q_OBJECT
 
 public:
-    explicit JobInstanceDetailDialog(
-        const scheduler::messaging::job_instance_summary& instance,
-        QWidget* parent = nullptr);
+    explicit JobInstanceDetailDialog(const scheduler::messaging::job_instance_summary& instance,
+                                     QWidget* parent = nullptr);
     ~JobInstanceDetailDialog() override = default;
 };
 

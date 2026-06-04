@@ -18,38 +18,42 @@
  *
  */
 #include "ores.qt/ClientContactTypeModel.hpp"
-
-#include <QtConcurrent>
-#include "ores.refdata.api/messaging/contact_type_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
+#include "ores.refdata.api/messaging/contact_type_protocol.hpp"
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    std::string contact_type_key_extractor(const refdata::domain::contact_type& e) {
-        return e.code;
-    }
+std::string contact_type_key_extractor(const refdata::domain::contact_type& e) {
+    return e.code;
+}
 }
 
-ClientContactTypeModel::ClientContactTypeModel(
-    ClientManager* clientManager, QObject* parent)
-    : AbstractClientModel(parent),
-      clientManager_(clientManager),
-      watcher_(new QFutureWatcher<FetchResult>(this)),
-      recencyTracker_(contact_type_key_extractor),
-      pulseManager_(new RecencyPulseManager(this)) {
+ClientContactTypeModel::ClientContactTypeModel(ClientManager* clientManager, QObject* parent)
+    : AbstractClientModel(parent)
+    , clientManager_(clientManager)
+    , watcher_(new QFutureWatcher<FetchResult>(this))
+    , recencyTracker_(contact_type_key_extractor)
+    , pulseManager_(new RecencyPulseManager(this)) {
 
-    connect(watcher_, &QFutureWatcher<FetchResult>::finished,
-            this, &ClientContactTypeModel::onTypesLoaded);
+    connect(watcher_,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            &ClientContactTypeModel::onTypesLoaded);
 
-    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
-            this, &ClientContactTypeModel::onPulseStateChanged);
-    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
-            this, &ClientContactTypeModel::onPulsingComplete);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulse_state_changed,
+            this,
+            &ClientContactTypeModel::onPulseStateChanged);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulsing_complete,
+            this,
+            &ClientContactTypeModel::onPulsingComplete);
 }
 
 int ClientContactTypeModel::rowCount(const QModelIndex& parent) const {
@@ -64,8 +68,7 @@ int ClientContactTypeModel::columnCount(const QModelIndex& parent) const {
     return ColumnCount;
 }
 
-QVariant ClientContactTypeModel::data(
-    const QModelIndex& index, int role) const {
+QVariant ClientContactTypeModel::data(const QModelIndex& index, int role) const {
     if (!index.isValid())
         return {};
 
@@ -77,22 +80,22 @@ QVariant ClientContactTypeModel::data(
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-        case Code:
-            return QString::fromStdString(type.code);
-        case Name:
-            return QString::fromStdString(type.name);
-        case Description:
-            return QString::fromStdString(type.description);
-        case DisplayOrder:
-            return type.display_order;
-        case Version:
-            return type.version;
-        case ModifiedBy:
-            return QString::fromStdString(type.modified_by);
-        case RecordedAt:
-            return relative_time_helper::format(type.recorded_at);
-        default:
-            return {};
+            case Code:
+                return QString::fromStdString(type.code);
+            case Name:
+                return QString::fromStdString(type.name);
+            case Description:
+                return QString::fromStdString(type.description);
+            case DisplayOrder:
+                return type.display_order;
+            case Version:
+                return type.version;
+            case ModifiedBy:
+                return QString::fromStdString(type.modified_by);
+            case RecordedAt:
+                return relative_time_helper::format(type.recorded_at);
+            default:
+                return {};
         }
     }
 
@@ -103,28 +106,28 @@ QVariant ClientContactTypeModel::data(
     return {};
 }
 
-QVariant ClientContactTypeModel::headerData(
-    int section, Qt::Orientation orientation, int role) const {
+QVariant
+ClientContactTypeModel::headerData(int section, Qt::Orientation orientation, int role) const {
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return {};
 
     switch (section) {
-    case Code:
-        return tr("Code");
-    case Name:
-        return tr("Name");
-    case Description:
-        return tr("Description");
-    case DisplayOrder:
-        return tr("Order");
-    case Version:
-        return tr("Version");
-    case ModifiedBy:
-        return tr("Modified By");
-    case RecordedAt:
-        return tr("Recorded At");
-    default:
-        return {};
+        case Code:
+            return tr("Code");
+        case Name:
+            return tr("Name");
+        case Description:
+            return tr("Description");
+        case DisplayOrder:
+            return tr("Order");
+        case Version:
+            return tr("Version");
+        case ModifiedBy:
+            return tr("Modified By");
+        case RecordedAt:
+            return tr("Recorded At");
+        default:
+            return {};
     }
 }
 
@@ -154,8 +157,7 @@ void ClientContactTypeModel::refresh() {
     fetch_types(0, page_size_);
 }
 
-void ClientContactTypeModel::load_page(std::uint32_t offset,
-                                          std::uint32_t limit) {
+void ClientContactTypeModel::load_page(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "load_page: offset=" << offset << ", limit=" << limit;
 
     if (is_fetching_) {
@@ -179,18 +181,18 @@ void ClientContactTypeModel::load_page(std::uint32_t offset,
     fetch_types(offset, limit);
 }
 
-void ClientContactTypeModel::fetch_types(
-    std::uint32_t offset, std::uint32_t limit) {
+void ClientContactTypeModel::fetch_types(std::uint32_t offset, std::uint32_t limit) {
     is_fetching_ = true;
     QPointer<ClientContactTypeModel> self = this;
 
-    QFuture<FetchResult> future =
-        QtConcurrent::run([self, offset, limit]() -> FetchResult {
-            return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
-                BOOST_LOG_SEV(lg(), debug) << "Making contact types request with offset="
-                                           << offset << ", limit=" << limit;
+    QFuture<FetchResult> future = QtConcurrent::run([self, offset, limit]() -> FetchResult {
+        return exception_helper::wrap_async_fetch<FetchResult>(
+            [&]() -> FetchResult {
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Making contact types request with offset=" << offset << ", limit=" << limit;
                 if (!self || !self->clientManager_) {
-                    return {.success = false, .types = {},
+                    return {.success = false,
+                            .types = {},
                             .total_available_count = 0,
                             .error_message = "Model was destroyed",
                             .error_details = {}};
@@ -198,29 +200,32 @@ void ClientContactTypeModel::fetch_types(
 
                 refdata::messaging::get_contact_types_request request;
 
-                auto result = self->clientManager_->
-                    process_authenticated_request(std::move(request));
+                auto result =
+                    self->clientManager_->process_authenticated_request(std::move(request));
 
                 if (!result) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to fetch contact types: "
-                                               << result.error();
-                    return {.success = false, .types = {},
+                    BOOST_LOG_SEV(lg(), error)
+                        << "Failed to fetch contact types: " << result.error();
+                    return {.success = false,
+                            .types = {},
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(
                                 "Failed to fetch contact types: " + result.error()),
                             .error_details = {}};
                 }
 
-                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->contact_types.size()
-                                           << " contact types";
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Fetched " << result->contact_types.size() << " contact types";
                 const std::uint32_t count =
                     static_cast<std::uint32_t>(result->contact_types.size());
                 return {.success = true,
                         .types = std::move(result->contact_types),
                         .total_available_count = count,
-                        .error_message = {}, .error_details = {}};
-            }, "contact types");
-        });
+                        .error_message = {},
+                        .error_details = {}};
+            },
+            "contact types");
+    });
 
     watcher_->setFuture(future);
 }
@@ -231,8 +236,8 @@ void ClientContactTypeModel::onTypesLoaded() {
     const auto result = watcher_->result();
 
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to fetch contact types: "
-                                   << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to fetch contact types: " << result.error_message.toStdString();
         emit loadError(result.error_message, result.error_details);
         return;
     }
@@ -271,16 +276,14 @@ void ClientContactTypeModel::set_page_size(std::uint32_t size) {
     }
 }
 
-const refdata::domain::contact_type*
-ClientContactTypeModel::getType(int row) const {
+const refdata::domain::contact_type* ClientContactTypeModel::getType(int row) const {
     const auto idx = static_cast<std::size_t>(row);
     if (idx >= types_.size())
         return nullptr;
     return &types_[idx];
 }
 
-QVariant ClientContactTypeModel::recency_foreground_color(
-    const std::string& code) const {
+QVariant ClientContactTypeModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {
         return color_constants::stale_indicator;
     }
@@ -289,8 +292,8 @@ QVariant ClientContactTypeModel::recency_foreground_color(
 
 void ClientContactTypeModel::onPulseStateChanged(bool /*isOn*/) {
     if (!types_.empty()) {
-        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
-            {Qt::ForegroundRole});
+        emit dataChanged(
+            index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::ForegroundRole});
     }
 }
 

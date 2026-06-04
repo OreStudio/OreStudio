@@ -20,12 +20,12 @@
 #ifndef ORES_QT_BUSINESS_DAY_CONVENTION_TYPE_HISTORY_DIALOG_HPP
 #define ORES_QT_BUSINESS_DAY_CONVENTION_TYPE_HISTORY_DIALOG_HPP
 
-#include <QWidget>
-#include <QToolBar>
-#include <QTableWidget>
-#include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
 #include "ores.trading.api/domain/business_day_convention_type.hpp"
+#include <QTableWidget>
+#include <QToolBar>
+#include <QWidget>
 
 namespace Ui {
 class BusinessDayConventionTypeHistoryDialog;
@@ -53,10 +53,9 @@ private:
     }
 
 public:
-    explicit BusinessDayConventionTypeHistoryDialog(
-        const QString& code,
-        ClientManager* clientManager,
-        QWidget* parent = nullptr);
+    explicit BusinessDayConventionTypeHistoryDialog(const QString& code,
+                                                    ClientManager* clientManager,
+                                                    QWidget* parent = nullptr);
     ~BusinessDayConventionTypeHistoryDialog() override;
 
     void loadHistory();

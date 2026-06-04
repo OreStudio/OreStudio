@@ -20,14 +20,14 @@
 #ifndef ORES_QT_SWAP_INSTRUMENT_FORM_HPP
 #define ORES_QT_SWAP_INSTRUMENT_FORM_HPP
 
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/IInstrumentForm.hpp"
+#include "ores.trading.api/domain/swap_leg.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <optional>
 #include <string>
 #include <vector>
-#include <boost/uuid/uuid.hpp>
-#include "ores.qt/IInstrumentForm.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.trading.api/domain/swap_leg.hpp"
 
 namespace Ui {
 class SwapInstrumentForm;
@@ -138,20 +138,17 @@ public:
                   std::vector<trading::domain::swap_leg>) override;
     void clear() override;
 
-    void setTradeType(const QString& code,
-        bool has_options, bool has_extension) override;
+    void setTradeType(const QString& code, bool has_options, bool has_extension) override;
 
     void setReadOnly(bool readOnly) override;
     bool isDirty() const override;
     bool isLoaded() const override;
 
-    void setChangeReason(
-        const std::string& code, const std::string& commentary) override;
+    void setChangeReason(const std::string& code, const std::string& commentary) override;
     void writeUiToInstrument() override;
 
-    void saveInstrument(
-        std::function<void(const std::string& id)> on_success,
-        std::function<void(const QString& error)> on_failure) override;
+    void saveInstrument(std::function<void(const std::string& id)> on_success,
+                        std::function<void(const QString& error)> on_failure) override;
 
 private:
     void setupConnections();

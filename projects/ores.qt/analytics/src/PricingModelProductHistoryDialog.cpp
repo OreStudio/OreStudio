@@ -18,33 +18,31 @@
  *
  */
 #include "ores.qt/PricingModelProductHistoryDialog.hpp"
-
-#include <QVBoxLayout>
-#include <QHeaderView>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include "ui_PricingModelProductHistoryDialog.h"
+#include "ores.analytics.api/messaging/pricing_model_product_protocol.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.analytics.api/messaging/pricing_model_product_protocol.hpp"
+#include "ui_PricingModelProductHistoryDialog.h"
+#include <QFutureWatcher>
+#include <QHeaderView>
+#include <QVBoxLayout>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-PricingModelProductHistoryDialog::PricingModelProductHistoryDialog(
-    const boost::uuids::uuid& id,
-    const QString& code,
-    ClientManager* clientManager,
-    QWidget* parent)
-    : QWidget(parent),
-      ui_(new Ui::PricingModelProductHistoryDialog),
-      id_(id),
-      code_(code),
-      clientManager_(clientManager),
-      toolbar_(nullptr),
-      openVersionAction_(nullptr),
-      revertAction_(nullptr) {
+PricingModelProductHistoryDialog::PricingModelProductHistoryDialog(const boost::uuids::uuid& id,
+                                                                   const QString& code,
+                                                                   ClientManager* clientManager,
+                                                                   QWidget* parent)
+    : QWidget(parent)
+    , ui_(new Ui::PricingModelProductHistoryDialog)
+    , id_(id)
+    , code_(code)
+    , clientManager_(clientManager)
+    , toolbar_(nullptr)
+    , openVersionAction_(nullptr)
+    , revertAction_(nullptr) {
 
     ui_->setupUi(this);
     setupUi();
@@ -72,8 +70,7 @@ void PricingModelProductHistoryDialog::setupUi() {
 
     // Setup changes table
     ui_->changesTableWidget->setColumnCount(3);
-    ui_->changesTableWidget->setHorizontalHeaderLabels(
-        {"Field", "Old Value", "New Value"});
+    ui_->changesTableWidget->setHorizontalHeaderLabels({"Field", "Old Value", "New Value"});
     ui_->changesTableWidget->horizontalHeader()->setStretchLastSection(true);
 }
 
@@ -84,15 +81,14 @@ void PricingModelProductHistoryDialog::setupToolbar() {
     toolbar_->setIconSize(QSize(20, 20));
 
     openVersionAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Open, IconUtils::DefaultIconColor),
-        tr("Open"));
+        IconUtils::createRecoloredIcon(Icon::Open, IconUtils::DefaultIconColor), tr("Open"));
     openVersionAction_->setToolTip(tr("Open this version (read-only)"));
     openVersionAction_->setEnabled(false);
 
-    revertAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor),
-        tr("Revert"));
+    revertAction_ =
+        toolbar_->addAction(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
+                                                           IconUtils::DefaultIconColor),
+                            tr("Revert"));
     revertAction_->setToolTip(tr("Revert to this version"));
     revertAction_->setEnabled(false);
 
@@ -104,14 +100,22 @@ void PricingModelProductHistoryDialog::setupToolbar() {
 }
 
 void PricingModelProductHistoryDialog::setupConnections() {
-    connect(ui_->versionListWidget, &QTableWidget::itemSelectionChanged,
-            this, &PricingModelProductHistoryDialog::onVersionSelected);
-    connect(openVersionAction_, &QAction::triggered,
-            this, &PricingModelProductHistoryDialog::onOpenVersionClicked);
-    connect(revertAction_, &QAction::triggered,
-            this, &PricingModelProductHistoryDialog::onRevertClicked);
-    connect(ui_->closeButton, &QPushButton::clicked,
-            this, [this]() { if (window()) window()->close(); });
+    connect(ui_->versionListWidget,
+            &QTableWidget::itemSelectionChanged,
+            this,
+            &PricingModelProductHistoryDialog::onVersionSelected);
+    connect(openVersionAction_,
+            &QAction::triggered,
+            this,
+            &PricingModelProductHistoryDialog::onOpenVersionClicked);
+    connect(revertAction_,
+            &QAction::triggered,
+            this,
+            &PricingModelProductHistoryDialog::onRevertClicked);
+    connect(ui_->closeButton, &QPushButton::clicked, this, [this]() {
+        if (window())
+            window()->close();
+    });
 }
 
 void PricingModelProductHistoryDialog::loadHistory() {
@@ -120,28 +124,29 @@ void PricingModelProductHistoryDialog::loadHistory() {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Loading history for pricing model product: " << code_.toStdString();
+    BOOST_LOG_SEV(lg(), debug) << "Loading history for pricing model product: "
+                               << code_.toStdString();
     emit statusChanged(tr("Loading history..."));
 
     QPointer<PricingModelProductHistoryDialog> self = this;
 
-    using HistoryResult = std::expected<
-        analytics::messaging::get_pricing_model_product_history_response, std::string>;
+    using HistoryResult =
+        std::expected<analytics::messaging::get_pricing_model_product_history_response,
+                      std::string>;
 
-    QFuture<HistoryResult> future =
-        QtConcurrent::run([self, id = id_]() -> HistoryResult {
+    QFuture<HistoryResult> future = QtConcurrent::run([self, id = id_]() -> HistoryResult {
         if (!self || !self->clientManager_)
             return std::unexpected("Dialog closed");
         analytics::messaging::get_pricing_model_product_history_request request;
         request.id = id;
         auto result = self->clientManager_->process_authenticated_request(std::move(request));
-        if (!result) return std::unexpected(result.error());
+        if (!result)
+            return std::unexpected(result.error());
         return std::move(*result);
     });
 
     auto* watcher = new QFutureWatcher<HistoryResult>(self);
-    connect(watcher, &QFutureWatcher<HistoryResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<HistoryResult>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
@@ -156,8 +161,7 @@ void PricingModelProductHistoryDialog::loadHistory() {
         }
         self->versions_ = std::move(result->products);
         self->updateVersionList();
-        emit self->statusChanged(
-            QString("Loaded %1 versions").arg(self->versions_.size()));
+        emit self->statusChanged(QString("Loaded %1 versions").arg(self->versions_.size()));
     });
     watcher->setFuture(future);
 }
@@ -173,20 +177,18 @@ void PricingModelProductHistoryDialog::updateVersionList() {
         versionItem->setTextAlignment(Qt::AlignCenter);
         ui_->versionListWidget->setItem(row, 0, versionItem);
 
-        auto* recordedAtItem = new QTableWidgetItem(
-            relative_time_helper::format(version.recorded_at));
+        auto* recordedAtItem =
+            new QTableWidgetItem(relative_time_helper::format(version.recorded_at));
         ui_->versionListWidget->setItem(row, 1, recordedAtItem);
 
-        auto* modifiedByItem = new QTableWidgetItem(
-            QString::fromStdString(version.modified_by));
+        auto* modifiedByItem = new QTableWidgetItem(QString::fromStdString(version.modified_by));
         ui_->versionListWidget->setItem(row, 2, modifiedByItem);
 
-        auto* performedByItem = new QTableWidgetItem(
-            QString::fromStdString(version.performed_by));
+        auto* performedByItem = new QTableWidgetItem(QString::fromStdString(version.performed_by));
         ui_->versionListWidget->setItem(row, 3, performedByItem);
 
-        auto* commentaryItem = new QTableWidgetItem(
-            QString::fromStdString(version.change_commentary));
+        auto* commentaryItem =
+            new QTableWidgetItem(QString::fromStdString(version.change_commentary));
         ui_->versionListWidget->setItem(row, 4, commentaryItem);
     }
 
@@ -212,8 +214,7 @@ void PricingModelProductHistoryDialog::onVersionSelected() {
 void PricingModelProductHistoryDialog::updateChangesTable(int currentVersionIndex) {
     ui_->changesTableWidget->setRowCount(0);
 
-    if (currentVersionIndex < 0 ||
-        static_cast<size_t>(currentVersionIndex) >= versions_.size()) {
+    if (currentVersionIndex < 0 || static_cast<size_t>(currentVersionIndex) >= versions_.size()) {
         return;
     }
 
@@ -222,8 +223,7 @@ void PricingModelProductHistoryDialog::updateChangesTable(int currentVersionInde
     if (static_cast<size_t>(previousVersionIndex) >= versions_.size()) {
         // This is the first version, no changes to show
         ui_->changesTableWidget->insertRow(0);
-        ui_->changesTableWidget->setItem(0, 0,
-            new QTableWidgetItem("(Initial version)"));
+        ui_->changesTableWidget->setItem(0, 0, new QTableWidgetItem("(Initial version)"));
         ui_->changesTableWidget->setItem(0, 1, new QTableWidgetItem("-"));
         ui_->changesTableWidget->setItem(0, 2, new QTableWidgetItem("-"));
         return;
@@ -232,8 +232,7 @@ void PricingModelProductHistoryDialog::updateChangesTable(int currentVersionInde
     const auto& current = versions_[currentVersionIndex];
     const auto& previous = versions_[previousVersionIndex];
 
-    auto addChange = [this](const QString& field,
-                            const QString& oldVal, const QString& newVal) {
+    auto addChange = [this](const QString& field, const QString& oldVal, const QString& newVal) {
         int row = ui_->changesTableWidget->rowCount();
         ui_->changesTableWidget->insertRow(row);
         ui_->changesTableWidget->setItem(row, 0, new QTableWidgetItem(field));
@@ -248,9 +247,8 @@ void PricingModelProductHistoryDialog::updateChangesTable(int currentVersionInde
     }
 
     if (current.model != previous.model) {
-        addChange("Model",
-                  QString::fromStdString(previous.model),
-                  QString::fromStdString(current.model));
+        addChange(
+            "Model", QString::fromStdString(previous.model), QString::fromStdString(current.model));
     }
 
     if (current.engine != previous.engine) {
@@ -262,29 +260,27 @@ void PricingModelProductHistoryDialog::updateChangesTable(int currentVersionInde
 
     if (ui_->changesTableWidget->rowCount() == 0) {
         ui_->changesTableWidget->insertRow(0);
-        ui_->changesTableWidget->setItem(0, 0,
-            new QTableWidgetItem("(No field changes)"));
+        ui_->changesTableWidget->setItem(0, 0, new QTableWidgetItem("(No field changes)"));
         ui_->changesTableWidget->setItem(0, 1, new QTableWidgetItem("-"));
         ui_->changesTableWidget->setItem(0, 2, new QTableWidgetItem("-"));
     }
 }
 
 void PricingModelProductHistoryDialog::updateFullDetails(int versionIndex) {
-    if (versionIndex < 0 ||
-        static_cast<size_t>(versionIndex) >= versions_.size()) {
+    if (versionIndex < 0 || static_cast<size_t>(versionIndex) >= versions_.size()) {
         return;
     }
 
     const auto& version = versions_[versionIndex];
 
-    ui_->pricingEngineTypeCodeValue->setText(QString::fromStdString(version.pricing_engine_type_code));
+    ui_->pricingEngineTypeCodeValue->setText(
+        QString::fromStdString(version.pricing_engine_type_code));
     ui_->modelValue->setText(QString::fromStdString(version.model));
     ui_->engineValue->setText(QString::fromStdString(version.engine));
     ui_->versionNumberValue->setText(QString::number(version.version));
     ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
     ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));
-    ui_->changeCommentaryValue->setText(
-        QString::fromStdString(version.change_commentary));
+    ui_->changeCommentaryValue->setText(QString::fromStdString(version.change_commentary));
 }
 
 void PricingModelProductHistoryDialog::updateActionStates() {
@@ -298,20 +294,24 @@ void PricingModelProductHistoryDialog::updateActionStates() {
 
 void PricingModelProductHistoryDialog::onOpenVersionClicked() {
     auto selected = ui_->versionListWidget->selectedItems();
-    if (selected.isEmpty()) return;
+    if (selected.isEmpty())
+        return;
 
     int row = selected.first()->row();
-    if (static_cast<size_t>(row) >= versions_.size()) return;
+    if (static_cast<size_t>(row) >= versions_.size())
+        return;
 
     emit openVersionRequested(versions_[row], versions_[row].version);
 }
 
 void PricingModelProductHistoryDialog::onRevertClicked() {
     auto selected = ui_->versionListWidget->selectedItems();
-    if (selected.isEmpty()) return;
+    if (selected.isEmpty())
+        return;
 
     int row = selected.first()->row();
-    if (static_cast<size_t>(row) >= versions_.size()) return;
+    if (static_cast<size_t>(row) >= versions_.size())
+        return;
 
     emit revertVersionRequested(versions_[row]);
 }

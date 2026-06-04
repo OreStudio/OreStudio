@@ -20,17 +20,17 @@
 #ifndef ORES_QT_CLIENT_CHANGE_REASON_CATEGORY_MODEL_HPP
 #define ORES_QT_CLIENT_CHANGE_REASON_CATEGORY_MODEL_HPP
 
-#include <vector>
-#include <QSize>
-#include <QFutureWatcher>
-#include <QAbstractTableModel>
+#include "ores.dq.api/domain/change_reason_category.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/AbstractClientModel.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ColumnMetadata.hpp"
 #include "ores.qt/RecencyPulseManager.hpp"
 #include "ores.qt/RecencyTracker.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.dq.api/domain/change_reason_category.hpp"
+#include <QAbstractTableModel>
+#include <QFutureWatcher>
+#include <QSize>
+#include <vector>
 
 namespace ores::qt {
 
@@ -44,8 +44,7 @@ class ClientChangeReasonCategoryModel final : public AbstractClientModel {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.client_change_reason_category_model";
+    inline static std::string_view logger_name = "ores.qt.client_change_reason_category_model";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -57,14 +56,7 @@ public:
     /**
      * @brief Enumeration of table columns for type-safe column access.
      */
-    enum Column {
-        Code,
-        Description,
-        Version,
-        ModifiedBy,
-        RecordedAt,
-        ColumnCount
-    };
+    enum Column { Code, Description, Version, ModifiedBy, RecordedAt, ColumnCount };
 
     /**
      * @brief Column metadata: header text, style, visibility, and width.
@@ -72,43 +64,32 @@ public:
      * Order must match the Column enum.
      */
     static constexpr std::size_t kColumnCount = std::size_t(ColumnCount);
-    static constexpr std::array<ColumnMetadata, kColumnCount> kColumns = {{
-        {
-            .column = Code,
-            .header = std::string_view("Code"),
-            .style = column_style::text_left,
-            .hidden_by_default = false,
-            .default_width = kColumnWidthAuto
-        },
-        {
-            .column = Description,
-            .header = std::string_view("Description"),
-            .style = column_style::text_left,
-            .hidden_by_default = false,
-            .default_width = kColumnWidthAuto
-        },
-        {
-            .column = Version,
-            .header = std::string_view("Version"),
-            .style = column_style::mono_center,
-            .hidden_by_default = false,
-            .default_width = 70
-        },
-        {
-            .column = ModifiedBy,
-            .header = std::string_view("Modified By"),
-            .style = column_style::text_left,
-            .hidden_by_default = false,
-            .default_width = kColumnWidthAuto
-        },
-        {
-            .column = RecordedAt,
-            .header = std::string_view("Recorded At"),
-            .style = column_style::mono_left,
-            .hidden_by_default = false,
-            .default_width = kColumnWidthAuto
-        }
-    }};
+    static constexpr std::array<ColumnMetadata, kColumnCount> kColumns = {
+        {{.column = Code,
+          .header = std::string_view("Code"),
+          .style = column_style::text_left,
+          .hidden_by_default = false,
+          .default_width = kColumnWidthAuto},
+         {.column = Description,
+          .header = std::string_view("Description"),
+          .style = column_style::text_left,
+          .hidden_by_default = false,
+          .default_width = kColumnWidthAuto},
+         {.column = Version,
+          .header = std::string_view("Version"),
+          .style = column_style::mono_center,
+          .hidden_by_default = false,
+          .default_width = 70},
+         {.column = ModifiedBy,
+          .header = std::string_view("Modified By"),
+          .style = column_style::text_left,
+          .hidden_by_default = false,
+          .default_width = kColumnWidthAuto},
+         {.column = RecordedAt,
+          .header = std::string_view("Recorded At"),
+          .style = column_style::mono_left,
+          .hidden_by_default = false,
+          .default_width = kColumnWidthAuto}}};
 
     /**
      * @brief Default window size for the change reason category list window.
@@ -137,21 +118,20 @@ public:
      * @brief Returns a static QVector of hidden column indices (built once per process).
      */
     static QVector<int> defaultHiddenColumns() {
-        static QVector<int> const result =
-            ::ores::qt::defaultHiddenColumns<kColumnCount>(kColumns);
+        static QVector<int> const result = ::ores::qt::defaultHiddenColumns<kColumnCount>(kColumns);
         return result;
     }
 
     explicit ClientChangeReasonCategoryModel(ClientManager* clientManager,
-                                              QObject* parent = nullptr);
+                                             QObject* parent = nullptr);
     ~ClientChangeReasonCategoryModel() override = default;
 
     // QAbstractTableModel interface
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-    QVariant headerData(int section, Qt::Orientation orientation,
-        int role = Qt::DisplayRole) const override;
+    QVariant
+    headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
     /**
      * @brief Refresh category data from server asynchronously.
@@ -196,8 +176,10 @@ private:
     bool is_fetching_{false};
 
     // Recency highlighting
-    using ChangeReasonCategoryKeyExtractor = std::string(*)(const dq::domain::change_reason_category&);
-    RecencyTracker<dq::domain::change_reason_category, ChangeReasonCategoryKeyExtractor> recencyTracker_;
+    using ChangeReasonCategoryKeyExtractor =
+        std::string (*)(const dq::domain::change_reason_category&);
+    RecencyTracker<dq::domain::change_reason_category, ChangeReasonCategoryKeyExtractor>
+        recencyTracker_;
     RecencyPulseManager* pulseManager_;
 };
 

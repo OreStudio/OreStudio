@@ -18,31 +18,31 @@
  *
  */
 #include "ores.qt/TreatmentDimensionHistoryDialog.hpp"
-
-#include <QVBoxLayout>
-#include <QHeaderView>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include "ui_TreatmentDimensionHistoryDialog.h"
-#include "ores.qt/IconUtils.hpp"
+#include "ores.dq.api/messaging/dimension_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.dq.api/messaging/dimension_protocol.hpp"
+#include "ui_TreatmentDimensionHistoryDialog.h"
+#include <QFutureWatcher>
+#include <QHeaderView>
+#include <QVBoxLayout>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-TreatmentDimensionHistoryDialog::TreatmentDimensionHistoryDialog(
-    const QString& code, ClientManager* clientManager, QWidget* parent)
-    : QWidget(parent),
-      ui_(new Ui::TreatmentDimensionHistoryDialog),
-      code_(code),
-      clientManager_(clientManager),
-      toolbar_(nullptr),
-      openVersionAction_(nullptr),
-      revertAction_(nullptr) {
+TreatmentDimensionHistoryDialog::TreatmentDimensionHistoryDialog(const QString& code,
+                                                                 ClientManager* clientManager,
+                                                                 QWidget* parent)
+    : QWidget(parent)
+    , ui_(new Ui::TreatmentDimensionHistoryDialog)
+    , code_(code)
+    , clientManager_(clientManager)
+    , toolbar_(nullptr)
+    , openVersionAction_(nullptr)
+    , revertAction_(nullptr) {
 
     ui_->setupUi(this);
     WidgetUtils::setupComboBoxes(this);
@@ -61,7 +61,8 @@ void TreatmentDimensionHistoryDialog::setupUi() {
 
     ui_->titleLabel->setText(QString("History for: %1").arg(code_));
     ui_->versionListWidget->setColumnCount(4);
-    ui_->versionListWidget->setHorizontalHeaderLabels({"Version", "Recorded At", "Modified By", "Commentary"});
+    ui_->versionListWidget->setHorizontalHeaderLabels(
+        {"Version", "Recorded At", "Modified By", "Commentary"});
     ui_->versionListWidget->horizontalHeader()->setStretchLastSection(true);
     ui_->versionListWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui_->versionListWidget->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -81,9 +82,10 @@ void TreatmentDimensionHistoryDialog::setupToolbar() {
     openVersionAction_->setToolTip(tr("Open this version (read-only)"));
     openVersionAction_->setEnabled(false);
 
-    revertAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor),
-        tr("Revert"));
+    revertAction_ =
+        toolbar_->addAction(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
+                                                           IconUtils::DefaultIconColor),
+                            tr("Revert"));
     revertAction_->setToolTip(tr("Revert to this version"));
     revertAction_->setEnabled(false);
 
@@ -93,11 +95,22 @@ void TreatmentDimensionHistoryDialog::setupToolbar() {
 }
 
 void TreatmentDimensionHistoryDialog::setupConnections() {
-    connect(ui_->versionListWidget, &QTableWidget::itemSelectionChanged, this, &TreatmentDimensionHistoryDialog::onVersionSelected);
-    connect(openVersionAction_, &QAction::triggered, this, &TreatmentDimensionHistoryDialog::onOpenVersionClicked);
-    connect(revertAction_, &QAction::triggered, this, &TreatmentDimensionHistoryDialog::onRevertClicked);
-    connect(ui_->closeButton, &QPushButton::clicked,
-            this, [this]() { if (window()) window()->close(); });
+    connect(ui_->versionListWidget,
+            &QTableWidget::itemSelectionChanged,
+            this,
+            &TreatmentDimensionHistoryDialog::onVersionSelected);
+    connect(openVersionAction_,
+            &QAction::triggered,
+            this,
+            &TreatmentDimensionHistoryDialog::onOpenVersionClicked);
+    connect(revertAction_,
+            &QAction::triggered,
+            this,
+            &TreatmentDimensionHistoryDialog::onRevertClicked);
+    connect(ui_->closeButton, &QPushButton::clicked, this, [this]() {
+        if (window())
+            window()->close();
+    });
 }
 
 void TreatmentDimensionHistoryDialog::loadHistory() {
@@ -109,17 +122,26 @@ void TreatmentDimensionHistoryDialog::loadHistory() {
     emit statusChanged(tr("Loading history..."));
 
     QPointer<TreatmentDimensionHistoryDialog> self = this;
-    struct HistoryResult { bool success; std::string message; std::vector<dq::domain::treatment_dimension> versions; };
+    struct HistoryResult {
+        bool success;
+        std::string message;
+        std::vector<dq::domain::treatment_dimension> versions;
+    };
 
     auto task = [self, code = code_.toStdString()]() -> HistoryResult {
-        if (!self || !self->clientManager_) return {false, "Dialog closed", {}};
+        if (!self || !self->clientManager_)
+            return {false, "Dialog closed", {}};
 
         dq::messaging::get_treatment_dimension_history_request request;
         request.code = code;
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
-        if (!response_result) return {false, "Failed to communicate with server", {}};
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
+        if (!response_result)
+            return {false, "Failed to communicate with server", {}};
 
-        return {response_result->success, response_result->message, std::move(response_result->history)};
+        return {response_result->success,
+                response_result->message,
+                std::move(response_result->history)};
     };
 
     auto* watcher = new QFutureWatcher<HistoryResult>(self);
@@ -149,17 +171,24 @@ void TreatmentDimensionHistoryDialog::updateVersionList() {
         auto* versionItem = new QTableWidgetItem(QString::number(version.version));
         versionItem->setTextAlignment(Qt::AlignCenter);
         ui_->versionListWidget->setItem(row, 0, versionItem);
-        ui_->versionListWidget->setItem(row, 1, new QTableWidgetItem(relative_time_helper::format(version.recorded_at)));
-        ui_->versionListWidget->setItem(row, 2, new QTableWidgetItem(QString::fromStdString(version.modified_by)));
-        ui_->versionListWidget->setItem(row, 3, new QTableWidgetItem(QString::fromStdString(version.change_commentary)));
+        ui_->versionListWidget->setItem(
+            row, 1, new QTableWidgetItem(relative_time_helper::format(version.recorded_at)));
+        ui_->versionListWidget->setItem(
+            row, 2, new QTableWidgetItem(QString::fromStdString(version.modified_by)));
+        ui_->versionListWidget->setItem(
+            row, 3, new QTableWidgetItem(QString::fromStdString(version.change_commentary)));
     }
 
-    if (!versions_.empty()) ui_->versionListWidget->selectRow(0);
+    if (!versions_.empty())
+        ui_->versionListWidget->selectRow(0);
 }
 
 void TreatmentDimensionHistoryDialog::onVersionSelected() {
     auto selected = ui_->versionListWidget->selectedItems();
-    if (selected.isEmpty()) { updateActionStates(); return; }
+    if (selected.isEmpty()) {
+        updateActionStates();
+        return;
+    }
 
     int row = selected.first()->row();
     updateChangesTable(row);
@@ -170,7 +199,8 @@ void TreatmentDimensionHistoryDialog::onVersionSelected() {
 void TreatmentDimensionHistoryDialog::updateChangesTable(int currentVersionIndex) {
     ui_->changesTableWidget->setRowCount(0);
 
-    if (currentVersionIndex < 0 || static_cast<size_t>(currentVersionIndex) >= versions_.size()) return;
+    if (currentVersionIndex < 0 || static_cast<size_t>(currentVersionIndex) >= versions_.size())
+        return;
 
     int previousVersionIndex = currentVersionIndex + 1;
     if (static_cast<size_t>(previousVersionIndex) >= versions_.size()) {
@@ -192,8 +222,13 @@ void TreatmentDimensionHistoryDialog::updateChangesTable(int currentVersionIndex
         ui_->changesTableWidget->setItem(row, 2, new QTableWidgetItem(newVal));
     };
 
-    if (current.name != previous.name) addChange("Name", QString::fromStdString(previous.name), QString::fromStdString(current.name));
-    if (current.description != previous.description) addChange("Description", QString::fromStdString(previous.description), QString::fromStdString(current.description));
+    if (current.name != previous.name)
+        addChange(
+            "Name", QString::fromStdString(previous.name), QString::fromStdString(current.name));
+    if (current.description != previous.description)
+        addChange("Description",
+                  QString::fromStdString(previous.description),
+                  QString::fromStdString(current.description));
 
     if (ui_->changesTableWidget->rowCount() == 0) {
         ui_->changesTableWidget->insertRow(0);
@@ -204,7 +239,8 @@ void TreatmentDimensionHistoryDialog::updateChangesTable(int currentVersionIndex
 }
 
 void TreatmentDimensionHistoryDialog::updateFullDetails(int versionIndex) {
-    if (versionIndex < 0 || static_cast<size_t>(versionIndex) >= versions_.size()) return;
+    if (versionIndex < 0 || static_cast<size_t>(versionIndex) >= versions_.size())
+        return;
 
     const auto& version = versions_[versionIndex];
     ui_->codeValue->setText(QString::fromStdString(version.code));
@@ -227,20 +263,24 @@ void TreatmentDimensionHistoryDialog::updateActionStates() {
 
 void TreatmentDimensionHistoryDialog::onOpenVersionClicked() {
     auto selected = ui_->versionListWidget->selectedItems();
-    if (selected.isEmpty()) return;
+    if (selected.isEmpty())
+        return;
 
     int row = selected.first()->row();
-    if (static_cast<size_t>(row) >= versions_.size()) return;
+    if (static_cast<size_t>(row) >= versions_.size())
+        return;
 
     emit openVersionRequested(versions_[row], versions_[row].version);
 }
 
 void TreatmentDimensionHistoryDialog::onRevertClicked() {
     auto selected = ui_->versionListWidget->selectedItems();
-    if (selected.isEmpty()) return;
+    if (selected.isEmpty())
+        return;
 
     int row = selected.first()->row();
-    if (static_cast<size_t>(row) >= versions_.size()) return;
+    if (static_cast<size_t>(row) >= versions_.size())
+        return;
 
     emit revertVersionRequested(versions_[row]);
 }

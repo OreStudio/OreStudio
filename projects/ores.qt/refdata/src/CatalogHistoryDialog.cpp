@@ -18,33 +18,31 @@
  *
  */
 #include "ores.qt/CatalogHistoryDialog.hpp"
-
-#include <QVBoxLayout>
-#include <QHeaderView>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include "ui_CatalogHistoryDialog.h"
-#include "ores.qt/IconUtils.hpp"
+#include "ores.dq.api/messaging/data_organization_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.dq.api/messaging/data_organization_protocol.hpp"
+#include "ui_CatalogHistoryDialog.h"
+#include <QFutureWatcher>
+#include <QHeaderView>
+#include <QVBoxLayout>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-CatalogHistoryDialog::CatalogHistoryDialog(
-    const QString& name,
-    ClientManager* clientManager,
-    QWidget* parent)
-    : QWidget(parent),
-      ui_(new Ui::CatalogHistoryDialog),
-      name_(name),
-      clientManager_(clientManager),
-      toolbar_(nullptr),
-      openVersionAction_(nullptr),
-      revertAction_(nullptr) {
+CatalogHistoryDialog::CatalogHistoryDialog(const QString& name,
+                                           ClientManager* clientManager,
+                                           QWidget* parent)
+    : QWidget(parent)
+    , ui_(new Ui::CatalogHistoryDialog)
+    , name_(name)
+    , clientManager_(clientManager)
+    , toolbar_(nullptr)
+    , openVersionAction_(nullptr)
+    , revertAction_(nullptr) {
 
     ui_->setupUi(this);
     WidgetUtils::setupComboBoxes(this);
@@ -68,12 +66,10 @@ void CatalogHistoryDialog::setupUi() {
         {"Version", "Recorded At", "Modified By", "Commentary"});
     ui_->versionListWidget->horizontalHeader()->setStretchLastSection(true);
     ui_->versionListWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
-    ui_->versionListWidget->setSelectionMode(
-        QAbstractItemView::SingleSelection);
+    ui_->versionListWidget->setSelectionMode(QAbstractItemView::SingleSelection);
 
     ui_->changesTableWidget->setColumnCount(3);
-    ui_->changesTableWidget->setHorizontalHeaderLabels(
-        {"Field", "Old Value", "New Value"});
+    ui_->changesTableWidget->setHorizontalHeaderLabels({"Field", "Old Value", "New Value"});
     ui_->changesTableWidget->horizontalHeader()->setStretchLastSection(true);
 }
 
@@ -84,17 +80,14 @@ void CatalogHistoryDialog::setupToolbar() {
     toolbar_->setIconSize(QSize(20, 20));
 
     openVersionAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::Open, IconUtils::DefaultIconColor),
-        tr("Open"));
+        IconUtils::createRecoloredIcon(Icon::Open, IconUtils::DefaultIconColor), tr("Open"));
     openVersionAction_->setToolTip(tr("Open this version (read-only)"));
     openVersionAction_->setEnabled(false);
 
-    revertAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::ArrowRotateCounterclockwise,
-            IconUtils::DefaultIconColor),
-        tr("Revert"));
+    revertAction_ =
+        toolbar_->addAction(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
+                                                           IconUtils::DefaultIconColor),
+                            tr("Revert"));
     revertAction_->setToolTip(tr("Revert to this version"));
     revertAction_->setEnabled(false);
 
@@ -104,14 +97,17 @@ void CatalogHistoryDialog::setupToolbar() {
 }
 
 void CatalogHistoryDialog::setupConnections() {
-    connect(ui_->versionListWidget, &QTableWidget::itemSelectionChanged,
-            this, &CatalogHistoryDialog::onVersionSelected);
-    connect(openVersionAction_, &QAction::triggered,
-            this, &CatalogHistoryDialog::onOpenVersionClicked);
-    connect(revertAction_, &QAction::triggered,
-            this, &CatalogHistoryDialog::onRevertClicked);
-    connect(ui_->closeButton, &QPushButton::clicked,
-            this, [this]() { if (window()) window()->close(); });
+    connect(ui_->versionListWidget,
+            &QTableWidget::itemSelectionChanged,
+            this,
+            &CatalogHistoryDialog::onVersionSelected);
+    connect(
+        openVersionAction_, &QAction::triggered, this, &CatalogHistoryDialog::onOpenVersionClicked);
+    connect(revertAction_, &QAction::triggered, this, &CatalogHistoryDialog::onRevertClicked);
+    connect(ui_->closeButton, &QPushButton::clicked, this, [this]() {
+        if (window())
+            window()->close();
+    });
 }
 
 void CatalogHistoryDialog::loadHistory() {
@@ -136,29 +132,28 @@ void CatalogHistoryDialog::loadHistory() {
         dq::messaging::get_catalog_history_request request;
         request.code = name;
         auto response_result =
-self->clientManager_->process_authenticated_request(std::move(request));
+            self->clientManager_->process_authenticated_request(std::move(request));
         if (!response_result)
             return {false, "Failed to communicate with server", {}};
 
-        return {response_result->success, response_result->message,
+        return {response_result->success,
+                response_result->message,
                 std::move(response_result->history)};
     };
 
     auto* watcher = new QFutureWatcher<HistoryResult>(self);
-    connect(watcher, &QFutureWatcher<HistoryResult>::finished, self,
-            [self, watcher]() {
-                auto result = watcher->result();
-                watcher->deleteLater();
+    connect(watcher, &QFutureWatcher<HistoryResult>::finished, self, [self, watcher]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
 
-                if (result.success) {
-                    self->versions_ = std::move(result.versions);
-                    self->updateVersionList();
-                    emit self->statusChanged(
-                        QString("Loaded %1 versions").arg(self->versions_.size()));
-                } else {
-                    emit self->errorOccurred(QString::fromStdString(result.message));
-                }
-            });
+        if (result.success) {
+            self->versions_ = std::move(result.versions);
+            self->updateVersionList();
+            emit self->statusChanged(QString("Loaded %1 versions").arg(self->versions_.size()));
+        } else {
+            emit self->errorOccurred(QString::fromStdString(result.message));
+        }
+    });
 
     watcher->setFuture(QtConcurrent::run(task));
 }
@@ -170,21 +165,15 @@ void CatalogHistoryDialog::updateVersionList() {
         int row = ui_->versionListWidget->rowCount();
         ui_->versionListWidget->insertRow(row);
 
-        auto* versionItem =
-            new QTableWidgetItem(QString::number(version.version));
+        auto* versionItem = new QTableWidgetItem(QString::number(version.version));
         versionItem->setTextAlignment(Qt::AlignCenter);
         ui_->versionListWidget->setItem(row, 0, versionItem);
         ui_->versionListWidget->setItem(
-            row, 1,
-            new QTableWidgetItem(
-                relative_time_helper::format(version.recorded_at)));
+            row, 1, new QTableWidgetItem(relative_time_helper::format(version.recorded_at)));
         ui_->versionListWidget->setItem(
-            row, 2,
-            new QTableWidgetItem(QString::fromStdString(version.modified_by)));
+            row, 2, new QTableWidgetItem(QString::fromStdString(version.modified_by)));
         ui_->versionListWidget->setItem(
-            row, 3,
-            new QTableWidgetItem(
-                QString::fromStdString(version.change_commentary)));
+            row, 3, new QTableWidgetItem(QString::fromStdString(version.change_commentary)));
     }
 
     if (!versions_.empty())
@@ -207,15 +196,13 @@ void CatalogHistoryDialog::onVersionSelected() {
 void CatalogHistoryDialog::updateChangesTable(int currentVersionIndex) {
     ui_->changesTableWidget->setRowCount(0);
 
-    if (currentVersionIndex < 0 ||
-        static_cast<size_t>(currentVersionIndex) >= versions_.size())
+    if (currentVersionIndex < 0 || static_cast<size_t>(currentVersionIndex) >= versions_.size())
         return;
 
     int previousVersionIndex = currentVersionIndex + 1;
     if (static_cast<size_t>(previousVersionIndex) >= versions_.size()) {
         ui_->changesTableWidget->insertRow(0);
-        ui_->changesTableWidget->setItem(
-            0, 0, new QTableWidgetItem("(Initial version)"));
+        ui_->changesTableWidget->setItem(0, 0, new QTableWidgetItem("(Initial version)"));
         ui_->changesTableWidget->setItem(0, 1, new QTableWidgetItem("-"));
         ui_->changesTableWidget->setItem(0, 2, new QTableWidgetItem("-"));
         return;
@@ -224,8 +211,7 @@ void CatalogHistoryDialog::updateChangesTable(int currentVersionIndex) {
     const auto& current = versions_[currentVersionIndex];
     const auto& previous = versions_[previousVersionIndex];
 
-    auto addChange = [this](const QString& field, const QString& oldVal,
-                            const QString& newVal) {
+    auto addChange = [this](const QString& field, const QString& oldVal, const QString& newVal) {
         int row = ui_->changesTableWidget->rowCount();
         ui_->changesTableWidget->insertRow(row);
         ui_->changesTableWidget->setItem(row, 0, new QTableWidgetItem(field));
@@ -241,35 +227,28 @@ void CatalogHistoryDialog::updateChangesTable(int currentVersionIndex) {
     auto prevOwner = previous.owner.value_or("");
     auto currOwner = current.owner.value_or("");
     if (currOwner != prevOwner)
-        addChange("Owner",
-                  QString::fromStdString(prevOwner),
-                  QString::fromStdString(currOwner));
+        addChange("Owner", QString::fromStdString(prevOwner), QString::fromStdString(currOwner));
 
     if (ui_->changesTableWidget->rowCount() == 0) {
         ui_->changesTableWidget->insertRow(0);
-        ui_->changesTableWidget->setItem(
-            0, 0, new QTableWidgetItem("(No field changes)"));
+        ui_->changesTableWidget->setItem(0, 0, new QTableWidgetItem("(No field changes)"));
         ui_->changesTableWidget->setItem(0, 1, new QTableWidgetItem("-"));
         ui_->changesTableWidget->setItem(0, 2, new QTableWidgetItem("-"));
     }
 }
 
 void CatalogHistoryDialog::updateFullDetails(int versionIndex) {
-    if (versionIndex < 0 ||
-        static_cast<size_t>(versionIndex) >= versions_.size())
+    if (versionIndex < 0 || static_cast<size_t>(versionIndex) >= versions_.size())
         return;
 
     const auto& version = versions_[versionIndex];
     ui_->nameValue->setText(QString::fromStdString(version.name));
     ui_->descriptionValue->setText(QString::fromStdString(version.description));
-    ui_->ownerValue->setText(
-        version.owner ? QString::fromStdString(*version.owner) : QString());
+    ui_->ownerValue->setText(version.owner ? QString::fromStdString(*version.owner) : QString());
     ui_->versionNumberValue->setText(QString::number(version.version));
     ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
-    ui_->recordedAtValue->setText(
-        relative_time_helper::format(version.recorded_at));
-    ui_->changeCommentaryValue->setText(
-        QString::fromStdString(version.change_commentary));
+    ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));
+    ui_->changeCommentaryValue->setText(QString::fromStdString(version.change_commentary));
 }
 
 void CatalogHistoryDialog::updateActionStates() {

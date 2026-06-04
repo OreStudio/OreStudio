@@ -18,16 +18,15 @@
  *
  */
 #include "ores.qt/ProvenanceWidget.hpp"
-
-#include "ui_ProvenanceWidget.h"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
+#include "ui_ProvenanceWidget.h"
 
 namespace ores::qt {
 
 ProvenanceWidget::ProvenanceWidget(QWidget* parent)
-    : QWidget(parent),
-      ui_(new Ui::ProvenanceWidget) {
+    : QWidget(parent)
+    , ui_(new Ui::ProvenanceWidget) {
     ui_->setupUi(this);
     WidgetUtils::setupComboBoxes(this);
 }

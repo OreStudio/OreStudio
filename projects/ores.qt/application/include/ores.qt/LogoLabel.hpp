@@ -28,7 +28,8 @@ namespace ores::qt {
 
 class LogoLabel final : public QLabel {
 public:
-    explicit LogoLabel(QWidget* parent = nullptr) : QLabel(parent) {}
+    explicit LogoLabel(QWidget* parent = nullptr)
+        : QLabel(parent) {}
     void setTextOverlay(const QString& text) {
         overlayText_ = text;
         update();

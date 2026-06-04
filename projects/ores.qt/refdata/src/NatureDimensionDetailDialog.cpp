@@ -18,27 +18,26 @@
  *
  */
 #include "ores.qt/NatureDimensionDetailDialog.hpp"
-
-#include <QPlainTextEdit>
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include "ui_NatureDimensionDetailDialog.h"
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/ColorConstants.hpp"
-#include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/ChangeReasonDialog.hpp"
-#include "ores.qt/WidgetUtils.hpp"
 #include "ores.dq.api/messaging/dimension_protocol.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
+#include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/WidgetUtils.hpp"
+#include "ui_NatureDimensionDetailDialog.h"
+#include <QFutureWatcher>
+#include <QMessageBox>
+#include <QPlainTextEdit>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 NatureDimensionDetailDialog::NatureDimensionDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent),
-      ui_(new Ui::NatureDimensionDetailDialog),
-      clientManager_(nullptr) {
+    : DetailDialogBase(parent)
+    , ui_(new Ui::NatureDimensionDetailDialog)
+    , clientManager_(nullptr) {
 
     ui_->setupUi(this);
     WidgetUtils::setupComboBoxes(this);
@@ -50,9 +49,15 @@ NatureDimensionDetailDialog::~NatureDimensionDetailDialog() {
     delete ui_;
 }
 
-QTabWidget* NatureDimensionDetailDialog::tabWidget() const { return ui_->tabWidget; }
-QWidget* NatureDimensionDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
-ProvenanceWidget* NatureDimensionDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
+QTabWidget* NatureDimensionDetailDialog::tabWidget() const {
+    return ui_->tabWidget;
+}
+QWidget* NatureDimensionDetailDialog::provenanceTab() const {
+    return ui_->provenanceTab;
+}
+ProvenanceWidget* NatureDimensionDetailDialog::provenanceWidget() const {
+    return ui_->provenanceWidget;
+}
 
 void NatureDimensionDetailDialog::setupUi() {
     ui_->saveButton->setIcon(
@@ -67,13 +72,24 @@ void NatureDimensionDetailDialog::setupUi() {
 }
 
 void NatureDimensionDetailDialog::setupConnections() {
-    connect(ui_->saveButton, &QPushButton::clicked, this, &NatureDimensionDetailDialog::onSaveClicked);
-    connect(ui_->deleteButton, &QPushButton::clicked, this, &NatureDimensionDetailDialog::onDeleteClicked);
-    connect(ui_->closeButton, &QPushButton::clicked, this,
+    connect(
+        ui_->saveButton, &QPushButton::clicked, this, &NatureDimensionDetailDialog::onSaveClicked);
+    connect(ui_->deleteButton,
+            &QPushButton::clicked,
+            this,
+            &NatureDimensionDetailDialog::onDeleteClicked);
+    connect(ui_->closeButton,
+            &QPushButton::clicked,
+            this,
             &NatureDimensionDetailDialog::onCloseClicked);
-    connect(ui_->codeEdit, &QLineEdit::textChanged, this, &NatureDimensionDetailDialog::onCodeChanged);
-    connect(ui_->nameEdit, &QLineEdit::textChanged, this, &NatureDimensionDetailDialog::onFieldChanged);
-    connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this, &NatureDimensionDetailDialog::onFieldChanged);
+    connect(
+        ui_->codeEdit, &QLineEdit::textChanged, this, &NatureDimensionDetailDialog::onCodeChanged);
+    connect(
+        ui_->nameEdit, &QLineEdit::textChanged, this, &NatureDimensionDetailDialog::onFieldChanged);
+    connect(ui_->descriptionEdit,
+            &QPlainTextEdit::textChanged,
+            this,
+            &NatureDimensionDetailDialog::onFieldChanged);
 }
 
 void NatureDimensionDetailDialog::setClientManager(ClientManager* clientManager) {
@@ -111,14 +127,19 @@ void NatureDimensionDetailDialog::updateUiFromDimension() {
     ui_->codeEdit->setText(QString::fromStdString(dimension_.code));
     ui_->nameEdit->setText(QString::fromStdString(dimension_.name));
     ui_->descriptionEdit->setPlainText(QString::fromStdString(dimension_.description));
-    populateProvenance(dimension_.version, dimension_.modified_by, dimension_.performed_by,
-                       dimension_.recorded_at, "", dimension_.change_commentary);
+    populateProvenance(dimension_.version,
+                       dimension_.modified_by,
+                       dimension_.performed_by,
+                       dimension_.recorded_at,
+                       "",
+                       dimension_.change_commentary);
     hasChanges_ = false;
     updateSaveButtonState();
 }
 
 void NatureDimensionDetailDialog::updateDimensionFromUi() {
-    if (createMode_) dimension_.code = ui_->codeEdit->text().trimmed().toStdString();
+    if (createMode_)
+        dimension_.code = ui_->codeEdit->text().trimmed().toStdString();
     dimension_.name = ui_->nameEdit->text().trimmed().toStdString();
     dimension_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
     dimension_.modified_by = username_;
@@ -155,26 +176,31 @@ void NatureDimensionDetailDialog::onSaveClicked() {
 
     updateDimensionFromUi();
 
-    const auto crOpType = createMode_
-        ? ChangeReasonDialog::OperationType::Create
-        : ChangeReasonDialog::OperationType::Amend;
-    const auto crSel = promptChangeReason(crOpType, hasChanges_,
-        createMode_ ? "system" : "common");
-    if (!crSel) return;
+    const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
+                                        ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_, createMode_ ? "system" : "common");
+    if (!crSel)
+        return;
     dimension_.change_commentary = crSel->commentary;
 
     BOOST_LOG_SEV(lg(), info) << "Saving nature dimension: " << dimension_.code;
 
     QPointer<NatureDimensionDetailDialog> self = this;
-    struct SaveResult { bool success; std::string message; };
+    struct SaveResult {
+        bool success;
+        std::string message;
+    };
 
     auto task = [self, dimension = dimension_]() -> SaveResult {
-        if (!self || !self->clientManager_) return {false, "Dialog closed"};
+        if (!self || !self->clientManager_)
+            return {false, "Dialog closed"};
 
         dq::messaging::save_nature_dimension_request request;
         request.data = dimension;
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
-        if (!response_result) return {false, "Failed to communicate with server"};
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
+        if (!response_result)
+            return {false, "Failed to communicate with server"};
 
         return {response_result->success, response_result->message};
     };
@@ -207,30 +233,40 @@ void NatureDimensionDetailDialog::onDeleteClicked() {
     }
 
     QString code = QString::fromStdString(dimension_.code);
-    auto reply = MessageBoxHelper::question(this, "Delete Nature Dimension",
-        QString("Are you sure you want to delete '%1'?").arg(code),
-        QMessageBox::Yes | QMessageBox::No);
+    auto reply =
+        MessageBoxHelper::question(this,
+                                   "Delete Nature Dimension",
+                                   QString("Are you sure you want to delete '%1'?").arg(code),
+                                   QMessageBox::Yes | QMessageBox::No);
 
-    if (reply != QMessageBox::Yes) return;
+    if (reply != QMessageBox::Yes)
+        return;
 
     {
-        const auto crSel = promptChangeReason(
-            ChangeReasonDialog::OperationType::Delete, true, "common");
-        if (!crSel) return;
+        const auto crSel =
+            promptChangeReason(ChangeReasonDialog::OperationType::Delete, true, "common");
+        if (!crSel)
+            return;
     }
 
     BOOST_LOG_SEV(lg(), info) << "Deleting nature dimension: " << dimension_.code;
 
     QPointer<NatureDimensionDetailDialog> self = this;
-    struct DeleteResult { bool success; std::string message; };
+    struct DeleteResult {
+        bool success;
+        std::string message;
+    };
 
     auto task = [self, code = dimension_.code]() -> DeleteResult {
-        if (!self || !self->clientManager_) return {false, "Dialog closed"};
+        if (!self || !self->clientManager_)
+            return {false, "Dialog closed"};
 
         dq::messaging::delete_nature_dimension_request request;
         request.codes.push_back({code});
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
-        if (!response_result) return {false, "Failed to communicate with server"};
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
+        if (!response_result)
+            return {false, "Failed to communicate with server"};
 
         return {response_result->success, response_result->message};
     };

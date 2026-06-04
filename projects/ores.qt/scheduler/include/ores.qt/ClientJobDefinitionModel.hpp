@@ -20,15 +20,15 @@
 #ifndef ORES_QT_CLIENT_JOB_DEFINITION_MODEL_HPP
 #define ORES_QT_CLIENT_JOB_DEFINITION_MODEL_HPP
 
-#include <vector>
-#include <QFutureWatcher>
-#include <QAbstractTableModel>
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/AbstractClientModel.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/RecencyPulseManager.hpp"
 #include "ores.qt/RecencyTracker.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.scheduler.api/domain/job_definition.hpp"
+#include <QAbstractTableModel>
+#include <QFutureWatcher>
+#include <vector>
 
 namespace ores::qt {
 
@@ -42,8 +42,7 @@ class ClientJobDefinitionModel final : public AbstractClientModel {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.client_job_definition_model";
+    inline static std::string_view logger_name = "ores.qt.client_job_definition_model";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -67,16 +66,15 @@ public:
         ColumnCount
     };
 
-    explicit ClientJobDefinitionModel(ClientManager* clientManager,
-                                       QObject* parent = nullptr);
+    explicit ClientJobDefinitionModel(ClientManager* clientManager, QObject* parent = nullptr);
     ~ClientJobDefinitionModel() override = default;
 
     // QAbstractTableModel interface
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-    QVariant headerData(int section, Qt::Orientation orientation,
-        int role = Qt::DisplayRole) const override;
+    QVariant
+    headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
     /**
      * @brief Refresh job definition data from server asynchronously.
@@ -99,7 +97,9 @@ public:
     /**
      * @brief Get the page size used for pagination.
      */
-    std::uint32_t page_size() const { return page_size_; }
+    std::uint32_t page_size() const {
+        return page_size_;
+    }
 
     /**
      * @brief Set the page size for pagination.
@@ -109,7 +109,9 @@ public:
     /**
      * @brief Get the total number of records available on the server.
      */
-    std::uint32_t total_available_count() const { return total_available_count_; }
+    std::uint32_t total_available_count() const {
+        return total_available_count_;
+    }
 
 signals:
     /**
@@ -146,16 +148,17 @@ private:
     bool is_fetching_{false};
 
     struct JobDefinitionTimestampExtractor {
-        std::chrono::system_clock::time_point operator()(
-            const scheduler::domain::job_definition&) const {
+        std::chrono::system_clock::time_point
+        operator()(const scheduler::domain::job_definition&) const {
             return {};
         }
     };
 
-    using JobDefinitionKeyExtractor = std::string(*)(const scheduler::domain::job_definition&);
+    using JobDefinitionKeyExtractor = std::string (*)(const scheduler::domain::job_definition&);
     RecencyTracker<scheduler::domain::job_definition,
                    JobDefinitionKeyExtractor,
-                   JobDefinitionTimestampExtractor> recencyTracker_;
+                   JobDefinitionTimestampExtractor>
+        recencyTracker_;
     RecencyPulseManager* pulseManager_;
 };
 

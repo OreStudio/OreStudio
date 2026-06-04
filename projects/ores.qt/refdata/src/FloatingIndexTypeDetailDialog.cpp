@@ -18,24 +18,23 @@
  *
  */
 #include "ores.qt/FloatingIndexTypeDetailDialog.hpp"
-
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include <QPlainTextEdit>
-#include "ui_FloatingIndexTypeDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.trading.api/messaging/floating_index_type_protocol.hpp"
+#include "ui_FloatingIndexTypeDetailDialog.h"
+#include <QFutureWatcher>
+#include <QMessageBox>
+#include <QPlainTextEdit>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 FloatingIndexTypeDetailDialog::FloatingIndexTypeDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent),
-      ui_(new Ui::FloatingIndexTypeDetailDialog),
-      clientManager_(nullptr) {
+    : DetailDialogBase(parent)
+    , ui_(new Ui::FloatingIndexTypeDetailDialog)
+    , clientManager_(nullptr) {
 
     ui_->setupUi(this);
     setupUi();
@@ -71,16 +70,26 @@ void FloatingIndexTypeDetailDialog::setupUi() {
 }
 
 void FloatingIndexTypeDetailDialog::setupConnections() {
-    connect(ui_->saveButton, &QPushButton::clicked, this,
+    connect(ui_->saveButton,
+            &QPushButton::clicked,
+            this,
             &FloatingIndexTypeDetailDialog::onSaveClicked);
-    connect(ui_->deleteButton, &QPushButton::clicked, this,
+    connect(ui_->deleteButton,
+            &QPushButton::clicked,
+            this,
             &FloatingIndexTypeDetailDialog::onDeleteClicked);
-    connect(ui_->closeButton, &QPushButton::clicked, this,
+    connect(ui_->closeButton,
+            &QPushButton::clicked,
+            this,
             &FloatingIndexTypeDetailDialog::onCloseClicked);
 
-    connect(ui_->codeEdit, &QLineEdit::textChanged, this,
+    connect(ui_->codeEdit,
+            &QLineEdit::textChanged,
+            this,
             &FloatingIndexTypeDetailDialog::onCodeChanged);
-    connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this,
+    connect(ui_->descriptionEdit,
+            &QPlainTextEdit::textChanged,
+            this,
             &FloatingIndexTypeDetailDialog::onFieldChanged);
 }
 
@@ -92,8 +101,7 @@ void FloatingIndexTypeDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
 
-void FloatingIndexTypeDetailDialog::setType(
-    const trading::domain::floating_index_type& type) {
+void FloatingIndexTypeDetailDialog::setType(const trading::domain::floating_index_type& type) {
     type_ = type;
     updateUiFromType();
 }
@@ -161,14 +169,15 @@ bool FloatingIndexTypeDetailDialog::validateInput() {
 
 void FloatingIndexTypeDetailDialog::onSaveClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
+        MessageBoxHelper::warning(
+            this,
+            "Disconnected",
             "Cannot save floating index type while disconnected from server.");
         return;
     }
 
     if (!validateInput()) {
-        MessageBoxHelper::warning(this, "Invalid Input",
-            "Please fill in all required fields.");
+        MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
 
@@ -190,7 +199,8 @@ void FloatingIndexTypeDetailDialog::onSaveClicked() {
 
         trading::messaging::save_floating_index_type_request request;
         request.data = type;
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -200,8 +210,7 @@ void FloatingIndexTypeDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
@@ -226,13 +235,17 @@ void FloatingIndexTypeDetailDialog::onSaveClicked() {
 
 void FloatingIndexTypeDetailDialog::onDeleteClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
+        MessageBoxHelper::warning(
+            this,
+            "Disconnected",
             "Cannot delete floating index type while disconnected from server.");
         return;
     }
 
     QString code = QString::fromStdString(type_.code);
-    auto reply = MessageBoxHelper::question(this, "Delete Floating Index Type",
+    auto reply = MessageBoxHelper::question(
+        this,
+        "Delete Floating Index Type",
         QString("Are you sure you want to delete floating index type '%1'?").arg(code),
         QMessageBox::Yes | QMessageBox::No);
 
@@ -256,7 +269,8 @@ void FloatingIndexTypeDetailDialog::onDeleteClicked() {
 
         trading::messaging::delete_floating_index_type_request request;
         request.codes = {code};
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -266,8 +280,7 @@ void FloatingIndexTypeDetailDialog::onDeleteClicked() {
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
-            self, [self, code, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, code, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 

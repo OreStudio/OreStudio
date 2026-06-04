@@ -20,13 +20,13 @@
 #ifndef ORES_QT_PRICING_MODEL_PRODUCT_PARAMETER_HISTORY_DIALOG_HPP
 #define ORES_QT_PRICING_MODEL_PRODUCT_PARAMETER_HISTORY_DIALOG_HPP
 
-#include <QWidget>
-#include <QToolBar>
-#include <QTableWidget>
-#include <boost/uuid/uuid.hpp>
-#include "ores.qt/ClientManager.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.analytics.api/domain/pricing_model_product_parameter.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include <QTableWidget>
+#include <QToolBar>
+#include <QWidget>
+#include <boost/uuid/uuid.hpp>
 
 namespace Ui {
 class PricingModelProductParameterHistoryDialog;
@@ -54,11 +54,10 @@ private:
     }
 
 public:
-    explicit PricingModelProductParameterHistoryDialog(
-        const boost::uuids::uuid& id,
-        const QString& code,
-        ClientManager* clientManager,
-        QWidget* parent = nullptr);
+    explicit PricingModelProductParameterHistoryDialog(const boost::uuids::uuid& id,
+                                                       const QString& code,
+                                                       ClientManager* clientManager,
+                                                       QWidget* parent = nullptr);
     ~PricingModelProductParameterHistoryDialog() override;
 
     void loadHistory();
@@ -68,7 +67,8 @@ signals:
     void errorOccurred(const QString& error_message);
     void openVersionRequested(const analytics::domain::pricing_model_product_parameter& parameter,
                               int versionNumber);
-    void revertVersionRequested(const analytics::domain::pricing_model_product_parameter& parameter);
+    void
+    revertVersionRequested(const analytics::domain::pricing_model_product_parameter& parameter);
 
 private slots:
     void onVersionSelected();

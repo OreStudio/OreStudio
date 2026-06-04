@@ -19,9 +19,9 @@
 #ifndef ORES_QT_WORKFLOW_PLUGIN_HPP
 #define ORES_QT_WORKFLOW_PLUGIN_HPP
 
-#include <memory>
-#include <QList>
 #include "ores.qt/PluginBase.hpp"
+#include <QList>
+#include <memory>
 
 namespace ores::qt {
 
@@ -43,8 +43,12 @@ public:
     explicit WorkflowPlugin(QObject* parent = nullptr);
     ~WorkflowPlugin() override;
 
-    QString name() const override { return QStringLiteral("ores.qt.workflow"); }
-    int load_order() const override { return 365; }  // after SchedulerPlugin (360)
+    QString name() const override {
+        return QStringLiteral("ores.qt.workflow");
+    }
+    int load_order() const override {
+        return 365;
+    } // after SchedulerPlugin (360)
 
     void on_login(const plugin_context& ctx) override;
     void setup_menus(const shared_menus_context& ctx) override;

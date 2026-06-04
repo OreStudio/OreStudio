@@ -20,19 +20,19 @@
 #ifndef ORES_QT_CLIENT_DATASET_MODEL_HPP
 #define ORES_QT_CLIENT_DATASET_MODEL_HPP
 
-#include <vector>
-#include <QSize>
-#include <QFutureWatcher>
-#include <QAbstractTableModel>
+#include "ores.dq.api/domain/dataset.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/AbstractClientModel.hpp"
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ColumnMetadata.hpp"
 #include "ores.qt/RecencyPulseManager.hpp"
 #include "ores.qt/RecencyTracker.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.dq.api/domain/dataset.hpp"
+#include <QAbstractTableModel>
+#include <QFutureWatcher>
+#include <QSize>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <vector>
 
 namespace ores::qt {
 
@@ -40,8 +40,7 @@ class ClientDatasetModel final : public AbstractClientModel {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.client_dataset_model";
+    inline static std::string_view logger_name = "ores.qt.client_dataset_model";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -79,106 +78,77 @@ public:
      * Order must match the Column enum.
      */
     static constexpr std::size_t kColumnCount = std::size_t(ColumnCount);
-    static constexpr std::array<ColumnMetadata, kColumnCount> kColumns = {{
-        {
-            .column = Name,
-            .header = std::string_view("Name"),
-            .style = column_style::text_left,
-            .hidden_by_default = false,
-            .default_width = kColumnWidthAuto
-        },
-        {
-            .column = Code,
-            .header = std::string_view("Code"),
-            .style = column_style::text_left,
-            .hidden_by_default = false,
-            .default_width = kColumnWidthAuto
-        },
-        {
-            .column = Catalog,
-            .header = std::string_view("Catalog"),
-            .style = column_style::text_left,
-            .hidden_by_default = false,
-            .default_width = kColumnWidthAuto
-        },
-        {
-            .column = SubjectArea,
-            .header = std::string_view("Subject Area"),
-            .style = column_style::text_left,
-            .hidden_by_default = false,
-            .default_width = kColumnWidthAuto
-        },
-        {
-            .column = Domain,
-            .header = std::string_view("Domain"),
-            .style = column_style::text_left,
-            .hidden_by_default = false,
-            .default_width = kColumnWidthAuto
-        },
-        {
-            .column = Origin,
-            .header = std::string_view("Origin"),
-            .style = column_style::text_left,
-            .hidden_by_default = false,
-            .default_width = kColumnWidthAuto
-        },
-        {
-            .column = Nature,
-            .header = std::string_view("Nature"),
-            .style = column_style::text_left,
-            .hidden_by_default = false,
-            .default_width = kColumnWidthAuto
-        },
-        {
-            .column = Treatment,
-            .header = std::string_view("Treatment"),
-            .style = column_style::text_left,
-            .hidden_by_default = false,
-            .default_width = kColumnWidthAuto
-        },
-        {
-            .column = SourceSystem,
-            .header = std::string_view("Source System"),
-            .style = column_style::text_left,
-            .hidden_by_default = false,
-            .default_width = kColumnWidthAuto
-        },
-        {
-            .column = AsOfDate,
-            .header = std::string_view("As Of Date"),
-            .style = column_style::mono_left,
-            .hidden_by_default = false,
-            .default_width = kColumnWidthAuto
-        },
-        {
-            .column = Version,
-            .header = std::string_view("Version"),
-            .style = column_style::mono_center,
-            .hidden_by_default = false,
-            .default_width = 70
-        },
-        {
-            .column = ModifiedBy,
-            .header = std::string_view("Modified By"),
-            .style = column_style::text_left,
-            .hidden_by_default = false,
-            .default_width = kColumnWidthAuto
-        },
-        {
-            .column = RecordedAt,
-            .header = std::string_view("Recorded At"),
-            .style = column_style::mono_left,
-            .hidden_by_default = false,
-            .default_width = kColumnWidthAuto
-        },
-        {
-            .column = Tags,
-            .header = std::string_view("Tags"),
-            .style = column_style::text_left,
-            .hidden_by_default = false,
-            .default_width = kColumnWidthAuto
-        }
-    }};
+    static constexpr std::array<ColumnMetadata, kColumnCount> kColumns = {
+        {{.column = Name,
+          .header = std::string_view("Name"),
+          .style = column_style::text_left,
+          .hidden_by_default = false,
+          .default_width = kColumnWidthAuto},
+         {.column = Code,
+          .header = std::string_view("Code"),
+          .style = column_style::text_left,
+          .hidden_by_default = false,
+          .default_width = kColumnWidthAuto},
+         {.column = Catalog,
+          .header = std::string_view("Catalog"),
+          .style = column_style::text_left,
+          .hidden_by_default = false,
+          .default_width = kColumnWidthAuto},
+         {.column = SubjectArea,
+          .header = std::string_view("Subject Area"),
+          .style = column_style::text_left,
+          .hidden_by_default = false,
+          .default_width = kColumnWidthAuto},
+         {.column = Domain,
+          .header = std::string_view("Domain"),
+          .style = column_style::text_left,
+          .hidden_by_default = false,
+          .default_width = kColumnWidthAuto},
+         {.column = Origin,
+          .header = std::string_view("Origin"),
+          .style = column_style::text_left,
+          .hidden_by_default = false,
+          .default_width = kColumnWidthAuto},
+         {.column = Nature,
+          .header = std::string_view("Nature"),
+          .style = column_style::text_left,
+          .hidden_by_default = false,
+          .default_width = kColumnWidthAuto},
+         {.column = Treatment,
+          .header = std::string_view("Treatment"),
+          .style = column_style::text_left,
+          .hidden_by_default = false,
+          .default_width = kColumnWidthAuto},
+         {.column = SourceSystem,
+          .header = std::string_view("Source System"),
+          .style = column_style::text_left,
+          .hidden_by_default = false,
+          .default_width = kColumnWidthAuto},
+         {.column = AsOfDate,
+          .header = std::string_view("As Of Date"),
+          .style = column_style::mono_left,
+          .hidden_by_default = false,
+          .default_width = kColumnWidthAuto},
+         {.column = Version,
+          .header = std::string_view("Version"),
+          .style = column_style::mono_center,
+          .hidden_by_default = false,
+          .default_width = 70},
+         {.column = ModifiedBy,
+          .header = std::string_view("Modified By"),
+          .style = column_style::text_left,
+          .hidden_by_default = false,
+          .default_width = kColumnWidthAuto},
+         {.column = RecordedAt,
+          .header = std::string_view("Recorded At"),
+          .style = column_style::mono_left,
+          .hidden_by_default = false,
+          .default_width = kColumnWidthAuto},
+         {.column = Tags,
+          .header = std::string_view("Tags"),
+          .style = column_style::text_left,
+          .hidden_by_default = false,
+          .default_width = kColumnWidthAuto}}};
 
     /**
      * @brief Default window size for the dataset list window.
@@ -207,20 +177,18 @@ public:
      * @brief Returns a static QVector of hidden column indices (built once per process).
      */
     static QVector<int> defaultHiddenColumns() {
-        static QVector<int> const result =
-            ::ores::qt::defaultHiddenColumns<kColumnCount>(kColumns);
+        static QVector<int> const result = ::ores::qt::defaultHiddenColumns<kColumnCount>(kColumns);
         return result;
     }
 
-    explicit ClientDatasetModel(ClientManager* clientManager,
-                                QObject* parent = nullptr);
+    explicit ClientDatasetModel(ClientManager* clientManager, QObject* parent = nullptr);
     ~ClientDatasetModel() override = default;
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-    QVariant headerData(int section, Qt::Orientation orientation,
-        int role = Qt::DisplayRole) const override;
+    QVariant
+    headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
     void refresh();
     const dq::domain::dataset* getDataset(int row) const;
@@ -247,7 +215,7 @@ private:
     QFutureWatcher<FetchResult>* watcher_;
     bool is_fetching_{false};
 
-    using DatasetKeyExtractor = std::string(*)(const dq::domain::dataset&);
+    using DatasetKeyExtractor = std::string (*)(const dq::domain::dataset&);
     RecencyTracker<dq::domain::dataset, DatasetKeyExtractor> recencyTracker_;
     RecencyPulseManager* pulseManager_;
 };

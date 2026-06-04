@@ -18,16 +18,15 @@
  *
  */
 #include "ores.qt/CounterpartyDetailOperations.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/ClientManager.hpp"
-#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.refdata.api/domain/counterparty.hpp"
-#include "ores.refdata.api/domain/counterparty_identifier.hpp"
 #include "ores.refdata.api/domain/counterparty_contact_information.hpp"
-#include "ores.refdata.api/messaging/counterparty_protocol.hpp"
-#include "ores.refdata.api/messaging/counterparty_identifier_protocol.hpp"
+#include "ores.refdata.api/domain/counterparty_identifier.hpp"
 #include "ores.refdata.api/messaging/counterparty_contact_information_protocol.hpp"
+#include "ores.refdata.api/messaging/counterparty_identifier_protocol.hpp"
+#include "ores.refdata.api/messaging/counterparty_protocol.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
@@ -39,8 +38,8 @@ bool counterparty_detail_operations::has_party_category() const {
     return false;
 }
 
-operation_result counterparty_detail_operations::save_entity(
-    ClientManager* cm, const entity_data& data) const {
+operation_result counterparty_detail_operations::save_entity(ClientManager* cm,
+                                                             const entity_data& data) const {
 
     refdata::domain::counterparty cpty;
     cpty.version = data.version;
@@ -67,8 +66,8 @@ operation_result counterparty_detail_operations::save_entity(
     return {response_result->success, response_result->message};
 }
 
-operation_result counterparty_detail_operations::delete_entity(
-    ClientManager* cm, const boost::uuids::uuid& id) const {
+operation_result counterparty_detail_operations::delete_entity(ClientManager* cm,
+                                                               const boost::uuids::uuid& id) const {
 
     refdata::messaging::delete_counterparty_request request;
     request.ids.push_back(boost::uuids::to_string(id));
@@ -79,50 +78,54 @@ operation_result counterparty_detail_operations::delete_entity(
     return {response_result->success, response_result->message};
 }
 
-load_all_entities_result counterparty_detail_operations::load_all_entities(
-    ClientManager* cm) const {
+load_all_entities_result
+counterparty_detail_operations::load_all_entities(ClientManager* cm) const {
 
     refdata::messaging::get_counterparties_request request;
     request.offset = 0;
     request.limit = 1000;
     auto response_result = cm->process_authenticated_request(std::move(request));
-    if (!response_result) return {{}, false};
+    if (!response_result)
+        return {{}, false};
 
     std::vector<parent_entity_entry> entries;
     entries.reserve(response_result->counterparties.size());
     for (const auto& cpty : response_result->counterparties) {
-        entries.push_back({
-            cpty.id, cpty.short_code, cpty.full_name, cpty.status,
-            cpty.parent_counterparty_id
-        });
+        entries.push_back(
+            {cpty.id, cpty.short_code, cpty.full_name, cpty.status, cpty.parent_counterparty_id});
     }
 
     return {std::move(entries), true};
 }
 
-load_identifiers_result counterparty_detail_operations::load_identifiers(
-    ClientManager* cm, const boost::uuids::uuid& entity_id) const {
+load_identifiers_result
+counterparty_detail_operations::load_identifiers(ClientManager* cm,
+                                                 const boost::uuids::uuid& entity_id) const {
 
     refdata::messaging::get_counterparty_identifiers_request request;
     request.counterparty_id = boost::uuids::to_string(entity_id);
     auto response_result = cm->process_authenticated_request(std::move(request));
-    if (!response_result) return {{}, false};
+    if (!response_result)
+        return {{}, false};
 
     std::vector<identifier_entry> entries;
     entries.reserve(response_result->identifiers.size());
     for (const auto& ident : response_result->identifiers) {
-        entries.push_back({
-            ident.id, ident.counterparty_id,
-            ident.id_scheme, ident.id_value, ident.description,
-            ident.modified_by, ident.performed_by
-        });
+        entries.push_back({ident.id,
+                           ident.counterparty_id,
+                           ident.id_scheme,
+                           ident.id_value,
+                           ident.description,
+                           ident.modified_by,
+                           ident.performed_by});
     }
 
     return {std::move(entries), true};
 }
 
-operation_result counterparty_detail_operations::save_identifier(
-    ClientManager* cm, const identifier_entry& entry) const {
+operation_result
+counterparty_detail_operations::save_identifier(ClientManager* cm,
+                                                const identifier_entry& entry) const {
 
     refdata::domain::counterparty_identifier ident;
     ident.id = entry.id;
@@ -142,8 +145,9 @@ operation_result counterparty_detail_operations::save_identifier(
     return {response_result->success, response_result->message};
 }
 
-operation_result counterparty_detail_operations::delete_identifier(
-    ClientManager* cm, const boost::uuids::uuid& id) const {
+operation_result
+counterparty_detail_operations::delete_identifier(ClientManager* cm,
+                                                  const boost::uuids::uuid& id) const {
 
     refdata::messaging::delete_counterparty_identifier_request request;
     request.ids.push_back(boost::uuids::to_string(id));
@@ -154,30 +158,40 @@ operation_result counterparty_detail_operations::delete_identifier(
     return {response_result->success, response_result->message};
 }
 
-load_contacts_result counterparty_detail_operations::load_contacts(
-    ClientManager* cm, const boost::uuids::uuid& entity_id) const {
+load_contacts_result
+counterparty_detail_operations::load_contacts(ClientManager* cm,
+                                              const boost::uuids::uuid& entity_id) const {
 
     refdata::messaging::get_counterparty_contact_informations_request request;
     request.counterparty_id = boost::uuids::to_string(entity_id);
     auto response_result = cm->process_authenticated_request(std::move(request));
-    if (!response_result) return {{}, false};
+    if (!response_result)
+        return {{}, false};
 
     std::vector<contact_entry> entries;
     entries.reserve(response_result->contact_informations.size());
     for (const auto& c : response_result->contact_informations) {
-        entries.push_back({
-            c.id, c.counterparty_id, c.contact_type,
-            c.street_line_1, c.street_line_2, c.city, c.state,
-            c.country_code, c.postal_code, c.phone, c.email, c.web_page,
-            c.modified_by, c.performed_by
-        });
+        entries.push_back({c.id,
+                           c.counterparty_id,
+                           c.contact_type,
+                           c.street_line_1,
+                           c.street_line_2,
+                           c.city,
+                           c.state,
+                           c.country_code,
+                           c.postal_code,
+                           c.phone,
+                           c.email,
+                           c.web_page,
+                           c.modified_by,
+                           c.performed_by});
     }
 
     return {std::move(entries), true};
 }
 
-operation_result counterparty_detail_operations::save_contact(
-    ClientManager* cm, const contact_entry& entry) const {
+operation_result counterparty_detail_operations::save_contact(ClientManager* cm,
+                                                              const contact_entry& entry) const {
 
     refdata::domain::counterparty_contact_information contact;
     contact.id = entry.id;
@@ -204,8 +218,9 @@ operation_result counterparty_detail_operations::save_contact(
     return {response_result->success, response_result->message};
 }
 
-operation_result counterparty_detail_operations::delete_contact(
-    ClientManager* cm, const boost::uuids::uuid& id) const {
+operation_result
+counterparty_detail_operations::delete_contact(ClientManager* cm,
+                                               const boost::uuids::uuid& id) const {
 
     refdata::messaging::delete_counterparty_contact_information_request request;
     request.ids.push_back(boost::uuids::to_string(id));

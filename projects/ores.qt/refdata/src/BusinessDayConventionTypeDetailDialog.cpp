@@ -18,24 +18,23 @@
  *
  */
 #include "ores.qt/BusinessDayConventionTypeDetailDialog.hpp"
-
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include <QPlainTextEdit>
-#include "ui_BusinessDayConventionTypeDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.trading.api/messaging/business_day_convention_type_protocol.hpp"
+#include "ui_BusinessDayConventionTypeDetailDialog.h"
+#include <QFutureWatcher>
+#include <QMessageBox>
+#include <QPlainTextEdit>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 BusinessDayConventionTypeDetailDialog::BusinessDayConventionTypeDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent),
-      ui_(new Ui::BusinessDayConventionTypeDetailDialog),
-      clientManager_(nullptr) {
+    : DetailDialogBase(parent)
+    , ui_(new Ui::BusinessDayConventionTypeDetailDialog)
+    , clientManager_(nullptr) {
 
     ui_->setupUi(this);
     setupUi();
@@ -71,16 +70,26 @@ void BusinessDayConventionTypeDetailDialog::setupUi() {
 }
 
 void BusinessDayConventionTypeDetailDialog::setupConnections() {
-    connect(ui_->saveButton, &QPushButton::clicked, this,
+    connect(ui_->saveButton,
+            &QPushButton::clicked,
+            this,
             &BusinessDayConventionTypeDetailDialog::onSaveClicked);
-    connect(ui_->deleteButton, &QPushButton::clicked, this,
+    connect(ui_->deleteButton,
+            &QPushButton::clicked,
+            this,
             &BusinessDayConventionTypeDetailDialog::onDeleteClicked);
-    connect(ui_->closeButton, &QPushButton::clicked, this,
+    connect(ui_->closeButton,
+            &QPushButton::clicked,
+            this,
             &BusinessDayConventionTypeDetailDialog::onCloseClicked);
 
-    connect(ui_->codeEdit, &QLineEdit::textChanged, this,
+    connect(ui_->codeEdit,
+            &QLineEdit::textChanged,
+            this,
             &BusinessDayConventionTypeDetailDialog::onCodeChanged);
-    connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this,
+    connect(ui_->descriptionEdit,
+            &QPlainTextEdit::textChanged,
+            this,
             &BusinessDayConventionTypeDetailDialog::onFieldChanged);
 }
 
@@ -161,14 +170,15 @@ bool BusinessDayConventionTypeDetailDialog::validateInput() {
 
 void BusinessDayConventionTypeDetailDialog::onSaveClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
+        MessageBoxHelper::warning(
+            this,
+            "Disconnected",
             "Cannot save business day convention type while disconnected from server.");
         return;
     }
 
     if (!validateInput()) {
-        MessageBoxHelper::warning(this, "Invalid Input",
-            "Please fill in all required fields.");
+        MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
 
@@ -190,7 +200,8 @@ void BusinessDayConventionTypeDetailDialog::onSaveClicked() {
 
         trading::messaging::save_business_day_convention_type_request request;
         request.data = type;
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -200,8 +211,7 @@ void BusinessDayConventionTypeDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
@@ -226,13 +236,17 @@ void BusinessDayConventionTypeDetailDialog::onSaveClicked() {
 
 void BusinessDayConventionTypeDetailDialog::onDeleteClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
+        MessageBoxHelper::warning(
+            this,
+            "Disconnected",
             "Cannot delete business day convention type while disconnected from server.");
         return;
     }
 
     QString code = QString::fromStdString(type_.code);
-    auto reply = MessageBoxHelper::question(this, "Delete Business Day Convention Type",
+    auto reply = MessageBoxHelper::question(
+        this,
+        "Delete Business Day Convention Type",
         QString("Are you sure you want to delete business day convention type '%1'?").arg(code),
         QMessageBox::Yes | QMessageBox::No);
 
@@ -256,7 +270,8 @@ void BusinessDayConventionTypeDetailDialog::onDeleteClicked() {
 
         trading::messaging::delete_business_day_convention_type_request request;
         request.codes = {code};
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -266,14 +281,14 @@ void BusinessDayConventionTypeDetailDialog::onDeleteClicked() {
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
-            self, [self, code, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, code, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Business Day Convention Type deleted successfully";
-            emit self->statusMessage(QString("Business Day Convention Type '%1' deleted").arg(code));
+            emit self->statusMessage(
+                QString("Business Day Convention Type '%1' deleted").arg(code));
             emit self->typeDeleted(code);
             self->requestClose();
         } else {

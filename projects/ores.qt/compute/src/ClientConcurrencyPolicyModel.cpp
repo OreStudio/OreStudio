@@ -18,38 +18,43 @@
  *
  */
 #include "ores.qt/ClientConcurrencyPolicyModel.hpp"
-
-#include <QtConcurrent>
-#include "ores.reporting.api/messaging/concurrency_policy_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
+#include "ores.reporting.api/messaging/concurrency_policy_protocol.hpp"
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    std::string concurrency_policy_key_extractor(const reporting::domain::concurrency_policy& e) {
-        return e.code;
-    }
+std::string concurrency_policy_key_extractor(const reporting::domain::concurrency_policy& e) {
+    return e.code;
+}
 }
 
-ClientConcurrencyPolicyModel::ClientConcurrencyPolicyModel(
-    ClientManager* clientManager, QObject* parent)
-    : AbstractClientModel(parent),
-      clientManager_(clientManager),
-      watcher_(new QFutureWatcher<FetchResult>(this)),
-      recencyTracker_(concurrency_policy_key_extractor),
-      pulseManager_(new RecencyPulseManager(this)) {
+ClientConcurrencyPolicyModel::ClientConcurrencyPolicyModel(ClientManager* clientManager,
+                                                           QObject* parent)
+    : AbstractClientModel(parent)
+    , clientManager_(clientManager)
+    , watcher_(new QFutureWatcher<FetchResult>(this))
+    , recencyTracker_(concurrency_policy_key_extractor)
+    , pulseManager_(new RecencyPulseManager(this)) {
 
-    connect(watcher_, &QFutureWatcher<FetchResult>::finished,
-            this, &ClientConcurrencyPolicyModel::onPolicysLoaded);
+    connect(watcher_,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            &ClientConcurrencyPolicyModel::onPolicysLoaded);
 
-    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
-            this, &ClientConcurrencyPolicyModel::onPulseStateChanged);
-    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
-            this, &ClientConcurrencyPolicyModel::onPulsingComplete);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulse_state_changed,
+            this,
+            &ClientConcurrencyPolicyModel::onPulseStateChanged);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulsing_complete,
+            this,
+            &ClientConcurrencyPolicyModel::onPulsingComplete);
 }
 
 int ClientConcurrencyPolicyModel::rowCount(const QModelIndex& parent) const {
@@ -64,8 +69,7 @@ int ClientConcurrencyPolicyModel::columnCount(const QModelIndex& parent) const {
     return ColumnCount;
 }
 
-QVariant ClientConcurrencyPolicyModel::data(
-    const QModelIndex& index, int role) const {
+QVariant ClientConcurrencyPolicyModel::data(const QModelIndex& index, int role) const {
     if (!index.isValid())
         return {};
 
@@ -77,22 +81,22 @@ QVariant ClientConcurrencyPolicyModel::data(
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-        case Code:
-            return QString::fromStdString(policy.code);
-        case Name:
-            return QString::fromStdString(policy.name);
-        case Description:
-            return QString::fromStdString(policy.description);
-        case DisplayOrder:
-            return static_cast<qlonglong>(policy.display_order);
-        case Version:
-            return static_cast<qlonglong>(policy.version);
-        case ModifiedBy:
-            return QString::fromStdString(policy.modified_by);
-        case RecordedAt:
-            return relative_time_helper::format(policy.recorded_at);
-        default:
-            return {};
+            case Code:
+                return QString::fromStdString(policy.code);
+            case Name:
+                return QString::fromStdString(policy.name);
+            case Description:
+                return QString::fromStdString(policy.description);
+            case DisplayOrder:
+                return static_cast<qlonglong>(policy.display_order);
+            case Version:
+                return static_cast<qlonglong>(policy.version);
+            case ModifiedBy:
+                return QString::fromStdString(policy.modified_by);
+            case RecordedAt:
+                return relative_time_helper::format(policy.recorded_at);
+            default:
+                return {};
         }
     }
 
@@ -103,28 +107,28 @@ QVariant ClientConcurrencyPolicyModel::data(
     return {};
 }
 
-QVariant ClientConcurrencyPolicyModel::headerData(
-    int section, Qt::Orientation orientation, int role) const {
+QVariant
+ClientConcurrencyPolicyModel::headerData(int section, Qt::Orientation orientation, int role) const {
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return {};
 
     switch (section) {
-    case Code:
-        return tr("Code");
-    case Name:
-        return tr("Name");
-    case Description:
-        return tr("Description");
-    case DisplayOrder:
-        return tr("Order");
-    case Version:
-        return tr("Version");
-    case ModifiedBy:
-        return tr("Modified By");
-    case RecordedAt:
-        return tr("Recorded At");
-    default:
-        return {};
+        case Code:
+            return tr("Code");
+        case Name:
+            return tr("Name");
+        case Description:
+            return tr("Description");
+        case DisplayOrder:
+            return tr("Order");
+        case Version:
+            return tr("Version");
+        case ModifiedBy:
+            return tr("Modified By");
+        case RecordedAt:
+            return tr("Recorded At");
+        default:
+            return {};
     }
 }
 
@@ -154,8 +158,7 @@ void ClientConcurrencyPolicyModel::refresh() {
     fetch_policies(0, page_size_);
 }
 
-void ClientConcurrencyPolicyModel::load_page(std::uint32_t offset,
-                                          std::uint32_t limit) {
+void ClientConcurrencyPolicyModel::load_page(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "load_page: offset=" << offset << ", limit=" << limit;
 
     if (is_fetching_) {
@@ -179,18 +182,19 @@ void ClientConcurrencyPolicyModel::load_page(std::uint32_t offset,
     fetch_policies(offset, limit);
 }
 
-void ClientConcurrencyPolicyModel::fetch_policies(
-    std::uint32_t offset, std::uint32_t limit) {
+void ClientConcurrencyPolicyModel::fetch_policies(std::uint32_t offset, std::uint32_t limit) {
     is_fetching_ = true;
     QPointer<ClientConcurrencyPolicyModel> self = this;
 
-    QFuture<FetchResult> future =
-        QtConcurrent::run([self, offset, limit]() -> FetchResult {
-            return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
-                BOOST_LOG_SEV(lg(), debug) << "Making concurrency policies request with offset="
-                                           << offset << ", limit=" << limit;
+    QFuture<FetchResult> future = QtConcurrent::run([self, offset, limit]() -> FetchResult {
+        return exception_helper::wrap_async_fetch<FetchResult>(
+            [&]() -> FetchResult {
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Making concurrency policies request with offset=" << offset
+                    << ", limit=" << limit;
                 if (!self || !self->clientManager_) {
-                    return {.success = false, .policies = {},
+                    return {.success = false,
+                            .policies = {},
                             .total_available_count = 0,
                             .error_message = "Model was destroyed",
                             .error_details = {}};
@@ -198,29 +202,31 @@ void ClientConcurrencyPolicyModel::fetch_policies(
 
                 reporting::messaging::get_concurrency_policies_request request;
 
-                auto result = self->clientManager_->
-                    process_authenticated_request(std::move(request));
+                auto result =
+                    self->clientManager_->process_authenticated_request(std::move(request));
 
                 if (!result) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to fetch concurrency policies: "
-                                               << result.error();
-                    return {.success = false, .policies = {},
+                    BOOST_LOG_SEV(lg(), error)
+                        << "Failed to fetch concurrency policies: " << result.error();
+                    return {.success = false,
+                            .policies = {},
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(
                                 "Failed to fetch concurrency policies: " + result.error()),
                             .error_details = {}};
                 }
 
-                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->policies.size()
-                                           << " concurrency policies";
-                const std::uint32_t count =
-                    static_cast<std::uint32_t>(result->policies.size());
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Fetched " << result->policies.size() << " concurrency policies";
+                const std::uint32_t count = static_cast<std::uint32_t>(result->policies.size());
                 return {.success = true,
                         .policies = std::move(result->policies),
                         .total_available_count = count,
-                        .error_message = {}, .error_details = {}};
-            }, "concurrency policies");
-        });
+                        .error_message = {},
+                        .error_details = {}};
+            },
+            "concurrency policies");
+    });
 
     watcher_->setFuture(future);
 }
@@ -231,8 +237,8 @@ void ClientConcurrencyPolicyModel::onPolicysLoaded() {
     const auto result = watcher_->result();
 
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to fetch concurrency policies: "
-                                   << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to fetch concurrency policies: " << result.error_message.toStdString();
         emit loadError(result.error_message, result.error_details);
         return;
     }
@@ -279,8 +285,7 @@ ClientConcurrencyPolicyModel::getPolicy(int row) const {
     return &policies_[idx];
 }
 
-QVariant ClientConcurrencyPolicyModel::recency_foreground_color(
-    const std::string& code) const {
+QVariant ClientConcurrencyPolicyModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {
         return color_constants::stale_indicator;
     }
@@ -289,8 +294,8 @@ QVariant ClientConcurrencyPolicyModel::recency_foreground_color(
 
 void ClientConcurrencyPolicyModel::onPulseStateChanged(bool /*isOn*/) {
     if (!policies_.empty()) {
-        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
-            {Qt::ForegroundRole});
+        emit dataChanged(
+            index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::ForegroundRole});
     }
 }
 

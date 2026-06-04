@@ -20,11 +20,11 @@
 #ifndef ORES_QT_CURRENCY_CONTROLLER_HPP
 #define ORES_QT_CURRENCY_CONTROLLER_HPP
 
-#include <QPointer>
-#include <QDateTime>
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/EntityController.hpp"
 #include "ores.refdata.api/domain/currency.hpp"
-#include "ores.logging/make_logger.hpp"
+#include <QDateTime>
+#include <QPointer>
 
 namespace ores::qt {
 
@@ -54,8 +54,7 @@ class CurrencyController : public EntityController {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.currency_controller";
+    inline static std::string_view logger_name = "ores.qt.currency_controller";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -75,14 +74,13 @@ public:
      * @param username Username of logged-in user (for audit trails)
      * @param parent QObject parent (for Qt ownership)
      */
-    explicit CurrencyController(
-        QMainWindow* mainWindow,
-        QMdiArea* mdiArea,
-        ClientManager* clientManager,
-        ImageCache* imageCache,
-        ChangeReasonCache* changeReasonCache,
-        const QString& username,
-        QObject* parent = nullptr);
+    explicit CurrencyController(QMainWindow* mainWindow,
+                                QMdiArea* mdiArea,
+                                ClientManager* clientManager,
+                                ImageCache* imageCache,
+                                ChangeReasonCache* changeReasonCache,
+                                const QString& username,
+                                QObject* parent = nullptr);
 
     /**
      * @brief Destroys the currency controller.
@@ -182,8 +180,10 @@ private slots:
      * @param timestamp When the event occurred
      * @param entityIds ISO codes of currencies that changed (may be empty)
      */
-    void onNotificationReceived(const QString& eventType, const QDateTime& timestamp,
-                                const QStringList& entityIds, const QString& tenantId);
+    void onNotificationReceived(const QString& eventType,
+                                const QDateTime& timestamp,
+                                const QStringList& entityIds,
+                                const QString& tenantId);
 
 private:
     /**

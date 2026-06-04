@@ -18,38 +18,42 @@
  *
  */
 #include "ores.qt/ClientReportTypeModel.hpp"
-
-#include <QtConcurrent>
-#include "ores.reporting.api/messaging/report_type_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
+#include "ores.reporting.api/messaging/report_type_protocol.hpp"
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    std::string report_type_key_extractor(const reporting::domain::report_type& e) {
-        return e.code;
-    }
+std::string report_type_key_extractor(const reporting::domain::report_type& e) {
+    return e.code;
+}
 }
 
-ClientReportTypeModel::ClientReportTypeModel(
-    ClientManager* clientManager, QObject* parent)
-    : AbstractClientModel(parent),
-      clientManager_(clientManager),
-      watcher_(new QFutureWatcher<FetchResult>(this)),
-      recencyTracker_(report_type_key_extractor),
-      pulseManager_(new RecencyPulseManager(this)) {
+ClientReportTypeModel::ClientReportTypeModel(ClientManager* clientManager, QObject* parent)
+    : AbstractClientModel(parent)
+    , clientManager_(clientManager)
+    , watcher_(new QFutureWatcher<FetchResult>(this))
+    , recencyTracker_(report_type_key_extractor)
+    , pulseManager_(new RecencyPulseManager(this)) {
 
-    connect(watcher_, &QFutureWatcher<FetchResult>::finished,
-            this, &ClientReportTypeModel::onTypesLoaded);
+    connect(watcher_,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            &ClientReportTypeModel::onTypesLoaded);
 
-    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
-            this, &ClientReportTypeModel::onPulseStateChanged);
-    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
-            this, &ClientReportTypeModel::onPulsingComplete);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulse_state_changed,
+            this,
+            &ClientReportTypeModel::onPulseStateChanged);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulsing_complete,
+            this,
+            &ClientReportTypeModel::onPulsingComplete);
 }
 
 int ClientReportTypeModel::rowCount(const QModelIndex& parent) const {
@@ -64,8 +68,7 @@ int ClientReportTypeModel::columnCount(const QModelIndex& parent) const {
     return ColumnCount;
 }
 
-QVariant ClientReportTypeModel::data(
-    const QModelIndex& index, int role) const {
+QVariant ClientReportTypeModel::data(const QModelIndex& index, int role) const {
     if (!index.isValid())
         return {};
 
@@ -77,22 +80,22 @@ QVariant ClientReportTypeModel::data(
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-        case Code:
-            return QString::fromStdString(type.code);
-        case Name:
-            return QString::fromStdString(type.name);
-        case Description:
-            return QString::fromStdString(type.description);
-        case DisplayOrder:
-            return static_cast<qlonglong>(type.display_order);
-        case Version:
-            return static_cast<qlonglong>(type.version);
-        case ModifiedBy:
-            return QString::fromStdString(type.modified_by);
-        case RecordedAt:
-            return relative_time_helper::format(type.recorded_at);
-        default:
-            return {};
+            case Code:
+                return QString::fromStdString(type.code);
+            case Name:
+                return QString::fromStdString(type.name);
+            case Description:
+                return QString::fromStdString(type.description);
+            case DisplayOrder:
+                return static_cast<qlonglong>(type.display_order);
+            case Version:
+                return static_cast<qlonglong>(type.version);
+            case ModifiedBy:
+                return QString::fromStdString(type.modified_by);
+            case RecordedAt:
+                return relative_time_helper::format(type.recorded_at);
+            default:
+                return {};
         }
     }
 
@@ -103,28 +106,28 @@ QVariant ClientReportTypeModel::data(
     return {};
 }
 
-QVariant ClientReportTypeModel::headerData(
-    int section, Qt::Orientation orientation, int role) const {
+QVariant
+ClientReportTypeModel::headerData(int section, Qt::Orientation orientation, int role) const {
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return {};
 
     switch (section) {
-    case Code:
-        return tr("Code");
-    case Name:
-        return tr("Name");
-    case Description:
-        return tr("Description");
-    case DisplayOrder:
-        return tr("Order");
-    case Version:
-        return tr("Version");
-    case ModifiedBy:
-        return tr("Modified By");
-    case RecordedAt:
-        return tr("Recorded At");
-    default:
-        return {};
+        case Code:
+            return tr("Code");
+        case Name:
+            return tr("Name");
+        case Description:
+            return tr("Description");
+        case DisplayOrder:
+            return tr("Order");
+        case Version:
+            return tr("Version");
+        case ModifiedBy:
+            return tr("Modified By");
+        case RecordedAt:
+            return tr("Recorded At");
+        default:
+            return {};
     }
 }
 
@@ -154,8 +157,7 @@ void ClientReportTypeModel::refresh() {
     fetch_types(0, page_size_);
 }
 
-void ClientReportTypeModel::load_page(std::uint32_t offset,
-                                          std::uint32_t limit) {
+void ClientReportTypeModel::load_page(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "load_page: offset=" << offset << ", limit=" << limit;
 
     if (is_fetching_) {
@@ -179,18 +181,18 @@ void ClientReportTypeModel::load_page(std::uint32_t offset,
     fetch_types(offset, limit);
 }
 
-void ClientReportTypeModel::fetch_types(
-    std::uint32_t offset, std::uint32_t limit) {
+void ClientReportTypeModel::fetch_types(std::uint32_t offset, std::uint32_t limit) {
     is_fetching_ = true;
     QPointer<ClientReportTypeModel> self = this;
 
-    QFuture<FetchResult> future =
-        QtConcurrent::run([self, offset, limit]() -> FetchResult {
-            return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
-                BOOST_LOG_SEV(lg(), debug) << "Making report types request with offset="
-                                           << offset << ", limit=" << limit;
+    QFuture<FetchResult> future = QtConcurrent::run([self, offset, limit]() -> FetchResult {
+        return exception_helper::wrap_async_fetch<FetchResult>(
+            [&]() -> FetchResult {
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Making report types request with offset=" << offset << ", limit=" << limit;
                 if (!self || !self->clientManager_) {
-                    return {.success = false, .types = {},
+                    return {.success = false,
+                            .types = {},
                             .total_available_count = 0,
                             .error_message = "Model was destroyed",
                             .error_details = {}};
@@ -198,29 +200,30 @@ void ClientReportTypeModel::fetch_types(
 
                 reporting::messaging::get_report_types_request request;
 
-                auto result = self->clientManager_->
-                    process_authenticated_request(std::move(request));
+                auto result =
+                    self->clientManager_->process_authenticated_request(std::move(request));
 
                 if (!result) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to fetch report types: "
-                                               << result.error();
-                    return {.success = false, .types = {},
+                    BOOST_LOG_SEV(lg(), error)
+                        << "Failed to fetch report types: " << result.error();
+                    return {.success = false,
+                            .types = {},
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(
                                 "Failed to fetch report types: " + result.error()),
                             .error_details = {}};
                 }
 
-                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->types.size()
-                                           << " report types";
-                const std::uint32_t count =
-                    static_cast<std::uint32_t>(result->types.size());
+                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->types.size() << " report types";
+                const std::uint32_t count = static_cast<std::uint32_t>(result->types.size());
                 return {.success = true,
                         .types = std::move(result->types),
                         .total_available_count = count,
-                        .error_message = {}, .error_details = {}};
-            }, "report types");
-        });
+                        .error_message = {},
+                        .error_details = {}};
+            },
+            "report types");
+    });
 
     watcher_->setFuture(future);
 }
@@ -231,8 +234,8 @@ void ClientReportTypeModel::onTypesLoaded() {
     const auto result = watcher_->result();
 
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to fetch report types: "
-                                   << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to fetch report types: " << result.error_message.toStdString();
         emit loadError(result.error_message, result.error_details);
         return;
     }
@@ -271,16 +274,14 @@ void ClientReportTypeModel::set_page_size(std::uint32_t size) {
     }
 }
 
-const reporting::domain::report_type*
-ClientReportTypeModel::getType(int row) const {
+const reporting::domain::report_type* ClientReportTypeModel::getType(int row) const {
     const auto idx = static_cast<std::size_t>(row);
     if (idx >= types_.size())
         return nullptr;
     return &types_[idx];
 }
 
-QVariant ClientReportTypeModel::recency_foreground_color(
-    const std::string& code) const {
+QVariant ClientReportTypeModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {
         return color_constants::stale_indicator;
     }
@@ -289,8 +290,8 @@ QVariant ClientReportTypeModel::recency_foreground_color(
 
 void ClientReportTypeModel::onPulseStateChanged(bool /*isOn*/) {
     if (!types_.empty()) {
-        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
-            {Qt::ForegroundRole});
+        emit dataChanged(
+            index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::ForegroundRole});
     }
 }
 

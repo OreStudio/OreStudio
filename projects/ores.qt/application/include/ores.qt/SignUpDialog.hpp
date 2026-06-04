@@ -20,15 +20,15 @@
 #ifndef ORES_QT_SIGNUP_DIALOG_HPP
 #define ORES_QT_SIGNUP_DIALOG_HPP
 
-#include <QWidget>
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include <QCheckBox>
 #include <QKeyEvent>
+#include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
-#include <QLabel>
-#include <QCheckBox>
 #include <QSpinBox>
-#include "ores.qt/ClientManager.hpp"
-#include "ores.logging/make_logger.hpp"
+#include <QWidget>
 
 namespace ores::qt {
 

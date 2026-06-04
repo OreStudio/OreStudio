@@ -20,13 +20,13 @@
 #ifndef ORES_QT_CATALOG_DETAIL_DIALOG_HPP
 #define ORES_QT_CATALOG_DETAIL_DIALOG_HPP
 
-#include <string>
-#include <QTabWidget>
 #include "ores.dq.api/domain/catalog.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.qt/ProvenanceWidget.hpp"
-#include "ores.logging/make_logger.hpp"
+#include <QTabWidget>
+#include <string>
 
 namespace Ui {
 class CatalogDetailDialog;

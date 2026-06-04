@@ -19,10 +19,10 @@
 #ifndef ORES_QT_PLUGIN_REGISTRY_HPP
 #define ORES_QT_PLUGIN_REGISTRY_HPP
 
-#include <QString>
-#include <QVector>
 #include "ores.qt/IPlugin.hpp"
 #include "ores.qt/export.hpp"
+#include <QString>
+#include <QVector>
 
 class QPluginLoader;
 
@@ -32,8 +32,8 @@ namespace ores::qt {
  * @brief Records a plugin that could not be loaded.
  */
 struct plugin_load_error {
-    QString filename;   ///< Short filename (e.g. libores.qt.admin.so)
-    QString message;    ///< Human-readable error from QPluginLoader::errorString()
+    QString filename; ///< Short filename (e.g. libores.qt.admin.so)
+    QString message;  ///< Human-readable error from QPluginLoader::errorString()
 };
 
 /**
@@ -81,7 +81,9 @@ public:
      *
      * Plugins are ordered by load_order() ascending (admin first, trading last).
      */
-    const QVector<IPlugin*>& plugins() const { return plugins_; }
+    const QVector<IPlugin*>& plugins() const {
+        return plugins_;
+    }
 
     /**
      * @brief Return any errors collected during load_from_directory().
@@ -89,7 +91,9 @@ public:
      * Non-empty when one or more .so files failed to load or did not implement
      * IPlugin.  Callers may use this to warn the user after startup.
      */
-    const QVector<plugin_load_error>& load_errors() const { return load_errors_; }
+    const QVector<plugin_load_error>& load_errors() const {
+        return load_errors_;
+    }
 
     PluginRegistry() = default;
     ~PluginRegistry();
@@ -97,9 +101,8 @@ public:
     PluginRegistry& operator=(const PluginRegistry&) = delete;
 
 private:
-
-    QVector<QPluginLoader*>   loaders_;     ///< Must outlive plugin instances.
-    QVector<IPlugin*>         plugins_;
+    QVector<QPluginLoader*> loaders_; ///< Must outlive plugin instances.
+    QVector<IPlugin*> plugins_;
     QVector<plugin_load_error> load_errors_;
 };
 

@@ -18,23 +18,22 @@
  *
  */
 #include "ores.qt/SwapConventionDetailDialog.hpp"
-
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include "ui_SwapConventionDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.refdata.api/messaging/swap_convention_protocol.hpp"
+#include "ui_SwapConventionDetailDialog.h"
+#include <QFutureWatcher>
+#include <QMessageBox>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 SwapConventionDetailDialog::SwapConventionDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent),
-      ui_(new Ui::SwapConventionDetailDialog),
-      clientManager_(nullptr) {
+    : DetailDialogBase(parent)
+    , ui_(new Ui::SwapConventionDetailDialog)
+    , clientManager_(nullptr) {
 
     ui_->setupUi(this);
     setupUi();
@@ -70,28 +69,41 @@ void SwapConventionDetailDialog::setupUi() {
 }
 
 void SwapConventionDetailDialog::setupConnections() {
-    connect(ui_->saveButton, &QPushButton::clicked, this,
-            &SwapConventionDetailDialog::onSaveClicked);
-    connect(ui_->deleteButton, &QPushButton::clicked, this,
+    connect(
+        ui_->saveButton, &QPushButton::clicked, this, &SwapConventionDetailDialog::onSaveClicked);
+    connect(ui_->deleteButton,
+            &QPushButton::clicked,
+            this,
             &SwapConventionDetailDialog::onDeleteClicked);
-    connect(ui_->closeButton, &QPushButton::clicked, this,
-            &SwapConventionDetailDialog::onCloseClicked);
+    connect(
+        ui_->closeButton, &QPushButton::clicked, this, &SwapConventionDetailDialog::onCloseClicked);
 
-    connect(ui_->idEdit, &QLineEdit::textChanged, this,
-            &SwapConventionDetailDialog::onCodeChanged);
-    connect(ui_->fixedFrequencyEdit, &QLineEdit::textChanged, this,
+    connect(ui_->idEdit, &QLineEdit::textChanged, this, &SwapConventionDetailDialog::onCodeChanged);
+    connect(ui_->fixedFrequencyEdit,
+            &QLineEdit::textChanged,
+            this,
             &SwapConventionDetailDialog::onFieldChanged);
-    connect(ui_->fixedDayCountFractionEdit, &QLineEdit::textChanged, this,
+    connect(ui_->fixedDayCountFractionEdit,
+            &QLineEdit::textChanged,
+            this,
             &SwapConventionDetailDialog::onFieldChanged);
-    connect(ui_->indexEdit, &QLineEdit::textChanged, this,
+    connect(
+        ui_->indexEdit, &QLineEdit::textChanged, this, &SwapConventionDetailDialog::onFieldChanged);
+    connect(ui_->fixedCalendarEdit,
+            &QLineEdit::textChanged,
+            this,
             &SwapConventionDetailDialog::onFieldChanged);
-    connect(ui_->fixedCalendarEdit, &QLineEdit::textChanged, this,
+    connect(ui_->fixedConventionEdit,
+            &QLineEdit::textChanged,
+            this,
             &SwapConventionDetailDialog::onFieldChanged);
-    connect(ui_->fixedConventionEdit, &QLineEdit::textChanged, this,
+    connect(ui_->floatFrequencyEdit,
+            &QLineEdit::textChanged,
+            this,
             &SwapConventionDetailDialog::onFieldChanged);
-    connect(ui_->floatFrequencyEdit, &QLineEdit::textChanged, this,
-            &SwapConventionDetailDialog::onFieldChanged);
-    connect(ui_->subPeriodsCouponTypeEdit, &QLineEdit::textChanged, this,
+    connect(ui_->subPeriodsCouponTypeEdit,
+            &QLineEdit::textChanged,
+            this,
             &SwapConventionDetailDialog::onFieldChanged);
 }
 
@@ -103,8 +115,7 @@ void SwapConventionDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
 
-void SwapConventionDetailDialog::setConvention(
-    const refdata::domain::swap_convention& sc) {
+void SwapConventionDetailDialog::setConvention(const refdata::domain::swap_convention& sc) {
     sc_ = sc;
     updateUiFromConvention();
 }
@@ -137,18 +148,15 @@ void SwapConventionDetailDialog::updateUiFromConvention() {
     ui_->fixedFrequencyEdit->setText(QString::fromStdString(sc_.fixed_frequency));
     ui_->fixedDayCountFractionEdit->setText(QString::fromStdString(sc_.fixed_day_count_fraction));
     ui_->indexEdit->setText(QString::fromStdString(sc_.index));
-    ui_->fixedCalendarEdit->setText(sc_.fixed_calendar
-        ? QString::fromStdString(*sc_.fixed_calendar)
-        : QString{});
-    ui_->fixedConventionEdit->setText(sc_.fixed_convention
-        ? QString::fromStdString(*sc_.fixed_convention)
-        : QString{});
-    ui_->floatFrequencyEdit->setText(sc_.float_frequency
-        ? QString::fromStdString(*sc_.float_frequency)
-        : QString{});
-    ui_->subPeriodsCouponTypeEdit->setText(sc_.sub_periods_coupon_type
-        ? QString::fromStdString(*sc_.sub_periods_coupon_type)
-        : QString{});
+    ui_->fixedCalendarEdit->setText(
+        sc_.fixed_calendar ? QString::fromStdString(*sc_.fixed_calendar) : QString{});
+    ui_->fixedConventionEdit->setText(
+        sc_.fixed_convention ? QString::fromStdString(*sc_.fixed_convention) : QString{});
+    ui_->floatFrequencyEdit->setText(
+        sc_.float_frequency ? QString::fromStdString(*sc_.float_frequency) : QString{});
+    ui_->subPeriodsCouponTypeEdit->setText(
+        sc_.sub_periods_coupon_type ? QString::fromStdString(*sc_.sub_periods_coupon_type) :
+                                      QString{});
 
     populateProvenance(sc_.version,
                        sc_.modified_by,
@@ -170,23 +178,28 @@ void SwapConventionDetailDialog::updateConventionFromUi() {
     sc_.index = ui_->indexEdit->text().trimmed().toStdString();
     {
         const auto fixed_calendar_str = ui_->fixedCalendarEdit->text().trimmed().toStdString();
-        sc_.fixed_calendar =
-            fixed_calendar_str.empty() ? std::nullopt : std::optional<std::string>(fixed_calendar_str);
+        sc_.fixed_calendar = fixed_calendar_str.empty() ?
+                                 std::nullopt :
+                                 std::optional<std::string>(fixed_calendar_str);
     }
     {
         const auto fixed_convention_str = ui_->fixedConventionEdit->text().trimmed().toStdString();
-        sc_.fixed_convention =
-            fixed_convention_str.empty() ? std::nullopt : std::optional<std::string>(fixed_convention_str);
+        sc_.fixed_convention = fixed_convention_str.empty() ?
+                                   std::nullopt :
+                                   std::optional<std::string>(fixed_convention_str);
     }
     {
         const auto float_frequency_str = ui_->floatFrequencyEdit->text().trimmed().toStdString();
-        sc_.float_frequency =
-            float_frequency_str.empty() ? std::nullopt : std::optional<std::string>(float_frequency_str);
+        sc_.float_frequency = float_frequency_str.empty() ?
+                                  std::nullopt :
+                                  std::optional<std::string>(float_frequency_str);
     }
     {
-        const auto sub_periods_coupon_type_str = ui_->subPeriodsCouponTypeEdit->text().trimmed().toStdString();
-        sc_.sub_periods_coupon_type =
-            sub_periods_coupon_type_str.empty() ? std::nullopt : std::optional<std::string>(sub_periods_coupon_type_str);
+        const auto sub_periods_coupon_type_str =
+            ui_->subPeriodsCouponTypeEdit->text().trimmed().toStdString();
+        sc_.sub_periods_coupon_type = sub_periods_coupon_type_str.empty() ?
+                                          std::nullopt :
+                                          std::optional<std::string>(sub_periods_coupon_type_str);
     }
     sc_.modified_by = username_;
 }
@@ -212,31 +225,25 @@ bool SwapConventionDetailDialog::validateInput() {
     const QString fixed_day_count_fraction_val = ui_->fixedDayCountFractionEdit->text().trimmed();
     const QString index_val = ui_->indexEdit->text().trimmed();
 
-    return true
-        && !id_val.isEmpty()
-        && !fixed_frequency_val.isEmpty()
-        && !fixed_day_count_fraction_val.isEmpty()
-        && !index_val.isEmpty()
-    ;
+    return true && !id_val.isEmpty() && !fixed_frequency_val.isEmpty() &&
+           !fixed_day_count_fraction_val.isEmpty() && !index_val.isEmpty();
 }
 
 void SwapConventionDetailDialog::onSaveClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot save swap convention while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot save swap convention while disconnected from server.");
         return;
     }
 
     if (!validateInput()) {
-        MessageBoxHelper::warning(this, "Invalid Input",
-            "Please fill in all required fields.");
+        MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
 
     updateConventionFromUi();
 
-    BOOST_LOG_SEV(lg(), info) << "Saving swap convention: "
-        << sc_.id;
+    BOOST_LOG_SEV(lg(), info) << "Saving swap convention: " << sc_.id;
 
     QPointer<SwapConventionDetailDialog> self = this;
 
@@ -252,8 +259,8 @@ void SwapConventionDetailDialog::onSaveClicked() {
 
         refdata::messaging::save_swap_convention_request request;
         request.data = sc;
-        auto response_result = self->clientManager_->
-            process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -263,15 +270,13 @@ void SwapConventionDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Swap Convention saved successfully";
-            QString code = QString::fromStdString(
-                self->sc_.id);
+            QString code = QString::fromStdString(self->sc_.id);
             self->hasChanges_ = false;
             self->updateSaveButtonState();
             emit self->scSaved(code);
@@ -290,14 +295,15 @@ void SwapConventionDetailDialog::onSaveClicked() {
 
 void SwapConventionDetailDialog::onDeleteClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot delete swap convention while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot delete swap convention while disconnected from server.");
         return;
     }
 
-    QString code = QString::fromStdString(
-        sc_.id);
-    auto reply = MessageBoxHelper::question(this, "Delete Swap Convention",
+    QString code = QString::fromStdString(sc_.id);
+    auto reply = MessageBoxHelper::question(
+        this,
+        "Delete Swap Convention",
         QString("Are you sure you want to delete swap convention '%1'?").arg(code),
         QMessageBox::Yes | QMessageBox::No);
 
@@ -305,8 +311,7 @@ void SwapConventionDetailDialog::onDeleteClicked() {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Deleting swap convention: "
-        << sc_.id;
+    BOOST_LOG_SEV(lg(), info) << "Deleting swap convention: " << sc_.id;
 
     QPointer<SwapConventionDetailDialog> self = this;
 
@@ -322,8 +327,8 @@ void SwapConventionDetailDialog::onDeleteClicked() {
 
         refdata::messaging::delete_swap_convention_request request;
         request.codes = {code};
-        auto response_result = self->clientManager_->
-            process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
@@ -333,15 +338,13 @@ void SwapConventionDetailDialog::onDeleteClicked() {
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
-            self, [self, code, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, code, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Swap Convention deleted successfully";
-            emit self->statusMessage(
-                QString("Swap Convention '%1' deleted").arg(code));
+            emit self->statusMessage(QString("Swap Convention '%1' deleted").arg(code));
             emit self->scDeleted(code);
             self->requestClose();
         } else {

@@ -20,18 +20,18 @@
 #ifndef ORES_QT_ENTITY_DETAIL_DIALOG_HPP
 #define ORES_QT_ENTITY_DETAIL_DIALOG_HPP
 
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/DetailDialogBase.hpp"
+#include "ores.qt/EntityDetailOperations.hpp"
+#include "ores.qt/ImageCache.hpp"
+#include "ores.qt/export.hpp"
+#include "ores.refdata.api/domain/party_id_scheme.hpp"
 #include <QTableWidget>
 #include <QToolBar>
 #include <QTreeWidget>
 #include <memory>
 #include <unordered_map>
-#include "ores.qt/ClientManager.hpp"
-#include "ores.qt/DetailDialogBase.hpp"
-#include "ores.qt/ImageCache.hpp"
-#include "ores.qt/EntityDetailOperations.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.refdata.api/domain/party_id_scheme.hpp"
-#include "ores.qt/export.hpp"
 
 namespace Ui {
 class EntityDetailDialog;
@@ -51,8 +51,7 @@ class ORES_QT_API EntityDetailDialog final : public DetailDialogBase {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.entity_detail_dialog";
+    inline static std::string_view logger_name = "ores.qt.entity_detail_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -61,9 +60,8 @@ private:
     }
 
 public:
-    explicit EntityDetailDialog(
-        std::shared_ptr<entity_detail_operations> ops,
-        QWidget* parent = nullptr);
+    explicit EntityDetailDialog(std::shared_ptr<entity_detail_operations> ops,
+                                QWidget* parent = nullptr);
     ~EntityDetailDialog() override;
 
     void setClientManager(ClientManager* clientManager);
@@ -93,7 +91,9 @@ protected:
     QWidget* provenanceTab() const override;
     ProvenanceWidget* provenanceWidget() const override;
 
-    bool hasUnsavedChanges() const override { return hasChanges_; }
+    bool hasUnsavedChanges() const override {
+        return hasChanges_;
+    }
 
 private:
     void setupUi();

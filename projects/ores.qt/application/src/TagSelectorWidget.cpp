@@ -18,12 +18,12 @@
  *
  */
 #include "ores.qt/TagSelectorWidget.hpp"
-#include "ores.qt/ConnectionTypes.hpp"
 #include "ores.connections/service/connection_manager.hpp"
-#include <QLabel>
-#include <QPushButton>
+#include "ores.qt/ConnectionTypes.hpp"
 #include <QInputDialog>
+#include <QLabel>
 #include <QMessageBox>
+#include <QPushButton>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -31,12 +31,12 @@
 namespace ores::qt {
 
 TagSelectorWidget::TagSelectorWidget(connections::service::connection_manager* manager,
-                                       QWidget* parent)
-    : QWidget(parent),
-      manager_(manager),
-      layout_(new QHBoxLayout(this)),
-      addButton_(new QToolButton(this)),
-      tagMenu_(new QMenu(this)) {
+                                     QWidget* parent)
+    : QWidget(parent)
+    , manager_(manager)
+    , layout_(new QHBoxLayout(this))
+    , addButton_(new QToolButton(this))
+    , tagMenu_(new QMenu(this)) {
 
     layout_->setContentsMargins(0, 0, 0, 0);
     layout_->setSpacing(4);
@@ -45,19 +45,17 @@ TagSelectorWidget::TagSelectorWidget(connections::service::connection_manager* m
     addButton_->setText("+");
     addButton_->setToolTip(tr("Add tag"));
     addButton_->setFixedSize(24, 24);
-    addButton_->setStyleSheet(
-        "QToolButton {"
-        "  background-color: #3B3B3B;"
-        "  border: 1px solid #555555;"
-        "  border-radius: 12px;"
-        "  color: #CCCCCC;"
-        "  font-weight: bold;"
-        "}"
-        "QToolButton:hover {"
-        "  background-color: #4B4B4B;"
-        "  border-color: #007ACC;"
-        "}"
-    );
+    addButton_->setStyleSheet("QToolButton {"
+                              "  background-color: #3B3B3B;"
+                              "  border: 1px solid #555555;"
+                              "  border-radius: 12px;"
+                              "  color: #CCCCCC;"
+                              "  font-weight: bold;"
+                              "}"
+                              "QToolButton:hover {"
+                              "  background-color: #4B4B4B;"
+                              "  border-color: #007ACC;"
+                              "}");
 
     connect(addButton_, &QToolButton::clicked, this, &TagSelectorWidget::onAddTagClicked);
     connect(tagMenu_, &QMenu::triggered, this, &TagSelectorWidget::onTagActionTriggered);
@@ -93,8 +91,8 @@ void TagSelectorWidget::onTagActionTriggered(QAction* action) {
     if (actionData == "create_new") {
         // Create new tag
         bool ok;
-        QString name = QInputDialog::getText(this, tr("Create Tag"),
-            tr("Tag name:"), QLineEdit::Normal, "", &ok);
+        QString name = QInputDialog::getText(
+            this, tr("Create Tag"), tr("Tag name:"), QLineEdit::Normal, "", &ok);
 
         if (ok && !name.trimmed().isEmpty()) {
             name = name.trimmed();
@@ -103,8 +101,9 @@ void TagSelectorWidget::onTagActionTriggered(QAction* action) {
             auto existing = manager_->get_tag_by_name(name.toStdString());
             if (existing) {
                 // Tag exists, add it if not already selected
-                auto it = std::find_if(selectedTags_.begin(), selectedTags_.end(),
-                    [&](const auto& t) { return t.id == existing->id; });
+                auto it = std::find_if(selectedTags_.begin(),
+                                       selectedTags_.end(),
+                                       [&](const auto& t) { return t.id == existing->id; });
                 if (it == selectedTags_.end()) {
                     selectedTags_.push_back(*existing);
                     rebuildTagDisplay();
@@ -122,8 +121,8 @@ void TagSelectorWidget::onTagActionTriggered(QAction* action) {
                     rebuildTagDisplay();
                     emit selectionChanged();
                 } catch (const std::exception& e) {
-                    QMessageBox::warning(this, tr("Error"),
-                        tr("Failed to create tag: %1").arg(e.what()));
+                    QMessageBox::warning(
+                        this, tr("Error"), tr("Failed to create tag: %1").arg(e.what()));
                 }
             }
         }
@@ -135,8 +134,9 @@ void TagSelectorWidget::onTagActionTriggered(QAction* action) {
         auto tag = manager_->get_tag(tagId);
         if (tag) {
             // Check if not already selected
-            auto it = std::find_if(selectedTags_.begin(), selectedTags_.end(),
-                [&](const auto& t) { return t.id == tagId; });
+            auto it = std::find_if(selectedTags_.begin(), selectedTags_.end(), [&](const auto& t) {
+                return t.id == tagId;
+            });
             if (it == selectedTags_.end()) {
                 selectedTags_.push_back(*tag);
                 rebuildTagDisplay();
@@ -147,8 +147,8 @@ void TagSelectorWidget::onTagActionTriggered(QAction* action) {
 }
 
 void TagSelectorWidget::removeTag(const boost::uuids::uuid& tagId) {
-    auto it = std::find_if(selectedTags_.begin(), selectedTags_.end(),
-        [&](const auto& t) { return t.id == tagId; });
+    auto it = std::find_if(
+        selectedTags_.begin(), selectedTags_.end(), [&](const auto& t) { return t.id == tagId; });
 
     if (it != selectedTags_.end()) {
         selectedTags_.erase(it);
@@ -180,44 +180,37 @@ void TagSelectorWidget::rebuildTagDisplay() {
 
         // Tag name label
         auto* label = new QLabel(name, badge);
-        label->setStyleSheet(QString(
-            "QLabel {"
-            "  color: white;"
-            "  font-size: 9pt;"
-            "  font-weight: bold;"
-            "}"
-        ));
+        label->setStyleSheet(QString("QLabel {"
+                                     "  color: white;"
+                                     "  font-size: 9pt;"
+                                     "  font-weight: bold;"
+                                     "}"));
         badgeLayout->addWidget(label);
 
         // Remove button
         auto* removeBtn = new QPushButton("×", badge);
         removeBtn->setFixedSize(14, 14);
-        removeBtn->setStyleSheet(
-            "QPushButton {"
-            "  background: transparent;"
-            "  border: none;"
-            "  color: rgba(255,255,255,0.7);"
-            "  font-size: 12pt;"
-            "  font-weight: bold;"
-            "  padding: 0;"
-            "}"
-            "QPushButton:hover {"
-            "  color: white;"
-            "}"
-        );
+        removeBtn->setStyleSheet("QPushButton {"
+                                 "  background: transparent;"
+                                 "  border: none;"
+                                 "  color: rgba(255,255,255,0.7);"
+                                 "  font-size: 12pt;"
+                                 "  font-weight: bold;"
+                                 "  padding: 0;"
+                                 "}"
+                                 "QPushButton:hover {"
+                                 "  color: white;"
+                                 "}");
 
         boost::uuids::uuid tagId = tag.id;
-        connect(removeBtn, &QPushButton::clicked, this, [this, tagId]() {
-            removeTag(tagId);
-        });
+        connect(removeBtn, &QPushButton::clicked, this, [this, tagId]() { removeTag(tagId); });
         badgeLayout->addWidget(removeBtn);
 
-        badge->setStyleSheet(QString(
-            "QWidget {"
-            "  background-color: %1;"
-            "  border-radius: 10px;"
-            "}"
-        ).arg(bgColor.name()));
+        badge->setStyleSheet(QString("QWidget {"
+                                     "  background-color: %1;"
+                                     "  border-radius: 10px;"
+                                     "}")
+                                 .arg(bgColor.name()));
 
         layout_->addWidget(badge);
     }
@@ -239,8 +232,9 @@ void TagSelectorWidget::populateTagMenu() {
 
         // Filter out already selected tags
         for (const auto& tag : allTags) {
-            auto it = std::find_if(selectedTags_.begin(), selectedTags_.end(),
-                [&](const auto& t) { return t.id == tag.id; });
+            auto it = std::find_if(selectedTags_.begin(), selectedTags_.end(), [&](const auto& t) {
+                return t.id == tag.id;
+            });
 
             if (it == selectedTags_.end()) {
                 QString name = QString::fromStdString(tag.name);

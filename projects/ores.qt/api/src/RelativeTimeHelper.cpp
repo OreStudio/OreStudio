@@ -18,17 +18,15 @@
  *
  */
 #include "ores.qt/RelativeTimeHelper.hpp"
-
-#include <QDateTime>
-#include "ores.qt/TimestampFormat.hpp"
 #include "ores.platform/time/relative_time_formatter.hpp"
+#include "ores.qt/TimestampFormat.hpp"
+#include <QDateTime>
 
 namespace ores::qt {
 
 namespace {
 
-std::optional<std::chrono::system_clock::time_point>
-parse_datetime(const QString& datetime_str) {
+std::optional<std::chrono::system_clock::time_point> parse_datetime(const QString& datetime_str) {
     // Try multiple formats
     QDateTime dt = QDateTime::fromString(datetime_str, Qt::ISODate);
 
@@ -43,8 +41,7 @@ parse_datetime(const QString& datetime_str) {
 
     // Convert QDateTime to std::chrono::system_clock::time_point
     const auto msecs_since_epoch = dt.toMSecsSinceEpoch();
-    return std::chrono::system_clock::time_point(
-        std::chrono::milliseconds(msecs_since_epoch));
+    return std::chrono::system_clock::time_point(std::chrono::milliseconds(msecs_since_epoch));
 }
 
 }
@@ -57,8 +54,7 @@ QString relative_time_helper::format(const QString& recorded_at) {
     return timestamp_formatter::format(recorded_at);
 }
 
-QString relative_time_helper::format(
-    const std::chrono::system_clock::time_point& recorded_at) {
+QString relative_time_helper::format(const std::chrono::system_clock::time_point& recorded_at) {
     return timestamp_formatter::format(recorded_at);
 }
 
@@ -74,8 +70,8 @@ QString relative_time_helper::format_relative(const QString& recorded_at) {
     return QString::fromStdString(formatter.format(*tp));
 }
 
-QString relative_time_helper::format_relative(
-    const std::chrono::system_clock::time_point& recorded_at) {
+QString
+relative_time_helper::format_relative(const std::chrono::system_clock::time_point& recorded_at) {
     platform::time::relative_time_formatter formatter;
     return QString::fromStdString(formatter.format(recorded_at));
 }

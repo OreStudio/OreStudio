@@ -20,15 +20,15 @@
 #ifndef ORES_QT_BADGE_SEVERITY_MDI_WINDOW_HPP
 #define ORES_QT_BADGE_SEVERITY_MDI_WINDOW_HPP
 
-#include <QToolBar>
-#include <QTableView>
-#include <QSortFilterProxyModel>
-#include "ores.qt/EntityListMdiWindow.hpp"
-#include "ores.qt/ClientManager.hpp"
-#include "ores.qt/ClientBadgeSeverityModel.hpp"
-#include "ores.qt/PaginationWidget.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.dq.api/domain/badge_severity.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientBadgeSeverityModel.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/EntityListMdiWindow.hpp"
+#include "ores.qt/PaginationWidget.hpp"
+#include <QSortFilterProxyModel>
+#include <QTableView>
+#include <QToolBar>
 
 namespace ores::qt {
 
@@ -42,8 +42,7 @@ class BadgeSeverityMdiWindow final : public EntityListMdiWindow {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.badge_severity_mdi_window";
+    inline static std::string_view logger_name = "ores.qt.badge_severity_mdi_window";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -52,10 +51,9 @@ private:
     }
 
 public:
-    explicit BadgeSeverityMdiWindow(
-        ClientManager* clientManager,
-        const QString& username,
-        QWidget* parent = nullptr);
+    explicit BadgeSeverityMdiWindow(ClientManager* clientManager,
+                                    const QString& username,
+                                    QWidget* parent = nullptr);
     ~BadgeSeverityMdiWindow() override = default;
 
 signals:

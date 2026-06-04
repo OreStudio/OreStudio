@@ -18,30 +18,27 @@
  *
  */
 #include "ores.qt/LegTypeController.hpp"
-
+#include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/LegTypeDetailDialog.hpp"
+#include "ores.qt/LegTypeHistoryDialog.hpp"
+#include "ores.qt/LegTypeMdiWindow.hpp"
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/LegTypeMdiWindow.hpp"
-#include "ores.qt/LegTypeDetailDialog.hpp"
-#include "ores.qt/LegTypeHistoryDialog.hpp"
-#include "ores.qt/DetachableMdiSubWindow.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-LegTypeController::LegTypeController(
-    QMainWindow* mainWindow,
-    QMdiArea* mdiArea,
-    ClientManager* clientManager,
-    const QString& username,
-    QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username,
-          std::string_view{}, parent),
-      listWindow_(nullptr),
-      listMdiSubWindow_(nullptr) {
+LegTypeController::LegTypeController(QMainWindow* mainWindow,
+                                     QMdiArea* mdiArea,
+                                     ClientManager* clientManager,
+                                     const QString& username,
+                                     QObject* parent)
+    : EntityController(mainWindow, mdiArea, clientManager, username, std::string_view{}, parent)
+    , listWindow_(nullptr)
+    , listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "LegTypeController created";
 }
@@ -59,23 +56,23 @@ void LegTypeController::showListWindow() {
     listWindow_ = new LegTypeMdiWindow(clientManager_, username_);
 
     // Connect signals
-    connect(listWindow_, &LegTypeMdiWindow::statusChanged,
-            this, &LegTypeController::statusMessage);
-    connect(listWindow_, &LegTypeMdiWindow::errorOccurred,
-            this, &LegTypeController::errorMessage);
-    connect(listWindow_, &LegTypeMdiWindow::showTypeDetails,
-            this, &LegTypeController::onShowDetails);
-    connect(listWindow_, &LegTypeMdiWindow::addNewRequested,
-            this, &LegTypeController::onAddNewRequested);
-    connect(listWindow_, &LegTypeMdiWindow::showTypeHistory,
-            this, &LegTypeController::onShowHistory);
+    connect(listWindow_, &LegTypeMdiWindow::statusChanged, this, &LegTypeController::statusMessage);
+    connect(listWindow_, &LegTypeMdiWindow::errorOccurred, this, &LegTypeController::errorMessage);
+    connect(
+        listWindow_, &LegTypeMdiWindow::showTypeDetails, this, &LegTypeController::onShowDetails);
+    connect(listWindow_,
+            &LegTypeMdiWindow::addNewRequested,
+            this,
+            &LegTypeController::onAddNewRequested);
+    connect(
+        listWindow_, &LegTypeMdiWindow::showTypeHistory, this, &LegTypeController::onShowHistory);
 
     // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Leg Types");
-    listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Tag, IconUtils::DefaultIconColor));
+    listMdiSubWindow_->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -87,12 +84,16 @@ void LegTypeController::showListWindow() {
     register_detachable_window(listMdiSubWindow_);
 
     // Cleanup when closed
-    connect(listMdiSubWindow_, &QObject::destroyed, this, [self = QPointer<LegTypeController>(this), key]() {
-        if (!self) return;
-        self->untrack_window(key);
-        self->listWindow_ = nullptr;
-        self->listMdiSubWindow_ = nullptr;
-    });
+    connect(listMdiSubWindow_,
+            &QObject::destroyed,
+            this,
+            [self = QPointer<LegTypeController>(this), key]() {
+                if (!self)
+                    return;
+                self->untrack_window(key);
+                self->listWindow_ = nullptr;
+                self->listMdiSubWindow_ = nullptr;
+            });
 
     BOOST_LOG_SEV(lg(), debug) << "Leg Type list window created";
 }
@@ -119,8 +120,7 @@ void LegTypeController::reloadListWindow() {
     }
 }
 
-void LegTypeController::onShowDetails(
-    const trading::domain::leg_type& type) {
+void LegTypeController::onShowDetails(const trading::domain::leg_type& type) {
     BOOST_LOG_SEV(lg(), debug) << "Show details for: " << type.code;
     showDetailWindow(type);
 }
@@ -130,8 +130,7 @@ void LegTypeController::onAddNewRequested() {
     showAddWindow();
 }
 
-void LegTypeController::onShowHistory(
-    const trading::domain::leg_type& type) {
+void LegTypeController::onShowHistory(const trading::domain::leg_type& type) {
     BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << type.code;
     showHistoryWindow(QString::fromStdString(type.code));
 }
@@ -144,23 +143,26 @@ void LegTypeController::showAddWindow() {
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
 
-    connect(detailDialog, &LegTypeDetailDialog::statusMessage,
-            this, &LegTypeController::statusMessage);
-    connect(detailDialog, &LegTypeDetailDialog::errorMessage,
-            this, &LegTypeController::errorMessage);
-    connect(detailDialog, &LegTypeDetailDialog::typeSaved,
-            this, [self = QPointer<LegTypeController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Leg Type saved: " << code.toStdString();
-        self->handleEntitySaved();
-    });
+    connect(
+        detailDialog, &LegTypeDetailDialog::statusMessage, this, &LegTypeController::statusMessage);
+    connect(
+        detailDialog, &LegTypeDetailDialog::errorMessage, this, &LegTypeController::errorMessage);
+    connect(detailDialog,
+            &LegTypeDetailDialog::typeSaved,
+            this,
+            [self = QPointer<LegTypeController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Leg Type saved: " << code.toStdString();
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Leg Type");
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Tag, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -168,8 +170,7 @@ void LegTypeController::showAddWindow() {
     show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
-void LegTypeController::showDetailWindow(
-    const trading::domain::leg_type& type) {
+void LegTypeController::showDetailWindow(const trading::domain::leg_type& type) {
 
     const QString identifier = QString::fromStdString(type.code);
     const QString key = build_window_key("details", identifier);
@@ -187,37 +188,42 @@ void LegTypeController::showDetailWindow(
     detailDialog->setCreateMode(false);
     detailDialog->setType(type);
 
-    connect(detailDialog, &LegTypeDetailDialog::statusMessage,
-            this, &LegTypeController::statusMessage);
-    connect(detailDialog, &LegTypeDetailDialog::errorMessage,
-            this, &LegTypeController::errorMessage);
-    connect(detailDialog, &LegTypeDetailDialog::typeSaved,
-            this, [self = QPointer<LegTypeController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Leg Type saved: " << code.toStdString();
-        self->handleEntitySaved();
-    });
-    connect(detailDialog, &LegTypeDetailDialog::typeDeleted,
-            this, [self = QPointer<LegTypeController>(this), key](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Leg Type deleted: " << code.toStdString();
-        self->handleEntityDeleted();
-    });
+    connect(
+        detailDialog, &LegTypeDetailDialog::statusMessage, this, &LegTypeController::statusMessage);
+    connect(
+        detailDialog, &LegTypeDetailDialog::errorMessage, this, &LegTypeController::errorMessage);
+    connect(detailDialog,
+            &LegTypeDetailDialog::typeSaved,
+            this,
+            [self = QPointer<LegTypeController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Leg Type saved: " << code.toStdString();
+                self->handleEntitySaved();
+            });
+    connect(detailDialog,
+            &LegTypeDetailDialog::typeDeleted,
+            this,
+            [self = QPointer<LegTypeController>(this), key](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Leg Type deleted: " << code.toStdString();
+                self->handleEntityDeleted();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Leg Type: %1").arg(identifier));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Tag, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor));
 
     // Track window
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<LegTypeController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, key]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, key]() {
         if (self) {
             self->untrack_window(key);
         }
@@ -228,37 +234,44 @@ void LegTypeController::showDetailWindow(
 }
 
 void LegTypeController::showHistoryWindow(const QString& code) {
-    BOOST_LOG_SEV(lg(), info) << "Opening history window for leg type: "
-                              << code.toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Opening history window for leg type: " << code.toStdString();
 
     const QString windowKey = build_window_key("history", code);
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
-        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: "
-                                  << code.toStdString();
+        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: " << code.toStdString();
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
-                              << code.toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << code.toStdString();
 
     auto* historyDialog = new LegTypeHistoryDialog(code, clientManager_, mainWindow_);
 
-    connect(historyDialog, &LegTypeHistoryDialog::statusChanged,
-            this, [self = QPointer<LegTypeController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(historyDialog, &LegTypeHistoryDialog::errorOccurred,
-            this, [self = QPointer<LegTypeController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
-    connect(historyDialog, &LegTypeHistoryDialog::revertVersionRequested,
-            this, &LegTypeController::onRevertVersion);
-    connect(historyDialog, &LegTypeHistoryDialog::openVersionRequested,
-            this, &LegTypeController::onOpenVersion);
+    connect(historyDialog,
+            &LegTypeHistoryDialog::statusChanged,
+            this,
+            [self = QPointer<LegTypeController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(historyDialog,
+            &LegTypeHistoryDialog::errorOccurred,
+            this,
+            [self = QPointer<LegTypeController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
+    connect(historyDialog,
+            &LegTypeHistoryDialog::revertVersionRequested,
+            this,
+            &LegTypeController::onRevertVersion);
+    connect(historyDialog,
+            &LegTypeHistoryDialog::openVersionRequested,
+            this,
+            &LegTypeController::onOpenVersion);
 
     // Load history data
     historyDialog->loadHistory();
@@ -267,16 +280,15 @@ void LegTypeController::showHistoryWindow(const QString& code) {
     historyWindow->setAttribute(Qt::WA_DeleteOnClose);
     historyWindow->setWidget(historyDialog);
     historyWindow->setWindowTitle(QString("Leg Type History: %1").arg(code));
-    historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    historyWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     // Track this history window
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
 
     QPointer<LegTypeController> self = this;
-    connect(historyWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -285,14 +297,13 @@ void LegTypeController::showHistoryWindow(const QString& code) {
     show_managed_window(historyWindow, listMdiSubWindow_);
 }
 
-void LegTypeController::onOpenVersion(
-    const trading::domain::leg_type& type, int versionNumber) {
+void LegTypeController::onOpenVersion(const trading::domain::leg_type& type, int versionNumber) {
     BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
                               << " for leg type: " << type.code;
 
     const QString code = QString::fromStdString(type.code);
-    const QString windowKey = build_window_key("version", QString("%1_v%2")
-        .arg(code).arg(versionNumber));
+    const QString windowKey =
+        build_window_key("version", QString("%1_v%2").arg(code).arg(versionNumber));
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
@@ -306,31 +317,35 @@ void LegTypeController::onOpenVersion(
     detailDialog->setType(type);
     detailDialog->setReadOnly(true);
 
-    connect(detailDialog, &LegTypeDetailDialog::statusMessage,
-            this, [self = QPointer<LegTypeController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(detailDialog, &LegTypeDetailDialog::errorMessage,
-            this, [self = QPointer<LegTypeController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
+    connect(detailDialog,
+            &LegTypeDetailDialog::statusMessage,
+            this,
+            [self = QPointer<LegTypeController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(detailDialog,
+            &LegTypeDetailDialog::errorMessage,
+            this,
+            [self = QPointer<LegTypeController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Leg Type: %1 (Version %2)")
-        .arg(code).arg(versionNumber));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(QString("Leg Type: %1 (Version %2)").arg(code).arg(versionNumber));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     track_window(windowKey, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<LegTypeController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -340,10 +355,8 @@ void LegTypeController::onOpenVersion(
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
-void LegTypeController::onRevertVersion(
-    const trading::domain::leg_type& type) {
-    BOOST_LOG_SEV(lg(), info) << "Reverting leg type to version: "
-                              << type.version;
+void LegTypeController::onRevertVersion(const trading::domain::leg_type& type) {
+    BOOST_LOG_SEV(lg(), info) << "Reverting leg type to version: " << type.version;
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new LegTypeDetailDialog(mainWindow_);
@@ -352,25 +365,28 @@ void LegTypeController::onRevertVersion(
     detailDialog->setType(type);
     detailDialog->setCreateMode(false);
 
-    connect(detailDialog, &LegTypeDetailDialog::statusMessage,
-            this, &LegTypeController::statusMessage);
-    connect(detailDialog, &LegTypeDetailDialog::errorMessage,
-            this, &LegTypeController::errorMessage);
-    connect(detailDialog, &LegTypeDetailDialog::typeSaved,
-            this, [self = QPointer<LegTypeController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Leg Type reverted: " << code.toStdString();
-        emit self->statusMessage(QString("Leg Type '%1' reverted successfully").arg(code));
-        self->handleEntitySaved();
-    });
+    connect(
+        detailDialog, &LegTypeDetailDialog::statusMessage, this, &LegTypeController::statusMessage);
+    connect(
+        detailDialog, &LegTypeDetailDialog::errorMessage, this, &LegTypeController::errorMessage);
+    connect(detailDialog,
+            &LegTypeDetailDialog::typeSaved,
+            this,
+            [self = QPointer<LegTypeController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Leg Type reverted: " << code.toStdString();
+                emit self->statusMessage(QString("Leg Type '%1' reverted successfully").arg(code));
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Revert Leg Type: %1")
-        .arg(QString::fromStdString(type.code)));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("Revert Leg Type: %1").arg(QString::fromStdString(type.code)));
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
+                                                               IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 

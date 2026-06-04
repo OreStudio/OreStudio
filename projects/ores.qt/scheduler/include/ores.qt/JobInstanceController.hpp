@@ -20,13 +20,13 @@
 #ifndef ORES_QT_JOB_INSTANCE_CONTROLLER_HPP
 #define ORES_QT_JOB_INSTANCE_CONTROLLER_HPP
 
-#include <QMdiArea>
-#include <QMainWindow>
-#include "ores.qt/EntityController.hpp"
-#include "ores.qt/ClientManager.hpp"
-#include "ores.qt/EntityListMdiWindow.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/EntityController.hpp"
+#include "ores.qt/EntityListMdiWindow.hpp"
 #include "ores.scheduler.api/messaging/scheduler_protocol.hpp"
+#include <QMainWindow>
+#include <QMdiArea>
 
 namespace ores::qt {
 
@@ -40,10 +40,8 @@ class JobInstanceController final : public EntityController {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.job_instance_controller";
-    static constexpr std::string_view event_subject =
-        "scheduler.v1.job-instance-events";
+    inline static std::string_view logger_name = "ores.qt.job_instance_controller";
+    static constexpr std::string_view event_subject = "scheduler.v1.job-instance-events";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -52,11 +50,10 @@ private:
     }
 
 public:
-    JobInstanceController(
-        QMainWindow* mainWindow,
-        QMdiArea* mdiArea,
-        ClientManager* clientManager,
-        QObject* parent = nullptr);
+    JobInstanceController(QMainWindow* mainWindow,
+                          QMdiArea* mdiArea,
+                          ClientManager* clientManager,
+                          QObject* parent = nullptr);
 
     void showListWindow() override;
     void closeAllWindows() override;

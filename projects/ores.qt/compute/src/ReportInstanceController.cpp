@@ -19,32 +19,29 @@
  */
 #include "ores.qt/ReportInstanceController.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
-
+#include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/ReportInstanceDetailDialog.hpp"
+#include "ores.qt/ReportInstanceHistoryDialog.hpp"
+#include "ores.qt/ReportInstanceMdiWindow.hpp"
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/ReportInstanceMdiWindow.hpp"
-#include "ores.qt/ReportInstanceDetailDialog.hpp"
-#include "ores.qt/ReportInstanceHistoryDialog.hpp"
-#include "ores.qt/DetachableMdiSubWindow.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-ReportInstanceController::ReportInstanceController(
-    QMainWindow* mainWindow,
-    QMdiArea* mdiArea,
-    ClientManager* clientManager,
-    ChangeReasonCache* changeReasonCache,
-    const QString& username,
-    QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username,
-          std::string_view{}, parent),
-      changeReasonCache_(changeReasonCache),
-      listWindow_(nullptr),
-      listMdiSubWindow_(nullptr) {
+ReportInstanceController::ReportInstanceController(QMainWindow* mainWindow,
+                                                   QMdiArea* mdiArea,
+                                                   ClientManager* clientManager,
+                                                   ChangeReasonCache* changeReasonCache,
+                                                   const QString& username,
+                                                   QObject* parent)
+    : EntityController(mainWindow, mdiArea, clientManager, username, std::string_view{}, parent)
+    , changeReasonCache_(changeReasonCache)
+    , listWindow_(nullptr)
+    , listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "ReportInstanceController created";
 }
@@ -62,23 +59,33 @@ void ReportInstanceController::showListWindow() {
     listWindow_ = new ReportInstanceMdiWindow(clientManager_, username_);
 
     // Connect signals
-    connect(listWindow_, &ReportInstanceMdiWindow::statusChanged,
-            this, &ReportInstanceController::statusMessage);
-    connect(listWindow_, &ReportInstanceMdiWindow::errorOccurred,
-            this, &ReportInstanceController::errorMessage);
-    connect(listWindow_, &ReportInstanceMdiWindow::showInstanceDetails,
-            this, &ReportInstanceController::onShowDetails);
-    connect(listWindow_, &ReportInstanceMdiWindow::addNewRequested,
-            this, &ReportInstanceController::onAddNewRequested);
-    connect(listWindow_, &ReportInstanceMdiWindow::showInstanceHistory,
-            this, &ReportInstanceController::onShowHistory);
+    connect(listWindow_,
+            &ReportInstanceMdiWindow::statusChanged,
+            this,
+            &ReportInstanceController::statusMessage);
+    connect(listWindow_,
+            &ReportInstanceMdiWindow::errorOccurred,
+            this,
+            &ReportInstanceController::errorMessage);
+    connect(listWindow_,
+            &ReportInstanceMdiWindow::showInstanceDetails,
+            this,
+            &ReportInstanceController::onShowDetails);
+    connect(listWindow_,
+            &ReportInstanceMdiWindow::addNewRequested,
+            this,
+            &ReportInstanceController::onAddNewRequested);
+    connect(listWindow_,
+            &ReportInstanceMdiWindow::showInstanceHistory,
+            this,
+            &ReportInstanceController::onShowHistory);
 
     // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Report Instances");
-    listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Record, IconUtils::DefaultIconColor));
+    listMdiSubWindow_->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Record, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -90,12 +97,16 @@ void ReportInstanceController::showListWindow() {
     register_detachable_window(listMdiSubWindow_);
 
     // Cleanup when closed
-    connect(listMdiSubWindow_, &QObject::destroyed, this, [self = QPointer<ReportInstanceController>(this), key]() {
-        if (!self) return;
-        self->untrack_window(key);
-        self->listWindow_ = nullptr;
-        self->listMdiSubWindow_ = nullptr;
-    });
+    connect(listMdiSubWindow_,
+            &QObject::destroyed,
+            this,
+            [self = QPointer<ReportInstanceController>(this), key]() {
+                if (!self)
+                    return;
+                self->untrack_window(key);
+                self->listWindow_ = nullptr;
+                self->listMdiSubWindow_ = nullptr;
+            });
 
     BOOST_LOG_SEV(lg(), debug) << "Report Instance list window created";
 }
@@ -122,8 +133,7 @@ void ReportInstanceController::reloadListWindow() {
     }
 }
 
-void ReportInstanceController::onShowDetails(
-    const reporting::domain::report_instance& instance) {
+void ReportInstanceController::onShowDetails(const reporting::domain::report_instance& instance) {
     BOOST_LOG_SEV(lg(), debug) << "Show details for: " << instance.name;
     showDetailWindow(instance);
 }
@@ -133,8 +143,7 @@ void ReportInstanceController::onAddNewRequested() {
     showAddWindow();
 }
 
-void ReportInstanceController::onShowHistory(
-    const reporting::domain::report_instance& instance) {
+void ReportInstanceController::onShowHistory(const reporting::domain::report_instance& instance) {
     BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << instance.name;
     showHistoryWindow(instance);
 }
@@ -149,23 +158,30 @@ void ReportInstanceController::showAddWindow() {
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
 
-    connect(detailDialog, &ReportInstanceDetailDialog::statusMessage,
-            this, &ReportInstanceController::statusMessage);
-    connect(detailDialog, &ReportInstanceDetailDialog::errorMessage,
-            this, &ReportInstanceController::errorMessage);
-    connect(detailDialog, &ReportInstanceDetailDialog::instanceSaved,
-            this, [self = QPointer<ReportInstanceController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Report Instance saved: " << code.toStdString();
-        self->handleEntitySaved();
-    });
+    connect(detailDialog,
+            &ReportInstanceDetailDialog::statusMessage,
+            this,
+            &ReportInstanceController::statusMessage);
+    connect(detailDialog,
+            &ReportInstanceDetailDialog::errorMessage,
+            this,
+            &ReportInstanceController::errorMessage);
+    connect(detailDialog,
+            &ReportInstanceDetailDialog::instanceSaved,
+            this,
+            [self = QPointer<ReportInstanceController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Report Instance saved: " << code.toStdString();
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Report Instance");
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Record, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Record, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -194,37 +210,46 @@ void ReportInstanceController::showDetailWindow(
     detailDialog->setCreateMode(false);
     detailDialog->setInstance(instance);
 
-    connect(detailDialog, &ReportInstanceDetailDialog::statusMessage,
-            this, &ReportInstanceController::statusMessage);
-    connect(detailDialog, &ReportInstanceDetailDialog::errorMessage,
-            this, &ReportInstanceController::errorMessage);
-    connect(detailDialog, &ReportInstanceDetailDialog::instanceSaved,
-            this, [self = QPointer<ReportInstanceController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Report Instance saved: " << code.toStdString();
-        self->handleEntitySaved();
-    });
-    connect(detailDialog, &ReportInstanceDetailDialog::instanceDeleted,
-            this, [self = QPointer<ReportInstanceController>(this), key](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Report Instance deleted: " << code.toStdString();
-        self->handleEntityDeleted();
-    });
+    connect(detailDialog,
+            &ReportInstanceDetailDialog::statusMessage,
+            this,
+            &ReportInstanceController::statusMessage);
+    connect(detailDialog,
+            &ReportInstanceDetailDialog::errorMessage,
+            this,
+            &ReportInstanceController::errorMessage);
+    connect(detailDialog,
+            &ReportInstanceDetailDialog::instanceSaved,
+            this,
+            [self = QPointer<ReportInstanceController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Report Instance saved: " << code.toStdString();
+                self->handleEntitySaved();
+            });
+    connect(detailDialog,
+            &ReportInstanceDetailDialog::instanceDeleted,
+            this,
+            [self = QPointer<ReportInstanceController>(this), key](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Report Instance deleted: " << code.toStdString();
+                self->handleEntityDeleted();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Report Instance: %1").arg(identifier));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Record, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Record, IconUtils::DefaultIconColor));
 
     // Track window
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<ReportInstanceController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, key]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, key]() {
         if (self) {
             self->untrack_window(key);
         }
@@ -237,38 +262,45 @@ void ReportInstanceController::showDetailWindow(
 void ReportInstanceController::showHistoryWindow(
     const reporting::domain::report_instance& instance) {
     const QString code = QString::fromStdString(instance.name);
-    BOOST_LOG_SEV(lg(), info) << "Opening history window for report instance: "
-                              << instance.name;
+    BOOST_LOG_SEV(lg(), info) << "Opening history window for report instance: " << instance.name;
 
     const QString windowKey = build_window_key("history", code);
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
-        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: "
-                                  << instance.name;
+        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: " << instance.name;
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
-                              << instance.name;
+    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << instance.name;
 
-    auto* historyDialog = new ReportInstanceHistoryDialog(
-        instance.id, code, clientManager_, mainWindow_);
+    auto* historyDialog =
+        new ReportInstanceHistoryDialog(instance.id, code, clientManager_, mainWindow_);
 
-    connect(historyDialog, &ReportInstanceHistoryDialog::statusChanged,
-            this, [self = QPointer<ReportInstanceController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(historyDialog, &ReportInstanceHistoryDialog::errorOccurred,
-            this, [self = QPointer<ReportInstanceController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
-    connect(historyDialog, &ReportInstanceHistoryDialog::revertVersionRequested,
-            this, &ReportInstanceController::onRevertVersion);
-    connect(historyDialog, &ReportInstanceHistoryDialog::openVersionRequested,
-            this, &ReportInstanceController::onOpenVersion);
+    connect(historyDialog,
+            &ReportInstanceHistoryDialog::statusChanged,
+            this,
+            [self = QPointer<ReportInstanceController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(historyDialog,
+            &ReportInstanceHistoryDialog::errorOccurred,
+            this,
+            [self = QPointer<ReportInstanceController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
+    connect(historyDialog,
+            &ReportInstanceHistoryDialog::revertVersionRequested,
+            this,
+            &ReportInstanceController::onRevertVersion);
+    connect(historyDialog,
+            &ReportInstanceHistoryDialog::openVersionRequested,
+            this,
+            &ReportInstanceController::onOpenVersion);
 
     // Load history data
     historyDialog->loadHistory();
@@ -277,16 +309,15 @@ void ReportInstanceController::showHistoryWindow(
     historyWindow->setAttribute(Qt::WA_DeleteOnClose);
     historyWindow->setWidget(historyDialog);
     historyWindow->setWindowTitle(QString("Report Instance History: %1").arg(code));
-    historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    historyWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     // Track this history window
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
 
     QPointer<ReportInstanceController> self = this;
-    connect(historyWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -295,14 +326,14 @@ void ReportInstanceController::showHistoryWindow(
     show_managed_window(historyWindow, listMdiSubWindow_);
 }
 
-void ReportInstanceController::onOpenVersion(
-    const reporting::domain::report_instance& instance, int versionNumber) {
+void ReportInstanceController::onOpenVersion(const reporting::domain::report_instance& instance,
+                                             int versionNumber) {
     BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
                               << " for report instance: " << instance.name;
 
     const QString code = QString::fromStdString(instance.name);
-    const QString windowKey = build_window_key("version", QString("%1_v%2")
-        .arg(code).arg(versionNumber));
+    const QString windowKey =
+        build_window_key("version", QString("%1_v%2").arg(code).arg(versionNumber));
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
@@ -318,31 +349,36 @@ void ReportInstanceController::onOpenVersion(
     detailDialog->setInstance(instance);
     detailDialog->setReadOnly(true);
 
-    connect(detailDialog, &ReportInstanceDetailDialog::statusMessage,
-            this, [self = QPointer<ReportInstanceController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(detailDialog, &ReportInstanceDetailDialog::errorMessage,
-            this, [self = QPointer<ReportInstanceController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
+    connect(detailDialog,
+            &ReportInstanceDetailDialog::statusMessage,
+            this,
+            [self = QPointer<ReportInstanceController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(detailDialog,
+            &ReportInstanceDetailDialog::errorMessage,
+            this,
+            [self = QPointer<ReportInstanceController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Report Instance: %1 (Version %2)")
-        .arg(code).arg(versionNumber));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("Report Instance: %1 (Version %2)").arg(code).arg(versionNumber));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     track_window(windowKey, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<ReportInstanceController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -352,10 +388,8 @@ void ReportInstanceController::onOpenVersion(
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
-void ReportInstanceController::onRevertVersion(
-    const reporting::domain::report_instance& instance) {
-    BOOST_LOG_SEV(lg(), info) << "Reverting report instance to version: "
-                              << instance.version;
+void ReportInstanceController::onRevertVersion(const reporting::domain::report_instance& instance) {
+    BOOST_LOG_SEV(lg(), info) << "Reverting report instance to version: " << instance.version;
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new ReportInstanceDetailDialog(mainWindow_);
@@ -366,25 +400,33 @@ void ReportInstanceController::onRevertVersion(
     detailDialog->setInstance(instance);
     detailDialog->setCreateMode(false);
 
-    connect(detailDialog, &ReportInstanceDetailDialog::statusMessage,
-            this, &ReportInstanceController::statusMessage);
-    connect(detailDialog, &ReportInstanceDetailDialog::errorMessage,
-            this, &ReportInstanceController::errorMessage);
-    connect(detailDialog, &ReportInstanceDetailDialog::instanceSaved,
-            this, [self = QPointer<ReportInstanceController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Report Instance reverted: " << code.toStdString();
-        emit self->statusMessage(QString("Report Instance '%1' reverted successfully").arg(code));
-        self->handleEntitySaved();
-    });
+    connect(detailDialog,
+            &ReportInstanceDetailDialog::statusMessage,
+            this,
+            &ReportInstanceController::statusMessage);
+    connect(detailDialog,
+            &ReportInstanceDetailDialog::errorMessage,
+            this,
+            &ReportInstanceController::errorMessage);
+    connect(detailDialog,
+            &ReportInstanceDetailDialog::instanceSaved,
+            this,
+            [self = QPointer<ReportInstanceController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Report Instance reverted: " << code.toStdString();
+                emit self->statusMessage(
+                    QString("Report Instance '%1' reverted successfully").arg(code));
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Revert Report Instance: %1")
-        .arg(QString::fromStdString(instance.name)));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("Revert Report Instance: %1").arg(QString::fromStdString(instance.name)));
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
+                                                               IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 

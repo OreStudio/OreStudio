@@ -17,20 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.qt/ClientManager.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
 #include "ores.nats/service/nats_connect_error.hpp"
 #include "ores.nats/service/session_expired_error.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-std::optional<TradeListResult> ClientManager::listTrades(
-    std::optional<boost::uuids::uuid> node_id,
-    std::uint32_t offset,
-    std::uint32_t limit) {
+std::optional<TradeListResult> ClientManager::listTrades(std::optional<boost::uuids::uuid> node_id,
+                                                         std::uint32_t offset,
+                                                         std::uint32_t limit) {
 
     try {
         trading::messaging::get_trades_request request;
@@ -41,21 +39,17 @@ std::optional<TradeListResult> ClientManager::listTrades(
 
         auto result = process_authenticated_request(std::move(request));
         if (!result) {
-            BOOST_LOG_SEV(lg(), error)
-                << "listTrades failed: " << result.error();
+            BOOST_LOG_SEV(lg(), error) << "listTrades failed: " << result.error();
             return std::nullopt;
         }
         if (!result->success) {
-            BOOST_LOG_SEV(lg(), error)
-                << "listTrades server error: " << result->message;
+            BOOST_LOG_SEV(lg(), error) << "listTrades server error: " << result->message;
             return std::nullopt;
         }
 
-        return TradeListResult{
-            .trades = std::move(result->trades),
-            .total_count = static_cast<std::uint32_t>(
-                result->total_available_count)
-        };
+        return TradeListResult{.trades = std::move(result->trades),
+                               .total_count =
+                                   static_cast<std::uint32_t>(result->total_available_count)};
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "listTrades failed: " << e.what();
         return std::nullopt;

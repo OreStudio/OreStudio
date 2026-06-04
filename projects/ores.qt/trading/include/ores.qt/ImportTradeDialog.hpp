@@ -20,26 +20,26 @@
 #ifndef ORES_QT_IMPORT_TRADE_DIALOG_HPP
 #define ORES_QT_IMPORT_TRADE_DIALOG_HPP
 
-#include <atomic>
-#include <vector>
-#include <QString>
-#include <QDialog>
-#include <QLabel>
-#include <QWidget>
-#include <QCheckBox>
-#include <QDateEdit>
-#include <QLineEdit>
-#include <QPushButton>
-#include <QComboBox>
-#include <QTableWidget>
-#include <QProgressBar>
-#include <QFutureWatcher>
-#include <boost/uuid/uuid.hpp>
+#include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/xml/importer.hpp"
+#include "ores.qt/ClientManager.hpp"
 #include "ores.refdata.api/domain/book.hpp"
 #include "ores.refdata.api/domain/counterparty.hpp"
-#include "ores.qt/ClientManager.hpp"
-#include "ores.logging/make_logger.hpp"
+#include <QCheckBox>
+#include <QComboBox>
+#include <QDateEdit>
+#include <QDialog>
+#include <QFutureWatcher>
+#include <QLabel>
+#include <QLineEdit>
+#include <QProgressBar>
+#include <QPushButton>
+#include <QString>
+#include <QTableWidget>
+#include <QWidget>
+#include <boost/uuid/uuid.hpp>
+#include <atomic>
+#include <vector>
 
 namespace ores::qt {
 
@@ -58,8 +58,7 @@ class ImportTradeDialog final : public QDialog {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.import_trade_dialog";
+    inline static std::string_view logger_name = "ores.qt.import_trade_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -80,14 +79,13 @@ public:
      * @param username Current logged-in username
      * @param parent Parent widget
      */
-    explicit ImportTradeDialog(
-        const refdata::domain::book& book,
-        const std::vector<ore::xml::trade_import_item>& items,
-        const QString& source_label,
-        const std::string& market_data_dir,
-        ClientManager* clientManager,
-        const QString& username,
-        QWidget* parent = nullptr);
+    explicit ImportTradeDialog(const refdata::domain::book& book,
+                               const std::vector<ore::xml::trade_import_item>& items,
+                               const QString& source_label,
+                               const std::string& market_data_dir,
+                               ClientManager* clientManager,
+                               const QString& username,
+                               QWidget* parent = nullptr);
 
     ~ImportTradeDialog() override;
 

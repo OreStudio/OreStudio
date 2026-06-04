@@ -22,15 +22,13 @@
 namespace ores::qt {
 
 void PasswordMatchIndicator::connectFields(QLineEdit* passwordField,
-    QLineEdit* confirmField, const QString& defaultStyle) {
+                                           QLineEdit* confirmField,
+                                           const QString& defaultStyle) {
     auto update = [=]() {
-        updateFieldBorder(confirmField, passwordField->text(),
-            confirmField->text(), defaultStyle);
+        updateFieldBorder(confirmField, passwordField->text(), confirmField->text(), defaultStyle);
     };
-    QObject::connect(passwordField, &QLineEdit::textChanged,
-        confirmField, update);
-    QObject::connect(confirmField, &QLineEdit::textChanged,
-        confirmField, update);
+    QObject::connect(passwordField, &QLineEdit::textChanged, confirmField, update);
+    QObject::connect(confirmField, &QLineEdit::textChanged, confirmField, update);
 }
 
 } // namespace ores::qt

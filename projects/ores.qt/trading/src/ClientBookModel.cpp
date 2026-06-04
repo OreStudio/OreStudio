@@ -18,54 +18,56 @@
  *
  */
 #include "ores.qt/ClientBookModel.hpp"
-
-#include <QtConcurrent>
-#include "ores.refdata.api/messaging/book_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/ImageCache.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
+#include "ores.refdata.api/messaging/book_protocol.hpp"
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    std::string book_key_extractor(const refdata::domain::book& e) {
-        return e.name;
-    }
+std::string book_key_extractor(const refdata::domain::book& e) {
+    return e.name;
+}
 }
 
-ClientBookModel::ClientBookModel(
-    ClientManager* clientManager, ImageCache* imageCache, QObject* parent)
-    : AbstractClientModel(parent),
-      clientManager_(clientManager),
-      imageCache_(imageCache),
-      watcher_(new QFutureWatcher<FetchResult>(this)),
-      recencyTracker_(book_key_extractor),
-      pulseManager_(new RecencyPulseManager(this)) {
+ClientBookModel::ClientBookModel(ClientManager* clientManager,
+                                 ImageCache* imageCache,
+                                 QObject* parent)
+    : AbstractClientModel(parent)
+    , clientManager_(clientManager)
+    , imageCache_(imageCache)
+    , watcher_(new QFutureWatcher<FetchResult>(this))
+    , recencyTracker_(book_key_extractor)
+    , pulseManager_(new RecencyPulseManager(this)) {
 
-    connect(watcher_, &QFutureWatcher<FetchResult>::finished,
-            this, &ClientBookModel::onBooksLoaded);
+    connect(
+        watcher_, &QFutureWatcher<FetchResult>::finished, this, &ClientBookModel::onBooksLoaded);
 
-    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
-            this, &ClientBookModel::onPulseStateChanged);
-    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
-            this, &ClientBookModel::onPulsingComplete);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulse_state_changed,
+            this,
+            &ClientBookModel::onPulseStateChanged);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulsing_complete,
+            this,
+            &ClientBookModel::onPulsingComplete);
 
     if (imageCache_) {
         connect(imageCache_, &ImageCache::imagesLoaded, this, [this]() {
             if (!books_.empty()) {
-                emit dataChanged(index(0, 0),
-                    index(rowCount() - 1, columnCount() - 1),
-                    {Qt::DecorationRole});
+                emit dataChanged(
+                    index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::DecorationRole});
             }
         });
         connect(imageCache_, &ImageCache::imageLoaded, this, [this](const QString&) {
             if (!books_.empty()) {
-                emit dataChanged(index(0, 0),
-                    index(rowCount() - 1, columnCount() - 1),
-                    {Qt::DecorationRole});
+                emit dataChanged(
+                    index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::DecorationRole});
             }
         });
     }
@@ -83,8 +85,7 @@ int ClientBookModel::columnCount(const QModelIndex& parent) const {
     return ColumnCount;
 }
 
-QVariant ClientBookModel::data(
-    const QModelIndex& index, int role) const {
+QVariant ClientBookModel::data(const QModelIndex& index, int role) const {
     if (!index.isValid())
         return {};
 
@@ -103,24 +104,24 @@ QVariant ClientBookModel::data(
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-        case Name:
-            return QString::fromStdString(book.name);
-        case LedgerCcy:
-            return QString::fromStdString(book.ledger_ccy);
-        case BookStatus:
-            return QString::fromStdString(book.book_status);
-        case IsTradingBook:
-            return book.is_trading_book != 0 ? tr("Trading") : tr("Banking");
-        case CostCenter:
-            return QString::fromStdString(book.cost_center);
-        case Version:
-            return book.version;
-        case ModifiedBy:
-            return QString::fromStdString(book.modified_by);
-        case RecordedAt:
-            return relative_time_helper::format(book.recorded_at);
-        default:
-            return {};
+            case Name:
+                return QString::fromStdString(book.name);
+            case LedgerCcy:
+                return QString::fromStdString(book.ledger_ccy);
+            case BookStatus:
+                return QString::fromStdString(book.book_status);
+            case IsTradingBook:
+                return book.is_trading_book != 0 ? tr("Trading") : tr("Banking");
+            case CostCenter:
+                return QString::fromStdString(book.cost_center);
+            case Version:
+                return book.version;
+            case ModifiedBy:
+                return QString::fromStdString(book.modified_by);
+            case RecordedAt:
+                return relative_time_helper::format(book.recorded_at);
+            default:
+                return {};
         }
     }
 
@@ -131,30 +132,29 @@ QVariant ClientBookModel::data(
     return {};
 }
 
-QVariant ClientBookModel::headerData(
-    int section, Qt::Orientation orientation, int role) const {
+QVariant ClientBookModel::headerData(int section, Qt::Orientation orientation, int role) const {
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return {};
 
     switch (section) {
-    case Name:
-        return tr("Name");
-    case LedgerCcy:
-        return tr("Ledger Ccy");
-    case BookStatus:
-        return tr("Status");
-    case IsTradingBook:
-        return tr("Book Type");
-    case CostCenter:
-        return tr("Cost Centre");
-    case Version:
-        return tr("Version");
-    case ModifiedBy:
-        return tr("Modified By");
-    case RecordedAt:
-        return tr("Recorded At");
-    default:
-        return {};
+        case Name:
+            return tr("Name");
+        case LedgerCcy:
+            return tr("Ledger Ccy");
+        case BookStatus:
+            return tr("Status");
+        case IsTradingBook:
+            return tr("Book Type");
+        case CostCenter:
+            return tr("Cost Centre");
+        case Version:
+            return tr("Version");
+        case ModifiedBy:
+            return tr("Modified By");
+        case RecordedAt:
+            return tr("Recorded At");
+        default:
+            return {};
     }
 }
 
@@ -184,8 +184,7 @@ void ClientBookModel::refresh() {
     fetch_books(0, page_size_);
 }
 
-void ClientBookModel::load_page(std::uint32_t offset,
-                                          std::uint32_t limit) {
+void ClientBookModel::load_page(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "load_page: offset=" << offset << ", limit=" << limit;
 
     if (is_fetching_) {
@@ -209,18 +208,18 @@ void ClientBookModel::load_page(std::uint32_t offset,
     fetch_books(offset, limit);
 }
 
-void ClientBookModel::fetch_books(
-    std::uint32_t offset, std::uint32_t limit) {
+void ClientBookModel::fetch_books(std::uint32_t offset, std::uint32_t limit) {
     is_fetching_ = true;
     QPointer<ClientBookModel> self = this;
 
-    QFuture<FetchResult> future =
-        QtConcurrent::run([self, offset, limit]() -> FetchResult {
-            return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
-                BOOST_LOG_SEV(lg(), debug) << "Making books request with offset="
-                                           << offset << ", limit=" << limit;
+    QFuture<FetchResult> future = QtConcurrent::run([self, offset, limit]() -> FetchResult {
+        return exception_helper::wrap_async_fetch<FetchResult>(
+            [&]() -> FetchResult {
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Making books request with offset=" << offset << ", limit=" << limit;
                 if (!self || !self->clientManager_) {
-                    return {.success = false, .books = {},
+                    return {.success = false,
+                            .books = {},
                             .total_available_count = 0,
                             .error_message = "Model was destroyed",
                             .error_details = {}};
@@ -229,28 +228,31 @@ void ClientBookModel::fetch_books(
                 refdata::messaging::get_books_request request;
 
                 const auto ws_id = self->workspaceContext().id.toStdString();
-                auto result = self->clientManager_->
-                    process_authenticated_request(std::move(request), ws_id);
+                auto result =
+                    self->clientManager_->process_authenticated_request(std::move(request), ws_id);
 
                 if (!result) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to fetch books: "
-                                               << result.error();
-                    return {.success = false, .books = {},
+                    BOOST_LOG_SEV(lg(), error) << "Failed to fetch books: " << result.error();
+                    return {.success = false,
+                            .books = {},
                             .total_available_count = 0,
-                            .error_message = QString::fromStdString(
-                                "Failed to fetch books: " + result.error()),
+                            .error_message =
+                                QString::fromStdString("Failed to fetch books: " + result.error()),
                             .error_details = {}};
                 }
 
-                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->books.size()
-                                           << " books, total available: "
-                                           << result->total_available_count;
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Fetched " << result->books.size()
+                    << " books, total available: " << result->total_available_count;
                 return {.success = true,
                         .books = std::move(result->books),
-                        .total_available_count = static_cast<std::uint32_t>(result->total_available_count),
-                        .error_message = {}, .error_details = {}};
-            }, "books");
-        });
+                        .total_available_count =
+                            static_cast<std::uint32_t>(result->total_available_count),
+                        .error_message = {},
+                        .error_details = {}};
+            },
+            "books");
+    });
 
     watcher_->setFuture(future);
 }
@@ -261,8 +263,8 @@ void ClientBookModel::onBooksLoaded() {
     const auto result = watcher_->result();
 
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to fetch books: "
-                                   << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to fetch books: " << result.error_message.toStdString();
         emit loadError(result.error_message, result.error_details);
         return;
     }
@@ -279,8 +281,8 @@ void ClientBookModel::onBooksLoaded() {
         const bool has_recent = recencyTracker_.update(books_);
         if (has_recent && !pulseManager_->is_pulsing()) {
             pulseManager_->start_pulsing();
-            BOOST_LOG_SEV(lg(), debug) << "Found " << recencyTracker_.recent_count()
-                                       << " books newer than last reload";
+            BOOST_LOG_SEV(lg(), debug)
+                << "Found " << recencyTracker_.recent_count() << " books newer than last reload";
         }
     }
 
@@ -301,16 +303,14 @@ void ClientBookModel::set_page_size(std::uint32_t size) {
     }
 }
 
-const refdata::domain::book*
-ClientBookModel::getBook(int row) const {
+const refdata::domain::book* ClientBookModel::getBook(int row) const {
     const auto idx = static_cast<std::size_t>(row);
     if (idx >= books_.size())
         return nullptr;
     return &books_[idx];
 }
 
-QVariant ClientBookModel::recency_foreground_color(
-    const std::string& code) const {
+QVariant ClientBookModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {
         return color_constants::stale_indicator;
     }
@@ -319,8 +319,8 @@ QVariant ClientBookModel::recency_foreground_color(
 
 void ClientBookModel::onPulseStateChanged(bool /*isOn*/) {
     if (!books_.empty()) {
-        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
-            {Qt::ForegroundRole});
+        emit dataChanged(
+            index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::ForegroundRole});
     }
 }
 

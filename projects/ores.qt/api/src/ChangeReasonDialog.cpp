@@ -18,28 +18,26 @@
  *
  */
 #include "ores.qt/ChangeReasonDialog.hpp"
+#include "ores.dq.api/domain/change_reason_constants.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-
-#include <QVBoxLayout>
-#include <QHBoxLayout>
 #include <QFormLayout>
 #include <QGroupBox>
+#include <QHBoxLayout>
 #include <QStandardItemModel>
-#include "ores.dq.api/domain/change_reason_constants.hpp"
+#include <QVBoxLayout>
 
 namespace ores::qt {
 
 namespace reason = ores::dq::domain::change_reason_constants;
 
-ChangeReasonDialog::ChangeReasonDialog(
-    const std::vector<dq::domain::change_reason>& reasons,
-    OperationType operation,
-    bool hasFieldChanges,
-    QWidget* parent)
-    : QDialog(parent),
-      reasons_(reasons),
-      operation_(operation),
-      hasFieldChanges_(hasFieldChanges) {
+ChangeReasonDialog::ChangeReasonDialog(const std::vector<dq::domain::change_reason>& reasons,
+                                       OperationType operation,
+                                       bool hasFieldChanges,
+                                       QWidget* parent)
+    : QDialog(parent)
+    , reasons_(reasons)
+    , operation_(operation)
+    , hasFieldChanges_(hasFieldChanges) {
 
     setupUi();
 
@@ -100,8 +98,7 @@ void ChangeReasonDialog::setupUi() {
 
     for (std::size_t i = 0; i < reasons_.size(); ++i) {
         const auto& r = reasons_[i];
-        reasonCombo_->addItem(QString::fromStdString(r.code),
-                              QString::fromStdString(r.code));
+        reasonCombo_->addItem(QString::fromStdString(r.code), QString::fromStdString(r.code));
 
         auto* model = qobject_cast<QStandardItemModel*>(reasonCombo_->model());
         if (model) {
@@ -115,13 +112,11 @@ void ChangeReasonDialog::setupUi() {
                     if (hasFieldChanges_) {
                         item->setEnabled(!isTouchReason);
                         if (isTouchReason)
-                            item->setToolTip(
-                                tr("Not available when fields have been modified"));
+                            item->setToolTip(tr("Not available when fields have been modified"));
                     } else {
                         item->setEnabled(isTouchReason);
                         if (!isTouchReason)
-                            item->setToolTip(
-                                tr("Only available when fields have been modified"));
+                            item->setToolTip(tr("Only available when fields have been modified"));
                     }
                 }
             }
@@ -161,8 +156,7 @@ void ChangeReasonDialog::setupUi() {
     mainLayout->addStretch();
 
     // Button box
-    buttonBox_ = new QDialogButtonBox(
-        QDialogButtonBox::Save | QDialogButtonBox::Cancel, this);
+    buttonBox_ = new QDialogButtonBox(QDialogButtonBox::Save | QDialogButtonBox::Cancel, this);
     saveButton_ = buttonBox_->button(QDialogButtonBox::Save);
     if (operation_ == OperationType::Create) {
         saveButton_->setText(tr("Create"));
@@ -175,14 +169,14 @@ void ChangeReasonDialog::setupUi() {
     mainLayout->addWidget(buttonBox_);
 
     // Connections
-    connect(reasonCombo_, QOverload<int>::of(&QComboBox::currentIndexChanged),
-            this, &ChangeReasonDialog::onReasonChanged);
-    connect(commentaryEdit_, &QTextEdit::textChanged,
-            this, &ChangeReasonDialog::onCommentaryChanged);
-    connect(buttonBox_, &QDialogButtonBox::accepted,
-            this, &ChangeReasonDialog::validateAndAccept);
-    connect(buttonBox_, &QDialogButtonBox::rejected,
-            this, &QDialog::reject);
+    connect(reasonCombo_,
+            QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this,
+            &ChangeReasonDialog::onReasonChanged);
+    connect(
+        commentaryEdit_, &QTextEdit::textChanged, this, &ChangeReasonDialog::onCommentaryChanged);
+    connect(buttonBox_, &QDialogButtonBox::accepted, this, &ChangeReasonDialog::validateAndAccept);
+    connect(buttonBox_, &QDialogButtonBox::rejected, this, &QDialog::reject);
 }
 
 void ChangeReasonDialog::onReasonChanged(int index) {

@@ -18,78 +18,86 @@
  *
  */
 #include "ores.qt/MainWindow.hpp"
-
-#include <chrono>
-#include <functional>
-#include <QtConcurrent>
-#include <QDebug>
-#include <QTimer>
-#include <QApplication>
-#include <QScreen>
-#include <QMdiSubWindow>
-#include <QPainter>
-#include <QPixmap>
-#include <QAction>
-#include <QCloseEvent>
-#include <QImage>
-#include <QFile>
-#include <QFont>
-#include <QIcon>
-#include <QFileDialog>
-#include <QMessageBox>
-#include <QSettings>
-#include <QHBoxLayout>
-#include <QVBoxLayout>
-#include <QStandardPaths>
-#include "ui_MainWindow.h"
+#include "ores.connections/service/connection_manager.hpp"
+#include "ores.qt/AboutDialog.hpp"
+#include "ores.qt/BadgeCache.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
+#include "ores.qt/ConnectionBrowserMdiWindow.hpp"
+#include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/EventViewerDialog.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/ImageCache.hpp"
 #include "ores.qt/LoginDialog.hpp"
-#include "ores.qt/SystemProvisionerWizard.hpp"
-#include "ores.qt/TenantProvisioningWizard.hpp"
-#include "ores.qt/PartyProvisioningWizard.hpp"
-#include "ores.qt/SignUpDialog.hpp"
+#include "ores.qt/MasterPasswordDialog.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/MyAccountDialog.hpp"
-#include "ores.qt/SessionHistoryDialog.hpp"
-#include "ores.qt/plugin_context.hpp"
-#include "ores.qt/WorkspaceContext.hpp"
+#include "ores.qt/PartyProvisioningWizard.hpp"
 #include "ores.qt/PluginBase.hpp"
 #include "ores.qt/PluginRegistry.hpp"
-#include "ores.qt/ChangeReasonCache.hpp"
-#include "ores.qt/BadgeCache.hpp"
-#include "ores.qt/DetachableMdiSubWindow.hpp"
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/AboutDialog.hpp"
-#include "ores.qt/EventViewerDialog.hpp"
-#include "ores.qt/TelemetryMdiWindow.hpp"
+#include "ores.qt/SessionHistoryDialog.hpp"
 #include "ores.qt/ShellMdiWindow.hpp"
-#include "ores.qt/ImageCache.hpp"
+#include "ores.qt/SignUpDialog.hpp"
+#include "ores.qt/SystemProvisionerWizard.hpp"
+#include "ores.qt/TelemetryMdiWindow.hpp"
 #include "ores.qt/TelemetrySettingsDialog.hpp"
-#include "ores.qt/ConnectionBrowserMdiWindow.hpp"
-#include "ores.qt/MasterPasswordDialog.hpp"
+#include "ores.qt/TenantProvisioningWizard.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.connections/service/connection_manager.hpp"
+#include "ores.qt/WorkspaceContext.hpp"
+#include "ores.qt/plugin_context.hpp"
 #include "ores.utility/version/version.hpp"
+#include "ui_MainWindow.h"
+#include <QAction>
+#include <QApplication>
+#include <QCloseEvent>
+#include <QDebug>
+#include <QFile>
+#include <QFileDialog>
+#include <QFont>
+#include <QHBoxLayout>
+#include <QIcon>
+#include <QImage>
+#include <QMdiSubWindow>
+#include <QMessageBox>
+#include <QPainter>
+#include <QPixmap>
+#include <QScreen>
+#include <QSettings>
+#include <QStandardPaths>
+#include <QTimer>
+#include <QVBoxLayout>
+#include <QtConcurrent>
 #include <boost/uuid/uuid_io.hpp>
+#include <chrono>
+#include <functional>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-MainWindow::MainWindow(QWidget* parent) :
-    QMainWindow(parent), ui_(new Ui::MainWindow), mdiArea_(nullptr),
-    eventBus_(std::make_shared<eventing::service::event_bus>()),
-    clientManager_(new ClientManager(eventBus_, this)),
-    imageCache_(new ImageCache(clientManager_, this)),
-    changeReasonCache_(new ChangeReasonCache(clientManager_, this)),
-    badgeCache_(new BadgeCache(clientManager_, this)),
-    systemTrayIcon_(nullptr), trayContextMenu_(nullptr),
-    instanceColorIndicator_(nullptr), eventViewerWindow_(nullptr),
-    telemetryViewerWindow_(nullptr),
-    userStatusWidget_(nullptr), userStatusNameLabel_(nullptr),
-    serverStatusWidget_(nullptr), serverStatusNameLabel_(nullptr),
-    tenantStatusWidget_(nullptr), tenantStatusNameLabel_(nullptr),
-    partyStatusWidget_(nullptr), partyStatusNameLabel_(nullptr),
-    envLabelWidget_(nullptr), envLabelNameLabel_(nullptr) {
+MainWindow::MainWindow(QWidget* parent)
+    : QMainWindow(parent)
+    , ui_(new Ui::MainWindow)
+    , mdiArea_(nullptr)
+    , eventBus_(std::make_shared<eventing::service::event_bus>())
+    , clientManager_(new ClientManager(eventBus_, this))
+    , imageCache_(new ImageCache(clientManager_, this))
+    , changeReasonCache_(new ChangeReasonCache(clientManager_, this))
+    , badgeCache_(new BadgeCache(clientManager_, this))
+    , systemTrayIcon_(nullptr)
+    , trayContextMenu_(nullptr)
+    , instanceColorIndicator_(nullptr)
+    , eventViewerWindow_(nullptr)
+    , telemetryViewerWindow_(nullptr)
+    , userStatusWidget_(nullptr)
+    , userStatusNameLabel_(nullptr)
+    , serverStatusWidget_(nullptr)
+    , serverStatusNameLabel_(nullptr)
+    , tenantStatusWidget_(nullptr)
+    , tenantStatusNameLabel_(nullptr)
+    , partyStatusWidget_(nullptr)
+    , partyStatusNameLabel_(nullptr)
+    , envLabelWidget_(nullptr)
+    , envLabelNameLabel_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "Creating the main window.";
     ui_->setupUi(this);
@@ -110,8 +118,7 @@ MainWindow::MainWindow(QWidget* parent) :
 
         auto* iconLbl = new QLabel(chip);
         iconLbl->setPixmap(
-            IconUtils::createRecoloredIcon(icon, IconUtils::DefaultIconColor)
-                .pixmap(14, 14));
+            IconUtils::createRecoloredIcon(icon, IconUtils::DefaultIconColor).pixmap(14, 14));
         iconLbl->setFixedSize(14, 14);
 
         auto* nameLbl = new QLabel(chip);
@@ -120,22 +127,25 @@ MainWindow::MainWindow(QWidget* parent) :
         return {chip, nameLbl};
     };
 
-    const QString normalChipStyle =
-        "QWidget { border-left: 1px solid palette(mid);"
-        " background: palette(alternateBase); }";
+    const QString normalChipStyle = "QWidget { border-left: 1px solid palette(mid);"
+                                    " background: palette(alternateBase); }";
 
     auto [uWidget, uName] = makeStatusChip(Icon::PersonAccounts);
     auto [sWidget, sName] = makeStatusChip(Icon::Server);
     auto [tWidget, tName] = makeStatusChip(Icon::BuildingSkyscraper);
     auto [pWidget, pName] = makeStatusChip(Icon::Organization);
 
-    userStatusWidget_       = uWidget;  userStatusNameLabel_   = uName;
-    serverStatusWidget_     = sWidget;  serverStatusNameLabel_ = sName;
-    tenantStatusWidget_     = tWidget;  tenantStatusNameLabel_ = tName;
-    partyStatusWidget_      = pWidget;  partyStatusNameLabel_  = pName;
+    userStatusWidget_ = uWidget;
+    userStatusNameLabel_ = uName;
+    serverStatusWidget_ = sWidget;
+    serverStatusNameLabel_ = sName;
+    tenantStatusWidget_ = tWidget;
+    tenantStatusNameLabel_ = tName;
+    partyStatusWidget_ = pWidget;
+    partyStatusNameLabel_ = pName;
 
     auto [eWidget, eName] = makeStatusChip(Icon::Tag);
-    envLabelWidget_    = eWidget;
+    envLabelWidget_ = eWidget;
     envLabelNameLabel_ = eName;
 
     for (auto* w : {uWidget, sWidget, tWidget, pWidget}) {
@@ -169,61 +179,71 @@ MainWindow::MainWindow(QWidget* parent) :
     mdiArea_->setBackgroundLogo(":/images/ore-studio-background.png");
 
     connectedIcon_ = IconUtils::createRecoloredIcon(Icon::PlugConnected, IconUtils::ConnectedColor);
-    disconnectedIcon_ = IconUtils::createRecoloredIcon(Icon::PlugDisconnected, IconUtils::DisconnectedColor);
-    reconnectingIcon_ = IconUtils::createRecoloredIcon(Icon::PlugDisconnected, IconUtils::ReconnectingColor);
+    disconnectedIcon_ =
+        IconUtils::createRecoloredIcon(Icon::PlugDisconnected, IconUtils::DisconnectedColor);
+    reconnectingIcon_ =
+        IconUtils::createRecoloredIcon(Icon::PlugDisconnected, IconUtils::ReconnectingColor);
 
-    ui_->ActionConnect->setIcon(IconUtils::createRecoloredIcon(Icon::PlugConnected, IconUtils::DefaultIconColor));
-    ui_->ActionDisconnect->setIcon(IconUtils::createRecoloredIcon(Icon::PlugDisconnected, IconUtils::DefaultIconColor));
-    ui_->ActionAbout->setIcon(IconUtils::createRecoloredIcon(Icon::Star, IconUtils::DefaultIconColor));
-    ui_->ActionMyAccount->setIcon(IconUtils::createRecoloredIcon(Icon::Person, IconUtils::DefaultIconColor));
-    ui_->ActionMySessions->setIcon(IconUtils::createRecoloredIcon(Icon::Clock, IconUtils::DefaultIconColor));
-    ui_->ExitAction->setIcon(IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
-    ui_->ActionOpenRecording->setIcon(IconUtils::createRecoloredIcon(Icon::FolderOpen, IconUtils::DefaultIconColor));
-    ui_->ActionSetRecordingDirectory->setIcon(IconUtils::createRecoloredIcon(Icon::Folder, IconUtils::DefaultIconColor));
-    ui_->ActionTelemetrySettings->setIcon(IconUtils::createRecoloredIcon(Icon::Settings, IconUtils::DefaultIconColor));
-    ui_->ActionConnectionBrowser->setIcon(IconUtils::createRecoloredIcon(Icon::ServerLink, IconUtils::DefaultIconColor));
+    ui_->ActionConnect->setIcon(
+        IconUtils::createRecoloredIcon(Icon::PlugConnected, IconUtils::DefaultIconColor));
+    ui_->ActionDisconnect->setIcon(
+        IconUtils::createRecoloredIcon(Icon::PlugDisconnected, IconUtils::DefaultIconColor));
+    ui_->ActionAbout->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Star, IconUtils::DefaultIconColor));
+    ui_->ActionMyAccount->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Person, IconUtils::DefaultIconColor));
+    ui_->ActionMySessions->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Clock, IconUtils::DefaultIconColor));
+    ui_->ExitAction->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
+    ui_->ActionOpenRecording->setIcon(
+        IconUtils::createRecoloredIcon(Icon::FolderOpen, IconUtils::DefaultIconColor));
+    ui_->ActionSetRecordingDirectory->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Folder, IconUtils::DefaultIconColor));
+    ui_->ActionTelemetrySettings->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Settings, IconUtils::DefaultIconColor));
+    ui_->ActionConnectionBrowser->setIcon(
+        IconUtils::createRecoloredIcon(Icon::ServerLink, IconUtils::DefaultIconColor));
 
     // Create record icons - regular (gray) for off, filled (red) for on
     recordOffIcon_ = IconUtils::createRecoloredIcon(Icon::Record, IconUtils::DefaultIconColor);
     recordOnIcon_ = IconUtils::createRecoloredIcon(Icon::RecordFilled, IconUtils::RecordingOnColor);
     ui_->ActionRecordSession->setIcon(recordOffIcon_);
-    ui_->ActionEventViewer->setIcon(IconUtils::createRecoloredIcon(Icon::DocumentCode, IconUtils::DefaultIconColor));
-    ui_->ActionTelemetryViewer->setIcon(IconUtils::createRecoloredIcon(Icon::DocumentTable, IconUtils::DefaultIconColor));
-    ui_->ActionShell->setIcon(IconUtils::createRecoloredIcon(Icon::Terminal, IconUtils::DefaultIconColor));
+    ui_->ActionEventViewer->setIcon(
+        IconUtils::createRecoloredIcon(Icon::DocumentCode, IconUtils::DefaultIconColor));
+    ui_->ActionTelemetryViewer->setIcon(
+        IconUtils::createRecoloredIcon(Icon::DocumentTable, IconUtils::DefaultIconColor));
+    ui_->ActionShell->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Terminal, IconUtils::DefaultIconColor));
 
     // Connect menu actions
-    connect(ui_->ActionConnect, &QAction::triggered, this,
-        &MainWindow::onLoginTriggered);
-    connect(ui_->ActionDisconnect, &QAction::triggered, this,
-        &MainWindow::onDisconnectTriggered);
-    connect(ui_->ActionMyAccount, &QAction::triggered, this,
-        &MainWindow::onMyAccountTriggered);
-    connect(ui_->ActionMySessions, &QAction::triggered, this,
-        &MainWindow::onMySessionsTriggered);
-    connect(ui_->ActionAbout, &QAction::triggered, this,
-        &MainWindow::onAboutTriggered);
+    connect(ui_->ActionConnect, &QAction::triggered, this, &MainWindow::onLoginTriggered);
+    connect(ui_->ActionDisconnect, &QAction::triggered, this, &MainWindow::onDisconnectTriggered);
+    connect(ui_->ActionMyAccount, &QAction::triggered, this, &MainWindow::onMyAccountTriggered);
+    connect(ui_->ActionMySessions, &QAction::triggered, this, &MainWindow::onMySessionsTriggered);
+    connect(ui_->ActionAbout, &QAction::triggered, this, &MainWindow::onAboutTriggered);
     connect(ui_->ExitAction, &QAction::triggered, this, &QMainWindow::close);
-    connect(ui_->ActionConnectionBrowser, &QAction::triggered, this,
-        &MainWindow::onConnectionBrowserTriggered);
+    connect(ui_->ActionConnectionBrowser,
+            &QAction::triggered,
+            this,
+            &MainWindow::onConnectionBrowserTriggered);
 
     // Connect Window menu actions
-    connect(ui_->ActionDetachAll, &QAction::triggered, this,
-        &MainWindow::onDetachAllTriggered);
-    connect(ui_->menuWindow, &QMenu::aboutToShow, this,
-        &MainWindow::onWindowMenuAboutToShow);
+    connect(ui_->ActionDetachAll, &QAction::triggered, this, &MainWindow::onDetachAllTriggered);
+    connect(ui_->menuWindow, &QMenu::aboutToShow, this, &MainWindow::onWindowMenuAboutToShow);
 
     // Connect Protocol recording actions
-    connect(ui_->ActionRecordSession, &QAction::toggled, this,
-        &MainWindow::onRecordSessionToggled);
-    connect(ui_->ActionOpenRecording, &QAction::triggered, this,
-        &MainWindow::onOpenRecordingTriggered);
-    connect(ui_->ActionSetRecordingDirectory, &QAction::triggered, this,
-        &MainWindow::onSetRecordingDirectoryTriggered);
-    connect(ui_->ActionTelemetrySettings, &QAction::triggered, this,
-        [this]() {
-            TelemetrySettingsDialog dialog(this);
-            dialog.exec();
-        });
+    connect(ui_->ActionRecordSession, &QAction::toggled, this, &MainWindow::onRecordSessionToggled);
+    connect(
+        ui_->ActionOpenRecording, &QAction::triggered, this, &MainWindow::onOpenRecordingTriggered);
+    connect(ui_->ActionSetRecordingDirectory,
+            &QAction::triggered,
+            this,
+            &MainWindow::onSetRecordingDirectoryTriggered);
+    connect(ui_->ActionTelemetrySettings, &QAction::triggered, this, [this]() {
+        TelemetrySettingsDialog dialog(this);
+        dialog.exec();
+    });
 
     // Connect Event Viewer action
     connect(ui_->ActionEventViewer, &QAction::triggered, this, [this]() {
@@ -269,8 +289,8 @@ MainWindow::MainWindow(QWidget* parent) :
         }
 
         // Create the telemetry viewer widget
-        auto* telemetryViewer = new TelemetryMdiWindow(
-            clientManager_, QString::fromStdString(username_), this);
+        auto* telemetryViewer =
+            new TelemetryMdiWindow(clientManager_, QString::fromStdString(username_), this);
 
         // Wrap in MDI sub-window
         telemetryViewerWindow_ = new DetachableMdiSubWindow();
@@ -279,8 +299,8 @@ MainWindow::MainWindow(QWidget* parent) :
         telemetryViewerWindow_->setAttribute(Qt::WA_DeleteOnClose);
         telemetryViewerWindow_->resize(1200, 700);
 
-        telemetryViewerWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-            Icon::DocumentTable, IconUtils::DefaultIconColor));
+        telemetryViewerWindow_->setWindowIcon(
+            IconUtils::createRecoloredIcon(Icon::DocumentTable, IconUtils::DefaultIconColor));
 
         // Track window destruction
         connect(telemetryViewerWindow_, &QObject::destroyed, this, [this]() {
@@ -289,14 +309,14 @@ MainWindow::MainWindow(QWidget* parent) :
         });
 
         // Connect status messages to status bar
-        connect(telemetryViewer, &TelemetryMdiWindow::statusChanged, this,
-            [this](const QString& message) {
-                ui_->statusbar->showMessage(message, 5000);
-            });
-        connect(telemetryViewer, &TelemetryMdiWindow::errorOccurred, this,
-            [this](const QString& message) {
-                ui_->statusbar->showMessage(message, 5000);
-            });
+        connect(telemetryViewer,
+                &TelemetryMdiWindow::statusChanged,
+                this,
+                [this](const QString& message) { ui_->statusbar->showMessage(message, 5000); });
+        connect(telemetryViewer,
+                &TelemetryMdiWindow::errorOccurred,
+                this,
+                [this](const QString& message) { ui_->statusbar->showMessage(message, 5000); });
 
         mdiArea_->addSubWindow(telemetryViewerWindow_);
         allDetachableWindows_.append(telemetryViewerWindow_);
@@ -324,8 +344,8 @@ MainWindow::MainWindow(QWidget* parent) :
         shellWindow_->setAttribute(Qt::WA_DeleteOnClose);
         shellWindow_->resize(800, 500);
 
-        shellWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-            Icon::Terminal, IconUtils::DefaultIconColor));
+        shellWindow_->setWindowIcon(
+            IconUtils::createRecoloredIcon(Icon::Terminal, IconUtils::DefaultIconColor));
 
         // Track window destruction
         connect(shellWindow_, &QObject::destroyed, this, [this]() {
@@ -334,10 +354,9 @@ MainWindow::MainWindow(QWidget* parent) :
         });
 
         // Connect status messages to status bar
-        connect(shellWidget, &ShellMdiWindow::statusChanged, this,
-            [this](const QString& message) {
-                ui_->statusbar->showMessage(message, 5000);
-            });
+        connect(shellWidget, &ShellMdiWindow::statusChanged, this, [this](const QString& message) {
+            ui_->statusbar->showMessage(message, 5000);
+        });
 
         mdiArea_->addSubWindow(shellWindow_);
         allDetachableWindows_.append(shellWindow_);
@@ -345,14 +364,15 @@ MainWindow::MainWindow(QWidget* parent) :
     });
 
     // Connect recording signals
-    connect(clientManager_, &ClientManager::recordingStarted, this, [this](const QString& filePath) {
-        ui_->statusbar->showMessage(QString("Recording to: %1").arg(filePath), 5000);
-        // Ensure icon shows recording is active
-        ui_->ActionRecordSession->setIcon(recordOnIcon_);
-        ui_->ActionRecordSession->blockSignals(true);
-        ui_->ActionRecordSession->setChecked(true);
-        ui_->ActionRecordSession->blockSignals(false);
-    });
+    connect(
+        clientManager_, &ClientManager::recordingStarted, this, [this](const QString& filePath) {
+            ui_->statusbar->showMessage(QString("Recording to: %1").arg(filePath), 5000);
+            // Ensure icon shows recording is active
+            ui_->ActionRecordSession->setIcon(recordOnIcon_);
+            ui_->ActionRecordSession->blockSignals(true);
+            ui_->ActionRecordSession->setChecked(true);
+            ui_->ActionRecordSession->blockSignals(false);
+        });
     connect(clientManager_, &ClientManager::recordingStopped, this, [this]() {
         ui_->statusbar->showMessage("Recording stopped.", 3000);
         // Ensure checkbox is unchecked when recording stops externally
@@ -382,9 +402,10 @@ MainWindow::MainWindow(QWidget* parent) :
         ui_->statusbar->showMessage("Reconnected to server.", 5000);
     });
     connect(clientManager_, &ClientManager::sessionExpired, this, [this]() {
-        QMessageBox::warning(this, "Session Expired",
-            "Your session has expired after the maximum allowed duration.\n"
-            "Please log in again to continue.");
+        QMessageBox::warning(this,
+                             "Session Expired",
+                             "Your session has expired after the maximum allowed duration.\n"
+                             "Please log in again to continue.");
         clientManager_->disconnect();
         showLoginDialog();
     });
@@ -408,8 +429,10 @@ MainWindow::MainWindow(QWidget* parent) :
 
     // When image list is loaded, automatically fetch the actual images
     // This ensures that preloading gets all images ready for the FlagSelectorDialog
-    connect(imageCache_, &ImageCache::imageListLoaded,
-            imageCache_, &ImageCache::loadAllAvailableImages);
+    connect(imageCache_,
+            &ImageCache::imageListLoaded,
+            imageCache_,
+            &ImageCache::loadAllAvailableImages);
 
     // Show error message when image loading fails (e.g., CRC errors)
     connect(imageCache_, &ImageCache::loadError, this, [this](const QString& message) {
@@ -462,15 +485,15 @@ MainWindow::MainWindow(QWidget* parent) :
     BOOST_LOG_SEV(lg(), info) << plugins.size() << " plugin(s) registered.";
 
     shared_menus_context smc;
-    smc.system_menu          = ui_->menuSystem;
-    smc.reference_data_menu  = referenceDataMenu;
-    smc.telemetry_menu       = ui_->menuTelemetry;
-    smc.account_menu         = accountMenu;
+    smc.system_menu = ui_->menuSystem;
+    smc.reference_data_menu = referenceDataMenu;
+    smc.telemetry_menu = ui_->menuTelemetry;
+    smc.account_menu = accountMenu;
     smc.data_management_menu = dataManagementMenu;
-    smc.trading_codes_menu   = tradingCodesMenu;
-    smc.analytics_menu       = analyticsMenu;
+    smc.trading_codes_menu = tradingCodesMenu;
+    smc.analytics_menu = analyticsMenu;
     smc.analytics_codes_menu = analyticsCodesMenu;
-    smc.operations_menu      = operationsMenu;
+    smc.operations_menu = operationsMenu;
 
     BOOST_LOG_SEV(lg(), debug) << "Distributing shared menu handles to plugins.";
     for (auto* plugin : plugins) {
@@ -490,17 +513,15 @@ MainWindow::MainWindow(QWidget* parent) :
     BOOST_LOG_SEV(lg(), debug) << "Collecting plugin menus and toolbar actions.";
     for (auto* plugin : plugins) {
         auto* pb = static_cast<PluginBase*>(plugin);
-        connect(pb, &PluginBase::statusMessage,
-                this, [this](const QString& msg) { ui_->statusbar->showMessage(msg); });
-        connect(pb, &PluginBase::windowCreated,
-                this, &MainWindow::onDetachableWindowCreated);
-        connect(pb, &PluginBase::windowDestroyed,
-                this, &MainWindow::onDetachableWindowDestroyed);
+        connect(pb, &PluginBase::statusMessage, this, [this](const QString& msg) {
+            ui_->statusbar->showMessage(msg);
+        });
+        connect(pb, &PluginBase::windowCreated, this, &MainWindow::onDetachableWindowCreated);
+        connect(pb, &PluginBase::windowDestroyed, this, &MainWindow::onDetachableWindowDestroyed);
 
         const auto menus = plugin->create_menus();
-        BOOST_LOG_SEV(lg(), info)
-            << "  " << plugin->name().toStdString()
-            << ": " << menus.size() << " menu(s)";
+        BOOST_LOG_SEV(lg(), info) << "  " << plugin->name().toStdString() << ": " << menus.size()
+                                  << " menu(s)";
         for (auto* menu : menus) {
             if (menu) {
                 BOOST_LOG_SEV(lg(), debug) << "    \"" << menu->title().toStdString() << "\"";
@@ -527,9 +548,8 @@ MainWindow::MainWindow(QWidget* parent) :
         }
     }
 
-    BOOST_LOG_SEV(lg(), info)
-        << "Menu bar ready: " << plugin_menus_.size() << " managed menus, "
-        << plugin_toolbar_actions_.size() << " toolbar actions.";
+    BOOST_LOG_SEV(lg(), info) << "Menu bar ready: " << plugin_menus_.size() << " managed menus, "
+                              << plugin_toolbar_actions_.size() << " toolbar actions.";
 
     // Initially disable data-related actions until logged in
     updateMenuState();
@@ -574,47 +594,46 @@ MainWindow::MainWindow(QWidget* parent) :
         systemTrayIcon_->show();
 
         // Connect tray icon activation to show window
-        connect(systemTrayIcon_, &QSystemTrayIcon::activated, this,
-            [this](QSystemTrayIcon::ActivationReason reason) {
-                if (reason == QSystemTrayIcon::Trigger ||
-                    reason == QSystemTrayIcon::DoubleClick) {
-                    show();
-                    raise();
-                    activateWindow();
-                }
-            });
+        connect(systemTrayIcon_,
+                &QSystemTrayIcon::activated,
+                this,
+                [this](QSystemTrayIcon::ActivationReason reason) {
+                    if (reason == QSystemTrayIcon::Trigger ||
+                        reason == QSystemTrayIcon::DoubleClick) {
+                        show();
+                        raise();
+                        activateWindow();
+                    }
+                });
 
         // Connect to ClientManager signals for tray notifications
         connect(clientManager_, &ClientManager::connected, this, [this]() {
             if (systemTrayIcon_) {
                 QString message = QString("Connected to %1")
-                    .arg(QString::fromStdString(clientManager_->serverAddress()));
-                systemTrayIcon_->showMessage("ORE Studio", message,
-                    QSystemTrayIcon::Information, 3000);
+                                      .arg(QString::fromStdString(clientManager_->serverAddress()));
+                systemTrayIcon_->showMessage(
+                    "ORE Studio", message, QSystemTrayIcon::Information, 3000);
             }
         });
 
         connect(clientManager_, &ClientManager::disconnected, this, [this]() {
             if (systemTrayIcon_) {
-                systemTrayIcon_->showMessage("ORE Studio",
-                    "Disconnected from server",
-                    QSystemTrayIcon::Warning, 3000);
+                systemTrayIcon_->showMessage(
+                    "ORE Studio", "Disconnected from server", QSystemTrayIcon::Warning, 3000);
             }
         });
 
         connect(clientManager_, &ClientManager::reconnecting, this, [this]() {
             if (systemTrayIcon_) {
-                systemTrayIcon_->showMessage("ORE Studio",
-                    "Reconnecting to server...",
-                    QSystemTrayIcon::Information, 2000);
+                systemTrayIcon_->showMessage(
+                    "ORE Studio", "Reconnecting to server...", QSystemTrayIcon::Information, 2000);
             }
         });
 
         connect(clientManager_, &ClientManager::reconnected, this, [this]() {
             if (systemTrayIcon_) {
-                systemTrayIcon_->showMessage("ORE Studio",
-                    "Reconnected to server",
-                    QSystemTrayIcon::Information, 3000);
+                systemTrayIcon_->showMessage(
+                    "ORE Studio", "Reconnected to server", QSystemTrayIcon::Information, 3000);
             }
         });
 
@@ -632,8 +651,7 @@ MainWindow::MainWindow(QWidget* parent) :
         resize(1400, 900);
         if (auto* screen = QApplication::primaryScreen()) {
             const QRect screenGeometry = screen->geometry();
-            move((screenGeometry.width() - width()) / 2,
-                 (screenGeometry.height() - height()) / 2);
+            move((screenGeometry.width() - width()) / 2, (screenGeometry.height() - height()) / 2);
             BOOST_LOG_SEV(lg(), debug) << "No saved geometry; centred window on screen";
         }
     }
@@ -645,19 +663,21 @@ MainWindow::MainWindow(QWidget* parent) :
 }
 
 QString MainWindow::buildConnectionTooltip() const {
-    if (!clientManager_) return QString();
+    if (!clientManager_)
+        return QString();
 
     const bool connected = clientManager_->isConnected();
     const auto disc_since = clientManager_->disconnectedSince();
     const auto host = clientManager_->connectedHost();
 
     // Never connected
-    if (host.empty() && !connected && !disc_since) return QString();
+    if (host.empty() && !connected && !disc_since)
+        return QString();
 
     if (connected) {
         const auto sent = clientManager_->bytesSent();
         const auto recv = clientManager_->bytesReceived();
-        const auto rtt  = clientManager_->lastRttMs();
+        const auto rtt = clientManager_->lastRttMs();
 
         auto format_bytes = [](std::uint64_t b) -> QString {
             if (b < 1024)
@@ -677,11 +697,11 @@ QString MainWindow::buildConnectionTooltip() const {
 
     if (disc_since) {
         const auto secs = std::chrono::duration_cast<std::chrono::seconds>(
-            std::chrono::steady_clock::now() - *disc_since).count();
+                              std::chrono::steady_clock::now() - *disc_since)
+                              .count();
         const auto mins = secs / 60;
-        QString duration = mins > 0
-            ? QString("%1m %2s").arg(mins).arg(secs % 60)
-            : QString("%1s").arg(secs);
+        QString duration =
+            mins > 0 ? QString("%1m %2s").arg(mins).arg(secs % 60) : QString("%1s").arg(secs);
         return QString("Disconnected for: %1\nRetrying...").arg(duration);
     }
 
@@ -699,11 +719,10 @@ void MainWindow::closeEvent(QCloseEvent* event) {
     BOOST_LOG_SEV(lg(), debug) << "MainWindow close event triggered";
 
     // Ask user for confirmation before exiting
-    const auto reply = MessageBoxHelper::question(
-        this,
-        tr("Exit ORE Studio"),
-        tr("Are you sure you want to exit?"),
-        QMessageBox::Yes | QMessageBox::No);
+    const auto reply = MessageBoxHelper::question(this,
+                                                  tr("Exit ORE Studio"),
+                                                  tr("Are you sure you want to exit?"),
+                                                  QMessageBox::Yes | QMessageBox::No);
 
     if (reply != QMessageBox::Yes) {
         BOOST_LOG_SEV(lg(), debug) << "Exit cancelled by user";
@@ -749,11 +768,9 @@ void MainWindow::updateMenuState() {
     const bool isConnected = clientManager_ && clientManager_->isConnected();
     const bool isLoggedIn = clientManager_ && clientManager_->isLoggedIn();
 
-    BOOST_LOG_SEV(lg(), debug)
-        << "Menu state update: connected=" << isConnected
-        << " logged_in=" << isLoggedIn
-        << " menus=" << plugin_menus_.size()
-        << " toolbar_actions=" << plugin_toolbar_actions_.size();
+    BOOST_LOG_SEV(lg(), debug) << "Menu state update: connected=" << isConnected
+                               << " logged_in=" << isLoggedIn << " menus=" << plugin_menus_.size()
+                               << " toolbar_actions=" << plugin_toolbar_actions_.size();
 
     ui_->ActionConnect->setEnabled(!isConnected);
     ui_->ActionDisconnect->setEnabled(isConnected);
@@ -762,8 +779,7 @@ void MainWindow::updateMenuState() {
     for (auto* menu : plugin_menus_) {
         menu->setEnabled(isLoggedIn);
         BOOST_LOG_SEV(lg(), debug)
-            << "  \"" << menu->title().toStdString()
-            << "\" -> enabled=" << isLoggedIn;
+            << "  \"" << menu->title().toStdString() << "\" -> enabled=" << isLoggedIn;
     }
 
     // Plugin toolbar actions follow the same login gate as their menus
@@ -795,7 +811,7 @@ void MainWindow::updateMenuState() {
     }
 
     BOOST_LOG_SEV(lg(), debug) << "Menu state updated. Connected: " << isConnected
-                              << ", LoggedIn: " << isLoggedIn;
+                               << ", LoggedIn: " << isLoggedIn;
 }
 
 void MainWindow::onDisconnectTriggered() {
@@ -831,13 +847,11 @@ bool MainWindow::initializeConnectionManager() {
         return true;
     }
 
-    QString dataPath = QStandardPaths::writableLocation(
-        QStandardPaths::AppDataLocation);
+    QString dataPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
     QDir().mkpath(dataPath);
     QString dbPath = dataPath + "/connections.db";
 
-    BOOST_LOG_SEV(lg(), debug) << "Connections database path: "
-                               << dbPath.toStdString();
+    BOOST_LOG_SEV(lg(), debug) << "Connections database path: " << dbPath.toStdString();
 
     try {
         // First, try with stored master password (or empty if none)
@@ -866,8 +880,8 @@ bool MainWindow::initializeConnectionManager() {
             // Verify again
             if (!connectionManager_->verify_master_password()) {
                 BOOST_LOG_SEV(lg(), warn) << "Master password verification failed";
-                MessageBoxHelper::warning(this, tr("Invalid Password"),
-                    tr("The master password is incorrect."));
+                MessageBoxHelper::warning(
+                    this, tr("Invalid Password"), tr("The master password is incorrect."));
                 masterPassword_.clear();
                 connectionManager_.reset();
                 return false;
@@ -877,8 +891,8 @@ bool MainWindow::initializeConnectionManager() {
         } else if (masterPassword_.isEmpty()) {
             // Check if user has already been prompted and chose blank password
             QSettings settings;
-            bool masterPasswordConfigured = settings.value(
-                "connections/master_password_configured", false).toBool();
+            bool masterPasswordConfigured =
+                settings.value("connections/master_password_configured", false).toBool();
 
             if (!masterPasswordConfigured) {
                 // Prompt to create master password
@@ -894,18 +908,24 @@ bool MainWindow::initializeConnectionManager() {
 
                     // Warn if blank password chosen
                     if (newPassword.isEmpty()) {
-                        MessageBoxHelper::warning(this, tr("No Master Password"),
+                        MessageBoxHelper::warning(
+                            this,
+                            tr("No Master Password"),
                             tr("You have chosen not to set a master password. "
                                "Saved passwords will not be encrypted securely.\n\n"
-                               "You can set a master password later from the Connection Browser toolbar."));
+                               "You can set a master password later from the Connection Browser "
+                               "toolbar."));
                         BOOST_LOG_SEV(lg(), warn) << "User chose blank master password";
                     } else {
                         // Re-encrypt any existing passwords from blank to new password
                         try {
                             connectionManager_->change_master_password(newPassword.toStdString());
-                            BOOST_LOG_SEV(lg(), info) << "Master password created and existing passwords re-encrypted";
+                            BOOST_LOG_SEV(lg(), info)
+                                << "Master password created and existing passwords re-encrypted";
                         } catch (const std::exception& e) {
-                            BOOST_LOG_SEV(lg(), error) << "Failed to re-encrypt passwords with new master password: " << e.what();
+                            BOOST_LOG_SEV(lg(), error)
+                                << "Failed to re-encrypt passwords with new master password: "
+                                << e.what();
                         }
                     }
 
@@ -917,10 +937,9 @@ bool MainWindow::initializeConnectionManager() {
 
         return true;
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to initialize connection manager: "
-                                   << e.what();
-        MessageBoxHelper::critical(this, tr("Error"),
-            tr("Failed to initialize connection manager: %1").arg(e.what()));
+        BOOST_LOG_SEV(lg(), error) << "Failed to initialize connection manager: " << e.what();
+        MessageBoxHelper::critical(
+            this, tr("Error"), tr("Failed to initialize connection manager: %1").arg(e.what()));
         return false;
     }
 }
@@ -959,8 +978,10 @@ void MainWindow::onMyAccountTriggered() {
     }
 
     auto* accountWidget = new MyAccountDialog(clientManager_, this);
-    connect(accountWidget, &MyAccountDialog::viewSessionHistoryRequested,
-            this, &MainWindow::onMySessionsTriggered);
+    connect(accountWidget,
+            &MyAccountDialog::viewSessionHistoryRequested,
+            this,
+            &MainWindow::onMySessionsTriggered);
 
     myAccountWindow_ = new DetachableMdiSubWindow();
     myAccountWindow_->setWidget(accountWidget);
@@ -1006,8 +1027,8 @@ void MainWindow::onMySessionsTriggered() {
     mySessionsWindow_ = new DetachableMdiSubWindow();
     mySessionsWindow_->setWidget(sessionWidget);
     mySessionsWindow_->setWindowTitle(tr("My Sessions - %1").arg(username));
-    mySessionsWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    mySessionsWindow_->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
     mySessionsWindow_->setAttribute(Qt::WA_DeleteOnClose);
     mySessionsWindow_->resize(900, 500);
 
@@ -1127,8 +1148,8 @@ void MainWindow::onRecordSessionToggled(bool checked) {
 
             // Save the directory for future use
             settings.setValue("telemetry/recording_directory", recordingDir);
-            BOOST_LOG_SEV(lg(), info) << "Recording directory set to: "
-                                      << recordingDir.toStdString();
+            BOOST_LOG_SEV(lg(), info)
+                << "Recording directory set to: " << recordingDir.toStdString();
         }
 
         // Enable recording (works before or after connection)
@@ -1136,11 +1157,10 @@ void MainWindow::onRecordSessionToggled(bool checked) {
             // Update icon to show recording is active
             ui_->ActionRecordSession->setIcon(recordOnIcon_);
             if (clientManager_->isConnected()) {
-                BOOST_LOG_SEV(lg(), info) << "Recording enabled to: "
-                                          << recordingDir.toStdString();
+                BOOST_LOG_SEV(lg(), info) << "Recording enabled to: " << recordingDir.toStdString();
             } else {
-                BOOST_LOG_SEV(lg(), info) << "Recording will start on connect to: "
-                                          << recordingDir.toStdString();
+                BOOST_LOG_SEV(lg(), info)
+                    << "Recording will start on connect to: " << recordingDir.toStdString();
                 ui_->statusbar->showMessage(
                     QString("Recording enabled - will start when connected"), 5000);
             }
@@ -1165,14 +1185,14 @@ void MainWindow::onOpenRecordingTriggered() {
 
     // Get the last used recording directory as the starting point
     QSettings settings;
-    QString startDir = settings.value("telemetry/recording_directory",
-        QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)).toString();
+    QString startDir =
+        settings
+            .value("telemetry/recording_directory",
+                   QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation))
+            .toString();
 
     QString filePath = QFileDialog::getOpenFileName(
-        this,
-        tr("Open Recording"),
-        startDir,
-        tr("ORE Studio Recordings (*.ores);;All Files (*)"));
+        this, tr("Open Recording"), startDir, tr("ORE Studio Recordings (*.ores);;All Files (*)"));
 
     if (filePath.isEmpty()) {
         return;
@@ -1182,22 +1202,25 @@ void MainWindow::onOpenRecordingTriggered() {
 
     // TODO: Implement recording viewer dialog
     // For now, just show a message
-    ui_->statusbar->showMessage(QString("Opening recording: %1 (viewer not yet implemented)")
-        .arg(filePath), 5000);
+    ui_->statusbar->showMessage(
+        QString("Opening recording: %1 (viewer not yet implemented)").arg(filePath), 5000);
 }
 
 void MainWindow::onSetRecordingDirectoryTriggered() {
     BOOST_LOG_SEV(lg(), debug) << "Set Recording Directory triggered";
 
     QSettings settings;
-    QString currentDir = settings.value("telemetry/recording_directory",
-        QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)).toString();
+    QString currentDir =
+        settings
+            .value("telemetry/recording_directory",
+                   QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation))
+            .toString();
 
-    QString newDir = QFileDialog::getExistingDirectory(
-        this,
-        tr("Select Recording Directory"),
-        currentDir,
-        QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    QString newDir = QFileDialog::getExistingDirectory(this,
+                                                       tr("Select Recording Directory"),
+                                                       currentDir,
+                                                       QFileDialog::ShowDirsOnly |
+                                                           QFileDialog::DontResolveSymlinks);
 
     if (newDir.isEmpty()) {
         return; // User cancelled
@@ -1223,8 +1246,8 @@ void MainWindow::setInstanceInfo(const QString& name, const QColor& color) {
     instanceName_ = name;
     instanceColor_ = color;
 
-    BOOST_LOG_SEV(lg(), info) << "Instance info set: name='" << name.toStdString()
-                              << "', color=" << (color.isValid() ? color.name().toStdString() : "none");
+    BOOST_LOG_SEV(lg(), info) << "Instance info set: name='" << name.toStdString() << "', color="
+                              << (color.isValid() ? color.name().toStdString() : "none");
 
     // Create/update the status bar indicator if color is specified
     if (color.isValid()) {
@@ -1238,7 +1261,8 @@ void MainWindow::setInstanceInfo(const QString& name, const QColor& color) {
 
         // Style as a colored circle with the instance color
         instanceColorIndicator_->setStyleSheet(
-            QString("background-color: %1; border-radius: 8px; border: 1px solid rgba(255,255,255,50);")
+            QString(
+                "background-color: %1; border-radius: 8px; border: 1px solid rgba(255,255,255,50);")
                 .arg(color.name()));
         instanceColorIndicator_->setToolTip(name.isEmpty() ? tr("Instance") : name);
         instanceColorIndicator_->show();
@@ -1263,9 +1287,8 @@ void MainWindow::updateWindowTitle() {
 }
 
 void MainWindow::updateStatusBarFields() {
-    const QString normalChipStyle =
-        "QWidget { border-left: 1px solid palette(mid);"
-        " background: palette(alternateBase); }";
+    const QString normalChipStyle = "QWidget { border-left: 1px solid palette(mid);"
+                                    " background: palette(alternateBase); }";
     const QString warningChipStyle =
         "QWidget { border-left: 1px solid palette(mid); background: #7a2000; }";
 
@@ -1293,9 +1316,9 @@ void MainWindow::updateStatusBarFields() {
     if (connected) {
         const auto host = QString::fromStdString(clientManager_->connectedHost());
         const auto port = clientManager_->connectedPort();
-        const QString label = activeConnectionName_.isEmpty()
-            ? QString("%1:%2").arg(host).arg(port)
-            : activeConnectionName_;
+        const QString label = activeConnectionName_.isEmpty() ?
+                                  QString("%1:%2").arg(host).arg(port) :
+                                  activeConnectionName_;
         serverStatusNameLabel_->setText(label);
         serverStatusWidget_->setToolTip(
             QString("Server: %1\nPort: %2\nUser: %3").arg(host).arg(port).arg(displayUser));
@@ -1366,19 +1389,20 @@ void MainWindow::onConnectionBrowserTriggered() {
     auto* browserWidget = new ConnectionBrowserMdiWindow(connectionManager_.get(), this);
 
     // Set up test connection callback
-    browserWidget->setTestCallback([this](const QString& host, int port,
-                                           const QString& username, const QString& password) -> QString {
+    browserWidget->setTestCallback([this](const QString& host,
+                                          int port,
+                                          const QString& username,
+                                          const QString& password) -> QString {
         if (!clientManager_) {
             return tr("Client manager not initialized");
         }
 
         // Use testConnection which creates a temporary client without affecting
         // main connection state or emitting signals
-        auto result = clientManager_->testConnection(
-            host.toStdString(),
-            static_cast<std::uint16_t>(port),
-            username.toStdString(),
-            password.toStdString());
+        auto result = clientManager_->testConnection(host.toStdString(),
+                                                     static_cast<std::uint16_t>(port),
+                                                     username.toStdString(),
+                                                     password.toStdString());
 
         if (result.success) {
             return QString(); // Empty = success
@@ -1391,77 +1415,82 @@ void MainWindow::onConnectionBrowserTriggered() {
     browserWidget->setMdiArea(mdiArea_, this, &allDetachableWindows_);
 
     // Connect signals
-    connect(browserWidget, &ConnectionBrowserMdiWindow::statusChanged,
-            this, [this](const QString& message) {
-        ui_->statusbar->showMessage(message);
-    });
-    connect(browserWidget, &ConnectionBrowserMdiWindow::errorOccurred,
-            this, [this](const QString& message) {
-        ui_->statusbar->showMessage(message);
-    });
-    connect(browserWidget, &ConnectionBrowserMdiWindow::connectRequested,
-            this, &MainWindow::onConnectionConnectRequested);
-    connect(browserWidget, &ConnectionBrowserMdiWindow::environmentConnectRequested,
-            this, &MainWindow::onEnvironmentConnectRequested);
-    connect(browserWidget, &ConnectionBrowserMdiWindow::databasePurged,
-            this, [this]() {
+    connect(browserWidget,
+            &ConnectionBrowserMdiWindow::statusChanged,
+            this,
+            [this](const QString& message) { ui_->statusbar->showMessage(message); });
+    connect(browserWidget,
+            &ConnectionBrowserMdiWindow::errorOccurred,
+            this,
+            [this](const QString& message) { ui_->statusbar->showMessage(message); });
+    connect(browserWidget,
+            &ConnectionBrowserMdiWindow::connectRequested,
+            this,
+            &MainWindow::onConnectionConnectRequested);
+    connect(browserWidget,
+            &ConnectionBrowserMdiWindow::environmentConnectRequested,
+            this,
+            &MainWindow::onEnvironmentConnectRequested);
+    connect(browserWidget, &ConnectionBrowserMdiWindow::databasePurged, this, [this]() {
         // Reset master password configuration when database is purged
         QSettings settings;
         settings.setValue("connections/master_password_configured", false);
         masterPassword_.clear();
         BOOST_LOG_SEV(lg(), info) << "Master password configuration reset after database purge";
     });
-    connect(browserWidget, &ConnectionBrowserMdiWindow::changeMasterPasswordRequested,
-            this, [this]() {
-        BOOST_LOG_SEV(lg(), debug) << "Change master password requested from Connection Browser";
+    connect(
+        browserWidget, &ConnectionBrowserMdiWindow::changeMasterPasswordRequested, this, [this]() {
+            BOOST_LOG_SEV(lg(), debug)
+                << "Change master password requested from Connection Browser";
 
-        if (!connectionManager_) {
-            BOOST_LOG_SEV(lg(), warn) << "Connection manager not initialized";
-            return;
-        }
+            if (!connectionManager_) {
+                BOOST_LOG_SEV(lg(), warn) << "Connection manager not initialized";
+                return;
+            }
 
-        MasterPasswordDialog dialog(MasterPasswordDialog::Change, this);
-        if (dialog.exec() != QDialog::Accepted) {
-            return;
-        }
+            MasterPasswordDialog dialog(MasterPasswordDialog::Change, this);
+            if (dialog.exec() != QDialog::Accepted) {
+                return;
+            }
 
-        QString currentPassword = dialog.getPassword();
-        QString newPassword = dialog.getNewPassword();
+            QString currentPassword = dialog.getPassword();
+            QString newPassword = dialog.getNewPassword();
 
-        // Verify the current password
-        if (currentPassword != masterPassword_) {
-            MessageBoxHelper::warning(this, tr("Invalid Password"),
-                tr("The current password is incorrect."));
-            return;
-        }
+            // Verify the current password
+            if (currentPassword != masterPassword_) {
+                MessageBoxHelper::warning(
+                    this, tr("Invalid Password"), tr("The current password is incorrect."));
+                return;
+            }
 
-        try {
-            // Re-encrypt all stored passwords with the new master password
-            connectionManager_->change_master_password(newPassword.toStdString());
+            try {
+                // Re-encrypt all stored passwords with the new master password
+                connectionManager_->change_master_password(newPassword.toStdString());
 
-            // Update stored master password
-            masterPassword_ = newPassword;
+                // Update stored master password
+                masterPassword_ = newPassword;
 
-            // Mark as configured (in case user is setting password for first time)
-            QSettings settings;
-            settings.setValue("connections/master_password_configured", true);
+                // Mark as configured (in case user is setting password for first time)
+                QSettings settings;
+                settings.setValue("connections/master_password_configured", true);
 
-            MessageBoxHelper::information(this, tr("Password Changed"),
-                tr("Master password has been changed successfully."));
-            BOOST_LOG_SEV(lg(), info) << "Master password changed successfully";
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to change master password: " << e.what();
-            MessageBoxHelper::critical(this, tr("Error"),
-                tr("Failed to change master password: %1").arg(e.what()));
-        }
-    });
+                MessageBoxHelper::information(this,
+                                              tr("Password Changed"),
+                                              tr("Master password has been changed successfully."));
+                BOOST_LOG_SEV(lg(), info) << "Master password changed successfully";
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to change master password: " << e.what();
+                MessageBoxHelper::critical(
+                    this, tr("Error"), tr("Failed to change master password: %1").arg(e.what()));
+            }
+        });
 
     // Create MDI sub-window
     connectionBrowserWindow_ = new DetachableMdiSubWindow();
     connectionBrowserWindow_->setWidget(browserWidget);
     connectionBrowserWindow_->setWindowTitle(tr("Connection Browser"));
-    connectionBrowserWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::ServerLink, IconUtils::DefaultIconColor));
+    connectionBrowserWindow_->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::ServerLink, IconUtils::DefaultIconColor));
     connectionBrowserWindow_->setAttribute(Qt::WA_DeleteOnClose);
 
     // Track the window
@@ -1481,7 +1510,7 @@ void MainWindow::onConnectionBrowserTriggered() {
 }
 
 void MainWindow::onConnectionConnectRequested(const boost::uuids::uuid& connectionId,
-                                               const QString& connectionName) {
+                                              const QString& connectionName) {
 
     BOOST_LOG_SEV(lg(), debug) << "Connect requested for connection: "
                                << boost::uuids::to_string(connectionId)
@@ -1489,7 +1518,8 @@ void MainWindow::onConnectionConnectRequested(const boost::uuids::uuid& connecti
 
     // If already connected, ask user to disconnect first
     if (clientManager_ && clientManager_->isConnected()) {
-        auto result = MessageBoxHelper::question(this,
+        auto result = MessageBoxHelper::question(
+            this,
             tr("Already Connected"),
             tr("You are already connected to a server. Disconnect and connect to '%1'?")
                 .arg(connectionName),
@@ -1513,8 +1543,8 @@ void MainWindow::onConnectionConnectRequested(const boost::uuids::uuid& connecti
         resolved = connectionManager_->resolve_connection(connectionId);
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Failed to resolve connection: " << e.what();
-        MessageBoxHelper::critical(this, tr("Error"),
-            tr("Could not find the selected connection."));
+        MessageBoxHelper::critical(
+            this, tr("Error"), tr("Could not find the selected connection."));
         return;
     }
 
@@ -1530,8 +1560,8 @@ void MainWindow::onConnectionConnectRequested(const boost::uuids::uuid& connecti
         options.password = QString::fromStdString(resolved.password);
     }
     options.connectionName = connectionName;
-    options.showSavedConnections = false;  // Already selected a connection
-    options.showSignUpButton = false;      // Connecting to known server
+    options.showSavedConnections = false; // Already selected a connection
+    options.showSignUpButton = false;     // Connecting to known server
 
     showLoginDialog(options);
 }
@@ -1545,7 +1575,8 @@ void MainWindow::onEnvironmentConnectRequested(const boost::uuids::uuid& environ
 
     // If already connected, ask user to disconnect first
     if (clientManager_ && clientManager_->isConnected()) {
-        auto result = MessageBoxHelper::question(this,
+        auto result = MessageBoxHelper::question(
+            this,
             tr("Already Connected"),
             tr("You are already connected to a server. Disconnect and connect via '%1'?")
                 .arg(environmentName),
@@ -1566,10 +1597,10 @@ void MainWindow::onEnvironmentConnectRequested(const boost::uuids::uuid& environ
     // Look up the environment to get host/port
     auto env = connectionManager_->get_environment(environmentId);
     if (!env) {
-        BOOST_LOG_SEV(lg(), error) << "Environment not found: "
-                                   << boost::uuids::to_string(environmentId);
-        MessageBoxHelper::critical(this, tr("Error"),
-            tr("Could not find the selected environment."));
+        BOOST_LOG_SEV(lg(), error)
+            << "Environment not found: " << boost::uuids::to_string(environmentId);
+        MessageBoxHelper::critical(
+            this, tr("Error"), tr("Could not find the selected environment."));
         return;
     }
 
@@ -1587,33 +1618,30 @@ void MainWindow::onEnvironmentConnectRequested(const boost::uuids::uuid& environ
 }
 
 void MainWindow::onLoginSuccess(const QString& username) {
-    BOOST_LOG_SEV(lg(), info) << "Login succeeded for user: "
-                               << username.toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Login succeeded for user: " << username.toStdString();
 
     username_ = username.toStdString();
     party_name_ = clientManager_ ? clientManager_->currentPartyName() : QString();
 
     // Build plugin context and drive plugin lifecycle
     plugin_context ctx;
-    ctx.main_window         = this;
-    ctx.mdi_area            = mdiArea_;
-    ctx.status_bar          = ui_->statusbar;
-    ctx.client_manager      = clientManager_;
-    ctx.image_cache         = imageCache_;
+    ctx.main_window = this;
+    ctx.mdi_area = mdiArea_;
+    ctx.status_bar = ui_->statusbar;
+    ctx.client_manager = clientManager_;
+    ctx.image_cache = imageCache_;
     ctx.change_reason_cache = changeReasonCache_;
-    ctx.badge_cache         = badgeCache_;
-    ctx.event_bus           = eventBus_;
-    ctx.username            = username;
+    ctx.badge_cache = badgeCache_;
+    ctx.event_bus = eventBus_;
+    ctx.username = username;
     // CLI override (--http-base-url) wins; otherwise use the URL discovered
     // post-login via NATS. Sourcing from ClientManager means every login path
     // (normal, bootstrap, tenant provisioning) surfaces the URL uniformly
     // without routing it through a dedicated signal.
-    ctx.http_base_url = httpBaseUrl_.empty() && clientManager_
-        ? clientManager_->httpBaseUrl()
-        : httpBaseUrl_;
+    ctx.http_base_url =
+        httpBaseUrl_.empty() && clientManager_ ? clientManager_->httpBaseUrl() : httpBaseUrl_;
     ctx.workspace_context = WorkspaceContext{};
-    mdiArea_->setProperty("ores_workspace_context",
-        QVariant::fromValue(ctx.workspace_context));
+    mdiArea_->setProperty("ores_workspace_context", QVariant::fromValue(ctx.workspace_context));
 
     // Drive plugin lifecycle in load_order sequence.
     // Menus were already created in the constructor; on_login() wires up controllers.
@@ -1630,7 +1658,9 @@ void MainWindow::onLoginSuccess(const QString& username) {
     // even though the party is correctly assigned.
     if (clientManager_ && clientManager_->isConnected() &&
         clientManager_->currentPartyId().is_nil()) {
-        MessageBoxHelper::warning(this, "No Party Assigned",
+        MessageBoxHelper::warning(
+            this,
+            "No Party Assigned",
             "Your account has no party context.\n\n"
             "This is a configuration error — please contact your tenant "
             "administrator to assign your account to a party before continuing.");
@@ -1655,22 +1685,19 @@ void MainWindow::showSignUpDialog(const QString& host, int port) {
 
     QPoint center = mdiArea_->viewport()->rect().center();
     signupWindow->move(center.x() - signupWindow->width() / 2,
-                      center.y() - signupWindow->height() / 2);
+                       center.y() - signupWindow->height() / 2);
 
-    connect(signupWidget, &SignUpDialog::closeRequested,
-            signupWindow, &QWidget::close);
+    connect(signupWidget, &SignUpDialog::closeRequested, signupWindow, &QWidget::close);
 
     // When auto-login after signup succeeds, update application state
-    connect(signupWidget, &SignUpDialog::loginSucceeded,
-            this, [this](const QString& username) {
+    connect(signupWidget, &SignUpDialog::loginSucceeded, this, [this](const QString& username) {
         onLoginSuccess(username);
         ui_->statusbar->showMessage(
             QString("Account '%1' created and logged in successfully.").arg(username));
     });
 
     // When user wants to go back to login
-    connect(signupWidget, &SignUpDialog::loginRequested,
-            this, [this, signupWindow]() {
+    connect(signupWidget, &SignUpDialog::loginRequested, this, [this, signupWindow]() {
         signupWindow->close();
         onModernLoginTriggered();
     });
@@ -1681,8 +1708,7 @@ void MainWindow::showSignUpDialog(const QString& host, int port) {
     });
 }
 
-void MainWindow::showSystemProvisionerWizard(
-    const QString& username, const QString& password) {
+void MainWindow::showSystemProvisionerWizard(const QString& username, const QString& password) {
     BOOST_LOG_SEV(lg(), info) << "Showing System Provisioner Wizard (bootstrap mode detected)";
 
     auto* wizard = new SystemProvisionerWizard(clientManager_, this);
@@ -1695,30 +1721,34 @@ void MainWindow::showSystemProvisionerWizard(
     wizard->setAttribute(Qt::WA_DeleteOnClose);
 
     // Connect completion signal - on success, proceed with normal flow
-    connect(wizard, &SystemProvisionerWizard::provisioningCompleted,
-            this, [this](const QString& username) {
-        BOOST_LOG_SEV(lg(), info) << "System provisioning completed, user logged in as: "
-                                  << username.toStdString();
-        ui_->statusbar->showMessage(
-            tr("System provisioned. Logged in as administrator '%1'.").arg(username));
+    connect(wizard,
+            &SystemProvisionerWizard::provisioningCompleted,
+            this,
+            [this](const QString& username) {
+                BOOST_LOG_SEV(lg(), info) << "System provisioning completed, user logged in as: "
+                                          << username.toStdString();
+                ui_->statusbar->showMessage(
+                    tr("System provisioned. Logged in as administrator '%1'.").arg(username));
 
-        // The system is now provisioned and user is already logged in from provisioning
-        // Call onLoginSuccess to properly initialize the application state
-        onLoginSuccess(username);
-    });
+                // The system is now provisioned and user is already logged in from provisioning
+                // Call onLoginSuccess to properly initialize the application state
+                onLoginSuccess(username);
+            });
 
     // Connect failure signal
-    connect(wizard, &SystemProvisionerWizard::provisioningFailed,
-            this, [this](const QString& errorMessage) {
-        BOOST_LOG_SEV(lg(), error) << "System provisioning failed: "
-                                   << errorMessage.toStdString();
-        ui_->statusbar->showMessage(tr("Provisioning failed: %1").arg(errorMessage));
+    connect(wizard,
+            &SystemProvisionerWizard::provisioningFailed,
+            this,
+            [this](const QString& errorMessage) {
+                BOOST_LOG_SEV(lg(), error)
+                    << "System provisioning failed: " << errorMessage.toStdString();
+                ui_->statusbar->showMessage(tr("Provisioning failed: %1").arg(errorMessage));
 
-        // Disconnect and allow retry
-        if (clientManager_) {
-            clientManager_->disconnect();
-        }
-    });
+                // Disconnect and allow retry
+                if (clientManager_) {
+                    clientManager_->disconnect();
+                }
+            });
 
     wizard->show();
 }
@@ -1730,11 +1760,9 @@ void MainWindow::showTenantProvisioningWizard() {
     wizard->setWindowModality(Qt::ApplicationModal);
     wizard->setAttribute(Qt::WA_DeleteOnClose);
 
-    connect(wizard, &TenantProvisioningWizard::provisioningCompleted,
-            this, [this]() {
+    connect(wizard, &TenantProvisioningWizard::provisioningCompleted, this, [this]() {
         BOOST_LOG_SEV(lg(), info) << "Tenant provisioning wizard completed";
-        ui_->statusbar->showMessage(
-            tr("Tenant setup completed successfully."));
+        ui_->statusbar->showMessage(tr("Tenant setup completed successfully."));
     });
 
     wizard->show();
@@ -1747,11 +1775,9 @@ void MainWindow::showPartyProvisioningWizard() {
     wizard->setWindowModality(Qt::ApplicationModal);
     wizard->setAttribute(Qt::WA_DeleteOnClose);
 
-    connect(wizard, &PartyProvisioningWizard::provisioningCompleted,
-            this, [this]() {
+    connect(wizard, &PartyProvisioningWizard::provisioningCompleted, this, [this]() {
         BOOST_LOG_SEV(lg(), info) << "Party provisioning wizard completed";
-        ui_->statusbar->showMessage(
-            tr("Party setup completed successfully."));
+        ui_->statusbar->showMessage(tr("Party setup completed successfully."));
     });
 
     wizard->show();
@@ -1799,46 +1825,42 @@ void MainWindow::showLoginDialog(const LoginDialogOptions& options) {
 
     // Center in MDI area
     QPoint center = mdiArea_->viewport()->rect().center();
-    subWindow->move(center.x() - subWindow->width() / 2,
-                    center.y() - subWindow->height() / 2);
+    subWindow->move(center.x() - subWindow->width() / 2, center.y() - subWindow->height() / 2);
 
     // Connect close signal
     connect(loginWidget, &LoginDialog::closeRequested, subWindow, &QWidget::close);
 
     // Connect login success signal
-    connect(loginWidget, &LoginDialog::loginSucceeded,
-            this, [this, connectionName](const QString& username) {
-        onLoginSuccess(username);
-        if (!connectionName.isEmpty()) {
-            ui_->statusbar->showMessage(tr("Connected to %1").arg(connectionName));
-        } else {
-            ui_->statusbar->showMessage(tr("Successfully connected and logged in."));
-        }
-    });
+    connect(loginWidget,
+            &LoginDialog::loginSucceeded,
+            this,
+            [this, connectionName](const QString& username) {
+                onLoginSuccess(username);
+                if (!connectionName.isEmpty()) {
+                    ui_->statusbar->showMessage(tr("Connected to %1").arg(connectionName));
+                } else {
+                    ui_->statusbar->showMessage(tr("Successfully connected and logged in."));
+                }
+            });
 
     // Connect bootstrap mode signal - pass login credentials to pre-fill wizard
-    connect(loginWidget, &LoginDialog::bootstrapModeDetected,
-            this, [this, loginWidget]() {
-        showSystemProvisionerWizard(
-            loginWidget->getUsername(), loginWidget->getPassword());
+    connect(loginWidget, &LoginDialog::bootstrapModeDetected, this, [this, loginWidget]() {
+        showSystemProvisionerWizard(loginWidget->getUsername(), loginWidget->getPassword());
     });
 
     // Connect tenant bootstrap mode signal - show tenant provisioning wizard
-    connect(loginWidget, &LoginDialog::tenantBootstrapDetected,
-            this, [this]() {
+    connect(loginWidget, &LoginDialog::tenantBootstrapDetected, this, [this]() {
         showTenantProvisioningWizard();
     });
 
     // Connect party setup mode signal - show party provisioning wizard
-    connect(loginWidget, &LoginDialog::partySetupDetected,
-            this, [this]() {
+    connect(loginWidget, &LoginDialog::partySetupDetected, this, [this]() {
         showPartyProvisioningWizard();
     });
 
     // Connect sign up request if enabled
     if (options.showSignUpButton) {
-        connect(loginWidget, &LoginDialog::signUpRequested,
-                this, [this, subWindow, loginWidget]() {
+        connect(loginWidget, &LoginDialog::signUpRequested, this, [this, subWindow, loginWidget]() {
             const QString host = loginWidget->getServer();
             const int port = loginWidget->getPort();
             subWindow->close();
@@ -1853,12 +1875,10 @@ void MainWindow::showLoginDialog(const LoginDialogOptions& options) {
         // works without requiring manual tagging via the connection browser.
         if (!instanceName_.isEmpty()) {
             try {
-                connectionManager_->auto_tag_environments_by_label(
-                    instanceName_.toStdString());
+                connectionManager_->auto_tag_environments_by_label(instanceName_.toStdString());
             } catch (const std::exception& e) {
                 using namespace ores::logging;
-                BOOST_LOG_SEV(lg(), warn)
-                    << "auto_tag_environments_by_label failed: " << e.what();
+                BOOST_LOG_SEV(lg(), warn) << "auto_tag_environments_by_label failed: " << e.what();
             }
         }
 
@@ -1870,9 +1890,7 @@ void MainWindow::showLoginDialog(const LoginDialogOptions& options) {
             LoginDialog::QuickConnectItem it;
             it.type = LoginDialog::QuickConnectItem::Type::Environment;
             it.name = QString::fromStdString(env.name);
-            it.subtitle = QString("%1:%2")
-                .arg(QString::fromStdString(env.host))
-                .arg(env.port);
+            it.subtitle = QString("%1:%2").arg(QString::fromStdString(env.host)).arg(env.port);
             for (const auto& tag : connectionManager_->get_tags_for_environment(env.id))
                 it.tags.append(QString::fromStdString(tag.name));
             items.append(it);
@@ -1899,49 +1917,55 @@ void MainWindow::showLoginDialog(const LoginDialogOptions& options) {
                 loginWidget->setActiveLabel(instanceName_);
 
             // Environment selected: fill host+port, credentials stay editable
-            connect(loginWidget, &LoginDialog::environmentSelected,
-                    this, [this, loginWidget](const QString& name) {
-                if (!connectionManager_) return;
-                for (const auto& env : connectionManager_->get_all_environments()) {
-                    if (QString::fromStdString(env.name) == name) {
-                        loginWidget->setServer(QString::fromStdString(env.host));
-                        loginWidget->setPort(env.port);
-                        loginWidget->setSubjectPrefix(
-                            QString::fromStdString(env.subject_prefix));
-                        break;
-                    }
-                }
-            });
+            connect(loginWidget,
+                    &LoginDialog::environmentSelected,
+                    this,
+                    [this, loginWidget](const QString& name) {
+                        if (!connectionManager_)
+                            return;
+                        for (const auto& env : connectionManager_->get_all_environments()) {
+                            if (QString::fromStdString(env.name) == name) {
+                                loginWidget->setServer(QString::fromStdString(env.host));
+                                loginWidget->setPort(env.port);
+                                loginWidget->setSubjectPrefix(
+                                    QString::fromStdString(env.subject_prefix));
+                                break;
+                            }
+                        }
+                    });
 
             // Connection selected: resolve and fill all fields
-            connect(loginWidget, &LoginDialog::connectionSelected,
-                    this, [this, loginWidget](const QString& name) {
-                if (!connectionManager_) return;
-                for (const auto& conn : connectionManager_->get_all_connections()) {
-                    if (QString::fromStdString(conn.name) == name) {
-                        try {
-                            auto resolved = connectionManager_->resolve_connection(conn.id);
-                            loginWidget->setServer(QString::fromStdString(resolved.host));
-                            loginWidget->setPort(resolved.port);
-                            if (!resolved.subject_prefix.empty()) {
-                                loginWidget->setSubjectPrefix(
-                                    QString::fromStdString(resolved.subject_prefix));
+            connect(loginWidget,
+                    &LoginDialog::connectionSelected,
+                    this,
+                    [this, loginWidget](const QString& name) {
+                        if (!connectionManager_)
+                            return;
+                        for (const auto& conn : connectionManager_->get_all_connections()) {
+                            if (QString::fromStdString(conn.name) == name) {
+                                try {
+                                    auto resolved = connectionManager_->resolve_connection(conn.id);
+                                    loginWidget->setServer(QString::fromStdString(resolved.host));
+                                    loginWidget->setPort(resolved.port);
+                                    if (!resolved.subject_prefix.empty()) {
+                                        loginWidget->setSubjectPrefix(
+                                            QString::fromStdString(resolved.subject_prefix));
+                                    }
+                                    loginWidget->setUsername(
+                                        QString::fromStdString(resolved.username));
+                                    if (!resolved.password.empty()) {
+                                        loginWidget->setPassword(
+                                            QString::fromStdString(resolved.password));
+                                    }
+                                } catch (const std::exception& e) {
+                                    using namespace ores::logging;
+                                    BOOST_LOG_SEV(lg(), error)
+                                        << "Failed to resolve connection: " << e.what();
+                                }
+                                break;
                             }
-                            loginWidget->setUsername(
-                                QString::fromStdString(resolved.username));
-                            if (!resolved.password.empty()) {
-                                loginWidget->setPassword(
-                                    QString::fromStdString(resolved.password));
-                            }
-                        } catch (const std::exception& e) {
-                            using namespace ores::logging;
-                            BOOST_LOG_SEV(lg(), error)
-                                << "Failed to resolve connection: " << e.what();
                         }
-                        break;
-                    }
-                }
-            });
+                    });
         }
     }
 
@@ -1960,7 +1984,8 @@ void MainWindow::onModernLoginTriggered() {
 
     // If already connected, ask user to disconnect first
     if (clientManager_ && clientManager_->isConnected()) {
-        auto result = MessageBoxHelper::question(this,
+        auto result = MessageBoxHelper::question(
+            this,
             tr("Already Connected"),
             tr("You are already connected to a server. Disconnect and connect to a new server?"),
             QMessageBox::Yes | QMessageBox::No);

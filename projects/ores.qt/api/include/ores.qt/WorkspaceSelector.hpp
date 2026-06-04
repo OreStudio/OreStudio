@@ -20,14 +20,14 @@
 #ifndef ORES_QT_WORKSPACE_SELECTOR_HPP
 #define ORES_QT_WORKSPACE_SELECTOR_HPP
 
-#include <vector>
-#include <QWidget>
-#include <QListWidget>
-#include <QLabel>
-#include <QFutureWatcher>
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/WorkspaceContext.hpp"
 #include "ores.qt/export.hpp"
+#include <QFutureWatcher>
+#include <QLabel>
+#include <QListWidget>
+#include <QWidget>
+#include <vector>
 
 namespace ores::qt {
 
@@ -55,8 +55,7 @@ private:
     }
 
 public:
-    explicit WorkspaceSelector(ClientManager* clientManager,
-                                QWidget* parent = nullptr);
+    explicit WorkspaceSelector(ClientManager* clientManager, QWidget* parent = nullptr);
     ~WorkspaceSelector() override = default;
 
     WorkspaceContext currentContext() const;

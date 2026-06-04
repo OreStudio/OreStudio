@@ -18,26 +18,24 @@
  *
  */
 #include "ores.qt/ServiceDashboardController.hpp"
-
+#include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ServiceDashboardMdiWindow.hpp"
-#include "ores.qt/DetachableMdiSubWindow.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-ServiceDashboardController::ServiceDashboardController(
-    QMainWindow* mainWindow,
-    QMdiArea* mdiArea,
-    ClientManager* clientManager,
-    QObject* parent)
-    : QObject(parent),
-      mainWindow_(mainWindow),
-      mdiArea_(mdiArea),
-      clientManager_(clientManager),
-      dashboardWindow_(nullptr),
-      dashboardSubWindow_(nullptr) {
+ServiceDashboardController::ServiceDashboardController(QMainWindow* mainWindow,
+                                                       QMdiArea* mdiArea,
+                                                       ClientManager* clientManager,
+                                                       QObject* parent)
+    : QObject(parent)
+    , mainWindow_(mainWindow)
+    , mdiArea_(mdiArea)
+    , clientManager_(clientManager)
+    , dashboardWindow_(nullptr)
+    , dashboardSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "ServiceDashboardController created";
 }
@@ -53,30 +51,39 @@ void ServiceDashboardController::showDashboard() {
 
     dashboardWindow_ = new ServiceDashboardMdiWindow(clientManager_);
 
-    connect(dashboardWindow_, &ServiceDashboardMdiWindow::statusChanged,
-            this, [self = QPointer<ServiceDashboardController>(this)](const QString& msg) {
-        if (!self) return;
-        emit self->statusMessage(msg);
-    });
-    connect(dashboardWindow_, &ServiceDashboardMdiWindow::errorOccurred,
-            this, [self = QPointer<ServiceDashboardController>(this)](const QString& err) {
-        if (!self) return;
-        emit self->errorMessage(err);
-    });
+    connect(dashboardWindow_,
+            &ServiceDashboardMdiWindow::statusChanged,
+            this,
+            [self = QPointer<ServiceDashboardController>(this)](const QString& msg) {
+                if (!self)
+                    return;
+                emit self->statusMessage(msg);
+            });
+    connect(dashboardWindow_,
+            &ServiceDashboardMdiWindow::errorOccurred,
+            this,
+            [self = QPointer<ServiceDashboardController>(this)](const QString& err) {
+                if (!self)
+                    return;
+                emit self->errorMessage(err);
+            });
 
     dashboardSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     dashboardSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     dashboardSubWindow_->setWidget(dashboardWindow_);
     dashboardSubWindow_->setWindowTitle(tr("Service Dashboard"));
-    dashboardSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Chart, IconUtils::DefaultIconColor));
+    dashboardSubWindow_->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
 
-    connect(dashboardSubWindow_, &QObject::destroyed, this,
+    connect(dashboardSubWindow_,
+            &QObject::destroyed,
+            this,
             [self = QPointer<ServiceDashboardController>(this)]() {
-        if (!self) return;
-        self->dashboardWindow_ = nullptr;
-        self->dashboardSubWindow_ = nullptr;
-    });
+                if (!self)
+                    return;
+                self->dashboardWindow_ = nullptr;
+                self->dashboardSubWindow_ = nullptr;
+            });
 
     emit detachableWindowCreated(dashboardSubWindow_);
 

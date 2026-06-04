@@ -20,10 +20,10 @@
 #ifndef ORES_QT_BADGE_LABEL_UTILS_HPP
 #define ORES_QT_BADGE_LABEL_UTILS_HPP
 
-#include <string>
+#include "ores.qt/export.hpp"
 #include <QLabel>
 #include <QString>
-#include "ores.qt/export.hpp"
+#include <string>
 
 namespace ores::qt {
 
@@ -53,9 +53,11 @@ struct ORES_QT_API BadgeLabelUtils {
      * @param value  Entity value to resolve (e.g. "Locked").
      * @param text   Human-readable badge text.
      */
-    static void apply(QLabel* label, const BadgeCache* cache,
-        const std::string& domain, const std::string& value,
-        const QString& text);
+    static void apply(QLabel* label,
+                      const BadgeCache* cache,
+                      const std::string& domain,
+                      const std::string& value,
+                      const QString& text);
 
     /**
      * @brief Clears badge styling and text from a label.

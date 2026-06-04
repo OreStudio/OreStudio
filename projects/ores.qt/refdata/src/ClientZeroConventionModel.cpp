@@ -18,38 +18,42 @@
  *
  */
 #include "ores.qt/ClientZeroConventionModel.hpp"
-
-#include <QtConcurrent>
-#include "ores.refdata.api/messaging/zero_convention_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
+#include "ores.refdata.api/messaging/zero_convention_protocol.hpp"
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    std::string zero_convention_key_extractor(const refdata::domain::zero_convention& e) {
-        return e.id;
-    }
+std::string zero_convention_key_extractor(const refdata::domain::zero_convention& e) {
+    return e.id;
+}
 }
 
-ClientZeroConventionModel::ClientZeroConventionModel(
-    ClientManager* clientManager, QObject* parent)
-    : AbstractClientModel(parent),
-      clientManager_(clientManager),
-      watcher_(new QFutureWatcher<FetchResult>(this)),
-      recencyTracker_(zero_convention_key_extractor),
-      pulseManager_(new RecencyPulseManager(this)) {
+ClientZeroConventionModel::ClientZeroConventionModel(ClientManager* clientManager, QObject* parent)
+    : AbstractClientModel(parent)
+    , clientManager_(clientManager)
+    , watcher_(new QFutureWatcher<FetchResult>(this))
+    , recencyTracker_(zero_convention_key_extractor)
+    , pulseManager_(new RecencyPulseManager(this)) {
 
-    connect(watcher_, &QFutureWatcher<FetchResult>::finished,
-            this, &ClientZeroConventionModel::onConventionsLoaded);
+    connect(watcher_,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            &ClientZeroConventionModel::onConventionsLoaded);
 
-    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
-            this, &ClientZeroConventionModel::onPulseStateChanged);
-    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
-            this, &ClientZeroConventionModel::onPulsingComplete);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulse_state_changed,
+            this,
+            &ClientZeroConventionModel::onPulseStateChanged);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulsing_complete,
+            this,
+            &ClientZeroConventionModel::onPulsingComplete);
 }
 
 int ClientZeroConventionModel::rowCount(const QModelIndex& parent) const {
@@ -64,8 +68,7 @@ int ClientZeroConventionModel::columnCount(const QModelIndex& parent) const {
     return ColumnCount;
 }
 
-QVariant ClientZeroConventionModel::data(
-    const QModelIndex& index, int role) const {
+QVariant ClientZeroConventionModel::data(const QModelIndex& index, int role) const {
     if (!index.isValid())
         return {};
 
@@ -77,28 +80,24 @@ QVariant ClientZeroConventionModel::data(
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-        case Id:
-            return QString::fromStdString(zc.id);
-        case TenorBased:
-            return zc.tenor_based ? tr("true") : tr("false");
-        case DayCountFraction:
-            return QString::fromStdString(zc.day_count_fraction);
-        case Compounding:
-            return zc.compounding
-                ? QString::fromStdString(*zc.compounding)
-                : QString{};
-        case TenorCalendar:
-            return zc.tenor_calendar
-                ? QString::fromStdString(*zc.tenor_calendar)
-                : QString{};
-        case Version:
-            return static_cast<qlonglong>(zc.version);
-        case ModifiedBy:
-            return QString::fromStdString(zc.modified_by);
-        case RecordedAt:
-            return relative_time_helper::format(zc.recorded_at);
-        default:
-            return {};
+            case Id:
+                return QString::fromStdString(zc.id);
+            case TenorBased:
+                return zc.tenor_based ? tr("true") : tr("false");
+            case DayCountFraction:
+                return QString::fromStdString(zc.day_count_fraction);
+            case Compounding:
+                return zc.compounding ? QString::fromStdString(*zc.compounding) : QString{};
+            case TenorCalendar:
+                return zc.tenor_calendar ? QString::fromStdString(*zc.tenor_calendar) : QString{};
+            case Version:
+                return static_cast<qlonglong>(zc.version);
+            case ModifiedBy:
+                return QString::fromStdString(zc.modified_by);
+            case RecordedAt:
+                return relative_time_helper::format(zc.recorded_at);
+            default:
+                return {};
         }
     }
 
@@ -109,30 +108,30 @@ QVariant ClientZeroConventionModel::data(
     return {};
 }
 
-QVariant ClientZeroConventionModel::headerData(
-    int section, Qt::Orientation orientation, int role) const {
+QVariant
+ClientZeroConventionModel::headerData(int section, Qt::Orientation orientation, int role) const {
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return {};
 
     switch (section) {
-    case Id:
-        return tr("Id");
-    case TenorBased:
-        return tr("Tenor Based");
-    case DayCountFraction:
-        return tr("DCF");
-    case Compounding:
-        return tr("Compounding");
-    case TenorCalendar:
-        return tr("Tenor Calendar");
-    case Version:
-        return tr("Version");
-    case ModifiedBy:
-        return tr("Modified By");
-    case RecordedAt:
-        return tr("Recorded At");
-    default:
-        return {};
+        case Id:
+            return tr("Id");
+        case TenorBased:
+            return tr("Tenor Based");
+        case DayCountFraction:
+            return tr("DCF");
+        case Compounding:
+            return tr("Compounding");
+        case TenorCalendar:
+            return tr("Tenor Calendar");
+        case Version:
+            return tr("Version");
+        case ModifiedBy:
+            return tr("Modified By");
+        case RecordedAt:
+            return tr("Recorded At");
+        default:
+            return {};
     }
 }
 
@@ -162,8 +161,7 @@ void ClientZeroConventionModel::refresh() {
     fetch_zero_conventions(0, page_size_);
 }
 
-void ClientZeroConventionModel::load_page(std::uint32_t offset,
-                                          std::uint32_t limit) {
+void ClientZeroConventionModel::load_page(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "load_page: offset=" << offset << ", limit=" << limit;
 
     if (is_fetching_) {
@@ -187,18 +185,19 @@ void ClientZeroConventionModel::load_page(std::uint32_t offset,
     fetch_zero_conventions(offset, limit);
 }
 
-void ClientZeroConventionModel::fetch_zero_conventions(
-    std::uint32_t offset, std::uint32_t limit) {
+void ClientZeroConventionModel::fetch_zero_conventions(std::uint32_t offset, std::uint32_t limit) {
     is_fetching_ = true;
     QPointer<ClientZeroConventionModel> self = this;
 
-    QFuture<FetchResult> future =
-        QtConcurrent::run([self, offset, limit]() -> FetchResult {
-            return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
-                BOOST_LOG_SEV(lg(), debug) << "Making zero conventions request with offset="
-                                           << offset << ", limit=" << limit;
+    QFuture<FetchResult> future = QtConcurrent::run([self, offset, limit]() -> FetchResult {
+        return exception_helper::wrap_async_fetch<FetchResult>(
+            [&]() -> FetchResult {
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Making zero conventions request with offset=" << offset
+                    << ", limit=" << limit;
                 if (!self || !self->clientManager_) {
-                    return {.success = false, .zero_conventions = {},
+                    return {.success = false,
+                            .zero_conventions = {},
                             .total_available_count = 0,
                             .error_message = "Model was destroyed",
                             .error_details = {}};
@@ -206,27 +205,30 @@ void ClientZeroConventionModel::fetch_zero_conventions(
 
                 refdata::messaging::get_zero_conventions_request request;
 
-                auto result = self->clientManager_->
-                    process_authenticated_request(std::move(request));
+                auto result =
+                    self->clientManager_->process_authenticated_request(std::move(request));
 
                 if (!result) {
                     BOOST_LOG_SEV(lg(), error) << "Failed to send request: " << result.error();
-                    return {.success = false, .zero_conventions = {},
+                    return {.success = false,
+                            .zero_conventions = {},
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(result.error()),
                             .error_details = {}};
                 }
 
-                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->zero_conventions.size()
-                                           << " zero conventions";
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Fetched " << result->zero_conventions.size() << " zero conventions";
                 const std::uint32_t count =
                     static_cast<std::uint32_t>(result->zero_conventions.size());
                 return {.success = true,
                         .zero_conventions = std::move(result->zero_conventions),
                         .total_available_count = count,
-                        .error_message = {}, .error_details = {}};
-            }, "zero conventions");
-        });
+                        .error_message = {},
+                        .error_details = {}};
+            },
+            "zero conventions");
+    });
 
     watcher_->setFuture(future);
 }
@@ -237,8 +239,8 @@ void ClientZeroConventionModel::onConventionsLoaded() {
     const auto result = watcher_->result();
 
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to fetch zero conventions: "
-                                   << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to fetch zero conventions: " << result.error_message.toStdString();
         emit loadError(result.error_message, result.error_details);
         return;
     }
@@ -277,16 +279,14 @@ void ClientZeroConventionModel::set_page_size(std::uint32_t size) {
     }
 }
 
-const refdata::domain::zero_convention*
-ClientZeroConventionModel::getConvention(int row) const {
+const refdata::domain::zero_convention* ClientZeroConventionModel::getConvention(int row) const {
     const auto idx = static_cast<std::size_t>(row);
     if (idx >= zero_conventions_.size())
         return nullptr;
     return &zero_conventions_[idx];
 }
 
-QVariant ClientZeroConventionModel::recency_foreground_color(
-    const std::string& code) const {
+QVariant ClientZeroConventionModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {
         return color_constants::stale_indicator;
     }
@@ -295,8 +295,8 @@ QVariant ClientZeroConventionModel::recency_foreground_color(
 
 void ClientZeroConventionModel::onPulseStateChanged(bool /*isOn*/) {
     if (!zero_conventions_.empty()) {
-        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
-            {Qt::ForegroundRole});
+        emit dataChanged(
+            index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::ForegroundRole});
     }
 }
 

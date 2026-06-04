@@ -20,8 +20,8 @@
 #ifndef ORES_QT_TELEMETRY_LOG_DELEGATE_HPP
 #define ORES_QT_TELEMETRY_LOG_DELEGATE_HPP
 
-#include <QStyledItemDelegate>
 #include <QFont>
+#include <QStyledItemDelegate>
 
 namespace ores::qt {
 
@@ -41,11 +41,11 @@ class TelemetryLogDelegate : public QStyledItemDelegate {
 public:
     explicit TelemetryLogDelegate(QObject* parent = nullptr);
 
-    void paint(QPainter* painter, const QStyleOptionViewItem& option,
+    void paint(QPainter* painter,
+               const QStyleOptionViewItem& option,
                const QModelIndex& index) const override;
 
-    QSize sizeHint(const QStyleOptionViewItem& option,
-                   const QModelIndex& index) const override;
+    QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
 private:
     QFont monospaceFont_;

@@ -18,15 +18,14 @@
  *
  */
 #include "ores.qt/LeiEntityPicker.hpp"
+#include "ores.dq.api/messaging/lei_entity_summary_protocol.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-
-#include <QVBoxLayout>
+#include <QFutureWatcher>
 #include <QHBoxLayout>
 #include <QHeaderView>
 #include <QPointer>
+#include <QVBoxLayout>
 #include <QtConcurrent>
-#include <QFutureWatcher>
-#include "ores.dq.api/messaging/lei_entity_summary_protocol.hpp"
 
 namespace ores::qt {
 
@@ -42,25 +41,19 @@ constexpr int LeiRole = Qt::UserRole + 1;
 /**
  * @brief Column indices for the visible table.
  */
-enum Column {
-    Country = 0,
-    Category = 1,
-    EntityLegalName = 2,
-    ColumnCount = 3
-};
+enum Column { Country = 0, Category = 1, EntityLegalName = 2, ColumnCount = 3 };
 
 }
 
-LeiEntityPicker::LeiEntityPicker(ClientManager* clientManager,
-    QWidget* parent)
-    : QWidget(parent),
-      clientManager_(clientManager),
-      searchEdit_(nullptr),
-      countryFilter_(nullptr),
-      tableView_(nullptr),
-      model_(nullptr),
-      proxyModel_(nullptr),
-      statusLabel_(nullptr) {
+LeiEntityPicker::LeiEntityPicker(ClientManager* clientManager, QWidget* parent)
+    : QWidget(parent)
+    , clientManager_(clientManager)
+    , searchEdit_(nullptr)
+    , countryFilter_(nullptr)
+    , tableView_(nullptr)
+    , model_(nullptr)
+    , proxyModel_(nullptr)
+    , statusLabel_(nullptr) {
     setupUI();
 }
 
@@ -89,8 +82,7 @@ void LeiEntityPicker::setupUI() {
 
     // Table view: Country, Category, Entity Legal Name
     model_ = new QStandardItemModel(0, Column::ColumnCount, this);
-    model_->setHorizontalHeaderLabels({"Country", "Category",
-        "Entity Legal Name"});
+    model_->setHorizontalHeaderLabels({"Country", "Category", "Entity Legal Name"});
 
     proxyModel_ = new QSortFilterProxyModel(this);
     proxyModel_->setSourceModel(model_);
@@ -114,13 +106,15 @@ void LeiEntityPicker::setupUI() {
     mainLayout->addWidget(statusLabel_);
 
     // Connections
-    connect(searchEdit_, &QLineEdit::textChanged,
-        this, &LeiEntityPicker::onSearchTextChanged);
-    connect(countryFilter_, &QComboBox::currentIndexChanged,
-        this, &LeiEntityPicker::onCountryFilterChanged);
+    connect(searchEdit_, &QLineEdit::textChanged, this, &LeiEntityPicker::onSearchTextChanged);
+    connect(countryFilter_,
+            &QComboBox::currentIndexChanged,
+            this,
+            &LeiEntityPicker::onCountryFilterChanged);
     connect(tableView_->selectionModel(),
-        &QItemSelectionModel::selectionChanged,
-        this, &LeiEntityPicker::onSelectionChanged);
+            &QItemSelectionModel::selectionChanged,
+            this,
+            &LeiEntityPicker::onSelectionChanged);
 
     // Apply combo box defaults after all widgets are created so that
     // countryFilter_ gets the BoundedListView and maxVisibleItems treatment.
@@ -160,78 +154,70 @@ void LeiEntityPicker::load() {
     };
 
     auto* watcher = new QFutureWatcher<LoadResult>(this);
-    connect(watcher, &QFutureWatcher<LoadResult>::finished, this,
-        [self, watcher]() {
-            auto result = watcher->result();
-            watcher->deleteLater();
+    connect(watcher, &QFutureWatcher<LoadResult>::finished, this, [self, watcher]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
 
-            if (!self) return;
+        if (!self)
+            return;
 
-            if (!result.success) {
-                const auto msg = QString::fromStdString(result.error_message);
-                BOOST_LOG_SEV(lg(), error)
-                    << "Failed to load LEI countries: " << result.error_message;
-                self->statusLabel_->setText("Error: " + msg);
-                emit self->loadFailed(msg);
-                return;
-            }
+        if (!result.success) {
+            const auto msg = QString::fromStdString(result.error_message);
+            BOOST_LOG_SEV(lg(), error) << "Failed to load LEI countries: " << result.error_message;
+            self->statusLabel_->setText("Error: " + msg);
+            emit self->loadFailed(msg);
+            return;
+        }
 
-            // Populate country filter combo from the distinct countries.
-            self->countryFilter_->blockSignals(true);
-            self->countryFilter_->clear();
-            self->countryFilter_->addItem("Select a country...");
-            for (const auto& entity : result.entities) {
-                const auto country =
-                    QString::fromStdString(entity.country);
-                if (!country.isEmpty())
-                    self->countryFilter_->addItem(country);
-            }
-            self->countryFilter_->blockSignals(false);
-            self->countriesLoaded_ = true;
+        // Populate country filter combo from the distinct countries.
+        self->countryFilter_->blockSignals(true);
+        self->countryFilter_->clear();
+        self->countryFilter_->addItem("Select a country...");
+        for (const auto& entity : result.entities) {
+            const auto country = QString::fromStdString(entity.country);
+            if (!country.isEmpty())
+                self->countryFilter_->addItem(country);
+        }
+        self->countryFilter_->blockSignals(false);
+        self->countriesLoaded_ = true;
 
-            const int count = self->countryFilter_->count() - 1;
-            self->statusLabel_->setText(
-                QString("%1 countries available — select one to load entities")
-                    .arg(count));
-            BOOST_LOG_SEV(lg(), info) << "Loaded " << count
-                                      << " LEI countries";
-            emit self->loadCompleted(count);
-        });
+        const int count = self->countryFilter_->count() - 1;
+        self->statusLabel_->setText(
+            QString("%1 countries available — select one to load entities").arg(count));
+        BOOST_LOG_SEV(lg(), info) << "Loaded " << count << " LEI countries";
+        emit self->loadCompleted(count);
+    });
 
     // Request with empty country_filter → server returns distinct countries.
-    QFuture<LoadResult> future = QtConcurrent::run(
-        [self]() -> LoadResult {
-            if (!self) return {false, "Widget destroyed", {}};
+    QFuture<LoadResult> future = QtConcurrent::run([self]() -> LoadResult {
+        if (!self)
+            return {false, "Widget destroyed", {}};
 
-            dq::messaging::get_lei_entities_summary_request request;
-            auto result = self->clientManager_->process_authenticated_request(
-                std::move(request));
+        dq::messaging::get_lei_entities_summary_request request;
+        auto result = self->clientManager_->process_authenticated_request(std::move(request));
 
-            if (!result) {
-                return {false,
-                    result.error(), {}};
-            }
+        if (!result) {
+            return {false, result.error(), {}};
+        }
 
-            if (!result->success) {
-                return {false, result->error_message, {}};
-            }
+        if (!result->success) {
+            return {false, result->error_message, {}};
+        }
 
-            return {true, {}, std::move(result->entities)};
-        });
+        return {true, {}, std::move(result->entities)};
+    });
 
     watcher->setFuture(future);
 }
 
 void LeiEntityPicker::loadEntitiesForCountry(const QString& country) {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        BOOST_LOG_SEV(lg(), warn)
-            << "Cannot load LEI entities: not connected";
+        BOOST_LOG_SEV(lg(), warn) << "Cannot load LEI entities: not connected";
         statusLabel_->setText("Not connected to server.");
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Loading LEI entities for country: "
-                               << country.toStdString();
+    BOOST_LOG_SEV(lg(), debug) << "Loading LEI entities for country: " << country.toStdString();
     statusLabel_->setText(QString("Loading entities for %1...").arg(country));
 
     QPointer<LeiEntityPicker> self = this;
@@ -243,68 +229,57 @@ void LeiEntityPicker::loadEntitiesForCountry(const QString& country) {
     };
 
     auto* watcher = new QFutureWatcher<LoadResult>(this);
-    connect(watcher, &QFutureWatcher<LoadResult>::finished, this,
-        [self, watcher]() {
-            auto result = watcher->result();
-            watcher->deleteLater();
+    connect(watcher, &QFutureWatcher<LoadResult>::finished, this, [self, watcher]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
 
-            if (!self) return;
+        if (!self)
+            return;
 
-            if (!result.success) {
-                const auto msg = QString::fromStdString(result.error_message);
-                BOOST_LOG_SEV(lg(), error)
-                    << "Failed to load LEI entities: "
-                    << result.error_message;
-                self->statusLabel_->setText("Error: " + msg);
-                emit self->loadFailed(msg);
-                return;
-            }
+        if (!result.success) {
+            const auto msg = QString::fromStdString(result.error_message);
+            BOOST_LOG_SEV(lg(), error) << "Failed to load LEI entities: " << result.error_message;
+            self->statusLabel_->setText("Error: " + msg);
+            emit self->loadFailed(msg);
+            return;
+        }
 
-            // Populate model with entities for this country.
-            self->model_->removeRows(0, self->model_->rowCount());
-            for (const auto& entity : result.entities) {
-                auto* countryItem = new QStandardItem(
-                    QString::fromStdString(entity.country));
-                countryItem->setData(
-                    QString::fromStdString(entity.lei), LeiRole);
-                auto* categoryItem = new QStandardItem(
-                    QString::fromStdString(entity.entity_category));
-                auto* nameItem = new QStandardItem(
-                    QString::fromStdString(entity.entity_legal_name));
+        // Populate model with entities for this country.
+        self->model_->removeRows(0, self->model_->rowCount());
+        for (const auto& entity : result.entities) {
+            auto* countryItem = new QStandardItem(QString::fromStdString(entity.country));
+            countryItem->setData(QString::fromStdString(entity.lei), LeiRole);
+            auto* categoryItem = new QStandardItem(QString::fromStdString(entity.entity_category));
+            auto* nameItem = new QStandardItem(QString::fromStdString(entity.entity_legal_name));
 
-                self->model_->appendRow(
-                    {countryItem, categoryItem, nameItem});
-            }
+            self->model_->appendRow({countryItem, categoryItem, nameItem});
+        }
 
-            const int count = static_cast<int>(result.entities.size());
-            self->statusLabel_->setText(
-                QString("%1 entities loaded").arg(count));
-            BOOST_LOG_SEV(lg(), info) << "Loaded " << count
-                                      << " LEI entities for country";
-            self->applyFilters();
-        });
+        const int count = static_cast<int>(result.entities.size());
+        self->statusLabel_->setText(QString("%1 entities loaded").arg(count));
+        BOOST_LOG_SEV(lg(), info) << "Loaded " << count << " LEI entities for country";
+        self->applyFilters();
+    });
 
     const auto countryStd = country.toStdString();
-    QFuture<LoadResult> future = QtConcurrent::run(
-        [self, countryStd]() -> LoadResult {
-            if (!self) return {false, "Widget destroyed", {}};
+    QFuture<LoadResult> future = QtConcurrent::run([self, countryStd]() -> LoadResult {
+        if (!self)
+            return {false, "Widget destroyed", {}};
 
-            dq::messaging::get_lei_entities_summary_request request;
-            request.country_filter = countryStd;
-            auto result = self->clientManager_->process_authenticated_request(
-                std::move(request));
+        dq::messaging::get_lei_entities_summary_request request;
+        request.country_filter = countryStd;
+        auto result = self->clientManager_->process_authenticated_request(std::move(request));
 
-            if (!result) {
-                return {false,
-                    result.error(), {}};
-            }
+        if (!result) {
+            return {false, result.error(), {}};
+        }
 
-            if (!result->success) {
-                return {false, result->error_message, {}};
-            }
+        if (!result->success) {
+            return {false, result->error_message, {}};
+        }
 
-            return {true, {}, std::move(result->entities)};
-        });
+        return {true, {}, std::move(result->entities)};
+    });
 
     watcher->setFuture(future);
 }
@@ -338,28 +313,26 @@ void LeiEntityPicker::applyFilters() {
     // the view to clear the selection, firing onSelectionChanged with empty
     // indexes and erasing selectedLei_ even though the user did not act.
     tableView_->selectionModel()->blockSignals(true);
-    proxyModel_->setFilterRegularExpression(
-        QRegularExpression(QRegularExpression::escape(searchText),
-            QRegularExpression::CaseInsensitiveOption));
+    proxyModel_->setFilterRegularExpression(QRegularExpression(
+        QRegularExpression::escape(searchText), QRegularExpression::CaseInsensitiveOption));
     tableView_->selectionModel()->blockSignals(false);
 
     // Restore the visual selection for the stored LEI if it is still visible.
     if (!selectedLei_.isEmpty()) {
         for (int row = 0; row < proxyModel_->rowCount(); ++row) {
-            const auto lei = proxyModel_->data(
-                proxyModel_->index(row, Column::Country), LeiRole).toString();
+            const auto lei =
+                proxyModel_->data(proxyModel_->index(row, Column::Country), LeiRole).toString();
             if (lei == selectedLei_) {
-                tableView_->selectionModel()->select(
-                    proxyModel_->index(row, 0),
-                    QItemSelectionModel::ClearAndSelect |
-                    QItemSelectionModel::Rows);
+                tableView_->selectionModel()->select(proxyModel_->index(row, 0),
+                                                     QItemSelectionModel::ClearAndSelect |
+                                                         QItemSelectionModel::Rows);
                 tableView_->scrollTo(proxyModel_->index(row, 0));
                 return;
             }
         }
         // The selected LEI was filtered out — clear the selection state.
-        BOOST_LOG_SEV(lg(), debug) << "Selection cleared by filter: "
-            << selectedLei_.toStdString() << " no longer visible";
+        BOOST_LOG_SEV(lg(), debug) << "Selection cleared by filter: " << selectedLei_.toStdString()
+                                   << " no longer visible";
         selectedLei_.clear();
         selectedName_.clear();
         emit selectionCleared();
@@ -369,20 +342,20 @@ void LeiEntityPicker::applyFilters() {
     // When the filter narrows the visible set to exactly one row and nothing is
     // selected yet, auto-select that row so the user does not have to click.
     if (proxyModel_->rowCount() == 1) {
-        const auto lei = proxyModel_->data(
-            proxyModel_->index(0, Column::Country), LeiRole).toString();
-        const auto name = proxyModel_->data(
-            proxyModel_->index(0, Column::EntityLegalName)).toString();
-        BOOST_LOG_SEV(lg(), debug) << "Auto-selecting sole visible entity: "
-            << lei.toStdString() << " - " << name.toStdString();
+        const auto lei =
+            proxyModel_->data(proxyModel_->index(0, Column::Country), LeiRole).toString();
+        const auto name =
+            proxyModel_->data(proxyModel_->index(0, Column::EntityLegalName)).toString();
+        BOOST_LOG_SEV(lg(), debug) << "Auto-selecting sole visible entity: " << lei.toStdString()
+                                   << " - " << name.toStdString();
         selectedLei_ = lei;
         selectedName_ = name;
         // Block the selection signal to avoid double-emitting entitySelected
         // via onSelectionChanged.
         tableView_->selectionModel()->blockSignals(true);
-        tableView_->selectionModel()->select(
-            proxyModel_->index(0, 0),
-            QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
+        tableView_->selectionModel()->select(proxyModel_->index(0, 0),
+                                             QItemSelectionModel::ClearAndSelect |
+                                                 QItemSelectionModel::Rows);
         tableView_->selectionModel()->blockSignals(false);
         tableView_->scrollTo(proxyModel_->index(0, 0));
         emit entitySelected(selectedLei_, selectedName_);
@@ -392,10 +365,9 @@ void LeiEntityPicker::applyFilters() {
 void LeiEntityPicker::onSelectionChanged() {
     const auto indexes = tableView_->selectionModel()->selectedRows();
     if (indexes.isEmpty()) {
-        BOOST_LOG_SEV(lg(), debug) << "Selection cleared"
-            << (selectedLei_.isEmpty() ? "" : " (was: ")
-            << selectedLei_.toStdString()
-            << (selectedLei_.isEmpty() ? "" : ")");
+        BOOST_LOG_SEV(lg(), debug)
+            << "Selection cleared" << (selectedLei_.isEmpty() ? "" : " (was: ")
+            << selectedLei_.toStdString() << (selectedLei_.isEmpty() ? "" : ")");
         selectedLei_.clear();
         selectedName_.clear();
         emit selectionCleared();
@@ -404,14 +376,13 @@ void LeiEntityPicker::onSelectionChanged() {
 
     const auto& index = indexes.first();
     // LEI is stored as UserRole data on the Country column item.
-    selectedLei_ = proxyModel_->data(
-        proxyModel_->index(index.row(), Column::Country), LeiRole).toString();
-    selectedName_ = proxyModel_->data(
-        proxyModel_->index(index.row(), Column::EntityLegalName)).toString();
+    selectedLei_ =
+        proxyModel_->data(proxyModel_->index(index.row(), Column::Country), LeiRole).toString();
+    selectedName_ =
+        proxyModel_->data(proxyModel_->index(index.row(), Column::EntityLegalName)).toString();
 
-    BOOST_LOG_SEV(lg(), debug) << "Entity selected: "
-                               << selectedLei_.toStdString()
-                               << " - " << selectedName_.toStdString();
+    BOOST_LOG_SEV(lg(), debug) << "Entity selected: " << selectedLei_.toStdString() << " - "
+                               << selectedName_.toStdString();
 
     emit entitySelected(selectedLei_, selectedName_);
 }

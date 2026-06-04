@@ -20,10 +20,10 @@
 #ifndef ORES_QT_TREATMENT_DIMENSION_DETAIL_DIALOG_HPP
 #define ORES_QT_TREATMENT_DIMENSION_DETAIL_DIALOG_HPP
 
+#include "ores.dq.api/domain/treatment_dimension.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.dq.api/domain/treatment_dimension.hpp"
 
 namespace Ui {
 class TreatmentDimensionDetailDialog;
@@ -35,8 +35,7 @@ class TreatmentDimensionDetailDialog final : public DetailDialogBase {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.treatment_dimension_detail_dialog";
+    inline static std::string_view logger_name = "ores.qt.treatment_dimension_detail_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -48,8 +47,12 @@ public:
     explicit TreatmentDimensionDetailDialog(QWidget* parent = nullptr);
     ~TreatmentDimensionDetailDialog() override;
 
-    void setClientManager(ClientManager* cm) { clientManager_ = cm; }
-    void setUsername(const std::string& username) { username_ = username; }
+    void setClientManager(ClientManager* cm) {
+        clientManager_ = cm;
+    }
+    void setUsername(const std::string& username) {
+        username_ = username;
+    }
     void setCreateMode(bool create);
     void setDimension(const dq::domain::treatment_dimension& dimension);
     void setReadOnly(bool readOnly);

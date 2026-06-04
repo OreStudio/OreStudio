@@ -20,13 +20,13 @@
 #ifndef ORES_QT_MASTER_PASSWORD_DIALOG_HPP
 #define ORES_QT_MASTER_PASSWORD_DIALOG_HPP
 
+#include "ores.logging/make_logger.hpp"
 #include <QCheckBox>
 #include <QDialog>
+#include <QDialogButtonBox>
+#include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
-#include <QLabel>
-#include <QDialogButtonBox>
-#include "ores.logging/make_logger.hpp"
 
 namespace ores::qt {
 
@@ -43,8 +43,7 @@ class MasterPasswordDialog : public QDialog {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.master_password_dialog";
+    inline static std::string_view logger_name = "ores.qt.master_password_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -54,9 +53,9 @@ private:
 
 public:
     enum Mode {
-        Unlock,      // Enter password to unlock
-        Change,      // Change existing password
-        Create       // Create new master password (first time)
+        Unlock, // Enter password to unlock
+        Change, // Change existing password
+        Create  // Create new master password (first time)
     };
 
     explicit MasterPasswordDialog(Mode mode, QWidget* parent = nullptr);

@@ -18,24 +18,23 @@
  *
  */
 #include "ores.qt/BadgeDefinitionDetailDialog.hpp"
-
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include <QPlainTextEdit>
-#include "ui_BadgeDefinitionDetailDialog.h"
+#include "ores.dq.api/messaging/badge_protocol.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.dq.api/messaging/badge_protocol.hpp"
+#include "ui_BadgeDefinitionDetailDialog.h"
+#include <QFutureWatcher>
+#include <QMessageBox>
+#include <QPlainTextEdit>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 BadgeDefinitionDetailDialog::BadgeDefinitionDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent),
-      ui_(new Ui::BadgeDefinitionDetailDialog),
-      clientManager_(nullptr) {
+    : DetailDialogBase(parent)
+    , ui_(new Ui::BadgeDefinitionDetailDialog)
+    , clientManager_(nullptr) {
 
     ui_->setupUi(this);
     setupUi();
@@ -71,18 +70,24 @@ void BadgeDefinitionDetailDialog::setupUi() {
 }
 
 void BadgeDefinitionDetailDialog::setupConnections() {
-    connect(ui_->saveButton, &QPushButton::clicked, this,
-            &BadgeDefinitionDetailDialog::onSaveClicked);
-    connect(ui_->deleteButton, &QPushButton::clicked, this,
+    connect(
+        ui_->saveButton, &QPushButton::clicked, this, &BadgeDefinitionDetailDialog::onSaveClicked);
+    connect(ui_->deleteButton,
+            &QPushButton::clicked,
+            this,
             &BadgeDefinitionDetailDialog::onDeleteClicked);
-    connect(ui_->closeButton, &QPushButton::clicked, this,
+    connect(ui_->closeButton,
+            &QPushButton::clicked,
+            this,
             &BadgeDefinitionDetailDialog::onCloseClicked);
 
-    connect(ui_->codeEdit, &QLineEdit::textChanged, this,
-            &BadgeDefinitionDetailDialog::onCodeChanged);
-    connect(ui_->nameEdit, &QLineEdit::textChanged, this,
-            &BadgeDefinitionDetailDialog::onFieldChanged);
-    connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this,
+    connect(
+        ui_->codeEdit, &QLineEdit::textChanged, this, &BadgeDefinitionDetailDialog::onCodeChanged);
+    connect(
+        ui_->nameEdit, &QLineEdit::textChanged, this, &BadgeDefinitionDetailDialog::onFieldChanged);
+    connect(ui_->descriptionEdit,
+            &QPlainTextEdit::textChanged,
+            this,
             &BadgeDefinitionDetailDialog::onFieldChanged);
 }
 
@@ -94,8 +99,7 @@ void BadgeDefinitionDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
 
-void BadgeDefinitionDetailDialog::setDefinition(
-    const dq::domain::badge_definition& definition) {
+void BadgeDefinitionDetailDialog::setDefinition(const dq::domain::badge_definition& definition) {
     definition_ = definition;
     updateUiFromDefinition();
 }
@@ -168,14 +172,13 @@ bool BadgeDefinitionDetailDialog::validateInput() {
 
 void BadgeDefinitionDetailDialog::onSaveClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot save badge definition while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot save badge definition while disconnected from server.");
         return;
     }
 
     if (!validateInput()) {
-        MessageBoxHelper::warning(this, "Invalid Input",
-            "Please fill in all required fields.");
+        MessageBoxHelper::warning(this, "Invalid Input", "Please fill in all required fields.");
         return;
     }
 
@@ -197,8 +200,8 @@ void BadgeDefinitionDetailDialog::onSaveClicked() {
 
         dq::messaging::save_badge_definition_request request;
         request.data = definition;
-        auto response_result = self->clientManager_->
-            process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, response_result.error()};
@@ -208,8 +211,7 @@ void BadgeDefinitionDetailDialog::onSaveClicked() {
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
-    connect(watcher, &QFutureWatcher<SaveResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
@@ -234,13 +236,15 @@ void BadgeDefinitionDetailDialog::onSaveClicked() {
 
 void BadgeDefinitionDetailDialog::onDeleteClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot delete badge definition while disconnected from server.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot delete badge definition while disconnected from server.");
         return;
     }
 
     QString code = QString::fromStdString(definition_.code);
-    auto reply = MessageBoxHelper::question(this, "Delete Badge Definition",
+    auto reply = MessageBoxHelper::question(
+        this,
+        "Delete Badge Definition",
         QString("Are you sure you want to delete badge definition '%1'?").arg(code),
         QMessageBox::Yes | QMessageBox::No);
 
@@ -264,8 +268,8 @@ void BadgeDefinitionDetailDialog::onDeleteClicked() {
 
         dq::messaging::delete_badge_definition_request request;
         request.codes = {code_str};
-        auto response_result = self->clientManager_->
-            process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, response_result.error()};
@@ -275,8 +279,7 @@ void BadgeDefinitionDetailDialog::onDeleteClicked() {
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
-            self, [self, code, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, code, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 

@@ -21,9 +21,8 @@
 #include "ores.qt/ClientChangeReasonModel.hpp"
 #include "ores.qt/DelegatePaintUtils.hpp"
 #include "ores.qt/FontUtils.hpp"
-
-#include <QPainter>
 #include <QApplication>
+#include <QPainter>
 #include <QStyleOptionViewItem>
 
 namespace ores::qt {
@@ -31,10 +30,10 @@ namespace ores::qt {
 namespace {
 
 // Badge colors for boolean columns
-const QColor yes_badge_bg(34, 197, 94);        // Green (#22c55e)
-const QColor yes_badge_text(255, 255, 255);    // White
-const QColor no_badge_bg(107, 114, 128);       // Gray (#6b7280)
-const QColor no_badge_text(255, 255, 255);     // White
+const QColor yes_badge_bg(34, 197, 94);     // Green (#22c55e)
+const QColor yes_badge_text(255, 255, 255); // White
+const QColor no_badge_bg(107, 114, 128);    // Gray (#6b7280)
+const QColor no_badge_text(255, 255, 255);  // White
 
 }
 
@@ -48,7 +47,8 @@ ChangeReasonItemDelegate::ChangeReasonItemDelegate(QObject* parent)
 }
 
 void ChangeReasonItemDelegate::paint(QPainter* painter,
-    const QStyleOptionViewItem& option, const QModelIndex& index) const {
+                                     const QStyleOptionViewItem& option,
+                                     const QModelIndex& index) const {
     QStyleOptionViewItem opt = option;
     initStyleOption(&opt, index);
 
@@ -74,8 +74,8 @@ void ChangeReasonItemDelegate::paint(QPainter* painter,
             badgeText = tr("No");
         }
 
-        DelegatePaintUtils::draw_centered_badge(painter, opt.rect,
-            badgeText, bgColor, textColor, badgeFont_);
+        DelegatePaintUtils::draw_centered_badge(
+            painter, opt.rect, badgeText, bgColor, textColor, badgeFont_);
         return;
     }
 
@@ -111,7 +111,7 @@ void ChangeReasonItemDelegate::paint(QPainter* painter,
 }
 
 QSize ChangeReasonItemDelegate::sizeHint(const QStyleOptionViewItem& option,
-                                          const QModelIndex& index) const {
+                                         const QModelIndex& index) const {
     QSize size = QStyledItemDelegate::sizeHint(option, index);
 
     if (index.column() == ClientChangeReasonModel::AppliesToAmend ||

@@ -20,19 +20,19 @@
 #ifndef ORES_QT_LOGIN_DIALOG_HPP
 #define ORES_QT_LOGIN_DIALOG_HPP
 
-#include <QWidget>
-#include <QKeyEvent>
-#include <QLineEdit>
-#include <QPushButton>
-#include <QLabel>
+#include "ores.connections/service/connection_manager.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
 #include <QCheckBox>
 #include <QComboBox>
-#include <QSpinBox>
+#include <QKeyEvent>
+#include <QLabel>
+#include <QLineEdit>
 #include <QList>
+#include <QPushButton>
+#include <QSpinBox>
 #include <QVBoxLayout>
-#include "ores.qt/ClientManager.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.connections/service/connection_manager.hpp"
+#include <QWidget>
 
 namespace ores::qt {
 
@@ -137,8 +137,7 @@ public:
     /**
      * @brief Set the connection manager for persisting recent party selections.
      */
-    void setConnectionManager(
-        ores::connections::service::connection_manager* connectionManager);
+    void setConnectionManager(ores::connections::service::connection_manager* connectionManager);
 
     /**
      * @brief Get the username that was used for login.

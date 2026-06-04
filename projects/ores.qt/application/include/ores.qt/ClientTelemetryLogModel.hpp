@@ -20,15 +20,15 @@
 #ifndef ORES_QT_CLIENT_TELEMETRY_LOG_MODEL_HPP
 #define ORES_QT_CLIENT_TELEMETRY_LOG_MODEL_HPP
 
-#include <vector>
-#include <optional>
-#include <QFutureWatcher>
-#include <QAbstractTableModel>
-#include "ores.qt/AbstractClientModel.hpp"
-#include <boost/uuid/uuid.hpp>
-#include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/AbstractClientModel.hpp"
+#include "ores.qt/ClientManager.hpp"
 #include "ores.telemetry.core/domain/telemetry_log_entry.hpp"
+#include <QAbstractTableModel>
+#include <QFutureWatcher>
+#include <boost/uuid/uuid.hpp>
+#include <optional>
+#include <vector>
 
 namespace ores::qt {
 
@@ -42,8 +42,7 @@ class ClientTelemetryLogModel final : public AbstractClientModel {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.client_telemetry_log_model";
+    inline static std::string_view logger_name = "ores.qt.client_telemetry_log_model";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -52,25 +51,16 @@ private:
     }
 
 public:
-    enum Column {
-        Timestamp,
-        Level,
-        Source,
-        Component,
-        Tag,
-        Message,
-        ColumnCount
-    };
+    enum Column { Timestamp, Level, Source, Component, Tag, Message, ColumnCount };
 
-    explicit ClientTelemetryLogModel(ClientManager* clientManager,
-                                      QObject* parent = nullptr);
+    explicit ClientTelemetryLogModel(ClientManager* clientManager, QObject* parent = nullptr);
     ~ClientTelemetryLogModel() override = default;
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-    QVariant headerData(int section, Qt::Orientation orientation,
-        int role = Qt::DisplayRole) const override;
+    QVariant
+    headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
     /**
      * @brief Load logs for a specific session.
@@ -109,7 +99,9 @@ public:
     /**
      * @brief Get the page size used for pagination.
      */
-    std::uint32_t page_size() const { return page_size_; }
+    std::uint32_t page_size() const {
+        return page_size_;
+    }
 
     /**
      * @brief Set the page size for pagination.
@@ -119,7 +111,9 @@ public:
     /**
      * @brief Get the total number of records available on the server.
      */
-    std::uint64_t total_available_count() const { return total_available_count_; }
+    std::uint64_t total_available_count() const {
+        return total_available_count_;
+    }
 
     /**
      * @brief Set the minimum log level filter.

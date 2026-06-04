@@ -18,39 +18,35 @@
  *
  */
 #include "ores.qt/AppMdiWindow.hpp"
-
-#include <QVBoxLayout>
-#include <QHeaderView>
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include <boost/uuid/uuid_io.hpp>
+#include "ores.compute.api/messaging/app_protocol.hpp"
+#include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/ColorConstants.hpp"
-#include "ores.compute.api/messaging/app_protocol.hpp"
+#include <QFutureWatcher>
+#include <QHeaderView>
+#include <QMessageBox>
+#include <QVBoxLayout>
+#include <QtConcurrent>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-AppMdiWindow::AppMdiWindow(
-    ClientManager* clientManager,
-    const QString& username,
-    QWidget* parent)
-    : EntityListMdiWindow(parent),
-      clientManager_(clientManager),
-      username_(username),
-      toolbar_(nullptr),
-      tableView_(nullptr),
-      model_(nullptr),
-      proxyModel_(nullptr),
-      paginationWidget_(nullptr),
-      reloadAction_(nullptr),
-      addAction_(nullptr),
-      editAction_(nullptr),
-      deleteAction_(nullptr),
-      historyAction_(nullptr) {
+AppMdiWindow::AppMdiWindow(ClientManager* clientManager, const QString& username, QWidget* parent)
+    : EntityListMdiWindow(parent)
+    , clientManager_(clientManager)
+    , username_(username)
+    , toolbar_(nullptr)
+    , tableView_(nullptr)
+    , model_(nullptr)
+    , proxyModel_(nullptr)
+    , paginationWidget_(nullptr)
+    , reloadAction_(nullptr)
+    , addAction_(nullptr)
+    , editAction_(nullptr)
+    , deleteAction_(nullptr)
+    , historyAction_(nullptr) {
 
     setupUi();
     setupConnections();
@@ -79,50 +75,36 @@ void AppMdiWindow::setupToolbar() {
     toolbar_->setIconSize(QSize(20, 20));
 
     reloadAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::ArrowClockwise, IconUtils::DefaultIconColor),
+        IconUtils::createRecoloredIcon(Icon::ArrowClockwise, IconUtils::DefaultIconColor),
         tr("Reload"));
-    connect(reloadAction_, &QAction::triggered, this,
-            &AppMdiWindow::reload);
+    connect(reloadAction_, &QAction::triggered, this, &AppMdiWindow::reload);
 
     initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowClockwise));
 
     toolbar_->addSeparator();
 
     addAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::Add, IconUtils::DefaultIconColor),
-        tr("Add"));
+        IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor), tr("Add"));
     addAction_->setToolTip(tr("Add new compute app"));
-    connect(addAction_, &QAction::triggered, this,
-            &AppMdiWindow::addNew);
+    connect(addAction_, &QAction::triggered, this, &AppMdiWindow::addNew);
 
     editAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::Edit, IconUtils::DefaultIconColor),
-        tr("Edit"));
+        IconUtils::createRecoloredIcon(Icon::Edit, IconUtils::DefaultIconColor), tr("Edit"));
     editAction_->setToolTip(tr("Edit selected compute app"));
     editAction_->setEnabled(false);
-    connect(editAction_, &QAction::triggered, this,
-            &AppMdiWindow::editSelected);
+    connect(editAction_, &QAction::triggered, this, &AppMdiWindow::editSelected);
 
     deleteAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::Delete, IconUtils::DefaultIconColor),
-        tr("Delete"));
+        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor), tr("Delete"));
     deleteAction_->setToolTip(tr("Delete selected compute app"));
     deleteAction_->setEnabled(false);
-    connect(deleteAction_, &QAction::triggered, this,
-            &AppMdiWindow::deleteSelected);
+    connect(deleteAction_, &QAction::triggered, this, &AppMdiWindow::deleteSelected);
 
     historyAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::History, IconUtils::DefaultIconColor),
-        tr("History"));
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor), tr("History"));
     historyAction_->setToolTip(tr("View compute app history"));
     historyAction_->setEnabled(false);
-    connect(historyAction_, &QAction::triggered, this,
-            &AppMdiWindow::viewHistorySelected);
+    connect(historyAction_, &QAction::triggered, this, &AppMdiWindow::viewHistorySelected);
 }
 
 void AppMdiWindow::setupTable() {
@@ -139,32 +121,28 @@ void AppMdiWindow::setupTable() {
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
 
-    initializeTableSettings(tableView_, model_,
-        "AppListWindow",
-        {ClientAppModel::Description},
-        {900, 400}, 1);
+    initializeTableSettings(
+        tableView_, model_, "AppListWindow", {ClientAppModel::Description}, {900, 400}, 1);
 }
 
 void AppMdiWindow::setupConnections() {
-    connect(model_, &ClientAppModel::dataLoaded,
-            this, &AppMdiWindow::onDataLoaded);
-    connect(model_, &ClientAppModel::loadError,
-            this, &AppMdiWindow::onLoadError);
+    connect(model_, &ClientAppModel::dataLoaded, this, &AppMdiWindow::onDataLoaded);
+    connect(model_, &ClientAppModel::loadError, this, &AppMdiWindow::onLoadError);
     connectModel(model_);
 
-    connect(tableView_->selectionModel(), &QItemSelectionModel::selectionChanged,
-            this, &AppMdiWindow::onSelectionChanged);
-    connect(tableView_, &QTableView::doubleClicked,
-            this, &AppMdiWindow::onDoubleClicked);
+    connect(tableView_->selectionModel(),
+            &QItemSelectionModel::selectionChanged,
+            this,
+            &AppMdiWindow::onSelectionChanged);
+    connect(tableView_, &QTableView::doubleClicked, this, &AppMdiWindow::onDoubleClicked);
 
-    connect(paginationWidget_, &PaginationWidget::page_size_changed,
-            this, [this](std::uint32_t size) {
-        model_->set_page_size(size);
-        model_->refresh();
-    });
+    connect(
+        paginationWidget_, &PaginationWidget::page_size_changed, this, [this](std::uint32_t size) {
+            model_->set_page_size(size);
+            model_->refresh();
+        });
 
-    connect(paginationWidget_, &PaginationWidget::load_all_requested,
-            this, [this]() {
+    connect(paginationWidget_, &PaginationWidget::load_all_requested, this, [this]() {
         const auto total = model_->total_available_count();
         if (total > 0 && total <= 1000) {
             model_->set_page_size(total);
@@ -172,10 +150,11 @@ void AppMdiWindow::setupConnections() {
         }
     });
 
-    connect(paginationWidget_, &PaginationWidget::page_requested,
-            this, [this](std::uint32_t offset, std::uint32_t limit) {
-        model_->load_page(offset, limit);
-    });
+    connect(
+        paginationWidget_,
+        &PaginationWidget::page_requested,
+        this,
+        [this](std::uint32_t offset, std::uint32_t limit) { model_->load_page(offset, limit); });
 }
 
 void AppMdiWindow::doReload() {
@@ -190,12 +169,11 @@ void AppMdiWindow::onDataLoaded() {
     emit statusChanged(tr("Loaded %1 of %2 compute apps").arg(loaded).arg(total));
 
     paginationWidget_->update_state(loaded, total);
-    paginationWidget_->set_load_all_enabled(
-        loaded < static_cast<int>(total) && total > 0 && total <= 1000);
+    paginationWidget_->set_load_all_enabled(loaded < static_cast<int>(total) && total > 0 &&
+                                            total <= 1000);
 }
 
-void AppMdiWindow::onLoadError(const QString& error_message,
-                                          const QString& details) {
+void AppMdiWindow::onLoadError(const QString& error_message, const QString& details) {
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);
@@ -249,8 +227,7 @@ void AppMdiWindow::viewHistorySelected() {
 
     auto sourceIndex = proxyModel_->mapToSource(selected.first());
     if (auto* app = model_->getApp(sourceIndex.row())) {
-        BOOST_LOG_SEV(lg(), debug) << "Emitting showAppHistory for code: "
-                                   << app->name;
+        BOOST_LOG_SEV(lg(), debug) << "Emitting showAppHistory for code: " << app->name;
         emit showAppHistory(*app);
     }
 }
@@ -263,13 +240,13 @@ void AppMdiWindow::deleteSelected() {
     }
 
     if (!clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot delete compute app while disconnected.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot delete compute app while disconnected.");
         return;
     }
 
     std::vector<boost::uuids::uuid> ids;
-    std::vector<std::string> codes;  // For display purposes
+    std::vector<std::string> codes; // For display purposes
     for (const auto& index : selected) {
         auto sourceIndex = proxyModel_->mapToSource(index);
         if (auto* app = model_->getApp(sourceIndex.row())) {
@@ -283,20 +260,19 @@ void AppMdiWindow::deleteSelected() {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Delete requested for " << ids.size()
-                               << " compute apps";
+    BOOST_LOG_SEV(lg(), debug) << "Delete requested for " << ids.size() << " compute apps";
 
     QString confirmMessage;
     if (ids.size() == 1) {
         confirmMessage = QString("Are you sure you want to delete compute app '%1'?")
-            .arg(QString::fromStdString(codes.front()));
+                             .arg(QString::fromStdString(codes.front()));
     } else {
-        confirmMessage = QString("Are you sure you want to delete %1 compute apps?")
-            .arg(ids.size());
+        confirmMessage =
+            QString("Are you sure you want to delete %1 compute apps?").arg(ids.size());
     }
 
-    auto reply = MessageBoxHelper::question(this, "Delete App",
-        confirmMessage, QMessageBox::Yes | QMessageBox::No);
+    auto reply = MessageBoxHelper::question(
+        this, "Delete App", confirmMessage, QMessageBox::Yes | QMessageBox::No);
 
     if (reply != QMessageBox::Yes) {
         BOOST_LOG_SEV(lg(), debug) << "Delete cancelled by user";
@@ -304,8 +280,8 @@ void AppMdiWindow::deleteSelected() {
     }
 
     // Delete not yet implemented for compute entities
-    MessageBoxHelper::warning(this, "Not Implemented",
-        "Delete operation is not yet implemented for this entity.");
+    MessageBoxHelper::warning(
+        this, "Not Implemented", "Delete operation is not yet implemented for this entity.");
 }
 
 }

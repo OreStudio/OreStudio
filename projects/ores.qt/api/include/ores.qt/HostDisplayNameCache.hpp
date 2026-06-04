@@ -20,12 +20,12 @@
 #ifndef ORES_QT_HOST_DISPLAY_NAME_CACHE_HPP
 #define ORES_QT_HOST_DISPLAY_NAME_CACHE_HPP
 
-#include <vector>
+#include "ores.compute.api/domain/host.hpp"
+#include "ores.qt/export.hpp"
 #include <QHash>
 #include <QObject>
 #include <QString>
-#include "ores.compute.api/domain/host.hpp"
-#include "ores.qt/export.hpp"
+#include <vector>
 
 namespace ores::qt {
 

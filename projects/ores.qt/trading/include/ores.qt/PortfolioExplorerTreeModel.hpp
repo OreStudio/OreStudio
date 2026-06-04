@@ -20,16 +20,16 @@
 #ifndef ORES_QT_PORTFOLIO_EXPLORER_TREE_MODEL_HPP
 #define ORES_QT_PORTFOLIO_EXPLORER_TREE_MODEL_HPP
 
+#include "ores.logging/make_logger.hpp"
+#include "ores.refdata.api/domain/book.hpp"
+#include "ores.refdata.api/domain/portfolio.hpp"
+#include <QAbstractItemModel>
+#include <QString>
+#include <boost/uuid/uuid.hpp>
 #include <memory>
-#include <vector>
 #include <optional>
 #include <unordered_map>
-#include <QString>
-#include <QAbstractItemModel>
-#include <boost/uuid/uuid.hpp>
-#include "ores.logging/make_logger.hpp"
-#include "ores.refdata.api/domain/portfolio.hpp"
-#include "ores.refdata.api/domain/book.hpp"
+#include <vector>
 
 namespace ores::qt {
 
@@ -43,9 +43,9 @@ struct PortfolioTreeNode {
     enum class Kind { Party, Portfolio, Book };
 
     Kind kind;
-    QString party_name;                        // valid when kind == Party
-    refdata::domain::portfolio portfolio;      // valid when kind == Portfolio
-    refdata::domain::book book;                // valid when kind == Book
+    QString party_name;                   // valid when kind == Party
+    refdata::domain::portfolio portfolio; // valid when kind == Portfolio
+    refdata::domain::book book;           // valid when kind == Book
     PortfolioTreeNode* parent = nullptr;
     std::vector<std::unique_ptr<PortfolioTreeNode>> children;
     int row_in_parent = 0;
@@ -70,8 +70,7 @@ class PortfolioExplorerTreeModel final : public QAbstractItemModel {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.portfolio_explorer_tree_model";
+    inline static std::string_view logger_name = "ores.qt.portfolio_explorer_tree_model";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -113,8 +112,7 @@ public:
     void set_trade_count(const boost::uuids::uuid& book_id, std::uint32_t count);
 
     // QAbstractItemModel interface
-    QModelIndex index(int row, int col,
-        const QModelIndex& parent = QModelIndex()) const override;
+    QModelIndex index(int row, int col, const QModelIndex& parent = QModelIndex()) const override;
     QModelIndex parent(const QModelIndex& index) const override;
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
@@ -127,9 +125,9 @@ public:
 
 private:
     void build_subtree(PortfolioTreeNode* parent_node,
-        const std::vector<refdata::domain::portfolio>& portfolios,
-        const std::vector<refdata::domain::book>& books,
-        const std::optional<boost::uuids::uuid>& parent_id);
+                       const std::vector<refdata::domain::portfolio>& portfolios,
+                       const std::vector<refdata::domain::book>& books,
+                       const std::optional<boost::uuids::uuid>& parent_id);
 
     QModelIndex find_book_index(const boost::uuids::uuid& id) const;
     std::uint32_t subtree_count(const PortfolioTreeNode* node) const;

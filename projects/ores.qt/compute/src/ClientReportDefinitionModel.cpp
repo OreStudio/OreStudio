@@ -18,47 +18,54 @@
  *
  */
 #include "ores.qt/ClientReportDefinitionModel.hpp"
-
-#include <QtConcurrent>
-#include <QColor>
-#include <QFont>
-#include <boost/uuid/uuid_io.hpp>
-#include "ores.platform/time/datetime.hpp"
 #include "ores.dq.api/messaging/fsm_protocol.hpp"
-#include "ores.reporting.api/messaging/report_definition_protocol.hpp"
-#include "ores.scheduler.api/domain/cron_expression.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
+#include "ores.reporting.api/messaging/report_definition_protocol.hpp"
+#include "ores.scheduler.api/domain/cron_expression.hpp"
+#include <QColor>
+#include <QFont>
+#include <QtConcurrent>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    std::string report_definition_key_extractor(const reporting::domain::report_definition& e) {
-        return e.name;
-    }
+std::string report_definition_key_extractor(const reporting::domain::report_definition& e) {
+    return e.name;
+}
 }
 
-ClientReportDefinitionModel::ClientReportDefinitionModel(
-    ClientManager* clientManager, QObject* parent)
-    : AbstractClientModel(parent),
-      clientManager_(clientManager),
-      watcher_(new QFutureWatcher<FetchResult>(this)),
-      fsm_watcher_(new QFutureWatcher<FsmStateFetchResult>(this)),
-      recencyTracker_(report_definition_key_extractor),
-      pulseManager_(new RecencyPulseManager(this)) {
+ClientReportDefinitionModel::ClientReportDefinitionModel(ClientManager* clientManager,
+                                                         QObject* parent)
+    : AbstractClientModel(parent)
+    , clientManager_(clientManager)
+    , watcher_(new QFutureWatcher<FetchResult>(this))
+    , fsm_watcher_(new QFutureWatcher<FsmStateFetchResult>(this))
+    , recencyTracker_(report_definition_key_extractor)
+    , pulseManager_(new RecencyPulseManager(this)) {
 
-    connect(watcher_, &QFutureWatcher<FetchResult>::finished,
-            this, &ClientReportDefinitionModel::onDefinitionsLoaded);
-    connect(fsm_watcher_, &QFutureWatcher<FsmStateFetchResult>::finished,
-            this, &ClientReportDefinitionModel::onFsmStatesLoaded);
+    connect(watcher_,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            &ClientReportDefinitionModel::onDefinitionsLoaded);
+    connect(fsm_watcher_,
+            &QFutureWatcher<FsmStateFetchResult>::finished,
+            this,
+            &ClientReportDefinitionModel::onFsmStatesLoaded);
 
-    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
-            this, &ClientReportDefinitionModel::onPulseStateChanged);
-    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
-            this, &ClientReportDefinitionModel::onPulsingComplete);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulse_state_changed,
+            this,
+            &ClientReportDefinitionModel::onPulseStateChanged);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulsing_complete,
+            this,
+            &ClientReportDefinitionModel::onPulsingComplete);
 }
 
 int ClientReportDefinitionModel::rowCount(const QModelIndex& parent) const {
@@ -73,8 +80,7 @@ int ClientReportDefinitionModel::columnCount(const QModelIndex& parent) const {
     return ColumnCount;
 }
 
-QVariant ClientReportDefinitionModel::data(
-    const QModelIndex& index, int role) const {
+QVariant ClientReportDefinitionModel::data(const QModelIndex& index, int role) const {
     if (!index.isValid())
         return {};
 
@@ -84,45 +90,44 @@ QVariant ClientReportDefinitionModel::data(
 
     const auto& definition = definitions_[row];
 
-    const auto def_ws_id = QString::fromStdString(
-        boost::uuids::to_string(definition.workspace_id));
-    const bool is_local = workspaceContext().is_live() ||
-                          (def_ws_id == workspaceContext().id);
+    const auto def_ws_id = QString::fromStdString(boost::uuids::to_string(definition.workspace_id));
+    const bool is_local = workspaceContext().is_live() || (def_ws_id == workspaceContext().id);
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-        case Name:
-            return QString::fromStdString(definition.name);
-        case Source:
-            if (workspaceContext().is_live())
+            case Name:
+                return QString::fromStdString(definition.name);
+            case Source:
+                if (workspaceContext().is_live())
+                    return {};
+                return is_local ? tr("Local") : tr("Inherited");
+            case ReportType:
+                return QString::fromStdString(definition.report_type);
+            case ScheduleExpression:
+                return QString::fromStdString(definition.schedule_expression);
+            case ConcurrencyPolicy:
+                return QString::fromStdString(definition.concurrency_policy);
+            case Status:
+                return resolve_fsm_state_name(definition.fsm_state_id);
+            case NextFire: {
+                if (!definition.scheduler_job_id.has_value() ||
+                    definition.schedule_expression.empty())
+                    return tr("—");
+                auto expr =
+                    scheduler::domain::cron_expression::from_string(definition.schedule_expression);
+                if (!expr)
+                    return tr("—");
+                const auto tp = expr->next_occurrence();
+                return QString::fromStdString(platform::time::datetime::to_iso8601_utc(tp));
+            }
+            case Version:
+                return static_cast<qlonglong>(definition.version);
+            case ModifiedBy:
+                return QString::fromStdString(definition.modified_by);
+            case RecordedAt:
+                return relative_time_helper::format(definition.recorded_at);
+            default:
                 return {};
-            return is_local ? tr("Local") : tr("Inherited");
-        case ReportType:
-            return QString::fromStdString(definition.report_type);
-        case ScheduleExpression:
-            return QString::fromStdString(definition.schedule_expression);
-        case ConcurrencyPolicy:
-            return QString::fromStdString(definition.concurrency_policy);
-        case Status:
-            return resolve_fsm_state_name(definition.fsm_state_id);
-        case NextFire: {
-            if (!definition.scheduler_job_id.has_value() || definition.schedule_expression.empty())
-                return tr("—");
-            auto expr = scheduler::domain::cron_expression::from_string(definition.schedule_expression);
-            if (!expr)
-                return tr("—");
-            const auto tp = expr->next_occurrence();
-            return QString::fromStdString(
-                platform::time::datetime::to_iso8601_utc(tp));
-        }
-        case Version:
-            return static_cast<qlonglong>(definition.version);
-        case ModifiedBy:
-            return QString::fromStdString(definition.modified_by);
-        case RecordedAt:
-            return relative_time_helper::format(definition.recorded_at);
-        default:
-            return {};
         }
     }
 
@@ -135,41 +140,41 @@ QVariant ClientReportDefinitionModel::data(
 
     if (role == Qt::ForegroundRole) {
         if (!workspaceContext().is_live() && !is_local)
-            return QColor(0x9C, 0xA3, 0xAF);  // dimmed gray for inherited rows
+            return QColor(0x9C, 0xA3, 0xAF); // dimmed gray for inherited rows
         return recency_foreground_color(definition.name);
     }
 
     return {};
 }
 
-QVariant ClientReportDefinitionModel::headerData(
-    int section, Qt::Orientation orientation, int role) const {
+QVariant
+ClientReportDefinitionModel::headerData(int section, Qt::Orientation orientation, int role) const {
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return {};
 
     switch (section) {
-    case Name:
-        return tr("Name");
-    case Source:
-        return tr("Source");
-    case ReportType:
-        return tr("Type");
-    case ScheduleExpression:
-        return tr("Schedule");
-    case ConcurrencyPolicy:
-        return tr("Concurrency");
-    case Status:
-        return tr("Status");
-    case NextFire:
-        return tr("Next Fire (UTC)");
-    case Version:
-        return tr("Version");
-    case ModifiedBy:
-        return tr("Modified By");
-    case RecordedAt:
-        return tr("Recorded At");
-    default:
-        return {};
+        case Name:
+            return tr("Name");
+        case Source:
+            return tr("Source");
+        case ReportType:
+            return tr("Type");
+        case ScheduleExpression:
+            return tr("Schedule");
+        case ConcurrencyPolicy:
+            return tr("Concurrency");
+        case Status:
+            return tr("Status");
+        case NextFire:
+            return tr("Next Fire (UTC)");
+        case Version:
+            return tr("Version");
+        case ModifiedBy:
+            return tr("Modified By");
+        case RecordedAt:
+            return tr("Recorded At");
+        default:
+            return {};
     }
 }
 
@@ -199,8 +204,7 @@ void ClientReportDefinitionModel::refresh() {
     fetch_definitions(0, page_size_);
 }
 
-void ClientReportDefinitionModel::load_page(std::uint32_t offset,
-                                          std::uint32_t limit) {
+void ClientReportDefinitionModel::load_page(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "load_page: offset=" << offset << ", limit=" << limit;
 
     if (is_fetching_) {
@@ -224,18 +228,19 @@ void ClientReportDefinitionModel::load_page(std::uint32_t offset,
     fetch_definitions(offset, limit);
 }
 
-void ClientReportDefinitionModel::fetch_definitions(
-    std::uint32_t offset, std::uint32_t limit) {
+void ClientReportDefinitionModel::fetch_definitions(std::uint32_t offset, std::uint32_t limit) {
     is_fetching_ = true;
     QPointer<ClientReportDefinitionModel> self = this;
 
-    QFuture<FetchResult> future =
-        QtConcurrent::run([self, offset, limit]() -> FetchResult {
-            return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
-                BOOST_LOG_SEV(lg(), debug) << "Making report definitions request with offset="
-                                           << offset << ", limit=" << limit;
+    QFuture<FetchResult> future = QtConcurrent::run([self, offset, limit]() -> FetchResult {
+        return exception_helper::wrap_async_fetch<FetchResult>(
+            [&]() -> FetchResult {
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Making report definitions request with offset=" << offset
+                    << ", limit=" << limit;
                 if (!self || !self->clientManager_) {
-                    return {.success = false, .definitions = {},
+                    return {.success = false,
+                            .definitions = {},
                             .total_available_count = 0,
                             .error_message = "Model was destroyed",
                             .error_details = {}};
@@ -243,30 +248,31 @@ void ClientReportDefinitionModel::fetch_definitions(
 
                 reporting::messaging::get_report_definitions_request request;
 
-                auto result = self->clientManager_->
-                    process_authenticated_request(
-                        std::move(request), self->workspaceContext());
+                auto result = self->clientManager_->process_authenticated_request(
+                    std::move(request), self->workspaceContext());
 
                 if (!result) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to fetch report definitions: "
-                                               << result.error();
-                    return {.success = false, .definitions = {},
+                    BOOST_LOG_SEV(lg(), error)
+                        << "Failed to fetch report definitions: " << result.error();
+                    return {.success = false,
+                            .definitions = {},
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(
                                 "Failed to fetch report definitions: " + result.error()),
                             .error_details = {}};
                 }
 
-                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->definitions.size()
-                                           << " report definitions";
-                const std::uint32_t count =
-                    static_cast<std::uint32_t>(result->definitions.size());
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Fetched " << result->definitions.size() << " report definitions";
+                const std::uint32_t count = static_cast<std::uint32_t>(result->definitions.size());
                 return {.success = true,
                         .definitions = std::move(result->definitions),
                         .total_available_count = count,
-                        .error_message = {}, .error_details = {}};
-            }, "report definitions");
-        });
+                        .error_message = {},
+                        .error_details = {}};
+            },
+            "report definitions");
+    });
 
     watcher_->setFuture(future);
 }
@@ -277,8 +283,8 @@ void ClientReportDefinitionModel::onDefinitionsLoaded() {
     const auto result = watcher_->result();
 
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to fetch report definitions: "
-                                   << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to fetch report definitions: " << result.error_message.toStdString();
         emit loadError(result.error_message, result.error_details);
         return;
     }
@@ -325,8 +331,7 @@ ClientReportDefinitionModel::getDefinition(int row) const {
     return &definitions_[idx];
 }
 
-QVariant ClientReportDefinitionModel::recency_foreground_color(
-    const std::string& code) const {
+QVariant ClientReportDefinitionModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {
         return color_constants::stale_indicator;
     }
@@ -335,8 +340,8 @@ QVariant ClientReportDefinitionModel::recency_foreground_color(
 
 void ClientReportDefinitionModel::onPulseStateChanged(bool /*isOn*/) {
     if (!definitions_.empty()) {
-        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
-            {Qt::ForegroundRole});
+        emit dataChanged(
+            index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::ForegroundRole});
     }
 }
 
@@ -350,26 +355,23 @@ void ClientReportDefinitionModel::load_fsm_states() {
         return;
 
     QPointer<ClientReportDefinitionModel> self = this;
-    QFuture<FsmStateFetchResult> future =
-        QtConcurrent::run([self]() -> FsmStateFetchResult {
-            if (!self || !self->clientManager_)
-                return {false, {}};
+    QFuture<FsmStateFetchResult> future = QtConcurrent::run([self]() -> FsmStateFetchResult {
+        if (!self || !self->clientManager_)
+            return {false, {}};
 
-            dq::messaging::get_fsm_states_request request;
-            request.machine_name = "report_definition_lifecycle";
-            auto result = self->clientManager_->process_authenticated_request(
-                std::move(request));
-            if (!result || !result->success)
-                return {false, {}};
+        dq::messaging::get_fsm_states_request request;
+        request.machine_name = "report_definition_lifecycle";
+        auto result = self->clientManager_->process_authenticated_request(std::move(request));
+        if (!result || !result->success)
+            return {false, {}};
 
-            QHash<QString, QString> map;
-            for (const auto& s : result->states) {
-                const auto id = QString::fromStdString(
-                    boost::uuids::to_string(s.id));
-                map[id] = QString::fromStdString(s.name);
-            }
-            return {true, std::move(map)};
-        });
+        QHash<QString, QString> map;
+        for (const auto& s : result->states) {
+            const auto id = QString::fromStdString(boost::uuids::to_string(s.id));
+            map[id] = QString::fromStdString(s.name);
+        }
+        return {true, std::move(map)};
+    });
     fsm_watcher_->setFuture(future);
 }
 
@@ -385,8 +387,8 @@ void ClientReportDefinitionModel::onFsmStatesLoaded() {
     // Refresh Status column display if definitions are already loaded
     if (!definitions_.empty()) {
         const auto status_col = static_cast<int>(Status);
-        emit dataChanged(index(0, status_col),
-            index(rowCount() - 1, status_col), {Qt::DisplayRole});
+        emit dataChanged(
+            index(0, status_col), index(rowCount() - 1, status_col), {Qt::DisplayRole});
     }
 }
 
@@ -394,8 +396,7 @@ QString ClientReportDefinitionModel::resolve_fsm_state_name(
     const std::optional<boost::uuids::uuid>& state_id) const {
     if (!state_id)
         return tr("Draft");
-    const auto key = QString::fromStdString(
-        boost::uuids::to_string(*state_id));
+    const auto key = QString::fromStdString(boost::uuids::to_string(*state_id));
     if (const auto it = fsm_state_map_.find(key); it != fsm_state_map_.end()) {
         const auto& name = it.value();
         return name.left(1).toUpper() + name.mid(1);

@@ -18,46 +18,44 @@
  *
  */
 #include "ores.qt/TenantMdiWindow.hpp"
-
-#include <QVBoxLayout>
+#include "ores.iam.api/messaging/reset_protocol.hpp"
+#include "ores.iam.api/messaging/tenant_protocol.hpp"
+#include "ores.qt/BadgeCache.hpp"
+#include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/EntityItemDelegate.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/WidgetUtils.hpp"
+#include <QFutureWatcher>
 #include <QHeaderView>
 #include <QMessageBox>
+#include <QVBoxLayout>
 #include <QtConcurrent>
-#include <QFutureWatcher>
 #include <boost/uuid/uuid_io.hpp>
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/BadgeCache.hpp"
-#include "ores.qt/EntityItemDelegate.hpp"
-#include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/ColorConstants.hpp"
-#include "ores.qt/WidgetUtils.hpp"
-#include "ores.iam.api/messaging/tenant_protocol.hpp"
-#include "ores.iam.api/messaging/reset_protocol.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-TenantMdiWindow::TenantMdiWindow(
-    ClientManager* clientManager,
-    const QString& username,
-    BadgeCache* badgeCache,
-    QWidget* parent)
-    : EntityListMdiWindow(parent),
-      clientManager_(clientManager),
-      username_(username),
-      badgeCache_(badgeCache),
-      toolbar_(nullptr),
-      tableView_(nullptr),
-      model_(nullptr),
-      proxyModel_(nullptr),
-      reloadAction_(nullptr),
-      addAction_(nullptr),
-      onboardAction_(nullptr),
-      editAction_(nullptr),
-      deleteAction_(nullptr),
-      resetAction_(nullptr),
-      historyAction_(nullptr) {
+TenantMdiWindow::TenantMdiWindow(ClientManager* clientManager,
+                                 const QString& username,
+                                 BadgeCache* badgeCache,
+                                 QWidget* parent)
+    : EntityListMdiWindow(parent)
+    , clientManager_(clientManager)
+    , username_(username)
+    , badgeCache_(badgeCache)
+    , toolbar_(nullptr)
+    , tableView_(nullptr)
+    , model_(nullptr)
+    , proxyModel_(nullptr)
+    , reloadAction_(nullptr)
+    , addAction_(nullptr)
+    , onboardAction_(nullptr)
+    , editAction_(nullptr)
+    , deleteAction_(nullptr)
+    , resetAction_(nullptr)
+    , historyAction_(nullptr) {
 
     setupUi();
     setupConnections();
@@ -85,68 +83,48 @@ void TenantMdiWindow::setupToolbar() {
     toolbar_->setIconSize(QSize(20, 20));
 
     reloadAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::ArrowClockwise, IconUtils::DefaultIconColor),
+        IconUtils::createRecoloredIcon(Icon::ArrowClockwise, IconUtils::DefaultIconColor),
         tr("Reload"));
-    connect(reloadAction_, &QAction::triggered, this,
-            &EntityListMdiWindow::reload);
+    connect(reloadAction_, &QAction::triggered, this, &EntityListMdiWindow::reload);
 
     initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowClockwise));
 
     toolbar_->addSeparator();
 
     addAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::Add, IconUtils::DefaultIconColor),
-        tr("Add"));
+        IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor), tr("Add"));
     addAction_->setToolTip(tr("Add new tenant"));
-    connect(addAction_, &QAction::triggered, this,
-            &TenantMdiWindow::addNew);
+    connect(addAction_, &QAction::triggered, this, &TenantMdiWindow::addNew);
 
     onboardAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::BuildingSkyscraper, IconUtils::DefaultIconColor),
+        IconUtils::createRecoloredIcon(Icon::BuildingSkyscraper, IconUtils::DefaultIconColor),
         tr("Onboard"));
     onboardAction_->setToolTip(tr("Provision a new evaluation tenant"));
-    connect(onboardAction_, &QAction::triggered, this, [this]() {
-        emit onboardRequested();
-    });
+    connect(onboardAction_, &QAction::triggered, this, [this]() { emit onboardRequested(); });
 
     editAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::Edit, IconUtils::DefaultIconColor),
-        tr("Edit"));
+        IconUtils::createRecoloredIcon(Icon::Edit, IconUtils::DefaultIconColor), tr("Edit"));
     editAction_->setToolTip(tr("Edit selected tenant"));
     editAction_->setEnabled(false);
-    connect(editAction_, &QAction::triggered, this,
-            &TenantMdiWindow::editSelected);
+    connect(editAction_, &QAction::triggered, this, &TenantMdiWindow::editSelected);
 
     deleteAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::Delete, IconUtils::DefaultIconColor),
-        tr("Delete"));
+        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor), tr("Delete"));
     deleteAction_->setToolTip(tr("Delete selected tenant"));
     deleteAction_->setEnabled(false);
-    connect(deleteAction_, &QAction::triggered, this,
-            &TenantMdiWindow::deleteSelected);
+    connect(deleteAction_, &QAction::triggered, this, &TenantMdiWindow::deleteSelected);
 
     resetAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::Warning, IconUtils::DefaultIconColor),
-        tr("Reset"));
+        IconUtils::createRecoloredIcon(Icon::Warning, IconUtils::DefaultIconColor), tr("Reset"));
     resetAction_->setToolTip(tr("Reset tenant to bootstrap state"));
     resetAction_->setEnabled(false);
-    connect(resetAction_, &QAction::triggered, this,
-            &TenantMdiWindow::resetSelected);
+    connect(resetAction_, &QAction::triggered, this, &TenantMdiWindow::resetSelected);
 
     historyAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::History, IconUtils::DefaultIconColor),
-        tr("History"));
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor), tr("History"));
     historyAction_->setToolTip(tr("View tenant history"));
     historyAction_->setEnabled(false);
-    connect(historyAction_, &QAction::triggered, this,
-            &TenantMdiWindow::viewHistorySelected);
+    connect(historyAction_, &QAction::triggered, this, &TenantMdiWindow::viewHistorySelected);
 }
 
 void TenantMdiWindow::setupTable() {
@@ -161,47 +139,51 @@ void TenantMdiWindow::setupTable() {
     tableView_->setSelectionMode(QAbstractItemView::SingleSelection);
     tableView_->setSortingEnabled(true);
 
-    auto* delegate = new EntityItemDelegate(
-        ClientTenantModel::columnStyles(), tableView_);
-    delegate->set_badge_color_resolver(ClientTenantModel::Status,
-        [cache = badgeCache_](const QString& value) -> badge_color_pair {
-            static const badge_color_pair fallback{
-                color_constants::badge_fallback,
-                color_constants::badge_fallback_text};
-            if (!cache) return fallback;
+    auto* delegate = new EntityItemDelegate(ClientTenantModel::columnStyles(), tableView_);
+    delegate->set_badge_color_resolver(
+        ClientTenantModel::Status, [cache = badgeCache_](const QString& value) -> badge_color_pair {
+            static const badge_color_pair fallback{color_constants::badge_fallback,
+                                                   color_constants::badge_fallback_text};
+            if (!cache)
+                return fallback;
             auto* def = cache->resolve("tenant_status", value.toStdString());
-            if (!def) return fallback;
+            if (!def)
+                return fallback;
             return {QColor(QString::fromStdString(def->background_colour)),
                     QColor(QString::fromStdString(def->text_colour))};
         });
     tableView_->setItemDelegate(delegate);
 
     if (badgeCache_ && !badgeCache_->isLoaded()) {
-        connect(badgeCache_, &BadgeCache::loaded, tableView_->viewport(),
-                [tv = tableView_]() { tv->viewport()->update(); },
-                Qt::SingleShotConnection);
+        connect(
+            badgeCache_,
+            &BadgeCache::loaded,
+            tableView_->viewport(),
+            [tv = tableView_]() { tv->viewport()->update(); },
+            Qt::SingleShotConnection);
     }
 
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
 
-    initializeTableSettings(tableView_, model_,
-        ClientTenantModel::kSettingsGroup,
-        ClientTenantModel::defaultHiddenColumns(),
-        ClientTenantModel::kDefaultWindowSize, 1);
+    initializeTableSettings(tableView_,
+                            model_,
+                            ClientTenantModel::kSettingsGroup,
+                            ClientTenantModel::defaultHiddenColumns(),
+                            ClientTenantModel::kDefaultWindowSize,
+                            1);
 }
 
 void TenantMdiWindow::setupConnections() {
-    connect(model_, &ClientTenantModel::dataLoaded,
-            this, &TenantMdiWindow::onDataLoaded);
-    connect(model_, &ClientTenantModel::loadError,
-            this, &TenantMdiWindow::onLoadError);
+    connect(model_, &ClientTenantModel::dataLoaded, this, &TenantMdiWindow::onDataLoaded);
+    connect(model_, &ClientTenantModel::loadError, this, &TenantMdiWindow::onLoadError);
     connectModel(model_);
 
-    connect(tableView_->selectionModel(), &QItemSelectionModel::selectionChanged,
-            this, &TenantMdiWindow::onSelectionChanged);
-    connect(tableView_, &QTableView::doubleClicked,
-            this, &TenantMdiWindow::onDoubleClicked);
+    connect(tableView_->selectionModel(),
+            &QItemSelectionModel::selectionChanged,
+            this,
+            &TenantMdiWindow::onSelectionChanged);
+    connect(tableView_, &QTableView::doubleClicked, this, &TenantMdiWindow::onDoubleClicked);
 }
 
 void TenantMdiWindow::doReload() {
@@ -214,8 +196,7 @@ void TenantMdiWindow::onDataLoaded() {
     emit statusChanged(tr("Loaded %1 tenants").arg(model_->rowCount()));
 }
 
-void TenantMdiWindow::onLoadError(const QString& error_message,
-                                          const QString& details) {
+void TenantMdiWindow::onLoadError(const QString& error_message, const QString& details) {
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);
@@ -270,8 +251,7 @@ void TenantMdiWindow::viewHistorySelected() {
 
     auto sourceIndex = proxyModel_->mapToSource(selected.first());
     if (auto* tenant = model_->getTenant(sourceIndex.row())) {
-        BOOST_LOG_SEV(lg(), debug) << "Emitting showTenantHistory for code: "
-                                   << tenant->code;
+        BOOST_LOG_SEV(lg(), debug) << "Emitting showTenantHistory for code: " << tenant->code;
         emit showTenantHistory(*tenant);
     }
 }
@@ -284,13 +264,12 @@ void TenantMdiWindow::deleteSelected() {
     }
 
     if (!clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot delete tenant while disconnected.");
+        MessageBoxHelper::warning(this, "Disconnected", "Cannot delete tenant while disconnected.");
         return;
     }
 
     std::vector<boost::uuids::uuid> ids;
-    std::vector<std::string> codes;  // For display purposes
+    std::vector<std::string> codes; // For display purposes
     for (const auto& index : selected) {
         auto sourceIndex = proxyModel_->mapToSource(index);
         if (auto* tenant = model_->getTenant(sourceIndex.row())) {
@@ -304,20 +283,18 @@ void TenantMdiWindow::deleteSelected() {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Delete requested for " << ids.size()
-                               << " tenants";
+    BOOST_LOG_SEV(lg(), debug) << "Delete requested for " << ids.size() << " tenants";
 
     QString confirmMessage;
     if (ids.size() == 1) {
         confirmMessage = QString("Are you sure you want to delete tenant '%1'?")
-            .arg(QString::fromStdString(codes.front()));
+                             .arg(QString::fromStdString(codes.front()));
     } else {
-        confirmMessage = QString("Are you sure you want to delete %1 tenants?")
-            .arg(ids.size());
+        confirmMessage = QString("Are you sure you want to delete %1 tenants?").arg(ids.size());
     }
 
-    auto reply = MessageBoxHelper::question(this, "Delete Tenant",
-        confirmMessage, QMessageBox::Yes | QMessageBox::No);
+    auto reply = MessageBoxHelper::question(
+        this, "Delete Tenant", confirmMessage, QMessageBox::Yes | QMessageBox::No);
 
     if (reply != QMessageBox::Yes) {
         BOOST_LOG_SEV(lg(), debug) << "Delete cancelled by user";
@@ -325,20 +302,23 @@ void TenantMdiWindow::deleteSelected() {
     }
 
     QPointer<TenantMdiWindow> self = this;
-    using DeleteResult = std::vector<std::tuple<boost::uuids::uuid, std::string, bool, std::string>>;
+    using DeleteResult =
+        std::vector<std::tuple<boost::uuids::uuid, std::string, bool, std::string>>;
 
     auto task = [self, ids, codes]() -> DeleteResult {
         DeleteResult results;
-        if (!self) return {};
+        if (!self)
+            return {};
 
-        BOOST_LOG_SEV(lg(), debug) << "Making batch delete request for "
-                                   << ids.size() << " tenants";
+        BOOST_LOG_SEV(lg(), debug)
+            << "Making batch delete request for " << ids.size() << " tenants";
 
         iam::messaging::delete_tenant_request request;
         for (const auto& id : ids) {
             request.ids.push_back(boost::uuids::to_string(id));
         }
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             BOOST_LOG_SEV(lg(), error) << "Failed to send batch delete request";
@@ -357,15 +337,15 @@ void TenantMdiWindow::deleteSelected() {
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, watcher]() {
         DeleteResult results;
         try {
             results = watcher->result();
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), error) << "tenant delete task threw: " << e.what();
             watcher->deleteLater();
-            if (!self) return;
+            if (!self)
+                return;
             auto msg = QString("Unexpected error during tenant deletion: %1").arg(e.what());
             emit self->errorOccurred(msg);
             MessageBoxHelper::critical(self, "Delete Failed", msg);
@@ -383,8 +363,8 @@ void TenantMdiWindow::deleteSelected() {
                 success_count++;
                 emit self->tenantDeleted(QString::fromStdString(code));
             } else {
-                BOOST_LOG_SEV(lg(), error) << "Tenant deletion failed: "
-                                           << code << " - " << message;
+                BOOST_LOG_SEV(lg(), error)
+                    << "Tenant deletion failed: " << code << " - " << message;
                 failure_count++;
                 if (first_error.isEmpty()) {
                     first_error = QString::fromStdString(message);
@@ -395,21 +375,20 @@ void TenantMdiWindow::deleteSelected() {
         self->model_->refresh();
 
         if (failure_count == 0) {
-            QString msg = success_count == 1
-                ? "Successfully deleted 1 tenant"
-                : QString("Successfully deleted %1 tenants").arg(success_count);
+            QString msg = success_count == 1 ?
+                              "Successfully deleted 1 tenant" :
+                              QString("Successfully deleted %1 tenants").arg(success_count);
             emit self->statusChanged(msg);
         } else if (success_count == 0) {
             QString msg = QString("Failed to delete %1 %2: %3")
-                .arg(failure_count)
-                .arg(failure_count == 1 ? "tenant" : "tenants")
-                .arg(first_error);
+                              .arg(failure_count)
+                              .arg(failure_count == 1 ? "tenant" : "tenants")
+                              .arg(first_error);
             emit self->errorOccurred(msg);
             MessageBoxHelper::critical(self, "Delete Failed", msg);
         } else {
-            QString msg = QString("Deleted %1, failed to delete %2")
-                .arg(success_count)
-                .arg(failure_count);
+            QString msg =
+                QString("Deleted %1, failed to delete %2").arg(success_count).arg(failure_count);
             emit self->statusChanged(msg);
             MessageBoxHelper::warning(self, "Partial Success", msg);
         }
@@ -427,8 +406,7 @@ void TenantMdiWindow::resetSelected() {
     }
 
     if (!clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot reset tenant while disconnected.");
+        MessageBoxHelper::warning(this, "Disconnected", "Cannot reset tenant while disconnected.");
         return;
     }
 
@@ -442,16 +420,17 @@ void TenantMdiWindow::resetSelected() {
     const std::string code = tenant->code;
     const QString qcode = QString::fromStdString(code);
 
-    const QString confirmMessage = QString(
-        "Reset tenant '%1' to bootstrap state?\n\n"
-        "This will:\n"
-        "  • Soft-delete all admin-created parties and accounts\n"
-        "  • Re-enable bootstrap mode so provisioning wizards re-fire on next login\n\n"
-        "System-seeded data (roles, permissions, tenant type) is preserved.\n"
-        "This action cannot be undone.").arg(qcode);
+    const QString confirmMessage =
+        QString("Reset tenant '%1' to bootstrap state?\n\n"
+                "This will:\n"
+                "  • Soft-delete all admin-created parties and accounts\n"
+                "  • Re-enable bootstrap mode so provisioning wizards re-fire on next login\n\n"
+                "System-seeded data (roles, permissions, tenant type) is preserved.\n"
+                "This action cannot be undone.")
+            .arg(qcode);
 
-    auto reply = MessageBoxHelper::question(this, "Reset Tenant",
-        confirmMessage, QMessageBox::Yes | QMessageBox::No);
+    auto reply = MessageBoxHelper::question(
+        this, "Reset Tenant", confirmMessage, QMessageBox::Yes | QMessageBox::No);
     if (reply != QMessageBox::Yes) {
         BOOST_LOG_SEV(lg(), debug) << "Reset cancelled by user";
         return;
@@ -461,20 +440,19 @@ void TenantMdiWindow::resetSelected() {
     using ResetResult = std::pair<bool, std::string>;
 
     auto task = [self, code]() -> ResetResult {
-        if (!self) return {false, "Window closed"};
+        if (!self)
+            return {false, "Window closed"};
         BOOST_LOG_SEV(lg(), debug) << "Sending reset-tenant request for: " << code;
         iam::messaging::reset_tenant_command request;
         request.tenant_code = code;
-        auto result = self->clientManager_->process_authenticated_request(
-            std::move(request));
+        auto result = self->clientManager_->process_authenticated_request(std::move(request));
         if (!result)
             return {false, "Failed to communicate with server"};
         return {result->success, result->message};
     };
 
     auto* watcher = new QFutureWatcher<ResetResult>(self);
-    connect(watcher, &QFutureWatcher<ResetResult>::finished,
-            self, [self, watcher, qcode]() {
+    connect(watcher, &QFutureWatcher<ResetResult>::finished, self, [self, watcher, qcode]() {
         ResetResult res;
         try {
             res = watcher->result();
@@ -488,10 +466,11 @@ void TenantMdiWindow::resetSelected() {
         if (success) {
             BOOST_LOG_SEV(lg(), info) << "Tenant reset: " << qcode.toStdString();
             emit self->tenantReset(qcode);
-            emit self->statusChanged(
-                QString("Tenant '%1' reset to bootstrap state").arg(qcode));
+            emit self->statusChanged(QString("Tenant '%1' reset to bootstrap state").arg(qcode));
             self->model_->refresh();
-            MessageBoxHelper::information(self, "Reset Complete",
+            MessageBoxHelper::information(
+                self,
+                "Reset Complete",
                 QString("Tenant '%1' has been reset to bootstrap state.\n\n"
                         "Provisioning wizards will re-fire on next login.")
                     .arg(qcode));

@@ -19,10 +19,10 @@
 #ifndef ORES_QT_WORKSPACE_CONTEXT_HPP
 #define ORES_QT_WORKSPACE_CONTEXT_HPP
 
-#include <QVector>
-#include <QString>
-#include <QMetaType>
 #include "ores.qt/export.hpp"
+#include <QMetaType>
+#include <QString>
+#include <QVector>
 
 namespace ores::qt {
 
@@ -44,7 +44,9 @@ struct ORES_QT_API WorkspaceContext {
     QString name = QStringLiteral("Live");
     QVector<QString> resolution_order = {live_workspace_id};
 
-    bool is_live() const { return id == live_workspace_id; }
+    bool is_live() const {
+        return id == live_workspace_id;
+    }
 };
 
 }

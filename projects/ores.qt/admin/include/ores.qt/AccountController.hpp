@@ -20,17 +20,21 @@
 #ifndef ORES_QT_ACCOUNT_CONTROLLER_HPP
 #define ORES_QT_ACCOUNT_CONTROLLER_HPP
 
-#include <optional>
-#include <QPointer>
-#include <QDateTime>
-#include <boost/uuid/uuid.hpp>
-#include "ores.qt/EntityController.hpp"
-#include "ores.qt/ClientAccountModel.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.iam.api/domain/account.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientAccountModel.hpp"
+#include "ores.qt/EntityController.hpp"
+#include <QDateTime>
+#include <QPointer>
+#include <boost/uuid/uuid.hpp>
+#include <optional>
 
-namespace ores::qt { class ChangeReasonCache; }
-namespace ores::qt { class BadgeCache; }
+namespace ores::qt {
+class ChangeReasonCache;
+}
+namespace ores::qt {
+class BadgeCache;
+}
 
 namespace ores::qt {
 
@@ -57,8 +61,7 @@ class AccountController : public EntityController {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.account_controller";
+    inline static std::string_view logger_name = "ores.qt.account_controller";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -76,14 +79,13 @@ public:
      * @param username Username of logged-in user (for audit trails)
      * @param parent QObject parent (for Qt ownership)
      */
-    explicit AccountController(
-        QMainWindow* mainWindow,
-        QMdiArea* mdiArea,
-        ClientManager* clientManager,
-        const QString& username,
-        ChangeReasonCache* changeReasonCache = nullptr,
-        BadgeCache* badgeCache = nullptr,
-        QObject* parent = nullptr);
+    explicit AccountController(QMainWindow* mainWindow,
+                               QMdiArea* mdiArea,
+                               ClientManager* clientManager,
+                               const QString& username,
+                               ChangeReasonCache* changeReasonCache = nullptr,
+                               BadgeCache* badgeCache = nullptr,
+                               QObject* parent = nullptr);
 
     /**
      * @brief Destroys the account controller.
@@ -154,8 +156,7 @@ private slots:
      * @param accountId The account UUID
      * @param username The username of the account
      */
-    void onShowSessionHistory(const boost::uuids::uuid& accountId,
-                              const QString& username);
+    void onShowSessionHistory(const boost::uuids::uuid& accountId, const QString& username);
 
     /**
      * @brief Handles request to open a historical account version in read-only mode.
@@ -188,8 +189,10 @@ private slots:
      * @param timestamp When the event occurred
      * @param entityIds Account IDs that changed (may be empty)
      */
-    void onNotificationReceived(const QString& eventType, const QDateTime& timestamp,
-                                const QStringList& entityIds, const QString& tenantId);
+    void onNotificationReceived(const QString& eventType,
+                                const QDateTime& timestamp,
+                                const QStringList& entityIds,
+                                const QString& tenantId);
 
 private:
     /**

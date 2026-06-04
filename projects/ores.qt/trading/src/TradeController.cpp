@@ -18,36 +18,35 @@
  *
  */
 #include "ores.qt/TradeController.hpp"
+#include "ores.eventing/domain/event_traits.hpp"
+#include "ores.ore.core/xml/importer.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
+#include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ImageCache.hpp"
-
-#include <optional>
-#include <filesystem>
+#include "ores.qt/ImportTradeDialog.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/TradeDetailDialog.hpp"
+#include "ores.qt/TradeHistoryDialog.hpp"
+#include "ores.qt/TradeMdiWindow.hpp"
+#include "ores.qt/UiPersistence.hpp"
+#include "ores.refdata.api/messaging/book_protocol.hpp"
+#include "ores.trading.api/eventing/trade_changed_event.hpp"
+#include <QComboBox>
+#include <QDialog>
+#include <QDialogButtonBox>
+#include <QFileDialog>
+#include <QFileInfo>
+#include <QFutureWatcher>
+#include <QLabel>
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
-#include <QFileDialog>
-#include <QFileInfo>
-#include <QDialog>
 #include <QVBoxLayout>
-#include <QLabel>
-#include <QComboBox>
-#include <QDialogButtonBox>
 #include <QtConcurrent>
-#include <QFutureWatcher>
 #include <boost/uuid/uuid_io.hpp>
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/TradeMdiWindow.hpp"
-#include "ores.ore.core/xml/importer.hpp"
-#include "ores.qt/TradeDetailDialog.hpp"
-#include "ores.qt/TradeHistoryDialog.hpp"
-#include "ores.qt/ImportTradeDialog.hpp"
-#include "ores.qt/DetachableMdiSubWindow.hpp"
-#include "ores.qt/UiPersistence.hpp"
-#include "ores.eventing/domain/event_traits.hpp"
-#include "ores.trading.api/eventing/trade_changed_event.hpp"
-#include "ores.refdata.api/messaging/book_protocol.hpp"
+#include <filesystem>
+#include <optional>
 
 namespace ores::qt {
 
@@ -58,20 +57,18 @@ constexpr std::string_view trade_event_name =
     eventing::domain::event_traits<trading::eventing::trade_changed_event>::name;
 }
 
-TradeController::TradeController(
-    QMainWindow* mainWindow,
-    QMdiArea* mdiArea,
-    ClientManager* clientManager,
-    ChangeReasonCache* changeReasonCache,
-    ImageCache* imageCache,
-    const QString& username,
-    QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username,
-          trade_event_name, parent),
-      changeReasonCache_(changeReasonCache),
-      imageCache_(imageCache),
-      listWindow_(nullptr),
-      listMdiSubWindow_(nullptr) {
+TradeController::TradeController(QMainWindow* mainWindow,
+                                 QMdiArea* mdiArea,
+                                 ClientManager* clientManager,
+                                 ChangeReasonCache* changeReasonCache,
+                                 ImageCache* imageCache,
+                                 const QString& username,
+                                 QObject* parent)
+    : EntityController(mainWindow, mdiArea, clientManager, username, trade_event_name, parent)
+    , changeReasonCache_(changeReasonCache)
+    , imageCache_(imageCache)
+    , listWindow_(nullptr)
+    , listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "TradeController created";
 }
@@ -89,25 +86,23 @@ void TradeController::showListWindow() {
     listWindow_ = new TradeMdiWindow(clientManager_, username_);
 
     // Connect signals
-    connect(listWindow_, &TradeMdiWindow::statusChanged,
-            this, &TradeController::statusMessage);
-    connect(listWindow_, &TradeMdiWindow::errorOccurred,
-            this, &TradeController::errorMessage);
-    connect(listWindow_, &TradeMdiWindow::showTradeDetails,
-            this, &TradeController::onShowDetails);
-    connect(listWindow_, &TradeMdiWindow::addNewRequested,
-            this, &TradeController::onAddNewRequested);
-    connect(listWindow_, &TradeMdiWindow::showTradeHistory,
-            this, &TradeController::onShowHistory);
-    connect(listWindow_, &TradeMdiWindow::importTradesRequested,
-            this, &TradeController::onImportTradesRequested);
+    connect(listWindow_, &TradeMdiWindow::statusChanged, this, &TradeController::statusMessage);
+    connect(listWindow_, &TradeMdiWindow::errorOccurred, this, &TradeController::errorMessage);
+    connect(listWindow_, &TradeMdiWindow::showTradeDetails, this, &TradeController::onShowDetails);
+    connect(
+        listWindow_, &TradeMdiWindow::addNewRequested, this, &TradeController::onAddNewRequested);
+    connect(listWindow_, &TradeMdiWindow::showTradeHistory, this, &TradeController::onShowHistory);
+    connect(listWindow_,
+            &TradeMdiWindow::importTradesRequested,
+            this,
+            &TradeController::onImportTradesRequested);
 
     // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Trades");
-    listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::DocumentTable, IconUtils::DefaultIconColor));
+    listMdiSubWindow_->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::DocumentTable, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -119,12 +114,16 @@ void TradeController::showListWindow() {
     register_detachable_window(listMdiSubWindow_);
 
     // Cleanup when closed
-    connect(listMdiSubWindow_, &QObject::destroyed, this, [self = QPointer<TradeController>(this), key]() {
-        if (!self) return;
-        self->untrack_window(key);
-        self->listWindow_ = nullptr;
-        self->listMdiSubWindow_ = nullptr;
-    });
+    connect(listMdiSubWindow_,
+            &QObject::destroyed,
+            this,
+            [self = QPointer<TradeController>(this), key]() {
+                if (!self)
+                    return;
+                self->untrack_window(key);
+                self->listWindow_ = nullptr;
+                self->listMdiSubWindow_ = nullptr;
+            });
 
     BOOST_LOG_SEV(lg(), debug) << "Trade list window created";
 }
@@ -170,8 +169,8 @@ void TradeController::onImportTradesRequested() {
     BOOST_LOG_SEV(lg(), debug) << "Import trades requested from trade window";
 
     if (!clientManager_->isConnected()) {
-        MessageBoxHelper::warning(mainWindow_, tr("Disconnected"),
-            tr("Cannot import trades while disconnected."));
+        MessageBoxHelper::warning(
+            mainWindow_, tr("Disconnected"), tr("Cannot import trades while disconnected."));
         return;
     }
 
@@ -179,13 +178,15 @@ void TradeController::onImportTradesRequested() {
     refdata::messaging::get_books_request booksReq;
     auto booksResult = clientManager_->process_authenticated_request(std::move(booksReq));
     if (!booksResult) {
-        MessageBoxHelper::critical(mainWindow_, tr("Error"),
-            tr("Failed to fetch books from server."));
+        MessageBoxHelper::critical(
+            mainWindow_, tr("Error"), tr("Failed to fetch books from server."));
         return;
     }
 
     if (booksResult->books.empty()) {
-        MessageBoxHelper::warning(mainWindow_, tr("No Books"),
+        MessageBoxHelper::warning(
+            mainWindow_,
+            tr("No Books"),
             tr("No books found. Please create a book before importing trades."));
         return;
     }
@@ -203,13 +204,11 @@ void TradeController::onImportTradesRequested() {
     auto* combo = new QComboBox(picker);
     for (const auto& b : books) {
         combo->addItem(QString::fromStdString(b.name),
-                       QVariant::fromValue(
-                           static_cast<int>(&b - &books[0])));
+                       QVariant::fromValue(static_cast<int>(&b - &books[0])));
     }
     layout->addWidget(combo);
 
-    auto* buttons = new QDialogButtonBox(
-        QDialogButtonBox::Ok | QDialogButtonBox::Cancel, picker);
+    auto* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, picker);
     connect(buttons, &QDialogButtonBox::accepted, picker, &QDialog::accept);
     connect(buttons, &QDialogButtonBox::rejected, picker, &QDialog::reject);
     layout->addWidget(buttons);
@@ -223,11 +222,11 @@ void TradeController::onImportTradesRequested() {
     const auto& selectedBook = books[static_cast<std::size_t>(bookIdx)];
 
     // Ask for ORE portfolio XML file
-    const QString fileName = QFileDialog::getOpenFileName(
-        mainWindow_,
-        tr("Select ORE Portfolio XML File to Import"),
-        QString(),
-        tr("ORE Portfolio Files (*.xml);;All Files (*)"));
+    const QString fileName =
+        QFileDialog::getOpenFileName(mainWindow_,
+                                     tr("Select ORE Portfolio XML File to Import"),
+                                     QString(),
+                                     tr("ORE Portfolio Files (*.xml);;All Files (*)"));
 
     if (fileName.isEmpty()) {
         BOOST_LOG_SEV(lg(), debug) << "Import: user cancelled file dialog";
@@ -239,72 +238,82 @@ void TradeController::onImportTradesRequested() {
         const auto items = ore::xml::importer::import_portfolio_with_context(path);
 
         if (items.empty()) {
-            MessageBoxHelper::information(mainWindow_, tr("No Trades"),
-                tr("The selected file contains no trades."));
+            MessageBoxHelper::information(
+                mainWindow_, tr("No Trades"), tr("The selected file contains no trades."));
             return;
         }
 
         BOOST_LOG_SEV(lg(), info) << "Parsed " << items.size()
-                                  << " trades for import into book: "
-                                  << selectedBook.name;
+                                  << " trades for import into book: " << selectedBook.name;
 
         // Pass the XML's parent directory to the dialog so it can read
         // market.txt and fixings.txt on the import worker thread.
         const std::string market_data_dir = path.parent_path().string();
 
         const QFileInfo fileInfo(fileName);
-        auto* dialog = new ImportTradeDialog(
-            selectedBook, items, fileInfo.fileName(),
-            market_data_dir, clientManager_, username_, mainWindow_);
+        auto* dialog = new ImportTradeDialog(selectedBook,
+                                             items,
+                                             fileInfo.fileName(),
+                                             market_data_dir,
+                                             clientManager_,
+                                             username_,
+                                             mainWindow_);
 
-        connect(dialog, &ImportTradeDialog::importCompleted,
-                this, [self = QPointer<TradeController>(this)](
-                    int success_count, int total_count) {
-            if (!self) return;
-            BOOST_LOG_SEV(lg(), info)
-                << "Import complete: " << success_count
-                << " of " << total_count << " trades imported";
-            self->reloadListWindow();
-            if (success_count > 0) {
-                emit self->statusMessage(
-                    tr("Successfully imported %1 of %2 trades")
-                    .arg(success_count).arg(total_count));
-                if (success_count < total_count) {
-                    MessageBoxHelper::warning(
-                        self->mainWindow_, tr("Partial Import"),
-                        tr("Imported %1 of %2 trades. Check the log for details.")
-                        .arg(success_count).arg(total_count));
-                } else {
-                    MessageBoxHelper::information(
-                        self->mainWindow_, tr("Import Complete"),
-                        tr("Successfully imported %1 trade(s).")
-                        .arg(success_count));
-                }
-            } else {
-                emit self->statusMessage(tr("Import failed - no trades imported"));
-                MessageBoxHelper::warning(
-                    self->mainWindow_, tr("Import Failed"),
-                    tr("Failed to import trades. Check the log for details."));
-            }
-        });
+        connect(dialog,
+                &ImportTradeDialog::importCompleted,
+                this,
+                [self = QPointer<TradeController>(this)](int success_count, int total_count) {
+                    if (!self)
+                        return;
+                    BOOST_LOG_SEV(lg(), info) << "Import complete: " << success_count << " of "
+                                              << total_count << " trades imported";
+                    self->reloadListWindow();
+                    if (success_count > 0) {
+                        emit self->statusMessage(tr("Successfully imported %1 of %2 trades")
+                                                     .arg(success_count)
+                                                     .arg(total_count));
+                        if (success_count < total_count) {
+                            MessageBoxHelper::warning(
+                                self->mainWindow_,
+                                tr("Partial Import"),
+                                tr("Imported %1 of %2 trades. Check the log for details.")
+                                    .arg(success_count)
+                                    .arg(total_count));
+                        } else {
+                            MessageBoxHelper::information(
+                                self->mainWindow_,
+                                tr("Import Complete"),
+                                tr("Successfully imported %1 trade(s).").arg(success_count));
+                        }
+                    } else {
+                        emit self->statusMessage(tr("Import failed - no trades imported"));
+                        MessageBoxHelper::warning(
+                            self->mainWindow_,
+                            tr("Import Failed"),
+                            tr("Failed to import trades. Check the log for details."));
+                    }
+                });
 
-        connect(dialog, &ImportTradeDialog::importCancelled,
-                this, [self = QPointer<TradeController>(this)]() {
-            if (!self) return;
-            emit self->statusMessage(tr("Import cancelled"));
-        });
+        connect(dialog,
+                &ImportTradeDialog::importCancelled,
+                this,
+                [self = QPointer<TradeController>(this)]() {
+                    if (!self)
+                        return;
+                    emit self->statusMessage(tr("Import cancelled"));
+                });
 
         dialog->open();
 
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Error importing portfolio XML: " << e.what();
-        MessageBoxHelper::critical(mainWindow_, tr("Import Error"),
-            tr("Failed to import portfolio XML file:\n%1").arg(e.what()));
+        MessageBoxHelper::critical(mainWindow_,
+                                   tr("Import Error"),
+                                   tr("Failed to import portfolio XML file:\n%1").arg(e.what()));
     }
 }
 
-void TradeController::onShowHistory(
-    const trading::domain::trade& trade) {
+void TradeController::onShowHistory(const trading::domain::trade& trade) {
     BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << trade.identity.external_id;
     showHistoryWindow(trade);
 }
@@ -321,23 +330,24 @@ void TradeController::showAddWindow() {
         detailDialog->setImageCache(imageCache_);
     detailDialog->setCreateMode(true);
 
-    connect(detailDialog, &TradeDetailDialog::statusMessage,
-            this, &TradeController::statusMessage);
-    connect(detailDialog, &TradeDetailDialog::errorMessage,
-            this, &TradeController::errorMessage);
-    connect(detailDialog, &TradeDetailDialog::tradeSaved,
-            this, [self = QPointer<TradeController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Trade saved: " << code.toStdString();
-        self->handleEntitySaved();
-    });
+    connect(detailDialog, &TradeDetailDialog::statusMessage, this, &TradeController::statusMessage);
+    connect(detailDialog, &TradeDetailDialog::errorMessage, this, &TradeController::errorMessage);
+    connect(detailDialog,
+            &TradeDetailDialog::tradeSaved,
+            this,
+            [self = QPointer<TradeController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Trade saved: " << code.toStdString();
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Trade");
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::DocumentTable, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::DocumentTable, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -345,8 +355,7 @@ void TradeController::showAddWindow() {
     show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
-void TradeController::showDetailWindow(
-    const trading::messaging::trade_export_item& bundle) {
+void TradeController::showDetailWindow(const trading::messaging::trade_export_item& bundle) {
 
     const QString identifier = QString::fromStdString(bundle.trade.identity.external_id);
     const QString key = build_window_key("details", identifier);
@@ -369,37 +378,40 @@ void TradeController::showDetailWindow(
     detailDialog->setCreateMode(false);
     detailDialog->setTradeBundle(bundle);
 
-    connect(detailDialog, &TradeDetailDialog::statusMessage,
-            this, &TradeController::statusMessage);
-    connect(detailDialog, &TradeDetailDialog::errorMessage,
-            this, &TradeController::errorMessage);
-    connect(detailDialog, &TradeDetailDialog::tradeSaved,
-            this, [self = QPointer<TradeController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Trade saved: " << code.toStdString();
-        self->handleEntitySaved();
-    });
-    connect(detailDialog, &TradeDetailDialog::tradeDeleted,
-            this, [self = QPointer<TradeController>(this), key](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Trade deleted: " << code.toStdString();
-        self->handleEntityDeleted();
-    });
+    connect(detailDialog, &TradeDetailDialog::statusMessage, this, &TradeController::statusMessage);
+    connect(detailDialog, &TradeDetailDialog::errorMessage, this, &TradeController::errorMessage);
+    connect(detailDialog,
+            &TradeDetailDialog::tradeSaved,
+            this,
+            [self = QPointer<TradeController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Trade saved: " << code.toStdString();
+                self->handleEntitySaved();
+            });
+    connect(detailDialog,
+            &TradeDetailDialog::tradeDeleted,
+            this,
+            [self = QPointer<TradeController>(this), key](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Trade deleted: " << code.toStdString();
+                self->handleEntityDeleted();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Trade: %1").arg(identifier));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::DocumentTable, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::DocumentTable, IconUtils::DefaultIconColor));
 
     // Track window
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<TradeController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, key]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, key]() {
         if (self) {
             self->untrack_window(key);
         }
@@ -414,11 +426,9 @@ void TradeController::showDetailWindow(
     }
 }
 
-void TradeController::showHistoryWindow(
-    const trading::domain::trade& trade) {
+void TradeController::showHistoryWindow(const trading::domain::trade& trade) {
     const QString code = QString::fromStdString(trade.identity.external_id);
-    BOOST_LOG_SEV(lg(), info) << "Opening history window for trade: "
-                              << trade.identity.external_id;
+    BOOST_LOG_SEV(lg(), info) << "Opening history window for trade: " << trade.identity.external_id;
 
     const QString windowKey = build_window_key("history", code);
 
@@ -429,26 +439,35 @@ void TradeController::showHistoryWindow(
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
-                              << trade.identity.external_id;
+    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << trade.identity.external_id;
 
-    auto* historyDialog = new TradeHistoryDialog(
-        trade.identity.id, code, clientManager_, mainWindow_);
+    auto* historyDialog =
+        new TradeHistoryDialog(trade.identity.id, code, clientManager_, mainWindow_);
 
-    connect(historyDialog, &TradeHistoryDialog::statusChanged,
-            this, [self = QPointer<TradeController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(historyDialog, &TradeHistoryDialog::errorOccurred,
-            this, [self = QPointer<TradeController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
-    connect(historyDialog, &TradeHistoryDialog::revertVersionRequested,
-            this, &TradeController::onRevertVersion);
-    connect(historyDialog, &TradeHistoryDialog::openVersionRequested,
-            this, &TradeController::onOpenVersion);
+    connect(historyDialog,
+            &TradeHistoryDialog::statusChanged,
+            this,
+            [self = QPointer<TradeController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(historyDialog,
+            &TradeHistoryDialog::errorOccurred,
+            this,
+            [self = QPointer<TradeController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
+    connect(historyDialog,
+            &TradeHistoryDialog::revertVersionRequested,
+            this,
+            &TradeController::onRevertVersion);
+    connect(historyDialog,
+            &TradeHistoryDialog::openVersionRequested,
+            this,
+            &TradeController::onOpenVersion);
 
     // Load history data
     historyDialog->loadHistory();
@@ -457,16 +476,15 @@ void TradeController::showHistoryWindow(
     historyWindow->setAttribute(Qt::WA_DeleteOnClose);
     historyWindow->setWidget(historyDialog);
     historyWindow->setWindowTitle(QString("Trade History: %1").arg(code));
-    historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    historyWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     // Track this history window
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
 
     QPointer<TradeController> self = this;
-    connect(historyWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -475,14 +493,13 @@ void TradeController::showHistoryWindow(
     show_managed_window(historyWindow, listMdiSubWindow_);
 }
 
-void TradeController::onOpenVersion(
-    const trading::domain::trade& trade, int versionNumber) {
+void TradeController::onOpenVersion(const trading::domain::trade& trade, int versionNumber) {
     BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
                               << " for trade: " << trade.identity.external_id;
 
     const QString code = QString::fromStdString(trade.identity.external_id);
-    const QString windowKey = build_window_key("version", QString("%1_v%2")
-        .arg(code).arg(versionNumber));
+    const QString windowKey =
+        build_window_key("version", QString("%1_v%2").arg(code).arg(versionNumber));
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
@@ -505,31 +522,35 @@ void TradeController::onOpenVersion(
     detailDialog->setTradeBundle(bundle);
     detailDialog->setReadOnly(true);
 
-    connect(detailDialog, &TradeDetailDialog::statusMessage,
-            this, [self = QPointer<TradeController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(detailDialog, &TradeDetailDialog::errorMessage,
-            this, [self = QPointer<TradeController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
+    connect(detailDialog,
+            &TradeDetailDialog::statusMessage,
+            this,
+            [self = QPointer<TradeController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(detailDialog,
+            &TradeDetailDialog::errorMessage,
+            this,
+            [self = QPointer<TradeController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Trade: %1 (Version %2)")
-        .arg(code).arg(versionNumber));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(QString("Trade: %1 (Version %2)").arg(code).arg(versionNumber));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     track_window(windowKey, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<TradeController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -539,10 +560,8 @@ void TradeController::onOpenVersion(
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
-void TradeController::onRevertVersion(
-    const trading::domain::trade& trade) {
-    BOOST_LOG_SEV(lg(), info) << "Reverting trade to version: "
-                              << trade.identity.version;
+void TradeController::onRevertVersion(const trading::domain::trade& trade) {
+    BOOST_LOG_SEV(lg(), info) << "Reverting trade to version: " << trade.identity.version;
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new TradeDetailDialog(mainWindow_);
@@ -556,25 +575,26 @@ void TradeController::onRevertVersion(
     detailDialog->setTradeBundle(bundle);
     detailDialog->setCreateMode(false);
 
-    connect(detailDialog, &TradeDetailDialog::statusMessage,
-            this, &TradeController::statusMessage);
-    connect(detailDialog, &TradeDetailDialog::errorMessage,
-            this, &TradeController::errorMessage);
-    connect(detailDialog, &TradeDetailDialog::tradeSaved,
-            this, [self = QPointer<TradeController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Trade reverted: " << code.toStdString();
-        emit self->statusMessage(QString("Trade '%1' reverted successfully").arg(code));
-        self->handleEntitySaved();
-    });
+    connect(detailDialog, &TradeDetailDialog::statusMessage, this, &TradeController::statusMessage);
+    connect(detailDialog, &TradeDetailDialog::errorMessage, this, &TradeController::errorMessage);
+    connect(detailDialog,
+            &TradeDetailDialog::tradeSaved,
+            this,
+            [self = QPointer<TradeController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Trade reverted: " << code.toStdString();
+                emit self->statusMessage(QString("Trade '%1' reverted successfully").arg(code));
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Revert Trade: %1")
-        .arg(QString::fromStdString(trade.identity.external_id)));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("Revert Trade: %1").arg(QString::fromStdString(trade.identity.external_id)));
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
+                                                               IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 

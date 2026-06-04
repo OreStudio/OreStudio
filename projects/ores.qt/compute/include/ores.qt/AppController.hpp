@@ -20,13 +20,13 @@
 #ifndef ORES_QT_APP_CONTROLLER_HPP
 #define ORES_QT_APP_CONTROLLER_HPP
 
-#include <QMdiArea>
-#include <QMainWindow>
-#include "ores.qt/EntityController.hpp"
-#include "ores.qt/ClientManager.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.compute.api/domain/app.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/EntityController.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
+#include <QMainWindow>
+#include <QMdiArea>
 
 namespace ores::qt {
 
@@ -44,8 +44,7 @@ class AppController final : public EntityController {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.app_controller";
+    inline static std::string_view logger_name = "ores.qt.app_controller";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -54,13 +53,12 @@ private:
     }
 
 public:
-    AppController(
-        QMainWindow* mainWindow,
-        QMdiArea* mdiArea,
-        ClientManager* clientManager,
-        ChangeReasonCache* changeReasonCache,
-        const QString& username,
-        QObject* parent = nullptr);
+    AppController(QMainWindow* mainWindow,
+                  QMdiArea* mdiArea,
+                  ClientManager* clientManager,
+                  ChangeReasonCache* changeReasonCache,
+                  const QString& username,
+                  QObject* parent = nullptr);
 
     void showListWindow() override;
     void closeAllWindows() override;
@@ -78,8 +76,7 @@ private slots:
     void onAddNewRequested();
     void onShowHistory(const compute::domain::app& app);
     void onRevertVersion(const compute::domain::app& app);
-    void onOpenVersion(const compute::domain::app& app,
-                       int versionNumber);
+    void onOpenVersion(const compute::domain::app& app, int versionNumber);
 
 private:
     void showAddWindow();

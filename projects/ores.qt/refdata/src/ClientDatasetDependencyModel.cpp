@@ -18,22 +18,20 @@
  *
  */
 #include "ores.qt/ClientDatasetDependencyModel.hpp"
-
-#include <QFutureWatcher>
-#include <QtConcurrent>
+#include "ores.dq.api/messaging/dataset_dependency_protocol.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.dq.api/messaging/dataset_dependency_protocol.hpp"
+#include <QFutureWatcher>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-ClientDatasetDependencyModel::ClientDatasetDependencyModel(
-    ClientManager* clientManager, QObject* parent)
-    : AbstractClientModel(parent),
-      clientManager_(clientManager) {
-}
+ClientDatasetDependencyModel::ClientDatasetDependencyModel(ClientManager* clientManager,
+                                                           QObject* parent)
+    : AbstractClientModel(parent)
+    , clientManager_(clientManager) {}
 
 int ClientDatasetDependencyModel::rowCount(const QModelIndex& parent) const {
     if (parent.isValid())
@@ -47,8 +45,7 @@ int ClientDatasetDependencyModel::columnCount(const QModelIndex& parent) const {
     return ColumnCount;
 }
 
-QVariant ClientDatasetDependencyModel::data(const QModelIndex& index,
-                                            int role) const {
+QVariant ClientDatasetDependencyModel::data(const QModelIndex& index, int role) const {
     if (!index.isValid() || index.row() >= static_cast<int>(dependencies_.size()))
         return {};
 
@@ -58,34 +55,39 @@ QVariant ClientDatasetDependencyModel::data(const QModelIndex& index,
     const auto& dep = dependencies_[index.row()];
 
     switch (index.column()) {
-    case DatasetCode:
-        return QString::fromStdString(dep.dataset_code);
-    case DependencyCode:
-        return QString::fromStdString(dep.dependency_code);
-    case Role:
-        return QString::fromStdString(dep.role);
-    case ModifiedBy:
-        return QString::fromStdString(dep.modified_by);
-    case RecordedAt:
-        return relative_time_helper::format(dep.recorded_at);
-    default:
-        return {};
+        case DatasetCode:
+            return QString::fromStdString(dep.dataset_code);
+        case DependencyCode:
+            return QString::fromStdString(dep.dependency_code);
+        case Role:
+            return QString::fromStdString(dep.role);
+        case ModifiedBy:
+            return QString::fromStdString(dep.modified_by);
+        case RecordedAt:
+            return relative_time_helper::format(dep.recorded_at);
+        default:
+            return {};
     }
 }
 
-QVariant ClientDatasetDependencyModel::headerData(int section,
-                                                  Qt::Orientation orientation,
-                                                  int role) const {
+QVariant
+ClientDatasetDependencyModel::headerData(int section, Qt::Orientation orientation, int role) const {
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return {};
 
     switch (section) {
-    case DatasetCode: return tr("Dataset Code");
-    case DependencyCode: return tr("Depends On");
-    case Role: return tr("Role");
-    case ModifiedBy: return tr("Modified By");
-    case RecordedAt: return tr("Recorded At");
-    default: return {};
+        case DatasetCode:
+            return tr("Dataset Code");
+        case DependencyCode:
+            return tr("Depends On");
+        case Role:
+            return tr("Role");
+        case ModifiedBy:
+            return tr("Modified By");
+        case RecordedAt:
+            return tr("Recorded At");
+        default:
+            return {};
     }
 }
 
@@ -107,43 +109,47 @@ void ClientDatasetDependencyModel::loadData() {
     };
 
     auto task = [self]() -> LoadResult {
-        return exception_helper::wrap_async_fetch<LoadResult>([&]() -> LoadResult {
-            if (!self || !self->clientManager_) {
-                return {.success = false, .dependencies = {},
-                        .error_message = "Model was destroyed",
-                        .error_details = {}};
-            }
+        return exception_helper::wrap_async_fetch<LoadResult>(
+            [&]() -> LoadResult {
+                if (!self || !self->clientManager_) {
+                    return {.success = false,
+                            .dependencies = {},
+                            .error_message = "Model was destroyed",
+                            .error_details = {}};
+                }
 
-            dq::messaging::get_dataset_dependencies_request request;
-            auto response_result =
-self->clientManager_->process_authenticated_request(std::move(request));
-            if (!response_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to send request";
-                return {.success = false, .dependencies = {},
-                        .error_message = "Failed to communicate with server",
-                        .error_details = {}};
-            }
+                dq::messaging::get_dataset_dependencies_request request;
+                auto response_result =
+                    self->clientManager_->process_authenticated_request(std::move(request));
+                if (!response_result) {
+                    BOOST_LOG_SEV(lg(), error) << "Failed to send request";
+                    return {.success = false,
+                            .dependencies = {},
+                            .error_message = "Failed to communicate with server",
+                            .error_details = {}};
+                }
 
-            BOOST_LOG_SEV(lg(), debug) << "Fetched "
-                                       << response_result->dependencies.size()
-                                       << " dataset dependencies";
-            return {.success = true,
-                    .dependencies = std::move(response_result->dependencies),
-                    .error_message = {}, .error_details = {}};
-        }, "dataset dependencies");
+                BOOST_LOG_SEV(lg(), debug) << "Fetched " << response_result->dependencies.size()
+                                           << " dataset dependencies";
+                return {.success = true,
+                        .dependencies = std::move(response_result->dependencies),
+                        .error_message = {},
+                        .error_details = {}};
+            },
+            "dataset dependencies");
     };
 
     auto* watcher = new QFutureWatcher<LoadResult>(this);
-    connect(watcher, &QFutureWatcher<LoadResult>::finished, this,
-            [self, watcher]() {
+    connect(watcher, &QFutureWatcher<LoadResult>::finished, this, [self, watcher]() {
         const auto result = watcher->result();
         watcher->deleteLater();
 
-        if (!self) return;
+        if (!self)
+            return;
 
         if (!result.success) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to fetch dataset dependencies: "
-                                       << result.error_message.toStdString();
+            BOOST_LOG_SEV(lg(), error)
+                << "Failed to fetch dataset dependencies: " << result.error_message.toStdString();
             emit self->errorOccurred(result.error_message, result.error_details);
             return;
         }
@@ -161,8 +167,7 @@ self->clientManager_->process_authenticated_request(std::move(request));
     watcher->setFuture(QtConcurrent::run(task));
 }
 
-void ClientDatasetDependencyModel::loadDataByDataset(
-    const std::string& dataset_code) {
+void ClientDatasetDependencyModel::loadDataByDataset(const std::string& dataset_code) {
     if (!clientManager_ || !clientManager_->isConnected()) {
         emit errorOccurred("Not connected to server");
         return;
@@ -181,45 +186,48 @@ void ClientDatasetDependencyModel::loadDataByDataset(
     };
 
     auto task = [self, code_copy]() -> LoadResult {
-        return exception_helper::wrap_async_fetch<LoadResult>([&]() -> LoadResult {
-            if (!self || !self->clientManager_) {
-                return {.success = false, .dependencies = {},
-                        .error_message = "Model was destroyed",
-                        .error_details = {}};
-            }
+        return exception_helper::wrap_async_fetch<LoadResult>(
+            [&]() -> LoadResult {
+                if (!self || !self->clientManager_) {
+                    return {.success = false,
+                            .dependencies = {},
+                            .error_message = "Model was destroyed",
+                            .error_details = {}};
+                }
 
-            dq::messaging::get_dataset_dependencies_by_dataset_request request;
-            request.dataset_code = code_copy;
-            auto response_result =
-self->clientManager_->process_authenticated_request(std::move(request));
-            if (!response_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to send request";
-                return {.success = false, .dependencies = {},
-                        .error_message = "Failed to communicate with server",
-                        .error_details = {}};
-            }
+                dq::messaging::get_dataset_dependencies_by_dataset_request request;
+                request.dataset_code = code_copy;
+                auto response_result =
+                    self->clientManager_->process_authenticated_request(std::move(request));
+                if (!response_result) {
+                    BOOST_LOG_SEV(lg(), error) << "Failed to send request";
+                    return {.success = false,
+                            .dependencies = {},
+                            .error_message = "Failed to communicate with server",
+                            .error_details = {}};
+                }
 
-            BOOST_LOG_SEV(lg(), debug) << "Fetched "
-                                       << response_result->dependencies.size()
-                                       << " dependencies for dataset: "
-                                       << code_copy;
-            return {.success = true,
-                    .dependencies = std::move(response_result->dependencies),
-                    .error_message = {}, .error_details = {}};
-        }, "dataset dependencies by dataset");
+                BOOST_LOG_SEV(lg(), debug) << "Fetched " << response_result->dependencies.size()
+                                           << " dependencies for dataset: " << code_copy;
+                return {.success = true,
+                        .dependencies = std::move(response_result->dependencies),
+                        .error_message = {},
+                        .error_details = {}};
+            },
+            "dataset dependencies by dataset");
     };
 
     auto* watcher = new QFutureWatcher<LoadResult>(this);
-    connect(watcher, &QFutureWatcher<LoadResult>::finished, this,
-            [self, watcher]() {
+    connect(watcher, &QFutureWatcher<LoadResult>::finished, this, [self, watcher]() {
         const auto result = watcher->result();
         watcher->deleteLater();
 
-        if (!self) return;
+        if (!self)
+            return;
 
         if (!result.success) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to fetch dataset dependencies: "
-                                       << result.error_message.toStdString();
+            BOOST_LOG_SEV(lg(), error)
+                << "Failed to fetch dataset dependencies: " << result.error_message.toStdString();
             emit self->errorOccurred(result.error_message, result.error_details);
             return;
         }
@@ -243,8 +251,7 @@ ClientDatasetDependencyModel::dependencies() const {
 }
 
 std::vector<dq::domain::dataset_dependency>
-ClientDatasetDependencyModel::dependenciesForDataset(
-    const std::string& dataset_code) const {
+ClientDatasetDependencyModel::dependenciesForDataset(const std::string& dataset_code) const {
     std::vector<dq::domain::dataset_dependency> result;
     for (const auto& dep : dependencies_) {
         if (dep.dataset_code == dataset_code) {

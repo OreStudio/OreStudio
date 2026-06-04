@@ -20,14 +20,14 @@
 #ifndef ORES_QT_PAGINATION_WIDGET_HPP
 #define ORES_QT_PAGINATION_WIDGET_HPP
 
-#include <QWidget>
-#include <QLabel>
-#include <QAction>
-#include <QToolBar>
-#include <QComboBox>
-#include <QHBoxLayout>
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/export.hpp"
+#include <QAction>
+#include <QComboBox>
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QToolBar>
+#include <QWidget>
 
 namespace ores::qt {
 
@@ -41,8 +41,7 @@ class ORES_QT_API PaginationWidget : public QWidget {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.pagination_widget";
+    inline static std::string_view logger_name = "ores.qt.pagination_widget";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -78,7 +77,9 @@ public:
     /**
      * @brief Get the current page number (0-based).
      */
-    [[nodiscard]] std::uint32_t current_page() const { return current_page_; }
+    [[nodiscard]] std::uint32_t current_page() const {
+        return current_page_;
+    }
 
     /**
      * @brief Get the total number of pages.

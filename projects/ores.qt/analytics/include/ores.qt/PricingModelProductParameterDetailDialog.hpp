@@ -20,11 +20,11 @@
 #ifndef ORES_QT_PRICING_MODEL_PRODUCT_PARAMETER_DETAIL_DIALOG_HPP
 #define ORES_QT_PRICING_MODEL_PRODUCT_PARAMETER_DETAIL_DIALOG_HPP
 
-#include <vector>
+#include "ores.analytics.api/domain/pricing_model_product_parameter.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.analytics.api/domain/pricing_model_product_parameter.hpp"
+#include <vector>
 
 
 namespace Ui {
@@ -78,7 +78,9 @@ protected:
     QTabWidget* tabWidget() const override;
     QWidget* provenanceTab() const override;
     ProvenanceWidget* provenanceWidget() const override;
-    bool hasUnsavedChanges() const override { return hasChanges_; }
+    bool hasUnsavedChanges() const override {
+        return hasChanges_;
+    }
 
 private:
     void setupUi();
@@ -97,7 +99,6 @@ private:
     bool createMode_{true};
     bool readOnly_{false};
     bool hasChanges_{false};
-
 };
 
 }

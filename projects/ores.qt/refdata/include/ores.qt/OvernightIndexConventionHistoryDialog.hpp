@@ -20,12 +20,12 @@
 #ifndef ORES_QT_OVERNIGHT_INDEX_CONVENTION_HISTORY_DIALOG_HPP
 #define ORES_QT_OVERNIGHT_INDEX_CONVENTION_HISTORY_DIALOG_HPP
 
-#include <QWidget>
-#include <QToolBar>
-#include <QTableWidget>
-#include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
 #include "ores.refdata.api/domain/overnight_index_convention.hpp"
+#include <QTableWidget>
+#include <QToolBar>
+#include <QWidget>
 
 namespace Ui {
 class OvernightIndexConventionHistoryDialog;
@@ -53,10 +53,9 @@ private:
     }
 
 public:
-    explicit OvernightIndexConventionHistoryDialog(
-        const QString& code,
-        ClientManager* clientManager,
-        QWidget* parent = nullptr);
+    explicit OvernightIndexConventionHistoryDialog(const QString& code,
+                                                   ClientManager* clientManager,
+                                                   QWidget* parent = nullptr);
     ~OvernightIndexConventionHistoryDialog() override;
 
     void loadHistory();

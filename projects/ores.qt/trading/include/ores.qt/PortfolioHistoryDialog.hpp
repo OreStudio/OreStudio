@@ -20,13 +20,13 @@
 #ifndef ORES_QT_PORTFOLIO_HISTORY_DIALOG_HPP
 #define ORES_QT_PORTFOLIO_HISTORY_DIALOG_HPP
 
-#include <QWidget>
-#include <QToolBar>
-#include <QTableWidget>
-#include <boost/uuid/uuid.hpp>
-#include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
 #include "ores.refdata.api/domain/portfolio.hpp"
+#include <QTableWidget>
+#include <QToolBar>
+#include <QWidget>
+#include <boost/uuid/uuid.hpp>
 
 namespace Ui {
 class PortfolioHistoryDialog;
@@ -44,8 +44,7 @@ class PortfolioHistoryDialog final : public QWidget {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.portfolio_history_dialog";
+    inline static std::string_view logger_name = "ores.qt.portfolio_history_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -54,11 +53,10 @@ private:
     }
 
 public:
-    explicit PortfolioHistoryDialog(
-        const boost::uuids::uuid& id,
-        const QString& code,
-        ClientManager* clientManager,
-        QWidget* parent = nullptr);
+    explicit PortfolioHistoryDialog(const boost::uuids::uuid& id,
+                                    const QString& code,
+                                    ClientManager* clientManager,
+                                    QWidget* parent = nullptr);
     ~PortfolioHistoryDialog() override;
 
     void loadHistory();
@@ -66,8 +64,7 @@ public:
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
-    void openVersionRequested(const refdata::domain::portfolio& portfolio,
-                              int versionNumber);
+    void openVersionRequested(const refdata::domain::portfolio& portfolio, int versionNumber);
     void revertVersionRequested(const refdata::domain::portfolio& portfolio);
 
 private slots:

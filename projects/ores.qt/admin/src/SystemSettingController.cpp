@@ -18,68 +18,75 @@
  *
  */
 #include "ores.qt/SystemSettingController.hpp"
+#include "ores.eventing/domain/event_traits.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
-
-#include <QMdiSubWindow>
+#include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
-#include "ores.qt/SystemSettingMdiWindow.hpp"
 #include "ores.qt/SystemSettingDetailDialog.hpp"
 #include "ores.qt/SystemSettingHistoryDialog.hpp"
-#include "ores.qt/DetachableMdiSubWindow.hpp"
-#include "ores.eventing/domain/event_traits.hpp"
+#include "ores.qt/SystemSettingMdiWindow.hpp"
 #include "ores.variability.api/eventing/system_setting_changed_event.hpp"
 #include "ores.variability.api/messaging/system_settings_protocol.hpp"
-#include "ores.qt/ExceptionHelper.hpp"
+#include <QMdiSubWindow>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    // Event type name for system setting changes
-    constexpr std::string_view system_setting_event_name =
-        eventing::domain::event_traits<
-            variability::eventing::system_setting_changed_event>::name;
+// Event type name for system setting changes
+constexpr std::string_view system_setting_event_name =
+    eventing::domain::event_traits<variability::eventing::system_setting_changed_event>::name;
 }
 
-SystemSettingController::SystemSettingController(
-    QMainWindow* mainWindow,
-    QMdiArea* mdiArea,
-    ClientManager* clientManager,
-    ChangeReasonCache* changeReasonCache,
-    const QString& username,
-    QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username, {}, parent),
-      changeReasonCache_(changeReasonCache),
-      listWindow_(nullptr),
-      listMdiSubWindow_(nullptr) {
+SystemSettingController::SystemSettingController(QMainWindow* mainWindow,
+                                                 QMdiArea* mdiArea,
+                                                 ClientManager* clientManager,
+                                                 ChangeReasonCache* changeReasonCache,
+                                                 const QString& username,
+                                                 QObject* parent)
+    : EntityController(mainWindow, mdiArea, clientManager, username, {}, parent)
+    , changeReasonCache_(changeReasonCache)
+    , listWindow_(nullptr)
+    , listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "SystemSettingController created";
 
     // Connect to notification signal from ClientManager
     if (clientManager_) {
-        connect(clientManager_, &ClientManager::notificationReceived,
-                this, &SystemSettingController::onNotificationReceived);
+        connect(clientManager_,
+                &ClientManager::notificationReceived,
+                this,
+                &SystemSettingController::onNotificationReceived);
 
         // Subscribe to events when logged in
-        connect(clientManager_, &ClientManager::loggedIn,
-                this, [self = QPointer<SystemSettingController>(this)]() {
-            if (!self) return;
-            BOOST_LOG_SEV(lg(), info) << "Subscribing to system setting change events";
-            self->clientManager_->subscribeToEvent(std::string{system_setting_event_name});
-        });
+        connect(clientManager_,
+                &ClientManager::loggedIn,
+                this,
+                [self = QPointer<SystemSettingController>(this)]() {
+                    if (!self)
+                        return;
+                    BOOST_LOG_SEV(lg(), info) << "Subscribing to system setting change events";
+                    self->clientManager_->subscribeToEvent(std::string{system_setting_event_name});
+                });
 
         // Re-subscribe after reconnection
-        connect(clientManager_, &ClientManager::reconnected,
-                this, [self = QPointer<SystemSettingController>(this)]() {
-            if (!self) return;
-            BOOST_LOG_SEV(lg(), info) << "Re-subscribing to system setting change events after reconnect";
-            self->clientManager_->subscribeToEvent(std::string{system_setting_event_name});
-        });
+        connect(clientManager_,
+                &ClientManager::reconnected,
+                this,
+                [self = QPointer<SystemSettingController>(this)]() {
+                    if (!self)
+                        return;
+                    BOOST_LOG_SEV(lg(), info)
+                        << "Re-subscribing to system setting change events after reconnect";
+                    self->clientManager_->subscribeToEvent(std::string{system_setting_event_name});
+                });
 
         // If already connected, subscribe now
         if (clientManager_->isConnected()) {
-            BOOST_LOG_SEV(lg(), info) << "Already connected, subscribing to system setting change events";
+            BOOST_LOG_SEV(lg(), info)
+                << "Already connected, subscribing to system setting change events";
             clientManager_->subscribeToEvent(std::string{system_setting_event_name});
         }
     }
@@ -108,25 +115,37 @@ void SystemSettingController::showListWindow() {
     listWindow_ = new SystemSettingMdiWindow(clientManager_, username_);
 
     // Connect signals
-    connect(listWindow_, &SystemSettingMdiWindow::statusChanged,
-            this, &SystemSettingController::statusMessage);
-    connect(listWindow_, &SystemSettingMdiWindow::errorOccurred,
-            this, &SystemSettingController::errorMessage);
-    connect(listWindow_, &SystemSettingMdiWindow::addNewRequested,
-            this, &SystemSettingController::onAddNewRequested);
-    connect(listWindow_, &SystemSettingMdiWindow::showSystemSettingDetails,
-            this, &SystemSettingController::onShowDetails);
-    connect(listWindow_, &SystemSettingMdiWindow::showHistoryRequested,
-            this, &SystemSettingController::onShowHistory);
-    connect(listWindow_, &SystemSettingMdiWindow::systemSettingDeleted,
-            this, &SystemSettingController::onSystemSettingDeleted);
+    connect(listWindow_,
+            &SystemSettingMdiWindow::statusChanged,
+            this,
+            &SystemSettingController::statusMessage);
+    connect(listWindow_,
+            &SystemSettingMdiWindow::errorOccurred,
+            this,
+            &SystemSettingController::errorMessage);
+    connect(listWindow_,
+            &SystemSettingMdiWindow::addNewRequested,
+            this,
+            &SystemSettingController::onAddNewRequested);
+    connect(listWindow_,
+            &SystemSettingMdiWindow::showSystemSettingDetails,
+            this,
+            &SystemSettingController::onShowDetails);
+    connect(listWindow_,
+            &SystemSettingMdiWindow::showHistoryRequested,
+            this,
+            &SystemSettingController::onShowHistory);
+    connect(listWindow_,
+            &SystemSettingMdiWindow::systemSettingDeleted,
+            this,
+            &SystemSettingController::onSystemSettingDeleted);
 
     // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("System Settings");
-    listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Flag, IconUtils::DefaultIconColor));
+    listMdiSubWindow_->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Flag, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -138,12 +157,16 @@ void SystemSettingController::showListWindow() {
     register_detachable_window(listMdiSubWindow_);
 
     // Cleanup when closed
-    connect(listMdiSubWindow_, &QObject::destroyed, this, [self = QPointer<SystemSettingController>(this), key]() {
-        if (!self) return;
-        self->untrack_window(key);
-        self->listWindow_ = nullptr;
-        self->listMdiSubWindow_ = nullptr;
-    });
+    connect(listMdiSubWindow_,
+            &QObject::destroyed,
+            this,
+            [self = QPointer<SystemSettingController>(this), key]() {
+                if (!self)
+                    return;
+                self->untrack_window(key);
+                self->listWindow_ = nullptr;
+                self->listMdiSubWindow_ = nullptr;
+            });
 
     BOOST_LOG_SEV(lg(), debug) << "System settings list window created";
 }
@@ -175,22 +198,20 @@ void SystemSettingController::onAddNewRequested() {
     showDetailWindow({}, true);
 }
 
-void SystemSettingController::onShowDetails(
-    const variability::domain::system_setting& flag) {
+void SystemSettingController::onShowDetails(const variability::domain::system_setting& flag) {
     BOOST_LOG_SEV(lg(), debug) << "Show details requested for: " << flag.name;
     showDetailWindow(flag, false);
 }
 
-void SystemSettingController::showDetailWindow(
-    const variability::domain::system_setting& flag, bool createMode) {
+void SystemSettingController::showDetailWindow(const variability::domain::system_setting& flag,
+                                               bool createMode) {
 
-    const QString identifier = createMode ? "new" :
-        QString::fromStdString(flag.name);
+    const QString identifier = createMode ? "new" : QString::fromStdString(flag.name);
     const QString key = build_window_key("details", identifier);
 
     if (try_reuse_window(key)) {
-        BOOST_LOG_SEV(lg(), debug) << "Reusing existing detail window for: "
-                                   << identifier.toStdString();
+        BOOST_LOG_SEV(lg(), debug)
+            << "Reusing existing detail window for: " << identifier.toStdString();
         return;
     }
 
@@ -209,24 +230,33 @@ void SystemSettingController::showDetailWindow(
     }
 
     // Connect signals
-    connect(detailDialog, &SystemSettingDetailDialog::statusMessage,
-            this, &SystemSettingController::statusMessage);
-    connect(detailDialog, &SystemSettingDetailDialog::errorMessage,
-            this, &SystemSettingController::errorMessage);
-    connect(detailDialog, &SystemSettingDetailDialog::systemSettingSaved,
-            this, &SystemSettingController::onSystemSettingSaved);
-    connect(detailDialog, &SystemSettingDetailDialog::systemSettingDeleted,
-            this, &SystemSettingController::onSystemSettingDeleted);
+    connect(detailDialog,
+            &SystemSettingDetailDialog::statusMessage,
+            this,
+            &SystemSettingController::statusMessage);
+    connect(detailDialog,
+            &SystemSettingDetailDialog::errorMessage,
+            this,
+            &SystemSettingController::errorMessage);
+    connect(detailDialog,
+            &SystemSettingDetailDialog::systemSettingSaved,
+            this,
+            &SystemSettingController::onSystemSettingSaved);
+    connect(detailDialog,
+            &SystemSettingDetailDialog::systemSettingDeleted,
+            this,
+            &SystemSettingController::onSystemSettingDeleted);
 
     // Create MDI subwindow
     auto* subWindow = new DetachableMdiSubWindow(mainWindow_);
     subWindow->setWidget(detailDialog);
 
-    const QString title = createMode ? "New System Setting" :
-        QString("System Setting: %1").arg(QString::fromStdString(flag.name));
+    const QString title = createMode ?
+                              "New System Setting" :
+                              QString("System Setting: %1").arg(QString::fromStdString(flag.name));
     subWindow->setWindowTitle(title);
-    subWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Flag, IconUtils::DefaultIconColor));
+    subWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Flag, IconUtils::DefaultIconColor));
     subWindow->setAttribute(Qt::WA_DeleteOnClose);
     subWindow->resize(detailDialog->sizeHint());
 
@@ -238,13 +268,16 @@ void SystemSettingController::showDetailWindow(
     register_detachable_window(subWindow);
 
     // Cleanup when closed
-    connect(subWindow, &QObject::destroyed, this, [self = QPointer<SystemSettingController>(this), key]() {
-        if (!self) return;
-        self->untrack_window(key);
-    });
+    connect(subWindow,
+            &QObject::destroyed,
+            this,
+            [self = QPointer<SystemSettingController>(this), key]() {
+                if (!self)
+                    return;
+                self->untrack_window(key);
+            });
 
-    BOOST_LOG_SEV(lg(), debug) << "Detail window created for: "
-                               << identifier.toStdString();
+    BOOST_LOG_SEV(lg(), debug) << "Detail window created for: " << identifier.toStdString();
 }
 
 void SystemSettingController::onSystemSettingSaved(const QString& name) {
@@ -268,17 +301,18 @@ void SystemSettingController::refreshListWindow() {
     }
 }
 
-void SystemSettingController::onNotificationReceived(
-    const QString& eventType, const QDateTime& timestamp,
-    const QStringList& entityIds, const QString& /*tenantId*/) {
+void SystemSettingController::onNotificationReceived(const QString& eventType,
+                                                     const QDateTime& timestamp,
+                                                     const QStringList& entityIds,
+                                                     const QString& /*tenantId*/) {
     // Check if this is a system setting change event
     if (eventType != QString::fromStdString(std::string{system_setting_event_name})) {
         return;
     }
 
     BOOST_LOG_SEV(lg(), info) << "Received system setting change notification at "
-                              << timestamp.toString(Qt::ISODate).toStdString()
-                              << " with " << entityIds.size() << " flag names";
+                              << timestamp.toString(Qt::ISODate).toStdString() << " with "
+                              << entityIds.size() << " flag names";
 
     // Mark the list window as stale if it's open
     if (listWindow_) {
@@ -295,15 +329,14 @@ void SystemSettingController::onNotificationReceived(
 
         // Check if this is a history window for an affected system setting
         if (key.startsWith("history:")) {
-            QString windowFlagName = key.mid(8);  // Remove "history:" prefix
+            QString windowFlagName = key.mid(8); // Remove "history:" prefix
             if (entityIds.isEmpty() || entityIds.contains(windowFlagName)) {
                 // Mark history dialog as stale
-                auto* historyDialog = qobject_cast<SystemSettingHistoryDialog*>(
-                    window->widget());
+                auto* historyDialog = qobject_cast<SystemSettingHistoryDialog*>(window->widget());
                 if (historyDialog) {
                     historyDialog->markAsStale();
-                    BOOST_LOG_SEV(lg(), debug) << "Marked history dialog as stale for: "
-                                               << windowFlagName.toStdString();
+                    BOOST_LOG_SEV(lg(), debug)
+                        << "Marked history dialog as stale for: " << windowFlagName.toStdString();
                 }
             }
         }
@@ -317,36 +350,44 @@ void SystemSettingController::onShowHistory(const QString& name) {
 
 void SystemSettingController::showHistoryWindow(const QString& name) {
     BOOST_LOG_SEV(lg(), info) << "Opening history window for system setting: "
-                             << name.toStdString();
+                              << name.toStdString();
 
     const QString windowKey = build_window_key("history", name);
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
-        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: "
-                                  << name.toStdString();
+        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: " << name.toStdString();
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
-                              << name.toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << name.toStdString();
 
     auto* historyDialog = new SystemSettingHistoryDialog(name, clientManager_, mainWindow_);
 
-    connect(historyDialog, &SystemSettingHistoryDialog::statusChanged,
-            this, [self = QPointer<SystemSettingController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(historyDialog, &SystemSettingHistoryDialog::errorOccurred,
-            this, [self = QPointer<SystemSettingController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
-    connect(historyDialog, &SystemSettingHistoryDialog::revertVersionRequested,
-            this, &SystemSettingController::onRevertSystemSetting);
-    connect(historyDialog, &SystemSettingHistoryDialog::openVersionRequested,
-            this, &SystemSettingController::onOpenSystemSettingVersion);
+    connect(historyDialog,
+            &SystemSettingHistoryDialog::statusChanged,
+            this,
+            [self = QPointer<SystemSettingController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(historyDialog,
+            &SystemSettingHistoryDialog::errorOccurred,
+            this,
+            [self = QPointer<SystemSettingController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
+    connect(historyDialog,
+            &SystemSettingHistoryDialog::revertVersionRequested,
+            this,
+            &SystemSettingController::onRevertSystemSetting);
+    connect(historyDialog,
+            &SystemSettingHistoryDialog::openVersionRequested,
+            this,
+            &SystemSettingController::onOpenSystemSettingVersion);
 
     // Load history data
     historyDialog->loadHistory();
@@ -355,16 +396,15 @@ void SystemSettingController::showHistoryWindow(const QString& name) {
     historyWindow->setAttribute(Qt::WA_DeleteOnClose);
     historyWindow->setWidget(historyDialog);
     historyWindow->setWindowTitle(QString("System Setting History: %1").arg(name));
-    historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    historyWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     // Track this history window
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
 
     QPointer<SystemSettingController> self = this;
-    connect(historyWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -391,8 +431,8 @@ void SystemSettingController::onOpenSystemSettingVersion(
                               << " for system setting: " << flag.name;
 
     const QString flagName = QString::fromStdString(flag.name);
-    const QString windowKey = build_window_key("version", QString("%1_v%2")
-        .arg(flagName).arg(versionNumber));
+    const QString windowKey =
+        build_window_key("version", QString("%1_v%2").arg(flagName).arg(versionNumber));
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
@@ -406,16 +446,22 @@ void SystemSettingController::onOpenSystemSettingVersion(
         detailDialog->setUsername(username_.toStdString());
     }
 
-    connect(detailDialog, &SystemSettingDetailDialog::statusMessage,
-            this, [self = QPointer<SystemSettingController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(detailDialog, &SystemSettingDetailDialog::errorMessage,
-            this, [self = QPointer<SystemSettingController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
+    connect(detailDialog,
+            &SystemSettingDetailDialog::statusMessage,
+            this,
+            [self = QPointer<SystemSettingController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(detailDialog,
+            &SystemSettingDetailDialog::errorMessage,
+            this,
+            [self = QPointer<SystemSettingController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
 
     // Try to get history from the sender (history dialog) for version navigation
     auto* historyDialog = qobject_cast<SystemSettingHistoryDialog*>(sender());
@@ -431,18 +477,17 @@ void SystemSettingController::onOpenSystemSettingVersion(
     auto* detailWindow = new DetachableMdiSubWindow();
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("System Setting: %1 (Version %2 - Read Only)")
-        .arg(flagName).arg(versionNumber));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Flag, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("System Setting: %1 (Version %2 - Read Only)").arg(flagName).arg(versionNumber));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Flag, IconUtils::DefaultIconColor));
 
     // Track this version window
     track_window(windowKey, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<SystemSettingController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -455,8 +500,8 @@ void SystemSettingController::onOpenSystemSettingVersion(
 
 void SystemSettingController::onRevertSystemSetting(
     const variability::domain::system_setting& flag) {
-    BOOST_LOG_SEV(lg(), info) << "Reverting system setting: " << flag.name
-                              << " to version " << flag.version;
+    BOOST_LOG_SEV(lg(), info) << "Reverting system setting: " << flag.name << " to version "
+                              << flag.version;
 
     if (!clientManager_ || !clientManager_->isConnected()) {
         emit errorMessage("Cannot revert - not connected to server");
@@ -476,7 +521,7 @@ void SystemSettingController::onRevertSystemSetting(
     if (response_result->success) {
         BOOST_LOG_SEV(lg(), info) << "System setting reverted successfully";
         emit statusMessage(QString("System setting '%1' reverted successfully")
-            .arg(QString::fromStdString(flag.name)));
+                               .arg(QString::fromStdString(flag.name)));
 
         // Mark list and history windows as stale
         if (listWindow_) {
@@ -485,8 +530,8 @@ void SystemSettingController::onRevertSystemSetting(
     } else {
         const std::string msg = response_result->message;
         BOOST_LOG_SEV(lg(), error) << "Revert failed: " << msg;
-        emit errorMessage(QString("Failed to revert system setting: %1")
-            .arg(QString::fromStdString(msg)));
+        emit errorMessage(
+            QString("Failed to revert system setting: %1").arg(QString::fromStdString(msg)));
     }
 }
 

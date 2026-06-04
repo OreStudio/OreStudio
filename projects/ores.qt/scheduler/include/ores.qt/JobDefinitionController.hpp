@@ -20,13 +20,13 @@
 #ifndef ORES_QT_JOB_DEFINITION_CONTROLLER_HPP
 #define ORES_QT_JOB_DEFINITION_CONTROLLER_HPP
 
-#include <QMdiArea>
-#include <QMainWindow>
-#include "ores.qt/EntityController.hpp"
-#include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.scheduler.api/domain/job_definition.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/EntityController.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
+#include "ores.scheduler.api/domain/job_definition.hpp"
+#include <QMainWindow>
+#include <QMdiArea>
 
 namespace ores::qt {
 
@@ -44,8 +44,7 @@ class JobDefinitionController final : public EntityController {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.job_definition_controller";
+    inline static std::string_view logger_name = "ores.qt.job_definition_controller";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -54,13 +53,12 @@ private:
     }
 
 public:
-    JobDefinitionController(
-        QMainWindow* mainWindow,
-        QMdiArea* mdiArea,
-        ClientManager* clientManager,
-        const QString& username,
-        ChangeReasonCache* changeReasonCache,
-        QObject* parent = nullptr);
+    JobDefinitionController(QMainWindow* mainWindow,
+                            QMdiArea* mdiArea,
+                            ClientManager* clientManager,
+                            const QString& username,
+                            ChangeReasonCache* changeReasonCache,
+                            QObject* parent = nullptr);
 
     void showListWindow() override;
     void closeAllWindows() override;

@@ -20,14 +20,14 @@
 #ifndef ORES_QT_NATURE_DIMENSION_MDI_WINDOW_HPP
 #define ORES_QT_NATURE_DIMENSION_MDI_WINDOW_HPP
 
-#include <QToolBar>
-#include <QTableView>
-#include <QSortFilterProxyModel>
-#include "ores.qt/EntityListMdiWindow.hpp"
+#include "ores.dq.api/domain/nature_dimension.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ClientNatureDimensionModel.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.dq.api/domain/nature_dimension.hpp"
+#include "ores.qt/EntityListMdiWindow.hpp"
+#include <QSortFilterProxyModel>
+#include <QTableView>
+#include <QToolBar>
 
 namespace ores::qt {
 
@@ -35,8 +35,7 @@ class NatureDimensionMdiWindow final : public EntityListMdiWindow {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.nature_dimension_mdi_window";
+    inline static std::string_view logger_name = "ores.qt.nature_dimension_mdi_window";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -45,10 +44,9 @@ private:
     }
 
 public:
-    explicit NatureDimensionMdiWindow(
-        ClientManager* clientManager,
-        const QString& username,
-        QWidget* parent = nullptr);
+    explicit NatureDimensionMdiWindow(ClientManager* clientManager,
+                                      const QString& username,
+                                      QWidget* parent = nullptr);
     ~NatureDimensionMdiWindow() override = default;
 
 public slots:

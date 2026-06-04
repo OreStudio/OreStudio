@@ -20,14 +20,14 @@
 #ifndef ORES_QT_BUSINESS_CENTRE_CONTROLLER_HPP
 #define ORES_QT_BUSINESS_CENTRE_CONTROLLER_HPP
 
-#include <QMdiArea>
-#include <QMainWindow>
-#include "ores.qt/EntityController.hpp"
-#include "ores.qt/ClientManager.hpp"
-#include "ores.qt/ImageCache.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata.api/domain/business_centre.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/EntityController.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
+#include "ores.qt/ImageCache.hpp"
+#include "ores.refdata.api/domain/business_centre.hpp"
+#include <QMainWindow>
+#include <QMdiArea>
 
 namespace ores::qt {
 
@@ -45,8 +45,7 @@ class BusinessCentreController final : public EntityController {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.business_centre_controller";
+    inline static std::string_view logger_name = "ores.qt.business_centre_controller";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -55,14 +54,13 @@ private:
     }
 
 public:
-    BusinessCentreController(
-        QMainWindow* mainWindow,
-        QMdiArea* mdiArea,
-        ClientManager* clientManager,
-        ImageCache* imageCache,
-        ChangeReasonCache* changeReasonCache,
-        const QString& username,
-        QObject* parent = nullptr);
+    BusinessCentreController(QMainWindow* mainWindow,
+                             QMdiArea* mdiArea,
+                             ClientManager* clientManager,
+                             ImageCache* imageCache,
+                             ChangeReasonCache* changeReasonCache,
+                             const QString& username,
+                             QObject* parent = nullptr);
 
     void showListWindow() override;
     void closeAllWindows() override;
@@ -80,8 +78,7 @@ private slots:
     void onAddNewRequested();
     void onShowHistory(const refdata::domain::business_centre& business_centre);
     void onRevertVersion(const refdata::domain::business_centre& business_centre);
-    void onOpenVersion(const refdata::domain::business_centre& business_centre,
-                       int versionNumber);
+    void onOpenVersion(const refdata::domain::business_centre& business_centre, int versionNumber);
 
 private:
     void showAddWindow();

@@ -20,12 +20,12 @@
 #ifndef ORES_QT_QUEUE_CHART_WINDOW_HPP
 #define ORES_QT_QUEUE_CHART_WINDOW_HPP
 
-#include <QWidget>
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
 #include <QComboBox>
 #include <QToolBar>
+#include <QWidget>
 #include <QtCharts/QChartView>
-#include "ores.qt/ClientManager.hpp"
-#include "ores.logging/make_logger.hpp"
 
 namespace ores::qt {
 
@@ -47,13 +47,7 @@ private:
         return instance;
     }
 
-    enum class TimeRange {
-        LastHour,
-        Last6Hours,
-        Last24Hours,
-        Last7Days,
-        AllTime
-    };
+    enum class TimeRange { LastHour, Last6Hours, Last24Hours, Last7Days, AllTime };
 
 public:
     explicit QueueChartWindow(const QString& queueId,
@@ -62,10 +56,16 @@ public:
                               QWidget* parent = nullptr);
     ~QueueChartWindow() override = default;
 
-    [[nodiscard]] const QString& queueId()   const { return queueId_;   }
-    [[nodiscard]] const QString& queueName() const { return queueName_; }
+    [[nodiscard]] const QString& queueId() const {
+        return queueId_;
+    }
+    [[nodiscard]] const QString& queueName() const {
+        return queueName_;
+    }
 
-    QSize sizeHint() const override { return {900, 500}; }
+    QSize sizeHint() const override {
+        return {900, 500};
+    }
 
     void reload();
 

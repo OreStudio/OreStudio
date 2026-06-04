@@ -32,9 +32,9 @@
  * (__declspec(dllimport) on MSVC, the same visibility attribute on GCC/Clang).
  */
 #ifdef ORES_QT_API_LIBRARY
-#  define ORES_QT_API BOOST_SYMBOL_EXPORT
+#    define ORES_QT_API BOOST_SYMBOL_EXPORT
 #else
-#  define ORES_QT_API BOOST_SYMBOL_IMPORT
+#    define ORES_QT_API BOOST_SYMBOL_IMPORT
 #endif
 
 #endif

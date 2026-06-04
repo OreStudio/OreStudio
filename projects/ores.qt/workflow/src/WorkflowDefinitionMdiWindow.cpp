@@ -17,7 +17,9 @@
  *
  */
 #include "ores.qt/WorkflowDefinitionMdiWindow.hpp"
-
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/UiPersistence.hpp"
+#include "ores.workflow.api/messaging/workflow_query_protocol.hpp"
 #include <QAction>
 #include <QCloseEvent>
 #include <QGroupBox>
@@ -29,9 +31,6 @@
 #include <QVBoxLayout>
 #include <QWidget>
 #include <QtConcurrent>
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/UiPersistence.hpp"
-#include "ores.workflow.api/messaging/workflow_query_protocol.hpp"
 
 namespace ores::qt {
 
@@ -43,22 +42,10 @@ namespace {
 constexpr auto kSettingsGroup = "WorkflowDefinitionMdiWindow";
 
 // Definition table columns
-enum class DCol {
-    TypeName = 0,
-    Description,
-    StepCount,
-    Count
-};
+enum class DCol { TypeName = 0, Description, StepCount, Count };
 
 // Steps detail table columns
-enum class SCol {
-    Index = 0,
-    Name,
-    Description,
-    CommandSubject,
-    Compensation,
-    Count
-};
+enum class SCol { Index = 0, Name, Description, CommandSubject, Compensation, Count };
 
 QTableWidgetItem* make_item(const QString& text) {
     auto* item = new QTableWidgetItem(text);
@@ -73,27 +60,27 @@ QTableWidgetItem* make_item(const QString& text) {
 // WorkflowDefinitionMdiWindow
 // ─────────────────────────────────────────────────────────────────────────────
 
-WorkflowDefinitionMdiWindow::WorkflowDefinitionMdiWindow(
-    ClientManager* clientManager, QWidget* parent)
-    : EntityListMdiWindow(parent),
-      clientManager_(clientManager),
-      toolbar_(nullptr),
-      refreshAction_(nullptr),
-      definitionTable_(nullptr),
-      splitter_(nullptr),
-      stepsGroup_(nullptr),
-      stepsTable_(nullptr),
-      watcher_(new QFutureWatcher<FetchResult>(this)) {
+WorkflowDefinitionMdiWindow::WorkflowDefinitionMdiWindow(ClientManager* clientManager,
+                                                         QWidget* parent)
+    : EntityListMdiWindow(parent)
+    , clientManager_(clientManager)
+    , toolbar_(nullptr)
+    , refreshAction_(nullptr)
+    , definitionTable_(nullptr)
+    , splitter_(nullptr)
+    , stepsGroup_(nullptr)
+    , stepsTable_(nullptr)
+    , watcher_(new QFutureWatcher<FetchResult>(this)) {
 
-    connect(watcher_, &QFutureWatcher<FetchResult>::finished,
-            this, &WorkflowDefinitionMdiWindow::onFetchFinished);
+    connect(watcher_,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            &WorkflowDefinitionMdiWindow::onFetchFinished);
 
     setupUi();
 
-    UiPersistence::restoreSize(
-        QLatin1String(kSettingsGroup), {800, 500});
-    UiPersistence::restoreSplitter(
-        QLatin1String(kSettingsGroup), splitter_);
+    UiPersistence::restoreSize(QLatin1String(kSettingsGroup), {800, 500});
+    UiPersistence::restoreSplitter(QLatin1String(kSettingsGroup), splitter_);
 
     reload();
 }
@@ -114,12 +101,9 @@ void WorkflowDefinitionMdiWindow::setupUi() {
     layout->addWidget(loadingBar());
 
     // ── Definition table (top of splitter) ──────────────────────────────────
-    definitionTable_ = new QTableWidget(
-        0, static_cast<int>(DCol::Count), this);
-    definitionTable_->setHorizontalHeaderLabels(
-        {tr("Type Name"), tr("Description"), tr("Steps")});
-    definitionTable_->horizontalHeader()->setSectionResizeMode(
-        QHeaderView::ResizeToContents);
+    definitionTable_ = new QTableWidget(0, static_cast<int>(DCol::Count), this);
+    definitionTable_->setHorizontalHeaderLabels({tr("Type Name"), tr("Description"), tr("Steps")});
+    definitionTable_->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     definitionTable_->horizontalHeader()->setStretchLastSection(true);
     definitionTable_->setSelectionBehavior(QAbstractItemView::SelectRows);
     definitionTable_->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -127,23 +111,20 @@ void WorkflowDefinitionMdiWindow::setupUi() {
     definitionTable_->setAlternatingRowColors(true);
     definitionTable_->verticalHeader()->setVisible(false);
 
-    connect(definitionTable_, &QTableWidget::currentItemChanged,
-            this, [this](QTableWidgetItem*, QTableWidgetItem*) {
-                onDefinitionSelectionChanged();
-            });
+    connect(definitionTable_,
+            &QTableWidget::currentItemChanged,
+            this,
+            [this](QTableWidgetItem*, QTableWidgetItem*) { onDefinitionSelectionChanged(); });
 
     // ── Steps detail panel (bottom of splitter) ─────────────────────────────
     stepsGroup_ = new QGroupBox(tr("Steps"), this);
     auto* stepsLayout = new QVBoxLayout(stepsGroup_);
     stepsLayout->setContentsMargins(4, 4, 4, 4);
 
-    stepsTable_ = new QTableWidget(
-        0, static_cast<int>(SCol::Count), stepsGroup_);
+    stepsTable_ = new QTableWidget(0, static_cast<int>(SCol::Count), stepsGroup_);
     stepsTable_->setHorizontalHeaderLabels(
-        {tr("#"), tr("Name"), tr("Description"),
-         tr("Command Subject"), tr("Compensation")});
-    stepsTable_->horizontalHeader()->setSectionResizeMode(
-        QHeaderView::ResizeToContents);
+        {tr("#"), tr("Name"), tr("Description"), tr("Command Subject"), tr("Compensation")});
+    stepsTable_->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     stepsTable_->horizontalHeader()->setStretchLastSection(true);
     stepsTable_->setSelectionBehavior(QAbstractItemView::SelectRows);
     stepsTable_->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -167,15 +148,12 @@ void WorkflowDefinitionMdiWindow::setupToolbar() {
     toolbar_->setIconSize(QSize(16, 16));
 
     refreshAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::ArrowSync, IconUtils::DefaultIconColor),
+        IconUtils::createRecoloredIcon(Icon::ArrowSync, IconUtils::DefaultIconColor),
         tr("Refresh"));
     refreshAction_->setToolTip(tr("Refresh workflow definitions"));
-    connect(refreshAction_, &QAction::triggered,
-            this, &WorkflowDefinitionMdiWindow::reload);
+    connect(refreshAction_, &QAction::triggered, this, &WorkflowDefinitionMdiWindow::reload);
 
-    initializeStaleIndicator(refreshAction_,
-        IconUtils::iconPath(Icon::ArrowSync));
+    initializeStaleIndicator(refreshAction_, IconUtils::iconPath(Icon::ArrowSync));
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -211,8 +189,7 @@ void WorkflowDefinitionMdiWindow::doReload() {
         } catch (const std::exception& e) {
             return {false, QString::fromLatin1(e.what()), {}};
         } catch (...) {
-            return {false,
-                QStringLiteral("Unknown error fetching definitions"), {}};
+            return {false, QStringLiteral("Unknown error fetching definitions"), {}};
         }
     }));
 }
@@ -222,20 +199,18 @@ void WorkflowDefinitionMdiWindow::onFetchFinished() {
     endLoading();
 
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), warn)
-            << "Definitions fetch failed: " << result.error.toStdString();
+        BOOST_LOG_SEV(lg(), warn) << "Definitions fetch failed: " << result.error.toStdString();
         emit errorOccurred(result.error);
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug)
-        << "Fetched " << result.definitions.size()
-        << " workflow definition(s).";
+    BOOST_LOG_SEV(lg(), debug) << "Fetched " << result.definitions.size()
+                               << " workflow definition(s).";
 
     currentDefinitions_ = result.definitions;
     populateDefinitions(currentDefinitions_);
-    emit statusChanged(tr("Loaded %1 workflow definition(s).")
-        .arg(static_cast<int>(currentDefinitions_.size())));
+    emit statusChanged(
+        tr("Loaded %1 workflow definition(s).").arg(static_cast<int>(currentDefinitions_.size())));
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -251,12 +226,14 @@ void WorkflowDefinitionMdiWindow::populateDefinitions(
         const int row = definitionTable_->rowCount();
         definitionTable_->insertRow(row);
 
-        definitionTable_->setItem(row, static_cast<int>(DCol::TypeName),
-            make_item(QString::fromStdString(def.type_name)));
-        definitionTable_->setItem(row, static_cast<int>(DCol::Description),
-            make_item(QString::fromStdString(def.description)));
-        definitionTable_->setItem(row, static_cast<int>(DCol::StepCount),
-            make_item(QString::number(def.step_count)));
+        definitionTable_->setItem(row,
+                                  static_cast<int>(DCol::TypeName),
+                                  make_item(QString::fromStdString(def.type_name)));
+        definitionTable_->setItem(row,
+                                  static_cast<int>(DCol::Description),
+                                  make_item(QString::fromStdString(def.description)));
+        definitionTable_->setItem(
+            row, static_cast<int>(DCol::StepCount), make_item(QString::number(def.step_count)));
     }
 
     definitionTable_->resizeColumnsToContents();
@@ -280,17 +257,19 @@ void WorkflowDefinitionMdiWindow::populateSteps(
         const int row = stepsTable_->rowCount();
         stepsTable_->insertRow(row);
 
-        stepsTable_->setItem(row, static_cast<int>(SCol::Index),
-            make_item(QString::number(step.step_index + 1)));
-        stepsTable_->setItem(row, static_cast<int>(SCol::Name),
-            make_item(QString::fromStdString(step.name)));
-        stepsTable_->setItem(row, static_cast<int>(SCol::Description),
-            make_item(QString::fromStdString(step.description)));
-        stepsTable_->setItem(row, static_cast<int>(SCol::CommandSubject),
-            make_item(QString::fromStdString(step.command_subject)));
-        stepsTable_->setItem(row, static_cast<int>(SCol::Compensation),
-            make_item(step.has_compensation
-                ? tr("Yes") : tr("No")));
+        stepsTable_->setItem(
+            row, static_cast<int>(SCol::Index), make_item(QString::number(step.step_index + 1)));
+        stepsTable_->setItem(
+            row, static_cast<int>(SCol::Name), make_item(QString::fromStdString(step.name)));
+        stepsTable_->setItem(row,
+                             static_cast<int>(SCol::Description),
+                             make_item(QString::fromStdString(step.description)));
+        stepsTable_->setItem(row,
+                             static_cast<int>(SCol::CommandSubject),
+                             make_item(QString::fromStdString(step.command_subject)));
+        stepsTable_->setItem(row,
+                             static_cast<int>(SCol::Compensation),
+                             make_item(step.has_compensation ? tr("Yes") : tr("No")));
     }
 
     stepsTable_->resizeColumnsToContents();
@@ -310,8 +289,7 @@ void WorkflowDefinitionMdiWindow::onDefinitionSelectionChanged() {
     }
 
     const auto& def = currentDefinitions_[static_cast<std::size_t>(row)];
-    stepsGroup_->setTitle(tr("Steps — %1")
-        .arg(QString::fromStdString(def.type_name)));
+    stepsGroup_->setTitle(tr("Steps — %1").arg(QString::fromStdString(def.type_name)));
     populateSteps(def.steps);
 }
 

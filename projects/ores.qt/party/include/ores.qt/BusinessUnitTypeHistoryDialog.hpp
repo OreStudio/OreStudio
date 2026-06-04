@@ -20,13 +20,13 @@
 #ifndef ORES_QT_BUSINESS_UNIT_TYPE_HISTORY_DIALOG_HPP
 #define ORES_QT_BUSINESS_UNIT_TYPE_HISTORY_DIALOG_HPP
 
-#include <QWidget>
-#include <QToolBar>
-#include <QTableWidget>
-#include <boost/uuid/uuid.hpp>
-#include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
 #include "ores.refdata.api/domain/business_unit_type.hpp"
+#include <QTableWidget>
+#include <QToolBar>
+#include <QWidget>
+#include <boost/uuid/uuid.hpp>
 
 namespace Ui {
 class BusinessUnitTypeHistoryDialog;
@@ -44,8 +44,7 @@ class BusinessUnitTypeHistoryDialog final : public QWidget {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.business_unit_type_history_dialog";
+    inline static std::string_view logger_name = "ores.qt.business_unit_type_history_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -54,11 +53,10 @@ private:
     }
 
 public:
-    explicit BusinessUnitTypeHistoryDialog(
-        const boost::uuids::uuid& id,
-        const QString& code,
-        ClientManager* clientManager,
-        QWidget* parent = nullptr);
+    explicit BusinessUnitTypeHistoryDialog(const boost::uuids::uuid& id,
+                                           const QString& code,
+                                           ClientManager* clientManager,
+                                           QWidget* parent = nullptr);
     ~BusinessUnitTypeHistoryDialog() override;
 
     void loadHistory();
@@ -66,8 +64,7 @@ public:
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
-    void openVersionRequested(const refdata::domain::business_unit_type& type,
-                              int versionNumber);
+    void openVersionRequested(const refdata::domain::business_unit_type& type, int versionNumber);
     void revertVersionRequested(const refdata::domain::business_unit_type& type);
 
 private slots:

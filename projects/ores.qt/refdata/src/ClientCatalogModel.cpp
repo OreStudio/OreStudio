@@ -18,35 +18,37 @@
  *
  */
 #include "ores.qt/ClientCatalogModel.hpp"
-
-#include <QFutureWatcher>
-#include <QtConcurrent>
+#include "ores.dq.api/messaging/data_organization_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.dq.api/messaging/data_organization_protocol.hpp"
+#include <QFutureWatcher>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    std::string catalog_key_extractor(const dq::domain::catalog& c) {
-        return c.name;
-    }
+std::string catalog_key_extractor(const dq::domain::catalog& c) {
+    return c.name;
+}
 }
 
-ClientCatalogModel::ClientCatalogModel(ClientManager* clientManager,
-                                       QObject* parent)
-    : AbstractClientModel(parent),
-      clientManager_(clientManager),
-      recencyTracker_(catalog_key_extractor),
-      pulseManager_(new RecencyPulseManager(this)) {
+ClientCatalogModel::ClientCatalogModel(ClientManager* clientManager, QObject* parent)
+    : AbstractClientModel(parent)
+    , clientManager_(clientManager)
+    , recencyTracker_(catalog_key_extractor)
+    , pulseManager_(new RecencyPulseManager(this)) {
 
-    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
-            this, &ClientCatalogModel::onPulseStateChanged);
-    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
-            this, &ClientCatalogModel::onPulsingComplete);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulse_state_changed,
+            this,
+            &ClientCatalogModel::onPulseStateChanged);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulsing_complete,
+            this,
+            &ClientCatalogModel::onPulsingComplete);
 }
 
 int ClientCatalogModel::rowCount(const QModelIndex& parent) const {
@@ -75,39 +77,42 @@ QVariant ClientCatalogModel::data(const QModelIndex& index, int role) const {
         return {};
 
     switch (index.column()) {
-    case Name:
-        return QString::fromStdString(catalog.name);
-    case Description:
-        return QString::fromStdString(catalog.description);
-    case Owner:
-        return catalog.owner
-            ? QString::fromStdString(*catalog.owner)
-            : QString();
-    case Version:
-        return catalog.version;
-    case ModifiedBy:
-        return QString::fromStdString(catalog.modified_by);
-    case RecordedAt:
-        return relative_time_helper::format(catalog.recorded_at);
-    default:
-        return {};
+        case Name:
+            return QString::fromStdString(catalog.name);
+        case Description:
+            return QString::fromStdString(catalog.description);
+        case Owner:
+            return catalog.owner ? QString::fromStdString(*catalog.owner) : QString();
+        case Version:
+            return catalog.version;
+        case ModifiedBy:
+            return QString::fromStdString(catalog.modified_by);
+        case RecordedAt:
+            return relative_time_helper::format(catalog.recorded_at);
+        default:
+            return {};
     }
 }
 
-QVariant ClientCatalogModel::headerData(int section,
-                                        Qt::Orientation orientation,
-                                        int role) const {
+QVariant ClientCatalogModel::headerData(int section, Qt::Orientation orientation, int role) const {
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return {};
 
     switch (section) {
-    case Name: return tr("Name");
-    case Description: return tr("Description");
-    case Owner: return tr("Owner");
-    case Version: return tr("Version");
-    case ModifiedBy: return tr("Modified By");
-    case RecordedAt: return tr("Recorded At");
-    default: return {};
+        case Name:
+            return tr("Name");
+        case Description:
+            return tr("Description");
+        case Owner:
+            return tr("Owner");
+        case Version:
+            return tr("Version");
+        case ModifiedBy:
+            return tr("Modified By");
+        case RecordedAt:
+            return tr("Recorded At");
+        default:
+            return {};
     }
 }
 
@@ -129,41 +134,47 @@ void ClientCatalogModel::loadData() {
     };
 
     auto task = [self]() -> LoadResult {
-        return exception_helper::wrap_async_fetch<LoadResult>([&]() -> LoadResult {
-            if (!self || !self->clientManager_) {
-                return {.success = false, .catalogs = {},
-                        .error_message = "Model was destroyed",
-                        .error_details = {}};
-            }
+        return exception_helper::wrap_async_fetch<LoadResult>(
+            [&]() -> LoadResult {
+                if (!self || !self->clientManager_) {
+                    return {.success = false,
+                            .catalogs = {},
+                            .error_message = "Model was destroyed",
+                            .error_details = {}};
+                }
 
-            dq::messaging::get_catalogs_request request;
-            auto response_result =
-self->clientManager_->process_authenticated_request(std::move(request));
-            if (!response_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to send request";
-                return {.success = false, .catalogs = {},
-                        .error_message = "Failed to communicate with server",
-                        .error_details = {}};
-            }
+                dq::messaging::get_catalogs_request request;
+                auto response_result =
+                    self->clientManager_->process_authenticated_request(std::move(request));
+                if (!response_result) {
+                    BOOST_LOG_SEV(lg(), error) << "Failed to send request";
+                    return {.success = false,
+                            .catalogs = {},
+                            .error_message = "Failed to communicate with server",
+                            .error_details = {}};
+                }
 
-            BOOST_LOG_SEV(lg(), debug) << "Fetched " << response_result->catalogs.size()
-                                       << " catalogs";
-            return {.success = true, .catalogs = std::move(response_result->catalogs),
-                    .error_message = {}, .error_details = {}};
-        }, "catalogs");
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Fetched " << response_result->catalogs.size() << " catalogs";
+                return {.success = true,
+                        .catalogs = std::move(response_result->catalogs),
+                        .error_message = {},
+                        .error_details = {}};
+            },
+            "catalogs");
     };
 
     auto* watcher = new QFutureWatcher<LoadResult>(this);
-    connect(watcher, &QFutureWatcher<LoadResult>::finished, this,
-            [self, watcher]() {
+    connect(watcher, &QFutureWatcher<LoadResult>::finished, this, [self, watcher]() {
         const auto result = watcher->result();
         watcher->deleteLater();
 
-        if (!self) return;
+        if (!self)
+            return;
 
         if (!result.success) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to fetch catalogs: "
-                                       << result.error_message.toStdString();
+            BOOST_LOG_SEV(lg(), error)
+                << "Failed to fetch catalogs: " << result.error_message.toStdString();
             emit self->errorOccurred(result.error_message, result.error_details);
             return;
         }
@@ -183,8 +194,7 @@ self->clientManager_->process_authenticated_request(std::move(request));
 
         emit self->loadFinished();
 
-        BOOST_LOG_SEV(lg(), debug)
-            << "Loaded " << self->catalogs_.size() << " catalogs";
+        BOOST_LOG_SEV(lg(), debug) << "Loaded " << self->catalogs_.size() << " catalogs";
     });
 
     watcher->setFuture(QtConcurrent::run(task));
@@ -203,8 +213,8 @@ QVariant ClientCatalogModel::foregroundColor(const std::string& name) const {
 
 void ClientCatalogModel::onPulseStateChanged(bool /*isOn*/) {
     if (!catalogs_.empty()) {
-        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
-            {Qt::ForegroundRole});
+        emit dataChanged(
+            index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::ForegroundRole});
     }
 }
 

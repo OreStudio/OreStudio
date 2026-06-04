@@ -18,25 +18,23 @@
  *
  */
 #include "ores.qt/RoleController.hpp"
-
-#include <QPointer>
-#include "ores.qt/RoleMdiWindow.hpp"
-#include "ores.qt/RoleDetailDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/RoleDetailDialog.hpp"
+#include "ores.qt/RoleMdiWindow.hpp"
+#include <QPointer>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-RoleController::RoleController(
-    QMainWindow* mainWindow,
-    QMdiArea* mdiArea,
-    ClientManager* clientManager,
-    const QString& username,
-    QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username, {}, parent),
-      roleListWindow_(nullptr) {
+RoleController::RoleController(QMainWindow* mainWindow,
+                               QMdiArea* mdiArea,
+                               ClientManager* clientManager,
+                               const QString& username,
+                               QObject* parent)
+    : EntityController(mainWindow, mdiArea, clientManager, username, {}, parent)
+    , roleListWindow_(nullptr) {
     BOOST_LOG_SEV(lg(), debug) << "Role controller created";
 }
 
@@ -69,34 +67,38 @@ void RoleController::showListWindow() {
     auto* roleWidget = new RoleMdiWindow(clientManager_, username_, mainWindow_);
 
     // Connect status signals
-    connect(roleWidget, &RoleMdiWindow::statusChanged,
-            this, [self = QPointer<RoleController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(roleWidget, &RoleMdiWindow::errorOccurred,
-            this, [self = QPointer<RoleController>(this)](const QString& err_msg) {
-        if (!self) return;
-        emit self->errorMessage("Error: " + err_msg);
-    });
+    connect(roleWidget,
+            &RoleMdiWindow::statusChanged,
+            this,
+            [self = QPointer<RoleController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(roleWidget,
+            &RoleMdiWindow::errorOccurred,
+            this,
+            [self = QPointer<RoleController>(this)](const QString& err_msg) {
+                if (!self)
+                    return;
+                emit self->errorMessage("Error: " + err_msg);
+            });
 
     // Connect role operations
-    connect(roleWidget, &RoleMdiWindow::showRoleDetails,
-            this, &RoleController::onShowRoleDetails);
+    connect(roleWidget, &RoleMdiWindow::showRoleDetails, this, &RoleController::onShowRoleDetails);
 
     roleListWindow_ = new DetachableMdiSubWindow();
     roleListWindow_->setAttribute(Qt::WA_DeleteOnClose);
     roleListWindow_->setWidget(roleWidget);
     roleListWindow_->setWindowTitle("Roles");
-    roleListWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::LockClosed, IconUtils::DefaultIconColor));
+    roleListWindow_->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::LockClosed, IconUtils::DefaultIconColor));
 
     // Track window for detach/reattach operations
     register_detachable_window(roleListWindow_);
     QPointer<RoleController> self = this;
     QPointer<DetachableMdiSubWindow> windowBeingDestroyed = roleListWindow_;
-    connect(roleListWindow_, &QObject::destroyed, this,
-        [self, windowBeingDestroyed]() {
+    connect(roleListWindow_, &QObject::destroyed, this, [self, windowBeingDestroyed]() {
         if (!self)
             return;
 
@@ -130,25 +132,30 @@ void RoleController::onShowRoleDetails(const iam::domain::role& role) {
     detailDialog->setRole(role);
 
     // Connect common signals
-    connect(detailDialog, &RoleDetailDialog::statusMessage,
-            this, [self = QPointer<RoleController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(detailDialog, &RoleDetailDialog::errorMessage,
-            this, [self = QPointer<RoleController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
+    connect(detailDialog,
+            &RoleDetailDialog::statusMessage,
+            this,
+            [self = QPointer<RoleController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(detailDialog,
+            &RoleDetailDialog::errorMessage,
+            this,
+            [self = QPointer<RoleController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
 
     // Create and configure window
     auto* detailWindow = new DetachableMdiSubWindow();
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Role: %1")
-        .arg(QString::fromStdString(role.name)));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::LockClosed, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(QString("Role: %1").arg(QString::fromStdString(role.name)));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::LockClosed, IconUtils::DefaultIconColor));
 
     // Track window for cleanup
     register_detachable_window(detailWindow);

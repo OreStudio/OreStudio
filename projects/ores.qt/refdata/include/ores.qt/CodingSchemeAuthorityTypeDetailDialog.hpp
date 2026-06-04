@@ -20,10 +20,10 @@
 #ifndef ORES_QT_CODING_SCHEME_AUTHORITY_TYPE_DETAIL_DIALOG_HPP
 #define ORES_QT_CODING_SCHEME_AUTHORITY_TYPE_DETAIL_DIALOG_HPP
 
+#include "ores.dq.api/domain/coding_scheme_authority_type.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.dq.api/domain/coding_scheme_authority_type.hpp"
 
 namespace Ui {
 class CodingSchemeAuthorityTypeDetailDialog;
@@ -48,8 +48,12 @@ public:
     explicit CodingSchemeAuthorityTypeDetailDialog(QWidget* parent = nullptr);
     ~CodingSchemeAuthorityTypeDetailDialog() override;
 
-    void setClientManager(ClientManager* cm) { clientManager_ = cm; }
-    void setUsername(const std::string& username) { username_ = username; }
+    void setClientManager(ClientManager* cm) {
+        clientManager_ = cm;
+    }
+    void setUsername(const std::string& username) {
+        username_ = username;
+    }
     void setCreateMode(bool create);
     void setAuthorityType(const dq::domain::coding_scheme_authority_type& authorityType);
     void setReadOnly(bool readOnly);

@@ -18,33 +18,30 @@
  *
  */
 #include "ores.qt/JobDefinitionController.hpp"
-
-#include <QMdiSubWindow>
 #include "ores.qt/ChangeReasonCache.hpp"
-#include <QMessageBox>
-#include <QPointer>
+#include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
-#include "ores.qt/JobDefinitionMdiWindow.hpp"
 #include "ores.qt/JobDefinitionDetailDialog.hpp"
 #include "ores.qt/JobDefinitionHistoryDialog.hpp"
-#include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/JobDefinitionMdiWindow.hpp"
+#include <QMdiSubWindow>
+#include <QMessageBox>
+#include <QPointer>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-JobDefinitionController::JobDefinitionController(
-    QMainWindow* mainWindow,
-    QMdiArea* mdiArea,
-    ClientManager* clientManager,
-    const QString& username,
-    ChangeReasonCache* changeReasonCache,
-    QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username,
-          std::string_view{}, parent),
-      changeReasonCache_(changeReasonCache),
-      listWindow_(nullptr),
-      listMdiSubWindow_(nullptr) {
+JobDefinitionController::JobDefinitionController(QMainWindow* mainWindow,
+                                                 QMdiArea* mdiArea,
+                                                 ClientManager* clientManager,
+                                                 const QString& username,
+                                                 ChangeReasonCache* changeReasonCache,
+                                                 QObject* parent)
+    : EntityController(mainWindow, mdiArea, clientManager, username, std::string_view{}, parent)
+    , changeReasonCache_(changeReasonCache)
+    , listWindow_(nullptr)
+    , listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "JobDefinitionController created";
 }
@@ -62,23 +59,33 @@ void JobDefinitionController::showListWindow() {
     listWindow_ = new JobDefinitionMdiWindow(clientManager_, username_);
 
     // Connect signals
-    connect(listWindow_, &JobDefinitionMdiWindow::statusChanged,
-            this, &JobDefinitionController::statusMessage);
-    connect(listWindow_, &JobDefinitionMdiWindow::errorOccurred,
-            this, &JobDefinitionController::errorMessage);
-    connect(listWindow_, &JobDefinitionMdiWindow::showDefinitionDetails,
-            this, &JobDefinitionController::onShowDetails);
-    connect(listWindow_, &JobDefinitionMdiWindow::addNewRequested,
-            this, &JobDefinitionController::onAddNewRequested);
-    connect(listWindow_, &JobDefinitionMdiWindow::showDefinitionHistory,
-            this, &JobDefinitionController::onShowHistory);
+    connect(listWindow_,
+            &JobDefinitionMdiWindow::statusChanged,
+            this,
+            &JobDefinitionController::statusMessage);
+    connect(listWindow_,
+            &JobDefinitionMdiWindow::errorOccurred,
+            this,
+            &JobDefinitionController::errorMessage);
+    connect(listWindow_,
+            &JobDefinitionMdiWindow::showDefinitionDetails,
+            this,
+            &JobDefinitionController::onShowDetails);
+    connect(listWindow_,
+            &JobDefinitionMdiWindow::addNewRequested,
+            this,
+            &JobDefinitionController::onAddNewRequested);
+    connect(listWindow_,
+            &JobDefinitionMdiWindow::showDefinitionHistory,
+            this,
+            &JobDefinitionController::onShowHistory);
 
     // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Job Definitions");
-    listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::CalendarClock, IconUtils::DefaultIconColor));
+    listMdiSubWindow_->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::CalendarClock, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -90,12 +97,16 @@ void JobDefinitionController::showListWindow() {
     register_detachable_window(listMdiSubWindow_);
 
     // Cleanup when closed
-    connect(listMdiSubWindow_, &QObject::destroyed, this, [self = QPointer<JobDefinitionController>(this), key]() {
-        if (!self) return;
-        self->untrack_window(key);
-        self->listWindow_ = nullptr;
-        self->listMdiSubWindow_ = nullptr;
-    });
+    connect(listMdiSubWindow_,
+            &QObject::destroyed,
+            this,
+            [self = QPointer<JobDefinitionController>(this), key]() {
+                if (!self)
+                    return;
+                self->untrack_window(key);
+                self->listWindow_ = nullptr;
+                self->listMdiSubWindow_ = nullptr;
+            });
 
     BOOST_LOG_SEV(lg(), debug) << "Job Definition list window created";
 }
@@ -122,8 +133,7 @@ void JobDefinitionController::reloadListWindow() {
     }
 }
 
-void JobDefinitionController::onShowDetails(
-    const scheduler::domain::job_definition& definition) {
+void JobDefinitionController::onShowDetails(const scheduler::domain::job_definition& definition) {
     BOOST_LOG_SEV(lg(), debug) << "Show details for: " << definition.job_name;
     showDetailWindow(definition);
 }
@@ -133,8 +143,7 @@ void JobDefinitionController::onAddNewRequested() {
     showAddWindow();
 }
 
-void JobDefinitionController::onShowHistory(
-    const scheduler::domain::job_definition& definition) {
+void JobDefinitionController::onShowHistory(const scheduler::domain::job_definition& definition) {
     BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << definition.job_name;
     showHistoryWindow(definition);
 }
@@ -148,23 +157,30 @@ void JobDefinitionController::showAddWindow() {
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
 
-    connect(detailDialog, &JobDefinitionDetailDialog::statusMessage,
-            this, &JobDefinitionController::statusMessage);
-    connect(detailDialog, &JobDefinitionDetailDialog::errorMessage,
-            this, &JobDefinitionController::errorMessage);
-    connect(detailDialog, &JobDefinitionDetailDialog::definitionSaved,
-            this, [self = QPointer<JobDefinitionController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Job Definition saved: " << code.toStdString();
-        self->handleEntitySaved();
-    });
+    connect(detailDialog,
+            &JobDefinitionDetailDialog::statusMessage,
+            this,
+            &JobDefinitionController::statusMessage);
+    connect(detailDialog,
+            &JobDefinitionDetailDialog::errorMessage,
+            this,
+            &JobDefinitionController::errorMessage);
+    connect(detailDialog,
+            &JobDefinitionDetailDialog::definitionSaved,
+            this,
+            [self = QPointer<JobDefinitionController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Job Definition saved: " << code.toStdString();
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Job Definition");
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::CalendarClock, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::CalendarClock, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -192,37 +208,46 @@ void JobDefinitionController::showDetailWindow(
     detailDialog->setCreateMode(false);
     detailDialog->setDefinition(definition);
 
-    connect(detailDialog, &JobDefinitionDetailDialog::statusMessage,
-            this, &JobDefinitionController::statusMessage);
-    connect(detailDialog, &JobDefinitionDetailDialog::errorMessage,
-            this, &JobDefinitionController::errorMessage);
-    connect(detailDialog, &JobDefinitionDetailDialog::definitionSaved,
-            this, [self = QPointer<JobDefinitionController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Job Definition saved: " << code.toStdString();
-        self->handleEntitySaved();
-    });
-    connect(detailDialog, &JobDefinitionDetailDialog::definitionDeleted,
-            this, [self = QPointer<JobDefinitionController>(this), key](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Job Definition deleted: " << code.toStdString();
-        self->handleEntityDeleted();
-    });
+    connect(detailDialog,
+            &JobDefinitionDetailDialog::statusMessage,
+            this,
+            &JobDefinitionController::statusMessage);
+    connect(detailDialog,
+            &JobDefinitionDetailDialog::errorMessage,
+            this,
+            &JobDefinitionController::errorMessage);
+    connect(detailDialog,
+            &JobDefinitionDetailDialog::definitionSaved,
+            this,
+            [self = QPointer<JobDefinitionController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Job Definition saved: " << code.toStdString();
+                self->handleEntitySaved();
+            });
+    connect(detailDialog,
+            &JobDefinitionDetailDialog::definitionDeleted,
+            this,
+            [self = QPointer<JobDefinitionController>(this), key](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info) << "Job Definition deleted: " << code.toStdString();
+                self->handleEntityDeleted();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Job Definition: %1").arg(identifier));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::CalendarClock, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::CalendarClock, IconUtils::DefaultIconColor));
 
     // Track window
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<JobDefinitionController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, key]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, key]() {
         if (self) {
             self->untrack_window(key);
         }
@@ -242,28 +267,32 @@ void JobDefinitionController::showHistoryWindow(
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
-        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: "
-                                  << definition.job_name;
+        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: " << definition.job_name;
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
-                              << definition.job_name;
+    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << definition.job_name;
 
-    auto* historyDialog = new JobDefinitionHistoryDialog(
-        definition.id, code, clientManager_, mainWindow_);
+    auto* historyDialog =
+        new JobDefinitionHistoryDialog(definition.id, code, clientManager_, mainWindow_);
     // No revert/open-version signals — execution history is read-only
 
-    connect(historyDialog, &JobDefinitionHistoryDialog::statusChanged,
-            this, [self = QPointer<JobDefinitionController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(historyDialog, &JobDefinitionHistoryDialog::errorOccurred,
-            this, [self = QPointer<JobDefinitionController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
+    connect(historyDialog,
+            &JobDefinitionHistoryDialog::statusChanged,
+            this,
+            [self = QPointer<JobDefinitionController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(historyDialog,
+            &JobDefinitionHistoryDialog::errorOccurred,
+            this,
+            [self = QPointer<JobDefinitionController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
     // Load history data
     historyDialog->loadHistory();
 
@@ -271,16 +300,15 @@ void JobDefinitionController::showHistoryWindow(
     historyWindow->setAttribute(Qt::WA_DeleteOnClose);
     historyWindow->setWidget(historyDialog);
     historyWindow->setWindowTitle(QString("Job Definition History: %1").arg(code));
-    historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    historyWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     // Track this history window
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
 
     QPointer<JobDefinitionController> self = this;
-    connect(historyWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }

@@ -18,31 +18,31 @@
  *
  */
 #include "ores.qt/CodingSchemeMdiWindow.hpp"
-
-#include <QVBoxLayout>
-#include <QHeaderView>
-#include <QMessageBox>
-#include <QtConcurrent>
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/EntityItemDelegate.hpp"
+#include "ores.dq.api/messaging/coding_scheme_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/EntityItemDelegate.hpp"
+#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.dq.api/messaging/coding_scheme_protocol.hpp"
+#include <QHeaderView>
+#include <QMessageBox>
+#include <QVBoxLayout>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-CodingSchemeMdiWindow::CodingSchemeMdiWindow(
-    ClientManager* clientManager, const QString& username, QWidget* parent)
-    : EntityListMdiWindow(parent),
-      clientManager_(clientManager),
-      username_(username),
-      model_(new ClientCodingSchemeModel(clientManager, this)),
-      proxyModel_(new QSortFilterProxyModel(this)),
-      tableView_(new QTableView(this)),
-      toolbar_(nullptr) {
+CodingSchemeMdiWindow::CodingSchemeMdiWindow(ClientManager* clientManager,
+                                             const QString& username,
+                                             QWidget* parent)
+    : EntityListMdiWindow(parent)
+    , clientManager_(clientManager)
+    , username_(username)
+    , model_(new ClientCodingSchemeModel(clientManager, this))
+    , proxyModel_(new QSortFilterProxyModel(this))
+    , tableView_(new QTableView(this))
+    , toolbar_(nullptr) {
 
     proxyModel_->setSourceModel(model_);
     proxyModel_->setSortCaseSensitivity(Qt::CaseInsensitive);
@@ -61,8 +61,8 @@ void CodingSchemeMdiWindow::setupUi() {
 
     tableView_->setModel(proxyModel_);
     tableView_->setSortingEnabled(true);
-    tableView_->setItemDelegate(new EntityItemDelegate(
-        ClientCodingSchemeModel::columnStyles(), tableView_));
+    tableView_->setItemDelegate(
+        new EntityItemDelegate(ClientCodingSchemeModel::columnStyles(), tableView_));
     tableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
     tableView_->setSelectionMode(QAbstractItemView::ExtendedSelection);
     tableView_->setAlternatingRowColors(true);
@@ -70,10 +70,12 @@ void CodingSchemeMdiWindow::setupUi() {
     tableView_->verticalHeader()->setVisible(false);
     tableView_->sortByColumn(ClientCodingSchemeModel::Code, Qt::AscendingOrder);
 
-    initializeTableSettings(tableView_, model_,
-        ClientCodingSchemeModel::kSettingsGroup,
-        ClientCodingSchemeModel::defaultHiddenColumns(),
-        ClientCodingSchemeModel::kDefaultWindowSize, 1);
+    initializeTableSettings(tableView_,
+                            model_,
+                            ClientCodingSchemeModel::kSettingsGroup,
+                            ClientCodingSchemeModel::defaultHiddenColumns(),
+                            ClientCodingSchemeModel::kDefaultWindowSize,
+                            1);
 
     layout->addWidget(loadingBar());
     layout->addWidget(tableView_);
@@ -86,27 +88,23 @@ void CodingSchemeMdiWindow::setupToolbar() {
     toolbar_->setIconSize(QSize(20, 20));
 
     addAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor),
-        tr("Add"));
+        IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor), tr("Add"));
     addAction_->setToolTip(tr("Add new coding scheme"));
 
     editAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Edit, IconUtils::DefaultIconColor),
-        tr("Edit"));
+        IconUtils::createRecoloredIcon(Icon::Edit, IconUtils::DefaultIconColor), tr("Edit"));
     editAction_->setToolTip(tr("Edit selected coding scheme"));
     editAction_->setEnabled(false);
 
     deleteAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor),
-        tr("Delete"));
+        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor), tr("Delete"));
     deleteAction_->setToolTip(tr("Delete selected coding scheme(s)"));
     deleteAction_->setEnabled(false);
 
     toolbar_->addSeparator();
 
     historyAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor),
-        tr("History"));
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor), tr("History"));
     historyAction_->setToolTip(tr("View version history"));
     historyAction_->setEnabled(false);
 
@@ -124,15 +122,16 @@ void CodingSchemeMdiWindow::setupToolbar() {
 }
 
 void CodingSchemeMdiWindow::setupConnections() {
-    connect(model_, &ClientCodingSchemeModel::dataLoaded,
-            this, &CodingSchemeMdiWindow::onDataLoaded);
-    connect(model_, &ClientCodingSchemeModel::loadError,
-            this, &CodingSchemeMdiWindow::onLoadError);
+    connect(
+        model_, &ClientCodingSchemeModel::dataLoaded, this, &CodingSchemeMdiWindow::onDataLoaded);
+    connect(model_, &ClientCodingSchemeModel::loadError, this, &CodingSchemeMdiWindow::onLoadError);
     connectModel(model_);
-    connect(tableView_, &QTableView::doubleClicked,
-            this, &CodingSchemeMdiWindow::onRowDoubleClicked);
-    connect(tableView_->selectionModel(), &QItemSelectionModel::selectionChanged,
-            this, &CodingSchemeMdiWindow::onSelectionChanged);
+    connect(
+        tableView_, &QTableView::doubleClicked, this, &CodingSchemeMdiWindow::onRowDoubleClicked);
+    connect(tableView_->selectionModel(),
+            &QItemSelectionModel::selectionChanged,
+            this,
+            &CodingSchemeMdiWindow::onSelectionChanged);
 
     connect(addAction_, &QAction::triggered, this, &CodingSchemeMdiWindow::onAddClicked);
     connect(editAction_, &QAction::triggered, this, &CodingSchemeMdiWindow::onEditClicked);
@@ -146,8 +145,7 @@ void CodingSchemeMdiWindow::onDataLoaded() {
     updateActionStates();
 }
 
-void CodingSchemeMdiWindow::onLoadError(const QString& error_message,
-                                         const QString& details) {
+void CodingSchemeMdiWindow::onLoadError(const QString& error_message, const QString& details) {
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);
@@ -166,7 +164,8 @@ void CodingSchemeMdiWindow::onAddClicked() {
 
 void CodingSchemeMdiWindow::onEditClicked() {
     auto selected = tableView_->selectionModel()->selectedRows();
-    if (selected.isEmpty()) return;
+    if (selected.isEmpty())
+        return;
 
     auto sourceIndex = proxyModel_->mapToSource(selected.first());
     if (auto* scheme = model_->getScheme(sourceIndex.row())) {
@@ -176,7 +175,8 @@ void CodingSchemeMdiWindow::onEditClicked() {
 
 void CodingSchemeMdiWindow::onDeleteClicked() {
     auto selected = tableView_->selectionModel()->selectedRows();
-    if (selected.isEmpty()) return;
+    if (selected.isEmpty())
+        return;
 
     std::vector<std::string> codes;
     for (const auto& index : selected) {
@@ -186,22 +186,26 @@ void CodingSchemeMdiWindow::onDeleteClicked() {
         }
     }
 
-    QString message = codes.size() == 1
-        ? tr("Delete coding scheme '%1'?").arg(QString::fromStdString(codes[0]))
-        : tr("Delete %1 coding schemes?").arg(codes.size());
+    QString message = codes.size() == 1 ?
+                          tr("Delete coding scheme '%1'?").arg(QString::fromStdString(codes[0])) :
+                          tr("Delete %1 coding schemes?").arg(codes.size());
 
-    auto reply = MessageBoxHelper::question(this, tr("Confirm Delete"), message,
-                                            QMessageBox::Yes | QMessageBox::No);
-    if (reply != QMessageBox::Yes) return;
+    auto reply = MessageBoxHelper::question(
+        this, tr("Confirm Delete"), message, QMessageBox::Yes | QMessageBox::No);
+    if (reply != QMessageBox::Yes)
+        return;
 
     QPointer<CodingSchemeMdiWindow> self = this;
     auto task = [self, codes = std::move(codes)]() -> bool {
-        if (!self || !self->clientManager_) return false;
+        if (!self || !self->clientManager_)
+            return false;
 
         dq::messaging::delete_coding_scheme_request request;
         request.codes = codes;
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
-        if (!response_result) return false;
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
+        if (!response_result)
+            return false;
 
         return response_result->success;
     };
@@ -235,7 +239,8 @@ void CodingSchemeMdiWindow::onSelectionChanged() {
 
 void CodingSchemeMdiWindow::onHistoryClicked() {
     auto selected = tableView_->selectionModel()->selectedRows();
-    if (selected.isEmpty()) return;
+    if (selected.isEmpty())
+        return;
 
     auto sourceIndex = proxyModel_->mapToSource(selected.first());
     if (auto* scheme = model_->getScheme(sourceIndex.row())) {

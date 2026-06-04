@@ -18,15 +18,14 @@
  *
  */
 #include "ores.qt/BusinessDayConventionTypeController.hpp"
-
+#include "ores.qt/BusinessDayConventionTypeDetailDialog.hpp"
+#include "ores.qt/BusinessDayConventionTypeHistoryDialog.hpp"
+#include "ores.qt/BusinessDayConventionTypeMdiWindow.hpp"
+#include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/IconUtils.hpp"
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/BusinessDayConventionTypeMdiWindow.hpp"
-#include "ores.qt/BusinessDayConventionTypeDetailDialog.hpp"
-#include "ores.qt/BusinessDayConventionTypeHistoryDialog.hpp"
-#include "ores.qt/DetachableMdiSubWindow.hpp"
 
 namespace ores::qt {
 
@@ -38,10 +37,9 @@ BusinessDayConventionTypeController::BusinessDayConventionTypeController(
     ClientManager* clientManager,
     const QString& username,
     QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username,
-          std::string_view{}, parent),
-      listWindow_(nullptr),
-      listMdiSubWindow_(nullptr) {
+    : EntityController(mainWindow, mdiArea, clientManager, username, std::string_view{}, parent)
+    , listWindow_(nullptr)
+    , listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "BusinessDayConventionTypeController created";
 }
@@ -59,23 +57,33 @@ void BusinessDayConventionTypeController::showListWindow() {
     listWindow_ = new BusinessDayConventionTypeMdiWindow(clientManager_, username_);
 
     // Connect signals
-    connect(listWindow_, &BusinessDayConventionTypeMdiWindow::statusChanged,
-            this, &BusinessDayConventionTypeController::statusMessage);
-    connect(listWindow_, &BusinessDayConventionTypeMdiWindow::errorOccurred,
-            this, &BusinessDayConventionTypeController::errorMessage);
-    connect(listWindow_, &BusinessDayConventionTypeMdiWindow::showTypeDetails,
-            this, &BusinessDayConventionTypeController::onShowDetails);
-    connect(listWindow_, &BusinessDayConventionTypeMdiWindow::addNewRequested,
-            this, &BusinessDayConventionTypeController::onAddNewRequested);
-    connect(listWindow_, &BusinessDayConventionTypeMdiWindow::showTypeHistory,
-            this, &BusinessDayConventionTypeController::onShowHistory);
+    connect(listWindow_,
+            &BusinessDayConventionTypeMdiWindow::statusChanged,
+            this,
+            &BusinessDayConventionTypeController::statusMessage);
+    connect(listWindow_,
+            &BusinessDayConventionTypeMdiWindow::errorOccurred,
+            this,
+            &BusinessDayConventionTypeController::errorMessage);
+    connect(listWindow_,
+            &BusinessDayConventionTypeMdiWindow::showTypeDetails,
+            this,
+            &BusinessDayConventionTypeController::onShowDetails);
+    connect(listWindow_,
+            &BusinessDayConventionTypeMdiWindow::addNewRequested,
+            this,
+            &BusinessDayConventionTypeController::onAddNewRequested);
+    connect(listWindow_,
+            &BusinessDayConventionTypeMdiWindow::showTypeHistory,
+            this,
+            &BusinessDayConventionTypeController::onShowHistory);
 
     // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Business Day Convention Types");
-    listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Tag, IconUtils::DefaultIconColor));
+    listMdiSubWindow_->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -87,12 +95,16 @@ void BusinessDayConventionTypeController::showListWindow() {
     register_detachable_window(listMdiSubWindow_);
 
     // Cleanup when closed
-    connect(listMdiSubWindow_, &QObject::destroyed, this, [self = QPointer<BusinessDayConventionTypeController>(this), key]() {
-        if (!self) return;
-        self->untrack_window(key);
-        self->listWindow_ = nullptr;
-        self->listMdiSubWindow_ = nullptr;
-    });
+    connect(listMdiSubWindow_,
+            &QObject::destroyed,
+            this,
+            [self = QPointer<BusinessDayConventionTypeController>(this), key]() {
+                if (!self)
+                    return;
+                self->untrack_window(key);
+                self->listWindow_ = nullptr;
+                self->listMdiSubWindow_ = nullptr;
+            });
 
     BOOST_LOG_SEV(lg(), debug) << "Business Day Convention Type list window created";
 }
@@ -144,23 +156,31 @@ void BusinessDayConventionTypeController::showAddWindow() {
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
 
-    connect(detailDialog, &BusinessDayConventionTypeDetailDialog::statusMessage,
-            this, &BusinessDayConventionTypeController::statusMessage);
-    connect(detailDialog, &BusinessDayConventionTypeDetailDialog::errorMessage,
-            this, &BusinessDayConventionTypeController::errorMessage);
-    connect(detailDialog, &BusinessDayConventionTypeDetailDialog::typeSaved,
-            this, [self = QPointer<BusinessDayConventionTypeController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Business Day Convention Type saved: " << code.toStdString();
-        self->handleEntitySaved();
-    });
+    connect(detailDialog,
+            &BusinessDayConventionTypeDetailDialog::statusMessage,
+            this,
+            &BusinessDayConventionTypeController::statusMessage);
+    connect(detailDialog,
+            &BusinessDayConventionTypeDetailDialog::errorMessage,
+            this,
+            &BusinessDayConventionTypeController::errorMessage);
+    connect(detailDialog,
+            &BusinessDayConventionTypeDetailDialog::typeSaved,
+            this,
+            [self = QPointer<BusinessDayConventionTypeController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info)
+                    << "Business Day Convention Type saved: " << code.toStdString();
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Business Day Convention Type");
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Tag, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -187,37 +207,48 @@ void BusinessDayConventionTypeController::showDetailWindow(
     detailDialog->setCreateMode(false);
     detailDialog->setType(type);
 
-    connect(detailDialog, &BusinessDayConventionTypeDetailDialog::statusMessage,
-            this, &BusinessDayConventionTypeController::statusMessage);
-    connect(detailDialog, &BusinessDayConventionTypeDetailDialog::errorMessage,
-            this, &BusinessDayConventionTypeController::errorMessage);
-    connect(detailDialog, &BusinessDayConventionTypeDetailDialog::typeSaved,
-            this, [self = QPointer<BusinessDayConventionTypeController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Business Day Convention Type saved: " << code.toStdString();
-        self->handleEntitySaved();
-    });
-    connect(detailDialog, &BusinessDayConventionTypeDetailDialog::typeDeleted,
-            this, [self = QPointer<BusinessDayConventionTypeController>(this), key](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Business Day Convention Type deleted: " << code.toStdString();
-        self->handleEntityDeleted();
-    });
+    connect(detailDialog,
+            &BusinessDayConventionTypeDetailDialog::statusMessage,
+            this,
+            &BusinessDayConventionTypeController::statusMessage);
+    connect(detailDialog,
+            &BusinessDayConventionTypeDetailDialog::errorMessage,
+            this,
+            &BusinessDayConventionTypeController::errorMessage);
+    connect(detailDialog,
+            &BusinessDayConventionTypeDetailDialog::typeSaved,
+            this,
+            [self = QPointer<BusinessDayConventionTypeController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info)
+                    << "Business Day Convention Type saved: " << code.toStdString();
+                self->handleEntitySaved();
+            });
+    connect(detailDialog,
+            &BusinessDayConventionTypeDetailDialog::typeDeleted,
+            this,
+            [self = QPointer<BusinessDayConventionTypeController>(this), key](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info)
+                    << "Business Day Convention Type deleted: " << code.toStdString();
+                self->handleEntityDeleted();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Business Day Convention Type: %1").arg(identifier));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Tag, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor));
 
     // Track window
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<BusinessDayConventionTypeController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, key]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, key]() {
         if (self) {
             self->untrack_window(key);
         }
@@ -235,30 +266,39 @@ void BusinessDayConventionTypeController::showHistoryWindow(const QString& code)
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
-        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: "
-                                  << code.toStdString();
+        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: " << code.toStdString();
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
-                              << code.toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << code.toStdString();
 
-    auto* historyDialog = new BusinessDayConventionTypeHistoryDialog(code, clientManager_, mainWindow_);
+    auto* historyDialog =
+        new BusinessDayConventionTypeHistoryDialog(code, clientManager_, mainWindow_);
 
-    connect(historyDialog, &BusinessDayConventionTypeHistoryDialog::statusChanged,
-            this, [self = QPointer<BusinessDayConventionTypeController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(historyDialog, &BusinessDayConventionTypeHistoryDialog::errorOccurred,
-            this, [self = QPointer<BusinessDayConventionTypeController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
-    connect(historyDialog, &BusinessDayConventionTypeHistoryDialog::revertVersionRequested,
-            this, &BusinessDayConventionTypeController::onRevertVersion);
-    connect(historyDialog, &BusinessDayConventionTypeHistoryDialog::openVersionRequested,
-            this, &BusinessDayConventionTypeController::onOpenVersion);
+    connect(historyDialog,
+            &BusinessDayConventionTypeHistoryDialog::statusChanged,
+            this,
+            [self = QPointer<BusinessDayConventionTypeController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(historyDialog,
+            &BusinessDayConventionTypeHistoryDialog::errorOccurred,
+            this,
+            [self = QPointer<BusinessDayConventionTypeController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
+    connect(historyDialog,
+            &BusinessDayConventionTypeHistoryDialog::revertVersionRequested,
+            this,
+            &BusinessDayConventionTypeController::onRevertVersion);
+    connect(historyDialog,
+            &BusinessDayConventionTypeHistoryDialog::openVersionRequested,
+            this,
+            &BusinessDayConventionTypeController::onOpenVersion);
 
     // Load history data
     historyDialog->loadHistory();
@@ -267,16 +307,15 @@ void BusinessDayConventionTypeController::showHistoryWindow(const QString& code)
     historyWindow->setAttribute(Qt::WA_DeleteOnClose);
     historyWindow->setWidget(historyDialog);
     historyWindow->setWindowTitle(QString("Business Day Convention Type History: %1").arg(code));
-    historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    historyWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     // Track this history window
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
 
     QPointer<BusinessDayConventionTypeController> self = this;
-    connect(historyWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -291,8 +330,8 @@ void BusinessDayConventionTypeController::onOpenVersion(
                               << " for business day convention type: " << type.code;
 
     const QString code = QString::fromStdString(type.code);
-    const QString windowKey = build_window_key("version", QString("%1_v%2")
-        .arg(code).arg(versionNumber));
+    const QString windowKey =
+        build_window_key("version", QString("%1_v%2").arg(code).arg(versionNumber));
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
@@ -306,31 +345,36 @@ void BusinessDayConventionTypeController::onOpenVersion(
     detailDialog->setType(type);
     detailDialog->setReadOnly(true);
 
-    connect(detailDialog, &BusinessDayConventionTypeDetailDialog::statusMessage,
-            this, [self = QPointer<BusinessDayConventionTypeController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(detailDialog, &BusinessDayConventionTypeDetailDialog::errorMessage,
-            this, [self = QPointer<BusinessDayConventionTypeController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
+    connect(detailDialog,
+            &BusinessDayConventionTypeDetailDialog::statusMessage,
+            this,
+            [self = QPointer<BusinessDayConventionTypeController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(detailDialog,
+            &BusinessDayConventionTypeDetailDialog::errorMessage,
+            this,
+            [self = QPointer<BusinessDayConventionTypeController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Business Day Convention Type: %1 (Version %2)")
-        .arg(code).arg(versionNumber));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("Business Day Convention Type: %1 (Version %2)").arg(code).arg(versionNumber));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     track_window(windowKey, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<BusinessDayConventionTypeController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -352,25 +396,34 @@ void BusinessDayConventionTypeController::onRevertVersion(
     detailDialog->setType(type);
     detailDialog->setCreateMode(false);
 
-    connect(detailDialog, &BusinessDayConventionTypeDetailDialog::statusMessage,
-            this, &BusinessDayConventionTypeController::statusMessage);
-    connect(detailDialog, &BusinessDayConventionTypeDetailDialog::errorMessage,
-            this, &BusinessDayConventionTypeController::errorMessage);
-    connect(detailDialog, &BusinessDayConventionTypeDetailDialog::typeSaved,
-            this, [self = QPointer<BusinessDayConventionTypeController>(this)](const QString& code) {
-        if (!self) return;
-        BOOST_LOG_SEV(lg(), info) << "Business Day Convention Type reverted: " << code.toStdString();
-        emit self->statusMessage(QString("Business Day Convention Type '%1' reverted successfully").arg(code));
-        self->handleEntitySaved();
-    });
+    connect(detailDialog,
+            &BusinessDayConventionTypeDetailDialog::statusMessage,
+            this,
+            &BusinessDayConventionTypeController::statusMessage);
+    connect(detailDialog,
+            &BusinessDayConventionTypeDetailDialog::errorMessage,
+            this,
+            &BusinessDayConventionTypeController::errorMessage);
+    connect(detailDialog,
+            &BusinessDayConventionTypeDetailDialog::typeSaved,
+            this,
+            [self = QPointer<BusinessDayConventionTypeController>(this)](const QString& code) {
+                if (!self)
+                    return;
+                BOOST_LOG_SEV(lg(), info)
+                    << "Business Day Convention Type reverted: " << code.toStdString();
+                emit self->statusMessage(
+                    QString("Business Day Convention Type '%1' reverted successfully").arg(code));
+                self->handleEntitySaved();
+            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Revert Business Day Convention Type: %1")
-        .arg(QString::fromStdString(type.code)));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("Revert Business Day Convention Type: %1").arg(QString::fromStdString(type.code)));
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
+                                                               IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 

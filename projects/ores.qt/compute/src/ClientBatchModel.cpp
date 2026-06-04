@@ -18,39 +18,41 @@
  *
  */
 #include "ores.qt/ClientBatchModel.hpp"
-
-#include <QtConcurrent>
-#include <boost/uuid/uuid_io.hpp>
 #include "ores.compute.api/messaging/batch_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
+#include <QtConcurrent>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    std::string batch_key_extractor(const compute::domain::batch& e) {
-        return e.external_ref;
-    }
+std::string batch_key_extractor(const compute::domain::batch& e) {
+    return e.external_ref;
+}
 }
 
-ClientBatchModel::ClientBatchModel(
-    ClientManager* clientManager, QObject* parent)
-    : AbstractClientModel(parent),
-      clientManager_(clientManager),
-      watcher_(new QFutureWatcher<FetchResult>(this)),
-      recencyTracker_(batch_key_extractor),
-      pulseManager_(new RecencyPulseManager(this)) {
+ClientBatchModel::ClientBatchModel(ClientManager* clientManager, QObject* parent)
+    : AbstractClientModel(parent)
+    , clientManager_(clientManager)
+    , watcher_(new QFutureWatcher<FetchResult>(this))
+    , recencyTracker_(batch_key_extractor)
+    , pulseManager_(new RecencyPulseManager(this)) {
 
-    connect(watcher_, &QFutureWatcher<FetchResult>::finished,
-            this, &ClientBatchModel::onBatchsLoaded);
+    connect(
+        watcher_, &QFutureWatcher<FetchResult>::finished, this, &ClientBatchModel::onBatchsLoaded);
 
-    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
-            this, &ClientBatchModel::onPulseStateChanged);
-    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
-            this, &ClientBatchModel::onPulsingComplete);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulse_state_changed,
+            this,
+            &ClientBatchModel::onPulseStateChanged);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulsing_complete,
+            this,
+            &ClientBatchModel::onPulsingComplete);
 }
 
 int ClientBatchModel::rowCount(const QModelIndex& parent) const {
@@ -65,8 +67,7 @@ int ClientBatchModel::columnCount(const QModelIndex& parent) const {
     return ColumnCount;
 }
 
-QVariant ClientBatchModel::data(
-    const QModelIndex& index, int role) const {
+QVariant ClientBatchModel::data(const QModelIndex& index, int role) const {
     if (!index.isValid())
         return {};
 
@@ -78,16 +79,16 @@ QVariant ClientBatchModel::data(
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-        case ExternalRef:
-            return QString::fromStdString(batch.external_ref);
-        case Status:
-            return QString::fromStdString(batch.status);
-        case Version:
-            return static_cast<qlonglong>(batch.version);
-        case ModifiedBy:
-            return QString::fromStdString(batch.modified_by);
-        default:
-            return {};
+            case ExternalRef:
+                return QString::fromStdString(batch.external_ref);
+            case Status:
+                return QString::fromStdString(batch.status);
+            case Version:
+                return static_cast<qlonglong>(batch.version);
+            case ModifiedBy:
+                return QString::fromStdString(batch.modified_by);
+            default:
+                return {};
         }
     }
 
@@ -98,22 +99,21 @@ QVariant ClientBatchModel::data(
     return {};
 }
 
-QVariant ClientBatchModel::headerData(
-    int section, Qt::Orientation orientation, int role) const {
+QVariant ClientBatchModel::headerData(int section, Qt::Orientation orientation, int role) const {
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return {};
 
     switch (section) {
-    case ExternalRef:
-        return tr("Reference");
-    case Status:
-        return tr("Status");
-    case Version:
-        return tr("Version");
-    case ModifiedBy:
-        return tr("Modified By");
-    default:
-        return {};
+        case ExternalRef:
+            return tr("Reference");
+        case Status:
+            return tr("Status");
+        case Version:
+            return tr("Version");
+        case ModifiedBy:
+            return tr("Modified By");
+        default:
+            return {};
     }
 }
 
@@ -143,8 +143,7 @@ void ClientBatchModel::refresh() {
     fetch_batches(0, page_size_);
 }
 
-void ClientBatchModel::load_page(std::uint32_t offset,
-                                          std::uint32_t limit) {
+void ClientBatchModel::load_page(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "load_page: offset=" << offset << ", limit=" << limit;
 
     if (is_fetching_) {
@@ -168,18 +167,19 @@ void ClientBatchModel::load_page(std::uint32_t offset,
     fetch_batches(offset, limit);
 }
 
-void ClientBatchModel::fetch_batches(
-    std::uint32_t offset, std::uint32_t limit) {
+void ClientBatchModel::fetch_batches(std::uint32_t offset, std::uint32_t limit) {
     is_fetching_ = true;
     QPointer<ClientBatchModel> self = this;
 
-    QFuture<FetchResult> future =
-        QtConcurrent::run([self, offset, limit]() -> FetchResult {
-            return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
-                BOOST_LOG_SEV(lg(), debug) << "Making compute batches request with offset="
-                                           << offset << ", limit=" << limit;
+    QFuture<FetchResult> future = QtConcurrent::run([self, offset, limit]() -> FetchResult {
+        return exception_helper::wrap_async_fetch<FetchResult>(
+            [&]() -> FetchResult {
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Making compute batches request with offset=" << offset
+                    << ", limit=" << limit;
                 if (!self || !self->clientManager_) {
-                    return {.success = false, .batches = {},
+                    return {.success = false,
+                            .batches = {},
                             .total_available_count = 0,
                             .error_message = "Model was destroyed",
                             .error_details = {}};
@@ -189,28 +189,32 @@ void ClientBatchModel::fetch_batches(
                 request.offset = offset;
                 request.limit = limit;
 
-                auto result = self->clientManager_->
-                    process_authenticated_request(std::move(request));
+                auto result =
+                    self->clientManager_->process_authenticated_request(std::move(request));
 
                 if (!result) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to fetch compute batches: "
-                                               << result.error();
-                    return {.success = false, .batches = {},
+                    BOOST_LOG_SEV(lg(), error)
+                        << "Failed to fetch compute batches: " << result.error();
+                    return {.success = false,
+                            .batches = {},
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(
                                 "Failed to fetch compute batches: " + result.error()),
                             .error_details = {}};
                 }
 
-                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->batches.size()
-                                           << " compute batches, total available: "
-                                           << result->total_available_count;
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Fetched " << result->batches.size()
+                    << " compute batches, total available: " << result->total_available_count;
                 return {.success = true,
                         .batches = std::move(result->batches),
-                        .total_available_count = static_cast<std::uint32_t>(result->total_available_count),
-                        .error_message = {}, .error_details = {}};
-            }, "compute batches");
-        });
+                        .total_available_count =
+                            static_cast<std::uint32_t>(result->total_available_count),
+                        .error_message = {},
+                        .error_details = {}};
+            },
+            "compute batches");
+    });
 
     watcher_->setFuture(future);
 }
@@ -221,8 +225,8 @@ void ClientBatchModel::onBatchsLoaded() {
     const auto result = watcher_->result();
 
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to fetch compute batches: "
-                                   << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to fetch compute batches: " << result.error_message.toStdString();
         emit loadError(result.error_message, result.error_details);
         return;
     }
@@ -261,16 +265,14 @@ void ClientBatchModel::set_page_size(std::uint32_t size) {
     }
 }
 
-const compute::domain::batch*
-ClientBatchModel::getBatch(int row) const {
+const compute::domain::batch* ClientBatchModel::getBatch(int row) const {
     const auto idx = static_cast<std::size_t>(row);
     if (idx >= batches_.size())
         return nullptr;
     return &batches_[idx];
 }
 
-QVariant ClientBatchModel::recency_foreground_color(
-    const std::string& code) const {
+QVariant ClientBatchModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {
         return color_constants::stale_indicator;
     }
@@ -279,8 +281,8 @@ QVariant ClientBatchModel::recency_foreground_color(
 
 void ClientBatchModel::onPulseStateChanged(bool /*isOn*/) {
     if (!batches_.empty()) {
-        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
-            {Qt::ForegroundRole});
+        emit dataChanged(
+            index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::ForegroundRole});
     }
 }
 

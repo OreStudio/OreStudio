@@ -20,13 +20,13 @@
 #ifndef ORES_QT_REPORT_INSTANCE_HISTORY_DIALOG_HPP
 #define ORES_QT_REPORT_INSTANCE_HISTORY_DIALOG_HPP
 
-#include <QWidget>
-#include <QToolBar>
-#include <QTableWidget>
-#include <boost/uuid/uuid.hpp>
-#include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
 #include "ores.reporting.api/domain/report_instance.hpp"
+#include <QTableWidget>
+#include <QToolBar>
+#include <QWidget>
+#include <boost/uuid/uuid.hpp>
 
 namespace Ui {
 class ReportInstanceHistoryDialog;
@@ -44,8 +44,7 @@ class ReportInstanceHistoryDialog final : public QWidget {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.report_instance_history_dialog";
+    inline static std::string_view logger_name = "ores.qt.report_instance_history_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -54,11 +53,10 @@ private:
     }
 
 public:
-    explicit ReportInstanceHistoryDialog(
-        const boost::uuids::uuid& id,
-        const QString& code,
-        ClientManager* clientManager,
-        QWidget* parent = nullptr);
+    explicit ReportInstanceHistoryDialog(const boost::uuids::uuid& id,
+                                         const QString& code,
+                                         ClientManager* clientManager,
+                                         QWidget* parent = nullptr);
     ~ReportInstanceHistoryDialog() override;
 
     void loadHistory();

@@ -17,15 +17,13 @@
  *
  */
 #include "ores.qt/SchedulerPlugin.hpp"
-
-#include <QMenu>
-#include <QAction>
-
-#include "ores.qt/IconUtils.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/JobDefinitionController.hpp"
 #include "ores.qt/JobInstanceController.hpp"
 #include "ores.qt/SchedulerMonitorController.hpp"
+#include <QAction>
+#include <QMenu>
 
 namespace ores::qt {
 
@@ -44,7 +42,8 @@ auto ico(Icon icon) {
 
 }
 
-SchedulerPlugin::SchedulerPlugin(QObject* parent) : PluginBase(parent) {
+SchedulerPlugin::SchedulerPlugin(QObject* parent)
+    : PluginBase(parent) {
     BOOST_LOG_SEV(lg(), debug) << "Plugin initialised.";
 }
 
@@ -56,9 +55,12 @@ void SchedulerPlugin::on_login(const plugin_context& ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Login event received.";
     ctx_ = ctx;
 
-    jobDefinitionController_ = std::make_unique<JobDefinitionController>(
-        ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username,
-        ctx_.change_reason_cache, this);
+    jobDefinitionController_ = std::make_unique<JobDefinitionController>(ctx_.main_window,
+                                                                         ctx_.mdi_area,
+                                                                         ctx_.client_manager,
+                                                                         ctx_.username,
+                                                                         ctx_.change_reason_cache,
+                                                                         this);
     connectControllerSignals(jobDefinitionController_.get());
 
     jobInstanceController_ = std::make_unique<JobInstanceController>(
@@ -67,38 +69,42 @@ void SchedulerPlugin::on_login(const plugin_context& ctx) {
 
     schedulerMonitorController_ = std::make_unique<SchedulerMonitorController>(
         ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, this);
-    connect(schedulerMonitorController_.get(), &SchedulerMonitorController::statusMessage,
-            this, &SchedulerPlugin::statusMessage);
-    connect(schedulerMonitorController_.get(), &SchedulerMonitorController::errorMessage,
-            this, &SchedulerPlugin::statusMessage);
+    connect(schedulerMonitorController_.get(),
+            &SchedulerMonitorController::statusMessage,
+            this,
+            &SchedulerPlugin::statusMessage);
+    connect(schedulerMonitorController_.get(),
+            &SchedulerMonitorController::errorMessage,
+            this,
+            &SchedulerPlugin::statusMessage);
 }
 
 void SchedulerPlugin::setup_menus(const shared_menus_context& smc) {
     BOOST_LOG_SEV(lg(), debug) << "Registering entries in shared menus."
-        << " operations=" << (smc.operations_menu ? "ok" : "null");
+                               << " operations=" << (smc.operations_menu ? "ok" : "null");
     if (!smc.operations_menu)
         return;
 
     operations_menu_ = smc.operations_menu;
 
-    auto* actJobDefs = operations_menu_->addAction(
-        ico(Icon::TasksApp), tr("&Job Definitions"));
+    auto* actJobDefs = operations_menu_->addAction(ico(Icon::TasksApp), tr("&Job Definitions"));
     connect(actJobDefs, &QAction::triggered, this, [this]() {
-        if (jobDefinitionController_) jobDefinitionController_->showListWindow();
+        if (jobDefinitionController_)
+            jobDefinitionController_->showListWindow();
     });
 
-    auto* actJobInstances = operations_menu_->addAction(
-        ico(Icon::Clock), tr("&Job Instances"));
+    auto* actJobInstances = operations_menu_->addAction(ico(Icon::Clock), tr("&Job Instances"));
     connect(actJobInstances, &QAction::triggered, this, [this]() {
-        if (jobInstanceController_) jobInstanceController_->showListWindow();
+        if (jobInstanceController_)
+            jobInstanceController_->showListWindow();
     });
 
     operations_menu_->addSeparator();
 
-    auto* actMonitor = operations_menu_->addAction(
-        ico(Icon::Clock), tr("Job &Monitor"));
+    auto* actMonitor = operations_menu_->addAction(ico(Icon::Clock), tr("Job &Monitor"));
     connect(actMonitor, &QAction::triggered, this, [this]() {
-        if (schedulerMonitorController_) schedulerMonitorController_->showWindow();
+        if (schedulerMonitorController_)
+            schedulerMonitorController_->showWindow();
     });
 }
 

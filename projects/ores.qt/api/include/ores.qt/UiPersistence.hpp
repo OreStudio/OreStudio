@@ -20,9 +20,9 @@
 #ifndef ORES_QT_UI_PERSISTENCE_HPP
 #define ORES_QT_UI_PERSISTENCE_HPP
 
+#include "ores.qt/export.hpp"
 #include <QSize>
 #include <QString>
-#include "ores.qt/export.hpp"
 
 class QWidget;
 class QSplitter;
@@ -61,8 +61,7 @@ public:
     /**
      * @brief Restore saved widget size, or return defaultSize if none saved.
      */
-    static QSize restoreSize(const QString& group,
-                             const QSize& defaultSize = {900, 400});
+    static QSize restoreSize(const QString& group, const QSize& defaultSize = {900, 400});
 
     /**
      * @brief Save splitter position to settings.
@@ -79,8 +78,7 @@ public:
      *
      * @param version  Bump this when the column layout changes to invalidate old state.
      */
-    static void saveHeader(const QString& group, const QHeaderView* h,
-                           int version = 1);
+    static void saveHeader(const QString& group, const QHeaderView* h, int version = 1);
 
     /**
      * @brief Restore saved table header state.
@@ -89,8 +87,7 @@ public:
      *         false if no saved state or version mismatch — the caller should
      *         apply their default hidden columns.
      */
-    static bool restoreHeader(const QString& group, QHeaderView* h,
-                              int version = 1);
+    static bool restoreHeader(const QString& group, QHeaderView* h, int version = 1);
 
     /**
      * @brief Save MDI sub-window geometry (position and size within the MDI

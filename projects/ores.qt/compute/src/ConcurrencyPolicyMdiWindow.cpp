@@ -18,38 +18,36 @@
  *
  */
 #include "ores.qt/ConcurrencyPolicyMdiWindow.hpp"
-
-#include <QVBoxLayout>
-#include <QHeaderView>
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
+#include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/ColorConstants.hpp"
 #include "ores.reporting.api/messaging/concurrency_policy_protocol.hpp"
+#include <QFutureWatcher>
+#include <QHeaderView>
+#include <QMessageBox>
+#include <QVBoxLayout>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-ConcurrencyPolicyMdiWindow::ConcurrencyPolicyMdiWindow(
-    ClientManager* clientManager,
-    const QString& username,
-    QWidget* parent)
-    : EntityListMdiWindow(parent),
-      clientManager_(clientManager),
-      username_(username),
-      toolbar_(nullptr),
-      tableView_(nullptr),
-      model_(nullptr),
-      proxyModel_(nullptr),
-      paginationWidget_(nullptr),
-      reloadAction_(nullptr),
-      addAction_(nullptr),
-      editAction_(nullptr),
-      deleteAction_(nullptr),
-      historyAction_(nullptr) {
+ConcurrencyPolicyMdiWindow::ConcurrencyPolicyMdiWindow(ClientManager* clientManager,
+                                                       const QString& username,
+                                                       QWidget* parent)
+    : EntityListMdiWindow(parent)
+    , clientManager_(clientManager)
+    , username_(username)
+    , toolbar_(nullptr)
+    , tableView_(nullptr)
+    , model_(nullptr)
+    , proxyModel_(nullptr)
+    , paginationWidget_(nullptr)
+    , reloadAction_(nullptr)
+    , addAction_(nullptr)
+    , editAction_(nullptr)
+    , deleteAction_(nullptr)
+    , historyAction_(nullptr) {
 
     setupUi();
     setupConnections();
@@ -79,49 +77,38 @@ void ConcurrencyPolicyMdiWindow::setupToolbar() {
     toolbar_->setIconSize(QSize(20, 20));
 
     reloadAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::ArrowClockwise, IconUtils::DefaultIconColor),
+        IconUtils::createRecoloredIcon(Icon::ArrowClockwise, IconUtils::DefaultIconColor),
         tr("Reload"));
-    connect(reloadAction_, &QAction::triggered, this,
-            &EntityListMdiWindow::reload);
+    connect(reloadAction_, &QAction::triggered, this, &EntityListMdiWindow::reload);
 
     initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowClockwise));
 
     toolbar_->addSeparator();
 
     addAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::Add, IconUtils::DefaultIconColor),
-        tr("Add"));
+        IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor), tr("Add"));
     addAction_->setToolTip(tr("Add new concurrency policy"));
-    connect(addAction_, &QAction::triggered, this,
-            &ConcurrencyPolicyMdiWindow::addNew);
+    connect(addAction_, &QAction::triggered, this, &ConcurrencyPolicyMdiWindow::addNew);
 
     editAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::Edit, IconUtils::DefaultIconColor),
-        tr("Edit"));
+        IconUtils::createRecoloredIcon(Icon::Edit, IconUtils::DefaultIconColor), tr("Edit"));
     editAction_->setToolTip(tr("Edit selected concurrency policy"));
     editAction_->setEnabled(false);
-    connect(editAction_, &QAction::triggered, this,
-            &ConcurrencyPolicyMdiWindow::editSelected);
+    connect(editAction_, &QAction::triggered, this, &ConcurrencyPolicyMdiWindow::editSelected);
 
     deleteAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::Delete, IconUtils::DefaultIconColor),
-        tr("Delete"));
+        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor), tr("Delete"));
     deleteAction_->setToolTip(tr("Delete selected concurrency policy"));
     deleteAction_->setEnabled(false);
-    connect(deleteAction_, &QAction::triggered, this,
-            &ConcurrencyPolicyMdiWindow::deleteSelected);
+    connect(deleteAction_, &QAction::triggered, this, &ConcurrencyPolicyMdiWindow::deleteSelected);
 
     historyAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::History, IconUtils::DefaultIconColor),
-        tr("History"));
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor), tr("History"));
     historyAction_->setToolTip(tr("View concurrency policy history"));
     historyAction_->setEnabled(false);
-    connect(historyAction_, &QAction::triggered, this,
+    connect(historyAction_,
+            &QAction::triggered,
+            this,
             &ConcurrencyPolicyMdiWindow::viewHistorySelected);
 }
 
@@ -139,32 +126,39 @@ void ConcurrencyPolicyMdiWindow::setupTable() {
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
 
-    initializeTableSettings(tableView_, model_,
-        "ConcurrencyPolicyListWindow",
-        {ClientConcurrencyPolicyModel::Description},
-        {900, 400}, 1);
+    initializeTableSettings(tableView_,
+                            model_,
+                            "ConcurrencyPolicyListWindow",
+                            {ClientConcurrencyPolicyModel::Description},
+                            {900, 400},
+                            1);
 }
 
 void ConcurrencyPolicyMdiWindow::setupConnections() {
-    connect(model_, &ClientConcurrencyPolicyModel::dataLoaded,
-            this, &ConcurrencyPolicyMdiWindow::onDataLoaded);
-    connect(model_, &ClientConcurrencyPolicyModel::loadError,
-            this, &ConcurrencyPolicyMdiWindow::onLoadError);
+    connect(model_,
+            &ClientConcurrencyPolicyModel::dataLoaded,
+            this,
+            &ConcurrencyPolicyMdiWindow::onDataLoaded);
+    connect(model_,
+            &ClientConcurrencyPolicyModel::loadError,
+            this,
+            &ConcurrencyPolicyMdiWindow::onLoadError);
     connectModel(model_);
 
-    connect(tableView_->selectionModel(), &QItemSelectionModel::selectionChanged,
-            this, &ConcurrencyPolicyMdiWindow::onSelectionChanged);
-    connect(tableView_, &QTableView::doubleClicked,
-            this, &ConcurrencyPolicyMdiWindow::onDoubleClicked);
+    connect(tableView_->selectionModel(),
+            &QItemSelectionModel::selectionChanged,
+            this,
+            &ConcurrencyPolicyMdiWindow::onSelectionChanged);
+    connect(
+        tableView_, &QTableView::doubleClicked, this, &ConcurrencyPolicyMdiWindow::onDoubleClicked);
 
-    connect(paginationWidget_, &PaginationWidget::page_size_changed,
-            this, [this](std::uint32_t size) {
-        model_->set_page_size(size);
-        model_->refresh();
-    });
+    connect(
+        paginationWidget_, &PaginationWidget::page_size_changed, this, [this](std::uint32_t size) {
+            model_->set_page_size(size);
+            model_->refresh();
+        });
 
-    connect(paginationWidget_, &PaginationWidget::load_all_requested,
-            this, [this]() {
+    connect(paginationWidget_, &PaginationWidget::load_all_requested, this, [this]() {
         const auto total = model_->total_available_count();
         if (total > 0 && total <= 1000) {
             model_->set_page_size(total);
@@ -172,10 +166,11 @@ void ConcurrencyPolicyMdiWindow::setupConnections() {
         }
     });
 
-    connect(paginationWidget_, &PaginationWidget::page_requested,
-            this, [this](std::uint32_t offset, std::uint32_t limit) {
-        model_->load_page(offset, limit);
-    });
+    connect(
+        paginationWidget_,
+        &PaginationWidget::page_requested,
+        this,
+        [this](std::uint32_t offset, std::uint32_t limit) { model_->load_page(offset, limit); });
 }
 
 void ConcurrencyPolicyMdiWindow::doReload() {
@@ -190,12 +185,11 @@ void ConcurrencyPolicyMdiWindow::onDataLoaded() {
     emit statusChanged(tr("Loaded %1 of %2 concurrency policies").arg(loaded).arg(total));
 
     paginationWidget_->update_state(loaded, total);
-    paginationWidget_->set_load_all_enabled(
-        loaded < static_cast<int>(total) && total > 0 && total <= 1000);
+    paginationWidget_->set_load_all_enabled(loaded < static_cast<int>(total) && total > 0 &&
+                                            total <= 1000);
 }
 
-void ConcurrencyPolicyMdiWindow::onLoadError(const QString& error_message,
-                                          const QString& details) {
+void ConcurrencyPolicyMdiWindow::onLoadError(const QString& error_message, const QString& details) {
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);
@@ -249,8 +243,7 @@ void ConcurrencyPolicyMdiWindow::viewHistorySelected() {
 
     auto sourceIndex = proxyModel_->mapToSource(selected.first());
     if (auto* policy = model_->getPolicy(sourceIndex.row())) {
-        BOOST_LOG_SEV(lg(), debug) << "Emitting showPolicyHistory for code: "
-                                   << policy->code;
+        BOOST_LOG_SEV(lg(), debug) << "Emitting showPolicyHistory for code: " << policy->code;
         emit showPolicyHistory(*policy);
     }
 }
@@ -263,8 +256,8 @@ void ConcurrencyPolicyMdiWindow::deleteSelected() {
     }
 
     if (!clientManager_->isConnected()) {
-        MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot delete concurrency policy while disconnected.");
+        MessageBoxHelper::warning(
+            this, "Disconnected", "Cannot delete concurrency policy while disconnected.");
         return;
     }
 
@@ -287,14 +280,14 @@ void ConcurrencyPolicyMdiWindow::deleteSelected() {
     QString confirmMessage;
     if (codes.size() == 1) {
         confirmMessage = QString("Are you sure you want to delete concurrency policy '%1'?")
-            .arg(QString::fromStdString(codes.front()));
+                             .arg(QString::fromStdString(codes.front()));
     } else {
-        confirmMessage = QString("Are you sure you want to delete %1 concurrency policies?")
-            .arg(codes.size());
+        confirmMessage =
+            QString("Are you sure you want to delete %1 concurrency policies?").arg(codes.size());
     }
 
-    auto reply = MessageBoxHelper::question(this, "Delete Concurrency Policy",
-        confirmMessage, QMessageBox::Yes | QMessageBox::No);
+    auto reply = MessageBoxHelper::question(
+        this, "Delete Concurrency Policy", confirmMessage, QMessageBox::Yes | QMessageBox::No);
 
     if (reply != QMessageBox::Yes) {
         BOOST_LOG_SEV(lg(), debug) << "Delete cancelled by user";
@@ -306,14 +299,16 @@ void ConcurrencyPolicyMdiWindow::deleteSelected() {
 
     auto task = [self, codes]() -> DeleteResult {
         DeleteResult results;
-        if (!self) return {};
+        if (!self)
+            return {};
 
-        BOOST_LOG_SEV(lg(), debug) << "Making batch delete request for "
-                                   << codes.size() << " concurrency policies";
+        BOOST_LOG_SEV(lg(), debug)
+            << "Making batch delete request for " << codes.size() << " concurrency policies";
 
         reporting::messaging::delete_concurrency_policy_request request;
         request.codes = codes;
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             BOOST_LOG_SEV(lg(), error) << "Failed to send batch delete request";
@@ -331,8 +326,7 @@ void ConcurrencyPolicyMdiWindow::deleteSelected() {
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);
-    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
-            self, [self, watcher]() {
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, watcher]() {
         auto results = watcher->result();
         watcher->deleteLater();
 
@@ -346,8 +340,8 @@ void ConcurrencyPolicyMdiWindow::deleteSelected() {
                 success_count++;
                 emit self->policyDeleted(QString::fromStdString(code));
             } else {
-                BOOST_LOG_SEV(lg(), error) << "Concurrency Policy deletion failed: "
-                                           << code << " - " << result.second;
+                BOOST_LOG_SEV(lg(), error)
+                    << "Concurrency Policy deletion failed: " << code << " - " << result.second;
                 failure_count++;
                 if (first_error.isEmpty()) {
                     first_error = QString::fromStdString(result.second);
@@ -358,21 +352,22 @@ void ConcurrencyPolicyMdiWindow::deleteSelected() {
         self->model_->refresh();
 
         if (failure_count == 0) {
-            QString msg = success_count == 1
-                ? "Successfully deleted 1 concurrency policy"
-                : QString("Successfully deleted %1 concurrency policies").arg(success_count);
+            QString msg =
+                success_count == 1 ?
+                    "Successfully deleted 1 concurrency policy" :
+                    QString("Successfully deleted %1 concurrency policies").arg(success_count);
             emit self->statusChanged(msg);
         } else if (success_count == 0) {
-            QString msg = QString("Failed to delete %1 %2: %3")
-                .arg(failure_count)
-                .arg(failure_count == 1 ? "concurrency policy" : "concurrency policies")
-                .arg(first_error);
+            QString msg =
+                QString("Failed to delete %1 %2: %3")
+                    .arg(failure_count)
+                    .arg(failure_count == 1 ? "concurrency policy" : "concurrency policies")
+                    .arg(first_error);
             emit self->errorOccurred(msg);
             MessageBoxHelper::critical(self, "Delete Failed", msg);
         } else {
-            QString msg = QString("Deleted %1, failed to delete %2")
-                .arg(success_count)
-                .arg(failure_count);
+            QString msg =
+                QString("Deleted %1, failed to delete %2").arg(success_count).arg(failure_count);
             emit self->statusChanged(msg);
             MessageBoxHelper::warning(self, "Partial Success", msg);
         }

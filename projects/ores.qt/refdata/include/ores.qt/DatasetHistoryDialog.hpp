@@ -20,13 +20,13 @@
 #ifndef ORES_QT_DATASET_HISTORY_DIALOG_HPP
 #define ORES_QT_DATASET_HISTORY_DIALOG_HPP
 
-#include <QWidget>
-#include <QToolBar>
-#include <QTableWidget>
-#include <boost/uuid/uuid.hpp>
-#include "ores.qt/ClientManager.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.dq.api/domain/dataset.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include <QTableWidget>
+#include <QToolBar>
+#include <QWidget>
+#include <boost/uuid/uuid.hpp>
 
 namespace Ui {
 class DatasetHistoryDialog;
@@ -38,8 +38,7 @@ class DatasetHistoryDialog final : public QWidget {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.dataset_history_dialog";
+    inline static std::string_view logger_name = "ores.qt.dataset_history_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -48,10 +47,9 @@ private:
     }
 
 public:
-    explicit DatasetHistoryDialog(
-        const boost::uuids::uuid& id,
-        ClientManager* clientManager,
-        QWidget* parent = nullptr);
+    explicit DatasetHistoryDialog(const boost::uuids::uuid& id,
+                                  ClientManager* clientManager,
+                                  QWidget* parent = nullptr);
     ~DatasetHistoryDialog() override;
 
     void loadHistory();

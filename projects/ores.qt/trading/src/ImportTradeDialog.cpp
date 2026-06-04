@@ -18,75 +18,70 @@
  *
  */
 #include "ores.qt/ImportTradeDialog.hpp"
-
-#include <fstream>
-#include <sstream>
-#include <filesystem>
-#include <QVBoxLayout>
-#include <QHBoxLayout>
+#include "ores.marketdata.api/messaging/import_protocol.hpp"
+#include "ores.ore.core/xml/importer.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.refdata.api/messaging/counterparty_protocol.hpp"
+#include "ores.trading.api/messaging/instrument_protocol.hpp"
+#include "ores.trading.api/messaging/trade_protocol.hpp"
+#include <QDateTime>
 #include <QGridLayout>
 #include <QGroupBox>
+#include <QHBoxLayout>
 #include <QHeaderView>
-#include <QDateTime>
 #include <QPointer>
+#include <QVBoxLayout>
 #include <QtConcurrent/QtConcurrent>
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/uuid/random_generator.hpp>
 #include <boost/lexical_cast.hpp>
-#include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.ore.core/xml/importer.hpp"
-#include "ores.refdata.api/messaging/counterparty_protocol.hpp"
-#include "ores.trading.api/messaging/trade_protocol.hpp"
-#include "ores.trading.api/messaging/instrument_protocol.hpp"
-#include "ores.marketdata.api/messaging/import_protocol.hpp"
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <filesystem>
+#include <fstream>
+#include <sstream>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-ImportTradeDialog::ImportTradeDialog(
-    const refdata::domain::book& book,
-    const std::vector<ore::xml::trade_import_item>& items,
-    const QString& source_label,
-    const std::string& market_data_dir,
-    ClientManager* clientManager,
-    const QString& username,
-    QWidget* parent)
-    : QDialog(parent),
-      book_(book),
-      items_(items),
-      source_label_(source_label),
-      market_data_dir_(market_data_dir),
-      clientManager_(clientManager),
-      username_(username),
-      tradeDateEdit_(nullptr),
-      effectiveDateEdit_(nullptr),
-      terminationDateEdit_(nullptr),
-      lifecycleEventCombo_(nullptr),
-      defaultNettingSetEdit_(nullptr),
-      defaultCounterpartyCombo_(nullptr),
-      counterpartyStatusLabel_(nullptr),
-      fileLabel_(nullptr),
-      bookLabel_(nullptr),
-      selectAllCheckbox_(nullptr),
-      selectionCountLabel_(nullptr),
-      tradeTable_(nullptr),
-      progressBar_(nullptr),
-      statusLabel_(nullptr),
-      importButton_(nullptr),
-      cancelButton_(nullptr),
-      importInProgress_(false),
-      cancelRequested_(false) {
+ImportTradeDialog::ImportTradeDialog(const refdata::domain::book& book,
+                                     const std::vector<ore::xml::trade_import_item>& items,
+                                     const QString& source_label,
+                                     const std::string& market_data_dir,
+                                     ClientManager* clientManager,
+                                     const QString& username,
+                                     QWidget* parent)
+    : QDialog(parent)
+    , book_(book)
+    , items_(items)
+    , source_label_(source_label)
+    , market_data_dir_(market_data_dir)
+    , clientManager_(clientManager)
+    , username_(username)
+    , tradeDateEdit_(nullptr)
+    , effectiveDateEdit_(nullptr)
+    , terminationDateEdit_(nullptr)
+    , lifecycleEventCombo_(nullptr)
+    , defaultNettingSetEdit_(nullptr)
+    , defaultCounterpartyCombo_(nullptr)
+    , counterpartyStatusLabel_(nullptr)
+    , fileLabel_(nullptr)
+    , bookLabel_(nullptr)
+    , selectAllCheckbox_(nullptr)
+    , selectionCountLabel_(nullptr)
+    , tradeTable_(nullptr)
+    , progressBar_(nullptr)
+    , statusLabel_(nullptr)
+    , importButton_(nullptr)
+    , cancelButton_(nullptr)
+    , importInProgress_(false)
+    , cancelRequested_(false) {
 
-    BOOST_LOG_SEV(lg(), debug) << "Creating import trade dialog for book: "
-                               << book.name << " with " << items.size()
-                               << " trades from: "
-                               << source_label.toStdString();
+    BOOST_LOG_SEV(lg(), debug) << "Creating import trade dialog for book: " << book.name << " with "
+                               << items.size() << " trades from: " << source_label.toStdString();
 
     validation_errors_.reserve(items.size());
     for (const auto& item : items) {
-        validation_errors_.push_back(
-            ore::xml::importer::validate_trade(item.trade));
+        validation_errors_.push_back(ore::xml::importer::validate_trade(item.trade));
     }
 
     setupUI();
@@ -111,8 +106,7 @@ void ImportTradeDialog::setupUI() {
     fileLabel_ = new QLabel(QString("Source: %1").arg(source_label_));
     mainLayout->addWidget(fileLabel_);
 
-    const QString bookStr = QString("Book: %1")
-        .arg(QString::fromStdString(book_.name));
+    const QString bookStr = QString("Book: %1").arg(QString::fromStdString(book_.name));
     bookLabel_ = new QLabel(bookStr);
     mainLayout->addWidget(bookLabel_);
 
@@ -142,11 +136,14 @@ void ImportTradeDialog::setupUI() {
 
     // Row 1: lifecycle event
     lifecycleEventCombo_ = new QComboBox();
-    lifecycleEventCombo_->addItems({
-        "New", "Amendment", "Novation",
-        "Full Termination", "Partial Termination",
-        "Exercise", "Maturity", "Withdrawal"
-    });
+    lifecycleEventCombo_->addItems({"New",
+                                    "Amendment",
+                                    "Novation",
+                                    "Full Termination",
+                                    "Partial Termination",
+                                    "Exercise",
+                                    "Maturity",
+                                    "Withdrawal"});
     defaultsGrid->addWidget(new QLabel(tr("Lifecycle Event:")), 1, 0);
     defaultsGrid->addWidget(lifecycleEventCombo_, 1, 1);
 
@@ -154,8 +151,7 @@ void ImportTradeDialog::setupUI() {
     defaultNettingSetEdit_ = new QLineEdit();
     defaultNettingSetEdit_->setPlaceholderText(tr("e.g. NS_CPTY_A"));
     auto* applyNsBtn = new QPushButton(tr("Apply to All"));
-    connect(applyNsBtn, &QPushButton::clicked,
-            this, &ImportTradeDialog::onApplyNettingSetToAll);
+    connect(applyNsBtn, &QPushButton::clicked, this, &ImportTradeDialog::onApplyNettingSetToAll);
     auto* nsRowWidget = new QWidget();
     auto* nsRowLayout = new QHBoxLayout(nsRowWidget);
     nsRowLayout->setContentsMargins(0, 0, 0, 0);
@@ -170,8 +166,7 @@ void ImportTradeDialog::setupUI() {
     defaultCounterpartyCombo_->addItem(tr("-- None --"), QString());
     defaultCounterpartyCombo_->setMinimumWidth(220);
     auto* applyCpBtn = new QPushButton(tr("Apply to All"));
-    connect(applyCpBtn, &QPushButton::clicked,
-            this, &ImportTradeDialog::onApplyCounterpartyToAll);
+    connect(applyCpBtn, &QPushButton::clicked, this, &ImportTradeDialog::onApplyCounterpartyToAll);
     counterpartyStatusLabel_ = new QLabel(tr("Loading..."));
     counterpartyStatusLabel_->setStyleSheet("color: gray; font-style: italic;");
     auto* cpRowWidget = new QWidget();
@@ -193,8 +188,10 @@ void ImportTradeDialog::setupUI() {
     auto* selectionLayout = new QHBoxLayout();
     selectAllCheckbox_ = new QCheckBox(tr("Select All"));
     selectAllCheckbox_->setChecked(true);
-    connect(selectAllCheckbox_, &QCheckBox::checkStateChanged,
-            this, &ImportTradeDialog::onSelectAllChanged);
+    connect(selectAllCheckbox_,
+            &QCheckBox::checkStateChanged,
+            this,
+            &ImportTradeDialog::onSelectAllChanged);
     selectionLayout->addWidget(selectAllCheckbox_);
 
     selectionCountLabel_ = new QLabel();
@@ -204,12 +201,11 @@ void ImportTradeDialog::setupUI() {
 
     tradeTable_ = new QTableWidget(this);
     tradeTable_->setColumnCount(5);
-    tradeTable_->setHorizontalHeaderLabels({
-        "", "External ID", "Trade Type", "Counterparty", "Netting Set ID"
-    });
+    tradeTable_->setHorizontalHeaderLabels(
+        {"", "External ID", "Trade Type", "Counterparty", "Netting Set ID"});
     tradeTable_->setSelectionBehavior(QAbstractItemView::SelectRows);
-    tradeTable_->setEditTriggers(
-        QAbstractItemView::DoubleClicked | QAbstractItemView::AnyKeyPressed);
+    tradeTable_->setEditTriggers(QAbstractItemView::DoubleClicked |
+                                 QAbstractItemView::AnyKeyPressed);
     tradeTable_->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Fixed);
     tradeTable_->setColumnWidth(0, 30);
     tradeTable_->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
@@ -237,21 +233,18 @@ void ImportTradeDialog::setupUI() {
     buttonLayout->addStretch();
 
     importButton_ = new QPushButton(tr("Import"));
-    connect(importButton_, &QPushButton::clicked,
-            this, &ImportTradeDialog::onImportClicked);
+    connect(importButton_, &QPushButton::clicked, this, &ImportTradeDialog::onImportClicked);
     buttonLayout->addWidget(importButton_);
 
     cancelButton_ = new QPushButton(tr("Cancel"));
-    connect(cancelButton_, &QPushButton::clicked,
-            this, &ImportTradeDialog::onCancelClicked);
+    connect(cancelButton_, &QPushButton::clicked, this, &ImportTradeDialog::onCancelClicked);
     buttonLayout->addWidget(cancelButton_);
 
     mainLayout->addLayout(buttonLayout);
 }
 
 void ImportTradeDialog::populateTradeTable() {
-    BOOST_LOG_SEV(lg(), debug) << "Populating trade table with "
-                               << items_.size() << " trades";
+    BOOST_LOG_SEV(lg(), debug) << "Populating trade table with " << items_.size() << " trades";
 
     tradeTable_->setRowCount(static_cast<int>(items_.size()));
 
@@ -272,15 +265,13 @@ void ImportTradeDialog::populateTradeTable() {
 
         auto* checkBox = new QCheckBox();
         checkBox->setProperty("row", row);
-        connect(checkBox, &QCheckBox::toggled,
-                this, [this](bool) { onTradeCheckChanged(); });
+        connect(checkBox, &QCheckBox::toggled, this, [this](bool) { onTradeCheckChanged(); });
 
         if (!is_valid) {
             checkBox->setChecked(false);
             checkBox->setEnabled(false);
             checkBoxWidget->setToolTip(
-                QString("Cannot import: %1")
-                .arg(QString::fromStdString(validation_error)));
+                QString("Cannot import: %1").arg(QString::fromStdString(validation_error)));
             invalid_count++;
         } else {
             checkBox->setChecked(true);
@@ -292,18 +283,15 @@ void ImportTradeDialog::populateTradeTable() {
 
         // Columns 1–2: read-only text items
         const QString source_tooltip =
-            QString("Source: %1")
-            .arg(QString::fromStdString(item.source_file.generic_string()));
+            QString("Source: %1").arg(QString::fromStdString(item.source_file.generic_string()));
 
         auto makeItem = [&](const std::string& text) {
             auto* it = new QTableWidgetItem(QString::fromStdString(text));
             if (!is_valid) {
                 it->setBackground(QBrush(QColor(255, 200, 200)));
-                it->setToolTip(
-                    QString("Source: %1\nValidation errors:\n%2")
-                    .arg(QString::fromStdString(
-                             item.source_file.generic_string()))
-                    .arg(QString::fromStdString(validation_error)));
+                it->setToolTip(QString("Source: %1\nValidation errors:\n%2")
+                                   .arg(QString::fromStdString(item.source_file.generic_string()))
+                                   .arg(QString::fromStdString(validation_error)));
             } else {
                 it->setToolTip(source_tooltip);
             }
@@ -316,14 +304,14 @@ void ImportTradeDialog::populateTradeTable() {
         // Column 3: per-row counterparty combo (populated after load)
         auto* cpCombo = new QComboBox();
         cpCombo->addItem(tr("-- None --"), QString());
-        cpCombo->setProperty("ore_name",
-            QString::fromStdString(item.ore_counterparty_name));
-        if (!is_valid) cpCombo->setEnabled(false);
+        cpCombo->setProperty("ore_name", QString::fromStdString(item.ore_counterparty_name));
+        if (!is_valid)
+            cpCombo->setEnabled(false);
         tradeTable_->setCellWidget(row, 3, cpCombo);
 
         // Column 4: per-row editable netting set item
-        auto* nsItem = new QTableWidgetItem(
-            QString::fromStdString(item.trade.classification.netting_set_id));
+        auto* nsItem =
+            new QTableWidgetItem(QString::fromStdString(item.trade.classification.netting_set_id));
         if (is_valid) {
             nsItem->setFlags(nsItem->flags() | Qt::ItemIsEditable);
         } else {
@@ -333,35 +321,31 @@ void ImportTradeDialog::populateTradeTable() {
         tradeTable_->setItem(row, 4, nsItem);
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Trade table populated: " << valid_count
-                               << " valid, " << invalid_count << " invalid";
+    BOOST_LOG_SEV(lg(), debug) << "Trade table populated: " << valid_count << " valid, "
+                               << invalid_count << " invalid";
 }
 
 void ImportTradeDialog::populateCounterpartyCombos() {
     const auto count = counterparties_.size();
-    BOOST_LOG_SEV(lg(), debug) << "Populating counterparty combos with "
-                               << count << " counterparties";
+    BOOST_LOG_SEV(lg(), debug) << "Populating counterparty combos with " << count
+                               << " counterparties";
     if (count == 0) {
         counterpartyStatusLabel_->setText(tr("(no counterparties found)"));
     } else {
-        counterpartyStatusLabel_->setText(
-            tr("(%1 loaded)").arg(static_cast<int>(count)));
+        counterpartyStatusLabel_->setText(tr("(%1 loaded)").arg(static_cast<int>(count)));
     }
 
     // Repopulate the default counterparty combo
-    const QString prevDefaultData =
-        defaultCounterpartyCombo_->currentData().toString();
+    const QString prevDefaultData = defaultCounterpartyCombo_->currentData().toString();
     defaultCounterpartyCombo_->clear();
     defaultCounterpartyCombo_->addItem(tr("-- None --"), QString());
     for (const auto& cp : counterparties_) {
-        defaultCounterpartyCombo_->addItem(
-            QString::fromStdString(cp.full_name),
-            QString::fromStdString(boost::uuids::to_string(cp.id)));
+        defaultCounterpartyCombo_->addItem(QString::fromStdString(cp.full_name),
+                                           QString::fromStdString(boost::uuids::to_string(cp.id)));
     }
     if (!prevDefaultData.isEmpty()) {
         for (int j = 1; j < defaultCounterpartyCombo_->count(); ++j) {
-            if (defaultCounterpartyCombo_->itemData(j).toString() ==
-                    prevDefaultData) {
+            if (defaultCounterpartyCombo_->itemData(j).toString() == prevDefaultData) {
                 defaultCounterpartyCombo_->setCurrentIndex(j);
                 break;
             }
@@ -372,15 +356,15 @@ void ImportTradeDialog::populateCounterpartyCombos() {
     for (int row = 0; row < tradeTable_->rowCount(); ++row) {
         auto* cpWidget = tradeTable_->cellWidget(row, 3);
         auto* cpCombo = cpWidget ? qobject_cast<QComboBox*>(cpWidget) : nullptr;
-        if (!cpCombo || !cpCombo->isEnabled()) continue;
+        if (!cpCombo || !cpCombo->isEnabled())
+            continue;
 
         const QString oreName = cpCombo->property("ore_name").toString();
         cpCombo->clear();
         cpCombo->addItem(tr("-- None --"), QString());
         for (const auto& cp : counterparties_) {
-            cpCombo->addItem(
-                QString::fromStdString(cp.full_name),
-                QString::fromStdString(boost::uuids::to_string(cp.id)));
+            cpCombo->addItem(QString::fromStdString(cp.full_name),
+                             QString::fromStdString(boost::uuids::to_string(cp.id)));
         }
 
         // Auto-match by ORE counterparty name (case-insensitive)
@@ -398,8 +382,7 @@ void ImportTradeDialog::populateCounterpartyCombos() {
 
 void ImportTradeDialog::loadCounterparties() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        BOOST_LOG_SEV(lg(), warn)
-            << "Skipping counterparty load: not connected";
+        BOOST_LOG_SEV(lg(), warn) << "Skipping counterparty load: not connected";
         counterpartyStatusLabel_->setText(tr("(not connected)"));
         return;
     }
@@ -420,15 +403,16 @@ void ImportTradeDialog::loadCounterparties() {
         refdata::messaging::get_counterparties_request request;
         request.offset = 0;
         request.limit = 1000; // server maximum
-        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
-        if (!response_result) return {};
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
+        if (!response_result)
+            return {};
 
         return {true, std::move(response_result->counterparties)};
     });
 
     auto* watcher = new QFutureWatcher<Result>(this);
-    connect(watcher, &QFutureWatcher<Result>::finished,
-            this, [this, watcher]() {
+    connect(watcher, &QFutureWatcher<Result>::finished, this, [this, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
@@ -439,8 +423,7 @@ void ImportTradeDialog::loadCounterparties() {
         }
 
         counterparties_ = std::move(result.counterparties);
-        BOOST_LOG_SEV(lg(), debug) << "Loaded " << counterparties_.size()
-                                   << " counterparties";
+        BOOST_LOG_SEV(lg(), debug) << "Loaded " << counterparties_.size() << " counterparties";
         populateCounterpartyCombos();
     });
 
@@ -459,9 +442,7 @@ void ImportTradeDialog::updateSelectionCount() {
     }
 
     selectionCountLabel_->setText(
-        QString("(%1 of %2 trades selected)")
-        .arg(selectedCount)
-        .arg(items_.size()));
+        QString("(%1 of %2 trades selected)").arg(selectedCount).arg(items_.size()));
 
     updateImportButtonState();
 }
@@ -480,8 +461,7 @@ void ImportTradeDialog::updateImportButtonState() {
 }
 
 void ImportTradeDialog::onSelectAllChanged(Qt::CheckState state) {
-    BOOST_LOG_SEV(lg(), debug) << "Select all changed: "
-                               << static_cast<int>(state);
+    BOOST_LOG_SEV(lg(), debug) << "Select all changed: " << static_cast<int>(state);
 
     const bool checked = (state == Qt::Checked);
     for (int i = 0; i < tradeTable_->rowCount(); ++i) {
@@ -525,8 +505,7 @@ void ImportTradeDialog::onTradeCheckChanged() {
 
 void ImportTradeDialog::onApplyNettingSetToAll() {
     const QString value = defaultNettingSetEdit_->text();
-    BOOST_LOG_SEV(lg(), debug) << "Applying netting set to all rows: "
-                               << value.toStdString();
+    BOOST_LOG_SEV(lg(), debug) << "Applying netting set to all rows: " << value.toStdString();
     for (int row = 0; row < tradeTable_->rowCount(); ++row) {
         auto* nsItem = tradeTable_->item(row, 4);
         if (nsItem && (nsItem->flags() & Qt::ItemIsEditable))
@@ -535,14 +514,14 @@ void ImportTradeDialog::onApplyNettingSetToAll() {
 }
 
 void ImportTradeDialog::onApplyCounterpartyToAll() {
-    const QString defaultData =
-        defaultCounterpartyCombo_->currentData().toString();
+    const QString defaultData = defaultCounterpartyCombo_->currentData().toString();
     BOOST_LOG_SEV(lg(), debug) << "Applying counterparty to all rows: "
                                << defaultData.toStdString();
     for (int row = 0; row < tradeTable_->rowCount(); ++row) {
         auto* cpWidget = tradeTable_->cellWidget(row, 3);
         auto* cpCombo = cpWidget ? qobject_cast<QComboBox*>(cpWidget) : nullptr;
-        if (!cpCombo || !cpCombo->isEnabled()) continue;
+        if (!cpCombo || !cpCombo->isEnabled())
+            continue;
         for (int j = 0; j < cpCombo->count(); ++j) {
             if (cpCombo->itemData(j).toString() == defaultData) {
                 cpCombo->setCurrentIndex(j);
@@ -557,8 +536,8 @@ void ImportTradeDialog::onImportClicked() {
 
     if (!clientManager_ || !clientManager_->isConnected()) {
         BOOST_LOG_SEV(lg(), warn) << "Import cancelled: client disconnected";
-        MessageBoxHelper::warning(this, tr("Disconnected"),
-            tr("Cannot import trades while disconnected."));
+        MessageBoxHelper::warning(
+            this, tr("Disconnected"), tr("Cannot import trades while disconnected."));
         return;
     }
 
@@ -571,17 +550,14 @@ void ImportTradeDialog::onImportClicked() {
     statusLabel_->setVisible(true);
 
     // Read global defaults from UI (on main thread before spawning worker)
-    const std::string tradeDate =
-        tradeDateEdit_->date().toString("yyyy-MM-dd").toStdString();
+    const std::string tradeDate = tradeDateEdit_->date().toString("yyyy-MM-dd").toStdString();
     const std::string effectiveDate =
         effectiveDateEdit_->date().toString("yyyy-MM-dd").toStdString();
     const std::string terminationDate =
         terminationDateEdit_->date().toString("yyyy-MM-dd").toStdString();
-    const std::string lifecycleEvent =
-        lifecycleEventCombo_->currentText().toStdString();
+    const std::string lifecycleEvent = lifecycleEventCombo_->currentText().toStdString();
     const std::string executionTimestamp =
-        QDateTime::currentDateTimeUtc()
-        .toString("yyyy-MM-ddThh:mm:ss").toStdString();
+        QDateTime::currentDateTimeUtc().toString("yyyy-MM-ddThh:mm:ss").toStdString();
 
     // Collect selected trades with per-row widget values
     struct TradeToImport {
@@ -592,9 +568,11 @@ void ImportTradeDialog::onImportClicked() {
     std::vector<TradeToImport> selected;
     for (int i = 0; i < tradeTable_->rowCount(); ++i) {
         auto* cellWidget = tradeTable_->cellWidget(i, 0);
-        if (!cellWidget) continue;
+        if (!cellWidget)
+            continue;
         auto* checkBox = cellWidget->findChild<QCheckBox*>();
-        if (!checkBox || !checkBox->isChecked()) continue;
+        if (!checkBox || !checkBox->isChecked())
+            continue;
 
         const auto& item = items_[static_cast<size_t>(i)];
 
@@ -605,37 +583,43 @@ void ImportTradeDialog::onImportClicked() {
         tti.trade.identity.id = boost::uuids::random_generator()();
         // Assign fresh UUIDs and wire the soft FKs for this specific import.
         // product_type is already set on tti.trade from the importer.
-        std::visit([&](auto& r) {
-            using T = std::decay_t<decltype(r)>;
-            if constexpr (!std::is_same_v<T, std::monostate>) {
-                const auto instr_id = boost::uuids::random_generator()();
-                tti.trade.classification.instrument_id = instr_id;
-                using trading::domain::swap_instrument_data;
-                using trading::domain::fx_instrument_variant;
-                using trading::domain::equity_instrument_variant;
-                using trading::domain::composite_instrument_data;
-                if constexpr (std::is_same_v<T, swap_instrument_data>) {
-                    std::visit([&](auto& instr) {
-                        instr.identity.instrument_id = instr_id;
-                        instr.identity.trade_id = tti.trade.identity.id;
-                    }, r.instrument);
-                    for (auto& leg : r.legs)
-                        leg.identity.instrument_id = instr_id;
-                } else if constexpr (std::is_same_v<T, fx_instrument_variant> ||
-                                     std::is_same_v<T, equity_instrument_variant>) {
-                    std::visit([&](auto& instr) {
-                        instr.instrument_id = instr_id;
-                        instr.trade_id = tti.trade.identity.id;
-                    }, r);
-                } else if constexpr (std::is_same_v<T, composite_instrument_data>) {
-                    r.instrument.instrument_id = instr_id;
-                    r.instrument.trade_id = tti.trade.identity.id;
-                } else {
-                    r.instrument_id = instr_id;
-                    r.trade_id = tti.trade.identity.id;
+        std::visit(
+            [&](auto& r) {
+                using T = std::decay_t<decltype(r)>;
+                if constexpr (!std::is_same_v<T, std::monostate>) {
+                    const auto instr_id = boost::uuids::random_generator()();
+                    tti.trade.classification.instrument_id = instr_id;
+                    using trading::domain::swap_instrument_data;
+                    using trading::domain::fx_instrument_variant;
+                    using trading::domain::equity_instrument_variant;
+                    using trading::domain::composite_instrument_data;
+                    if constexpr (std::is_same_v<T, swap_instrument_data>) {
+                        std::visit(
+                            [&](auto& instr) {
+                                instr.identity.instrument_id = instr_id;
+                                instr.identity.trade_id = tti.trade.identity.id;
+                            },
+                            r.instrument);
+                        for (auto& leg : r.legs)
+                            leg.identity.instrument_id = instr_id;
+                    } else if constexpr (std::is_same_v<T, fx_instrument_variant> ||
+                                         std::is_same_v<T, equity_instrument_variant>) {
+                        std::visit(
+                            [&](auto& instr) {
+                                instr.instrument_id = instr_id;
+                                instr.trade_id = tti.trade.identity.id;
+                            },
+                            r);
+                    } else if constexpr (std::is_same_v<T, composite_instrument_data>) {
+                        r.instrument.instrument_id = instr_id;
+                        r.instrument.trade_id = tti.trade.identity.id;
+                    } else {
+                        r.instrument_id = instr_id;
+                        r.trade_id = tti.trade.identity.id;
+                    }
                 }
-            }
-        }, tti.instrument);
+            },
+            tti.instrument);
         tti.trade.parties.book_id = book_.id;
         tti.trade.parties.portfolio_id = book_.parent_portfolio_id;
         tti.trade.identity.party_id = book_.party_id;
@@ -664,8 +648,7 @@ void ImportTradeDialog::onImportClicked() {
         if (!cpUuidStr.isEmpty()) {
             try {
                 tti.trade.parties.counterparty_id =
-                    boost::lexical_cast<boost::uuids::uuid>(
-                        cpUuidStr.toStdString());
+                    boost::lexical_cast<boost::uuids::uuid>(cpUuidStr.toStdString());
             } catch (...) {
                 tti.trade.parties.counterparty_id = std::nullopt;
             }
@@ -686,110 +669,117 @@ void ImportTradeDialog::onImportClicked() {
     QPointer<ImportTradeDialog> self = this;
     const std::string md_dir = market_data_dir_;
 
-    QFuture<std::pair<int, int>> future =
-        QtConcurrent::run([self, selected, total,
-                           md_dir]() -> std::pair<int, int> {
-            using namespace ores::trading::messaging;
+    QFuture<std::pair<int, int>> future = QtConcurrent::run([self, selected, total, md_dir]()
+                                                                -> std::pair<int, int> {
+        using namespace ores::trading::messaging;
 
-            // Read and import market data (market.txt + fixings.txt) before
-            // trades. File I/O is performed here on the worker thread to avoid
-            // blocking the UI thread for large data sets.
-            if (!md_dir.empty()) {
-                const auto read_file = [&](const std::string& name) -> std::string {
-                    namespace fs = std::filesystem;
-                    const auto p = fs::path(md_dir) / name;
-                    if (!fs::exists(p)) return {};
-                    std::ifstream f(p);
-                    if (!f) return {};
-                    std::ostringstream ss;
-                    ss << f.rdbuf();
-                    BOOST_LOG_SEV(lg(), info) << "Found " << name << " for import";
-                    return ss.str();
-                };
+        // Read and import market data (market.txt + fixings.txt) before
+        // trades. File I/O is performed here on the worker thread to avoid
+        // blocking the UI thread for large data sets.
+        if (!md_dir.empty()) {
+            const auto read_file = [&](const std::string& name) -> std::string {
+                namespace fs = std::filesystem;
+                const auto p = fs::path(md_dir) / name;
+                if (!fs::exists(p))
+                    return {};
+                std::ifstream f(p);
+                if (!f)
+                    return {};
+                std::ostringstream ss;
+                ss << f.rdbuf();
+                BOOST_LOG_SEV(lg(), info) << "Found " << name << " for import";
+                return ss.str();
+            };
 
-                auto md_content = read_file("market.txt");
-                auto fx_content = read_file("fixings.txt");
+            auto md_content = read_file("market.txt");
+            auto fx_content = read_file("fixings.txt");
 
-                if (!md_content.empty() || !fx_content.empty()) {
-                    if (self) {
-                        QMetaObject::invokeMethod(self, [self]() {
-                            if (self) self->statusLabel_->setText(
-                                self->tr("Importing market data..."));
-                        }, Qt::QueuedConnection);
-                    }
+            if (!md_content.empty() || !fx_content.empty()) {
+                if (self) {
+                    QMetaObject::invokeMethod(
+                        self,
+                        [self]() {
+                            if (self)
+                                self->statusLabel_->setText(self->tr("Importing market data..."));
+                        },
+                        Qt::QueuedConnection);
+                }
 
-                    marketdata::messaging::import_market_data_request md_req;
-                    md_req.market_data_content = std::move(md_content);
-                    md_req.fixings_content     = std::move(fx_content);
+                marketdata::messaging::import_market_data_request md_req;
+                md_req.market_data_content = std::move(md_content);
+                md_req.fixings_content = std::move(fx_content);
 
-                    if (self) {
-                        auto md_resp = self->clientManager_
-                            ->process_authenticated_request(std::move(md_req));
-                        if (md_resp && md_resp->success) {
-                            BOOST_LOG_SEV(lg(), info)
-                                << "Market data import succeeded: "
-                                << md_resp->series_count << " series, "
-                                << md_resp->observation_count << " observations, "
-                                << md_resp->fixing_count << " fixings";
-                        } else {
-                            const std::string msg =
-                                md_resp ? md_resp->message : "no response";
-                            BOOST_LOG_SEV(lg(), warn)
-                                << "Market data import failed: " << msg;
-                            if (self) {
-                                const QString err = QString::fromStdString(msg);
-                                QMetaObject::invokeMethod(self, [self, err]() {
-                                    if (self) self->statusLabel_->setText(
-                                        self->tr("Market data import failed: %1")
-                                            .arg(err));
-                                }, Qt::QueuedConnection);
-                            }
+                if (self) {
+                    auto md_resp =
+                        self->clientManager_->process_authenticated_request(std::move(md_req));
+                    if (md_resp && md_resp->success) {
+                        BOOST_LOG_SEV(lg(), info)
+                            << "Market data import succeeded: " << md_resp->series_count
+                            << " series, " << md_resp->observation_count << " observations, "
+                            << md_resp->fixing_count << " fixings";
+                    } else {
+                        const std::string msg = md_resp ? md_resp->message : "no response";
+                        BOOST_LOG_SEV(lg(), warn) << "Market data import failed: " << msg;
+                        if (self) {
+                            const QString err = QString::fromStdString(msg);
+                            QMetaObject::invokeMethod(
+                                self,
+                                [self, err]() {
+                                    if (self)
+                                        self->statusLabel_->setText(
+                                            self->tr("Market data import failed: %1").arg(err));
+                                },
+                                Qt::QueuedConnection);
                         }
                     }
                 }
             }
+        }
 
-            int success_count = 0;
-            int current = 0;
+        int success_count = 0;
+        int current = 0;
 
-            for (const auto& tti : selected) {
-                if (!self || self->cancelRequested_.load()) {
-                    BOOST_LOG_SEV(lg(), info)
-                        << "Import cancelled by user at trade "
-                        << current << " of " << total;
-                    break;
+        for (const auto& tti : selected) {
+            if (!self || self->cancelRequested_.load()) {
+                BOOST_LOG_SEV(lg(), info)
+                    << "Import cancelled by user at trade " << current << " of " << total;
+                break;
+            }
+
+            current++;
+
+            QMetaObject::invokeMethod(
+                self,
+                [self, current, total, ext_id = tti.trade.identity.external_id]() {
+                    if (!self)
+                        return;
+                    self->progressBar_->setValue(current);
+                    self->statusLabel_->setText(QString("Importing %1 (%2 of %3)...")
+                                                    .arg(QString::fromStdString(ext_id))
+                                                    .arg(current)
+                                                    .arg(total));
+                },
+                Qt::QueuedConnection);
+
+            if (!self)
+                break;
+
+            try {
+                save_trade_request request;
+                request.trades.push_back(tti.trade);
+                auto response_result =
+                    self->clientManager_->process_authenticated_request(std::move(request));
+
+                if (!response_result) {
+                    BOOST_LOG_SEV(lg(), warn)
+                        << "Failed to import trade: " << tti.trade.identity.external_id;
+                    continue;
                 }
 
-                current++;
-
-                QMetaObject::invokeMethod(self,
-                    [self, current, total, ext_id = tti.trade.identity.external_id]() {
-                        if (!self) return;
-                        self->progressBar_->setValue(current);
-                        self->statusLabel_->setText(
-                            QString("Importing %1 (%2 of %3)...")
-                            .arg(QString::fromStdString(ext_id))
-                            .arg(current)
-                            .arg(total));
-                    }, Qt::QueuedConnection);
-
-                if (!self) break;
-
-                try {
-                    save_trade_request request;
-                    request.trades.push_back(tti.trade);
-                    auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
-
-                    if (!response_result) {
-                        BOOST_LOG_SEV(lg(), warn)
-                            << "Failed to import trade: "
-                            << tti.trade.identity.external_id;
-                        continue;
-                    }
-
-                    if (response_result->success) {
-                        // Persist the instrument data for this trade.
-                        std::visit([&](const auto& r) {
+                if (response_result->success) {
+                    // Persist the instrument data for this trade.
+                    std::visit(
+                        [&](const auto& r) {
                             using T = std::decay_t<decltype(r)>;
                             using namespace ores::trading::messaging;
                             using trading::domain::swap_instrument_data;
@@ -803,173 +793,260 @@ void ImportTradeDialog::onImportClicked() {
                             if constexpr (std::is_same_v<T, std::monostate>) {
                                 // Trade type not yet mapped — skip instrument save.
                             } else if constexpr (std::is_same_v<T, swap_instrument_data>) {
-                                std::visit([&](const auto& instr) {
-                                    using InstrT = std::decay_t<decltype(instr)>;
-                                    using ores::trading::domain::fra_instrument;
-                                    using ores::trading::domain::vanilla_swap_instrument;
-                                    using ores::trading::domain::cap_floor_instrument;
-                                    using ores::trading::domain::swaption_instrument;
-                                    using ores::trading::domain::balance_guaranteed_swap_instrument;
-                                    using ores::trading::domain::callable_swap_instrument;
-                                    using ores::trading::domain::knock_out_swap_instrument;
-                                    using ores::trading::domain::inflation_swap_instrument;
-                                    using ores::trading::domain::rpa_instrument;
-                                    if constexpr (std::is_same_v<InstrT, fra_instrument>) {
-                                        save_fra_instrument_request req;
-                                        req.data = instr;
-                                        (void)self->clientManager_->process_authenticated_request(std::move(req));
-                                    } else if constexpr (std::is_same_v<InstrT, vanilla_swap_instrument>) {
-                                        save_vanilla_swap_instrument_request req;
-                                        req.data = instr;
-                                        (void)self->clientManager_->process_authenticated_request(std::move(req));
-                                    } else if constexpr (std::is_same_v<InstrT, cap_floor_instrument>) {
-                                        save_cap_floor_instrument_request req;
-                                        req.data = instr;
-                                        (void)self->clientManager_->process_authenticated_request(std::move(req));
-                                    } else if constexpr (std::is_same_v<InstrT, swaption_instrument>) {
-                                        save_swaption_instrument_request req;
-                                        req.data = instr;
-                                        (void)self->clientManager_->process_authenticated_request(std::move(req));
-                                    } else if constexpr (std::is_same_v<InstrT, balance_guaranteed_swap_instrument>) {
-                                        save_balance_guaranteed_swap_instrument_request req;
-                                        req.data = instr;
-                                        (void)self->clientManager_->process_authenticated_request(std::move(req));
-                                    } else if constexpr (std::is_same_v<InstrT, callable_swap_instrument>) {
-                                        save_callable_swap_instrument_request req;
-                                        req.data = instr;
-                                        (void)self->clientManager_->process_authenticated_request(std::move(req));
-                                    } else if constexpr (std::is_same_v<InstrT, knock_out_swap_instrument>) {
-                                        save_knock_out_swap_instrument_request req;
-                                        req.data = instr;
-                                        (void)self->clientManager_->process_authenticated_request(std::move(req));
-                                    } else if constexpr (std::is_same_v<InstrT, inflation_swap_instrument>) {
-                                        save_inflation_swap_instrument_request req;
-                                        req.data = instr;
-                                        (void)self->clientManager_->process_authenticated_request(std::move(req));
-                                    } else if constexpr (std::is_same_v<InstrT, rpa_instrument>) {
-                                        save_rpa_instrument_request req;
-                                        req.data = instr;
-                                        (void)self->clientManager_->process_authenticated_request(std::move(req));
-                                    }
-                                }, r.instrument);
+                                std::visit(
+                                    [&](const auto& instr) {
+                                        using InstrT = std::decay_t<decltype(instr)>;
+                                        using ores::trading::domain::fra_instrument;
+                                        using ores::trading::domain::vanilla_swap_instrument;
+                                        using ores::trading::domain::cap_floor_instrument;
+                                        using ores::trading::domain::swaption_instrument;
+                                        using ores::trading::domain::
+                                            balance_guaranteed_swap_instrument;
+                                        using ores::trading::domain::callable_swap_instrument;
+                                        using ores::trading::domain::knock_out_swap_instrument;
+                                        using ores::trading::domain::inflation_swap_instrument;
+                                        using ores::trading::domain::rpa_instrument;
+                                        if constexpr (std::is_same_v<InstrT, fra_instrument>) {
+                                            save_fra_instrument_request req;
+                                            req.data = instr;
+                                            (void)self->clientManager_
+                                                ->process_authenticated_request(std::move(req));
+                                        } else if constexpr (std::is_same_v<
+                                                                 InstrT,
+                                                                 vanilla_swap_instrument>) {
+                                            save_vanilla_swap_instrument_request req;
+                                            req.data = instr;
+                                            (void)self->clientManager_
+                                                ->process_authenticated_request(std::move(req));
+                                        } else if constexpr (std::is_same_v<InstrT,
+                                                                            cap_floor_instrument>) {
+                                            save_cap_floor_instrument_request req;
+                                            req.data = instr;
+                                            (void)self->clientManager_
+                                                ->process_authenticated_request(std::move(req));
+                                        } else if constexpr (std::is_same_v<InstrT,
+                                                                            swaption_instrument>) {
+                                            save_swaption_instrument_request req;
+                                            req.data = instr;
+                                            (void)self->clientManager_
+                                                ->process_authenticated_request(std::move(req));
+                                        } else if constexpr (
+                                            std::is_same_v<InstrT,
+                                                           balance_guaranteed_swap_instrument>) {
+                                            save_balance_guaranteed_swap_instrument_request req;
+                                            req.data = instr;
+                                            (void)self->clientManager_
+                                                ->process_authenticated_request(std::move(req));
+                                        } else if constexpr (std::is_same_v<
+                                                                 InstrT,
+                                                                 callable_swap_instrument>) {
+                                            save_callable_swap_instrument_request req;
+                                            req.data = instr;
+                                            (void)self->clientManager_
+                                                ->process_authenticated_request(std::move(req));
+                                        } else if constexpr (std::is_same_v<
+                                                                 InstrT,
+                                                                 knock_out_swap_instrument>) {
+                                            save_knock_out_swap_instrument_request req;
+                                            req.data = instr;
+                                            (void)self->clientManager_
+                                                ->process_authenticated_request(std::move(req));
+                                        } else if constexpr (std::is_same_v<
+                                                                 InstrT,
+                                                                 inflation_swap_instrument>) {
+                                            save_inflation_swap_instrument_request req;
+                                            req.data = instr;
+                                            (void)self->clientManager_
+                                                ->process_authenticated_request(std::move(req));
+                                        } else if constexpr (std::is_same_v<InstrT,
+                                                                            rpa_instrument>) {
+                                            save_rpa_instrument_request req;
+                                            req.data = instr;
+                                            (void)self->clientManager_
+                                                ->process_authenticated_request(std::move(req));
+                                        }
+                                    },
+                                    r.instrument);
                             } else if constexpr (std::is_same_v<T, fx_instrument_variant>) {
-                                std::visit([&](const auto& instr) {
-                                    using InstrT = std::decay_t<decltype(instr)>;
-                                    using ores::trading::domain::fx_forward_instrument;
-                                    using ores::trading::domain::fx_vanilla_option_instrument;
-                                    using ores::trading::domain::fx_barrier_option_instrument;
-                                    using ores::trading::domain::fx_digital_option_instrument;
-                                    using ores::trading::domain::fx_asian_forward_instrument;
-                                    using ores::trading::domain::fx_accumulator_instrument;
-                                    using ores::trading::domain::fx_variance_swap_instrument;
-                                    if constexpr (std::is_same_v<InstrT, fx_forward_instrument>) {
-                                        save_fx_forward_instrument_request req;
-                                        req.data = instr;
-                                        (void)self->clientManager_->process_authenticated_request(std::move(req));
-                                    } else if constexpr (std::is_same_v<InstrT, fx_vanilla_option_instrument>) {
-                                        save_fx_vanilla_option_instrument_request req;
-                                        req.data = instr;
-                                        (void)self->clientManager_->process_authenticated_request(std::move(req));
-                                    } else if constexpr (std::is_same_v<InstrT, fx_barrier_option_instrument>) {
-                                        save_fx_barrier_option_instrument_request req;
-                                        req.data = instr;
-                                        (void)self->clientManager_->process_authenticated_request(std::move(req));
-                                    } else if constexpr (std::is_same_v<InstrT, fx_digital_option_instrument>) {
-                                        save_fx_digital_option_instrument_request req;
-                                        req.data = instr;
-                                        (void)self->clientManager_->process_authenticated_request(std::move(req));
-                                    } else if constexpr (std::is_same_v<InstrT, fx_asian_forward_instrument>) {
-                                        save_fx_asian_forward_instrument_request req;
-                                        req.data = instr;
-                                        (void)self->clientManager_->process_authenticated_request(std::move(req));
-                                    } else if constexpr (std::is_same_v<InstrT, fx_accumulator_instrument>) {
-                                        save_fx_accumulator_instrument_request req;
-                                        req.data = instr;
-                                        (void)self->clientManager_->process_authenticated_request(std::move(req));
-                                    } else if constexpr (std::is_same_v<InstrT, fx_variance_swap_instrument>) {
-                                        save_fx_variance_swap_instrument_request req;
-                                        req.data = instr;
-                                        (void)self->clientManager_->process_authenticated_request(std::move(req));
-                                    }
-                                }, r);
+                                std::visit(
+                                    [&](const auto& instr) {
+                                        using InstrT = std::decay_t<decltype(instr)>;
+                                        using ores::trading::domain::fx_forward_instrument;
+                                        using ores::trading::domain::fx_vanilla_option_instrument;
+                                        using ores::trading::domain::fx_barrier_option_instrument;
+                                        using ores::trading::domain::fx_digital_option_instrument;
+                                        using ores::trading::domain::fx_asian_forward_instrument;
+                                        using ores::trading::domain::fx_accumulator_instrument;
+                                        using ores::trading::domain::fx_variance_swap_instrument;
+                                        if constexpr (std::is_same_v<InstrT,
+                                                                     fx_forward_instrument>) {
+                                            save_fx_forward_instrument_request req;
+                                            req.data = instr;
+                                            (void)self->clientManager_
+                                                ->process_authenticated_request(std::move(req));
+                                        } else if constexpr (std::is_same_v<
+                                                                 InstrT,
+                                                                 fx_vanilla_option_instrument>) {
+                                            save_fx_vanilla_option_instrument_request req;
+                                            req.data = instr;
+                                            (void)self->clientManager_
+                                                ->process_authenticated_request(std::move(req));
+                                        } else if constexpr (std::is_same_v<
+                                                                 InstrT,
+                                                                 fx_barrier_option_instrument>) {
+                                            save_fx_barrier_option_instrument_request req;
+                                            req.data = instr;
+                                            (void)self->clientManager_
+                                                ->process_authenticated_request(std::move(req));
+                                        } else if constexpr (std::is_same_v<
+                                                                 InstrT,
+                                                                 fx_digital_option_instrument>) {
+                                            save_fx_digital_option_instrument_request req;
+                                            req.data = instr;
+                                            (void)self->clientManager_
+                                                ->process_authenticated_request(std::move(req));
+                                        } else if constexpr (std::is_same_v<
+                                                                 InstrT,
+                                                                 fx_asian_forward_instrument>) {
+                                            save_fx_asian_forward_instrument_request req;
+                                            req.data = instr;
+                                            (void)self->clientManager_
+                                                ->process_authenticated_request(std::move(req));
+                                        } else if constexpr (std::is_same_v<
+                                                                 InstrT,
+                                                                 fx_accumulator_instrument>) {
+                                            save_fx_accumulator_instrument_request req;
+                                            req.data = instr;
+                                            (void)self->clientManager_
+                                                ->process_authenticated_request(std::move(req));
+                                        } else if constexpr (std::is_same_v<
+                                                                 InstrT,
+                                                                 fx_variance_swap_instrument>) {
+                                            save_fx_variance_swap_instrument_request req;
+                                            req.data = instr;
+                                            (void)self->clientManager_
+                                                ->process_authenticated_request(std::move(req));
+                                        }
+                                    },
+                                    r);
                             } else if constexpr (std::is_same_v<T, bond_instrument>) {
                                 save_bond_instrument_request req;
                                 req.data = r;
-                                (void)self->clientManager_->process_authenticated_request(std::move(req));
+                                (void)self->clientManager_->process_authenticated_request(
+                                    std::move(req));
                             } else if constexpr (std::is_same_v<T, credit_instrument>) {
                                 save_credit_instrument_request req;
                                 req.data = r;
-                                (void)self->clientManager_->process_authenticated_request(std::move(req));
+                                (void)self->clientManager_->process_authenticated_request(
+                                    std::move(req));
                             } else if constexpr (std::is_same_v<T, equity_instrument_variant>) {
-                                std::visit([&](const auto& instr) {
-                                    using InstrT = std::decay_t<decltype(instr)>;
-                                    using namespace ores::trading::domain;
-                                    if constexpr (std::is_same_v<InstrT, equity_option_instrument>) {
-                                        save_equity_option_instrument_request req; req.data = instr;
-                                        (void)self->clientManager_->process_authenticated_request(std::move(req));
-                                    } else if constexpr (std::is_same_v<InstrT, equity_digital_option_instrument>) {
-                                        save_equity_digital_option_instrument_request req; req.data = instr;
-                                        (void)self->clientManager_->process_authenticated_request(std::move(req));
-                                    } else if constexpr (std::is_same_v<InstrT, equity_barrier_option_instrument>) {
-                                        save_equity_barrier_option_instrument_request req; req.data = instr;
-                                        (void)self->clientManager_->process_authenticated_request(std::move(req));
-                                    } else if constexpr (std::is_same_v<InstrT, equity_asian_option_instrument>) {
-                                        save_equity_asian_option_instrument_request req; req.data = instr;
-                                        (void)self->clientManager_->process_authenticated_request(std::move(req));
-                                    } else if constexpr (std::is_same_v<InstrT, equity_forward_instrument>) {
-                                        save_equity_forward_instrument_request req; req.data = instr;
-                                        (void)self->clientManager_->process_authenticated_request(std::move(req));
-                                    } else if constexpr (std::is_same_v<InstrT, equity_variance_swap_instrument>) {
-                                        save_equity_variance_swap_instrument_request req; req.data = instr;
-                                        (void)self->clientManager_->process_authenticated_request(std::move(req));
-                                    } else if constexpr (std::is_same_v<InstrT, equity_swap_instrument>) {
-                                        save_equity_swap_instrument_request req; req.data = instr;
-                                        (void)self->clientManager_->process_authenticated_request(std::move(req));
-                                    } else if constexpr (std::is_same_v<InstrT, equity_accumulator_instrument>) {
-                                        save_equity_accumulator_instrument_request req; req.data = instr;
-                                        (void)self->clientManager_->process_authenticated_request(std::move(req));
-                                    } else if constexpr (std::is_same_v<InstrT, equity_position_instrument>) {
-                                        save_equity_position_instrument_request req; req.data = instr;
-                                        (void)self->clientManager_->process_authenticated_request(std::move(req));
-                                    }
-                                }, r);
+                                std::visit(
+                                    [&](const auto& instr) {
+                                        using InstrT = std::decay_t<decltype(instr)>;
+                                        using namespace ores::trading::domain;
+                                        if constexpr (std::is_same_v<InstrT,
+                                                                     equity_option_instrument>) {
+                                            save_equity_option_instrument_request req;
+                                            req.data = instr;
+                                            (void)self->clientManager_
+                                                ->process_authenticated_request(std::move(req));
+                                        } else if constexpr (
+                                            std::is_same_v<InstrT,
+                                                           equity_digital_option_instrument>) {
+                                            save_equity_digital_option_instrument_request req;
+                                            req.data = instr;
+                                            (void)self->clientManager_
+                                                ->process_authenticated_request(std::move(req));
+                                        } else if constexpr (
+                                            std::is_same_v<InstrT,
+                                                           equity_barrier_option_instrument>) {
+                                            save_equity_barrier_option_instrument_request req;
+                                            req.data = instr;
+                                            (void)self->clientManager_
+                                                ->process_authenticated_request(std::move(req));
+                                        } else if constexpr (std::is_same_v<
+                                                                 InstrT,
+                                                                 equity_asian_option_instrument>) {
+                                            save_equity_asian_option_instrument_request req;
+                                            req.data = instr;
+                                            (void)self->clientManager_
+                                                ->process_authenticated_request(std::move(req));
+                                        } else if constexpr (std::is_same_v<
+                                                                 InstrT,
+                                                                 equity_forward_instrument>) {
+                                            save_equity_forward_instrument_request req;
+                                            req.data = instr;
+                                            (void)self->clientManager_
+                                                ->process_authenticated_request(std::move(req));
+                                        } else if constexpr (std::is_same_v<
+                                                                 InstrT,
+                                                                 equity_variance_swap_instrument>) {
+                                            save_equity_variance_swap_instrument_request req;
+                                            req.data = instr;
+                                            (void)self->clientManager_
+                                                ->process_authenticated_request(std::move(req));
+                                        } else if constexpr (std::is_same_v<
+                                                                 InstrT,
+                                                                 equity_swap_instrument>) {
+                                            save_equity_swap_instrument_request req;
+                                            req.data = instr;
+                                            (void)self->clientManager_
+                                                ->process_authenticated_request(std::move(req));
+                                        } else if constexpr (std::is_same_v<
+                                                                 InstrT,
+                                                                 equity_accumulator_instrument>) {
+                                            save_equity_accumulator_instrument_request req;
+                                            req.data = instr;
+                                            (void)self->clientManager_
+                                                ->process_authenticated_request(std::move(req));
+                                        } else if constexpr (std::is_same_v<
+                                                                 InstrT,
+                                                                 equity_position_instrument>) {
+                                            save_equity_position_instrument_request req;
+                                            req.data = instr;
+                                            (void)self->clientManager_
+                                                ->process_authenticated_request(std::move(req));
+                                        }
+                                    },
+                                    r);
                             } else if constexpr (std::is_same_v<T, commodity_instrument>) {
                                 save_commodity_instrument_request req;
                                 req.data = r;
-                                (void)self->clientManager_->process_authenticated_request(std::move(req));
+                                (void)self->clientManager_->process_authenticated_request(
+                                    std::move(req));
                             } else if constexpr (std::is_same_v<T, composite_instrument_data>) {
                                 save_composite_instrument_request req;
                                 req.data = r.instrument;
-                                (void)self->clientManager_->process_authenticated_request(std::move(req));
+                                (void)self->clientManager_->process_authenticated_request(
+                                    std::move(req));
                             } else if constexpr (std::is_same_v<T, scripted_instrument>) {
                                 save_scripted_instrument_request req;
                                 req.data = r;
-                                (void)self->clientManager_->process_authenticated_request(std::move(req));
+                                (void)self->clientManager_->process_authenticated_request(
+                                    std::move(req));
                             }
-                        }, tti.instrument);
-                        success_count++;
-                        BOOST_LOG_SEV(lg(), debug)
-                            << "Successfully imported trade: "
-                            << tti.trade.identity.external_id;
-                    } else {
-                        const std::string msg = response_result->message;
-                        BOOST_LOG_SEV(lg(), warn)
-                            << "Server rejected trade: "
-                            << tti.trade.identity.external_id << " - " << msg;
-                    }
-                } catch (const std::exception& e) {
-                    BOOST_LOG_SEV(lg(), error)
-                        << "Error importing trade "
-                        << tti.trade.identity.external_id << ": " << e.what();
+                        },
+                        tti.instrument);
+                    success_count++;
+                    BOOST_LOG_SEV(lg(), debug)
+                        << "Successfully imported trade: " << tti.trade.identity.external_id;
+                } else {
+                    const std::string msg = response_result->message;
+                    BOOST_LOG_SEV(lg(), warn)
+                        << "Server rejected trade: " << tti.trade.identity.external_id << " - "
+                        << msg;
                 }
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(lg(), error) << "Error importing trade "
+                                           << tti.trade.identity.external_id << ": " << e.what();
             }
+        }
 
-            return {success_count, total};
-        });
+        return {success_count, total};
+    });
 
     auto* watcher = new QFutureWatcher<std::pair<int, int>>(this);
-    connect(watcher, &QFutureWatcher<std::pair<int, int>>::finished,
-            this, [this, watcher]() {
+    connect(watcher, &QFutureWatcher<std::pair<int, int>>::finished, this, [this, watcher]() {
         auto result = watcher->result();
         const int success_count = result.first;
         const int total_count = result.second;
@@ -979,15 +1056,13 @@ void ImportTradeDialog::onImportClicked() {
         importInProgress_ = false;
 
         if (cancelRequested_.load()) {
-            BOOST_LOG_SEV(lg(), info)
-                << "Import cancelled after importing " << success_count
-                << " of " << total_count << " trades";
+            BOOST_LOG_SEV(lg(), info) << "Import cancelled after importing " << success_count
+                                      << " of " << total_count << " trades";
             emit importCancelled();
             reject();
         } else {
-            BOOST_LOG_SEV(lg(), info)
-                << "Import completed: " << success_count
-                << " of " << total_count << " trades imported successfully";
+            BOOST_LOG_SEV(lg(), info) << "Import completed: " << success_count << " of "
+                                      << total_count << " trades imported successfully";
             emit importCompleted(success_count, total_count);
             accept();
         }

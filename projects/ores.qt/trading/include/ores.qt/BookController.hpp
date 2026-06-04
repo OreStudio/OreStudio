@@ -20,14 +20,14 @@
 #ifndef ORES_QT_BOOK_CONTROLLER_HPP
 #define ORES_QT_BOOK_CONTROLLER_HPP
 
-#include <QMdiArea>
-#include <QMainWindow>
-#include "ores.qt/EntityController.hpp"
-#include "ores.qt/ClientManager.hpp"
-#include "ores.qt/ImageCache.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata.api/domain/book.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/EntityController.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
+#include "ores.qt/ImageCache.hpp"
+#include "ores.refdata.api/domain/book.hpp"
+#include <QMainWindow>
+#include <QMdiArea>
 
 namespace ores::qt {
 
@@ -46,8 +46,7 @@ class BookController final : public EntityController {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.book_controller";
+    inline static std::string_view logger_name = "ores.qt.book_controller";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -56,15 +55,14 @@ private:
     }
 
 public:
-    BookController(
-        QMainWindow* mainWindow,
-        QMdiArea* mdiArea,
-        ClientManager* clientManager,
-        ImageCache* imageCache,
-        ChangeReasonCache* changeReasonCache,
-        BadgeCache* badgeCache,
-        const QString& username,
-        QObject* parent = nullptr);
+    BookController(QMainWindow* mainWindow,
+                   QMdiArea* mdiArea,
+                   ClientManager* clientManager,
+                   ImageCache* imageCache,
+                   ChangeReasonCache* changeReasonCache,
+                   BadgeCache* badgeCache,
+                   const QString& username,
+                   QObject* parent = nullptr);
 
     void showListWindow() override;
     void closeAllWindows() override;
@@ -87,8 +85,7 @@ private slots:
     void onAddNewRequested();
     void onShowHistory(const refdata::domain::book& book);
     void onRevertVersion(const refdata::domain::book& book);
-    void onOpenVersion(const refdata::domain::book& book,
-                       int versionNumber);
+    void onOpenVersion(const refdata::domain::book& book, int versionNumber);
 
 private:
     void showAddWindow(boost::uuids::uuid parentPortfolioId = {});

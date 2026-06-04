@@ -18,64 +18,71 @@
  *
  */
 #include "ores.qt/CountryController.hpp"
-
-#include <QPointer>
-#include <QtConcurrent>
-#include <QFutureWatcher>
-#include "ores.qt/CountryMdiWindow.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/CountryDetailDialog.hpp"
 #include "ores.qt/CountryHistoryDialog.hpp"
-#include "ores.qt/ImageCache.hpp"
-#include "ores.qt/ChangeReasonCache.hpp"
+#include "ores.qt/CountryMdiWindow.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/ImageCache.hpp"
 #include "ores.refdata.api/eventing/country_changed_event.hpp"
 #include "ores.refdata.api/messaging/protocol.hpp"
+#include <QFutureWatcher>
+#include <QPointer>
+#include <QtConcurrent>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    // Event type name for country changes
-    constexpr std::string_view country_event_name =
-        eventing::domain::event_traits<refdata::eventing::country_changed_event>::name;
+// Event type name for country changes
+constexpr std::string_view country_event_name =
+    eventing::domain::event_traits<refdata::eventing::country_changed_event>::name;
 }
 
-CountryController::CountryController(
-    QMainWindow* mainWindow,
-    QMdiArea* mdiArea,
-    ClientManager* clientManager,
-    ImageCache* imageCache,
-    ChangeReasonCache* changeReasonCache,
-    const QString& username,
-    QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username, {}, parent),
-      imageCache_(imageCache),
-      changeReasonCache_(changeReasonCache),
-      countryListWindow_(nullptr) {
+CountryController::CountryController(QMainWindow* mainWindow,
+                                     QMdiArea* mdiArea,
+                                     ClientManager* clientManager,
+                                     ImageCache* imageCache,
+                                     ChangeReasonCache* changeReasonCache,
+                                     const QString& username,
+                                     QObject* parent)
+    : EntityController(mainWindow, mdiArea, clientManager, username, {}, parent)
+    , imageCache_(imageCache)
+    , changeReasonCache_(changeReasonCache)
+    , countryListWindow_(nullptr) {
     BOOST_LOG_SEV(lg(), debug) << "Country controller created";
 
     // Connect to notification signal from ClientManager
     if (clientManager_) {
-        connect(clientManager_, &ClientManager::notificationReceived,
-                this, &CountryController::onNotificationReceived);
+        connect(clientManager_,
+                &ClientManager::notificationReceived,
+                this,
+                &CountryController::onNotificationReceived);
 
         // Subscribe to events when logged in (event adapter only available after login)
-        connect(clientManager_, &ClientManager::loggedIn,
-                this, [self = QPointer<CountryController>(this)]() {
-            if (!self) return;
-            BOOST_LOG_SEV(lg(), info) << "Subscribing to country change events";
-            self->clientManager_->subscribeToEvent(std::string{country_event_name});
-        });
+        connect(clientManager_,
+                &ClientManager::loggedIn,
+                this,
+                [self = QPointer<CountryController>(this)]() {
+                    if (!self)
+                        return;
+                    BOOST_LOG_SEV(lg(), info) << "Subscribing to country change events";
+                    self->clientManager_->subscribeToEvent(std::string{country_event_name});
+                });
 
         // Re-subscribe after reconnection
-        connect(clientManager_, &ClientManager::reconnected,
-                this, [self = QPointer<CountryController>(this)]() {
-            if (!self) return;
-            BOOST_LOG_SEV(lg(), info) << "Re-subscribing to country change events after reconnect";
-            self->clientManager_->subscribeToEvent(std::string{country_event_name});
-        });
+        connect(clientManager_,
+                &ClientManager::reconnected,
+                this,
+                [self = QPointer<CountryController>(this)]() {
+                    if (!self)
+                        return;
+                    BOOST_LOG_SEV(lg(), info)
+                        << "Re-subscribing to country change events after reconnect";
+                    self->clientManager_->subscribeToEvent(std::string{country_event_name});
+                });
 
         // If already connected, subscribe now
         if (clientManager_->isConnected()) {
@@ -116,45 +123,57 @@ void CountryController::showListWindow() {
     }
 
     BOOST_LOG_SEV(lg(), info) << "Creating new countries MDI window";
-    auto* countryWidget = new CountryMdiWindow(clientManager_, imageCache_,
-                                                username_, mainWindow_);
+    auto* countryWidget = new CountryMdiWindow(clientManager_, imageCache_, username_, mainWindow_);
 
     // Connect status signals
-    connect(countryWidget, &CountryMdiWindow::statusChanged,
-            this, [self = QPointer<CountryController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(countryWidget, &CountryMdiWindow::errorOccurred,
-            this, [self = QPointer<CountryController>(this)](const QString& err_msg) {
-        if (!self) return;
-        emit self->errorMessage("Error loading countries: " + err_msg);
-    });
+    connect(countryWidget,
+            &CountryMdiWindow::statusChanged,
+            this,
+            [self = QPointer<CountryController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(countryWidget,
+            &CountryMdiWindow::errorOccurred,
+            this,
+            [self = QPointer<CountryController>(this)](const QString& err_msg) {
+                if (!self)
+                    return;
+                emit self->errorMessage("Error loading countries: " + err_msg);
+            });
 
     // Connect country operations (add, edit, history)
-    connect(countryWidget, &CountryMdiWindow::addNewRequested,
-            this, &CountryController::onAddNewRequested);
-    connect(countryWidget, &CountryMdiWindow::showCountryDetails,
-            this, &CountryController::onShowCountryDetails);
-    connect(countryWidget, &CountryMdiWindow::showCountryHistory,
-            this, &CountryController::onShowCountryHistory);
+    connect(countryWidget,
+            &CountryMdiWindow::addNewRequested,
+            this,
+            &CountryController::onAddNewRequested);
+    connect(countryWidget,
+            &CountryMdiWindow::showCountryDetails,
+            this,
+            &CountryController::onShowCountryDetails);
+    connect(countryWidget,
+            &CountryMdiWindow::showCountryHistory,
+            this,
+            &CountryController::onShowCountryHistory);
 
     countryListWindow_ = new DetachableMdiSubWindow();
     countryListWindow_->setAttribute(Qt::WA_DeleteOnClose);
     countryListWindow_->setWidget(countryWidget);
     countryListWindow_->setWindowTitle("Countries");
-    countryListWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Globe, IconUtils::DefaultIconColor));
+    countryListWindow_->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Globe, IconUtils::DefaultIconColor));
 
     // Track window for detach/reattach operations
     register_detachable_window(countryListWindow_);
     QPointer<CountryController> self = this;
     QPointer<DetachableMdiSubWindow> windowBeingDestroyed = countryListWindow_;
     // to avoid race conditions with signal processing
-    connect(countryListWindow_, &QObject::destroyed, this,
-        [self, windowBeingDestroyed](QObject* obj) {
+    connect(
+        countryListWindow_, &QObject::destroyed, this, [self, windowBeingDestroyed](QObject* obj) {
             Q_UNUSED(obj);
-            if (!self) return;
+            if (!self)
+                return;
 
             BOOST_LOG_SEV(lg(), debug) << "Detachable MDI Sub Window destroyed";
 
@@ -164,14 +183,17 @@ void CountryController::showListWindow() {
         });
 
     // When the image cache reloads (due to external event), mark the list as stale
-    connect(imageCache_, &ImageCache::allLoaded, this,
+    connect(imageCache_,
+            &ImageCache::allLoaded,
+            this,
             [self = QPointer<CountryController>(this),
-             countryWidget = QPointer<CountryMdiWindow>(countryWidget)](){
-        if (!self) return;
-        if (countryWidget) {
-            countryWidget->markAsStale();
-        }
-    });
+             countryWidget = QPointer<CountryMdiWindow>(countryWidget)]() {
+                if (!self)
+                    return;
+                if (countryWidget) {
+                    countryWidget->markAsStale();
+                }
+            });
 
     mdiArea_->addSubWindow(countryListWindow_);
     countryListWindow_->adjustSize();
@@ -208,16 +230,22 @@ void CountryController::onAddNewRequested() {
         detailDialog->setChangeReasonCache(changeReasonCache_);
     }
 
-    connect(detailDialog, &CountryDetailDialog::statusMessage,
-            this, [self = QPointer<CountryController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(detailDialog, &CountryDetailDialog::errorMessage,
-            this, [self = QPointer<CountryController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
+    connect(detailDialog,
+            &CountryDetailDialog::statusMessage,
+            this,
+            [self = QPointer<CountryController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(detailDialog,
+            &CountryDetailDialog::errorMessage,
+            this,
+            [self = QPointer<CountryController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
 
     detailDialog->setCountry(new_country);
 
@@ -225,8 +253,8 @@ void CountryController::onAddNewRequested() {
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Country");
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Globe, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Globe, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -234,23 +262,19 @@ void CountryController::onAddNewRequested() {
     show_managed_window(detailWindow, countryListWindow_);
 }
 
-void CountryController::onShowCountryDetails(
-    const refdata::domain::country& country) {
-    BOOST_LOG_SEV(lg(), info) << "Showing country details for: "
-                             << country.alpha2_code;
+void CountryController::onShowCountryDetails(const refdata::domain::country& country) {
+    BOOST_LOG_SEV(lg(), info) << "Showing country details for: " << country.alpha2_code;
 
     const QString alpha2Code = QString::fromStdString(country.alpha2_code);
     const QString windowKey = build_window_key("details", alpha2Code);
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
-        BOOST_LOG_SEV(lg(), info) << "Reusing existing detail window for: "
-                                  << country.alpha2_code;
+        BOOST_LOG_SEV(lg(), info) << "Reusing existing detail window for: " << country.alpha2_code;
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Creating new detail window for: "
-                              << country.alpha2_code;
+    BOOST_LOG_SEV(lg(), info) << "Creating new detail window for: " << country.alpha2_code;
 
     auto* detailDialog = new CountryDetailDialog(mainWindow_);
     if (clientManager_) {
@@ -264,16 +288,22 @@ void CountryController::onShowCountryDetails(
         detailDialog->setChangeReasonCache(changeReasonCache_);
     }
 
-    connect(detailDialog, &CountryDetailDialog::statusMessage,
-            this, [self = QPointer<CountryController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(detailDialog, &CountryDetailDialog::errorMessage,
-            this, [self = QPointer<CountryController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
+    connect(detailDialog,
+            &CountryDetailDialog::statusMessage,
+            this,
+            [self = QPointer<CountryController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(detailDialog,
+            &CountryDetailDialog::errorMessage,
+            this,
+            [self = QPointer<CountryController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
 
     detailDialog->setCountry(country);
 
@@ -281,16 +311,15 @@ void CountryController::onShowCountryDetails(
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Country Details: %1").arg(alpha2Code));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Globe, IconUtils::DefaultIconColor));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Globe, IconUtils::DefaultIconColor));
 
     // Track this detail window
     track_window(windowKey, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<CountryController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -301,8 +330,7 @@ void CountryController::onShowCountryDetails(
 }
 
 void CountryController::onShowCountryHistory(const QString& alpha2Code) {
-    BOOST_LOG_SEV(lg(), info) << "Showing country history for: "
-                             << alpha2Code.toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Showing country history for: " << alpha2Code.toStdString();
 
     const QString windowKey = build_window_key("history", alpha2Code);
 
@@ -313,28 +341,37 @@ void CountryController::onShowCountryHistory(const QString& alpha2Code) {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
-                              << alpha2Code.toStdString();
+    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << alpha2Code.toStdString();
 
     auto* historyDialog = new CountryHistoryDialog(alpha2Code, clientManager_, mainWindow_);
     if (imageCache_) {
         historyDialog->setImageCache(imageCache_);
     }
 
-    connect(historyDialog, &CountryHistoryDialog::statusChanged,
-            this, [self = QPointer<CountryController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(historyDialog, &CountryHistoryDialog::errorOccurred,
-            this, [self = QPointer<CountryController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
-    connect(historyDialog, &CountryHistoryDialog::revertVersionRequested,
-            this, &CountryController::onRevertCountry);
-    connect(historyDialog, &CountryHistoryDialog::openVersionRequested,
-            this, &CountryController::onOpenCountryVersion);
+    connect(historyDialog,
+            &CountryHistoryDialog::statusChanged,
+            this,
+            [self = QPointer<CountryController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(historyDialog,
+            &CountryHistoryDialog::errorOccurred,
+            this,
+            [self = QPointer<CountryController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
+    connect(historyDialog,
+            &CountryHistoryDialog::revertVersionRequested,
+            this,
+            &CountryController::onRevertCountry);
+    connect(historyDialog,
+            &CountryHistoryDialog::openVersionRequested,
+            this,
+            &CountryController::onOpenCountryVersion);
 
     // Load history data
     historyDialog->loadHistory();
@@ -343,16 +380,15 @@ void CountryController::onShowCountryHistory(const QString& alpha2Code) {
     historyWindow->setAttribute(Qt::WA_DeleteOnClose);
     historyWindow->setWidget(historyDialog);
     historyWindow->setWindowTitle(QString("Country History: %1").arg(alpha2Code));
-    historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::History, IconUtils::DefaultIconColor));
+    historyWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
 
     // Track this history window
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
 
     QPointer<CountryController> self = this;
-    connect(historyWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -361,22 +397,22 @@ void CountryController::onShowCountryHistory(const QString& alpha2Code) {
     show_managed_window(historyWindow, countryListWindow_);
 }
 
-void CountryController::onNotificationReceived(
-    const QString& eventType, const QDateTime& timestamp,
-    const QStringList& entityIds, const QString& /*tenantId*/) {
+void CountryController::onNotificationReceived(const QString& eventType,
+                                               const QDateTime& timestamp,
+                                               const QStringList& entityIds,
+                                               const QString& /*tenantId*/) {
     // Check if this is a country change event
     if (eventType != QString::fromStdString(std::string{country_event_name})) {
         return;
     }
 
     BOOST_LOG_SEV(lg(), info) << "Received country change notification at "
-                              << timestamp.toString(Qt::ISODate).toStdString()
-                              << " with " << entityIds.size() << " alpha2 codes";
+                              << timestamp.toString(Qt::ISODate).toStdString() << " with "
+                              << entityIds.size() << " alpha2 codes";
 
     // If the country list window is open, mark it as stale
     if (countryListWindow_) {
-        auto* countryWidget = qobject_cast<CountryMdiWindow*>(
-            countryListWindow_->widget());
+        auto* countryWidget = qobject_cast<CountryMdiWindow*>(countryListWindow_->widget());
         if (countryWidget) {
             countryWidget->markAsStale();
             BOOST_LOG_SEV(lg(), debug) << "Marked country window as stale";
@@ -392,43 +428,41 @@ void CountryController::onNotificationReceived(
 
         // Check if this is a detail window for an affected country
         if (key.startsWith("details:")) {
-            QString windowAlpha2 = key.mid(8);  // Remove "details:" prefix
+            QString windowAlpha2 = key.mid(8); // Remove "details:" prefix
             if (entityIds.isEmpty() || entityIds.contains(windowAlpha2)) {
                 // Mark detail dialog as stale
-                auto* detailDialog = qobject_cast<CountryDetailDialog*>(
-                    window->widget());
+                auto* detailDialog = qobject_cast<CountryDetailDialog*>(window->widget());
                 if (detailDialog) {
                     detailDialog->markAsStale();
-                    BOOST_LOG_SEV(lg(), debug) << "Marked detail dialog as stale for: "
-                                               << windowAlpha2.toStdString();
+                    BOOST_LOG_SEV(lg(), debug)
+                        << "Marked detail dialog as stale for: " << windowAlpha2.toStdString();
                 }
             }
         }
         // Check if this is a history window for an affected country
         else if (key.startsWith("history:")) {
-            QString windowAlpha2 = key.mid(8);  // Remove "history:" prefix
+            QString windowAlpha2 = key.mid(8); // Remove "history:" prefix
             if (entityIds.isEmpty() || entityIds.contains(windowAlpha2)) {
                 // Mark history dialog as stale
-                auto* historyDialog = qobject_cast<CountryHistoryDialog*>(
-                    window->widget());
+                auto* historyDialog = qobject_cast<CountryHistoryDialog*>(window->widget());
                 if (historyDialog) {
                     historyDialog->markAsStale();
-                    BOOST_LOG_SEV(lg(), debug) << "Marked history dialog as stale for: "
-                                               << windowAlpha2.toStdString();
+                    BOOST_LOG_SEV(lg(), debug)
+                        << "Marked history dialog as stale for: " << windowAlpha2.toStdString();
                 }
             }
         }
     }
 }
 
-void CountryController::onOpenCountryVersion(
-    const refdata::domain::country& country, int versionNumber) {
+void CountryController::onOpenCountryVersion(const refdata::domain::country& country,
+                                             int versionNumber) {
     BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
                               << " for country: " << country.alpha2_code;
 
     const QString alpha2Code = QString::fromStdString(country.alpha2_code);
-    const QString windowKey = build_window_key("version", QString("%1_v%2")
-        .arg(alpha2Code).arg(versionNumber));
+    const QString windowKey =
+        build_window_key("version", QString("%1_v%2").arg(alpha2Code).arg(versionNumber));
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
@@ -448,20 +482,28 @@ void CountryController::onOpenCountryVersion(
         detailDialog->setChangeReasonCache(changeReasonCache_);
     }
 
-    connect(detailDialog, &CountryDetailDialog::statusMessage,
-            this, [self = QPointer<CountryController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->statusMessage(message);
-    });
-    connect(detailDialog, &CountryDetailDialog::errorMessage,
-            this, [self = QPointer<CountryController>(this)](const QString& message) {
-        if (!self) return;
-        emit self->errorMessage(message);
-    });
+    connect(detailDialog,
+            &CountryDetailDialog::statusMessage,
+            this,
+            [self = QPointer<CountryController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->statusMessage(message);
+            });
+    connect(detailDialog,
+            &CountryDetailDialog::errorMessage,
+            this,
+            [self = QPointer<CountryController>(this)](const QString& message) {
+                if (!self)
+                    return;
+                emit self->errorMessage(message);
+            });
 
     // Connect revert signal
-    connect(detailDialog, &CountryDetailDialog::revertRequested,
-            this, &CountryController::onRevertCountry);
+    connect(detailDialog,
+            &CountryDetailDialog::revertRequested,
+            this,
+            &CountryController::onRevertCountry);
 
     // Try to get history from the sender (history dialog) for version navigation
     auto* historyDialog = qobject_cast<CountryHistoryDialog*>(sender());
@@ -477,18 +519,17 @@ void CountryController::onOpenCountryVersion(
     auto* detailWindow = new DetachableMdiSubWindow();
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
-    detailWindow->setWindowTitle(QString("Country: %1 (Version %2 - Read Only)")
-        .arg(alpha2Code).arg(versionNumber));
-    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Globe, IconUtils::DefaultIconColor));
+    detailWindow->setWindowTitle(
+        QString("Country: %1 (Version %2 - Read Only)").arg(alpha2Code).arg(versionNumber));
+    detailWindow->setWindowIcon(
+        IconUtils::createRecoloredIcon(Icon::Globe, IconUtils::DefaultIconColor));
 
     // Track this version window
     track_window(windowKey, detailWindow);
     register_detachable_window(detailWindow);
 
     QPointer<CountryController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, windowKey]() {
+    connect(detailWindow, &QObject::destroyed, this, [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
         }
@@ -513,16 +554,17 @@ void CountryController::onRevertCountry(const refdata::domain::country& country)
     QPointer<CountryController> self = this;
     QFuture<std::pair<bool, std::string>> future =
         QtConcurrent::run([self, countryToSave]() -> std::pair<bool, std::string> {
-            if (!self) return {false, ""};
+            if (!self)
+                return {false, ""};
 
-            BOOST_LOG_SEV(lg(), debug) << "Sending save country request for revert: "
-                                       << countryToSave.alpha2_code;
+            BOOST_LOG_SEV(lg(), debug)
+                << "Sending save country request for revert: " << countryToSave.alpha2_code;
             using refdata::messaging::save_country_request;
             using refdata::messaging::save_country_response;
 
             auto request = save_country_request::from(countryToSave);
             auto response_result =
-self->clientManager_->process_authenticated_request(std::move(request));
+                self->clientManager_->process_authenticated_request(std::move(request));
 
             if (!response_result)
                 return {false, "Failed to communicate with server"};
@@ -531,7 +573,10 @@ self->clientManager_->process_authenticated_request(std::move(request));
         });
 
     auto* watcher = new QFutureWatcher<std::pair<bool, std::string>>(self);
-    connect(watcher, &QFutureWatcher<std::pair<bool, std::string>>::finished, self,
+    connect(
+        watcher,
+        &QFutureWatcher<std::pair<bool, std::string>>::finished,
+        self,
         [self, watcher, alpha2_code = country.alpha2_code]() {
             if (!self) {
                 watcher->deleteLater();
@@ -542,14 +587,13 @@ self->clientManager_->process_authenticated_request(std::move(request));
             watcher->deleteLater();
 
             if (success) {
-                BOOST_LOG_SEV(lg(), info) << "Country reverted successfully: "
-                                          << alpha2_code;
+                BOOST_LOG_SEV(lg(), info) << "Country reverted successfully: " << alpha2_code;
                 emit self->statusMessage(QString("Successfully reverted country: %1")
-                    .arg(QString::fromStdString(alpha2_code)));
+                                             .arg(QString::fromStdString(alpha2_code)));
             } else {
                 BOOST_LOG_SEV(lg(), error) << "Country revert failed: " << message;
-                emit self->errorMessage(QString("Failed to revert country: %1")
-                    .arg(QString::fromStdString(message)));
+                emit self->errorMessage(
+                    QString("Failed to revert country: %1").arg(QString::fromStdString(message)));
             }
         });
 

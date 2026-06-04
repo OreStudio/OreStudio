@@ -20,16 +20,16 @@
 #ifndef ORES_QT_CURRENCY_MDI_WINDOW_HPP
 #define ORES_QT_CURRENCY_MDI_WINDOW_HPP
 
-#include <QTableView>
-#include <QVBoxLayout>
-#include <QToolBar>
-#include <QSortFilterProxyModel>
-#include <memory>
-#include "ores.qt/EntityListMdiWindow.hpp"
-#include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientCurrencyModel.hpp"
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/EntityListMdiWindow.hpp"
 #include "ores.qt/PaginationWidget.hpp"
+#include <QSortFilterProxyModel>
+#include <QTableView>
+#include <QToolBar>
+#include <QVBoxLayout>
+#include <memory>
 
 namespace ores::qt {
 
@@ -42,8 +42,7 @@ class CurrencyMdiWindow : public EntityListMdiWindow {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name =
-        "ores.qt.currency_mdi_window";
+    inline static std::string_view logger_name = "ores.qt.currency_mdi_window";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -58,7 +57,9 @@ public:
                                QWidget* parent = nullptr);
     ~CurrencyMdiWindow() override;
 
-    ClientCurrencyModel* currencyModel() const { return currencyModel_.get(); }
+    ClientCurrencyModel* currencyModel() const {
+        return currencyModel_.get();
+    }
 
 signals:
     void statusChanged(const QString& message);
@@ -89,8 +90,9 @@ private slots:
     void onRowDoubleClicked(const QModelIndex& index);
     void onSelectionChanged();
     void onConnectionStateChanged();
-    void onSystemSettingNotification(const QString& eventType, const QDateTime& timestamp,
-                                    const QStringList& entityIds);
+    void onSystemSettingNotification(const QString& eventType,
+                                     const QDateTime& timestamp,
+                                     const QStringList& entityIds);
 
 protected:
     QString normalRefreshTooltip() const override {

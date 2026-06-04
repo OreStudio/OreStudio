@@ -18,39 +18,43 @@
  *
  */
 #include "ores.qt/ClientWorkunitModel.hpp"
-
-#include <QtConcurrent>
-#include <boost/uuid/uuid_io.hpp>
 #include "ores.compute.api/messaging/workunit_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
+#include <QtConcurrent>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    std::string workunit_key_extractor(const compute::domain::workunit& e) {
-        return e.input_uri;
-    }
+std::string workunit_key_extractor(const compute::domain::workunit& e) {
+    return e.input_uri;
+}
 }
 
-ClientWorkunitModel::ClientWorkunitModel(
-    ClientManager* clientManager, QObject* parent)
-    : AbstractClientModel(parent),
-      clientManager_(clientManager),
-      watcher_(new QFutureWatcher<FetchResult>(this)),
-      recencyTracker_(workunit_key_extractor),
-      pulseManager_(new RecencyPulseManager(this)) {
+ClientWorkunitModel::ClientWorkunitModel(ClientManager* clientManager, QObject* parent)
+    : AbstractClientModel(parent)
+    , clientManager_(clientManager)
+    , watcher_(new QFutureWatcher<FetchResult>(this))
+    , recencyTracker_(workunit_key_extractor)
+    , pulseManager_(new RecencyPulseManager(this)) {
 
-    connect(watcher_, &QFutureWatcher<FetchResult>::finished,
-            this, &ClientWorkunitModel::onWorkunitsLoaded);
+    connect(watcher_,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            &ClientWorkunitModel::onWorkunitsLoaded);
 
-    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
-            this, &ClientWorkunitModel::onPulseStateChanged);
-    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
-            this, &ClientWorkunitModel::onPulsingComplete);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulse_state_changed,
+            this,
+            &ClientWorkunitModel::onPulseStateChanged);
+    connect(pulseManager_,
+            &RecencyPulseManager::pulsing_complete,
+            this,
+            &ClientWorkunitModel::onPulsingComplete);
 }
 
 int ClientWorkunitModel::rowCount(const QModelIndex& parent) const {
@@ -65,8 +69,7 @@ int ClientWorkunitModel::columnCount(const QModelIndex& parent) const {
     return ColumnCount;
 }
 
-QVariant ClientWorkunitModel::data(
-    const QModelIndex& index, int role) const {
+QVariant ClientWorkunitModel::data(const QModelIndex& index, int role) const {
     if (!index.isValid())
         return {};
 
@@ -78,22 +81,22 @@ QVariant ClientWorkunitModel::data(
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-        case BatchId:
-            return QString::fromStdString(boost::uuids::to_string(workunit.batch_id));
-        case AppVersionId:
-            return QString::fromStdString(boost::uuids::to_string(workunit.app_version_id));
-        case InputUri:
-            return QString::fromStdString(workunit.input_uri);
-        case Priority:
-            return static_cast<qlonglong>(workunit.priority);
-        case TargetRedundancy:
-            return static_cast<qlonglong>(workunit.target_redundancy);
-        case Version:
-            return static_cast<qlonglong>(workunit.version);
-        case ModifiedBy:
-            return QString::fromStdString(workunit.modified_by);
-        default:
-            return {};
+            case BatchId:
+                return QString::fromStdString(boost::uuids::to_string(workunit.batch_id));
+            case AppVersionId:
+                return QString::fromStdString(boost::uuids::to_string(workunit.app_version_id));
+            case InputUri:
+                return QString::fromStdString(workunit.input_uri);
+            case Priority:
+                return static_cast<qlonglong>(workunit.priority);
+            case TargetRedundancy:
+                return static_cast<qlonglong>(workunit.target_redundancy);
+            case Version:
+                return static_cast<qlonglong>(workunit.version);
+            case ModifiedBy:
+                return QString::fromStdString(workunit.modified_by);
+            default:
+                return {};
         }
     }
 
@@ -104,28 +107,27 @@ QVariant ClientWorkunitModel::data(
     return {};
 }
 
-QVariant ClientWorkunitModel::headerData(
-    int section, Qt::Orientation orientation, int role) const {
+QVariant ClientWorkunitModel::headerData(int section, Qt::Orientation orientation, int role) const {
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return {};
 
     switch (section) {
-    case BatchId:
-        return tr("Batch ID");
-    case AppVersionId:
-        return tr("App Version ID");
-    case InputUri:
-        return tr("Input URI");
-    case Priority:
-        return tr("Priority");
-    case TargetRedundancy:
-        return tr("Redundancy");
-    case Version:
-        return tr("Version");
-    case ModifiedBy:
-        return tr("Modified By");
-    default:
-        return {};
+        case BatchId:
+            return tr("Batch ID");
+        case AppVersionId:
+            return tr("App Version ID");
+        case InputUri:
+            return tr("Input URI");
+        case Priority:
+            return tr("Priority");
+        case TargetRedundancy:
+            return tr("Redundancy");
+        case Version:
+            return tr("Version");
+        case ModifiedBy:
+            return tr("Modified By");
+        default:
+            return {};
     }
 }
 
@@ -155,8 +157,7 @@ void ClientWorkunitModel::refresh() {
     fetch_workunits(0, page_size_);
 }
 
-void ClientWorkunitModel::load_page(std::uint32_t offset,
-                                          std::uint32_t limit) {
+void ClientWorkunitModel::load_page(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "load_page: offset=" << offset << ", limit=" << limit;
 
     if (is_fetching_) {
@@ -180,18 +181,18 @@ void ClientWorkunitModel::load_page(std::uint32_t offset,
     fetch_workunits(offset, limit);
 }
 
-void ClientWorkunitModel::fetch_workunits(
-    std::uint32_t offset, std::uint32_t limit) {
+void ClientWorkunitModel::fetch_workunits(std::uint32_t offset, std::uint32_t limit) {
     is_fetching_ = true;
     QPointer<ClientWorkunitModel> self = this;
 
-    QFuture<FetchResult> future =
-        QtConcurrent::run([self, offset, limit]() -> FetchResult {
-            return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
-                BOOST_LOG_SEV(lg(), debug) << "Making workunits request with offset="
-                                           << offset << ", limit=" << limit;
+    QFuture<FetchResult> future = QtConcurrent::run([self, offset, limit]() -> FetchResult {
+        return exception_helper::wrap_async_fetch<FetchResult>(
+            [&]() -> FetchResult {
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Making workunits request with offset=" << offset << ", limit=" << limit;
                 if (!self || !self->clientManager_) {
-                    return {.success = false, .workunits = {},
+                    return {.success = false,
+                            .workunits = {},
                             .total_available_count = 0,
                             .error_message = "Model was destroyed",
                             .error_details = {}};
@@ -201,28 +202,31 @@ void ClientWorkunitModel::fetch_workunits(
                 request.offset = offset;
                 request.limit = limit;
 
-                auto result = self->clientManager_->
-                    process_authenticated_request(std::move(request));
+                auto result =
+                    self->clientManager_->process_authenticated_request(std::move(request));
 
                 if (!result) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to fetch workunits: "
-                                               << result.error();
-                    return {.success = false, .workunits = {},
+                    BOOST_LOG_SEV(lg(), error) << "Failed to fetch workunits: " << result.error();
+                    return {.success = false,
+                            .workunits = {},
                             .total_available_count = 0,
-                            .error_message = QString::fromStdString(
-                                "Failed to fetch workunits: " + result.error()),
+                            .error_message = QString::fromStdString("Failed to fetch workunits: " +
+                                                                    result.error()),
                             .error_details = {}};
                 }
 
-                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->workunits.size()
-                                           << " workunits, total available: "
-                                           << result->total_available_count;
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Fetched " << result->workunits.size()
+                    << " workunits, total available: " << result->total_available_count;
                 return {.success = true,
                         .workunits = std::move(result->workunits),
-                        .total_available_count = static_cast<std::uint32_t>(result->total_available_count),
-                        .error_message = {}, .error_details = {}};
-            }, "workunits");
-        });
+                        .total_available_count =
+                            static_cast<std::uint32_t>(result->total_available_count),
+                        .error_message = {},
+                        .error_details = {}};
+            },
+            "workunits");
+    });
 
     watcher_->setFuture(future);
 }
@@ -233,8 +237,8 @@ void ClientWorkunitModel::onWorkunitsLoaded() {
     const auto result = watcher_->result();
 
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to fetch workunits: "
-                                   << result.error_message.toStdString();
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to fetch workunits: " << result.error_message.toStdString();
         emit loadError(result.error_message, result.error_details);
         return;
     }
@@ -273,16 +277,14 @@ void ClientWorkunitModel::set_page_size(std::uint32_t size) {
     }
 }
 
-const compute::domain::workunit*
-ClientWorkunitModel::getWorkunit(int row) const {
+const compute::domain::workunit* ClientWorkunitModel::getWorkunit(int row) const {
     const auto idx = static_cast<std::size_t>(row);
     if (idx >= workunits_.size())
         return nullptr;
     return &workunits_[idx];
 }
 
-QVariant ClientWorkunitModel::recency_foreground_color(
-    const std::string& code) const {
+QVariant ClientWorkunitModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {
         return color_constants::stale_indicator;
     }
@@ -291,8 +293,8 @@ QVariant ClientWorkunitModel::recency_foreground_color(
 
 void ClientWorkunitModel::onPulseStateChanged(bool /*isOn*/) {
     if (!workunits_.empty()) {
-        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
-            {Qt::ForegroundRole});
+        emit dataChanged(
+            index(0, 0), index(rowCount() - 1, columnCount() - 1), {Qt::ForegroundRole});
     }
 }
 

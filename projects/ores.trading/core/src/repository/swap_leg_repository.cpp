@@ -40,7 +40,7 @@ std::string swap_leg_repository::sql() {
 }
 
 void swap_leg_repository::write(context ctx, const domain::swap_leg& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing swap leg: " << v.identity.get().id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing swap leg: " << v.identity.id;
     execute_write_query(ctx, swap_leg_mapper::map(v),
         lg(), "Writing swap leg to database.");
 }

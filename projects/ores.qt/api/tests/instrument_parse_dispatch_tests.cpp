@@ -290,7 +290,7 @@ TEST_CASE("parse_trade_instrument_dispatches_fra", tags) {
     instr.trade_type_code = "ForwardRateAgreement";
 
     swap_leg leg;
-    leg.identity.get().leg_number = 1;
+    leg.identity.leg_number = 1;
 
     auto json = make_response_json(
         make_test_trade(product_type::swap, "ForwardRateAgreement"),
@@ -306,7 +306,7 @@ TEST_CASE("parse_trade_instrument_dispatches_fra", tags) {
     REQUIRE(pop.called);
     CHECK(pop.got.instrument_id == instr.instrument_id);
     REQUIRE(pop.got_legs.size() == 1);
-    CHECK(pop.got_legs[0].identity.get().leg_number == 1);
+    CHECK(pop.got_legs[0].identity.leg_number == 1);
 }
 
 // =============================================================================
@@ -319,9 +319,9 @@ TEST_CASE("parse_trade_instrument_dispatches_vanilla_swap", tags) {
     instr.trade_type_code = "Swap";
 
     swap_leg leg1;
-    leg1.identity.get().leg_number = 1;
+    leg1.identity.leg_number = 1;
     swap_leg leg2;
-    leg2.identity.get().leg_number = 2;
+    leg2.identity.leg_number = 2;
 
     auto json = make_response_json(
         make_test_trade(product_type::swap, "Swap"),
@@ -337,8 +337,8 @@ TEST_CASE("parse_trade_instrument_dispatches_vanilla_swap", tags) {
     REQUIRE(pop.called);
     CHECK(pop.got.instrument_id == instr.instrument_id);
     REQUIRE(pop.got_legs.size() == 2);
-    CHECK(pop.got_legs[0].identity.get().leg_number == 1);
-    CHECK(pop.got_legs[1].identity.get().leg_number == 2);
+    CHECK(pop.got_legs[0].identity.leg_number == 1);
+    CHECK(pop.got_legs[1].identity.leg_number == 2);
 }
 
 // =============================================================================

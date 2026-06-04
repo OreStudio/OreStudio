@@ -215,6 +215,94 @@ same repository and deployed together. There are no external consumers of the
 *Caller simplification*: the =.get()= accessor (an =rfl::Flatten= artifact)
 is removed. =sl.identity.get().version= becomes =sl.identity.version=.
 
+* Architectural impact of the plain nested struct fix
+
+The fix (remove =rfl::Flatten=, use plain nested sub-structs) has broader
+architectural consequences worth recording. On balance the change is
+*positive* — it removes a compiler workaround at the cost of a wire-format
+change, and leaves the codebase in better shape on every dimension except one.
+
+** Code clarity — improvement
+
+=rfl::Flatten::get()= is a library artefact with no domain meaning. Callers
+had to write =sl.identity.get().leg_number= when they meant =sl.identity.leg_number=.
+The nested struct approach is idiomatic C++; a reader unfamiliar with rfl can
+understand the code immediately.
+
+Before:
+#+begin_src cpp
+auto& tm = sl.terms.get();
+tm.leg_type_code = "Fixed";
+#+end_src
+
+After:
+#+begin_src cpp
+sl.terms.leg_type_code = "Fixed";
+#+end_src
+
+** Compiler dependency — improvement
+
+With =rfl::Flatten=, the struct definition itself depends on the rfl library
+header. Without it, =swap_leg= is a plain C++ struct that can be included in
+any TU with no rfl dependency. rfl is now only needed at serialisation
+boundaries, which is the correct layering.
+
+** Portability — improvement
+
+A plain nested struct can be serialised by any library (rfl, nlohmann::json,
+Boost.JSON, protobuf, etc.) without structural modification. The flat
+=rfl::Flatten= form ties the struct layout to rfl's specific Flatten
+semantics.
+
+** Wire format — trade-off
+
+The JSON changes from flat (19 top-level fields) to nested (3 top-level keys).
+This is a breaking wire-format change. The risk is low in ORE Studio because:
+- The service and client are in the same repository, deployed together.
+- =swap_leg= is an internal RPC type; no external consumers exist.
+- The format change is consistent: the C++ nested structure now mirrors
+  the JSON structure, eliminating a conceptual mismatch.
+
+Recommendation: bump the =export_portfolio_response= protocol version to
+signal the format change clearly, and verify no persisted JSON (e.g. test
+fixtures or fixtures in the database) uses the flat format.
+
+** Structural coherence — improvement
+
+The C++ structure now accurately reflects the logical grouping:
+- =identity= — who and when (version, tenant, id, instrument, leg number)
+- =terms= — the economic terms (rate type, rate, notional, currency, indices)
+- =audit= — the audit trail (who changed it, why, when)
+
+This grouping makes the domain model self-documenting. It also aligns
+=swap_leg= with how =trade= was decomposed in sprint 17 (five sub-structs),
+creating a consistent pattern across the domain layer.
+
+** Performance — neutral
+
+Both layouts are POD structs. Memory layout and cache behaviour are
+effectively identical. There is no runtime cost difference.
+
+** Maintenance — improvement
+
+Flat 19-field structs are fragile: adding a 20th field (if the threshold is
+~17-19) would silently re-trigger C1202. The nested layout makes adding
+fields safe: new fields go into the appropriate sub-struct (≤9 fields each)
+and C1202 cannot fire regardless of how many fields are added in future.
+
+** Summary
+
+| Dimension | Before (rfl::Flatten) | After (nested structs) |
+|-----------+----------------------+------------------------|
+| Code clarity | Obscured by .get() | Clean, idiomatic |
+| Compiler dependency | Struct requires rfl | Struct is pure C++ |
+| Portability | rfl-specific | Library-agnostic |
+| Wire format | Flat JSON (19 fields) | Nested JSON (3 keys) |
+| Structural coherence | Mismatch (flat JSON, nested C++) | Aligned |
+| Performance | Baseline | Identical |
+| Future-proofing | Fragile (field count) | Robust |
+| C1202 | Fires (Mode 2) | Eliminated |
+
 * Decision table: which approach for which failure mode
 
 | Approach | Mode 1 (TU saturation) | Mode 2 (clean TU) | Wire format |

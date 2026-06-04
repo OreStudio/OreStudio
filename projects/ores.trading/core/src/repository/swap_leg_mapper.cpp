@@ -34,9 +34,9 @@ swap_leg_mapper::map(const swap_leg_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::swap_leg r;
-    auto& id = r.identity.get();
-    auto& tm = r.terms.get();
-    auto& au = r.audit.get();
+    auto& id = r.identity;
+    auto& tm = r.terms;
+    auto& au = r.audit;
     id.version = v.version;
     id.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     id.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
@@ -66,9 +66,9 @@ swap_leg_mapper::map(const domain::swap_leg& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     swap_leg_entity r;
-    const auto& id = v.identity.get();
-    const auto& tm = v.terms.get();
-    const auto& au = v.audit.get();
+    const auto& id = v.identity;
+    const auto& tm = v.terms;
+    const auto& au = v.audit;
     r.id = boost::uuids::to_string(id.id);
     r.tenant_id = id.tenant_id.to_string();
     r.version = id.version;

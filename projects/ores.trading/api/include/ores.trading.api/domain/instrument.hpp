@@ -72,7 +72,7 @@ void stamp_ids(with_legs<T, Leg>& data,
     stamp_ids(data.instrument, instrument_id, trade_id);
     for (auto& leg : data.legs) {
         if constexpr (std::is_same_v<Leg, swap_leg>)
-            leg.identity.get().instrument_id = instrument_id;
+            leg.identity.instrument_id = instrument_id;
         else
             leg.instrument_id = instrument_id;
     }

@@ -23,16 +23,20 @@
 #include <chrono>
 #include <string>
 #include <boost/uuid/uuid.hpp>
-#include <rfl/Flatten.hpp>
 #include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::trading::domain {
 
-// Decomposed into three sub-structs (≤9 fields each) so that
+// Decomposed into three plain nested sub-structs (≤9 fields each) so that
 // rfl::internal::no_duplicate_field_names never sees more than 9 field names
-// at once, staying below MSVC's C1202 template-graph limit. rfl::Flatten is
-// transparent at the JSON level: all fields appear at the top level of the
-// serialised object, identical to the pre-split layout.
+// at once, staying below MSVC's C1202 template-graph limit.
+//
+// NOTE: rfl::Flatten was tried and rejected — it preserves the flat wire
+// format but rfl still instantiates a 19-field Literal for the parent struct,
+// which fires C1202 in a clean TU (Mode 2 failure). Plain nested structs
+// produce a 3-field parent Literal and reflect each sub-struct independently.
+// The JSON wire format is nested: {"identity":{...},"terms":{...},"audit":{...}}.
+// See doc/investigations/msvc_c1202_rfl_complexity.org for full analysis.
 
 struct swap_leg_identity final {
     int version = 0;
@@ -66,19 +70,17 @@ struct swap_leg_audit final {
  * @brief One leg of a rates instrument (Swap, CrossCurrencySwap, CapFloor,
  * Swaption).
  *
- * A plain IRS has two legs: one fixed, one floating. Fields not applicable to
- * a leg type are left empty (e.g. floating_index_code for fixed legs,
- * fixed_rate for floating legs).
- *
  * Access fields via the sub-struct members:
  *   sl.identity.id, sl.identity.leg_number
  *   sl.terms.leg_type_code, sl.terms.notional
  *   sl.audit.modified_by, sl.audit.recorded_at
+ *
+ * JSON wire format is nested: {"identity":{...},"terms":{...},"audit":{...}}.
  */
 struct swap_leg final {
-    rfl::Flatten<swap_leg_identity> identity;
-    rfl::Flatten<swap_leg_terms>   terms;
-    rfl::Flatten<swap_leg_audit>   audit;
+    swap_leg_identity identity;
+    swap_leg_terms    terms;
+    swap_leg_audit    audit;
 };
 
 }

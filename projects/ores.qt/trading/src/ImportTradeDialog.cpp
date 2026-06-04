@@ -620,7 +620,7 @@ void ImportTradeDialog::onImportClicked() {
                         instr.trade_id = tti.trade.identity.id;
                     }, r.instrument);
                     for (auto& leg : r.legs)
-                        leg.identity.get().instrument_id = instr_id;
+                        leg.identity.instrument_id = instr_id;
                 } else if constexpr (std::is_same_v<T, fx_instrument_variant> ||
                                      std::is_same_v<T, equity_instrument_variant>) {
                     std::visit([&](auto& instr) {

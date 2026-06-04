@@ -43,11 +43,11 @@ stories will extend the cleanup to all of them.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] |
-| Now           | Scaffolded; investigation not yet started. |
+| Now           | Inventory complete; DQ fix implemented, full build verifying. |
 | Waiting on    | Nothing.                               |
-| Next          | Run the inventory task, starting with ores.dq. |
+| Next          | Land the DQ fix PR; then the constants-move follow-up task. |
 | Last touched  | 2026-06-04                               |
 
 * Acceptance
@@ -68,9 +68,27 @@ stories will extend the cleanup to all of them.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:681BBF6B-4DD8-411A-9B19-76AA5E14C1FC][Inventory api/core contents across split components]] | BACKLOG | | | Catalogue api vs core contents + link deps for all 17 split components, DQ first; flag heavy apis; investigation report. |
+| [[id:681BBF6B-4DD8-411A-9B19-76AA5E14C1FC][Inventory api/core contents across split components]] | STARTED | 2026-06-04 | | Catalogue api vs core contents + link deps for all 17 split components, DQ first; flag heavy apis; investigation report. |
+| [[id:9409F936-C45C-4BF8-9507-D796907D1E45][Move change reason constants from ores.database to ores.dq.api]] | BACKLOG | | | Constants are DQ-domain; ores.database has zero internal uses. Cycle-safe now dq.api is light. No aliases; fix all consumers. |
 
 * Decisions
+
+- /The erosion is not systemic./ Of 17 split components, only
+  =ores.dq.api= linked the database layer — and for a single
+  backwards-compatibility shim header with one remaining consumer.
+  See the [[id:D16238D8-3F4A-4F45-97BC-4F6618601313][investigation report]].
+- /No backwards-compatibility hacks./ The shim is deleted and the
+  caller fixed, not aliased. This is the standing rule for the
+  remaining work.
+- /Change reason constants belong in DQ./ They were parked in
+  =ores.database= only to break a historical dq↔iam cycle;
+  =ores.database= never uses them. The move back is cycle-safe
+  precisely because dq.api is now light — deferred to its own task
+  as a post-cleanup change.
+- /Transitive freeloaders fixed properly./ Removing dq.api's PUBLIC
+  database link exposed four cores (iam, refdata, synthetic,
+  workspace) that include =ores.database= headers without linking
+  the library; each now links it explicitly.
 
 * Out of scope
 

@@ -41,11 +41,11 @@ decision:
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:BD519FC9-6B29-4055-877F-861E46043A06][Investigate the API/core split in components]] |
-| Now          | Not yet started.                       |
+| Now          | Inventory done; DQ fix implemented; full build verifying. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Verify build, commit, update PR #1045. |
 | Last touched | 2026-06-04                               |
 
 * Acceptance
@@ -79,3 +79,13 @@ task closes. Plans do not outlive their task.)
 |   |                 |      |          |       |
 
 * Result
+
+Investigation report: [[id:D16238D8-3F4A-4F45-97BC-4F6618601313][Investigation: API/core split inventory]].
+
+Headline: the erosion is *not* systemic — =ores.dq.api= was the only
+api linking =ores.database=, caused by one backwards-compat shim
+header with a single consumer. Fixed in this branch: shim deleted,
+caller repointed, dq.api links cleaned (database/sqlgen/logging
+removed), and four transitive freeloaders (iam, refdata, synthetic,
+workspace cores) now link =ores.database= explicitly. Follow-up
+filed: [[id:9409F936-C45C-4BF8-9507-D796907D1E45][move the constants to their semantic home in dq.api]].

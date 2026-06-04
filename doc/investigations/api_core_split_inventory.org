@@ -1,0 +1,131 @@
+:PROPERTIES:
+:ID: D16238D8-3F4A-4F45-97BC-4F6618601313
+:END:
+#+title: Investigation: API/core split inventory
+#+description: Inventory of what all 17 api+core split components keep in each sub-component and what their apis link; identifies ores.dq.api as the only api linking the database layer, traces the cause to a backwards-compatibility shim, and recommends the refactor.
+#+type: investigation
+#+level: cross
+#+filetags: :architecture:components:cpp:
+#+created: 2026-06-04
+#+updated: 2026-06-04
+
+This page documents a formal historical record of an [[id:A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D][investigation]] into
+the api/core split across components: what each sub-component
+contains, what each =api= links, where the lightweight-api contract
+has eroded, and why.
+
+* Context
+
+The api/core split exists so that consumers who only need a
+component's /types/ — typically NATS clients serialising and
+deserialising its messages — can link the =api= sub-component without
+pulling in the database layer, repositories, or other heavy
+machinery. The trigger for this investigation: =ores.dq.api= links
+=ores.database.lib=, which defeats the point of the split. Seventeen
+components carry an api+core split; if DQ's pattern held elsewhere,
+the erosion would be systemic.
+
+* Methodology
+
+For every component under =projects/= with both an =api/= and =core/=
+sub-directory: catalogue the facet directories under each
+sub-component's =include/= tree, and extract every
+=target_link_libraries= entry from each sub-component's
+=src/CMakeLists.txt=. For flagged apis, trace the dependency to the
+responsible headers with =grep= over the include tree, count actual
+usage of each linked library, and identify the consumers of the
+offending headers.
+
+* Inventory
+
+Seventeen components are split: analytics, assets, compute,
+controller, dq, http, iam, marketdata, ore, refdata, reporting,
+scheduler, synthetic, trading, variability, workflow, workspace.
+
+** The standard api profile
+
+Almost all apis converge on the same shape — facets =domain=,
+=messaging=, usually =eventing= and =generators= — and the same
+link set:
+
+| Library            | Role                                  |
+|--------------------+---------------------------------------|
+| =ores.utility.lib= | cross-cutting helpers, rfl reflectors |
+| =ores.platform.lib= | platform abstractions                |
+| =ores.eventing.lib= | event envelope types                 |
+| =ores.rfl.pch=     | reflect-cpp precompiled header        |
+| =faker-cxx=        | generators facet (test data)          |
+| =libfort=          | table dumpers                         |
+
+Apis that depend on /other apis/ also conform to the contract:
+=ores.refdata.api= → =iam.api=, =workflow.api=; =ores.synthetic.api=
+→ =dq.api=, =iam.api=, =refdata.api=. The exemplar is
+=ores.workflow.api=, which links only =ores.utility.lib=.
+
+** Flagged apis
+
+| Api | Heavy link | Verdict |
+|-----+------------+---------|
+| =ores.dq.api= | =ores.database.lib= (PUBLIC), =sqlgen= + =ores.logging= (PRIVATE) | *The offender.* See below. |
+| =ores.compute.api= | =ores.storage.lib= | Deliberate: =net/compute_storage.hpp= facet. Storage is a filesystem/net abstraction, not the database layer. Borderline; revisit separately. |
+| =ores.ore.api= | =ores.storage.lib=, =ores.logging.lib= | Same pattern: =net/ore_storage.hpp=. Borderline; revisit separately. |
+| =ores.http.api= | OpenSSL, =ores.security=, =ores.telemetry.core=, Boost::json/url | Network component; its api /is/ a transport layer. Different contract; out of scope here. |
+
+No other api links =ores.database= or any repository/service
+machinery. *The erosion is not systemic — DQ is the only true
+violation of the lightweight-api contract.*
+
+* Conclusions
+
+The entire =ores.dq.api= → =ores.database= dependency exists for one
+backwards-compatibility shim:
+=ores.dq.api/domain/change_reason_constants.hpp=. The change reason
+constants were moved to =ores.database= to break a circular
+dependency between =ores.dq= and =ores.iam=; the shim was left behind
+aliasing =ores::database::domain::change_reason_constants= into
+=ores::dq::domain=. Findings:
+
+- The shim has exactly *one remaining consumer*:
+  =projects/ores.qt/api/src/ChangeReasonDialog.cpp=. All other
+  former consumers (http, qt wizards, iam services, ore planner)
+  already include the =ores.database= header directly.
+- Because the link is PUBLIC, =ores.database.lib= — whose own PUBLIC
+  interface carries =sqlgen= and =ores.logging= — leaks into the
+  interface of everything linking =dq.api=.
+- =dq.api='s PRIVATE links on =sqlgen= and =ores.logging= are
+  *unused* (zero references in the sub-component) — vestiges of the
+  same move.
+
+* Recommendations
+
+Per the project direction: no backwards-compatibility hacks — move
+callers to the new world and delete the shim.
+
+1. /Fix the caller/: point =ChangeReasonDialog.cpp= at
+   ="ores.database/domain/change_reason_constants.hpp"= and the
+   =ores::database::domain= namespace, linking =ores.database.lib=
+   explicitly in =ores.qt.api= if it does not already.
+2. /Delete the shim/ header
+   =ores.dq.api/include/ores.dq.api/domain/change_reason_constants.hpp=.
+3. /Clean the links/: drop =ores.database.lib= (PUBLIC) and the
+   unused =sqlgen= / =ores.logging= (PRIVATE) from
+   =projects/ores.dq/api/src/CMakeLists.txt=.
+4. /Move the constants home/ (deferred post-cleanup, filed as
+   [[id:9409F936-C45C-4BF8-9507-D796907D1E45][Move change reason constants from ores.database to ores.dq.api]]):
+   the constants are DQ-domain — the =change_reason= entity lives in
+   =dq.api/domain= — and =ores.database= has zero internal uses of
+   them. The historical cycle-break reason no longer applies once
+   =dq.api= is light: =iam.core → dq.api= cannot loop. This is the
+   light-api contract paying for itself — api→api dependencies are
+   only safe when apis stay light.
+5. /Separately/ (follow-up candidates, not part of this fix):
+   - Decide whether =generators= (faker-cxx) and dumpers (libfort)
+     belong in apis at all, or in a test-support library — they are
+     the largest remaining weight in the standard api profile.
+   - Revisit =compute.api= / =ore.api= storage facets against the
+     api contract.
+
+* See also
+
+- [[id:BD519FC9-6B29-4055-877F-861E46043A06][Story: Investigate the API/core split in components]] — parent story.
+- [[id:681BBF6B-4DD8-411A-9B19-76AA5E14C1FC][Task: Inventory api/core contents across split components]] — the task this report closes.

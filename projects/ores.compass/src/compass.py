@@ -2106,6 +2106,10 @@ def cmd_task(argv):
     new_p.add_argument("--description", default="",  help="Task description")
     new_p.add_argument("--base",      default="origin/main")
     new_p.add_argument("--kind",      default="feature", choices=["feature", "hotfix"])
+    new_p.add_argument("--branch",    default="",
+                       help="Override the auto-derived branch name "
+                            "(default: <kind>/<slug-kebab>). Useful when "
+                            "several tasks share one feature branch.")
     new_p.add_argument("--dry-run",   action="store_true")
 
     start_p = sub.add_parser(
@@ -2143,7 +2147,8 @@ def cmd_task(argv):
             return 1
         sprint_dir = _parent_dir(current_sprint.rel_path)
         task_desc  = args.description or f"Task for: {story_title}"
-        branch     = args.kind + "/" + args.task_slug.replace("_", "-")
+        branch     = (args.branch.strip()
+                      or args.kind + "/" + args.task_slug.replace("_", "-"))
         return _scaffold_and_branch(
             sprint_dir, story_dir, story_title, None,
             args.task_slug, args.title, task_desc,

@@ -48,11 +48,24 @@ Identify the story by its =:ID:= (or unique prefix) or its folder slug:
 Creates =feature/fix-help-text= and adds the task to that story (no new
 story). =--story= accepts UUID, UUID prefix, or folder slug.
 
+When several tasks belong to the same feature branch (e.g. a series of
+format-pass tasks that share one branch), pass =--branch= to override
+the auto-derived name:
+
+#+begin_src sh :results verbatim
+./projects/ores.compass/compass.sh task new \
+  --story clang_format_setup \
+  --slug format_pass_group_01 \
+  --title "Format pass: group 1" \
+  --branch feature/format-pass-group-01
+#+end_src
+
 ** Notes
 
 Preview either mode with =--dry-run= (no side effects). =--task= in
 =story new= sets the first task title (default: =Implement <title>=);
-=--base= overrides the branch base (default =origin/main=).
+=--base= overrides the branch base (default =origin/main=);
+=--branch= (=task new= only) overrides the auto-derived branch name.
 
 * Script
 

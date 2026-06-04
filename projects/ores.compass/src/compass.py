@@ -5,7 +5,7 @@ Compass: developer toolkit for ORE Studio — orient, scaffold, capture, and sea
 Pillars:
   - Orient:   where we are (where/fleet/sprint/story) and what every worktree is doing.
   - Search:   fast NLP/FTS retrieval over Org-Roam notes (search/list/show).
-  - Scaffold: create branches and agile artefacts in one step (goto/add).
+  - Scaffold: create branches and agile artefacts in one step (story new/task new/add).
   - Capture:  file and triage product backlog ideas (capture/inbox/next/backlog).
   - Journal:  per-worktree session log for restart recovery and overlap detection.
 """
@@ -1596,11 +1596,11 @@ def cmd_capture(argv):
             print(f"❌ No capture found for slug '{slug}'.", file=sys.stderr)
             return 1
         print(f"Capture: {src.relative_to(PROJECT_ROOT)}")
-        print("\nTo promote to a new story:")
-        print(f"  compass goto --slug {slug} --title \"<title>\" --description \"<desc>\" --tags \"<tags>\"")
+        print("\nTo promote to a new story (creates branch + story + first task):")
+        print(f"  compass story new --slug {slug} --title \"<title>\" --description \"<desc>\" --tags \"<tags>\"")
         print(f"  Then delete: {src.relative_to(PROJECT_ROOT)}")
-        print("\nTo promote to a task on an existing story:")
-        print(f"  compass goto --story <id-or-slug> --task-slug {slug} --task \"<title>\"")
+        print("\nTo promote to a task on an existing story (creates branch + task):")
+        print(f"  compass task new --story <id-or-slug> --slug {slug} --title \"<title>\"")
         print(f"  Then delete: {src.relative_to(PROJECT_ROOT)}")
         return 0
 
@@ -1757,8 +1757,8 @@ def cmd_add(argv):
                       f"{_DEFAULTABLE_PARENT[doc_type]}: {default_parent}", file=sys.stderr)
 
     # Lazy, optional import: the generator lives in ores.codegen and needs
-    # pystache. Only `add` / `goto` require it; the other commands stay
-    # dependency-free.
+    # pystache. Only `add` / `story new` / `task new` require it; the other
+    # commands stay dependency-free.
     doc_generate = _import_generator()
 
     # doc_generate.main returns 0 on success but may sys.exit on error;

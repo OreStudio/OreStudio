@@ -26,7 +26,8 @@ computes orientation on demand against the live org-roam graph and
 offers quality-of-life shortcuts for both humans and LLMs. A human
 uses it to search docs (=compass find "query"=), inspect what is in
 flight (=compass where=), or start a unit of work without manually
-creating branches and files (=compass goto=). An LLM uses it to
+creating branches and files (=compass story new= / =compass task new=).
+An LLM uses it to
 resolve doc references without hallucinating paths, discover recipes
 before generating one from scratch, and scaffold agile artefacts with
 correct frontmatter. Where this document tells you /where things are/,

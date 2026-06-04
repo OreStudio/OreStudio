@@ -2,13 +2,13 @@
 :ID: 28F78E07-834D-4755-BB03-89BD7C17B01E
 :END:
 #+title: Compass basic command syntax
-#+description: Syntax reference for the most-used compass commands: search, show, list, add, where, goto.
+#+description: Syntax reference for the most-used compass commands: search, show, list, add, where, story new, task new.
 #+type: memory
 #+memory_subtype: reference
 #+level: cross
 #+filetags: :memory:reference:bearings:
 #+created: 2026-05-28
-#+updated: 2026-05-28
+#+updated: 2026-06-04
 
 The =compass.sh= wrapper lives at =./projects/ores.compass/compass.sh=.
 Core commands:
@@ -26,10 +26,13 @@ Core commands:
 - *Where* (current sprint/story/task context):
   =compass.sh where=
 
-- *Goto* (start a new story+branch in one step):
-  =compass.sh goto --slug my_slug --title "Title" --description "..." --tags "tag1:tag2"=
+- *Story new* (start a new story+branch in one step):
+  =compass.sh story new --slug my_slug --title "Title" --description "..." --tags "tag1:tag2"=
   For a hotfix branch (=hotfix/<slug>= instead of =feature/<slug>=):
-  =compass.sh goto --slug broken_thing --kind hotfix --title "Hotfix: ..." --description "..." --tags "hotfix:..."=
+  =compass.sh story new --slug broken_thing --kind hotfix --title "Hotfix: ..." --description "..." --tags "hotfix:..."=
+
+- *Task new* (add a task+branch to an existing story):
+  =compass.sh task new --story <id-or-slug> --slug my_task --title "Title"=
 
 - *Add* (scaffold a new artefact — always requires =--slug=, =--title=,
   =--description=, =--tags=; types =memory= and =runbook= also require

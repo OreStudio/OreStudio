@@ -124,6 +124,12 @@ AccountDetailDialog::AccountDetailDialog(QWidget* parent)
     ui_->accountTypeCombo->addItem(tr("LLM"),       QString("llm"));
     connect(ui_->accountTypeCombo, &QComboBox::currentIndexChanged, this,
         &AccountDetailDialog::onFieldChanged);
+    connect(ui_->accountTypeCombo, &QComboBox::currentIndexChanged, this,
+        [this](int index) {
+            if (partiesWidget_)
+                partiesWidget_->setAccountType(
+                    ui_->accountTypeCombo->itemData(index).toString().toStdString());
+        });
 
     // Create roles widget and add it to the Roles tab layout
     rolesWidget_ = new AccountRolesWidget(this);

@@ -80,7 +80,11 @@ void AccountItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
                 }
             }
         } else if (index.column() == Column::AccountType) {
-            badgeText = text;
+            if (text == "user")           badgeText = tr("User");
+            else if (text == "service")   badgeText = tr("Service");
+            else if (text == "algorithm") badgeText = tr("Algorithm");
+            else if (text == "llm")       badgeText = tr("LLM");
+            else                          badgeText = text;
             if (badgeCache_) {
                 auto* def = badgeCache_->resolve("account_type", text.toStdString());
                 if (def) {

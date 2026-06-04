@@ -20,16 +20,16 @@
 #ifndef ORES_TRADING_SERVICE_COMPOSITE_INSTRUMENT_SERVICE_HPP
 #define ORES_TRADING_SERVICE_COMPOSITE_INSTRUMENT_SERVICE_HPP
 
-#include <string>
-#include <vector>
-#include <optional>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/composite_instrument.hpp"
 #include "ores.trading.api/domain/composite_leg.hpp"
+#include "ores.trading.core/export.hpp"
 #include "ores.trading.core/repository/composite_instrument_repository.hpp"
 #include "ores.trading.core/repository/composite_leg_repository.hpp"
-#include "ores.trading.core/export.hpp"
+#include <optional>
+#include <string>
+#include <vector>
 
 namespace ores::trading::service {
 
@@ -54,22 +54,20 @@ public:
 
     std::vector<domain::composite_instrument> list_composite_instruments();
 
-    std::vector<domain::composite_instrument>
-    list_composite_instruments(std::uint32_t offset, std::uint32_t limit);
+    std::vector<domain::composite_instrument> list_composite_instruments(std::uint32_t offset,
+                                                                         std::uint32_t limit);
 
     std::uint32_t count_composite_instruments();
 
-    std::optional<domain::composite_instrument>
-    get_composite_instrument(const std::string& id);
+    std::optional<domain::composite_instrument> get_composite_instrument(const std::string& id);
 
-    std::vector<domain::composite_leg>
-    get_legs(const std::string& instrument_id);
+    std::vector<domain::composite_leg> get_legs(const std::string& instrument_id);
 
     std::vector<domain::composite_leg>
     get_legs_batch(const std::vector<std::string>& instrument_ids);
 
     void save_composite_instrument(const domain::composite_instrument& v,
-        const std::vector<domain::composite_leg>& legs);
+                                   const std::vector<domain::composite_leg>& legs);
 
     void remove_composite_instrument(const std::string& id);
 

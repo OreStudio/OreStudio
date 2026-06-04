@@ -20,16 +20,16 @@
 #ifndef ORES_TRADING_SERVICE_FRA_INSTRUMENT_SERVICE_HPP
 #define ORES_TRADING_SERVICE_FRA_INSTRUMENT_SERVICE_HPP
 
-#include <string>
-#include <vector>
-#include <optional>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/fra_instrument.hpp"
 #include "ores.trading.api/domain/swap_leg.hpp"
+#include "ores.trading.core/export.hpp"
 #include "ores.trading.core/repository/fra_instrument_repository.hpp"
 #include "ores.trading.core/repository/swap_leg_repository.hpp"
-#include "ores.trading.core/export.hpp"
+#include <optional>
+#include <string>
+#include <vector>
 
 namespace ores::trading::service {
 
@@ -38,8 +38,7 @@ namespace ores::trading::service {
  */
 class ORES_TRADING_CORE_EXPORT fra_instrument_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.trading.service.fra_instrument_service";
+    inline static std::string_view logger_name = "ores.trading.service.fra_instrument_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -54,20 +53,18 @@ public:
 
     std::vector<domain::fra_instrument> list_fra_instruments();
 
-    std::vector<domain::fra_instrument>
-    list_fra_instruments(std::uint32_t offset, std::uint32_t limit);
+    std::vector<domain::fra_instrument> list_fra_instruments(std::uint32_t offset,
+                                                             std::uint32_t limit);
 
     std::uint32_t count_fra_instruments();
 
-    std::optional<domain::fra_instrument>
-    get_fra_instrument(const std::string& id);
+    std::optional<domain::fra_instrument> get_fra_instrument(const std::string& id);
 
     void save_fra_instrument(const domain::fra_instrument& v);
 
     void remove_fra_instrument(const std::string& id);
 
-    std::vector<domain::fra_instrument>
-    get_fra_instrument_history(const std::string& id);
+    std::vector<domain::fra_instrument> get_fra_instrument_history(const std::string& id);
 
     /**
      * @brief Fetches the swap legs for any rates instrument by instrument_id.
@@ -75,14 +72,12 @@ public:
      * All rates instrument families share the swap_legs table. This method is
      * the shared access point used by handlers that need legs for any type.
      */
-    std::vector<domain::swap_leg>
-    get_swap_legs(const std::string& instrument_id);
+    std::vector<domain::swap_leg> get_swap_legs(const std::string& instrument_id);
 
     std::vector<domain::swap_leg>
     get_swap_legs_batch(const std::vector<std::string>& instrument_ids);
 
-    std::vector<domain::fra_instrument>
-    get_fra_instruments(const std::vector<std::string>& ids);
+    std::vector<domain::fra_instrument> get_fra_instruments(const std::vector<std::string>& ids);
 
 private:
     context ctx_;

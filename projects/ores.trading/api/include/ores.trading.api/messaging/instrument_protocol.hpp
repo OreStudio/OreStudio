@@ -20,42 +20,42 @@
 #ifndef ORES_TRADING_MESSAGING_INSTRUMENT_PROTOCOL_HPP
 #define ORES_TRADING_MESSAGING_INSTRUMENT_PROTOCOL_HPP
 
-#include <string>
-#include <variant>
-#include <vector>
-#include "ores.trading.api/domain/product_type.hpp"
-#include "ores.trading.api/domain/swap_leg.hpp"
-#include "ores.trading.api/domain/fx_forward_instrument.hpp"
-#include "ores.trading.api/domain/fx_vanilla_option_instrument.hpp"
-#include "ores.trading.api/domain/fx_barrier_option_instrument.hpp"
-#include "ores.trading.api/domain/fx_digital_option_instrument.hpp"
-#include "ores.trading.api/domain/fx_asian_forward_instrument.hpp"
-#include "ores.trading.api/domain/fx_accumulator_instrument.hpp"
-#include "ores.trading.api/domain/fx_variance_swap_instrument.hpp"
+#include "ores.trading.api/domain/balance_guaranteed_swap_instrument.hpp"
 #include "ores.trading.api/domain/bond_instrument.hpp"
-#include "ores.trading.api/domain/credit_instrument.hpp"
-#include "ores.trading.api/domain/equity_option_instrument.hpp"
-#include "ores.trading.api/domain/equity_digital_option_instrument.hpp"
-#include "ores.trading.api/domain/equity_barrier_option_instrument.hpp"
-#include "ores.trading.api/domain/equity_asian_option_instrument.hpp"
-#include "ores.trading.api/domain/equity_forward_instrument.hpp"
-#include "ores.trading.api/domain/equity_variance_swap_instrument.hpp"
-#include "ores.trading.api/domain/equity_swap_instrument.hpp"
-#include "ores.trading.api/domain/equity_accumulator_instrument.hpp"
-#include "ores.trading.api/domain/equity_position_instrument.hpp"
+#include "ores.trading.api/domain/callable_swap_instrument.hpp"
+#include "ores.trading.api/domain/cap_floor_instrument.hpp"
 #include "ores.trading.api/domain/commodity_instrument.hpp"
 #include "ores.trading.api/domain/composite_instrument.hpp"
 #include "ores.trading.api/domain/composite_leg.hpp"
-#include "ores.trading.api/domain/scripted_instrument.hpp"
+#include "ores.trading.api/domain/credit_instrument.hpp"
+#include "ores.trading.api/domain/equity_accumulator_instrument.hpp"
+#include "ores.trading.api/domain/equity_asian_option_instrument.hpp"
+#include "ores.trading.api/domain/equity_barrier_option_instrument.hpp"
+#include "ores.trading.api/domain/equity_digital_option_instrument.hpp"
+#include "ores.trading.api/domain/equity_forward_instrument.hpp"
+#include "ores.trading.api/domain/equity_option_instrument.hpp"
+#include "ores.trading.api/domain/equity_position_instrument.hpp"
+#include "ores.trading.api/domain/equity_swap_instrument.hpp"
+#include "ores.trading.api/domain/equity_variance_swap_instrument.hpp"
 #include "ores.trading.api/domain/fra_instrument.hpp"
-#include "ores.trading.api/domain/vanilla_swap_instrument.hpp"
-#include "ores.trading.api/domain/cap_floor_instrument.hpp"
-#include "ores.trading.api/domain/swaption_instrument.hpp"
-#include "ores.trading.api/domain/balance_guaranteed_swap_instrument.hpp"
-#include "ores.trading.api/domain/callable_swap_instrument.hpp"
-#include "ores.trading.api/domain/knock_out_swap_instrument.hpp"
+#include "ores.trading.api/domain/fx_accumulator_instrument.hpp"
+#include "ores.trading.api/domain/fx_asian_forward_instrument.hpp"
+#include "ores.trading.api/domain/fx_barrier_option_instrument.hpp"
+#include "ores.trading.api/domain/fx_digital_option_instrument.hpp"
+#include "ores.trading.api/domain/fx_forward_instrument.hpp"
+#include "ores.trading.api/domain/fx_vanilla_option_instrument.hpp"
+#include "ores.trading.api/domain/fx_variance_swap_instrument.hpp"
 #include "ores.trading.api/domain/inflation_swap_instrument.hpp"
+#include "ores.trading.api/domain/knock_out_swap_instrument.hpp"
+#include "ores.trading.api/domain/product_type.hpp"
 #include "ores.trading.api/domain/rpa_instrument.hpp"
+#include "ores.trading.api/domain/scripted_instrument.hpp"
+#include "ores.trading.api/domain/swap_leg.hpp"
+#include "ores.trading.api/domain/swaption_instrument.hpp"
+#include "ores.trading.api/domain/vanilla_swap_instrument.hpp"
+#include <string>
+#include <variant>
+#include <vector>
 
 namespace ores::trading::messaging {
 
@@ -63,8 +63,7 @@ namespace ores::trading::messaging {
 
 struct save_fx_forward_instrument_request {
     using response_type = struct save_fx_forward_instrument_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.fx_forward_instruments.save";
+    static constexpr std::string_view nats_subject = "trading.v1.fx_forward_instruments.save";
     ores::trading::domain::fx_forward_instrument data;
 };
 
@@ -111,8 +110,7 @@ struct save_fx_digital_option_instrument_response {
 
 struct save_fx_asian_forward_instrument_request {
     using response_type = struct save_fx_asian_forward_instrument_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.fx_asian_forward_instruments.save";
+    static constexpr std::string_view nats_subject = "trading.v1.fx_asian_forward_instruments.save";
     ores::trading::domain::fx_asian_forward_instrument data;
 };
 
@@ -123,8 +121,7 @@ struct save_fx_asian_forward_instrument_response {
 
 struct save_fx_accumulator_instrument_request {
     using response_type = struct save_fx_accumulator_instrument_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.fx_accumulator_instruments.save";
+    static constexpr std::string_view nats_subject = "trading.v1.fx_accumulator_instruments.save";
     ores::trading::domain::fx_accumulator_instrument data;
 };
 
@@ -135,8 +132,7 @@ struct save_fx_accumulator_instrument_response {
 
 struct save_fx_variance_swap_instrument_request {
     using response_type = struct save_fx_variance_swap_instrument_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.fx_variance_swap_instruments.save";
+    static constexpr std::string_view nats_subject = "trading.v1.fx_variance_swap_instruments.save";
     ores::trading::domain::fx_variance_swap_instrument data;
 };
 
@@ -149,8 +145,7 @@ struct save_fx_variance_swap_instrument_response {
 
 struct get_bond_instruments_request {
     using response_type = struct get_bond_instruments_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.bond_instruments.list";
+    static constexpr std::string_view nats_subject = "trading.v1.bond_instruments.list";
     int offset = 0;
     int limit = 100;
 };
@@ -164,8 +159,7 @@ struct get_bond_instruments_response {
 
 struct save_bond_instrument_request {
     using response_type = struct save_bond_instrument_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.bond_instruments.save";
+    static constexpr std::string_view nats_subject = "trading.v1.bond_instruments.save";
     ores::trading::domain::bond_instrument data;
 };
 
@@ -176,8 +170,7 @@ struct save_bond_instrument_response {
 
 struct delete_bond_instrument_request {
     using response_type = struct delete_bond_instrument_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.bond_instruments.delete";
+    static constexpr std::string_view nats_subject = "trading.v1.bond_instruments.delete";
     std::vector<std::string> ids;
 };
 
@@ -189,8 +182,7 @@ struct delete_bond_instrument_response {
 
 struct get_bond_instrument_history_request {
     using response_type = struct get_bond_instrument_history_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.bond_instruments.history";
+    static constexpr std::string_view nats_subject = "trading.v1.bond_instruments.history";
     std::string id;
 };
 
@@ -204,8 +196,7 @@ struct get_bond_instrument_history_response {
 
 struct get_credit_instruments_request {
     using response_type = struct get_credit_instruments_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.credit_instruments.list";
+    static constexpr std::string_view nats_subject = "trading.v1.credit_instruments.list";
     int offset = 0;
     int limit = 100;
 };
@@ -219,8 +210,7 @@ struct get_credit_instruments_response {
 
 struct save_credit_instrument_request {
     using response_type = struct save_credit_instrument_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.credit_instruments.save";
+    static constexpr std::string_view nats_subject = "trading.v1.credit_instruments.save";
     ores::trading::domain::credit_instrument data;
 };
 
@@ -231,8 +221,7 @@ struct save_credit_instrument_response {
 
 struct delete_credit_instrument_request {
     using response_type = struct delete_credit_instrument_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.credit_instruments.delete";
+    static constexpr std::string_view nats_subject = "trading.v1.credit_instruments.delete";
     std::vector<std::string> ids;
 };
 
@@ -244,8 +233,7 @@ struct delete_credit_instrument_response {
 
 struct get_credit_instrument_history_request {
     using response_type = struct get_credit_instrument_history_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.credit_instruments.history";
+    static constexpr std::string_view nats_subject = "trading.v1.credit_instruments.history";
     std::string id;
 };
 
@@ -259,8 +247,7 @@ struct get_credit_instrument_history_response {
 
 struct save_equity_option_instrument_request {
     using response_type = struct save_equity_option_instrument_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.equity_option_instruments.save";
+    static constexpr std::string_view nats_subject = "trading.v1.equity_option_instruments.save";
     ores::trading::domain::equity_option_instrument data;
 };
 
@@ -307,8 +294,7 @@ struct save_equity_asian_option_instrument_response {
 
 struct save_equity_forward_instrument_request {
     using response_type = struct save_equity_forward_instrument_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.equity_forward_instruments.save";
+    static constexpr std::string_view nats_subject = "trading.v1.equity_forward_instruments.save";
     ores::trading::domain::equity_forward_instrument data;
 };
 
@@ -331,8 +317,7 @@ struct save_equity_variance_swap_instrument_response {
 
 struct save_equity_swap_instrument_request {
     using response_type = struct save_equity_swap_instrument_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.equity_swap_instruments.save";
+    static constexpr std::string_view nats_subject = "trading.v1.equity_swap_instruments.save";
     ores::trading::domain::equity_swap_instrument data;
 };
 
@@ -355,8 +340,7 @@ struct save_equity_accumulator_instrument_response {
 
 struct save_equity_position_instrument_request {
     using response_type = struct save_equity_position_instrument_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.equity_position_instruments.save";
+    static constexpr std::string_view nats_subject = "trading.v1.equity_position_instruments.save";
     ores::trading::domain::equity_position_instrument data;
 };
 
@@ -369,8 +353,7 @@ struct save_equity_position_instrument_response {
 
 struct get_commodity_instruments_request {
     using response_type = struct get_commodity_instruments_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.commodity_instruments.list";
+    static constexpr std::string_view nats_subject = "trading.v1.commodity_instruments.list";
     int offset = 0;
     int limit = 100;
 };
@@ -384,8 +367,7 @@ struct get_commodity_instruments_response {
 
 struct save_commodity_instrument_request {
     using response_type = struct save_commodity_instrument_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.commodity_instruments.save";
+    static constexpr std::string_view nats_subject = "trading.v1.commodity_instruments.save";
     ores::trading::domain::commodity_instrument data;
 };
 
@@ -396,8 +378,7 @@ struct save_commodity_instrument_response {
 
 struct delete_commodity_instrument_request {
     using response_type = struct delete_commodity_instrument_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.commodity_instruments.delete";
+    static constexpr std::string_view nats_subject = "trading.v1.commodity_instruments.delete";
     std::vector<std::string> ids;
 };
 
@@ -409,8 +390,7 @@ struct delete_commodity_instrument_response {
 
 struct get_commodity_instrument_history_request {
     using response_type = struct get_commodity_instrument_history_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.commodity_instruments.history";
+    static constexpr std::string_view nats_subject = "trading.v1.commodity_instruments.history";
     std::string id;
 };
 
@@ -424,8 +404,7 @@ struct get_commodity_instrument_history_response {
 
 struct get_composite_instrument_legs_request {
     using response_type = struct get_composite_instrument_legs_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.composite_instruments.legs.list";
+    static constexpr std::string_view nats_subject = "trading.v1.composite_instruments.legs.list";
     std::string instrument_id;
 };
 
@@ -437,8 +416,7 @@ struct get_composite_instrument_legs_response {
 
 struct get_composite_instruments_request {
     using response_type = struct get_composite_instruments_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.composite_instruments.list";
+    static constexpr std::string_view nats_subject = "trading.v1.composite_instruments.list";
     int offset = 0;
     int limit = 100;
 };
@@ -452,8 +430,7 @@ struct get_composite_instruments_response {
 
 struct save_composite_instrument_request {
     using response_type = struct save_composite_instrument_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.composite_instruments.save";
+    static constexpr std::string_view nats_subject = "trading.v1.composite_instruments.save";
     ores::trading::domain::composite_instrument data;
     std::vector<ores::trading::domain::composite_leg> legs;
 };
@@ -465,8 +442,7 @@ struct save_composite_instrument_response {
 
 struct delete_composite_instrument_request {
     using response_type = struct delete_composite_instrument_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.composite_instruments.delete";
+    static constexpr std::string_view nats_subject = "trading.v1.composite_instruments.delete";
     std::vector<std::string> ids;
 };
 
@@ -478,8 +454,7 @@ struct delete_composite_instrument_response {
 
 struct get_composite_instrument_history_request {
     using response_type = struct get_composite_instrument_history_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.composite_instruments.history";
+    static constexpr std::string_view nats_subject = "trading.v1.composite_instruments.history";
     std::string id;
 };
 
@@ -493,8 +468,7 @@ struct get_composite_instrument_history_response {
 
 struct get_scripted_instruments_request {
     using response_type = struct get_scripted_instruments_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.scripted_instruments.list";
+    static constexpr std::string_view nats_subject = "trading.v1.scripted_instruments.list";
     int offset = 0;
     int limit = 100;
 };
@@ -508,8 +482,7 @@ struct get_scripted_instruments_response {
 
 struct save_scripted_instrument_request {
     using response_type = struct save_scripted_instrument_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.scripted_instruments.save";
+    static constexpr std::string_view nats_subject = "trading.v1.scripted_instruments.save";
     ores::trading::domain::scripted_instrument data;
 };
 
@@ -520,8 +493,7 @@ struct save_scripted_instrument_response {
 
 struct delete_scripted_instrument_request {
     using response_type = struct delete_scripted_instrument_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.scripted_instruments.delete";
+    static constexpr std::string_view nats_subject = "trading.v1.scripted_instruments.delete";
     std::vector<std::string> ids;
 };
 
@@ -533,8 +505,7 @@ struct delete_scripted_instrument_response {
 
 struct get_scripted_instrument_history_request {
     using response_type = struct get_scripted_instrument_history_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.scripted_instruments.history";
+    static constexpr std::string_view nats_subject = "trading.v1.scripted_instruments.history";
     std::string id;
 };
 
@@ -548,8 +519,7 @@ struct get_scripted_instrument_history_response {
 
 struct get_fra_instruments_request {
     using response_type = struct get_fra_instruments_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.fra_instruments.list";
+    static constexpr std::string_view nats_subject = "trading.v1.fra_instruments.list";
     int offset = 0;
     int limit = 100;
 };
@@ -563,8 +533,7 @@ struct get_fra_instruments_response {
 
 struct save_fra_instrument_request {
     using response_type = struct save_fra_instrument_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.fra_instruments.save";
+    static constexpr std::string_view nats_subject = "trading.v1.fra_instruments.save";
     ores::trading::domain::fra_instrument data;
 };
 
@@ -575,8 +544,7 @@ struct save_fra_instrument_response {
 
 struct delete_fra_instrument_request {
     using response_type = struct delete_fra_instrument_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.fra_instruments.delete";
+    static constexpr std::string_view nats_subject = "trading.v1.fra_instruments.delete";
     std::vector<std::string> ids;
 };
 
@@ -588,8 +556,7 @@ struct delete_fra_instrument_response {
 
 struct get_fra_instrument_history_request {
     using response_type = struct get_fra_instrument_history_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.fra_instruments.history";
+    static constexpr std::string_view nats_subject = "trading.v1.fra_instruments.history";
     std::string id;
 };
 
@@ -603,8 +570,7 @@ struct get_fra_instrument_history_response {
 
 struct get_vanilla_swap_instruments_request {
     using response_type = struct get_vanilla_swap_instruments_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.vanilla_swap_instruments.list";
+    static constexpr std::string_view nats_subject = "trading.v1.vanilla_swap_instruments.list";
     int offset = 0;
     int limit = 100;
 };
@@ -618,8 +584,7 @@ struct get_vanilla_swap_instruments_response {
 
 struct save_vanilla_swap_instrument_request {
     using response_type = struct save_vanilla_swap_instrument_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.vanilla_swap_instruments.save";
+    static constexpr std::string_view nats_subject = "trading.v1.vanilla_swap_instruments.save";
     ores::trading::domain::vanilla_swap_instrument data;
     std::vector<ores::trading::domain::swap_leg> legs;
 };
@@ -631,8 +596,7 @@ struct save_vanilla_swap_instrument_response {
 
 struct delete_vanilla_swap_instrument_request {
     using response_type = struct delete_vanilla_swap_instrument_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.vanilla_swap_instruments.delete";
+    static constexpr std::string_view nats_subject = "trading.v1.vanilla_swap_instruments.delete";
     std::vector<std::string> ids;
 };
 
@@ -644,8 +608,7 @@ struct delete_vanilla_swap_instrument_response {
 
 struct get_vanilla_swap_instrument_history_request {
     using response_type = struct get_vanilla_swap_instrument_history_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.vanilla_swap_instruments.history";
+    static constexpr std::string_view nats_subject = "trading.v1.vanilla_swap_instruments.history";
     std::string id;
 };
 
@@ -659,8 +622,7 @@ struct get_vanilla_swap_instrument_history_response {
 
 struct get_cap_floor_instruments_request {
     using response_type = struct get_cap_floor_instruments_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.cap_floor_instruments.list";
+    static constexpr std::string_view nats_subject = "trading.v1.cap_floor_instruments.list";
     int offset = 0;
     int limit = 100;
 };
@@ -674,8 +636,7 @@ struct get_cap_floor_instruments_response {
 
 struct save_cap_floor_instrument_request {
     using response_type = struct save_cap_floor_instrument_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.cap_floor_instruments.save";
+    static constexpr std::string_view nats_subject = "trading.v1.cap_floor_instruments.save";
     ores::trading::domain::cap_floor_instrument data;
     std::vector<ores::trading::domain::swap_leg> legs;
 };
@@ -687,8 +648,7 @@ struct save_cap_floor_instrument_response {
 
 struct delete_cap_floor_instrument_request {
     using response_type = struct delete_cap_floor_instrument_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.cap_floor_instruments.delete";
+    static constexpr std::string_view nats_subject = "trading.v1.cap_floor_instruments.delete";
     std::vector<std::string> ids;
 };
 
@@ -700,8 +660,7 @@ struct delete_cap_floor_instrument_response {
 
 struct get_cap_floor_instrument_history_request {
     using response_type = struct get_cap_floor_instrument_history_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.cap_floor_instruments.history";
+    static constexpr std::string_view nats_subject = "trading.v1.cap_floor_instruments.history";
     std::string id;
 };
 
@@ -715,8 +674,7 @@ struct get_cap_floor_instrument_history_response {
 
 struct get_swaption_instruments_request {
     using response_type = struct get_swaption_instruments_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.swaption_instruments.list";
+    static constexpr std::string_view nats_subject = "trading.v1.swaption_instruments.list";
     int offset = 0;
     int limit = 100;
 };
@@ -730,8 +688,7 @@ struct get_swaption_instruments_response {
 
 struct save_swaption_instrument_request {
     using response_type = struct save_swaption_instrument_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.swaption_instruments.save";
+    static constexpr std::string_view nats_subject = "trading.v1.swaption_instruments.save";
     ores::trading::domain::swaption_instrument data;
     std::vector<ores::trading::domain::swap_leg> legs;
 };
@@ -743,8 +700,7 @@ struct save_swaption_instrument_response {
 
 struct delete_swaption_instrument_request {
     using response_type = struct delete_swaption_instrument_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.swaption_instruments.delete";
+    static constexpr std::string_view nats_subject = "trading.v1.swaption_instruments.delete";
     std::vector<std::string> ids;
 };
 
@@ -756,8 +712,7 @@ struct delete_swaption_instrument_response {
 
 struct get_swaption_instrument_history_request {
     using response_type = struct get_swaption_instrument_history_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.swaption_instruments.history";
+    static constexpr std::string_view nats_subject = "trading.v1.swaption_instruments.history";
     std::string id;
 };
 
@@ -827,8 +782,7 @@ struct get_balance_guaranteed_swap_instrument_history_response {
 
 struct get_callable_swap_instruments_request {
     using response_type = struct get_callable_swap_instruments_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.callable_swap_instruments.list";
+    static constexpr std::string_view nats_subject = "trading.v1.callable_swap_instruments.list";
     int offset = 0;
     int limit = 100;
 };
@@ -842,8 +796,7 @@ struct get_callable_swap_instruments_response {
 
 struct save_callable_swap_instrument_request {
     using response_type = struct save_callable_swap_instrument_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.callable_swap_instruments.save";
+    static constexpr std::string_view nats_subject = "trading.v1.callable_swap_instruments.save";
     ores::trading::domain::callable_swap_instrument data;
     std::vector<ores::trading::domain::swap_leg> legs;
 };
@@ -855,8 +808,7 @@ struct save_callable_swap_instrument_response {
 
 struct delete_callable_swap_instrument_request {
     using response_type = struct delete_callable_swap_instrument_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.callable_swap_instruments.delete";
+    static constexpr std::string_view nats_subject = "trading.v1.callable_swap_instruments.delete";
     std::vector<std::string> ids;
 };
 
@@ -868,8 +820,7 @@ struct delete_callable_swap_instrument_response {
 
 struct get_callable_swap_instrument_history_request {
     using response_type = struct get_callable_swap_instrument_history_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.callable_swap_instruments.history";
+    static constexpr std::string_view nats_subject = "trading.v1.callable_swap_instruments.history";
     std::string id;
 };
 
@@ -883,8 +834,7 @@ struct get_callable_swap_instrument_history_response {
 
 struct get_knock_out_swap_instruments_request {
     using response_type = struct get_knock_out_swap_instruments_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.knock_out_swap_instruments.list";
+    static constexpr std::string_view nats_subject = "trading.v1.knock_out_swap_instruments.list";
     int offset = 0;
     int limit = 100;
 };
@@ -898,8 +848,7 @@ struct get_knock_out_swap_instruments_response {
 
 struct save_knock_out_swap_instrument_request {
     using response_type = struct save_knock_out_swap_instrument_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.knock_out_swap_instruments.save";
+    static constexpr std::string_view nats_subject = "trading.v1.knock_out_swap_instruments.save";
     ores::trading::domain::knock_out_swap_instrument data;
     std::vector<ores::trading::domain::swap_leg> legs;
 };
@@ -911,8 +860,7 @@ struct save_knock_out_swap_instrument_response {
 
 struct delete_knock_out_swap_instrument_request {
     using response_type = struct delete_knock_out_swap_instrument_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.knock_out_swap_instruments.delete";
+    static constexpr std::string_view nats_subject = "trading.v1.knock_out_swap_instruments.delete";
     std::vector<std::string> ids;
 };
 
@@ -939,8 +887,7 @@ struct get_knock_out_swap_instrument_history_response {
 
 struct get_inflation_swap_instruments_request {
     using response_type = struct get_inflation_swap_instruments_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.inflation_swap_instruments.list";
+    static constexpr std::string_view nats_subject = "trading.v1.inflation_swap_instruments.list";
     int offset = 0;
     int limit = 100;
 };
@@ -954,8 +901,7 @@ struct get_inflation_swap_instruments_response {
 
 struct save_inflation_swap_instrument_request {
     using response_type = struct save_inflation_swap_instrument_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.inflation_swap_instruments.save";
+    static constexpr std::string_view nats_subject = "trading.v1.inflation_swap_instruments.save";
     ores::trading::domain::inflation_swap_instrument data;
     std::vector<ores::trading::domain::swap_leg> legs;
 };
@@ -967,8 +913,7 @@ struct save_inflation_swap_instrument_response {
 
 struct delete_inflation_swap_instrument_request {
     using response_type = struct delete_inflation_swap_instrument_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.inflation_swap_instruments.delete";
+    static constexpr std::string_view nats_subject = "trading.v1.inflation_swap_instruments.delete";
     std::vector<std::string> ids;
 };
 
@@ -995,8 +940,7 @@ struct get_inflation_swap_instrument_history_response {
 
 struct get_rpa_instruments_request {
     using response_type = struct get_rpa_instruments_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.rpa_instruments.list";
+    static constexpr std::string_view nats_subject = "trading.v1.rpa_instruments.list";
     int offset = 0;
     int limit = 100;
 };
@@ -1010,8 +954,7 @@ struct get_rpa_instruments_response {
 
 struct save_rpa_instrument_request {
     using response_type = struct save_rpa_instrument_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.rpa_instruments.save";
+    static constexpr std::string_view nats_subject = "trading.v1.rpa_instruments.save";
     ores::trading::domain::rpa_instrument data;
     std::vector<ores::trading::domain::swap_leg> legs;
 };
@@ -1023,8 +966,7 @@ struct save_rpa_instrument_response {
 
 struct delete_rpa_instrument_request {
     using response_type = struct delete_rpa_instrument_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.rpa_instruments.delete";
+    static constexpr std::string_view nats_subject = "trading.v1.rpa_instruments.delete";
     std::vector<std::string> ids;
 };
 
@@ -1036,8 +978,7 @@ struct delete_rpa_instrument_response {
 
 struct get_rpa_instrument_history_request {
     using response_type = struct get_rpa_instrument_history_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.rpa_instruments.history";
+    static constexpr std::string_view nats_subject = "trading.v1.rpa_instruments.history";
     std::string id;
 };
 

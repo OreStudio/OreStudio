@@ -20,25 +20,24 @@
 #ifndef ORES_TRADING_GENERATOR_LIFECYCLE_EVENT_GENERATOR_HPP
 #define ORES_TRADING_GENERATOR_LIFECYCLE_EVENT_GENERATOR_HPP
 
-#include <vector>
-#include "ores.trading.api/export.hpp"
 #include "ores.trading.api/domain/lifecycle_event.hpp"
+#include "ores.trading.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include <vector>
 
 namespace ores::trading::generator {
 
 /**
  * @brief Generates a synthetic lifecycle_event.
  */
-ORES_TRADING_API_EXPORT domain::lifecycle_event generate_synthetic_lifecycle_event(
-    utility::generation::generation_context& ctx);
+ORES_TRADING_API_EXPORT domain::lifecycle_event
+generate_synthetic_lifecycle_event(utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic lifecycle_events.
  */
 ORES_TRADING_API_EXPORT std::vector<domain::lifecycle_event>
-generate_synthetic_lifecycle_events(std::size_t n,
-    utility::generation::generation_context& ctx);
+generate_synthetic_lifecycle_events(std::size_t n, utility::generation::generation_context& ctx);
 
 }
 

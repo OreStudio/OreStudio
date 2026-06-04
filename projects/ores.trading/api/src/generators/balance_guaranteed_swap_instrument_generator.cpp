@@ -18,12 +18,11 @@
  *
  */
 #include "ores.trading.api/generators/balance_guaranteed_swap_instrument_generator.hpp"
-
-#include <atomic>
-#include <string>
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <atomic>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <string>
 
 namespace ores::trading::generators {
 
@@ -32,15 +31,14 @@ using ores::utility::generation::generation_keys;
 domain::balance_guaranteed_swap_instrument generate_synthetic_balance_guaranteed_swap_instrument(
     utility::generation::generation_context& ctx) {
     static std::atomic<int> counter{0};
-    const auto modified_by = ctx.env().get_or(
-        std::string(generation_keys::modified_by), "system");
-    const auto tid_str = ctx.env().get_or(
-        std::string(generation_keys::tenant_id), std::string("system"));
+    const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
+    const auto tid_str =
+        ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::balance_guaranteed_swap_instrument r;
     r.identity.version = 1;
-    r.identity.tenant_id = utility::uuid::tenant_id::from_string(tid_str)
-        .value_or(utility::uuid::tenant_id::system());
+    r.identity.tenant_id =
+        utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.identity.workspace_id = utility::uuid::live_workspace_id();
     r.identity.instrument_id = ctx.generate_uuid();
     r.identity.trade_type_code = std::string("BalanceGuaranteedSwap");
@@ -56,8 +54,8 @@ domain::balance_guaranteed_swap_instrument generate_synthetic_balance_guaranteed
 }
 
 std::vector<domain::balance_guaranteed_swap_instrument>
-generate_synthetic_balance_guaranteed_swap_instruments(std::size_t n,
-    utility::generation::generation_context& ctx) {
+generate_synthetic_balance_guaranteed_swap_instruments(
+    std::size_t n, utility::generation::generation_context& ctx) {
     std::vector<domain::balance_guaranteed_swap_instrument> r;
     r.reserve(n);
     while (r.size() < n)

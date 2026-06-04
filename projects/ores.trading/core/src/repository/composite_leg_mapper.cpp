@@ -18,19 +18,17 @@
  *
  */
 #include "ores.trading.core/repository/composite_leg_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.trading.api/domain/composite_leg_json_io.hpp" // IWYU pragma: keep.
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::trading::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::composite_leg
-composite_leg_mapper::map(const composite_leg_entity& v) {
+domain::composite_leg composite_leg_mapper::map(const composite_leg_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::composite_leg r;
@@ -51,8 +49,7 @@ composite_leg_mapper::map(const composite_leg_entity& v) {
     return r;
 }
 
-composite_leg_entity
-composite_leg_mapper::map(const domain::composite_leg& v) {
+composite_leg_entity composite_leg_mapper::map(const domain::composite_leg& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     composite_leg_entity r;
@@ -75,19 +72,13 @@ composite_leg_mapper::map(const domain::composite_leg& v) {
 std::vector<domain::composite_leg>
 composite_leg_mapper::map(const std::vector<composite_leg_entity>& v) {
     return map_vector<composite_leg_entity, domain::composite_leg>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<composite_leg_entity>
 composite_leg_mapper::map(const std::vector<domain::composite_leg>& v) {
     return map_vector<domain::composite_leg, composite_leg_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

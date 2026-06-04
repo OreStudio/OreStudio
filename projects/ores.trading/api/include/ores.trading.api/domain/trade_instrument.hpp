@@ -20,14 +20,14 @@
 #ifndef ORES_TRADING_DOMAIN_TRADE_INSTRUMENT_HPP
 #define ORES_TRADING_DOMAIN_TRADE_INSTRUMENT_HPP
 
-#include <variant>
-#include "ores.trading.api/domain/instrument.hpp"
-#include "ores.trading.api/domain/fx_instrument_variant.hpp"
-#include "ores.trading.api/domain/equity_instrument_variant.hpp"
 #include "ores.trading.api/domain/bond_instrument.hpp"
-#include "ores.trading.api/domain/credit_instrument.hpp"
 #include "ores.trading.api/domain/commodity_instrument.hpp"
+#include "ores.trading.api/domain/credit_instrument.hpp"
+#include "ores.trading.api/domain/equity_instrument_variant.hpp"
+#include "ores.trading.api/domain/fx_instrument_variant.hpp"
+#include "ores.trading.api/domain/instrument.hpp"
 #include "ores.trading.api/domain/scripted_instrument.hpp"
+#include <variant>
 
 namespace ores::trading::domain {
 
@@ -39,25 +39,24 @@ namespace ores::trading::domain {
  * wrappers. Families with multiple sub-types (FX, equity, rates) use their
  * inner variant directly. Single-type families carry the domain struct directly.
  */
-using trade_instrument = std::variant<
-    std::monostate,
-    swap_instrument_data,
-    fx_instrument_variant,
-    bond_instrument,
-    credit_instrument,
-    equity_instrument_variant,
-    commodity_instrument,
-    composite_instrument_data,
-    scripted_instrument
->;
+using trade_instrument = std::variant<std::monostate,
+                                      swap_instrument_data,
+                                      fx_instrument_variant,
+                                      bond_instrument,
+                                      credit_instrument,
+                                      equity_instrument_variant,
+                                      commodity_instrument,
+                                      composite_instrument_data,
+                                      scripted_instrument>;
 
-inline void stamp_ids(trade_instrument& ti,
-                      boost::uuids::uuid instrument_id,
-                      boost::uuids::uuid trade_id) {
-    std::visit([&]<typename T>(T& v) {
-        if constexpr (!std::is_same_v<T, std::monostate>)
-            stamp_ids(v, instrument_id, trade_id);
-    }, ti);
+inline void
+stamp_ids(trade_instrument& ti, boost::uuids::uuid instrument_id, boost::uuids::uuid trade_id) {
+    std::visit(
+        [&]<typename T>(T& v) {
+            if constexpr (!std::is_same_v<T, std::monostate>)
+                stamp_ids(v, instrument_id, trade_id);
+        },
+        ti);
 }
 
 } // namespace ores::trading::domain

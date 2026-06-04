@@ -18,11 +18,10 @@
  *
  */
 #include "ores.trading.core/service/trade_service.hpp"
-
-#include <stdexcept>
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/nil_generator.hpp>
 #include "ores.service/messaging/handler_helpers.hpp"
+#include <boost/uuid/nil_generator.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <stdexcept>
 
 using ores::service::messaging::stamp;
 
@@ -38,18 +37,14 @@ std::vector<domain::trade> trade_service::list_trades() {
     return repo_.read_latest(ctx_);
 }
 
-std::vector<domain::trade>
-trade_service::list_trades(std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing trades with offset=" << offset
-                               << ", limit=" << limit;
+std::vector<domain::trade> trade_service::list_trades(std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing trades with offset=" << offset << ", limit=" << limit;
     return repo_.read_latest(ctx_, offset, limit);
 }
 
-std::vector<domain::trade>
-trade_service::list_trades_by_node(std::uint32_t offset, std::uint32_t limit,
-    std::optional<boost::uuids::uuid> node_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing trades by node offset=" << offset
-                               << ", limit=" << limit;
+std::vector<domain::trade> trade_service::list_trades_by_node(
+    std::uint32_t offset, std::uint32_t limit, std::optional<boost::uuids::uuid> node_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing trades by node offset=" << offset << ", limit=" << limit;
     return repo_.read_latest_for_node(ctx_, offset, limit, node_id);
 }
 
@@ -58,22 +53,20 @@ std::uint32_t trade_service::count_trades() {
     return repo_.count_latest(ctx_);
 }
 
-std::uint32_t trade_service::count_trades_by_node(
-    std::optional<boost::uuids::uuid> node_id) {
+std::uint32_t trade_service::count_trades_by_node(std::optional<boost::uuids::uuid> node_id) {
     BOOST_LOG_SEV(lg(), debug) << "Counting trades by node";
     return repo_.count_latest_for_node(ctx_, node_id);
 }
 
-std::optional<domain::trade>
-trade_service::find_trade(const std::string& id) {
+std::optional<domain::trade> trade_service::find_trade(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Finding trade: " << id;
     auto results = repo_.read_latest(ctx_, id);
-    if (results.empty()) return std::nullopt;
+    if (results.empty())
+        return std::nullopt;
     return results.front();
 }
 
-void trade_service::save_trade(const domain::trade& v,
-    const fsm_transition_map& transitions) {
+void trade_service::save_trade(const domain::trade& v, const fsm_transition_map& transitions) {
     if (v.identity.id.is_nil())
         throw std::invalid_argument("Trade id cannot be empty.");
     BOOST_LOG_SEV(lg(), debug) << "Saving trade: " << v.identity.id;
@@ -81,8 +74,8 @@ void trade_service::save_trade(const domain::trade& v,
     stamp(t.identity, ctx_);
     stamp(t.audit, ctx_);
     const std::optional<boost::uuids::uuid> current =
-        t.classification.status_id.is_nil() ? std::nullopt
-                             : std::make_optional(t.classification.status_id);
+        t.classification.status_id.is_nil() ? std::nullopt :
+                                              std::make_optional(t.classification.status_id);
     t.classification.status_id = trade_status_service::resolve_status(
         ctx_, t.classification.activity_type_code, current, transitions);
     repo_.write(ctx_, t);
@@ -90,7 +83,7 @@ void trade_service::save_trade(const domain::trade& v,
 }
 
 void trade_service::save_trades(const std::vector<domain::trade>& trades,
-    const fsm_transition_map& transitions) {
+                                const fsm_transition_map& transitions) {
     for (const auto& t : trades) {
         if (t.identity.id.is_nil())
             throw std::invalid_argument("Trade id cannot be empty.");
@@ -101,8 +94,8 @@ void trade_service::save_trades(const std::vector<domain::trade>& trades,
         stamp(t.identity, ctx_);
         stamp(t.audit, ctx_);
         const std::optional<boost::uuids::uuid> current =
-            t.classification.status_id.is_nil() ? std::nullopt
-                                 : std::make_optional(t.classification.status_id);
+            t.classification.status_id.is_nil() ? std::nullopt :
+                                                  std::make_optional(t.classification.status_id);
         t.classification.status_id = trade_status_service::resolve_status(
             ctx_, t.classification.activity_type_code, current, transitions);
     }
@@ -115,8 +108,7 @@ void trade_service::remove_trade(const std::string& id) {
     BOOST_LOG_SEV(lg(), info) << "Removed trade: " << id;
 }
 
-std::vector<domain::trade>
-trade_service::get_trade_history(const std::string& id) {
+std::vector<domain::trade> trade_service::get_trade_history(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for trade: " << id;
     return repo_.read_all(ctx_, id);
 }

@@ -20,10 +20,10 @@
 #ifndef ORES_TRADING_REPOSITORY_SWAP_LEG_MAPPER_HPP
 #define ORES_TRADING_REPOSITORY_SWAP_LEG_MAPPER_HPP
 
-#include "ores.trading.api/domain/swap_leg.hpp"
-#include "ores.trading.core/repository/swap_leg_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.trading.api/domain/swap_leg.hpp"
 #include "ores.trading.core/export.hpp"
+#include "ores.trading.core/repository/swap_leg_entity.hpp"
 
 namespace ores::trading::repository {
 
@@ -32,22 +32,20 @@ namespace ores::trading::repository {
  */
 class ORES_TRADING_CORE_EXPORT swap_leg_mapper {
 private:
-    inline static std::string_view logger_name =
-        "ores.trading.repository.swap_leg_mapper";
+    inline static std::string_view logger_name = "ores.trading.repository.swap_leg_mapper";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }
+
 public:
     static domain::swap_leg map(const swap_leg_entity& v);
     static swap_leg_entity map(const domain::swap_leg& v);
 
-    static std::vector<domain::swap_leg>
-    map(const std::vector<swap_leg_entity>& v);
-    static std::vector<swap_leg_entity>
-    map(const std::vector<domain::swap_leg>& v);
+    static std::vector<domain::swap_leg> map(const std::vector<swap_leg_entity>& v);
+    static std::vector<swap_leg_entity> map(const std::vector<domain::swap_leg>& v);
 };
 
 }

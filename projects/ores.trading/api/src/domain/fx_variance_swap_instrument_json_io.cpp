@@ -18,11 +18,10 @@
  *
  */
 #include "ores.trading.api/domain/fx_variance_swap_instrument_json_io.hpp"
-
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 
 namespace ores::trading::domain {
 

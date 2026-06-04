@@ -17,14 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.logging/make_logger.hpp"
+#include "ores.testing/database_helper.hpp"
+#include "ores.trading.api/domain/fx_asian_forward_instrument_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/fx_asian_forward_instrument_repository.hpp"
-
-#include <catch2/catch_test_macros.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include "ores.logging/make_logger.hpp"
-#include "ores.trading.api/domain/fx_asian_forward_instrument_json_io.hpp" // IWYU pragma: keep.
-#include "ores.testing/database_helper.hpp"
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 
@@ -47,20 +46,20 @@ using namespace ores::logging;
  */
 fx_asian_forward_instrument make_instrument(database_helper& h) {
     fx_asian_forward_instrument r;
-    r.instrument_id       = boost::uuids::random_generator()();
-    r.tenant_id           = h.tenant_id();
-    r.trade_type_code     = "FxAverageForward";
-    r.fx_index            = "FX-TR20H-EUR-USD";
-    r.reference_currency  = "EUR";
-    r.reference_notional  = 8614.0;
+    r.instrument_id = boost::uuids::random_generator()();
+    r.tenant_id = h.tenant_id();
+    r.trade_type_code = "FxAverageForward";
+    r.fx_index = "FX-TR20H-EUR-USD";
+    r.reference_currency = "EUR";
+    r.reference_notional = 8614.0;
     r.settlement_currency = "USD";
     r.settlement_notional = 10000.0;
-    r.payment_date        = "2025-09-30";
-    r.long_short          = "Long";
-    r.modified_by         = h.db_user();
-    r.performed_by        = "ores";
-    r.change_reason_code  = "system.external_data_import";
-    r.change_commentary   = "Imported from ORE XML";
+    r.payment_date = "2025-09-30";
+    r.long_short = "Long";
+    r.modified_by = h.db_user();
+    r.performed_by = "ores";
+    r.change_reason_code = "system.external_data_import";
+    r.change_commentary = "Imported from ORE XML";
     return r;
 }
 

@@ -18,7 +18,6 @@
  *
  */
 #include "ores.trading.core/service/trade_id_type_service.hpp"
-
 #include <stdexcept>
 
 namespace ores::trading::service {
@@ -33,11 +32,11 @@ std::vector<domain::trade_id_type> trade_id_type_service::list_id_types() {
     return repo_.read_latest(ctx_);
 }
 
-std::optional<domain::trade_id_type>
-trade_id_type_service::find_id_type(const std::string& code) {
+std::optional<domain::trade_id_type> trade_id_type_service::find_id_type(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Finding trade ID type: " << code;
     auto results = repo_.read_latest(ctx_, code);
-    if (results.empty()) return std::nullopt;
+    if (results.empty())
+        return std::nullopt;
     return results.front();
 }
 
@@ -49,8 +48,7 @@ void trade_id_type_service::save_id_type(const domain::trade_id_type& v) {
     BOOST_LOG_SEV(lg(), info) << "Saved trade ID type: " << v.code;
 }
 
-void trade_id_type_service::save_id_types(
-    const std::vector<domain::trade_id_type>& id_types) {
+void trade_id_type_service::save_id_types(const std::vector<domain::trade_id_type>& id_types) {
     for (const auto& t : id_types) {
         if (t.code.empty())
             throw std::invalid_argument("Trade ID Type code cannot be empty.");

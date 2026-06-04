@@ -18,7 +18,6 @@
  *
  */
 #include "ores.trading.core/repository/day_count_fraction_type_mapper.hpp"
-
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.trading.api/domain/day_count_fraction_type_json_io.hpp" // IWYU pragma: keep.
 
@@ -67,19 +66,13 @@ day_count_fraction_type_mapper::map(const domain::day_count_fraction_type& v) {
 std::vector<domain::day_count_fraction_type>
 day_count_fraction_type_mapper::map(const std::vector<day_count_fraction_type_entity>& v) {
     return map_vector<day_count_fraction_type_entity, domain::day_count_fraction_type>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<day_count_fraction_type_entity>
 day_count_fraction_type_mapper::map(const std::vector<domain::day_count_fraction_type>& v) {
     return map_vector<domain::day_count_fraction_type, day_count_fraction_type_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

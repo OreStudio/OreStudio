@@ -17,14 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.logging/make_logger.hpp"
+#include "ores.testing/database_helper.hpp"
+#include "ores.trading.api/domain/fx_accumulator_instrument_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/fx_accumulator_instrument_repository.hpp"
-
-#include <catch2/catch_test_macros.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include "ores.logging/make_logger.hpp"
-#include "ores.trading.api/domain/fx_accumulator_instrument_json_io.hpp" // IWYU pragma: keep.
-#include "ores.testing/database_helper.hpp"
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 
@@ -48,20 +47,20 @@ using namespace ores::logging;
  */
 fx_accumulator_instrument make_instrument(database_helper& h) {
     fx_accumulator_instrument r;
-    r.instrument_id      = boost::uuids::random_generator()();
-    r.tenant_id          = h.tenant_id();
-    r.trade_type_code    = "FxAccumulator";
-    r.currency           = "JPY";
-    r.fixing_amount      = 350000.0;
-    r.strike             = 122.0;
-    r.underlying_code    = "TR20H-EUR-JPY";
-    r.long_short         = "Long";
-    r.start_date         = "2026-01-12";
-    r.knock_out_barrier  = 126.0;
-    r.modified_by        = h.db_user();
-    r.performed_by       = "ores";
+    r.instrument_id = boost::uuids::random_generator()();
+    r.tenant_id = h.tenant_id();
+    r.trade_type_code = "FxAccumulator";
+    r.currency = "JPY";
+    r.fixing_amount = 350000.0;
+    r.strike = 122.0;
+    r.underlying_code = "TR20H-EUR-JPY";
+    r.long_short = "Long";
+    r.start_date = "2026-01-12";
+    r.knock_out_barrier = 126.0;
+    r.modified_by = h.db_user();
+    r.performed_by = "ores";
     r.change_reason_code = "system.external_data_import";
-    r.change_commentary  = "Imported from ORE XML";
+    r.change_commentary = "Imported from ORE XML";
     return r;
 }
 

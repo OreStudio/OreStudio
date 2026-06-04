@@ -18,9 +18,8 @@
  *
  */
 #include "ores.trading.core/service/fx_forward_instrument_service.hpp"
-
-#include <stdexcept>
 #include "ores.service/messaging/handler_helpers.hpp"
+#include <stdexcept>
 
 using ores::service::messaging::stamp;
 
@@ -35,7 +34,8 @@ std::optional<domain::fx_forward_instrument>
 fx_forward_instrument_service::get_fx_forward_instrument(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting fx_forward_instrument: " << id;
     auto results = repo_.read_latest(ctx_, id);
-    if (results.empty()) return std::nullopt;
+    if (results.empty())
+        return std::nullopt;
     return results.front();
 }
 
@@ -43,19 +43,16 @@ void fx_forward_instrument_service::save_fx_forward_instrument(
     const domain::fx_forward_instrument& v) {
     if (v.instrument_id.is_nil())
         throw std::invalid_argument("FX forward instrument id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving fx_forward_instrument: "
-                               << v.instrument_id;
+    BOOST_LOG_SEV(lg(), debug) << "Saving fx_forward_instrument: " << v.instrument_id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved fx_forward_instrument: "
-                              << t.instrument_id;
+    BOOST_LOG_SEV(lg(), info) << "Saved fx_forward_instrument: " << t.instrument_id;
 }
 
 
 std::vector<domain::fx_forward_instrument>
-fx_forward_instrument_service::get_fx_forward_instruments(
-    const std::vector<std::string>& ids) {
+fx_forward_instrument_service::get_fx_forward_instruments(const std::vector<std::string>& ids) {
     return repo_.read_latest(ctx_, ids);
 }
 

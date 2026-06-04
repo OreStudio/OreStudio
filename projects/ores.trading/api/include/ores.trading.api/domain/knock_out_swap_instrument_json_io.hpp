@@ -20,16 +20,17 @@
 #ifndef ORES_TRADING_DOMAIN_KNOCK_OUT_SWAP_INSTRUMENT_JSON_IO_HPP
 #define ORES_TRADING_DOMAIN_KNOCK_OUT_SWAP_INSTRUMENT_JSON_IO_HPP
 
-#include <iosfwd>
 #include "ores.trading.api/domain/knock_out_swap_instrument.hpp"
 #include "ores.trading.api/export.hpp"
+#include <iosfwd>
 
 namespace ores::trading::domain {
 
 /**
  * @brief Dumps the knock_out_swap_instrument to a stream in JSON format.
  */
-ORES_TRADING_API_EXPORT std::ostream& operator<<(std::ostream& s, const knock_out_swap_instrument& v);
+ORES_TRADING_API_EXPORT std::ostream& operator<<(std::ostream& s,
+                                                 const knock_out_swap_instrument& v);
 
 }
 

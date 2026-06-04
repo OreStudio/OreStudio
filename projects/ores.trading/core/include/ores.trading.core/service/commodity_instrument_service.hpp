@@ -20,14 +20,14 @@
 #ifndef ORES_TRADING_SERVICE_COMMODITY_INSTRUMENT_SERVICE_HPP
 #define ORES_TRADING_SERVICE_COMMODITY_INSTRUMENT_SERVICE_HPP
 
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.trading.api/domain/commodity_instrument.hpp"
+#include "ores.trading.core/export.hpp"
+#include "ores.trading.core/repository/commodity_instrument_repository.hpp"
+#include <optional>
 #include <string>
 #include <vector>
-#include <optional>
-#include "ores.logging/make_logger.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.trading.api/domain/commodity_instrument.hpp"
-#include "ores.trading.core/repository/commodity_instrument_repository.hpp"
-#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::service {
 
@@ -52,13 +52,12 @@ public:
 
     std::vector<domain::commodity_instrument> list_commodity_instruments();
 
-    std::vector<domain::commodity_instrument>
-    list_commodity_instruments(std::uint32_t offset, std::uint32_t limit);
+    std::vector<domain::commodity_instrument> list_commodity_instruments(std::uint32_t offset,
+                                                                         std::uint32_t limit);
 
     std::uint32_t count_commodity_instruments();
 
-    std::optional<domain::commodity_instrument>
-    get_commodity_instrument(const std::string& id);
+    std::optional<domain::commodity_instrument> get_commodity_instrument(const std::string& id);
 
     void save_commodity_instrument(const domain::commodity_instrument& v);
 

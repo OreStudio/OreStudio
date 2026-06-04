@@ -20,10 +20,10 @@
 #ifndef ORES_TRADING_REPOSITORY_TRADE_IDENTIFIER_MAPPER_HPP
 #define ORES_TRADING_REPOSITORY_TRADE_IDENTIFIER_MAPPER_HPP
 
-#include "ores.trading.api/domain/trade_identifier.hpp"
-#include "ores.trading.core/repository/trade_identifier_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.trading.api/domain/trade_identifier.hpp"
 #include "ores.trading.core/export.hpp"
+#include "ores.trading.core/repository/trade_identifier_entity.hpp"
 
 namespace ores::trading::repository {
 
@@ -32,22 +32,20 @@ namespace ores::trading::repository {
  */
 class ORES_TRADING_CORE_EXPORT trade_identifier_mapper {
 private:
-    inline static std::string_view logger_name =
-        "ores.trading.repository.trade_identifier_mapper";
+    inline static std::string_view logger_name = "ores.trading.repository.trade_identifier_mapper";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }
+
 public:
     static domain::trade_identifier map(const trade_identifier_entity& v);
     static trade_identifier_entity map(const domain::trade_identifier& v);
 
-    static std::vector<domain::trade_identifier>
-    map(const std::vector<trade_identifier_entity>& v);
-    static std::vector<trade_identifier_entity>
-    map(const std::vector<domain::trade_identifier>& v);
+    static std::vector<domain::trade_identifier> map(const std::vector<trade_identifier_entity>& v);
+    static std::vector<trade_identifier_entity> map(const std::vector<domain::trade_identifier>& v);
 };
 
 }

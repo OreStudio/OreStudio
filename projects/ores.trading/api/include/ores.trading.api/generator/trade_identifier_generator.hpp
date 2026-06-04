@@ -20,25 +20,24 @@
 #ifndef ORES_TRADING_GENERATOR_TRADE_IDENTIFIER_GENERATOR_HPP
 #define ORES_TRADING_GENERATOR_TRADE_IDENTIFIER_GENERATOR_HPP
 
-#include <vector>
-#include "ores.trading.api/export.hpp"
 #include "ores.trading.api/domain/trade_identifier.hpp"
+#include "ores.trading.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include <vector>
 
 namespace ores::trading::generator {
 
 /**
  * @brief Generates a synthetic trade_identifier.
  */
-ORES_TRADING_API_EXPORT domain::trade_identifier generate_synthetic_trade_identifier(
-    utility::generation::generation_context& ctx);
+ORES_TRADING_API_EXPORT domain::trade_identifier
+generate_synthetic_trade_identifier(utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic trade_identifiers.
  */
 ORES_TRADING_API_EXPORT std::vector<domain::trade_identifier>
-generate_synthetic_trade_identifiers(std::size_t n,
-    utility::generation::generation_context& ctx);
+generate_synthetic_trade_identifiers(std::size_t n, utility::generation::generation_context& ctx);
 
 }
 

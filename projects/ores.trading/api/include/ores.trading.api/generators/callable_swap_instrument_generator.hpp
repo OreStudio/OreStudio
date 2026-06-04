@@ -20,25 +20,25 @@
 #ifndef ORES_TRADING_GENERATORS_CALLABLE_SWAP_INSTRUMENT_GENERATOR_HPP
 #define ORES_TRADING_GENERATORS_CALLABLE_SWAP_INSTRUMENT_GENERATOR_HPP
 
-#include <vector>
-#include "ores.trading.api/export.hpp"
 #include "ores.trading.api/domain/callable_swap_instrument.hpp"
+#include "ores.trading.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include <vector>
 
 namespace ores::trading::generators {
 
 /**
  * @brief Generates a synthetic callable_swap_instrument.
  */
-ORES_TRADING_API_EXPORT domain::callable_swap_instrument generate_synthetic_callable_swap_instrument(
-    utility::generation::generation_context& ctx);
+ORES_TRADING_API_EXPORT domain::callable_swap_instrument
+generate_synthetic_callable_swap_instrument(utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic callable_swap_instruments.
  */
 ORES_TRADING_API_EXPORT std::vector<domain::callable_swap_instrument>
 generate_synthetic_callable_swap_instruments(std::size_t n,
-    utility::generation::generation_context& ctx);
+                                             utility::generation::generation_context& ctx);
 
 }
 

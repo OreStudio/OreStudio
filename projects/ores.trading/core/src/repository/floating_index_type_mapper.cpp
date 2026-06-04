@@ -18,7 +18,6 @@
  *
  */
 #include "ores.trading.core/repository/floating_index_type_mapper.hpp"
-
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.trading.api/domain/floating_index_type_json_io.hpp" // IWYU pragma: keep.
 
@@ -27,8 +26,7 @@ namespace ores::trading::repository {
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::floating_index_type
-floating_index_type_mapper::map(const floating_index_type_entity& v) {
+domain::floating_index_type floating_index_type_mapper::map(const floating_index_type_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::floating_index_type r;
@@ -46,8 +44,7 @@ floating_index_type_mapper::map(const floating_index_type_entity& v) {
     return r;
 }
 
-floating_index_type_entity
-floating_index_type_mapper::map(const domain::floating_index_type& v) {
+floating_index_type_entity floating_index_type_mapper::map(const domain::floating_index_type& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     floating_index_type_entity r;
@@ -67,19 +64,13 @@ floating_index_type_mapper::map(const domain::floating_index_type& v) {
 std::vector<domain::floating_index_type>
 floating_index_type_mapper::map(const std::vector<floating_index_type_entity>& v) {
     return map_vector<floating_index_type_entity, domain::floating_index_type>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<floating_index_type_entity>
 floating_index_type_mapper::map(const std::vector<domain::floating_index_type>& v) {
     return map_vector<domain::floating_index_type, floating_index_type_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

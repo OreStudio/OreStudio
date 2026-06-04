@@ -23,7 +23,8 @@
 /**
  * @brief Trade domain component
  *
- * Provides domain types, repositories, services and protocol support for trade management including trade types, lifecycle events, party roles and trade identifiers.
+ * Provides domain types, repositories, services and protocol support for trade management including
+ * trade types, lifecycle events, party roles and trade identifiers.
  */
 namespace ores::trading {}
 

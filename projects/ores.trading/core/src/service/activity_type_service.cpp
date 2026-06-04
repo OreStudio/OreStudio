@@ -18,7 +18,6 @@
  *
  */
 #include "ores.trading.core/service/activity_type_service.hpp"
-
 #include <stdexcept>
 
 namespace ores::trading::service {
@@ -33,11 +32,11 @@ std::vector<domain::activity_type> activity_type_service::list_types() {
     return repo_.read_latest(ctx_);
 }
 
-std::optional<domain::activity_type>
-activity_type_service::find_type(const std::string& code) {
+std::optional<domain::activity_type> activity_type_service::find_type(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Finding activity type: " << code;
     auto results = repo_.read_latest(ctx_, code);
-    if (results.empty()) return std::nullopt;
+    if (results.empty())
+        return std::nullopt;
     return results.front();
 }
 
@@ -49,8 +48,7 @@ void activity_type_service::save_type(const domain::activity_type& v) {
     BOOST_LOG_SEV(lg(), info) << "Saved activity type: " << v.code;
 }
 
-void activity_type_service::save_types(
-    const std::vector<domain::activity_type>& v) {
+void activity_type_service::save_types(const std::vector<domain::activity_type>& v) {
     for (const auto& e : v) {
         if (e.code.empty())
             throw std::invalid_argument("Activity Type code cannot be empty.");

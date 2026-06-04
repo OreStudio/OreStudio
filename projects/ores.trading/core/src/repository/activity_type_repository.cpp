@@ -18,13 +18,12 @@
  *
  */
 #include "ores.trading.core/repository/activity_type_repository.hpp"
-
-#include <sqlgen/postgres.hpp>
-#include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
 #include "ores.trading.api/domain/activity_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/activity_type_entity.hpp"
 #include "ores.trading.core/repository/activity_type_mapper.hpp"
+#include <sqlgen/postgres.hpp>
 
 namespace ores::trading::repository {
 
@@ -39,74 +38,80 @@ std::string activity_type_repository::sql() {
 
 void activity_type_repository::write(context ctx, const domain::activity_type& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing activity type: " << v.code;
-    execute_write_query(ctx, activity_type_mapper::map(v),
-        lg(), "Writing activity type to database.");
+    execute_write_query(
+        ctx, activity_type_mapper::map(v), lg(), "Writing activity type to database.");
 }
 
-void activity_type_repository::write(
-    context ctx, const std::vector<domain::activity_type>& v) {
+void activity_type_repository::write(context ctx, const std::vector<domain::activity_type>& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing activity types. Count: " << v.size();
-    execute_write_query(ctx, activity_type_mapper::map(v),
-        lg(), "Writing activity types to database.");
+    execute_write_query(
+        ctx, activity_type_mapper::map(v), lg(), "Writing activity types to database.");
 }
 
-std::vector<domain::activity_type>
-activity_type_repository::read_latest(context ctx) {
+std::vector<domain::activity_type> activity_type_repository::read_latest(context ctx) {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<activity_type_entity>> |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-        order_by("code"_c);
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("code"_c);
 
     return execute_read_query<activity_type_entity, domain::activity_type>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return activity_type_mapper::map(entities); },
-        lg(), "Reading latest activity types");
+        lg(),
+        "Reading latest activity types");
 }
 
-std::vector<domain::activity_type>
-activity_type_repository::read_latest(context ctx, const std::string& code) {
+std::vector<domain::activity_type> activity_type_repository::read_latest(context ctx,
+                                                                         const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest activity type. code: " << code;
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<activity_type_entity>> |
+    const auto query =
+        sqlgen::read<std::vector<activity_type_entity>> |
         where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max.value());
 
     return execute_read_query<activity_type_entity, domain::activity_type>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return activity_type_mapper::map(entities); },
-        lg(), "Reading latest activity type by code.");
+        lg(),
+        "Reading latest activity type by code.");
 }
 
-std::vector<domain::activity_type>
-activity_type_repository::read_all(context ctx, const std::string& code) {
+std::vector<domain::activity_type> activity_type_repository::read_all(context ctx,
+                                                                      const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all activity type versions. code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<activity_type_entity>> |
-        where("tenant_id"_c == tid && "code"_c == code) |
-        order_by("version"_c.desc());
+                       where("tenant_id"_c == tid && "code"_c == code) |
+                       order_by("version"_c.desc());
 
     return execute_read_query<activity_type_entity, domain::activity_type>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return activity_type_mapper::map(entities); },
-        lg(), "Reading all activity type versions by code.");
+        lg(),
+        "Reading all activity type versions by code.");
 }
 
 void activity_type_repository::remove(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing activity type: " << code;
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<activity_type_entity> |
+    const auto query =
+        sqlgen::delete_from<activity_type_entity> |
         where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max.value());
 
     execute_delete_query(ctx, query, lg(), "Removing activity type from database.");
 }
 
-void activity_type_repository::remove(
-    context ctx, const std::vector<std::string>& codes) {
+void activity_type_repository::remove(context ctx, const std::vector<std::string>& codes) {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<activity_type_entity> |
+    const auto query =
+        sqlgen::delete_from<activity_type_entity> |
         where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max.value());
 
     execute_delete_query(ctx, query, lg(), "batch removing activity_types");

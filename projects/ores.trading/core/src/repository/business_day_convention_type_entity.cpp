@@ -18,7 +18,6 @@
  *
  */
 #include "ores.trading.core/repository/business_day_convention_type_entity.hpp"
-
 #include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>

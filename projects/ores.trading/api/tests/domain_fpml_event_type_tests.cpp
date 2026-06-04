@@ -17,15 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.trading.api/domain/fpml_event_type.hpp"
-
-#include <sstream>
-#include <catch2/catch_test_macros.hpp>
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
+#include "ores.trading.api/domain/fpml_event_type.hpp"
 #include "ores.trading.api/domain/fpml_event_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.api/domain/fpml_event_type_table.hpp"
 #include "ores.trading.api/domain/fpml_event_type_table_io.hpp" // IWYU pragma: keep.
+#include <catch2/catch_test_macros.hpp>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <sstream>
 
 namespace {
 
@@ -34,8 +33,7 @@ using ores::trading::domain::fpml_event_type;
 const std::string_view test_suite("ores.trading.tests");
 const std::string tags("[domain]");
 
-fpml_event_type make_fpml_event_type(const std::string& code,
-    const std::string& description = "") {
+fpml_event_type make_fpml_event_type(const std::string& code, const std::string& description = "") {
     fpml_event_type et;
     et.version = 1;
     et.code = code;
@@ -104,8 +102,8 @@ TEST_CASE("create_fpml_event_type_with_faker", tags) {
 TEST_CASE("create_multiple_random_fpml_event_types", tags) {
     auto lg(make_logger(test_suite));
 
-    const std::vector<std::string> codes = {"New", "Amendment", "Novation",
-        "PartialTermination", "FullTermination"};
+    const std::vector<std::string> codes = {
+        "New", "Amendment", "Novation", "PartialTermination", "FullTermination"};
     for (const auto& code : codes) {
         auto sut = make_fpml_event_type(code);
         BOOST_LOG_SEV(lg, info) << "FpML event type: " << sut;

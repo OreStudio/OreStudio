@@ -18,19 +18,17 @@
  *
  */
 #include "ores.trading.api/generators/scripted_instrument_generator.hpp"
-
+#include "ores.utility/generation/generation_keys.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::trading::generator {
 
 using ores::utility::generation::generation_keys;
 
-domain::scripted_instrument generate_synthetic_scripted_instrument(
-    utility::generation::generation_context& ctx) {
-    const auto modified_by = ctx.env().get_or(
-        std::string(generation_keys::modified_by), "system");
+domain::scripted_instrument
+generate_synthetic_scripted_instrument(utility::generation::generation_context& ctx) {
+    const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
 
     domain::scripted_instrument r;
     r.version = 1;
@@ -48,7 +46,7 @@ domain::scripted_instrument generate_synthetic_scripted_instrument(
 
 std::vector<domain::scripted_instrument>
 generate_synthetic_scripted_instruments(std::size_t n,
-    utility::generation::generation_context& ctx) {
+                                        utility::generation::generation_context& ctx) {
     std::vector<domain::scripted_instrument> r;
     r.reserve(n);
     while (r.size() < n)

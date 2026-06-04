@@ -18,7 +18,6 @@
  *
  */
 #include "ores.trading.core/service/day_count_fraction_type_service.hpp"
-
 #include <stdexcept>
 
 namespace ores::trading::service {
@@ -37,7 +36,8 @@ std::optional<domain::day_count_fraction_type>
 day_count_fraction_type_service::find_type(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Finding day count fraction type: " << code;
     auto results = repo_.read_latest(ctx_, code);
-    if (results.empty()) return std::nullopt;
+    if (results.empty())
+        return std::nullopt;
     return results.front();
 }
 
@@ -49,7 +49,8 @@ void day_count_fraction_type_service::save_type(const domain::day_count_fraction
     BOOST_LOG_SEV(lg(), info) << "Saved day count fraction type: " << v.code;
 }
 
-void day_count_fraction_type_service::save_types(const std::vector<domain::day_count_fraction_type>& v) {
+void day_count_fraction_type_service::save_types(
+    const std::vector<domain::day_count_fraction_type>& v) {
     for (const auto& e : v) {
         if (e.code.empty())
             throw std::invalid_argument("day count fraction type code cannot be empty.");

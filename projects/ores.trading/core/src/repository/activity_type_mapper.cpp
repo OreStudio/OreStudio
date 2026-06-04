@@ -18,19 +18,17 @@
  *
  */
 #include "ores.trading.core/repository/activity_type_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.trading.api/domain/activity_type_json_io.hpp" // IWYU pragma: keep.
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::trading::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::activity_type
-activity_type_mapper::map(const activity_type_entity& v) {
+domain::activity_type activity_type_mapper::map(const activity_type_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::activity_type r;
@@ -41,9 +39,10 @@ activity_type_mapper::map(const activity_type_entity& v) {
     r.requires_confirmation = v.requires_confirmation;
     r.description = v.description.value_or("");
     r.fpml_event_type_code = v.fpml_event_type_code.value_or("");
-    r.fsm_transition_id = v.fsm_transition_id.has_value()
-        ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.fsm_transition_id))
-        : std::nullopt;
+    r.fsm_transition_id =
+        v.fsm_transition_id.has_value() ?
+            std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.fsm_transition_id)) :
+            std::nullopt;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -54,8 +53,7 @@ activity_type_mapper::map(const activity_type_entity& v) {
     return r;
 }
 
-activity_type_entity
-activity_type_mapper::map(const domain::activity_type& v) {
+activity_type_entity activity_type_mapper::map(const domain::activity_type& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     activity_type_entity r;
@@ -65,11 +63,11 @@ activity_type_mapper::map(const domain::activity_type& v) {
     r.category = v.category;
     r.requires_confirmation = v.requires_confirmation;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
-    r.fpml_event_type_code = v.fpml_event_type_code.empty()
-        ? std::nullopt : std::optional(v.fpml_event_type_code);
-    r.fsm_transition_id = v.fsm_transition_id.has_value()
-        ? std::optional(boost::uuids::to_string(*v.fsm_transition_id))
-        : std::nullopt;
+    r.fpml_event_type_code =
+        v.fpml_event_type_code.empty() ? std::nullopt : std::optional(v.fpml_event_type_code);
+    r.fsm_transition_id = v.fsm_transition_id.has_value() ?
+                              std::optional(boost::uuids::to_string(*v.fsm_transition_id)) :
+                              std::nullopt;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -82,19 +80,13 @@ activity_type_mapper::map(const domain::activity_type& v) {
 std::vector<domain::activity_type>
 activity_type_mapper::map(const std::vector<activity_type_entity>& v) {
     return map_vector<activity_type_entity, domain::activity_type>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<activity_type_entity>
 activity_type_mapper::map(const std::vector<domain::activity_type>& v) {
     return map_vector<domain::activity_type, activity_type_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

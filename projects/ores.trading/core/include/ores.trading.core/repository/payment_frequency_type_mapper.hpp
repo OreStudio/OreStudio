@@ -20,10 +20,10 @@
 #ifndef ORES_TRADING_REPOSITORY_PAYMENT_FREQUENCY_TYPE_MAPPER_HPP
 #define ORES_TRADING_REPOSITORY_PAYMENT_FREQUENCY_TYPE_MAPPER_HPP
 
-#include "ores.trading.api/domain/payment_frequency_type.hpp"
-#include "ores.trading.core/repository/payment_frequency_type_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.trading.api/domain/payment_frequency_type.hpp"
 #include "ores.trading.core/export.hpp"
+#include "ores.trading.core/repository/payment_frequency_type_entity.hpp"
 
 namespace ores::trading::repository {
 
@@ -40,6 +40,7 @@ private:
         static auto instance = make_logger(logger_name);
         return instance;
     }
+
 public:
     static domain::payment_frequency_type map(const payment_frequency_type_entity& v);
     static payment_frequency_type_entity map(const domain::payment_frequency_type& v);

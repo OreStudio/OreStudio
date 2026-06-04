@@ -18,7 +18,6 @@
  *
  */
 #include "ores.trading.core/repository/leg_type_mapper.hpp"
-
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.trading.api/domain/leg_type_json_io.hpp" // IWYU pragma: keep.
 
@@ -27,8 +26,7 @@ namespace ores::trading::repository {
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::leg_type
-leg_type_mapper::map(const leg_type_entity& v) {
+domain::leg_type leg_type_mapper::map(const leg_type_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::leg_type r;
@@ -46,8 +44,7 @@ leg_type_mapper::map(const leg_type_entity& v) {
     return r;
 }
 
-leg_type_entity
-leg_type_mapper::map(const domain::leg_type& v) {
+leg_type_entity leg_type_mapper::map(const domain::leg_type& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     leg_type_entity r;
@@ -64,22 +61,14 @@ leg_type_mapper::map(const domain::leg_type& v) {
     return r;
 }
 
-std::vector<domain::leg_type>
-leg_type_mapper::map(const std::vector<leg_type_entity>& v) {
+std::vector<domain::leg_type> leg_type_mapper::map(const std::vector<leg_type_entity>& v) {
     return map_vector<leg_type_entity, domain::leg_type>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
-std::vector<leg_type_entity>
-leg_type_mapper::map(const std::vector<domain::leg_type>& v) {
+std::vector<leg_type_entity> leg_type_mapper::map(const std::vector<domain::leg_type>& v) {
     return map_vector<domain::leg_type, leg_type_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

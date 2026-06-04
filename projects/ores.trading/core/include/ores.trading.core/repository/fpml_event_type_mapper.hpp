@@ -20,10 +20,10 @@
 #ifndef ORES_TRADING_REPOSITORY_FPML_EVENT_TYPE_MAPPER_HPP
 #define ORES_TRADING_REPOSITORY_FPML_EVENT_TYPE_MAPPER_HPP
 
-#include "ores.trading.api/domain/fpml_event_type.hpp"
-#include "ores.trading.core/repository/fpml_event_type_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.trading.api/domain/fpml_event_type.hpp"
 #include "ores.trading.core/export.hpp"
+#include "ores.trading.core/repository/fpml_event_type_entity.hpp"
 
 namespace ores::trading::repository {
 
@@ -32,22 +32,20 @@ namespace ores::trading::repository {
  */
 class ORES_TRADING_CORE_EXPORT fpml_event_type_mapper {
 private:
-    inline static std::string_view logger_name =
-        "ores.trading.repository.fpml_event_type_mapper";
+    inline static std::string_view logger_name = "ores.trading.repository.fpml_event_type_mapper";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }
+
 public:
     static domain::fpml_event_type map(const fpml_event_type_entity& v);
     static fpml_event_type_entity map(const domain::fpml_event_type& v);
 
-    static std::vector<domain::fpml_event_type>
-    map(const std::vector<fpml_event_type_entity>& v);
-    static std::vector<fpml_event_type_entity>
-    map(const std::vector<domain::fpml_event_type>& v);
+    static std::vector<domain::fpml_event_type> map(const std::vector<fpml_event_type_entity>& v);
+    static std::vector<fpml_event_type_entity> map(const std::vector<domain::fpml_event_type>& v);
 };
 
 }

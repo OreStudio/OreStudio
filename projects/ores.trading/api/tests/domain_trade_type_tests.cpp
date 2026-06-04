@@ -17,15 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.trading.api/domain/trade_type.hpp"
-
-#include <sstream>
-#include <catch2/catch_test_macros.hpp>
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
+#include "ores.trading.api/domain/trade_type.hpp"
 #include "ores.trading.api/domain/trade_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.api/domain/trade_type_table.hpp"
 #include "ores.trading.api/domain/trade_type_table_io.hpp" // IWYU pragma: keep.
+#include <catch2/catch_test_macros.hpp>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <sstream>
 
 namespace {
 

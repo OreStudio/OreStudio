@@ -18,7 +18,6 @@
  *
  */
 #include "ores.trading.core/service/trade_identifier_service.hpp"
-
 #include <stdexcept>
 
 namespace ores::trading::service {
@@ -37,7 +36,8 @@ std::optional<domain::trade_identifier>
 trade_identifier_service::find_identifier(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Finding trade identifier: " << id;
     auto results = repo_.read_latest(ctx_, id);
-    if (results.empty()) return std::nullopt;
+    if (results.empty())
+        return std::nullopt;
     return results.front();
 }
 

@@ -18,20 +18,18 @@
  *
  */
 #include "ores.trading.api/generators/payment_frequency_type_generator.hpp"
-
+#include "ores.utility/generation/generation_keys.hpp"
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::trading::generator {
 
 using ores::utility::generation::generation_keys;
 
-domain::payment_frequency_type generate_synthetic_payment_frequency_type(
-    utility::generation::generation_context& ctx) {
+domain::payment_frequency_type
+generate_synthetic_payment_frequency_type(utility::generation::generation_context& ctx) {
     static std::atomic<int> counter{0};
-    const auto modified_by = ctx.env().get_or(
-        std::string(generation_keys::modified_by), "system");
+    const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
 
     domain::payment_frequency_type r;
     r.version = 1;
@@ -47,7 +45,7 @@ domain::payment_frequency_type generate_synthetic_payment_frequency_type(
 
 std::vector<domain::payment_frequency_type>
 generate_synthetic_payment_frequency_types(std::size_t n,
-    utility::generation::generation_context& ctx) {
+                                           utility::generation::generation_context& ctx) {
     std::vector<domain::payment_frequency_type> r;
     r.reserve(n);
     while (r.size() < n)

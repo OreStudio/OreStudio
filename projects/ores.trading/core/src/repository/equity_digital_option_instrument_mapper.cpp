@@ -18,11 +18,10 @@
  *
  */
 #include "ores.trading.core/repository/equity_digital_option_instrument_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.trading.api/domain/equity_digital_option_instrument_json_io.hpp" // IWYU pragma: keep.
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::trading::repository {
 
@@ -38,7 +37,9 @@ equity_digital_option_instrument_mapper::map(const equity_digital_option_instrum
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.instrument_id = boost::lexical_cast<boost::uuids::uuid>(v.instrument_id.value());
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
-    r.trade_id = v.trade_id.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.trade_id)) : std::nullopt;
+    r.trade_id = v.trade_id.has_value() ?
+                     std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.trade_id)) :
+                     std::nullopt;
     r.trade_type_code = v.trade_type_code;
     r.underlying_name = v.underlying_name;
     r.currency = v.currency;
@@ -70,7 +71,8 @@ equity_digital_option_instrument_mapper::map(const domain::equity_digital_option
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
     r.party_id = boost::uuids::to_string(v.party_id);
-    r.trade_id = v.trade_id.has_value() ? std::optional(boost::uuids::to_string(*v.trade_id)) : std::nullopt;
+    r.trade_id =
+        v.trade_id.has_value() ? std::optional(boost::uuids::to_string(*v.trade_id)) : std::nullopt;
     r.trade_type_code = v.trade_type_code;
     r.underlying_name = v.underlying_name;
     r.currency = v.currency;
@@ -92,22 +94,18 @@ equity_digital_option_instrument_mapper::map(const domain::equity_digital_option
     return r;
 }
 
-std::vector<domain::equity_digital_option_instrument>
-equity_digital_option_instrument_mapper::map(const std::vector<equity_digital_option_instrument_entity>& v) {
-    return map_vector<equity_digital_option_instrument_entity, domain::equity_digital_option_instrument>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+std::vector<domain::equity_digital_option_instrument> equity_digital_option_instrument_mapper::map(
+    const std::vector<equity_digital_option_instrument_entity>& v) {
+    return map_vector<equity_digital_option_instrument_entity,
+                      domain::equity_digital_option_instrument>(
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
-std::vector<equity_digital_option_instrument_entity>
-equity_digital_option_instrument_mapper::map(const std::vector<domain::equity_digital_option_instrument>& v) {
-    return map_vector<domain::equity_digital_option_instrument, equity_digital_option_instrument_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+std::vector<equity_digital_option_instrument_entity> equity_digital_option_instrument_mapper::map(
+    const std::vector<domain::equity_digital_option_instrument>& v) {
+    return map_vector<domain::equity_digital_option_instrument,
+                      equity_digital_option_instrument_entity>(
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

@@ -18,11 +18,10 @@
  *
  */
 #include "ores.trading.core/repository/commodity_instrument_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.trading.api/domain/commodity_instrument_json_io.hpp" // IWYU pragma: keep.
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::trading::repository {
 
@@ -38,7 +37,9 @@ commodity_instrument_mapper::map(const commodity_instrument_entity& v) {
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.version = v.version;
-    r.trade_id = v.trade_id.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.trade_id)) : std::nullopt;
+    r.trade_id = v.trade_id.has_value() ?
+                     std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.trade_id)) :
+                     std::nullopt;
     r.trade_type_code = v.trade_type_code;
     r.commodity_code = v.commodity_code;
     r.currency = v.currency;
@@ -86,7 +87,8 @@ commodity_instrument_mapper::map(const domain::commodity_instrument& v) {
     r.tenant_id = v.tenant_id.to_string();
     r.party_id = boost::uuids::to_string(v.party_id);
     r.version = v.version;
-    r.trade_id = v.trade_id.has_value() ? std::optional(boost::uuids::to_string(*v.trade_id)) : std::nullopt;
+    r.trade_id =
+        v.trade_id.has_value() ? std::optional(boost::uuids::to_string(*v.trade_id)) : std::nullopt;
     r.trade_type_code = v.trade_type_code;
     r.commodity_code = v.commodity_code;
     r.currency = v.currency;
@@ -99,11 +101,15 @@ commodity_instrument_mapper::map(const domain::commodity_instrument& v) {
     r.strike_price = v.strike_price;
     r.exercise_type = v.exercise_type.empty() ? std::nullopt : std::optional(v.exercise_type);
     r.average_type = v.average_type.empty() ? std::nullopt : std::optional(v.average_type);
-    r.averaging_start_date = v.averaging_start_date.empty() ? std::nullopt : std::optional(v.averaging_start_date);
-    r.averaging_end_date = v.averaging_end_date.empty() ? std::nullopt : std::optional(v.averaging_end_date);
-    r.spread_commodity_code = v.spread_commodity_code.empty() ? std::nullopt : std::optional(v.spread_commodity_code);
+    r.averaging_start_date =
+        v.averaging_start_date.empty() ? std::nullopt : std::optional(v.averaging_start_date);
+    r.averaging_end_date =
+        v.averaging_end_date.empty() ? std::nullopt : std::optional(v.averaging_end_date);
+    r.spread_commodity_code =
+        v.spread_commodity_code.empty() ? std::nullopt : std::optional(v.spread_commodity_code);
     r.spread_amount = v.spread_amount;
-    r.strip_frequency_code = v.strip_frequency_code.empty() ? std::nullopt : std::optional(v.strip_frequency_code);
+    r.strip_frequency_code =
+        v.strip_frequency_code.empty() ? std::nullopt : std::optional(v.strip_frequency_code);
     r.variance_strike = v.variance_strike;
     r.accumulation_amount = v.accumulation_amount;
     r.knock_out_barrier = v.knock_out_barrier;
@@ -112,8 +118,10 @@ commodity_instrument_mapper::map(const domain::commodity_instrument& v) {
     r.upper_barrier = v.upper_barrier;
     r.basket_json = v.basket_json.empty() ? std::nullopt : std::optional(v.basket_json);
     r.day_count_code = v.day_count_code.empty() ? std::nullopt : std::optional(v.day_count_code);
-    r.payment_frequency_code = v.payment_frequency_code.empty() ? std::nullopt : std::optional(v.payment_frequency_code);
-    r.swaption_expiry_date = v.swaption_expiry_date.empty() ? std::nullopt : std::optional(v.swaption_expiry_date);
+    r.payment_frequency_code =
+        v.payment_frequency_code.empty() ? std::nullopt : std::optional(v.payment_frequency_code);
+    r.swaption_expiry_date =
+        v.swaption_expiry_date.empty() ? std::nullopt : std::optional(v.swaption_expiry_date);
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -127,19 +135,13 @@ commodity_instrument_mapper::map(const domain::commodity_instrument& v) {
 std::vector<domain::commodity_instrument>
 commodity_instrument_mapper::map(const std::vector<commodity_instrument_entity>& v) {
     return map_vector<commodity_instrument_entity, domain::commodity_instrument>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<commodity_instrument_entity>
 commodity_instrument_mapper::map(const std::vector<domain::commodity_instrument>& v) {
     return map_vector<domain::commodity_instrument, commodity_instrument_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

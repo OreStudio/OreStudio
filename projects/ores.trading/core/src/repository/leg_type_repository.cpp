@@ -18,13 +18,12 @@
  *
  */
 #include "ores.trading.core/repository/leg_type_repository.hpp"
-
-#include <sqlgen/postgres.hpp>
-#include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
 #include "ores.trading.api/domain/leg_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/leg_type_entity.hpp"
 #include "ores.trading.core/repository/leg_type_mapper.hpp"
+#include <sqlgen/postgres.hpp>
 
 namespace ores::trading::repository {
 
@@ -39,73 +38,76 @@ std::string leg_type_repository::sql() {
 
 void leg_type_repository::write(context ctx, const domain::leg_type& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing leg type: " << v.code;
-    execute_write_query(ctx, leg_type_mapper::map(v),
-        lg(), "Writing leg type to database.");
+    execute_write_query(ctx, leg_type_mapper::map(v), lg(), "Writing leg type to database.");
 }
 
-void leg_type_repository::write(
-    context ctx, const std::vector<domain::leg_type>& v) {
+void leg_type_repository::write(context ctx, const std::vector<domain::leg_type>& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing leg types. Count: " << v.size();
-    execute_write_query(ctx, leg_type_mapper::map(v),
-        lg(), "Writing leg types to database.");
+    execute_write_query(ctx, leg_type_mapper::map(v), lg(), "Writing leg types to database.");
 }
 
-std::vector<domain::leg_type>
-leg_type_repository::read_latest(context ctx) {
+std::vector<domain::leg_type> leg_type_repository::read_latest(context ctx) {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<leg_type_entity>> |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-        order_by("code"_c);
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("code"_c);
 
     return execute_read_query<leg_type_entity, domain::leg_type>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return leg_type_mapper::map(entities); },
-        lg(), "Reading latest leg types");
+        lg(),
+        "Reading latest leg types");
 }
 
-std::vector<domain::leg_type>
-leg_type_repository::read_latest(context ctx, const std::string& code) {
+std::vector<domain::leg_type> leg_type_repository::read_latest(context ctx,
+                                                               const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest leg type. code: " << code;
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<leg_type_entity>> |
+    const auto query =
+        sqlgen::read<std::vector<leg_type_entity>> |
         where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max.value());
 
     return execute_read_query<leg_type_entity, domain::leg_type>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return leg_type_mapper::map(entities); },
-        lg(), "Reading latest leg type by code.");
+        lg(),
+        "Reading latest leg type by code.");
 }
 
-std::vector<domain::leg_type>
-leg_type_repository::read_all(context ctx, const std::string& code) {
+std::vector<domain::leg_type> leg_type_repository::read_all(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all leg type versions. code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<leg_type_entity>> |
-        where("tenant_id"_c == tid && "code"_c == code) |
-        order_by("version"_c.desc());
+                       where("tenant_id"_c == tid && "code"_c == code) |
+                       order_by("version"_c.desc());
 
     return execute_read_query<leg_type_entity, domain::leg_type>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return leg_type_mapper::map(entities); },
-        lg(), "Reading all leg type versions by code.");
+        lg(),
+        "Reading all leg type versions by code.");
 }
 
 void leg_type_repository::remove(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing leg type: " << code;
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<leg_type_entity> |
+    const auto query =
+        sqlgen::delete_from<leg_type_entity> |
         where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max.value());
 
     execute_delete_query(ctx, query, lg(), "Removing leg type from database.");
 }
-void leg_type_repository::remove(
-    context ctx, const std::vector<std::string>& codes) {
+void leg_type_repository::remove(context ctx, const std::vector<std::string>& codes) {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<leg_type_entity> |
+    const auto query =
+        sqlgen::delete_from<leg_type_entity> |
         where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max.value());
 
     execute_delete_query(ctx, query, lg(), "batch removing leg types");

@@ -18,19 +18,17 @@
  *
  */
 #include "ores.trading.core/repository/credit_instrument_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.trading.api/domain/credit_instrument_json_io.hpp" // IWYU pragma: keep.
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::trading::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::credit_instrument
-credit_instrument_mapper::map(const credit_instrument_entity& v) {
+domain::credit_instrument credit_instrument_mapper::map(const credit_instrument_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::credit_instrument r;
@@ -38,7 +36,9 @@ credit_instrument_mapper::map(const credit_instrument_entity& v) {
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.version = v.version;
-    r.trade_id = v.trade_id.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.trade_id)) : std::nullopt;
+    r.trade_id = v.trade_id.has_value() ?
+                     std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.trade_id)) :
+                     std::nullopt;
     r.trade_type_code = v.trade_type_code;
     r.reference_entity = v.reference_entity;
     r.currency = v.currency;
@@ -71,8 +71,7 @@ credit_instrument_mapper::map(const credit_instrument_entity& v) {
     return r;
 }
 
-credit_instrument_entity
-credit_instrument_mapper::map(const domain::credit_instrument& v) {
+credit_instrument_entity credit_instrument_mapper::map(const domain::credit_instrument& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     credit_instrument_entity r;
@@ -80,7 +79,8 @@ credit_instrument_mapper::map(const domain::credit_instrument& v) {
     r.tenant_id = v.tenant_id.to_string();
     r.party_id = boost::uuids::to_string(v.party_id);
     r.version = v.version;
-    r.trade_id = v.trade_id.has_value() ? std::optional(boost::uuids::to_string(*v.trade_id)) : std::nullopt;
+    r.trade_id =
+        v.trade_id.has_value() ? std::optional(boost::uuids::to_string(*v.trade_id)) : std::nullopt;
     r.trade_type_code = v.trade_type_code;
     r.reference_entity = v.reference_entity;
     r.currency = v.currency;
@@ -92,23 +92,17 @@ credit_instrument_mapper::map(const domain::credit_instrument& v) {
     r.maturity_date = v.maturity_date;
     r.day_count_code = v.day_count_code;
     r.payment_frequency_code = v.payment_frequency_code;
-    r.index_name = v.index_name.empty()
-        ? std::nullopt : std::optional(v.index_name);
-    r.index_series = v.index_series == 0
-        ? std::nullopt : std::optional(v.index_series);
-    r.seniority = v.seniority.empty()
-        ? std::nullopt : std::optional(v.seniority);
-    r.restructuring = v.restructuring.empty()
-        ? std::nullopt : std::optional(v.restructuring);
-    r.description = v.description.empty()
-        ? std::nullopt : std::optional(v.description);
-    r.option_type = v.option_type.empty()
-        ? std::nullopt : std::optional(v.option_type);
-    r.option_expiry_date = v.option_expiry_date.empty()
-        ? std::nullopt : std::optional(v.option_expiry_date);
+    r.index_name = v.index_name.empty() ? std::nullopt : std::optional(v.index_name);
+    r.index_series = v.index_series == 0 ? std::nullopt : std::optional(v.index_series);
+    r.seniority = v.seniority.empty() ? std::nullopt : std::optional(v.seniority);
+    r.restructuring = v.restructuring.empty() ? std::nullopt : std::optional(v.restructuring);
+    r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
+    r.option_type = v.option_type.empty() ? std::nullopt : std::optional(v.option_type);
+    r.option_expiry_date =
+        v.option_expiry_date.empty() ? std::nullopt : std::optional(v.option_expiry_date);
     r.option_strike = v.option_strike;
-    r.linked_asset_code = v.linked_asset_code.empty()
-        ? std::nullopt : std::optional(v.linked_asset_code);
+    r.linked_asset_code =
+        v.linked_asset_code.empty() ? std::nullopt : std::optional(v.linked_asset_code);
     r.tranche_attachment = v.tranche_attachment;
     r.tranche_detachment = v.tranche_detachment;
     r.modified_by = v.modified_by;
@@ -123,19 +117,13 @@ credit_instrument_mapper::map(const domain::credit_instrument& v) {
 std::vector<domain::credit_instrument>
 credit_instrument_mapper::map(const std::vector<credit_instrument_entity>& v) {
     return map_vector<credit_instrument_entity, domain::credit_instrument>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<credit_instrument_entity>
 credit_instrument_mapper::map(const std::vector<domain::credit_instrument>& v) {
     return map_vector<domain::credit_instrument, credit_instrument_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

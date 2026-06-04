@@ -20,35 +20,35 @@
 #ifndef ORES_TRADING_MESSAGING_INSTRUMENT_REF_HANDLER_HPP
 #define ORES_TRADING_MESSAGING_INSTRUMENT_REF_HANDLER_HPP
 
-#include <optional>
+#include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.database/domain/context.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include "ores.trading.api/messaging/day_count_fraction_type_protocol.hpp"
 #include "ores.trading.api/messaging/business_day_convention_type_protocol.hpp"
+#include "ores.trading.api/messaging/day_count_fraction_type_protocol.hpp"
 #include "ores.trading.api/messaging/floating_index_type_protocol.hpp"
-#include "ores.trading.api/messaging/payment_frequency_type_protocol.hpp"
 #include "ores.trading.api/messaging/leg_type_protocol.hpp"
+#include "ores.trading.api/messaging/payment_frequency_type_protocol.hpp"
 #include "ores.trading.api/messaging/trade_type_protocol.hpp"
-#include "ores.trading.core/service/day_count_fraction_type_service.hpp"
+#include "ores.trading.core/export.hpp"
 #include "ores.trading.core/service/business_day_convention_type_service.hpp"
+#include "ores.trading.core/service/day_count_fraction_type_service.hpp"
 #include "ores.trading.core/service/floating_index_type_service.hpp"
-#include "ores.trading.core/service/payment_frequency_type_service.hpp"
 #include "ores.trading.core/service/leg_type_service.hpp"
+#include "ores.trading.core/service/payment_frequency_type_service.hpp"
 #include "ores.trading.core/service/trade_type_service.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
-#include "ores.trading.core/export.hpp"
+#include <optional>
 
 namespace ores::trading::messaging {
 
 namespace {
 inline auto& instrument_ref_handler_lg() {
-    static auto instance = ores::logging::make_logger(
-        "ores.trading.messaging.instrument_ref_handler");
+    static auto instance =
+        ores::logging::make_logger("ores.trading.messaging.instrument_ref_handler");
     return instance;
 }
 } // namespace
@@ -62,38 +62,39 @@ using namespace ores::logging;
 class ORES_TRADING_CORE_EXPORT instrument_ref_handler {
 public:
     instrument_ref_handler(ores::nats::service::client& nats,
-        ores::database::context ctx,
-        std::optional<ores::security::jwt::jwt_authenticator> verifier)
-        : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier)) {}
+                           ores::database::context ctx,
+                           std::optional<ores::security::jwt::jwt_authenticator> verifier)
+        : nats_(nats)
+        , ctx_(std::move(ctx))
+        , verifier_(std::move(verifier)) {}
 
 private:
-    template<typename Svc, typename Req, typename Resp>
+    template <typename Svc, typename Req, typename Resp>
     void list_impl(ores::nats::message msg) {
         BOOST_LOG_SEV(instrument_ref_handler_lg(), debug) << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        const auto sys_ctx = req_ctx.with_tenant(
-            ores::utility::uuid::tenant_id::system(), req_ctx.actor());
+        const auto sys_ctx =
+            req_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), req_ctx.actor());
         Svc svc(sys_ctx);
         Resp resp;
         try {
             resp.types = svc.list_types();
             resp.total_available_count = static_cast<int>(resp.types.size());
-        } catch (...) {}
+        } catch (...) {
+        }
         BOOST_LOG_SEV(instrument_ref_handler_lg(), debug) << "Completed " << msg.subject;
         reply(nats_, msg, resp);
     }
 
-    template<typename Svc, typename Req, typename Resp>
+    template <typename Svc, typename Req, typename Resp>
     void save_impl(ores::nats::message msg) {
         BOOST_LOG_SEV(instrument_ref_handler_lg(), debug) << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
             return;
@@ -107,8 +108,7 @@ private:
         if (auto req = decode<Req>(msg)) {
             try {
                 svc.save_type(req->data);
-                BOOST_LOG_SEV(instrument_ref_handler_lg(), debug)
-                    << "Completed " << msg.subject;
+                BOOST_LOG_SEV(instrument_ref_handler_lg(), debug) << "Completed " << msg.subject;
                 reply(nats_, msg, Resp{.success = true});
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(instrument_ref_handler_lg(), error)
@@ -116,16 +116,14 @@ private:
                 reply(nats_, msg, Resp{.success = false, .message = e.what()});
             }
         } else {
-            BOOST_LOG_SEV(instrument_ref_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(instrument_ref_handler_lg(), warn) << "Failed to decode: " << msg.subject;
         }
     }
 
-    template<typename Svc, typename Req, typename Resp>
+    template <typename Svc, typename Req, typename Resp>
     void delete_impl(ores::nats::message msg) {
         BOOST_LOG_SEV(instrument_ref_handler_lg(), debug) << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
             return;
@@ -139,8 +137,7 @@ private:
         if (auto req = decode<Req>(msg)) {
             try {
                 svc.remove_types(req->codes);
-                BOOST_LOG_SEV(instrument_ref_handler_lg(), debug)
-                    << "Completed " << msg.subject;
+                BOOST_LOG_SEV(instrument_ref_handler_lg(), debug) << "Completed " << msg.subject;
                 reply(nats_, msg, Resp{.success = true});
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(instrument_ref_handler_lg(), error)
@@ -148,29 +145,26 @@ private:
                 reply(nats_, msg, Resp{.success = false, .message = e.what()});
             }
         } else {
-            BOOST_LOG_SEV(instrument_ref_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(instrument_ref_handler_lg(), warn) << "Failed to decode: " << msg.subject;
         }
     }
 
-    template<typename Svc, typename Req, typename Resp>
+    template <typename Svc, typename Req, typename Resp>
     void history_impl(ores::nats::message msg) {
         BOOST_LOG_SEV(instrument_ref_handler_lg(), debug) << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        const auto sys_ctx = req_ctx.with_tenant(
-            ores::utility::uuid::tenant_id::system(), req_ctx.actor());
+        const auto sys_ctx =
+            req_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), req_ctx.actor());
         Svc svc(sys_ctx);
         if (auto req = decode<Req>(msg)) {
             try {
                 auto hist = svc.get_type_history(req->code);
-                BOOST_LOG_SEV(instrument_ref_handler_lg(), debug)
-                    << "Completed " << msg.subject;
+                BOOST_LOG_SEV(instrument_ref_handler_lg(), debug) << "Completed " << msg.subject;
                 reply(nats_, msg, Resp{.success = true, .history = std::move(hist)});
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(instrument_ref_handler_lg(), error)
@@ -178,8 +172,7 @@ private:
                 reply(nats_, msg, Resp{.success = false, .message = e.what()});
             }
         } else {
-            BOOST_LOG_SEV(instrument_ref_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(instrument_ref_handler_lg(), warn) << "Failed to decode: " << msg.subject;
         }
     }
 
@@ -274,19 +267,16 @@ public:
 
     // Leg type
     void list_leg_types(ores::nats::message msg) {
-        list_impl<service::leg_type_service,
-                  get_leg_types_request,
-                  get_leg_types_response>(std::move(msg));
+        list_impl<service::leg_type_service, get_leg_types_request, get_leg_types_response>(
+            std::move(msg));
     }
     void save_leg_type(ores::nats::message msg) {
-        save_impl<service::leg_type_service,
-                  save_leg_type_request,
-                  save_leg_type_response>(std::move(msg));
+        save_impl<service::leg_type_service, save_leg_type_request, save_leg_type_response>(
+            std::move(msg));
     }
     void delete_leg_type(ores::nats::message msg) {
-        delete_impl<service::leg_type_service,
-                    delete_leg_type_request,
-                    delete_leg_type_response>(std::move(msg));
+        delete_impl<service::leg_type_service, delete_leg_type_request, delete_leg_type_response>(
+            std::move(msg));
     }
     void history_leg_type(ores::nats::message msg) {
         history_impl<service::leg_type_service,
@@ -296,14 +286,12 @@ public:
 
     // Trade type
     void list_trade_types(ores::nats::message msg) {
-        list_impl<service::trade_type_service,
-                  get_trade_types_request,
-                  get_trade_types_response>(std::move(msg));
+        list_impl<service::trade_type_service, get_trade_types_request, get_trade_types_response>(
+            std::move(msg));
     }
     void save_trade_type(ores::nats::message msg) {
-        save_impl<service::trade_type_service,
-                  save_trade_type_request,
-                  save_trade_type_response>(std::move(msg));
+        save_impl<service::trade_type_service, save_trade_type_request, save_trade_type_response>(
+            std::move(msg));
     }
     void delete_trade_type(ores::nats::message msg) {
         delete_impl<service::trade_type_service,

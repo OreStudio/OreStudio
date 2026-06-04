@@ -18,7 +18,6 @@
  *
  */
 #include "ores.trading.api/domain/swaption_instrument_table.hpp"
-
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
 

@@ -20,9 +20,9 @@
 #ifndef ORES_TRADING_DOMAIN_FLOATING_INDEX_TYPE_JSON_IO_HPP
 #define ORES_TRADING_DOMAIN_FLOATING_INDEX_TYPE_JSON_IO_HPP
 
-#include <iosfwd>
 #include "ores.trading.api/domain/floating_index_type.hpp"
 #include "ores.trading.api/export.hpp"
+#include <iosfwd>
 
 namespace ores::trading::domain {
 

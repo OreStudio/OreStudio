@@ -20,25 +20,24 @@
 #ifndef ORES_TRADING_GENERATORS_FRA_INSTRUMENT_GENERATOR_HPP
 #define ORES_TRADING_GENERATORS_FRA_INSTRUMENT_GENERATOR_HPP
 
-#include <vector>
-#include "ores.trading.api/export.hpp"
 #include "ores.trading.api/domain/fra_instrument.hpp"
+#include "ores.trading.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include <vector>
 
 namespace ores::trading::generators {
 
 /**
  * @brief Generates a synthetic fra_instrument.
  */
-ORES_TRADING_API_EXPORT domain::fra_instrument generate_synthetic_fra_instrument(
-    utility::generation::generation_context& ctx);
+ORES_TRADING_API_EXPORT domain::fra_instrument
+generate_synthetic_fra_instrument(utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic fra_instruments.
  */
 ORES_TRADING_API_EXPORT std::vector<domain::fra_instrument>
-generate_synthetic_fra_instruments(std::size_t n,
-    utility::generation::generation_context& ctx);
+generate_synthetic_fra_instruments(std::size_t n, utility::generation::generation_context& ctx);
 
 }
 

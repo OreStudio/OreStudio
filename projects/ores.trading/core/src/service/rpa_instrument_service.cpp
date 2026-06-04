@@ -18,10 +18,9 @@
  *
  */
 #include "ores.trading.core/service/rpa_instrument_service.hpp"
-
+#include "ores.service/messaging/handler_helpers.hpp"
 #include <algorithm>
 #include <stdexcept>
-#include "ores.service/messaging/handler_helpers.hpp"
 
 using ores::service::messaging::stamp;
 
@@ -32,17 +31,15 @@ using namespace ores::logging;
 rpa_instrument_service::rpa_instrument_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
-std::vector<domain::rpa_instrument>
-rpa_instrument_service::list_rpa_instruments() {
+std::vector<domain::rpa_instrument> rpa_instrument_service::list_rpa_instruments() {
     BOOST_LOG_SEV(lg(), debug) << "Listing all rpa_instruments";
     return repo_.read_latest(ctx_);
 }
 
 std::vector<domain::rpa_instrument>
-rpa_instrument_service::list_rpa_instruments(std::uint32_t offset,
-    std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing rpa_instruments with offset="
-                               << offset << ", limit=" << limit;
+rpa_instrument_service::list_rpa_instruments(std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing rpa_instruments with offset=" << offset
+                               << ", limit=" << limit;
     auto all = repo_.read_latest(ctx_);
     const auto begin = std::min(static_cast<std::size_t>(offset), all.size());
     const auto end = std::min(begin + static_cast<std::size_t>(limit), all.size());
@@ -58,12 +55,12 @@ std::optional<domain::rpa_instrument>
 rpa_instrument_service::get_rpa_instrument(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting rpa_instrument: " << id;
     auto results = repo_.read_latest(ctx_, id);
-    if (results.empty()) return std::nullopt;
+    if (results.empty())
+        return std::nullopt;
     return results.front();
 }
 
-void rpa_instrument_service::save_rpa_instrument(
-    const domain::rpa_instrument& v) {
+void rpa_instrument_service::save_rpa_instrument(const domain::rpa_instrument& v) {
     if (v.identity.instrument_id.is_nil())
         throw std::invalid_argument("RPA instrument id cannot be empty.");
     BOOST_LOG_SEV(lg(), debug) << "Saving rpa_instrument: " << v.identity.instrument_id;
@@ -87,8 +84,7 @@ rpa_instrument_service::get_rpa_instrument_history(const std::string& id) {
 
 
 std::vector<domain::rpa_instrument>
-rpa_instrument_service::get_rpa_instruments(
-    const std::vector<std::string>& ids) {
+rpa_instrument_service::get_rpa_instruments(const std::vector<std::string>& ids) {
     return repo_.read_latest(ctx_, ids);
 }
 

@@ -18,9 +18,8 @@
  *
  */
 #include "ores.trading.core/service/scripted_instrument_service.hpp"
-
-#include <boost/uuid/random_generator.hpp>
 #include "ores.service/messaging/handler_helpers.hpp"
+#include <boost/uuid/random_generator.hpp>
 
 using ores::service::messaging::stamp;
 
@@ -31,17 +30,15 @@ using namespace ores::logging;
 scripted_instrument_service::scripted_instrument_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
-std::vector<domain::scripted_instrument>
-scripted_instrument_service::list_scripted_instruments() {
+std::vector<domain::scripted_instrument> scripted_instrument_service::list_scripted_instruments() {
     BOOST_LOG_SEV(lg(), debug) << "Listing all scripted_instruments";
     return repo_.read_latest(ctx_);
 }
 
 std::vector<domain::scripted_instrument>
-scripted_instrument_service::list_scripted_instruments(std::uint32_t offset,
-    std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing scripted_instruments with offset="
-                               << offset << ", limit=" << limit;
+scripted_instrument_service::list_scripted_instruments(std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing scripted_instruments with offset=" << offset
+                               << ", limit=" << limit;
     return repo_.read_latest(ctx_, offset, limit);
 }
 
@@ -54,12 +51,12 @@ std::optional<domain::scripted_instrument>
 scripted_instrument_service::get_scripted_instrument(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting scripted_instrument: " << id;
     auto results = repo_.read_latest(ctx_, id);
-    if (results.empty()) return std::nullopt;
+    if (results.empty())
+        return std::nullopt;
     return results.front();
 }
 
-void scripted_instrument_service::save_scripted_instrument(
-    const domain::scripted_instrument& v) {
+void scripted_instrument_service::save_scripted_instrument(const domain::scripted_instrument& v) {
     auto t = v;
     if (t.instrument_id.is_nil()) {
         static boost::uuids::random_generator gen;
@@ -85,8 +82,7 @@ scripted_instrument_service::get_scripted_instrument_history(const std::string& 
 
 
 std::vector<domain::scripted_instrument>
-scripted_instrument_service::get_scripted_instruments(
-    const std::vector<std::string>& ids) {
+scripted_instrument_service::get_scripted_instruments(const std::vector<std::string>& ids) {
     return repo_.read_latest(ctx_, ids);
 }
 

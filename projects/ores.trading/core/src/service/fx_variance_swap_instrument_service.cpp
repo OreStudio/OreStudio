@@ -18,9 +18,8 @@
  *
  */
 #include "ores.trading.core/service/fx_variance_swap_instrument_service.hpp"
-
-#include <stdexcept>
 #include "ores.service/messaging/handler_helpers.hpp"
+#include <stdexcept>
 
 using ores::service::messaging::stamp;
 
@@ -28,29 +27,27 @@ namespace ores::trading::service {
 
 using namespace ores::logging;
 
-fx_variance_swap_instrument_service::fx_variance_swap_instrument_service(
-    context ctx) : ctx_(std::move(ctx)) {}
+fx_variance_swap_instrument_service::fx_variance_swap_instrument_service(context ctx)
+    : ctx_(std::move(ctx)) {}
 
 std::optional<domain::fx_variance_swap_instrument>
 fx_variance_swap_instrument_service::get_fx_variance_swap_instrument(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting fx_variance_swap_instrument: " << id;
     auto results = repo_.read_latest(ctx_, id);
-    if (results.empty()) return std::nullopt;
+    if (results.empty())
+        return std::nullopt;
     return results.front();
 }
 
 void fx_variance_swap_instrument_service::save_fx_variance_swap_instrument(
     const domain::fx_variance_swap_instrument& v) {
     if (v.instrument_id.is_nil())
-        throw std::invalid_argument(
-            "FX variance swap instrument id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving fx_variance_swap_instrument: "
-                               << v.instrument_id;
+        throw std::invalid_argument("FX variance swap instrument id cannot be empty.");
+    BOOST_LOG_SEV(lg(), debug) << "Saving fx_variance_swap_instrument: " << v.instrument_id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved fx_variance_swap_instrument: "
-                              << t.instrument_id;
+    BOOST_LOG_SEV(lg(), info) << "Saved fx_variance_swap_instrument: " << t.instrument_id;
 }
 
 

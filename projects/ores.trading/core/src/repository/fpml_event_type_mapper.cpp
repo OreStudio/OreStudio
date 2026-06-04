@@ -18,19 +18,17 @@
  *
  */
 #include "ores.trading.core/repository/fpml_event_type_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.trading.api/domain/fpml_event_type_json_io.hpp" // IWYU pragma: keep.
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::trading::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::fpml_event_type
-fpml_event_type_mapper::map(const fpml_event_type_entity& v) {
+domain::fpml_event_type fpml_event_type_mapper::map(const fpml_event_type_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::fpml_event_type r;
@@ -48,8 +46,7 @@ fpml_event_type_mapper::map(const fpml_event_type_entity& v) {
     return r;
 }
 
-fpml_event_type_entity
-fpml_event_type_mapper::map(const domain::fpml_event_type& v) {
+fpml_event_type_entity fpml_event_type_mapper::map(const domain::fpml_event_type& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     fpml_event_type_entity r;
@@ -69,19 +66,13 @@ fpml_event_type_mapper::map(const domain::fpml_event_type& v) {
 std::vector<domain::fpml_event_type>
 fpml_event_type_mapper::map(const std::vector<fpml_event_type_entity>& v) {
     return map_vector<fpml_event_type_entity, domain::fpml_event_type>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<fpml_event_type_entity>
 fpml_event_type_mapper::map(const std::vector<domain::fpml_event_type>& v) {
     return map_vector<domain::fpml_event_type, fpml_event_type_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

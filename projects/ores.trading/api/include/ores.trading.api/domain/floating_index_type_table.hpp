@@ -20,10 +20,10 @@
 #ifndef ORES_TRADING_DOMAIN_FLOATING_INDEX_TYPE_TABLE_HPP
 #define ORES_TRADING_DOMAIN_FLOATING_INDEX_TYPE_TABLE_HPP
 
-#include <string>
-#include <vector>
 #include "ores.trading.api/domain/floating_index_type.hpp"
 #include "ores.trading.api/export.hpp"
+#include <string>
+#include <vector>
 
 namespace ores::trading::domain {
 

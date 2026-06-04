@@ -18,7 +18,6 @@
  *
  */
 #include "ores.trading.core/repository/inflation_swap_instrument_entity.hpp"
-
 #include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>

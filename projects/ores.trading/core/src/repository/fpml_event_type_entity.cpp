@@ -18,7 +18,6 @@
  *
  */
 #include "ores.trading.core/repository/fpml_event_type_entity.hpp"
-
 #include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>

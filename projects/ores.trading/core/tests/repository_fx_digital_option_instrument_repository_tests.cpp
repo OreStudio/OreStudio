@@ -17,14 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.logging/make_logger.hpp"
+#include "ores.testing/database_helper.hpp"
+#include "ores.trading.api/domain/fx_digital_option_instrument_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/fx_digital_option_instrument_repository.hpp"
-
-#include <catch2/catch_test_macros.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include "ores.logging/make_logger.hpp"
-#include "ores.trading.api/domain/fx_digital_option_instrument_json_io.hpp" // IWYU pragma: keep.
-#include "ores.testing/database_helper.hpp"
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 
@@ -48,21 +47,21 @@ using namespace ores::logging;
  */
 fx_digital_option_instrument make_instrument(database_helper& h) {
     fx_digital_option_instrument r;
-    r.instrument_id      = boost::uuids::random_generator()();
-    r.tenant_id          = h.tenant_id();
-    r.trade_type_code    = "FxDigitalOption";
-    r.foreign_currency   = "EUR";
-    r.domestic_currency  = "USD";
-    r.payoff_currency    = "EUR";
-    r.payoff_amount      = 100.0;
-    r.option_type        = "Call";
-    r.expiry_date        = "2033-02-20";
-    r.long_short         = "Long";
-    r.strike             = 1.1;
-    r.modified_by        = h.db_user();
-    r.performed_by       = "ores";
+    r.instrument_id = boost::uuids::random_generator()();
+    r.tenant_id = h.tenant_id();
+    r.trade_type_code = "FxDigitalOption";
+    r.foreign_currency = "EUR";
+    r.domestic_currency = "USD";
+    r.payoff_currency = "EUR";
+    r.payoff_amount = 100.0;
+    r.option_type = "Call";
+    r.expiry_date = "2033-02-20";
+    r.long_short = "Long";
+    r.strike = 1.1;
+    r.modified_by = h.db_user();
+    r.performed_by = "ores";
     r.change_reason_code = "system.external_data_import";
-    r.change_commentary  = "Imported from ORE XML";
+    r.change_commentary = "Imported from ORE XML";
     return r;
 }
 

@@ -18,11 +18,10 @@
  *
  */
 #include "ores.trading.core/repository/composite_instrument_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.trading.api/domain/composite_instrument_json_io.hpp" // IWYU pragma: keep.
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::trading::repository {
 
@@ -38,7 +37,9 @@ composite_instrument_mapper::map(const composite_instrument_entity& v) {
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.version = v.version;
-    r.trade_id = v.trade_id.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.trade_id)) : std::nullopt;
+    r.trade_id = v.trade_id.has_value() ?
+                     std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.trade_id)) :
+                     std::nullopt;
     r.trade_type_code = v.trade_type_code;
     r.description = v.description.value_or("");
     r.modified_by = v.modified_by;
@@ -60,7 +61,8 @@ composite_instrument_mapper::map(const domain::composite_instrument& v) {
     r.tenant_id = v.tenant_id.to_string();
     r.party_id = boost::uuids::to_string(v.party_id);
     r.version = v.version;
-    r.trade_id = v.trade_id.has_value() ? std::optional(boost::uuids::to_string(*v.trade_id)) : std::nullopt;
+    r.trade_id =
+        v.trade_id.has_value() ? std::optional(boost::uuids::to_string(*v.trade_id)) : std::nullopt;
     r.trade_type_code = v.trade_type_code;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.modified_by = v.modified_by;
@@ -75,19 +77,13 @@ composite_instrument_mapper::map(const domain::composite_instrument& v) {
 std::vector<domain::composite_instrument>
 composite_instrument_mapper::map(const std::vector<composite_instrument_entity>& v) {
     return map_vector<composite_instrument_entity, domain::composite_instrument>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<composite_instrument_entity>
 composite_instrument_mapper::map(const std::vector<domain::composite_instrument>& v) {
     return map_vector<domain::composite_instrument, composite_instrument_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

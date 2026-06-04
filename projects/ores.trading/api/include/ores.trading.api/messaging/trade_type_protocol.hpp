@@ -20,9 +20,9 @@
 #ifndef ORES_TRADING_MESSAGING_TRADE_TYPE_PROTOCOL_HPP
 #define ORES_TRADING_MESSAGING_TRADE_TYPE_PROTOCOL_HPP
 
+#include "ores.trading.api/domain/trade_type.hpp"
 #include <string>
 #include <vector>
-#include "ores.trading.api/domain/trade_type.hpp"
 
 namespace ores::trading::messaging {
 

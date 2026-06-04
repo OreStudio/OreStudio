@@ -20,15 +20,16 @@
 #ifndef ORES_TRADING_REPOSITORY_BALANCE_GUARANTEED_SWAP_INSTRUMENT_MAPPER_HPP
 #define ORES_TRADING_REPOSITORY_BALANCE_GUARANTEED_SWAP_INSTRUMENT_MAPPER_HPP
 
-#include "ores.trading.api/domain/balance_guaranteed_swap_instrument.hpp"
-#include "ores.trading.core/repository/balance_guaranteed_swap_instrument_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.trading.api/domain/balance_guaranteed_swap_instrument.hpp"
 #include "ores.trading.core/export.hpp"
+#include "ores.trading.core/repository/balance_guaranteed_swap_instrument_entity.hpp"
 
 namespace ores::trading::repository {
 
 /**
- * @brief Maps balance_guaranteed_swap_instrument domain entities to data storage layer and vice-versa.
+ * @brief Maps balance_guaranteed_swap_instrument domain entities to data storage layer and
+ * vice-versa.
  */
 class ORES_TRADING_CORE_EXPORT balance_guaranteed_swap_instrument_mapper {
 private:
@@ -40,9 +41,12 @@ private:
         static auto instance = make_logger(logger_name);
         return instance;
     }
+
 public:
-    static domain::balance_guaranteed_swap_instrument map(const balance_guaranteed_swap_instrument_entity& v);
-    static balance_guaranteed_swap_instrument_entity map(const domain::balance_guaranteed_swap_instrument& v);
+    static domain::balance_guaranteed_swap_instrument
+    map(const balance_guaranteed_swap_instrument_entity& v);
+    static balance_guaranteed_swap_instrument_entity
+    map(const domain::balance_guaranteed_swap_instrument& v);
 
     static std::vector<domain::balance_guaranteed_swap_instrument>
     map(const std::vector<balance_guaranteed_swap_instrument_entity>& v);

@@ -20,25 +20,25 @@
 #ifndef ORES_TRADING_GENERATOR_BUSINESS_DAY_CONVENTION_TYPE_GENERATOR_HPP
 #define ORES_TRADING_GENERATOR_BUSINESS_DAY_CONVENTION_TYPE_GENERATOR_HPP
 
-#include <vector>
 #include "ores.trading.api/domain/business_day_convention_type.hpp"
-#include "ores.utility/generation/generation_context.hpp"
 #include "ores.trading.api/export.hpp"
+#include "ores.utility/generation/generation_context.hpp"
+#include <vector>
 
 namespace ores::trading::generator {
 
 /**
  * @brief Generates a synthetic business_day_convention_type.
  */
-ORES_TRADING_API_EXPORT domain::business_day_convention_type generate_synthetic_business_day_convention_type(
-    utility::generation::generation_context& ctx);
+ORES_TRADING_API_EXPORT domain::business_day_convention_type
+generate_synthetic_business_day_convention_type(utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic business_day_convention_types.
  */
 ORES_TRADING_API_EXPORT std::vector<domain::business_day_convention_type>
 generate_synthetic_business_day_convention_types(std::size_t n,
-    utility::generation::generation_context& ctx);
+                                                 utility::generation::generation_context& ctx);
 
 }
 

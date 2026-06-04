@@ -20,25 +20,24 @@
 #ifndef ORES_TRADING_GENERATOR_TRADE_GENERATOR_HPP
 #define ORES_TRADING_GENERATOR_TRADE_GENERATOR_HPP
 
-#include <vector>
 #include "ores.trading.api/domain/trade.hpp"
-#include "ores.utility/generation/generation_context.hpp"
 #include "ores.trading.api/export.hpp"
+#include "ores.utility/generation/generation_context.hpp"
+#include <vector>
 
 namespace ores::trading::generator {
 
 /**
  * @brief Generates a synthetic trade.
  */
-ORES_TRADING_API_EXPORT domain::trade generate_synthetic_trade(
-    utility::generation::generation_context& ctx);
+ORES_TRADING_API_EXPORT domain::trade
+generate_synthetic_trade(utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic trades.
  */
 ORES_TRADING_API_EXPORT std::vector<domain::trade>
-generate_synthetic_trades(std::size_t n,
-    utility::generation::generation_context& ctx);
+generate_synthetic_trades(std::size_t n, utility::generation::generation_context& ctx);
 
 }
 

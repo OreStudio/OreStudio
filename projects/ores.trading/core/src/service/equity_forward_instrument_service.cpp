@@ -18,9 +18,8 @@
  *
  */
 #include "ores.trading.core/service/equity_forward_instrument_service.hpp"
-
-#include <stdexcept>
 #include "ores.service/messaging/handler_helpers.hpp"
+#include <stdexcept>
 
 using ores::service::messaging::stamp;
 
@@ -32,12 +31,11 @@ equity_forward_instrument_service::equity_forward_instrument_service(context ctx
     : ctx_(std::move(ctx)) {}
 
 std::optional<domain::equity_forward_instrument>
-equity_forward_instrument_service::get_equity_forward_instrument(
-    const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug)
-        << "Getting equity_forward_instrument: " << id;
+equity_forward_instrument_service::get_equity_forward_instrument(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting equity_forward_instrument: " << id;
     auto results = repo_.read_latest(ctx_, id);
-    if (results.empty()) return std::nullopt;
+    if (results.empty())
+        return std::nullopt;
     return results.front();
 }
 
@@ -45,13 +43,11 @@ void equity_forward_instrument_service::save_equity_forward_instrument(
     const domain::equity_forward_instrument& v) {
     if (v.instrument_id.is_nil())
         throw std::invalid_argument("Equity forward instrument id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving equity_forward_instrument: "
-                               << v.instrument_id;
+    BOOST_LOG_SEV(lg(), debug) << "Saving equity_forward_instrument: " << v.instrument_id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved equity_forward_instrument: "
-                              << t.instrument_id;
+    BOOST_LOG_SEV(lg(), info) << "Saved equity_forward_instrument: " << t.instrument_id;
 }
 
 

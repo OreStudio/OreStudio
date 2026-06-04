@@ -17,16 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.trading.api/domain/trade_identifier.hpp"
-
-#include <sstream>
-#include <catch2/catch_test_macros.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
+#include "ores.trading.api/domain/trade_identifier.hpp"
 #include "ores.trading.api/domain/trade_identifier_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.api/domain/trade_identifier_table.hpp"
 #include "ores.trading.api/domain/trade_identifier_table_io.hpp" // IWYU pragma: keep.
+#include <boost/uuid/uuid_generators.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <sstream>
 
 namespace {
 
@@ -35,8 +34,7 @@ using ores::trading::domain::trade_identifier;
 const std::string_view test_suite("ores.trading.tests");
 const std::string tags("[domain]");
 
-trade_identifier make_trade_identifier(const std::string& id_type,
-    const std::string& id_value) {
+trade_identifier make_trade_identifier(const std::string& id_type, const std::string& id_value) {
     trade_identifier ti;
     ti.version = 1;
     ti.id = boost::uuids::random_generator()();
@@ -136,8 +134,8 @@ TEST_CASE("create_trade_identifier_with_faker", tags) {
     sut.version = faker::number::integer(1, 10);
     sut.id = boost::uuids::random_generator()();
     sut.trade_id = boost::uuids::random_generator()();
-    sut.id_value = std::string(faker::word::noun()) + "-" +
-        std::to_string(faker::number::integer(1000, 9999));
+    sut.id_value =
+        std::string(faker::word::noun()) + "-" + std::to_string(faker::number::integer(1000, 9999));
     sut.id_type = std::string(faker::word::noun());
     sut.modified_by = std::string(faker::internet::username());
     sut.performed_by = std::string(faker::internet::username());
@@ -157,8 +155,7 @@ TEST_CASE("create_multiple_random_trade_identifiers", tags) {
     auto lg(make_logger(test_suite));
 
     const std::vector<std::pair<std::string, std::string>> ids = {
-        {"UTI", "UTI-001"}, {"USI", "USI-002"},
-        {"Internal", "INT-003"}, {"CICI", "CICI-004"}};
+        {"UTI", "UTI-001"}, {"USI", "USI-002"}, {"Internal", "INT-003"}, {"CICI", "CICI-004"}};
     for (const auto& [id_type, id_value] : ids) {
         auto sut = make_trade_identifier(id_type, id_value);
         BOOST_LOG_SEV(lg, info) << "Trade identifier: " << sut;
@@ -170,8 +167,7 @@ TEST_CASE("create_multiple_random_trade_identifiers", tags) {
 TEST_CASE("trade_identifier_convert_single_to_table", tags) {
     auto lg(make_logger(test_suite));
 
-    std::vector<trade_identifier> items = {
-        make_trade_identifier("UTI", "UTI-2026-001")};
+    std::vector<trade_identifier> items = {make_trade_identifier("UTI", "UTI-2026-001")};
     auto table = convert_to_table(items);
 
     BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
@@ -184,8 +180,8 @@ TEST_CASE("trade_identifier_convert_multiple_to_table", tags) {
 
     std::vector<trade_identifier> items;
     for (int i = 0; i < 3; ++i)
-        items.push_back(make_trade_identifier("Type" + std::to_string(i),
-            "VAL-" + std::to_string(i)));
+        items.push_back(
+            make_trade_identifier("Type" + std::to_string(i), "VAL-" + std::to_string(i)));
 
     auto table = convert_to_table(items);
 

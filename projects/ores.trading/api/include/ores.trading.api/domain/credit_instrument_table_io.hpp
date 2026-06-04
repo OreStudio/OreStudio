@@ -20,17 +20,18 @@
 #ifndef ORES_TRADING_DOMAIN_CREDIT_INSTRUMENT_TABLE_IO_HPP
 #define ORES_TRADING_DOMAIN_CREDIT_INSTRUMENT_TABLE_IO_HPP
 
-#include <iosfwd>
-#include <vector>
 #include "ores.trading.api/domain/credit_instrument.hpp"
 #include "ores.trading.api/export.hpp"
+#include <iosfwd>
+#include <vector>
 
 namespace ores::trading::domain {
 
 /**
  * @brief Dumps credit_instruments to a stream in table format.
  */
-ORES_TRADING_API_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<credit_instrument>& v);
+ORES_TRADING_API_EXPORT std::ostream& operator<<(std::ostream& s,
+                                                 const std::vector<credit_instrument>& v);
 
 }
 

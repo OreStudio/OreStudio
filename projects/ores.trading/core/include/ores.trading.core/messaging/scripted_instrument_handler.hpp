@@ -20,24 +20,24 @@
 #ifndef ORES_TRADING_MESSAGING_SCRIPTED_INSTRUMENT_HANDLER_HPP
 #define ORES_TRADING_MESSAGING_SCRIPTED_INSTRUMENT_HANDLER_HPP
 
-#include <optional>
+#include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.database/domain/context.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include "ores.trading.api/messaging/instrument_protocol.hpp"
-#include "ores.trading.core/service/scripted_instrument_service.hpp"
 #include "ores.trading.core/export.hpp"
+#include "ores.trading.core/service/scripted_instrument_service.hpp"
+#include <optional>
 
 namespace ores::trading::messaging {
 
 namespace {
 inline auto& scripted_instrument_handler_lg() {
-    static auto instance = ores::logging::make_logger(
-        "ores.trading.messaging.scripted_instrument_handler");
+    static auto instance =
+        ores::logging::make_logger("ores.trading.messaging.scripted_instrument_handler");
     return instance;
 }
 } // namespace
@@ -51,15 +51,15 @@ using namespace ores::logging;
 class ORES_TRADING_CORE_EXPORT scripted_instrument_handler {
 public:
     scripted_instrument_handler(ores::nats::service::client& nats,
-        ores::database::context ctx,
-        std::optional<ores::security::jwt::jwt_authenticator> verifier)
-        : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier)) {}
+                                ores::database::context ctx,
+                                std::optional<ores::security::jwt::jwt_authenticator> verifier)
+        : nats_(nats)
+        , ctx_(std::move(ctx))
+        , verifier_(std::move(verifier)) {}
 
     void list(ores::nats::message msg) {
-        BOOST_LOG_SEV(scripted_instrument_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        BOOST_LOG_SEV(scripted_instrument_handler_lg(), debug) << "Handling " << msg.subject;
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -69,13 +69,10 @@ public:
         get_scripted_instruments_response resp;
         try {
             if (auto req = decode<get_scripted_instruments_request>(msg)) {
-                const auto offset =
-                    static_cast<std::uint32_t>(req->offset);
-                const auto limit =
-                    static_cast<std::uint32_t>(req->limit);
+                const auto offset = static_cast<std::uint32_t>(req->offset);
+                const auto limit = static_cast<std::uint32_t>(req->limit);
                 resp.instruments = svc.list_scripted_instruments(offset, limit);
-                resp.total_available_count =
-                    static_cast<int>(svc.count_scripted_instruments());
+                resp.total_available_count = static_cast<int>(svc.count_scripted_instruments());
             }
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(scripted_instrument_handler_lg(), error)
@@ -83,16 +80,13 @@ public:
             resp.success = false;
             resp.message = e.what();
         }
-        BOOST_LOG_SEV(scripted_instrument_handler_lg(), debug)
-            << "Completed " << msg.subject;
+        BOOST_LOG_SEV(scripted_instrument_handler_lg(), debug) << "Completed " << msg.subject;
         reply(nats_, msg, resp);
     }
 
     void save(ores::nats::message msg) {
-        BOOST_LOG_SEV(scripted_instrument_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        BOOST_LOG_SEV(scripted_instrument_handler_lg(), debug) << "Handling " << msg.subject;
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -112,8 +106,9 @@ public:
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(scripted_instrument_handler_lg(), error)
                     << msg.subject << " failed: " << e.what();
-                reply(nats_, msg, save_scripted_instrument_response{
-                    .success = false, .message = e.what()});
+                reply(nats_,
+                      msg,
+                      save_scripted_instrument_response{.success = false, .message = e.what()});
             }
         } else {
             BOOST_LOG_SEV(scripted_instrument_handler_lg(), warn)
@@ -122,10 +117,8 @@ public:
     }
 
     void remove(ores::nats::message msg) {
-        BOOST_LOG_SEV(scripted_instrument_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        BOOST_LOG_SEV(scripted_instrument_handler_lg(), debug) << "Handling " << msg.subject;
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -145,15 +138,13 @@ public:
                     resp.results.push_back({id, {true, ""}});
                 } catch (const std::exception& e) {
                     BOOST_LOG_SEV(scripted_instrument_handler_lg(), error)
-                        << "Failed to delete scripted_instrument " << id
-                        << ": " << e.what();
+                        << "Failed to delete scripted_instrument " << id << ": " << e.what();
                     resp.results.push_back({id, {false, e.what()}});
                     resp.success = false;
                     resp.message = "One or more deletions failed";
                 }
             }
-            BOOST_LOG_SEV(scripted_instrument_handler_lg(), debug)
-                << "Completed " << msg.subject;
+            BOOST_LOG_SEV(scripted_instrument_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, resp);
         } else {
             BOOST_LOG_SEV(scripted_instrument_handler_lg(), warn)
@@ -162,10 +153,8 @@ public:
     }
 
     void history(ores::nats::message msg) {
-        BOOST_LOG_SEV(scripted_instrument_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        BOOST_LOG_SEV(scripted_instrument_handler_lg(), debug) << "Handling " << msg.subject;
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return;
@@ -177,14 +166,17 @@ public:
                 auto versions = svc.get_scripted_instrument_history(req->id);
                 BOOST_LOG_SEV(scripted_instrument_handler_lg(), debug)
                     << "Completed " << msg.subject;
-                reply(nats_, msg, get_scripted_instrument_history_response{
-                    .success = true,
-                    .history = std::move(versions)});
+                reply(nats_,
+                      msg,
+                      get_scripted_instrument_history_response{.success = true,
+                                                               .history = std::move(versions)});
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(scripted_instrument_handler_lg(), error)
                     << msg.subject << " failed: " << e.what();
-                reply(nats_, msg, get_scripted_instrument_history_response{
-                    .success = false, .message = e.what()});
+                reply(nats_,
+                      msg,
+                      get_scripted_instrument_history_response{.success = false,
+                                                               .message = e.what()});
             }
         } else {
             BOOST_LOG_SEV(scripted_instrument_handler_lg(), warn)

@@ -18,23 +18,21 @@
  *
  */
 #include "ores.trading.api/domain/business_day_convention_type_table_io.hpp"
-
-#include <ostream>
 #include "ores.trading.api/domain/business_day_convention_type_table.hpp"
+#include <ostream>
 
 namespace ores::trading::domain {
 
 namespace {
 
-void print_business_day_convention_type_table(
-    std::ostream& s, const std::vector<business_day_convention_type>& v) {
+void print_business_day_convention_type_table(std::ostream& s,
+                                              const std::vector<business_day_convention_type>& v) {
     s << std::endl << convert_to_table(v) << std::endl;
 }
 
 }
 
-std::ostream& operator<<(std::ostream& s,
-    const std::vector<business_day_convention_type>& v) {
+std::ostream& operator<<(std::ostream& s, const std::vector<business_day_convention_type>& v) {
     print_business_day_convention_type_table(s, v);
     return s;
 }

@@ -20,13 +20,13 @@
 #ifndef ORES_TRADING_REPOSITORY_EQUITY_DIGITAL_OPTION_INSTRUMENT_REPOSITORY_HPP
 #define ORES_TRADING_REPOSITORY_EQUITY_DIGITAL_OPTION_INSTRUMENT_REPOSITORY_HPP
 
-#include <string>
-#include <vector>
-#include <sqlgen/postgres.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/equity_digital_option_instrument.hpp"
 #include "ores.trading.core/export.hpp"
+#include <sqlgen/postgres.hpp>
+#include <string>
+#include <vector>
 
 namespace ores::trading::repository {
 

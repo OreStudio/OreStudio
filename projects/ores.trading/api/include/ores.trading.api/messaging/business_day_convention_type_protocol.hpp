@@ -20,15 +20,16 @@
 #ifndef ORES_TRADING_MESSAGING_BUSINESS_DAY_CONVENTION_TYPE_PROTOCOL_HPP
 #define ORES_TRADING_MESSAGING_BUSINESS_DAY_CONVENTION_TYPE_PROTOCOL_HPP
 
+#include "ores.trading.api/domain/business_day_convention_type.hpp"
 #include <string>
 #include <vector>
-#include "ores.trading.api/domain/business_day_convention_type.hpp"
 
 namespace ores::trading::messaging {
 
 struct get_business_day_convention_types_request {
     using response_type = struct get_business_day_convention_types_response;
-    static constexpr std::string_view nats_subject = "trading.v1.business-day-convention-types.list";
+    static constexpr std::string_view nats_subject =
+        "trading.v1.business-day-convention-types.list";
     int offset = 0;
     int limit = 100;
 };
@@ -40,7 +41,8 @@ struct get_business_day_convention_types_response {
 
 struct save_business_day_convention_type_request {
     using response_type = struct save_business_day_convention_type_response;
-    static constexpr std::string_view nats_subject = "trading.v1.business-day-convention-types.save";
+    static constexpr std::string_view nats_subject =
+        "trading.v1.business-day-convention-types.save";
     ores::trading::domain::business_day_convention_type data;
 };
 
@@ -51,7 +53,8 @@ struct save_business_day_convention_type_response {
 
 struct delete_business_day_convention_type_request {
     using response_type = struct delete_business_day_convention_type_response;
-    static constexpr std::string_view nats_subject = "trading.v1.business-day-convention-types.delete";
+    static constexpr std::string_view nats_subject =
+        "trading.v1.business-day-convention-types.delete";
     std::vector<std::string> codes;
 };
 
@@ -62,7 +65,8 @@ struct delete_business_day_convention_type_response {
 
 struct get_business_day_convention_type_history_request {
     using response_type = struct get_business_day_convention_type_history_response;
-    static constexpr std::string_view nats_subject = "trading.v1.business-day-convention-types.history";
+    static constexpr std::string_view nats_subject =
+        "trading.v1.business-day-convention-types.history";
     std::string code;
 };
 

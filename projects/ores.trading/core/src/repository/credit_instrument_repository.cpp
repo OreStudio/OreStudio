@@ -18,15 +18,14 @@
  *
  */
 #include "ores.trading.core/repository/credit_instrument_repository.hpp"
-
-#include <sqlgen/postgres.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
 #include "ores.trading.api/domain/credit_instrument_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/credit_instrument_entity.hpp"
 #include "ores.trading.core/repository/credit_instrument_mapper.hpp"
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <sqlgen/postgres.hpp>
 
 namespace ores::trading::repository {
 
@@ -39,52 +38,50 @@ std::string credit_instrument_repository::sql() {
     return generate_create_table_sql<credit_instrument_entity>(lg());
 }
 
-void credit_instrument_repository::write(context ctx,
-    const domain::credit_instrument& v) {
+void credit_instrument_repository::write(context ctx, const domain::credit_instrument& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing credit_instrument: " << v.instrument_id;
-    execute_write_query(ctx, credit_instrument_mapper::map(v),
-        lg(), "Writing credit_instrument to database.");
+    execute_write_query(
+        ctx, credit_instrument_mapper::map(v), lg(), "Writing credit_instrument to database.");
 }
 
-void credit_instrument_repository::write(
-    context ctx, const std::vector<domain::credit_instrument>& v) {
+void credit_instrument_repository::write(context ctx,
+                                         const std::vector<domain::credit_instrument>& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing credit_instruments. Count: " << v.size();
-    execute_write_query(ctx, credit_instrument_mapper::map(v),
-        lg(), "Writing credit_instruments to database.");
+    execute_write_query(
+        ctx, credit_instrument_mapper::map(v), lg(), "Writing credit_instruments to database.");
 }
 
-std::vector<domain::credit_instrument>
-credit_instrument_repository::read_latest(context ctx) {
+std::vector<domain::credit_instrument> credit_instrument_repository::read_latest(context ctx) {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<credit_instrument_entity>> |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-        order_by("id"_c);
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("id"_c);
 
     return execute_read_query<credit_instrument_entity, domain::credit_instrument>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return credit_instrument_mapper::map(entities); },
-        lg(), "Reading latest credit_instruments");
+        lg(),
+        "Reading latest credit_instruments");
 }
 
 std::vector<domain::credit_instrument>
-credit_instrument_repository::read_latest(context ctx, std::uint32_t offset,
-    std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug)
-        << "Reading latest credit_instruments with offset: "
-        << offset << " and limit: " << limit;
+credit_instrument_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest credit_instruments with offset: " << offset
+                               << " and limit: " << limit;
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<credit_instrument_entity>> |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-        order_by("id"_c) |
-        sqlgen::offset(offset) |
-        sqlgen::limit(limit);
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_read_query<credit_instrument_entity, domain::credit_instrument>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return credit_instrument_mapper::map(entities); },
-        lg(), "Reading latest credit_instruments with pagination");
+        lg(),
+        "Reading latest credit_instruments with pagination");
 }
 
 std::uint32_t credit_instrument_repository::count_latest(context ctx) {
@@ -96,10 +93,9 @@ std::uint32_t credit_instrument_repository::count_latest(context ctx) {
         long long count;
     };
 
-    const auto query = sqlgen::select_from<credit_instrument_entity>(
-        sqlgen::count().as<"count">()) |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-        sqlgen::to<count_result>;
+    const auto query =
+        sqlgen::select_from<credit_instrument_entity>(sqlgen::count().as<"count">()) |
+        where("tenant_id"_c == tid && "valid_to"_c == max.value()) | sqlgen::to<count_result>;
 
     const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
     ensure_success(r, lg());
@@ -115,27 +111,29 @@ credit_instrument_repository::read_latest(context ctx, const std::string& id) {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<credit_instrument_entity>> |
-        where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
     return execute_read_query<credit_instrument_entity, domain::credit_instrument>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return credit_instrument_mapper::map(entities); },
-        lg(), "Reading latest credit_instrument by id.");
+        lg(),
+        "Reading latest credit_instrument by id.");
 }
 
 std::vector<domain::credit_instrument>
 credit_instrument_repository::read_all(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug)
-        << "Reading all credit_instrument versions. id: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all credit_instrument versions. id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<credit_instrument_entity>> |
-        where("tenant_id"_c == tid && "id"_c == id) |
-        order_by("version"_c.desc());
+                       where("tenant_id"_c == tid && "id"_c == id) | order_by("version"_c.desc());
 
     return execute_read_query<credit_instrument_entity, domain::credit_instrument>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return credit_instrument_mapper::map(entities); },
-        lg(), "Reading all credit_instrument versions by id.");
+        lg(),
+        "Reading all credit_instrument versions by id.");
 }
 
 void credit_instrument_repository::remove(context ctx, const std::string& id) {
@@ -143,25 +141,26 @@ void credit_instrument_repository::remove(context ctx, const std::string& id) {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<credit_instrument_entity> |
-        where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
     execute_delete_query(ctx, query, lg(), "Removing credit_instrument from database.");
 }
 
 
 std::vector<domain::credit_instrument>
-credit_instrument_repository::read_latest(
-    context ctx, const std::vector<std::string>& ids) {
-    if (ids.empty()) return {};
+credit_instrument_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+    if (ids.empty())
+        return {};
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<credit_instrument_entity>> |
-        where("tenant_id"_c == tid && "id"_c.in(ids)
-              && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
     return execute_read_query<credit_instrument_entity, domain::credit_instrument>(
-        ctx, query,
+        ctx,
+        query,
         [](const auto& entities) { return credit_instrument_mapper::map(entities); },
-        lg(), "Reading latest credit_instruments by ids.");
+        lg(),
+        "Reading latest credit_instruments by ids.");
 }
 
 }

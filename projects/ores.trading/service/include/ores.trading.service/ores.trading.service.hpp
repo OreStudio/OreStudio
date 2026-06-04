@@ -23,7 +23,8 @@
 /**
  * @brief Trade booking and lifecycle service
  *
- * Standalone NATS microservice hosting trading handlers: trade booking, FSM-enforced status transitions, activity type taxonomy, and temporal versioning.
+ * Standalone NATS microservice hosting trading handlers: trade booking, FSM-enforced status
+ * transitions, activity type taxonomy, and temporal versioning.
  */
 namespace ores::trading.service {}
 

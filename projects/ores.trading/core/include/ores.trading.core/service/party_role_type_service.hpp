@@ -20,14 +20,14 @@
 #ifndef ORES_TRADING_SERVICE_PARTY_ROLE_TYPE_SERVICE_HPP
 #define ORES_TRADING_SERVICE_PARTY_ROLE_TYPE_SERVICE_HPP
 
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.trading.api/domain/party_role_type.hpp"
+#include "ores.trading.core/export.hpp"
+#include "ores.trading.core/repository/party_role_type_repository.hpp"
+#include <optional>
 #include <string>
 #include <vector>
-#include <optional>
-#include "ores.logging/make_logger.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.trading.api/domain/party_role_type.hpp"
-#include "ores.trading.core/repository/party_role_type_repository.hpp"
-#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::service {
 
@@ -36,8 +36,7 @@ namespace ores::trading::service {
  */
 class ORES_TRADING_CORE_EXPORT party_role_type_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.trading.service.party_role_type_service";
+    inline static std::string_view logger_name = "ores.trading.service.party_role_type_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -52,8 +51,7 @@ public:
 
     std::vector<domain::party_role_type> list_role_types();
 
-    std::optional<domain::party_role_type>
-    find_role_type(const std::string& code);
+    std::optional<domain::party_role_type> find_role_type(const std::string& code);
 
     void save_role_type(const domain::party_role_type& v);
 
@@ -66,8 +64,7 @@ public:
      */
     void remove_role_types(const std::vector<std::string>& codes);
 
-    std::vector<domain::party_role_type>
-    get_role_type_history(const std::string& code);
+    std::vector<domain::party_role_type> get_role_type_history(const std::string& code);
 
 private:
     context ctx_;

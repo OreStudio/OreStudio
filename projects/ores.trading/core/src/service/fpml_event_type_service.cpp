@@ -18,7 +18,6 @@
  *
  */
 #include "ores.trading.core/service/fpml_event_type_service.hpp"
-
 #include <stdexcept>
 
 namespace ores::trading::service {
@@ -33,11 +32,11 @@ std::vector<domain::fpml_event_type> fpml_event_type_service::list_types() {
     return repo_.read_latest(ctx_);
 }
 
-std::optional<domain::fpml_event_type>
-fpml_event_type_service::find_type(const std::string& code) {
+std::optional<domain::fpml_event_type> fpml_event_type_service::find_type(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Finding FpML event type: " << code;
     auto results = repo_.read_latest(ctx_, code);
-    if (results.empty()) return std::nullopt;
+    if (results.empty())
+        return std::nullopt;
     return results.front();
 }
 
@@ -49,8 +48,7 @@ void fpml_event_type_service::save_type(const domain::fpml_event_type& v) {
     BOOST_LOG_SEV(lg(), info) << "Saved FpML event type: " << v.code;
 }
 
-void fpml_event_type_service::save_types(
-    const std::vector<domain::fpml_event_type>& v) {
+void fpml_event_type_service::save_types(const std::vector<domain::fpml_event_type>& v) {
     for (const auto& e : v) {
         if (e.code.empty())
             throw std::invalid_argument("FpML Event Type code cannot be empty.");

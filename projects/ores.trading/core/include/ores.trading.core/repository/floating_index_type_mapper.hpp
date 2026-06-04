@@ -20,10 +20,10 @@
 #ifndef ORES_TRADING_REPOSITORY_FLOATING_INDEX_TYPE_MAPPER_HPP
 #define ORES_TRADING_REPOSITORY_FLOATING_INDEX_TYPE_MAPPER_HPP
 
-#include "ores.trading.api/domain/floating_index_type.hpp"
-#include "ores.trading.core/repository/floating_index_type_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.trading.api/domain/floating_index_type.hpp"
 #include "ores.trading.core/export.hpp"
+#include "ores.trading.core/repository/floating_index_type_entity.hpp"
 
 namespace ores::trading::repository {
 
@@ -40,6 +40,7 @@ private:
         static auto instance = make_logger(logger_name);
         return instance;
     }
+
 public:
     static domain::floating_index_type map(const floating_index_type_entity& v);
     static floating_index_type_entity map(const domain::floating_index_type& v);

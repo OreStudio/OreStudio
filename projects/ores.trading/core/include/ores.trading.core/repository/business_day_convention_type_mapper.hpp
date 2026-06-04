@@ -20,10 +20,10 @@
 #ifndef ORES_TRADING_REPOSITORY_BUSINESS_DAY_CONVENTION_TYPE_MAPPER_HPP
 #define ORES_TRADING_REPOSITORY_BUSINESS_DAY_CONVENTION_TYPE_MAPPER_HPP
 
-#include "ores.trading.api/domain/business_day_convention_type.hpp"
-#include "ores.trading.core/repository/business_day_convention_type_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.trading.api/domain/business_day_convention_type.hpp"
 #include "ores.trading.core/export.hpp"
+#include "ores.trading.core/repository/business_day_convention_type_entity.hpp"
 
 namespace ores::trading::repository {
 
@@ -40,6 +40,7 @@ private:
         static auto instance = make_logger(logger_name);
         return instance;
     }
+
 public:
     static domain::business_day_convention_type map(const business_day_convention_type_entity& v);
     static business_day_convention_type_entity map(const domain::business_day_convention_type& v);

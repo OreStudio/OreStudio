@@ -20,26 +20,24 @@
 #ifndef ORES_TRADING_DOMAIN_FX_INSTRUMENT_VARIANT_HPP
 #define ORES_TRADING_DOMAIN_FX_INSTRUMENT_VARIANT_HPP
 
-#include <variant>
-#include "ores.trading.api/domain/fx_forward_instrument.hpp"
-#include "ores.trading.api/domain/fx_vanilla_option_instrument.hpp"
+#include "ores.trading.api/domain/fx_accumulator_instrument.hpp"
+#include "ores.trading.api/domain/fx_asian_forward_instrument.hpp"
 #include "ores.trading.api/domain/fx_barrier_option_instrument.hpp"
 #include "ores.trading.api/domain/fx_digital_option_instrument.hpp"
-#include "ores.trading.api/domain/fx_asian_forward_instrument.hpp"
-#include "ores.trading.api/domain/fx_accumulator_instrument.hpp"
+#include "ores.trading.api/domain/fx_forward_instrument.hpp"
+#include "ores.trading.api/domain/fx_vanilla_option_instrument.hpp"
 #include "ores.trading.api/domain/fx_variance_swap_instrument.hpp"
+#include <variant>
 
 namespace ores::trading::domain {
 
-using fx_instrument_variant = std::variant<
-    fx_forward_instrument,
-    fx_vanilla_option_instrument,
-    fx_barrier_option_instrument,
-    fx_digital_option_instrument,
-    fx_asian_forward_instrument,
-    fx_accumulator_instrument,
-    fx_variance_swap_instrument
->;
+using fx_instrument_variant = std::variant<fx_forward_instrument,
+                                           fx_vanilla_option_instrument,
+                                           fx_barrier_option_instrument,
+                                           fx_digital_option_instrument,
+                                           fx_asian_forward_instrument,
+                                           fx_accumulator_instrument,
+                                           fx_variance_swap_instrument>;
 
 } // namespace ores::trading::domain
 

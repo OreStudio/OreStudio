@@ -18,7 +18,6 @@
  *
  */
 #include "ores.trading.api/domain/trade_type_table.hpp"
-
 #include <fort.hpp>
 
 namespace ores::trading::domain {
@@ -27,16 +26,12 @@ std::string convert_to_table(const std::vector<trade_type>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header
-          << "Code" << "Product" << "Opts" << "Ext" << "Description"
-          << "Modified By" << "Version"
-          << fort::endr;
+    table << fort::header << "Code" << "Product" << "Opts" << "Ext" << "Description"
+          << "Modified By" << "Version" << fort::endr;
 
     for (const auto& tt : v) {
-        table << tt.code << std::string(to_string(tt.product_type))
-              << (tt.has_options ? "Y" : "")
-              << (tt.has_extension ? "Y" : "")
-              << tt.description << tt.modified_by << tt.version
+        table << tt.code << std::string(to_string(tt.product_type)) << (tt.has_options ? "Y" : "")
+              << (tt.has_extension ? "Y" : "") << tt.description << tt.modified_by << tt.version
               << fort::endr;
     }
     return table.to_string();

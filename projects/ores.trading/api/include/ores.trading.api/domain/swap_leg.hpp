@@ -20,10 +20,10 @@
 #ifndef ORES_TRADING_DOMAIN_SWAP_LEG_HPP
 #define ORES_TRADING_DOMAIN_SWAP_LEG_HPP
 
-#include <string>
-#include <boost/uuid/uuid.hpp>
-#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.utility/domain/audit_record.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <string>
 
 namespace ores::trading::domain {
 
@@ -64,8 +64,8 @@ struct swap_leg_terms final {
  * JSON wire format is nested: {"identity":{...},"terms":{...},"audit":{...}}.
  */
 struct swap_leg final {
-    swap_leg_identity             identity;
-    swap_leg_terms                terms;
+    swap_leg_identity identity;
+    swap_leg_terms terms;
     utility::domain::audit_record audit;
 };
 

@@ -17,20 +17,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.logging/make_logger.hpp"
+#include "ores.trading.api/generator/lifecycle_event_generator.hpp"
+#include "ores.trading.api/generator/trade_identifier_generator.hpp"
 #include "ores.trading.api/generators/activity_type_generator.hpp"
 #include "ores.trading.api/generators/fpml_event_type_generator.hpp"
-#include "ores.trading.api/generator/lifecycle_event_generator.hpp"
 #include "ores.trading.api/generators/party_role_type_generator.hpp"
 #include "ores.trading.api/generators/trade_generator.hpp"
 #include "ores.trading.api/generators/trade_id_type_generator.hpp"
-#include "ores.trading.api/generator/trade_identifier_generator.hpp"
 #include "ores.trading.api/generators/trade_party_role_generator.hpp"
 #include "ores.trading.api/generators/trade_type_generator.hpp"
-
-#include <catch2/catch_test_macros.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include "ores.logging/make_logger.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 

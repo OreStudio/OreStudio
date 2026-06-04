@@ -20,10 +20,10 @@
 #ifndef ORES_TRADING_REPOSITORY_DAY_COUNT_FRACTION_TYPE_MAPPER_HPP
 #define ORES_TRADING_REPOSITORY_DAY_COUNT_FRACTION_TYPE_MAPPER_HPP
 
-#include "ores.trading.api/domain/day_count_fraction_type.hpp"
-#include "ores.trading.core/repository/day_count_fraction_type_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.trading.api/domain/day_count_fraction_type.hpp"
 #include "ores.trading.core/export.hpp"
+#include "ores.trading.core/repository/day_count_fraction_type_entity.hpp"
 
 namespace ores::trading::repository {
 
@@ -40,6 +40,7 @@ private:
         static auto instance = make_logger(logger_name);
         return instance;
     }
+
 public:
     static domain::day_count_fraction_type map(const day_count_fraction_type_entity& v);
     static day_count_fraction_type_entity map(const domain::day_count_fraction_type& v);

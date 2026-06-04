@@ -18,7 +18,6 @@
  *
  */
 #include "ores.trading.api/domain/bond_instrument_table.hpp"
-
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
 
@@ -28,23 +27,14 @@ std::string convert_to_table(const std::vector<bond_instrument>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header
-          << "ID" << "Type" << "Issuer" << "Currency"
+    table << fort::header << "ID" << "Type" << "Issuer" << "Currency"
           << "Face Value" << "Coupon Rate" << "Maturity"
-          << "Modified By" << "Version"
-          << fort::endr;
+          << "Modified By" << "Version" << fort::endr;
 
     for (const auto& t : v) {
-        table << boost::uuids::to_string(t.instrument_id)
-              << t.trade_type_code
-              << t.issuer
-              << t.currency
-              << std::to_string(t.face_value)
-              << std::to_string(t.coupon_rate)
-              << t.maturity_date
-              << t.modified_by
-              << t.version
-              << fort::endr;
+        table << boost::uuids::to_string(t.instrument_id) << t.trade_type_code << t.issuer
+              << t.currency << std::to_string(t.face_value) << std::to_string(t.coupon_rate)
+              << t.maturity_date << t.modified_by << t.version << fort::endr;
     }
     return table.to_string();
 }

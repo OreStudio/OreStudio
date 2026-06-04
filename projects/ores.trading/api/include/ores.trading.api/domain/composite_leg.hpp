@@ -20,10 +20,10 @@
 #ifndef ORES_TRADING_DOMAIN_COMPOSITE_LEG_HPP
 #define ORES_TRADING_DOMAIN_COMPOSITE_LEG_HPP
 
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <string>
-#include <boost/uuid/uuid.hpp>
-#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::trading::domain {
 

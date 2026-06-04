@@ -20,25 +20,25 @@
 #ifndef ORES_TRADING_GENERATOR_PAYMENT_FREQUENCY_TYPE_GENERATOR_HPP
 #define ORES_TRADING_GENERATOR_PAYMENT_FREQUENCY_TYPE_GENERATOR_HPP
 
-#include <vector>
 #include "ores.trading.api/domain/payment_frequency_type.hpp"
-#include "ores.utility/generation/generation_context.hpp"
 #include "ores.trading.api/export.hpp"
+#include "ores.utility/generation/generation_context.hpp"
+#include <vector>
 
 namespace ores::trading::generator {
 
 /**
  * @brief Generates a synthetic payment_frequency_type.
  */
-ORES_TRADING_API_EXPORT domain::payment_frequency_type generate_synthetic_payment_frequency_type(
-    utility::generation::generation_context& ctx);
+ORES_TRADING_API_EXPORT domain::payment_frequency_type
+generate_synthetic_payment_frequency_type(utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic payment_frequency_types.
  */
 ORES_TRADING_API_EXPORT std::vector<domain::payment_frequency_type>
 generate_synthetic_payment_frequency_types(std::size_t n,
-    utility::generation::generation_context& ctx);
+                                           utility::generation::generation_context& ctx);
 
 }
 

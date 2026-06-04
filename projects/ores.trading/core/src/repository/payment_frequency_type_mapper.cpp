@@ -18,7 +18,6 @@
  *
  */
 #include "ores.trading.core/repository/payment_frequency_type_mapper.hpp"
-
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.trading.api/domain/payment_frequency_type_json_io.hpp" // IWYU pragma: keep.
 
@@ -67,19 +66,13 @@ payment_frequency_type_mapper::map(const domain::payment_frequency_type& v) {
 std::vector<domain::payment_frequency_type>
 payment_frequency_type_mapper::map(const std::vector<payment_frequency_type_entity>& v) {
     return map_vector<payment_frequency_type_entity, domain::payment_frequency_type>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<payment_frequency_type_entity>
 payment_frequency_type_mapper::map(const std::vector<domain::payment_frequency_type>& v) {
     return map_vector<domain::payment_frequency_type, payment_frequency_type_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

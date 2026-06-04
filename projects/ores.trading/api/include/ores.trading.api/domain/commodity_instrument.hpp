@@ -20,11 +20,11 @@
 #ifndef ORES_TRADING_DOMAIN_COMMODITY_INSTRUMENT_HPP
 #define ORES_TRADING_DOMAIN_COMMODITY_INSTRUMENT_HPP
 
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <optional>
 #include <string>
-#include <boost/uuid/uuid.hpp>
-#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::trading::domain {
 

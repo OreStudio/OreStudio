@@ -20,13 +20,13 @@
 #ifndef ORES_TRADING_SERVICE_EQUITY_BARRIER_OPTION_INSTRUMENT_SERVICE_HPP
 #define ORES_TRADING_SERVICE_EQUITY_BARRIER_OPTION_INSTRUMENT_SERVICE_HPP
 
-#include <string>
-#include <optional>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/equity_barrier_option_instrument.hpp"
-#include "ores.trading.core/repository/equity_barrier_option_instrument_repository.hpp"
 #include "ores.trading.core/export.hpp"
+#include "ores.trading.core/repository/equity_barrier_option_instrument_repository.hpp"
+#include <optional>
+#include <string>
 
 namespace ores::trading::service {
 

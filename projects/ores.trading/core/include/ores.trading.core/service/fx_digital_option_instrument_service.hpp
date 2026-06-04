@@ -20,13 +20,13 @@
 #ifndef ORES_TRADING_SERVICE_FX_DIGITAL_OPTION_INSTRUMENT_SERVICE_HPP
 #define ORES_TRADING_SERVICE_FX_DIGITAL_OPTION_INSTRUMENT_SERVICE_HPP
 
-#include <string>
-#include <optional>
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/fx_digital_option_instrument.hpp"
-#include "ores.trading.core/repository/fx_digital_option_instrument_repository.hpp"
 #include "ores.trading.core/export.hpp"
+#include "ores.trading.core/repository/fx_digital_option_instrument_repository.hpp"
+#include <optional>
+#include <string>
 
 namespace ores::trading::service {
 
@@ -49,8 +49,7 @@ public:
     std::optional<domain::fx_digital_option_instrument>
     get_fx_digital_option_instrument(const std::string& id);
 
-    void save_fx_digital_option_instrument(
-        const domain::fx_digital_option_instrument& v);
+    void save_fx_digital_option_instrument(const domain::fx_digital_option_instrument& v);
 
     std::vector<domain::fx_digital_option_instrument>
     get_fx_digital_option_instruments(const std::vector<std::string>& ids);

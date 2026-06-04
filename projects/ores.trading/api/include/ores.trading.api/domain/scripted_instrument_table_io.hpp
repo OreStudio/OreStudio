@@ -20,17 +20,18 @@
 #ifndef ORES_TRADING_DOMAIN_SCRIPTED_INSTRUMENT_TABLE_IO_HPP
 #define ORES_TRADING_DOMAIN_SCRIPTED_INSTRUMENT_TABLE_IO_HPP
 
-#include <iosfwd>
-#include <vector>
 #include "ores.trading.api/domain/scripted_instrument.hpp"
 #include "ores.trading.api/export.hpp"
+#include <iosfwd>
+#include <vector>
 
 namespace ores::trading::domain {
 
 /**
  * @brief Dumps scripted_instruments to a stream in table format.
  */
-ORES_TRADING_API_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<scripted_instrument>& v);
+ORES_TRADING_API_EXPORT std::ostream& operator<<(std::ostream& s,
+                                                 const std::vector<scripted_instrument>& v);
 
 }
 

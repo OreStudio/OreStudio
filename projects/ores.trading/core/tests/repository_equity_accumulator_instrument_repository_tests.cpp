@@ -17,14 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.logging/make_logger.hpp"
+#include "ores.testing/database_helper.hpp"
+#include "ores.trading.api/domain/equity_accumulator_instrument_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/equity_accumulator_instrument_repository.hpp"
-
-#include <catch2/catch_test_macros.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include "ores.logging/make_logger.hpp"
-#include "ores.trading.api/domain/equity_accumulator_instrument_json_io.hpp" // IWYU pragma: keep.
-#include "ores.testing/database_helper.hpp"
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 
@@ -44,24 +43,24 @@ using namespace ores::logging;
  */
 equity_accumulator_instrument make_instrument(database_helper& h) {
     equity_accumulator_instrument r;
-    r.instrument_id      = boost::uuids::random_generator()();
-    r.tenant_id          = h.tenant_id();
-    r.trade_type_code    = "EquityAccumulator";
-    r.underlying_name    = ".STOXX50";
-    r.currency           = "EUR";
-    r.strike             = 4000.0;
-    r.fixing_amount      = 30.0;
-    r.start_date         = "2025-02-05";
-    r.expiry_date        = "2026-02-05";
-    r.fixing_frequency   = "Monthly";
-    r.long_short         = "Long";
-    r.knock_out_level    = 3500.0;
-    r.target_type        = "";
-    r.payoff_type        = "Decumulator";
-    r.modified_by        = h.db_user();
-    r.performed_by       = "ores";
+    r.instrument_id = boost::uuids::random_generator()();
+    r.tenant_id = h.tenant_id();
+    r.trade_type_code = "EquityAccumulator";
+    r.underlying_name = ".STOXX50";
+    r.currency = "EUR";
+    r.strike = 4000.0;
+    r.fixing_amount = 30.0;
+    r.start_date = "2025-02-05";
+    r.expiry_date = "2026-02-05";
+    r.fixing_frequency = "Monthly";
+    r.long_short = "Long";
+    r.knock_out_level = 3500.0;
+    r.target_type = "";
+    r.payoff_type = "Decumulator";
+    r.modified_by = h.db_user();
+    r.performed_by = "ores";
     r.change_reason_code = "system.external_data_import";
-    r.change_commentary  = "Imported from ORE XML";
+    r.change_commentary = "Imported from ORE XML";
     return r;
 }
 

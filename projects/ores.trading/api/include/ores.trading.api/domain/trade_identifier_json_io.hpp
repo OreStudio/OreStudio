@@ -20,9 +20,9 @@
 #ifndef ORES_TRADING_DOMAIN_TRADE_IDENTIFIER_JSON_IO_HPP
 #define ORES_TRADING_DOMAIN_TRADE_IDENTIFIER_JSON_IO_HPP
 
-#include <iosfwd>
 #include "ores.trading.api/domain/trade_identifier.hpp"
 #include "ores.trading.api/export.hpp"
+#include <iosfwd>
 
 namespace ores::trading::domain {
 

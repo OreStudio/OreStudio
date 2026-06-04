@@ -20,10 +20,10 @@
 #ifndef ORES_TRADING_DOMAIN_PAYMENT_FREQUENCY_TYPE_TABLE_HPP
 #define ORES_TRADING_DOMAIN_PAYMENT_FREQUENCY_TYPE_TABLE_HPP
 
-#include <string>
-#include <vector>
 #include "ores.trading.api/domain/payment_frequency_type.hpp"
 #include "ores.trading.api/export.hpp"
+#include <string>
+#include <vector>
 
 namespace ores::trading::domain {
 

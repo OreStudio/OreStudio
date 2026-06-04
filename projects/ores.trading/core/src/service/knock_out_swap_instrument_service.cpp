@@ -18,10 +18,9 @@
  *
  */
 #include "ores.trading.core/service/knock_out_swap_instrument_service.hpp"
-
+#include "ores.service/messaging/handler_helpers.hpp"
 #include <algorithm>
 #include <stdexcept>
-#include "ores.service/messaging/handler_helpers.hpp"
 
 using ores::service::messaging::stamp;
 
@@ -29,8 +28,7 @@ namespace ores::trading::service {
 
 using namespace ores::logging;
 
-knock_out_swap_instrument_service::knock_out_swap_instrument_service(
-    context ctx)
+knock_out_swap_instrument_service::knock_out_swap_instrument_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
 std::vector<domain::knock_out_swap_instrument>
@@ -40,58 +38,50 @@ knock_out_swap_instrument_service::list_knock_out_swap_instruments() {
 }
 
 std::vector<domain::knock_out_swap_instrument>
-knock_out_swap_instrument_service::list_knock_out_swap_instruments(
-    std::uint32_t offset, std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug)
-        << "Listing knock_out_swap_instruments with offset="
-        << offset << ", limit=" << limit;
+knock_out_swap_instrument_service::list_knock_out_swap_instruments(std::uint32_t offset,
+                                                                   std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing knock_out_swap_instruments with offset=" << offset
+                               << ", limit=" << limit;
     auto all = repo_.read_latest(ctx_);
     const auto begin = std::min(static_cast<std::size_t>(offset), all.size());
     const auto end = std::min(begin + static_cast<std::size_t>(limit), all.size());
     return {all.begin() + begin, all.begin() + end};
 }
 
-std::uint32_t
-knock_out_swap_instrument_service::count_knock_out_swap_instruments() {
+std::uint32_t knock_out_swap_instrument_service::count_knock_out_swap_instruments() {
     BOOST_LOG_SEV(lg(), debug) << "Counting knock_out_swap_instruments";
     return static_cast<std::uint32_t>(repo_.read_latest(ctx_).size());
 }
 
 std::optional<domain::knock_out_swap_instrument>
-knock_out_swap_instrument_service::get_knock_out_swap_instrument(
-    const std::string& id) {
+knock_out_swap_instrument_service::get_knock_out_swap_instrument(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting knock_out_swap_instrument: " << id;
     auto results = repo_.read_latest(ctx_, id);
-    if (results.empty()) return std::nullopt;
+    if (results.empty())
+        return std::nullopt;
     return results.front();
 }
 
 void knock_out_swap_instrument_service::save_knock_out_swap_instrument(
     const domain::knock_out_swap_instrument& v) {
     if (v.identity.instrument_id.is_nil())
-        throw std::invalid_argument(
-            "Knock-out swap instrument id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving knock_out_swap_instrument: "
-                               << v.identity.instrument_id;
+        throw std::invalid_argument("Knock-out swap instrument id cannot be empty.");
+    BOOST_LOG_SEV(lg(), debug) << "Saving knock_out_swap_instrument: " << v.identity.instrument_id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved knock_out_swap_instrument: "
-                              << t.identity.instrument_id;
+    BOOST_LOG_SEV(lg(), info) << "Saved knock_out_swap_instrument: " << t.identity.instrument_id;
 }
 
-void knock_out_swap_instrument_service::remove_knock_out_swap_instrument(
-    const std::string& id) {
+void knock_out_swap_instrument_service::remove_knock_out_swap_instrument(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing knock_out_swap_instrument: " << id;
     repo_.remove(ctx_, id);
     BOOST_LOG_SEV(lg(), info) << "Removed knock_out_swap_instrument: " << id;
 }
 
 std::vector<domain::knock_out_swap_instrument>
-knock_out_swap_instrument_service::get_knock_out_swap_instrument_history(
-    const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug)
-        << "Getting history for knock_out_swap_instrument: " << id;
+knock_out_swap_instrument_service::get_knock_out_swap_instrument_history(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for knock_out_swap_instrument: " << id;
     return repo_.read_all(ctx_, id);
 }
 

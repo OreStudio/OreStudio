@@ -17,14 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.logging/make_logger.hpp"
+#include "ores.testing/database_helper.hpp"
+#include "ores.trading.api/domain/fx_forward_instrument_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/fx_forward_instrument_repository.hpp"
-
-#include <catch2/catch_test_macros.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include "ores.logging/make_logger.hpp"
-#include "ores.trading.api/domain/fx_forward_instrument_json_io.hpp" // IWYU pragma: keep.
-#include "ores.testing/database_helper.hpp"
+#include <catch2/catch_test_macros.hpp>
 
 namespace {
 
@@ -44,19 +43,19 @@ using namespace ores::logging;
  */
 fx_forward_instrument make_instrument(database_helper& h) {
     fx_forward_instrument r;
-    r.instrument_id      = boost::uuids::random_generator()();
-    r.tenant_id          = h.tenant_id();
-    r.trade_type_code    = "FxForward";
-    r.bought_currency    = "EUR";
-    r.bought_amount      = 1000000.0;
-    r.sold_currency      = "USD";
-    r.sold_amount        = 1100000.0;
-    r.value_date         = "2033-02-20";
-    r.settlement         = "Cash";
-    r.modified_by        = h.db_user();
-    r.performed_by       = "ores";
+    r.instrument_id = boost::uuids::random_generator()();
+    r.tenant_id = h.tenant_id();
+    r.trade_type_code = "FxForward";
+    r.bought_currency = "EUR";
+    r.bought_amount = 1000000.0;
+    r.sold_currency = "USD";
+    r.sold_amount = 1100000.0;
+    r.value_date = "2033-02-20";
+    r.settlement = "Cash";
+    r.modified_by = h.db_user();
+    r.performed_by = "ores";
     r.change_reason_code = "system.external_data_import";
-    r.change_commentary  = "Imported from ORE XML";
+    r.change_commentary = "Imported from ORE XML";
     return r;
 }
 

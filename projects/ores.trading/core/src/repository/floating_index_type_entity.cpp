@@ -18,7 +18,6 @@
  *
  */
 #include "ores.trading.core/repository/floating_index_type_entity.hpp"
-
 #include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>

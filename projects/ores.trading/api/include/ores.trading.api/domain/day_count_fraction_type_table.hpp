@@ -20,10 +20,10 @@
 #ifndef ORES_TRADING_DOMAIN_DAY_COUNT_FRACTION_TYPE_TABLE_HPP
 #define ORES_TRADING_DOMAIN_DAY_COUNT_FRACTION_TYPE_TABLE_HPP
 
-#include <string>
-#include <vector>
 #include "ores.trading.api/domain/day_count_fraction_type.hpp"
 #include "ores.trading.api/export.hpp"
+#include <string>
+#include <vector>
 
 namespace ores::trading::domain {
 

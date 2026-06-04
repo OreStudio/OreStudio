@@ -18,19 +18,17 @@
  *
  */
 #include "ores.trading.core/repository/swap_leg_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.trading.api/domain/swap_leg_json_io.hpp" // IWYU pragma: keep.
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::trading::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::swap_leg
-swap_leg_mapper::map(const swap_leg_entity& v) {
+domain::swap_leg swap_leg_mapper::map(const swap_leg_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::swap_leg r;
@@ -61,8 +59,7 @@ swap_leg_mapper::map(const swap_leg_entity& v) {
     return r;
 }
 
-swap_leg_entity
-swap_leg_mapper::map(const domain::swap_leg& v) {
+swap_leg_entity swap_leg_mapper::map(const domain::swap_leg& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     swap_leg_entity r;
@@ -78,7 +75,8 @@ swap_leg_mapper::map(const domain::swap_leg& v) {
     r.day_count_fraction_code = tm.day_count_fraction_code;
     r.business_day_convention_code = tm.business_day_convention_code;
     r.payment_frequency_code = tm.payment_frequency_code;
-    r.floating_index_code = tm.floating_index_code.empty() ? std::nullopt : std::optional(tm.floating_index_code);
+    r.floating_index_code =
+        tm.floating_index_code.empty() ? std::nullopt : std::optional(tm.floating_index_code);
     r.fixed_rate = std::optional(tm.fixed_rate);
     r.spread = std::optional(tm.spread);
     r.notional = tm.notional;
@@ -92,22 +90,14 @@ swap_leg_mapper::map(const domain::swap_leg& v) {
     return r;
 }
 
-std::vector<domain::swap_leg>
-swap_leg_mapper::map(const std::vector<swap_leg_entity>& v) {
+std::vector<domain::swap_leg> swap_leg_mapper::map(const std::vector<swap_leg_entity>& v) {
     return map_vector<swap_leg_entity, domain::swap_leg>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
-std::vector<swap_leg_entity>
-swap_leg_mapper::map(const std::vector<domain::swap_leg>& v) {
+std::vector<swap_leg_entity> swap_leg_mapper::map(const std::vector<domain::swap_leg>& v) {
     return map_vector<domain::swap_leg, swap_leg_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

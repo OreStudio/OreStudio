@@ -18,19 +18,17 @@
  *
  */
 #include "ores.trading.core/repository/trade_identifier_mapper.hpp"
-
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.trading.api/domain/trade_identifier_json_io.hpp" // IWYU pragma: keep.
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::trading::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-domain::trade_identifier
-trade_identifier_mapper::map(const trade_identifier_entity& v) {
+domain::trade_identifier trade_identifier_mapper::map(const trade_identifier_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::trade_identifier r;
@@ -39,7 +37,10 @@ trade_identifier_mapper::map(const trade_identifier_entity& v) {
     r.workspace_id = boost::lexical_cast<boost::uuids::uuid>(v.workspace_id);
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id);
-    r.issuing_party_id = v.issuing_party_id.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.issuing_party_id)) : std::nullopt;
+    r.issuing_party_id =
+        v.issuing_party_id.has_value() ?
+            std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.issuing_party_id)) :
+            std::nullopt;
     r.id_value = v.id_value;
     r.id_type = v.id_type;
     r.id_scheme = v.id_scheme.value_or("");
@@ -53,8 +54,7 @@ trade_identifier_mapper::map(const trade_identifier_entity& v) {
     return r;
 }
 
-trade_identifier_entity
-trade_identifier_mapper::map(const domain::trade_identifier& v) {
+trade_identifier_entity trade_identifier_mapper::map(const domain::trade_identifier& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     trade_identifier_entity r;
@@ -63,7 +63,9 @@ trade_identifier_mapper::map(const domain::trade_identifier& v) {
     r.workspace_id = boost::uuids::to_string(v.workspace_id);
     r.version = v.version;
     r.trade_id = boost::uuids::to_string(v.trade_id);
-    r.issuing_party_id = v.issuing_party_id.has_value() ? std::optional(boost::uuids::to_string(*v.issuing_party_id)) : std::nullopt;
+    r.issuing_party_id = v.issuing_party_id.has_value() ?
+                             std::optional(boost::uuids::to_string(*v.issuing_party_id)) :
+                             std::nullopt;
     r.id_value = v.id_value;
     r.id_type = v.id_type;
     r.id_scheme = v.id_scheme.empty() ? std::nullopt : std::optional(v.id_scheme);
@@ -79,19 +81,13 @@ trade_identifier_mapper::map(const domain::trade_identifier& v) {
 std::vector<domain::trade_identifier>
 trade_identifier_mapper::map(const std::vector<trade_identifier_entity>& v) {
     return map_vector<trade_identifier_entity, domain::trade_identifier>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "db entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
 }
 
 std::vector<trade_identifier_entity>
 trade_identifier_mapper::map(const std::vector<domain::trade_identifier>& v) {
     return map_vector<domain::trade_identifier, trade_identifier_entity>(
-        v,
-        [](const auto& ve) { return map(ve); },
-        lg(),
-        "domain entities");
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
 }
 
 }

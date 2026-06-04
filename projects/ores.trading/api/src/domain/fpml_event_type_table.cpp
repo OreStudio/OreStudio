@@ -18,7 +18,6 @@
  *
  */
 #include "ores.trading.api/domain/fpml_event_type_table.hpp"
-
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
 
@@ -28,13 +27,10 @@ std::string convert_to_table(const std::vector<fpml_event_type>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header
-          << "version" << "code" << "description" << "modified_by"
-          << fort::endr;
+    table << fort::header << "version" << "code" << "description" << "modified_by" << fort::endr;
 
     for (const auto& fet : v) {
-        table << fet.version << fet.code << fet.description << fet.modified_by
-              << fort::endr;
+        table << fet.version << fet.code << fet.description << fet.modified_by << fort::endr;
     }
     return table.to_string();
 }

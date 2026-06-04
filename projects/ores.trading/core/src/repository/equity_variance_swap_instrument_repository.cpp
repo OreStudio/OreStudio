@@ -18,13 +18,12 @@
  *
  */
 #include "ores.trading.core/repository/equity_variance_swap_instrument_repository.hpp"
-
-#include <sqlgen/postgres.hpp>
-#include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/helpers.hpp"
 #include "ores.trading.api/domain/equity_variance_swap_instrument_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/equity_variance_swap_instrument_entity.hpp"
 #include "ores.trading.core/repository/equity_variance_swap_instrument_mapper.hpp"
+#include <sqlgen/postgres.hpp>
 
 namespace ores::trading::repository {
 
@@ -40,15 +39,19 @@ std::string equity_variance_swap_instrument_repository::sql() {
 void equity_variance_swap_instrument_repository::write(
     context ctx, const domain::equity_variance_swap_instrument& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing equity variance swap instrument: " << v.instrument_id;
-    execute_write_query(ctx, equity_variance_swap_instrument_mapper::map(v),
-        lg(), "Writing equity variance swap instrument to database.");
+    execute_write_query(ctx,
+                        equity_variance_swap_instrument_mapper::map(v),
+                        lg(),
+                        "Writing equity variance swap instrument to database.");
 }
 
 void equity_variance_swap_instrument_repository::write(
     context ctx, const std::vector<domain::equity_variance_swap_instrument>& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing equity variance swap instruments. Count: " << v.size();
-    execute_write_query(ctx, equity_variance_swap_instrument_mapper::map(v),
-        lg(), "Writing equity variance swap instruments to database.");
+    execute_write_query(ctx,
+                        equity_variance_swap_instrument_mapper::map(v),
+                        lg(),
+                        "Writing equity variance swap instruments to database.");
 }
 
 std::vector<domain::equity_variance_swap_instrument>
@@ -56,70 +59,88 @@ equity_variance_swap_instrument_repository::read_latest(context ctx) {
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<equity_variance_swap_instrument_entity>> |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-        order_by("instrument_id"_c);
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("instrument_id"_c);
 
-    return execute_read_query<equity_variance_swap_instrument_entity, domain::equity_variance_swap_instrument>(
-        ctx, query,
+    return execute_read_query<equity_variance_swap_instrument_entity,
+                              domain::equity_variance_swap_instrument>(
+        ctx,
+        query,
         [](const auto& entities) { return equity_variance_swap_instrument_mapper::map(entities); },
-        lg(), "Reading latest equity variance swap instruments");
+        lg(),
+        "Reading latest equity variance swap instruments");
 }
 
 std::vector<domain::equity_variance_swap_instrument>
-equity_variance_swap_instrument_repository::read_latest(
-    context ctx, const std::string& instrument_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest equity variance swap instrument. instrument_id: " << instrument_id;
+equity_variance_swap_instrument_repository::read_latest(context ctx,
+                                                        const std::string& instrument_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest equity variance swap instrument. instrument_id: "
+                               << instrument_id;
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<equity_variance_swap_instrument_entity>> |
-        where("tenant_id"_c == tid && "instrument_id"_c == instrument_id && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "instrument_id"_c == instrument_id &&
+                             "valid_to"_c == max.value());
 
-    return execute_read_query<equity_variance_swap_instrument_entity, domain::equity_variance_swap_instrument>(
-        ctx, query,
+    return execute_read_query<equity_variance_swap_instrument_entity,
+                              domain::equity_variance_swap_instrument>(
+        ctx,
+        query,
         [](const auto& entities) { return equity_variance_swap_instrument_mapper::map(entities); },
-        lg(), "Reading latest equity variance swap instrument by instrument_id.");
+        lg(),
+        "Reading latest equity variance swap instrument by instrument_id.");
 }
 
 std::vector<domain::equity_variance_swap_instrument>
-equity_variance_swap_instrument_repository::read_all(
-    context ctx, const std::string& instrument_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all equity variance swap instrument versions. instrument_id: " << instrument_id;
+equity_variance_swap_instrument_repository::read_all(context ctx,
+                                                     const std::string& instrument_id) {
+    BOOST_LOG_SEV(lg(), debug)
+        << "Reading all equity variance swap instrument versions. instrument_id: " << instrument_id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<equity_variance_swap_instrument_entity>> |
-        where("tenant_id"_c == tid && "instrument_id"_c == instrument_id) |
-        order_by("version"_c.desc());
+                       where("tenant_id"_c == tid && "instrument_id"_c == instrument_id) |
+                       order_by("version"_c.desc());
 
-    return execute_read_query<equity_variance_swap_instrument_entity, domain::equity_variance_swap_instrument>(
-        ctx, query,
+    return execute_read_query<equity_variance_swap_instrument_entity,
+                              domain::equity_variance_swap_instrument>(
+        ctx,
+        query,
         [](const auto& entities) { return equity_variance_swap_instrument_mapper::map(entities); },
-        lg(), "Reading all equity variance swap instrument versions by instrument_id.");
+        lg(),
+        "Reading all equity variance swap instrument versions by instrument_id.");
 }
 
-void equity_variance_swap_instrument_repository::remove(
-    context ctx, const std::string& instrument_id) {
+void equity_variance_swap_instrument_repository::remove(context ctx,
+                                                        const std::string& instrument_id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing equity variance swap instrument: " << instrument_id;
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<equity_variance_swap_instrument_entity> |
-        where("tenant_id"_c == tid && "instrument_id"_c == instrument_id && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "instrument_id"_c == instrument_id &&
+                             "valid_to"_c == max.value());
 
-    execute_delete_query(ctx, query, lg(), "Removing equity variance swap instrument from database.");
+    execute_delete_query(
+        ctx, query, lg(), "Removing equity variance swap instrument from database.");
 }
 
 
 std::vector<domain::equity_variance_swap_instrument>
-equity_variance_swap_instrument_repository::read_latest(
-    context ctx, const std::vector<std::string>& ids) {
-    if (ids.empty()) return {};
+equity_variance_swap_instrument_repository::read_latest(context ctx,
+                                                        const std::vector<std::string>& ids) {
+    if (ids.empty())
+        return {};
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<equity_variance_swap_instrument_entity>> |
-        where("tenant_id"_c == tid && "instrument_id"_c.in(ids)
-              && "valid_to"_c == max.value());
-    return execute_read_query<equity_variance_swap_instrument_entity, domain::equity_variance_swap_instrument>(
-        ctx, query,
+    const auto query =
+        sqlgen::read<std::vector<equity_variance_swap_instrument_entity>> |
+        where("tenant_id"_c == tid && "instrument_id"_c.in(ids) && "valid_to"_c == max.value());
+    return execute_read_query<equity_variance_swap_instrument_entity,
+                              domain::equity_variance_swap_instrument>(
+        ctx,
+        query,
         [](const auto& entities) { return equity_variance_swap_instrument_mapper::map(entities); },
-        lg(), "Reading latest equity_variance_swap_instruments by ids.");
+        lg(),
+        "Reading latest equity_variance_swap_instruments by ids.");
 }
 
 }

@@ -20,17 +20,18 @@
 #ifndef ORES_TRADING_DOMAIN_LIFECYCLE_EVENT_TABLE_IO_HPP
 #define ORES_TRADING_DOMAIN_LIFECYCLE_EVENT_TABLE_IO_HPP
 
-#include <iosfwd>
-#include <vector>
 #include "ores.trading.api/domain/lifecycle_event.hpp"
 #include "ores.trading.api/export.hpp"
+#include <iosfwd>
+#include <vector>
 
 namespace ores::trading::domain {
 
 /**
  * @brief Dumps the lifecycle_event objects to a stream in table format.
  */
-ORES_TRADING_API_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<lifecycle_event>& v);
+ORES_TRADING_API_EXPORT std::ostream& operator<<(std::ostream& s,
+                                                 const std::vector<lifecycle_event>& v);
 
 }
 

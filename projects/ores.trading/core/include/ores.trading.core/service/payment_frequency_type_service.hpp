@@ -20,14 +20,14 @@
 #ifndef ORES_TRADING_SERVICE_PAYMENT_FREQUENCY_TYPE_SERVICE_HPP
 #define ORES_TRADING_SERVICE_PAYMENT_FREQUENCY_TYPE_SERVICE_HPP
 
+#include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.trading.api/domain/payment_frequency_type.hpp"
+#include "ores.trading.core/export.hpp"
+#include "ores.trading.core/repository/payment_frequency_type_repository.hpp"
+#include <optional>
 #include <string>
 #include <vector>
-#include <optional>
-#include "ores.logging/make_logger.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.trading.api/domain/payment_frequency_type.hpp"
-#include "ores.trading.core/repository/payment_frequency_type_repository.hpp"
-#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::service {
 
@@ -52,8 +52,7 @@ public:
 
     std::vector<domain::payment_frequency_type> list_types();
 
-    std::optional<domain::payment_frequency_type>
-    find_type(const std::string& code);
+    std::optional<domain::payment_frequency_type> find_type(const std::string& code);
 
     void save_type(const domain::payment_frequency_type& v);
 
@@ -66,8 +65,7 @@ public:
      */
     void remove_types(const std::vector<std::string>& codes);
 
-    std::vector<domain::payment_frequency_type>
-    get_type_history(const std::string& code);
+    std::vector<domain::payment_frequency_type> get_type_history(const std::string& code);
 
 private:
     context ctx_;

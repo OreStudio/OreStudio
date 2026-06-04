@@ -20,11 +20,11 @@
 #ifndef ORES_TRADING_REPOSITORY_EQUITY_ASIAN_OPTION_INSTRUMENT_MAPPER_HPP
 #define ORES_TRADING_REPOSITORY_EQUITY_ASIAN_OPTION_INSTRUMENT_MAPPER_HPP
 
-#include <vector>
-#include "ores.trading.api/domain/equity_asian_option_instrument.hpp"
-#include "ores.trading.core/repository/equity_asian_option_instrument_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.trading.api/domain/equity_asian_option_instrument.hpp"
 #include "ores.trading.core/export.hpp"
+#include "ores.trading.core/repository/equity_asian_option_instrument_entity.hpp"
+#include <vector>
 
 namespace ores::trading::repository {
 
@@ -41,9 +41,12 @@ private:
         static auto instance = make_logger(logger_name);
         return instance;
     }
+
 public:
-    static domain::equity_asian_option_instrument map(const equity_asian_option_instrument_entity& v);
-    static equity_asian_option_instrument_entity map(const domain::equity_asian_option_instrument& v);
+    static domain::equity_asian_option_instrument
+    map(const equity_asian_option_instrument_entity& v);
+    static equity_asian_option_instrument_entity
+    map(const domain::equity_asian_option_instrument& v);
 
     static std::vector<domain::equity_asian_option_instrument>
     map(const std::vector<equity_asian_option_instrument_entity>& v);

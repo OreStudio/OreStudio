@@ -20,10 +20,10 @@
 #ifndef ORES_TRADING_REPOSITORY_ACTIVITY_TYPE_MAPPER_HPP
 #define ORES_TRADING_REPOSITORY_ACTIVITY_TYPE_MAPPER_HPP
 
-#include "ores.trading.api/domain/activity_type.hpp"
-#include "ores.trading.core/repository/activity_type_entity.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.trading.api/domain/activity_type.hpp"
 #include "ores.trading.core/export.hpp"
+#include "ores.trading.core/repository/activity_type_entity.hpp"
 
 namespace ores::trading::repository {
 
@@ -32,22 +32,20 @@ namespace ores::trading::repository {
  */
 class ORES_TRADING_CORE_EXPORT activity_type_mapper {
 private:
-    inline static std::string_view logger_name =
-        "ores.trading.repository.activity_type_mapper";
+    inline static std::string_view logger_name = "ores.trading.repository.activity_type_mapper";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }
+
 public:
     static domain::activity_type map(const activity_type_entity& v);
     static activity_type_entity map(const domain::activity_type& v);
 
-    static std::vector<domain::activity_type>
-    map(const std::vector<activity_type_entity>& v);
-    static std::vector<activity_type_entity>
-    map(const std::vector<domain::activity_type>& v);
+    static std::vector<domain::activity_type> map(const std::vector<activity_type_entity>& v);
+    static std::vector<activity_type_entity> map(const std::vector<domain::activity_type>& v);
 };
 
 }

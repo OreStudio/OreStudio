@@ -18,7 +18,6 @@
  *
  */
 #include "ores.trading.core/service/floating_index_type_service.hpp"
-
 #include <stdexcept>
 
 namespace ores::trading::service {
@@ -37,7 +36,8 @@ std::optional<domain::floating_index_type>
 floating_index_type_service::find_type(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Finding floating index type: " << code;
     auto results = repo_.read_latest(ctx_, code);
-    if (results.empty()) return std::nullopt;
+    if (results.empty())
+        return std::nullopt;
     return results.front();
 }
 

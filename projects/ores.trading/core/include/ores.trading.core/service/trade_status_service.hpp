@@ -20,15 +20,15 @@
 #ifndef ORES_TRADING_SERVICE_TRADE_STATUS_SERVICE_HPP
 #define ORES_TRADING_SERVICE_TRADE_STATUS_SERVICE_HPP
 
+#include "ores.database/domain/context.hpp"
+#include "ores.dq.api/domain/fsm_transition.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.trading.core/export.hpp"
+#include <boost/container_hash/hash.hpp>
+#include <boost/uuid/uuid.hpp>
 #include <optional>
 #include <string>
 #include <unordered_map>
-#include <boost/uuid/uuid.hpp>
-#include <boost/container_hash/hash.hpp>
-#include "ores.logging/make_logger.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.dq.api/domain/fsm_transition.hpp"
-#include "ores.trading.core/export.hpp"
 
 namespace ores::trading::service {
 
@@ -38,10 +38,9 @@ namespace ores::trading::service {
  * Fetched once per request from the DQ service via NATS and passed into
  * resolve_status() to avoid a cross-service DB read.
  */
-using fsm_transition_map = std::unordered_map<
-    boost::uuids::uuid,
-    ores::dq::domain::fsm_transition,
-    boost::hash<boost::uuids::uuid>>;
+using fsm_transition_map = std::unordered_map<boost::uuids::uuid,
+                                              ores::dq::domain::fsm_transition,
+                                              boost::hash<boost::uuids::uuid>>;
 
 /**
  * @brief Resolves trade status transitions via the FSM.
@@ -53,8 +52,7 @@ using fsm_transition_map = std::unordered_map<
  */
 class ORES_TRADING_CORE_EXPORT trade_status_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.trading.service.trade_status_service";
+    inline static std::string_view logger_name = "ores.trading.service.trade_status_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -81,11 +79,10 @@ public:
      * @throws std::logic_error if the transition is invalid from the
      *         current status, or if the transition id is not in the map.
      */
-    static boost::uuids::uuid resolve_status(
-        context ctx,
-        const std::string& activity_type_code,
-        std::optional<boost::uuids::uuid> current_status_id,
-        const fsm_transition_map& transitions);
+    static boost::uuids::uuid resolve_status(context ctx,
+                                             const std::string& activity_type_code,
+                                             std::optional<boost::uuids::uuid> current_status_id,
+                                             const fsm_transition_map& transitions);
 };
 
 }

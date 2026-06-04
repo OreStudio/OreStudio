@@ -17,15 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.trading.api/domain/trade_id_type.hpp"
-
-#include <sstream>
-#include <catch2/catch_test_macros.hpp>
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
+#include "ores.trading.api/domain/trade_id_type.hpp"
 #include "ores.trading.api/domain/trade_id_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.api/domain/trade_id_type_table.hpp"
 #include "ores.trading.api/domain/trade_id_type_table_io.hpp" // IWYU pragma: keep.
+#include <catch2/catch_test_macros.hpp>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <sstream>
 
 namespace {
 
@@ -34,8 +33,7 @@ using ores::trading::domain::trade_id_type;
 const std::string_view test_suite("ores.trading.tests");
 const std::string tags("[domain]");
 
-trade_id_type make_trade_id_type(const std::string& code,
-    const std::string& description = "") {
+trade_id_type make_trade_id_type(const std::string& code, const std::string& description = "") {
     trade_id_type tit;
     tit.version = 1;
     tit.code = code;

@@ -20,17 +20,18 @@
 #ifndef ORES_TRADING_DOMAIN_BUSINESS_DAY_CONVENTION_TYPE_TABLE_HPP
 #define ORES_TRADING_DOMAIN_BUSINESS_DAY_CONVENTION_TYPE_TABLE_HPP
 
-#include <string>
-#include <vector>
 #include "ores.trading.api/domain/business_day_convention_type.hpp"
 #include "ores.trading.api/export.hpp"
+#include <string>
+#include <vector>
 
 namespace ores::trading::domain {
 
 /**
  * @brief Converts business_day_convention_types to the table format.
  */
-ORES_TRADING_API_EXPORT std::string convert_to_table(const std::vector<business_day_convention_type>& v);
+ORES_TRADING_API_EXPORT std::string
+convert_to_table(const std::vector<business_day_convention_type>& v);
 
 }
 

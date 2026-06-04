@@ -27,3 +27,4 @@ a single how-do-I question with executable steps.
 - [[id:4BF2516D-F37E-4E31-AD7B-124F2639B9AB][How do I enable test logging?]]
 - [[id:E1A68ED5-20CB-426C-91C6-97984A692505][How do I investigate a test failure?]]
 - [[id:E9F98DA1-CF33-4B53-BC4D-A034C652F3B0][How do I bump the project version?]]
+- [[id:4CEC17FA-CB28-4B21-B139-AD8F30E02C43][How do I format C++ sources with clang-format?]]

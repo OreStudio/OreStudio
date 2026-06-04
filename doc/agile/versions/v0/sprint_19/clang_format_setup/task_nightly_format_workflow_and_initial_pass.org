@@ -76,4 +76,5 @@ in CI. Filed as a capture: [[id:A16A6F10-1362-4009-9BFB-44402D7A9403][Set up cla
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Missing PRs and Review tables | task_nightly_format_workflow_and_initial_pass.org | Accepted | 141772bc |
+| 2 | Broken id link (already fixed prior commit) | same | Accepted | 7aa507ab |

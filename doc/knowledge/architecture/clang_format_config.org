@@ -1,0 +1,377 @@
+:PROPERTIES:
+:ID: 2BE1DCB1-6F10-4568-9945-E1AFA079FC7B
+:END:
+#+title: C++ code style: clang-format configuration
+#+description: Literate source for .clang-format — every setting documented with rationale and examples, tangled to the repo root via the tangle_clang_format CMake target.
+#+type: knowledge
+#+level: cross
+#+filetags: :cpp:formatting:build:architecture:knowledge:
+#+created: 2026-06-04
+#+updated: 2026-06-04
+
+* Summary
+
+This file is the single authoritative source for =.clang-format= at
+the repository root. Every setting is accompanied by the reasoning
+behind its choice and a before/after example. Do not edit
+=.clang-format= directly — regenerate it with the
+=tangle_clang_format= CMake target instead. The style is based on
+LLVM, tuned to match the conventions already in the codebase:
+4-space indent, no namespace indentation, leading-comma constructor
+initialisers, and =std → Boost → local= include ordering. Return
+to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+
+* How to regenerate
+
+Tangle the literate source to =.clang-format= and commit the result:
+
+#+begin_src sh :results verbatim
+cmake --build --preset linux-clang-debug-make --target tangle_clang_format
+#+end_src
+
+The target runs =projects/ores.lisp/src/ores-build-clang-format.el=
+in Emacs batch mode, which calls =org-babel-tangle-file= on this
+document and writes the output to =.clang-format= at the repo root.
+
+* Literate source
+
+The canonical =.clang-format= is assembled from the sections below.
+Each section documents one group of settings and contains the
+corresponding YAML fragment. The Emacs tangle script collects all
+=#+begin_src yaml= blocks and concatenates them into the output file.
+
+** File header
+
+#+begin_src yaml
+# -*- mode: yaml; yaml-tab-width: 4; indent-tabs-mode: nil -*-
+# This file is generated from doc/knowledge/architecture/clang_format_config.org.
+# Do not edit directly — run: cmake --build --preset <preset> --target tangle_clang_format
+---
+Language: Cpp
+# "Latest" means the most recent C++ standard the installed clang-format
+# understands — effectively c++23 on current toolchains.
+# The string "c++23" is not yet a valid enum value in clang-format 21.
+Standard: Latest
+#+end_src
+
+** Baseline style
+
+LLVM style provides a well-documented, widely-used baseline. The
+sections below override specific settings to match the ORE Studio
+codebase conventions instead of LLVM's defaults.
+
+#+begin_src yaml
+
+# ── Baseline ─────────────────────────────────────────────────────────────────
+BasedOnStyle: LLVM
+#+end_src
+
+** Indentation
+
+The project uses 4-space indentation throughout. Key deviations from
+LLVM defaults:
+
+- =NamespaceIndentation: None= — namespace body is not indented.
+  LLVM defaults to =None= too, but we make it explicit.
+  *Before:* =namespace ores { class Foo {};= indented by 2 (LLVM default indent)
+  *After:* namespace body at column 0.
+
+- =AccessModifierOffset: -4= — =public:= / =private:= / =protected:=
+  appear at the class indentation level, not further indented.
+  *Before:* (LLVM default, =-2= with 2-space indent) =  public:=
+  *After:* =public:= at column 0 relative to class.
+
+- =IndentCaseLabels: true= — =case X:= is indented relative to =switch=.
+  *Before:* =switch (x) { case 1: ...= at same level as =switch=
+  *After:* =case 1:= indented 4 spaces inside =switch=.
+
+- =IndentPPDirectives: AfterHash= — preprocessor directives are indented
+  after the =#=, keeping nested =#if/#endif= readable.
+  *Before:* =#ifdef FOO\n#define BAR= — all at column 0
+  *After:* =#ifdef FOO\n#  define BAR= — nested defines indented
+
+#+begin_src yaml
+
+# ── Indentation ───────────────────────────────────────────────────────────────
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+NamespaceIndentation: None
+AccessModifierOffset: -4
+IndentCaseLabels: true
+IndentPPDirectives: AfterHash
+#+end_src
+
+** Line length
+
+100 characters. Long enough for deeply namespaced C++ and Qt signal
+connections without excessive wrapping; short enough to allow
+side-by-side diffs at reasonable terminal widths.
+
+#+begin_src yaml
+
+# ── Line length ───────────────────────────────────────────────────────────────
+ColumnLimit: 100
+#+end_src
+
+** Pointer and reference alignment
+
+Pointer and reference qualifiers are attached to the type, not the
+variable name: =T* x= and =T& x=, not =T *x= and =T &x=. This is
+consistent throughout the codebase and matches Qt's own convention.
+
+*Before:* =void foo(const std::string &s, int *p)=
+*After:*  =void foo(const std::string& s, int* p)=
+
+=DerivePointerAlignment: false= prevents clang-format from inferring
+the alignment from the existing code (which would be inconsistent
+during the transition period).
+
+#+begin_src yaml
+
+# ── Pointer / reference alignment ────────────────────────────────────────────
+DerivePointerAlignment: false
+PointerAlignment: Left
+ReferenceAlignment: Left
+#+end_src
+
+** Constructor initialiser lists
+
+Initialisers use the leading-comma style: the colon and each comma
+appear at the start of a new line, indented 4 spaces. One initialiser
+per line, always (=PackConstructorInitializers: Never=).
+
+*Before* (packed, trailing-comma):
+#+begin_example
+Foo::Foo(int a, int b) : a_(a), b_(b), c_(0) {
+#+end_example
+
+*After* (one-per-line, leading-comma):
+#+begin_example
+Foo::Foo(int a, int b)
+    : a_(a)
+    , b_(b)
+    , c_(0) {
+#+end_example
+
+This style is already used consistently in the nats, http, and
+database components; the format pass extends it everywhere.
+
+#+begin_src yaml
+
+# ── Constructor initialiser lists ─────────────────────────────────────────────
+BreakConstructorInitializers: BeforeComma
+ConstructorInitializerIndentWidth: 4
+PackConstructorInitializers: Never
+#+end_src
+
+** Function parameters and arguments
+
+Parameters and arguments are never bin-packed — they either all fit
+on one line or each goes on its own line, aligned to the opening
+parenthesis.
+
+*Before* (bin-packed, fits whatever):
+#+begin_example
+void foo(TypeA a, TypeB b,
+         TypeC c, TypeD d) {
+#+end_example
+
+*After* (one per line when wrapping):
+#+begin_example
+void foo(TypeA a,
+         TypeB b,
+         TypeC c,
+         TypeD d) {
+#+end_example
+
+#+begin_src yaml
+
+# ── Function parameters / arguments ──────────────────────────────────────────
+BinPackParameters: false
+BinPackArguments: false
+#+end_src
+
+** Template declarations
+
+The =template<...>= line is always on its own line, separate from
+the function or class declaration that follows. This improves
+readability for the long template parameter lists common in this
+codebase (repository patterns, codegen helpers, etc.).
+
+*Before:*
+#+begin_example
+template<typename T> void foo(T x) {
+#+end_example
+
+*After:*
+#+begin_example
+template<typename T>
+void foo(T x) {
+#+end_example
+
+#+begin_src yaml
+
+# ── Templates ─────────────────────────────────────────────────────────────────
+AlwaysBreakTemplateDeclarations: Yes
+#+end_src
+
+** Short constructs
+
+Only empty function bodies are allowed on a single line (e.g.
+=Foo() {}=). All other functions, including trivial one-liners, are
+expanded to multiple lines. Short lambdas may remain inline when they
+are the sole argument to a function call.
+
+=AllowShortIfStatementsOnASingleLine: Never= and
+=AllowShortLoopsOnASingleLine: false= ensure that control flow is
+always on its own line, even for single-statement bodies — this makes
+diffs cleaner and reduces the chance of off-by-one errors when adding
+a second statement.
+
+*Before:*
+#+begin_example
+if (!joined.empty()) joined += ',';
+#+end_example
+
+*After:*
+#+begin_example
+if (!joined.empty())
+    joined += ',';
+#+end_example
+
+#+begin_src yaml
+
+# ── Short constructs ──────────────────────────────────────────────────────────
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortLambdasOnASingleLine: Inline
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+#+end_src
+
+** Include ordering
+
+Includes are merged into a single sorted block (no blank lines
+between groups) and ordered local-first: project headers, then Qt,
+then Boost, then the standard library. Within each group, headers
+are sorted case-sensitively.
+
+The ordering rationale: including local headers first is the
+Google and LLVM convention for a reason — it surfaces missing
+transitive includes immediately. If =account.hpp= forgets to include
+=<string>= but the =#include "account.hpp"= line comes after a
+=<string>= include, the bug is hidden. Local-first catches it
+because nothing has yet satisfied =<string>= when the header is
+parsed.
+
+*Before* (unsorted, mixed):
+#+begin_example
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <chrono>
+#+end_example
+
+*After* (local → Qt → Boost → std):
+#+begin_example
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <string>
+#+end_example
+
+#+begin_src yaml
+
+# ── Includes ──────────────────────────────────────────────────────────────────
+# Sorted into one merged block (no blank line separators), ordered:
+#   local "ores.*" / "ui_*" → Qt → Boost → std / other angle-bracket
+# Local-first ensures each header is self-sufficient: a missing transitive
+# include cannot be silently satisfied by a preceding std/Boost header.
+SortIncludes: CaseSensitive
+IncludeBlocks: Merge
+IncludeCategories:
+  - Regex: '^"'
+    Priority: 1
+  - Regex: '^<Q[A-Z]'
+    Priority: 2
+  - Regex: '^<boost/'
+    Priority: 3
+  - Regex: '^<'
+    Priority: 4
+#+end_src
+
+** Miscellaneous
+
+- =MaxEmptyLinesToKeep: 2= — prevents formatting passes from collapsing
+  intentional visual groupings while still removing excessive blank lines.
+- =FixNamespaceComments: false= — the codebase uses bare =}= to close
+  namespaces; adding trailing comments would be noisy.
+- =SortUsingDeclarations: false= — =using= declarations are grouped
+  intentionally; resorting them could change meaning for shadowing cases.
+- =AlignEscapedNewlines: Left= — backslash-escaped newlines in macros
+  are left-aligned (column 0) rather than right-aligned to the column
+  limit, keeping macro definitions compact.
+- =BreakBeforeTernaryOperators: false= — the ternary =?= / =:= stays
+  at the end of the line, not the start of the continuation, matching
+  the existing style.
+
+#+begin_src yaml
+
+# ── Miscellaneous ─────────────────────────────────────────────────────────────
+MaxEmptyLinesToKeep: 2
+FixNamespaceComments: false
+SortUsingDeclarations: false
+AlignEscapedNewlines: Left
+BreakBeforeTernaryOperators: false
+#+end_src
+
+* How to use
+
+** Format sources in-place
+
+Reformats all =.cpp=, =.hpp=, and =.h= files under =projects/= using the
+canonical =.clang-format= config. Run before opening a PR or after
+pulling changes that modify the config.
+
+See [[id:4CEC17FA-CB28-4B21-B139-AD8F30E02C43][How do I format C++ sources with clang-format?]] for the full recipe.
+
+#+begin_src sh
+cmake --build --preset linux-clang-debug-make --target format
+#+end_src
+
+** Check for drift (dry run)
+
+Reports files that differ from the canonical style without modifying
+them. Exits non-zero if any file would change — use this locally to
+verify a branch is clean before pushing.
+
+#+begin_src sh
+cmake --build --preset linux-clang-debug-make --target check-format
+#+end_src
+
+** Nightly CI workflow
+
+The [[https://github.com/OreStudio/OreStudio/actions/workflows/nightly-format.yml][nightly-format]] GitHub Actions workflow runs at 02:00 UTC every night.
+It installs =clang-format-18= on Ubuntu 24.04, reformats all sources
+in-place, and — if any file changed — raises a PR titled
+=[format] Nightly clang-format run= against =main=. When the PR is
+empty (no files changed) no action is taken.
+
+To trigger it manually: *Actions → Nightly Format → Run workflow*.
+
+** Updating the style
+
+To change a setting:
+
+1. Edit the relevant =#+begin_src yaml= block in this document.
+2. Update the documentation prose and example above the block.
+3. Run =tangle_clang_format= to regenerate =.clang-format=.
+4. Run =check-format= to see what changes; review the diff.
+5. Commit both this document and the regenerated =.clang-format=.
+
+* See also
+
+- [[id:4CEC17FA-CB28-4B21-B139-AD8F30E02C43][How do I format C++ sources with clang-format?]] — the format and check-format recipe.
+- [[id:5B271351-399A-4BD7-A096-E5DF1EDAD8F5][Developer Links]] — nightly-format CI workflow and other build dashboards.
+- [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]] — preset names and build directory layout.
+- [[id:2D83251F-0E24-4B97-B736-08F710316634][Claude Code Settings]] — the analogous literate source for =.claude/settings.json=.

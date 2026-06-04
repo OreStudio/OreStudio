@@ -68,6 +68,8 @@ How the codebase is put together.
   history dialog, and async-fetch patterns.
 - [[id:F7DE2705-4D20-4878-A10C-A834F3283683][Badge system wiring]] — DB-driven pill badges: =ores.dq= entities,
   SQL population, =BadgeCache=, and delegate wiring.
+- [[id:2BE1DCB1-6F10-4568-9945-E1AFA079FC7B][C++ code style: clang-format configuration]] — literate source for
+  =.clang-format=; every setting documented with rationale and examples.
 - [[id:E44891DC-234C-42DB-90E1-9421400ABD1A][Qt menu and toolbar patterns]] — plugin registration,
   =on_login()= menu wiring, and MDI window toolbar construction.
 - [[id:05891220-2503-48A0-ADF5-13EC95B605D7][CLI entity patterns]] — options structs, parser layout, and

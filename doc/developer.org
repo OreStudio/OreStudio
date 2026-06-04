@@ -32,13 +32,21 @@ share onboarding links with a new contributor or LLM agent.
 
 ** Build and Quality
 
-| Resource           | Link                                                                                                      |
-|--------------------+-----------------------------------------------------------------------------------------------------------|
-| CDash Dashboard    | [[https://my.cdash.org/index.php?project=OreStudio][my.cdash.org — OreStudio]]                          |
-| CI — Linux         | [[https://github.com/OreStudio/OreStudio/actions/workflows/continuous-linux.yml][continuous-linux.yml]]   |
-| CI — Windows       | [[https://github.com/OreStudio/OreStudio/actions/workflows/continuous-windows.yml][continuous-windows.yml]] |
-| CI — macOS         | [[https://github.com/OreStudio/OreStudio/actions/workflows/continuous-macos.yml][continuous-macos.yml]]   |
-| CI — Nightly Linux | [[https://github.com/OreStudio/OreStudio/actions/workflows/nightly-linux.yml][nightly-linux.yml]]       |
+| Resource              | Link                                                                                                            |
+|-----------------------+-----------------------------------------------------------------------------------------------------------------|
+| CDash Dashboard       | [[https://my.cdash.org/index.php?project=OreStudio][my.cdash.org — OreStudio]]                                |
+| CI — Linux            | [[https://github.com/OreStudio/OreStudio/actions/workflows/continuous-linux.yml][continuous-linux.yml]]       |
+| CI — Windows          | [[https://github.com/OreStudio/OreStudio/actions/workflows/continuous-windows.yml][continuous-windows.yml]]   |
+| CI — macOS            | [[https://github.com/OreStudio/OreStudio/actions/workflows/continuous-macos.yml][continuous-macos.yml]]     |
+| CI — Nightly Linux    | [[https://github.com/OreStudio/OreStudio/actions/workflows/nightly-linux.yml][nightly-linux.yml]]           |
+| CI — Nightly Format   | [[https://github.com/OreStudio/OreStudio/actions/workflows/nightly-format.yml][nightly-format.yml]]         |
+
+** Code Style
+
+| Resource | Link |
+|----------+------|
+| C++ clang-format config | [[id:2BE1DCB1-6F10-4568-9945-E1AFA079FC7B][C++ code style: clang-format configuration]] — literate source, all settings documented. |
+| Format recipe | [[id:4CEC17FA-CB28-4B21-B139-AD8F30E02C43][How do I format C++ sources with clang-format?]] |
 
 ** Releases
 

@@ -19,41 +19,49 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Add a nightly GH Actions workflow that runs clang-format across all
+C++ sources and raises a PR when any file drifts from the canonical
+style. The initial format pass (run after this PR merges) will clean
+up existing drift across the whole tree.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                   |
 | Parent story | [[id:78D292E4-EA18-4FDE-9B23-E0F446A1B526][Set up clang-format with CMake targets and CI integration]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-04                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-06-04                             |
 
 * Acceptance
 
--
+- =.github/workflows/nightly-format.yml= exists and triggers nightly
+  at 02:00 UTC (plus =workflow_dispatch= for manual runs).
+- Workflow installs =clang-format-18= via apt on Ubuntu 24.04.
+- Runs =clang-format -i= on all =.cpp=, =.hpp=, =.h= under =projects/=.
+- Uses =peter-evans/create-pull-request@v7= to raise a PR titled
+  =[format] Nightly clang-format run= when files change.
+- PR is raised on branch =bot/nightly-format=; branch deleted after merge.
+- Initial format pass: run locally after this PR merges, commit
+  as a single =[format] Initial clang-format pass= PR.
 
-* Plan
+* Result
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
+Created =.github/workflows/nightly-format.yml=:
+- Schedule: 02:00 UTC nightly + workflow_dispatch.
+- Runs clang-format-18 in-place directly (no CMake configure step
+  needed — faster and simpler for CI).
+- =peter-evans/create-pull-request@v7= handles branch creation,
+  commit, and PR raise atomically; no-ops when tree is already clean.
+- Permissions: =contents: write= + =pull-requests: write=.
+
+Initial format pass is deferred until this PR is merged to avoid
+a conflict between the new config and the existing tree state.
 
 * Notes
 
-* PRs
-
-| PR | Title |
-|----+-------|
-|    |       |
-
-* Review
-
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
-
-* Result
+clang-tidy (static analysis) is a separate story — it requires
+=compile_commands.json=, check selection, and a full build environment
+in CI. Filed as a capture: [[id:][Set up clang-tidy static analysis]].

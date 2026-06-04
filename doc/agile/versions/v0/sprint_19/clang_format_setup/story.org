@@ -62,3 +62,4 @@ so formatting is corrected continuously without blocking PRs.
 
 - Per-PR blocking format gate (revisit once nightly PRs go silent).
 - Wt / Python / SQL formatting (C++ only for now).
+- clang-tidy static analysis — separate story; filed as [[id:A16A6F10-1362-4009-9BFB-44402D7A9403][capture]].

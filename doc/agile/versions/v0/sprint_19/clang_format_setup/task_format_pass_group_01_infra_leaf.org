@@ -54,6 +54,6 @@ task closes. Plans do not outlive their task.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | archive_error_string() can return nullptr — UB when appended to std::string | archiver.cpp | Accepted | Added safe_error_string() helper; replaced all 6 call sites; 59fe2c0 |
 
 * Result

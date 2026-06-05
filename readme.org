@@ -48,8 +48,8 @@
 
 * What is ORE Studio?
 
-ORE Studio is a graphical front-end for the [[https://www.opensourcerisk.org/][Open Source Risk Engine]] (ORE), which
-itself builds on [[https://www.quantlib.org/][QuantLib]]. It provides a database-backed UI for configuring and
+ORE Studio is a graphical front-end for the [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][Open Source Risk Engine]] (ORE), which
+itself builds on [[id:0412444A-0A4C-4611-887C-09353A3CB253][QuantLib]]. It provides a database-backed UI for configuring and
 running ORE — persistent storage for inputs and outputs, CRUD management, and a
 simple three-layer architecture (client / service / [[https://www.postgresql.org/][PostgreSQL]]) designed to be
 easy to understand and extend. ORE Studio was started by [[https://mcraveiro.github.io/][Marco Craveiro]].

@@ -21,7 +21,7 @@
 #define ORES_IAM_SERVICE_AUTHORIZATION_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.eventing/service/event_bus.hpp"
+#include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.iam.api/domain/account_role.hpp"
 #include "ores.iam.api/domain/permission.hpp"
 #include "ores.iam.api/domain/role.hpp"

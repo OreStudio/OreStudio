@@ -18,7 +18,7 @@
  *
  */
 #include "ores.qt/TenantController.hpp"
-#include "ores.eventing/domain/event_traits.hpp"
+#include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.iam.api/eventing/tenant_changed_event.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"

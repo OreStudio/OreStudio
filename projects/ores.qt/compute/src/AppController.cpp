@@ -19,7 +19,7 @@
  */
 #include "ores.qt/AppController.hpp"
 #include "ores.compute.api/eventing/app_changed_event.hpp"
-#include "ores.eventing/domain/event_traits.hpp"
+#include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.qt/AppDetailDialog.hpp"
 #include "ores.qt/AppHistoryDialog.hpp"
 #include "ores.qt/AppMdiWindow.hpp"

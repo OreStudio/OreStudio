@@ -18,7 +18,7 @@
  *
  */
 #include "ores.scheduler.core/service/scheduler_loop.hpp"
-#include "ores.eventing/domain/entity_change_event.hpp"
+#include "ores.eventing.api/domain/entity_change_event.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.scheduler.api/domain/job_instance.hpp"
 #include "ores.scheduler.api/domain/job_status.hpp"

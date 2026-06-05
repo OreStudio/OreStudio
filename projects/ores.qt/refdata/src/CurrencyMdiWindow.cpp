@@ -18,7 +18,7 @@
  *
  */
 #include "ores.qt/CurrencyMdiWindow.hpp"
-#include "ores.eventing/domain/event_traits.hpp"
+#include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.ore.core/xml/exporter.hpp"
 #include "ores.ore.core/xml/importer.hpp"
 #include "ores.qt/ColorConstants.hpp"

@@ -19,7 +19,7 @@
  */
 #include "ores.qt/TreatmentDimensionController.hpp"
 #include "ores.dq.api/eventing/treatment_dimension_changed_event.hpp"
-#include "ores.eventing/domain/event_traits.hpp"
+#include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"

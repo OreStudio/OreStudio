@@ -20,7 +20,7 @@
 #ifndef ORES_IAM_EVENTING_TENANT_CHANGED_EVENT_HPP
 #define ORES_IAM_EVENTING_TENANT_CHANGED_EVENT_HPP
 
-#include "ores.eventing/domain/event_traits.hpp"
+#include "ores.eventing.api/domain/event_traits.hpp"
 #include <chrono>
 #include <string>
 #include <vector>

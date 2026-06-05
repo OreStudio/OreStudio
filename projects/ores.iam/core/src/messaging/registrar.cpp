@@ -18,7 +18,7 @@
  *
  */
 #include "ores.iam.core/messaging/registrar.hpp"
-#include "ores.eventing/domain/entity_change_event.hpp"
+#include "ores.eventing.api/domain/entity_change_event.hpp"
 #include "ores.iam.api/messaging/account_history_protocol.hpp"
 #include "ores.iam.api/messaging/account_party_protocol.hpp"
 #include "ores.iam.api/messaging/account_protocol.hpp"

@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.eventing/domain/event_traits.hpp"
-#include "ores.eventing/service/event_bus.hpp"
+#include "ores.eventing.api/domain/event_traits.hpp"
+#include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/eventing/trade_changed_event.hpp"
 #include <boost/uuid/uuid_generators.hpp>

@@ -18,7 +18,7 @@
  *
  */
 #include "ores.qt/ClientManager.hpp"
-#include "ores.eventing/domain/entity_change_event.hpp"
+#include "ores.eventing.api/domain/entity_change_event.hpp"
 #include "ores.http.api/messaging/http_info_protocol.hpp"
 #include "ores.iam.api/messaging/account_protocol.hpp"
 #include "ores.iam.api/messaging/bootstrap_protocol.hpp"

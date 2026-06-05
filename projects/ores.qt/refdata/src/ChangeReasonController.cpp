@@ -19,7 +19,7 @@
  */
 #include "ores.qt/ChangeReasonController.hpp"
 #include "ores.dq.api/eventing/change_reason_changed_event.hpp"
-#include "ores.eventing/domain/event_traits.hpp"
+#include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/ChangeReasonDetailDialog.hpp"
 #include "ores.qt/ChangeReasonHistoryDialog.hpp"

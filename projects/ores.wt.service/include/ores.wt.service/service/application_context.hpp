@@ -22,8 +22,8 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/database_options.hpp"
-#include "ores.eventing/service/event_bus.hpp"
-#include "ores.eventing/service/postgres_event_source.hpp"
+#include "ores.eventing.api/service/event_bus.hpp"
+#include "ores.eventing.core/service/postgres_event_source.hpp"
 #include "ores.iam.core/service/account_service.hpp"
 #include "ores.iam.core/service/account_setup_service.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"

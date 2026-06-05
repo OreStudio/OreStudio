@@ -20,7 +20,7 @@
 #ifndef ORES_DQ_API_EVENTING_CHANGE_REASON_CHANGED_EVENT_HPP
 #define ORES_DQ_API_EVENTING_CHANGE_REASON_CHANGED_EVENT_HPP
 
-#include "ores.eventing/domain/event_traits.hpp"
+#include "ores.eventing.api/domain/event_traits.hpp"
 #include <chrono>
 #include <string>
 #include <vector>

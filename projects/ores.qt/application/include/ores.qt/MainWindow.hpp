@@ -20,7 +20,7 @@
 #ifndef ORES_QT_MAIN_WINDOW_HPP
 #define ORES_QT_MAIN_WINDOW_HPP
 
-#include "ores.eventing/service/event_bus.hpp"
+#include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/MdiAreaWithBackground.hpp"

@@ -20,7 +20,7 @@
 #ifndef ORES_QT_CLIENT_MANAGER_HPP
 #define ORES_QT_CLIENT_MANAGER_HPP
 
-#include "ores.eventing/service/event_bus.hpp"
+#include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.iam.api/domain/session.hpp"
 #include "ores.iam.api/messaging/session_samples_protocol.hpp"
 #include "ores.logging/make_logger.hpp"

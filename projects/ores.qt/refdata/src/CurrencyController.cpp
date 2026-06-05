@@ -18,7 +18,7 @@
  *
  */
 #include "ores.qt/CurrencyController.hpp"
-#include "ores.eventing/domain/event_traits.hpp"
+#include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/CurrencyDetailDialog.hpp"
 #include "ores.qt/CurrencyHistoryDialog.hpp"

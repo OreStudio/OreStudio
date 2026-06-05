@@ -18,7 +18,7 @@
  *
  */
 #include "ores.workflow.core/service/workflow_engine.hpp"
-#include "ores.eventing/domain/entity_change_event.hpp"
+#include "ores.eventing.api/domain/entity_change_event.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.workflow.api/messaging/workflow_events.hpp"
 #include <boost/lexical_cast.hpp>

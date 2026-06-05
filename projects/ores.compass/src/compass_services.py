@@ -158,16 +158,40 @@ def _wait_for_log(ctx, name, pattern, timeout=120, suffix=".log") -> bool:
     return False
 
 
+def _log_contains(log_file: Path, pattern: str) -> bool:
+    """Stream-search a log for PATTERN without loading it into memory."""
+    if not log_file.exists():
+        return False
+    needle = pattern.encode()
+    keep = len(needle) - 1
+    tail = b""
+    with open(log_file, "rb") as f:
+        while True:
+            chunk = f.read(1 << 20)
+            if not chunk:
+                return False
+            if needle in tail + chunk:
+                return True
+            tail = chunk[-keep:] if keep else b""
+
+
+def _log_last_line(log_file: Path) -> str:
+    """Last line of a log by reading only its final chunk."""
+    if not log_file.exists():
+        return ""
+    with open(log_file, "rb") as f:
+        f.seek(0, 2)
+        size = f.tell()
+        f.seek(max(0, size - 1024))
+        lines = f.read().splitlines()
+    return lines[-1].decode("utf-8", errors="ignore") if lines else ""
+
+
 def gather_counts(ctx):
     """Service state counts for status displays: dict of state -> count,
     plus nats state. Mirrors cmd_status's classification."""
     counts = {"running": 0, "starting": 0, "stopped": 0, "missing": 0}
-
-    def _ready(log_file, pattern):
-        try:
-            return pattern.encode() in log_file.read_bytes()
-        except OSError:
-            return False
+    _ready = _log_contains
 
     def _classify(svc):
         pid = _read_pid(ctx.run_dir / f"{svc}.pid")
@@ -337,12 +361,7 @@ def cmd_status(ctx, args):
     print(f"  {'STATUS':<10} {'SERVICE':<40} DETAIL")
     print(f"  {'-' * 10} {'-' * 40} ------")
     running = starting = stopped = missing = 0
-
-    def _ready(log_file, pattern):
-        try:
-            return pattern.encode() in log_file.read_bytes()
-        except OSError:
-            return False
+    _ready = _log_contains
 
     nats_pid = _read_pid(ctx.nats_pid_file)
     nats_log = ctx.log_dir / "nats-server.log"
@@ -377,12 +396,7 @@ def cmd_status(ctx, args):
             print(f"  {'running':<10} {svc:<40} PID {pid}")
             running += 1
         else:
-            last = ""
-            try:
-                last = log_file.read_text().splitlines()[-1]
-                last = last.split('"] ')[-1][:60]
-            except (OSError, IndexError):
-                pass
+            last = _log_last_line(log_file).split('\"] ')[-1][:60]
             print(f"  {'starting':<10} {svc:<40} PID {pid}  "
                   f"{f'({last})' if last else ''}")
             starting += 1

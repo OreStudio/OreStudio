@@ -84,7 +84,11 @@ def service_names(project_root: Path):
         print("error: could not parse SERVICE_NAMES from service_vars.sh",
               file=sys.stderr)
         sys.exit(1)
-    return [t for t in m.group(1).split() if not t.startswith("#")]
+    names = []
+    for line in m.group(1).splitlines():
+        line = line.split("#")[0].strip()
+        names.extend(line.split())
+    return names
 
 
 # --- psql helpers -----------------------------------------------------------

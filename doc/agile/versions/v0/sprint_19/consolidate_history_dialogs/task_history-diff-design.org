@@ -8,7 +8,7 @@
 #+filetags: :qt:design:architecture:history:consolidate_history_dialogs:sprint_19:v0:
 #+owner: marco
 #+branch: feature/history-diff-design
-#+pr:
+#+pr: https://github.com/OreStudio/OreStudio/pull/1072
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-05
@@ -48,7 +48,7 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1072][#1072]] | [agile] History dialog consolidation: design and task breakdown |
 
 * Review
 

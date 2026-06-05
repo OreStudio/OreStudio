@@ -1381,7 +1381,7 @@ def _audit_pr_states(numbers):
 
     Returns {} when gh is unavailable so the audit degrades gracefully."""
     numbers = sorted(set(numbers))
-    if not numbers or not shutil.which("gh"):
+    if not numbers:
         return {}
     try:
         repo = subprocess.run(
@@ -1400,7 +1400,9 @@ def _audit_pr_states(numbers):
             capture_output=True, text=True, cwd=str(PROJECT_ROOT), timeout=30)
         if out.returncode != 0:
             return {}
-        data = json.loads(out.stdout)["data"]["repository"]
+        data = json.loads(out.stdout).get("data", {}).get("repository")
+        if not data:
+            return {}
         return {int(k[2:]): v["state"] for k, v in data.items() if v}
     except (OSError, subprocess.SubprocessError, json.JSONDecodeError,
             KeyError, ValueError):
@@ -1414,7 +1416,8 @@ def _sprint_table_states(sprint_file):
     except (OSError, UnicodeDecodeError):
         return states
     row_re = re.compile(
-        r"^\| \[\[id:([A-Fa-f0-9-]+)\]\[[^\]]*\]\]\s*\| (\w+) \|", re.MULTILINE)
+        r"^\|\s*\[\[id:([A-Fa-f0-9-]+)\]\[.*?\]\]\s*\|\s*([A-Z]+)\s*\|",
+        re.MULTILINE)
     for m in row_re.finditer(text):
         states[m.group(1).upper()] = m.group(2).upper()
     return states
@@ -1463,11 +1466,9 @@ def cmd_sprint_audit(args):
                 and not open_tasks):
             closeable.append(s)
         for t in open_tasks:
-            merged = [n for n in t["prs"] if pr_states.get(n) == "MERGED"]
-            unmerged = [n for n in t["prs"] if n in pr_states
-                        and pr_states[n] != "MERGED"]
-            if t["prs"] and merged and not unmerged and pr_states:
-                merged_open.append((s, t, merged))
+            if (t["prs"] and pr_states
+                    and all(pr_states.get(n) == "MERGED" for n in t["prs"])):
+                merged_open.append((s, t, t["prs"]))
         table = table_states.get(s["uuid"])
         if table and table != s["state"]:
             mismatch.append((s, table))

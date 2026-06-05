@@ -32,12 +32,12 @@ following the existing short-circuit pattern.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE |
 | Parent story | [[id:166E8E44-1573-4DE2-825F-A6037A302AE9][Add PR management support to compass]] |
-| Now          | Implementation + docs landed; dogfood reply on own review round. |
+| Now          | Complete: compass review list/reply/resolve/pending shipped in PR #1078. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-05                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-05 |
 
 * Acceptance
 

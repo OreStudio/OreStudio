@@ -82,7 +82,8 @@ build/nats/
 
 .bash_profile
 .bashrc
-.claude/
+.claude/*
+!.claude/settings.json
 .gitconfig
 .mcp.json
 .profile

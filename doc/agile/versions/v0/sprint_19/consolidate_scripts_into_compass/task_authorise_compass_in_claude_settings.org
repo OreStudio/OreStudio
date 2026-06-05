@@ -1,0 +1,139 @@
+:PROPERTIES:
+:ID: A350DEA8-B032-40A0-904D-A9A207387A4D
+:END:
+#+title: Task: Authorise compass in Claude Code settings
+#+description: Compass is the designed entry point for LLM workflows, yet every session pays permission prompts for it: the checked-in allowlist covers projects/ores.compass/compass.sh but not the root ./compass.sh wrapper that CLAUDE.md itself tells sessions to run, and settings.local.json has accumulated 10+ ad-hoc variants. Decide the authorisation model and encode it once in the checked-in settings.
+#+type: task
+#+level: s1
+#+filetags: :consolidate_scripts_into_compass:sprint_19:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]] |
+| Now          | Deciding the authorisation model; encoding it in settings. |
+| Waiting on   | Nothing.                               |
+| Next         | Land settings change + this analysis; verify prompt-free session. |
+| Last touched | 2026-06-05                               |
+
+* Acceptance
+
+- =Bash(./compass.sh *)= and =Bash(./projects/ores.compass/compass.sh *)=
+  are allowed in the checked-in =.claude/settings.json=.
+- A fresh Claude session can run one read command (=compass where=) and
+  one scaffold command (=compass add capture ...=) with zero permission
+  prompts.
+- The authorisation decision and its rationale are recorded here, with
+  org-roam links to the compass recipes that motivate it.
+
+* Plan
+
+1. Record the decision analysis (below, in Notes).
+2. Add =Bash(./compass.sh *)= to the checked-in allowlist alongside the
+   existing =./projects/ores.compass/compass.sh= entry.
+3. Canonicalise on =./compass.sh= as the documented invocation (it is
+   what CLAUDE.md already instructs).
+4. Marco prunes the accumulated compass variants from his
+   =settings.local.json= at leisure (user-owned file, not in git).
+
+* Notes
+
+** Why this matters
+
+Compass is purpose-built to simplify LLM workflows — orientation
+([[id:FE388774-0714-4D93-AEB0-D6221314D4F9][How do I orient a new session?]]), navigation
+([[id:BDA8F7FB-5CEC-42D8-BC78-766BBC8D4285][How do I search docs with compass?]],
+[[id:DEAC11AE-3753-49FA-994A-98594162A605][How do I index notes for compass?]]), agile authoring
+([[id:5B670808-D28B-4818-A2FA-EA5220D35E8D][How do I add a doc with compass?]],
+[[id:84C9177E-C737-428A-BDF9-E55FA6C9680C][How do I start a unit of work with compass?]]), session
+continuity ([[id:B4C7D2E1-9F3A-4A6B-8E5D-3C1F7B2A9D4E][How do I use the session journal?]],
+[[id:F3373CC1-C2B3-4371-A63F-FBEC54297265][How do I know what I was working on?]]), and status
+([[id:A7D3C1E5-9F2B-4A8D-B6E4-3C7F1D9A2E5B][How do I get a sprint or story status?]],
+[[id:0D378978-7CF1-45F5-896F-63E281CC02CB][How do I see what every worktree is doing?]]). Project
+memory instructs the LLM to [[id:C6735DF2-B905-4A85-BAAA-B7F5CBBEC92D][prefer compass over Unix tools]] and to
+[[id:7F176058-4FF7-4731-920B-26FE318E338F][always use compass for agile artefacts]]. A tool we mandate on
+every session must not pay a permission prompt per invocation.
+
+** Evidence of the current friction
+
+- The checked-in allowlist covers
+  =Bash(./projects/ores.compass/compass.sh *)= — but CLAUDE.md's first
+  instruction is =./compass.sh bearings=, the *root wrapper*, which is
+  not covered. Every session starts with a prompt.
+- =settings.local.json= has accumulated 10+ ad-hoc compass entries
+  (=bash=-prefixed, env-var-prefixed, subcommand-specific, relative and
+  =./=-prefixed variants) — each one a manual approval someone clicked,
+  none of them shared across worktrees or contributors.
+
+** Options considered
+
+1. /Blanket allow, checked in/ (CHOSEN): allow both invocation forms
+   for all subcommands in =.claude/settings.json=.
+2. /Read-only subset/: allow =list/show/search/where/status/journal
+   where/bearings/fleet=; keep prompting for =add/task new/journal
+   update/env=. Rejected: the friction lands exactly on the
+   highest-frequency LLM flows (scaffolding, journaling), and the
+   "safety" is illusory — the same session already holds =Edit(**)=,
+   =Write(**)= and =git *=, so it can do by hand, unprompted,
+   everything the mutating compass commands do.
+3. /Per-user settings.local.json/: the status quo. Demonstrably
+   produces drift (see evidence above) and helps neither fresh
+   worktrees nor other contributors.
+
+** Discovery: the "checked-in" allowlist never existed
+
+While implementing this task we found =.gitignore:85= blanket-ignores
+=.claude/=, so the =settings.json= that "covered"
+=projects/ores.compass/compass.sh= was never in git at all — every
+worktree has been carrying its own private copy, which explains both
+the inconsistency across worktrees and the local.json drift. The fix
+narrows the ignore to =.claude/*= with =!.claude/settings.json=,
+adopting Claude Code's own convention: =settings.json= shared and
+reviewed, =settings.local.json= personal, and the generated
+=.claude/skills/= (deployed by CMake from =doc/llm/skills=) still
+ignored.
+
+** Rationale for the chosen model
+
+- Compass is repo-owned, version-controlled tooling; its mutating
+  surface is repo-local files (doc scaffolds, =.journal.org=, =.env=)
+  and git branch creation — all reversible, all reviewable in the PR
+  that carries them.
+- Authorising the entry point implicitly authorises whatever compass
+  shells out to (git, gh, psql) /through compass/ — that is the
+  point: compass is the trusted boundary, and its subcommands are the
+  audited, recipe-documented way to do those operations
+  ([[id:28F78E07-834D-4755-BB03-89BD7C17B01E][Compass basic command syntax]]).
+- Checked-in settings make the authorisation uniform across all five
+  worktrees and any future contributor, and changes to it are
+  reviewed like any other code.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

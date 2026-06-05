@@ -1,0 +1,62 @@
+{
+  "permissions": {
+    "allow": [
+"Edit(**)",
+"Write(**)",
+"Bash(make *)",
+"Bash(cmake *)",
+"Bash(emacs -Q --script *)",
+"Bash(build/scripts/build.sh *)",
+"Bash(source build/scripts/set_ssh_agent.sh)",
+"Bash(projects/ores.sql/run_sql.sh *)",
+"Bash(projects/ores.sql/recreate_database.sh *)",
+"Bash(projects/ores.sql/utility/validate_schemas.sh *)",
+"Bash(projects/ores.sql/utility/kill_db_connections.sh *)",
+"Bash(./compass.sh *)",
+"Bash(compass.sh *)",
+"Bash(./projects/ores.compass/compass.sh *)",
+"Bash(projects/ores.compass/compass.sh *)",
+"Bash(projects/ores.codegen/generate_doc.sh *)",
+"Bash(projects/ores.codegen/run_generator.sh *)",
+"Bash(projects/ores.codegen/plantuml_er_generate.sh *)",
+"Bash(ctest *)",
+"Bash(build/output/*/publish/bin/ores.* *)",
+"Bash(git *)",
+"Bash(gh pr view *)",
+"Bash(gh pr list *)",
+"Bash(gh pr status *)",
+"Bash(gh pr checks *)",
+"Bash(gh pr diff *)",
+"Bash(gh pr create *)",
+"Bash(gh pr edit *)",
+"Bash(gh pr comment *)",
+"Bash(gh pr review *)",
+"Bash(gh pr ready *)",
+"Bash(gh pr reopen *)",
+"Bash(gh pr update-branch *)",
+"Bash(gh pr checkout *)",
+"Bash(gh run *)",
+"Bash(gh api *)",
+"WebFetch(domain:*)",
+"WebSearch",
+"Bash(find *)",
+"Bash(grep *)",
+"Bash(python3 *)",
+"Bash(java *)",
+"Bash(echo *)",
+"Bash(wc *)",
+"Bash(sort *)",
+"Bash(uniq *)"
+    ]
+  },
+  "sandbox": {
+"network": {
+  "allowedHosts": ["localhost"]
+},
+"filesystem": {
+  "allowWrite": [
+    "~/.cache/sccache"
+  ]
+}
+  }
+}

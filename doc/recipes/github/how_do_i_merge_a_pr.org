@@ -21,17 +21,20 @@ How do I merge a green, approved PR and delete its feature branch?
 
 1. /Merge/ — the guard rails are built in: the command refuses while
    review threads are unresolved or CI is not green, always creates a
-   merge commit (never squash/rebase), and deletes the remote branch
-   (worktree-safe; the local branch is left alone):
+   merge commit (never squash/rebase), deletes the remote branch
+   (worktree-safe), and closes the branch's task out (task and story
+   row to DONE, journal stamped):
 
    #+begin_src sh :results verbatim
-   ./compass.sh pr merge             # current branch's PR
-   ./compass.sh pr merge 123         # explicit PR number
-   ./compass.sh pr merge --force     # override the guards, stating what was bypassed
+   ./compass.sh pr merge               # current branch's PR
+   ./compass.sh pr merge 123           # explicit PR number
+   ./compass.sh pr merge --force       # override the guards, stating what was bypassed
+   ./compass.sh pr merge --keep-open   # leave the task open (multi-task branch, partial slice)
    #+end_src
 
-2. /Close out/: follow the printed prompt — mark the task DONE with a
-   Result, update the story's =* Tasks= row, stamp the journal.
+2. /Close out/: write the task's =* Result= prose and commit. With
+   =--keep-open=, run =compass task done <slug>= when the task really
+   finishes.
 
 3. /Sync local main/:
 

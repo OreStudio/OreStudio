@@ -65,6 +65,7 @@ so every compass command renders documents identically.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Gemini: None-guard d.title/d.description in list (2 sites) | doc_list.py | Decline | doc_index.py:179-180 coalesces missing fields to ""; Doc declares title/description as str — None is unreachable via load_all() |
+| 2 | Gemini: None-guard doc.title in show header | doc_show.py | Decline | Same contract; guards would imply None is a valid state |
 
 * Result

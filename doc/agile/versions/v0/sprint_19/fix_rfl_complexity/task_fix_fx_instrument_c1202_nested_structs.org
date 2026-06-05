@@ -25,12 +25,12 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]] |
-| Now          | Not yet started.                       |
+| Now          | Decomposing the 7 FX instrument types. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-04                               |
+| Next         | Apply identity/audit/type-specific pattern to all 7 headers and callers. |
+| Last touched | 2026-06-05                               |
 
 * Acceptance
 
@@ -38,9 +38,16 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Plan
 
-(Transient implementation strategy. Written when work starts;
-distilled into the parent story's =* Decisions= and cleared when the
-task closes. Plans do not outlive their task.)
+Follow the rates-instrument pattern from PR #1047, updated for the
+audit_record move to dq.api (PR #1070):
+
+1. Each of the 7 FX headers gains =instrument_identity identity= +
+   =dq::domain::audit_record audit= + type-specific flat fields;
+   parent Literal stays well below the C1202 threshold.
+2. Update all callers per type: mapper, generator, service,
+   repository, trade_handler, plus Qt parse/form/import paths.
+3. Wire format changes to nested JSON (internal-only).
+4. Round-trip tests updated.
 
 * Notes
 

@@ -98,6 +98,7 @@ See [[id:D75F4921-B431-4E78-99AB-62A47F761D1D][Investigation: MSVC C1202 and rfl
 | PR                                                                         | Title                                                                                         |
 |----------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------|
 | [[https://github.com/OreStudio/OreStudio/pull/1047][#1047]] | [trading] Decompose all 9 rates instruments + extract shared audit_record / instrument_identity |
+| [[https://github.com/OreStudio/OreStudio/pull/1070][#1070]] | [dq,trading] Move audit_record from ores.utility to ores.dq.api |
 
 * Review
 

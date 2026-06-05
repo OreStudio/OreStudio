@@ -20,9 +20,8 @@
 #ifndef ORES_TRADING_DOMAIN_EQUITY_DIGITAL_OPTION_INSTRUMENT_HPP
 #define ORES_TRADING_DOMAIN_EQUITY_DIGITAL_OPTION_INSTRUMENT_HPP
 
-#include "ores.utility/uuid/tenant_id.hpp"
-#include <boost/uuid/uuid.hpp>
-#include <chrono>
+#include "ores.dq.api/domain/audit_record.hpp"
+#include "ores.trading.api/domain/instrument_identity.hpp"
 #include <optional>
 #include <string>
 
@@ -34,21 +33,7 @@ namespace ores::trading::domain {
  * Represents EquityDigitalOption and EquityTouchOption trades.
  */
 struct equity_digital_option_instrument final {
-    int version = 0;
-    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
-
-    /**
-     * @brief UUID uniquely identifying this equity digital option instrument.
-     */
-    boost::uuids::uuid instrument_id;
-
-    boost::uuids::uuid party_id;
-    std::optional<boost::uuids::uuid> trade_id;
-
-    /**
-     * @brief ORE product type code: EquityDigitalOption or EquityTouchOption.
-     */
-    std::string trade_type_code;
+    instrument_identity identity;
 
     /**
      * @brief ORE equity Name identifier.
@@ -98,11 +83,8 @@ struct equity_digital_option_instrument final {
     std::optional<double> payout_amount;
 
     std::string description;
-    std::string modified_by;
-    std::string performed_by;
-    std::string change_reason_code;
-    std::string change_commentary;
-    std::chrono::system_clock::time_point recorded_at;
+
+    ores::dq::domain::audit_record audit;
 };
 
 }

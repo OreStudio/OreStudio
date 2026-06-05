@@ -38,7 +38,7 @@ std::string equity_swap_instrument_repository::sql() {
 
 void equity_swap_instrument_repository::write(context ctx,
                                               const domain::equity_swap_instrument& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing equity swap instrument: " << v.instrument_id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing equity swap instrument: " << v.identity.instrument_id;
     execute_write_query(ctx,
                         equity_swap_instrument_mapper::map(v),
                         lg(),

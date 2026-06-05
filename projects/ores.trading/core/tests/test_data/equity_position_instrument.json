@@ -10,16 +10,20 @@
     "currency maps from ReturnData.Currency (USD)"
   ],
   "instrument": {
-    "trade_type_code": "EquityPosition",
+    "identity": {
+      "trade_type_code": "EquityPosition"
+    },
     "underlying_name": "BBG00R251JN8",
     "currency": "USD",
     "quantity": 18101.486,
     "price": 6927.586,
     "option_data_json": "",
     "description": "",
-    "modified_by": "ores",
-    "performed_by": "ores",
-    "change_reason_code": "system.external_data_import",
-    "change_commentary": "Imported from ORE XML"
+    "audit": {
+      "modified_by": "ores",
+      "performed_by": "ores",
+      "change_reason_code": "system.external_data_import",
+      "change_commentary": "Imported from ORE XML"
+    }
   }
 }

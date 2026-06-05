@@ -6,21 +6,25 @@
     "long_short is hardcoded to Long by mapper",
     "variance_strike maps from Strike (0.20)",
     "maturity_date maps from EndDate (2025-05-20)",
-    "MomentType (Variance) is implicit in the trade type — not stored separately"
+    "MomentType (Variance) is implicit in the trade type \u2014 not stored separately"
   ],
   "instrument": {
-    "trade_type_code": "EquityVarianceSwap",
+    "identity": {
+      "trade_type_code": "EquityVarianceSwap"
+    },
     "underlying_name": ".SPX",
     "currency": "USD",
     "notional": 50000.0,
-    "variance_strike": 0.20,
+    "variance_strike": 0.2,
     "start_date": "2025-02-20",
     "maturity_date": "2025-05-20",
     "long_short": "Long",
     "description": "",
-    "modified_by": "ores",
-    "performed_by": "ores",
-    "change_reason_code": "system.external_data_import",
-    "change_commentary": "Imported from ORE XML"
+    "audit": {
+      "modified_by": "ores",
+      "performed_by": "ores",
+      "change_reason_code": "system.external_data_import",
+      "change_commentary": "Imported from ORE XML"
+    }
   }
 }

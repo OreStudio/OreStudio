@@ -212,7 +212,7 @@ TEST_CASE("equity_double_barrier_option_forward", tags) {
     const auto r = load_and_map_equity("Equity_Double_Barrier_Option.xml");
     const auto& instr = std::get<ores::trading::domain::equity_barrier_option_instrument>(r);
 
-    CHECK(instr.trade_type_code == "EquityDoubleBarrierOption");
+    CHECK(instr.identity.trade_type_code == "EquityDoubleBarrierOption");
     CHECK(!instr.option_type.empty());
     CHECK(!instr.underlying_name.empty());
 
@@ -240,7 +240,7 @@ TEST_CASE("equity_european_barrier_option_forward", tags) {
     const auto r = load_and_map_equity("Equity_European_Barrier_Option.xml");
     const auto& instr = std::get<ores::trading::domain::equity_barrier_option_instrument>(r);
 
-    CHECK(instr.trade_type_code == "EquityEuropeanBarrierOption");
+    CHECK(instr.identity.trade_type_code == "EquityEuropeanBarrierOption");
     CHECK(!instr.option_type.empty());
 
     BOOST_LOG_SEV(lg, info) << "EquityEuropeanBarrierOption forward test passed";

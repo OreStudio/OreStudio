@@ -41,13 +41,15 @@ equity_asian_option_instrument_service::get_equity_asian_option_instrument(const
 
 void equity_asian_option_instrument_service::save_equity_asian_option_instrument(
     const domain::equity_asian_option_instrument& v) {
-    if (v.instrument_id.is_nil())
+    if (v.identity.instrument_id.is_nil())
         throw std::invalid_argument("Equity asian option instrument id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving equity_asian_option_instrument: " << v.instrument_id;
+    BOOST_LOG_SEV(lg(), debug) << "Saving equity_asian_option_instrument: "
+                               << v.identity.instrument_id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved equity_asian_option_instrument: " << t.instrument_id;
+    BOOST_LOG_SEV(lg(), info) << "Saved equity_asian_option_instrument: "
+                              << t.identity.instrument_id;
 }
 
 

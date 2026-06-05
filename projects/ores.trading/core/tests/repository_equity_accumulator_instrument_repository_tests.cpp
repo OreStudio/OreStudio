@@ -43,9 +43,9 @@ using namespace ores::logging;
  */
 equity_accumulator_instrument make_instrument(database_helper& h) {
     equity_accumulator_instrument r;
-    r.instrument_id = boost::uuids::random_generator()();
-    r.tenant_id = h.tenant_id();
-    r.trade_type_code = "EquityAccumulator";
+    r.identity.instrument_id = boost::uuids::random_generator()();
+    r.identity.tenant_id = h.tenant_id();
+    r.identity.trade_type_code = "EquityAccumulator";
     r.underlying_name = ".STOXX50";
     r.currency = "EUR";
     r.strike = 4000.0;
@@ -57,10 +57,10 @@ equity_accumulator_instrument make_instrument(database_helper& h) {
     r.knock_out_level = 3500.0;
     r.target_type = "";
     r.payoff_type = "Decumulator";
-    r.modified_by = h.db_user();
-    r.performed_by = "ores";
-    r.change_reason_code = "system.external_data_import";
-    r.change_commentary = "Imported from ORE XML";
+    r.audit.modified_by = h.db_user();
+    r.audit.performed_by = "ores";
+    r.audit.change_reason_code = "system.external_data_import";
+    r.audit.change_commentary = "Imported from ORE XML";
     return r;
 }
 
@@ -74,7 +74,7 @@ TEST_CASE("equity_accumulator_instrument_write_and_read_latest", tags) {
     auto ctx = h.context().with_party(h.tenant_id(), party_id, {party_id}, h.db_user());
 
     auto instr = make_instrument(h);
-    const auto id_str = boost::uuids::to_string(instr.instrument_id);
+    const auto id_str = boost::uuids::to_string(instr.identity.instrument_id);
     BOOST_LOG_SEV(lg, debug) << "Writing equity accumulator instrument: " << instr;
 
     equity_accumulator_instrument_repository repo;
@@ -82,7 +82,7 @@ TEST_CASE("equity_accumulator_instrument_write_and_read_latest", tags) {
 
     const auto read = repo.read_latest(ctx, id_str);
     REQUIRE(read.size() == 1);
-    CHECK(read[0].trade_type_code == "EquityAccumulator");
+    CHECK(read[0].identity.trade_type_code == "EquityAccumulator");
     CHECK(read[0].underlying_name == ".STOXX50");
     CHECK(read[0].currency == "EUR");
     CHECK(read[0].strike == 4000.0);
@@ -115,7 +115,7 @@ TEST_CASE("equity_accumulator_instrument_remove", tags) {
     auto ctx = h.context().with_party(h.tenant_id(), party_id, {party_id}, h.db_user());
 
     auto instr = make_instrument(h);
-    const auto id_str = boost::uuids::to_string(instr.instrument_id);
+    const auto id_str = boost::uuids::to_string(instr.identity.instrument_id);
 
     equity_accumulator_instrument_repository repo;
     repo.write(ctx, instr);

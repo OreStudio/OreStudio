@@ -256,11 +256,11 @@ equity_instrument_mapper::forward_equity_option(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping EquityOption: " << std::string(t.id);
     trading::domain::equity_instrument_variant result;
     auto& inst = result.emplace<ores::trading::domain::equity_option_instrument>();
-    inst.trade_type_code = "EquityOption";
-    inst.modified_by = "ores";
-    inst.performed_by = "ores";
-    inst.change_reason_code = "system.external_data_import";
-    inst.change_commentary = "Imported from ORE XML";
+    inst.identity.trade_type_code = "EquityOption";
+    inst.audit.modified_by = "ores";
+    inst.audit.performed_by = "ores";
+    inst.audit.change_reason_code = "system.external_data_import";
+    inst.audit.change_commentary = "Imported from ORE XML";
     if (!t.EquityOptionData)
         return result;
     const auto& d = *t.EquityOptionData;
@@ -284,11 +284,11 @@ equity_instrument_mapper::forward_equity_forward(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping EquityForward: " << std::string(t.id);
     trading::domain::equity_instrument_variant result;
     auto& inst = result.emplace<ores::trading::domain::equity_forward_instrument>();
-    inst.trade_type_code = "EquityForward";
-    inst.modified_by = "ores";
-    inst.performed_by = "ores";
-    inst.change_reason_code = "system.external_data_import";
-    inst.change_commentary = "Imported from ORE XML";
+    inst.identity.trade_type_code = "EquityForward";
+    inst.audit.modified_by = "ores";
+    inst.audit.performed_by = "ores";
+    inst.audit.change_reason_code = "system.external_data_import";
+    inst.audit.change_commentary = "Imported from ORE XML";
     if (!t.EquityForwardData)
         return result;
     const auto& d = *t.EquityForwardData;
@@ -310,11 +310,11 @@ equity_instrument_mapper::forward_equity_swap(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping EquitySwap: " << std::string(t.id);
     trading::domain::equity_instrument_variant result;
     auto& inst = result.emplace<ores::trading::domain::equity_swap_instrument>();
-    inst.trade_type_code = "EquitySwap";
-    inst.modified_by = "ores";
-    inst.performed_by = "ores";
-    inst.change_reason_code = "system.external_data_import";
-    inst.change_commentary = "Imported from ORE XML";
+    inst.identity.trade_type_code = "EquitySwap";
+    inst.audit.modified_by = "ores";
+    inst.audit.performed_by = "ores";
+    inst.audit.change_reason_code = "system.external_data_import";
+    inst.audit.change_commentary = "Imported from ORE XML";
     if (!t.EquitySwapData)
         return result;
     const auto& d = *t.EquitySwapData;
@@ -359,11 +359,11 @@ equity_instrument_mapper::forward_equity_variance_swap(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping EquityVarianceSwap: " << std::string(t.id);
     trading::domain::equity_instrument_variant result;
     auto& inst = result.emplace<ores::trading::domain::equity_variance_swap_instrument>();
-    inst.trade_type_code = "EquityVarianceSwap";
-    inst.modified_by = "ores";
-    inst.performed_by = "ores";
-    inst.change_reason_code = "system.external_data_import";
-    inst.change_commentary = "Imported from ORE XML";
+    inst.identity.trade_type_code = "EquityVarianceSwap";
+    inst.audit.modified_by = "ores";
+    inst.audit.performed_by = "ores";
+    inst.audit.change_reason_code = "system.external_data_import";
+    inst.audit.change_commentary = "Imported from ORE XML";
     if (!t.EquityVarianceSwapData)
         return result;
     const auto& d = *t.EquityVarianceSwapData;
@@ -386,11 +386,11 @@ equity_instrument_mapper::forward_equity_barrier_option(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping EquityBarrierOption: " << std::string(t.id);
     trading::domain::equity_instrument_variant result;
     auto& inst = result.emplace<ores::trading::domain::equity_barrier_option_instrument>();
-    inst.trade_type_code = "EquityBarrierOption";
-    inst.modified_by = "ores";
-    inst.performed_by = "ores";
-    inst.change_reason_code = "system.external_data_import";
-    inst.change_commentary = "Imported from ORE XML";
+    inst.identity.trade_type_code = "EquityBarrierOption";
+    inst.audit.modified_by = "ores";
+    inst.audit.performed_by = "ores";
+    inst.audit.change_reason_code = "system.external_data_import";
+    inst.audit.change_commentary = "Imported from ORE XML";
     if (!t.EquityBarrierOptionData)
         return result;
     const auto& d = *t.EquityBarrierOptionData;
@@ -419,11 +419,11 @@ equity_instrument_mapper::forward_equity_asian_option(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping EquityAsianOption: " << std::string(t.id);
     trading::domain::equity_instrument_variant result;
     auto& inst = result.emplace<ores::trading::domain::equity_asian_option_instrument>();
-    inst.trade_type_code = "EquityAsianOption";
-    inst.modified_by = "ores";
-    inst.performed_by = "ores";
-    inst.change_reason_code = "system.external_data_import";
-    inst.change_commentary = "Imported from ORE XML";
+    inst.identity.trade_type_code = "EquityAsianOption";
+    inst.audit.modified_by = "ores";
+    inst.audit.performed_by = "ores";
+    inst.audit.change_reason_code = "system.external_data_import";
+    inst.audit.change_commentary = "Imported from ORE XML";
     if (!t.EquityAsianOptionData)
         return result;
     const auto& d = *t.EquityAsianOptionData;
@@ -449,11 +449,11 @@ equity_instrument_mapper::forward_equity_digital_option(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping EquityDigitalOption: " << std::string(t.id);
     trading::domain::equity_instrument_variant result;
     auto& inst = result.emplace<ores::trading::domain::equity_digital_option_instrument>();
-    inst.trade_type_code = "EquityDigitalOption";
-    inst.modified_by = "ores";
-    inst.performed_by = "ores";
-    inst.change_reason_code = "system.external_data_import";
-    inst.change_commentary = "Imported from ORE XML";
+    inst.identity.trade_type_code = "EquityDigitalOption";
+    inst.audit.modified_by = "ores";
+    inst.audit.performed_by = "ores";
+    inst.audit.change_reason_code = "system.external_data_import";
+    inst.audit.change_commentary = "Imported from ORE XML";
     if (!t.EquityDigitalOptionData)
         return result;
     const auto& d = *t.EquityDigitalOptionData;
@@ -477,11 +477,11 @@ equity_instrument_mapper::forward_equity_touch_option(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping EquityTouchOption: " << std::string(t.id);
     trading::domain::equity_instrument_variant result;
     auto& inst = result.emplace<ores::trading::domain::equity_digital_option_instrument>();
-    inst.trade_type_code = "EquityTouchOption";
-    inst.modified_by = "ores";
-    inst.performed_by = "ores";
-    inst.change_reason_code = "system.external_data_import";
-    inst.change_commentary = "Imported from ORE XML";
+    inst.identity.trade_type_code = "EquityTouchOption";
+    inst.audit.modified_by = "ores";
+    inst.audit.performed_by = "ores";
+    inst.audit.change_reason_code = "system.external_data_import";
+    inst.audit.change_commentary = "Imported from ORE XML";
     if (!t.EquityTouchOptionData)
         return result;
     const auto& d = *t.EquityTouchOptionData;
@@ -508,11 +508,11 @@ equity_instrument_mapper::forward_equity_outperformance_option(const trade& t) {
                                << std::string(t.id);
     trading::domain::equity_instrument_variant result;
     auto& inst = result.emplace<ores::trading::domain::equity_option_instrument>();
-    inst.trade_type_code = "EquityOutperformanceOption";
-    inst.modified_by = "ores";
-    inst.performed_by = "ores";
-    inst.change_reason_code = "system.external_data_import";
-    inst.change_commentary = "Imported from ORE XML";
+    inst.identity.trade_type_code = "EquityOutperformanceOption";
+    inst.audit.modified_by = "ores";
+    inst.audit.performed_by = "ores";
+    inst.audit.change_reason_code = "system.external_data_import";
+    inst.audit.change_commentary = "Imported from ORE XML";
     if (!t.EquityOutperformanceOptionData)
         return result;
     const auto& d = *t.EquityOutperformanceOptionData;
@@ -541,11 +541,11 @@ equity_instrument_mapper::forward_equity_accumulator(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping EquityAccumulator: " << std::string(t.id);
     trading::domain::equity_instrument_variant result;
     auto& inst = result.emplace<ores::trading::domain::equity_accumulator_instrument>();
-    inst.trade_type_code = "EquityAccumulator";
-    inst.modified_by = "ores";
-    inst.performed_by = "ores";
-    inst.change_reason_code = "system.external_data_import";
-    inst.change_commentary = "Imported from ORE XML";
+    inst.identity.trade_type_code = "EquityAccumulator";
+    inst.audit.modified_by = "ores";
+    inst.audit.performed_by = "ores";
+    inst.audit.change_reason_code = "system.external_data_import";
+    inst.audit.change_commentary = "Imported from ORE XML";
     if (!t.EquityAccumulatorData)
         return result;
     const auto& d = *t.EquityAccumulatorData;
@@ -580,11 +580,11 @@ equity_instrument_mapper::forward_equity_tarf(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping EquityTaRF: " << std::string(t.id);
     trading::domain::equity_instrument_variant result;
     auto& inst = result.emplace<ores::trading::domain::equity_accumulator_instrument>();
-    inst.trade_type_code = "EquityTaRF";
-    inst.modified_by = "ores";
-    inst.performed_by = "ores";
-    inst.change_reason_code = "system.external_data_import";
-    inst.change_commentary = "Imported from ORE XML";
+    inst.identity.trade_type_code = "EquityTaRF";
+    inst.audit.modified_by = "ores";
+    inst.audit.performed_by = "ores";
+    inst.audit.change_reason_code = "system.external_data_import";
+    inst.audit.change_commentary = "Imported from ORE XML";
     if (!t.EquityTaRFData)
         return result;
     const auto& d = *t.EquityTaRFData;
@@ -614,11 +614,11 @@ equity_instrument_mapper::forward_equity_cliquet_option(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping EquityCliquetOption: " << std::string(t.id);
     trading::domain::equity_instrument_variant result;
     auto& inst = result.emplace<ores::trading::domain::equity_option_instrument>();
-    inst.trade_type_code = "EquityCliquetOption";
-    inst.modified_by = "ores";
-    inst.performed_by = "ores";
-    inst.change_reason_code = "system.external_data_import";
-    inst.change_commentary = "Imported from ORE XML";
+    inst.identity.trade_type_code = "EquityCliquetOption";
+    inst.audit.modified_by = "ores";
+    inst.audit.performed_by = "ores";
+    inst.audit.change_reason_code = "system.external_data_import";
+    inst.audit.change_commentary = "Imported from ORE XML";
     if (!t.EquityCliquetOptionData)
         return result;
     const auto& d = *t.EquityCliquetOptionData;
@@ -647,11 +647,11 @@ equity_instrument_mapper::forward_equity_worst_of_basket_swap(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping EquityWorstOfBasketSwap: " << std::string(t.id);
     trading::domain::equity_instrument_variant result;
     auto& inst = result.emplace<ores::trading::domain::equity_swap_instrument>();
-    inst.trade_type_code = "EquityWorstOfBasketSwap";
-    inst.modified_by = "ores";
-    inst.performed_by = "ores";
-    inst.change_reason_code = "system.external_data_import";
-    inst.change_commentary = "Imported from ORE XML";
+    inst.identity.trade_type_code = "EquityWorstOfBasketSwap";
+    inst.audit.modified_by = "ores";
+    inst.audit.performed_by = "ores";
+    inst.audit.change_reason_code = "system.external_data_import";
+    inst.audit.change_commentary = "Imported from ORE XML";
     if (!t.EquityWorstOfBasketSwapData)
         return result;
     const auto& d = *t.EquityWorstOfBasketSwapData;
@@ -1065,11 +1065,11 @@ equity_instrument_mapper::forward_equity_double_barrier_option(const trade& t) {
                                << std::string(t.id);
     trading::domain::equity_instrument_variant result;
     auto& inst = result.emplace<ores::trading::domain::equity_barrier_option_instrument>();
-    inst.trade_type_code = "EquityDoubleBarrierOption";
-    inst.modified_by = "ores";
-    inst.performed_by = "ores";
-    inst.change_reason_code = "system.external_data_import";
-    inst.change_commentary = "Imported from ORE XML";
+    inst.identity.trade_type_code = "EquityDoubleBarrierOption";
+    inst.audit.modified_by = "ores";
+    inst.audit.performed_by = "ores";
+    inst.audit.change_reason_code = "system.external_data_import";
+    inst.audit.change_commentary = "Imported from ORE XML";
     if (!t.EquityDoubleBarrierOptionData)
         return result;
     const auto& d = *t.EquityDoubleBarrierOptionData;
@@ -1098,11 +1098,11 @@ equity_instrument_mapper::forward_equity_european_barrier_option(const trade& t)
                                << std::string(t.id);
     trading::domain::equity_instrument_variant result;
     auto& inst = result.emplace<ores::trading::domain::equity_barrier_option_instrument>();
-    inst.trade_type_code = "EquityEuropeanBarrierOption";
-    inst.modified_by = "ores";
-    inst.performed_by = "ores";
-    inst.change_reason_code = "system.external_data_import";
-    inst.change_commentary = "Imported from ORE XML";
+    inst.identity.trade_type_code = "EquityEuropeanBarrierOption";
+    inst.audit.modified_by = "ores";
+    inst.audit.performed_by = "ores";
+    inst.audit.change_reason_code = "system.external_data_import";
+    inst.audit.change_commentary = "Imported from ORE XML";
     if (!t.EquityEuropeanBarrierOptionData)
         return result;
     const auto& d = *t.EquityEuropeanBarrierOptionData;

@@ -12,7 +12,9 @@
     "averaging_end_date maps from ObservationDates.Rules.EndDate (2026-01-19)"
   ],
   "instrument": {
-    "trade_type_code": "EquityAsianOption",
+    "identity": {
+      "trade_type_code": "EquityAsianOption"
+    },
     "underlying_name": "RIC:.SPX",
     "currency": "USD",
     "notional": 1.0,
@@ -25,9 +27,11 @@
     "averaging_start_date": "2025-07-12",
     "averaging_end_date": "2026-01-19",
     "description": "",
-    "modified_by": "ores",
-    "performed_by": "ores",
-    "change_reason_code": "system.external_data_import",
-    "change_commentary": "Imported from ORE XML"
+    "audit": {
+      "modified_by": "ores",
+      "performed_by": "ores",
+      "change_reason_code": "system.external_data_import",
+      "change_commentary": "Imported from ORE XML"
+    }
   }
 }

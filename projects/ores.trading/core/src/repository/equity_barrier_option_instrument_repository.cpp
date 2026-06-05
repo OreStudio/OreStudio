@@ -38,7 +38,8 @@ std::string equity_barrier_option_instrument_repository::sql() {
 
 void equity_barrier_option_instrument_repository::write(
     context ctx, const domain::equity_barrier_option_instrument& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing equity barrier option instrument: " << v.instrument_id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing equity barrier option instrument: "
+                               << v.identity.instrument_id;
     execute_write_query(ctx,
                         equity_barrier_option_instrument_mapper::map(v),
                         lg(),

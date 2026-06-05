@@ -38,7 +38,7 @@ std::string equity_option_instrument_repository::sql() {
 
 void equity_option_instrument_repository::write(context ctx,
                                                 const domain::equity_option_instrument& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing equity option instrument: " << v.instrument_id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing equity option instrument: " << v.identity.instrument_id;
     execute_write_query(ctx,
                         equity_option_instrument_mapper::map(v),
                         lg(),

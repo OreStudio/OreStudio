@@ -9,7 +9,9 @@
     "upper_barrier is absent: XML has a single-level BarrierData block"
   ],
   "instrument": {
-    "trade_type_code": "EquityBarrierOption",
+    "identity": {
+      "trade_type_code": "EquityBarrierOption"
+    },
     "underlying_name": "RIC:.SPX",
     "currency": "USD",
     "notional": 1000.0,
@@ -24,9 +26,11 @@
     "upper_barrier_type": "",
     "rebate": null,
     "description": "",
-    "modified_by": "ores",
-    "performed_by": "ores",
-    "change_reason_code": "system.external_data_import",
-    "change_commentary": "Imported from ORE XML"
+    "audit": {
+      "modified_by": "ores",
+      "performed_by": "ores",
+      "change_reason_code": "system.external_data_import",
+      "change_commentary": "Imported from ORE XML"
+    }
   }
 }

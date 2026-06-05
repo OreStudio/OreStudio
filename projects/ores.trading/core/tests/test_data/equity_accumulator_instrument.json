@@ -12,7 +12,9 @@
     "target_amount is absent for Decumulator"
   ],
   "instrument": {
-    "trade_type_code": "EquityAccumulator",
+    "identity": {
+      "trade_type_code": "EquityAccumulator"
+    },
     "underlying_name": ".STOXX50",
     "currency": "EUR",
     "strike": 4000.0,
@@ -26,9 +28,11 @@
     "target_type": "",
     "payoff_type": "Decumulator",
     "description": "",
-    "modified_by": "ores",
-    "performed_by": "ores",
-    "change_reason_code": "system.external_data_import",
-    "change_commentary": "Imported from ORE XML"
+    "audit": {
+      "modified_by": "ores",
+      "performed_by": "ores",
+      "change_reason_code": "system.external_data_import",
+      "change_commentary": "Imported from ORE XML"
+    }
   }
 }

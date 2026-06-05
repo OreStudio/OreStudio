@@ -38,7 +38,8 @@ std::string equity_accumulator_instrument_repository::sql() {
 
 void equity_accumulator_instrument_repository::write(
     context ctx, const domain::equity_accumulator_instrument& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing equity accumulator instrument: " << v.instrument_id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing equity accumulator instrument: "
+                               << v.identity.instrument_id;
     execute_write_query(ctx,
                         equity_accumulator_instrument_mapper::map(v),
                         lg(),

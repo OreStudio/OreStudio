@@ -163,7 +163,7 @@ void EquityInstrumentForm::clear() {
 }
 
 void EquityInstrumentForm::setTradeType(const QString& code, bool has_options, bool has_extension) {
-    instrument_.trade_type_code = code.trimmed().toStdString();
+    instrument_.identity.trade_type_code = code.trimmed().toStdString();
     ui_->tradeTypeCodeEdit->setText(code.trimmed());
     ui_->subTabWidget->setTabVisible(ui_->subTabWidget->indexOf(ui_->optionsTab), has_options);
     ui_->subTabWidget->setTabVisible(ui_->subTabWidget->indexOf(ui_->extensionsTab), has_extension);
@@ -203,8 +203,8 @@ bool EquityInstrumentForm::isLoaded() const {
 }
 
 void EquityInstrumentForm::setChangeReason(const std::string& code, const std::string& commentary) {
-    instrument_.change_reason_code = code;
-    instrument_.change_commentary = commentary;
+    instrument_.audit.change_reason_code = code;
+    instrument_.audit.change_commentary = commentary;
 }
 
 void EquityInstrumentForm::writeUiToInstrument() {
@@ -217,8 +217,8 @@ void EquityInstrumentForm::writeUiToInstrument() {
     instrument_.exercise_type = InstrumentFormUtils::getComboValue(ui_->exerciseTypeCombo);
     instrument_.strike = ui_->strikePriceSpinBox->value();
     instrument_.cliquet_frequency = InstrumentFormUtils::getComboValue(ui_->cliquetFrequencyCombo);
-    instrument_.modified_by = username_;
-    instrument_.performed_by = username_;
+    instrument_.audit.modified_by = username_;
+    instrument_.audit.performed_by = username_;
 }
 
 void EquityInstrumentForm::populate(const trading::domain::equity_option_instrument& instr) {
@@ -258,7 +258,7 @@ void EquityInstrumentForm::populateFromInstrument() {
     };
 
     block(true);
-    ui_->tradeTypeCodeEdit->setText(QString::fromStdString(instrument_.trade_type_code));
+    ui_->tradeTypeCodeEdit->setText(QString::fromStdString(instrument_.identity.trade_type_code));
     ui_->underlyingCodeEdit->setText(QString::fromStdString(instrument_.underlying_name));
     InstrumentFormUtils::setComboValue(ui_->currencyCombo, instrument_.currency);
     ui_->notionalSpinBox->setValue(instrument_.notional);
@@ -287,12 +287,12 @@ void EquityInstrumentForm::populateFromInstrument() {
 
 void EquityInstrumentForm::emitProvenance() {
     InstrumentProvenance p;
-    p.version = instrument_.version;
-    p.modified_by = instrument_.modified_by;
-    p.performed_by = instrument_.performed_by;
-    p.recorded_at = instrument_.recorded_at;
-    p.change_reason_code = instrument_.change_reason_code;
-    p.change_commentary = instrument_.change_commentary;
+    p.version = instrument_.identity.version;
+    p.modified_by = instrument_.audit.modified_by;
+    p.performed_by = instrument_.audit.performed_by;
+    p.recorded_at = instrument_.audit.recorded_at;
+    p.change_reason_code = instrument_.audit.change_reason_code;
+    p.change_commentary = instrument_.audit.change_commentary;
     emit provenanceChanged(p);
 }
 
@@ -337,7 +337,7 @@ void EquityInstrumentForm::saveInstrument(std::function<void(const std::string&)
             BOOST_LOG_SEV(lg(), info) << "Equity instrument saved";
             self->dirty_ = false;
             self->emitProvenance();
-            on_success(boost::uuids::to_string(self->instrument_.instrument_id));
+            on_success(boost::uuids::to_string(self->instrument_.identity.instrument_id));
         });
 
     auto* cm = clientManager_;

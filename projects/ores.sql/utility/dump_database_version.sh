@@ -24,7 +24,7 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/../../.." && pwd)"
-RUN_SQL="${SCRIPT_DIR}/../run_sql.sh"
+RUN_SQL="${SCRIPT_DIR}/../../ores.compass/compass.sh db sql --"
 ENV_FILE="${REPO_ROOT}/.env"
 
 if [[ -f "${ENV_FILE}" ]]; then

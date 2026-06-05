@@ -17,7 +17,7 @@ The most common development operations:
 
 | Task                         | Command                              |
 |------------------------------+--------------------------------------|
-| Recreate everything          | =./recreate_database.sh= (with args)|
+| Recreate everything          | =compass db recreate= (with args)|
 | Recreate one environment     | =./recreate_env.sh -e local1=        |
 | Validate schema consistency  | =./utility/validate_schemas.sh=      |
 | Recreate a single entity     | =./utility/recreate_entity.sh NAME=  |
@@ -389,12 +389,12 @@ PGPASSWORD='DDL_PASS' psql -U ores_ddl_user -d my_database -f setup_schema.sql
 
 | Scenario                       | Script                  |
 |--------------------------------+-------------------------|
-| Full cluster recreation        | =recreate_database.sh=  |
+| Full cluster recreation        | =compass db recreate=  |
 | Recreate one dev environment   | =recreate_env.sh=       |
 
 * Bash Wrapper Scripts
 
-** recreate_database.sh
+** compass db recreate
 
 Full teardown and recreation of the entire cluster. Requires passwords for all
 database users. Executes:
@@ -410,7 +410,7 @@ Recreates a single environment database (=ores_dev_local1=, etc.) without
 affecting other environments. Uses two-phase creation: =create_database.sql=
 (postgres) then =setup_schema.sql= (ores_ddl_user).
 
-** drop_database.sh
+** compass db drop
 
 Safely drops a single database. Checks for active connections and refuses to
 drop protected databases.

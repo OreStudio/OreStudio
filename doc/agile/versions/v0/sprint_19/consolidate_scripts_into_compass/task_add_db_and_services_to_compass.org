@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: 8D6F9E36-9BEC-46B1-BBCC-37DE60F54613
+:END:
+#+title: Task: Add db and services commands to compass
+#+description: Migrate the database scripts (recreate_database, setup_database, run_sql, reset_system, ...) and the services-lifecycle scripts (start/stop/status-services, start-client, clear-logs) into compass db and compass services verbs; hard cutover — delete the scripts, update the developer-scripts inventory, and repoint every recipe, doc and CI reference to the compass commands.
+#+type: task
+#+level: s1
+#+filetags: :consolidate_scripts_into_compass:sprint_19:v0:
+#+owner: marco
+#+branch: feature/add-db-and-services-to-compass
+#+pr: 1093
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Bring the database lifecycle and the services lifecycle under compass,
+completing two pillars from the design task in one cutover:
+
+- *Provision / db* — =compass db recreate | setup | drop | sql |
+  reset-system | reset-tenant=, replacing the =projects/ores.sql/=
+  scripts of the same names (=run_sql.sh= becomes =db sql=).
+- *Operate / services* — =compass services start | stop | status |
+  clear-logs= and =compass client=, replacing
+  =build/scripts/{start,stop,status}-services.sh=, =clear-logs.sh=
+  and =start-client.sh=.
+
+Hard cutover per the story acceptance: the migrated scripts are
+deleted; the [[id:BA6F2BF1-E16E-4E80-A3D0-CACC30FA04DB][developer scripts inventory]] drops their rows and the
+compass docs gain them; every recipe, knowledge doc and CI reference
+is repointed to the compass verbs.
+
+Absorbs the two placeholder tasks =migrate_operate_pillar= and
+=migrate_provision_db_nats= (the nats half of the latter already
+shipped as =compass nats=).
+
+Out of scope: =recreate_env.sh= / =teardown_env.sh= (whole-environment
+wrappers — candidates for =compass env=), =service_vars.sh=
+(generated include), and the =utility/= one-offs.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-05                               |
+
+* Acceptance
+
+- =compass db= and =compass services= (+ =compass client=) implement
+  the verbs above natively (no shelling to the deleted scripts),
+  reusing compass's .env/preset/registry plumbing.
+- The eleven migrated scripts are deleted; no reference to them
+  remains anywhere (recipes, knowledge, CI, lisp dashboard, docs).
+- Developer scripts inventory updated; compass --help and the compass
+  recipes document the new pillars.
+- Round-trip verified on this environment: =compass db recreate= →
+  =compass services start= → =compass services status= →
+  =compass services stop=.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1093][#1093]] | [compass,sql,lisp,ci] Add db and services pillars to compass |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | SERVICE_NAMES parse leaks tokens from multi-word comments | projects/ores.compass/src/compass_db.py | Accepted | Fixed in c85033a15; line-by-line comment stripping. |
+| 2 | Status loads whole log files into memory | projects/ores.compass/src/compass_services.py | Accepted | Fixed in c85033a15; streaming _log_contains + tail-chunk _log_last_line, also applied to the unflagged _ready path used by bearings. |
+
+* Result

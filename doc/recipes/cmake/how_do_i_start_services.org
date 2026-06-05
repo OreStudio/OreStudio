@@ -2,7 +2,7 @@
 :ID: D8663EF2-5626-462E-AADC-AB2717F49C0D
 :END:
 #+title: How do I start the ORE Studio services?
-#+description: Start NATS and all backend services for a local checkout using start-services.sh; stop and check status with companion scripts.
+#+description: Start NATS and all backend services for a local checkout with compass services start; stop and check status with the companion verbs.
 #+type: recipe
 #+level: cross
 #+filetags: :cmake:build:services:nats:controller:recipe:
@@ -25,19 +25,19 @@ How do I start all ORE Studio backend services for a local checkout?
 2. /Start services/:
 
    #+begin_src sh :results verbatim
-   ./build/scripts/start-services.sh
+   ./projects/ores.compass/compass.sh services start
    #+end_src
 
    The preset defaults to =ORES_PRESET= from =.env=. Override with =--preset=:
 
    #+begin_src sh :results verbatim
-   ./build/scripts/start-services.sh --preset linux-clang-debug-make
+   ./projects/ores.compass/compass.sh services start --preset linux-clang-debug-make
    #+end_src
 
    Change log verbosity with =--log-level= (default: =trace=):
 
    #+begin_src sh :results verbatim
-   ./build/scripts/start-services.sh --log-level info
+   ./projects/ores.compass/compass.sh services start --log-level info
    #+end_src
 
    The script blocks until the controller logs =All services started=, then exits.
@@ -45,13 +45,13 @@ How do I start all ORE Studio backend services for a local checkout?
 ** Check status
 
    #+begin_src sh :results verbatim
-   ./build/scripts/status-services.sh
+   ./projects/ores.compass/compass.sh services status
    #+end_src
 
 ** Stop all services
 
    #+begin_src sh :results verbatim
-   ./build/scripts/stop-services.sh
+   ./projects/ores.compass/compass.sh services stop
    #+end_src
 
 ** Logs
@@ -62,15 +62,15 @@ Logs land in =build/output/<preset>/publish/log/=. Each service writes its own
 ** Prerequisites checklist
 
 - =.env= exists (run =compass env init= if not — see [[id:1794B513-877B-4B93-A818-53F080C55E47][How do I initialise the checkout environment?]]).
-- Database initialised (=./projects/ores.sql/recreate_database.sh -y=).
+- Database initialised (=compass db recreate -y=).
 - Project built (=cmake --build --preset <preset>=).
 - =nats-server= on =PATH= or in =/usr/sbin=.
 
 * Script
 
-=build/scripts/start-services.sh= — starts NATS then the controller; blocks until all services are up.
-=build/scripts/stop-services.sh= — stops all services cleanly.
-=build/scripts/status-services.sh= — shows running/stopped state per service.
+=compass services start= — starts NATS then the controller; blocks until all services are up.
+=compass services stop= — stops all services cleanly.
+=compass services status= — shows running/stopped state per service.
 
 * Tested by
 

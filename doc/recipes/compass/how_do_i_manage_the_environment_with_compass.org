@@ -113,7 +113,7 @@ is stdlib-only). =env init= also skips the =--preset= requirement when
 
 Manual. =env init= against an existing =.env= changes no secret and no
 key set (verify with =compass env diff= or by diffing a backup); the
-generated =.env= round-trips through =recreate_database.sh=.
+generated =.env= round-trips through =compass db recreate=.
 
 * See also
 

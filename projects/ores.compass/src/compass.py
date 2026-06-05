@@ -3149,6 +3149,98 @@ def cmd_bearings(argv):
         print("  ❌ No product_identity document found.")
 
     # ── Where have we been? ──────────────────────────────────────────────────
+    # ── Environment status ──────────────────────────────────────────────────
+    _bearings_section("🔌", "Is the environment up?",
+                      "compass services status")
+    try:
+        import compass_db as _cdb
+        import compass_services as _csv
+        _env = _cdb.load_env(PROJECT_ROOT)
+        _preset = _env.get("ORES_PRESET", "(not set)")
+        _label = _env.get("ORES_CHECKOUT_LABEL", "?")
+        _envver = _env.get("ORES_ENV_VERSION", "?")
+        print(f"  Preset   : {_preset}  (label: {_label}, env v{_envver})")
+        _info = _cdb.database_info(_env)
+        if _info:
+            # Drift = time between the commit the DB was built from
+            # (git_date, stored at restore) and the HEAD commit date.
+            # Same chip/warning UX as branch staleness:
+            # ok < 1 day <= warn < 3 days <= stale.
+            _delta = None
+            try:
+                _head_ct = int(subprocess.run(
+                    ["git", "log", "-1", "--format=%ct", "HEAD"],
+                    capture_output=True, text=True,
+                    cwd=str(PROJECT_ROOT)).stdout.strip() or "0")
+                _db_dt = datetime.datetime.strptime(
+                    _info["git_date"], "%Y/%m/%d %H:%M:%S")
+                _delta = max(0, _head_ct - int(_db_dt.timestamp()))
+            except (OSError, ValueError):
+                pass
+            if _delta is None:
+                _col, _warning = "", None
+            elif _delta >= 3 * 86400:
+                _col, _warning = _C_RED, (
+                    f"{_C_RED}⚠  Schema is stale — run: compass services "
+                    f"stop && compass db recreate -y -k{_C_RESET}")
+            elif _delta >= 86400:
+                _col, _warning = _C_YELLOW, (
+                    f"{_C_YELLOW}⚠  Schema is drifting — consider: compass "
+                    f"db recreate -y -k{_C_RESET}")
+            else:
+                _col, _warning = _C_GREEN, None
+            _chip = (f" (schema {_info['schema_version']}, built "
+                     f"{_age_human(_delta)} behind HEAD)"
+                     if _delta is not None
+                     else f" (schema {_info['schema_version']})")
+            print(f"  Database : {_col}restored {_info['restored_at']}"
+                  f"{_chip}{_C_RESET}")
+            if _warning:
+                print(f"  {_warning}")
+        else:
+            print(f"  Database : {_C_RED}unreachable{_C_RESET}  "
+                  f"({_ycmd('compass db recreate -y -k')})")
+        try:
+            _ctx = _csv.Ctx(PROJECT_ROOT, _env, None)
+            _st = _csv.gather_counts(_ctx)
+            _c = _st["counts"]
+            _all_up = (_c["running"] and not _c["stopped"]
+                       and not _c["missing"])
+            _tone = _C_GREEN if _all_up else _C_YELLOW
+            _hint = ("" if _c["running"] or _c["starting"]
+                     else f"  ({_ycmd('compass services start')})")
+            print(f"  Services : {_tone}running={_c['running']} "
+                  f"starting={_c['starting']} stopped={_c['stopped']} "
+                  f"missing={_c['missing']}{_C_RESET}  "
+                  f"(nats: {_st['nats']}){_hint}")
+            _clients = _csv.client_status(_ctx)
+            if _clients:
+                _desc = ", ".join(f"{n} PID {pid}" for n, pid in _clients)
+                print(f"  Client   : {_C_GREEN}running{_C_RESET}  ({_desc})")
+            else:
+                print(f"  Client   : not running  "
+                      f"({_ycmd('compass client')})")
+        except SystemExit:
+            print("  Services : (no preset in .env — compass env init)")
+    except SystemExit:
+        print("  (.env missing — run compass env init to provision)")
+
+    # ── Common commands ─────────────────────────────────────────────────────
+    _bearings_section("🛠", "Commands you will reach for")
+    for _what, _cmd in [
+        ("Run SQL in the environment", 'compass sql -- -c "<sql>"'),
+        ("Start / stop / inspect services",
+         "compass services start|stop|status"),
+        ("Rebuild the database from scratch", "compass db recreate -y -k"),
+        ("Search every doc in the repo", 'compass search "<term>"'),
+        ("Clock on to a task (branch + journal)",
+         "compass task start <slug>"),
+        ("Check the sprint for state drift", "compass sprint audit"),
+    ]:
+        print(f"  {_what}:")
+        print(f"      {_ycmd(_cmd)}")
+    print(f"  (every command has --help)")
+
     _bearings_section("📓", "Where have we been?", "compass journal where")
     _journal_where()
 
@@ -3330,6 +3422,18 @@ def main():
         sys.exit(cmd_env(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "nats":
         sys.exit(cmd_nats(sys.argv[2:]))
+    if len(sys.argv) >= 2 and sys.argv[1] == "db":
+        import compass_db
+        sys.exit(compass_db.run(sys.argv[2:], PROJECT_ROOT))
+    if len(sys.argv) >= 2 and sys.argv[1] == "sql":
+        import compass_db
+        sys.exit(compass_db.run(["sql"] + sys.argv[2:], PROJECT_ROOT))
+    if len(sys.argv) >= 2 and sys.argv[1] == "services":
+        import compass_services
+        sys.exit(compass_services.run(sys.argv[2:], PROJECT_ROOT))
+    if len(sys.argv) >= 2 and sys.argv[1] == "client":
+        import compass_services
+        sys.exit(compass_services.run_client(sys.argv[2:], PROJECT_ROOT))
     if len(sys.argv) >= 2 and sys.argv[1] == "test":
         sys.exit(cmd_test(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "build":
@@ -3348,8 +3452,8 @@ def main():
         _KNOWN_COMMANDS = [
             "index", "search", "find", "debug", "where", "status", "fleet",
             "list", "show", "add", "sprint", "story", "task", "journal",
-            "env", "nats", "test", "build", "review", "pr", "bearings",
-            "orient",
+            "env", "nats", "db", "sql", "services", "client", "test", "build",
+            "review", "pr", "bearings", "orient",
             "capture",
             "inbox", "next", "deferred", "discarded", "backlog",
         ]
@@ -3370,9 +3474,10 @@ def main():
         "  Scaffold:  story, task, add\n"
         "  Capture:   capture, inbox, next, deferred, discarded, backlog\n"
         "  Journal:   journal\n"
-        "  Provision: env, nats\n"
+        "  Provision: env, nats, db\n"
         "  Test:      test\n"
         "  Build:     build\n"
+        "  Operate:   services, client\n"
         "  Review:    review\n"
         "  PR:        pr\n"
         "  Bearings:  bearings (alias: orient)\n"
@@ -3382,6 +3487,9 @@ def main():
         "  story:    new (scaffold) | status (orient)\n"
         "  task:     new (scaffold)\n"
         "  env:      init | diff | list | version [new] (provision)\n"
+        "  db:       recreate | setup | drop | sql | reset-system | reset-tenant (provision)\n"
+        "  sql:      alias for db sql — run SQL in the environment\n"
+        "  services: start | stop | status | clear-logs (operate)\n"
     )
     parser = argparse.ArgumentParser(
         description="Compass: developer toolkit for ORE Studio — orient, scaffold, capture, and search.",
@@ -3434,6 +3542,18 @@ def main():
                           help="Read/write the per-worktree session journal; 'journal --help' for subcommands")
     subparsers.add_parser("env",
                           help="Provision: 'env init' generates .env + certs + IAM key; 'env diff'; 'env --help'")
+    subparsers.add_parser("db",
+                          help="Provision: database lifecycle — recreate, "
+                               "setup, drop, sql, reset-system, reset-tenant")
+    subparsers.add_parser("sql",
+                          help="Run SQL in the environment (alias for "
+                               "'db sql'; args after -- go to psql)")
+    subparsers.add_parser("services",
+                          help="Operate: service lifecycle — start, stop, "
+                               "status, clear-logs")
+    subparsers.add_parser("client",
+                          help="Operate: launch the Qt client (detached; "
+                               "--colour/--instance-name for parallel runs)")
     subparsers.add_parser("test",
                           help="Test: 'test results' shows last run overview; "
                                "'test logging on|off|status' toggles test logging; 'test --help'")

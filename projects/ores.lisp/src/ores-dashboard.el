@@ -442,7 +442,7 @@ Falls back to two spaces when icons are unavailable, preserving alignment."
 ;; ---------------------------------------------------------------------------
 ;; Service runner — persistent pipe-based process buffer
 ;;
-;; start-services.sh runs synchronously for ~2 minutes (waits for NATS and
+;; compass services start runs synchronously for ~2 minutes (waits for NATS and
 ;; the controller), then exits — the services continue as background jobs.
 ;; compilation-start uses a PTY; when the PTY master closes, the kernel
 ;; sends SIGHUP to the foreground process group, killing the services.
@@ -542,7 +542,7 @@ On other systems `setsid' is used when available, otherwise an error is raised."
          (label    (nth 1 ctx))
          (dashbuf  (nth 2 ctx))
          (args     (transient-args 'ores/dashboard--start-client-transient))
-         (script   (expand-file-name "build/scripts/start-client.sh" root))
+         (script   (concat (expand-file-name "projects/ores.compass/compass.sh" root) " client"))
          (arg-list (cl-mapcan (lambda (a)
                      (if (string-match "\\`\\(--[^=]+\\)=\\(.*\\)\\'" a)
                          (list (match-string 1 a) (match-string 2 a))
@@ -724,7 +724,7 @@ On other systems `setsid' is used when available, otherwise an error is raised."
            (ores/dashboard--mkitem
             "Start services" 'nerd-icons-faicon "nf-fa-play"
             (let ((lbl label)
-                  (s   (expand-file-name "build/scripts/start-services.sh" root))
+                  (s   (concat (expand-file-name "projects/ores.compass/compass.sh" root) " services start"))
                   (r   root) (db dash-buf))
               (lambda (_)
                 (ores/dashboard--run-services lbl s r db))))
@@ -737,19 +737,19 @@ On other systems `setsid' is used when available, otherwise an error is raised."
            (ores/dashboard--mkitem
             "Service status" 'nerd-icons-faicon "nf-fa-info_circle"
             (let ((lbl label)
-                  (s   (expand-file-name "build/scripts/status-services.sh" root))
+                  (s   (concat (expand-file-name "projects/ores.compass/compass.sh" root) " services status"))
                   (r   root) (db dash-buf))
               (lambda (_) (ores/dashboard--compile lbl s "service-status" r db))))
            (ores/dashboard--mkitem
             "Stop services" 'nerd-icons-faicon "nf-fa-stop"
             (let ((lbl label)
-                  (s   (expand-file-name "build/scripts/stop-services.sh" root))
+                  (s   (concat (expand-file-name "projects/ores.compass/compass.sh" root) " services stop"))
                   (r   root) (db dash-buf))
               (lambda (_) (ores/dashboard--compile lbl s "stop-services" r db))))
            (ores/dashboard--mkitem
             "Clear logs" 'nerd-icons-faicon "nf-fa-trash"
             (let ((lbl label)
-                  (s   (expand-file-name "build/scripts/clear-logs.sh" root))
+                  (s   (concat (expand-file-name "projects/ores.compass/compass.sh" root) " services clear-logs"))
                   (r   root) (db dash-buf))
               (lambda (_) (ores/dashboard--compile lbl s "clear-logs" r db)))))
           'ores/dashboard-group-services-face)))

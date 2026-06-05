@@ -4,7 +4,7 @@
 # Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
 #
 # validate_env_version.sh — Verify the .env file is compatible with the
-# current database scripts.  Sourced (not executed) by recreate_database.sh
+# current database scripts.  Sourced (not executed) by the remaining
 # so that it can read variables already loaded into the caller's environment.
 #
 # Fails with exit 1 and a clear explanation when ORES_ENV_VERSION is missing
@@ -16,7 +16,7 @@
 #   compass env new-version "what changed in .env"
 # then re-run `compass env init` to write the new ORES_ENV_VERSION.
 #
-# NOTE: this shell guard is transitional.  When recreate_database.sh moves
+# NOTE: this shell guard is transitional.  When the remaining scripts move
 # to `compass db recreate`, the check becomes an internal compass call
 # (env_init.current_version) and this script is deleted.
 

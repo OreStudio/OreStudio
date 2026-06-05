@@ -38,7 +38,7 @@ grep -i "connection\|fatal\|failed" \
 ** Step 2 — Check current connection counts and limits
 
 #+begin_src sh :results verbatim
-projects/ores.sql/run_sql.sh -c "
+./projects/ores.compass/compass.sh db sql -- -c "
 SELECT count(*), state, usename
 FROM pg_stat_activity
 GROUP BY state, usename
@@ -46,7 +46,7 @@ ORDER BY count DESC;"
 #+end_src
 
 #+begin_src sh :results verbatim
-projects/ores.sql/run_sql.sh -c "
+./projects/ores.compass/compass.sh db sql -- -c "
 SELECT setting::int AS max_connections
   FROM pg_settings WHERE name = 'max_connections';
 SELECT count(*) AS total_connections
@@ -70,7 +70,7 @@ output above.
 Replace =local4= with the environment slug you want to clear:
 
 #+begin_src sh :results verbatim
-projects/ores.sql/run_sql.sh -c "
+./projects/ores.compass/compass.sh db sql -- -c "
 SELECT pg_terminate_backend(pid)
 FROM pg_stat_activity
 WHERE usename LIKE 'ores_local4_%'
@@ -82,14 +82,14 @@ WHERE usename LIKE 'ores_local4_%'
 Find the active config file:
 
 #+begin_src sh :results verbatim
-projects/ores.sql/run_sql.sh -c "SHOW config_file;"
+./projects/ores.compass/compass.sh db sql -- -c "SHOW config_file;"
 #+end_src
 
 Edit =postgresql.conf= and increase =max_connections= (e.g. to 400),
 then reload:
 
 #+begin_src sh :results verbatim
-projects/ores.sql/run_sql.sh -c "SELECT pg_reload_conf();"
+./projects/ores.compass/compass.sh db sql -- -c "SELECT pg_reload_conf();"
 #+end_src
 
 A full restart is required if =max_connections= was raised beyond what
@@ -97,7 +97,7 @@ a reload can apply. Check the PostgreSQL log after reloading to confirm.
 
 * Script
 
-Uses =projects/ores.sql/run_sql.sh -c "<sql>"= throughout. No other wrapper needed.
+Uses =./projects/ores.compass/compass.sh db sql -- -c "<sql>"= throughout. No other wrapper needed.
 
 * Tested by
 

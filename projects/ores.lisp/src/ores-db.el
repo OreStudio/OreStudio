@@ -128,7 +128,7 @@ falls back to the current project."
     (define-key map (kbd "k")   #'ores-db/kill-connections-at-point)
     (define-key map (kbd "x")   #'ores-db/drop-at-point)
     (define-key map (kbd "X")   #'ores-db/teardown-at-point)
-    ;; Recreate database (recreate_database.sh)
+    ;; Recreate database (compass db recreate)
     (define-key map (kbd "r")   #'ores-db/recreate-db-at-point)
     (define-key map (kbd "R")   #'ores-db/recreate-all-dbs)
     ;; Recreate environment (recreate_env.sh)
@@ -270,7 +270,7 @@ The session's working directory is set to ores.sql for easy script access."
       (message "No database at point."))))
 
 (defun ores-db/drop-at-point ()
-  "Drop the database at point using drop_database.sh."
+  "Drop the database at point using compass db drop."
   (interactive)
   (let* ((id (tabulated-list-get-id))
          (db-name (car id))
@@ -280,14 +280,15 @@ The session's working directory is set to ores.sql for easy script access."
       (unless (yes-or-no-p (format "Drop database '%s' on %s? " db-name host))
         (user-error "Aborted"))
       (let* ((sql-dir (ores-db/sql-scripts-directory))
-             (script-path (expand-file-name "drop_database.sh" sql-dir))
+             (root (expand-file-name ".." (expand-file-name ".." sql-dir)))
+             (compass (expand-file-name "projects/ores.compass/compass.sh" root))
              (postgres-pw (ores-db/--get-password-from-dotenv "PGPASSWORD"))
              (process-environment (cons (concat "PGPASSWORD=" postgres-pw)
                                         process-environment)))
-        (if (not (file-exists-p script-path))
-            (user-error "Script not found: %s" script-path)
+        (if (not (file-executable-p compass))
+            (user-error "compass not found: %s" compass)
           (compilation-start
-           (format "%s -y --host %s %s" script-path host db-name)
+           (format "%s db drop %s -y" compass db-name)
            nil
            (lambda (_) (format "*ores-db-drop-%s*" db-name))))))))
 
@@ -445,6 +446,22 @@ SQL-DIR overrides the default scripts directory when provided."
        nil
        (lambda (_) buffer-name)))))
 
+(defun ores-db/run-compass (subcommand buffer-name &optional args)
+  "Run a compass SUBCOMMAND (e.g. \"db recreate\") in compilation mode.
+BUFFER-NAME is the compilation buffer name; ARGS is a list of extra
+arguments. The checkout root is derived from the scripts directory."
+  (let* ((sql-dir (ores-db/sql-scripts-directory))
+         (root (expand-file-name ".." (expand-file-name ".." sql-dir)))
+         (compass (expand-file-name "projects/ores.compass/compass.sh" root))
+         (default-directory root))
+    (if (not (file-executable-p compass))
+        (user-error "compass not found: %s" compass)
+      (compilation-start
+       (format "%s %s%s" compass subcommand
+               (if args (concat " " (string-join args " ")) ""))
+       nil
+       (lambda (_) buffer-name)))))
+
 (defun ores-db/run-sql (sql-file buffer-name)
   "Run SQL-FILE from ores.sql directory via psql in compilation mode.
 BUFFER-NAME is the compilation buffer name."
@@ -522,22 +539,22 @@ With prefix arg SKIP-VALIDATION, also pass --no-sql-validation."
     (ores-db/--run-recreate-env env skip-validation)))
 
 ;;; --------------------------------------------------------------------------
-;;; Recreate Database (recreate_database.sh)
+;;; Recreate Database (compass db recreate)
 ;;; Recreates a named database (schema + data) without touching roles/users.
 ;;; --------------------------------------------------------------------------
 
 (defun ores-db/--run-recreate-db (db-name &optional skip-validation)
-  "Internal: run recreate_database.sh for DB-NAME, always killing connections first.
+  "Internal: run compass db recreate for DB-NAME, always killing connections first.
 If SKIP-VALIDATION is non-nil, also pass --no-sql-validation."
   (let ((args (list "-D" db-name "-y" "-k")))
     (when skip-validation
       (setq args (append args '("--no-sql-validation"))))
-    (ores-db/run-script "recreate_database.sh"
-                        (format "*ores-db-recreate-db-%s*" db-name)
-                        args)))
+    (ores-db/run-compass "db recreate"
+                         (format "*ores-db-recreate-db-%s*" db-name)
+                         args)))
 
 (defun ores-db/recreate-db-at-point (&optional skip-validation)
-  "Recreate the database at point using recreate_database.sh.
+  "Recreate the database at point using compass db recreate.
 Kills all active connections first.
 With prefix arg SKIP-VALIDATION, also pass --no-sql-validation."
   (interactive "P")
@@ -550,11 +567,11 @@ With prefix arg SKIP-VALIDATION, also pass --no-sql-validation."
 
 (defun ores-db/recreate-all-dbs ()
   "Recreate ALL ORES databases (nuclear option).
-Runs recreate_database.sh with no -D flag, killing all connections first."
+Runs compass db recreate with no -D flag, killing all connections first."
   (interactive)
   (unless (yes-or-no-p "DROP ALL ORES databases and recreate from scratch. Are you SURE? ")
     (user-error "Aborted"))
-  (ores-db/run-script "recreate_database.sh" "*ores-db-recreate-all*" '("-y" "-k")))
+  (ores-db/run-compass "db recreate" "*ores-db-recreate-all*" '("-y" "-k")))
 
 (defconst ores-db/presets
   '("linux-clang-debug-make"

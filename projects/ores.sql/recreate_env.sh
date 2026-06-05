@@ -150,7 +150,7 @@ if [[ -z "${ASSUME_YES}" ]]; then
 fi
 
 # Verify that the cluster-level roles for this environment already exist.
-# recreate_env.sh does not create roles — that is done once by recreate_database.sh.
+# recreate_env.sh does not create roles — that is done once by compass db recreate.
 echo "--- Checking environment roles ---"
 missing_roles=()
 for role in "${ORES_DB_OWNER_ROLE}" "${ORES_DB_RW_ROLE}" "${ORES_DB_RO_ROLE}" "${ORES_DB_SERVICE_ROLE}"; do
@@ -168,11 +168,11 @@ if [[ ${#missing_roles[@]} -gt 0 ]]; then
         echo "  - ${role}"
     done
     echo ""
-    echo "This script does not create roles. Run recreate_database.sh once to"
+    echo "This script does not create roles. Run 'compass db recreate' once to"
     echo "set up roles and users for this environment, then use recreate_env.sh"
     echo "for subsequent schema resets:"
     echo ""
-    echo "  ./recreate_database.sh -e ${ENVIRONMENT} -y"
+    echo "  ./projects/ores.compass/compass.sh db recreate -y"
     echo ""
     exit 1
 fi
@@ -187,7 +187,7 @@ psql -h "${ORES_DB_HOST}" -U postgres -c "DROP DATABASE IF EXISTS ${DB_NAME};"
 # Create database, schema, and metadata via shared helper
 SKIP_ARG=""
 [[ "${SKIP_VALIDATION}" == "on" ]] && SKIP_ARG="--skip-validation"
-"${SCRIPT_DIR}/setup_database.sh" "${DB_NAME}" ${SKIP_ARG}
+"${SCRIPT_DIR}/../ores.compass/compass.sh" db setup "${DB_NAME}" ${SKIP_ARG}
 
 echo ""
 echo "=========================================="

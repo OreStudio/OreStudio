@@ -39,9 +39,9 @@ database creation, reset, teardown, migration, and SQL execution.
 
 * Entry points
 
-- =recreate_database.sh= — drop and recreate the database from scratch.
-- =setup_database.sh= — create roles and apply DDL without dropping first.
-- =run_sql.sh= — execute a SQL file against the ORE database.
+- =compass db recreate= — drop and recreate the database from scratch.
+- =compass db setup= — create the database and apply DDL without dropping first.
+- =compass db sql= — execute SQL against the ORE database.
 - =migrate/= — incremental schema migration scripts.
 - =utility/validate_schemas.sh= — validate schema consistency before push.
 
@@ -60,13 +60,13 @@ provisioning, and environment refresh.
 
 | Script | Purpose | Notes |
 |--------+---------+-------|
-| =recreate_database.sh= | Drop and fully recreate the database from scratch: roles, DDL, RLS, seed data. | Primary setup script; safe to re-run. Reads =.env= or CI env vars. |
-| =setup_database.sh= | Create roles and apply DDL without dropping the database first. | Use when the database already exists but roles or schema need updating. |
+| =compass db recreate= | Drop and fully recreate the database from scratch: roles, DDL, RLS, seed data. | Primary setup command; safe to re-run. Reads =.env= or CI env vars. |
+| =compass db setup= | Create the database and apply DDL without dropping roles first. | Use when roles already exist but the database or schema needs creating. |
 | =teardown_database.sh= | Tear down a named database — remove tables, revoke grants, drop roles. | Accepts =DATABASE_NAME= as argument. Checks for active connections before dropping. |
-| =drop_database.sh= | Drop a named database, refusing if active connections are present unless =--kill= is passed. | Sources =utility/check_db_connections.sh= to check connections; calls =utility/kill_db_connections.sh= when =--kill= is passed. |
-| =run_sql.sh= | Execute a SQL file or command against the development database. | Reads host/credentials from =.env=; individual env vars can override. |
-| =reset_system.sh= | Reset all system-level data (IAM, roles, permissions) without dropping the schema. | Non-destructive; preserves tenant data. |
-| =reset_tenant.sh= | Reset all tenant-level data for the current environment. | Non-destructive; preserves system data. |
+| =compass db drop= | Drop a named database, refusing if active connections are present unless =--kill= is passed. | Connection checks ported into compass. |
+| =compass db sql= | Execute a SQL file or command against the development database. | Reads host/credentials from =.env=; remaining args pass through to psql after =--=. |
+| =compass db reset-system= | Reset all system-level data (IAM, roles, permissions) without dropping the schema. | Non-destructive; preserves tenant data. |
+| =compass db reset-tenant= | Reset all tenant-level data for the current environment. | Non-destructive; preserves system data. |
 | =recreate_env.sh= | Tear down and recreate the current environment's database end-to-end. | Combines teardown + recreate for a named environment. Reads =.env=. |
 | =teardown_env.sh= | Tear down the current environment's database without recreating it. | Use when decommissioning a local or CI environment. Reads =.env=. |
 
@@ -80,7 +80,7 @@ maintenance operations. Safe to run against a live database.
 | =utility/validate_schemas.sh= | Validate SQL schema naming and convention invariants before pushing. | Requires Python 3. Run before committing schema changes. |
 | =utility/validate_env_version.sh= | Verify the =.env= file's version is compatible with the current codebase. | Guards against running stale env configs after schema migrations. |
 | =utility/dump_database_version.sh= | Print the schema version currently recorded in the database. | Quick sanity check after a migration. |
-| =utility/check_db_connections.sh= | Report active connections to a database. | Sourced (not executed) by =drop_database.sh=; can also be run standalone. |
+| =utility/check_db_connections.sh= | Report active connections to a database. | Logic ported into compass db; kept for standalone use. |
 | =utility/kill_db_connections.sh= | Terminate all active connections to a named database. | Required before a =DROP DATABASE= when connections are open. |
 | =utility/list_databases.sh= | List all ORE Studio databases visible on the PostgreSQL server. | Useful for auditing environments. |
 | =utility/show_roles.sh= | Show all database roles provisioned for ORE Studio. | Useful for verifying role provisioning after setup. |

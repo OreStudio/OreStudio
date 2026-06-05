@@ -196,5 +196,5 @@ if [[ $configure -eq 0 ]]; then
     echo "  In CI, pass shared_preload_libraries via the postgres action's postgres-conf."
     echo ""
 fi
-echo "  Next step: run recreate_database.sh to create the ORES database."
+echo "  Next step: compass db recreate to create the ORES database."
 echo "======================================================================="

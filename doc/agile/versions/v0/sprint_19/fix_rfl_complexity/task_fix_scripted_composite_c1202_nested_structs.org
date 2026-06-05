@@ -54,6 +54,6 @@ task closes. Plans do not outlive their task.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Gemini: guard empty workspace_id before lexical_cast (2 mappers) | scripted/composite mappers | Decline | Column is NOT NULL DEFAULT in the DDL — empty values cannot exist; guarding would diverge from the ~30 sibling mappers using the identical cast. Cross-cutting defensive parsing would be a capture, not a one-off |
 
 * Result

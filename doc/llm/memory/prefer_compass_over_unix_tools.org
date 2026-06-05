@@ -33,3 +33,11 @@ runbooks, stories, tasks — with =ls doc/recipes/... | grep= instead
 of =compass search "<topic>"= / =compass list --type recipe=. Finding
 documents is exactly what Search is for; the listing-and-grepping
 habit must go first to compass every time, even for a "quick look".
+
+This applies to the /work-start flow especially/: never =git checkout
+-b= for story/task work. =compass story new= and =compass task
+new=/=start= own branch creation (off =origin/main=), the =#+branch:=
+field, the state flip, and the journal stamp — pre-creating a branch
+by hand collides with the one compass makes (incident: 2026-06-05,
+duplicate currency branches). Follow the start-work recipe/runbook
+end to end.

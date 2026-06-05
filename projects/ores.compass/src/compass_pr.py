@@ -10,6 +10,11 @@ Subcommands:
                 to the * PRs table. The task is found by matching
                 #+branch: against the current branch (override with
                 --task); idempotent when the PR is already recorded.
+  create        Open a PR with the conventions built in: validated
+                [component] title, Summary/Changes body, Traceability
+                table derived from the branch's task and story docs,
+                branch pushed with -u if needed, PR recorded on the
+                task and stamped in the journal.
 
 The review-round verbs (list, reply, resolve, pending) live in the
 Review pillar: compass review --help.
@@ -119,6 +124,131 @@ def _cmd_record(args, project_root):
     return 0
 
 
+_SITE_BASE = "https://orestudio.github.io/OreStudio/"
+
+
+def _org_title(text, kind):
+    """#+title: value with the 'Task: ' / 'Story: ' prefix stripped."""
+    m = re.search(r"^#\+title:\s*(.+)$", text, re.M | re.I)
+    if not m:
+        return ""
+    return re.sub(rf"(?i)^{kind}:\s*", "", m.group(1).strip())
+
+
+def _org_id(text):
+    m = re.search(r"(?i):ID:\s+([0-9A-Fa-f-]{36})", text)
+    return m.group(1) if m else ""
+
+
+def _site_url(rel_path):
+    return _SITE_BASE + str(rel_path).removesuffix(".org") + ".html"
+
+
+def _cmd_create(args, project_root):
+    branch = _current_branch(project_root)
+    if not branch or branch == "main":
+        print("❌ Refusing to open a PR from main or a detached HEAD.",
+              file=sys.stderr)
+        return 1
+
+    # Title convention: [component] Description, ideally <= 72 chars.
+    if not re.match(r"^\[[^\]]+\] \S", args.title):
+        print("❌ Title must follow the convention: "
+              "'[component] Description' (multi-component: [a,b,c]).",
+              file=sys.stderr)
+        return 1
+    if len(args.title) > 72:
+        print(f"⚠️  Title is {len(args.title)} chars; convention prefers "
+              "<= 72.", file=sys.stderr)
+
+    # Traceability: the branch's task doc and its parent story.
+    task_path, task_text = _find_task_doc(project_root, branch, args.task)
+    if task_path is None:
+        print(f"❌ No task doc found for branch '{branch}' "
+              "(set #+branch: on the task, or pass --task).",
+              file=sys.stderr)
+        return 1
+    task_id = _org_id(task_text)
+    task_title = _org_title(task_text, "Task")
+    task_rel = task_path.relative_to(project_root)
+    if not task_id:
+        print(f"❌ No :ID: property found in task doc {task_rel}.",
+              file=sys.stderr)
+        return 1
+    story_path = task_path.parent / "story.org"
+    try:
+        story_text = story_path.read_text(encoding="utf-8")
+    except OSError:
+        print(f"❌ No story.org next to {task_rel}.", file=sys.stderr)
+        return 1
+    story_id = _org_id(story_text)
+    story_title = _org_title(story_text, "Story")
+    story_rel = story_path.relative_to(project_root)
+    if not story_id:
+        print(f"❌ No :ID: property found in story doc {story_rel}.",
+              file=sys.stderr)
+        return 1
+
+    summary = args.summary or "(Fill in: what changes, why.)"
+    changes = "\n".join(f"- {c}" for c in (args.change or ["(Fill in.)"]))
+    body = (
+        f"## Summary\n\n{summary}\n\n"
+        f"## Changes\n\n{changes}\n\n"
+        "## Traceability\n\n"
+        "| Artefact | Link | ID |\n"
+        "|----------|------|----|\n"
+        f"| Story | [{story_title}]({_site_url(story_rel)}) | {story_id} |\n"
+        f"| Task | [{task_title}]({_site_url(task_rel)}) | {task_id} |\n\n"
+        "🤖 Generated with [Claude Code](https://claude.com/claude-code)")
+
+    # Ensure the branch exists on the remote under its own name — a
+    # branch created off origin/main tracks origin/main until first
+    # push, so @{u} is not a reliable signal. push -u is idempotent.
+    print(f"🔼 Pushing {branch}…")
+    p = subprocess.run(["git", "push", "-u", "origin", branch],
+                       cwd=str(project_root))
+    if p.returncode != 0:
+        return p.returncode
+
+    cmd = ["gh", "pr", "create", "--title", args.title, "--body", body]
+    if args.draft:
+        cmd.append("--draft")
+    p = subprocess.run(cmd, capture_output=True, text=True,
+                       cwd=str(project_root))
+    if p.returncode != 0:
+        print(p.stderr.strip() or "❌ gh pr create failed.",
+              file=sys.stderr)
+        return p.returncode
+    lines = p.stdout.strip().splitlines()
+    if not lines:
+        print("❌ gh pr create succeeded but returned no output.",
+              file=sys.stderr)
+        return 1
+    url = lines[-1]
+    print(f"✅ PR created: {url}")
+    try:
+        number = int(url.rstrip("/").rsplit("/", 1)[-1])
+    except ValueError:
+        print(f"❌ Could not parse PR number from URL '{url}'.",
+              file=sys.stderr)
+        return 1
+
+    # Record on the task doc and stamp the journal.
+    import types
+    rc = _cmd_record(types.SimpleNamespace(pr=number, task=args.task),
+                     project_root)
+    if rc != 0:
+        return rc
+    compass = Path(project_root) / "projects" / "ores.compass" / "compass.sh"
+    subprocess.run([str(compass), "journal", "update",
+                    "--story", story_id, "--task", task_id,
+                    "--branch", branch, "--state", "STARTED",
+                    "--pr", str(number)], cwd=str(project_root))
+    print("ℹ️  Task doc updated — commit and push the record:")
+    print(f"    git add {task_rel} && git commit && git push")
+    return 0
+
+
 def run(argv, project_root):
     """Entry point: compass pr <subcommand>."""
     ap = argparse.ArgumentParser(
@@ -149,6 +279,20 @@ def run(argv, project_root):
                     help="Task UUID or slug (default: match #+branch: "
                          "against the current branch)")
 
+    cr = sub.add_parser("create",
+                        help="Open a PR with the conventions built in")
+    cr.add_argument("--title", required=True,
+                    help="PR title: '[component] Description'")
+    cr.add_argument("--summary", default="",
+                    help="Summary paragraph for the body")
+    cr.add_argument("--change", action="append", default=[],
+                    help="A Changes bullet (repeatable)")
+    cr.add_argument("--task", default="",
+                    help="Task UUID or slug (default: match #+branch: "
+                         "against the current branch)")
+    cr.add_argument("--draft", action="store_true",
+                    help="Open as a draft PR")
+
     args = ap.parse_args(argv)
     if args.subcmd == "checks" and args.interval is not None:
         if args.interval < 0:
@@ -159,4 +303,6 @@ def run(argv, project_root):
         return _cmd_checks(args, project_root)
     if args.subcmd == "record":
         return _cmd_record(args, project_root)
+    if args.subcmd == "create":
+        return _cmd_create(args, project_root)
     return 1

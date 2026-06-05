@@ -31,11 +31,11 @@ fix-CI, create-PR, and merge recipes.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:166E8E44-1573-4DE2-825F-A6037A302AE9][Add PR management support to compass]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing.                               |
 | Last touched | 2026-06-05                               |
 
 * Acceptance
@@ -68,3 +68,9 @@ task closes. Plans do not outlive their task.)
 | 3 | Validate --interval: non-negative, only with --watch | compass_pr.py | Accepted | ap.error; d0f3c6708 |
 
 * Result
+
+Shipped in PR [[https://github.com/OreStudio/OreStudio/pull/1084][#1084]] (merged 2026-06-05): =compass pr checks= (gh
+exit semantics, --watch/--fail-fast/--required/--interval with clean
+validation) and, riding along, =compass pr record= (the pr-create
+task's first slice). Raw =gh pr checks= retired from the runbook and
+four recipes.

@@ -2,7 +2,7 @@
 :ID: CC928252-E0C5-4C3C-A7A8-D613593E4E37
 :END:
 #+title: How do I create a PR?
-#+description: Open a pull request via the gh CLI with a structured title and HEREDOC body — and the conventions ORE Studio follows on title format.
+#+description: Open a pull request with compass pr create — title validation, structured body, and the Traceability table generated from the branch's task and story.
 #+type: recipe
 #+level: cross
 #+filetags: :github:pr:gh:recipe:
@@ -19,51 +19,24 @@ correctly-formatted title and a structured body?
 
 * Answer
 
-1. /Push the branch/ first if it isn't on the remote yet:
+1. /Create the PR/ with =compass pr create=. It validates the title
+   convention, assembles the body (Summary, Changes, and the
+   =## Traceability= table derived from the branch's task and story
+   docs), pushes the branch with =-u= if needed, opens the PR, records
+   it on the task (=#+pr:= and the =* PRs= table), and stamps the
+   session journal:
 
    #+begin_src sh :results verbatim
-   git push -u origin "$(git branch --show-current)"
+   ./compass.sh pr create --title "[component] One-line description" \
+     --summary "What changes, why." \
+     --change "First change" --change "Second change"
    #+end_src
 
-2. /Create the PR/ with =gh pr create=. Include a =## Traceability=
-   table at the end of the body with a row per artefact, each carrying
-   a markdown link to the published HTML page and the full UUID. Use a
-   HEREDOC for the body so newlines are preserved:
+   Use =--draft= for a draft PR and =--task <uuid-or-slug>= when the
+   branch carries more than one task.
 
-   #+begin_src sh :results verbatim
-   gh pr create --title "[component] One-line description" \
-     --body "$(cat <<'EOF'
-   ## Summary
-
-   Brief paragraph.
-
-   ## Changes
-
-   - First change
-   - Second change
-
-   ## Traceability
-
-   | Artefact | Link | ID |
-   |----------|------|----|
-   | Story | [Story title here](https://orestudio.github.io/OreStudio/doc/agile/versions/v0/sprint_NN/STORY_SLUG/story.html) | STORY-FULL-UUID |
-   | Task | [Task title here](https://orestudio.github.io/OreStudio/doc/agile/versions/v0/sprint_NN/STORY_SLUG/task_TASK_SLUG.html) | TASK-FULL-UUID |
-EOF
-   )"
-   #+end_src
-
-3. /Confirm the PR URL/ that =gh= prints; verify the title format
-   matches =[COMPONENT] Description=.
-
-4. /Record the PR in the task./ One command — it finds the task by
-   matching =#+branch:= against the current branch, sets =#+pr:=, and
-   adds the =* PRs= table row (the canonical record =compass where
-   --prs= reads):
-
-   #+begin_src sh :results verbatim
-   ./compass.sh pr record            # current branch's PR
-   ./compass.sh pr record 123        # explicit PR number
-   #+end_src
+2. /Confirm the PR URL/ it prints, then commit and push the task-doc
+   record it staged (the command prints the exact git invocation).
 
 * Conventions
 
@@ -91,7 +64,8 @@ EOF
 
 * Script
 
-Bare =gh= CLI; no wrapper. The CLI must be authenticated (=gh auth
+=compass pr create= (=projects/ores.compass/src/compass_pr.py=)
+wrapping =gh pr create=. The =gh= CLI must be authenticated (=gh auth
 login=) once per checkout.
 
 * Tested by

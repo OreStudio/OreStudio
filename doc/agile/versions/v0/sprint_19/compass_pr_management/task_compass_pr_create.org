@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :compass_pr_management:sprint_19:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/compass-pr-create
+#+pr: 1087
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-05
@@ -19,7 +19,13 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Opening a PR by hand has the most conventions to remember — title
+format, body sections, the Traceability table with full UUIDs and
+published-page links, recording the PR on the task. Build them into
+=compass pr create=: validated =[component]= title, Summary/Changes
+body from flags, Traceability derived from the branch's task doc and
+its parent story, branch pushed with =-u= when needed, PR recorded via
+=pr record=, and the journal stamped.
 
 * Status
 
@@ -34,7 +40,14 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- =compass pr create --title "[c] D" [--summary ...] [--change ...]
+  [--draft] [--task ...]= opens a PR whose body carries Summary,
+  Changes, and a Traceability table with the story and task full
+  UUIDs and site links.
+- Title convention validated; refuses to run from =main=.
+- The PR is recorded on the task doc and the journal is stamped
+  without manual steps.
+- The create-PR recipe leads with the command.
 
 * Plan
 
@@ -55,12 +68,15 @@ pr-checks branch (PR #1084).
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1087][#1087]] | [ores.compass] Add pr create: open PRs with conventions built in |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Empty gh output → IndexError; pass parsed PR number to record | compass_pr.py | Accepted | b54902d50 |
+| 2 | #+title: parsing should be case-insensitive (org spec) | compass_pr.py | Accepted | b54902d50 |
+| 3 | :ID: search should be case-insensitive | compass_pr.py | Accepted | b54902d50 |
+| 4 | Validate task/story :ID: present before Traceability | compass_pr.py | Accepted | b54902d50 |
 
 * Result

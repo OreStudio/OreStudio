@@ -19,7 +19,10 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+=compass pr merge <N>= closes out a PR with guard rails: refuses to
+merge while review threads are unresolved or CI is red, merges via
+=gh=, deletes the remote branch, and prompts the task/journal
+close-out. Replaces the merge recipe's raw =gh pr merge=.
 
 * Status
 
@@ -34,7 +37,15 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- Merge is a *merge commit* — never squash, never rebase — matching
+  the repository's history (=gh pr merge --merge=).
+- Default guard rails: refuse while review threads are unresolved or
+  CI is red/pending.
+- =--force= overrides the guards (merge with red CI), stating
+  loudly what was bypassed.
+- Deletes the remote branch after merge; prompts the task/journal
+  close-out.
+- The merge recipe leads with the command.
 
 * Plan
 

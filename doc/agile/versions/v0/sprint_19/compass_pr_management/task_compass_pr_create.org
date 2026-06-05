@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :compass_pr_management:sprint_19:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/compass-pr-create
 #+pr:
 #+blocked_on:
 #+blocked_since:

@@ -3407,7 +3407,10 @@ def _read_env_map() -> dict:
         if not line or line.lstrip().startswith("#") or "=" not in line:
             continue
         key, _, val = line.partition("=")
-        result[key.strip()] = val.strip()
+        val = val.strip()
+        if len(val) >= 2 and val[0] == val[-1] and val[0] in ("'", '"'):
+            val = val[1:-1]
+        result[key.strip()] = val
     return result
 
 
@@ -3456,8 +3459,9 @@ def cmd_shell(argv):
               file=sys.stderr)
         return 1
 
+    binary_name = "ores.shell.exe" if sys.platform == "win32" else "ores.shell"
     binary = (PROJECT_ROOT / "build" / "output" / preset / "publish" /
-              "bin" / "ores.shell")
+              "bin" / binary_name)
     if not binary.is_file():
         print(f"❌ ores.shell not found: {binary}\n"
               f"   Build it first: compass build ores.shell",
@@ -3494,8 +3498,9 @@ def cmd_shell(argv):
     cmd += extra
 
     masked = list(cmd)
-    if password and password in masked:
-        masked[masked.index(password)] = "********"
+    for i in range(len(masked) - 1):
+        if masked[i] == "--login-password":
+            masked[i + 1] = "********"
     print(f"🐚 {' '.join(masked)}", flush=True)
 
     script = None

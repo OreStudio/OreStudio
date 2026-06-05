@@ -25,7 +25,6 @@
 #include "ores.qt/HistoryDialogBase.hpp"
 #include "ores.qt/ImageCache.hpp"
 #include "ores.refdata.api/domain/country.hpp"
-#include "ui_CountryHistoryDialog.h"
 #include <QString>
 #include <memory>
 #include <vector>
@@ -55,7 +54,7 @@ public:
     explicit CountryHistoryDialog(QString alpha2_code,
                                   ClientManager* clientManager,
                                   QWidget* parent = nullptr);
-    ~CountryHistoryDialog() override = default;
+    ~CountryHistoryDialog() override;
 
     void loadHistory() override;
 

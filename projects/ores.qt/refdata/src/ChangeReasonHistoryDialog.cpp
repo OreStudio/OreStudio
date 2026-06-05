@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/ChangeReasonHistoryDialog.hpp"
+#include "ui_ChangeReasonHistoryDialog.h"
 #include "ores.dq.api/messaging/change_management_protocol.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
@@ -45,6 +46,8 @@ ChangeReasonHistoryDialog::ChangeReasonHistoryDialog(QString code,
                          .titleLabel = ui_->titleLabel,
                          .closeButton = ui_->closeButton});
 }
+
+ChangeReasonHistoryDialog::~ChangeReasonHistoryDialog() = default;
 
 void ChangeReasonHistoryDialog::loadHistory() {
     BOOST_LOG_SEV(lg(), info) << "Loading change reason history for: "

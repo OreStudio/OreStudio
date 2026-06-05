@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/CurrencyHistoryDialog.hpp"
+#include "ui_CurrencyHistoryDialog.h"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.qt/UiPersistence.hpp"
 #include "ores.qt/WidgetUtils.hpp"
@@ -63,6 +64,8 @@ CurrencyHistoryDialog::CurrencyHistoryDialog(QString iso_code,
     resize(UiPersistence::restoreSize(QLatin1String("CurrencyHistoryDialog"),
                                       sizeHint()));
 }
+
+CurrencyHistoryDialog::~CurrencyHistoryDialog() = default;
 
 void CurrencyHistoryDialog::loadHistory() {
     BOOST_LOG_SEV(lg(), info) << "Loading currency history for: "

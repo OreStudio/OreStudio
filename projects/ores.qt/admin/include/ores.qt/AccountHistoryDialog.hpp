@@ -25,7 +25,6 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/HistoryDialogBase.hpp"
-#include "ui_AccountHistoryDialog.h"
 #include <QString>
 #include <memory>
 
@@ -54,7 +53,7 @@ public:
     explicit AccountHistoryDialog(QString username,
                                   ClientManager* clientManager,
                                   QWidget* parent = nullptr);
-    ~AccountHistoryDialog() override = default;
+    ~AccountHistoryDialog() override;
 
     void loadHistory() override;
 

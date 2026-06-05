@@ -24,7 +24,6 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/HistoryDialogBase.hpp"
 #include "ores.variability.api/domain/system_setting.hpp"
-#include "ui_SystemSettingHistoryDialog.h"
 #include <QString>
 #include <memory>
 #include <vector>
@@ -54,7 +53,7 @@ public:
     explicit SystemSettingHistoryDialog(QString name,
                                         ClientManager* clientManager,
                                         QWidget* parent = nullptr);
-    ~SystemSettingHistoryDialog() override = default;
+    ~SystemSettingHistoryDialog() override;
 
     void loadHistory() override;
 

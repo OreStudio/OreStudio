@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/AccountHistoryDialog.hpp"
+#include "ui_AccountHistoryDialog.h"
 #include "ores.iam.api/messaging/protocol.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
@@ -45,6 +46,8 @@ AccountHistoryDialog::AccountHistoryDialog(QString username,
                          .titleLabel = ui_->titleLabel,
                          .closeButton = ui_->closeButton});
 }
+
+AccountHistoryDialog::~AccountHistoryDialog() = default;
 
 void AccountHistoryDialog::loadHistory() {
     BOOST_LOG_SEV(lg(), info) << "Loading account history for: "

@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/ChangeReasonCategoryHistoryDialog.hpp"
+#include "ui_ChangeReasonCategoryHistoryDialog.h"
 #include "ores.dq.api/messaging/change_management_protocol.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
@@ -44,6 +45,8 @@ ChangeReasonCategoryHistoryDialog::ChangeReasonCategoryHistoryDialog(
                          .titleLabel = ui_->titleLabel,
                          .closeButton = ui_->closeButton});
 }
+
+ChangeReasonCategoryHistoryDialog::~ChangeReasonCategoryHistoryDialog() = default;
 
 void ChangeReasonCategoryHistoryDialog::loadHistory() {
     BOOST_LOG_SEV(lg(), info) << "Loading category history for: "

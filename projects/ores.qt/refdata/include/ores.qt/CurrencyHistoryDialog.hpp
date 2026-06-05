@@ -26,7 +26,6 @@
 #include "ores.qt/ImageCache.hpp"
 #include "ores.refdata.api/domain/currency.hpp"
 #include "ores.refdata.api/messaging/protocol.hpp"
-#include "ui_CurrencyHistoryDialog.h"
 #include <QString>
 #include <memory>
 
@@ -55,7 +54,7 @@ public:
     explicit CurrencyHistoryDialog(QString iso_code,
                                    ClientManager* clientManager,
                                    QWidget* parent = nullptr);
-    ~CurrencyHistoryDialog() override = default;
+    ~CurrencyHistoryDialog() override;
 
     void loadHistory() override;
 

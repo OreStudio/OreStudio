@@ -24,7 +24,6 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/HistoryDialogBase.hpp"
-#include "ui_ChangeReasonCategoryHistoryDialog.h"
 #include <QString>
 #include <memory>
 #include <vector>
@@ -55,7 +54,7 @@ public:
     explicit ChangeReasonCategoryHistoryDialog(QString code,
                                                ClientManager* clientManager,
                                                QWidget* parent = nullptr);
-    ~ChangeReasonCategoryHistoryDialog() override = default;
+    ~ChangeReasonCategoryHistoryDialog() override;
 
     void loadHistory() override;
 

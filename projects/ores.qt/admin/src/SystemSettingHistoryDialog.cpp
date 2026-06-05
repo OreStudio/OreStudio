@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/SystemSettingHistoryDialog.hpp"
+#include "ui_SystemSettingHistoryDialog.h"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.variability.api/messaging/system_settings_protocol.hpp"
@@ -53,6 +54,8 @@ SystemSettingHistoryDialog::SystemSettingHistoryDialog(QString name,
                          .titleLabel = ui_->titleLabel,
                          .closeButton = ui_->closeButton});
 }
+
+SystemSettingHistoryDialog::~SystemSettingHistoryDialog() = default;
 
 void SystemSettingHistoryDialog::loadHistory() {
     BOOST_LOG_SEV(lg(), info) << "Loading system setting history for: "

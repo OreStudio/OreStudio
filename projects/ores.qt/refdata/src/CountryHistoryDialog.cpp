@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/CountryHistoryDialog.hpp"
+#include "ui_CountryHistoryDialog.h"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata.api/messaging/protocol.hpp"
@@ -58,6 +59,8 @@ CountryHistoryDialog::CountryHistoryDialog(QString alpha2_code,
                          .titleLabel = ui_->titleLabel,
                          .closeButton = ui_->closeButton});
 }
+
+CountryHistoryDialog::~CountryHistoryDialog() = default;
 
 void CountryHistoryDialog::loadHistory() {
     BOOST_LOG_SEV(lg(), info) << "Loading country history for: "

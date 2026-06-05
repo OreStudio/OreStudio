@@ -97,7 +97,7 @@ already gone).
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1103][#1103]] | [codegen,dq,trading] Instrument models for the nested-struct decomposition |
 
 * Review
 

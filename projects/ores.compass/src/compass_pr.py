@@ -15,6 +15,11 @@ Subcommands:
                 table derived from the branch's task and story docs,
                 branch pushed with -u if needed, PR recorded on the
                 task and stamped in the journal.
+  merge [pr]    Merge a PR with guard rails: refuses while review
+                threads are unresolved or CI is not green (--force to
+                override, stating what was bypassed), always a merge
+                commit (never squash/rebase), deletes the branch, and
+                prompts the task/journal close-out.
 
 The review-round verbs (list, reply, resolve, pending) live in the
 Review pillar: compass review --help.
@@ -85,6 +90,9 @@ def _find_task_doc(project_root, branch, task_ref):
 
 
 def _cmd_record(args, project_root):
+    if args.pr is not None and args.pr <= 0:
+        print("❌ PR number must be a positive integer.", file=sys.stderr)
+        return 1
     # Resolve the PR: explicit number or the current branch's PR.
     sel = [str(args.pr)] if args.pr else []
     p = subprocess.run(
@@ -249,6 +257,70 @@ def _cmd_create(args, project_root):
     return 0
 
 
+def _cmd_merge(args, project_root):
+    if args.pr is not None and args.pr <= 0:
+        print("❌ PR number must be a positive integer.", file=sys.stderr)
+        return 1
+    # Resolve the PR number (explicit or the current branch's).
+    sel = [str(args.pr)] if args.pr else []
+    p = subprocess.run(
+        ["gh", "pr", "view", *sel, "--json", "number,title,state"],
+        capture_output=True, text=True, cwd=str(project_root))
+    if p.returncode != 0:
+        print(p.stderr.strip() or "❌ gh pr view failed.", file=sys.stderr)
+        return p.returncode
+    pr = json.loads(p.stdout)
+    number, title, state = pr["number"], pr["title"], pr["state"]
+    if state != "OPEN":
+        print(f"❌ PR #{number} is {state}, not open.", file=sys.stderr)
+        return 1
+    print(f"🔀 Merging PR #{number}: {title}", flush=True)
+
+    # Guard rails: unresolved review threads and CI state.
+    import compass_review
+    owner, repo = compass_review._default_owner_repo(project_root)
+    blocked = []
+    rc, threads = compass_review._fetch_unresolved_threads(
+        owner, repo, number)
+    if rc != 0:
+        return rc
+    if threads:
+        blocked.append(f"{len(threads)} unresolved review thread(s) — "
+                       f"compass review list {number}")
+    ci = subprocess.run(["gh", "pr", "checks", str(number)],
+                        capture_output=True, text=True,
+                        cwd=str(project_root))
+    if ci.returncode != 0:
+        blocked.append(f"CI is not green — compass pr checks {number}")
+
+    if blocked and not args.force:
+        print("❌ Refusing to merge:", file=sys.stderr)
+        for b in blocked:
+            print(f"   - {b}", file=sys.stderr)
+        print("   Use --force to merge anyway.", file=sys.stderr)
+        return 1
+    if blocked:
+        print("⚠️  --force: merging despite:", flush=True)
+        for b in blocked:
+            print(f"   - {b}", flush=True)
+
+    # Always a merge commit — never squash, never rebase — matching
+    # the repository's history. --force needs gh's --admin to bypass
+    # the base branch protection (required checks still pending).
+    cmd = ["gh", "pr", "merge", str(number), "--merge", "--delete-branch"]
+    if args.force and blocked:
+        cmd.append("--admin")
+    p = subprocess.run(cmd, cwd=str(project_root))
+    if p.returncode != 0:
+        return p.returncode
+    print(f"✅ PR #{number} merged (merge commit); branch deleted.")
+    print("ℹ️  Close out the task: mark it DONE with a Result, update the")
+    print("   story's * Tasks row, and stamp the journal:")
+    print(f"   compass journal update --story <id> --task <id> "
+          f"--branch <branch> --state DONE --pr {number}")
+    return 0
+
+
 def run(argv, project_root):
     """Entry point: compass pr <subcommand>."""
     ap = argparse.ArgumentParser(
@@ -273,7 +345,7 @@ def run(argv, project_root):
     rp = sub.add_parser("record",
                         help="Record a PR on its task doc (#+pr: and the "
                              "* PRs table)")
-    rp.add_argument("pr", nargs="?", type=int, default=0,
+    rp.add_argument("pr", nargs="?", type=int,
                     help="PR number (default: the current branch's PR)")
     rp.add_argument("--task", default="",
                     help="Task UUID or slug (default: match #+branch: "
@@ -293,6 +365,14 @@ def run(argv, project_root):
     cr.add_argument("--draft", action="store_true",
                     help="Open as a draft PR")
 
+    mp = sub.add_parser("merge",
+                        help="Merge a PR (merge commit) with guard rails")
+    mp.add_argument("pr", nargs="?", type=int,
+                    help="PR number (default: the current branch's PR)")
+    mp.add_argument("--force", action="store_true",
+                    help="Merge even with unresolved threads or red CI "
+                         "(states what was bypassed)")
+
     args = ap.parse_args(argv)
     if args.subcmd == "checks" and args.interval is not None:
         if args.interval < 0:
@@ -305,4 +385,6 @@ def run(argv, project_root):
         return _cmd_record(args, project_root)
     if args.subcmd == "create":
         return _cmd_create(args, project_root)
+    if args.subcmd == "merge":
+        return _cmd_merge(args, project_root)
     return 1

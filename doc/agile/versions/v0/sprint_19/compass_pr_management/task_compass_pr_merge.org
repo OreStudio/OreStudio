@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :compass_pr_management:sprint_19:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/compass-pr-merge
+#+pr: 1088
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-05
@@ -28,7 +28,7 @@ close-out. Replaces the merge recipe's raw =gh pr merge=.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:166E8E44-1573-4DE2-825F-A6037A302AE9][Add PR management support to compass]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -59,12 +59,13 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1088][#1088]] | [ores.compass] Add pr merge with guard rails; scaffold pr sync |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | pr=0 treated as falsy; validate positive integer | compass_pr.py | Accepted | 9def8887f; record fixed too |
+| 2 | pr positional should default to None not 0 | compass_pr.py | Accepted | 9def8887f |
 
 * Result

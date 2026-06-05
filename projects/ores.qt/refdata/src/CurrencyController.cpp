@@ -462,10 +462,10 @@ void CurrencyController::onNotificationReceived(const QString& eventType,
             }
         } else if (key.startsWith("history:")) {
             if (auto* historyDialog = qobject_cast<CurrencyHistoryDialog*>(window->widget())) {
-                if (entityIds.isEmpty() || entityIds.contains(historyDialog->isoCode())) {
+                if (entityIds.isEmpty() || entityIds.contains(historyDialog->code())) {
                     historyDialog->markAsStale();
                     BOOST_LOG_SEV(lg(), debug) << "Marked history dialog as stale for: "
-                                               << historyDialog->isoCode().toStdString();
+                                               << historyDialog->code().toStdString();
                 }
             }
         }

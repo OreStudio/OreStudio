@@ -23,9 +23,10 @@
 #include "ores.dq.api/domain/code_domain.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
-#include <QTableWidget>
-#include <QToolBar>
-#include <QWidget>
+#include "ores.qt/HistoryDialogBase.hpp"
+#include <QString>
+#include <memory>
+#include <vector>
 
 namespace Ui {
 class CodeDomainHistoryDialog;
@@ -39,7 +40,7 @@ namespace ores::qt {
  * Shows all historical versions of a code domain with ability
  * to view details or revert to a previous version.
  */
-class CodeDomainHistoryDialog final : public QWidget {
+class CodeDomainHistoryDialog final : public HistoryDialogBase {
     Q_OBJECT
 
 private:
@@ -57,36 +58,34 @@ public:
                                      QWidget* parent = nullptr);
     ~CodeDomainHistoryDialog() override;
 
-    void loadHistory();
+    void loadHistory() override;
+
+    /**
+     * @brief Returns the identifier of the code domain.
+     */
+    [[nodiscard]] QString code() const override {
+        return code_;
+    }
 
 signals:
-    void statusChanged(const QString& message);
-    void errorOccurred(const QString& error_message);
     void openVersionRequested(const dq::domain::code_domain& domain, int versionNumber);
     void revertVersionRequested(const dq::domain::code_domain& domain);
 
-private slots:
-    void onVersionSelected();
-    void onOpenVersionClicked();
-    void onRevertClicked();
+protected:
+    [[nodiscard]] int historySize() const override;
+    [[nodiscard]] VersionRow versionRow(int index) const override;
+    [[nodiscard]] QString historyTitle() const override;
+    [[nodiscard]] DiffResult
+    calculateDiffAt(int current_index, int previous_index) const override;
+    void displayFullDetails(int index) override;
+    void openVersionAt(int index) override;
+    void revertToVersionAt(int index) override;
 
 private:
-    void setupUi();
-    void setupToolbar();
-    void setupConnections();
-    void updateVersionList();
-    void updateChangesTable(int currentVersionIndex);
-    void updateFullDetails(int versionIndex);
-    void updateActionStates();
-
-    Ui::CodeDomainHistoryDialog* ui_;
+    std::unique_ptr<Ui::CodeDomainHistoryDialog> ui_;
     QString code_;
     ClientManager* clientManager_;
     std::vector<dq::domain::code_domain> versions_;
-
-    QToolBar* toolbar_;
-    QAction* openVersionAction_;
-    QAction* revertAction_;
 };
 
 }

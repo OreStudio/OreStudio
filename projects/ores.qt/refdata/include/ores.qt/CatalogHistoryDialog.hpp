@@ -23,9 +23,9 @@
 #include "ores.dq.api/domain/catalog.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
-#include <QAction>
-#include <QToolBar>
-#include <QWidget>
+#include "ores.qt/HistoryDialogBase.hpp"
+#include <QString>
+#include <memory>
 #include <vector>
 
 namespace Ui {
@@ -37,7 +37,7 @@ namespace ores::qt {
 /**
  * @brief Dialog for viewing catalog version history.
  */
-class CatalogHistoryDialog : public QWidget {
+class CatalogHistoryDialog final : public HistoryDialogBase {
     Q_OBJECT
 
 private:
@@ -55,35 +55,34 @@ public:
                                   QWidget* parent = nullptr);
     ~CatalogHistoryDialog() override;
 
-    void loadHistory();
+    void loadHistory() override;
+
+    /**
+     * @brief Returns the identifier of the catalog.
+     */
+    [[nodiscard]] QString code() const override {
+        return name_;
+    }
 
 signals:
-    void statusChanged(const QString& message);
-    void errorOccurred(const QString& message);
     void openVersionRequested(const dq::domain::catalog& catalog, int versionNumber);
     void revertVersionRequested(const dq::domain::catalog& catalog);
 
-private slots:
-    void onVersionSelected();
-    void onOpenVersionClicked();
-    void onRevertClicked();
+protected:
+    [[nodiscard]] int historySize() const override;
+    [[nodiscard]] VersionRow versionRow(int index) const override;
+    [[nodiscard]] QString historyTitle() const override;
+    [[nodiscard]] DiffResult
+    calculateDiffAt(int current_index, int previous_index) const override;
+    void displayFullDetails(int index) override;
+    void openVersionAt(int index) override;
+    void revertToVersionAt(int index) override;
 
 private:
-    void setupUi();
-    void setupToolbar();
-    void setupConnections();
-    void updateVersionList();
-    void updateChangesTable(int currentVersionIndex);
-    void updateFullDetails(int versionIndex);
-    void updateActionStates();
-
-    Ui::CatalogHistoryDialog* ui_;
+    std::unique_ptr<Ui::CatalogHistoryDialog> ui_;
     QString name_;
     ClientManager* clientManager_;
     std::vector<dq::domain::catalog> versions_;
-    QToolBar* toolbar_;
-    QAction* openVersionAction_;
-    QAction* revertAction_;
 };
 
 }

@@ -23,10 +23,11 @@
 #include "ores.dq.api/domain/dataset.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
-#include <QTableWidget>
-#include <QToolBar>
-#include <QWidget>
+#include "ores.qt/HistoryDialogBase.hpp"
+#include <QString>
 #include <boost/uuid/uuid.hpp>
+#include <memory>
+#include <vector>
 
 namespace Ui {
 class DatasetHistoryDialog;
@@ -34,7 +35,7 @@ class DatasetHistoryDialog;
 
 namespace ores::qt {
 
-class DatasetHistoryDialog final : public QWidget {
+class DatasetHistoryDialog final : public HistoryDialogBase {
     Q_OBJECT
 
 private:
@@ -52,36 +53,32 @@ public:
                                   QWidget* parent = nullptr);
     ~DatasetHistoryDialog() override;
 
-    void loadHistory();
+    void loadHistory() override;
+
+    /**
+     * @brief Returns the identifier of the dataset.
+     */
+    [[nodiscard]] QString code() const override;
 
 signals:
-    void statusChanged(const QString& message);
-    void errorOccurred(const QString& error_message);
     void openVersionRequested(const dq::domain::dataset& dataset, int versionNumber);
     void revertVersionRequested(const dq::domain::dataset& dataset);
 
-private slots:
-    void onVersionSelected();
-    void onOpenVersionClicked();
-    void onRevertClicked();
+protected:
+    [[nodiscard]] int historySize() const override;
+    [[nodiscard]] VersionRow versionRow(int index) const override;
+    [[nodiscard]] QString historyTitle() const override;
+    [[nodiscard]] DiffResult
+    calculateDiffAt(int current_index, int previous_index) const override;
+    void displayFullDetails(int index) override;
+    void openVersionAt(int index) override;
+    void revertToVersionAt(int index) override;
 
 private:
-    void setupUi();
-    void setupToolbar();
-    void setupConnections();
-    void updateVersionList();
-    void updateChangesTable(int currentVersionIndex);
-    void updateFullDetails(int versionIndex);
-    void updateActionStates();
-
-    Ui::DatasetHistoryDialog* ui_;
+    std::unique_ptr<Ui::DatasetHistoryDialog> ui_;
     boost::uuids::uuid id_;
     ClientManager* clientManager_;
     std::vector<dq::domain::dataset> versions_;
-
-    QToolBar* toolbar_;
-    QAction* openVersionAction_;
-    QAction* revertAction_;
 };
 
 }

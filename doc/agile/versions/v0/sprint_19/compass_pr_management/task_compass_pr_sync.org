@@ -8,7 +8,7 @@
 #+filetags: :compass_pr_management:sprint_19:v0:
 #+owner: marco
 #+branch: feature/compass-pr-sync
-#+pr:
+#+pr: 1092
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-05
@@ -60,7 +60,7 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1092][#1092]] | [ores.compass] Add pr sync: conflict-aware fetch and rebase |
 
 * Review
 

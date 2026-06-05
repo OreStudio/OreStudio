@@ -52,6 +52,9 @@ Tenants come in several types with different operational controls;
 the next section covers the taxonomy.
 
 *** Parties
+:PROPERTIES:
+:ID: E8393440-D821-4A24-AE27-DD0917F125EB
+:END:
 
 Within a tenant, a /party/ is a business unit — a legal entity, a
 branch, a trading desk, or any other organisational subdivision.
@@ -97,6 +100,9 @@ logged in at "Acme Group" sees data from both "Acme London" and
 own data.
 
 ** Tenant types
+:PROPERTIES:
+:ID: F4CD58EE-FE4D-4F2C-8731-F7ACF3785FF0
+:END:
 
 ORE Studio supports four tenant types, each with different operational
 controls:

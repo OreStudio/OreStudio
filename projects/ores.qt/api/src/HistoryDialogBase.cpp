@@ -226,12 +226,26 @@ void HistoryDialogBase::displayChangesTab(int version_index) {
     if (version_index >= historySize())
         return;
 
+    auto placeholderRow = [this](const QString& text) {
+        widgets_.changesTable->setRowCount(1);
+        widgets_.changesTable->setItem(0, 0, new QTableWidgetItem(text));
+        widgets_.changesTable->setItem(0, 1, new QTableWidgetItem("-"));
+        widgets_.changesTable->setItem(0, 2, new QTableWidgetItem("-"));
+    };
+
     // The oldest version has nothing to diff against.
-    if (version_index == historySize() - 1)
+    if (version_index == historySize() - 1) {
+        placeholderRow("(Initial version)");
         return;
+    }
 
     const DiffResult diffs =
         calculateDiffAt(version_index, version_index + 1);
+
+    if (diffs.isEmpty()) {
+        placeholderRow("(No field changes)");
+        return;
+    }
 
     widgets_.changesTable->setRowCount(diffs.size());
     for (int i = 0; i < diffs.size(); ++i) {
@@ -260,8 +274,11 @@ void HistoryDialogBase::updateActionStates() {
 
     if (openAction_)
         openAction_->setEnabled(hasSelection);
+
+    // Reverting to the latest version is a no-op, so the action only
+    // makes sense for older versions.
     if (revertAction_)
-        revertAction_->setEnabled(hasSelection);
+        revertAction_->setEnabled(hasSelection && index > 0);
 }
 
 void HistoryDialogBase::onReloadClicked() {
@@ -278,20 +295,14 @@ void HistoryDialogBase::onOpenClicked() {
 }
 
 void HistoryDialogBase::onRevertClicked() {
+    // Reverting restores the SELECTED version; the action is disabled
+    // for the latest version, where reverting would be a no-op.
     const int index = selectedVersionIndex();
-    if (index < 0 || index >= historySize())
+    if (index <= 0 || index >= historySize())
         return;
 
-    if (index == historySize() - 1) {
-        MessageBoxHelper::information(
-            this, "Cannot Revert",
-            "This is the oldest version. There is no previous version to "
-            "revert to.");
-        return;
-    }
-
-    const VersionRow current = versionRow(index);
-    const VersionRow previous = versionRow(index + 1);
+    const VersionRow latest = versionRow(0);
+    const VersionRow selected = versionRow(index);
 
     const auto reply = MessageBoxHelper::question(
         this, "Revert",
@@ -299,8 +310,8 @@ void HistoryDialogBase::onRevertClicked() {
                 "to version %3?\n\nThis will create a new version with the "
                 "data from version %3.")
             .arg(code())
-            .arg(current.version)
-            .arg(previous.version),
+            .arg(latest.version)
+            .arg(selected.version),
         QMessageBox::Yes | QMessageBox::No);
 
     if (reply != QMessageBox::Yes)
@@ -319,11 +330,33 @@ void HistoryDialogBase::checkString(DiffResult& diffs, const QString& field,
     }
 }
 
+void HistoryDialogBase::checkString(DiffResult& diffs, const QString& field,
+                                    const std::optional<std::string>& current,
+                                    const std::optional<std::string>& previous) {
+    if (current != previous) {
+        auto text = [](const std::optional<std::string>& v) {
+            return v ? QString::fromStdString(*v) : QString();
+        };
+        diffs.append({field, {text(previous), text(current)}});
+    }
+}
+
 void HistoryDialogBase::checkInt(DiffResult& diffs, const QString& field,
                                  int current, int previous) {
     if (current != previous) {
         diffs.append({field,
                       {QString::number(previous), QString::number(current)}});
+    }
+}
+
+void HistoryDialogBase::checkInt(DiffResult& diffs, const QString& field,
+                                 const std::optional<int>& current,
+                                 const std::optional<int>& previous) {
+    if (current != previous) {
+        auto text = [](const std::optional<int>& v) {
+            return v ? QString::number(*v) : QString();
+        };
+        diffs.append({field, {text(previous), text(current)}});
     }
 }
 

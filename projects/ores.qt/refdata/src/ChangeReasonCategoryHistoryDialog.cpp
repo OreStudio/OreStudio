@@ -117,14 +117,14 @@ void ChangeReasonCategoryHistoryDialog::openVersionAt(int index) {
 }
 
 void ChangeReasonCategoryHistoryDialog::revertToVersionAt(int index) {
-    // The base has already confirmed with the user; revert TO the version
-    // older than the selection, stamped with the latest version number.
-    const auto& previous = versions_[index + 1];
+    // The base has already confirmed with the user; revert TO the
+    // selected version, stamped with the latest version number.
+    const auto& selected = versions_[index];
 
     BOOST_LOG_SEV(lg(), info) << "Requesting revert to version "
-                              << previous.version;
+                              << selected.version;
 
-    dq::domain::change_reason_category category = previous;
+    dq::domain::change_reason_category category = selected;
     category.version = versions_.front().version;
     emit revertVersionRequested(category);
 }

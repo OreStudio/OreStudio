@@ -22,6 +22,7 @@
 
 #include <string>
 #include <expected>
+#include <optional>
 #include <QFuture>
 #include <QFutureWatcher>
 #include <QList>
@@ -191,9 +192,9 @@ protected:
     virtual void openVersionAt(int index);
 
     /**
-     * @brief Reverts to the version older than the given index, after
-     * the base has confirmed with the user. Derived dialogs emit
-     * their typed signal.
+     * @brief Reverts to the version at the given index, after the
+     * base has confirmed with the user. Derived dialogs emit their
+     * typed signal.
      */
     virtual void revertToVersionAt(int index);
 
@@ -209,8 +210,14 @@ protected:
     static void checkString(DiffResult& diffs, const QString& field,
                             const std::string& current,
                             const std::string& previous);
+    static void checkString(DiffResult& diffs, const QString& field,
+                            const std::optional<std::string>& current,
+                            const std::optional<std::string>& previous);
     static void checkInt(DiffResult& diffs, const QString& field,
                          int current, int previous);
+    static void checkInt(DiffResult& diffs, const QString& field,
+                         const std::optional<int>& current,
+                         const std::optional<int>& previous);
     static void checkBool(DiffResult& diffs, const QString& field,
                           bool current, bool previous);
 

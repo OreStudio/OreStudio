@@ -172,14 +172,14 @@ void CountryHistoryDialog::openVersionAt(int index) {
 }
 
 void CountryHistoryDialog::revertToVersionAt(int index) {
-    // The base has already confirmed with the user; revert TO the version
-    // older than the selection, stamped with the latest version number.
-    const auto& previous = history_[index + 1];
+    // The base has already confirmed with the user; revert TO the
+    // selected version, stamped with the latest version number.
+    const auto& selected = history_[index];
 
     BOOST_LOG_SEV(lg(), info) << "Requesting revert to version "
-                              << previous.version;
+                              << selected.version;
 
-    refdata::domain::country countryToRevert = previous;
+    refdata::domain::country countryToRevert = selected;
     countryToRevert.version = history_.front().version;
     emit revertVersionRequested(countryToRevert);
 }

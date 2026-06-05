@@ -196,14 +196,14 @@ void CurrencyHistoryDialog::openVersionAt(int index) {
 }
 
 void CurrencyHistoryDialog::revertToVersionAt(int index) {
-    // The base has already confirmed with the user; revert TO the version
-    // older than the selection, stamped with the latest version number.
-    const auto& previous = history_.versions[index + 1];
+    // The base has already confirmed with the user; revert TO the
+    // selected version, stamped with the latest version number.
+    const auto& selected = history_.versions[index];
 
     BOOST_LOG_SEV(lg(), info) << "Requesting revert to version "
-                              << previous.version_number;
+                              << selected.version_number;
 
-    refdata::domain::currency currency = previous.data;
+    refdata::domain::currency currency = selected.data;
     currency.version = history_.versions.front().version_number;
     emit revertVersionRequested(currency);
 }

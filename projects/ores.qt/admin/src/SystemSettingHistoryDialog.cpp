@@ -128,15 +128,15 @@ void SystemSettingHistoryDialog::openVersionAt(int index) {
 }
 
 void SystemSettingHistoryDialog::revertToVersionAt(int index) {
-    // The base has already confirmed with the user; revert TO the version
-    // older than the selection. The server handles versioning - we just
-    // send the data we want to restore.
-    const auto& previous = history_[index + 1];
+    // The base has already confirmed with the user; revert TO the
+    // selected version. The server handles versioning - we just send
+    // the data we want to restore.
+    const auto& selected = history_[index];
 
     BOOST_LOG_SEV(lg(), info) << "Requesting revert to version "
-                              << previous.version;
+                              << selected.version;
 
-    emit revertVersionRequested(previous);
+    emit revertVersionRequested(selected);
 }
 
 }

@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 32AA31C3-D8C5-475D-B52C-59207AE1FC63
+:END:
+#+title: pr merge: after pushing the close-out commit, the immediate …
+#+description: pr merge: after pushing the close-out commit, the immediate gh pr merge can race GitHub's mergeability recompute and fail with 'Pull Request is not mergeable' — observed merging PR #1100; the retry succeeded. Add a short retry loop (e.g. 3 attempts, 3s apart) around the merge call when a close-out was just pushed.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

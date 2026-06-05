@@ -27,7 +27,7 @@ Sprint 19 wired into the version manifest and agile index; sprint.org mission an
 |--------------+----------------------------------------|
 | State        | DONE                                 |
 | Parent story | [[id:A48DEC19-E769-4C71-AC0B-434B551DC801][Open sprint 19]] |
-| Now          | Done.                                  |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing.                               |
 | Last touched | 2026-05-29                               |

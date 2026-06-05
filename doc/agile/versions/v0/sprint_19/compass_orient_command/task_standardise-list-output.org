@@ -33,7 +33,7 @@ so every compass command renders documents identically.
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:2E5F5DB5-7417-45B8-8D0B-C71650127D32][Add compass bearings command for LLM on-boarding]] |
-| Now          | Complete: PR #1077 ready to merge.     |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing.                               |
 | Last touched | 2026-06-05                               |

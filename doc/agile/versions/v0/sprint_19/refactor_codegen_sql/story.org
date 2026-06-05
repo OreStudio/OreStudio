@@ -112,7 +112,7 @@ fidelity is required; whitespace normalisation is acceptable.
 |---------------+----------------------------------------|
 | State         | DONE                                 |
 | Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] |
-| Now           | Complete. All 5 tasks done; PRs #934–#938 merged.                           |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                                                                    |
 | Next          | Nothing.                                                                    |
 | Last touched  | 2026-05-30                               |

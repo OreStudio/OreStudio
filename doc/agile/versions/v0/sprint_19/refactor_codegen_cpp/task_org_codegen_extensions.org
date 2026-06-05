@@ -62,7 +62,7 @@ extension idea retreats to a simpler sidecar-fragment design.
 |--------------+----------------------------------------|
 | State        | DONE                                   |
 | Parent story | [[id:3B8F2A1D-7C4E-4B6A-9E5D-2F1A8C3B7D9E][Refactor ores.codegen C++ generation]] |
-| Now          | POC complete; mechanism proven on =party=. |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
 | Next         | Full migration tracked under [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][org-mode migration story]]. |
 | Last touched | 2026-06-01                             |

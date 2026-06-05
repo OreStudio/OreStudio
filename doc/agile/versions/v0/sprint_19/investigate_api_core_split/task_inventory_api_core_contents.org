@@ -43,7 +43,7 @@ decision:
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:BD519FC9-6B29-4055-877F-861E46043A06][Investigate the API/core split in components]] |
-| Now          | Complete: PRs #1045 and #1048 merged.  |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing — see the constants-move follow-up task. |
 | Last touched | 2026-06-04                               |

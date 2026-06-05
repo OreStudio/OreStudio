@@ -30,7 +30,7 @@ tracking approach]] knowledge doc, then implement the agreed changes.
 |--------------+------------------------------------------------|
 | State        | DONE                                           |
 | Parent story | [[id:F8E2AB1E-344B-4B04-BD0B-6EC96CDA5298][PnL tracking improvements]]                      |
-| Now          | Nothing. — closed with story as knowledge capture. |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                                       |
 | Next         | Nothing.                                       |
 | Last touched | 2026-06-03                                     |

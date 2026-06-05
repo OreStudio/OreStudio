@@ -31,7 +31,7 @@ user can see the full chain at a glance without opening individual files.
 |--------------+---------------------------------------------|
 | State        | ABANDONED |
 | Parent story | [[id:A596D1E7-6A74-4E55-996D-6F1F2E48F261][Compass CLI UX redesign]]                    |
-| Now          | Re-filed as backlog capture. |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                                    |
 | Next         | Nothing. |
 | Last touched | 2026-06-05 |

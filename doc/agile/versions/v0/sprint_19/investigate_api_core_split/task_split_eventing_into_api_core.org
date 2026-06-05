@@ -48,7 +48,7 @@ uses. This completes what the dq.api fix started: apis linking
 |--------------+----------------------------------------|
 | State        | DONE |
 | Parent story | [[id:BD519FC9-6B29-4055-877F-861E46043A06][Investigate the API/core split in components]] |
-| Now          | Complete: PR #1068 merged. |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing. |
 | Last touched | 2026-06-05 |

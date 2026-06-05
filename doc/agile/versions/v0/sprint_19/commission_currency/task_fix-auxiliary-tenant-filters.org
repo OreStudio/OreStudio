@@ -30,7 +30,7 @@ system-tenant seed rows.
 |--------------+----------------------------------------|
 | State        | DONE |
 | Parent story | [[id:7F9C0F29-4268-4B62-A1BB-2153ECF0A858][Commission: currency]] |
-| Now          | Complete: PR #1042 merged. |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing. |
 | Last touched | 2026-06-05 |

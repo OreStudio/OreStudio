@@ -32,7 +32,7 @@ today. The standalone script is deleted on hard cutover.
 |--------------+----------------------------------------|
 | State        | DONE |
 | Parent story | [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]] |
-| Now          | Complete: PR(s) #1020 merged. |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing. |
 | Last touched | 2026-06-05 |

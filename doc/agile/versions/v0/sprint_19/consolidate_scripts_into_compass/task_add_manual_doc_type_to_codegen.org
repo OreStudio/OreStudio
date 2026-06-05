@@ -29,7 +29,7 @@ Add =manual= as a first-class document type to =ores.codegen= and
 |--------------+-------------------------------------------------------------|
 | State        | DONE                                                        |
 | Parent story | [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]]                  |
-| Now          | Implemented on feature/currency-write-docs; pending PR.     |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                                                    |
 | Next         | Include in the commission-currency documentation PR.        |
 | Last touched | 2026-06-03                                                  |

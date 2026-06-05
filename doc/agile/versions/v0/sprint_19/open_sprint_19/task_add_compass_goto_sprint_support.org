@@ -31,7 +31,7 @@ runbook is updated to reference =compass goto sprint=.
 |--------------+----------------------------------------|
 | State        | ABANDONED |
 | Parent story | [[id:A48DEC19-E769-4C71-AC0B-434B551DC801][Open sprint 19]] |
-| Now          | Abandoned: compass goto no longer exists. |
+| Now          | Nothing.                               |
 | Waiting on   | Task: Open new sprint (needs PR merged first). |
 | Next         | Nothing. |
 | Last touched | 2026-06-05 |

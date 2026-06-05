@@ -34,7 +34,7 @@ following the existing short-circuit pattern.
 |--------------+----------------------------------------|
 | State        | DONE |
 | Parent story | [[id:166E8E44-1573-4DE2-825F-A6037A302AE9][Add PR management support to compass]] |
-| Now          | Complete: compass review list/reply/resolve/pending shipped in PR #1078. |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing. |
 | Last touched | 2026-06-05 |

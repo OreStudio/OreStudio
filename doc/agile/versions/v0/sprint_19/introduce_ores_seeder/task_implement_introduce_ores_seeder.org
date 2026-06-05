@@ -40,7 +40,7 @@ slovaris is authored here too.
 |--------------+----------------------------------------|
 | State        | DONE |
 | Parent story | [[id:5104ADAF-390D-4ADB-B005-CE726B553123][Introduce ores.seeder component for database test-data generation]] |
-| Now          | Complete: PR #1018 merged. |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing. |
 | Last touched | 2026-06-05 |

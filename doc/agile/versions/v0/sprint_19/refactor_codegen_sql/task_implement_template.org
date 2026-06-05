@@ -33,7 +33,7 @@ current SQL files in =projects/ores.sql/create/refdata/=.
 |--------------+----------------------------------------|
 | State        | DONE                                 |
 | Parent story | [[id:C4A7B1E2-5D3F-4A6B-8C9D-2E1F0A3B4C5D][Refactor ores.codegen SQL generation]] |
-| Now          | Implementation complete; awaiting PR review. |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                                     |
 | Next         | Migrate refdata entity models to new format. |
 | Last touched | 2026-05-29                               |

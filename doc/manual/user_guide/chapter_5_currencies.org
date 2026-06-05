@@ -14,6 +14,9 @@ standard and OreStudio's extensions, every screen in the Qt UI,
 and the three classification tables currencies depend on — rounding
 types, market tiers, and monetary natures.
 
+# Restore the heading gap that the lettrine paragraph suppresses.
+#+latex: \bigskip
+
 ** Overview
 
 Currencies are the foundational reference data entity. Every trade,

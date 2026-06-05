@@ -19,6 +19,9 @@ with the supporting material around a session: command-line options,
 locating the application version, running in the system tray, and
 logging out.
 
+# Restore the heading gap that the lettrine paragraph suppresses.
+#+latex: \bigskip
+
 ** Getting started
 
 When you launch ORE Studio a splash screen appears briefly while the

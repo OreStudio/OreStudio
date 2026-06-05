@@ -20,6 +20,9 @@ the Party Provisioner, which equips each party with counterparties and
 report definitions. The chapter closes with party selection at login,
 the point where provisioning ends and daily use begins.
 
+# Restore the heading gap that the lettrine paragraph suppresses.
+#+latex: \bigskip
+
 ** The model in brief
 
 ORE Studio organises data around two concepts that the provisioning
@@ -115,7 +118,7 @@ Configure the first tenant:
 
 - *Name* — the organisation's display name (e.g. "Barclays Plc").
 - *Code* — a short machine code used internally (e.g. =barclays_plc=).
-- *Type* — the tenant type (see [[*Tenants][Tenants]] above): /System/,
+- *Type* — the tenant type (see the [[id:0D1AA9E2-7556-4B73-8AE5-5E2A0E8FD043][Tenants]] chapter): /System/,
   /Production/, /Evaluation/, or /Automation/.
 - *Hostname* — the host identifier for the tenant.
 
@@ -183,7 +186,7 @@ use. Choose a catalogue and click *Next*.
 
 This step seeds the /internal/ party hierarchy: the legal entities and
 business units that represent your own organisation — what practitioners
-call /the house/. As described in [[*Parties][Parties]] above, these are the
+call /the house/. As described in the [[id:0D1AA9E2-7556-4B73-8AE5-5E2A0E8FD043][Tenants]] chapter, these are the
 operational parties that own trades, books, and analytics results.
 
 The data source choice does *not* affect counterparties (the external

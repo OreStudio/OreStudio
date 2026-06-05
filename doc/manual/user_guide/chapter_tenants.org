@@ -17,6 +17,9 @@ Tenants window and detail dialog through which tenants are managed.
 Tenant administration is a platform concern — the window is available
 to the platform administrator on the system tenant.
 
+# Restore the heading gap that the lettrine paragraph suppresses.
+#+latex: \bigskip
+
 ** Overview
 
 A tenant is OreStudio's unit of isolation, and the party hierarchy

@@ -19,6 +19,9 @@ structured change reason system. Readers who want to jump straight to
 managing specific entity types can skim this chapter and return to it
 when questions arise about audit trails or data quality controls.
 
+# Restore the heading gap that the lettrine paragraph suppresses.
+#+latex: \bigskip
+
 ** What is Reference Data?
 :PROPERTIES:
 :ID: CEE81730-CC5D-493F-A7DF-CEFB13FE6E23

@@ -8,7 +8,7 @@
 #+filetags: :shell:history:ux:consolidate_history_dialogs:sprint_19:v0:
 #+owner: marco
 #+branch: feature/shell-unified-diff
-#+pr:
+#+pr: 1105
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-05
@@ -73,7 +73,7 @@ Qt dialogs — demonstrating that frontends need no comparison logic.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1105][#1105]] | [shell] Show currency history as a unified diff |
 
 * Review
 

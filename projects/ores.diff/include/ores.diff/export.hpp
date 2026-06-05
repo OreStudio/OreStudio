@@ -20,12 +20,16 @@
 #ifndef ORES_DIFF_EXPORT_HPP
 #define ORES_DIFF_EXPORT_HPP
 
-#include <boost/config.hpp>
-
-#ifdef ORES_DIFF_LIBRARY
-#  define ORES_DIFF_EXPORT BOOST_SYMBOL_EXPORT
+#if defined(_WIN32) || defined(__CYGWIN__)
+#  ifdef ORES_DIFF_LIBRARY
+#    define ORES_DIFF_EXPORT __declspec(dllexport)
+#  else
+#    define ORES_DIFF_EXPORT __declspec(dllimport)
+#  endif
+#elif defined(__GNUC__)
+#  define ORES_DIFF_EXPORT __attribute__((visibility("default")))
 #else
-#  define ORES_DIFF_EXPORT BOOST_SYMBOL_IMPORT
+#  define ORES_DIFF_EXPORT
 #endif
 
 #endif

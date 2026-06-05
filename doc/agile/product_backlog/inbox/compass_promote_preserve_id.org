@@ -1,0 +1,40 @@
+:PROPERTIES:
+:ID: 2EE98C9B-EE16-41E6-AC97-9998DC30F582
+:END:
+#+title: Make compass capture promote a real command preserving the UUID
+#+description: Replace the instruction-printing compass capture promote with a real command: scaffold a story/task that reuses the capture UUID, carry content over, branch, remove the capture and index row, and wire the sprint table.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A real =compass capture promote <slug-or-uuid> [--to story|task --story <id>]=
+command that: scaffolds a story (or task on an existing story) which
+*reuses the capture's UUID*; carries over title, description,
+acceptance, and decisions content; creates the feature branch; removes
+the capture file and its inbox/bucket index row (re-running the index
+regeneration); and wires the sprint =* Stories= table.
+
+* Why
+
+Today =compass capture promote= only prints instructions: run
+=compass story new= (which mints a fresh UUID) and delete the capture
+— losing the capture's ID and breaking traceability from sprint
+deferral records and the backlog indexes. Promoting the
+=compass_pr_review= capture (2026-06-05) required manually adopting
+the capture's UUID into the scaffolded story, then fixing the task's
+parent links, the sprint table row, the journal entry, and the inbox
+index by hand.
+
+* References
+
+-
+
+* See also
+
+-

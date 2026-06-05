@@ -1,0 +1,68 @@
+:PROPERTIES:
+:ID: 745668F6-3F30-4C0C-B6F4-45077873AABD
+:END:
+#+title: Task: Implement compass review commands (list, reply, resolve)
+#+description: Add compass review list/reply/resolve subcommands wrapping the gh CLI for PR review rounds.
+#+type: task
+#+level: s1
+#+filetags: :compass_pr_management:sprint_19:v0:
+#+owner: marco
+#+branch: feature/compass-pr-management
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:166E8E44-1573-4DE2-825F-A6037A302AE9][Add PR management support to compass]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Implement the three review-round verbs as =compass review=
+subcommands wrapping the =gh= CLI: =list= (all review comments with
+id/file/line/preview, =--detail= for full bodies), =reply= (POST a
+reply to a comment id with correct integer typing), and =resolve=
+(resolve all unresolved threads via the GraphQL mutation, with
+=--dry-run=). Defaults for =--owner=/=--repo= come from the git
+remote. New module =compass_review.py=, dispatched from =compass.py=
+following the existing short-circuit pattern.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:166E8E44-1573-4DE2-825F-A6037A302AE9][Add PR management support to compass]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-05                               |
+
+* Acceptance
+
+- The story acceptance bullets for =list=, =reply=, and =resolve=
+  hold, exercised against a real PR.
+- =compass --help= documents the review pillar.
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -98,7 +98,7 @@ in-flight model migration); codegen the mappers (deferred).
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] |
-| Now           | Phase B2: currency pilot for server-side diffs. |
+| Now           | Shell unified diff; phase C gated on codegen migration. |
 | Waiting on    | Nothing.                               |
 | Next          | Phase C: template rollout (gated on codegen migration). |
 | Last touched  | 2026-06-05                               |
@@ -122,10 +122,10 @@ in-flight model migration); codegen the mappers (deferred).
 | [[id:40781D42-C34B-47F3-8612-7FA9C2202E5B][Design the history diff architecture and testing strategy]] | DONE | 2026-06-05 | 2026-06-05 | Design distributed into this story's Architecture and the tasks' Plans. |
 | [[id:E9348344-C7A1-4B4A-969D-BDB56C96DE9A][Grow HistoryDialogBase and migrate the six hand-rolled dialogs]] | DONE | 2026-06-05 | 2026-06-05 | Scope grew to all 64 version-history dialogs; event-log dialogs renamed to Audit. PR 1080. |
 | [[id:83B7239F-5C29-4C52-900E-C9623C608DFD][Create the ores.diff component]] | DONE | 2026-06-05 | 2026-06-05 | Flat diff model + engine, std+rfl only; 14 tests. PR 1091. |
-| [[id:D575DCF0-2341-4630-9C47-F428F82C2FCE][Pilot server-side history diffs end to end on currency]] | DONE | 2026-06-05 | 2026-06-05 | Phase B2: currency mapper, extended response, handler compose, dialog renders server rows. |
+| [[id:D575DCF0-2341-4630-9C47-F428F82C2FCE][Pilot server-side history diffs end to end on currency]] | DONE | 2026-06-05 | 2026-06-05 | Currency mapper + extended response + handler compose; dialog renders server rows; dogfooded. PR 1097. |
 | [[id:7B2998F0-3B7B-4A11-8A44-7464BF3F4CBB][Adopt the base in the history-dialog template and roll out]] | BACKLOG | | | Phase C: template target form + per-domain rollout. Gated on codegen org-model migration. |
 | [[id:D759765E-85A3-47B6-91C5-23FF938B0B34][Codegen field mappers from entity models]] | BACKLOG | | | Phase D, deferred: generate mappers once the hand-written shape is proven. |
-| [[id:F455B2BE-5562-4561-B8D2-9D85E218B669][Show history as a unified diff in ores.shell]] | BACKLOG | | | Unified-diff rendering of the changes rows in the shell; no comparison logic client-side. |
+| [[id:F455B2BE-5562-4561-B8D2-9D85E218B669][Show history as a unified diff in ores.shell]] | STARTED | 2026-06-05 | | Unified-diff rendering of the changes rows in the shell; no comparison logic client-side. |
 
 * Decisions
 

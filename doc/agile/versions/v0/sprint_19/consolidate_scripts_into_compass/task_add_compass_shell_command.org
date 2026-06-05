@@ -30,12 +30,12 @@ every entry point shares one definition of "connect to this checkout".
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | DONE |
+| State        | DONE                              |
 | Parent story | [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]] |
-| Now          | Nothing. |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Nothing. |
-| Last touched | 2026-06-05 |
+| Next         | Nothing.                               |
+| Last touched | 2026-06-05                               |
 
 * Acceptance
 
@@ -65,4 +65,11 @@ task closes. Plans do not outlive their task.)
 
 * Result
 
-PR #1097 merged.
+Merged in [[https://github.com/OreStudio/OreStudio/pull/1097][PR 1097]]. compass shell launches ores.shell with the binary
+resolved from the checkout's preset and the NATS connection and login
+credentials from .env passed as explicit flags; -f runs scripted
+sessions (exit auto-appended), -u/-p override credentials, logging
+flags forward, --dry-run masks the password, -- passes through. The
+Emacs dashboard's shell launcher goes through it. Review round 1
+hardened it: .exe suffix on Windows, flag-anchored password masking,
+quote-stripped .env values.

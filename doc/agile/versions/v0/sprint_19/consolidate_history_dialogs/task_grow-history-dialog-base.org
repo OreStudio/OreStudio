@@ -32,9 +32,9 @@ broke GCC/AppleClang).
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]] |
-| Now          | Not yet started.                       |
+| Now          | All 64 version-history dialogs migrated; full build green; raising the PR. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Raise the PR and run the review runbook. |
 | Last touched | 2026-06-05                               |
 
 * Acceptance
@@ -59,6 +59,29 @@ broke GCC/AppleClang).
    codegen-free.
 
 * Notes
+
+- Scope expanded by Marco during implementation: migrate /all/
+  history dialogs with the same pattern, not just the six hand-rolled
+  ones — first hand-crafted, then the generated family. Final tally:
+  6 hand-rolled + 58 generated-pattern dialogs (including the
+  ZeroConvention exemplar and the original Workspace adopter) are on
+  the base; 64 in total.
+- =VersionRow= became {version, ordered cell list} because version
+  lists vary per dialog (3–6 columns: change reason, commentary,
+  performed by, enabled).
+- Revert semantics were unified (Marco's decision): *Revert restores
+  the selected version* as a new current version, after confirmation,
+  and is disabled on the latest version. Previously the hand-rolled
+  family reverted to the version older than the selection and the
+  generated family reverted to the selection without confirmation.
+  Recorded in the UX language knowledge doc.
+- Out of scope — event-log "history" screens, not version histories:
+  =SessionHistoryDialog= (login-session telemetry with charts),
+  =PublicationHistoryDialog= (dataset publication audit log),
+  =JobDefinitionHistoryDialog= (job execution run log). The base's
+  version-list/diff/open-revert contract does not apply to them.
+- Pre-existing AppVersion diff mislabelling preserved verbatim and
+  captured separately: [[id:FC2EF34E-F873-4793-BA38-4026BD78E7FE][AppVersionHistoryDialog diff rows mislabelled]].
 
 * PRs
 

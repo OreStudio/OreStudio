@@ -300,15 +300,17 @@ def _cmd_merge(args, project_root):
         print("   Use --force to merge anyway.", file=sys.stderr)
         return 1
     if blocked:
-        print("⚠️  --force: merging despite:")
+        print("⚠️  --force: merging despite:", flush=True)
         for b in blocked:
-            print(f"   - {b}")
+            print(f"   - {b}", flush=True)
 
     # Always a merge commit — never squash, never rebase — matching
-    # the repository's history.
-    p = subprocess.run(
-        ["gh", "pr", "merge", str(number), "--merge", "--delete-branch"],
-        cwd=str(project_root))
+    # the repository's history. --force needs gh's --admin to bypass
+    # the base branch protection (required checks still pending).
+    cmd = ["gh", "pr", "merge", str(number), "--merge", "--delete-branch"]
+    if args.force and blocked:
+        cmd.append("--admin")
+    p = subprocess.run(cmd, cwd=str(project_root))
     if p.returncode != 0:
         return p.returncode
     print(f"✅ PR #{number} merged (merge commit); branch deleted.")

@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: B4CFC8E8-6A3A-4E65-ADD8-79FA28906CE3
+:END:
+#+title: User-voice experience over the product backlog
+#+description: UserVoice-style portal where users browse, file, vote on and track feature requests — backed by the org-mode product backlog itself, with a service account raising capture PRs, votes as org properties, postgres-served documents, and in-UI triage that merges the capture PR.
+#+type: capture
+#+level: cross
+#+filetags: :ux:backlog:wt:git:product:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *deferred* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A UserVoice-like experience for OreStudio users: see open user
+requests, add new ones, vote on them, and follow each request through
+its lifecycle. The twist is the backend — there is no separate
+feature-request database. The user requests /are/ the org-mode
+product backlog:
+
+- *Captures as requests.* Users create and update captures; votes and
+  similar engagement data are recorded as org-mode properties on the
+  capture. We may need a separate bucket for "untriaged" requests —
+  or simply let users see the entire backlog.
+- *Service account + pull requests.* A service account is able to
+  submit pull requests; user actions (new capture, edit, vote)
+  materialise as commits/PRs against the backlog, so the normal
+  review pipeline governs user-generated content.
+- *Lifecycle visibility.* Users can see exactly where a request
+  stands: still in PR phase → merged but awaiting triage → promoted
+  to a story → implemented. The agile machinery doubles as the
+  public roadmap.
+- *Serving layer.* It may be easiest to load all the backlog
+  documents into postgres so they can be served to clients
+  efficiently; the server side makes a clone of the repo (something
+  like libgit2). A "mutex" on the git repo is needed so several
+  users changing captures concurrently do not race.
+- *In-UI triage (bonus).* Authorised users see new captures and can
+  approve them from the UI — equivalent to merging the capture PR.
+- *Screenshots and annotation (bonus).* Requests can carry
+  screenshots, ideally with basic annotation — just enough paint to
+  draw a yellow circle around the problem area.
+
+* Why
+
+Closes the loop between users and the backlog without building (or
+buying) a parallel request tracker that would drift from the real
+plan. Users get transparency — their request is visibly the same
+artefact the team plans from, with honest status straight from the
+agile lifecycle — and the team gets triage, voting signal, and
+provenance for free through the existing git/PR machinery. The
+approach also dogfoods OreStudio's own philosophy: documents as the
+source of truth, postgres as a serving cache, and controlled, audited
+change for everything.
+
+* References
+
+- [[https://uservoice.com/product-overview][UserVoice product overview]] — the experience benchmark.
+- [[https://libgit2.org][libgit2]] — embeddable git for the server-side clone.
+
+* See also
+
+- [[id:D4219199-7B17-4A89-B4BC-6019738642DA][Product backlog]] — the buckets and triage flow this would expose
+  to users.

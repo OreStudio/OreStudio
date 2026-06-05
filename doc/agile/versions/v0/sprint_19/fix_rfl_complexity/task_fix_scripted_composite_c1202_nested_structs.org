@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: B6B2BC7A-255F-4E23-A16E-F4537E2D8E1E
+:END:
+#+title: Task: Decompose scripted, composite and composite_leg into nested structs
+#+description: scripted_instrument (17 fields) sits in the same Mode 2 risk band as equity_position (17, already decomposed); composite_instrument and composite_leg (12 each) follow for symmetry. Completing the family lets the FlatInstrument dual concept and all flat/nested if-constexpr dispatch branches be deleted.
+#+type: task
+#+level: s1
+#+filetags: :fix_rfl_complexity:sprint_19:v0:
+#+owner: marco
+#+branch: feature/fix-scripted-composite-c1202-nested-structs
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]] |
+| Now          | PR #1085 in review.                    |
+| Waiting on   | Nothing.                               |
+| Next         | Review round; rebase once #1083 merges. |
+| Last touched | 2026-06-05                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1085][#1085]] | [trading,qt,ore] Decompose scripted/composite; delete the flat-instrument era |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Gemini: guard empty workspace_id before lexical_cast (2 mappers) | scripted/composite mappers | Decline | Column is NOT NULL DEFAULT in the DDL — empty values cannot exist; guarding would diverge from the ~30 sibling mappers using the identical cast. Cross-cutting defensive parsing would be a capture, not a one-off |
+
+* Result

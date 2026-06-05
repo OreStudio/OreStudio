@@ -31,16 +31,16 @@ generate_synthetic_scripted_instrument(utility::generation::generation_context& 
     const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
 
     domain::scripted_instrument r;
-    r.version = 1;
-    r.instrument_id = boost::uuids::random_generator()();
-    r.trade_type_code = "ScriptedTrade";
+    r.identity.version = 1;
+    r.identity.instrument_id = boost::uuids::random_generator()();
+    r.identity.trade_type_code = "ScriptedTrade";
     r.script_name = "Autocallable";
     r.description = std::string(faker::lorem::sentence());
-    r.modified_by = modified_by;
-    r.performed_by = modified_by;
-    r.change_reason_code = "system.test";
-    r.change_commentary = "Synthetic test data";
-    r.recorded_at = ctx.past_timepoint();
+    r.audit.modified_by = modified_by;
+    r.audit.performed_by = modified_by;
+    r.audit.change_reason_code = "system.test";
+    r.audit.change_commentary = "Synthetic test data";
+    r.audit.recorded_at = ctx.past_timepoint();
     return r;
 }
 

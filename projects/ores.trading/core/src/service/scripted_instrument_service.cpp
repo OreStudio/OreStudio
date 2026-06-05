@@ -58,14 +58,14 @@ scripted_instrument_service::get_scripted_instrument(const std::string& id) {
 
 void scripted_instrument_service::save_scripted_instrument(const domain::scripted_instrument& v) {
     auto t = v;
-    if (t.instrument_id.is_nil()) {
+    if (t.identity.instrument_id.is_nil()) {
         static boost::uuids::random_generator gen;
-        t.instrument_id = gen();
+        t.identity.instrument_id = gen();
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving scripted_instrument: " << t.instrument_id;
+    BOOST_LOG_SEV(lg(), debug) << "Saving scripted_instrument: " << t.identity.instrument_id;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved scripted_instrument: " << t.instrument_id;
+    BOOST_LOG_SEV(lg(), info) << "Saved scripted_instrument: " << t.identity.instrument_id;
 }
 
 void scripted_instrument_service::remove_scripted_instrument(const std::string& id) {

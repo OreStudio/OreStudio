@@ -70,7 +70,7 @@ void ScriptedInstrumentForm::clear() {
 void ScriptedInstrumentForm::setTradeType(const QString& code,
                                           bool /*has_options*/,
                                           bool /*has_extension*/) {
-    instrument_.trade_type_code = code.trimmed().toStdString();
+    instrument_.identity.trade_type_code = code.trimmed().toStdString();
 }
 
 void ScriptedInstrumentForm::setReadOnly(bool readOnly) {
@@ -92,20 +92,20 @@ bool ScriptedInstrumentForm::isLoaded() const {
 
 void ScriptedInstrumentForm::setChangeReason(const std::string& code,
                                              const std::string& commentary) {
-    instrument_.change_reason_code = code;
-    instrument_.change_commentary = commentary;
+    instrument_.audit.change_reason_code = code;
+    instrument_.audit.change_commentary = commentary;
 }
 
 void ScriptedInstrumentForm::writeUiToInstrument() {
-    instrument_.trade_type_code = ui_->tradeTypeCodeEdit->text().trimmed().toStdString();
+    instrument_.identity.trade_type_code = ui_->tradeTypeCodeEdit->text().trimmed().toStdString();
     instrument_.script_name = ui_->scriptNameEdit->text().trimmed().toStdString();
     instrument_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
     instrument_.script_body = ui_->scriptBodyEdit->toPlainText().toStdString();
     instrument_.events_json = ui_->eventsJsonEdit->toPlainText().toStdString();
     instrument_.underlyings_json = ui_->underlyingsJsonEdit->toPlainText().toStdString();
     instrument_.parameters_json = ui_->parametersJsonEdit->toPlainText().toStdString();
-    instrument_.modified_by = username_;
-    instrument_.performed_by = username_;
+    instrument_.audit.modified_by = username_;
+    instrument_.audit.performed_by = username_;
 }
 
 void ScriptedInstrumentForm::populate(const trading::domain::scripted_instrument& instr) {
@@ -129,7 +129,7 @@ void ScriptedInstrumentForm::populateFromInstrument() {
     };
 
     block(true);
-    ui_->tradeTypeCodeEdit->setText(QString::fromStdString(instrument_.trade_type_code));
+    ui_->tradeTypeCodeEdit->setText(QString::fromStdString(instrument_.identity.trade_type_code));
     ui_->scriptNameEdit->setText(QString::fromStdString(instrument_.script_name));
     ui_->descriptionEdit->setPlainText(QString::fromStdString(instrument_.description));
     ui_->scriptBodyEdit->setPlainText(QString::fromStdString(instrument_.script_body));
@@ -141,12 +141,12 @@ void ScriptedInstrumentForm::populateFromInstrument() {
 
 void ScriptedInstrumentForm::emitProvenance() {
     InstrumentProvenance p;
-    p.version = instrument_.version;
-    p.modified_by = instrument_.modified_by;
-    p.performed_by = instrument_.performed_by;
-    p.recorded_at = instrument_.recorded_at;
-    p.change_reason_code = instrument_.change_reason_code;
-    p.change_commentary = instrument_.change_commentary;
+    p.version = instrument_.identity.version;
+    p.modified_by = instrument_.audit.modified_by;
+    p.performed_by = instrument_.audit.performed_by;
+    p.recorded_at = instrument_.audit.recorded_at;
+    p.change_reason_code = instrument_.audit.change_reason_code;
+    p.change_commentary = instrument_.audit.change_commentary;
     emit provenanceChanged(p);
 }
 
@@ -191,7 +191,7 @@ void ScriptedInstrumentForm::saveInstrument(std::function<void(const std::string
             BOOST_LOG_SEV(lg(), info) << "Scripted instrument saved";
             self->dirty_ = false;
             self->emitProvenance();
-            on_success(boost::uuids::to_string(self->instrument_.instrument_id));
+            on_success(boost::uuids::to_string(self->instrument_.identity.instrument_id));
         });
 
     auto* cm = clientManager_;

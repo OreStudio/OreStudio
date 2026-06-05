@@ -612,14 +612,12 @@ void ImportTradeDialog::onImportClicked() {
                             },
                             r);
                     } else if constexpr (std::is_same_v<T, composite_instrument_data>) {
-                        r.instrument.instrument_id = instr_id;
-                        r.instrument.trade_id = tti.trade.identity.id;
-                    } else if constexpr (trading::domain::NestedInstrument<T>) {
+                        r.instrument.identity.instrument_id = instr_id;
+                        r.instrument.identity.trade_id = tti.trade.identity.id;
+                    } else {
+                        // bond/credit/commodity/scripted — all nested now.
                         r.identity.instrument_id = instr_id;
                         r.identity.trade_id = tti.trade.identity.id;
-                    } else {
-                        r.instrument_id = instr_id;
-                        r.trade_id = tti.trade.identity.id;
                     }
                 }
             },

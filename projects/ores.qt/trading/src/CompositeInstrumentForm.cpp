@@ -68,7 +68,7 @@ void CompositeInstrumentForm::clear() {
 void CompositeInstrumentForm::setTradeType(const QString& code,
                                            bool /*has_options*/,
                                            bool /*has_extension*/) {
-    instrument_.trade_type_code = code.trimmed().toStdString();
+    instrument_.identity.trade_type_code = code.trimmed().toStdString();
     const auto idx = ui_->tradeTypeCombo->findText(code.trimmed());
     if (idx >= 0)
         ui_->tradeTypeCombo->setCurrentIndex(idx);
@@ -89,16 +89,17 @@ bool CompositeInstrumentForm::isLoaded() const {
 
 void CompositeInstrumentForm::setChangeReason(const std::string& code,
                                               const std::string& commentary) {
-    instrument_.change_reason_code = code;
-    instrument_.change_commentary = commentary;
+    instrument_.audit.change_reason_code = code;
+    instrument_.audit.change_commentary = commentary;
 }
 
 void CompositeInstrumentForm::writeUiToInstrument() {
-    instrument_.trade_type_code = ui_->tradeTypeCombo->currentText().trimmed().toStdString();
+    instrument_.identity.trade_type_code =
+        ui_->tradeTypeCombo->currentText().trimmed().toStdString();
     instrument_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
     legs_ = ui_->legsWidget->legs();
-    instrument_.modified_by = username_;
-    instrument_.performed_by = username_;
+    instrument_.audit.modified_by = username_;
+    instrument_.audit.performed_by = username_;
 }
 
 void CompositeInstrumentForm::populate(const trading::domain::composite_instrument& instr,
@@ -118,7 +119,7 @@ void CompositeInstrumentForm::populateFromInstrument() {
     ui_->legsWidget->blockSignals(true);
 
     const auto idx =
-        ui_->tradeTypeCombo->findText(QString::fromStdString(instrument_.trade_type_code));
+        ui_->tradeTypeCombo->findText(QString::fromStdString(instrument_.identity.trade_type_code));
     if (idx >= 0)
         ui_->tradeTypeCombo->setCurrentIndex(idx);
     ui_->descriptionEdit->setPlainText(QString::fromStdString(instrument_.description));
@@ -131,12 +132,12 @@ void CompositeInstrumentForm::populateFromInstrument() {
 
 void CompositeInstrumentForm::emitProvenance() {
     InstrumentProvenance p;
-    p.version = instrument_.version;
-    p.modified_by = instrument_.modified_by;
-    p.performed_by = instrument_.performed_by;
-    p.recorded_at = instrument_.recorded_at;
-    p.change_reason_code = instrument_.change_reason_code;
-    p.change_commentary = instrument_.change_commentary;
+    p.version = instrument_.identity.version;
+    p.modified_by = instrument_.audit.modified_by;
+    p.performed_by = instrument_.audit.performed_by;
+    p.recorded_at = instrument_.audit.recorded_at;
+    p.change_reason_code = instrument_.audit.change_reason_code;
+    p.change_commentary = instrument_.audit.change_commentary;
     emit provenanceChanged(p);
 }
 
@@ -182,7 +183,7 @@ void CompositeInstrumentForm::saveInstrument(std::function<void(const std::strin
             BOOST_LOG_SEV(lg(), info) << "Composite instrument saved";
             self->dirty_ = false;
             self->emitProvenance();
-            on_success(boost::uuids::to_string(self->instrument_.instrument_id));
+            on_success(boost::uuids::to_string(self->instrument_.identity.instrument_id));
         });
 
     auto* cm = clientManager_;

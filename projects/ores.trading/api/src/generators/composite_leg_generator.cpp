@@ -33,16 +33,16 @@ generate_synthetic_composite_leg(const boost::uuids::uuid& instrument_id,
     const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
 
     domain::composite_leg r;
-    r.version = 1;
-    r.id = boost::uuids::random_generator()();
-    r.instrument_id = instrument_id;
-    r.leg_sequence = leg_sequence;
+    r.identity.version = 1;
+    r.identity.id = boost::uuids::random_generator()();
+    r.identity.instrument_id = instrument_id;
+    r.identity.leg_sequence = leg_sequence;
     r.constituent_trade_id = boost::uuids::to_string(boost::uuids::random_generator()());
-    r.modified_by = modified_by;
-    r.performed_by = modified_by;
-    r.change_reason_code = "system.test";
-    r.change_commentary = "Synthetic test data";
-    r.recorded_at = ctx.past_timepoint();
+    r.audit.modified_by = modified_by;
+    r.audit.performed_by = modified_by;
+    r.audit.change_reason_code = "system.test";
+    r.audit.change_commentary = "Synthetic test data";
+    r.audit.recorded_at = ctx.past_timepoint();
     return r;
 }
 

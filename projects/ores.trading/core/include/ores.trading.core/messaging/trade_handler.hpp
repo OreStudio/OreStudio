@@ -232,7 +232,8 @@ private:
         if (!composite_ids.empty()) {
             service::composite_instrument_service comp_svc(ctx);
             for (auto& leg : comp_svc.get_legs_batch(composite_ids))
-                comp_legs_map[boost::uuids::to_string(leg.instrument_id)].push_back(std::move(leg));
+                comp_legs_map[boost::uuids::to_string(leg.identity.instrument_id)].push_back(
+                    std::move(leg));
         }
 
         // Phase 3: batch-fetch instruments, build lookup map
@@ -244,16 +245,10 @@ private:
                                           std::vector<ores::trading::domain::swap_leg>{};
         };
 
-        // Single-table types (bond/credit/commodity are nested; scripted
-        // is still flat — key through whichever shape the type has).
+        // Single-table types (bond, credit, commodity, scripted).
         auto add_flat = [&](auto&& results) {
-            for (auto& v : results) {
-                using T = std::decay_t<decltype(v)>;
-                if constexpr (ores::trading::domain::NestedInstrument<T>)
-                    imap[boost::uuids::to_string(v.identity.instrument_id)] = std::move(v);
-                else
-                    imap[boost::uuids::to_string(v.instrument_id)] = std::move(v);
-            }
+            for (auto& v : results)
+                imap[boost::uuids::to_string(v.identity.instrument_id)] = std::move(v);
         };
 
         if (!bond_ids.empty()) {
@@ -275,7 +270,7 @@ private:
         if (!composite_ids.empty()) {
             service::composite_instrument_service svc(ctx);
             for (auto& v : svc.get_composite_instruments(composite_ids)) {
-                const auto id = boost::uuids::to_string(v.instrument_id);
+                const auto id = boost::uuids::to_string(v.identity.instrument_id);
                 composite_instrument_data data;
                 data.instrument = std::move(v);
                 auto it = comp_legs_map.find(id);

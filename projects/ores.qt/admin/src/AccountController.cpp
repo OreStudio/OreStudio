@@ -252,7 +252,7 @@ void AccountController::onNotificationReceived(const QString& eventType,
             // since we don't have easy access to account_id
             historyDialog->markAsStale();
             BOOST_LOG_SEV(lg(), debug) << "Marked account history dialog as stale for: "
-                                       << historyDialog->username().toStdString();
+                                       << historyDialog->code().toStdString();
         }
     }
 }

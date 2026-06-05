@@ -129,14 +129,14 @@ _SITE_BASE = "https://orestudio.github.io/OreStudio/"
 
 def _org_title(text, kind):
     """#+title: value with the 'Task: ' / 'Story: ' prefix stripped."""
-    m = re.search(r"^#\+title:\s*(.+)$", text, re.M)
+    m = re.search(r"^#\+title:\s*(.+)$", text, re.M | re.I)
     if not m:
         return ""
-    return re.sub(rf"^{kind}:\s*", "", m.group(1).strip())
+    return re.sub(rf"(?i)^{kind}:\s*", "", m.group(1).strip())
 
 
 def _org_id(text):
-    m = re.search(r":ID:\s+([0-9A-Fa-f-]{36})", text)
+    m = re.search(r"(?i):ID:\s+([0-9A-Fa-f-]{36})", text)
     return m.group(1) if m else ""
 
 
@@ -171,6 +171,10 @@ def _cmd_create(args, project_root):
     task_id = _org_id(task_text)
     task_title = _org_title(task_text, "Task")
     task_rel = task_path.relative_to(project_root)
+    if not task_id:
+        print(f"❌ No :ID: property found in task doc {task_rel}.",
+              file=sys.stderr)
+        return 1
     story_path = task_path.parent / "story.org"
     try:
         story_text = story_path.read_text(encoding="utf-8")
@@ -180,6 +184,10 @@ def _cmd_create(args, project_root):
     story_id = _org_id(story_text)
     story_title = _org_title(story_text, "Story")
     story_rel = story_path.relative_to(project_root)
+    if not story_id:
+        print(f"❌ No :ID: property found in story doc {story_rel}.",
+              file=sys.stderr)
+        return 1
 
     summary = args.summary or "(Fill in: what changes, why.)"
     changes = "\n".join(f"- {c}" for c in (args.change or ["(Fill in.)"]))
@@ -211,21 +219,31 @@ def _cmd_create(args, project_root):
         print(p.stderr.strip() or "❌ gh pr create failed.",
               file=sys.stderr)
         return p.returncode
-    url = p.stdout.strip().splitlines()[-1]
+    lines = p.stdout.strip().splitlines()
+    if not lines:
+        print("❌ gh pr create succeeded but returned no output.",
+              file=sys.stderr)
+        return 1
+    url = lines[-1]
     print(f"✅ PR created: {url}")
+    try:
+        number = int(url.rstrip("/").rsplit("/", 1)[-1])
+    except ValueError:
+        print(f"❌ Could not parse PR number from URL '{url}'.",
+              file=sys.stderr)
+        return 1
 
     # Record on the task doc and stamp the journal.
     import types
-    rc = _cmd_record(types.SimpleNamespace(pr=0, task=args.task),
+    rc = _cmd_record(types.SimpleNamespace(pr=number, task=args.task),
                      project_root)
     if rc != 0:
         return rc
-    number = url.rstrip("/").rsplit("/", 1)[-1]
     compass = Path(project_root) / "projects" / "ores.compass" / "compass.sh"
     subprocess.run([str(compass), "journal", "update",
                     "--story", story_id, "--task", task_id,
                     "--branch", branch, "--state", "STARTED",
-                    "--pr", number], cwd=str(project_root))
+                    "--pr", str(number)], cwd=str(project_root))
     print("ℹ️  Task doc updated — commit and push the record:")
     print(f"    git add {task_rel} && git commit && git push")
     return 0

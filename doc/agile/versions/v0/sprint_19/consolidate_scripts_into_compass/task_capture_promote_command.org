@@ -63,3 +63,14 @@ task closes. Plans do not outlive their task.)
 | 3 | heading demotion regex matched line-leading bold | compass.py | Accepted | asterisks+space only; 47318cf78 |
 
 * Result
+
+Shipped in PR [[https://github.com/OreStudio/OreStudio/pull/1100][#1100]] (merged 2026-06-05): =compass capture promote
+<slug> --to story|task= performs the promotion — the promoted doc
+reuses the capture's UUID so deferral records and index links keep
+resolving; title, description, What-as-goal, and the full body carry
+over; branch off fresh main; capture removed and indexes regenerated;
+tasks auto-wired. Live-tested by promoting the sprint-review capture
+(UUID D12E4DC1 preserved end to end). The gap-capture requesting this
+was retired by the same PR. Capture → ship is now compass verbs all
+the way: capture, promote, task start, pr create, review round, pr
+merge.

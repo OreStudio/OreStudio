@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :compass_pr_management:sprint_19:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/compass-pr-sync
+#+pr: 1092
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-05
@@ -19,13 +19,19 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Every review round starts with fetch + rebase, and every conflict
+leaves the session improvising. =compass pr sync= makes step 1 one
+command: fetch =origin/main=, rebase the current branch, report how
+far ahead it is; =--push= force-pushes with lease after success. On
+conflicts: stop where git stops, list the conflicted files and the
+ways out (continue/abort); =--abort-on-conflict= rolls back
+automatically so unattended runs never strand a half-finished rebase.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:166E8E44-1573-4DE2-825F-A6037A302AE9][Add PR management support to compass]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -34,7 +40,13 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- =compass pr sync [--push] [--abort-on-conflict]= fetches, rebases,
+  and reports; refuses on =main= and detached HEAD.
+- Conflict stop lists the files and prints continue/abort guidance;
+  =--abort-on-conflict= restores the branch; both exit non-zero.
+- Non-conflict failures surface git's own message untouched.
+- The review-round runbook and the address-review-comments recipe
+  lead with the command.
 
 * Plan
 
@@ -48,12 +60,12 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1092][#1092]] | [ores.compass] Add pr sync: conflict-aware fetch and rebase |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Merge cleanup claims deletion unconditionally; no main/master guard | compass_pr.py | Accepted | verified + guarded; 7f95079aa |
 
 * Result

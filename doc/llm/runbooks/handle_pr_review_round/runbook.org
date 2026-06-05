@@ -25,7 +25,7 @@ Handle one complete review round: sync with main, read all review comments, deci
 
 In execution order:
 
-1. /Sync with main./ Fetch and rebase: =git fetch origin main && git rebase origin/main=. Never address review comments on a stale branch.
+1. /Sync with main./ =compass pr sync= — fetch, rebase, and report; on conflicts it stops with the conflicted files and the ways out. Never address review comments on a stale branch.
 
 2. /Check CI status./ Before reading comments, inspect the current CI state:
 

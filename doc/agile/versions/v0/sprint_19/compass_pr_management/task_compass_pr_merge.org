@@ -28,11 +28,11 @@ close-out. Replaces the merge recipe's raw =gh pr merge=.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:166E8E44-1573-4DE2-825F-A6037A302AE9][Add PR management support to compass]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing.                               |
 | Last touched | 2026-06-05                               |
 
 * Acceptance
@@ -69,3 +69,10 @@ task closes. Plans do not outlive their task.)
 | 2 | pr positional should default to None not 0 | compass_pr.py | Accepted | 9def8887f |
 
 * Result
+
+Shipped in PR [[https://github.com/OreStudio/OreStudio/pull/1088][#1088]] (merged 2026-06-05 — by the command itself, the
+first compass-driven merge). Guard rails proven live: the command
+refused its own PR on unresolved threads + pending CI; =--force=
+exercised the gh =--admin= path against base branch protection; the
+multi-worktree cleanup issue (gh --delete-branch checks out main)
+found and fixed by deleting the remote branch directly.

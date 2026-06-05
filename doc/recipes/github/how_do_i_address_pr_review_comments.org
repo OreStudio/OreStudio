@@ -37,13 +37,13 @@ Then, for each PR that needs a round in this checkout:
    branch is up to date:
 
    #+begin_src sh :results verbatim
-   git fetch origin main
-   git rebase origin/main
+   ./compass.sh pr sync
    #+end_src
 
-   Addressing comments on a stale branch risks rebase conflicts later
-   and can cause merge noise that confuses reviewers. Rebase first,
-   then address; never the other way around.
+   On conflicts the command stops where git stops and lists the ways
+   out. Addressing comments on a stale branch risks rebase conflicts
+   later and merge noise; sync first, then address — never the other
+   way around.
 
 1. /Read the open comments/:
 

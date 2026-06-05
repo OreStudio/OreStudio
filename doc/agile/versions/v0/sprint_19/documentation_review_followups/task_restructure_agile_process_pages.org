@@ -49,6 +49,6 @@ task closes. Plans do not outlive their task.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Heartbeat rule: Last touched stale on story acted on today | doc/agile/versions/v0/sprint_19/documentation_review_followups/story.org | Accepted | Fixed in ea580971f; dates freshened on all seven touched agile docs. |
 
 * Result

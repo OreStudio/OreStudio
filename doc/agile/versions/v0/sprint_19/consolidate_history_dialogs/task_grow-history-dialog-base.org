@@ -89,13 +89,19 @@ broke GCC/AppleClang).
 * PRs
 
 | PR | Title |
-|----+-------|
-|    |       |
+|------+-------------------------------------------------------------------------------------|
+| [[https://github.com/OreStudio/OreStudio/pull/1080][1080]] | Migrate all history dialogs onto HistoryDialogBase; rename event-log dialogs to Audit |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | unique_ptr with forward-declared Ui needs out-of-line dtor (×4: Account, SystemSetting hpp+cpp) | admin history dialogs | Accepted | Premise was wrong (headers included ui_*.h; build was green) but the forward-decl pattern is better; applied to all six hand-rolled dialogs in f09464d20 |
+| 2 | Wrap toolbar action names and tooltips in tr() | HistoryDialogBase.cpp | Accepted | 282f9c518 |
+| 3 | Wrap load-failure error strings in tr() | HistoryDialogBase.cpp | Accepted | 282f9c518 |
+| 4 | Wrap changes-table placeholders in tr() | HistoryDialogBase.cpp | Accepted | 282f9c518 |
+| 5 | Wrap revert confirmation in tr() | HistoryDialogBase.cpp | Accepted | 282f9c518 |
+| 6 | Wrap Yes/No boolean diff values in tr() | HistoryDialogBase.cpp | Accepted | 282f9c518 |
+| 7 | Task doc must include * Review section | task_grow-history-dialog-base.org | Declined | Section already present with the standard table; comment anchored on the adjacent empty PRs table |
 
 * Result

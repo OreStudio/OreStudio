@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :github:pr:gh:recipe:
 #+created: 2026-05-21
-#+updated: 2026-05-24
+#+updated: 2026-06-05
 
 The body content should be assembled via [[id:1882D6DF-4012-4C6E-BF62-0D943EF805B0][How do I generate a PR
 summary?]] before running the =gh= command here.
@@ -55,16 +55,15 @@ EOF
 3. /Confirm the PR URL/ that =gh= prints; verify the title format
    matches =[COMPONENT] Description=.
 
-4. /Record the PR in the task./ Open the task's =* PRs= table and add
-   a row with the PR number (as a URL link) and title. The table carries
-   the canonical record — =compass where --prs= reads it to fetch live
-   status:
+4. /Record the PR in the task./ One command — it finds the task by
+   matching =#+branch:= against the current branch, sets =#+pr:=, and
+   adds the =* PRs= table row (the canonical record =compass where
+   --prs= reads):
 
-   #+begin_example
-   | PR | Title                            |
-   |----+----------------------------------|
-   | [[https://github.com/OreStudio/OreStudio/pull/123][#123]] | [component] One-line description |
-   #+end_example
+   #+begin_src sh :results verbatim
+   ./compass.sh pr record            # current branch's PR
+   ./compass.sh pr record 123        # explicit PR number
+   #+end_src
 
 * Conventions
 

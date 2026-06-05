@@ -25,9 +25,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:166E8E44-1573-4DE2-825F-A6037A302AE9][Add PR management support to compass]] |
-| Now          | Not yet started.                       |
+| Now          | pr record (auto-record slice) shipped with #1084; create itself next. |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-06-05                               |
@@ -43,6 +43,13 @@ distilled into the parent story's =* Decisions= and cleared when the
 task closes. Plans do not outlive their task.)
 
 * Notes
+
+2026-06-05: first slice landed ahead of create itself — =compass pr
+record [<pr>]= finds the task by matching =#+branch:= against the
+current branch (or =--task=), sets =#+pr:=, and appends the =* PRs=
+row from the PR's live title; idempotent when already recorded. The
+create-PR recipe's record step is now one command. Shipped on the
+pr-checks branch (PR #1084).
 
 * PRs
 

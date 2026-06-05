@@ -3200,7 +3200,8 @@ def main():
                                "'review pending [--since 24h]'; 'review --help'")
     subparsers.add_parser("pr",
                           help="PR: pull-request lifecycle verbs via gh — "
-                               "'pr checks [<pr>] [--watch]'; 'pr --help'")
+                               "'pr checks [<pr>] [--watch]', 'pr record [<pr>]'; "
+                               "'pr --help'")
     subparsers.add_parser("bearings",
                           help="Cold-start orientation: identity, where, last session, recipes, memories")
     subparsers.add_parser("orient",

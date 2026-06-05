@@ -321,14 +321,24 @@ def _cmd_merge(args, project_root):
     p = subprocess.run(cmd, cwd=str(project_root))
     if p.returncode != 0:
         return p.returncode
-    head = subprocess.run(
+    head_proc = subprocess.run(
         ["gh", "pr", "view", str(number), "--json", "headRefName",
          "--jq", ".headRefName"],
-        capture_output=True, text=True, cwd=str(project_root)).stdout.strip()
-    if head:
-        subprocess.run(["git", "push", "origin", "--delete", head],
-                       cwd=str(project_root))
-    print(f"✅ PR #{number} merged (merge commit); remote branch deleted.")
+        capture_output=True, text=True, cwd=str(project_root))
+    head = head_proc.stdout.strip() if head_proc.returncode == 0 else ""
+    deleted = False
+    if head and head not in ("main", "master"):
+        deleted = subprocess.run(
+            ["git", "push", "origin", "--delete", head],
+            cwd=str(project_root)).returncode == 0
+    if deleted:
+        print(f"✅ PR #{number} merged (merge commit); remote branch "
+              f"{head} deleted.")
+    else:
+        print(f"✅ PR #{number} merged (merge commit).")
+        print(f"⚠️  Remote branch deletion skipped or failed"
+              f"{f' ({head})' if head else ''} — delete it manually if "
+              "needed.", file=sys.stderr)
     print("ℹ️  Close out the task: mark it DONE with a Result, update the")
     print("   story's * Tasks row, and stamp the journal:")
     print(f"   compass journal update --story <id> --task <id> "

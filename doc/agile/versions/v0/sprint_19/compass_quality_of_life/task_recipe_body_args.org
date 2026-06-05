@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: 82763717-CFA8-42F4-B775-BE48AB64E78A
+:END:
+#+title: Task: Instantiate recipe body from arguments in compass add
+#+description: compass add recipe scaffolds placeholder boilerplate that must be edited afterwards; accept body content as arguments and render it through the mustache template directly.
+#+type: task
+#+level: s1
+#+filetags: :compass:codegen:recipe:compass_quality_of_life:sprint_19:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A9C8B9F6-C7AE-404D-8EEF-20E5929CB7C0][Compass quality-of-life improvements]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Tasks and stories can already be born with content via --goal and --acceptance, but recipes still come out as boilerplate that has to be edited after generation. Extend compass add (and the underlying codegen template) so the recipe body sections (question, answer, etc.) can be supplied as arguments and instantiated via the mustache template, removing the modify-after-scaffold step.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:A9C8B9F6-C7AE-404D-8EEF-20E5929CB7C0][Compass quality-of-life improvements]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-06                               |
+
+* Acceptance
+
+- compass add recipe accepts body arguments (e.g. question, answer) rendered into the template
+- a recipe created with body arguments needs no post-generation editing
+- the add-doc recipe documents the new flags
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

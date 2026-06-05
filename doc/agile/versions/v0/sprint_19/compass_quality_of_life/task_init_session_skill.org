@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: C200F3C6-8737-47AD-80D7-A2445760E60D
+:END:
+#+title: Task: Add an init-session skill
+#+description: Add a Claude Code skill that standardises session start: prefer compass for all operations, search recipes for command info, run compass bearings, then summarise and suggest the next action.
+#+type: task
+#+level: s1
+#+filetags: :compass:skill:llm:compass_quality_of_life:sprint_19:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-06-06
+#+updated: 2026-06-06
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A9C8B9F6-C7AE-404D-8EEF-20E5929CB7C0][Compass quality-of-life improvements]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Session starts are ad hoc: the LLM sometimes reaches for --help or Unix tools instead of compass and recipes. Add an 'init session' skill with these steps: 1. try to use compass for all operations, and if there are limitations make them clear to the user; 2. to find information about any compass command, search recipes first (compass search "<term>" or compass list --type recipe); 3. find your bearings by running ./compass.sh bearings; then provide the user a summary of the bearings and suggest the next action.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:A9C8B9F6-C7AE-404D-8EEF-20E5929CB7C0][Compass quality-of-life improvements]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-06-06                               |
+
+* Acceptance
+
+- skill instructs to prefer compass for all operations and to surface limitations to the user
+- skill instructs to search recipes for compass command info, with the correct search syntax
+- skill runs compass bearings and ends with a summary plus a suggested next action
+
+* Plan
+
+(Transient implementation strategy. Written when work starts;
+distilled into the parent story's =* Decisions= and cleared when the
+task closes. Plans do not outlive their task.)
+
+* Notes
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

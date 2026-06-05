@@ -2994,6 +2994,11 @@ BUILD_TARGET_ALIASES = {
     "site": "deploy_site",
     "manual": "deploy_manual",
     "org-roam-db-sync": "org_roam_db_sync",
+    # .claude/ is generated, never checked in: settings.json tangles from
+    # doc/llm/claude_code_settings.org; skills deploy from doc/llm/skills.
+    # Recreate the whole directory with: compass build settings skills
+    "settings": "deploy_settings",
+    "skills": "deploy_skills",
 }
 
 

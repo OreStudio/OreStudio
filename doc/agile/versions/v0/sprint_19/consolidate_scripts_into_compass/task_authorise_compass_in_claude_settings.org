@@ -34,22 +34,30 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
-- =Bash(./compass.sh *)= and =Bash(./projects/ores.compass/compass.sh *)=
-  are allowed in the checked-in =.claude/settings.json=.
-- A fresh Claude session can run one read command (=compass where=) and
-  one scaffold command (=compass add capture ...=) with zero permission
-  prompts.
+- All four compass invocation forms are authorised in
+  =doc/llm/claude_code_settings.org= (the peer-reviewed literate
+  source), in a dedicated Compass section with rationale.
+- =.claude/= remains unchecked in; =compass build settings= (and
+  =compass build settings skills= for the whole directory) recreates
+  it from the org sources.
+- A fresh Claude session can run one read command (=compass where=)
+  and one scaffold command (=compass add capture ...=) with zero
+  permission prompts after regenerating settings.
 - The authorisation decision and its rationale are recorded here, with
   org-roam links to the compass recipes that motivate it.
 
 * Plan
 
 1. Record the decision analysis (below, in Notes).
-2. Add =Bash(./compass.sh *)= to the checked-in allowlist alongside the
-   existing =./projects/ores.compass/compass.sh= entry.
-3. Canonicalise on =./compass.sh= as the documented invocation (it is
-   what CLAUDE.md already instructs).
-4. Marco prunes the accumulated compass variants from his
+2. Add a dedicated Compass section to
+   [[id:2D83251F-0E24-4B97-B736-08F710316634][Claude Code settings]] (the literate org source) carrying all
+   four invocation forms and the blanket-allow rationale.
+3. Surface regeneration in the Build pillar: =compass build settings=
+   / =compass build skills= aliases onto the existing
+   =deploy_settings= / =deploy_skills= CMake targets.
+4. Regenerate and verify; canonicalise on =./compass.sh= as the
+   documented invocation (what CLAUDE.md already instructs).
+5. Marco prunes the accumulated compass variants from his
    =settings.local.json= at leisure (user-owned file, not in git).
 
 * Notes
@@ -96,18 +104,31 @@ every session must not pay a permission prompt per invocation.
    produces drift (see evidence above) and helps neither fresh
    worktrees nor other contributors.
 
-** Discovery: the "checked-in" allowlist never existed
+** Discovery: the pipeline already existed; the decision evolved
 
-While implementing this task we found =.gitignore:85= blanket-ignores
-=.claude/=, so the =settings.json= that "covered"
-=projects/ores.compass/compass.sh= was never in git at all — every
-worktree has been carrying its own private copy, which explains both
-the inconsistency across worktrees and the local.json drift. The fix
-narrows the ignore to =.claude/*= with =!.claude/settings.json=,
-adopting Claude Code's own convention: =settings.json= shared and
-reviewed, =settings.local.json= personal, and the generated
-=.claude/skills/= (deployed by CMake from =doc/llm/skills=) still
-ignored.
+Three rounds of design happened inside this task, worth recording:
+
+1. /First attempt: check in .claude/settings.json./ We found
+   =.gitignore= blanket-ignores =.claude/=, so the "shared" allowlist
+   was never in git — every worktree carried a private copy. The
+   first fix narrowed the ignore to track =settings.json=. Marco
+   overruled: =.claude/= must never be checked in; users recreate it
+   from org-mode builds.
+2. /Second discovery: the literate pipeline already existed./
+   [[id:2D83251F-0E24-4B97-B736-08F710316634][Claude Code settings]] is the checked-in, peer-reviewed literate
+   source (per-entry rationale, noweb-assembled master block), tangled
+   to =.claude/settings.json= by the =deploy_settings= CMake target —
+   exactly the skills model (=doc/llm/skills= → =deploy_skills= →
+   =.claude/skills/=). The live settings had silently drifted from
+   the org source, which is precisely the failure mode the generated
+   approach prevents when regeneration is habitual.
+3. /Third round: where does regeneration live in compass?/ First cut
+   was =compass env claude=; rejected — Provision is about runtime
+   environment (.env, certs, keys). Generating artifacts from
+   checked-in sources is the Build pillar, which already aliases
+   =site= and =manual= onto deploy targets. Final: =compass build
+   settings= and =compass build skills= aliases — zero new machinery,
+   and =compass build settings skills= recreates all of =.claude/=.
 
 ** Rationale for the chosen model
 

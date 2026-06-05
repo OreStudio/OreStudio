@@ -21,6 +21,16 @@ necessary; each wildcard is chosen to cover only the intended surface.
 
 * How to regenerate
 
+Via the Build pillar (configures the preset first if needed; the
+=skills= alias recreates the other generated half of =.claude/=):
+
+#+begin_src sh
+compass build settings          # .claude/settings.json
+compass build settings skills   # recreate all of .claude/
+#+end_src
+
+Or via the raw CMake target:
+
 #+begin_src sh
 cmake --build --preset linux-clang-debug-ninja --target deploy_settings
 #+end_src
@@ -49,6 +59,7 @@ last section in each array carries no comma.
 <<perm-files>>,
 <<perm-build>>,
 <<perm-sql>>,
+<<perm-compass>>,
 <<perm-codegen>>,
 <<perm-tests>>,
 <<perm-vcs>>,
@@ -188,11 +199,41 @@ Common invocations:
       "Bash(projects/ores.sql/utility/kill_db_connections.sh *)"
 #+end_src
 
+** Compass
+
+Compass is the developer toolkit purpose-built to simplify LLM
+workflows: orientation (=bearings=, =where=, =fleet=), navigation
+(=search=, =list=, =show=), agile authoring (=add=, =story new=,
+=task new=), session continuity (=journal=), PR work (=pr checks=,
+=review list/reply/resolve=) and environment provisioning (=env=).
+CLAUDE.md's first instruction to every session is =./compass.sh
+bearings=, and project memory directs the LLM to prefer compass over
+raw Unix tools and to use it for all agile artefacts.
+
+A tool we mandate on every session must not pay a permission prompt
+per invocation. The grant is deliberately blanket rather than
+per-subcommand: compass's mutating surface is repo-local files (doc
+scaffolds, =.journal.org=, =.env=) and branch creation, all of which
+the session can already do unprompted via =Edit=/=Write=/=git *= — a
+read-only subset would add ceremony exactly on the highest-frequency
+flows (scaffolding, journaling) without adding safety. Compass is the
+trusted, recipe-documented boundary; authorising the entry point
+authorises its delegations (git, gh, codegen) /through compass/ only.
+
+All four invocation forms are covered: the root wrapper (what
+CLAUDE.md instructs), the component script, each with and without the
+=./= prefix.
+
+#+begin_src json :tangle no :noweb-ref perm-compass
+      "Bash(./compass.sh *)",
+      "Bash(compass.sh *)",
+      "Bash(./projects/ores.compass/compass.sh *)",
+      "Bash(projects/ores.compass/compass.sh *)"
+#+end_src
+
 ** Code generation
 
-=compass.sh= is the preferred entry point for all document scaffolding
-(=compass add <type>=); it delegates to the Mustache-based =ores.codegen=
-Python package. =codegen.sh= is the main entry point for C++ and SQL
+=codegen.sh= is the main entry point for C++ and SQL
 code generation via =ores.codegen= (=regenerate=, =generate=
 subcommands). =run_generator.sh= drives the C++ code generator (Dogen).
 =plantuml_er_generate.sh= produces PlantUML ER diagrams. =generate_doc.sh=
@@ -203,14 +244,12 @@ as SQL: a directory wildcard would permit running arbitrary scripts in
 a large codegen tree.
 
 Common invocations:
-- =./projects/ores.compass/compass.sh add memory --slug foo --parent-dir doc/llm/memory ...=
 - =projects/ores.codegen/codegen.sh regenerate --component refdata-cpp --profile all-cpp=
 - =projects/ores.codegen/codegen.sh generate --model path/to/model.json --profile all-cpp=
 - =projects/ores.codegen/run_generator.sh=
 - =projects/ores.codegen/plantuml_er_generate.sh -i doc/plans/foo.org=
 
 #+begin_src json :tangle no :noweb-ref perm-codegen
-      "Bash(./projects/ores.compass/compass.sh *)",
       "Bash(projects/ores.codegen/codegen.sh *)",
       "Bash(projects/ores.codegen/generate_doc.sh *)",
       "Bash(projects/ores.codegen/run_generator.sh *)",

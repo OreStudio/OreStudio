@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-03
-#+updated: 2026-06-03
+#+updated: 2026-06-05
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2E5F5DB5-7417-45B8-8D0B-C71650127D32][Add compass bearings command for LLM on-boarding]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -25,12 +25,12 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                                |
+| State        | DONE |
 | Parent story | [[id:2E5F5DB5-7417-45B8-8D0B-C71650127D32][Add compass bearings command for LLM on-boarding]] |
-| Now          | Implementing compass bearings.         |
+| Now          | Complete: PR #1024 merged. |
 | Waiting on   | Nothing.                               |
-| Next         | Tag docs; add recipe; PR.              |
-| Last touched | 2026-06-03                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-05 |
 
 * Acceptance
 
@@ -60,3 +60,5 @@ task closes. Plans do not outlive their task.)
 | 4 | Memory sort key TypeError if d.title is None | =compass.py= | Fixed | key=lambda d: d.title or "" — 23e14f3a3 |
 
 * Result
+
+compass bearings shipped and in daily use as the session cold-start. PR #1024 merged.

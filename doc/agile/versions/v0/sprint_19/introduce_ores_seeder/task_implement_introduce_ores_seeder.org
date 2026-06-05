@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-02
-#+updated: 2026-06-02
+#+updated: 2026-06-05
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5104ADAF-390D-4ADB-B005-CE726B553123][Introduce ores.seeder component for database test-data generation]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -38,12 +38,12 @@ slovaris is authored here too.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                                |
+| State        | DONE |
 | Parent story | [[id:5104ADAF-390D-4ADB-B005-CE726B553123][Introduce ores.seeder component for database test-data generation]] |
-| Now          | Scaffolding + slovaris move; closing legacy docs. |
+| Now          | Complete: PR #1018 merged. |
 | Waiting on   | Nothing.                               |
-| Next         | Tidy commits + PR.                     |
-| Last touched | 2026-06-02                             |
+| Next         | Nothing. |
+| Last touched | 2026-06-05 |
 
 * Acceptance
 
@@ -134,3 +134,5 @@ Sequence:
 | 1 | Duplicate BACKLOG * Status section below the STARTED table (scaffold artefact) | =introduce_ores_seeder/story.org= | Fixed | Removed in ba7498168 |
 
 * Result
+
+projects/ores.seeder scaffolded with seeder.sh, src, modeling, datasets/slovaris relocated from codegen. PR #1018 merged.

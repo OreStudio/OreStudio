@@ -78,5 +78,5 @@ auxiliary type (=rounding_type=, =monetary_nature=, =currency_market_tier=).
 | [[id:1816FAA3-B987-4307-B265-EBF6EDEE93AA][Verify and fix currency CLI commands]] | DONE | 2026-05-29 | 2026-05-29 | Confirm list/add/remove exist; implement missing; run against live service. |
 | [[id:3D394DE4-7101-4E4B-A774-DD583BC5F0B0][Verify currency shell commands and NATS integration]] | DONE | 2026-05-29 | 2026-05-31 | Run list/add/remove/history in shell; validates NATS end-to-end. |
 | [[id:E276A541-93EA-46EC-8CD8-D40803FEE587][Verify currency Qt UI end-to-end post-NATS]] | BACKLOG | | | Manually test MDI list, detail, history, delete, eventing. |
-| [[id:C6870B89-A806-4657-B75B-7B333946281D][Fix duplicate refdata rows: add tenant filters to auxiliary repositories]] | STARTED | 2026-06-04 | | Rounding/monetary-nature/market-tier repos read unfiltered; apply change_reason tenant-filter pattern. |
+| [[id:C6870B89-A806-4657-B75B-7B333946281D][Fix duplicate refdata rows: add tenant filters to auxiliary repositories]] | DONE | 2026-06-04 | 2026-06-05 | Rounding/monetary-nature/market-tier repos read unfiltered; apply change_reason tenant-filter pattern. |
 | [[id:B3788A76-208E-4422-B277-17DF8FF3A78C][Write currency documentation (manual chapter, recipes, NATS reference)]] | BACKLOG | | | Manual chapter, CLI recipe, shell recipe, NATS message reference. |

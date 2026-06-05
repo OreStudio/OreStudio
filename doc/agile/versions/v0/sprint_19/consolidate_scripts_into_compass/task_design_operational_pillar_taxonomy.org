@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-02
-#+updated: 2026-06-02
+#+updated: 2026-06-05
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -38,12 +38,12 @@ this task; it produces the plan and scaffolds the migration tasks.
 
 | Field        | Value                                                |
 |--------------+------------------------------------------------------|
-| State        | STARTED                                              |
+| State        | DONE |
 | Parent story | [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]]         |
-| Now          | Design complete: pillars, mapping, Q1–Q8 resolved; migration tasks scaffolded. |
+| Now          | Complete: PR(s) #1004 merged. |
 | Waiting on   | PR + merge.                                          |
-| Next         | Commit, push, open PR.                               |
-| Last touched | 2026-06-02                                           |
+| Next         | Nothing. |
+| Last touched | 2026-06-05 |
 
 * Acceptance
 
@@ -281,3 +281,5 @@ No =logs= pillar/noun.
 |   |                 |      |          |       |
 
 * Result
+
+Pillar taxonomy designed: Provision/Operate/Build/Generate + per-script mapping. PR(s) #1004 merged.

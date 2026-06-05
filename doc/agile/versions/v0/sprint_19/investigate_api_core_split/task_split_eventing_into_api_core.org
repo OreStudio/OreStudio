@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-04
-#+updated: 2026-06-04
+#+updated: 2026-06-05
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BD519FC9-6B29-4055-877F-861E46043A06][Investigate the API/core split in components]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -46,12 +46,12 @@ uses. This completes what the dq.api fix started: apis linking
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE |
 | Parent story | [[id:BD519FC9-6B29-4055-877F-861E46043A06][Investigate the API/core split in components]] |
-| Now          | Not yet started.                       |
+| Now          | Complete: PR #1068 merged. |
 | Waiting on   | Nothing.                               |
-| Next         | Pick up after the constants move (PR #1052) lands. |
-| Last touched | 2026-06-04                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-05 |
 
 * Acceptance
 
@@ -90,3 +90,5 @@ task closes. Plans do not outlive their task.)
 | 1 | Boost::boost must be PUBLIC: public headers include boost | projects/ores.eventing/api/src/CMakeLists.txt | Accepted | Fixed in 98f67d729; demangle/config are public-header deps. Noted sweep candidate: other apis carry Boost PRIVATE with the same pattern. |
 
 * Result
+
+eventing split into api/core; 18 consumers repointed; two freeloaders fixed. PR #1068 merged.

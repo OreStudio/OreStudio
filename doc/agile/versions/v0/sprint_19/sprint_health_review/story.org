@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :agile:review:sprint_19:v0:
 #+created: 2026-05-31
-#+updated: 2026-05-31
+#+updated: 2026-06-05
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -26,12 +26,12 @@ whether the team is focused — rather than merely summarising status.
 
 | Field         | Value                                                                   |
 |---------------+-------------------------------------------------------------------------|
-| State         | DONE                                                                    |
+| State         | STARTED |
 | Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                                                               |
-| Now           | Nothing.                                                                |
+| Now           | Health review 3: state-sync audit + compass sprint audit command. |
 | Waiting on    | Nothing.                                                                |
-| Next          | Nothing.                                                                |
-| Last touched  | 2026-06-03                                                              |
+| Next          | Land the sync PR; close review 3. |
+| Last touched  | 2026-06-05 |
 
 * Acceptance
 

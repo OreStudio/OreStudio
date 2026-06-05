@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-04
-#+updated: 2026-06-04
+#+updated: 2026-06-05
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:95429DF9-B645-4E41-8375-A2A5C84A8E5A][Document the sprint health charts]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -36,12 +36,12 @@ it:
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE |
 | Parent story | [[id:95429DF9-B645-4E41-8375-A2A5C84A8E5A][Document the sprint health charts]] |
-| Now          | Writing the knowledge page.            |
+| Now          | Complete: PR #1039 merged. |
 | Waiting on   | Nothing.                               |
-| Next         | Tangle gnuplot sources; wire links.    |
-| Last touched | 2026-06-04                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-05 |
 
 * Acceptance
 
@@ -70,3 +70,5 @@ task closes. Plans do not outlive their task.)
 | 3 | Stories done chart: same x-axis issue | doc/agile/sprint_charts.org | Accepted | Fixed in eeb0dbaed. |
 
 * Result
+
+Charts knowledge page shipped; gnuplot sources literate-tangled; date-axis review fix. PR #1039 merged.

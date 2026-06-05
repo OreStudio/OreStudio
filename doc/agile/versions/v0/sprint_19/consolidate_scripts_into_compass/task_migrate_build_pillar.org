@@ -31,12 +31,12 @@ build directory is configured automatically on first use. Fold
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE |
 | Parent story | [[id:6695E245-E789-40EC-8AC6-EB10276CA241][Consolidate standalone scripts into compass]] |
-| Now          | compass build landed; serve migration outstanding. |
+| Now          | Complete: PR(s) #1076 merged. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-06-05                               |
+| Next         | Nothing. |
+| Last touched | 2026-06-05 |
 
 * Acceptance
 
@@ -86,3 +86,5 @@ and updating their callers.
 | 1 | cmake --target only accepts one target; repeat the flag | compass.py | Declined | Multi-target valid since CMake 3.15; project requires >= 3.28; verified on 4.3.3 (PR #1076) |
 
 * Result
+
+compass build landed as the Build pillar first slice. PR(s) #1076 merged.

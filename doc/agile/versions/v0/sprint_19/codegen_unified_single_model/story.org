@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :tooling:codegen:sprint_19:v0:
 #+created: 2026-05-30
-#+updated: 2026-06-01
+#+updated: 2026-06-05
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -63,12 +63,12 @@ See [[id:F2A1C8E3-9D4B-4F7A-B2E5-6C3D8A1F9B4E][Codegen architecture analysis and
 
 | Field         | Value                                                                                    |
 |---------------+------------------------------------------------------------------------------------------|
-| State         | BACKLOG                                                                                  |
+| State         | ABANDONED |
 | Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]                                                                                |
-| Now           | Not yet started.                                                                         |
+| Now           | Superseded by the org-mode migration story. |
 | Waiting on    | [[id:7AA5B5C3-F7DE-4A17-84A0-75FB3761D43E][Phase 1: Qt derivation]] (model is cleaner without transcribed Qt fields). |
-| Next          | Design the unified _entity.json JSON Schema.                                             |
-| Last touched  | 2026-05-30                                                                               |
+| Next          | Nothing. |
+| Last touched  | 2026-06-05 |
 
 * Acceptance
 

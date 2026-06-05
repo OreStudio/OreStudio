@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-04
-#+updated: 2026-06-04
+#+updated: 2026-06-05
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:305E3A3B-8A72-49D3-9972-FAF06FEB4552][Documentation review follow-ups]] story. It captures the goal, current status, acceptance, and any notes or results.

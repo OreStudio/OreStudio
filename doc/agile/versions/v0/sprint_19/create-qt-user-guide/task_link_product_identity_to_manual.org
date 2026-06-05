@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-04
-#+updated: 2026-06-04
+#+updated: 2026-06-05
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6111FDF8-96E6-4C40-88BD-C756B6841F85][Create a user guide for ores.qt]] story. It captures the goal, current status, acceptance, and any notes or results.

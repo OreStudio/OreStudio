@@ -83,6 +83,6 @@ server computed, with no comparison logic client-side.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Round 1 raised no comments on the pilot itself | - | - | All three review comments targeted compass shell; recorded in its task. Fixes in . |
 
 * Result

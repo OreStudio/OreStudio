@@ -59,6 +59,8 @@ task closes. Plans do not outlive their task.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Binary lacks .exe suffix on Windows | compass.py | Accepted |  |
+| 2 | Password mask by value can leak when values collide | compass.py | Accepted | Mask the argument after --login-password;  |
+| 3 | Strip quotes from .env values | compass.py | Accepted |  |
 
 * Result

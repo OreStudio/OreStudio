@@ -15,7 +15,7 @@ The =deploy_skills= cmake target only invokes Emacs in batch mode via
 compilation. Claude can run it directly without asking the user.
 
 *Why:* Session on 2026-05-22 incorrectly deferred the command to the user by
-applying build-parallelism concerns (=-j $(nproc)= crash risk, build.sh
+applying build-parallelism concerns (=-j $(nproc)= crash risk, build
 wrapper) to a target that does not compile anything. The user corrected this
 and requested the rule be made explicit.
 
@@ -25,5 +25,5 @@ and requested the rule be made explicit.
 cmake --build --preset linux-clang-debug-ninja --target deploy_skills
 #+end_src
 
-from the project root. Do not ask the user to run it. The =-j= caps and
-=build/scripts/build.sh= wrapper only apply to C++ compilation targets.
+from the project root. Do not ask the user to run it. The =-j= caps
+only apply to C++ compilation targets.

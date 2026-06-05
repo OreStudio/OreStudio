@@ -71,11 +71,11 @@ Design direction — two layers:
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] |
-| Now           | Not yet started.                       |
+| Now           | Design task in progress.               |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Produce the architecture and testing design; then implementation tasks. |
 | Last touched  | 2026-06-05                               |
 
 * Acceptance
@@ -86,7 +86,7 @@ Design direction — two layers:
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-|      |       |       |     |             |
+| [[id:40781D42-C34B-47F3-8612-7FA9C2202E5B][Design the history diff architecture and testing strategy]] | STARTED | 2026-06-05 | | Mapper placement, NATS diff message shape, ores.diff component question, incremental adoption plan, testing strategy. |
 
 * Decisions
 

@@ -1,0 +1,174 @@
+:PROPERTIES:
+:ID: F7E99C10-E44B-45AA-B47E-CE1801343959
+:END:
+#+title: History Diff Architecture Design
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
+#+startup: inlineimages
+
+* Overview
+
+Sixty-seven =*HistoryDialog= classes in ores.qt duplicate the
+version-list/load/stale pipeline, and six of them hand-roll field-level
+diffs with four different idioms. The parent story
+([[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Consolidate history dialogs onto HistoryDialogBase]]) sets the
+direction: compute diffs server-side, adopt the base class everywhere.
+This document records the design decisions: where each piece lives,
+the message shapes, whether a dedicated =ores.diff= component is
+warranted, the migration sequence, and the testing strategy.
+
+* Findings that shape the design
+
+1. /The dialogs are generated./ =cpp_qt_history_dialog.{hpp,cpp}.mustache=
+   and =qt_history_dialog_ui.mustache= produce the standard history
+   dialog. The 67-fold duplication is therefore one template times 67
+   entities — the bulk migration is a template change plus
+   regeneration, not 67 hand edits. The six diff-bearing dialogs
+   (Account, SystemSetting, ChangeReason, ChangeReasonCategory,
+   Country, Currency) carry hand-written additions and migrate
+   manually.
+2. /The base is currently a stub./ =HistoryDialogBase= holds two
+   signals, =markAsStale()= and =code()= — none of the pipeline. One
+   adopter (=WorkspaceHistoryDialog=).
+3. /History messages ship full versions./ Each entity has
+   =get_<entity>_history_request= on =<domain>.v1.<entities>.history=
+   returning complete version records; any comparison happens
+   client-side.
+4. /The detail panel needs full values, not only diffs./ History
+   dialogs show a version's complete field set alongside the Changes
+   tab, so a diff-only message would starve the detail view.
+
+* The design
+
+Three layers, from the wire up.
+
+** Layer 1 — ores.diff: the diff model and engine
+
+A new, dependency-light component owning the vocabulary of "what
+changed":
+
+- =ores.diff/domain=:
+  - =field_value= — ordered pair of field name and rendered value
+    string.
+  - =diff_entry= — field name, old value, new value.
+  - =diff_result= — ordered list of entries.
+- =ores.diff/engine=: =compute(previous_fields, current_fields)= →
+  =diff_result=. Field-name keyed; handles added and removed fields
+  (old or new side empty); preserves the mapper's field order.
+
+Why a component rather than a corner of ores.utility: the types cross
+every domain service (which compute) and every frontend (which
+render); keeping them alone in a leaf component keeps the dependency
+arrows clean (std + rfl only) and gives the diff engine a home for
+pure unit tests. It also matches the project's many-small-components
+style (ores.logging, ores.testing, ores.eventing). The component
+stays deliberately small; if it never grows beyond two types and a
+function, that is fine — its value is the clean dependency direction,
+not bulk.
+
+** Layer 2 — per-entity field mappers, server side
+
+Each entity gains a mapper from its domain type to
+=std::vector<ores::diff::domain::field_value>= — the ordered,
+human-labelled, rendered field list ("ISO Code" → "AOA"). It lives
+beside the entity's other mappers in =ores.<domain>.core/repository=
+(or a sibling =presentation= namespace if mixing concerns grates),
+because it needs the domain type and nothing Qt.
+
+Formatting rules (booleans as Yes/No, timestamps via the standard
+conversions, enums via their display names) follow the conventions the
+six hand-rolled dialogs already established, now written once per
+entity instead of once per frontend.
+
+These mappers are a clear codegen candidate — the entity org models
+already know field names, labels and types — but the pilot hand-writes
+one (currency) to prove the shape before templating.
+
+** Layer 3 — the history message carries fields and diffs
+
+Keep the per-entity request structs and subjects (they are typed and
+already deployed); extend the /response/ so each version carries:
+
+- the version metadata (number, provenance) — as today;
+- =fields= — the mapper's rendered field list for that version;
+- =changes= — =diff_result= against the previous version (empty for
+  the oldest).
+
+The handler composes: load versions → map each → diff consecutive
+pairs. Frontends render rows; they hold no comparison logic and no
+knowledge of entity fields beyond what the message states. Shipping
+both =fields= and =changes= is mildly redundant but makes every
+frontend (Qt today; shell, Wt, HTTP tomorrow) a dumb renderer, which
+is the point of the story.
+
+Full domain payloads can remain in the response during migration so
+old dialogs keep working; they are removed once no client reads them.
+
+** Qt consolidation
+
+=HistoryDialogBase= grows the pipeline in two steps:
+
+1. /Interim/ — =DiffResult= type, =checkString= / =checkInt= /
+   =checkBool= helpers, the changes-tab rendering flow calling an
+   abstract =calculateDiff(current, previous)=, and the
+   version-list/async-load/stale plumbing. The six hand-rolled
+   dialogs adopt it, eliminating the four idioms (and the
+   anonymous-namespace alias pattern that broke GCC).
+2. /Target/ — once the extended history message lands, the base
+   renders =fields= and =changes= straight from the response;
+   =calculateDiff= and the helpers retire. The generated dialogs reach
+   the target state via the history-dialog template, regenerated
+   across all entities.
+
+** Migration sequence
+
+| Phase | Content | Risk containment |
+|-------+---------+------------------|
+| A | Grow the base (interim form); migrate the 6 hand-rolled dialogs | Pure Qt refactor; behaviour identical; per-dialog commits |
+| B | ores.diff component + currency mapper + extended currency history response; currency dialog renders server rows | One pilot entity end to end before generalising |
+| C | Update the history-dialog template to the target form; regenerate; handler/mapper rollout per domain | Template-only codegen edit; gated on the codegen org-model migration settling (see below) |
+| D | Codegen the mappers from entity org models | Optional, after C proves the hand-written shape |
+
+*Codegen dependency.* The codegen unified-model work is in flight, so
+this story must not require codegen changes or regeneration sweeps
+while models migrate. Phases A and B are codegen-free by construction:
+the extended history response keeps the full version payloads, so the
+61 generated dialogs continue to work unmodified while the pilot
+proves the architecture. Phase C touches only a mustache template (no
+generator logic) but implies regenerating every entity, so it waits
+until the org-model migration stabilises — or proceeds component by
+component behind the migration as each component's models settle.
+Phase D is new codegen capability and is explicitly deferred.
+
+* Testing strategy
+
+- /ores.diff engine/ — pure Catch2 unit tests: identical inputs,
+  changed values, added/removed fields, ordering preservation, empty
+  lists. No fixtures needed; this is the cheapest layer to cover
+  exhaustively.
+- /Mappers/ — per-entity unit tests pairing the entity's generator
+  with golden expectations: field order, labels, formatting of each
+  type (bool, timestamp, enum, optional).
+- /Handlers/ — extend the existing service-level test pattern
+  (scoped_database_helper): write three versions of a record, request
+  history, assert the =changes= rows between consecutive versions and
+  the =fields= list of the latest.
+- /Qt base/ — the pipeline logic (version selection, stale handling,
+  rendering from a prepared response) exercised through the existing
+  ores.qt test target with synthetic responses; rendering glue kept
+  thin enough that the server-side tests carry the semantic load.
+- /End to end/ — the currency history dialog against a live backend
+  (the dogfooding flow already used for the manual screenshots),
+  before and after phase B, to confirm identical visible behaviour.
+
+* Out of scope
+
+- History views in shell, Wt and HTTP frontends — enabled by this
+  design but delivered separately.
+- Pagination of history results and diffing non-consecutive versions.
+- Any change to the bitemporal storage model.
+
+* See also
+
+- [[id:037B474D-84ED-4888-9054-D58AB1FB10D2][Story: Consolidate history dialogs onto HistoryDialogBase]]
+- [[id:40781D42-C34B-47F3-8612-7FA9C2202E5B][Task: Design the history diff architecture and testing strategy]]

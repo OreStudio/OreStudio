@@ -19,7 +19,13 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Add the PR pillar's first verb: =compass pr checks [<pr>]= wrapping
+=gh pr checks= (default: the current branch's PR), with =--watch=,
+=--fail-fast=, =--required=, and =--interval= passed through. Output
+streams live and the exit code follows gh (0 green, non-zero on
+failing/pending) so runbooks can gate on it. Retire the raw =gh pr
+checks= invocations from the review-round runbook and the monitor,
+fix-CI, create-PR, and merge recipes.
 
 * Status
 
@@ -34,7 +40,10 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- =compass pr checks [<pr>] [--watch] [--fail-fast] [--required]
+  [--interval N]= streams CI status with gh's exit semantics.
+- No =gh pr checks= references remain in recipes or runbooks.
+- =compass --help= documents the PR pillar.
 
 * Plan
 

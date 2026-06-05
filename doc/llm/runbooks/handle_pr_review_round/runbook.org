@@ -30,7 +30,7 @@ In execution order:
 2. /Check CI status./ Before reading comments, inspect the current CI state:
 
    #+begin_src sh :results verbatim
-   gh pr checks <N>
+   compass pr checks <N>
    #+end_src
 
    - If any check is *failing*, identify and fix the root cause first — as a separate commit — before looking at review comments. A CI failure may explain or supersede some review comments.
@@ -45,7 +45,7 @@ In execution order:
 
 6. /Push./ =git push=.
 
-7. /Verify CI is green./ Re-run =gh pr checks <N>= and wait until no checks are pending. If any check fails, fix, commit, push, and repeat this step. Do not reply to review comments while CI is red.
+7. /Verify CI is green./ Re-run =compass pr checks <N>= (or =--watch= to poll) and wait until no checks are pending. If any check fails, fix, commit, push, and repeat this step. Do not reply to review comments while CI is red.
 
 8. /Reply to every comment./ Accepted: "Fixed in commit <sha> — <description>." Declined: "Not changed. <reason>." Use =compass review reply <N> <comment-id> "<message>"= per the recipe.
 

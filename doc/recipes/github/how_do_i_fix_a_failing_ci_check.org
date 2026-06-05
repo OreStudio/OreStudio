@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :github:pr:ci:gh:recipe:
 #+created: 2026-05-21
-#+updated: 2026-05-21
+#+updated: 2026-06-05
 
 This is one branch of the [[id:F6E88DCC-9240-4632-A9A3-9F36F79C9262][PR monitoring loop]]. The other branch is
 [[id:26C1DC06-82D2-46C4-94D6-DF9231BA171B][addressing review comments]].
@@ -19,11 +19,11 @@ and push the fix?
 
 * Answer
 
-1. /Identify the failing check/. =gh pr checks= shows the overall
+1. /Identify the failing check/. =compass pr checks= shows the overall
    status; =gh run list= drills into the runs for the branch:
 
    #+begin_src sh :results verbatim
-   gh pr checks
+   ./compass.sh pr checks
    gh run list --branch "$(git branch --show-current)"
    #+end_src
 

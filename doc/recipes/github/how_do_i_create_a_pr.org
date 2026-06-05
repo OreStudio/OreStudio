@@ -97,7 +97,7 @@ login=) once per checkout.
 
 * Tested by
 
-Manual. Reviewers verify the PR shape; =gh pr checks= reports CI.
+Manual. Reviewers verify the PR shape; =compass pr checks= reports CI.
 
 * See also
 

@@ -8,7 +8,7 @@
 #+filetags: :compass:pr:bearings:compass_quality_of_life:sprint_19:v0:
 #+owner: marco
 #+branch: feature/compass-quality-of-life
-#+pr:
+#+pr: 1106
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-06
@@ -49,7 +49,7 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1106][#1106]] | [ores.compass] Compass quality-of-life improvements |
 
 * Review
 

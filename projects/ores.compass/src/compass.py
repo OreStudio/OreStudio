@@ -156,6 +156,20 @@ def cmd_index(args):
     print(f"📂 Using org-roam.db: {ORG_ROAM_DB}")
     print(f"🌳 Project root:      {PROJECT_ROOT}")
 
+    if getattr(args, "sync_org_roam_db", False):
+        script = (PROJECT_ROOT / "projects" / "ores.lisp" / "src"
+                  / "ores-sync-org-roam.el")
+        print(f"🔄 Syncing org-roam db first: emacs -Q --script "
+              f"{script.relative_to(PROJECT_ROOT)}")
+        rc = subprocess.run(
+            ["emacs", "-Q", "--script", str(script)],
+            cwd=PROJECT_ROOT).returncode
+        if rc != 0:
+            print(f"❌ org-roam db sync failed (exit code {rc}); "
+                  f"indexing aborted.", file=sys.stderr)
+            sys.exit(rc)
+        validate_paths("index")
+
     roam_conn = get_roam_conn()
     file_count = roam_conn.execute("SELECT COUNT(*) FROM files").fetchone()[0]
     print(f"📝 Found {file_count} files registered in org-roam.db")
@@ -400,6 +414,7 @@ def cmd_search(args):
             print(f'{r["roam_id"]} "{rel_path}" "{matched_text}"')
 
     else:  # Pretty format (default)
+        print_db_freshness()
         print(f"\nFound {len(results)} results for '{query}':\n" + "-"*50)
         for r in results:
             title = r['title'] or "Untitled"
@@ -688,6 +703,42 @@ _C_CYAN   = "\033[36m"
 _C_BOLD   = "\033[1m"
 _C_RESET  = "\033[0m"
 _C_SEV    = {"ok": _C_GREEN, "warn": _C_YELLOW, "stale": _C_RED}
+
+# Freshness bands for the search/index databases, in seconds.
+_FRESH_GREEN    = 3600       # < 1h: green, fresh
+_FRESH_WARNING  = 5 * 3600   # > 5h: yellow, warning
+_FRESH_CRITICAL = 24 * 3600  # > 24h: red, critical
+
+
+def db_freshness_line(label, path, refresh_hint):
+    """One-line freshness report for a database file.
+
+    < 1h green (info), 1h–5h plain (info), > 5h yellow (warning),
+    > 24h red (critical). Missing file is always critical.
+    """
+    if not os.path.exists(path):
+        return (f"{_C_RED}🛑 {label}: missing — "
+                f"run: {refresh_hint}{_C_RESET}")
+    age = time.time() - os.path.getmtime(path)
+    human = _age_human(age)
+    if age > _FRESH_CRITICAL:
+        return (f"{_C_RED}🛑 {label}: {human} old (critical) — "
+                f"run: {refresh_hint}{_C_RESET}")
+    if age > _FRESH_WARNING:
+        return (f"{_C_YELLOW}⚠  {label}: {human} old (stale) — "
+                f"consider: {refresh_hint}{_C_RESET}")
+    if age < _FRESH_GREEN:
+        return f"{_C_GREEN}✅ {label}: {human} old (fresh){_C_RESET}"
+    return f"ℹ️  {label}: {human} old"
+
+
+def print_db_freshness():
+    """Print freshness of the compass index and the org-roam db."""
+    print(db_freshness_line("index (.compass.db)", COMPASS_DB,
+                            "compass index"))
+    print(db_freshness_line("org-roam (.org-roam.db)", ORG_ROAM_DB,
+                            "compass index --sync-org-roam-db"))
+
 
 def staleness_lines(info):
     """Return (chip_line, warning_line_or_None) for a branch_staleness dict."""
@@ -2674,6 +2725,7 @@ def cmd_bearings(argv):
 BUILD_TARGET_ALIASES = {
     "site": "deploy_site",
     "manual": "deploy_manual",
+    "org-roam": "sync_org_roam",
 }
 
 
@@ -2818,6 +2870,8 @@ def main():
 
     index_parser = subparsers.add_parser("index", help="Index or update notes from org-roam.db")
     index_parser.add_argument("--rebuild", action="store_true", help="Rebuild the entire index from scratch")
+    index_parser.add_argument("--sync-org-roam-db", action="store_true",
+                              help="Sync .org-roam.db (emacs batch org-roam-db-sync) before indexing")
 
     search_parser = subparsers.add_parser("search", aliases=["find"], help="Search your notes")
     search_parser.add_argument("query", type=str, help="The search query")
@@ -2876,8 +2930,11 @@ def main():
     args = parser.parse_args()
 
     # Only the org-roam-backed commands need org-roam.db; the agile/doc-graph
-    # commands read the working tree directly.
-    if args.command in ("index", "search", "find", "debug"):
+    # commands read the working tree directly. index --sync-org-roam-db
+    # creates the db itself, so it validates after the sync (in cmd_index).
+    if args.command in ("index", "search", "find", "debug") and \
+            not (args.command == "index"
+                 and getattr(args, "sync_org_roam_db", False)):
         validate_paths(args.command)
 
     if args.command == "index":

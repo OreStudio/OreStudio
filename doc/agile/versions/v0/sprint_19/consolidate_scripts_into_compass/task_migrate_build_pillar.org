@@ -83,6 +83,6 @@ and updating their callers.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | cmake --target only accepts one target; repeat the flag | compass.py | Declined | Multi-target valid since CMake 3.15; project requires >= 3.28; verified on 4.3.3 (PR #1076) |
 
 * Result

@@ -20,7 +20,7 @@
 #ifndef ORES_TRADING_DOMAIN_SWAP_LEG_HPP
 #define ORES_TRADING_DOMAIN_SWAP_LEG_HPP
 
-#include "ores.utility/domain/audit_record.hpp"
+#include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <string>
@@ -66,7 +66,7 @@ struct swap_leg_terms final {
 struct swap_leg final {
     swap_leg_identity identity;
     swap_leg_terms terms;
-    utility::domain::audit_record audit;
+    dq::domain::audit_record audit;
 };
 
 }

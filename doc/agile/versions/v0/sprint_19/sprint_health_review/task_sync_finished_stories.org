@@ -58,6 +58,7 @@ task closes. Plans do not outlive their task.)
 | 2 | Null repository in GraphQL response crashes audit | projects/ores.compass/src/compass.py | Accepted | Fixed in ef76aa58a; .get() chain + truthiness. |
 | 3 | Table-row regex breaks under org auto-alignment | projects/ores.compass/src/compass.py | Accepted | Fixed in ef76aa58a; \s* padding, [A-Z]+ state. |
 | 4 | Use all() for the merged-PR check | projects/ores.compass/src/compass.py | Accepted | Fixed in ef76aa58a; stricter logic surfaced one further genuine finding, closed in same commit. |
+| 5 | Now should be Nothing. on DONE task (PR #1082 round) | doc/agile/.../task_sync_finished_stories.org | Accepted | Fixed in 7159b8920; noted repo-wide sweep candidate. |
 
 * Result
 

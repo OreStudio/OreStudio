@@ -12,7 +12,9 @@
     "basket_json is empty for single-underlying swaps"
   ],
   "instrument": {
-    "trade_type_code": "EquitySwap",
+    "identity": {
+      "trade_type_code": "EquitySwap"
+    },
     "underlying_name": ".SPX",
     "basket_json": "",
     "currency": "USD",
@@ -23,9 +25,11 @@
     "long_short": "Long",
     "payment_frequency": "1M",
     "description": "",
-    "modified_by": "ores",
-    "performed_by": "ores",
-    "change_reason_code": "system.external_data_import",
-    "change_commentary": "Imported from ORE XML"
+    "audit": {
+      "modified_by": "ores",
+      "performed_by": "ores",
+      "change_reason_code": "system.external_data_import",
+      "change_commentary": "Imported from ORE XML"
+    }
   }
 }

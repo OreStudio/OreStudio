@@ -363,7 +363,7 @@ private:
         // Equity types
         auto add_eq = [&](auto&& results) {
             for (auto& v : results)
-                imap[boost::uuids::to_string(v.instrument_id)] =
+                imap[boost::uuids::to_string(v.identity.instrument_id)] =
                     ores::trading::domain::equity_instrument_variant{std::move(v)};
         };
         if (!eq_opt_ids.empty()) {

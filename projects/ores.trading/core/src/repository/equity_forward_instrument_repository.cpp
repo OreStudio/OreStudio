@@ -38,7 +38,7 @@ std::string equity_forward_instrument_repository::sql() {
 
 void equity_forward_instrument_repository::write(context ctx,
                                                  const domain::equity_forward_instrument& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing equity forward instrument: " << v.instrument_id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing equity forward instrument: " << v.identity.instrument_id;
     execute_write_query(ctx,
                         equity_forward_instrument_mapper::map(v),
                         lg(),

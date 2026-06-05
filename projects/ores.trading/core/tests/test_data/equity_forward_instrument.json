@@ -6,10 +6,12 @@
     "quantity maps from Quantity (775)",
     "forward_price maps from Strike (2800)",
     "expiry_date maps from Maturity (2025-02-20)",
-    "settlement_type is not present in XML — field is empty"
+    "settlement_type is not present in XML \u2014 field is empty"
   ],
   "instrument": {
-    "trade_type_code": "EquityForward",
+    "identity": {
+      "trade_type_code": "EquityForward"
+    },
     "underlying_name": "RIC:.SPX",
     "currency": "USD",
     "quantity": 775.0,
@@ -18,9 +20,11 @@
     "long_short": "Long",
     "settlement_type": "",
     "description": "",
-    "modified_by": "ores",
-    "performed_by": "ores",
-    "change_reason_code": "system.external_data_import",
-    "change_commentary": "Imported from ORE XML"
+    "audit": {
+      "modified_by": "ores",
+      "performed_by": "ores",
+      "change_reason_code": "system.external_data_import",
+      "change_commentary": "Imported from ORE XML"
+    }
   }
 }

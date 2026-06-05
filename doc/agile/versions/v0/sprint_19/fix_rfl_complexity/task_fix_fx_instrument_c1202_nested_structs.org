@@ -25,11 +25,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]] |
-| Now          | Decomposing the 7 FX instrument types. |
+| Now          | Complete: PR #1071 merged.             |
 | Waiting on   | Nothing.                               |
-| Next         | Apply identity/audit/type-specific pattern to all 7 headers and callers. |
+| Next         | Nothing.                               |
 | Last touched | 2026-06-05                               |
 
 * Acceptance
@@ -72,3 +72,11 @@ audit_record move to dq.api (PR #1070):
 |   |                 |      |          |       |
 
 * Result
+
+All 7 FX instrument types decomposed into identity + type-specific +
+audit nested structs; FX entities gained workspace_id; all callers
+updated (mappers, repositories, services, trade_handler, Qt forms and
+import dialog, ores.ore XML layer, 13 test files, JSON snapshots).
+PR #1071 also carried the main CI fixes (Windows SDK include category
+in clang-format; AccountHistoryDialog DiffResult access) and the
+PR #1070 review round. CI green on all four platforms; merged.

@@ -602,18 +602,12 @@ void ImportTradeDialog::onImportClicked() {
                             r.instrument);
                         for (auto& leg : r.legs)
                             leg.identity.instrument_id = instr_id;
-                    } else if constexpr (std::is_same_v<T, fx_instrument_variant>) {
+                    } else if constexpr (std::is_same_v<T, fx_instrument_variant> ||
+                                         std::is_same_v<T, equity_instrument_variant>) {
                         std::visit(
                             [&](auto& instr) {
                                 instr.identity.instrument_id = instr_id;
                                 instr.identity.trade_id = tti.trade.identity.id;
-                            },
-                            r);
-                    } else if constexpr (std::is_same_v<T, equity_instrument_variant>) {
-                        std::visit(
-                            [&](auto& instr) {
-                                instr.instrument_id = instr_id;
-                                instr.trade_id = tti.trade.identity.id;
                             },
                             r);
                     } else if constexpr (std::is_same_v<T, composite_instrument_data>) {

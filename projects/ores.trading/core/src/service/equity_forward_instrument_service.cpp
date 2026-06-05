@@ -41,13 +41,13 @@ equity_forward_instrument_service::get_equity_forward_instrument(const std::stri
 
 void equity_forward_instrument_service::save_equity_forward_instrument(
     const domain::equity_forward_instrument& v) {
-    if (v.instrument_id.is_nil())
+    if (v.identity.instrument_id.is_nil())
         throw std::invalid_argument("Equity forward instrument id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving equity_forward_instrument: " << v.instrument_id;
+    BOOST_LOG_SEV(lg(), debug) << "Saving equity_forward_instrument: " << v.identity.instrument_id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved equity_forward_instrument: " << t.instrument_id;
+    BOOST_LOG_SEV(lg(), info) << "Saved equity_forward_instrument: " << t.identity.instrument_id;
 }
 
 

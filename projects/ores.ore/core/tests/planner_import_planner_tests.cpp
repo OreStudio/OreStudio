@@ -318,21 +318,13 @@ TEST_CASE("plan_instrument_trade_id_matches_minted_trade_id", tags) {
                             ++checked;
                         },
                         r.instrument);
-                } else if constexpr (std::is_same_v<T, fx_instrument_variant>) {
+                } else if constexpr (std::is_same_v<T, fx_instrument_variant> ||
+                                     std::is_same_v<T, equity_instrument_variant>) {
                     std::visit(
                         [&](const auto& instr) {
                             INFO("Instrument variant index checked");
                             REQUIRE(instr.identity.trade_id.has_value());
                             CHECK(*instr.identity.trade_id == item.trade.identity.id);
-                            ++checked;
-                        },
-                        r);
-                } else if constexpr (std::is_same_v<T, equity_instrument_variant>) {
-                    std::visit(
-                        [&](const auto& instr) {
-                            INFO("Instrument variant index checked");
-                            REQUIRE(instr.trade_id.has_value());
-                            CHECK(*instr.trade_id == item.trade.identity.id);
                             ++checked;
                         },
                         r);

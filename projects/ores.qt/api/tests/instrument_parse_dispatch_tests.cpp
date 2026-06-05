@@ -361,8 +361,8 @@ TEST_CASE("parse_trade_instrument_dispatches_vanilla_swap", tags) {
 
 TEST_CASE("parse_trade_instrument_dispatches_equity_option", tags) {
     equity_option_instrument instr;
-    instr.instrument_id = boost::uuids::random_generator()();
-    instr.trade_type_code = "EquityOption";
+    instr.identity.instrument_id = boost::uuids::random_generator()();
+    instr.identity.trade_type_code = "EquityOption";
     instr.underlying_name = "AAPL";
     instr.currency = "USD";
     instr.option_type = "Call";
@@ -376,7 +376,7 @@ TEST_CASE("parse_trade_instrument_dispatches_equity_option", tags) {
     REQUIRE(result.has_value());
     CHECK(result->classification.product_type == product_type::equity);
     REQUIRE(pop.called);
-    CHECK(pop.got.instrument_id == instr.instrument_id);
+    CHECK(pop.got.identity.instrument_id == instr.identity.instrument_id);
     CHECK(pop.got.underlying_name == "AAPL");
     CHECK(pop.got.option_type == "Call");
 }
@@ -387,8 +387,8 @@ TEST_CASE("parse_trade_instrument_dispatches_equity_option", tags) {
 
 TEST_CASE("parse_trade_instrument_dispatches_equity_forward", tags) {
     equity_forward_instrument instr;
-    instr.instrument_id = boost::uuids::random_generator()();
-    instr.trade_type_code = "EquityForward";
+    instr.identity.instrument_id = boost::uuids::random_generator()();
+    instr.identity.trade_type_code = "EquityForward";
 
     auto json = make_response_json(make_test_trade(product_type::equity, "EquityForward"),
                                    trade_instrument{equity_instrument_variant{instr}});
@@ -399,7 +399,7 @@ TEST_CASE("parse_trade_instrument_dispatches_equity_forward", tags) {
     REQUIRE(result.has_value());
     CHECK(result->classification.product_type == product_type::equity);
     REQUIRE(pop.called);
-    CHECK(pop.got.instrument_id == instr.instrument_id);
+    CHECK(pop.got.identity.instrument_id == instr.identity.instrument_id);
 }
 
 // =============================================================================

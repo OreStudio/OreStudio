@@ -23,7 +23,7 @@ that standardises session start around compass.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -43,7 +43,7 @@ that standardises session start around compass.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:0442BF8D-760D-4454-88BF-4509FA6BB192][Detect merged PRs in compass bearings]] | BACKLOG | | | bearings shows the branch's PR as if still open even after it has been merged; detect and surface the merged state. |
+| [[id:0442BF8D-760D-4454-88BF-4509FA6BB192][Detect merged PRs in compass bearings]] | DONE | 2026-06-06 | 2026-06-06 | bearings shows the branch's PR as if still open even after it has been merged; detect and surface the merged state. |
 | [[id:82763717-CFA8-42F4-B775-BE48AB64E78A][Instantiate recipe body from arguments in compass add]] | BACKLOG | | | compass add recipe scaffolds placeholder boilerplate that must be edited afterwards; accept body content as arguments and render it through the mustache template directly. |
 | [[id:C200F3C6-8737-47AD-80D7-A2445760E60D][Add an init-session skill]] | BACKLOG | | | Add a Claude Code skill that standardises session start: prefer compass for all operations, search recipes for command info, run compass bearings, then summarise and suggest the next action. |
 

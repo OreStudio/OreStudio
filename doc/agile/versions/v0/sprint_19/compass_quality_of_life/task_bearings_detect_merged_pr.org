@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :compass:pr:bearings:compass_quality_of_life:sprint_19:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/compass-quality-of-life
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -25,11 +25,11 @@ compass bearings (and fleet/where) currently report the PR associated with the c
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:A9C8B9F6-C7AE-404D-8EEF-20E5929CB7C0][Compass quality-of-life improvements]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-06                               |
 
 * Acceptance
@@ -58,3 +58,11 @@ task closes. Plans do not outlive their task.)
 |   |                 |      |          |       |
 
 * Result
+
+Added =pr_state()= (gh-backed, cached, fails soft to =None=) and a
+state chip on the journal PR line: =[open]= green, =[merged]= magenta
+with a "sync main or start the next task" hint, =[closed]= red. The
+annotation is enabled only for single-entry views (=journal where=,
+which =bearings= reuses) so =journal log= stays gh-free. Verified
+against PR #1100 and #1102 (both merged); when gh is unavailable the
+PR line renders exactly as before.

@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 9AB395D6-0265-4DEB-BA95-04D24C8444AF
+:END:
+#+title: Document type: knowledge
+#+description: The contract for the knowledge document type: folder, frontmatter, sections, and lifecycle notes.
+#+type: meta
+#+level: cross
+#+filetags: :meta:document_types:knowledge:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+
+This page defines the =knowledge= document type — one entry in the
+[[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]] taxonomy. The general contract every document follows
+(frontmatter, state, linking, tags) lives on the taxonomy page; this
+page carries only what is specific to =knowledge=.
+
+* Contract
+
+- Folder ::
+  - Cross-cutting knowledge (not specific to one component) lives at
+    =doc/knowledge/{domain,architecture,...}/=.
+  - Component-specific knowledge (deeper analyses tied to one
+    component's code) lives co-located at =projects/<comp>/docs/=.
+- Level :: =cross=
+- Not stateful — no TODO. Audit may flag stale facts via a tag.
+- How to create :: see [[id:F497AA0A-F604-436A-8555-C17B14302C99][New knowledge document]] in the codegen recipe.
+
+** Index pages (knowledge / meta variant)
+
+When a knowledge or meta document's role is /navigation/ — it
+summarises a tree of related documents and links to them — it is
+called an /index page/. Examples in this repo: [[id:B69989F6-19E1-430D-AC6D-B2416E4C433F][Compass]],
+[[id:E5635EAC-CCE9-C0A4-A00B-C1780FF4A88E][Agile]], [[id:D4219199-7B17-4A89-B4BC-6019738642DA][Product backlog]], the [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][next]] and [[id:C1BF2C4F-2DB3-49C1-94E9-7D2B3E4F1AB8][deferred]] bucket indexes.
+
+Index pages have three extra requirements on top of the usual
+knowledge / meta contract:
+
+1. /Blurb before the first headline/. One paragraph between the
+   frontmatter and the first =*= heading. It tells the reader, in one
+   look, what is being indexed and why. Without it, the page lands on
+   a heading with no orientation. The blurb hyperlinks key terms (the
+   things this page is indexing) to their glossary entries or to the
+   downstream pages.
+2. /Internal links woven into content/. Cross-references to other
+   docs in this repo sit inline in the prose or in the bullet lists
+   they pertain to — /not/ in a separate "See also" dumping ground.
+   Every section should link somewhere relevant when the topic
+   demands it.
+3. /=* See also= is for external references only/. Blog essays,
+   external standards, vendor docs — material that lives outside
+   =doc/=. If the only thing you'd put in See also is an internal
+   id-link, the link belongs in the body instead.
+
+If all three rules hold, the page is acting as an index. If none do,
+it is a normal knowledge document — no extra obligations.
+- Required sections ::
+  - /Blurb/ — the 3-5 sentence overview, between the frontmatter and
+    the first =*= heading. Knowledge docs do /not/ carry a separate
+    =* Summary= section; the summary is the blurb.
+  - =* Detail= — the content.
+  - /See also/ — optional, for external cross-references only
+    (internal references weave into the body).
+

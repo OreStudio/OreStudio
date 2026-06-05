@@ -1,0 +1,41 @@
+:PROPERTIES:
+:ID: 1366553A-4E0F-496F-91DD-19171C003631
+:END:
+#+title: Document type: investigation
+#+description: The contract for the investigation document type: folder, frontmatter, sections, and lifecycle notes.
+#+type: meta
+#+level: cross
+#+filetags: :meta:document_types:investigation:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+
+This page defines the =investigation= document type — one entry in the
+[[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]] taxonomy. The general contract every document follows
+(frontmatter, state, linking, tags) lives on the taxonomy page; this
+page carries only what is specific to =investigation=.
+
+* Contract
+
+- Folder :: =doc/investigations/= — historical records of technical
+  investigations.
+- Title :: =Investigation: <human readable title>=. The
+  =Investigation: = prefix is added by the codegen automatically when
+  the type is =investigation=.
+- Level :: =cross=.
+- Not stateful — no TODO, no =* Status= table. An investigation
+  report is a point-in-time record.
+- How to create :: see [[id:75F4921B-43D1-4E78-99AB-62A47F761D1D][New investigation report]] in the codegen recipe.
+- Required sections ::
+  - =* Context= — one or two paragraphs: what was the original
+    problem or research question.
+  - =* Methodology= — how the investigation was conducted (tools,
+    reproducibility steps).
+  - =* Paths taken= — detailed log of approaches tried, including
+    those that were unsuccessful. Link to related PRs, branches, or
+    commits.
+  - =* Conclusions= — the ultimate findings of the investigation.
+  - =* Recommendations= — suggested next steps or new approaches,
+    avoiding implementation-level detail.
+  - =* See also= — related knowledge docs, tasks, or external
+    references.
+

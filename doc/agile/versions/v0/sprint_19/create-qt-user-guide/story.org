@@ -54,7 +54,7 @@ flow), roles, and tenants — using the screenshot set captured on
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:CFD59F8D-39C3-4604-9BDE-CA5778161B88][Write accounts, roles and tenants administration chapter]] | DONE | 2026-06-05 | 2026-06-05 | Administration part: accounts/roles + tenants chapters, 19 screenshots, manual-wide quality pass. PR #1063. |
-| [[id:3DA4EDB1-F6E2-42D1-A029-0E8422A05E7A][Link product identity to the user manual]] | BACKLOG | | | Moved from Documentation review follow-ups: "If you are looking for instructions on how to use the product see...". |
+| [[id:3DA4EDB1-F6E2-42D1-A029-0E8422A05E7A][Link product identity to the user manual]] | DONE | 2026-06-05 | 2026-06-05 | Moved from Documentation review follow-ups: "If you are looking for instructions on how to use the product see...". |
 
 * Decisions
 

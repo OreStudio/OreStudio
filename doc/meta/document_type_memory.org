@@ -1,0 +1,44 @@
+:PROPERTIES:
+:ID: FC7CE460-131C-40BA-B46A-2D64525C6789
+:END:
+#+title: Document type: memory
+#+description: The contract for the memory document type: folder, frontmatter, sections, and lifecycle notes.
+#+type: meta
+#+level: cross
+#+filetags: :meta:document_types:memory:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+
+This page defines the =memory= document type — one entry in the
+[[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]] taxonomy. The general contract every document follows
+(frontmatter, state, linking, tags) lives on the taxonomy page; this
+page carries only what is specific to =memory=.
+
+* Contract
+
+A persistent project-scope note an LLM session writes for the benefit
+of future sessions — see [[id:32B3A055-63FA-4EDF-8DCC-901E9D883F22][Memory]] in the glossary.
+
+- Folder :: =doc/llm/memory/<slug>.org= — flat, one memory per file.
+- Level :: =cross= (memories cut across cybernetic levels; they're
+  about how-to-work-together, not about composition).
+- Slug :: =snake_case=, descriptive of /the rule/, not the topic
+  (=do_not_re_export_env_vars=, not =bash_environment=).
+- Title :: free-form, restated as a one-line summary in the body.
+- Not stateful — no TODO, no =* Status= table. The =#+updated= date
+  reflects when the memory was last refreshed.
+- Subtype :: =#+memory_subtype:= is one of =feedback= (corrected or
+  confirmed by the user), =user= (facts about the user), =project=
+  (facts about the work in flight), =reference= (pointer to an
+  external system). Same four-way taxonomy as Claude Code's
+  auto-memory.
+- How to create :: see [[id:3B7156CD-3A8D-49E5-BF89-A5F6F2486596][New memory]] in the codegen recipe.
+- Required structure ::
+  - /Blurb/ — one short paragraph stating the rule, fact, or
+    insight.
+  - =*Why:*= — one or two sentences. The reason the user gave, or
+    the incident. Without the why, a future session can't judge
+    edge cases.
+  - =*How to apply:*= — when this memory should kick in: which
+    files, which workflows, what circumstances.
+

@@ -1,0 +1,26 @@
+:PROPERTIES:
+:ID: A0844CC9-9D7C-4A87-9D65-8143614E76A6
+:END:
+#+title: Document type: plan
+#+description: The contract for the plan document type: folder, frontmatter, sections, and lifecycle notes.
+#+type: meta
+#+level: cross
+#+filetags: :meta:document_types:plan:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+
+This page defines the =plan= document type — one entry in the
+[[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]] taxonomy. The general contract every document follows
+(frontmatter, state, linking, tags) lives on the taxonomy page; this
+page carries only what is specific to =plan=.
+
+* Contract
+
+- Lives /inside/ a task or story document as the =* Plan= section.
+  Not a separate file. (Previously =plan.org= as a sibling file;
+  that was retired when tasks became flat files.)
+- Level :: =s1= (task plan) or =s2= (story plan).
+- Transient :: cleared or summarised in =* Notes= when the task or
+  story closes; distilled content moves to =* Decisions= on the
+  parent story. Plans do not outlive their task.
+

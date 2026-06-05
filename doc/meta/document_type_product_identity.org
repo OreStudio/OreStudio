@@ -1,0 +1,32 @@
+:PROPERTIES:
+:ID: 2C35C57A-147A-40EB-86CE-A5815B214662
+:END:
+#+title: Document type: product_identity
+#+description: The contract for the product_identity document type: folder, frontmatter, sections, and lifecycle notes.
+#+type: meta
+#+level: cross
+#+filetags: :meta:document_types:product_identity:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+
+This page defines the =product_identity= document type — one entry in the
+[[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]] taxonomy. The general contract every document follows
+(frontmatter, state, linking, tags) lives on the taxonomy page; this
+page carries only what is specific to =product_identity=.
+
+* Contract
+
+- Folder :: =identity/=
+- Level :: =s5=
+- File :: =product_identity.org= — single file covering both what
+  ORE Studio /is/ (=* Vision=) and what it /is not/ (=* Out of
+  scope=). The vision and out-of-scope are sections of the identity,
+  not separate documents.
+- Not stateful — no TODO. These documents are durable.
+- How to create :: see [[id:F1311596-B8ED-43AD-8C46-76C58C0194C7][New product identity]] in the codegen recipe.
+- Required sections ::
+  - =* What this is= — the durable statement.
+  - =* What this is not= — explicit boundaries.
+  - =* Relationship to versions= — how identity relates to the
+    version tree.
+

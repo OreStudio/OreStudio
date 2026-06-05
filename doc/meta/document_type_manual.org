@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: B4DD4BE2-CF51-4C2B-8A73-9803CAEB811D
+:END:
+#+title: Document type: manual
+#+description: The contract for the manual document type: folder, frontmatter, sections, and lifecycle notes.
+#+type: meta
+#+level: cross
+#+filetags: :meta:document_types:manual:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+
+This page defines the =manual= document type — one entry in the
+[[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]] taxonomy. The general contract every document follows
+(frontmatter, state, linking, tags) lives on the taxonomy page; this
+page carries only what is specific to =manual=.
+
+* Contract
+
+- Folder :: =doc/manual/user_guide/=
+- Level :: =cross=
+- Not stateful — no TODO.
+- Naming :: =chapter_<N>_<slug>.org= — one file per chapter, included
+  into =user_manual.org= via =#+include: "chapter_<N>_<slug>.org" :minlevel 2=.
+  Headings inside the chapter start at =**= (level 2), which maps to
+  =\section= in the PDF build.
+- How to create :: =compass add manual --slug chapter_N_<topic> --title "..." --description "..."=
+  (=--parent-dir= defaults to =doc/manual/user_guide/=).
+- Links ::
+  - *Within the manual*: =[[id:UUID]]= links must target a /heading/
+    inside a chapter — give the heading its own =:ID:= property and
+    link to that. The PDF exporter resolves heading IDs as internal
+    cross-references and hyperref renders them as clickable jumps.
+    File-level chapter IDs do /not/ resolve: chapters are inlined via
+    =#+include= and the exporter only matches IDs on headlines, so a
+    link to a chapter's file-level =:ID:= aborts the PDF build.
+  - *Outside the manual*: org-roam =[[id:UUID]]= links to knowledge
+    docs, recipes, or any document outside =doc/manual/= must not be
+    used. The PDF cannot follow them; they either break the export or
+    produce unresolvable hyperref anchors. Use a plain HTTP URL
+    (=[[https://...][label]]=) or a plain text citation instead.
+  - =[[file:...]]= links to images are fine; they resolve to the asset
+    path at export time.
+- Required sections ::
+  - =** Overview= — one or two sentences orienting the reader.
+  - =** See also= — optional; for cross-references and external links.
+

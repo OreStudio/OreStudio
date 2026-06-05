@@ -1,0 +1,86 @@
+:PROPERTIES:
+:ID: 7D72A9DA-984F-4130-BFF6-97B66B233907
+:END:
+#+title: Sprint closure
+#+description: The final sprint phase: resolve every story, write the achievements, generate release notes, cut a release when warranted, run the retrospective, and close the sprint.
+#+type: knowledge
+#+level: cross
+#+filetags: :agile:sprint:closure:knowledge:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+
+* Summary
+
+In agile practice, closing an iteration combines the /review/ —
+demonstrating what was actually delivered to stakeholders — and the
+/retrospective/ — the team inspecting its own process and adapting
+it. Closure is what makes iterations comparable: each one ends with
+an honest account of what shipped and what was learned.
+
+In ORE Studio, sprint closure is more than flipping the [[id:0820B7FD-147C-4832-AC25-C043D38D5B61][sprint]] to
+=DONE=: every [[id:4FAC3AE2-04A8-4C35-B72E-78C7A862EED9][story]] is explicitly resolved, the sprint's
+achievements are written down, release notes are generated when a
+release is cut, the retrospective captures what the sprint taught,
+the outreach (LinkedIn, Twitter/X, Discord) tells the world, and the
+sprint demo shows the outcomes working. Closure ends when the record
+is complete — only then does the next sprint's [[id:F5426198-ACAF-41DA-A043-FF15785E4A1D][planning]] begin.
+
+* Detail
+
+** Ownership
+
+*Owned by* [[id:8F13BA75-EDAA-46CC-9BE2-E356D60BF4F4][System 3]] (drives the sequence). [[id:BF4F183F-BB33-44F2-A53F-D9BD602E9BE8][System 2]] resolves each
+story (=DONE= / =ABANDONED= / carried); [[id:6CA8B181-BD81-4EF4-AF27-64F5491D62F0][System 4]] weighs in on whether
+to cut a release.
+
+** The closure sequence
+
+1. *Resolve every story.* Every story in the sprint is =DONE=,
+   =ABANDONED=, or has been explicitly carried to a successor (see
+   cross-sprint continuations in [[id:4FAC3AE2-04A8-4C35-B72E-78C7A862EED9][Stories]]).
+2. *Write the Achievements.* Add a =** Achievements= sub-heading
+   inside =* Status=, after the Status table. Write 3–7 bullet points
+   capturing what the sprint actually delivered — specific outcomes,
+   not story titles. Clear the =Now= field to =Nothing.= at the same
+   time. Achievements are only written at sprint close; the heading
+   does not appear in in-flight sprints.
+3. *Generate the release notes* if a release is being cut. The notes
+   are produced from the closed tasks' =* Result= sections and the
+   PRs that landed.
+4. *Cut the release* (tag, build, publish artefacts) when the version
+   warrants it. Not every sprint produces a release; many sprints
+   land mid-version. See [[id:B69989F6-19E1-430D-AC6D-B2416E4C433F][Compass]] for what the release tag means in
+   terms of CMake major/minor.
+5. *Do the outreach.* Announce what shipped: a LinkedIn post, a
+   Twitter/X post, and a Discord announcement. Outreach draws on the
+   Achievements and the release notes; it happens whether or not a
+   release was cut — sprints that land mid-version still have a story
+   worth telling.
+6. *Run the post-mortem.* Fill the sprint's =* Retrospective= section
+   — what went well, what hurt, what changed. Past sprints under
+   =doc/agile/versions/v0/sprint_*/= are the template.
+7. *Create the sprint demo.* The last step of closing a sprint:
+   produce the demo showing the sprint's outcomes working — the
+   user-visible proof behind the Achievements.
+8. *Transition the sprint* itself to =DONE= and update =Last touched=
+   on the Status row.
+
+Sprint closure ends when all the steps are complete; the next
+sprint's planning phase can then begin.
+
+** When the sprint is done
+
+A sprint is /done/ when every story is closed, the Retrospective is
+filled, and release notes are generated if applicable. (Story and
+task doneness are defined on their own pages: [[id:4FAC3AE2-04A8-4C35-B72E-78C7A862EED9][Stories]], [[id:A7CF5191-6786-408F-A4A6-3A508DCADAC1][Tasks]].)
+
+* See also
+
+- [[id:4995D24A-28FB-47F6-A083-DB5283507410][Definition of done]] — the criteria closure checks at every
+  level.
+- [[id:46DFE47F-967B-4C24-95BF-3E21F97CFD20][Agile process]] — the loop around the phases.
+- [[id:227958A5-0F78-4CC6-A116-B83988592B68][Sprint execution]] — the phase before.
+- [[id:F5426198-ACAF-41DA-A043-FF15785E4A1D][Sprint planning]] — what follows, for the next sprint.
+- [[id:47032D2E-4922-4A43-B594-AD76F0213E10][Open a new sprint]] — the runbook that drives closure and the next
+  sprint's opening in one procedure.
+- [[id:A64F482F-8A57-406D-98B2-53476F095E8C][Sprint health charts]] — regenerated at close for the final record.

@@ -14,8 +14,17 @@ ideas in the [[id:D4219199-7B17-4A89-B4BC-6019738642DA][product backlog]], promo
 broken down into [[id:31C868B9-306E-4282-BA8C-07E647021B34][tasks]] that map one-to-one to pull requests, and grouped into
 sprints that compose a [[id:CA4D4BDE-2EAB-4F0A-BC8B-7C0BCB17BC82][version]]. The pages under =doc/agile/= are:
 
-- [[id:46DFE47F-967B-4C24-95BF-3E21F97CFD20][Agile process]] — how the loop runs: backlog refinement, opening and closing
-  sprints, sizing tasks, cross-sprint continuations.
+- [[id:46DFE47F-967B-4C24-95BF-3E21F97CFD20][Agile process]] — overview of the loop: backlog refinement, the three sprint
+  phases, version closure; the inventory of the per-concept pages below.
+- [[id:4FAC3AE2-04A8-4C35-B72E-78C7A862EED9][Stories]] — what a story is: themes and epics, sizing, ready/done,
+  cross-sprint continuations.
+- [[id:A7CF5191-6786-408F-A4A6-3A508DCADAC1][Tasks]] — the one-PR unit of execution: sizing limits, discovered tasks,
+  ready/done.
+- [[id:F5426198-ACAF-41DA-A043-FF15785E4A1D][Sprint planning]] — mission first, choose stories, decompose into tasks.
+- [[id:227958A5-0F78-4CC6-A116-B83988592B68][Sprint execution]] — tasks through the lifecycle; heartbeat rule;
+  discovered-work triage.
+- [[id:7D72A9DA-984F-4130-BFF6-97B66B233907][Sprint closure]] — resolve stories, achievements, release notes,
+  retrospective.
 - [[id:A064D838-F127-4DD6-BB42-9A7902039AEE][Sprint themes]] — definitions of the six themes and the epic convention used
   to group stories in sprint backlogs.
 - [[id:37C10313-E6E9-4D42-B82D-B6758D0A3AD9][Versions]] — every version series of the product, the sprints inside each, and the

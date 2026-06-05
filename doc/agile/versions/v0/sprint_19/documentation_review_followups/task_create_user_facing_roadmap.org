@@ -33,11 +33,11 @@ pages via links. Repoint the site nav (=ores-build-site.el= and
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:305E3A3B-8A72-49D3-9972-FAF06FEB4552][Documentation review follow-ups]] |
-| Now          | Not yet started.                       |
+| Now          | Complete: PR #1076 merged.             |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing.                               |
 | Last touched | 2026-06-05                               |
 
 * Acceptance
@@ -74,3 +74,5 @@ task closes. Plans do not outlive their task.)
 |   |                 |      |          |       |
 
 * Result
+
+doc/roadmap.org created; site nav repointed. PR #1076 merged.

@@ -1,0 +1,35 @@
+:PROPERTIES:
+:ID: 8A2A2873-BE08-48DA-B02F-CF541479E6B1
+:END:
+#+title: Document type: recipe
+#+description: The contract for the recipe document type: folder, frontmatter, sections, and lifecycle notes.
+#+type: meta
+#+level: cross
+#+filetags: :meta:document_types:recipe:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+
+This page defines the =recipe= document type — one entry in the
+[[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]] taxonomy. The general contract every document follows
+(frontmatter, state, linking, tags) lives on the taxonomy page; this
+page carries only what is specific to =recipe=.
+
+* Contract
+
+- Folder :: =recipes/<topic>/=
+- Level :: =cross=
+- Filename :: starts with =how_do_i_= or similar NLP question phrasing.
+- Not stateful by TODO, but audit may set a =:stale:= tag when the
+  script fails.
+- How to create :: see [[id:0C57932D-D13A-480F-B426-49525AA8BA3D][New recipe]] in the codegen recipe.
+- Required sections ::
+  - =* Question= — the NLP question.
+  - =* Answer= — the steps. Shell commands inside an =* Answer= belong
+    in =#+begin_src sh :results verbatim= blocks so they can be
+    executed in place (=C-c C-c= in emacs); when the captured output
+    is the value of the recipe (e.g. /list available presets/), keep
+    =#+RESULTS:= alongside as a snapshot.
+  - =* Script= — pointer to the script or wrapper that does the work,
+    where applicable.
+  - =* Tested by= — link to the CI check that exercises the recipe.
+

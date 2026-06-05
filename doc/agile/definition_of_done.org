@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: 4995D24A-28FB-47F6-A083-DB5283507410
+:END:
+#+title: Definition of done
+#+description: What a definition of done is, and why every planning document — task, story, sprint, version — must carry one: explicit, checkable criteria agreed before work starts, gating every DONE transition.
+#+type: knowledge
+#+level: cross
+#+filetags: :agile:done:quality:knowledge:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+
+* Summary
+
+In agile practice, the /definition of done/ is the shared checklist
+that says when work is genuinely complete — not "code written" but
+tested, integrated, documented, releasable. It exists so that "done"
+means the same thing to everyone, and so that progress reports are
+made of facts rather than optimism.
+
+In ORE Studio, a definition of done is the explicit, checkable set
+of criteria a piece of work must satisfy before it may transition to
+=DONE= — agreed /before/ the work starts, not negotiated after it
+finishes. Every
+planning document in the [[id:8810E0F9-C5B9-4CFA-A710-774AD6C771DD][lifecycle]] carries one, at its own
+altitude: a [[id:A7CF5191-6786-408F-A4A6-3A508DCADAC1][task]]'s and a [[id:4FAC3AE2-04A8-4C35-B72E-78C7A862EED9][story]]'s =* Acceptance= section, a
+[[id:0820B7FD-147C-4832-AC25-C043D38D5B61][sprint]]'s closure conditions, and a [[id:CA4D4BDE-2EAB-4F0A-BC8B-7C0BCB17BC82][version]]'s =Definition of
+done=. Without one, =DONE= is a feeling; with one, it is a check.
+
+* Detail
+
+** What it is
+
+A definition of done turns intent into a contract. It is written when
+the document is created — during [[id:F5426198-ACAF-41DA-A043-FF15785E4A1D][sprint planning]] for stories and
+tasks, at version opening for versions — and it is what the =DONE=
+transition is checked against. Two properties matter:
+
+- /Checkable/: each criterion can be verified by reading, running, or
+  measuring something. "Improve the docs" is not checkable; "the
+  manual chapter covers every dialog field" is.
+- /Agreed up front/: the criteria predate the work. Moving the
+  goalposts mid-flight is an explicit edit with a reason, visible in
+  the document's history — not a silent reinterpretation at close
+  time.
+
+** Where each document carries it
+
+| Document | Where the definition of done lives |
+|----------+------------------------------------|
+| [[id:A7CF5191-6786-408F-A4A6-3A508DCADAC1][Task]] | =* Acceptance= — and the [[id:32842C44-2585-46EB-B90D-75C3CB28F003][task contract]]'s done rules: PR merged, =* Result= filled. |
+| [[id:4FAC3AE2-04A8-4C35-B72E-78C7A862EED9][Story]] | =* Acceptance= — re-read at close; every task resolved (see the [[id:DF81C4F0-9EB6-408B-9828-1A33BCC7769A][story contract]]). |
+| [[id:0820B7FD-147C-4832-AC25-C043D38D5B61][Sprint]] | The [[id:7D72A9DA-984F-4130-BFF6-97B66B233907][closure]] conditions: every story closed, retrospective filled, release notes if applicable. |
+| [[id:CA4D4BDE-2EAB-4F0A-BC8B-7C0BCB17BC82][Version]] | An explicit =Definition of done= on the version page; meeting it is what closes the version. |
+
+** Why it is mandatory
+
+- /It gates the lifecycle./ The =BACKLOG → ... → DONE= machine is only
+  honest if =DONE= has an objective meaning; the definition of done is
+  that meaning.
+- /It protects the charts and reviews./ The [[id:A64F482F-8A57-406D-98B2-53476F095E8C][sprint health charts]]
+  count story transitions and the [[id:30FE3C0F-ECCB-46AD-AC1F-75C6CE05F0E7][health reviews]] reason about
+  them; both are garbage-in-garbage-out without real done criteria.
+- /It makes hand-offs cheap./ Any agent or human can pick up, finish,
+  or audit work without re-deriving what "finished" was supposed to
+  mean.
+
+* See also
+
+- [[id:46DFE47F-967B-4C24-95BF-3E21F97CFD20][Agile process]] — the loop these documents move through.
+- [[id:8810E0F9-C5B9-4CFA-A710-774AD6C771DD][Lifecycle]] — the state machine the definition of done gates.
+- [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document types]] — the per-type contracts, including each type's
+  required sections.

@@ -1,0 +1,24 @@
+:PROPERTIES:
+:ID: 8C6D8D83-C78F-4A18-A481-A8398058BE84
+:END:
+#+title: Document type: decision
+#+description: The contract for the decision document type: folder, frontmatter, sections, and lifecycle notes.
+#+type: meta
+#+level: cross
+#+filetags: :meta:document_types:decision:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+
+This page defines the =decision= document type — one entry in the
+[[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]] taxonomy. The general contract every document follows
+(frontmatter, state, linking, tags) lives on the taxonomy page; this
+page carries only what is specific to =decision=.
+
+* Contract
+
+- Lives as the =* Decisions= section inside =story.org=, or — when the
+  list grows large — pulled out into =decisions.org= alongside it.
+- Level :: =s2=.
+- Format :: a flat list of decision records, newest first. Each record
+  has context, decision, consequences.
+

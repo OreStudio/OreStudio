@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: E8BE5E74-46AB-4233-9181-621187960603
+:END:
+#+title: Document type: skill
+#+description: The contract for the skill document type: folder, frontmatter, sections, and lifecycle notes.
+#+type: meta
+#+level: cross
+#+filetags: :meta:document_types:skill:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+
+This page defines the =skill= document type — one entry in the
+[[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]] taxonomy. The general contract every document follows
+(frontmatter, state, linking, tags) lives on the taxonomy page; this
+page carries only what is specific to =skill=.
+
+* Contract
+
+A skill is /task-shaped/: it tells an LLM session how to perform a
+specific unit of work end-to-end (e.g. open a new sprint, run a PR
+review, scaffold a domain type). Compare with =function= above, which
+is /role-shaped/: a description of who does what, listing the skills
+they draw on. Functions compose skills; skills don't own functions. A
+skill is loaded /into/ a session; a function /is/ the session's
+identity.
+
+- Folder :: =doc/llm/skills/<slug>/SKILL.org= (the filename is fixed
+  uppercase by Claude Code convention).
+- Level :: =cross=.
+- Slug :: =kebab-case= (matches existing =cmake-runner=, =recipe-author=).
+  The slug doubles as the Claude Code skill =name:=.
+- Not stateful — no TODO.
+- How to create :: see [[id:6054CC20-5F41-482F-A587-759512577B1D][New Claude Code skill]] in the codegen recipe.
+- Required sections ::
+  - A =#+begin_export markdown ... #+end_export= block with
+    =name:= / =description:= / =license:= (Claude Code metadata).
+  - =* When to use this skill= — one or two sentences.
+  - =* How to use this skill= — numbered steps.
+  - =* Recipes= — id-links to the operational recipes the skill
+    indexes.
+  - =* Reference= — id-link to the knowledge document or component
+    model that backs the skill.
+  - =* Artefacts :noexport:= containing the licence (tangled into
+    =LICENCE.txt= at build).
+- Size :: 50–80 lines once skeleton sections are filled in. Skills
+  are /thin indexes/, not reference content.
+

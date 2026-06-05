@@ -1437,74 +1437,112 @@ def cmd_sprint_audit(args):
         title, state, uuid = _read_story_state(sf)
         tasks = []
         for tf in sorted(sf.parent.glob("task_*.org")):
+            ttitle, tstate, tuuid, _, _ = _read_task_detail(tf)
             try:
                 text = tf.read_text(encoding="utf-8")
             except (OSError, UnicodeDecodeError):
-                continue
-            m = _STATE_RE.search(text)
-            tstate = m.group(1).upper() if m else "UNKNOWN"
+                text = ""
             prs = sorted({int(n) for n in pr_re.findall(text)})
             all_prs.update(prs)
-            tasks.append({"file": tf.name, "state": tstate, "prs": prs})
-        stories.append({"title": title, "state": state,
-                        "uuid": (uuid or "").upper(), "dir": sf.parent.name,
-                        "tasks": tasks})
+            tasks.append({"title": ttitle, "state": tstate,
+                          "uuid": (tuuid or "").upper(), "prs": prs})
+        stories.append({"title": _strip_type_prefix(title or ""),
+                        "state": state, "uuid": (uuid or "").upper(),
+                        "dir": sf.parent.name, "tasks": tasks})
 
     pr_states = _audit_pr_states(all_prs)
     if all_prs and not pr_states:
         print("⚠️  gh unavailable — skipping merged-PR checks.", file=sys.stderr)
 
-    findings = []
+    zombie, closeable, merged_open, mismatch = [], [], [], []
     for s in stories:
         open_tasks = [t for t in s["tasks"] if t["state"] not in _TERMINAL_STATES]
         if s["state"] in _TERMINAL_STATES and open_tasks:
-            findings.append({
-                "check": "done-story-with-open-tasks", "story": s["title"],
-                "detail": f"{len(open_tasks)} unresolved task(s): "
-                          + ", ".join(t["file"] for t in open_tasks)})
+            zombie.append((s, open_tasks))
         if (s["state"] not in _TERMINAL_STATES and s["tasks"]
                 and not open_tasks):
-            findings.append({
-                "check": "all-tasks-done-story-open", "story": s["title"],
-                "detail": f"story is {s['state']} but all "
-                          f"{len(s['tasks'])} task(s) are terminal"})
+            closeable.append(s)
         for t in open_tasks:
             merged = [n for n in t["prs"] if pr_states.get(n) == "MERGED"]
             unmerged = [n for n in t["prs"] if n in pr_states
                         and pr_states[n] != "MERGED"]
             if t["prs"] and merged and not unmerged and pr_states:
-                findings.append({
-                    "check": "task-open-all-prs-merged", "story": s["title"],
-                    "detail": f"{t['file']} is {t['state']} but PR(s) "
-                              + ", ".join(f"#{n}" for n in merged)
-                              + " merged"})
+                merged_open.append((s, t, merged))
         table = table_states.get(s["uuid"])
         if table and table != s["state"]:
-            findings.append({
-                "check": "sprint-table-mismatch", "story": s["title"],
-                "detail": f"sprint table says {table}, story file says "
-                          f"{s['state']}"})
+            mismatch.append((s, table))
+
+    total = len(zombie) + len(closeable) + len(merged_open) + len(mismatch)
 
     if args.format == "json":
+        findings = (
+            [{"check": "done-story-with-open-tasks", "story": s["title"],
+              "story_uuid": s["uuid"],
+              "tasks": [{"title": t["title"], "state": t["state"],
+                         "uuid": t["uuid"]} for t in ts]}
+             for s, ts in zombie]
+            + [{"check": "all-tasks-done-story-open", "story": s["title"],
+                "story_uuid": s["uuid"], "state": s["state"]}
+               for s in closeable]
+            + [{"check": "task-open-all-prs-merged", "story": s["title"],
+                "story_uuid": s["uuid"], "task": t["title"],
+                "task_uuid": t["uuid"], "state": t["state"], "prs": merged}
+               for s, t, merged in merged_open]
+            + [{"check": "sprint-table-mismatch", "story": s["title"],
+                "story_uuid": s["uuid"], "table_state": table,
+                "story_state": s["state"]}
+               for s, table in mismatch])
         print(json.dumps({"sprint": current_sprint.title,
                           "findings": findings}, indent=2))
         return 0
 
-    print(f"🧭 ores.compass — sprint audit: {current_sprint.title}\n")
-    if not findings:
-        print("  ✅ No state-sync violations found.")
+    def _section(icon, title):
+        print(f"\n{_C_BOLD}{_C_CYAN}{icon}  {title}{_C_RESET}")
+
+    def _hint(uuid, indent):
+        if uuid:
+            print(f"{' ' * indent}{_ycmd(f'compass show {uuid}')}")
+
+    print(f"🧭 ores.compass — sprint audit: {current_sprint.title}")
+    if not total:
+        print("\n  ✅ No state-sync violations found.")
         return 0
-    order = ["done-story-with-open-tasks", "all-tasks-done-story-open",
-             "task-open-all-prs-merged", "sprint-table-mismatch"]
-    findings.sort(key=lambda f: (order.index(f["check"]), f["story"]))
-    current = None
-    for f in findings:
-        if f["check"] != current:
-            current = f["check"]
-            print(f"  {current}")
-        print(f"    • {f['story']}")
-        print(f"      {f['detail']}")
-    print(f"\n  {len(findings)} finding(s).")
+
+    if zombie:
+        _section("🧟", "Closed stories with unresolved tasks")
+        for s, ts in zombie:
+            print(f"  • {s['title']}  {_C_RED}{s['state']}{_C_RESET} "
+                  f"with {len(ts)} open task(s)")
+            _hint(s["uuid"], 4)
+            for t in ts:
+                print(f"      {_C_YELLOW}{t['state']:<10}{_C_RESET} {t['title']}")
+                _hint(t["uuid"], 17)
+
+    if closeable:
+        _section("🏁", "Stories ready to close — every task is done")
+        for s in closeable:
+            print(f"  • {s['title']}  ({s['state']}, "
+                  f"{len(s['tasks'])}/{len(s['tasks'])} tasks done)")
+            _hint(s["uuid"], 4)
+
+    if merged_open:
+        _section("🔀", "Open tasks whose pull requests have all merged")
+        for s, t, merged in merged_open:
+            prs = ", ".join(f"#{n}" for n in merged)
+            print(f"  • {t['title']}  "
+                  f"{_C_YELLOW}{t['state']}{_C_RESET}, merged {prs}")
+            print(f"    story: {s['title']}")
+            _hint(t["uuid"], 4)
+
+    if mismatch:
+        _section("⚖️", "Sprint table disagrees with the story file")
+        for s, table in mismatch:
+            print(f"  • {s['title']}  table says "
+                  f"{_C_YELLOW}{table}{_C_RESET}, story file says "
+                  f"{_C_YELLOW}{s['state']}{_C_RESET}")
+            _hint(s["uuid"], 4)
+
+    print(f"\n  {total} finding(s).")
     return 0
 
 def cmd_sprint(argv):

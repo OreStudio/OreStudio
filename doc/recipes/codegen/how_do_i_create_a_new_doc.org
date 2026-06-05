@@ -25,11 +25,31 @@ frontmatter?
 For *all standard document types*, use [[id:5B670808-D28B-4818-A2FA-EA5220D35E8D][compass add]] instead of calling
 =generate_doc.sh= directly. It supports: =story=, =task=, =sprint=,
 =version=, =recipe=, =knowledge=, =component=, =capture=, =memory=,
-=investigation=, =product_identity=, =skill=, =diagram=. It defaults
+=investigation=, =product_identity=, =skill=, =diagram=, =entity_org=,
+=field_group=, =dataset_overview=. It defaults
 =--parent-dir= from context (current sprint for stories/tasks, current version
 for sprints, =doc/llm/skills= for skills) so you rarely need to type a path.
 This recipe remains the authoritative reference for edge cases (explicit =--id=,
 non-current parents, cross-sprint predecessors, etc.).
+
+Memories support a one-shot body — no placeholder fill-in step:
+
+#+begin_src sh
+compass add memory --slug prefer_x_over_y --title "Prefer X over Y" \
+  --description "One-line summary." --memory-subtype feedback \
+  --statement "The rule itself." \
+  --why "The correction or incident behind it." \
+  --how-to-apply "When X applies, do Y."
+#+end_src
+
+Codegen field-group models scaffold into the component's modeling
+directory (the =_field_group.org= suffix drives loader dispatch):
+
+#+begin_src sh
+compass add field_group --component trading --slug instrument_identity \
+  --description "Codegen field-group model for instrument_identity." \
+  --brief "Common identity fields shared by all instrument types."
+#+end_src
 
 Call =projects/ores.codegen/generate_doc.sh= with the type, slug, parent
 directory, and the document's title and description. The script fills in a fresh

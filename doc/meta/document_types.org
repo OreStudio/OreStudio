@@ -326,3 +326,18 @@ Each type's contract lives on its own page:
 - [[id:CE9E4F7C-D14B-46C4-AD3D-39881C466914][retrospective, release_note, audit_report]]
 - [[id:1366553A-4E0F-496F-91DD-19171C003631][investigation]]
 - [[id:973591F1-F2B5-40FF-9B2D-A198D4BB4903][meta]]
+
+Codegen model types live with their component under
+=projects/ores.<component>/modeling/= and are consumed by
+[[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] rather than published; their contract is defined by the
+loader (=org_loader.py=) and the scaffolding templates:
+
+- =entity_org= (=#+type: ores.codegen.entity=) — a full entity model
+  driving C++ domain class, mapper, repository, service, Qt UI and SQL
+  generation. Scaffold: =compass add entity_org=.
+- =field_group= (=#+type: ores.codegen.field_group=) — a named group of
+  related fields generated as a plain C++ sub-struct, composed by a
+  hand-written parent (the C1202 decomposition pattern). Filenames end
+  =_field_group.org=. Scaffold: =compass add field_group=.
+- =dataset_overview= — seeder dataset description. Scaffold:
+  =compass add dataset_overview=.

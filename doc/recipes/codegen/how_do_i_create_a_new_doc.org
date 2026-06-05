@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :codegen:templates:agile:recipe:
 #+created: 2026-05-18
-#+updated: 2026-05-20
+#+updated: 2026-06-06
 
 For the contract every generated document follows (frontmatter, sections, TODO
 vocabulary), see [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]]. For background on the generator itself, see
@@ -166,6 +166,20 @@ Use the =how_do_i_<thing>= slug convention. The output is
   --description "Remove the CMake binary cache to force a clean re-configure." \
   --tags "cmake,build,recipe"
 #+end_src
+
+Scaffold with content — the body sections can be supplied as
+arguments (verbatim org markup; multi-line via =$(printf ...)= or
+shell =$'...'= quoting) so the recipe is born complete instead of
+with placeholder text:
+
+- =--intro= — lead paragraph before =* Question=;
+- =--question= — the =* Question= body;
+- =--answer= — the =* Answer= body (include the =#+begin_src= block);
+- =--script= — the =* Script= body;
+- =--tested-by= — the =* Tested by= body;
+- =--see-also= — one =* See also= bullet (repeatable).
+
+Sections not supplied fall back to the fill-in placeholders.
 
 When the recipe's =* Answer= involves a shell command, write it in
 an =#+begin_src sh :results verbatim= block so the recipe is

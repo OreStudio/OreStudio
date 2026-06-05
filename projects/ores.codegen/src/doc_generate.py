@@ -272,6 +272,26 @@ def parse_args(argv=None):
     parser.add_argument("--acceptance", action="append", default=[],
                         help="An acceptance bullet for task/story docs "
                              "(repeatable).")
+    parser.add_argument("--intro", default="",
+                        help="For --type recipe: lead paragraph pointing at "
+                             "the component model / knowledge doc the recipe "
+                             "relies on. Defaults to the fill-in placeholder.")
+    parser.add_argument("--question", default="",
+                        help="For --type recipe: the NLP question the recipe "
+                             "answers (* Question body).")
+    parser.add_argument("--answer", default="",
+                        help="For --type recipe: the * Answer body, verbatim "
+                             "org markup (may be multi-line, e.g. a "
+                             "#+begin_src block).")
+    parser.add_argument("--script", default="",
+                        help="For --type recipe: the * Script body — pointer "
+                             "to the script or wrapper that does the work.")
+    parser.add_argument("--tested-by", default="",
+                        help="For --type recipe: the * Tested by body — how "
+                             "the recipe is exercised.")
+    parser.add_argument("--see-also", action="append", default=[],
+                        help="For --type recipe: a * See also bullet, "
+                             "verbatim org markup (repeatable).")
     parser.add_argument("--brief", default="",
                         help="For --type component: one-line tagline that "
                              "codegen reads from the overview's #+brief: "
@@ -428,11 +448,38 @@ def main(argv=None):
         "story": "(Describe the user-visible outcome this story "
                  "delivers.)",
     }.get(args.type, "")
+
+    # Recipe body sections: rendered verbatim when supplied, fill-in
+    # placeholders otherwise, so a fully-argumented recipe needs no
+    # post-generation editing.
+    recipe_intro = args.intro or (
+        "(One- or two-sentence pointer to the component model and any "
+        "knowledge\ndoc this recipe relies on.)")
+    recipe_question = args.question or (
+        "(Restate the NLP question this recipe answers.)")
+    recipe_answer = args.answer or (
+        "#+begin_src sh :results verbatim\n"
+        "# Replace with the command(s) that answer the question.\n"
+        "#+end_src")
+    recipe_script = args.script or (
+        "(Pointer to the script or wrapper that does the work, if "
+        "applicable.)")
+    recipe_tested_by = args.tested_by or (
+        "(How this recipe is exercised — CI workflow, manual smoke "
+        "test, etc.)")
+
     variables = {
         "id": new_id,
         "goal": args.goal or goal_default,
         "acceptance": args.acceptance,
         "has_acceptance": bool(args.acceptance),
+        "intro": recipe_intro,
+        "question": recipe_question,
+        "answer": recipe_answer,
+        "script": recipe_script,
+        "tested_by": recipe_tested_by,
+        "see_also": args.see_also,
+        "has_see_also": bool(args.see_also),
         "slug": args.slug,
         "title": args.title,
         "description": args.description,

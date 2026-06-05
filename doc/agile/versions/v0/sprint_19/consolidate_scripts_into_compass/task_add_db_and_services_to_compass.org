@@ -85,6 +85,7 @@ task closes. Plans do not outlive their task.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | SERVICE_NAMES parse leaks tokens from multi-word comments | projects/ores.compass/src/compass_db.py | Accepted | Fixed in c85033a15; line-by-line comment stripping. |
+| 2 | Status loads whole log files into memory | projects/ores.compass/src/compass_services.py | Accepted | Fixed in c85033a15; streaming _log_contains + tail-chunk _log_last_line, also applied to the unflagged _ready path used by bearings. |
 
 * Result

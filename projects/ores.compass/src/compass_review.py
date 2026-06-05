@@ -106,7 +106,7 @@ def _fetch_conversation(owner, repo, pr):
             "kind": "comment",
             "id": c["id"],
             "author": (c.get("user") or {}).get("login", "?"),
-            "created_at": c.get("created_at", ""),
+            "created_at": c.get("created_at") or "",
             "state": None,
             "body": c.get("body") or "",
         })
@@ -126,7 +126,7 @@ def _fetch_conversation(owner, repo, pr):
             "kind": "review",
             "id": r["id"],
             "author": (r.get("user") or {}).get("login", "?"),
-            "created_at": r.get("submitted_at", ""),
+            "created_at": r.get("submitted_at") or "",
             "state": r.get("state"),
             "body": r["body"],
         })

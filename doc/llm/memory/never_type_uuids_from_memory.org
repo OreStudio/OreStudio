@@ -10,11 +10,13 @@
 #+created: 2026-06-05
 #+updated: 2026-06-05
 
-When writing an =[[id:UUID][...]]= link, never produce the UUID from
-recall or invention — always read it from the target document's =:ID:=
-drawer first (=head -3 <file>= or =compass show=). A generated UUID is
-indistinguishable from a real one at a glance and silently breaks the
-org-roam link graph.
+When writing an =[[id:UUID][...]]= link, the UUID must be /pasted from
+compass output/ — =compass show=, =compass list=, or the path+ID a
+=compass add= prints — or from a just-read =:ID:= drawer. Never
+compose one: an LLM writing prose will fill the UUID slot with a
+plausible-looking value (confabulation under fluency pressure), and a
+fabricated UUID is indistinguishable from a real one at a glance while
+silently breaking the org-roam link graph.
 
 *Why:* On 2026-06-05 two links were written with fabricated UUIDs
 within an hour (currency model link in the messaging reference;

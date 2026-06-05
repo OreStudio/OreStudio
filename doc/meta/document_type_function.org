@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: 8A027686-5D1E-40E1-85BC-B328A9B3E7EC
+:END:
+#+title: Document type: function
+#+description: The contract for the function document type: folder, frontmatter, sections, and lifecycle notes.
+#+type: meta
+#+level: cross
+#+filetags: :meta:document_types:function:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+
+This page defines the =function= document type — one entry in the
+[[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]] taxonomy. The general contract every document follows
+(frontmatter, state, linking, tags) lives on the taxonomy page; this
+page carries only what is specific to =function=.
+
+* Contract
+
+A function is /role-shaped/: it describes a named role and lists the
+operational [[id:4F6384FE-CDE9-40F6-B13D-8A84B6CD77F7][skills]], recipes, and pre-reads that role uses. Think of
+it as the priming context an LLM session loads when it takes on that
+role — "you are S2 orchestrator, here is what you do, here is what you
+do not do, here are the skills available to you." Compare with =skill=
+below, which is /task-shaped/.
+
+- Folder :: =doc/functions/=
+- Level :: =cross= or a specific level.
+- How to create :: function codegen is not yet wired into
+  [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][generate_doc.sh]] (no =--type function= yet); for now, copy an
+  existing function under =doc/functions/= and adjust the frontmatter
+  and sections.
+- Not stateful — no TODO.
+- Required sections ::
+  - =* Purpose= — one paragraph: what this role is for.
+  - =* Operates at= — which system level(s); link to
+    [[id:926B916E-A57E-498E-99AB-720B583C0362][cybernetic levels]].
+  - =* Inputs= — what this role consumes (documents, signals).
+  - =* Outputs= — what this role produces.
+  - =* Pre-reads= — documents that must be loaded into context before
+    the role can act. The contract docs go here.
+  - =* Skills= — id-links to the [[id:4F6384FE-CDE9-40F6-B13D-8A84B6CD77F7][skills]] this role invokes.
+  - =* Recipes= — id-links to the recipes this role exercises.
+  - =* Boundaries= — what this role explicitly does /not/ do, and
+    which other function picks it up instead.
+

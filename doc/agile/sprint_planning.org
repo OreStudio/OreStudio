@@ -11,8 +11,14 @@
 
 * Summary
 
-Sprint planning is the first of the three sprint phases: the moment a
-new [[id:0820B7FD-147C-4832-AC25-C043D38D5B61][sprint]] acquires its identity. The [[id:198DA730-D9FB-4BDE-B1C0-B930CD019917][sprint mission]] is written
+In agile practice, /sprint planning/ is the ceremony that opens an
+iteration: the team agrees what the sprint is for, selects the work
+that serves that goal from the backlog, and breaks it down far enough
+that execution can start. Good planning is goal-led — the sprint goal
+filters the backlog, not the other way around.
+
+In ORE Studio, sprint planning is the moment a new
+[[id:0820B7FD-147C-4832-AC25-C043D38D5B61][sprint]] acquires its identity. The [[id:198DA730-D9FB-4BDE-B1C0-B930CD019917][sprint mission]] is written
 /first/ and acts as the filter for everything else: [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][captures]] are
 pulled from the [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][next]] bucket only if they fit the mission and the
 sprint's size budget, promoted into [[id:4FAC3AE2-04A8-4C35-B72E-78C7A862EED9][stories]], and decomposed into

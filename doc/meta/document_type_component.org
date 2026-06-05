@@ -1,0 +1,40 @@
+:PROPERTIES:
+:ID: CE17C7BB-C68C-4304-BD3D-92FA5D13272B
+:END:
+#+title: Document type: component
+#+description: The contract for the component document type: folder, frontmatter, sections, and lifecycle notes.
+#+type: meta
+#+level: cross
+#+filetags: :meta:document_types:component:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+
+This page defines the =component= document type — one entry in the
+[[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]] taxonomy. The general contract every document follows
+(frontmatter, state, linking, tags) lives on the taxonomy page; this
+page carries only what is specific to =component=.
+
+* Contract
+
+- Folder :: =projects/<comp>/modeling/<comp>.org= — always co-located
+  with the component's code, so the doc updates alongside it.
+- Level :: =cross=.
+- Not stateful — components are durable. No TODO. Audit may attach a
+  =:stale:= tag if the doc has drifted from the code.
+- Size :: 50–100 lines. The component doc is the /index/ into the
+  component, not a full reference. Deeper material (architecture,
+  internals, design decisions) lives in linked =knowledge= documents
+  alongside the code.
+- How to create :: see [[id:0806C8FB-43D2-497E-900D-5F2E0B3472FD][How do I create a component overview?]]
+- Required sections ::
+  - =* Summary= — three to five sentences: what the component does
+    and why it exists.
+  - =* Inputs= — what the component consumes (data, dependencies,
+    configuration).
+  - =* Outputs= — what it produces.
+  - =* Entry points= — key files, classes, scripts, or commands,
+    with paths.
+  - =* Dependencies= — other components or libraries this one needs.
+  - =* See also= — id-links to recipes operating on the component
+    and to deeper knowledge documents about it.
+

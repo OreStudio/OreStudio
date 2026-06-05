@@ -1,0 +1,36 @@
+:PROPERTIES:
+:ID: CEF41D31-54C6-47E9-9464-BBB1FCDAEBB9
+:END:
+#+title: Document type: runbook
+#+description: The contract for the runbook document type: folder, frontmatter, sections, and lifecycle notes.
+#+type: meta
+#+level: cross
+#+filetags: :meta:document_types:runbook:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+
+This page defines the =runbook= document type — one entry in the
+[[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]] taxonomy. The general contract every document follows
+(frontmatter, state, linking, tags) lives on the taxonomy page; this
+page carries only what is specific to =runbook=.
+
+* Contract
+
+- Folder :: =doc/llm/runbooks/=
+- Level :: =cross=
+- Filename :: =runbook.org= inside a =<slug>/= folder (same pattern as
+  =story.org=, =task_*.org=).
+- Not stateful — runbooks are durable reference. No TODO.
+- How to create :: =compass add runbook= or
+  =projects/ores.codegen/generate_doc.sh --type runbook=.
+- Required sections ::
+  - =* Goal= — what this runbook achieves, in one sentence.
+  - =* Preconditions= — what must be true before starting (branch state,
+    sprint state, tooling, etc.).
+  - =* Steps= — ordered list. Each step references a [[id:0C57932D-D13A-480F-B426-49525AA8BA3D][recipe]] or
+    [[id:6054CC20-5F41-482F-A587-759512577B1D][skill]] by id-link, with a one-line description. Steps may branch
+    ("if declined, go to step N").
+  - =* Postconditions= — what is true after completing.
+  - =* See also= — id-links to related runbooks, recipes, or knowledge
+    documents.
+

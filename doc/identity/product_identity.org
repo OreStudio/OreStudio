@@ -15,7 +15,8 @@ that constrains every level below it. It is the statement of what the product
 /is/ and what it /is not/; it predates any [[id:37C10313-E6E9-4D42-B82D-B6758D0A3AD9][version]] and outlives every release.
 Everything else under =doc/= — [[id:0820B7FD-147C-4832-AC25-C043D38D5B61][sprints]], [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][stories]], [[id:31C868B9-306E-4282-BA8C-07E647021B34][tasks]], [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][captures]] — is filtered
 through this page when deciding whether a candidate idea belongs in the [[id:D4219199-7B17-4A89-B4BC-6019738642DA][product
-backlog]] at all.
+backlog]] at all. If you are looking for instructions on how to /use/ the
+product, see the [[id:2E4F8B1C-9A3D-4C7E-B6F2-1D5E8A0C3F7B][user manual]] instead.
 
 #+caption: ORE Studio v0.0.17 — the main window, an early implementation of the vision below.
 [[./ore_studio-v0.0.17.jpeg]]

@@ -1,0 +1,43 @@
+:PROPERTIES:
+:ID: 20EA2CBD-994C-4D82-86E9-469C609A8464
+:END:
+#+title: Document type: sprint
+#+description: The contract for the sprint document type: folder, frontmatter, sections, and lifecycle notes.
+#+type: meta
+#+level: cross
+#+filetags: :meta:document_types:sprint:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+
+This page defines the =sprint= document type — one entry in the
+[[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]] taxonomy. The general contract every document follows
+(frontmatter, state, linking, tags) lives on the taxonomy page; this
+page carries only what is specific to =sprint=.
+
+* Contract
+
+- Folder :: =versions/<v>/<sprint_NN>/sprint.org=
+- Title :: =Sprint NN= — no prefix (the word "Sprint" is already in the
+  title).
+- Level :: =s3=
+- TODO vocabulary :: =STARTED | DONE= (sprints don't go through BACKLOG;
+  they exist when they exist, and lexicographic order tells you which
+  is current).
+- How to create :: see [[id:F56FBA9B-A3C4-4C7C-8A15-BC9C3CC98A12][New sprint]] in the codegen recipe.
+- Required sections (in this order) ::
+  - /Blurb/ — opens with =This page documents a
+    [[id:0820B7FD-147C-4832-AC25-C043D38D5B61][sprint]] (*Sprint NN*) of
+    ORE Studio. ... see [[id:<parent_version_id>][<parent_version_title>]].=
+  - =* Mission= — one or two paragraphs / bullets: what this sprint
+    exists to achieve.
+  - =* Status= — table; rows =State / Parent version / Start / End (expected)
+    / Now / Waiting on / Next / Last touched=.
+  - =* Stories= — table with class =hug-leading=; columns =Story /
+    State / Start / End / Theme=. Story column carries the
+    id-link to each child story.
+  - =* Retrospective= — filled at close.
+
+A sprint folder may also contain an =inbox/= subfolder for untriaged
+discovered tasks that didn't fit any existing story at the time of
+discovery (see [[id:8810E0F9-C5B9-4CFA-A710-774AD6C771DD][lifecycle]]).
+

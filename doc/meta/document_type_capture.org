@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: 4C1CF390-5CF1-4896-8F15-36FFB23641B6
+:END:
+#+title: Document type: capture
+#+description: The contract for the capture document type: folder, frontmatter, sections, and lifecycle notes.
+#+type: meta
+#+level: cross
+#+filetags: :meta:document_types:capture:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+
+This page defines the =capture= document type — one entry in the
+[[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]] taxonomy. The general contract every document follows
+(frontmatter, state, linking, tags) lives on the taxonomy page; this
+page carries only what is specific to =capture=.
+
+* Contract
+
+A pre-sprint idea — see [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][Capture]] in the glossary.
+
+** Buckets
+
+Captures live in one of four buckets under =doc/agile/product_backlog/=:
+
+| Bucket      | Path              | Purpose                                                  |
+|-------------+-------------------+----------------------------------------------------------|
+| =inbox/=    | untriaged         | Landing zone for new captures; not yet assessed          |
+| =next/=     | next candidates   | Concrete ideas ready to pull into an upcoming sprint     |
+| =deferred/= | long-horizon      | Valid but not soon; revisit during future planning       |
+| =discarded/=| explicitly rejected | Decided against; kept for rationale, not for promotion |
+
+A capture starts in =inbox/= and is triaged to =next/=, =deferred/=, or =discarded/= via
+=compass capture file <slug> <bucket>=. It is never deleted on rejection — =discarded/=
+preserves the rationale.
+
+** Key properties
+
+- Folder :: =doc/agile/product_backlog/{inbox,next,deferred,discarded}/<slug>.org=
+- Level :: =cross= (product-level; not tied to a sprint or version)
+- Slug :: =snake_case=. Becomes the filename.
+- Title :: free-form (the idea itself); no type prefix.
+- Not stateful — no TODO, no =* Status= table. Effective states:
+  /pending/ (file in a bucket) and /promoted/ (converted to a story).
+- *ID preservation* :: on promotion the destination =story.org= keeps
+  the capture's =:ID:= so existing links keep resolving. =#+type:=
+  flips from =capture= to =story=; the file moves into the sprint folder;
+  the capture is no longer in its bucket.
+
+** Compass commands
+
+#+begin_src sh
+# Create a new capture in inbox (preferred entry point)
+compass capture --note "The idea text"
+
+# Triage an inbox capture to a bucket
+compass capture file <slug> next|deferred|discarded
+
+# Print promotion instructions (goto command to run)
+compass capture promote <slug>
+#+end_src
+
+** How to create
+
+See [[id:978E0A8F-197C-48DA-A405-457E0AEE91D9][New capture]] in the codegen recipe for direct scaffolding via codegen.
+
+** Required sections (in this order)
+
+- /Blurb/ — one sentence linking the word "capture" to the glossary
+  entry and naming the bucket.
+- =* Note= — the idea, one paragraph. (=* What= / =* Why= are acceptable
+  synonyms for more developed captures.)
+- =* Actions= — optional; concrete next steps if known.
+- =* See also= — related captures, knowledge docs, components. Optional.
+

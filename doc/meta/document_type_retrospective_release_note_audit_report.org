@@ -1,0 +1,21 @@
+:PROPERTIES:
+:ID: CE9E4F7C-D14B-46C4-AD3D-39881C466914
+:END:
+#+title: Document type: retrospective, release_note, audit_report
+#+description: The contract for the retrospective, release_note, audit_report document type: folder, frontmatter, sections, and lifecycle notes.
+#+type: meta
+#+level: cross
+#+filetags: :meta:document_types:retrospective_release_note_audit_report:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+
+This page defines the =retrospective, release_note, audit_report= document type — one entry in the
+[[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]] taxonomy. The general contract every document follows
+(frontmatter, state, linking, tags) lives on the taxonomy page; this
+page carries only what is specific to =retrospective, release_note, audit_report=.
+
+* Contract
+
+- Generated where possible. See [[id:8810E0F9-C5B9-4CFA-A710-774AD6C771DD][lifecycle]] and the relevant function
+  documents.
+

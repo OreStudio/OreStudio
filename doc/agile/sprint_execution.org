@@ -11,7 +11,12 @@
 
 * Summary
 
-Sprint execution is the middle phase, where the plan becomes merged
+In agile practice, /sprint execution/ is the iteration's working
+middle: the team pulls items from the sprint backlog, finishes them
+one by one, keeps progress visible day to day, and absorbs newly
+discovered work without losing the sprint goal.
+
+In ORE Studio, sprint execution is where the plan becomes merged
 pull requests. Agents pick up =BACKLOG= [[id:A7CF5191-6786-408F-A4A6-3A508DCADAC1][tasks]] and run each through
 the [[id:8810E0F9-C5B9-4CFA-A710-774AD6C771DD][lifecycle]] one PR at a time; the /heartbeat rule/ keeps every
 in-flight document's Status honest; and work discovered along the way

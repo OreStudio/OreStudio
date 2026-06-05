@@ -1,0 +1,104 @@
+:PROPERTIES:
+:ID: 32842C44-2585-46EB-B90D-75C3CB28F003
+:END:
+#+title: Document type: task
+#+description: The contract for the task document type: folder, frontmatter, sections, and lifecycle notes.
+#+type: meta
+#+level: cross
+#+filetags: :meta:document_types:task:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+
+This page defines the =task= document type — one entry in the
+[[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]] taxonomy. The general contract every document follows
+(frontmatter, state, linking, tags) lives on the taxonomy page; this
+page carries only what is specific to =task=.
+
+* Contract
+
+- Path :: =versions/<v>/<sprint>/<story>/task_<task_slug>.org= — a
+  flat file inside the story folder, /not/ a subfolder. Tasks are
+  leaves; only composition nodes (story, sprint, version) get
+  folders. The =task_= prefix sorts tasks together (after =story.org=)
+  and makes their type obvious in =ls=.
+- Title :: =Task: <human readable title>=. The =Task: = prefix is
+  added by the codegen automatically when the type is =task=.
+- Level :: =s1=
+- Size constraint :: one PR; soft limits ≤ ~10 files changed, ≤ ~400 LOC
+  delta, one coherent concept. Tasks exceeding this should be split or
+  promoted to stories.
+- Supporting files :: rare. When a task genuinely needs extra artefacts
+  (screenshots, attached data), promote that single task to a folder
+  ahead of time (=<task_slug>/<task_slug>.org= plus the supporting
+  files). The default remains the flat file.
+- How to create :: see [[id:B7FA729C-2D42-408A-9424-B6AA90EB16B4][New task]] in the codegen recipe.
+
+** Task frontmatter (additions on top of the standard set)
+
+#+begin_src org
+,#+owner: <handle>                                ; required (=marco= today)
+,#+branch: <git branch the task is on>             ; required once started
+,#+pr: <pr number or url>                          ; set when PR is opened
+,#+blocked_on: <review|ci|local_build|external|none> ; required when in STARTED/BLOCKED
+,#+blocked_since: <YYYY-MM-DD HH:MM>               ; set when blocked_on != none
+,#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+#+end_src
+
+These fields make in-flight work greppable:
+
+- =grep -l "blocked_on: review"= → every task waiting on review.
+- =grep -l "branch: feature/foo"= → which task owns =feature/foo=.
+- =grep -lR "^\* STARTED Status\|^\* BLOCKED Status"= → every in-flight
+  task.
+
+** Task sections
+
+Required, in this order. The blurb tells the reader what this is; the
+=* Goal= says what success looks like; the =* Status= table gives the
+operational state.
+
+- /Blurb/ (one paragraph, no heading) — opens with =This page documents
+  a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the
+  [[id:<parent_id>][<parent_title>]] story.=
+- =* Goal= — one paragraph: what user-visible-or-internal change does
+  this task produce.
+- =* Status= — table; see /The Status table/ below.
+- =* Acceptance= — bulleted criteria. A task is done when these all
+  hold.
+- =* Plan= — transient implementation strategy. Written when the agent
+  starts work; distilled into the parent story's =* Decisions= and
+  cleared (or summarised in =* Notes=) when the task closes. Plans do
+  not outlive their task.
+- =* Notes= — chronological log of decisions, observations, discovered
+  work. Append-only. Most recent at the bottom, dated.
+- =* Result= — filled when task closes: PR link, commit hashes,
+  follow-up tasks filed.
+
+** The Status table — state + parent link + live channel
+
+#+begin_src org
+,* Status
+,
+,| Field        | Value                                |
+,|--------------+--------------------------------------|
+,| State        | STARTED                              |
+,| Parent story | [[id:<UUID>][Currencies end-to-end]] |
+,| Now          | Implementing the XML serialiser.     |
+,| Waiting on   | Nothing.                             |
+,| Next         | Add the round-trip test.             |
+,| Last touched | 2026-05-21                           |
+#+end_src
+
+State transitions overwrite the =State= row (=DISCOVERED= / =BACKLOG=
+/ =STARTED= / =BLOCKED= / =DONE= / =ABANDONED=). The row value is
+greppable: =grep -lR "^| State .*STARTED"=.
+
+For =DONE= and =ABANDONED= tasks, =Now= becomes a single-sentence
+epitaph (=Completed 2024-07-12.=), =Waiting on= / =Next= are =None.=,
+=Last touched= equals the closing date.
+
+*Heartbeat rule.* Every time an orchestrator or agent acts on a task,
+it must update the Status rows and =#+updated= before yielding
+control. Audit flags tasks in =STARTED= or =BLOCKED= whose =#+updated=
+has gone stale.
+

@@ -1,0 +1,38 @@
+:PROPERTIES:
+:ID: 88EF99D4-970D-4EFF-9A0C-1A747F42B245
+:END:
+#+title: Document type: version
+#+description: The contract for the version document type: folder, frontmatter, sections, and lifecycle notes.
+#+type: meta
+#+level: cross
+#+filetags: :meta:document_types:version:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+
+This page defines the =version= document type — one entry in the
+[[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]] taxonomy. The general contract every document follows
+(frontmatter, state, linking, tags) lives on the taxonomy page; this
+page carries only what is specific to =version=.
+
+* Contract
+
+- Folder :: =versions/<v>/=
+- Title :: =Version N= — no prefix (the word "Version" is already in
+  the title).
+- Level :: =s4=
+- TODO vocabulary :: =STARTED | RELEASED= (one in flight at a time;
+  the rest are released).
+- How to create :: see [[id:8FC15EA1-AB30-47BE-993F-ED624A57F761][New version]] in the codegen recipe.
+- Required sections (in this order) ::
+  - /Blurb/ — opens with =This page documents the
+    [[id:CA4D4BDE-2EAB-4F0A-BC8B-7C0BCB17BC82][version]] *Version N* of
+    ORE Studio. ... see [[id:436FB40C-422A-465B-B949-E9F0760820C1][product identity]].=
+  - =* Identity= — what makes this version distinct.
+  - =* Mission= — what the version is for.
+  - =* Definition of done= — when the version can close.
+  - =* Status= — table; rows =State / Now / Waiting on / Next / Last
+    touched= (no Parent row — versions are top-level).
+  - =* Sprints= — table with class =hug-leading=; columns =Sprint /
+    Start / End / Theme=.
+  - =* Release scope= — what is in, what is deferred.
+

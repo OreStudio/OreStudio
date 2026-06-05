@@ -1,0 +1,83 @@
+:PROPERTIES:
+:ID: DF81C4F0-9EB6-408B-9828-1A33BCC7769A
+:END:
+#+title: Document type: story
+#+description: The contract for the story document type: folder, frontmatter, sections, and lifecycle notes.
+#+type: meta
+#+level: cross
+#+filetags: :meta:document_types:story:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+
+This page defines the =story= document type — one entry in the
+[[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]] taxonomy. The general contract every document follows
+(frontmatter, state, linking, tags) lives on the taxonomy page; this
+page carries only what is specific to =story=.
+
+* Contract
+
+- Folder :: =versions/<v>/<sprint>/<story_slug>/story.org=
+- Title :: =Story: <human readable title>=. The =Story: = prefix is
+  added by the codegen automatically when the type is =story=.
+- Level :: =s2=
+- TODO vocabulary :: =BACKLOG STARTED | DONE ABANDONED= (no DISCOVERED or
+  BLOCKED at story level).
+- How to create :: see [[id:6D6DDB4B-A0AA-42E6-A294-0F9B35CC0752][New story]] in the codegen recipe.
+- Required sections (in this order) ::
+  - /Blurb/ — opens with =This page documents a
+    [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in
+    [[id:<parent_id>][<parent_title>]].=
+  - =* Goal= — the user-visible outcome.
+  - =* Status= — table; rows =State / Parent sprint / Now / Waiting on
+    / Next / Last touched=.
+  - =* Acceptance= — when is this story done?
+  - =* Tasks= — id-links to its child tasks, in execution order.
+  - =* Decisions= — distilled from plans as tasks land.
+  - =* Out of scope= — what we explicitly /chose/ not to include.
+
+** Cross-sprint stories — predecessor and successor
+
+A story belongs to exactly one sprint. When work cannot fit a single
+sprint, the story closes =DONE= with whatever landed and a /successor/
+story is created in the next sprint. Optional frontmatter fields link
+the two:
+
+#+begin_src org
+,#+predecessor: <id-of-prior-story>    ; on the successor: where the work began
+,#+successor:   <id-of-next-story>     ; on the predecessor: where the work continues
+#+end_src
+
+Both fields carry the target story's =:ID:= (not its slug — slugs may
+collide across sprints).
+
+Inline body conventions:
+
+- On the successor :: =Continued from: [[id:<predecessor>][...]]= sits
+  immediately after the parent-sprint link, so a reader sees the
+  history at the top.
+- On the predecessor :: a =Continued in: [[id:<successor>][...]]= note
+  goes into =* Decisions=, recorded when the successor is created.
+
+The successor's slug is the original slug suffixed with =_continued=,
+=_phase_2=, or similar — pick whichever reads better in context.
+
+Audit verifies bidirectional links: every =#+predecessor= has a
+matching =#+successor= pointing back.
+
+** Story frontmatter (additions on top of the standard set)
+
+#+begin_src org
+,#+category: <feature|housekeeping|enabler>
+,#+predecessor: <id-of-prior-story>
+,#+successor:   <id-of-next-story>
+#+end_src
+
+- =#+category:= — required; one of =feature=, =housekeeping=, or =enabler=.
+  Drives velocity tracking (see =** Story categories= in =* Tags= above).
+- =#+predecessor:= / =#+successor:= — optional; used on stories that span
+  sprints (see =*** Cross-sprint stories= above for full conventions).
+
+The =#+category:= field classifies the story's intent so velocity
+metrics can be sliced by type (see =** Story categories= in =* Tags=
+above). It is required on every story created from sprint 18 onward.
+

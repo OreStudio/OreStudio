@@ -11,8 +11,14 @@
 
 * Summary
 
-A [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] is the unit of execution: one pull request's worth of work
-inside a [[id:4FAC3AE2-04A8-4C35-B72E-78C7A862EED9][story]]. The hard rule — *one task = one PR* — gives every
+In agile practice, a /task/ is the unit of execution: one concrete,
+finishable piece of work carved out of a story, small enough that its
+progress is binary — not started, in hand, or done — rather than a
+percentage. Tasks are how a team turns an outcome into a sequence of
+changes someone can actually pick up.
+
+In ORE Studio, a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] is one pull request's worth of work inside
+a [[id:4FAC3AE2-04A8-4C35-B72E-78C7A862EED9][story]]. The hard rule — *one task = one PR* — gives every
 change a reviewable shape, a traceable record (the task's =* PRs= and
 =* Review= tables), and an honest state in the [[id:8810E0F9-C5B9-4CFA-A710-774AD6C771DD][lifecycle]] machine.
 Tasks are deliberately small; anything bigger splits, or grows up
@@ -65,6 +71,8 @@ Status row's "Last touched" matches the close date.
 
 * See also
 
+- [[id:4995D24A-28FB-47F6-A083-DB5283507410][Definition of done]] — why =* Acceptance= exists and what gates
+  =DONE=.
 - [[id:31C868B9-306E-4282-BA8C-07E647021B34][Task]] in the glossary — the one-line definition.
 - [[id:4FAC3AE2-04A8-4C35-B72E-78C7A862EED9][Stories]] — the unit tasks decompose from.
 - [[id:227958A5-0F78-4CC6-A116-B83988592B68][Sprint execution]] — the phase tasks run in, including the

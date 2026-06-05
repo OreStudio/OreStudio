@@ -437,7 +437,7 @@ def run(argv, project_root: Path) -> int:
 
 # ---------------------------------------------------------------------------
 # .env format version — checked by projects/ores.sql/utility/validate_env_version.sh
-# at the start of recreate_database.sh.  If this file is out of date, re-run:
+# at the start of compass db recreate.  If this file is out of date, re-run:
 #   compass env init --preset <preset> -y
 # ---------------------------------------------------------------------------
 ORES_ENV_VERSION={env_version}
@@ -474,7 +474,7 @@ ORES_NATS_TLS_CERT={nats_tls_cert}
 ORES_NATS_TLS_KEY={nats_tls_key}
 
 # ---------------------------------------------------------------------------
-# Database admin (postgres superuser — for recreate_database.sh and psql)
+# Database admin (postgres superuser — for compass db recreate and psql)
 # ---------------------------------------------------------------------------
 PGPASSWORD={pgpassword}
 ORES_DB_HOST={db_host}
@@ -497,7 +497,7 @@ ORES_DB_READONLY_USER={readonly_user}
 ORES_TEST_DB_DDL_USER={test_ddl_user}
 
 # ---------------------------------------------------------------------------
-# Script / DDL passwords (used by recreate_database.sh)
+# Script / DDL passwords (used by compass db recreate)
 # ---------------------------------------------------------------------------
 ORES_DB_DDL_PASSWORD={ddl_pw}
 ORES_DB_CLI_PASSWORD={cli_pw}
@@ -507,7 +507,7 @@ ORES_DB_SHELL_PASSWORD={shell_pw}
 ORES_DB_READONLY_PASSWORD={readonly_pw}
 
 # ---------------------------------------------------------------------------
-# Test connection credentials (read by recreate_database.sh and C++ tests)
+# Test connection credentials (read by compass db recreate and C++ tests)
 # ---------------------------------------------------------------------------
 ORES_TEST_DB_USER={test_dml_user}
 ORES_TEST_DB_PASSWORD={test_pw}
@@ -578,7 +578,7 @@ ORES_IAM_SERVICE_JWT_PRIVATE_KEY="{jwt_key_oneline}"
 # ---------------------------------------------------------------------------
 # Compute wrapper node host IDs (one per test node)
 # Each ID must match a host record in the compute.hosts table.
-# Re-run recreate_database.sh after regenerating to keep IDs in sync.
+# Re-run compass db recreate after regenerating to keep IDs in sync.
 # ---------------------------------------------------------------------------
 """)
     for i, gid in enumerate(grid_node_ids, start=1):
@@ -609,7 +609,7 @@ ORES_IAM_SERVICE_JWT_PRIVATE_KEY="{jwt_key_oneline}"
           f"(db: {db_name}, NATS port: {nats_port}) ===\n")
     print("Next steps:")
     print("  1. Create the database (first time only):")
-    print("       ./projects/ores.sql/recreate_database.sh -y\n")
+    print("       ./projects/ores.compass/compass.sh db recreate -y\n")
     print("  2. Start NATS:")
     print(f"       nats-server --config build/config/nats-{label}.conf\n")
     print("  3. In Emacs, set up SQL connections:")

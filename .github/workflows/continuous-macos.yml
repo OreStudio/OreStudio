@@ -118,7 +118,7 @@ jobs:
 
       - name: Setup Database
         run: |
-          ./projects/ores.sql/recreate_database.sh -y -D ores_ci
+          ./projects/ores.compass/compass.sh db recreate -y -D ores_ci
 
       - name: get-cmake
         uses: lukka/get-cmake@v4.3.3

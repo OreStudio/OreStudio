@@ -161,8 +161,8 @@ database. Each is granted individually rather than via a directory
 wildcard (e.g. =Bash(projects/ores.sql/* *)=) to prevent accidental
 execution of other files in that tree.
 
-=run_sql.sh= executes a single SQL file against the database.
-=recreate_database.sh= drops and rebuilds the entire schema.
+=compass db sql= executes SQL against the database.
+=compass db recreate= drops and rebuilds the entire schema.
 =validate_schemas.sh= checks that the live schema matches expectations.
 =kill_db_connections.sh= terminates stale connections before a recreate.
 
@@ -176,14 +176,14 @@ Note: never prepend =PGPASSWORD= on the command line; these scripts
 source =.env= themselves.
 
 Common invocations:
-- =projects/ores.sql/run_sql.sh -f projects/ores.sql/schema/foo_create.sql=
-- =projects/ores.sql/recreate_database.sh=
+- =compass db sql -- -f projects/ores.sql/schema/foo_create.sql=
+- =compass db recreate=
 - =projects/ores.sql/utility/validate_schemas.sh=
 - =projects/ores.sql/utility/kill_db_connections.sh=
 
 #+begin_src json :tangle no :noweb-ref perm-sql
-      "Bash(projects/ores.sql/run_sql.sh *)",
-      "Bash(projects/ores.sql/recreate_database.sh *)",
+      "Bash(projects/ores.compass/compass.sh db *)",
+      
       "Bash(projects/ores.sql/utility/validate_schemas.sh *)",
       "Bash(projects/ores.sql/utility/kill_db_connections.sh *)"
 #+end_src

@@ -49,7 +49,7 @@ all created consistently?
 4. /Recreate the database/ to provision the new role and grants:
 
    #+begin_src sh :results verbatim
-   ./projects/ores.sql/recreate_database.sh -y
+   ./projects/ores.compass/compass.sh db recreate -y
    #+end_src
 
 5. /Commit/ the registry edit and all regenerated files together.
@@ -70,13 +70,13 @@ all created consistently?
 
 Generation: =projects/ores.codegen/run_generator.sh ... --profile
 service-registry=. Credentials: =compass env init=.
-Provisioning: =projects/ores.sql/recreate_database.sh=.
+Provisioning: =compass db recreate=.
 
 * Tested by
 
 Manual: after step 2, =git diff projects/ores.sql/service_vars.sh= shows
 the new =SERVICE_NAMES= entry; after steps 3–4 the new
-=ORES_<NAME>_SERVICE_DB_*= vars exist and =recreate_database.sh= reports
+=ORES_<NAME>_SERVICE_DB_*= vars exist and =compass db recreate= reports
 no missing-password errors. CI exercises the same path in the canary
 "Setup Database" step.
 

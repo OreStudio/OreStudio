@@ -28,7 +28,7 @@ The SQL source lives entirely in [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores
 | =ores.sql/test/= | pgTAP SQL unit tests |
 | =ores.sql/create/utility/utility_functions_create.sql= | Shared utility functions (infinity timestamp, name normalisation, etc.) |
 | =ores.sql/setup_extensions.sql= | Extension installation script |
-| =ores.sql/recreate_database.sh= | Full database teardown and rebuild |
+| =compass db recreate= | Full database teardown and rebuild |
 | =ores.sql/migrate.sh= | Incremental migration runner |
 
 * Schema layout

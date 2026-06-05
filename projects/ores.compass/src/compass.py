@@ -3084,6 +3084,15 @@ def main():
         sys.exit(cmd_env(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "nats":
         sys.exit(cmd_nats(sys.argv[2:]))
+    if len(sys.argv) >= 2 and sys.argv[1] == "db":
+        import compass_db
+        sys.exit(compass_db.run(sys.argv[2:], PROJECT_ROOT))
+    if len(sys.argv) >= 2 and sys.argv[1] == "services":
+        import compass_services
+        sys.exit(compass_services.run(sys.argv[2:], PROJECT_ROOT))
+    if len(sys.argv) >= 2 and sys.argv[1] == "client":
+        import compass_services
+        sys.exit(compass_services.run_client(sys.argv[2:], PROJECT_ROOT))
     if len(sys.argv) >= 2 and sys.argv[1] == "test":
         sys.exit(cmd_test(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "build":
@@ -3102,8 +3111,8 @@ def main():
         _KNOWN_COMMANDS = [
             "index", "search", "find", "debug", "where", "status", "fleet",
             "list", "show", "add", "sprint", "story", "task", "journal",
-            "env", "nats", "test", "build", "review", "pr", "bearings",
-            "orient",
+            "env", "nats", "db", "services", "client", "test", "build",
+            "review", "pr", "bearings", "orient",
             "capture",
             "inbox", "next", "deferred", "discarded", "backlog",
         ]
@@ -3124,9 +3133,10 @@ def main():
         "  Scaffold:  story, task, add\n"
         "  Capture:   capture, inbox, next, deferred, discarded, backlog\n"
         "  Journal:   journal\n"
-        "  Provision: env, nats\n"
+        "  Provision: env, nats, db\n"
         "  Test:      test\n"
         "  Build:     build\n"
+        "  Operate:   services, client\n"
         "  Review:    review\n"
         "  PR:        pr\n"
         "  Bearings:  bearings (alias: orient)\n"
@@ -3136,6 +3146,8 @@ def main():
         "  story:    new (scaffold) | status (orient)\n"
         "  task:     new (scaffold)\n"
         "  env:      init | diff | list | version [new] (provision)\n"
+        "  db:       recreate | setup | drop | sql | reset-system | reset-tenant (provision)\n"
+        "  services: start | stop | status | clear-logs (operate)\n"
     )
     parser = argparse.ArgumentParser(
         description="Compass: developer toolkit for ORE Studio — orient, scaffold, capture, and search.",
@@ -3188,6 +3200,15 @@ def main():
                           help="Read/write the per-worktree session journal; 'journal --help' for subcommands")
     subparsers.add_parser("env",
                           help="Provision: 'env init' generates .env + certs + IAM key; 'env diff'; 'env --help'")
+    subparsers.add_parser("db",
+                          help="Provision: database lifecycle — recreate, "
+                               "setup, drop, sql, reset-system, reset-tenant")
+    subparsers.add_parser("services",
+                          help="Operate: service lifecycle — start, stop, "
+                               "status, clear-logs")
+    subparsers.add_parser("client",
+                          help="Operate: launch the Qt client (detached; "
+                               "--colour/--instance-name for parallel runs)")
     subparsers.add_parser("test",
                           help="Test: 'test results' shows last run overview; "
                                "'test logging on|off|status' toggles test logging; 'test --help'")

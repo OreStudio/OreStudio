@@ -18,7 +18,7 @@
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
 # Show all OreStudio roles for an environment, with login capability and group
-# memberships. Run before and after recreate_database.sh to verify that roles
+# memberships. Run before and after compass db recreate to verify that roles
 # are correctly dropped and recreated.
 
 set -e
@@ -38,7 +38,7 @@ usage() {
 Usage: $(basename "$0") [OPTIONS]
 
 Show all OreStudio roles for a given environment, with login capability and
-group memberships. Run before and after recreate_database.sh to verify that
+group memberships. Run before and after compass db recreate to verify that
 roles are correctly dropped and recreated.
 
 Options:

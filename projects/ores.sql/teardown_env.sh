@@ -21,7 +21,7 @@
 # then removes all cluster-level roles belonging to the environment.
 #
 # This is the inverse of the full setup sequence (setup_user.sql +
-# recreate_database.sh). After running this script, the environment can be
+# compass db recreate). After running this script, the environment can be
 # re-created from scratch without leaving orphaned roles.
 
 set -e
@@ -149,5 +149,5 @@ echo "  Teardown complete: ${ENVIRONMENT}"
 echo "=========================================="
 echo ""
 echo "To recreate, run:"
-echo "  ./projects/ores.sql/recreate_database.sh -y"
+echo "  ./projects/ores.compass/compass.sh db recreate -y"
 echo ""

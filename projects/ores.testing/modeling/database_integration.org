@@ -286,7 +286,7 @@ The project includes a helper script for database access:
 
 #+begin_src bash
 cd projects/ores.sql
-./run_sql.sh -c "SELECT * FROM ores_telemetry_logs_tbl LIMIT 10;"
+compass db sql -- -c "SELECT * FROM ores_telemetry_logs_tbl LIMIT 10;"
 #+end_src
 
 * Troubleshooting

@@ -347,8 +347,10 @@ def _cmd_merge(args, project_root):
     closed_out = False
     on_head = _current_branch(project_root) == head
     if task_id and not args.keep_open and on_head:
-        subprocess.run([str(compass), "task", "done", task_id,
-                        "--pr", str(number)], cwd=str(project_root))
+        res = subprocess.run([str(compass), "task", "done", task_id,
+                              "--pr", str(number)], cwd=str(project_root))
+        if res.returncode != 0:
+            return res.returncode
         story_rel = (task_path.parent / "story.org").relative_to(
             project_root)
         task_rel = task_path.relative_to(project_root)
@@ -371,6 +373,7 @@ def _cmd_merge(args, project_root):
             closed_out = True
         elif "nothing to commit" not in (c.stdout + c.stderr):
             print(c.stderr.strip() or c.stdout.strip(), file=sys.stderr)
+            return c.returncode
 
     # Always a merge commit — never squash, never rebase — matching
     # the repository's history. gh's --admin bypasses the base branch

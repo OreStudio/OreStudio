@@ -194,8 +194,10 @@ resolution."
         (if (string-prefix-p ores/manual-dir (expand-file-name file))
             ;; File-level property drawers sit within the first few
             ;; hundred characters; heading ids appear much later.
+            ;; CUSTOM_ID labels are emitted verbatim by ox-latex (no
+            ;; sec: prefix) under org-latex-prefer-user-labels.
             (when (and pos (< pos 200))
-              (format "\\hyperref[sec:%s]{%s}"
+              (format "\\hyperref[%s]{%s}"
                       (file-name-base file)
                       (or desc (file-name-base file))))
           (let ((url (concat ores/site-base-url

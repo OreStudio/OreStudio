@@ -148,6 +148,32 @@ def _svc_psql_args(env, names, with_passwords):
     return args
 
 
+def database_info(env):
+    """Latest ores_database_info_tbl row, or None when unreachable.
+
+    Returns {restored_at, schema_version, git_commit, git_date}. Used by
+    compass bearings for the environment status; degrades silently."""
+    db_name = env.get("ORES_TEST_DB_DATABASE", "")
+    pw = env.get("PGPASSWORD", "")
+    if not db_name or not pw:
+        return None
+    try:
+        out = _psql(env, "-At", "-c",
+                    "SELECT to_char(created_at, 'YYYY-MM-DD HH24:MI'), "
+                    "schema_version, git_commit, git_date "
+                    "FROM ores_database_info_tbl "
+                    "ORDER BY created_at DESC LIMIT 1;",
+                    password=pw, database=db_name, check=False, capture=True)
+    except OSError:
+        return None
+    line = (out.stdout or "").strip()
+    if out.returncode or not line:
+        return None
+    restored, schema, commit, git_date = (line.split("|") + ["", "", ""])[:4]
+    return {"restored_at": restored, "schema_version": schema,
+            "git_commit": commit, "git_date": git_date}
+
+
 # --- subcommands ------------------------------------------------------------
 
 def cmd_sql(project_root, env, args, passthrough):

@@ -158,6 +158,60 @@ def _wait_for_log(ctx, name, pattern, timeout=120, suffix=".log") -> bool:
     return False
 
 
+def gather_counts(ctx):
+    """Service state counts for status displays: dict of state -> count,
+    plus nats state. Mirrors cmd_status's classification."""
+    counts = {"running": 0, "starting": 0, "stopped": 0, "missing": 0}
+
+    def _ready(log_file, pattern):
+        try:
+            return pattern.encode() in log_file.read_bytes()
+        except OSError:
+            return False
+
+    def _classify(svc):
+        pid = _read_pid(ctx.run_dir / f"{svc}.pid")
+        if pid is None:
+            return "missing"
+        if not _pid_alive(pid):
+            return "stopped"
+        log_file = ctx.log_dir / f"{svc}.log"
+        if not log_file.exists() and (ctx.log_dir / f"{svc}.0.log").exists():
+            log_file = ctx.log_dir / f"{svc}.0.log"
+        return "running" if _ready(log_file, "Service ready") else "starting"
+
+    nats_pid = _read_pid(ctx.nats_pid_file)
+    if nats_pid is None:
+        nats = "missing"
+    elif not _pid_alive(nats_pid):
+        nats = "stopped"
+    elif _ready(ctx.log_dir / "nats-server.log", "Server is ready"):
+        nats = "running"
+    else:
+        nats = "starting"
+
+    seen = set()
+    if ctx.run_dir.is_dir():
+        for pid_file in sorted(ctx.run_dir.glob("*.pid")):
+            svc = pid_file.stem
+            if svc.startswith("ores.qt"):
+                continue  # the client is reported separately
+            seen.add(svc)
+            counts[_classify(svc)] += 1
+    return {"nats": nats, "counts": counts, "service_total": len(seen)}
+
+
+def client_status(ctx):
+    """List of (instance_name, pid) for running Qt clients."""
+    clients = []
+    if ctx.run_dir.is_dir():
+        for pid_file in sorted(ctx.run_dir.glob("ores.qt*.pid")):
+            pid = _read_pid(pid_file)
+            if pid and _pid_alive(pid):
+                clients.append((pid_file.stem, pid))
+    return clients
+
+
 # --- subcommands ------------------------------------------------------------
 
 def cmd_start(ctx, args):

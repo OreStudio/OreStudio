@@ -87,6 +87,6 @@ task closes. Plans do not outlive their task.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Boost::boost must be PUBLIC: public headers include boost | projects/ores.eventing/api/src/CMakeLists.txt | Accepted | Fixed in 98f67d729; demangle/config are public-header deps. Noted sweep candidate: other apis carry Boost PRIVATE with the same pattern. |
 
 * Result

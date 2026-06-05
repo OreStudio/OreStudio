@@ -206,6 +206,56 @@ def _cmd_resolve(args, project_root):
     return 0
 
 
+def _ycmd(cmd):
+    """Render a compass command hint in the standard yellow."""
+    return f"{_C_YELLOW}{cmd}{_C_RESET}"
+
+
+def _pr_agile_links(project_root, numbers):
+    """Map PR number → (task_id, story_id) by scanning doc/agile docs.
+
+    A PR is matched to the task doc that records it (a /pull/<n>] link
+    in its * PRs table or a #+pr: <n> property); the story comes from
+    the task's Parent story row. When the recording doc is itself a
+    story, only the story id is returned. PRs with no match are
+    simply absent from the result.
+    """
+    import os
+    results = {}
+    base = os.path.join(str(project_root), "doc", "agile")
+    remaining = set(numbers)
+    for root, _dirs, files in os.walk(base):
+        if not remaining:
+            break
+        for fn in files:
+            if not fn.endswith(".org") or not remaining:
+                continue
+            path = os.path.join(root, fn)
+            try:
+                with open(path, encoding="utf-8", errors="ignore") as f:
+                    text = f.read()
+            except OSError:
+                continue
+            for n in list(remaining):
+                if (f"/pull/{n}]" not in text
+                        and not re.search(rf"^#\+pr: {n}\s*$", text, re.M)):
+                    continue
+                doc_id = re.search(r":ID:\s+([0-9A-Fa-f-]{36})", text)
+                doc_type = re.search(r"^#\+type:\s+(\w+)", text, re.M)
+                if not doc_id:
+                    continue
+                if doc_type and doc_type.group(1) == "story":
+                    results[n] = (None, doc_id.group(1))
+                else:
+                    parent = re.search(
+                        r"Parent story\s*\|\s*\[\[id:([0-9A-Fa-f-]{36})\]",
+                        text)
+                    results[n] = (doc_id.group(1),
+                                  parent.group(1) if parent else None)
+                remaining.discard(n)
+    return results
+
+
 def _worktree_branches(project_root):
     """Map branch name → worktree directory name, across all worktrees."""
     try:
@@ -293,8 +343,7 @@ def _cmd_pending(args, project_root):
     for p in pending:
         if p["state"] != "OPEN":
             p["severity"] = "critical"
-            p["note"] = (f"{p['state'].lower()} with unattended review "
-                         "threads — feedback was never addressed")
+            p["note"] = f"{p['state'].lower()} with unattended review threads"
         elif p["worktree"] and p["worktree"] != here:
             p["severity"] = "ok"
             p["note"] = f"being worked in {p['worktree']}"
@@ -303,6 +352,11 @@ def _cmd_pending(args, project_root):
             where = ("this checkout" if p["worktree"] == here
                      else f"branch {p['branch']}, no local worktree")
             p["note"] = f"needs a review round ({where})"
+
+    agile = _pr_agile_links(project_root, [p["number"] for p in pending])
+    for p in pending:
+        task_id, story_id = agile.get(p["number"], (None, None))
+        p["task_id"], p["story_id"] = task_id, story_id
 
     if args.format == "json":
         print(json.dumps(pending, indent=2))
@@ -315,23 +369,26 @@ def _cmd_pending(args, project_root):
               f"in the last {args.since}.")
         return 0
 
-    icon = {"critical": f"{_C_RED}🛑", "attention": f"{_C_YELLOW}⚠ ",
-            "ok": f"{_C_GREEN}✅"}
+    icon = {"critical": "🛑", "attention": "⚠️ ", "ok": "✅"}
     order = {"critical": 0, "attention": 1, "ok": 2}
     for p in sorted(pending, key=lambda x: (order[x["severity"]],
                                             -x["number"])):
         print(f"{icon[p['severity']]} #{p['number']}  [{p['state']}]  "
-              f"{p['title']}{_C_RESET}")
+              f"{p['title']}")
         print(f"    {p['unresolved']} unresolved thread(s), "
               f"updated {p['age']} ago — {p['note']}")
-        print(f"    compass review list {p['number']}")
+        review_cmd = f"compass review list {p['number']}"
+        print(f"    Review: {_ycmd(review_cmd)}")
+        if p["story_id"]:
+            print(f"    Story:  {_ycmd('compass show ' + p['story_id'])}")
+        if p["task_id"]:
+            print(f"    Task:   {_ycmd('compass show ' + p['task_id'])}")
         print()
-    actionable = [p for p in pending if p["severity"] != "ok"]
     counts = {k: sum(1 for p in pending if p["severity"] == k)
               for k in ("critical", "attention", "ok")}
     print(f"{counts['critical']} critical, {counts['attention']} need a "
           f"round, {counts['ok']} in progress elsewhere.")
-    return 1 if actionable else 0  # non-zero only when action is needed
+    return 0
 
 
 def _age_human(seconds):

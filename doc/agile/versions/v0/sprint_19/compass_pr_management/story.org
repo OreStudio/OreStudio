@@ -56,8 +56,10 @@ with traceability, merge) as follow-on tasks.
   open|merged|closed|all]= triages PRs with unattended review threads
   within the look-back window: critical (merged/closed — feedback was
   never addressed), needs-a-round (open, owned here or unowned), and
-  fine (open, being worked in another worktree). Exits non-zero only
-  when action is needed, so scripts/cron can alert.
+  fine (open, being worked in another worktree). Severity is carried
+  by the row icon; command hints (review list, story/task compass
+  show) use the standard colours; exit code is 0 — the output, not
+  the exit status, carries the signal.
 - Commands are documented in =compass --help= and the PR review
   recipes/runbook are updated to use them.
 

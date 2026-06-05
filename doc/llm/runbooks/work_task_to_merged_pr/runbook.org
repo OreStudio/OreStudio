@@ -45,7 +45,7 @@ In execution order:
    This covers all three cases: new task on an existing story, resuming a
    BACKLOG task, and restarting an already-STARTED task after a session reset.
    Read =task_<slug>.org= after clocking on: understand the =* Goal=,
-   =* Acceptance= criteria, and =* Notes=. Set =#+owner:= and =#+pr:= once known.
+   =* Acceptance= criteria, and =* Notes=. (=pr create= sets =#+pr:= later.)
 
 2. /Sync with main./ =compass pr sync= — fetch, rebase, report; on
    conflicts it stops with the conflicted files and the ways out.
@@ -68,7 +68,9 @@ In execution order:
 
    Repeat step 7 for each review round until the PR is approved.
 
-8. /Merge./ When the PR is approved, =compass pr merge= — the guards refuse while threads are unresolved or CI is not green. See [[id:95D560C6-3551-4810-9D11-55F9F82B483C][How do I merge a PR?]].
+8. /Merge./ When the PR is approved, =compass pr merge= — the guards refuse while threads are unresolved or CI is not green; the journal is stamped automatically. See [[id:95D560C6-3551-4810-9D11-55F9F82B483C][How do I merge a PR?]].
+
+9. /Close out./ =compass task done <slug>= — task and story row flip to DONE with end date. Write the task's =* Result= by hand and commit.
 
    After merge, update the task: state → =DONE=, fill =* Result=, distill any =* Plan= into the parent story's =* Decisions=.
 

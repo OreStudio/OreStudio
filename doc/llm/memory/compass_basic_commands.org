@@ -2,7 +2,7 @@
 :ID: 28F78E07-834D-4755-BB03-89BD7C17B01E
 :END:
 #+title: Compass basic command syntax
-#+description: Syntax reference for the most-used compass commands: search, show, list, add, where, story new, task new.
+#+description: Syntax reference for the most-used compass commands: search, show, list, add, where, story/task lifecycle, review, pr.
 #+type: memory
 #+memory_subtype: reference
 #+level: cross
@@ -33,6 +33,13 @@ Core commands:
 
 - *Task new* (add a task+branch to an existing story):
   =compass.sh task new --story <id-or-slug> --slug my_task --title "Title"=
+- Task lifecycle (tables and journal are side-effects):
+  =compass.sh add task --slug s --parent-dir <story-dir> --title T --description D --goal "..." --acceptance "..."=
+  =compass.sh task start <slug> [--branch b]=  /  =compass.sh task done <slug> [--pr N]=
+- PR lifecycle:
+  =compass.sh pr sync [--push]= / =pr checks [--watch]= / =pr create --title "[c] D" --summary S --change C= / =pr merge [--force]=
+- Review round:
+  =compass.sh review pending [--since 24h]= / =review list <pr> [--detail]= / =review reply <pr> <id> "msg"= / =review resolve <pr>=
 
 - *Add* (scaffold a new artefact — always requires =--slug=, =--title=,
   =--description=, =--tags=; types =memory= and =runbook= also require

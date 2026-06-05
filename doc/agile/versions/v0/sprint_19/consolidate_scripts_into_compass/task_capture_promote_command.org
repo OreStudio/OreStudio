@@ -58,6 +58,8 @@ task closes. Plans do not outlive their task.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | frontmatter fields could be None → TypeError | compass.py | Declined | helper returns "" by contract, never None |
+| 2 | goal could be None | compass.py | Declined | same contract; or-chain yields "" at worst |
+| 3 | heading demotion regex matched line-leading bold | compass.py | Accepted | asterisks+space only; 47318cf78 |
 
 * Result

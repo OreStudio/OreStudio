@@ -12,7 +12,7 @@
 #+blocked_on: none
 #+blocked_since:
 #+created: 2026-06-01
-#+updated: 2026-06-01
+#+updated: 2026-06-05
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -29,12 +29,12 @@ service parser header.
 
 | Field        | Value                                                            |
 |--------------+------------------------------------------------------------------|
-| State        | STARTED                                                          |
+| State        | DONE |
 | Parent story | [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]]  |
-| Now          | PR #969 open; awaiting CI and review.                            |
+| Now          | Complete: PR(s) #969 merged. |
 | Waiting on   | CI green + review.                                               |
-| Next         | Merge PR; mark DONE.                                             |
-| Last touched | 2026-06-01                                                       |
+| Next         | Nothing. |
+| Last touched | 2026-06-05 |
 
 * Acceptance
 
@@ -74,3 +74,5 @@ Pattern (from working example in =ores.trading.service=):
 | 4 | Story table says 11 service parsers (should be 16)   | story.org                                   | Accept   | Fixed 71667d1c |
 
 * Result
+
+PR(s) #969 merged.

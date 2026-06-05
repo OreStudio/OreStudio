@@ -27,9 +27,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:73D162FD-92D6-4567-8D94-4368C97F96E4][Sprint health review — System 2 analysis]] |
-| Now          | Not yet started.                       |
+| Now          | Sync complete: 30 findings -> 2 (both deliberately open). |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Land PR #1079; close review 3. |
 | Last touched | 2026-06-05                               |
 
 * Acceptance
@@ -57,3 +57,10 @@ task closes. Plans do not outlive their task.)
 |   |                 |      |          |       |
 
 * Result
+
+compass sprint audit shipped and drove the sync: 30 findings reduced
+to 2 (the deliberately-open currency tasks). 5 stories closed, 1
+reopened (codegen org migration, 17 tasks closed within it, 3 backlog
+remain), 11 further tasks closed, 3 abandoned with reasons, 2
+re-filed as backlog captures, 1 missing Status section added, all
+sprint-table drift reconciled.

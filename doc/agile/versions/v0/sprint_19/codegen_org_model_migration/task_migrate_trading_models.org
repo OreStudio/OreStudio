@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-01
-#+updated: 2026-06-01
+#+updated: 2026-06-05
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -31,12 +31,12 @@ output matches the pre-migration regen byte-for-byte.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                                |
+| State        | DONE |
 | Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
-| Now          | Running migrate_json_to_org.py over the 21 trading entities. |
+| Now          | Complete: migration verified on disk. |
 | Waiting on   | Nothing.                               |
-| Next         | Snapshot regen; convert; round-trip diff; raise PR. |
-| Last touched | 2026-06-01                             |
+| Next         | Nothing. |
+| Last touched | 2026-06-05 |
 
 * Acceptance
 
@@ -83,3 +83,5 @@ Follow the refdata pilot pattern from PR #971:
 | 1 | Task missing =* PRs= / =* Review= sections; suggests =\| PR \| Description \| Decision \| Notes \|= columns. | task_migrate_trading_models.org:72 | Declined | PR #975 round 1. Both sections already present (lines 73, 79) with the repo's standard column shape. |
 
 * Result
+
+All trading entity models live as co-located org files under projects/ores.trading/modeling/; no JSON models remain.

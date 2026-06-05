@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-04
-#+updated: 2026-06-04
+#+updated: 2026-06-05
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -48,12 +48,12 @@ A side benefit: callers simplify — =sl.identity.version= replaces
 
 | Field        | Value                                                                      |
 |--------------+----------------------------------------------------------------------------|
-| State        | STARTED                                                                    |
+| State        | DONE |
 | Parent story | [[id:7763D0EE-A500-4497-9B2D-973C02ADC739][Fix rfl complexity failure (Windows + macOS CI)]]                            |
-| Now          | Fix implemented and committed; PR #1041 open; awaiting Windows CI.         |
+| Now          | Complete: PR(s) #1041 merged. |
 | Waiting on   | Windows CI green.                                                          |
-| Next         | Merge once CI is green; close task.                                        |
-| Last touched | 2026-06-04                                                                 |
+| Next         | Nothing. |
+| Last touched | 2026-06-05 |
 
 * Acceptance
 

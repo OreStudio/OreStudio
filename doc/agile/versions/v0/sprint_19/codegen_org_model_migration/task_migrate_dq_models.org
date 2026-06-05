@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-01
-#+updated: 2026-06-01
+#+updated: 2026-06-05
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -29,12 +29,12 @@ files under =projects/ores.dq/modeling/=, using
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                                |
+| State        | DONE |
 | Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
-| Now          | Migration complete; raising PR.        |
+| Now          | Complete: migration verified on disk. |
 | Waiting on   | Nothing.                               |
-| Next         | Merge.                                 |
-| Last touched | 2026-06-01                             |
+| Next         | Nothing. |
+| Last touched | 2026-06-05 |
 
 * Acceptance
 
@@ -58,3 +58,5 @@ files under =projects/ores.dq/modeling/=, using
 | 1 | Task missing =* PRs= / =* Review= sections; suggests =\| PR \| Description \| Decision \| Notes \|=. | task_migrate_dq_models.org:44 | Declined | PR #980 round 1. Both sections already present with the repo's standard column shape. |
 
 * Result
+
+All dq entity models live as co-located org files under projects/ores.dq/modeling/; no JSON models remain.

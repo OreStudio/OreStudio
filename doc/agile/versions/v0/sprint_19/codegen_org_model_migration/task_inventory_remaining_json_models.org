@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-01
-#+updated: 2026-06-01
+#+updated: 2026-06-05
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -35,12 +35,12 @@ one scaffolds.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                                |
+| State        | DONE |
 | Parent story | [[id:D85E2B30-8C64-46DF-819D-B50D2E70B73C][Codegen unified model — org-mode migration]] |
-| Now          | Inventory complete; per-kind follow-on tasks scaffolded. |
+| Now          | Complete; verified during health review 3. |
 | Waiting on   | Nothing.                               |
-| Next         | Land this PR; tackle the per-kind tasks. |
-| Last touched | 2026-06-01                             |
+| Next         | Nothing. |
+| Last touched | 2026-06-05 |
 
 * Acceptance
 
@@ -301,3 +301,5 @@ already in the story.
 | 1-8 | =#+blocked_on: none= placeholder on every scaffolded follow-on task; convention is empty. | task_migrate_*_to_org.org / task_retire_*.org:12 | Accepted | PR #990 round 1. Eight identical comments. Fixed in =88ca303b6= (swept the placeholder across all 13 task files under the story dir) and =8aac84e08= (root cause: =doc_task.org.mustache= scaffold template hardcoded =none=; template now leaves it empty so future tasks land clean). |
 
 * Result
+
+Inventory served its purpose: every component migrated; projects/ores.codegen/models/ no longer exists.

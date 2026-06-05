@@ -19,7 +19,12 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+=compass review list= only showed line-level review comments, so the
+review-round runbook still needed =gh pr view --comments= for review
+summaries and bot banners. Extend =list= with a Conversation section
+sourced from the PR's issue comments and review summaries (state-only
+reviews with no body are dropped), so one command reads the whole
+review surface.
 
 * Status
 
@@ -34,7 +39,12 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- =compass review list <pr>= shows line comments and conversation
+  items (issue comments + review summaries with bodies), in
+  chronological order, with =--detail= and =--format json= covering
+  both.
+- The review-round runbook and the address-review-comments recipe no
+  longer reference =gh pr view --comments=.
 
 * Plan
 

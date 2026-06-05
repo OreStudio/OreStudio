@@ -52,9 +52,10 @@ Then, for each PR that needs a round in this checkout:
    ./compass.sh review list <pr_number> --detail   # full bodies
    #+end_src
 
-   (=--format json= for machine consumption. Conversation-level
-   comments — review summaries, bot banners — are not line comments;
-   see them with =gh pr view <pr_number> --comments=.)
+   The output has two sections: line-level threads (the ones that
+   take replies and resolution) and conversation-level comments —
+   review summaries and bot banners. =--format json= for machine
+   consumption.
 
 2. /Decide on each comment/. For every comment, make an explicit
    accept/decline decision before touching any code:

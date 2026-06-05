@@ -8,7 +8,7 @@
 #+filetags: :sprint_health_review:sprint_19:v0:
 #+owner: marco
 #+branch: feature/sync-post-merge-paperwork
-#+pr:
+#+pr: 1101
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-06-05
@@ -48,7 +48,7 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1101][#1101]] | [agile] Health review 4: post-merge paperwork sync |
 
 * Review
 

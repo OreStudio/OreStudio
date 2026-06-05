@@ -24,22 +24,12 @@
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata.api/messaging/protocol.hpp"
 #include <QCloseEvent>
+#include <QHeaderView>
 #include <QLabel>
-#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
 using namespace ores::logging;
-
-namespace {
-
-QString formatImageId(const std::optional<boost::uuids::uuid>& id) {
-    if (!id.has_value())
-        return QStringLiteral("(none)");
-    return QString::fromStdString(boost::uuids::to_string(*id));
-}
-
-}
 
 CurrencyHistoryDialog::CurrencyHistoryDialog(QString iso_code,
                                              ClientManager* clientManager,
@@ -60,6 +50,9 @@ CurrencyHistoryDialog::CurrencyHistoryDialog(QString iso_code,
                          .changesTable = ui_->changesTableWidget,
                          .titleLabel = ui_->titleLabel,
                          .closeButton = ui_->closeButton});
+
+    ui_->detailsTableWidget->horizontalHeader()->setStretchLastSection(true);
+    ui_->detailsTableWidget->setColumnWidth(0, 200);
 
     resize(UiPersistence::restoreSize(QLatin1String("CurrencyHistoryDialog"),
                                       sizeHint()));
@@ -107,40 +100,16 @@ QString CurrencyHistoryDialog::historyTitle() const {
 
 HistoryDialogBase::DiffResult
 CurrencyHistoryDialog::calculateDiffAt(int current_index,
-                                       int previous_index) const {
-    const auto& current = history_.versions[current_index].data;
-    const auto& previous = history_.versions[previous_index].data;
-
+                                       int /*previous_index*/) const {
+    // The server computes the diff; this renders its rows verbatim.
     DiffResult diffs;
-    checkString(diffs, "ISO Code", current.iso_code, previous.iso_code);
-    checkString(diffs, "Name", current.name, previous.name);
-    checkString(diffs, "Numeric Code", current.numeric_code,
-                previous.numeric_code);
-    checkString(diffs, "Symbol", current.symbol, previous.symbol);
-    checkString(diffs, "Fraction Symbol", current.fraction_symbol,
-                previous.fraction_symbol);
-    checkString(diffs, "Rounding Type", current.rounding_type,
-                previous.rounding_type);
-    checkString(diffs, "Format", current.format, previous.format);
-    checkString(diffs, "Monetary Nature", current.monetary_nature,
-                previous.monetary_nature);
-    checkString(diffs, "Market Tier", current.market_tier,
-                previous.market_tier);
-    checkInt(diffs, "Fractions Per Unit", current.fractions_per_unit,
-             previous.fractions_per_unit);
-    checkInt(diffs, "Rounding Precision", current.rounding_precision,
-             previous.rounding_precision);
-    checkString(diffs, "Change Reason", current.change_reason_code,
-                previous.change_reason_code);
-    checkString(diffs, "Commentary", current.change_commentary,
-                previous.change_commentary);
-
-    if (current.image_id != previous.image_id) {
-        diffs.append({"Flag",
-                      {formatImageId(previous.image_id),
-                       formatImageId(current.image_id)}});
+    const auto& changes = history_.versions[current_index].changes;
+    diffs.reserve(static_cast<qsizetype>(changes.entries.size()));
+    for (const auto& entry : changes.entries) {
+        diffs.append({QString::fromStdString(entry.field_name),
+                      {QString::fromStdString(entry.old_value),
+                       QString::fromStdString(entry.new_value)}});
     }
-
     return diffs;
 }
 
@@ -174,20 +143,30 @@ QWidget* CurrencyHistoryDialog::changeCellWidget(const QString& field,
 
 void CurrencyHistoryDialog::displayFullDetails(int index) {
     const auto& version = history_.versions[index];
-    const auto& data = version.data;
 
-    ui_->isoCodeValue->setText(QString::fromStdString(data.iso_code));
-    ui_->nameValue->setText(QString::fromStdString(data.name));
-    ui_->numericCodeValue->setText(QString::fromStdString(data.numeric_code));
-    ui_->symbolValue->setText(QString::fromStdString(data.symbol));
-    ui_->fractionSymbolValue->setText(
-        QString::fromStdString(data.fraction_symbol));
-    ui_->fractionsPerUnitValue->setText(
-        QString::number(data.fractions_per_unit));
-    ui_->versionNumberValue->setText(QString::number(version.version_number));
-    ui_->modifiedByValue->setText(QString::fromStdString(version.modified_by));
-    ui_->recordedAtValue->setText(
-        relative_time_helper::format(version.recorded_at));
+    auto* table = ui_->detailsTableWidget;
+    table->setRowCount(0);
+    table->setRowCount(static_cast<int>(version.fields.size()) + 3);
+
+    int row = 0;
+    auto addRow = [&](const QString& field, const QString& value) {
+        table->setItem(row, 0, new QTableWidgetItem(field));
+        if (QWidget* widget = changeCellWidget(field, value))
+            table->setCellWidget(row, 1, widget);
+        else
+            table->setItem(row, 1, new QTableWidgetItem(value));
+        ++row;
+    };
+
+    for (const auto& field : version.fields) {
+        addRow(QString::fromStdString(field.name),
+               QString::fromStdString(field.value));
+    }
+
+    addRow(tr("Version"), QString::number(version.version_number));
+    addRow(tr("Modified By"), QString::fromStdString(version.modified_by));
+    addRow(tr("Recorded At"),
+           relative_time_helper::format(version.recorded_at));
 }
 
 void CurrencyHistoryDialog::openVersionAt(int index) {

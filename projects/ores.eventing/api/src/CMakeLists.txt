@@ -44,10 +44,10 @@ target_link_libraries(${lib_target_name}
         ores.logging.lib
         ores.platform.lib
         ores.utility.lib
+        Boost::boost
     PRIVATE
         faker-cxx::faker-cxx
-        libfort::fort
-        Boost::boost)
+        libfort::fort)
 
 
 target_link_libraries(${lib_target_name} PRIVATE ores.rfl.pch)

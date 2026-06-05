@@ -128,7 +128,7 @@ ignored.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1089][#1089]] | [llm] Authorise compass in shared Claude settings; track settings.json |
 
 * Review
 

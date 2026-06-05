@@ -29,11 +29,11 @@ journal with =--state DONE=. The prompt keeps only the judgement work
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:166E8E44-1573-4DE2-825F-A6037A302AE9][Add PR management support to compass]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-05                               |
 
 * Acceptance
@@ -63,3 +63,9 @@ task closes. Plans do not outlive their task.)
 |   |                 |      |          |       |
 
 * Result
+
+Shipped in PR [[https://github.com/OreStudio/OreStudio/pull/1095][#1095]] (merged 2026-06-05): after a successful merge the
+command maps the head branch to its task doc and stamps the journal
+with DONE — proven on its own merge, where the 📓 line appeared
+automatically. The close-out prompt now carries only the judgement
+work.

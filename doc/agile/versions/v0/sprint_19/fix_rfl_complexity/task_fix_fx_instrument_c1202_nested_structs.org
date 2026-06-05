@@ -63,7 +63,7 @@ audit_record move to dq.api (PR #1070):
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1071][#1071]] | [trading,qt,ore] Decompose FX instruments into nested structs; fix main CI |
 
 * Review
 

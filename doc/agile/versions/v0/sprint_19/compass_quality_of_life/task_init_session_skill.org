@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :compass:skill:llm:compass_quality_of_life:sprint_19:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/compass-quality-of-life
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -25,11 +25,11 @@ Session starts are ad hoc: the LLM sometimes reaches for --help or Unix tools in
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:A9C8B9F6-C7AE-404D-8EEF-20E5929CB7C0][Compass quality-of-life improvements]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-06-06                               |
 
 * Acceptance
@@ -59,3 +59,11 @@ task closes. Plans do not outlive their task.)
 |   |                 |      |          |       |
 
 * Result
+
+Scaffolded =doc/llm/skills/init-session/SKILL.org= via =compass add
+skill= (renamed to kebab-case to match the deployed skill folders)
+with the four-step ritual: compass-first operation with limitations
+surfaced as captures, recipe search before guessing command syntax
+(=compass search= / =list --type recipe=), =compass bearings=, then a
+summary plus suggested next action. Deployed with =compass build
+skills= and verified the bundle output.

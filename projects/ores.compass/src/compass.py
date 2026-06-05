@@ -1792,13 +1792,155 @@ def _find_capture(slug):
             return candidate
     return None
 
+def _capture_body(text):
+    """A capture's body: everything from its first top-level heading."""
+    m = re.search(r"^\* ", text, re.M)
+    return text[m.start():].rstrip() if m else ""
+
+
+def _cmd_capture_promote(argv):
+    """compass capture promote — turn a capture into a story or task.
+
+    The promoted doc REUSES the capture's UUID, so sprint-deferral
+    records and backlog index references resolve to it. The capture
+    body is carried over (What section as the goal; everything else
+    preserved under 'Promoted from capture'), the capture file is
+    removed, and the backlog indexes are regenerated.
+    """
+    ap = argparse.ArgumentParser(
+        prog="compass capture promote",
+        description="Promote a capture to a story or task, preserving "
+                    "its UUID.")
+    ap.add_argument("slug", help="Capture slug (any backlog bucket)")
+    ap.add_argument("--to", required=True, choices=["story", "task"],
+                    help="Promote to a new story, or a task on an "
+                         "existing story")
+    ap.add_argument("--story", default="",
+                    help="Story UUID/prefix or folder slug (for --to task)")
+    ap.add_argument("--title", default="",
+                    help="Override the capture's title")
+    ap.add_argument("--branch", default="",
+                    help="Branch name (default: feature/<slug-kebab>)")
+    args = ap.parse_args(argv)
+
+    src = _find_capture(args.slug)
+    if src is None:
+        print(f"❌ No capture found for slug '{args.slug}'.",
+              file=sys.stderr)
+        return 1
+    text = src.read_text(encoding="utf-8")
+    cap_id = _read_org_id(src)
+    title = args.title or _read_frontmatter_field(src, "title")
+    description = _read_frontmatter_field(src, "description")
+    created = _read_frontmatter_field(src, "created")
+    if not cap_id:
+        print(f"❌ Capture has no :ID:.", file=sys.stderr)
+        return 1
+
+    # Goal: the capture's What section when present, else description.
+    m = re.search(r"^\* What\s*\n(.*?)(?=^\* |\Z)", text, re.M | re.S)
+    goal = (m.group(1).strip() if m else "") or description
+
+    # Resolve target locations.
+    docs = doc_index.load_all()
+    _, current_sprint = current_version_sprint(docs)
+    if current_sprint is None:
+        print("❌ No current sprint found.", file=sys.stderr)
+        return 1
+    sprint_dir = _parent_dir(current_sprint.rel_path)
+    if args.to == "task":
+        if not args.story:
+            print("❌ --to task requires --story <id-or-slug>.",
+                  file=sys.stderr)
+            return 1
+        story_dir, _story_title = resolve_story(args.story)
+        if story_dir is None:
+            print(f"❌ Could not resolve story '{args.story}'.",
+                  file=sys.stderr)
+            return 1
+        parent_dir = story_dir
+        new_rel = Path(parent_dir) / f"task_{args.slug}.org"
+    else:
+        parent_dir = sprint_dir
+        new_rel = Path(parent_dir) / args.slug / "story.org"
+
+    # Branch off fresh origin/main, as task new does.
+    branch = args.branch or "feature/" + args.slug.replace("_", "-")
+    subprocess.run(["git", "fetch", "origin", "main"], cwd=PROJECT_ROOT)
+    r = subprocess.run(["git", "switch", "-c", branch, "origin/main"],
+                       capture_output=True, text=True, cwd=PROJECT_ROOT)
+    if r.returncode != 0:
+        r = subprocess.run(["git", "switch", branch],
+                           capture_output=True, text=True,
+                           cwd=PROJECT_ROOT)
+        if r.returncode != 0:
+            print(f"❌ git switch failed:\n{r.stderr.strip()}",
+                  file=sys.stderr)
+            return 1
+        print(f"✅ switched to existing {branch}")
+    else:
+        print(f"✅ created and switched to {branch} (off fresh "
+              "origin/main)")
+
+    # Scaffold with the capture's own UUID and content.
+    doc_generate = _import_generator()
+    gen_args = ["--type", args.to, "--slug", args.slug,
+                "--parent-dir", str(parent_dir), "--title", title,
+                "--description", description, "--id", cap_id,
+                "--goal", goal]
+    try:
+        rc = doc_generate.main(gen_args)
+    except SystemExit as exc:
+        rc = exc.code
+    if rc not in (None, 0):
+        if isinstance(rc, str):
+            print(rc, file=sys.stderr)
+        return 1
+    new_path = PROJECT_ROOT / new_rel
+    print(f"✅ {args.to} scaffolded with the capture's UUID: {new_rel}")
+
+    # Preserve the rest of the capture body, demoted one level.
+    body = _capture_body(text)
+    if body:
+        demoted = re.sub(r"^\*", "**", body, flags=re.M)
+        with new_path.open("a", encoding="utf-8") as f:
+            f.write(f"\n* Promoted from capture\n\n"
+                    f"Captured {created or 'earlier'} in the product "
+                    f"backlog; promoted preserving the UUID.\n\n"
+                    f"{demoted}\n")
+
+    # Wire a task into its story; stories get the sprint hint (the
+    # epic choice is judgement).
+    if args.to == "task":
+        _add_wire_task(["--parent-dir", str(parent_dir),
+                        "--slug", args.slug])
+    else:
+        print(f"ℹ️  Wire the story into the sprint's * Stories table "
+              f"(pick the epic):\n    story  {cap_id}\n"
+              f"    sprint {current_sprint.id.upper()}  "
+              f"({current_sprint.rel_path})")
+
+    # Remove the capture and regenerate the bucket indexes.
+    subprocess.run(["git", "rm", "-q", str(src)], cwd=PROJECT_ROOT,
+                   capture_output=True, text=True)
+    if src.exists():
+        src.unlink()
+    regen = (PROJECT_ROOT / "projects" / "ores.codegen" / "scripts"
+             / "regenerate_backlog_indexes.py")
+    subprocess.run([sys.executable, str(regen)], cwd=PROJECT_ROOT)
+    print(f"✅ Capture removed; backlog indexes regenerated.")
+    print(f"ℹ️  Next: compass task start "
+          f"{args.slug if args.to == 'task' else '<first-task-slug>'}")
+    return 0
+
+
 def cmd_capture(argv):
     """Manage product backlog captures.
 
     Subcommands:
       (default)  --note "..."  [--slug <slug>]        Create a capture in inbox/.
       file <slug> next|deferred|discarded             Move an inbox capture to a bucket.
-      promote <slug>                                  Show instructions to promote to story/task.
+      promote <slug> --to story|task [--story <id>]   Promote, preserving the UUID.
     """
     if not argv or argv[0] in ("-h", "--help"):
         print(
@@ -1807,8 +1949,9 @@ def cmd_capture(argv):
             "      Create a capture in doc/agile/product_backlog/inbox/.\n"
             "  compass capture file <slug> next|deferred|discarded\n"
             "      Move an inbox capture to a triaged product backlog bucket.\n"
-            "  compass capture promote <slug>\n"
-            "      Print instructions for promoting a capture to a story or task.\n"
+            "  compass capture promote <slug> --to story|task [--story <id-or-slug>]\n"
+            "      Promote a capture to a story or task, preserving its UUID;\n"
+            "      carries content over, branches, removes the capture, regenerates indexes.\n"
         )
         return 0
 
@@ -1850,22 +1993,7 @@ def cmd_capture(argv):
 
     # --- promote subcommand ---
     if subcommand == "promote":
-        if len(argv) < 2:
-            print("❌ usage: compass capture promote <slug>", file=sys.stderr)
-            return 1
-        slug = argv[1]
-        src = _find_capture(slug)
-        if src is None:
-            print(f"❌ No capture found for slug '{slug}'.", file=sys.stderr)
-            return 1
-        print(f"Capture: {src.relative_to(PROJECT_ROOT)}")
-        print("\nTo promote to a new story (creates branch + story + first task):")
-        print(f"  compass story new --slug {slug} --title \"<title>\" --description \"<desc>\" --tags \"<tags>\"")
-        print(f"  Then delete: {src.relative_to(PROJECT_ROOT)}")
-        print("\nTo promote to a task on an existing story (creates branch + task):")
-        print(f"  compass task new --story <id-or-slug> --slug {slug} --title \"<title>\"")
-        print(f"  Then delete: {src.relative_to(PROJECT_ROOT)}")
-        return 0
+        return _cmd_capture_promote(argv[1:])
 
     # --- default: create a new capture in inbox ---
     ap = argparse.ArgumentParser(prog="compass capture",

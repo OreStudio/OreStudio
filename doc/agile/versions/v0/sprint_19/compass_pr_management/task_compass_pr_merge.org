@@ -65,6 +65,7 @@ task closes. Plans do not outlive their task.)
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | pr=0 treated as falsy; validate positive integer | compass_pr.py | Accepted | 9def8887f; record fixed too |
+| 2 | pr positional should default to None not 0 | compass_pr.py | Accepted | 9def8887f |
 
 * Result

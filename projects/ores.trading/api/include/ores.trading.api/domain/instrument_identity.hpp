@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_DOMAIN_INSTRUMENT_IDENTITY_HPP
-#define ORES_TRADING_DOMAIN_INSTRUMENT_IDENTITY_HPP
+#ifndef ORES_TRADING_API_DOMAIN_INSTRUMENT_IDENTITY_HPP
+#define ORES_TRADING_API_DOMAIN_INSTRUMENT_IDENTITY_HPP
 
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
@@ -33,13 +33,40 @@ namespace ores::trading::domain {
  * Extracted as a plain nested sub-struct to keep each rfl::Literal below
  * the MSVC C1202 threshold. See doc/investigations/msvc_c1202_rfl_complexity.org.
  */
-struct instrument_identity final {
+struct instrument_identity {
+    /**
+     * @brief Version number for optimistic locking and change tracking.
+     */
     int version = 0;
+
+    /**
+     * @brief Tenant identifier for multi-tenancy isolation.
+     */
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
+
+    /**
+     * @brief Workspace this record belongs to; defaults to the Live workspace sentinel.
+     */
     boost::uuids::uuid workspace_id = utility::uuid::live_workspace_id();
+
+    /**
+     * @brief UUID uniquely identifying this instrument.
+     */
     boost::uuids::uuid instrument_id;
+
+    /**
+     * @brief ORE product type code (soft FK to ores_trading_trade_types_tbl).
+     */
     std::string trade_type_code;
+
+    /**
+     * @brief Party that owns this instrument record.
+     */
     boost::uuids::uuid party_id;
+
+    /**
+     * @brief Soft back-reference to the trade this instrument belongs to, when known.
+     */
     std::optional<boost::uuids::uuid> trade_id;
 };
 

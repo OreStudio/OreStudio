@@ -42,6 +42,7 @@ Surrogate key for the instrument record.
 
 ** trade_type_code
 :PROPERTIES:
+:group:    identity
 :type:     text
 :cpp_type: std::string
 :nullable: false
@@ -55,6 +56,7 @@ std::string("CapFloor")
 
 ** party_id
 :PROPERTIES:
+:group:    identity
 :type:     uuid
 :cpp_type: boost::uuids::uuid
 :nullable: false
@@ -66,6 +68,7 @@ Set from session variable app.current_party_id.
 
 ** trade_id
 :PROPERTIES:
+:group:    identity
 :type:     uuid
 :cpp_type: std::optional<boost::uuids::uuid>
 :nullable: true
@@ -125,10 +128,27 @@ Human-readable notes about this instrument.
 
 * C++
 
+The C++ domain class is decomposed into nested sub-structs (the C1202
+pattern from PRs #1047/#1071/#1075/#1083/#1085): the implicit scaffolding
+columns (version, tenant_id, workspace_id, the primary key) and the
+columns marked =:group: identity= below fold into an
+=instrument_identity identity;= member (see the
+ores.trading.instrument_identity field-group model), the implicit audit
+columns fold into an =ores::dq::domain::audit_record audit;= member (see
+the ores.dq.audit_record field-group model), and the remaining columns
+stay flat in between. The SQL schema, DB entity and column lists are
+unaffected — only the domain class and the mapper's domain-side accesses
+nest. NOTE: the entity templates do not consume these annotations yet;
+until that lands, regeneration of the domain/repository profiles would
+emit the obsolete flat shape — do not regenerate those profiles for
+instruments.
+
 ** Flags
 :PROPERTIES:
 :component_include:    trading.api
 :component_core:       trading.core
+:domain_identity_group: ores.trading.instrument_identity
+:domain_audit_group:    ores.dq.audit_record
 :has_batch_read:       true
 :generator_facet_name: generators
 :END:

@@ -1,0 +1,66 @@
+:PROPERTIES:
+:ID: 7C09B0D6-47EF-4007-8236-42DDB93DFD2D
+:END:
+#+title: ores.dq.audit_record
+#+description: Codegen field-group model for ores::dq::domain::audit_record.
+#+type: ores.codegen.field_group
+#+component: dq
+#+component_include: dq.api
+#+product: ores
+#+entity_singular: audit_record
+#+namespace: ores::dq::domain
+#+brief: Provenance and audit trail shared by all temporal domain entities.
+#+filetags: :model:field_group:dq:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+
+Lives in data quality alongside change_reason, which governs the
+vocabulary for change_reason_code.
+
+Extracted as a plain nested sub-struct so that rfl::internal::no_duplicate_field_names
+never instantiates a Literal wider than 5 fields for this block.
+See doc/investigations/msvc_c1202_rfl_complexity.org.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#+end_src
+
+* Fields
+
+** modified_by
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Username of the system actor that wrote this record.
+
+** performed_by
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Username of the business user on whose behalf the change was made.
+
+** change_reason_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Structured reason code for the change (vocabulary owned by dq change_reason).
+
+** change_commentary
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Free-text commentary describing the reason for the change.
+
+** recorded_at
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+Wall-clock timestamp at which this version of the record was persisted.

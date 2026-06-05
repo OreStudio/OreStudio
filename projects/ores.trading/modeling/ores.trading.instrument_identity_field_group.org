@@ -1,0 +1,81 @@
+:PROPERTIES:
+:ID: F9B9C91D-427F-420A-A3BC-D5725AC04674
+:END:
+#+title: ores.trading.instrument_identity
+#+description: Codegen field-group model for ores::trading::domain::instrument_identity.
+#+type: ores.codegen.field_group
+#+component: trading
+#+component_include: trading.api
+#+product: ores
+#+entity_singular: instrument_identity
+#+namespace: ores::trading::domain
+#+brief: Common identity fields shared by all instrument types.
+#+filetags: :model:field_group:trading:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+
+Extracted as a plain nested sub-struct to keep each rfl::Literal below
+the MSVC C1202 threshold. See doc/investigations/msvc_c1202_rfl_complexity.org.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#include "ores.utility/uuid/tenant_id.hpp"
+#+end_src
+
+* Fields
+
+** version
+:PROPERTIES:
+:cpp_type: int
+:default_value: 0
+:END:
+
+Version number for optimistic locking and change tracking.
+
+** tenant_id
+:PROPERTIES:
+:cpp_type: utility::uuid::tenant_id
+:default_value: utility::uuid::tenant_id::system()
+:END:
+
+Tenant identifier for multi-tenancy isolation.
+
+** workspace_id
+:PROPERTIES:
+:cpp_type: boost::uuids::uuid
+:default_value: utility::uuid::live_workspace_id()
+:END:
+
+Workspace this record belongs to; defaults to the Live workspace sentinel.
+
+** instrument_id
+:PROPERTIES:
+:cpp_type: boost::uuids::uuid
+:END:
+
+UUID uniquely identifying this instrument.
+
+** trade_type_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+ORE product type code (soft FK to ores_trading_trade_types_tbl).
+
+** party_id
+:PROPERTIES:
+:cpp_type: boost::uuids::uuid
+:END:
+
+Party that owns this instrument record.
+
+** trade_id
+:PROPERTIES:
+:cpp_type: std::optional<boost::uuids::uuid>
+:END:
+
+Soft back-reference to the trade this instrument belongs to, when known.

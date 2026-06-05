@@ -1,0 +1,36 @@
+:PROPERTIES:
+:ID: E8C3B46F-D375-4CFA-853F-D6C36804E4E6
+:END:
+#+title: Include order is owned by clang-format
+#+description: Reject review suggestions to hand-tune C++ include order; the formatter is the single source of truth and will revert manual deviations.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-06-05
+#+updated: 2026-06-05
+
+C++ include order is owned by clang-format: the tangled =.clang-format=
+(generated from =doc/knowledge/architecture/clang_format_config.org=)
+is the single source of truth. Never hand-tune include order in source
+files, and reject review suggestions that ask for it. If an ordering
+suggestion sounds sensible, the change is made at the clang-format
+level — edit the literate org config, retangle, and let the formatter
+apply it everywhere.
+
+*Why:* Marco, 2026-06-05, while triaging Gemini review comments on PR
+#1070 that suggested same-target includes before external-component
+includes: "in terms of includes order, remember we go via clang
+format... any changes must be done at the clang format level, if they
+sound sensible." Manual deviations are reverted by the next format run
+or the nightly format bot. Precedent: the Windows SDK ordering
+constraint (iphlpapi.h after windows.h) was encoded as an
+IncludeCategories entry rather than per-file pragmas.
+
+*How to apply:* When a review comment, lint suggestion, or instinct
+says to reorder =#include= lines: do not edit the source file ordering
+by hand. Either reject (if it fights the alphabetical-within-category
+policy) or, if the rule is genuinely sensible, add it to the
+IncludeCategories in =clang_format_config.org=, run the
+=tangle_clang_format= target, and reformat. Always run =clang-format -i=
+on touched files so order matches the config.

@@ -79,7 +79,7 @@ struct fx_variance_swap_instrument final {
 
     std::string description;
 
-    dq::domain::audit_record audit;
+    ores::dq::domain::audit_record audit;
 };
 
 }

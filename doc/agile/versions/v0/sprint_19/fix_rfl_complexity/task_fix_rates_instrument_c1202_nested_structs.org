@@ -105,5 +105,7 @@ See [[id:D75F4921-B431-4E78-99AB-62A47F761D1D][Investigation: MSVC C1202 and rfl
 | # | Comment summary                                                               | File              | Decision | Notes          |
 |---+-------------------------------------------------------------------------------+-------------------+----------+----------------|
 | 1 | Gemini: task doc missing Plan, PRs, Review, Result sections                   | task_fix_rates*.org | Accept  | Fixed this commit |
+| 2 | Gemini (#1070): same-target includes before external-component includes       | 10 rates headers  | Reject   | Considered at the clang-format level and rejected on merits: IncludeCategories regexes cannot express "current target" repo-wide (would need per-component configs); self-sufficiency is already enforced by main-header-first in each header's own TU; LLVM/Chromium sort project includes purely alphabetically |
+| 3 | Gemini (#1070): fully qualify ores::dq::domain::audit_record                  | 10 rates headers  | Accept   | Applied on PR #1071 branch (1070 merged early); also applied to the 7 FX headers for consistency |
 
 * Result
